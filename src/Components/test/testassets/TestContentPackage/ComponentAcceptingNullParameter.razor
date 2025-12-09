@@ -1,0 +1,52 @@
+﻿@implements IDisposable
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Components.Routing
+
+<p>Value: @(Value ?? "(null)")</p>
+
+@if (_interactive)
+{
+    <button id="button-increment" @onclick="Increment">Count: <span id="current-count">@_count</span></button>
+    <button id="button-refresh" @onclick="Refresh">Refresh</button>
+    <p>Location changed count: <span id="location-changed-count">@_locationChangedCount</span></p>
+}
+
+@code {
+    private bool _interactive;
+    private int _count;
+    private int _locationChangedCount;
+
+    [Parameter]
+    public string Value { get; set; }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            NavigationManager.LocationChanged += OnLocationChanged;
+            _interactive = true;
+            StateHasChanged();
+        }
+    }
+
+    private void OnLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        _locationChangedCount++;
+        StateHasChanged();
+    }
+
+    private void Increment()
+    {
+        _count++;
+    }
+
+    private void Refresh()
+    {
+        NavigationManager.Refresh();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}

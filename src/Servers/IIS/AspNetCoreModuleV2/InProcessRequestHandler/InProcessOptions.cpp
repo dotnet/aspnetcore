@@ -65,7 +65,7 @@ InProcessOptions::InProcessOptions(const ConfigurationSource &configurationSourc
     const auto handlerSettings = aspNetCoreSection->GetKeyValuePairs(CS_ASPNETCORE_HANDLER_SETTINGS);
     m_fSetCurrentDirectory = equals_ignore_case(find_element(handlerSettings, CS_ASPNETCORE_HANDLER_SET_CURRENT_DIRECTORY).value_or(L"true"), L"true");
     m_fCallStartupHook = equals_ignore_case(find_element(handlerSettings, CS_ASPNETCORE_HANDLER_CALL_STARTUP_HOOK).value_or(L"true"), L"true");
-    m_strStackSize = find_element(handlerSettings, CS_ASPNETCORE_HANDLER_STACK_SIZE).value_or(L"1048576");
+    m_strStackSize = find_element(handlerSettings, CS_ASPNETCORE_HANDLER_STACK_SIZE).value_or(L"0x100000"); // 1 MB in hex
     m_fSuppressRecycleOnStartupTimeout = equals_ignore_case(find_element(handlerSettings, CS_ASPNETCORE_SUPPRESS_RECYCLE_ON_STARTUP_TIMEOUT).value_or(L"false"), L"true");
 
     m_dwStartupTimeLimitInMS = aspNetCoreSection->GetRequiredLong(CS_ASPNETCORE_PROCESS_STARTUP_TIME_LIMIT) * 1000;

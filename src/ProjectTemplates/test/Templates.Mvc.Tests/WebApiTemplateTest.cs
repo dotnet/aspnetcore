@@ -12,6 +12,8 @@ using Xunit.Abstractions;
 
 namespace Templates.Mvc.Test;
 
+#pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
+
 public class WebApiTemplateTest : LoggedTest
 {
     public WebApiTemplateTest(ProjectFactoryFixture factoryFixture)
@@ -96,7 +98,7 @@ public class WebApiTemplateTest : LoggedTest
     [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.UseControllers, ArgConstants.CallsGraph })]
     public Task WebApiTemplateCSharp_IdentityWeb_SingleOrg_ProgramMain_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
 
-    [ConditionalTheory]
+    [ConditionalTheory(Skip = "https://github.com/dotnet/aspnetcore/issues/58957")]
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/28090", Queues = HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     [InlineData("SingleOrg", null)]
     [InlineData("SingleOrg", new [] { ArgConstants.UseProgramMain, ArgConstants.NoHttps })]
@@ -171,7 +173,7 @@ public class WebApiTemplateTest : LoggedTest
             aspNetProcess.Process.HasExited,
             ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
-        await aspNetProcess.AssertNotFound("swagger");
+        await aspNetProcess.AssertNotFound("openapi/v1.json");
     }
 
     [ConditionalTheory]
@@ -195,8 +197,8 @@ public class WebApiTemplateTest : LoggedTest
 
         var noHttps = args.Contains(ArgConstants.NoHttps);
         var expectedLaunchProfileNames = noHttps
-            ? new[] { "http", "IIS Express" }
-            : new[] { "http", "https", "IIS Express" };
+            ? new[] { "http" }
+            : new[] { "http", "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
         await project.RunDotNetBuildAsync();
@@ -206,7 +208,7 @@ public class WebApiTemplateTest : LoggedTest
             aspNetProcess.Process.HasExited,
             ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
-        await aspNetProcess.AssertNotFound("swagger");
+        await aspNetProcess.AssertNotFound("openapi/v1.json");
     }
 
     private async Task<Project> PublishAndBuildWebApiTemplate(string languageOverride, string auth, string[] args = null)
@@ -220,10 +222,10 @@ public class WebApiTemplateTest : LoggedTest
                             || string.Equals(auth, "SingleOrg", StringComparison.OrdinalIgnoreCase);
         var noHttps = args?.Contains(ArgConstants.NoHttps) ?? false;
         var expectedLaunchProfileNames = requiresHttps
-            ? new[] { "https", "IIS Express" }
+            ? new[] { "https" }
             : noHttps
-                ? new[] { "http", "IIS Express" }
-                : new[] { "http", "https", "IIS Express" };
+                ? new[] { "http" }
+                : new[] { "http", "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
         // Avoid the F# compiler. See https://github.com/dotnet/aspnetcore/issues/14022
@@ -260,7 +262,7 @@ public class WebApiTemplateTest : LoggedTest
                 ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
             await aspNetProcess.AssertOk("weatherforecast");
-            await aspNetProcess.AssertOk("swagger");
+            await aspNetProcess.AssertOk("openapi/v1.json");
             await aspNetProcess.AssertNotFound("/");
         }
 
@@ -271,8 +273,8 @@ public class WebApiTemplateTest : LoggedTest
                 ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", project, aspNetProcess.Process));
 
             await aspNetProcess.AssertOk("weatherforecast");
-            // Swagger is only available in Development
-            await aspNetProcess.AssertNotFound("swagger");
+            // OpenAPI endpoint is only enabled in Development
+            await aspNetProcess.AssertNotFound("openapi/v1.json");
             await aspNetProcess.AssertNotFound("/");
         }
     }

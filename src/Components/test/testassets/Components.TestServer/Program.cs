@@ -19,10 +19,11 @@ public class Program
         var createIndividualHosts = new Dictionary<string, (IHost host, string basePath)>
         {
             ["Client authentication"] = (BuildWebHost<AuthenticationStartup>(CreateAdditionalArgs(args)), "/subdir"),
+            ["Remote client authentication"] = (BuildWebHost<RemoteAuthenticationStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Server authentication"] = (BuildWebHost<ServerAuthenticationStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["CORS (WASM)"] = (BuildWebHost<CorsStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Prerendering (Server-side)"] = (BuildWebHost<PrerenderedStartup>(CreateAdditionalArgs(args)), "/prerendered"),
-            ["Razor Component Endpoints"] = (BuildWebHost<RazorComponentEndpointsStartup<Components.TestServer.RazorComponents.App>>(CreateAdditionalArgs(args)), "/subdir"),
+            ["Razor Component Endpoints"] = (BuildWebHost<RazorComponentEndpointsStartup<App>>(CreateAdditionalArgs(args)), "/subdir"),
             ["Deferred component content (Server-side)"] = (BuildWebHost<DeferredComponentContentStartup>(CreateAdditionalArgs(args)), "/deferred-component-content"),
             ["Locked navigation (Server-side)"] = (BuildWebHost<LockedNavigationStartup>(CreateAdditionalArgs(args)), "/locked-navigation"),
             ["Client-side with fallback"] = (BuildWebHost<StartupWithMapFallbackToClientSideBlazor>(CreateAdditionalArgs(args)), "/fallback"),
@@ -31,9 +32,12 @@ public class Program
             ["Globalization + Localization (Server-side)"] = (BuildWebHost<InternationalizationStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Server-side blazor"] = (BuildWebHost<ServerStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Blazor web with server-side blazor root component"] = (BuildWebHost<RazorComponentEndpointsStartup<Root>>(CreateAdditionalArgs(args)), "/subdir"),
+            ["Blazor web with server-side reconnection disabled"] = (BuildWebHost<RazorComponentEndpointsStartup<Root>>(CreateAdditionalArgs([.. args, "--DisableReconnectionCache", "true"])), "/subdir"),
+            ["Blazor web with server-side hybrid cache"] = (BuildWebHost<RazorComponentEndpointsStartup<Root>>(CreateAdditionalArgs([.. args, "--DisableReconnectionCache", "true", "--UseHybridCache", "true"])), "/subdir"),
             ["Hosted client-side blazor"] = (BuildWebHost<ClientStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Hot Reload"] = (BuildWebHost<HotReloadStartup>(CreateAdditionalArgs(args)), "/subdir"),
-            ["Dev server client-side blazor"] = CreateDevServerHost(CreateAdditionalArgs(args))
+            ["Dev server client-side blazor"] = CreateDevServerHost(CreateAdditionalArgs(args)),
+            ["Global Interactivity"] = (BuildWebHost<RazorComponentEndpointsStartup<GlobalInteractivityApp>>(CreateAdditionalArgs(args)), "/subdir"),
         };
 
         var mainHost = BuildWebHost(args);
@@ -54,24 +58,39 @@ public class Program
         var contentRoot = typeof(Program).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .Single(a => a.Key == "Microsoft.AspNetCore.InternalTesting.BasicTestApp.ContentRoot")
             .Value;
+        var finalArgs = new List<string>();
+        finalArgs.AddRange(args);
+        finalArgs.AddRange(
+        [
+            "--contentroot", contentRoot,
+            "--pathbase", "/subdir",
+            "--applicationpath", typeof(BasicTestApp.Program).Assembly.Location,
+        ]);
 
-        var finalArgs = args.Concat(new[]
+        if (WebAssemblyTestHelper.MultithreadingIsEnabled())
         {
-                "--contentroot", contentRoot,
-                "--pathbase", "/subdir",
-                "--applicationpath", typeof(BasicTestApp.Program).Assembly.Location,
-            }).ToArray();
-        var host = DevServerProgram.BuildWebHost(finalArgs);
+            finalArgs.Add("--apply-cop-headers");
+        }
+
+        var host = DevServerProgram.BuildWebHost(finalArgs.ToArray());
         return (host, "/subdir");
     }
 
     private static string[] CreateAdditionalArgs(string[] args) =>
-        args.Concat(new[] { "--urls", $"http://127.0.0.1:{GetNextChildAppPortNumber()}" }).ToArray();
+        [.. args, .. new[] { "--urls", $"http://127.0.0.1:{GetNextChildAppPortNumber()}" }];
 
     public static IHost BuildWebHost(string[] args) => BuildWebHost<Startup>(args);
 
-    public static IHost BuildWebHost<TStartup>(string[] args) where TStartup : class =>
-        Host.CreateDefaultBuilder(args)
+    public static IHost BuildWebHost<TStartup>(string[] args) where TStartup : class
+    {
+        var unobservedTaskExceptionObserver = new UnobservedTaskExceptionObserver();
+        TaskScheduler.UnobservedTaskException += unobservedTaskExceptionObserver.OnUnobservedTaskException;
+
+        return Host.CreateDefaultBuilder(args)
+            .ConfigureServices(services =>
+            {
+                services.AddSingleton(unobservedTaskExceptionObserver);
+            })
             .ConfigureLogging((ctx, lb) =>
             {
                 TestSink sink = new TestSink();
@@ -87,6 +106,7 @@ public class Program
                 webHostBuilder.UseStaticWebAssets();
             })
             .Build();
+    }
 
     private static int GetNextChildAppPortNumber()
     {

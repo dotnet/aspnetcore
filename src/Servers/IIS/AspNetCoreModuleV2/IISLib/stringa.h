@@ -6,10 +6,6 @@
 #include "buffer.h"
 #include <strsafe.h>
 
-
-#pragma warning( push )
-#pragma warning ( disable : ALL_CODE_ANALYSIS_WARNINGS )
-
 class STRA
 {
 
@@ -39,88 +35,6 @@ public:
         __in BOOL           fIgnoreCase = FALSE
     ) const;
 
-    BOOL
-    Equals(
-        __in const STRA &  strRhs,
-        __in BOOL           fIgnoreCase = FALSE
-    ) const;
-
-    static
-    BOOL
-    Equals(
-        __in PCSTR          pszLhs,
-        __in PCSTR          pszRhs,
-        __in bool           fIgnoreCase = false
-    )
-    {
-        // Return FALSE if either or both strings are NULL.
-        if (!pszLhs || !pszRhs) return FALSE;
-
-        if( fIgnoreCase )
-        {
-            return ( 0 == _stricmp( pszLhs, pszRhs ) );
-        }
-
-        return ( 0 == strcmp( pszLhs, pszRhs ) );
-    }
-
-    VOID
-    Trim();
-
-    BOOL
-    StartsWith(
-        __in const STRA *   pStraPrefix,
-        __in bool           fIgnoreCase = FALSE
-    ) const;
-
-    BOOL
-    StartsWith(
-        __in const STRA &   straPrefix,
-        __in bool           fIgnoreCase = FALSE
-    ) const;
-
-    BOOL
-    StartsWith(
-        __in PCSTR          pszPrefix,
-        __in bool           fIgnoreCase = FALSE
-    ) const;
-
-    BOOL
-    EndsWith(
-        __in const STRA *   pStraSuffix,
-        __in bool           fIgnoreCase = FALSE
-    ) const;
-
-    BOOL
-    EndsWith(
-        __in const STRA &   straSuffix,
-        __in bool           fIgnoreCase = FALSE
-    ) const;
-
-    BOOL
-    EndsWith(
-        __in PCSTR          pszSuffix,
-        __in bool           fIgnoreCase = FALSE
-    ) const;
-
-    INT
-    IndexOf(
-        __in CHAR           charValue,
-        __in DWORD          dwStartIndex = 0
-    ) const;
-
-    INT
-    IndexOf(
-        __in PCSTR          pszValue,
-        __in DWORD          dwStartIndex = 0
-    ) const;
-
-    INT
-    LastIndexOf(
-        __in CHAR           charValue,
-        __in DWORD          dwStartIndex = 0
-    ) const;
-
     DWORD
     QueryCB(
     ) const;
@@ -142,6 +56,8 @@ public:
     CHAR *
     QueryStr(
     ) const;
+
+    VOID EnsureNullTerminated();
 
     VOID
     Reset(
@@ -204,18 +120,6 @@ public:
     }
 
     HRESULT
-    CopyWTruncate(
-        __in PCWSTR pszCopyWTruncate
-    );
-
-    HRESULT
-    CopyWTruncate(
-        __in_ecount(cchLen)
-        PCWSTR          pszCopyWTruncate,
-        __in SIZE_T     cchLen
-    );
-
-    HRESULT
     Append(
         __in PCSTR pszAppend
     );
@@ -225,11 +129,6 @@ public:
         __in_ecount(cbLen)
         PCSTR       pszAppend,
         __in SIZE_T cbLen
-    );
-
-    HRESULT
-    Append(
-        __in const STRA * pstrRhs
     );
 
     HRESULT
@@ -277,34 +176,10 @@ public:
     }
 
     HRESULT
-    AppendWTruncate(
-        __in PCWSTR pszAppendWTruncate
-    );
-
-    HRESULT
-    AppendWTruncate(
-        __in_ecount(cchLen)
-        PCWSTR          pszAppendWTruncate,
-        __in SIZE_T     cchLen
-    );
-
-    HRESULT
     CopyToBuffer(
         __out_bcount(*pcb) CHAR*    pszBuffer,
         __inout DWORD *             pcb
     ) const;
-
-    HRESULT
-    SetLen(
-        __in DWORD cchLen
-    );
-
-    HRESULT
-    SafeSnprintf(
-        __in __format_string
-        PCSTR       pszFormatString,
-        ...
-    );
 
     HRESULT
     SafeVsnprintf(
@@ -314,36 +189,12 @@ public:
     );
 
     HRESULT
-    Escape(
-    );
-
-    HRESULT
-    EscapeUtf8(
-    );
-
-    VOID
-    Unescape(
-    );
-
-    HRESULT
     CopyWToUTF8Unescaped(
         __in LPCWSTR cpchStr
     );
 
     HRESULT
     CopyWToUTF8Unescaped(
-        __in_ecount(cch)
-        LPCWSTR         cpchStr,
-        __in DWORD      cch
-    );
-
-    HRESULT
-    CopyWToUTF8Escaped(
-        __in LPCWSTR cpchStr
-    );
-
-    HRESULT
-    CopyWToUTF8Escaped(
         __in_ecount(cch)
         LPCWSTR         cpchStr,
         __in DWORD      cch
@@ -433,15 +284,6 @@ private:
 
     static
     HRESULT
-    ConvertUnicodeToMultiByte(
-        __in_ecount(dwStringLen)
-        LPCWSTR                     pszSrcUnicodeString,
-        __in BUFFER_T<CHAR,1> *     pbufDstAnsiString,
-        __in DWORD                  dwStringLen
-    );
-
-    static
-    HRESULT
     ConvertUnicodeToUTF8(
         __in_ecount(dwStringLen)
         LPCWSTR                     pszSrcUnicodeString,
@@ -451,11 +293,6 @@ private:
 
     typedef bool (* PFN_F_SHOULD_ESCAPE)(BYTE ch);
 
-    HRESULT
-    EscapeInternal(
-        PFN_F_SHOULD_ESCAPE pfnFShouldEscape
-    );
-
     //
     // Buffer with an inline buffer of 1,
     // enough to hold null-terminating character.
@@ -463,28 +300,6 @@ private:
     BUFFER_T<CHAR,1>    m_Buff;
     DWORD               m_cchLen;
 };
-
-inline
-HRESULT
-AppendToString(
-    ULONGLONG Number,
-    STRA & String
-)
-{
-    // prefast complains Append requires input
-    // to be null terminated, so zero initialize
-    // and pass the size of the buffer minus one
-    // to _ui64toa_s
-    CHAR chNumber[32] = {0};
-    if (_ui64toa_s(Number,
-                   chNumber,
-                   sizeof(chNumber) - sizeof(CHAR),
-                   10) != 0)
-    {
-        return E_INVALIDARG;
-    }
-    return String.Append(chNumber);
-}
 
 template<DWORD size>
 CHAR* InitHelper(__out CHAR (&psz)[size])
@@ -498,10 +313,3 @@ CHAR* InitHelper(__out CHAR (&psz)[size])
 //
 #define STACK_STRA(name, size)  CHAR __ach##name[size];\
                                 STRA  name(InitHelper(__ach##name), sizeof(__ach##name))
-
-#define INLINE_STRA(name, size) CHAR __ach##name[size];\
-                                STRA  name;
-
-#define INLINE_STRA_INIT(name) name(InitHelper(__ach##name), sizeof(__ach##name))
-
-#pragma warning( pop )

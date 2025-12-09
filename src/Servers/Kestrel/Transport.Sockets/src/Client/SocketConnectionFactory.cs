@@ -27,7 +27,7 @@ internal sealed class SocketConnectionFactory : IConnectionFactory, IAsyncDispos
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _options = options.Value;
-        _memoryPool = options.Value.MemoryPoolFactory();
+        _memoryPool = options.Value.MemoryPoolFactory.Create(SocketConnectionFactoryOptions.MemoryPoolOptions);
         _trace = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Client");
 
         var maxReadBufferSize = _options.MaxReadBufferSize ?? 0;
@@ -58,7 +58,7 @@ internal sealed class SocketConnectionFactory : IConnectionFactory, IAsyncDispos
             NoDelay = _options.NoDelay
         };
 
-        await socket.ConnectAsync(ipEndPoint);
+        await socket.ConnectAsync(ipEndPoint, cancellationToken);
 
         var socketConnection = new SocketConnection(
             socket,

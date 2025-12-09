@@ -11,8 +11,8 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests;
 
 public class TemplateBinderTests
 {
-    public static TheoryData EmptyAndNullDefaultValues =>
-        new TheoryData<string, RouteValueDictionary, RouteValueDictionary, string>
+    public static TheoryData<string, RouteValueDictionary, RouteValueDictionary, string> EmptyAndNullDefaultValues =>
+        new()
         {
                 {
                     "Test/{val1}/{val2}",
@@ -174,8 +174,8 @@ public class TemplateBinderTests
             "/language/axx-yy");
     }
 
-    public static TheoryData OptionalParamValues =>
-        new TheoryData<string, RouteValueDictionary, RouteValueDictionary, RouteValueDictionary, string>
+    public static TheoryData<string, RouteValueDictionary, RouteValueDictionary, RouteValueDictionary, string> OptionalParamValues =>
+        new()
         {
                 // defaults
                 // ambient values

@@ -1,19 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Net;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using StackExchange.Redis;
 using StackExchange.Redis.Maintenance;
 using StackExchange.Redis.Profiling;
-using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
 
@@ -237,6 +230,8 @@ public class TestConnectionMultiplexer : IConnectionMultiplexer
     }
 
     public ValueTask DisposeAsync() => default;
+
+    public void AddLibraryNameSuffix(string suffix) { } // don't need to implement
 }
 
 public class TestRedisServer

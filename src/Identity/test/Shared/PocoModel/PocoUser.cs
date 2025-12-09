@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.AspNetCore.Identity.Test;
 
 /// <summary>
@@ -144,4 +146,8 @@ public class PocoUser<TKey> where TKey : IEquatable<TKey>
     /// Navigation property
     /// </summary>
     public virtual ICollection<PocoUserToken<TKey>> Tokens { get; private set; } = new List<PocoUserToken<TKey>>();
+    /// <summary>
+    /// Navigation property
+    /// </summary>
+    public virtual ICollection<PocoUserPasskey<TKey>> Passkeys { get; private set; } = new List<PocoUserPasskey<TKey>>();
 }

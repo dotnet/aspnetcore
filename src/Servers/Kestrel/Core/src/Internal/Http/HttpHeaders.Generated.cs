@@ -7481,7 +7481,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe ushort ReadUnalignedLittleEndian_ushort(ref byte source)
+        internal static ushort ReadUnalignedLittleEndian_ushort(ref byte source)
         {
             ushort result = Unsafe.ReadUnaligned<ushort>(ref source);
             if (!BitConverter.IsLittleEndian)
@@ -7491,7 +7491,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return result;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe uint ReadUnalignedLittleEndian_uint(ref byte source)
+        internal static uint ReadUnalignedLittleEndian_uint(ref byte source)
         {
             uint result = Unsafe.ReadUnaligned<uint>(ref source);
             if (!BitConverter.IsLittleEndian)
@@ -7501,7 +7501,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return result;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe ulong ReadUnalignedLittleEndian_ulong(ref byte source)
+        internal static ulong ReadUnalignedLittleEndian_ulong(ref byte source)
         {
             ulong result = Unsafe.ReadUnaligned<ulong>(ref source);
             if (!BitConverter.IsLittleEndian)
@@ -7511,11 +7511,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return result;
         }
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public unsafe void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars)
+        public void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value, bool checkForNewlineChars)
         {
             ref byte nameStart = ref MemoryMarshal.GetReference(name);
             var nameStr = string.Empty;
-            ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
+            ref StringValues values = ref Unsafe.NullRef<StringValues>();
             var flag = 0L;
 
             // Does the name match any "known" headers
@@ -7924,9 +7924,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public unsafe bool TryHPackAppend(int index, ReadOnlySpan<byte> value, bool checkForNewlineChars)
+        public bool TryHPackAppend(int index, ReadOnlySpan<byte> value, bool checkForNewlineChars)
         {
-            ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
+            ref StringValues values = ref Unsafe.NullRef<StringValues>();
             var nameStr = string.Empty;
             var flag = 0L;
 
@@ -8136,9 +8136,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
-        public unsafe bool TryQPackAppend(int index, ReadOnlySpan<byte> value, bool checkForNewlineChars)
+        public bool TryQPackAppend(int index, ReadOnlySpan<byte> value, bool checkForNewlineChars)
         {
-            ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
+            ref StringValues values = ref Unsafe.NullRef<StringValues>();
             var nameStr = string.Empty;
             var flag = 0L;
 
@@ -8669,6 +8669,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     _next = _collection._contentLength.HasValue ? 49 : -1;
                     return true;
                 }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static int GetNext(long bits, bool hasContentLength)
+            {
+                return bits != 0
+                    ? BitOperations.TrailingZeroCount(bits)
+                    : hasContentLength
+                        ? 49
+                        : -1;
             }
         }
     }
@@ -14796,7 +14806,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             _bits &= ~13161725953;
         }
-        internal unsafe void CopyToFast(ref BufferWriter<PipeWriter> output)
+        internal void CopyToFast(ref BufferWriter<PipeWriter> output)
         {
             var tempBits = (ulong)_bits;
             // Set exact next
@@ -14813,7 +14823,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return;
             }
 
-            ref readonly StringValues values = ref Unsafe.AsRef<StringValues>(null);
+            ref readonly StringValues values = ref Unsafe.NullRef<StringValues>();
             do
             {
                 int keyStart;
@@ -15495,6 +15505,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     _next = _collection._contentLength.HasValue ? 38 : -1;
                     return true;
                 }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static int GetNext(long bits, bool hasContentLength)
+            {
+                return bits != 0
+                    ? BitOperations.TrailingZeroCount(bits)
+                    : hasContentLength
+                        ? 38
+                        : -1;
             }
         }
     }

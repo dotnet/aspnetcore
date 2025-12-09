@@ -6,6 +6,8 @@
     <!-- Installing Java on ARM will take some work -->
     <SkipHelixArm>true</SkipHelixArm>
     <SkipHelixAlpine>true</SkipHelixAlpine>
+    <!-- Temporary while Mac machines get new JDK -->
+    <SkipHelixQueues>OSX.15.Amd64.Open;$(SkipHelixQueues)</SkipHelixQueues>
     <PublishDir>$(OutputPath)</PublishDir>
     <TestDependsOnJava>true</TestDependsOnJava>
   </PropertyGroup>
@@ -49,8 +51,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' != 'true'" Include="cp %24{HELIX_WORKITEM_ROOT}/test/test-results/TEST-junit-jupiter.xml %24{HELIX_WORKITEM_ROOT}/junit-results.xml" />
-    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="copy %25HELIX_WORKITEM_ROOT%25\test\test-results\TEST-junit-jupiter.xml %25HELIX_WORKITEM_ROOT%25\junit-results.xml" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' != 'true'" Include="cp %24{HELIX_WORKITEM_ROOT}/test/test-results/junit-results.xml %24{HELIX_WORKITEM_ROOT}/junit-results.xml" />
+    <HelixPostCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="copy %25HELIX_WORKITEM_ROOT%25\test\test-results\junit-results.xml %25HELIX_WORKITEM_ROOT%25\junit-results.xml" />
   </ItemGroup>
 
 </Project>

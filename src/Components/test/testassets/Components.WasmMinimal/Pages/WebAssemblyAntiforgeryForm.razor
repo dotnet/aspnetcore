@@ -1,0 +1,18 @@
+﻿@page "/webassembly-antiforgery-form/{RenderForm=false}"
+@using Microsoft.AspNetCore.Components.Web
+@rendermode RenderMode.InteractiveWebAssembly
+
+@if (string.IsNullOrEmpty(Name))
+{
+    <TestContentPackage.InteractiveAntiforgery RenderForm="@bool.Parse(RenderForm)" />
+}
+else
+{
+    <p id="result">@Name</p>
+}
+
+@code {
+    [SupplyParameterFromQuery] public string Name { get; set; } = "";
+
+    [Parameter] public string RenderForm { get; set; } = null!;
+}

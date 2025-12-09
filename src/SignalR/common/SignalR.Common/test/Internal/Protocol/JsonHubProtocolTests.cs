@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Options;
@@ -106,6 +107,106 @@ public class JsonHubProtocolTests : JsonHubProtocolTestsBase
         Assert.Equal(expectedMessage, message);
     }
 
+    [Fact]
+    public void PolymorphicWorksWithInvocation()
+    {
+        Person todo = new JsonPersonExtended()
+        {
+            Name = "Person",
+            Age = 99,
+        };
+
+        var expectedJson = "{\"type\":1,\"target\":\"method\",\"arguments\":[{\"$type\":\"JsonPersonExtended\",\"age\":99,\"name\":\"Person\",\"child\":null,\"parent\":null}]}";
+
+        var writer = MemoryBufferWriter.Get();
+        try
+        {
+            JsonHubProtocol.WriteMessage(new InvocationMessage("method", new[] { todo }), writer);
+
+            var json = Encoding.UTF8.GetString(writer.ToArray());
+            Assert.Equal(Frame(expectedJson), json);
+
+            var binder = new TestBinder([typeof(JsonPerson)]);
+            var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(json));
+            Assert.True(JsonHubProtocol.TryParseMessage(ref data, binder, out var message));
+
+            var invocationMessage = Assert.IsType<InvocationMessage>(message);
+            Assert.Equal(1, invocationMessage.Arguments?.Length);
+            PersonEqual(todo, invocationMessage.Arguments[0]);
+        }
+        finally
+        {
+            MemoryBufferWriter.Return(writer);
+        }
+    }
+
+    [Fact]
+    public void PolymorphicWorksWithStreamItem()
+    {
+        Person todo = new JsonPersonExtended()
+        {
+            Name = "Person",
+            Age = 99,
+        };
+
+        var expectedJson = "{\"type\":2,\"invocationId\":\"1\",\"item\":{\"$type\":\"JsonPersonExtended\",\"age\":99,\"name\":\"Person\",\"child\":null,\"parent\":null}}";
+
+        var writer = MemoryBufferWriter.Get();
+        try
+        {
+            JsonHubProtocol.WriteMessage(new StreamItemMessage("1", todo), writer);
+
+            var json = Encoding.UTF8.GetString(writer.ToArray());
+            Assert.Equal(Frame(expectedJson), json);
+
+            var binder = new TestBinder(typeof(JsonPerson));
+            var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(json));
+            Assert.True(JsonHubProtocol.TryParseMessage(ref data, binder, out var message));
+
+            var streamItemMessage = Assert.IsType<StreamItemMessage>(message);
+            Assert.Equal("1", streamItemMessage.InvocationId);
+            PersonEqual(todo, streamItemMessage.Item);
+        }
+        finally
+        {
+            MemoryBufferWriter.Return(writer);
+        }
+    }
+
+    [Fact]
+    public void PolymorphicWorksWithCompletion()
+    {
+        Person todo = new JsonPersonExtended2()
+        {
+            Name = "Person",
+            Location = "Canada",
+        };
+
+        var expectedJson = "{\"type\":3,\"invocationId\":\"1\",\"result\":{\"$type\":\"JsonPersonExtended2\",\"location\":\"Canada\",\"name\":\"Person\",\"child\":null,\"parent\":null}}";
+
+        var writer = MemoryBufferWriter.Get();
+        try
+        {
+            JsonHubProtocol.WriteMessage(CompletionMessage.WithResult("1", todo), writer);
+
+            var json = Encoding.UTF8.GetString(writer.ToArray());
+            Assert.Equal(Frame(expectedJson), json);
+
+            var binder = new TestBinder(typeof(JsonPerson));
+            var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(json));
+            Assert.True(JsonHubProtocol.TryParseMessage(ref data, binder, out var message));
+
+            var completionMessage = Assert.IsType<CompletionMessage>(message);
+            Assert.Equal("1", completionMessage.InvocationId);
+            Assert.True(completionMessage.HasResult);
+            PersonEqual(todo, completionMessage.Result);
+        }
+        finally
+        {
+            MemoryBufferWriter.Return(writer);
+        }
+    }
+
     public static IDictionary<string, JsonProtocolTestData> CustomProtocolTestData => new[]
     {
             new JsonProtocolTestData("InvocationMessage_HasFloatArgument", new InvocationMessage(null, "Target", new object[] { 1, "Foo", 2.0f }), true, true, "{\"type\":1,\"target\":\"Target\",\"arguments\":[1,\"Foo\",2]}"),
@@ -119,4 +220,72 @@ public class JsonHubProtocolTests : JsonHubProtocolTestsBase
         }.ToDictionary(t => t.Name);
 
     public static IEnumerable<object[]> CustomProtocolTestDataNames => CustomProtocolTestData.Keys.Select(name => new object[] { name });
+
+    private class Person
+    {
+        public string Name { get; set; }
+        public Person Child { get; set; }
+        public Person Parent { get; set; }
+    }
+
+    [JsonPolymorphic]
+    [JsonDerivedType(typeof(JsonPersonExtended), nameof(JsonPersonExtended))]
+    [JsonDerivedType(typeof(JsonPersonExtended2), nameof(JsonPersonExtended2))]
+    private class JsonPerson : Person
+    { }
+
+    private class JsonPersonExtended : JsonPerson
+    {
+        public int Age { get; set; }
+    }
+
+    private class JsonPersonExtended2 : JsonPerson
+    {
+        public string Location { get; set; }
+    }
+
+    private static void PersonEqual(object expected, object actual)
+    {
+        if (expected is null && actual is null)
+        {
+            return;
+        }
+
+        Assert.Equal(expected.GetType(), actual.GetType());
+
+        if (expected is JsonPersonExtended expectedPersonExtended && actual is JsonPersonExtended actualPersonExtended)
+        {
+            Assert.Equal(expectedPersonExtended.Name, actualPersonExtended.Name);
+            Assert.Equal(expectedPersonExtended.Age, actualPersonExtended.Age);
+            PersonEqual(expectedPersonExtended.Child, actualPersonExtended.Child);
+            PersonEqual(expectedPersonExtended.Parent, actualPersonExtended.Parent);
+            return;
+        }
+
+        if (expected is JsonPersonExtended2 expectedPersonExtended2 && actual is JsonPersonExtended2 actualPersonExtended2)
+        {
+            Assert.Equal(expectedPersonExtended2.Name, actualPersonExtended2.Name);
+            Assert.Equal(expectedPersonExtended2.Location, actualPersonExtended2.Location);
+            PersonEqual(expectedPersonExtended2.Child, actualPersonExtended2.Child);
+            PersonEqual(expectedPersonExtended2.Parent, actualPersonExtended2.Parent);
+            return;
+        }
+
+        if (expected is JsonPerson expectedJsonPerson && actual is JsonPerson actualJsonPerson)
+        {
+            Assert.Equal(expectedJsonPerson.Name, actualJsonPerson.Name);
+            PersonEqual(expectedJsonPerson.Child, actualJsonPerson.Child);
+            PersonEqual(expectedJsonPerson.Parent, actualJsonPerson.Parent);
+            return;
+        }
+
+        if (expected is Person expectedPerson && actual is Person actualPerson)
+        {
+            Assert.Equal(expectedPerson.Name, actualPerson.Name);
+            PersonEqual(expectedPerson.Parent, actualPerson.Parent);
+            PersonEqual(expectedPerson.Child, actualPerson.Child);
+        }
+
+        Assert.Fail("Passed in unexpected object(s)");
+    }
 }

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using Microsoft.Extensions.Primitives;
@@ -9,6 +10,11 @@ namespace Microsoft.Net.Http.Headers;
 
 internal static class CookieHeaderParserShared
 {
+    // cookie-octet      = %x21 / %x23-2B / %x2D-3A / %x3C-5B / %x5D-7E
+    //                     ; US-ASCII characters excluding CTLs, whitespace, DQUOTE, comma, semicolon, and backslash
+    private static readonly SearchValues<char> CookieValueChar =
+        SearchValues.Create("!#$%&'()*+-./0123456789:<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~");
+
     public static bool TryParseValues(StringValues values, IDictionary<string, string> store, bool supportsMultipleValues)
     {
         // If a parser returns an empty list, it means there was no value, but that's valid (e.g. "Accept: "). The caller
@@ -83,6 +89,17 @@ internal static class CookieHeaderParserShared
 
         if (!TryGetCookieLength(value, ref current, out parsedName, out parsedValue))
         {
+            var separatorIndex = value.IndexOf(';', current);
+            if (separatorIndex > 0)
+            {
+                // Skip the invalid values and keep trying.
+                index = separatorIndex;
+            }
+            else
+            {
+                // No more separators, so we're done.
+                index = value.Length;
+            }
             return false;
         }
 
@@ -91,6 +108,17 @@ internal static class CookieHeaderParserShared
         // If we support multiple values and we've not reached the end of the string, then we must have a separator.
         if ((separatorFound && !supportsMultipleValues) || (!separatorFound && (current < value.Length)))
         {
+            var separatorIndex = value.IndexOf(';', current);
+            if (separatorIndex > 0)
+            {
+                // Skip the invalid values and keep trying.
+                index = separatorIndex;
+            }
+            else
+            {
+                // No more separators, so we're done.
+                index = value.Length;
+            }
             return false;
         }
 
@@ -106,7 +134,7 @@ internal static class CookieHeaderParserShared
         separatorFound = false;
         var current = startIndex + HttpRuleParser.GetWhitespaceLength(input, startIndex);
 
-        if ((current == input.Length) || (input[current] != ',' && input[current] != ';'))
+        if (current == input.Length || input[current] != ';')
         {
             return current;
         }
@@ -119,8 +147,8 @@ internal static class CookieHeaderParserShared
 
         if (skipEmptyValues)
         {
-            // Most headers only split on ',', but cookies primarily split on ';'
-            while ((current < input.Length) && ((input[current] == ',') || (input[current] == ';')))
+            // Cookies are split on ';'
+            while (current < input.Length && input[current] == ';')
             {
                 current++; // skip delimiter.
                 current = current + HttpRuleParser.GetWhitespaceLength(input, current);
@@ -130,6 +158,18 @@ internal static class CookieHeaderParserShared
         return current;
     }
 
+    /*
+     * https://www.rfc-editor.org/rfc/rfc6265#section-4.1.1
+     * cookie-pair       = cookie-name "=" cookie-value
+     * cookie-name       = token
+     * token          = 1*<any CHAR except CTLs or separators>
+       separators     = "(" | ")" | "<" | ">" | "@"
+                      | "," | ";" | ":" | "\" | <">
+                      | "/" | "[" | "]" | "?" | "="
+                      | "{" | "}" | SP | HT
+       CTL            = <any US-ASCII control character
+                        (octets 0 - 31) and DEL (127)>
+     */
     // name=value; name="value"
     internal static bool TryGetCookieLength(StringSegment input, ref int offset, [NotNullWhen(true)] out StringSegment? parsedName, [NotNullWhen(true)] out StringSegment? parsedValue)
     {
@@ -192,15 +232,14 @@ internal static class CookieHeaderParserShared
             offset++;
         }
 
-        while (offset < input.Length)
+        var delta = input.AsSpan(offset).IndexOfAnyExcept(CookieValueChar);
+        if (delta < 0)
         {
-            var c = input[offset];
-            if (!IsCookieValueChar(c))
-            {
-                break;
-            }
-
-            offset++;
+            offset = input.Length;
+        }
+        else
+        {
+            offset += delta;
         }
 
         if (inQuotes)
@@ -231,16 +270,5 @@ internal static class CookieHeaderParserShared
         }
         offset++;
         return true;
-    }
-
-    // cookie-octet      = %x21 / %x23-2B / %x2D-3A / %x3C-5B / %x5D-7E
-    //                     ; US-ASCII characters excluding CTLs, whitespace DQUOTE, comma, semicolon, and backslash
-    private static bool IsCookieValueChar(char c)
-    {
-        if (c < 0x21 || c > 0x7E)
-        {
-            return false;
-        }
-        return !(c == '"' || c == ',' || c == ';' || c == '\\');
     }
 }

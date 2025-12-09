@@ -106,29 +106,33 @@ public class ControllerBaseTest
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void Redirect_WithParameter_NullOrEmptyUrl_Throws(string url)
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string.")]
+    public void Redirect_WithParameter_NullOrEmptyUrl_Throws(string url, string expectedMessage)
     {
         // Arrange
         var controller = new TestableController();
 
         // Act & Assert
-        ExceptionAssert.ThrowsArgumentNullOrEmpty(
-            () => controller.Redirect(url: url), "url");
+        ExceptionAssert.ThrowsArgument(
+            () => controller.Redirect(url: url),
+            "url",
+            expectedMessage);
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void RedirectPreserveMethod_WithParameter_NullOrEmptyUrl_Throws(string url)
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string.")]
+    public void RedirectPreserveMethod_WithParameter_NullOrEmptyUrl_Throws(string url, string expectedMessage)
     {
         // Arrange
         var controller = new TestableController();
 
         // Act & Assert
-        ExceptionAssert.ThrowsArgumentNullOrEmpty(
-            () => controller.RedirectPreserveMethod(url: url), "url");
+        ExceptionAssert.ThrowsArgument(
+            () => controller.RedirectPreserveMethod(url: url),
+            "url",
+            expectedMessage);
     }
 
     [Fact]
@@ -200,68 +204,78 @@ public class ControllerBaseTest
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void LocalRedirect_WithParameter_NullOrEmptyUrl_Throws(string url)
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string.")]
+    public void LocalRedirect_WithParameter_NullOrEmptyUrl_Throws(string url, string expectedMessage)
     {
         // Arrange
         var controller = new TestableController();
 
         // Act & Assert
-        ExceptionAssert.ThrowsArgumentNullOrEmpty(
-            () => controller.LocalRedirect(localUrl: url), "localUrl");
+        ExceptionAssert.ThrowsArgument(
+            () => controller.LocalRedirect(localUrl: url),
+            "localUrl",
+            expectedMessage);
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void LocalRedirectPreserveMethod_WithParameter_NullOrEmptyUrl_Throws(string url)
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string.")]
+    public void LocalRedirectPreserveMethod_WithParameter_NullOrEmptyUrl_Throws(string url, string expectedMessage)
     {
         // Arrange
         var controller = new TestableController();
 
         // Act & Assert
-        ExceptionAssert.ThrowsArgumentNullOrEmpty(
-            () => controller.LocalRedirectPreserveMethod(localUrl: url), "localUrl");
+        ExceptionAssert.ThrowsArgument(
+            () => controller.LocalRedirectPreserveMethod(localUrl: url),
+            "localUrl",
+            expectedMessage);
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void LocalRedirectPermanentPreserveMethod_WithParameter_NullOrEmptyUrl_Throws(string url)
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string.")]
+    public void LocalRedirectPermanentPreserveMethod_WithParameter_NullOrEmptyUrl_Throws(string url, string expectedMessage)
     {
         // Arrange
         var controller = new TestableController();
 
         // Act & Assert
-        ExceptionAssert.ThrowsArgumentNullOrEmpty(
-            () => controller.LocalRedirectPermanentPreserveMethod(localUrl: url), "localUrl");
+        ExceptionAssert.ThrowsArgument(
+            () => controller.LocalRedirectPermanentPreserveMethod(localUrl: url),
+            "localUrl",
+            expectedMessage);
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void RedirectPermanent_WithParameter_NullOrEmptyUrl_Throws(string url)
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string.")]
+    public void RedirectPermanent_WithParameter_NullOrEmptyUrl_Throws(string url, string expectedMessage)
     {
         // Arrange
         var controller = new TestableController();
 
         // Act & Assert
-        ExceptionAssert.ThrowsArgumentNullOrEmpty(
-            () => controller.RedirectPermanent(url: url), "url");
+        ExceptionAssert.ThrowsArgument(
+            () => controller.RedirectPermanent(url: url),
+            "url",
+            expectedMessage);
     }
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    public void RedirectPermanentPreserveMethod_WithParameter_NullOrEmptyUrl_Throws(string url)
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string.")]
+    public void RedirectPermanentPreserveMethod_WithParameter_NullOrEmptyUrl_Throws(string url, string expectedMessage)
     {
         // Arrange
         var controller = new TestableController();
 
         // Act & Assert
-        ExceptionAssert.ThrowsArgumentNullOrEmpty(
-            () => controller.RedirectPermanentPreserveMethod(url: url), "url");
+        ExceptionAssert.ThrowsArgument(
+            () => controller.RedirectPermanentPreserveMethod(url: url),
+            "url",
+            expectedMessage);
     }
 
     [Fact]

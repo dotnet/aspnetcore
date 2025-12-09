@@ -10,27 +10,21 @@ using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Infrastructure;
 
-internal class RazorComponentEndpointDataSourceFactory
+internal class RazorComponentEndpointDataSourceFactory(
+    RazorComponentEndpointFactory factory,
+    IEnumerable<RenderModeEndpointProvider> providers,
+    HotReloadService? hotReloadService = null)
 {
-    private readonly RazorComponentEndpointFactory _factory;
-    private readonly IEnumerable<RenderModeEndpointProvider> _providers;
-    private readonly HotReloadService? _hotReloadService;
-
-    public RazorComponentEndpointDataSourceFactory(
-        RazorComponentEndpointFactory factory,
-        IEnumerable<RenderModeEndpointProvider> providers,
-        HotReloadService? hotReloadService = null)
-    {
-        _factory = factory;
-        _providers = providers;
-        _hotReloadService = hotReloadService;
-    }
-
     public RazorComponentEndpointDataSource<TRootComponent> CreateDataSource<[DynamicallyAccessedMembers(Component)] TRootComponent>(IEndpointRouteBuilder endpoints)
     {
-        var builder = ComponentApplicationBuilder.GetBuilder<TRootComponent>() ??
-            DefaultRazorComponentApplication<TRootComponent>.Instance.GetBuilder();
+        var dataSource = new RazorComponentEndpointDataSource<TRootComponent>(providers, endpoints, factory, hotReloadService);
 
-        return new RazorComponentEndpointDataSource<TRootComponent>(builder, _providers, endpoints.CreateApplicationBuilder(), _factory, _hotReloadService);
+        dataSource.ComponentApplicationBuilderActions.Add(builder =>
+        {
+            var assembly = typeof(TRootComponent).Assembly;
+            IRazorComponentApplication.GetBuilderForAssembly(builder, assembly);
+        });
+
+        return dataSource;
     }
 }

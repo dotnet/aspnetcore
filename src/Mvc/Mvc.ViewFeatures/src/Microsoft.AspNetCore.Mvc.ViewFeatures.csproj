@@ -15,6 +15,7 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
+    <DefineConstants>$(DefineConstants);MVC_VIEWFEATURES</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,6 +32,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)\PooledArrayBufferWriter.cs" LinkBase="Infrastructure" />
+    <Compile Include="$(SharedSourceRoot)\Components\ResourceCollectionResolver.cs" LinkBase="Infrastructure" />
   </ItemGroup>
 
   <ItemGroup>

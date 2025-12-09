@@ -59,7 +59,7 @@ else
         object key = DisableKeys ? null : counter.Id;
 
         <Counter
-            @rendermode="@GetRenderMode(counter.RenderModeId)"
+            @rendermode="@RenderModeHelper.GetRenderMode(counter.RenderModeId)"
             @key="@key"
             IdSuffix="@counter.Id.ToString()"
             IncrementAmount="counter.IncrementAmount"
@@ -100,6 +100,9 @@ else
     ComponentState _state = new(ImmutableArray<CounterInfo>.Empty, NextCounterId: 0);
     bool _isStreaming = false;
 
+    [CascadingParameter]
+    public HttpContext HttpContext { get; set; }
+
     [SupplyParameterFromQuery]
     public string? InitialState { get; set; }
 
@@ -109,11 +112,19 @@ else
     [SupplyParameterFromQuery]
     public bool DisableKeys { get; set; }
 
+    [SupplyParameterFromQuery]
+    public bool ClearSiteData { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         if (InitialState is not null)
         {
             _state = ReadStateFromJson(InitialState);
+        }
+
+        if (ClearSiteData)
+        {
+            HttpContext.Response.Headers["Clear-Site-Data"] = "\"*\"";
         }
 
         if (ShouldStream)
@@ -188,30 +199,6 @@ else
             $"?{nameof(InitialState)}={stateJson}" +
             $"&{nameof(ShouldStream)}={shouldStream}" +
             $"&{nameof(DisableKeys)}={disableKeys}";
-    }
-
-    private static IComponentRenderMode GetRenderMode(RenderModeId renderMode)
-    {
-        return renderMode switch
-        {
-            RenderModeId.ServerPrerendered => RenderMode.InteractiveServer,
-            RenderModeId.ServerNonPrerendered => new InteractiveServerRenderMode(false),
-            RenderModeId.WebAssemblyPrerendered => RenderMode.InteractiveWebAssembly,
-            RenderModeId.WebAssemblyNonPrerendered => new InteractiveWebAssemblyRenderMode(false),
-            RenderModeId.AutoPrerendered => RenderMode.InteractiveAuto,
-            RenderModeId.AutoNonPrerendered => new InteractiveAutoRenderMode(false),
-            _ => throw new InvalidOperationException($"Unknown render mode: {renderMode}"),
-        };
-    }
-
-    private enum RenderModeId
-    {
-        ServerPrerendered = 0,
-        ServerNonPrerendered = 1,
-        WebAssemblyPrerendered = 2,
-        WebAssemblyNonPrerendered = 3,
-        AutoPrerendered = 4,
-        AutoNonPrerendered = 5,
     }
 
     private record struct CounterInfo(int Id, int IncrementAmount, RenderModeId RenderModeId);

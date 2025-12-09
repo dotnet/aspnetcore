@@ -9,7 +9,7 @@
     <PackAsTool>true</PackAsTool>
     <!-- This package is for internal use only. It contains a CLI which is bundled in the .NET Core SDK. -->
     <IsShippingPackage>false</IsShippingPackage>
-    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+    <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ContainsFunctionalTestAssets>true</ContainsFunctionalTestAssets>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -22,9 +22,9 @@
 
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.Testing" />
     <Reference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <Reference Include="AngleSharp" />
-    <Reference Include="System.Net.Http" />
 
     <None Update="Testing.DefaultWebSite.StaticWebAssets.V4.xml" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Testing.DefaultWebSite.StaticWebAssets.V5.xml" CopyToOutputDirectory="PreserveNewest" />

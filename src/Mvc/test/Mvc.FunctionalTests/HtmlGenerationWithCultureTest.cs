@@ -14,22 +14,29 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Abstractions;
 using Xunit.Sdk;
+using Microsoft.AspNetCore.Builder;
+using System.Reflection;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class HtmlGenerationWithCultureTest : LoggedTest, IClassFixture<MvcTestFixture<StartupWithCultureReplace>>
+public class HtmlGenerationWithCultureTest : LoggedTest
 {
-    public HtmlGenerationWithCultureTest(
-        ITestOutputHelper testOutputHelper,
-        MvcTestFixture<StartupWithCultureReplace> fixture) : base(testOutputHelper)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        Factory = fixture.WithWebHostBuilder(builder => builder.UseStartup<StartupWithCultureReplace>());
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<StartupWithCultureReplace>(LoggerFactory)
+            .WithWebHostBuilder(builder => builder.UseStartup<StartupWithCultureReplace>());
         Client = Factory.CreateDefaultClient();
     }
 
-    public WebApplicationFactory<StartupWithCultureReplace> Factory { get; }
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
 
-    public HttpClient Client { get; }
+    public WebApplicationFactory<StartupWithCultureReplace> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public async Task CacheTagHelper_AllowsVaryingByCulture()
@@ -124,6 +131,7 @@ public class HtmlGenerationWithCultureTest : LoggedTest, IClassFixture<MvcTestFi
         }
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/56440")]
     [Fact]
     public async Task CacheTagHelper_VaryByCultureComposesWithOtherVaryByOptions()
     {

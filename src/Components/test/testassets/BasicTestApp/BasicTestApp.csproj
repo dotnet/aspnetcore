@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -11,16 +11,17 @@
 
     <!-- Project supports more than one language -->
     <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TestTrimmedApps)' == 'true'">
+  <PropertyGroup Condition="'$(TestTrimmedOrMultithreadingApps)' == 'true'">
     <!-- Avoid spending time brotli compression publish output.-->
     <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="System.ComponentModel" />
-    <Reference Include="System.Net.Http.Json" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <Reference Include="Microsoft.AspNetCore.Components.CustomElements" />
     <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
@@ -28,7 +29,6 @@
     <Reference Include="Microsoft.AspNetCore.SignalR.Client" />
     <Reference Include="Microsoft.Extensions.Logging.Configuration" />
     <Reference Include="Newtonsoft.Json" />
-    <Reference Include="System.Private.Uri" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,14 +46,12 @@
   </ItemGroup>
 
   <!-- Workaround for https://github.com/dotnet/aspnetcore/issues/30791 -->
-  <Target Name="_FixupPublishBug" AfterTargets="_ProcessPublishFilesForBlazor" BeforeTargets="_BlazorCompressPublishFiles" Condition="'$(TestTrimmedApps)' == 'true'">
+  <Target Name="_FixupPublishBug" AfterTargets="_ProcessPublishFilesForBlazor" BeforeTargets="_BlazorCompressPublishFiles" Condition="'$(TestTrimmedOrMultithreadingApps)' == 'true'">
     <ItemGroup>
       <ResolvedFileToPublish RelativePath="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('subdir\subdir', 'subdir').Replace('subdir/subdir', 'subdir'))" />
 
-      <ResolvedFileToPublish
-        Include="@(ResolvedFileToPublish)"
-        RelativePath="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('subdir\_content', '_content').Replace('subdir/subdir', '_content'))"
-        Condition="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('subdir\_content', 'subdir/_content').Contains('subdir/_content'))" />
+      <ResolvedFileToPublish Include="@(ResolvedFileToPublish)" RelativePath="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('subdir\_content', '_content').Replace('subdir/subdir', '_content'))" Condition="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('subdir\_content', 'subdir/_content').Contains('subdir/_content'))" />
+
     </ItemGroup>
   </Target>
 

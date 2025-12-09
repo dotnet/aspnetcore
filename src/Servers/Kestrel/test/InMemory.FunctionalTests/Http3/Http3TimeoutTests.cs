@@ -28,6 +28,7 @@ public class Http3TimeoutTests : Http3TestBase
         Http3Api.AdvanceTime(limits.KeepAliveTimeout + TimeSpan.FromTicks(1));
 
         await Http3Api.WaitForConnectionStopAsync(0, false, expectedErrorCode: Http3ErrorCode.NoError);
+        MetricsAssert.Equal(ConnectionEndReason.KeepAliveTimeout, Http3Api.ConnectionTags);
     }
 
     [Fact]
@@ -44,6 +45,7 @@ public class Http3TimeoutTests : Http3TestBase
         Http3Api.AdvanceTime(limits.KeepAliveTimeout + TimeSpan.FromTicks(1));
 
         await Http3Api.WaitForConnectionStopAsync(0, false, expectedErrorCode: Http3ErrorCode.NoError);
+        MetricsAssert.Equal(ConnectionEndReason.KeepAliveTimeout, Http3Api.ConnectionTags);
     }
 
     [Fact]
@@ -72,6 +74,7 @@ public class Http3TimeoutTests : Http3TestBase
         Http3Api.AdvanceTime(limits.KeepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
 
         await Http3Api.WaitForConnectionStopAsync(4, false, expectedErrorCode: Http3ErrorCode.NoError);
+        MetricsAssert.Equal(ConnectionEndReason.KeepAliveTimeout, Http3Api.ConnectionTags);
     }
 
     [Fact]
@@ -117,6 +120,7 @@ public class Http3TimeoutTests : Http3TestBase
         Http3Api.AdvanceTime(limits.KeepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
 
         await Http3Api.WaitForConnectionStopAsync(4, false, expectedErrorCode: Http3ErrorCode.NoError);
+        MetricsAssert.Equal(ConnectionEndReason.KeepAliveTimeout, Http3Api.ConnectionTags);
     }
 
     [Fact]
@@ -365,6 +369,7 @@ public class Http3TimeoutTests : Http3TestBase
             expectedLastStreamId: 4,
             Http3ErrorCode.InternalError,
             null);
+        MetricsAssert.Equal(ConnectionEndReason.MinRequestBodyDataRate, Http3Api.ConnectionTags);
 
         _mockTimeoutHandler.VerifyNoOtherCalls();
     }
@@ -408,6 +413,7 @@ public class Http3TimeoutTests : Http3TestBase
             Http3ErrorCode.InternalError,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied);
+        MetricsAssert.Equal(ConnectionEndReason.MinResponseDataRate, Http3Api.ConnectionTags);
 
         Assert.Contains(TestSink.Writes, w => w.EventId.Name == "ResponseMinimumDataRateNotSatisfied");
     }
@@ -561,6 +567,7 @@ public class Http3TimeoutTests : Http3TestBase
             expectedLastStreamId: null,
             Http3ErrorCode.InternalError,
             null);
+        MetricsAssert.Equal(ConnectionEndReason.MinRequestBodyDataRate, Http3Api.ConnectionTags);
 
         _mockTimeoutHandler.VerifyNoOtherCalls();
     }
@@ -615,6 +622,7 @@ public class Http3TimeoutTests : Http3TestBase
             expectedLastStreamId: null,
             Http3ErrorCode.InternalError,
             null);
+        MetricsAssert.Equal(ConnectionEndReason.MinRequestBodyDataRate, Http3Api.ConnectionTags);
 
         _mockTimeoutHandler.VerifyNoOtherCalls();
     }
@@ -670,6 +678,7 @@ public class Http3TimeoutTests : Http3TestBase
             expectedLastStreamId: null,
             Http3ErrorCode.InternalError,
             null);
+        MetricsAssert.Equal(ConnectionEndReason.MinRequestBodyDataRate, Http3Api.ConnectionTags);
 
         _mockTimeoutHandler.VerifyNoOtherCalls();
     }

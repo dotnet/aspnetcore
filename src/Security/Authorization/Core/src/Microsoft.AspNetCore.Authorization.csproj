@@ -6,7 +6,7 @@ Commonly used types:
 Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute
 Microsoft.AspNetCore.Authorization.AuthorizeAttribute</Description>
     <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;authorization</PackageTags>
@@ -17,6 +17,7 @@ Microsoft.AspNetCore.Authorization.AuthorizeAttribute</Description>
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Metadata" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Diagnostics" />
     <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
@@ -29,6 +30,10 @@ Microsoft.AspNetCore.Authorization.AuthorizeAttribute</Description>
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\DebuggerHelpers.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Authorization.Test" />
   </ItemGroup>
 
 </Project>

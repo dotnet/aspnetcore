@@ -52,10 +52,7 @@ public class DeploymentParameters
         RuntimeFlavor runtimeFlavor,
         RuntimeArchitecture runtimeArchitecture)
     {
-        if (string.IsNullOrEmpty(applicationPath))
-        {
-            throw new ArgumentException("Value cannot be null.", nameof(applicationPath));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(applicationPath);
 
         if (!Directory.Exists(applicationPath))
         {
@@ -186,11 +183,12 @@ public class DeploymentParameters
     {
         return string.Format(
             CultureInfo.InvariantCulture,
-            "[Variation] :: ServerType={0}, Runtime={1}, Arch={2}, BaseUrlHint={3}, Publish={4}",
+            "[Variation] :: ServerType={0}, Runtime={1}, Arch={2}, BaseUrlHint={3}, Publish={4}, HostingModel={5}",
             ServerType,
             RuntimeFlavor,
             RuntimeArchitecture,
             ApplicationBaseUriHint,
-            PublishApplicationBeforeDeployment);
+            PublishApplicationBeforeDeployment,
+            HostingModel);
     }
 }

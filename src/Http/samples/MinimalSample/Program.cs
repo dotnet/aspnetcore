@@ -58,7 +58,7 @@ var superNested = inner.MapGroup("/group/{groupName}")
 
 superNested.MapGet("/", (string groupName, string nestedName) =>
 {
-   return $"Hello from {groupName}:{nestedName}!";
+    return $"Hello from {groupName}:{nestedName}!";
 });
 
 object Json() => new { message = "Hello, World!" };

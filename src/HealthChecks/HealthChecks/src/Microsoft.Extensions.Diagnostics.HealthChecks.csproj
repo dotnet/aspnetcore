@@ -7,7 +7,7 @@ Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckService
 Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
     </Description>
     <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>diagnostics;healthchecks</PackageTags>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
@@ -22,8 +22,7 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
     <Compile Include="$(SharedSourceRoot)NonCapturingTimer\*.cs" />
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
 
-    <Compile Include="$(SharedSourceRoot)TrimmingAttributes.cs" LinkBase="Shared"
-      Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
+    <Compile Include="$(SharedSourceRoot)TrimmingAttributes.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
   </ItemGroup>

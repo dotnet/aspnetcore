@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Builder;
@@ -34,8 +35,9 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
 
     protected abstract bool IsGeneratorEnabled { get; }
 
-    internal static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Preview).WithFeatures(new[] { new KeyValuePair<string, string>("InterceptorsPreviewNamespaces", "Microsoft.AspNetCore.Http.Generated") });
+    internal static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Preview).WithFeatures(new[] { new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.AspNetCore.Http.Generated") });
     private static readonly Project _baseProject = CreateProject();
+    private static readonly string _interceptsLocationAttributeRegex = @"\[global::System\.Runtime\.CompilerServices\.InterceptsLocationAttribute\(\d+, "".*""\)\]";
 
     internal async Task<(GeneratorRunResult?, Compilation)> RunGeneratorAsync(string sources, params string[] updatedSources)
     {
@@ -285,6 +287,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Http.Generators.Tests;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.DependencyInjection;
+using Http;
 
 public static class {{className}}
 {
@@ -309,7 +312,7 @@ public static class {{className}}
     {
         var projectName = $"TestProject-{Guid.NewGuid()}";
         var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
-                .WithNullableContextOptions(NullableContextOptions.Enable);
+                .WithNullableContextOptions(NullableContextOptions.Disable);
         if (modifyCompilationOptions is not null)
         {
             compilationOptions = modifyCompilationOptions(compilationOptions);
@@ -360,8 +363,9 @@ public static class {{className}}
         if (RegenerateBaselines)
         {
             var newSource = generatedCode.ToString()
-                .Replace(RequestDelegateGeneratorSources.GeneratedCodeAttribute, "%GENERATEDCODEATTRIBUTE%")
-                + Environment.NewLine;
+                .Replace(RequestDelegateGeneratorSources.GeneratedCodeAttribute, "%GENERATEDCODEATTRIBUTE%");
+            newSource = Regex.Replace(newSource, _interceptsLocationAttributeRegex, "%INTERCEPTSLOCATIONATTRIBUTE%");
+            newSource += Environment.NewLine;
             await File.WriteAllTextAsync(baselineFilePath, newSource);
             Assert.Fail("RegenerateBaselines=true. Do not merge PRs with this set.");
         }
@@ -387,6 +391,11 @@ public static class {{className}}
         {
             var expectedLine = expectedLines[index].Trim().ReplaceLineEndings();
             var actualLine = textLine.ToString().Trim().ReplaceLineEndings();
+            if (Regex.IsMatch(actualLine, _interceptsLocationAttributeRegex))
+            {
+                index++;
+                continue;
+            }
             if (!expectedLine.Equals(actualLine, StringComparison.Ordinal))
             {
                 message = $"""

@@ -1,0 +1,125 @@
+﻿@page "/counter"
+@using System.Runtime.InteropServices
+@using System.Threading
+
+<h1>Counter</h1>
+
+<p>Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<button class="btn btn-primary" @onclick="TestThreads" id="TestThreads">Test threads</button>
+
+@code {
+    int currentCount = 0;
+    System.Threading.Timer timer;
+
+    void IncrementCount()
+    {
+        currentCount++;
+    }
+
+    async Task WaitUntilBackgroundThreadsReady()
+    {
+        for (var i = 0; i < 10; i++)
+        {
+            var backgroundThreadId = await Task.Run(() => Thread.CurrentThread.ManagedThreadId);
+            if (backgroundThreadId != 1)
+            {
+                return;
+            }
+
+            await Task.Delay(1000);
+        }
+
+        throw new InvalidOperationException("Timed out after 10 seconds waiting for background threads to become available");
+    }
+
+    async Task TestThreads()
+    {
+        if (!OperatingSystem.IsBrowser())
+        {
+            return;
+        }
+
+        try
+        {
+            if (Thread.CurrentThread.ManagedThreadId != 1)
+            {
+                throw new Exception("We should be on main thread!");
+            }
+
+            await WaitUntilBackgroundThreadsReady();
+
+            Exception exc = null;
+
+            // run in the thread pool
+            await Task.Run(() =>
+            {
+                try
+                {
+                    StateHasChanged(); // render should throw
+                    return Task.CompletedTask;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("After expected fail " + Environment.CurrentManagedThreadId);
+                    exc = ex;
+                    return Task.CompletedTask;
+                }
+            });
+
+            if (exc == null || exc.Message == null || !exc.Message.Contains("The current thread is not associated with the Dispatcher"))
+            {
+                throw new Exception("We should have thrown here!");
+            }
+
+            // test that we could create new thread
+            var tcs = new TaskCompletionSource<int>();
+            var t = new Thread(() =>
+            {
+                Console.WriteLine("From new thread " + Environment.CurrentManagedThreadId);
+                tcs.SetResult(Thread.CurrentThread.ManagedThreadId);
+            });
+            t.Start();
+            var newThreadId = await tcs.Task;
+            if (newThreadId == 1)
+            {
+                throw new Exception("We should be on new thread in the callback!");
+            }
+
+            timer = new System.Threading.Timer(async (state) =>
+            {
+                Console.WriteLine("From timer " + Environment.CurrentManagedThreadId);
+
+                // run in the thread pool
+                await Task.Run(async () =>
+                {
+                    if (Thread.CurrentThread.ManagedThreadId == 1)
+                    {
+                        throw new Exception("We should be on thread pool thread!");
+                    }
+                    Console.WriteLine("From thread pool " + Environment.CurrentManagedThreadId);
+
+                    // we back to main thread
+                    await InvokeAsync(() =>
+                    {
+                        if (Thread.CurrentThread.ManagedThreadId != 1)
+                        {
+                            throw new Exception("We should be on main thread again!");
+                        }
+                        Console.WriteLine("From UI thread " + Environment.CurrentManagedThreadId);
+
+                        // we are back on main thread
+                        IncrementCount();
+                        StateHasChanged(); // render!
+                    });
+                });
+            }, null, 100, 0);
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex);
+            throw;
+        }
+    }
+}

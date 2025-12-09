@@ -7,6 +7,8 @@ using Xunit.Abstractions;
 
 namespace Templates.Mvc.Test;
 
+#pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
+
 public class MvcTemplateTest : LoggedTest
 {
     public MvcTemplateTest(ProjectFactoryFixture projectFactory)
@@ -59,13 +61,13 @@ public class MvcTemplateTest : LoggedTest
 
         var noHttps = args?.Contains(ArgConstants.NoHttps) ?? false;
         var expectedLaunchProfileNames = noHttps
-            ? new[] { "http", "IIS Express" }
-            : new[] { "http", "https", "IIS Express" };
+            ? new[] { "http" }
+            : new[] { "http", "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
         var projectExtension = languageOverride == "F#" ? "fsproj" : "csproj";
         var projectFileContents = project.ReadFile($"{project.ProjectName}.{projectExtension}");
-        Assert.DoesNotContain(".db", projectFileContents);
+        Assert.DoesNotContain("app.db", projectFileContents);
         Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools", projectFileContents);
         Assert.DoesNotContain("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
         Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
@@ -157,14 +159,14 @@ public class MvcTemplateTest : LoggedTest
         await project.RunDotNetNewAsync("mvc", auth: "Individual", useLocalDB: useLocalDB, args: args);
 
         var expectedLaunchProfileNames = noHttps
-            ? new[] { "http", "IIS Express" }
-            : new[] { "http", "https", "IIS Express" };
+            ? new[] { "http" }
+            : new[] { "http", "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
         var projectFileContents = project.ReadFile($"{project.ProjectName}.csproj");
         if (!useLocalDB)
         {
-            Assert.Contains(".db", projectFileContents);
+            Assert.Contains("app.db", projectFileContents);
         }
 
         await project.RunDotNetPublishAsync();
@@ -355,7 +357,7 @@ public class MvcTemplateTest : LoggedTest
         await project.RunDotNetNewAsync("mvc", auth: auth, args: args);
 
         // Identity Web auth requires https and thus ignores the --no-https option if passed so there should never be an 'http' profile
-        var expectedLaunchProfileNames = new[] { "https", "IIS Express" };
+        var expectedLaunchProfileNames = new[] { "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
         // Verify building in debug works

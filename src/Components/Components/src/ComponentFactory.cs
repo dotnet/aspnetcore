@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,10 +14,23 @@ namespace Microsoft.AspNetCore.Components;
 
 internal sealed class ComponentFactory
 {
+    // This switch is unsupported and will be removed in a future version.
+    private static readonly bool _propertyInjectionDisabled =
+        AppContext.TryGetSwitch("Microsoft.AspNetCore.Components.Unsupported.DisablePropertyInjection", out var isDisabled) &&
+        isDisabled;
+
     private const BindingFlags _injectablePropertyBindingFlags
         = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
     private static readonly ConcurrentDictionary<Type, ComponentTypeInfoCacheEntry> _cachedComponentTypeInfo = new();
+
+    static ComponentFactory()
+    {
+        if (HotReloadManager.Default.MetadataUpdateSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += ClearCache;
+        }
+    }
 
     private readonly IComponentActivator _componentActivator;
     private readonly Renderer _renderer;
@@ -73,15 +87,18 @@ internal sealed class ComponentFactory
             throw new InvalidOperationException($"The component activator returned a null value for a component of type {componentType.FullName}.");
         }
 
-        if (component.GetType() == componentType)
+        if (!_propertyInjectionDisabled)
         {
-            // Fast, common case: use the cached data we already looked up
-            propertyInjector(serviceProvider, component);
-        }
-        else
-        {
-            // Uncommon case where the activator/resolver returned a different type. Needs an extra cache lookup.
-            PerformPropertyInjection(serviceProvider, component);
+            if (component.GetType() == componentType)
+            {
+                // Fast, common case: use the cached data we already looked up
+                propertyInjector(serviceProvider, component);
+            }
+            else
+            {
+                // Uncommon case where the activator/resolver returned a different type. Needs an extra cache lookup.
+                PerformPropertyInjection(serviceProvider, component);
+            }
         }
 
         return component;
@@ -90,9 +107,9 @@ internal sealed class ComponentFactory
     private static void PerformPropertyInjection(IServiceProvider serviceProvider, IComponent instance)
     {
         // Suppressed with "pragma warning disable" so ILLink Roslyn Anayzer doesn't report the warning.
-        #pragma warning disable IL2072 // 'componentType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.ComponentFactory.GetComponentTypeInfo(Type)'.
+#pragma warning disable IL2072 // 'componentType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.ComponentFactory.GetComponentTypeInfo(Type)'.
         var componentTypeInfo = GetComponentTypeInfo(instance.GetType());
-        #pragma warning restore IL2072 // 'componentType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.ComponentFactory.GetComponentTypeInfo(Type)'.
+#pragma warning restore IL2072 // 'componentType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.ComponentFactory.GetComponentTypeInfo(Type)'.
 
         componentTypeInfo.PerformPropertyInjection(serviceProvider, instance);
     }

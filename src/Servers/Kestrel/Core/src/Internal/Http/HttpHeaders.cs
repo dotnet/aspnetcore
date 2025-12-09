@@ -9,13 +9,14 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 [DebuggerDisplay("{DebuggerToString(),nq}")]
-[DebuggerTypeProxy(typeof(HttpHeadersDebugView))]
+[DebuggerTypeProxy(typeof(StringValuesDictionaryDebugView))]
 internal abstract partial class HttpHeaders : IHeaderDictionary
 {
     protected long _bits;
@@ -688,13 +689,5 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
     private static void ThrowInvalidEmptyHeaderName()
     {
         throw new InvalidOperationException(CoreStrings.InvalidEmptyHeaderName);
-    }
-
-    private sealed class HttpHeadersDebugView(HttpHeaders headers)
-    {
-        private readonly HttpHeaders _headers = headers;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KeyValuePair<string, string>[] Items => _headers.Select(pair => new KeyValuePair<string, string>(pair.Key, pair.Value.ToString())).ToArray();
     }
 }

@@ -20,7 +20,7 @@ public partial class MvcAnalyzer
 {
     private static void DetectAmbiguousActionRoutes(SymbolAnalysisContext context, WellKnownTypes wellKnownTypes, RoutePatternTree? controllerRoutePattern, List<ActionRoute> actionRoutes)
     {
-        var controllerHasActionReplacement = controllerRoutePattern != null ? HasActionReplacementToken(controllerRoutePattern) : false;
+        var controllerHasActionToken = controllerRoutePattern != null ? HasActionToken(controllerRoutePattern) : false;
 
         // Ambiguous action route detection is conservative in what it detects to avoid false positives.
         //
@@ -33,7 +33,7 @@ public partial class MvcAnalyzer
         {
             // Group action routes together. When multiple match in a group, then report action routes to diagnostics.
             var groupedByParent = actionRoutes
-                .GroupBy(ar => new ActionRouteGroupKey(ar.ActionSymbol, ar.RouteUsageModel.RoutePattern, ar.HttpMethods, controllerHasActionReplacement, wellKnownTypes));
+                .GroupBy(ar => new ActionRouteGroupKey(ar.ActionSymbol, ar.RouteUsageModel.RoutePattern, ar.HttpMethods, controllerHasActionToken, wellKnownTypes));
 
             foreach (var ambiguousGroup in groupedByParent.Where(g => g.Count() >= 2))
             {
@@ -48,7 +48,12 @@ public partial class MvcAnalyzer
         }
     }
 
-    private static bool HasActionReplacementToken(RoutePatternTree routePattern)
+    /// <summary>
+    /// Search route pattern for:
+    /// 1. Action replacement tokens, [action]
+    /// 2. Action parameter tokens, {action}
+    /// </summary>
+    private static bool HasActionToken(RoutePatternTree routePattern)
     {
         for (var i = 0; i < routePattern.Root.Parts.Length; i++)
         {
@@ -67,6 +72,23 @@ public partial class MvcAnalyzer
                             }
                         }
                     }
+                    else if (segment.Children[j] is RoutePatternParameterNode parameterNode)
+                    {
+                        for (var k = 0; k < parameterNode.ParameterParts.Length; k++)
+                        {
+                            if (parameterNode.ParameterParts[k] is RoutePatternNameParameterPartNode namePartNode)
+                            {
+                                if (!namePartNode.ParameterNameToken.IsMissing)
+                                {
+                                    var name = namePartNode.ParameterNameToken.Value!.ToString();
+                                    if (string.Equals(name, "action", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -80,10 +102,10 @@ public partial class MvcAnalyzer
         public RoutePatternTree RoutePattern { get; }
         public ImmutableArray<string> HttpMethods { get; }
         public string ActionName { get; }
-        public bool HasActionReplacement { get; }
+        public bool HasActionToken { get; }
         private readonly WellKnownTypes _wellKnownTypes;
 
-        public ActionRouteGroupKey(IMethodSymbol actionSymbol, RoutePatternTree routePattern, ImmutableArray<string> httpMethods, bool controllerHasActionReplacement, WellKnownTypes wellKnownTypes)
+        public ActionRouteGroupKey(IMethodSymbol actionSymbol, RoutePatternTree routePattern, ImmutableArray<string> httpMethods, bool controllerHasActionToken, WellKnownTypes wellKnownTypes)
         {
             Debug.Assert(!httpMethods.IsDefault);
 
@@ -92,7 +114,7 @@ public partial class MvcAnalyzer
             HttpMethods = httpMethods;
             _wellKnownTypes = wellKnownTypes;
             ActionName = GetActionName(ActionSymbol, _wellKnownTypes);
-            HasActionReplacement = controllerHasActionReplacement || HasActionReplacementToken(RoutePattern);
+            HasActionToken = controllerHasActionToken || HasActionToken(RoutePattern);
         }
 
         private static string GetActionName(IMethodSymbol actionSymbol, WellKnownTypes wellKnownTypes)
@@ -118,7 +140,7 @@ public partial class MvcAnalyzer
         {
             return
                 AmbiguousRoutePatternComparer.Instance.Equals(RoutePattern, other.RoutePattern) &&
-                (!HasActionReplacement || string.Equals(ActionName, other.ActionName, StringComparison.OrdinalIgnoreCase)) &&
+                (!HasActionToken || string.Equals(ActionName, other.ActionName, StringComparison.OrdinalIgnoreCase)) &&
                 HasMatchingHttpMethods(HttpMethods, other.HttpMethods) &&
                 CanMatchActions(_wellKnownTypes, ActionSymbol, other.ActionSymbol);
         }

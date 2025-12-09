@@ -109,6 +109,29 @@ public class XmlDocumentationIntegrationTests
     }
 
     [Fact]
+    public void Parameters_QueryParameters_ProtoFieldDocs()
+    {
+        // Arrange & Act
+        var swagger = OpenApiTestHelpers.GetOpenApiDocument<XmlDocService>(_testOutputHelper);
+
+        // Assert
+        var path = swagger.Paths["/v1/greeter/query/{name}"];
+        Assert.Collection(path.Operations[OperationType.Get].Parameters,
+            p =>
+            {
+                Assert.Equal(ParameterLocation.Path, p.In);
+                Assert.Equal("name", p.Name);
+                Assert.Equal("Name field!", p.Description);
+            },
+            p =>
+            {
+                Assert.Equal(ParameterLocation.Query, p.In);
+                Assert.Equal("detail.age", p.Name);
+                Assert.Equal("Age field!", p.Description);
+            });
+    }
+
+    [Fact]
     public void Message_UseProtoDocs()
     {
         // Arrange & Act

@@ -59,10 +59,7 @@ public class CookiePolicyOptions
         get => _consentCookieValue;
         set
         {
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new ArgumentException("Value cannot be null or empty string.", nameof(value));
-            }
+            ArgumentException.ThrowIfNullOrEmpty(value);
             _consentCookieValue = value;
         }
     }

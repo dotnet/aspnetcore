@@ -34,7 +34,7 @@ public class RazorComponentResultTest
     {
         var paramsDict = new Dictionary<string, object> { { "First", 123 } };
         var result = new RazorComponentResult(typeof(SimpleComponent), paramsDict);
-        Assert.Equal(1, result.Parameters.Count);
+        Assert.Single(result.Parameters);
         Assert.Equal(123, result.Parameters["First"]);
         Assert.Same(paramsDict, result.Parameters);
     }
@@ -168,7 +168,7 @@ public class RazorComponentResultTest
         Assert.Equal(
             expectedInitialHtml,
             MaskComponentIds(GetStringContent(responseBody)));
-        
+
         // Act/Assert 2: When loading completes, it emits a streaming batch update in which the
         // child is present only within the parent markup, not as a separate entry
         tcs.SetResult();
@@ -336,10 +336,11 @@ public class RazorComponentResultTest
     {
         // Arrange
         var testContext = PrepareVaryStreamingScenariosTests();
-        var initialOutputTask = Task.WhenAll(testContext.Renderer.NonStreamingPendingTasks);
+        var initialOutputTask = testContext.Renderer.NonStreamingPendingTasksCompletion;
 
         // Act/Assert: Even if all other blocking tasks complete, we don't produce output until the top-level
         // nonstreaming component completes
+        Assert.NotNull(initialOutputTask);
         testContext.WithinNestedNonstreamingRegionTask.SetResult();
         await Task.Yield(); // Just to show it's still not completed after
         Assert.False(initialOutputTask.IsCompleted);
@@ -368,10 +369,11 @@ public class RazorComponentResultTest
     {
         // Arrange
         var testContext = PrepareVaryStreamingScenariosTests();
-        var initialOutputTask = Task.WhenAll(testContext.Renderer.NonStreamingPendingTasks);
+        var initialOutputTask = testContext.Renderer.NonStreamingPendingTasksCompletion;
 
         // Act/Assert: Even if all other nonblocking tasks complete, we don't produce output until
         // the component in the nonstreaming subtree is quiescent
+        Assert.NotNull(initialOutputTask);
         testContext.TopLevelComponentTask.SetResult();
         await Task.Yield(); // Just to show it's still not completed after
         Assert.False(initialOutputTask.IsCompleted);
@@ -514,7 +516,7 @@ public class RazorComponentResultTest
         protected override void NavigateToCore(string uri, NavigationOptions options)
         {
             // Equivalent to what RemoteNavigationManager would do
-            var absoluteUriString = ToAbsoluteUri(uri).ToString();
+            var absoluteUriString = ToAbsoluteUri(uri).AbsoluteUri;
             throw new NavigationException(absoluteUriString);
         }
     }

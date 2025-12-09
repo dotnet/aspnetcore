@@ -13,15 +13,10 @@ internal sealed record JwtAuthenticationSchemeSettings(string SchemeName, List<s
     private const string AuthenticationKey = "Authentication";
     private const string SchemesKey = "Schemes";
 
-    private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
-    {
-        WriteIndented = true,
-    };
-
     public void Save(string filePath)
     {
         using var reader = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-        var config = JsonSerializer.Deserialize<JsonObject>(reader, _jsonSerializerOptions);
+        var config = JsonSerializer.Deserialize<JsonObject>(reader, JwtSerializerOptions.Default);
         reader.Close();
 
         var settingsObject = new JsonObject
@@ -63,13 +58,13 @@ internal sealed record JwtAuthenticationSchemeSettings(string SchemeName, List<s
             streamOptions.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
         }
         using var writer = new FileStream(filePath, streamOptions);
-        JsonSerializer.Serialize(writer, config, _jsonSerializerOptions);
+        JsonSerializer.Serialize(writer, config, JwtSerializerOptions.Default);
     }
 
     public static void RemoveScheme(string filePath, string name)
     {
         using var reader = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-        var config = JsonSerializer.Deserialize<JsonObject>(reader);
+        var config = JsonSerializer.Deserialize<JsonObject>(reader, JwtSerializerOptions.Default);
         reader.Close();
 
         if (config[AuthenticationKey] is JsonObject authentication &&
@@ -79,6 +74,6 @@ internal sealed record JwtAuthenticationSchemeSettings(string SchemeName, List<s
         }
 
         using var writer = new FileStream(filePath, FileMode.Create, FileAccess.Write);
-        JsonSerializer.Serialize(writer, config, _jsonSerializerOptions);
+        JsonSerializer.Serialize(writer, config, JwtSerializerOptions.Default);
     }
 }

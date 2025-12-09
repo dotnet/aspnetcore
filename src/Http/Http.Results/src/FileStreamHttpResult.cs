@@ -67,7 +67,7 @@ public sealed class FileStreamHttpResult : IResult, IFileHttpResult, IContentTyp
             FileLength = fileStream.Length;
         }
 
-        ContentType = contentType ?? "application/octet-stream";
+        ContentType = contentType ?? ContentTypeConstants.BinaryContentType;
         FileDownloadName = fileDownloadName;
         EnableRangeProcessing = enableRangeProcessing;
         LastModified = lastModified;

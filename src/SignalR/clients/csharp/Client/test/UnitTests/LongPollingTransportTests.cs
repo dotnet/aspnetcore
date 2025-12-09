@@ -8,6 +8,7 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Moq.Protected;
 using Xunit;
@@ -690,6 +692,61 @@ public class LongPollingTransportTests : VerifiableLoggedTest
             var deleteRequest = handler.ReceivedRequests.SingleOrDefault(r => r.Method == HttpMethod.Delete);
             Assert.NotNull(deleteRequest);
             Assert.Equal(TestUri, deleteRequest.RequestUri);
+        }
+    }
+
+    [Fact]
+    public async Task PollRequestsContainCorrectAcceptHeader()
+    {
+        var testHttpHandler = new TestHttpMessageHandler();
+        var responseTaskCompletionSource = new TaskCompletionSource<HttpResponseMessage>();
+        var requestCount = 0;
+        var allHeadersCorrect = true;
+        var secondRequestReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        testHttpHandler.OnRequest(async (request, next, cancellationToken) =>
+        {
+            if (request.Headers.Accept?.Contains(new MediaTypeWithQualityHeaderValue("*/*")) != true)
+            {
+                allHeadersCorrect = false;
+            }
+
+            requestCount++;
+
+            if (requestCount == 2)
+            {
+                secondRequestReceived.SetResult();
+            }
+
+            if (requestCount >= 2)
+            {
+                if (allHeadersCorrect)
+                {
+                    responseTaskCompletionSource.TrySetResult(new HttpResponseMessage(HttpStatusCode.OK));
+                }
+                else
+                {
+                    responseTaskCompletionSource.TrySetResult(new HttpResponseMessage(HttpStatusCode.NoContent));
+                }
+            }
+
+            return await Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        });
+
+        using (var httpClient = new HttpClient(testHttpHandler))
+        {
+            var loggerFactory = NullLoggerFactory.Instance;
+            var transport = new LongPollingTransport(httpClient, loggerFactory: loggerFactory);
+
+            var startTask = transport.StartAsync(TestUri, TransferFormat.Text);
+
+            await secondRequestReceived.Task.DefaultTimeout();
+
+            await transport.StopAsync();
+
+            Assert.True(responseTaskCompletionSource.Task.IsCompleted);
+            var response = await responseTaskCompletionSource.Task.DefaultTimeout();
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
     }
 }

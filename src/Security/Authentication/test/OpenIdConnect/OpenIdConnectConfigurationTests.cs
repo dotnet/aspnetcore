@@ -483,7 +483,7 @@ public class OpenIdConnectConfigurationTests
     [Fact]
     public Task ThrowsWhenClientIdIsMissing()
     {
-        return TestConfigurationException<ArgumentException>(
+        return TestConfigurationException<ArgumentNullException>(
             o =>
             {
                 o.SignInScheme = "TestScheme";

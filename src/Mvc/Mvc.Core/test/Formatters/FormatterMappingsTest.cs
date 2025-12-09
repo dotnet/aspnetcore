@@ -57,19 +57,21 @@ public class FormatterMappingsTest
             expected);
     }
 
-    [Fact]
-    public void FormatterMappings_SetFormatMapping_FormatEmpty()
+    [Theory]
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string.")]
+    public void FormatterMappings_SetFormatMapping_FormatEmpty(string format, string expectedMessage)
     {
         // Arrange
         var options = new FormatterMappings();
-        var format = "";
 
         // Act and Assert
-        ExceptionAssert.ThrowsArgumentNullOrEmpty(
+        ExceptionAssert.ThrowsArgument(
             () => options.SetMediaTypeMappingForFormat(
                 format,
                 MediaTypeHeaderValue.Parse("application/xml")),
-            "format");
+            "format",
+            expectedMessage);
     }
 
     [Theory]

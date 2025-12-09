@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Validation\gen\Microsoft.Extensions.Validation.ValidationsGenerator.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" />
+    <Reference Include="Microsoft.Extensions.Validation" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Results" />
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Verify.XUnit" />
+    <Reference Include="Verify.SourceGenerators" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <HelixContent Include="$(MSBuildProjectDirectory)\snapshots\**" />
+  </ItemGroup>
+
+</Project>

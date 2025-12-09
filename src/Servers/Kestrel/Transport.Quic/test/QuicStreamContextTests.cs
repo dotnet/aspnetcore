@@ -64,7 +64,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
         await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
 
         // Act
-        var clientStream = await clientConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
+        await using var clientStream = await clientConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
         await clientStream.WriteAsync(TestData).DefaultTimeout();
         var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
         var readResult = await serverStream.Transport.Input.ReadAtLeastAsync(TestData.Length).DefaultTimeout();
@@ -113,7 +113,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
 
         // Act
         Logger.LogInformation("Client starting stream.");
-        var clientStream = await clientConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
+        await using var clientStream = await clientConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
         await clientStream.WriteAsync(TestData).DefaultTimeout();
 
         var readTask = clientStream.ReadUntilEndAsync();
@@ -181,7 +181,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
 
         // Act
         Logger.LogInformation("Client starting stream.");
-        var clientStream = await clientConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
+        await using var clientStream = await clientConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
         await clientStream.WriteAsync(TestData, completeWrites: true).DefaultTimeout();
         var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
 
@@ -226,6 +226,7 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/59978")]
     public async Task BidirectionalStream_MultipleStreamsOnConnection_ReusedFromPool()
     {
         // Arrange
@@ -525,5 +526,60 @@ public class QuicStreamContextTests : TestApplicationErrorLoggerLoggedTest
         // Server errors when reading
         var serverEx = await Assert.ThrowsAsync<ConnectionAbortedException>(() => serverReadTask).DefaultTimeout();
         Assert.Equal("Test reason", serverEx.Message);
+    }
+
+    [ConditionalTheory]
+    [MsQuicSupported]
+    [InlineData(-1L)] // Too small
+    [InlineData(1L << 62)] // Too big
+    public async Task IProtocolErrorFeature_InvalidErrorCode(long errorCode)
+    {
+        // Arrange
+        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+        var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+        await using var clientConnection = await QuicConnection.ConnectAsync(options);
+
+        await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+        // Act
+        await using var clientStream = await clientConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
+        await clientStream.WriteAsync(TestData).DefaultTimeout();
+
+        var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
+
+        var protocolErrorCodeFeature = serverStream.Features.Get<IProtocolErrorCodeFeature>();
+
+        // Assert
+        Assert.IsType<QuicStreamContext>(protocolErrorCodeFeature);
+        Assert.Throws<ArgumentOutOfRangeException>(() => protocolErrorCodeFeature.Error = errorCode);
+    }
+
+    [ConditionalTheory]
+    [MsQuicSupported]
+    [InlineData(-1L)] // Too small
+    [InlineData(1L << 62)] // Too big
+    public async Task IStreamAbortFeature_InvalidErrorCode(long errorCode)
+    {
+        // Arrange
+        await using var connectionListener = await QuicTestHelpers.CreateConnectionListenerFactory(LoggerFactory);
+
+        var options = QuicTestHelpers.CreateClientConnectionOptions(connectionListener.EndPoint);
+        await using var clientConnection = await QuicConnection.ConnectAsync(options);
+
+        await using var serverConnection = await connectionListener.AcceptAndAddFeatureAsync().DefaultTimeout();
+
+        // Act
+        await using var clientStream = await clientConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
+        await clientStream.WriteAsync(TestData).DefaultTimeout();
+
+        var serverStream = await serverConnection.AcceptAsync().DefaultTimeout();
+
+        var protocolErrorCodeFeature = serverStream.Features.Get<IStreamAbortFeature>();
+
+        // Assert
+        Assert.IsType<QuicStreamContext>(protocolErrorCodeFeature);
+        Assert.Throws<ArgumentOutOfRangeException>(() => protocolErrorCodeFeature.AbortRead(errorCode, new ConnectionAbortedException()));
+        Assert.Throws<ArgumentOutOfRangeException>(() => protocolErrorCodeFeature.AbortWrite(errorCode, new ConnectionAbortedException()));
     }
 }

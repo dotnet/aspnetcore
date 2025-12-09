@@ -23,11 +23,8 @@
   "symbols/iisHttpsPort/description": "Port number to use for the IIS Express HTTPS endpoint in launchSettings.json. This option is only applicable when the parameter no-https is not used (no-https will be ignored if either IndividualB2C or OrganizationalAuth is used).",
   "symbols/NoHttps/description": "Whether to turn off HTTPS. This option only applies if IndividualB2C, SingleOrg, or MultiOrg aren't used for --auth.",
   "symbols/UseLocalDB/description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual or --auth IndividualB2C is specified.",
-  "symbols/UseMinimalAPIs/description": "Whether to use minimal APIs instead of controllers.",
-  "symbols/UseControllers/description": "Whether to use controllers instead of minimal APIs. This option overides the value specified by --minimal.",
   "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net8.0/description": "Target net8.0",
-  "_symbols/Framework/choices/net8.0/description.comment": "{Locked='net8.0'}",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
   "symbols/CalledApiUrl/description": "URL of the API to call from the web app. This option only applies if --auth SingleOrg or --auth IndividualB2C is specified.",
   "symbols/CallsMicrosoftGraph/description": "Specifies if the web app calls Microsoft Graph. This option only applies if --auth SingleOrg is specified.",
@@ -36,6 +33,8 @@
   "symbols/UseProgramMain/displayName": "Do not use _top-level statements",
   "_symbols/UseProgramMain/displayName.comment": "Use '_' as accelerator key when translating.",
   "symbols/UseProgramMain/description": "Whether to generate an explicit Program class and Main method instead of top-level statements.",
+  "symbols/UseMinimalAPIs/description": "Whether to use minimal APIs instead of controllers.",
+  "symbols/UseControllers/description": "Whether to use controllers instead of minimal APIs. This option overides the value specified by --minimal.",
   "postActions/restore/description": "Restore NuGet packages required by this project.",
   "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
 }

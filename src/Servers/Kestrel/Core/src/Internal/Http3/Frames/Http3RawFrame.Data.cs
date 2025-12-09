@@ -7,7 +7,7 @@ internal partial class Http3RawFrame
 {
     public void PrepareData()
     {
-        Length = 0;
+        RemainingLength = 0;
         Type = Http3FrameType.Data;
     }
 }

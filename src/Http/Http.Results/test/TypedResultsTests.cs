@@ -3,6 +3,7 @@
 
 using System.Collections.ObjectModel;
 using System.IO.Pipelines;
+using System.Runtime.ExceptionServices;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Net.Http.Headers;
+using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
@@ -349,7 +351,7 @@ public partial class TypedResultsTests
     [Fact]
     public void PhysicalFile_WithNullPath_ThrowsArgException()
     {
-        Assert.Throws<ArgumentException>("path", () => TypedResults.PhysicalFile(default(string)));
+        Assert.Throws<ArgumentNullException>("path", () => TypedResults.PhysicalFile(default(string)));
     }
 
     [Fact]
@@ -361,7 +363,7 @@ public partial class TypedResultsTests
     [Fact]
     public void VirtualFile_WithNullPath_ThrowsArgException()
     {
-        Assert.Throws<ArgumentException>("path", () => TypedResults.VirtualFile(default(string)));
+        Assert.Throws<ArgumentNullException>("path", () => TypedResults.VirtualFile(default(string)));
     }
 
     [Fact]
@@ -916,7 +918,7 @@ public partial class TypedResultsTests
     [Fact]
     public void LocalRedirect_WithNullStringUrl_ThrowsArgException()
     {
-        Assert.Throws<ArgumentException>("localUrl", () => TypedResults.LocalRedirect(default(string)));
+        Assert.Throws<ArgumentNullException>("localUrl", () => TypedResults.LocalRedirect(default(string)));
     }
 
     [Fact]
@@ -1082,6 +1084,30 @@ public partial class TypedResultsTests
         Assert.Equal(extensions, result.ProblemDetails.Extensions);
     }
 
+    [Fact]
+    public void Problem_ResultHasCorrectValues()
+    {
+        // Arrange
+        var detail = "test detail";
+        var instance = "test instance";
+        var statusCode = StatusCodes.Status409Conflict;
+        var title = "test title";
+        var type = "test type";
+        var extensions = new List<KeyValuePair<string, object>> { new("test", "value") };
+
+        // Act
+        var result = TypedResults.Problem(detail, instance, statusCode, title, type, extensions);
+
+        // Assert
+        Assert.Equal(detail, result.ProblemDetails.Detail);
+        Assert.Equal(instance, result.ProblemDetails.Instance);
+        Assert.Equal("application/problem+json", result.ContentType);
+        Assert.Equal(statusCode, result.StatusCode);
+        Assert.Equal(title, result.ProblemDetails.Title);
+        Assert.Equal(type, result.ProblemDetails.Type);
+        Assert.Equal(extensions, result.ProblemDetails.Extensions);
+    }
+
     [Theory]
     [InlineData(StatusCodes.Status400BadRequest, "Bad Request", "https://tools.ietf.org/html/rfc9110#section-15.5.1")]
     [InlineData(StatusCodes.Status418ImATeapot, "I'm a teapot", null)]
@@ -1185,9 +1211,35 @@ public partial class TypedResultsTests
     }
 
     [Fact]
+    public void ValidationProblem_ResultHasCorrectValues()
+    {
+        // Arrange
+        var errors = new List<KeyValuePair<string, string[]>> { new("testField", new[] { "test error" }) };
+        var detail = "test detail";
+        var instance = "test instance";
+        var title = "test title";
+        var type = "test type";
+        var extensions = new List<KeyValuePair<string, object>> { new("testField", "test value") };
+
+        // Act
+        var result = TypedResults.ValidationProblem(errors, detail, instance, title, type, extensions);
+
+        // Assert
+        Assert.Equal(errors, result.ProblemDetails.Errors);
+        Assert.Equal(detail, result.ProblemDetails.Detail);
+        Assert.Equal(instance, result.ProblemDetails.Instance);
+        Assert.Equal(StatusCodes.Status400BadRequest, result.ProblemDetails.Status);
+        Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
+        Assert.Equal(title, result.ProblemDetails.Title);
+        Assert.Equal(type, result.ProblemDetails.Type);
+        Assert.Equal("application/problem+json", result.ContentType);
+        Assert.Equal(extensions, result.ProblemDetails.Extensions);
+    }
+
+    [Fact]
     public void Redirect_WithNullStringUrl_ThrowsArgException()
     {
-        Assert.Throws<ArgumentException>("url", () => TypedResults.Redirect(default(string)));
+        Assert.Throws<ArgumentNullException>("url", () => TypedResults.Redirect(default(string)));
     }
 
     [Fact]
@@ -1420,6 +1472,30 @@ public partial class TypedResultsTests
 
         // Assert
         Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
+    }
+
+    [Fact]
+    public void InternalServerError_WithValue_ResultHasCorrectValues()
+    {
+        // Arrange
+        var value = new { };
+
+        // Act
+        var result = TypedResults.InternalServerError(value);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+        Assert.Equal(value, result.Value);
+    }
+
+    [Fact]
+    public void InternalServerError_WithNoArgs_ResultHasCorrectValues()
+    {
+        // Act
+        var result = TypedResults.InternalServerError();
+
+        // Assert
+        Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
     }
 
     [JsonSerializable(typeof(object))]

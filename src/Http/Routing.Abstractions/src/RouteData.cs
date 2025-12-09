@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -189,7 +190,7 @@ public class RouteData
         private readonly RouteData _routeData = routeData;
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KeyValuePair<string, object?>[] Items => _routeData.Values.ToArray();
+        public DictionaryItemDebugView<string, object?>[] Items => _routeData.Values.Select(pair => new DictionaryItemDebugView<string, object>(pair)).ToArray();
     }
 
     /// <summary>

@@ -11,7 +11,7 @@ internal sealed class MsBuildProjectFinder
 
     public MsBuildProjectFinder(string directory)
     {
-        Ensure.NotNullOrEmpty(directory, nameof(directory));
+        ArgumentException.ThrowIfNullOrEmpty(directory);
 
         _directory = directory;
     }
@@ -46,7 +46,7 @@ internal sealed class MsBuildProjectFinder
 
         if (!File.Exists(projectPath))
         {
-            throw new FileNotFoundException(SecretsHelpersResources.FormatError_ProjectPath_NotFound(projectPath));
+            throw new FileNotFoundException(SecretsHelpersResources.FormatError_File_NotFound(projectPath));
         }
 
         return projectPath;

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.Extensions;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.Tests;
@@ -118,7 +119,169 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     public void AdditionalAttributesApplied()
     {
         var grid = app.FindElement(By.CssSelector("#grid > table"));
-        Assert.Equal("somevalue", grid.GetAttribute("custom-attrib"));
-        Assert.Contains("custom-class-attrib", grid.GetAttribute("class")?.Split(" "));
+        Assert.Equal("somevalue", grid.GetDomAttribute("custom-attrib"));
+        Assert.Contains("custom-class-attrib", grid.GetDomAttribute("class")?.Split(" "));
+    }
+
+    [Fact]
+    public void RowClassApplied()
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+        var rows = grid.FindElements(By.CssSelector("tbody > tr"));
+
+        bool isJulieRowFound = false;
+        foreach (var row in rows)
+        {
+            var firstName = row.FindElement(By.CssSelector("td:nth-child(2)")).Text;
+            if (firstName == "Julie")
+            {
+                isJulieRowFound = true;
+                Assert.Equal("row-clickable highlight", row.GetDomAttribute("class"));
+            }
+            else
+            {
+                Assert.Equal("row-clickable", row.GetDomAttribute("class"));
+            }
+        }
+
+        if (!isJulieRowFound)
+        {
+            Assert.Fail("No row found for Julie to highlight.");
+        }
+    }
+
+    [Fact]
+    public void RowStyleApplied()
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+        var birthDateColumn = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(4)"));
+        var ageColumn = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(5)"));
+
+        Assert.Contains("col-justify-center", birthDateColumn.GetAttribute("class"));
+        Assert.Contains("col-justify-right", ageColumn.GetAttribute("class"));
+        Assert.Equal("center", Browser.ExecuteJavaScript<string>(@"
+        const p = document.querySelector('tbody > tr:first-child > td:nth-child(4)');
+        return p ? getComputedStyle(p).textAlign : null;"));
+        Assert.Equal("right", Browser.ExecuteJavaScript<string>(@"
+        const p = document.querySelector('tbody > tr:first-child > td:nth-child(5)');
+        return p ? getComputedStyle(p).textAlign : null;"));
+    }
+
+    [Fact]
+    public void CanOpenColumnOptions()
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+        var firstNameColumnOptionsButton = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(2) > div > button[title=\"Column options\"]"));
+
+        firstNameColumnOptionsButton.Click();
+
+        var firstNameSearchSelector = "#grid > table > thead > tr > th:nth-child(2) input[type=search]";
+        Browser.Exists(By.CssSelector(firstNameSearchSelector));
+    }
+
+    [Fact]
+    public void CanCloseColumnOptionsByBlurring()
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+        var firstNameColumnOptionsButton = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(2) > div > button[title=\"Column options\"]"));
+
+        firstNameColumnOptionsButton.Click();
+
+        // Click outside the column options to close
+        grid.Click();
+
+        var firstNameSearchSelector = "#grid > table > thead > tr > th:nth-child(2) input[type=search]";
+        Browser.DoesNotExist(By.CssSelector(firstNameSearchSelector));
+    }
+
+    [Fact]
+    public void CanCloseColumnOptionsByHideColumnOptionsAsync()
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+        var firstNameColumnOptionsButton = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(2) > div > button[title=\"Column options\"]"));
+
+        firstNameColumnOptionsButton.Click();
+
+        // Click the button inside the column options popup to close, which calls QuickGrid.HideColumnOptionsAsync
+        grid.FindElement(By.CssSelector("#close-column-options")).Click();
+
+        var firstNameSearchSelector = "#grid > table > thead > tr > th:nth-child(2) input[type=search]";
+        Browser.DoesNotExist(By.CssSelector(firstNameSearchSelector));
+    }
+
+    [Fact]
+    public void ItemsProviderCalledOnceWithVirtualize()
+    {
+        app = Browser.MountTestComponent<QuickGridVirtualizeComponent>();
+        Browser.Equal("1", () => app.FindElement(By.Id("items-provider-call-count")).Text);
+    }
+
+    [Fact]
+    public void FilterUsingSetCurrentPageDoesNotCauseExtraRefresh()
+    {
+        app = Browser.MountTestComponent<QuickGridFilterComponent>();
+
+        Browser.Equal("1", () => app.FindElement(By.Id("items-provider-calls")).Text);
+
+        var filterInput = app.FindElement(By.Id("filter-input"));
+        filterInput.Clear();
+        filterInput.SendKeys("Item 1");
+        app.FindElement(By.Id("apply-filter-reset-pagination-btn")).Click();
+
+        Browser.Equal("2", () => app.FindElement(By.Id("items-provider-calls")).Text);
+    }
+
+    [Fact]
+    public void FilterUsingRefreshDataDoesNotCauseExtraRefresh()
+    {
+        app = Browser.MountTestComponent<QuickGridFilterComponent>();
+
+        Browser.Equal("1", () => app.FindElement(By.Id("items-provider-calls")).Text);
+
+        var filterInput = app.FindElement(By.Id("filter-input"));
+        filterInput.Clear();
+        filterInput.SendKeys("Item 1");
+        app.FindElement(By.Id("apply-filter-refresh-data-btn")).Click();
+
+        Browser.Equal("2", () => app.FindElement(By.Id("items-provider-calls")).Text);
+    }
+    
+    [Fact]
+    public void OnRowClickTriggersCallback()
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+
+        // Verify no row has been clicked yet
+        Browser.Exists(By.Id("no-click"));
+
+        // Click on the first row (Julie Smith)
+        var firstRow = grid.FindElement(By.CssSelector("tbody > tr:nth-child(1)"));
+        firstRow.Click();
+
+        // Verify the callback was triggered with correct data
+        Browser.Equal("PersonId: 11203", () => app.FindElement(By.Id("clicked-person-id")).Text);
+        Browser.Equal("Name: Julie Smith", () => app.FindElement(By.Id("clicked-person-name")).Text);
+        Browser.Equal("Click count: 1", () => app.FindElement(By.Id("click-count")).Text);
+
+        // Click on another row (Jose Hernandez - 3rd row)
+        var thirdRow = grid.FindElement(By.CssSelector("tbody > tr:nth-child(3)"));
+        thirdRow.Click();
+
+        // Verify the callback was triggered with the new row's data
+        Browser.Equal("PersonId: 11898", () => app.FindElement(By.Id("clicked-person-id")).Text);
+        Browser.Equal("Name: Jose Hernandez", () => app.FindElement(By.Id("clicked-person-name")).Text);
+        Browser.Equal("Click count: 2", () => app.FindElement(By.Id("click-count")).Text);
+    }
+
+    [Fact]
+    public void OnRowClickAppliesCursorPointerStyle()
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+
+        // Verify the row has cursor: pointer style via the row-clickable class
+        var cursorStyle = Browser.ExecuteJavaScript<string>(@"
+            const row = document.querySelector('#grid > table > tbody > tr:nth-child(1)');
+            return row ? getComputedStyle(row).cursor : null;");
+        Assert.Equal("pointer", cursorStyle);
     }
 }

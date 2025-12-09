@@ -180,4 +180,22 @@
   <data name="ComponentParametersShouldBeAutoProperties_Title" xml:space="preserve">
     <value>Component parameters should be auto properties</value>
   </data>
+  <data name="SupplyParameterFromFormShouldNotHavePropertyInitializer_Description" xml:space="preserve">
+    <value>The value of a property decorated with [SupplyParameterFromForm] and initialized with a property initializer can be overwritten with null when the component receives parameters. To ensure the initialized value is not overwritten, move the initialization to a component lifecycle method like OnInitialized or OnInitializedAsync</value>
+  </data>
+  <data name="SupplyParameterFromFormShouldNotHavePropertyInitializer_Format" xml:space="preserve">
+    <value>Property '{0}' has [SupplyParameterFromForm] and a property initializer. This can be overwritten with null during form posts.</value>
+  </data>
+  <data name="SupplyParameterFromFormShouldNotHavePropertyInitializer_Title" xml:space="preserve">
+    <value>Property with [SupplyParameterFromForm] should not have initializer</value>
+  </data>
+  <data name="PersistentStateShouldNotHavePropertyInitializer_Description" xml:space="preserve">
+    <value>The value of a property decorated with [PersistentState] and initialized with a property initializer can be overwritten when the component receives parameters. To ensure the initialized value is not overwritten, move the initialization to a component lifecycle method like OnInitialized or OnInitializedAsync</value>
+  </data>
+  <data name="PersistentStateShouldNotHavePropertyInitializer_Format" xml:space="preserve">
+    <value>Property '{0}' has [PersistentState] and a property initializer. This can be overwritten during parameter binding.</value>
+  </data>
+  <data name="PersistentStateShouldNotHavePropertyInitializer_Title" xml:space="preserve">
+    <value>Property with [PersistentState] should not have initializer</value>
+  </data>
 </root>

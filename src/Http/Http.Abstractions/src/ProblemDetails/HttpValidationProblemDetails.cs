@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Microsoft.AspNetCore.Http;
@@ -23,6 +24,15 @@ public class HttpValidationProblemDetails : ProblemDetails
     /// </summary>
     /// <param name="errors">The validation errors.</param>
     public HttpValidationProblemDetails(IDictionary<string, string[]> errors)
+        : this((IEnumerable<KeyValuePair<string, string[]>>)errors)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="HttpValidationProblemDetails"/> using the specified <paramref name="errors"/>.
+    /// </summary>
+    /// <param name="errors">The validation errors.</param>
+    public HttpValidationProblemDetails(IEnumerable<KeyValuePair<string, string[]>> errors)
         : this(new Dictionary<string, string[]>(errors ?? throw new ArgumentNullException(nameof(errors)), StringComparer.Ordinal))
     {
     }
@@ -36,5 +46,6 @@ public class HttpValidationProblemDetails : ProblemDetails
     /// <summary>
     /// Gets the validation errors associated with this instance of <see cref="HttpValidationProblemDetails"/>.
     /// </summary>
-    public IDictionary<string, string[]> Errors { get; set; } = new Dictionary<string, string[]>(StringComparer.Ordinal);
+    [JsonPropertyName("errors")]
+    public IDictionary<string, string[]> Errors { get; set; }
 }

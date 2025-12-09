@@ -102,7 +102,7 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
                     host = host.Slice(0, pivot);
                 }
 
-                if (host == null || MemoryExtensions.Equals(host, WildcardHost, StringComparison.OrdinalIgnoreCase))
+                if (host.Length == 0 || MemoryExtensions.Equals(host, WildcardHost, StringComparison.OrdinalIgnoreCase))
                 {
                     // Can match any host
                 }

@@ -7,6 +7,7 @@ Param(
   [string] $msbuildEngine = $null,
   [bool] $warnAsError = $true,
   [bool] $nodeReuse = $true,
+  [switch] $buildCheck = $false,
   [switch][Alias('r')]$restore,
   [switch] $deployDeps,
   [switch][Alias('b')]$build,
@@ -19,6 +20,8 @@ Param(
   [switch] $pack,
   [switch] $publish,
   [switch] $clean,
+  [switch][Alias('pb')]$productBuild,
+  [switch]$fromVMR,
   [switch][Alias('bl')]$binaryLog,
   [switch][Alias('nobl')]$excludeCIBinarylog,
   [switch] $ci,
@@ -58,6 +61,7 @@ function Print-Usage() {
   Write-Host "  -sign                   Sign build outputs"
   Write-Host "  -publish                Publish artifacts (e.g. symbols)"
   Write-Host "  -clean                  Clean the solution"
+  Write-Host "  -productBuild           Build the solution in the way it will be built in the full .NET product (VMR) build (short: -pb)"
   Write-Host ""
 
   Write-Host "Advanced settings:"
@@ -69,6 +73,9 @@ function Print-Usage() {
   Write-Host "  -msbuildEngine <value>  Msbuild engine to use to run build ('dotnet', 'vs', or unspecified)."
   Write-Host "  -excludePrereleaseVS    Set to exclude build engines in prerelease versions of Visual Studio"
   Write-Host "  -nativeToolsOnMachine   Sets the native tools on machine environment variable (indicating that the script should use native tools on machine)"
+  Write-Host "  -nodeReuse <value>      Sets nodereuse msbuild parameter ('true' or 'false')"
+  Write-Host "  -buildCheck             Sets /check msbuild parameter"
+  Write-Host "  -fromVMR                Set when building from within the VMR"
   Write-Host ""
 
   Write-Host "Command line arguments not listed above are passed thru to msbuild."
@@ -95,6 +102,7 @@ function Build {
 
   $bl = if ($binaryLog) { '/bl:' + (Join-Path $LogDir 'Build.binlog') } else { '' }
   $platformArg = if ($platform) { "/p:Platform=$platform" } else { '' }
+  $check = if ($buildCheck) { '/check' } else { '' }
 
   if ($projects) {
     # Re-assign properties to a new variable because PowerShell doesn't let us append properties directly for unclear reasons.
@@ -111,6 +119,7 @@ function Build {
   MSBuild $toolsetBuildProj `
     $bl `
     $platformArg `
+    $check `
     /p:Configuration=$configuration `
     /p:RepoRoot=$RepoRoot `
     /p:Restore=$restore `
@@ -120,10 +129,13 @@ function Build {
     /p:Deploy=$deploy `
     /p:Test=$test `
     /p:Pack=$pack `
+    /p:DotNetBuild=$productBuild `
+    /p:DotNetBuildFromVMR=$fromVMR `
     /p:IntegrationTest=$integrationTest `
     /p:PerformanceTest=$performanceTest `
     /p:Sign=$sign `
     /p:Publish=$publish `
+    /p:RestoreStaticGraphEnableBinaryLogger=$binaryLog `
     @properties
 }
 

@@ -33,15 +33,14 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
 
     protected override void RegisterAuth(AuthenticationBuilder services, Action<JwtBearerOptions> configure)
     {
-        services.AddJwtBearer(o =>
-        {
-            ConfigureDefaults(o);
-            configure.Invoke(o);
-        });
+        services.AddJwtBearer(configure);
     }
 
-    private void ConfigureDefaults(JwtBearerOptions o)
+    [Fact]
+    public void EventsPropertyIsInitializedOnConstruction()
     {
+        var options = new JwtBearerOptions();
+        Assert.NotNull(options.Events);
     }
 
     [Fact]
@@ -201,7 +200,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
             try
             {
                 await next();
-                Assert.False(true, "Expected exception is not thrown");
+                Assert.Fail("Expected exception is not thrown");
             }
             catch (Exception)
             {
@@ -973,7 +972,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
             issuer: "issuer.contoso.com",
             audience: "audience.contoso.com",
             claims: claims,
-            expires: DateTime.MaxValue,
+            expires: new DateTime(DateTime.MaxValue.Ticks, DateTimeKind.Utc),
             signingCredentials: creds);
 
         var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
@@ -1001,82 +1000,12 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         var expiresElement = dom.RootElement.GetProperty("expires");
         Assert.Equal(JsonValueKind.String, expiresElement.ValueKind);
 
-        var elementValue = DateTime.Parse(expiresElement.GetString(), CultureInfo.InvariantCulture);
-        var elementValueUtc = elementValue.ToUniversalTime();
+        var elementValueUtc = DateTime.Parse(expiresElement.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
         // roundtrip DateTime.MaxValue through parsing because it is lossy and we
         // need equivalent values to compare against.
         var max = DateTime.Parse(DateTime.MaxValue.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
 
         Assert.Equal(max, elementValueUtc);
-    }
-
-    [Fact]
-    public void CanReadJwtBearerOptionsFromConfig()
-    {
-        var services = new ServiceCollection().AddLogging();
-        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
-        {
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidIssuer", "dotnet-user-jwts"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidAudiences:0", "http://localhost:5000"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidAudiences:1", "https://localhost:5001"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:BackchannelTimeout", "00:01:00"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:RequireHttpsMetadata", "false"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SaveToken", "True"),
-        }).Build();
-        services.AddSingleton<IConfiguration>(config);
-
-        // Act
-        var builder = services.AddAuthentication(o =>
-        {
-            o.AddScheme<TestHandler>("Bearer", "Bearer");
-        });
-        builder.AddJwtBearer("Bearer", o => o.UseSecurityTokenValidators = true);
-        RegisterAuth(builder, _ => { });
-        var sp = services.BuildServiceProvider();
-
-        // Assert
-        var jwtBearerOptions = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
-        Assert.Equal(jwtBearerOptions.TokenValidationParameters.ValidIssuers, new[] { "dotnet-user-jwts" });
-        Assert.Equal(jwtBearerOptions.TokenValidationParameters.ValidAudiences, new[] { "http://localhost:5000", "https://localhost:5001" });
-        Assert.Equal(jwtBearerOptions.BackchannelTimeout, TimeSpan.FromSeconds(60));
-        Assert.False(jwtBearerOptions.RequireHttpsMetadata);
-        Assert.True(jwtBearerOptions.SaveToken);
-        Assert.True(jwtBearerOptions.MapInboundClaims); // Assert default values are respected
-    }
-
-    [Fact]
-    public void CanReadMultipleIssuersFromConfig()
-    {
-        var services = new ServiceCollection().AddLogging();
-        var firstKey = "qPG6tDtfxFYZifHW3sEueQ==";
-        var secondKey = "6JPzXj6aOPdojlZdeLshaA==";
-        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
-        {
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidIssuers:0", "dotnet-user-jwts"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:ValidIssuers:1", "dotnet-user-jwts-2"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:0:Issuer", "dotnet-user-jwts"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:0:Value", firstKey),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:0:Length", "32"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:1:Issuer", "dotnet-user-jwts-2"),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:1:Value", secondKey),
-            new KeyValuePair<string, string>("Authentication:Schemes:Bearer:SigningKeys:1:Length", "32"),
-        }).Build();
-        services.AddSingleton<IConfiguration>(config);
-
-        // Act
-        var builder = services.AddAuthentication(o =>
-        {
-            o.AddScheme<TestHandler>("Bearer", "Bearer");
-        });
-        builder.AddJwtBearer("Bearer", o => o.UseSecurityTokenValidators = true);
-        RegisterAuth(builder, _ => { });
-        var sp = services.BuildServiceProvider();
-
-        // Assert
-        var jwtBearerOptions = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
-        Assert.Equal(2, jwtBearerOptions.TokenValidationParameters.IssuerSigningKeys.Count());
-        Assert.Equal(firstKey, Convert.ToBase64String(jwtBearerOptions.TokenValidationParameters.IssuerSigningKeys.OfType<SymmetricSecurityKey>().FirstOrDefault()?.Key));
-        Assert.Equal(secondKey, Convert.ToBase64String(jwtBearerOptions.TokenValidationParameters.IssuerSigningKeys.OfType<SymmetricSecurityKey>().LastOrDefault()?.Key));
     }
 
     class InvalidTokenValidator : ISecurityTokenValidator

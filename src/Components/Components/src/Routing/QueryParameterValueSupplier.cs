@@ -51,10 +51,4 @@ internal sealed class QueryParameterValueSupplier
 
         return default;
     }
-
-    public static bool CanSupplyValueForType(Type targetType)
-    {
-        var elementType = targetType.IsArray ? targetType.GetElementType()! : targetType;
-        return UrlValueConstraint.TryGetByTargetType(elementType, out _);
-    }
 }

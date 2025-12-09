@@ -77,24 +77,29 @@ internal sealed class CreateCommand
                 Resources.CreateCommand_ValidForOption_Description,
                 CommandOptionType.SingleValue);
 
+            var appsettingsFileOption = cmd.Option(
+                "--appsettings-file",
+                Resources.CreateCommand_appsettingsFileOption_Description,
+                CommandOptionType.SingleValue);
+
             cmd.HelpOption("-h|--help");
 
             cmd.OnExecute(() =>
             {
-                var (options, isValid, optionsString) = ValidateArguments(
-                    cmd.Reporter, cmd.ProjectOption, schemeNameOption, nameOption, audienceOption, issuerOption, notBeforeOption, expiresOnOption, validForOption, rolesOption, scopesOption, claimsOption);
+                var (options, isValid, optionsString, appsettingsFile) = ValidateArguments(
+                    cmd.Reporter, cmd.ProjectOption, schemeNameOption, nameOption, audienceOption, issuerOption, notBeforeOption, expiresOnOption, validForOption, rolesOption, scopesOption, claimsOption, appsettingsFileOption);
 
                 if (!isValid)
                 {
                     return 1;
                 }
 
-                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), options, optionsString, cmd.OutputOption.Value(), program);
+                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), options, optionsString, cmd.OutputOption.Value(), appsettingsFile, program);
             });
         });
     }
 
-    private static (JwtCreatorOptions, bool, string) ValidateArguments(
+    private static (JwtCreatorOptions, bool, string, string) ValidateArguments(
         IReporter reporter,
         CommandOption projectOption,
         CommandOption schemeNameOption,
@@ -106,7 +111,8 @@ internal sealed class CreateCommand
         CommandOption validForOption,
         CommandOption rolesOption,
         CommandOption scopesOption,
-        CommandOption claimsOption)
+        CommandOption claimsOption,
+        CommandOption appsettingsFileOption)
     {
         var isValid = true;
         var finder = new MsBuildProjectFinder(Directory.GetCurrentDirectory());
@@ -121,6 +127,7 @@ internal sealed class CreateCommand
             return (
                 null,
                 isValid,
+                string.Empty,
                 string.Empty
             );
         }
@@ -209,10 +216,19 @@ internal sealed class CreateCommand
             optionsString += $"{Resources.JwtPrint_CustomClaims}: [{string.Join(", ", claims.Select(kvp => $"{kvp.Key}={kvp.Value}"))}]{Environment.NewLine}";
         }
 
+        var appsettingsFile = DevJwtCliHelpers.DefaultAppSettingsFile;
+        if (appsettingsFileOption.HasValue())
+        {
+            isValid = DevJwtCliHelpers.GetAppSettingsFile(project, appsettingsFileOption.Value(), reporter, out appsettingsFile);
+
+            optionsString += appsettingsFileOption.HasValue() ? $"{Resources.JwtPrint_appsettingsFile}: {appsettingsFile}{Environment.NewLine}" : string.Empty;
+        }
+
         return (
             new JwtCreatorOptions(scheme, name, audience, issuer, notBefore, expiresOn, roles, scopes, claims),
             isValid,
-            optionsString);
+            optionsString,
+            appsettingsFile);
 
         static bool ParseDate(string datetime, out DateTime parsedDateTime) =>
             DateTime.TryParseExact(datetime, _dateTimeFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out parsedDateTime);
@@ -224,6 +240,7 @@ internal sealed class CreateCommand
         JwtCreatorOptions options,
         string optionsString,
         string outputFormat,
+        string appsettingsFile,
         Program program)
     {
         if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var project, out var userSecretsId))
@@ -244,7 +261,7 @@ internal sealed class CreateCommand
         jwtStore.Jwts.Add(jwtToken.Id, jwt);
         jwtStore.Save();
 
-        var appsettingsFilePath = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
+        var appsettingsFilePath = Path.Combine(Path.GetDirectoryName(project), appsettingsFile);
         var settingsToWrite = new JwtAuthenticationSchemeSettings(options.Scheme, options.Audiences, options.Issuer);
         settingsToWrite.Save(appsettingsFilePath);
 
@@ -254,7 +271,7 @@ internal sealed class CreateCommand
                 reporter.Output(jwt.Token);
                 break;
             case "json":
-                reporter.Output(JsonSerializer.Serialize(jwt, new JsonSerializerOptions { WriteIndented = true }));
+                reporter.Output(JsonSerializer.Serialize(jwt, JwtSerializerOptions.Default));
                 break;
             default:
                 reporter.Output(Resources.FormatCreateCommand_Confirmed(jwtToken.Id));

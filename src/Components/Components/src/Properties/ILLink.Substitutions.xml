@@ -3,5 +3,8 @@
     <type fullname="Microsoft.AspNetCore.Components.HotReload.HotReloadManager" feature="System.Reflection.Metadata.MetadataUpdater.IsSupported" featurevalue="false">
       <method signature="System.Boolean get_MetadataUpdateSupported()" body="stub" value="false"  />
     </type>
+    <type fullname="Microsoft.AspNetCore.Components.Routing.RegexConstraintSupport" feature="Microsoft.AspNetCore.Components.Routing.RegexConstraintSupport" featurevalue="false">
+      <method signature="System.Boolean get_IsEnabled()" body="stub" value="false"  />
+    </type>
   </assembly>
 </linker>

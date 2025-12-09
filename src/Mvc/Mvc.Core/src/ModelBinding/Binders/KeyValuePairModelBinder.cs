@@ -32,7 +32,7 @@ public class KeyValuePairModelBinder<TKey, TValue> : IModelBinder
 
         _keyBinder = keyBinder;
         _valueBinder = valueBinder;
-        _logger = loggerFactory.CreateLogger<KeyValuePairModelBinder<TKey, TValue>>();
+        _logger = loggerFactory.CreateLogger(typeof(KeyValuePairModelBinder<TKey, TValue>));
     }
 
     /// <inheritdoc />

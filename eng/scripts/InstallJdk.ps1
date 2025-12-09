@@ -22,8 +22,7 @@ $installDir = "$repoRoot\.tools\jdk\win-x64\"
 $javacExe = "$installDir\bin\javac.exe"
 $tempDir = "$repoRoot\obj"
 if (-not $JdkVersion) {
-    $globalJson = Get-Content "$repoRoot\global.json" | ConvertFrom-Json
-    $JdkVersion = $globalJson.tools.jdk
+    $JdkVersion = "11.0.24"
 }
 
 if (Test-Path $javacExe) {
@@ -40,12 +39,13 @@ Remove-Item -Force -Recurse $tempDir -ErrorAction Ignore | out-null
 mkdir $tempDir -ea Ignore | out-null
 mkdir $installDir -ea Ignore | out-null
 Write-Host "Starting download of JDK ${JdkVersion}"
-& $PSScriptRoot\Download.ps1 "https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/java/jdk-${JdkVersion}_windows-x64_bin.zip" "$tempDir/jdk.zip"
+& $PSScriptRoot\Download.ps1 "https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/java/microsoft-jdk-${JdkVersion}-windows-x64.zip" "$tempDir/jdk.zip"
 Write-Host "Done downloading JDK ${JdkVersion}"
 Expand-Archive "$tempDir/jdk.zip" -d "$tempDir/jdk/"
 Write-Host "Expanded JDK to $tempDir"
 Write-Host "Installing JDK to $installDir"
-Move-Item "$tempDir/jdk/jdk-${JdkVersion}/*" $installDir
+# The name of the file directory within the zip is based on the version, but may contain a +N for build number.
+Move-Item "$(Get-ChildItem -Path "$tempDir/jdk" | Select-Object -First 1 -ExpandProperty FullName)/*" $installDir
 Write-Host "Done installing JDK to $installDir"
 
 if ($env:TF_BUILD) {

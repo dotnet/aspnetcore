@@ -5,6 +5,7 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -32,14 +33,18 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         Browser.Equal("Redirections", () => _originalH1Element.Text);
     }
 
-    [Fact]
-    public void RedirectStreamingGetToInternal()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RedirectStreamingGetToInternal(bool disableThrowNavigationException)
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+
         Browser.Exists(By.LinkText("Streaming GET with internal redirection")).Click();
         AssertElementRemoved(_originalH1Element);
         Browser.Equal("Scroll to hash", () => Browser.Exists(By.TagName("h1")).Text);
         Browser.True(() => Browser.GetScrollY() > 500);
-        Assert.EndsWith("/subdir/nav/scroll-to-hash#some-content", Browser.Url);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash?foo=%F0%9F%99%82#some-content", Browser.Url);
 
         // See that 'back' takes you to the place from before the redirection
         Browser.Navigate().Back();
@@ -47,21 +52,28 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         Assert.EndsWith("/subdir/redirect", Browser.Url);
     }
 
-    [Fact]
-    public void RedirectStreamingGetToExternal()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RedirectStreamingGetToExternal(bool disableThrowNavigationException)
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
         Browser.Exists(By.LinkText("Streaming GET with external redirection")).Click();
         Browser.Contains("microsoft.com", () => Browser.Url);
     }
 
-    [Fact]
-    public void RedirectStreamingPostToInternal()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RedirectStreamingPostToInternal(bool disableThrowNavigationException)
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+
         Browser.Exists(By.CssSelector("#form-streaming-internal button")).Click();
         AssertElementRemoved(_originalH1Element);
         Browser.Equal("Scroll to hash", () => Browser.Exists(By.TagName("h1")).Text);
         Browser.True(() => Browser.GetScrollY() > 500);
-        Assert.EndsWith("/subdir/nav/scroll-to-hash#some-content", Browser.Url);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash?foo=%F0%9F%99%82#some-content", Browser.Url);
 
         // See that 'back' takes you to the place from before the redirection
         Browser.Navigate().Back();
@@ -69,16 +81,23 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         Assert.EndsWith("/subdir/redirect", Browser.Url);
     }
 
-    [Fact]
-    public void RedirectStreamingPostToExternal()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RedirectStreamingPostToExternal(bool disableThrowNavigationException)
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
         Browser.Exists(By.CssSelector("#form-streaming-external button")).Click();
         Browser.Contains("microsoft.com", () => Browser.Url);
     }
 
-    [Fact]
-    public void RedirectEnhancedGetToInternal()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RedirectEnhancedGetToInternal(bool disableThrowNavigationException)
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+
         // Note that for enhanced nav we can't preserve the hash part of the URL, as it
         // gets discarded when the browser follows a 'fetch' redirection. This is not solvable
         // unless we are willing to make the server return extra information so that the
@@ -87,7 +106,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
 
         Browser.Exists(By.LinkText("Enhanced GET with internal redirection")).Click();
         Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
-        Assert.EndsWith("/subdir/nav/scroll-to-hash", Browser.Url);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash?foo=%F0%9F%99%82", Browser.Url);
 
         // See that 'back' takes you to the place from before the redirection
         Browser.Navigate().Back();
@@ -95,20 +114,27 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         Assert.EndsWith("/subdir/redirect", Browser.Url);
     }
 
-    [Fact]
-    public void RedirectEnhancedGetToExternal()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RedirectEnhancedGetToExternal(bool disableThrowNavigationException)
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
         Browser.Exists(By.LinkText("Enhanced GET with external redirection")).Click();
         Browser.Contains("microsoft.com", () => Browser.Url);
     }
 
-    [Fact]
-    public void RedirectEnhancedPostToInternal()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RedirectEnhancedPostToInternal(bool disableThrowNavigationException)
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+
         // See above for why enhanced nav doesn't support preserving the hash
         Browser.Exists(By.CssSelector("#form-enhanced-internal button")).Click();
         Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
-        Assert.EndsWith("/subdir/nav/scroll-to-hash", Browser.Url);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash?foo=%F0%9F%99%82", Browser.Url);
 
         // See that 'back' takes you to the place from before the redirection
         Browser.Navigate().Back();
@@ -116,20 +142,27 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         Assert.EndsWith("/subdir/redirect", Browser.Url);
     }
 
-    [Fact]
-    public void RedirectEnhancedPostToExternal()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RedirectEnhancedPostToExternal(bool disableThrowNavigationException)
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
         Browser.Exists(By.CssSelector("#form-enhanced-external button")).Click();
         Browser.Contains("microsoft.com", () => Browser.Url);
     }
 
-    [Fact]
-    public void RedirectStreamingEnhancedGetToInternal()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RedirectStreamingEnhancedGetToInternal(bool disableThrowNavigationException)
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+
         // See above for why enhanced nav doesn't support preserving the hash
         Browser.Exists(By.LinkText("Streaming enhanced GET with internal redirection")).Click();
         Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
-        Assert.EndsWith("/subdir/nav/scroll-to-hash", Browser.Url);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash?foo=%F0%9F%99%82", Browser.Url);
 
         // See that 'back' takes you to the place from before the redirection
         Browser.Navigate().Back();
@@ -137,20 +170,29 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         Assert.EndsWith("/subdir/redirect", Browser.Url);
     }
 
-    [Fact]
-    public void RedirectStreamingEnhancedGetToExternal()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RedirectStreamingEnhancedGetToExternal(bool disableThrowNavigationException)
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+
         Browser.Exists(By.LinkText("Streaming enhanced GET with external redirection")).Click();
         Browser.Contains("microsoft.com", () => Browser.Url);
     }
+    
 
-    [Fact]
-    public void RedirectStreamingEnhancedPostToInternal()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RedirectStreamingEnhancedPostToInternal(bool disableThrowNavigationException)
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+
         // See above for why enhanced nav doesn't support preserving the hash
         Browser.Exists(By.CssSelector("#form-streaming-enhanced-internal button")).Click();
         Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
-        Assert.EndsWith("/subdir/nav/scroll-to-hash", Browser.Url);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash?foo=%F0%9F%99%82", Browser.Url);
 
         // See that 'back' takes you to the place from before the redirection
         Browser.Navigate().Back();
@@ -158,16 +200,24 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         Assert.EndsWith("/subdir/redirect", Browser.Url);
     }
 
-    [Fact]
-    public void RedirectStreamingEnhancedPostToExternal()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RedirectStreamingEnhancedPostToExternal(bool disableThrowNavigationException)
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+
         Browser.Exists(By.CssSelector("#form-streaming-enhanced-external button")).Click();
         Browser.Contains("microsoft.com", () => Browser.Url);
     }
 
-    [Fact]
-    public void RedirectEnhancedNonBlazorGetToInternal()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RedirectEnhancedNonBlazorGetToInternal(bool disableThrowNavigationException)
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+
         // See above for why enhanced nav doesn't support preserving the hash
         Browser.Exists(By.LinkText("Enhanced GET to non-Blazor endpoint with internal redirection")).Click();
         Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
@@ -179,16 +229,24 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         Assert.EndsWith("/subdir/redirect", Browser.Url);
     }
 
-    [Fact]
-    public void RedirectEnhancedNonBlazorGetToExternal()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RedirectEnhancedNonBlazorGetToExternal(bool disableThrowNavigationException)
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+
         Browser.Exists(By.LinkText("Enhanced GET to non-Blazor endpoint with external redirection")).Click();
         Browser.Contains("microsoft.com", () => Browser.Url);
     }
 
-    [Fact]
-    public void RedirectEnhancedNonBlazorPostToInternal()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RedirectEnhancedNonBlazorPostToInternal(bool disableThrowNavigationException)
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+
         // See above for why enhanced nav doesn't support preserving the hash
         Browser.Exists(By.CssSelector("#form-nonblazor-enhanced-internal button")).Click();
         Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
@@ -204,6 +262,39 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     // We would need server-side middleware that runs on *all* requests to convert the 301/302/etc
     // response to something like a 200 that the 'fetch' is allowed to read (embedding the
     // destination URL).
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void RedirectEnhancedGetToInternalWithErrorBoundary(bool disableThrowNavigationException)
+    {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", disableThrowNavigationException);
+
+        // This test verifies that redirection works even if an ErrorBoundary wraps
+        // a component throwing a NavigationException.
+
+        Browser.Exists(By.LinkText("Enhanced GET with redirect inside error boundary")).Click();
+        Browser.Equal("Scroll to hash", () => _originalH1Element.Text);
+        Assert.EndsWith("/subdir/nav/scroll-to-hash?foo=%F0%9F%99%82", Browser.Url);
+
+        // See that 'back' takes you to the place from before the redirection
+        Browser.Navigate().Back();
+        Browser.Equal("Redirections", () => _originalH1Element.Text);
+        Assert.EndsWith("/subdir/redirect", Browser.Url);
+    }
+
+    [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/pull/63708/")]
+    public void NavigationException_InAsyncContext_DoesNotBecomeUnobservedTaskException()
+    {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", false);
+
+        // Navigate to the page that triggers the circular redirect.
+        Navigate($"{ServerPathBase}/redirect/circular");
+
+        // The component will stop redirecting after 3 attempts and render the exception count.
+        Browser.Equal("0", () => Browser.FindElement(By.Id("unobserved-exceptions-count")).Text);
+    }
 
     private void AssertElementRemoved(IWebElement element)
     {

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http.Features;
 public static class FeatureCollectionExtensions
 {
     /// <summary>
-    /// Retrives the requested feature from the collection.
+    /// Retrieves the requested feature from the collection.
     /// Throws an <see cref="InvalidOperationException"/> if the feature is not present.
     /// </summary>
     /// <param name="featureCollection">The <see cref="IFeatureCollection"/>.</param>
@@ -27,7 +27,7 @@ public static class FeatureCollectionExtensions
     }
 
     /// <summary>
-    /// Retrives the requested feature from the collection.
+    /// Retrieves the requested feature from the collection.
     /// Throws an <see cref="InvalidOperationException"/> if the feature is not present.
     /// </summary>
     /// <param name="featureCollection">feature collection</param>

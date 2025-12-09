@@ -14,7 +14,7 @@ To run Helix tests for one particular test project:
 .\eng\scripts\RunHelix.ps1 -Project path\mytestproject.csproj
 ```
 
-This will restore, and then publish all the test project including some bootstrapping scripts that will install the correct dotnet runtime/sdk before running the test assembly on the helix machine(s), and upload the job to helix.
+This will restore, and then publish all the test projects including some bootstrapping scripts that will install the correct dotnet runtime/sdk before running the test assembly on the helix machine(s), and upload the job to helix.
 
 ## Overview of the helix usage in our pipelines
 
@@ -93,7 +93,7 @@ dotnet vstest My.Tests.dll
 
 ## Differences from running tests locally
 
-Most tests that don't just work on helix automatically are ones that depend on the source code being accessible. The helix payloads only contain whatever is in the publish directories, so any thing else that test depends on will need to be included to the payload.
+Most tests that don't just work on helix automatically are ones that depend on the source code being accessible. The helix payloads only contain whatever is in the publish directories, so anything else that test depends on will need to be included to the payload.
 
 This can be accomplished by using the `HelixContent` property like so.
 
@@ -124,7 +124,7 @@ Make sure to file an issue for any skipped tests and include that in a comment n
 
 ## Process for updating helix matrix
 
-Goal is to balance cost/flakiness against having some coverage of supported distros:
+The goal is to balance cost/flakiness against having some coverage of supported distros:
 - At the start of each product version, we pick a set of queues/versions/arches to run based on popularity and perceived risk, and how long is left in the support for that OS version.
 - Whenever a new OS is coming online, we ask CTI to do a run on it, and if there is support for it in helix, we submit a PR to update our helix-matrix to include it for it to check for any failures in it, but if there aren’t any, we don’t merge it.
     - If an appropriate queue does not yet exist, we could submit a PR to https://github.com/dotnet/dotnet-buildtools-prereqs-docker to add it. This helps even if we do not plan to keep the dotnet/aspnetcore change around.
@@ -139,7 +139,7 @@ Goal is to balance cost/flakiness against having some coverage of supported dist
 
 ## Investigating helix run time issues
 
-Kusto has all of the helix job data, using a particular job id, with the following query you can get a breakdown of the test projects that take the longest.  Ideally to take advantage of the largest fan out, we want smaller test projects since the longest running test project will be the gate for finishing the entire helix test job.
+Kusto has all of the helix job data, using a particular job id, with the following query you can get a breakdown of the test projects that take the longest. Ideally to take advantage of the largest fan out, we want smaller test projects since the longest running test project will be the gate for finishing the entire helix test job.
 
 https://dataexplorer.azure.com/clusters/engsrvprod/databases/engineeringdata
 

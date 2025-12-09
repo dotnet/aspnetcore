@@ -6,13 +6,17 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Endpoints.Rendering;
+using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -20,10 +24,12 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 {
     private readonly EndpointHtmlRenderer _renderer;
     private readonly ILogger<RazorComponentEndpointInvoker> _logger;
+    private readonly ComponentsActivityLinkStore _activityLinkStore;
 
     public RazorComponentEndpointInvoker(EndpointHtmlRenderer renderer, ILogger<RazorComponentEndpointInvoker> logger)
     {
         _renderer = renderer;
+        _activityLinkStore = new ComponentsActivityLinkStore(renderer);
         _logger = logger;
     }
 
@@ -32,16 +38,25 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         return _renderer.Dispatcher.InvokeAsync(() => RenderComponentCore(context));
     }
 
+    // We do not want the debugger to consider NavigationExceptions caught by this method as user-unhandled.
+    [DebuggerDisableUserUnhandledExceptions]
     private async Task RenderComponentCore(HttpContext context)
     {
         context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
         var isErrorHandler = context.Features.Get<IExceptionHandlerFeature>() is not null;
+        var hasStatusCodePage = context.Features.Get<IStatusCodePagesFeature>() is not null;
+        var isReExecuted = context.Features.Get<IStatusCodeReExecuteFeature>() is not null;
+        var httpActivityContext = context.Features.Get<IHttpActivityFeature>()?.Activity.Context ?? default;
         if (isErrorHandler)
         {
             Log.InteractivityDisabledForErrorHandling(_logger);
         }
-        _renderer.InitializeStreamingRenderingFraming(context, isErrorHandler);
-        EndpointHtmlRenderer.MarkAsAllowingEnhancedNavigation(context);
+        _renderer.InitializeStreamingRenderingFraming(context, isErrorHandler, isReExecuted);
+        if (!isReExecuted)
+        {
+            // re-executed pages have Headers already set up
+            EndpointHtmlRenderer.MarkAsAllowingEnhancedNavigation(context);
+        }
 
         var endpoint = context.GetEndpoint() ?? throw new InvalidOperationException($"An endpoint must be set on the '{nameof(HttpContext)}'.");
 
@@ -63,15 +78,12 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             return;
         }
 
-        context.Response.OnStarting(() =>
+        if (httpActivityContext != default)
         {
-            // Generate the antiforgery tokens before we start streaming the response, as it needs
-            // to set the cookie header.
-            antiforgery!.GetAndStoreTokens(context);
-            return Task.CompletedTask;
-        });
+            _activityLinkStore.SetActivityContext(ComponentsActivityLinkStore.Http, httpActivityContext, null);
+        }
 
-        await EndpointHtmlRenderer.InitializeStandardComponentServicesAsync(
+        await _renderer.InitializeStandardComponentServicesAsync(
             context,
             componentType: pageComponent,
             handler: result.HandlerName,
@@ -82,6 +94,8 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         await using var writer = new HttpResponseStreamWriter(context.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
         using var bufferWriter = new BufferedTextWriter(writer);
 
+        bool isErrorHandlerOrReExecuted = isErrorHandler || isReExecuted;
+
         // Note that we always use Static rendering mode for the top-level output from a RazorComponentResult,
         // because you never want to serialize the invocation of RazorComponentResultHost. Instead, that host
         // component takes care of switching into your desired render mode when it produces its own output.
@@ -89,10 +103,10 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             context,
             rootComponent,
             ParameterView.Empty,
-            waitForQuiescence: result.IsPost || isErrorHandler);
+            waitForQuiescence: result.IsPost || isErrorHandlerOrReExecuted);
 
         Task quiesceTask;
-        if (!result.IsPost)
+        if (!result.IsPost || isReExecuted)
         {
             quiesceTask = htmlContent.QuiescenceTask;
         }
@@ -107,13 +121,37 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
                     return;
                 }
 
-                await Task.WhenAll(_renderer.NonStreamingPendingTasks);
+                await _renderer.WaitForNonStreamingPendingTasks();
             }
             catch (NavigationException ex)
             {
                 await EndpointHtmlRenderer.HandleNavigationException(context, ex);
                 quiesceTask = Task.CompletedTask;
             }
+        }
+
+        if (_renderer.NotFoundEventArgs != null)
+        {
+            _renderer.SetNotFoundWhenResponseNotStarted();
+        }
+
+        if (!quiesceTask.IsCompleted)
+        {
+            // An incomplete QuiescenceTask indicates there may be streaming rendering updates.
+            // Disable all response buffering and compression on IIS like SignalR's ServerSentEventsServerTransport does.
+            var bufferingFeature = context.Features.GetRequiredFeature<IHttpResponseBodyFeature>();
+            bufferingFeature.DisableBuffering();
+
+            // Store the tokens if not emitted already in case we stream a form in the response.
+            antiforgery!.GetAndStoreTokens(context);
+
+            context.Response.Headers.ContentEncoding = "identity";
+        }
+        else if (endpoint.Metadata.GetMetadata<ConfiguredRenderModesMetadata>()?.ConfiguredRenderModes.Length == 0)
+        {
+            // Disable token generation on EndpointAntiforgeryStateProvider if we are not streaming.
+            var provider = (EndpointAntiforgeryStateProvider)context.RequestServices.GetRequiredService<AntiforgeryStateProvider>();
+            provider.DisableTokenGeneration();
         }
 
         // Importantly, we must not yield this thread (which holds exclusive access to the renderer sync context)
@@ -125,6 +163,10 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         if (!quiesceTask.IsCompletedSuccessfully)
         {
             await _renderer.SendStreamingUpdatesAsync(context, quiesceTask, bufferWriter);
+            if (_renderer.NotFoundEventArgs != null)
+            {
+                await _renderer.SetNotFoundWhenResponseHasStarted();
+            }
         }
         else
         {
@@ -132,10 +174,21 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         }
 
         // Emit comment containing state.
-        if (!isErrorHandler)
+        if (!isErrorHandlerOrReExecuted)
         {
             var componentStateHtmlContent = await _renderer.PrerenderPersistedStateAsync(context);
             componentStateHtmlContent.WriteTo(bufferWriter, HtmlEncoder.Default);
+        }
+
+        if (context.Response.StatusCode == StatusCodes.Status404NotFound &&
+            !isReExecuted &&
+            string.IsNullOrEmpty(_renderer.NotFoundEventArgs?.Path))
+        {
+            // Router did not handle the NotFound event, otherwise this would not be empty.
+            // Don't flush the response if we have an unhandled 404 rendering
+            // This will allow the StatusCodePages middleware to re-execute the request
+            context.Response.ContentType = null;
+            return;
         }
 
         // Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying
@@ -154,9 +207,24 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
         if (processPost)
         {
-            var valid = false;
+            if (context.Request.ContentType is not null && MediaTypeHeaderValue.TryParse(context.Request.ContentType, out var type))
+            {
+                // We can't use request.HasFormContentType here because it will throw. We should revisit that.
+                if (!type.MediaType.Equals("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase) &&
+                    !type.MediaType.Equals("multipart/form-data", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    if (EndpointHtmlRenderer.ShouldShowDetailedErrors(context))
+                    {
+                        await context.Response.WriteAsync("The request has an incorrect Content-type.");
+                    }
+                    return RequestValidationState.InvalidPostRequest;
+                }
+            }
+
             // Respect the token validation done by the middleware _if_ it has been set, otherwise
             // run the validation here.
+            var valid = false;
             if (context.Features.Get<IAntiforgeryValidationFeature>() is { } antiForgeryValidationFeature)
             {
                 if (!antiForgeryValidationFeature.IsValid)
@@ -194,7 +262,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             {
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
 
-                if (context.RequestServices.GetService<IHostEnvironment>()?.IsDevelopment() == true)
+                if (EndpointHtmlRenderer.ShouldShowDetailedErrors(context))
                 {
                     await context.Response.WriteAsync("A valid antiforgery token was not provided with the request. Add an antiforgery token, or disable antiforgery validation for this endpoint.");
                 }

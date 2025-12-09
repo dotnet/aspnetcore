@@ -16,11 +16,11 @@ namespace Microsoft.Extensions.Http;
 /// <remarks>
 /// <para>
 /// This message handler implementation supports the use of policies provided by the Polly library for
-/// transient-fault-handling and resiliency.
+/// transient-fault handling and resiliency.
 /// </para>
 /// <para>
 /// The documentation provided here is focused guidance for using Polly together with the <see cref="IHttpClientFactory"/>.
-/// See the Polly project and its documentation (<see href="https://github.com/app-vnext/Polly"/>) for authoritative information on Polly.
+/// For authoritative information on Polly, see the Polly project and its documentation (<see href="https://github.com/app-vnext/Polly"/>).
 /// </para>
 /// <para>
 /// The extension methods on <see cref="PollyHttpClientBuilderExtensions"/> are designed as a convenient and correct
@@ -37,19 +37,17 @@ namespace Microsoft.Extensions.Http;
 /// by using the generic methods on <see cref="Policy"/> such as <see cref="Policy.TimeoutAsync{TResult}(int)"/>.
 /// </para>
 /// <para>
-/// To adapt an existing non-generic <see cref="IAsyncPolicy"/>, use code like the following:
-/// <example>
-/// Converting a non-generic <c>IAsyncPolicy policy</c> to <see cref="IAsyncPolicy{HttpResponseMessage}"/>.
-/// <code>
+/// To adapt an existing non-generic <see cref="IAsyncPolicy"/>, use code like the following that converts a 
+/// non-generic <c>IAsyncPolicy policy</c> to <see cref="IAsyncPolicy{HttpResponseMessage}"/>:
+/// <code lang="csharp">
 /// policy.AsAsyncPolicy&lt;HttpResponseMessage&gt;()
 /// </code>
-/// </example>
 /// </para>
 /// <para>
 /// The <see cref="PollyHttpClientBuilderExtensions.AddTransientHttpErrorPolicy(IHttpClientBuilder, Func{PolicyBuilder{HttpResponseMessage}, IAsyncPolicy{HttpResponseMessage}})"/>
 /// method is an opinionated convenience method that supports the application of a policy for requests that fail due
 /// to a connection failure or server error (5XX HTTP status code). This kind of method supports only reactive policies
-/// such as Retry, Circuit-Breaker or Fallback. This method is only provided for convenience; we recommend creating
+/// such as Retry, Circuit-Breaker, or Fallback. This method is only provided for convenience; we recommend creating
 /// your own policies as needed if this does not meet your requirements.
 /// </para>
 /// <para>
@@ -66,8 +64,8 @@ namespace Microsoft.Extensions.Http;
 /// and ensure that they can be used when the handler rotation feature is active.
 /// </para>
 /// <para>
-/// The <see cref="PolicyHttpMessageHandler"/> will attach a context to the <see cref="HttpRequestMessage"/> prior
-/// to executing a <see cref="Policy"/>, if one does not already exist. The <see cref="Context"/> will be provided
+/// The <see cref="PolicyHttpMessageHandler"/> attaches a context to the <see cref="HttpRequestMessage"/> prior
+/// to executing a <see cref="Policy"/>, if one does not already exist. The <see cref="Context"/> is provided
 /// to the policy for use inside the <see cref="Policy"/> and in other message handlers.
 /// </para>
 /// </remarks>

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <UserSecretsId>aspnet5-OpenIdConnectSample-20151210110318</UserSecretsId>
+     <UserSecretsId>aspnet5-OpenIdConnectSample-20151210110318</UserSecretsId> 
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
   </PropertyGroup>
 

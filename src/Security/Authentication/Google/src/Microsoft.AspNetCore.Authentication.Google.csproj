@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>ASP.NET Core contains middleware to support Google's OpenId and OAuth 2.0 authentication workflows.</Description>
+    <Description>ASP.NET Core contains middleware to support Google's OAuth 2.0 authentication workflow.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;authentication;security</PackageTags>

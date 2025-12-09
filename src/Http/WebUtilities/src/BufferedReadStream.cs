@@ -108,8 +108,8 @@ public class BufferedReadStream : Stream
                 if (innerOffset <= _bufferCount)
                 {
                     // Yes, just skip some of the buffered data
-                    _bufferOffset += innerOffset;
-                    _bufferCount -= innerOffset;
+                    _bufferOffset += _bufferCount - innerOffset;
+                    _bufferCount = innerOffset;
                 }
                 else
                 {
@@ -418,6 +418,6 @@ public class BufferedReadStream : Stream
 
     private void CheckDisposed()
     {
-        ObjectDisposedException.ThrowIf(_disposed, nameof(BufferedReadStream));
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 }

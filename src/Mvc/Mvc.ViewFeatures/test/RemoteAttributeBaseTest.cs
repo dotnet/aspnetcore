@@ -19,19 +19,6 @@ namespace Microsoft.AspNetCore.Mvc;
 
 public class RemoteAttributeBaseTest
 {
-    // Null or empty property names are invalid. (Those containing just whitespace are legal.)
-    public static TheoryData<string> NullOrEmptyNames
-    {
-        get
-        {
-            return new TheoryData<string>
-                {
-                    null,
-                    string.Empty,
-                };
-        }
-    }
-
     [Fact]
     public void IsValidAlwaysReturnsTrue()
     {
@@ -107,12 +94,12 @@ public class RemoteAttributeBaseTest
     }
 
     [Theory]
-    [MemberData(nameof(NullOrEmptyNames))]
-    public void FormatAdditionalFieldsForClientValidation_WithInvalidPropertyName_Throws(string property)
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string.")]
+    public void FormatAdditionalFieldsForClientValidation_WithInvalidPropertyName_Throws(string property, string expectedMessage)
     {
         // Arrange
         var attribute = new TestableRemoteAttributeBase();
-        var expectedMessage = "Value cannot be null or empty.";
 
         // Act & Assert
         ExceptionAssert.ThrowsArgument(
@@ -139,17 +126,15 @@ public class RemoteAttributeBaseTest
     }
 
     [Theory]
-    [MemberData(nameof(NullOrEmptyNames))]
-    public void FormatPropertyForClientValidation_WithInvalidPropertyName_Throws(string property)
+    [InlineData(null, "Value cannot be null.")]
+    [InlineData("", "The value cannot be an empty string.")]
+    public void FormatPropertyForClientValidation_WithInvalidPropertyName_Throws(string property, string expectedMessage)
     {
-        // Arrange
-        var expected = "Value cannot be null or empty.";
-
         // Act & Assert
         ExceptionAssert.ThrowsArgument(
             () => RemoteAttributeBase.FormatPropertyForClientValidation(property),
             "property",
-            expected);
+            expectedMessage);
     }
 
     [Fact]

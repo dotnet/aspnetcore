@@ -9,7 +9,7 @@
     those targets too to ensure everything is up-to-date when executing tests.
   -->
   <Target Name="CopyAssets" BeforeTargets="Build;Publish;RunTests;VSTest"
-      Condition=" '$(ExcludeFromBuild)' != 'true' AND '$(DotNetBuildFromSource)' != 'true' ">
+      Condition=" '$(ExcludeFromBuild)' != 'true' AND ('$(DotNetBuild)' != 'true' or '$(DotNetBuildTests)' == 'true') ">
     <MSBuild Projects="@(ProjectReference)"
         Targets="PublishTestsAssets"
         SkipNonexistentTargets="true"

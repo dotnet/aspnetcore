@@ -13,6 +13,6 @@
     private async Task DoRedirectionAsync()
     {
         await Task.Delay(500);
-        Nav.NavigateTo(External ? "https://microsoft.com" : "nav/scroll-to-hash#some-content");
+        Nav.NavigateTo(External ? "https://microsoft.com?foo=🙂" : "nav/scroll-to-hash?foo=🙂#some-content");
     }
 }

@@ -24,7 +24,7 @@ public class PropertyInjectionTest : ServerTestBase<ToggleExecutionModeServerFix
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: false);
+        Navigate(ServerPathBase);
         Browser.MountTestComponent<PropertyInjectionComponent>();
     }
 

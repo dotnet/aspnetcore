@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Required to generated trimmable Map-invocations. -->
+    <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
+    <IsAotCompatible>true</IsAotCompatible>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.AspNetCore.OpenApi.Generated</InterceptorsNamespaces>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Results" />
+    <Reference Include="Microsoft.AspNetCore.JsonPatch.SystemTextJson" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.OpenApi" />
+    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../test/Microsoft.AspNetCore.OpenApi.Tests/Shared/SharedTypes.cs" />
+    <Compile Include="../test/Microsoft.AspNetCore.OpenApi.Tests/Shared/SharedTypes.Polymorphism.cs" />
+  </ItemGroup>
+
+  <!-- Required to generated trimmable Map-invocations. -->
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)/src/Http/Http.Extensions/gen/Microsoft.AspNetCore.Http.RequestDelegateGenerator/Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <!-- Required to process XML documentation. -->
+  <ItemGroup>
+    <ProjectReference Include="../gen/Microsoft.AspNetCore.OpenApi.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.OpenApi" />
+  </ItemGroup>
+
+</Project>

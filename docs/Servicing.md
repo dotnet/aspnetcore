@@ -1,10 +1,10 @@
 # Servicing Process
 
-We maintain several on-going releases at once and produce patches for them. An essential part of our support committent to users is that we build high-quality patches that avoid breaking applications. This means we have to be extremely cautious with taking changes in patch releases. This document describes the "bar" (criteria for accepting servicing fixes) and the process for managing these changes.
+We maintain several on-going releases at once and produce patches for them. An essential part of our support commitment to users is that we build high-quality patches that avoid breaking applications. This means we have to be extremely cautious with taking changes in patch releases. This document describes the "bar" (criteria for accepting servicing fixes) and the process for managing these changes.
 
 See the [.NET Core release lifecycle](https://dotnet.microsoft.com/platform/support/policy/dotnet-core#lifecycle) for more details on the currently-supported .NET releases.
 
-The status of current servicing fixes can be found on the [Servicing Status](https://github.com/dotnet/aspnetcore/projects/11) GitHub project.
+The status of current servicing fixes can be found on the [Servicing Status](https://github.com/orgs/dotnet/projects/448) GitHub project.
 
 ## Servicing Bar
 
@@ -24,7 +24,7 @@ In addition, the following factors make a particular servicing fix *more likely*
 * It is required to support new OS distributions
 * If the issue is reported through [Microsoft Product Support](https://dotnet.microsoft.com/platform/support).
 
-Finally, infrastructure and test-only fixes are generally acceptable since they do not impact the customer use of the product. However, these should generally be focused on fixes that improve the *reliability* of building/testing the product.
+Finally, infrastructure and test-only fixes are generally acceptable since they do not impact the customer usage of the product. However, these should generally be focused on fixes that improve the *reliability* of building/testing the product.
 
 ### Long-Term Support Releases
 

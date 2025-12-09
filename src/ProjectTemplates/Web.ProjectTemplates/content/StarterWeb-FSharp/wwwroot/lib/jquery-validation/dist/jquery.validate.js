@@ -1,9 +1,9 @@
 /*!
- * jQuery Validation Plugin v1.19.5
+ * jQuery Validation Plugin v1.21.0
  *
  * https://jqueryvalidation.org/
  *
- * Copyright (c) 2022 Jörn Zaefferer
+ * Copyright (c) 2024 Jörn Zaefferer
  * Released under the MIT license
  */
 (function( factory ) {
@@ -293,6 +293,7 @@ $.extend( $.validator, {
 		onsubmit: true,
 		ignore: ":hidden",
 		ignoreTitle: false,
+		customElements: [],
 		onfocusin: function( element ) {
 			this.lastActive = element;
 
@@ -440,17 +441,17 @@ $.extend( $.validator, {
 					settings[ eventType ].call( validator, this, event );
 				}
 			}
-
+			var focusListeners = [ ":text", "[type='password']", "[type='file']", "select", "textarea", "[type='number']", "[type='search']",
+								"[type='tel']", "[type='url']", "[type='email']", "[type='datetime']", "[type='date']", "[type='month']",
+								"[type='week']", "[type='time']", "[type='datetime-local']", "[type='range']", "[type='color']",
+								"[type='radio']", "[type='checkbox']", "[contenteditable]", "[type='button']" ];
+			var clickListeners = [ "select", "option", "[type='radio']", "[type='checkbox']" ];
 			$( this.currentForm )
-				.on( "focusin.validate focusout.validate keyup.validate",
-					":text, [type='password'], [type='file'], select, textarea, [type='number'], [type='search'], " +
-					"[type='tel'], [type='url'], [type='email'], [type='datetime'], [type='date'], [type='month'], " +
-					"[type='week'], [type='time'], [type='datetime-local'], [type='range'], [type='color'], " +
-					"[type='radio'], [type='checkbox'], [contenteditable], [type='button']", delegate )
+				.on( "focusin.validate focusout.validate keyup.validate", focusListeners.concat( this.settings.customElements ).join( ", " ), delegate )
 
 				// Support: Chrome, oldIE
 				// "select" is provided as event.target when clicking a option
-				.on( "click.validate", "select, option, [type='radio'], [type='checkbox']", delegate );
+				.on( "click.validate", clickListeners.concat( this.settings.customElements ).join( ", " ), delegate );
 
 			if ( this.settings.invalidHandler ) {
 				$( this.currentForm ).on( "invalid-form.validate", this.settings.invalidHandler );
@@ -647,11 +648,12 @@ $.extend( $.validator, {
 
 		elements: function() {
 			var validator = this,
-				rulesCache = {};
+				rulesCache = {},
+				selectors = [ "input", "select", "textarea", "[contenteditable]" ];
 
 			// Select all valid inputs inside the form (no submit or reset buttons)
 			return $( this.currentForm )
-			.find( "input, select, textarea, [contenteditable]" )
+			.find( selectors.concat( this.settings.customElements ).join( ", " ) )
 			.not( ":submit, :reset, :image, :disabled" )
 			.not( this.settings.ignore )
 			.filter( function() {
@@ -773,6 +775,9 @@ $.extend( $.validator, {
 				dependencyMismatch = false,
 				val = this.elementValue( element ),
 				result, method, rule, normalizer;
+
+			// Abort any pending Ajax request from a previous call to this method.
+			this.abortRequest( element );
 
 			// Prioritize the local normalizer defined for this element over the global one
 			// if the former exists, otherwise user the global one in case it exists.
@@ -960,14 +965,23 @@ $.extend( $.validator, {
 				error.removeClass( this.settings.validClass ).addClass( this.settings.errorClass );
 
 				// Replace message on existing label
-				error.html( message );
+				if ( this.settings && this.settings.escapeHtml ) {
+					error.text( message || "" );
+				} else {
+					error.html( message || "" );
+				}
 			} else {
 
 				// Create error element
 				error = $( "<" + this.settings.errorElement + ">" )
 					.attr( "id", elementID + "-error" )
-					.addClass( this.settings.errorClass )
-					.html( message || "" );
+					.addClass( this.settings.errorClass );
+
+				if ( this.settings && this.settings.escapeHtml ) {
+					error.text( message || "" );
+				} else {
+					error.html( message || "" );
+				}
 
 				// Maintain reference to the element to be placed into the DOM
 				place = error;
@@ -1113,6 +1127,10 @@ $.extend( $.validator, {
 			return !$.validator.methods.required.call( this, val, element ) && "dependency-mismatch";
 		},
 
+		elementAjaxPort: function( element ) {
+			return "validate" + element.name;
+		},
+
 		startRequest: function( element ) {
 			if ( !this.pending[ element.name ] ) {
 				this.pendingRequest++;
@@ -1145,6 +1163,25 @@ $.extend( $.validator, {
 			} else if ( !valid && this.pendingRequest === 0 && this.formSubmitted ) {
 				$( this.currentForm ).triggerHandler( "invalid-form", [ this ] );
 				this.formSubmitted = false;
+			}
+		},
+
+		abortRequest: function( element ) {
+			var port;
+
+			if ( this.pending[ element.name ] ) {
+				port = this.elementAjaxPort( element );
+				$.ajaxAbort( port );
+
+				this.pendingRequest--;
+
+				// Sometimes synchronization fails, make sure pendingRequest is never < 0
+				if ( this.pendingRequest < 0 ) {
+					this.pendingRequest = 0;
+				}
+
+				delete this.pending[ element.name ];
+				$( element ).removeClass( this.settings.pendingClass );
 			}
 		},
 
@@ -1466,7 +1503,7 @@ $.extend( $.validator, {
 
 		// https://jqueryvalidation.org/number-method/
 		number: function( value, element ) {
-			return this.optional( element ) || /^(?:-?\d+|-?\d{1,3}(?:,\d{3})+)?(?:\.\d+)?$/.test( value );
+			return this.optional( element ) || /^(?:-?\d+|-?\d{1,3}(?:,\d{3})+)?(?:-?\.\d+)?$/.test( value );
 		},
 
 		// https://jqueryvalidation.org/digits-method/
@@ -1577,18 +1614,19 @@ $.extend( $.validator, {
 
 			param = typeof param === "string" && { url: param } || param;
 			optionDataString = $.param( $.extend( { data: value }, param.data ) );
-			if ( previous.old === optionDataString ) {
+			if ( previous.valid !== null && previous.old === optionDataString ) {
 				return previous.valid;
 			}
 
 			previous.old = optionDataString;
+			previous.valid = null;
 			validator = this;
 			this.startRequest( element );
 			data = {};
 			data[ element.name ] = value;
 			$.ajax( $.extend( true, {
 				mode: "abort",
-				port: "validate" + element.name,
+				port: this.elementAjaxPort( element ),
 				dataType: "json",
 				data: data,
 				context: validator.currentForm,
@@ -1599,7 +1637,6 @@ $.extend( $.validator, {
 					validator.settings.messages[ element.name ][ method ] = previous.originalMessage;
 					if ( valid ) {
 						submitted = validator.formSubmitted;
-						validator.resetInternals();
 						validator.toHide = validator.errorsFor( element );
 						validator.formSubmitted = submitted;
 						validator.successList.push( element );
@@ -1624,6 +1661,7 @@ $.extend( $.validator, {
 
 // Ajax mode: abort
 // usage: $.ajax({ mode: "abort"[, port: "uniqueport"]});
+//        $.ajaxAbort( port );
 // if mode:"abort" is used, the previous request on that port (port can be undefined) is aborted via XMLHttpRequest.abort()
 
 var pendingRequests = {},
@@ -1634,9 +1672,7 @@ if ( $.ajaxPrefilter ) {
 	$.ajaxPrefilter( function( settings, _, xhr ) {
 		var port = settings.port;
 		if ( settings.mode === "abort" ) {
-			if ( pendingRequests[ port ] ) {
-				pendingRequests[ port ].abort();
-			}
+			$.ajaxAbort( port );
 			pendingRequests[ port ] = xhr;
 		}
 	} );
@@ -1648,14 +1684,20 @@ if ( $.ajaxPrefilter ) {
 		var mode = ( "mode" in settings ? settings : $.ajaxSettings ).mode,
 			port = ( "port" in settings ? settings : $.ajaxSettings ).port;
 		if ( mode === "abort" ) {
-			if ( pendingRequests[ port ] ) {
-				pendingRequests[ port ].abort();
-			}
+			$.ajaxAbort( port );
 			pendingRequests[ port ] = ajax.apply( this, arguments );
 			return pendingRequests[ port ];
 		}
 		return ajax.apply( this, arguments );
 	};
 }
+
+// Abort the previous request without sending a new one
+$.ajaxAbort = function( port ) {
+	if ( pendingRequests[ port ] ) {
+		pendingRequests[ port ].abort();
+		delete pendingRequests[ port ];
+	}
+};
 return $;
 }));

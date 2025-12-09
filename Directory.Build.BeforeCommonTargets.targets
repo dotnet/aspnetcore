@@ -2,18 +2,18 @@
   <PropertyGroup>
     <!-- Only build Microsoft.AspNetCore.App, Microsoft.AspNetCore.App.Ref, ref/ assemblies, and ProjectTemplates in source build. -->
     <!-- Analyzer package are needed in source build for WebSDK -->
-    <ExcludeFromSourceBuild
-        Condition="'$(ExcludeFromSourceBuild)' == '' and
-            '$(DotNetBuildFromSource)' == 'true' and
+    <ExcludeFromSourceOnlyBuild
+        Condition="'$(ExcludeFromSourceOnlyBuild)' == '' and
+            '$(DotNetBuildSourceOnly)' == 'true' and
             '$(IsAspNetCoreApp)' != 'true' and
-            '$(MSBuildProjectName)' != '$(TargetingPackName)' and
+            '$(UsingMicrosoftDotNetSharedFrameworkSdk)' != 'true' and
             '$(IsAnalyzersProject)' != 'true' and
-            '$(IsProjectTemplateProject)' != 'true'">true</ExcludeFromSourceBuild>
+            '$(IsProjectTemplateProject)' != 'true'">true</ExcludeFromSourceOnlyBuild>
 
     <!-- If the user has specified that they want to skip building any test related projects with SkipTestBuild,
      suppress all targets for TestProjects using ExcludeFromBuild. -->
     <ExcludeFromBuild Condition="'$(IsPackable)' != 'true' and
-        '$(SkipTestBuild)' == 'true' and
+        ('$(SkipTestBuild)' == 'true' or ('$(DotNetBuild)' == 'true' and '$(DotNetBuildTests)' != 'true')) and
         ($(IsTestProject) or
          '$(IsPublishedAppTestProject)' == 'true' or
          '$(IsTestAssetProject)' == 'true' or

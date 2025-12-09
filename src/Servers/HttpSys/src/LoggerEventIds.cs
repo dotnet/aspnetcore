@@ -54,4 +54,11 @@ internal static class LoggerEventIds
     public const int RequestValidationFailed = 47;
     public const int CreateDisconnectTokenError = 48;
     public const int RequestAborted = 49;
+    public const int AcceptSetResultFailed = 50;
+    public const int AcceptSetExpectationMismatch = 51;
+    public const int AcceptCancelExpectationMismatch = 52;
+    public const int AcceptObserveExpectationMismatch = 53;
+    public const int RequestParsingError = 54;
+    public const int TlsListenerError = 55;
+    public const int QueryTlsCipherSuiteError = 56;
 }

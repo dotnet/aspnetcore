@@ -28,7 +28,7 @@ public class DecimalModelBinder : IModelBinder
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _supportedStyles = supportedStyles;
-        _logger = loggerFactory.CreateLogger<DecimalModelBinder>();
+        _logger = loggerFactory.CreateLogger(typeof(DecimalModelBinder));
     }
 
     /// <inheritdoc />

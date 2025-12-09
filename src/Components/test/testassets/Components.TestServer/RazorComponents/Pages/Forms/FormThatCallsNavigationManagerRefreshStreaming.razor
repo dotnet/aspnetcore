@@ -1,0 +1,41 @@
+﻿@page "/forms/form-that-calls-navigation-manager-refresh-streaming"
+@using Microsoft.AspNetCore.Components.Forms
+@attribute [StreamRendering]
+@inject NavigationManager Nav
+
+<h3>Form That Calls NavigationManager.Refresh() with streaming</h3>
+
+<form data-enhance @onsubmit="@RefreshAfterDelayAsync" @formname="form-refresh" method="post">
+    <AntiforgeryToken />
+    <input id="some-text" name="SomeText" value="@SomeText" />
+    <button id="submit-button">Submit</button>
+</form>
+
+<p>Loading: <span id="loading-indicator">@loading</span></p>
+
+@if (missingText)
+{
+    <p>Enter some text, so you can see it go back to blank after the refresh happened.</p>
+}
+
+@code {
+    [SupplyParameterFromForm]
+    public string SomeText { get; set; }
+
+    bool loading;
+    bool missingText;
+
+    async Task RefreshAfterDelayAsync()
+    {
+        if (string.IsNullOrEmpty(SomeText))
+        {
+            missingText = true;
+        }
+        else
+        {
+            loading = true;
+            await Task.Delay(1000);
+            Nav.Refresh();
+        }
+    }
+}

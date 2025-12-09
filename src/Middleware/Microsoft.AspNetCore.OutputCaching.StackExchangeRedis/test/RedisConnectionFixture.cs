@@ -13,8 +13,9 @@ public class RedisConnectionFixture : IDisposable
         var options = new RedisOutputCacheOptions
         {
             Configuration = "127.0.0.1:6379", // TODO: CI test config here
-        }.GetConfiguredOptions("CI test");
+        }.GetConfiguredOptions();
         _muxer = ConnectionMultiplexer.Connect(options);
+        _muxer.AddLibraryNameSuffix("test");
     }
 
     public IDatabase Database => _muxer.GetDatabase();

@@ -350,15 +350,8 @@ public static class DotNetDispatcher
 
     private static (MethodInfo, Type[]) GetCachedMethodInfo(AssemblyKey assemblyKey, string methodIdentifier)
     {
-        if (string.IsNullOrWhiteSpace(assemblyKey.AssemblyName))
-        {
-            throw new ArgumentException($"Property '{nameof(AssemblyKey.AssemblyName)}' cannot be null, empty, or whitespace.", nameof(assemblyKey));
-        }
-
-        if (string.IsNullOrWhiteSpace(methodIdentifier))
-        {
-            throw new ArgumentException("Cannot be null, empty, or whitespace.", nameof(methodIdentifier));
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(assemblyKey.AssemblyName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(methodIdentifier);
 
         var assemblyMethods = _cachedMethodsByAssembly.GetOrAdd(assemblyKey, ScanAssemblyForCallableMethods);
         if (assemblyMethods.TryGetValue(methodIdentifier, out var result))
@@ -414,18 +407,21 @@ public static class DotNetDispatcher
                     continue;
                 }
 
-                var identifier = method.GetCustomAttribute<JSInvokableAttribute>(false)!.Identifier ?? method.Name!;
-                var parameterTypes = GetParameterTypes(method);
-
-                if (result.ContainsKey(identifier))
+                foreach (var attr in method.GetCustomAttributes<JSInvokableAttribute>(false))
                 {
-                    throw new InvalidOperationException($"The type {type.Name} contains more than one " +
-                        $"[JSInvokable] method with identifier '{identifier}'. All [JSInvokable] methods within the same " +
-                        "type must have different identifiers. You can pass a custom identifier as a parameter to " +
-                        $"the [JSInvokable] attribute.");
-                }
+                    var identifier = attr.Identifier ?? method.Name;
+                    var parameterTypes = GetParameterTypes(method);
 
-                result.Add(identifier, (method, parameterTypes));
+                    if (result.ContainsKey(identifier))
+                    {
+                        throw new InvalidOperationException($"The type {type.Name} contains more than one " +
+                            $"[JSInvokable] method with identifier '{identifier}'. All [JSInvokable] methods within the same " +
+                            "type must have different identifiers. You can pass a custom identifier as a parameter to " +
+                            $"the [JSInvokable] attribute.");
+                    }
+
+                    result.Add(identifier, (method, parameterTypes));
+                }
             }
 
             return result;
@@ -450,18 +446,21 @@ public static class DotNetDispatcher
                     continue;
                 }
 
-                var identifier = method.GetCustomAttribute<JSInvokableAttribute>(false)!.Identifier ?? method.Name;
-                var parameterTypes = GetParameterTypes(method);
-
-                if (result.ContainsKey(identifier))
+                foreach (var attr in method.GetCustomAttributes<JSInvokableAttribute>(false))
                 {
-                    throw new InvalidOperationException($"The assembly '{assemblyKey.AssemblyName}' contains more than one " +
-                        $"[JSInvokable] method with identifier '{identifier}'. All [JSInvokable] methods within the same " +
-                        $"assembly must have different identifiers. You can pass a custom identifier as a parameter to " +
-                        $"the [JSInvokable] attribute.");
-                }
+                    var identifier = attr.Identifier ?? method.Name;
+                    var parameterTypes = GetParameterTypes(method);
 
-                result.Add(identifier, (method, parameterTypes));
+                    if (result.ContainsKey(identifier))
+                    {
+                        throw new InvalidOperationException($"The assembly '{assemblyKey.AssemblyName}' contains more than one " +
+                            $"[JSInvokable] method with identifier '{identifier}'. All [JSInvokable] methods within the same " +
+                            $"assembly must have different identifiers. You can pass a custom identifier as a parameter to " +
+                            $"the [JSInvokable] attribute.");
+                    }
+
+                    result.Add(identifier, (method, parameterTypes));
+                }
             }
         }
 

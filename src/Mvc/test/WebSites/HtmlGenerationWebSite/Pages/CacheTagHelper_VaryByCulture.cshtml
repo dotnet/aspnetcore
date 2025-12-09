@@ -10,6 +10,11 @@
 <h2 id="culture">@CultureInfo.CurrentCulture</h2>
 <h2 id="ui-culture">@CultureInfo.CurrentUICulture</h2>
 <span id="correlation-id">@CorrelationId</span>
-<test-cache vary-by-culture="true" vary-by-query="varyByQueryKey">
+@*
+Extend sliding expiration from it's default of 30 seconds to improve test reliability.
+Anything over HttpClient's default timeout of 100 seconds should be sufficient.
+https://github.com/dotnet/aspnetcore/issues/4907
+*@
+<test-cache vary-by-culture="true" vary-by-query="varyByQueryKey" expires-sliding="TimeSpan.FromSeconds(120)">
     <span id="cached-correlation-id">@CorrelationId</span>
 </test-cache>

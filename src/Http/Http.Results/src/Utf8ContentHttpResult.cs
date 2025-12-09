@@ -62,7 +62,7 @@ public sealed partial class Utf8ContentHttpResult : IResult, IStatusCodeHttpResu
             httpContext.Response.StatusCode = statusCode;
         }
 
-        httpContext.Response.ContentType = ContentType ?? HttpResultsHelper.DefaultContentType;
+        httpContext.Response.ContentType = ContentType ?? ContentTypeConstants.DefaultContentType;
 
         httpContext.Response.ContentLength = ResponseContent.Length;
         return httpContext.Response.Body.WriteAsync(ResponseContent).AsTask();

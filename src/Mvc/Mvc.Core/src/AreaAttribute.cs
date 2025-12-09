@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace Microsoft.AspNetCore.Mvc;
@@ -19,9 +18,6 @@ public class AreaAttribute : RouteValueAttribute
     public AreaAttribute(string areaName)
         : base("area", areaName)
     {
-        if (string.IsNullOrEmpty(areaName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(areaName);
     }
 }

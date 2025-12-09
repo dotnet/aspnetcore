@@ -5,6 +5,8 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.InternalTesting;
 
+#pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
+
 // We include a collection and assembly fixture to verify that they both still work.
 [Collection("MyCollection")]
 [TestCaseOrderer("Microsoft.AspNetCore.InternalTesting.AlphabeticalOrderer", "Microsoft.AspNetCore.InternalTesting.Tests")]

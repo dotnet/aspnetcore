@@ -77,9 +77,11 @@ public:
 
 private:
 
+    _Acquires_exclusive_lock_(this->m_RequestLock)
     VOID
     AcquireLockExclusive();
 
+    _Releases_exclusive_lock_(this->m_RequestLock)
     VOID
     ReleaseLockExclusive();
 

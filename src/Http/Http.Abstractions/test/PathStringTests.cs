@@ -57,7 +57,7 @@ public class PathStringTests
     [Theory]
     [InlineData(null, null)]
     [InlineData("", null)]
-    public void AddPathString_HandlesNullAndEmptyStrings(string appString, string concatString)
+    public void AddPathString_HandlesNullAndEmptyStrings(string? appString, string? concatString)
     {
         // Arrange
         var appPath = new PathString(appString);
@@ -77,7 +77,7 @@ public class PathStringTests
     [InlineData("/", "/test", "/test")]
     [InlineData("/myapp/", "/test/bar", "/myapp/test/bar")]
     [InlineData("/myapp/", "/test/bar/", "/myapp/test/bar/")]
-    public void AddPathString_HandlesLeadingAndTrailingSlashes(string appString, string concatString, string expected)
+    public void AddPathString_HandlesLeadingAndTrailingSlashes(string appString, string? concatString, string expected)
     {
         // Arrange
         var appPath = new PathString(appString);
@@ -127,12 +127,44 @@ public class PathStringTests
     }
 
     [Theory]
+    [InlineData("/a/", "/a/", true)]
+    [InlineData("/a/b", "/a/", false)]
+    [InlineData("/a/b/", "/a/", false)]
+    [InlineData("/a//b", "/a/", true)]
+    [InlineData("/a//b/", "/a/", true)]
+    public void StartsWithSegments_DoesMatchExactPathOrPathWithExtraTrailingSlash(string sourcePath, string testPath, bool expectedResult)
+    {
+        var source = new PathString(sourcePath);
+        var test = new PathString(testPath);
+
+        var result = source.StartsWithSegments(test);
+
+        Assert.Equal(expectedResult, result);
+    }
+
+    [Theory]
     [InlineData("/test/path", "/TEST", true)]
     [InlineData("/test/path", "/TEST/pa", false)]
     [InlineData("/TEST/PATH", "/test", true)]
     [InlineData("/TEST/path", "/test/pa", false)]
     [InlineData("/test/PATH/path/TEST", "/TEST/path/PATH", true)]
     public void StartsWithSegmentsWithRemainder_DoesACaseInsensitiveMatch(string sourcePath, string testPath, bool expectedResult)
+    {
+        var source = new PathString(sourcePath);
+        var test = new PathString(testPath);
+
+        var result = source.StartsWithSegments(test, out var remaining);
+
+        Assert.Equal(expectedResult, result);
+    }
+
+    [Theory]
+    [InlineData("/a/", "/a/", true)]
+    [InlineData("/a/b", "/a/", false)]
+    [InlineData("/a/b/", "/a/", false)]
+    [InlineData("/a//b", "/a/", true)]
+    [InlineData("/a//b/", "/a/", true)]
+    public void StartsWithSegmentsWithRemainder_DoesMatchExactPathOrPathWithExtraTrailingSlash(string sourcePath, string testPath, bool expectedResult)
     {
         var source = new PathString(sourcePath);
         var test = new PathString(testPath);
@@ -164,6 +196,27 @@ public class PathStringTests
     }
 
     [Theory]
+    [InlineData("/a/", "/a/", StringComparison.OrdinalIgnoreCase, true)]
+    [InlineData("/a/", "/a/", StringComparison.Ordinal, true)]
+    [InlineData("/a/b", "/a/", StringComparison.OrdinalIgnoreCase, false)]
+    [InlineData("/a/b", "/a/", StringComparison.Ordinal, false)]
+    [InlineData("/a/b/", "/a/", StringComparison.OrdinalIgnoreCase, false)]
+    [InlineData("/a/b/", "/a/", StringComparison.Ordinal, false)]
+    [InlineData("/a//b", "/a/", StringComparison.OrdinalIgnoreCase, true)]
+    [InlineData("/a//b", "/a/", StringComparison.Ordinal, true)]
+    [InlineData("/a//b/", "/a/", StringComparison.OrdinalIgnoreCase, true)]
+    [InlineData("/a//b/", "/a/", StringComparison.Ordinal, true)]
+    public void StartsWithSegments_DoesMatchExactPathOrPathWithExtraTrailingSlashUsingSpecifiedComparison(string sourcePath, string testPath, StringComparison comparison, bool expectedResult)
+    {
+        var source = new PathString(sourcePath);
+        var test = new PathString(testPath);
+
+        var result = source.StartsWithSegments(test, comparison);
+
+        Assert.Equal(expectedResult, result);
+    }
+
+    [Theory]
     [InlineData("/test/path", "/TEST", StringComparison.OrdinalIgnoreCase, true)]
     [InlineData("/test/path", "/TEST", StringComparison.Ordinal, false)]
     [InlineData("/test/path", "/TEST/pa", StringComparison.OrdinalIgnoreCase, false)]
@@ -175,6 +228,27 @@ public class PathStringTests
     [InlineData("/test/PATH/path/TEST", "/TEST/path/PATH", StringComparison.OrdinalIgnoreCase, true)]
     [InlineData("/test/PATH/path/TEST", "/TEST/path/PATH", StringComparison.Ordinal, false)]
     public void StartsWithSegmentsWithRemainder_DoesMatchUsingSpecifiedComparison(string sourcePath, string testPath, StringComparison comparison, bool expectedResult)
+    {
+        var source = new PathString(sourcePath);
+        var test = new PathString(testPath);
+
+        var result = source.StartsWithSegments(test, comparison, out var remaining);
+
+        Assert.Equal(expectedResult, result);
+    }
+
+    [Theory]
+    [InlineData("/a/", "/a/", StringComparison.OrdinalIgnoreCase, true)]
+    [InlineData("/a/", "/a/", StringComparison.Ordinal, true)]
+    [InlineData("/a/b", "/a/", StringComparison.OrdinalIgnoreCase, false)]
+    [InlineData("/a/b", "/a/", StringComparison.Ordinal, false)]
+    [InlineData("/a/b/", "/a/", StringComparison.OrdinalIgnoreCase, false)]
+    [InlineData("/a/b/", "/a/", StringComparison.Ordinal, false)]
+    [InlineData("/a//b", "/a/", StringComparison.OrdinalIgnoreCase, true)]
+    [InlineData("/a//b", "/a/", StringComparison.Ordinal, true)]
+    [InlineData("/a//b/", "/a/", StringComparison.OrdinalIgnoreCase, true)]
+    [InlineData("/a//b/", "/a/", StringComparison.Ordinal, true)]
+    public void StartsWithSegmentsWithRemainder_DoesMatchExactPathOrPathWithExtraTrailingSlashUsingSpecifiedComparison(string sourcePath, string testPath, StringComparison comparison, bool expectedResult)
     {
         var source = new PathString(sourcePath);
         var test = new PathString(testPath);

@@ -14,7 +14,7 @@ namespace System.Runtime.CompilerServices
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     file sealed class InterceptsLocationAttribute : Attribute
     {
-        public InterceptsLocationAttribute(string filePath, int line, int column)
+        public InterceptsLocationAttribute(int version, string data)
         {
         }
     }
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Http.Generated
         private static readonly JsonOptions FallbackJsonOptions = new();
         private static readonly string[] GetVerb = new[] { global::Microsoft.AspNetCore.Http.HttpMethods.Get };
 
-        [InterceptsLocation(@"TestMapActions.cs", 26, 13)]
+        %INTERCEPTSLOCATIONATTRIBUTE%
         internal static RouteHandlerBuilder MapGet0(
             this IEndpointRouteBuilder endpoints,
             [StringSyntax("Route")] string pattern,
@@ -134,13 +134,15 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var metadata = inferredMetadataResult?.EndpointMetadata ?? ReadOnlyCollection<object>.Empty;
                 return new RequestDelegateResult(targetDelegate, metadata);
             };
+            var castHandler = Cast(handler, global::Microsoft.AspNetCore.Http.HttpResults.ValidationProblem () => throw null!);
             return MapCore(
                 endpoints,
                 pattern,
                 handler,
                 GetVerb,
                 populateMetadata,
-                createRequestDelegate);
+                createRequestDelegate,
+                castHandler.Method);
         }
 
 
@@ -151,9 +153,10 @@ namespace Microsoft.AspNetCore.Http.Generated
             Delegate handler,
             IEnumerable<string>? httpMethods,
             MetadataPopulator populateMetadata,
-            RequestDelegateFactoryFunc createRequestDelegate)
+            RequestDelegateFactoryFunc createRequestDelegate,
+            MethodInfo methodInfo)
         {
-            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate);
+            return RouteHandlerServices.Map(routes, pattern, handler, httpMethods, populateMetadata, createRequestDelegate, methodInfo);
         }
 
         private static T Cast<T>(Delegate d, T _) where T : Delegate

@@ -130,13 +130,14 @@ app.UseHttpsRedirection();
 #else
 }
 #endif
-app.UseStaticFiles();
 
 app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapRazorPages();
+app.MapStaticAssets();
+app.MapRazorPages()
+   .WithStaticAssets();
 #if (IndividualB2CAuth || OrganizationalAuth)
 app.MapControllers();
 #endif

@@ -1,6 +1,4 @@
 <Project>
-  <!-- Version of this SDK is set in global.json -->
-  <Sdk Name="Yarn.MSBuild" />
 
   <!-- Make sure the settings files get copied to the test output folder. -->
   <ItemGroup>

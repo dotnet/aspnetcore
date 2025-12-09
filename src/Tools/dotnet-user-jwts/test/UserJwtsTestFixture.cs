@@ -1,23 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using Microsoft.Extensions.Configuration.UserSecrets;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools.Tests;
 
-public class UserJwtsTestFixture : IDisposable
+public sealed class UserJwtsTestFixture : IDisposable
 {
-    private Stack<Action> _disposables = new Stack<Action>();
-    internal string TestSecretsId;
+    private readonly Stack<Action> _disposables = new();
+    internal string TestSecretsId { get; private set; }
 
     private const string ProjectTemplate = @"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     {0}
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
@@ -82,6 +79,10 @@ public class UserJwtsTestFixture : IDisposable
 
         File.WriteAllText(
             Path.Combine(projectPath.FullName, "appsettings.Development.json"),
+            "{}");
+
+        File.WriteAllText(
+            Path.Combine(projectPath.FullName, "appsettings.Local.json"),
             "{}");
 
         if (hasSecret)

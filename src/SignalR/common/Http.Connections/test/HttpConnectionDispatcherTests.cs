@@ -159,7 +159,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
 
             var error = negotiateResponse.Value<string>("error");
-            Assert.Equal("The client requested an invalid protocol version 'Invalid'", error);
+            Assert.Equal("The client requested a non-integer protocol version.", error);
 
             var connectionId = negotiateResponse.Value<string>("connectionId");
             Assert.Null(connectionId);
@@ -555,7 +555,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                 await task.DefaultTimeout();
 
                 // We've been gone longer than the expiration time
-                connection.LastSeenTicks = Environment.TickCount64 - (long)disconnectTimeout.TotalMilliseconds - 1;
+                connection.LastSeenTicks = TimeSpan.FromMilliseconds(Environment.TickCount64) - disconnectTimeout - TimeSpan.FromTicks(1);
 
                 // The application is still running here because the poll is only killed
                 // by the heartbeat so we pretend to do a scan and this should force the application task to complete
@@ -1277,6 +1277,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
 
         using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
         {
+            var initialTime = TimeSpan.FromMilliseconds(Environment.TickCount64);
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection();
             connection.TransportType = HttpTransportType.LongPolling;
@@ -1287,16 +1288,23 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var builder = new ConnectionBuilder(services.BuildServiceProvider());
             builder.UseConnectionHandler<TestConnectionHandler>();
             var app = builder.Build();
-            var options = new HttpConnectionDispatcherOptions();
             // First poll completes immediately
+            var options = new HttpConnectionDispatcherOptions();
             await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
             var sync = new SyncPoint();
             context.Response.Body = new BlockingStream(sync);
             var dispatcherTask = dispatcher.ExecuteAsync(context, options, app);
             await connection.Transport.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
             await sync.WaitForSyncPoint().DefaultTimeout();
+
+            // Try cancel before cancellation should occur
+            connection.TryCancelSend(initialTime + options.TransportSendTimeout);
+            Assert.False(connection.SendingToken.IsCancellationRequested);
+
             // Cancel write to response body
-            connection.TryCancelSend(long.MaxValue);
+            connection.TryCancelSend(TimeSpan.FromMilliseconds(Environment.TickCount64) + options.TransportSendTimeout + TimeSpan.FromTicks(1));
+            Assert.True(connection.SendingToken.IsCancellationRequested);
+
             sync.Continue();
             await dispatcherTask.DefaultTimeout();
             // Connection should be removed on canceled write
@@ -1310,6 +1318,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
     {
         using (StartVerifiableLog())
         {
+            var initialTime = TimeSpan.FromMilliseconds(Environment.TickCount64);
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection();
             var dispatcher = CreateDispatcher(manager, LoggerFactory);
@@ -1326,8 +1335,15 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var dispatcherTask = dispatcher.ExecuteAsync(context, options, app);
             await connection.Transport.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
             await sync.WaitForSyncPoint().DefaultTimeout();
+
+            // Try cancel before cancellation should occur
+            connection.TryCancelSend(initialTime + options.TransportSendTimeout);
+            Assert.False(connection.SendingToken.IsCancellationRequested);
+
             // Cancel write to response body
-            connection.TryCancelSend(long.MaxValue);
+            connection.TryCancelSend(TimeSpan.FromMilliseconds(Environment.TickCount64) + options.TransportSendTimeout + TimeSpan.FromTicks(1));
+            Assert.True(connection.SendingToken.IsCancellationRequested);
+
             sync.Continue();
             await dispatcherTask.DefaultTimeout();
             // Connection should be removed on canceled write
@@ -1346,6 +1362,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
         using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
         {
+            var initialTime = TimeSpan.FromMilliseconds(Environment.TickCount64);
             var manager = CreateConnectionManager(LoggerFactory);
             var connection = manager.CreateConnection();
             var dispatcher = CreateDispatcher(manager, LoggerFactory);
@@ -1362,8 +1379,15 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var dispatcherTask = dispatcher.ExecuteAsync(context, options, app);
             await connection.Transport.Output.WriteAsync(new byte[] { 1 }).DefaultTimeout();
             await sync.WaitForSyncPoint().DefaultTimeout();
+
+            // Try cancel before cancellation should occur
+            connection.TryCancelSend(initialTime + options.TransportSendTimeout);
+            Assert.False(connection.SendingToken.IsCancellationRequested);
+
             // Cancel write to response body
-            connection.TryCancelSend(long.MaxValue);
+            connection.TryCancelSend(TimeSpan.FromMilliseconds(Environment.TickCount64) + options.TransportSendTimeout + TimeSpan.FromTicks(1));
+            Assert.True(connection.SendingToken.IsCancellationRequested);
+
             sync.Continue();
             await dispatcherTask.DefaultTimeout();
             // Connection should be removed on canceled write
@@ -1480,7 +1504,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             }
             if (count == 50)
             {
-                Assert.True(false, "Poll took too long to start");
+                Assert.Fail("Poll took too long to start");
             }
 
             var request2 = dispatcher.ExecuteAsync(context2, options, app);
@@ -1500,7 +1524,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             }
             if (count == 50)
             {
-                Assert.True(false, "Poll took too long to start");
+                Assert.Fail("Poll took too long to start");
             }
             Assert.Equal(HttpConnectionStatus.Active, connection.Status);
 
@@ -2842,6 +2866,37 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
+    [Fact]
+    public async Task ServerClosingClosesWebSocketConnection()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection();
+
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var services = new ServiceCollection();
+            services.AddSingleton<TestConnectionHandler>();
+            var context = MakeRequest("/foo", connection, services);
+            SetTransport(context, HttpTransportType.WebSockets);
+
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<TestConnectionHandler>();
+            var app = builder.Build();
+            var options = new HttpConnectionDispatcherOptions();
+            options.WebSockets.CloseTimeout = TimeSpan.FromSeconds(1);
+
+            var executeTask = dispatcher.ExecuteAsync(context, options, app);
+
+            // "close" server, since we're not using a server in these tests we just simulate what would be called when the server closes
+            await connection.DisposeAsync().DefaultTimeout();
+
+            await connection.ConnectionClosed.WaitForCancellationAsync().DefaultTimeout();
+
+            await executeTask.DefaultTimeout();
+        }
+    }
+
     public class CustomHttpRequestLifetimeFeature : IHttpRequestLifetimeFeature
     {
         public CancellationToken RequestAborted { get; set; }
@@ -3470,7 +3525,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                     app.UseRouting();
                     app.UseEndpoints(endpoints =>
                     {
-                        endpoints.MapConnectionHandler<TestConnectionHandler>("/foo");
+                        endpoints.MapConnectionHandler<EchoConnectionHandler>("/foo");
                     });
                 })
                 .UseUrls("http://127.0.0.1:0");
@@ -3494,6 +3549,10 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                 LoggerFactory);
 
             await connection.StartAsync();
+
+            // Easy way to make sure everything is set is to send and receive data over the connection
+            await connection.Transport.Output.WriteAsync(new byte[2]);
+            await connection.Transport.Input.ReadAsync();
 
             var negotiateResponse = NegotiateProtocol.ParseResponse(stream.ToArray());
 
@@ -3831,6 +3890,34 @@ public class TestConnectionHandler : ConnectionHandler
             try
             {
                 if (result.IsCompleted)
+                {
+                    break;
+                }
+            }
+            finally
+            {
+                connection.Transport.Input.AdvanceTo(result.Buffer.End);
+            }
+        }
+    }
+}
+
+public class EchoConnectionHandler : ConnectionHandler
+{
+    public override async Task OnConnectedAsync(ConnectionContext connection)
+    {
+        while (true)
+        {
+            var result = await connection.Transport.Input.ReadAsync();
+            var buffer = result.Buffer;
+
+            try
+            {
+                if (!buffer.IsEmpty)
+                {
+                    await connection.Transport.Output.WriteAsync(buffer.ToArray());
+                }
+                else if (result.IsCompleted)
                 {
                     break;
                 }

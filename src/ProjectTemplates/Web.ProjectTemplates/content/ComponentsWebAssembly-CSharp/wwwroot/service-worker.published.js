@@ -8,7 +8,7 @@ self.addEventListener('fetch', event => event.respondWith(onFetch(event)));
 
 const cacheNamePrefix = 'offline-cache-';
 const cacheName = `${cacheNamePrefix}${self.assetsManifest.version}`;
-const offlineAssetsInclude = [ /\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/ ];
+const offlineAssetsInclude = [ /\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.webmanifest$/ ];
 const offlineAssetsExclude = [ /^service-worker\.js$/ ];
 
 // Replace with your base path if you are hosting on a subfolder. Ensure there is a trailing '/'.
@@ -49,6 +49,15 @@ async function onFetch(event) {
         const request = shouldServeIndexHtml ? 'index.html' : event.request;
         const cache = await caches.open(cacheName);
         cachedResponse = await cache.match(request);
+    }
+
+    if (cachedResponse && cachedResponse.redirected) {
+        const clonedResponse = cachedResponse.clone();
+        cachedResponse = new Response(clonedResponse.body, {
+            headers: clonedResponse.headers,
+            status: clonedResponse.status,
+            statusText: clonedResponse.statusText
+        });
     }
 
     return cachedResponse || fetch(event.request);

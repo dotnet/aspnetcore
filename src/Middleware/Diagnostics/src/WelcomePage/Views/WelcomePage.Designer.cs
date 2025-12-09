@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Diagnostics;
 #line default
 #line hidden
 #nullable disable
-    internal sealed class WelcomePage : Microsoft.Extensions.RazorViews.BaseView
+    internal class WelcomePage : Microsoft.Extensions.RazorViews.BaseView
     {
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()

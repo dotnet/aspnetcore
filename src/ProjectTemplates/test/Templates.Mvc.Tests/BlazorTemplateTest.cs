@@ -57,8 +57,8 @@ public class BlazorTemplateTest : LoggedTest
         await project.RunDotNetNewAsync("blazor", args: args);
 
         var expectedLaunchProfileNames = args.Contains(ArgConstants.NoHttps)
-            ? new[] { "http", "IIS Express" }
-            : new[] { "http", "https", "IIS Express" };
+            ? new[] { "http" }
+            : new[] { "http", "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
         var projectFileContents = await ReadProjectFileAsync(project);
@@ -69,7 +69,7 @@ public class BlazorTemplateTest : LoggedTest
         if (!args.Contains(ArgConstants.IndividualAuth))
         {
             Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools", projectFileContents);
-            Assert.DoesNotContain(".db", projectFileContents);
+            Assert.DoesNotContain("app.db", projectFileContents);
         }
         else
         {
@@ -77,11 +77,11 @@ public class BlazorTemplateTest : LoggedTest
 
             if (args.Contains(ArgConstants.UseLocalDb))
             {
-                Assert.DoesNotContain(".db", projectFileContents);
+                Assert.DoesNotContain("app.db", projectFileContents);
             }
             else
             {
-                Assert.Contains(".db", projectFileContents);
+                Assert.Contains("app.db", projectFileContents);
             }
         }
 
@@ -187,14 +187,14 @@ public class BlazorTemplateTest : LoggedTest
             return File.ReadAllTextAsync(multiProjectPath);
         }
 
-        throw new FailException($"Expected file to exist, but it doesn't: {singleProjectPath}");
+        throw FailException.ForFailure($"Expected file to exist, but it doesn't: {singleProjectPath}");
     }
 
     private async Task WorkAroundNonNullableRenderModeAsync(Project project)
     {
         var appRazorPath = Path.Combine(project.TemplateOutputDir, "Components", "App.razor");
         var appRazorText = await File.ReadAllTextAsync(appRazorPath);
-        appRazorText = appRazorText.Replace("IComponentRenderMode?", "IComponentRenderMode").Replace("? null", "? null!");
+        appRazorText = appRazorText.Replace("IComponentRenderMode?", "IComponentRenderMode").Replace(": null", ": null!");
         await File.WriteAllTextAsync(appRazorPath, appRazorText);
     }
 

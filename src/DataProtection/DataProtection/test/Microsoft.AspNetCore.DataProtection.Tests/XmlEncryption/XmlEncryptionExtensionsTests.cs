@@ -50,6 +50,100 @@ public class XmlEncryptionExtensionsTests
     }
 
     [Fact]
+    public void DecryptElement_CustomType_TypeNameResolverNotCalled()
+    {
+        // Arrange
+        var decryptorTypeName = typeof(MyXmlDecryptor).AssemblyQualifiedName;
+
+        var original = XElement.Parse(@$"
+                <x:encryptedSecret decryptorType='{decryptorTypeName}' xmlns:x='http://schemas.asp.net/2015/03/dataProtection'>
+                  <node />
+                </x:encryptedSecret>");
+
+        var mockActivator = new Mock<IActivator>();
+        mockActivator.ReturnDecryptedElementGivenDecryptorTypeNameAndInput(decryptorTypeName, "<node />", "<newNode />");
+        var mockTypeNameResolver = mockActivator.As<ITypeNameResolver>();
+
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton<IActivator>(mockActivator.Object);
+        var services = serviceCollection.BuildServiceProvider();
+        var activator = services.GetActivator();
+
+        // Act
+        var retVal = original.DecryptElement(activator);
+
+        // Assert
+        XmlAssert.Equal("<newNode />", retVal);
+        Type resolvedType;
+        mockTypeNameResolver.Verify(o => o.TryResolveType(It.IsAny<string>(), out resolvedType), Times.Never());
+    }
+
+    [Fact]
+    public void DecryptElement_KnownType_TypeNameResolverCalled()
+    {
+        // Arrange
+        var decryptorTypeName = typeof(NullXmlDecryptor).AssemblyQualifiedName;
+        TypeForwardingActivator.TryForwardTypeName(decryptorTypeName, out var forwardedTypeName);
+
+        var original = XElement.Parse(@$"
+                <x:encryptedSecret decryptorType='{decryptorTypeName}' xmlns:x='http://schemas.asp.net/2015/03/dataProtection'>
+                  <node>
+                    <value />
+                  </node>
+                </x:encryptedSecret>");
+
+        var mockActivator = new Mock<IActivator>();
+        mockActivator.Setup(o => o.CreateInstance(typeof(NullXmlDecryptor), decryptorTypeName)).Returns(new NullXmlDecryptor());
+        var mockTypeNameResolver = mockActivator.As<ITypeNameResolver>();
+        var resolvedType = typeof(NullXmlDecryptor);
+        mockTypeNameResolver.Setup(mockTypeNameResolver => mockTypeNameResolver.TryResolveType(forwardedTypeName, out resolvedType)).Returns(true);
+
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton<IActivator>(mockActivator.Object);
+        var services = serviceCollection.BuildServiceProvider();
+        var activator = services.GetActivator();
+
+        // Act
+        var retVal = original.DecryptElement(activator);
+
+        // Assert
+        XmlAssert.Equal("<value />", retVal);
+        mockTypeNameResolver.Verify(o => o.TryResolveType(It.IsAny<string>(), out resolvedType), Times.Once());
+    }
+
+    [Fact]
+    public void DecryptElement_KnownType_UnableToResolveType_Success()
+    {
+        // Arrange
+        var decryptorTypeName = typeof(NullXmlDecryptor).AssemblyQualifiedName;
+
+        var original = XElement.Parse(@$"
+                <x:encryptedSecret decryptorType='{decryptorTypeName}' xmlns:x='http://schemas.asp.net/2015/03/dataProtection'>
+                  <node>
+                    <value />
+                  </node>
+                </x:encryptedSecret>");
+
+        var mockActivator = new Mock<IActivator>();
+        mockActivator.Setup(o => o.CreateInstance(typeof(IXmlDecryptor), decryptorTypeName)).Returns(new NullXmlDecryptor());
+        var mockTypeNameResolver = mockActivator.As<ITypeNameResolver>();
+        Type resolvedType = null;
+        mockTypeNameResolver.Setup(mockTypeNameResolver => mockTypeNameResolver.TryResolveType(It.IsAny<string>(), out resolvedType)).Returns(false);
+
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton<IActivator>(mockActivator.Object);
+        var services = serviceCollection.BuildServiceProvider();
+        var activator = services.GetActivator();
+
+        // Act
+        var retVal = original.DecryptElement(activator);
+
+        // Assert
+        XmlAssert.Equal("<value />", retVal);
+        mockTypeNameResolver.Verify(o => o.TryResolveType(It.IsAny<string>(), out resolvedType), Times.Once());
+    }
+
+    [Fact]
     public void DecryptElement_MultipleNodesRequireDecryption_AvoidsRecursion_Success()
     {
         // Arrange

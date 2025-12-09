@@ -20,7 +20,7 @@ internal sealed partial class RequestSizeLimitFilter : IAuthorizationFilter, IRe
     /// </summary>
     public RequestSizeLimitFilter(ILoggerFactory loggerFactory)
     {
-        _logger = loggerFactory.CreateLogger<RequestSizeLimitFilter>();
+        _logger = loggerFactory.CreateLogger(typeof(RequestSizeLimitFilter));
     }
 
     public long Bytes { get; set; }

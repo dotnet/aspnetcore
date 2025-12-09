@@ -8,13 +8,26 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel;
 
+/// <summary>
+/// A pooled HTTP/2 or HTTP/3 stream.
+/// </summary>
 internal interface IPooledStream
 {
     long PoolExpirationTimestamp { get; }
     void DisposeCore();
 }
 
-// See https://github.com/dotnet/runtime/blob/da9b16f2804e87c9c1ca9dcd9036e7b53e724f5d/src/libraries/System.IO.Pipelines/src/System/IO/Pipelines/BufferSegmentStack.cs
+/// <summary>
+/// A pool of <see cref="IPooledStream"/> instances.
+/// </summary>
+/// <typeparam name="TValue">The type of stream.</typeparam>
+/// <remarks>
+/// Inspired by https://github.com/dotnet/runtime/blob/da9b16f2804e87c9c1ca9dcd9036e7b53e724f5d/src/libraries/System.IO.Pipelines/src/System/IO/Pipelines/BufferSegmentStack.cs
+/// <para/>
+/// We seem to have chosen a stack for its quick insertion and removal, rather than for LIFO semantics.
+/// <para/>
+/// Owned by an Http2Connection or QuicConnectionContext.
+/// </remarks>
 internal struct PooledStreamStack<TValue> where TValue : class, IPooledStream
 {
     // Internal for testing

@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <Description>Passkey conformance testing for ASP.NET Core Identity</Description>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsShippingPackage>false</IsShippingPackage>
+    <Nullable>enable</Nullable>
+    <NoWarn>$(TS6385);$(NoWarn)</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
+    <Reference Include="Microsoft.AspNetCore.Identity" />
+    <Reference Include="Microsoft.AspNetCore.HttpsPolicy" />
+    <Reference Include="Microsoft.AspNetCore.Identity" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
+    <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <Reference Include="Microsoft.EntityFrameworkCore.Tools" />
+    <Reference Include="Microsoft.AspNetCore.HttpsPolicy" />
+    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.AspNetCore.StaticAssets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(IdentityTestSharedSourceRoot)PocoModel\**\*.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <!-- Workaround to add Blazor framework static assets without requiring a package reference -->
+  <PropertyGroup>
+    <UseBlazorFrameworkDebugAssets>true</UseBlazorFrameworkDebugAssets>
+    <BlazorFrameworkStaticWebAssetRoot Condition="'$(Configuration)' == 'Debug'">$(RepoRoot)src\Components\Web.JS\dist\Debug</BlazorFrameworkStaticWebAssetRoot>
+    <BlazorFrameworkStaticWebAssetRoot Condition="'$(Configuration)' == 'Release'">$(RepoRoot)src\Components\Web.JS\dist\Release</BlazorFrameworkStaticWebAssetRoot>
+  </PropertyGroup>
+
+  <Import Project="$(RepoRoot)\src\Assets\build\Microsoft.AspNetCore.App.Internal.Assets.targets" />
+
+</Project>

@@ -50,7 +50,7 @@ public:
 
     static DWORD WINAPI CopyAndShutdown(FILE_WATCHER* watcher);
 
-    HRESULT HandleChangeCompletion(DWORD cbCompletion);
+    HRESULT HandleChangeCompletion(_In_ DWORD bytesTransferred);
 
     HRESULT Monitor();
     void StopMonitor();
@@ -60,7 +60,6 @@ private:
     HandleWrapper<NullHandleTraits>               m_hChangeNotificationThread;
     HandleWrapper<NullHandleTraits>               _hDirectory;
     HandleWrapper<NullHandleTraits>               m_pDoneCopyEvent;
-    HandleWrapper<NullHandleTraits>               m_pShutdownEvent;
     std::atomic_bool        m_fThreadExit;
     STTIMER                 m_Timer;
     SRWLOCK                 m_copyLock{};

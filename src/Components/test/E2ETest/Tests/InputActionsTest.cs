@@ -24,7 +24,7 @@ public class InputFocusTest : ServerTestBase<ToggleExecutionModeServerFixture<Pr
     protected override void InitializeAsyncCore()
     {
         // On WebAssembly, page reloads are expensive so skip if possible
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
     }
 
     protected virtual IWebElement MountInputActionsComponent()

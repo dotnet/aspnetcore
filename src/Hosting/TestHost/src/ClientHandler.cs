@@ -135,6 +135,12 @@ public class ClientHandler : HttpMessageHandler
                         canHaveBody = false;
                     }
                 }
+                else
+                {
+                    // https://www.rfc-editor.org/rfc/rfc9112#section-6.2-2
+                    // A sender MUST NOT send a Content-Length header field in any message that contains a Transfer-Encoding header field.
+                    requestContent.Headers.Remove(HeaderNames.ContentLength);
+                }
 
                 foreach (var header in requestContent.Headers)
                 {
@@ -153,7 +159,7 @@ public class ClientHandler : HttpMessageHandler
                 // User-Agent is a space delineated single line header but HttpRequestHeaders parses it as multiple elements.
                 if (string.Equals(header.Key, HeaderNames.UserAgent, StringComparison.OrdinalIgnoreCase))
                 {
-                    req.Headers.Append(header.Key, string.Join(" ", header.Value));
+                    req.Headers.Append(header.Key, string.Join(' ', header.Value));
                 }
                 else
                 {

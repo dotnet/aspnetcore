@@ -19,7 +19,9 @@ public class RazorRuntimeCompilationMvcCoreBuilderExtensionsTest
             .AddSingleton<IViewCompilerProvider, DefaultViewCompilerProvider>();
 
         // Act
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
         RazorRuntimeCompilationMvcCoreBuilderExtensions.AddServices(services);
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
 
         // Assert
         var serviceDescriptor = Assert.Single(services, service => service.ServiceType == typeof(IViewCompilerProvider));
@@ -34,7 +36,9 @@ public class RazorRuntimeCompilationMvcCoreBuilderExtensionsTest
             .AddSingleton<IActionDescriptorProvider, CompiledPageActionDescriptorProvider>();
 
         // Act
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
         RazorRuntimeCompilationMvcCoreBuilderExtensions.AddServices(services);
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
 
         // Assert
         var serviceDescriptor = Assert.Single(services, service => service.ServiceType == typeof(IActionDescriptorProvider));

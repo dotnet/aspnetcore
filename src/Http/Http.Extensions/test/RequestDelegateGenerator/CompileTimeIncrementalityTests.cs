@@ -19,7 +19,12 @@ public class CompileTimeIncrementalityTests : RequestDelegateCreationTestBase
         var (result, compilation) = await RunGeneratorAsync(source, updatedSource);
         var outputSteps = GetRunStepOutputs(result);
 
-        Assert.All(outputSteps, (value) => Assert.Equal(IncrementalStepRunReason.Cached, value.Reason));
+        Assert.Collection(outputSteps,
+            // First source output for diagnostics is unchanged.
+            step => Assert.Equal(IncrementalStepRunReason.Unchanged, step.Reason),
+            // Interceptable location is different across compilations
+            step => Assert.Equal(IncrementalStepRunReason.Modified, step.Reason)
+        );
     }
 
     [Fact]
@@ -31,7 +36,12 @@ public class CompileTimeIncrementalityTests : RequestDelegateCreationTestBase
         var (result, compilation) = await RunGeneratorAsync(source, updatedSource);
         var outputSteps = GetRunStepOutputs(result);
 
-        Assert.All(outputSteps, (value) => Assert.Equal(IncrementalStepRunReason.Cached, value.Reason));
+        Assert.Collection(outputSteps,
+            // First source output for diagnostics is unchanged.
+            step => Assert.Equal(IncrementalStepRunReason.Unchanged, step.Reason),
+            // Interceptable location is different across compilations
+            step => Assert.Equal(IncrementalStepRunReason.Modified, step.Reason)
+        );
     }
 
     [Fact]

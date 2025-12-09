@@ -11,10 +11,10 @@
 
 REQUESTHANDLER_CONFIG::~REQUESTHANDLER_CONFIG()
 {
-    if (m_ppStrArguments != NULL)
+    if (m_ppStrArguments != nullptr)
     {
         delete[] m_ppStrArguments;
-        m_ppStrArguments = NULL;
+        m_ppStrArguments = nullptr;
     }
 }
 
@@ -27,19 +27,19 @@ REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(
 )
 {
     HRESULT                 hr = S_OK;
-    REQUESTHANDLER_CONFIG  *pRequestHandlerConfig = NULL;
+    REQUESTHANDLER_CONFIG  *pRequestHandlerConfig = nullptr;
     STRU                    struHostFxrDllLocation;
     STRU                    struExeLocation;
 
     try
     {
-        if (ppAspNetCoreConfig == NULL)
+        if (ppAspNetCoreConfig == nullptr)
         {
             hr = E_INVALIDARG;
             goto Finished;
         }
 
-        *ppAspNetCoreConfig = NULL;
+        *ppAspNetCoreConfig = nullptr;
 
         pRequestHandlerConfig = new REQUESTHANDLER_CONFIG;
 
@@ -58,7 +58,7 @@ REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(
         }
 
         *ppAspNetCoreConfig = pRequestHandlerConfig;
-        pRequestHandlerConfig = NULL;
+        pRequestHandlerConfig = nullptr;
     }
     catch (std::bad_alloc&)
     {
@@ -67,10 +67,10 @@ REQUESTHANDLER_CONFIG::CreateRequestHandlerConfig(
 
 Finished:
 
-    if (pRequestHandlerConfig != NULL)
+    if (pRequestHandlerConfig != nullptr)
     {
         delete pRequestHandlerConfig;
-        pRequestHandlerConfig = NULL;
+        pRequestHandlerConfig = nullptr;
     }
 
     return hr;
@@ -89,19 +89,19 @@ REQUESTHANDLER_CONFIG::Populate(
     STRU                            strEnvValue;
     STRU                            strExpandedEnvValue;
     STRU                            strApplicationFullPath;
-    IAppHostAdminManager           *pAdminManager = NULL;
-    IAppHostElement                *pAspNetCoreElement = NULL;
-    IAppHostElement                *pWindowsAuthenticationElement = NULL;
-    IAppHostElement                *pBasicAuthenticationElement = NULL;
-    IAppHostElement                *pAnonymousAuthenticationElement = NULL;
+    IAppHostAdminManager           *pAdminManager = nullptr;
+    IAppHostElement                *pAspNetCoreElement = nullptr;
+    IAppHostElement                *pWindowsAuthenticationElement = nullptr;
+    IAppHostElement                *pBasicAuthenticationElement = nullptr;
+    IAppHostElement                *pAnonymousAuthenticationElement = nullptr;
     ULONGLONG                       ullRawTimeSpan = 0;
     DWORD                           dwCounter = 0;
     DWORD                           dwPosition = 0;
-    WCHAR*                          pszPath = NULL;
-    BSTR                            bstrWindowAuthSection = NULL;
-    BSTR                            bstrBasicAuthSection = NULL;
-    BSTR                            bstrAnonymousAuthSection = NULL;
-    BSTR                            bstrAspNetCoreSection = NULL;
+    WCHAR*                          pszPath = nullptr;
+    BSTR                            bstrWindowAuthSection = nullptr;
+    BSTR                            bstrBasicAuthSection = nullptr;
+    BSTR                            bstrAnonymousAuthSection = nullptr;
+    BSTR                            bstrAspNetCoreSection = nullptr;
     std::optional<std::wstring> launcherPathEnv;
     std::optional<std::wstring> launcherArgsEnv;
 
@@ -161,7 +161,7 @@ REQUESTHANDLER_CONFIG::Populate(
     }
 
     bstrWindowAuthSection = SysAllocString(CS_WINDOWS_AUTHENTICATION_SECTION);
-    if (bstrWindowAuthSection == NULL)
+    if (bstrWindowAuthSection == nullptr)
     {
         hr = E_OUTOFMEMORY;
         goto Finished;
@@ -188,7 +188,7 @@ REQUESTHANDLER_CONFIG::Populate(
     }
 
     bstrBasicAuthSection = SysAllocString(CS_BASIC_AUTHENTICATION_SECTION);
-    if (bstrBasicAuthSection == NULL)
+    if (bstrBasicAuthSection == nullptr)
     {
         hr = E_OUTOFMEMORY;
         goto Finished;
@@ -213,7 +213,7 @@ REQUESTHANDLER_CONFIG::Populate(
     }
 
     bstrAnonymousAuthSection = SysAllocString(CS_ANONYMOUS_AUTHENTICATION_SECTION);
-    if (bstrAnonymousAuthSection == NULL)
+    if (bstrAnonymousAuthSection == nullptr)
     {
         hr = E_OUTOFMEMORY;
         goto Finished;
@@ -238,7 +238,7 @@ REQUESTHANDLER_CONFIG::Populate(
     }
 
     bstrAspNetCoreSection = SysAllocString(CS_ASPNETCORE_SECTION);
-    if (bstrAspNetCoreSection == NULL)
+    if (bstrAspNetCoreSection == nullptr)
     {
         hr = E_OUTOFMEMORY;
         goto Finished;
@@ -423,28 +423,28 @@ REQUESTHANDLER_CONFIG::Populate(
 
 Finished:
 
-    if (pAspNetCoreElement != NULL)
+    if (pAspNetCoreElement != nullptr)
     {
         pAspNetCoreElement->Release();
-        pAspNetCoreElement = NULL;
+        pAspNetCoreElement = nullptr;
     }
 
-    if (pWindowsAuthenticationElement != NULL)
+    if (pWindowsAuthenticationElement != nullptr)
     {
         pWindowsAuthenticationElement->Release();
-        pWindowsAuthenticationElement = NULL;
+        pWindowsAuthenticationElement = nullptr;
     }
 
-    if (pAnonymousAuthenticationElement != NULL)
+    if (pAnonymousAuthenticationElement != nullptr)
     {
         pAnonymousAuthenticationElement->Release();
-        pAnonymousAuthenticationElement = NULL;
+        pAnonymousAuthenticationElement = nullptr;
     }
 
-    if (pBasicAuthenticationElement != NULL)
+    if (pBasicAuthenticationElement != nullptr)
     {
         pBasicAuthenticationElement->Release();
-        pBasicAuthenticationElement = NULL;
+        pBasicAuthenticationElement = nullptr;
     }
 
     return hr;

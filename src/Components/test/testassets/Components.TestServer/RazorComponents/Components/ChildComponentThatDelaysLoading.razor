@@ -1,0 +1,13 @@
+﻿<p id="child">@childString</p>
+
+@code {
+    private string childString = "initial child";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Yield();
+
+        childString = "loaded child";
+    }
+
+}

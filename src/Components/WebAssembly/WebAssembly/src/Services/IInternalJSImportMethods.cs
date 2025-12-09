@@ -8,6 +8,12 @@ internal interface IInternalJSImportMethods
     string GetPersistedState();
 
     string GetApplicationEnvironment();
+    
+    string GetApplicationCulture();
+
+    void AttachRootComponentToElement(string domElementSelector, int componentId, int rendererId);
+
+    void EndUpdateRootComponents(long batchId);
 
     void NavigationManager_EnableNavigationInterception(int rendererId);
 

@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Buffers;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
@@ -19,6 +20,11 @@ namespace Microsoft.AspNetCore.Mvc.Rendering;
 [DebuggerDisplay("{DebuggerToString()}")]
 public class TagBuilder : IHtmlContent
 {
+    // Note '.' is valid according to the HTML 4.01 specification. Disallowed here
+    // to avoid confusion with CSS class selectors or when using jQuery.
+    private static readonly SearchValues<char> _html401IdChars =
+        SearchValues.Create("-0123456789:ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz");
+
     private AttributeDictionary? _attributes;
     private HtmlContentBuilder? _innerHtml;
 
@@ -28,10 +34,7 @@ public class TagBuilder : IHtmlContent
     /// <param name="tagName">An HTML tag name.</param>
     public TagBuilder(string tagName)
     {
-        if (string.IsNullOrEmpty(tagName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(tagName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(tagName);
 
         TagName = tagName;
     }
@@ -157,51 +160,39 @@ public class TagBuilder : IHtmlContent
         }
 
         // If there are no invalid characters in the string, then we don't have to create the buffer.
-        var firstIndexOfInvalidCharacter = 1;
-        for (; firstIndexOfInvalidCharacter < name.Length; firstIndexOfInvalidCharacter++)
-        {
-            if (!Html401IdUtil.IsValidIdCharacter(name[firstIndexOfInvalidCharacter]))
-            {
-                break;
-            }
-        }
-
+        var indexOfInvalidCharacter = name.AsSpan(1).IndexOfAnyExcept(_html401IdChars);
         var firstChar = name[0];
         var startsWithAsciiLetter = char.IsAsciiLetter(firstChar);
+        if (startsWithAsciiLetter && indexOfInvalidCharacter < 0)
+        {
+            return name;
+        }
+
         if (!startsWithAsciiLetter)
         {
             // The first character must be a letter according to the HTML 4.01 specification.
             firstChar = 'z';
         }
 
-        if (firstIndexOfInvalidCharacter == name.Length && startsWithAsciiLetter)
-        {
-            return name;
-        }
-
         var stringBuffer = new StringBuilder(name.Length);
         stringBuffer.Append(firstChar);
+        var remainingName = name.AsSpan(1);
 
-        // Characters until 'firstIndexOfInvalidCharacter' have already been checked for validity.
-        // So just copy them. This avoids running them through Html401IdUtil.IsValidIdCharacter again.
-        for (var index = 1; index < firstIndexOfInvalidCharacter; index++)
+        // Copy values until an invalid character found. Replace the invalid character with the replacement string
+        // and search for the next invalid character.
+        while (remainingName.Length > 0)
         {
-            stringBuffer.Append(name[index]);
-        }
-
-        for (var index = firstIndexOfInvalidCharacter; index < name.Length; index++)
-        {
-            var thisChar = name[index];
-            if (Html401IdUtil.IsValidIdCharacter(thisChar))
+            if (indexOfInvalidCharacter < 0)
             {
-                stringBuffer.Append(thisChar);
+                stringBuffer.Append(remainingName);
+                break;
             }
-            else
-            {
-                stringBuffer.Append(invalidCharReplacement);
-            }
-        }
 
+            stringBuffer.Append(remainingName.Slice(0, indexOfInvalidCharacter));
+            stringBuffer.Append(invalidCharReplacement);
+            remainingName = remainingName.Slice(indexOfInvalidCharacter + 1);
+            indexOfInvalidCharacter = remainingName.IndexOfAnyExcept(_html401IdChars);
+        }
         return stringBuffer.ToString();
     }
 
@@ -285,10 +276,7 @@ public class TagBuilder : IHtmlContent
     /// <param name="replaceExisting">Whether to replace an existing value.</param>
     public void MergeAttribute(string key, string? value, bool replaceExisting)
     {
-        if (string.IsNullOrEmpty(key))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(key));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(key);
 
         if (replaceExisting || !Attributes.ContainsKey(key))
         {
@@ -422,30 +410,6 @@ public class TagBuilder : IHtmlContent
         public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
             TagBuilder.WriteTo(_tagBuilder, writer, encoder, _tagRenderMode);
-        }
-    }
-
-    private static class Html401IdUtil
-    {
-        public static bool IsValidIdCharacter(char testChar)
-        {
-            return char.IsAsciiLetterOrDigit(testChar) || IsAllowableSpecialCharacter(testChar);
-        }
-
-        private static bool IsAllowableSpecialCharacter(char testChar)
-        {
-            switch (testChar)
-            {
-                case '-':
-                case '_':
-                case ':':
-                    // Note '.' is valid according to the HTML 4.01 specification. Disallowed here to avoid
-                    // confusion with CSS class selectors or when using jQuery.
-                    return true;
-
-                default:
-                    return false;
-            }
         }
     }
 }

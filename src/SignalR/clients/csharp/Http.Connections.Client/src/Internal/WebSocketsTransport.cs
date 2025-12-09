@@ -75,7 +75,7 @@ internal sealed partial class WebSocketsTransport : ITransport, IStatefulReconne
         bool useStatefulReconnect = false)
     {
         _useStatefulReconnect = useStatefulReconnect;
-        _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<WebSocketsTransport>();
+        _logger = loggerFactory?.CreateLogger(typeof(WebSocketsTransport)) ?? NullLogger.Instance;
         _httpConnectionOptions = httpConnectionOptions ?? new HttpConnectionOptions();
 
         _closeTimeout = _httpConnectionOptions.CloseTimeout;

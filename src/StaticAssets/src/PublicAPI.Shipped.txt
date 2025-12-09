@@ -1,0 +1,34 @@
+#nullable enable
+Microsoft.AspNetCore.Builder.StaticAssetsEndpointRouteBuilderExtensions
+Microsoft.AspNetCore.StaticAssets.Infrastructure.StaticAssetsEndpointDataSourceHelper
+Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor
+Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor.AssetPath.get -> string!
+Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor.AssetPath.set -> void
+Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor.Properties.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.StaticAssets.StaticAssetProperty!>!
+Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor.Properties.set -> void
+Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor.ResponseHeaders.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.StaticAssets.StaticAssetResponseHeader!>!
+Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor.ResponseHeaders.set -> void
+Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor.Route.get -> string!
+Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor.Route.set -> void
+Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor.Selectors.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.StaticAssets.StaticAssetSelector!>!
+Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor.Selectors.set -> void
+Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor.StaticAssetDescriptor() -> void
+Microsoft.AspNetCore.StaticAssets.StaticAssetProperty
+Microsoft.AspNetCore.StaticAssets.StaticAssetProperty.Name.get -> string!
+Microsoft.AspNetCore.StaticAssets.StaticAssetProperty.StaticAssetProperty(string! name, string! value) -> void
+Microsoft.AspNetCore.StaticAssets.StaticAssetProperty.Value.get -> string!
+Microsoft.AspNetCore.StaticAssets.StaticAssetResponseHeader
+Microsoft.AspNetCore.StaticAssets.StaticAssetResponseHeader.Name.get -> string!
+Microsoft.AspNetCore.StaticAssets.StaticAssetResponseHeader.StaticAssetResponseHeader(string! name, string! value) -> void
+Microsoft.AspNetCore.StaticAssets.StaticAssetResponseHeader.Value.get -> string!
+Microsoft.AspNetCore.StaticAssets.StaticAssetSelector
+Microsoft.AspNetCore.StaticAssets.StaticAssetSelector.Name.get -> string!
+Microsoft.AspNetCore.StaticAssets.StaticAssetSelector.Quality.get -> string!
+Microsoft.AspNetCore.StaticAssets.StaticAssetSelector.StaticAssetSelector(string! name, string! value, string! quality) -> void
+Microsoft.AspNetCore.StaticAssets.StaticAssetSelector.Value.get -> string!
+Microsoft.AspNetCore.StaticAssets.StaticAssetsEndpointConventionBuilder
+Microsoft.AspNetCore.StaticAssets.StaticAssetsEndpointConventionBuilder.Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
+Microsoft.AspNetCore.StaticAssets.StaticAssetsEndpointConventionBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
+static Microsoft.AspNetCore.Builder.StaticAssetsEndpointRouteBuilderExtensions.MapStaticAssets(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string? staticAssetsManifestPath = null) -> Microsoft.AspNetCore.StaticAssets.StaticAssetsEndpointConventionBuilder!
+static Microsoft.AspNetCore.StaticAssets.Infrastructure.StaticAssetsEndpointDataSourceHelper.HasStaticAssetsDataSource(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! builder, string? staticAssetsManifestPath = null) -> bool
+static Microsoft.AspNetCore.StaticAssets.Infrastructure.StaticAssetsEndpointDataSourceHelper.ResolveStaticAssetDescriptors(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpointRouteBuilder, string? manifestPath) -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.StaticAssets.StaticAssetDescriptor!>!

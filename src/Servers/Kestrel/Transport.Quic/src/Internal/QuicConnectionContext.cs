@@ -20,9 +20,9 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
     private bool _streamPoolHeartbeatInitialized;
     // Ticks updated once per-second in heartbeat event.
     private long _heartbeatTimestamp;
-    private readonly object _poolLock = new object();
+    private readonly Lock _poolLock = new();
 
-    private readonly object _shutdownLock = new object();
+    private readonly Lock _shutdownLock = new();
     private readonly QuicConnection _connection;
     private readonly QuicTransportContext _context;
     private readonly ILogger _log;
@@ -56,6 +56,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
         {
             lock (_shutdownLock)
             {
+                // The DefaultCloseErrorCode setter validates that the error code is within the valid range
                 _closeTask ??= _connection.CloseAsync(errorCode: _context.Options.DefaultCloseErrorCode).AsTask();
             }
 
@@ -81,7 +82,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
                 return;
             }
 
-            var resolvedErrorCode = _error ?? 0;
+            var resolvedErrorCode = _error ?? 0; // Only valid error codes are assigned to _error
             _abortReason = ExceptionDispatchInfo.Capture(abortReason);
             QuicLog.ConnectionAbort(_log, this, resolvedErrorCode, abortReason.Message);
             _closeTask = _connection.CloseAsync(errorCode: resolvedErrorCode).AsTask();
@@ -130,7 +131,7 @@ internal partial class QuicConnectionContext : TransportMultiplexedConnection
         catch (QuicException ex) when (ex.QuicError == QuicError.ConnectionAborted)
         {
             // Shutdown initiated by peer, abortive.
-            _error = ex.ApplicationErrorCode;
+            _error = ex.ApplicationErrorCode; // Trust Quic to provide us a valid error code
             QuicLog.ConnectionAborted(_log, this, ex.ApplicationErrorCode.GetValueOrDefault(), ex);
 
             ThreadPool.UnsafeQueueUserWorkItem(state =>

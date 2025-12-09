@@ -27,6 +27,16 @@ public static class CorsConstants
     public static readonly string AnyOrigin = "*";
 
     /// <summary>
+    /// The value for the Access-Control-Allow-Headers response header to allow all headers.
+    /// </summary>
+    public static readonly string AnyHeader = "*";
+
+    /// <summary>
+    /// The value for the Access-Control-Allow-Methods response header to allow all methods.
+    /// </summary>
+    public static readonly string AnyMethod = "*";
+
+    /// <summary>
     /// The Access-Control-Request-Method request header.
     /// </summary>
     public static readonly string AccessControlRequestMethod = HeaderNames.AccessControlRequestMethod;

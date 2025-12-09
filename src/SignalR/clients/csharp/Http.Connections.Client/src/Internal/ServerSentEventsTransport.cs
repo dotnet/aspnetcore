@@ -4,9 +4,9 @@
 using System;
 using System.Diagnostics;
 using System.IO.Pipelines;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.ServerSentEvents;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -25,7 +25,6 @@ internal sealed partial class ServerSentEventsTransport : ITransport
     private volatile Exception? _error;
     private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
     private readonly CancellationTokenSource _inputCts = new CancellationTokenSource();
-    private readonly ServerSentEventsMessageParser _parser = new ServerSentEventsMessageParser();
     private IDuplexPipe? _transport;
     private IDuplexPipe? _application;
 
@@ -40,7 +39,7 @@ internal sealed partial class ServerSentEventsTransport : ITransport
         ArgumentNullThrowHelper.ThrowIfNull(httpClient);
 
         _httpClient = httpClient;
-        _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<ServerSentEventsTransport>();
+        _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger(typeof(ServerSentEventsTransport));
         _httpConnectionOptions = httpConnectionOptions ?? new();
     }
 
@@ -130,79 +129,34 @@ internal sealed partial class ServerSentEventsTransport : ITransport
 
         Log.StartReceive(_logger);
 
-        static void CancelReader(object? state) => ((PipeReader)state!).CancelPendingRead();
-
         using (response)
 #pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods
         using (var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
 #pragma warning restore CA2016 // Forward the 'CancellationToken' parameter to methods
         {
-            var reader = PipeReader.Create(stream);
-
-            using var registration = cancellationToken.Register(CancelReader, reader);
-
             try
             {
-                while (true)
+                var parser = SseParser.Create(stream, (eventType, bytes) => bytes.ToArray());
+                await foreach (var item in parser.EnumerateAsync(cancellationToken).ConfigureAwait(false))
                 {
-                    // We rely on the CancelReader callback to cancel pending reads. Do not pass the token to ReadAsync since that would result in an exception on cancelation.
-                    var result = await reader.ReadAsync(default).ConfigureAwait(false);
-                    var buffer = result.Buffer;
-                    var consumed = buffer.Start;
-                    var examined = buffer.End;
+                    Log.MessageToApplication(_logger, item.Data.Length);
 
-                    try
+                    // When cancellationToken is canceled the next line will cancel pending flushes on the pipe unblocking the await.
+                    // Avoid passing the passed in context.
+                    var flushResult = await _application.Output.WriteAsync(item.Data, default).ConfigureAwait(false);
+
+                    // We canceled in the middle of applying back pressure
+                    // or if the consumer is done
+                    if (flushResult.IsCanceled || flushResult.IsCompleted)
                     {
-                        if (result.IsCanceled)
-                        {
-                            Log.ReceiveCanceled(_logger);
-                            break;
-                        }
-
-                        if (!buffer.IsEmpty)
-                        {
-                            Log.ParsingSSE(_logger, buffer.Length);
-
-                            var parseResult = _parser.ParseMessage(buffer, out consumed, out examined, out var message);
-                            FlushResult flushResult = default;
-
-                            switch (parseResult)
-                            {
-                                case ServerSentEventsMessageParser.ParseResult.Completed:
-                                    Log.MessageToApplication(_logger, message!.Length);
-
-                                    // When cancellationToken is canceled the next line will cancel pending flushes on the pipe unblocking the await.
-                                    // Avoid passing the passed in context.
-                                    flushResult = await _application.Output.WriteAsync(message, default).ConfigureAwait(false);
-
-                                    _parser.Reset();
-                                    break;
-                                case ServerSentEventsMessageParser.ParseResult.Incomplete:
-                                    if (result.IsCompleted)
-                                    {
-                                        throw new FormatException("Incomplete message.");
-                                    }
-                                    break;
-                            }
-
-                            // We canceled in the middle of applying back pressure
-                            // or if the consumer is done
-                            if (flushResult.IsCanceled || flushResult.IsCompleted)
-                            {
-                                Log.EventStreamEnded(_logger);
-                                break;
-                            }
-                        }
-                        else if (result.IsCompleted)
-                        {
-                            break;
-                        }
-                    }
-                    finally
-                    {
-                        reader.AdvanceTo(consumed, examined);
+                        Log.EventStreamEnded(_logger);
+                        break;
                     }
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                Log.ReceiveCanceled(_logger);
             }
             catch (Exception ex)
             {
@@ -213,8 +167,6 @@ internal sealed partial class ServerSentEventsTransport : ITransport
                 _application.Output.Complete(_error);
 
                 Log.ReceiveStopped(_logger);
-
-                reader.Complete();
             }
         }
     }

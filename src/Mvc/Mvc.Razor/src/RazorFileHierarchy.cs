@@ -11,10 +11,7 @@ internal static class RazorFileHierarchy
 
     public static IEnumerable<string> GetViewStartPaths(string path)
     {
-        if (string.IsNullOrEmpty(path))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(path));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(path);
 
         if (path[0] != '/')
         {

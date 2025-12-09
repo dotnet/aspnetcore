@@ -8,7 +8,7 @@
 
   <PropertyGroup>
     <!-- Update helix.proj when this TFM is updated. -->
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
 
     <OutputType>Exe</OutputType>
     <NoWarn>$(NoWarn);CA2007;NU5104</NoWarn>
@@ -16,7 +16,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <!-- We don't need this unless building for tests. -->
-    <ExcludeFromBuild Condition=" '$(DotNetBuildFromSource)' == 'true' OR '$(SkipTestBuild)' == 'true' ">true</ExcludeFromBuild>
+    <ExcludeFromBuild Condition=" ('$(DotNetBuild)' == 'true' AND '$(DotNetBuildTests)' != 'true') OR '$(SkipTestBuild)' == 'true' ">true</ExcludeFromBuild>
   </PropertyGroup>
 
   <ItemGroup>

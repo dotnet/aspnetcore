@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -15,6 +15,7 @@
   <ItemGroup>
     <!-- Also bring in Microsoft.AspNetCore.App.Analyzers. -->
     <ProjectReference Include="..\src\CodeFixes\Microsoft.AspNetCore.App.CodeFixes.csproj" />
+    <ProjectReference Include="..\src\SourceGenerators\Microsoft.AspNetCore.App.SourceGenerators.csproj" />
 
     <ProjectReference Include="$(RepoRoot)src\Analyzers\Microsoft.AspNetCore.Analyzer.Testing\src\Microsoft.AspNetCore.Analyzer.Testing.csproj" />
 
@@ -22,8 +23,9 @@
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.AspNetCore.RateLimiting" />
-    <Reference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing.XUnit" />
-    <Reference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" />
   </ItemGroup>
 
   <ItemGroup>

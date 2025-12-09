@@ -5,12 +5,15 @@
 
 using System.Collections;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 /// <summary>
 /// A dictionary for HTML attributes.
 /// </summary>
+[DebuggerDisplay("Count = {Count}")]
+[DebuggerTypeProxy(typeof(DictionaryDebugView<string, string?>))]
 public class AttributeDictionary : IDictionary<string, string?>, IReadOnlyDictionary<string, string?>
 {
     private List<KeyValuePair<string, string?>>? _items;

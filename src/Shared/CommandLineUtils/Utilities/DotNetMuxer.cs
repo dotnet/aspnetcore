@@ -9,6 +9,8 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.CommandLineUtils;
@@ -22,7 +24,7 @@ internal static class DotNetMuxer
 
     static DotNetMuxer()
     {
-        MuxerPath = TryFindMuxerPath(Process.GetCurrentProcess().MainModule?.FileName);
+        MuxerPath = TryFindMuxerPath();
     }
 
     /// <summary>
@@ -38,18 +40,45 @@ internal static class DotNetMuxer
     public static string MuxerPathOrDefault()
         => MuxerPath ?? MuxerName;
 
-    internal static string? TryFindMuxerPath(string? mainModule)
+    private static string? TryFindMuxerPath()
     {
-        var fileName = MuxerName;
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        // If not running on Helix, use a custom .NET host, if specified.
+        // This allows test projects to use a .NET host with the custom-built
+        // ASP.NET Core shared framework.
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
         {
-            fileName += ".exe";
+            var dotNetHostOverride = typeof(DotNetMuxer).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .SingleOrDefault(a => a.Key == "DotNetHostOverride")?.Value;
+            if (dotNetHostOverride is not null)
+            {
+                return dotNetHostOverride;
+            }
         }
 
-        if (!string.IsNullOrEmpty(mainModule)
-            && string.Equals(Path.GetFileName(mainModule!), fileName, StringComparison.OrdinalIgnoreCase))
+        var expectedFileName = MuxerName;
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            return mainModule;
+            expectedFileName += ".exe";
+        }
+
+        // If the currently running process is dotnet(.exe), return that path
+        var mainModuleFullPath = Process.GetCurrentProcess().MainModule?.FileName;
+        var mainModuleFileName = Path.GetFileName(mainModuleFullPath);
+        if (string.Equals(expectedFileName, mainModuleFileName, StringComparison.OrdinalIgnoreCase))
+        {
+            return mainModuleFullPath;
+        }
+
+        // The currently running process may not be dotnet(.exe). For example,
+        // it might be "testhost(.exe)" when running tests.
+        // In this case, we can get the location where the CLR is installed,
+        // and find dotnet(.exe) relative to that path.
+        var runtimeDirectory = RuntimeEnvironment.GetRuntimeDirectory();
+        var candidateDotNetExePath = Path.Combine(runtimeDirectory, "..", "..", "..", expectedFileName);
+        if (File.Exists(candidateDotNetExePath))
+        {
+            var normalizedPath = Path.GetFullPath(candidateDotNetExePath);
+            return normalizedPath;
         }
 
         return null;

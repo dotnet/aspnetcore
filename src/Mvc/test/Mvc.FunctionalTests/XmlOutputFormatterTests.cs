@@ -6,17 +6,30 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging;
+using System.Reflection;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class XmlOutputFormatterTests : IClassFixture<MvcTestFixture<FormatterWebSite.Startup>>
+public class XmlOutputFormatterTests : LoggedTest
 {
-    public XmlOutputFormatterTests(MvcTestFixture<FormatterWebSite.Startup> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        Client = fixture.CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<FormatterWebSite.Startup>(LoggerFactory);
+        Client = Factory.CreateDefaultClient();
     }
 
-    public HttpClient Client { get; }
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public HttpClient Client { get; private set; }
+
+    public MvcTestFixture<FormatterWebSite.Startup> Factory { get; private set; }
 
     [ConditionalFact]
     // Mono.Xml2.XmlTextReader.ReadText is unable to read the XML. This is fixed in mono 4.3.0.

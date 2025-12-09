@@ -97,10 +97,7 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
             throw new ArgumentOutOfRangeException(nameof(MaxAge), MaxAge.Value, "The value must not be a negative TimeSpan.");
         }
 
-        if (string.IsNullOrEmpty(ClientId))
-        {
-            throw new ArgumentException("Options.ClientId must be provided", nameof(ClientId));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(ClientId);
 
         if (!CallbackPath.HasValue)
         {
@@ -240,6 +237,16 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     public ICollection<string> Scope { get; } = new HashSet<string>();
 
     /// <summary>
+    /// Gets the additional parameters that will be included in the authorization request.
+    /// </summary>
+    /// <remarks>
+    /// The additional parameters can be used to customize the authorization request,
+    /// providing extra information or fulfilling specific requirements of the OpenIdConnect provider.
+    /// These parameters are typically, but not always, appended to the query string.
+    /// </remarks>
+    public IDictionary<string, string> AdditionalAuthorizationParameters { get; } = new Dictionary<string, string>();
+
+    /// <summary>
     /// Requests received on this path will cause the handler to invoke SignOut using the SignOutScheme.
     /// </summary>
     public PathString RemoteSignOutPath { get; set; }
@@ -314,7 +321,7 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     /// <item><description><see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.None"/>.</description></item>
     /// <item><description><see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>.</description></item>
     /// <item><description><see cref="CookieBuilder.IsEssential"/> defaults to <c>true</c>.</description></item>
-    /// <item><description><see cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.SameAsRequest"/>.</description></item>
+    /// <item><description><see cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.Always"/>.</description></item>
     /// </list>
     /// </remarks>
     public CookieBuilder NonceCookie
@@ -398,7 +405,16 @@ public class OpenIdConnectOptions : RemoteAuthenticationOptions
     /// <para>The default token handler is a <see cref="JsonWebTokenHandler"/> which is faster than a <see cref="JwtSecurityTokenHandler"/>.</para>
     /// <para>There is an ability to make use of a Last-Known-Good model for metadata that protects applications when metadata is published with errors.</para>
     /// SecurityTokenValidator can be used when <see cref="TokenValidatedContext.SecurityToken"/> needs a <see cref="JwtSecurityToken"/>.
-    /// When using TokenHandler, <see cref="TokenValidatedContext.SecurityToken"/> will be a <see cref="JsonWebToken"/>. 
+    /// When using TokenHandler, <see cref="TokenValidatedContext.SecurityToken"/> will be a <see cref="JsonWebToken"/>.
     /// </remarks>
     public bool UseSecurityTokenValidator { get; set; }
+
+    /// <summary>
+    /// Controls whether the handler should push authorization parameters on the
+    /// backchannel before redirecting to the identity provider. See <see
+    /// href="https://tools.ietf.org/html/9126"/>.
+    /// </summary>
+    /// <value>Defaults to <see
+    /// cref="PushedAuthorizationBehavior.UseIfAvailable" />.</value>
+    public PushedAuthorizationBehavior PushedAuthorizationBehavior { get; set; } = PushedAuthorizationBehavior.UseIfAvailable;
 }

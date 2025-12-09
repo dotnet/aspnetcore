@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
@@ -68,6 +69,6 @@ internal sealed class DynamicViewData : DynamicObject
         private readonly ViewDataDictionary _dictionary = dictionary.ViewData;
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KeyValuePair<string, object>[] Items => _dictionary.ToArray();
+        public DictionaryItemDebugView<string, object>[] Items => _dictionary.Select(pair => new DictionaryItemDebugView<string, object>(pair)).ToArray();
     }
 }

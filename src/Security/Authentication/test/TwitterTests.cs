@@ -42,6 +42,13 @@ public class TwitterTests : RemoteAuthenticationTests<TwitterOptions>
     }
 
     [Fact]
+    public void EventsPropertyIsInitializedOnConstruction()
+    {
+        var options = new TwitterOptions();
+        Assert.NotNull(options.Events);
+    }
+
+    [Fact]
     public async Task ChallengeWillTriggerApplyRedirectEvent()
     {
         using var host = await CreateHost(o =>
@@ -86,7 +93,7 @@ public class TwitterTests : RemoteAuthenticationTests<TwitterOptions>
         });
 
         using var server = host.GetTestServer();
-        await Assert.ThrowsAsync<ArgumentException>("ConsumerKey", async () => await server.SendAsync("http://example.com/challenge"));
+        await Assert.ThrowsAsync<ArgumentNullException>("ConsumerKey", async () => await server.SendAsync("http://example.com/challenge"));
     }
 
     /// <summary>
@@ -102,7 +109,7 @@ public class TwitterTests : RemoteAuthenticationTests<TwitterOptions>
         });
 
         using var server = host.GetTestServer();
-        await Assert.ThrowsAsync<ArgumentException>("ConsumerSecret", async () => await server.SendAsync("http://example.com/challenge"));
+        await Assert.ThrowsAsync<ArgumentNullException>("ConsumerSecret", async () => await server.SendAsync("http://example.com/challenge"));
     }
 
     [Fact]

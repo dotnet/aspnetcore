@@ -2,11 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.Extensions.Logging.AzureAppServices;
 
 /// <summary>
-/// Options for Azure diagnostics blob logging.
+/// Specifies options for Azure diagnostics blob logging.
 /// </summary>
 public class AzureBlobLoggerOptions : BatchingLoggerOptions
 {
@@ -14,25 +15,26 @@ public class AzureBlobLoggerOptions : BatchingLoggerOptions
 
     /// <summary>
     /// Gets or sets the last section of log blob name.
-    /// Defaults to <c>"applicationLog.txt"</c>.
     /// </summary>
+    /// <value>
+    /// The last section of the log blob name. The default is <c>"applicationLog.txt"</c>.
+    /// </value>
     public string BlobName
     {
         get { return _blobName; }
         set
         {
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new ArgumentException($"{nameof(BlobName)} must be non-empty string.", nameof(value));
-            }
+            ArgumentThrowHelper.ThrowIfNullOrEmpty(value);
             _blobName = value;
         }
     }
 
     /// <summary>
     /// Gets or sets the format of the file name.
-    /// Defaults to "AppName/Year/Month/Day/Hour/Identifier".
     /// </summary>
+    /// <value>
+    /// The format of the file name. The default is "AppName/Year/Month/Day/Hour/Identifier".
+    /// </value>
     public Func<AzureBlobLoggerContext, string> FileNameFormat { get; set; } = context =>
     {
         var timestamp = context.Timestamp;

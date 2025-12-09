@@ -4,7 +4,6 @@
 using System.Buffers.Text;
 using System.Collections;
 using System.Globalization;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -148,7 +147,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private unsafe void AppendUnknownHeaders(string name, string valueString)
+    private void AppendUnknownHeaders(string name, string valueString)
     {
         name = GetInternedHeaderName(name);
         Unknown.TryGetValue(name, out var existing);
@@ -244,7 +243,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         {
             _collection = collection;
             _currentBits = collection._bits;
-            _next = _currentBits != 0 ? BitOperations.TrailingZeroCount(_currentBits) : -1;
+            _next = GetNext(_currentBits, collection.ContentLength.HasValue);
             _current = default;
             _hasUnknown = collection.MaybeUnknown != null;
             _unknownEnumerator = _hasUnknown
@@ -263,7 +262,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
         public void Reset()
         {
             _currentBits = _collection._bits;
-            _next = _currentBits != 0 ? BitOperations.TrailingZeroCount(_currentBits) : -1;
+            _next = GetNext(_currentBits, _collection.ContentLength.HasValue);
         }
     }
 }

@@ -15,7 +15,7 @@ internal sealed partial class RequestFormLimitsFilter : IAuthorizationFilter, IR
 
     public RequestFormLimitsFilter(ILoggerFactory loggerFactory)
     {
-        _logger = loggerFactory.CreateLogger<RequestFormLimitsFilter>();
+        _logger = loggerFactory.CreateLogger(typeof(RequestFormLimitsFilter));
     }
 
     public FormOptions FormOptions { get; set; } = default!;

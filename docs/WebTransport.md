@@ -18,7 +18,7 @@ To use it, simply run from VS. This will launch the server and terminal. Now you
 
 ## Using Edge or Chrome DevTools as a client
 
-The Chromium project has implemented a WebTransport client and can be accessed via their JS API from the Chrome or Edge DevTools console. A good sample app demonstrating how to use that API can be found [here](https://github.com/myjimmy/google-webtransport-sample/blob/ee13bde656c4d421d1f2a8e88fd71f572272c163/client.js).
+The Chromium project has implemented a WebTransport client and can be accessed via their JS API from the Chrome or Edge DevTools console. A good sample app demonstrating how to use that API can be found in the [Google WebTransport sample repository](https://github.com/myjimmy/google-webtransport-sample/blob/ee13bde656c4d421d1f2a8e88fd71f572272c163/client.js).
 
 ## Note about preview features
 
@@ -171,7 +171,7 @@ session.Abort(int errorCode);
 ```
 Aborting a WebTransport session will result in severing the connection with the client and aborting all the streams. You can optionally specify an error code that will be passed down into the logs. The default value (256) represents no error.
 
-**Note:** valid error codes are defined [here](https://www.rfc-editor.org/rfc/rfc9114.html#name-http-3-error-codes).
+**Note:** valid error codes are defined in the [HTTP/3 Error Codes specification](https://www.rfc-editor.org/rfc/rfc9114.html#name-http-3-error-codes).
 
 - Aborting a WebTransport stream
 ```C#

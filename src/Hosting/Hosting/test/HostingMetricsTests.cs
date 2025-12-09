@@ -180,6 +180,7 @@ public class HostingMetricsTests
     private sealed class TestHttpMetricsTagsFeature : IHttpMetricsTagsFeature
     {
         public ICollection<KeyValuePair<string, object>> Tags { get; } = new Collection<KeyValuePair<string, object>>();
+        public bool MetricsDisabled { get; set; }
     }
 
     private static HostingApplication CreateApplication(IHttpContextFactory httpContextFactory = null, bool useHttpContextAccessor = false,

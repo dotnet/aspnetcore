@@ -15,7 +15,7 @@ internal sealed class WrappingStream : Stream
 
     public void SetInnerStream(Stream inner)
     {
-        ObjectDisposedException.ThrowIf(_disposed, nameof(WrappingStream));
+        ObjectDisposedException.ThrowIf(_disposed, this);
 
         _inner = inner;
     }

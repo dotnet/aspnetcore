@@ -41,10 +41,7 @@ public abstract class ApplicationDeployer : IDisposable
 
         if (DeploymentParameters.ApplicationPublisher == null)
         {
-            if (string.IsNullOrEmpty(DeploymentParameters.ApplicationPath))
-            {
-                throw new ArgumentException("ApplicationPath cannot be null.");
-            }
+            ArgumentException.ThrowIfNullOrEmpty(DeploymentParameters.ApplicationPath);
 
             if (!Directory.Exists(DeploymentParameters.ApplicationPath))
             {

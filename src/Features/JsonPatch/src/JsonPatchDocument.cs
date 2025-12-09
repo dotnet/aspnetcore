@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.AspNetCore.JsonPatch.Adapters;
 using Microsoft.AspNetCore.JsonPatch.Converters;
 using Microsoft.AspNetCore.JsonPatch.Exceptions;
@@ -12,13 +13,22 @@ using Microsoft.AspNetCore.Shared;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
+#if NET
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Metadata;
+#endif
+
 namespace Microsoft.AspNetCore.JsonPatch;
 
 // Implementation details: the purpose of this type of patch document is to allow creation of such
 // documents for cases where there's no class/DTO to work on. Typical use case: backend not built in
 // .NET or architecture doesn't contain a shared DTO layer.
 [JsonConverter(typeof(JsonPatchDocumentConverter))]
+#if NET
+public class JsonPatchDocument : IJsonPatchDocument, IEndpointParameterMetadataProvider
+#else
 public class JsonPatchDocument : IJsonPatchDocument
+#endif
 {
     public List<Operation> Operations { get; private set; }
 
@@ -27,7 +37,7 @@ public class JsonPatchDocument : IJsonPatchDocument
 
     public JsonPatchDocument()
     {
-        Operations = new List<Operation>();
+        Operations = [];
         ContractResolver = new DefaultContractResolver();
     }
 
@@ -205,12 +215,13 @@ public class JsonPatchDocument : IJsonPatchDocument
         {
             foreach (var op in Operations)
             {
-                var untypedOp = new Operation();
-
-                untypedOp.op = op.op;
-                untypedOp.value = op.value;
-                untypedOp.path = op.path;
-                untypedOp.from = op.from;
+                var untypedOp = new Operation
+                {
+                    op = op.op,
+                    value = op.value,
+                    path = op.path,
+                    from = op.from
+                };
 
                 allOps.Add(untypedOp);
             }
@@ -218,4 +229,15 @@ public class JsonPatchDocument : IJsonPatchDocument
 
         return allOps;
     }
+
+#if NET
+    /// <inheritdoc/>
+    static void IEndpointParameterMetadataProvider.PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(parameter);
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Metadata.Add(new AcceptsMetadata(["application/json-patch+json"], parameter.ParameterType));
+    }
+#endif
 }

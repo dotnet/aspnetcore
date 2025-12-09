@@ -17,7 +17,7 @@ The goals of these rules are listed below in priority order:
 
 ## Triage Process Details
 
-The feature teams should be able look through every single issue filed against this repository and be able to make a quick call regarding the nature of the issue.
+The feature teams should be able to look through every single issue filed against this repository and be able to make a quick call regarding the nature of the issue.
 We will first categorize the issues and further handle these depending on the category the issue is in. The subsections below represent these categories and the rules we apply for them during our triage meeting.
 
 ### Information Gathering
@@ -27,7 +27,7 @@ We'll try to respond quickly to such issues (within days). If a user has collect
 
 ### Feature requests
 
-As soon as we identify an issue represents an ask for a new feature, we will label the issue with the `enhancement` label.
+As soon as we identify an issue that represents an ask for a new feature, we will label the issue with the `enhancement` label.
 Most of the time, we will automatically move these issues into the `.NET 8 Planning` milestone for further review during one of our [sprint planning meetings](#milestone-planning).
 If we think the feature request is not aligned with our goals, we may choose to close it immediately.
 In some situations, however, we may choose to collect more feedback before acting on the issue. In these situations we will move the issue in the `Backlog` so that we can review it during the [release planning](#release-planning).
@@ -36,7 +36,7 @@ In some situations, however, we may choose to collect more feedback before actin
 
 If it's immediately clear that the issue is related to a bug in the framework, we will apply the `bug` label to the issue.
 
-At this point, we will try to make a call regarding it's impact and severity. If the issue is critical, we may choose to include it in our current milestone for immediate handling or potentially patching.
+At this point, we will try to make a call regarding its impact and severity. If the issue is critical, we may choose to include it in our current milestone for immediate handling or potentially patching.
 If the bug is relatively high impact, we will move the issue into the `.NET 8 Planning` milestone to review during our [sprint planning](#milestone-planning) meeting.
 If the impact is unclear or the is a very corner case scenario, we may move it to the `Backlog` milestone to further evaluate the impact by reviewing customer upvotes / comments at a later time.
 
@@ -65,10 +65,10 @@ For some feature requests and bug reports, depending on the user involvement, we
 
 ## Release Planning
 
-Once we approach to the end of the release cycle (such as for .NET 7) we will look through the accumulated issues in the `Backlog` milestone. This is a long process as the amount of issues accumulated in this milestone is quite large.
+Once we approach the end of the release cycle (such as for .NET 7) we will look through the accumulated issues in the `Backlog` milestone. This is a long process as the amount of issues accumulated in this milestone is quite large.
 
 We will try to prioritize issues with most community requests / upvotes assuming these are aligned with our goals.
-Issues, which we will think are candidates for the upcoming release, will be moved to the `.NET 8 Planning` milestone. This process is documented in more details in the [Release Planning](https://github.com/dotnet/aspnetcore/blob/main/docs/ReleasePlanning.md) document.
+Issues, which we will think are candidates for the upcoming release, will be moved to the `.NET 8 Planning` milestone. This process is documented in more detail in the [Release Planning](https://github.com/dotnet/aspnetcore/blob/main/docs/ReleasePlanning.md) document.
 
 ## Cleanup
 As we go through all the issues in the Backlog milestone as part of our release planning process, we will also cleanup the milestone by closing low priority issues, which have stayed in the backlog for more than 2 releases. While some of these issues may seem reasonable, the fact that those haven't been addressed for such prolonged period of time indicate that they're not as important for the product as they may seem to be.

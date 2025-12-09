@@ -13,6 +13,14 @@ namespace Microsoft.AspNetCore.CookiePolicy;
 /// <summary>
 /// Initializes a new instance of <see cref="CookiePolicyMiddleware"/>.
 /// </summary>
+/// <remarks>
+/// When using <see cref="CookieOptions"/> to configure cookies, note that a
+/// <see cref="CookieOptions"/> instance is intended to govern the behavior of an individual cookie.
+/// Reusing the same <see cref="CookieOptions"/> instance across multiple cookies can lead to unintended
+/// consequences, such as modifications affecting multiple cookies. We recommend instantiating a new
+/// <see cref="CookieOptions"/> object for each cookie to ensure that the configuration is applied
+/// independently.
+/// </remarks>
 public class CookiePolicyMiddleware
 {
     private readonly RequestDelegate _next;

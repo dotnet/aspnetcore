@@ -4,7 +4,6 @@
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace Microsoft.AspNetCore.Http.Extensions;
 
@@ -204,24 +203,7 @@ public static class UriHelper
     /// suitable only for display.</returns>
     public static string GetDisplayUrl(this HttpRequest request)
     {
-        var scheme = request.Scheme ?? string.Empty;
-        var host = request.Host.Value ?? string.Empty;
-        var pathBase = request.PathBase.Value ?? string.Empty;
-        var path = request.Path.Value ?? string.Empty;
-        var queryString = request.QueryString.Value ?? string.Empty;
-
-        // PERF: Calculate string length to allocate correct buffer size for StringBuilder.
-        var length = scheme.Length + SchemeDelimiter.Length + host.Length
-            + pathBase.Length + path.Length + queryString.Length;
-
-        return new StringBuilder(length)
-            .Append(scheme)
-            .Append(SchemeDelimiter)
-            .Append(host)
-            .Append(pathBase)
-            .Append(path)
-            .Append(queryString)
-            .ToString();
+        return string.Concat([request.Scheme, SchemeDelimiter, request.Host.Value, request.PathBase.Value, request.Path.Value, request.QueryString.Value]);
     }
 
     /// <summary>

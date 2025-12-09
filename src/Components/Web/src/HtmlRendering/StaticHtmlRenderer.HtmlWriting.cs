@@ -21,8 +21,8 @@ public partial class StaticHtmlRenderer
         string.Empty,
         typeof(FormMappingContext));
 
-    private static readonly TextEncoder _javaScriptEncoder = JavaScriptEncoder.Default;
-    private TextEncoder _htmlEncoder = HtmlEncoder.Default;
+    private readonly TextEncoder _javaScriptEncoder;
+    private TextEncoder _htmlEncoder;
     private string? _closestSelectValueAsString;
 
     /// <summary>
@@ -252,7 +252,7 @@ public partial class StaticHtmlRenderer
             componentState.Renderer,
             componentState);
 
-        return (FormMappingContext?)supplier?.GetCurrentValue(_findFormMappingContext);
+        return (FormMappingContext?)supplier?.GetCurrentValue(null, _findFormMappingContext);
     }
 
     private static bool TryFindEnclosingElementFrame(ArrayRange<RenderTreeFrame> frames, int frameIndex, out int result)

@@ -7,8 +7,15 @@ using System.Security.Claims;
 using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
+using Components.TestServer.RazorComponents.Pages.PersistentState;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Mvc;
+using TestContentPackage;
+using TestContentPackage.Services;
 
 namespace TestServer;
 
@@ -24,17 +31,54 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
+        services.AddValidation();
+
         services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;
             options.MaxFormMappingRecursionDepth = 5;
             options.MaxFormMappingCollectionSize = 100;
         })
+            .RegisterPersistentService<InteractiveServerService>(RenderMode.InteractiveServer)
+            .RegisterPersistentService<InteractiveAutoService>(RenderMode.InteractiveAuto)
+            .RegisterPersistentService<InteractiveWebAssemblyService>(RenderMode.InteractiveWebAssembly)
             .AddInteractiveWebAssemblyComponents()
-            .AddInteractiveServerComponents();
+            .AddInteractiveServerComponents(options =>
+            {
+                if (Configuration.GetValue<bool>("DisableReconnectionCache"))
+                {
+                    // This disables the reconnection cache, which forces the server to persist the circuit state.
+                    options.DisconnectedCircuitMaxRetained = 0;
+                    options.DetailedErrors = true;
+                }
+                options.RootComponents.RegisterForJavaScript<TestContentPackage.PersistentComponents.ComponentWithPersistentState>("dynamic-js-root-counter");
+            })
+            .AddAuthenticationStateSerialization(options =>
+            {
+                bool.TryParse(Configuration["SerializeAllClaims"], out var serializeAllClaims);
+                options.SerializeAllClaims = serializeAllClaims;
+            });
+
+        if (Configuration.GetValue<bool>("UseHybridCache"))
+        {
+            services.AddHybridCache();
+        }
+
+        services.AddScoped<InteractiveWebAssemblyService>();
+        services.AddScoped<InteractiveServerService>();
+        services.AddScoped<InteractiveAutoService>();
+
+        // Register custom serializer for E2E testing of persistent component state serialization extensibility
+        services.AddSingleton<PersistentComponentStateSerializer<int>, CustomIntSerializer>();
+
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
         services.AddCascadingAuthenticationState();
+        services.AddSingleton<WebSocketCompressionConfiguration>();
+
+        var circuitContextAccessor = new TestCircuitContextAccessor();
+        services.AddSingleton<CircuitHandler>(circuitContextAccessor);
+        services.AddSingleton(circuitContextAccessor);
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -51,43 +95,109 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         app.Map("/subdir", app =>
         {
-            if (!env.IsDevelopment())
+            app.Map("/reexecution", reexecutionApp =>
             {
-                app.UseExceptionHandler("/Error", createScopeForErrors: true);
-            }
+                app.Map("/trigger-404", app =>
+                {
+                    app.Run(async context =>
+                    {
+                        context.Response.StatusCode = 404;
+                        await context.Response.WriteAsync("Triggered a 404 status code.");
+                    });
+                });
+                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForStatusCodePages: true);
+                reexecutionApp.UseRouting();
 
-            app.UseStaticFiles();
-            app.UseRouting();
-            UseFakeAuthState(app);
-            app.UseAntiforgery();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapRazorComponents<TRootComponent>()
-                    .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
-                    .AddInteractiveServerRenderMode()
-                    .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal");
-
-                NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
-                StreamingRenderingForm.MapEndpoints(endpoints);
-                InteractiveStreamingRenderingComponent.MapEndpoints(endpoints);
-
-                MapEnhancedNavigationEndpoints(endpoints);
+                reexecutionApp.UseAntiforgery();
+                ConfigureEndpoints(reexecutionApp, env);
             });
+            app.Map("/interactive-reexecution", reexecutionApp =>
+            {
+                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute-interactive", createScopeForStatusCodePages: true);
+                reexecutionApp.UseRouting();
+                reexecutionApp.UseAntiforgery();
+                ConfigureEndpoints(reexecutionApp, env);
+            });
+
+            ConfigureSubdirPipeline(app, env);
         });
     }
 
-    private static void UseFakeAuthState(IApplicationBuilder app)
+    private void ConfigureSubdirPipeline(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
+
+        if (!env.IsDevelopment())
+        {
+            app.UseExceptionHandler("/Error", createScopeForErrors: true);
+        }
+
+        app.UseRouting();
+        UseFakeAuthState(app);
+        app.UseAntiforgery();
+
+        app.Use((ctx, nxt) =>
+        {
+            if (ctx.Request.Query.ContainsKey("add-csp"))
+            {
+                ctx.Response.Headers.Add("Content-Security-Policy", "script-src 'self' 'unsafe-inline'");
+            }
+            return nxt();
+        });
+        ConfigureEndpoints(app, env);
+    }
+
+    private void ConfigureEndpoints(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        _ = app.UseEndpoints(endpoints =>
+        {
+            var contentRootStaticAssetsPath = Path.Combine(env.ContentRootPath, "Components.TestServer.staticwebassets.endpoints.json");
+            if (File.Exists(contentRootStaticAssetsPath))
+            {
+                endpoints.MapStaticAssets(contentRootStaticAssetsPath);
+            }
+            else
+            {
+                endpoints.MapStaticAssets();
+            }
+
+            _ = endpoints.MapRazorComponents<TRootComponent>()
+                .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"))
+                .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
+                .AddInteractiveServerRenderMode(options =>
+                {
+                    var config = app.ApplicationServices.GetRequiredService<WebSocketCompressionConfiguration>();
+                    options.DisableWebSocketCompression = config.IsCompressionDisabled;
+
+                    options.ContentSecurityFrameAncestorsPolicy = config.CspPolicy;
+
+                    options.ConfigureWebSocketAcceptContext = config.ConfigureWebSocketAcceptContext;
+                })
+                .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal");
+
+            NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
+            StreamingRenderingForm.MapEndpoints(endpoints);
+            InteractiveStreamingRenderingComponent.MapEndpoints(endpoints);
+
+            MapEnhancedNavigationEndpoints(endpoints);
+        });
+    }
+
+    internal static void UseFakeAuthState(IApplicationBuilder app)
     {
         app.Use((HttpContext context, Func<Task> next) =>
         {
             // Completely insecure fake auth system with no password for tests. Do not do anything like this in real apps.
             // It accepts a query parameter 'username' and then sets or deletes a cookie to hold that, and supplies a principal
             // using this username (taken either from the cookie or query param).
+            string GetQueryOrDefault(string queryKey, string defaultValue) =>
+                context.Request.Query.TryGetValue(queryKey, out var value) ? value : defaultValue;
+
             const string cookieKey = "fake_username";
-            context.Request.Cookies.TryGetValue(cookieKey, out var username);
-            if (context.Request.Query.TryGetValue("username", out var usernameFromQuery))
+            var username = GetQueryOrDefault("username", context.Request.Cookies[cookieKey]);
+
+            if (context.Request.Query.ContainsKey("username"))
             {
-                username = usernameFromQuery;
                 if (string.IsNullOrEmpty(username))
                 {
                     context.Response.Cookies.Delete(cookieKey);
@@ -99,15 +209,20 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 }
             }
 
+            var nameClaimType = GetQueryOrDefault("nameClaimType", ClaimTypes.Name);
+            var roleClaimType = GetQueryOrDefault("roleClaimType", ClaimTypes.Role);
+
             if (!string.IsNullOrEmpty(username))
             {
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, username),
+                    new Claim(nameClaimType, username),
+                    new Claim(roleClaimType, "test-role-1"),
+                    new Claim(roleClaimType, "test-role-2"),
                     new Claim("test-claim", "Test claim value"),
                 };
 
-                context.User = new ClaimsPrincipal(new ClaimsIdentity(claims, "FakeAuthenticationType"));
+                context.User = new ClaimsPrincipal(new ClaimsIdentity(claims, "FakeAuthenticationType", nameClaimType, roleClaimType));
             }
 
             return next();

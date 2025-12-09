@@ -160,21 +160,25 @@ public:
         return S_OK;
     }
 
+    _Acquires_shared_lock_(this->m_rwLock)
     void SharedAcquire()
     {
         AcquireSRWLockShared(&m_rwLock);
     }
-    
+
+    _Releases_shared_lock_(this->m_rwLock)
     void SharedRelease()
     {
         ReleaseSRWLockShared(&m_rwLock);
     }
 
+    _Acquires_exclusive_lock_(this->m_rwLock)
     void ExclusiveAcquire()
     {
         AcquireSRWLockExclusive(&m_rwLock);
     }
-    
+
+    _Releases_exclusive_lock_(this->m_rwLock)
     void ExclusiveRelease()
     {
         ReleaseSRWLockExclusive(&m_rwLock);

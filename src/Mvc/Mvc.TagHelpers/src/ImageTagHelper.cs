@@ -123,8 +123,9 @@ public class ImageTagHelper : UrlResolutionTagHelper
             // pipeline have touched the value. If the value is already encoded this ImageTagHelper may
             // not function properly.
             Src = output.Attributes[SrcAttributeName].Value as string;
+            var src = GetVersionedResourceUrl(Src);
 
-            output.Attributes.SetAttribute(SrcAttributeName, FileVersionProvider.AddFileVersionToPath(ViewContext.HttpContext.Request.PathBase, Src));
+            output.Attributes.SetAttribute(SrcAttributeName, src);
         }
     }
 
@@ -134,5 +135,25 @@ public class ImageTagHelper : UrlResolutionTagHelper
         {
             FileVersionProvider = ViewContext.HttpContext.RequestServices.GetRequiredService<IFileVersionProvider>();
         }
+    }
+
+    private string GetVersionedResourceUrl(string url)
+    {
+        if (AppendVersion == true)
+        {
+            var pathBase = ViewContext.HttpContext.Request.PathBase;
+            if (ResourceCollectionUtilities.TryResolveFromAssetCollection(ViewContext, url, out var resolvedUrl))
+            {
+                url = resolvedUrl;
+                return url;
+            }
+
+            if (url != null)
+            {
+                url = FileVersionProvider.AddFileVersionToPath(pathBase, url);
+            }
+        }
+
+        return url;
     }
 }

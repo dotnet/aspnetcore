@@ -118,8 +118,8 @@
           Exclude="@(TypeScriptCompile)"
           Condition="'%(_Files.Extension)' == '.ts' OR '%(_Files.Extension)' == '.tsx'" />
 
-      <Compile Include="@(_Files)"
-          Exclude="@(Compile)"
+      <Compile Include="@(_Files->'%(FullPath)')"
+          Exclude="@(Compile->'%(FullPath)')"
           Condition="'$(DefaultLanguageSourceExtension)' != '.ts' AND '%(_Files.Extension)' == '$(DefaultLanguageSourceExtension)'" />
     </ItemGroup>
 
@@ -138,7 +138,7 @@
       <TypeScriptCompile Include="$(_TypeScriptCompileItemsFromDirectories)" Exclude="@(TypeScriptCompile)" />
 
       <Compile Include="$(_CompileItemsFromDirectories)"
-          Exclude="@(Compile)"
+          Exclude="@(Compile->'%(FullPath)')"
           Condition="'$(DefaultLanguageSourceExtension)' != '.ts'" />
 
       <FileWrites Include="@(_Files);$(_TypeScriptCompileItemsFromDirectories);$(_CompileItemsFromDirectories)"

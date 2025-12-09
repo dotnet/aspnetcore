@@ -126,7 +126,7 @@ public class QuicConnectionListenerTests : TestApplicationErrorLoggerLoggedTest
         var serverStreamTask = serverConnection.AcceptAsync().DefaultTimeout();
 
         // Client creates stream
-        using var clientStream = await quicConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
+        await using var clientStream = await quicConnection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
         await clientStream.WriteAsync(TestData).DefaultTimeout();
 
         // Server finishes accepting

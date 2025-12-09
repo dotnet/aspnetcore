@@ -599,4 +599,30 @@ app.MapPost("/", (HttpContext context,
         Assert.Equal(new[] { 4, 5, 6 }, (int[])httpContext.Items["headers"]!);
         Assert.Equal(new[] { 7, 8, 9 }, (int[])httpContext.Items["form"]!);
     }
+
+    // See: https://github.com/dotnet/aspnetcore/issues/58633
+    [Fact]
+    public async Task RequestDelegateGeneratesCompilableCodeForServiceInNamespaceHttp()
+    {
+        var source = """
+app.MapGet("/hello", ([FromServices] ExampleService e) => e.Act("To be or not to be…"));
+""";
+        var (results, compilation) = await RunGeneratorAsync(source);
+
+        // Ironically, the same error this is testing would bite us here, so we must globally qualify the type name.
+        var serviceProvider = CreateServiceProvider((serviceCollection) => serviceCollection.AddSingleton<global::Http.ExampleService>());
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
+
+        VerifyStaticEndpointModel(results, endpointModel =>
+        {
+            Assert.Equal("MapGet", endpointModel.HttpMethod);
+            var p = Assert.Single(endpointModel.Parameters);
+            Assert.Equal(EndpointParameterSource.Service, p.Source);
+            Assert.Equal("e", p.SymbolName);
+        });
+
+        var httpContext = CreateHttpContext(serviceProvider);
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "To be or not to be…");
+    }
 }

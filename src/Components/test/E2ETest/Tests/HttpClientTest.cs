@@ -37,7 +37,7 @@ public class HttpClientTest : ServerTestBase<BlazorWasmTestAppFixture<BasicTestA
     {
         base.InitializeAsyncCore();
 
-        Browser.Navigate(_serverFixture.RootUri, "/subdir", noReload: true);
+        Browser.Navigate(_serverFixture.RootUri, "/subdir");
         _appElement = Browser.MountTestComponent<HttpRequestsComponent>();
     }
 

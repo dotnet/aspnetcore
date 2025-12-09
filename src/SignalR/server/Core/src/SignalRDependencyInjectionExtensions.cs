@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -24,15 +25,25 @@ public static class SignalRDependencyInjectionExtensions
         services.TryAddSingleton(typeof(HubLifetimeManager<>), typeof(DefaultHubLifetimeManager<>));
         services.TryAddSingleton(typeof(IHubProtocolResolver), typeof(DefaultHubProtocolResolver));
         services.TryAddSingleton(typeof(IHubContext<>), typeof(HubContext<>));
-        services.TryAddSingleton(typeof(IHubContext<,>), typeof(HubContext<,>));
+        AddTypedHubContext(services);
         services.TryAddSingleton(typeof(HubConnectionHandler<>), typeof(HubConnectionHandler<>));
         services.TryAddSingleton(typeof(IUserIdProvider), typeof(DefaultUserIdProvider));
         services.TryAddSingleton(typeof(HubDispatcher<>), typeof(DefaultHubDispatcher<>));
         services.TryAddScoped(typeof(IHubActivator<>), typeof(DefaultHubActivator<>));
         services.AddAuthorization();
 
+        services.TryAddSingleton(new SignalRServerActivitySource());
+
         var builder = new SignalRServerBuilder(services);
         builder.AddJsonProtocol();
         return builder;
+
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL3050:RequiresDynamicCode",
+            Justification = "HubContext<,>'s ctor creates a HubClients<,> instance, which generates code dynamically. " +
+                "The property that accesses the HubClients<,> is annotated as RequiresDynamicCode on IHubContext<,>, so developers will get a warning when using it.")]
+        static void AddTypedHubContext(IServiceCollection services)
+        {
+            services.TryAddSingleton(typeof(IHubContext<,>), typeof(HubContext<,>));
+        }
     }
 }

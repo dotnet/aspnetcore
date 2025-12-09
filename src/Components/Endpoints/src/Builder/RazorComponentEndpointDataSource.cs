@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -17,40 +18,43 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Component)] TRootComponent> : EndpointDataSource
 {
     private readonly object _lock = new();
-    private readonly List<Action<EndpointBuilder>> _conventions = new();
-    private readonly List<Action<EndpointBuilder>> _finallyConventions = new();
+    private readonly List<Action<EndpointBuilder>> _conventions = [];
+    private readonly List<Action<EndpointBuilder>> _finallyConventions = [];
+    private readonly List<Action<ComponentApplicationBuilder>> _componentApplicationBuilderActions = [];
     private readonly RazorComponentDataSourceOptions _options = new();
-    private readonly ComponentApplicationBuilder _builder;
-    private readonly IApplicationBuilder _applicationBuilder;
+    private readonly IEndpointRouteBuilder _endpointRouteBuilder;
+    private readonly ResourceCollectionResolver _resourceCollectionResolver;
     private readonly RenderModeEndpointProvider[] _renderModeEndpointProviders;
     private readonly RazorComponentEndpointFactory _factory;
     private readonly HotReloadService? _hotReloadService;
     private List<Endpoint>? _endpoints;
     private CancellationTokenSource _cancellationTokenSource;
     private IChangeToken _changeToken;
+    private IDisposable? _disposableChangeToken;   // THREADING: protected by _lock
 
     // Internal for testing.
-    internal ComponentApplicationBuilder Builder => _builder;
     internal List<Action<EndpointBuilder>> Conventions => _conventions;
+    internal List<Action<ComponentApplicationBuilder>> ComponentApplicationBuilderActions => _componentApplicationBuilderActions;
+    internal CancellationTokenSource ChangeTokenSource => _cancellationTokenSource;
 
     public RazorComponentEndpointDataSource(
-        ComponentApplicationBuilder builder,
         IEnumerable<RenderModeEndpointProvider> renderModeEndpointProviders,
-        IApplicationBuilder applicationBuilder,
+        IEndpointRouteBuilder endpointRouteBuilder,
         RazorComponentEndpointFactory factory,
         HotReloadService? hotReloadService = null)
     {
-        _builder = builder;
-        _applicationBuilder = applicationBuilder;
+        _endpointRouteBuilder = endpointRouteBuilder;
+        _resourceCollectionResolver = new ResourceCollectionResolver(endpointRouteBuilder);
         _renderModeEndpointProviders = renderModeEndpointProviders.ToArray();
         _factory = factory;
         _hotReloadService = hotReloadService;
         DefaultBuilder = new RazorComponentsEndpointConventionBuilder(
             _lock,
-            builder,
+            endpointRouteBuilder,
             _options,
             _conventions,
-            _finallyConventions);
+            _finallyConventions,
+            _componentApplicationBuilderActions);
 
         _cancellationTokenSource = new CancellationTokenSource();
         _changeToken = new CancellationChangeToken(_cancellationTokenSource.Token);
@@ -94,32 +98,62 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
 
     private void UpdateEndpoints()
     {
+        const string ResourceCollectionKey = "__ResourceCollectionKey";
+
         lock (_lock)
         {
+            _disposableChangeToken?.Dispose();
+            _disposableChangeToken = null;
+
             var endpoints = new List<Endpoint>();
-            var context = _builder.Build();
+
+            var componentApplicationBuilder = new ComponentApplicationBuilder();
+
+            foreach (var action in ComponentApplicationBuilderActions)
+            {
+                action?.Invoke(componentApplicationBuilder);
+            }
+
+            var context = componentApplicationBuilder.Build();
+
             var configuredRenderModesMetadata = new ConfiguredRenderModesMetadata(
-                Options.ConfiguredRenderModes.ToArray());
+                [.. Options.ConfiguredRenderModes]);
+
+            var endpointContext = new RazorComponentEndpointUpdateContext(endpoints, _options);
+
+            DefaultBuilder.OnBeforeCreateEndpoints(endpointContext);
+
+            AddBlazorWebEndpoints(endpoints);
 
             foreach (var definition in context.Pages)
             {
-                _factory.AddEndpoints(endpoints, typeof(TRootComponent), definition, _conventions, _finallyConventions, configuredRenderModesMetadata);
+                _factory.AddEndpoints(
+                    endpoints,
+                    typeof(TRootComponent),
+                    definition,
+                    _conventions,
+                    _finallyConventions,
+                    configuredRenderModesMetadata);
             }
 
-            ICollection<IComponentRenderMode> renderModes = Options.ConfiguredRenderModes;
+            // Extract the endpoint collection from any of the endpoints
+            var resourceCollection = endpoints.Count > 0 ? endpoints[^1].Metadata.GetMetadata<ResourceAssetCollection>() : null;
 
+            ICollection<IComponentRenderMode> renderModes = Options.ConfiguredRenderModes;
             foreach (var renderMode in renderModes)
             {
                 var found = false;
                 foreach (var provider in _renderModeEndpointProviders)
                 {
+                    var builder = _endpointRouteBuilder.CreateApplicationBuilder();
+                    builder.Properties[ResourceCollectionKey] = resourceCollection;
                     if (provider.Supports(renderMode))
                     {
                         found = true;
                         RenderModeEndpointProvider.AddEndpoints(
                             endpoints,
                             typeof(TRootComponent),
-                            provider.GetEndpointBuilders(renderMode, _applicationBuilder.New()),
+                            provider.GetEndpointBuilders(renderMode, builder),
                             renderMode,
                             _conventions,
                             _finallyConventions);
@@ -139,10 +173,32 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
             _cancellationTokenSource = new CancellationTokenSource();
             _changeToken = new CancellationChangeToken(_cancellationTokenSource.Token);
             oldCancellationTokenSource?.Cancel();
-            if (_hotReloadService is { MetadataUpdateSupported : true })
+            oldCancellationTokenSource?.Dispose();
+            if (_hotReloadService is { MetadataUpdateSupported: true })
             {
-                ChangeToken.OnChange(_hotReloadService.GetChangeToken, UpdateEndpoints);
+                _disposableChangeToken = ChangeToken.OnChange(_hotReloadService.GetChangeToken, UpdateEndpoints);
             }
+        }
+    }
+
+    private void AddBlazorWebEndpoints(List<Endpoint> endpoints)
+    {
+        List<EndpointBuilder> blazorWebEndpoints = [
+            OpaqueRedirection.GetBlazorOpaqueRedirectionEndpoint()];
+
+        foreach (var endpoint in blazorWebEndpoints)
+        {
+            foreach (var convention in _conventions)
+            {
+                convention(endpoint);
+            }
+
+            foreach (var convention in _finallyConventions)
+            {
+                convention(endpoint);
+            }
+
+            endpoints.Add(endpoint.Build());
         }
     }
 

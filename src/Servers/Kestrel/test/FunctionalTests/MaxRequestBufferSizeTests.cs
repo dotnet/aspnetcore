@@ -1,23 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Xunit;
 
 #if SOCKETS
 namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests;
@@ -114,9 +108,10 @@ public class MaxRequestBufferSizeTests : LoggedTest
                     };
         }
     }
+
+    // On helix retry list - inherently flaky (trying to manipulate the state of the server's buffer)
     [Theory]
     [MemberData(nameof(LargeUploadData))]
-    // This is inherently flaky and is relying on helix retry to pass consistently
     public async Task LargeUpload(long? maxRequestBufferSize, bool connectionAdapter, bool expectPause)
     {
         // Parameters
@@ -131,7 +126,7 @@ public class MaxRequestBufferSizeTests : LoggedTest
 
         var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
 
-        using (var host = await StartHost(maxRequestBufferSize, data, connectionAdapter, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
+        using (var host = await StartHost(maxRequestBufferSize, data, connectionAdapter, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory))
         {
             var port = host.GetPort();
             using (var socket = CreateSocket(port))
@@ -224,7 +219,7 @@ public class MaxRequestBufferSizeTests : LoggedTest
 
         var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
 
-        using (var host = await StartHost(16 * 1024, data, false, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
+        using (var host = await StartHost(16 * 1024, data, false, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory))
         {
             var port = host.GetPort();
             using (var socket = CreateSocket(port))
@@ -278,22 +273,26 @@ public class MaxRequestBufferSizeTests : LoggedTest
 
                 // Dispose host prior to closing connection to verify the server doesn't throw during shutdown
                 // if a connection no longer has alloc and read callbacks configured.
-                try
-                {
-                    await host.StopAsync();
-                }
-                // Remove when https://github.com/dotnet/runtime/issues/40290 is fixed
-                catch (OperationCanceledException)
-                {
-
-                }
+                await host.StopAsync();
                 host.Dispose();
             }
         }
         // Allow appfunc to unblock
         startReadingRequestBody.SetResult();
         clientFinishedSendingRequestBody.SetResult();
-        await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
+
+        try
+        {
+            await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
+        }
+        catch (AggregateException)
+        {
+            // This test is inherently racey. The server could try to use blocks that have been disposed.
+            // Ignore errors related to this:
+            //
+            // System.AggregateException : Exceptions occurred while accessing blocks(Block is backed by disposed slab)
+            // ---- System.InvalidOperationException : Block is backed by disposed slab
+        }
     }
 
     private async Task<IHost> StartHost(long? maxRequestBufferSize,
@@ -301,9 +300,9 @@ public class MaxRequestBufferSizeTests : LoggedTest
         bool useConnectionAdapter,
         TaskCompletionSource startReadingRequestBody,
         TaskCompletionSource clientFinishedSendingRequestBody,
-        Func<MemoryPool<byte>> memoryPoolFactory = null)
+        IMemoryPoolFactory<byte> memoryPoolFactory = null)
     {
-        var host = TransportSelector.GetHostBuilder(memoryPoolFactory, maxRequestBufferSize)
+        var host = TransportSelector.GetHostBuilder(maxRequestBufferSize)
             .ConfigureWebHost(webHostBuilder =>
             {
                 webHostBuilder
@@ -336,6 +335,13 @@ public class MaxRequestBufferSizeTests : LoggedTest
                         options.Limits.MaxRequestBodySize = _dataLength;
                     })
                     .UseContentRoot(Directory.GetCurrentDirectory())
+                    .ConfigureServices(services =>
+                    {
+                        if (memoryPoolFactory != null)
+                        {
+                            services.AddSingleton<IMemoryPoolFactory<byte>>(memoryPoolFactory);
+                        }
+                    })
                     .Configure(app => app.Run(async context =>
                     {
                         await startReadingRequestBody.Task.TimeoutAfter(TimeSpan.FromSeconds(120));
@@ -408,7 +414,7 @@ public class MaxRequestBufferSizeTests : LoggedTest
 
             if (count == 0)
             {
-                Assert.True(false, "Stream completed without expected substring.");
+                Assert.Fail("Stream completed without expected substring.");
             }
 
             for (var i = 0; i < count && matchedChars < exptectedLength; i++)

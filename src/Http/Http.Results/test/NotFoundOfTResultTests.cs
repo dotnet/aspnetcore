@@ -78,17 +78,19 @@ public class NotFoundOfTResultTests
         Assert.Equal(StatusCodes.Status404NotFound, producesResponseTypeMetadata.StatusCode);
         Assert.Equal(typeof(Todo), producesResponseTypeMetadata.Type);
         Assert.Single(producesResponseTypeMetadata.ContentTypes, "application/json");
+
+        Assert.Contains(builder.Metadata, m => m is IDisableCookieRedirectMetadata);
     }
 
     [Fact]
-    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    public async Task ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
         var result = new NotFound<object>(null);
         HttpContext httpContext = null;
 
         // Act & Assert
-        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+        await Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
     }
 
     [Fact]

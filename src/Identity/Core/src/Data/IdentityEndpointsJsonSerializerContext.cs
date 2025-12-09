@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Identity.Data;
 [JsonSerializable(typeof(LoginRequest))]
 [JsonSerializable(typeof(RefreshRequest))]
 [JsonSerializable(typeof(ResetPasswordRequest))]
+[JsonSerializable(typeof(ForgotPasswordRequest))]
 [JsonSerializable(typeof(ResendConfirmationEmailRequest))]
 [JsonSerializable(typeof(InfoRequest))]
 [JsonSerializable(typeof(InfoResponse))]

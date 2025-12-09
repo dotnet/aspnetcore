@@ -99,7 +99,7 @@ Examples:
         {
             context.SecretStore.Set(_keyName, _keyValue);
             context.SecretStore.Save();
-            context.Reporter.Output(Resources.FormatMessage_Saved_Secret(_keyName, _keyValue));
+            context.Reporter.Output(Resources.FormatMessage_Saved_Secret(_keyName));
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing;
 
 public class UrlHelperBaseTest
 {
-    public static TheoryData GeneratePathFromRoute_HandlesLeadingAndTrailingSlashesData =>
+    public static TheoryData<string, string, string> GeneratePathFromRoute_HandlesLeadingAndTrailingSlashesData =>
         new TheoryData<string, string, string>
         {
                 {  null, "", "/" },

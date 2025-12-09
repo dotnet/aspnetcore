@@ -677,7 +677,7 @@ namespace System.Net.Http.HPack
             // see comments in GenerateDecodingLookupTree() describing decoding table
 
             Span<byte> dst = dstArray;
-            Debug.Assert(dst != null && dst.Length > 0);
+            Debug.Assert(dst.Length > 0);
 
             ushort[] decodingTree = s_decodingTree;
 

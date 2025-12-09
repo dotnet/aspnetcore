@@ -4,7 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.JSInterop;
+using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.WebView;
 
@@ -49,9 +49,17 @@ internal sealed class IpcSender
         DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.AttachToDocument, componentId, selector));
     }
 
-    public void BeginInvokeJS(long taskId, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
+    public void BeginInvokeJS(in JSInvocationInfo invocationInfo)
     {
-        DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.BeginInvokeJS, taskId, identifier, argsJson, resultType, targetInstanceId));
+        DispatchMessageWithErrorHandling(IpcCommon.Serialize(
+            IpcCommon.OutgoingMessageType.BeginInvokeJS,
+            invocationInfo.AsyncHandle,
+            invocationInfo.Identifier,
+            invocationInfo.ArgsJson,
+            invocationInfo.ResultType,
+            invocationInfo.TargetInstanceId,
+            invocationInfo.CallType
+        ));
     }
 
     public void EndInvokeDotNet(string callId, bool success, string invocationResultOrError)

@@ -198,7 +198,7 @@ public static class EndpointRouteBuilderExtensions
 
         return endpoints
             .GetOrAddRouteEndpointDataSource()
-            .AddRequestDelegate(pattern, requestDelegate, httpMethods, CreateHandlerRequestDelegate);
+            .AddRequestDelegate(pattern, requestDelegate, httpMethods, CreateHandlerRequestDelegate, requestDelegate.Method);
 
         static RequestDelegateResult CreateHandlerRequestDelegate(Delegate handler, RequestDelegateFactoryOptions options, RequestDelegateMetadataResult? metadataResult)
         {
@@ -436,7 +436,7 @@ public static class EndpointRouteBuilderExtensions
 
         return endpoints
             .GetOrAddRouteEndpointDataSource()
-            .AddRouteHandler(pattern, handler, httpMethods, isFallback, RequestDelegateFactory.InferMetadata, RequestDelegateFactory.Create);
+            .AddRouteHandler(pattern, handler, httpMethods, isFallback, RequestDelegateFactory.InferMetadata, RequestDelegateFactory.Create, handler.Method);
     }
 
     internal static RouteEndpointDataSource GetOrAddRouteEndpointDataSource(this IEndpointRouteBuilder endpoints)

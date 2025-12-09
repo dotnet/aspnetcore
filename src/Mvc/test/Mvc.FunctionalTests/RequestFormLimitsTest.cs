@@ -3,22 +3,34 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class RequestFormLimitsTest : IClassFixture<MvcTestFixture<BasicWebSite.StartupRequestLimitSize>>
+public class RequestFormLimitsTest : LoggedTest
 {
-    public RequestFormLimitsTest(MvcTestFixture<BasicWebSite.StartupRequestLimitSize> fixture)
-    {
-        var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
-        Client = factory.CreateDefaultClient();
-    }
-
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
         builder.UseStartup<BasicWebSite.StartupRequestLimitSize>();
 
-    public HttpClient Client { get; }
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+    {
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<BasicWebSite.StartupRequestLimitSize>(LoggerFactory).WithWebHostBuilder(ConfigureWebHostBuilder);
+        Client = Factory.CreateDefaultClient();
+    }
+
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<BasicWebSite.StartupRequestLimitSize> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public async Task RequestFormLimitCheckHappens_WithAntiforgeryValidation()

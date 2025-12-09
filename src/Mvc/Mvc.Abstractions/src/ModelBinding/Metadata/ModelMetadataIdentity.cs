@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-using Microsoft.AspNetCore.Mvc.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
@@ -52,11 +51,7 @@ public readonly struct ModelMetadataIdentity : IEquatable<ModelMetadataIdentity>
     {
         ArgumentNullException.ThrowIfNull(modelType);
         ArgumentNullException.ThrowIfNull(containerType);
-
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(name);
 
         return new ModelMetadataIdentity(modelType, name, containerType);
     }

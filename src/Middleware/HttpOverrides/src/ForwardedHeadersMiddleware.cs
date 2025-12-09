@@ -50,28 +50,20 @@ public class ForwardedHeadersMiddleware
         ArgumentNullException.ThrowIfNull(options);
 
         // Make sure required options is not null or whitespace
-        EnsureOptionNotNullorWhitespace(options.Value.ForwardedForHeaderName, nameof(options.Value.ForwardedForHeaderName));
-        EnsureOptionNotNullorWhitespace(options.Value.ForwardedHostHeaderName, nameof(options.Value.ForwardedHostHeaderName));
-        EnsureOptionNotNullorWhitespace(options.Value.ForwardedProtoHeaderName, nameof(options.Value.ForwardedProtoHeaderName));
-        EnsureOptionNotNullorWhitespace(options.Value.ForwardedPrefixHeaderName, nameof(options.Value.ForwardedPrefixHeaderName));
-        EnsureOptionNotNullorWhitespace(options.Value.OriginalForHeaderName, nameof(options.Value.OriginalForHeaderName));
-        EnsureOptionNotNullorWhitespace(options.Value.OriginalHostHeaderName, nameof(options.Value.OriginalHostHeaderName));
-        EnsureOptionNotNullorWhitespace(options.Value.OriginalProtoHeaderName, nameof(options.Value.OriginalProtoHeaderName));
-        EnsureOptionNotNullorWhitespace(options.Value.OriginalPrefixHeaderName, nameof(options.Value.OriginalPrefixHeaderName));
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.Value.ForwardedForHeaderName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.Value.ForwardedHostHeaderName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.Value.ForwardedProtoHeaderName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.Value.ForwardedPrefixHeaderName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.Value.OriginalForHeaderName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.Value.OriginalHostHeaderName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.Value.OriginalProtoHeaderName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.Value.OriginalPrefixHeaderName);
 
         _options = options.Value;
         _logger = loggerFactory.CreateLogger<ForwardedHeadersMiddleware>();
         _next = next;
 
         PreProcessHosts();
-
-        static void EnsureOptionNotNullorWhitespace(string value, string propertyName)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                throw new ArgumentException($"options.{propertyName} is required", nameof(options));
-            }
-        }
     }
 
     private void PreProcessHosts()
@@ -221,26 +213,26 @@ public class ForwardedHeadersMiddleware
             // Host and Scheme initial values are never inspected, no need to set them here.
         };
 
-        var checkKnownIps = _options.KnownNetworks.Count > 0 || _options.KnownProxies.Count > 0;
+        var checkKnownIps = _options.KnownIPNetworks.Count > 0 || _options.KnownProxies.Count > 0;
         bool applyChanges = false;
         int entriesConsumed = 0;
 
         for (; entriesConsumed < sets.Length; entriesConsumed++)
         {
             var set = sets[entriesConsumed];
+            // For the first instance, allow remoteIp to be null for servers that don't support it natively.
+            if (currentValues.RemoteIpAndPort != null && checkKnownIps && !CheckKnownAddress(currentValues.RemoteIpAndPort.Address))
+            {
+                // Stop at the first unknown remote IP, but still apply changes processed so far.
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug(1, "Unknown proxy: {RemoteIpAndPort}", currentValues.RemoteIpAndPort);
+                }
+                break;
+            }
+
             if (checkFor)
             {
-                // For the first instance, allow remoteIp to be null for servers that don't support it natively.
-                if (currentValues.RemoteIpAndPort != null && checkKnownIps && !CheckKnownAddress(currentValues.RemoteIpAndPort.Address))
-                {
-                    // Stop at the first unknown remote IP, but still apply changes processed so far.
-                    if (_logger.IsEnabled(LogLevel.Debug))
-                    {
-                        _logger.LogDebug(1, "Unknown proxy: {RemoteIpAndPort}", currentValues.RemoteIpAndPort);
-                    }
-                    break;
-                }
-
                 if (IPEndPoint.TryParse(set.IpAndPortText, out var parsedEndPoint))
                 {
                     applyChanges = true;
@@ -407,7 +399,7 @@ public class ForwardedHeadersMiddleware
         {
             return true;
         }
-        foreach (var network in _options.KnownNetworks)
+        foreach (var network in _options.KnownIPNetworks)
         {
             if (network.Contains(address))
             {

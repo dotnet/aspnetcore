@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using Resources = Microsoft.AspNetCore.Mvc.RazorPages.Resources;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -70,11 +69,7 @@ public static class MvcRazorPagesMvcCoreBuilderExtensions
     public static IMvcCoreBuilder WithRazorPagesRoot(this IMvcCoreBuilder builder, string rootDirectory)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
-        if (string.IsNullOrEmpty(rootDirectory))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(rootDirectory));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(rootDirectory);
 
         builder.Services.Configure<RazorPagesOptions>(options => options.RootDirectory = rootDirectory);
         return builder;

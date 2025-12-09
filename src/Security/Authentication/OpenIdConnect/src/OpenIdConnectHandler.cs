@@ -450,6 +450,11 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
         GenerateCorrelationId(properties);
 
+        foreach (var additionalParameter in Options.AdditionalAuthorizationParameters)
+        {
+            message.Parameters.Add(additionalParameter.Key, additionalParameter.Value);
+        }
+
         var redirectContext = new RedirectContext(Context, Scheme, Options, properties)
         {
             ProtocolMessage = message
@@ -478,6 +483,39 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         {
             throw new InvalidOperationException(
                 "Cannot redirect to the authorization endpoint, the configuration may be missing or invalid.");
+        }
+
+        var parEndpoint = _configuration?.PushedAuthorizationRequestEndpoint;
+
+        switch (Options.PushedAuthorizationBehavior)
+        {
+            case PushedAuthorizationBehavior.UseIfAvailable:
+                // Push if endpoint is in disco
+                if (!string.IsNullOrEmpty(parEndpoint))
+                {
+                    await PushAuthorizationRequest(message, properties, parEndpoint);
+                }
+
+                break;
+            case PushedAuthorizationBehavior.Disable:
+                // Fail if disabled in options but required by disco
+                if (_configuration?.RequirePushedAuthorizationRequests == true)
+                {
+                    throw new InvalidOperationException("Pushed authorization is required by the OpenId Connect provider, but disabled by the OpenIdConnectOptions.PushedAuthorizationBehavior.");
+                }
+
+                // Otherwise do nothing
+                break;
+            case PushedAuthorizationBehavior.Require:
+                // Fail if required in options but unavailable in disco
+                if (string.IsNullOrEmpty(parEndpoint))
+                {
+                    throw new InvalidOperationException("Pushed authorization is required by the OpenIdConnectOptions.PushedAuthorizationBehavior, but no pushed authorization endpoint is available.");
+                }
+
+                // Otherwise push
+                await PushAuthorizationRequest(message, properties, parEndpoint);
+                break;
         }
 
         if (Options.AuthenticationMethod == OpenIdConnectRedirectBehavior.RedirectGet)
@@ -509,6 +547,79 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         }
 
         throw new NotImplementedException($"An unsupported authentication method has been configured: {Options.AuthenticationMethod}");
+    }
+
+    private async Task PushAuthorizationRequest(OpenIdConnectMessage authorizeRequest, AuthenticationProperties properties, string parEndpoint)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(parEndpoint);
+
+        // Build context and run event
+        var parRequest = authorizeRequest.Clone();
+        var context = new PushedAuthorizationContext(Context, Scheme, Options, parRequest, properties);
+        await Events.PushAuthorization(context);
+
+        // If the event handled client authentication, skip the default auth behavior
+        if (context.HandledClientAuthentication)
+        {
+            Logger.PushAuthorizationHandledClientAuthentication();
+        }
+        // Otherwise, add the client secret to the parameters (if available)
+        else
+        {
+            if (!string.IsNullOrEmpty(Options.ClientSecret))
+            {
+                parRequest.Parameters.Add(OpenIdConnectParameterNames.ClientSecret, Options.ClientSecret);
+            }
+        }
+
+        string requestUri;
+
+        // The event can either entirely skip pushing to the par endpoint...
+        if (context.SkippedPush)
+        {
+            Logger.PushAuthorizationSkippedPush();
+            return;
+        }
+
+        // ... or handle pushing to the par endpoint itself, in which case it will supply the request uri
+        if (context.HandledPush)
+        {
+            Logger.PushAuthorizationHandledPush();
+            requestUri = context.RequestUri;
+        }
+        else
+        {
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, parEndpoint);
+            requestMessage.Content = new FormUrlEncodedContent(parRequest.Parameters);
+            requestMessage.Version = Backchannel.DefaultRequestVersion;
+            var parResponseMessage = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
+            requestUri = await GetPushedAuthorizationRequestUri(parResponseMessage);
+        }
+
+        authorizeRequest.Parameters.Clear();
+        authorizeRequest.Parameters.Add("client_id", Options.ClientId);
+        authorizeRequest.Parameters.Add("request_uri", requestUri);
+    }
+
+    private async Task<string> GetPushedAuthorizationRequestUri(HttpResponseMessage parResponseMessage)
+    {
+        // Check content type
+        var contentType = parResponseMessage.Content.Headers.ContentType;
+        if (!(contentType?.MediaType?.Equals("application/json", StringComparison.OrdinalIgnoreCase) ?? false))
+        {
+            throw new InvalidOperationException("Invalid response from pushed authorization: content type is not application/json.");
+        }
+
+        // Parse response
+        var parResponseString = await parResponseMessage.Content.ReadAsStringAsync(Context.RequestAborted);
+        var message = new OpenIdConnectMessage(parResponseString);
+
+        var requestUri = message.GetParameter("request_uri");
+        if (requestUri == null)
+        {
+            throw CreateOpenIdConnectProtocolException(message, parResponseMessage);
+        }
+        return requestUri;
     }
 
     /// <summary>

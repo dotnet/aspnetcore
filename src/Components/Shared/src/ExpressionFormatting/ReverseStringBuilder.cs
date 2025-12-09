@@ -17,7 +17,7 @@ internal ref struct ReverseStringBuilder
     private SequenceSegment? _fallbackSequenceSegment;
 
     // For testing.
-    internal int SequenceSegmentCount => _fallbackSequenceSegment?.Count() ?? 0;
+    internal readonly int SequenceSegmentCount => _fallbackSequenceSegment?.Count() ?? 0;
 
     public ReverseStringBuilder(int conservativeEstimatedStringLength)
     {
@@ -33,7 +33,7 @@ internal ref struct ReverseStringBuilder
         _nextEndIndex = _currentBuffer.Length;
     }
 
-    public bool Empty => _nextEndIndex == _currentBuffer.Length;
+    public readonly bool Empty => _nextEndIndex == _currentBuffer.Length;
 
     public void InsertFront(scoped ReadOnlySpan<char> span)
     {
@@ -60,13 +60,13 @@ internal ref struct ReverseStringBuilder
             var newBuffer = s_arrayPool.Rent(sizeToRent);
             _fallbackSequenceSegment = new(newBuffer);
 
-            _nextEndIndex = newBuffer.Length - _currentBuffer.Length;
-            _currentBuffer.CopyTo(newBuffer.AsSpan()[_nextEndIndex..]);
-            _currentBuffer = newBuffer;
+            var newEndIndex = newBuffer.Length - _currentBuffer.Length + _nextEndIndex;
+            _currentBuffer[_nextEndIndex..].CopyTo(newBuffer.AsSpan(newEndIndex));
+            newEndIndex -= span.Length;
+            span.CopyTo(newBuffer.AsSpan(newEndIndex));
 
-            startIndex = _nextEndIndex - span.Length;
-            span.CopyTo(_currentBuffer[startIndex..]);
-            _nextEndIndex = startIndex;
+            _currentBuffer = newBuffer;
+            _nextEndIndex = newEndIndex;
         }
         else
         {

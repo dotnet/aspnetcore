@@ -1,0 +1,24 @@
+﻿@page "/🙂/routing/parameters/{parameter}"
+<h3>Parameters</h3>
+
+<p id="parameter-value">@Parameter</p>
+
+@if (_interactive)
+{
+    <p id="interactive">Rendered interactive.</p>
+}
+
+@code {
+    private bool _interactive;
+
+    [Parameter] public string Parameter { get; set; }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _interactive = true;
+            StateHasChanged();
+        }
+    }
+}

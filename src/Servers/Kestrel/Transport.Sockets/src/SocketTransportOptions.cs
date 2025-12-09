@@ -1,10 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 
@@ -28,9 +28,9 @@ public class SocketTransportOptions
     /// The number of I/O queues used to process requests. Set to 0 to directly schedule I/O to the ThreadPool.
     /// </summary>
     /// <remarks>
-    /// Defaults to <see cref="Environment.ProcessorCount" /> rounded down and clamped between 1 and 16.
+    /// Defaults to a value based on and limited to <see cref="Environment.ProcessorCount" />.
     /// </remarks>
-    public int IOQueueCount { get; set; } = Math.Min(Environment.ProcessorCount, 16);
+    public int IOQueueCount { get; set; } = Internal.IOQueue.DefaultCount;
 
     /// <summary>
     /// Wait until there is data available to allocate a buffer. Setting this to false can increase throughput at the cost of increased memory usage.
@@ -166,5 +166,5 @@ public class SocketTransportOptions
         return listenSocket;
     }
 
-    internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.PinnedBlockMemoryPoolFactory.Create;
+    internal IMemoryPoolFactory<byte> MemoryPoolFactory { get; set; } = DefaultSimpleMemoryPoolFactory.Instance;
 }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using Windows.Win32;
 using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
@@ -63,6 +64,24 @@ public sealed class AuthenticationManager
     /// </summary>
     public string? AuthenticationDisplayName { get; set; }
 
+    /// <summary>
+    /// If true, the Kerberos authentication credentials are persisted per connection
+    /// and re-used for subsequent anonymous requests on the same connection.
+    /// Kerberos or Negotiate authentication must be enabled. The default is false.
+    /// This option maps to the native HTTP_AUTH_EX_FLAG_ENABLE_KERBEROS_CREDENTIAL_CACHING flag.
+    /// <see href="https://learn.microsoft.com/windows/win32/api/http/ns-http-http_server_authentication_info"/>
+    /// </summary>
+    public bool EnableKerberosCredentialCaching { get; set; }
+
+    /// <summary>
+    /// If true, the server captures user credentials from the thread that starts the
+    /// host and impersonates that user during Kerberos or Negotiate authentication.
+    /// Kerberos or Negotiate authentication must be enabled. The default is false.
+    /// This option maps to the native HTTP_AUTH_EX_FLAG_CAPTURE_CREDENTIAL flag.
+    /// <see href="https://learn.microsoft.com/windows/win32/api/http/ns-http-http_server_authentication_info"/>
+    /// </summary>
+    public bool CaptureCredentials { get; set; }
+
     internal void SetUrlGroupSecurity(UrlGroup urlGroup)
     {
         Debug.Assert(_urlGroup == null, "SetUrlGroupSecurity called more than once.");
@@ -85,18 +104,39 @@ public sealed class AuthenticationManager
         {
             authInfo.AuthSchemes = (uint)_authSchemes;
 
+            authInfo.ExFlags = 0;
+
+            if (EnableKerberosCredentialCaching)
+            {
+                authInfo.ExFlags |= (byte)PInvoke.HTTP_AUTH_EX_FLAG_ENABLE_KERBEROS_CREDENTIAL_CACHING;
+            }
+
+            if (CaptureCredentials)
+            {
+                authInfo.ExFlags |= (byte)PInvoke.HTTP_AUTH_EX_FLAG_CAPTURE_CREDENTIAL;
+            }
+
             // TODO:
             // NTLM auth sharing (on by default?) DisableNTLMCredentialCaching
-            // Kerberos auth sharing (off by default?) HTTP_AUTH_EX_FLAG_ENABLE_KERBEROS_CREDENTIAL_CACHING
             // Mutual Auth - ReceiveMutualAuth
             // Digest domain and realm - HTTP_SERVER_AUTHENTICATION_DIGEST_PARAMS
             // Basic realm - HTTP_SERVER_AUTHENTICATION_BASIC_PARAMS
 
+            HTTP_SERVER_PROPERTY property;
+            if (authInfo.ExFlags != 0)
+            {
+                // We need to modify extended fields such as ExFlags, set the extended auth property.
+                property = HTTP_SERVER_PROPERTY.HttpServerExtendedAuthenticationProperty;
+            }
+            else
+            {
+                // Otherwise set the regular auth property.
+                property = HTTP_SERVER_PROPERTY.HttpServerAuthenticationProperty;
+            }
+
             IntPtr infoptr = new IntPtr(&authInfo);
 
-            _urlGroup.SetProperty(
-                HTTP_SERVER_PROPERTY.HttpServerAuthenticationProperty,
-                infoptr, (uint)AuthInfoSize);
+            _urlGroup.SetProperty(property, infoptr, (uint)AuthInfoSize);
         }
     }
 

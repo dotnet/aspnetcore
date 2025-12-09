@@ -37,7 +37,7 @@ public static class MultipartSectionStreamExtensions
         _ = MediaTypeHeaderValue.TryParse(section.ContentType, out var sectionMediaType);
 
         var streamEncoding = sectionMediaType?.Encoding;
-        // https://learn.microsoft.com/en-us/dotnet/core/compatibility/syslib-warnings/syslib0001
+        // https://learn.microsoft.com/dotnet/core/compatibility/syslib-warnings/syslib0001
         if (streamEncoding == null || streamEncoding.CodePage == 65000)
         {
             streamEncoding = Encoding.UTF8;

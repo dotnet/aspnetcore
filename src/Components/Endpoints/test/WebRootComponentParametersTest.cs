@@ -100,36 +100,73 @@ public class WebRootComponentParametersTest
     }
 
     [Fact]
-    public void WebRootComponentParameters_DefinitelyEquals_Throws_WhenComparingNonJsonElementParameterToJsonElement()
+    public void WebRootComponentParameters_DefinitelyEquals_ReturnsFalse_WhenComparingNonJsonElementParameterToJsonElement()
     {
         // Arrange
         var parameters1 = CreateParametersWithNonJsonElements(new() { ["First"] = 123 });
         var parameters2 = CreateParameters(new() { ["First"] = 456 });
 
-        // Act/assert
-        Assert.Throws<InvalidCastException>(() => parameters1.DefinitelyEquals(parameters2));
+        // Act
+        var result = parameters1.DefinitelyEquals(parameters2);
+
+        // Assert
+        Assert.False(result);
     }
 
     [Fact]
-    public void WebRootComponentParameters_DefinitelyEquals_Throws_WhenComparingJsonElementParameterToNonJsonElement()
+    public void WebRootComponentParameters_DefinitelyEquals_ReturnsFalse_WhenComparingJsonElementParameterToNonJsonElement()
     {
         // Arrange
         var parameters1 = CreateParameters(new() { ["First"] = 123 });
         var parameters2 = CreateParametersWithNonJsonElements(new() { ["First"] = 456 });
 
-        // Act/assert
-        Assert.Throws<InvalidCastException>(() => parameters1.DefinitelyEquals(parameters2));
+        // Act
+        var result = parameters1.DefinitelyEquals(parameters2);
+
+        // Assert
+        Assert.False(result);
     }
 
     [Fact]
-    public void WebRootComponentParameters_DefinitelyEquals_Throws_WhenComparingNonJsonElementParameters()
+    public void WebRootComponentParameters_DefinitelyEquals_ReturnsTrue_WhenComparingEqualNonJsonElementParameters()
+    {
+        // Arrange
+        var parameters1 = CreateParametersWithNonJsonElements(new() { ["First"] = 123 });
+        var parameters2 = CreateParametersWithNonJsonElements(new() { ["First"] = 123 });
+
+        // Act
+        var result = parameters1.DefinitelyEquals(parameters2);
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void WebRootComponentParameters_DefinitelyEquals_ReturnsFalse_WhenComparingInequalNonJsonElementParameters()
     {
         // Arrange
         var parameters1 = CreateParametersWithNonJsonElements(new() { ["First"] = 123 });
         var parameters2 = CreateParametersWithNonJsonElements(new() { ["First"] = 456 });
 
-        // Act/assert
-        Assert.Throws<InvalidCastException>(() => parameters1.DefinitelyEquals(parameters2));
+        // Act
+        var result = parameters1.DefinitelyEquals(parameters2);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void WebRootComponentParameters_DefinitelyEquals_ReturnsTrue_WhenComparingNullParameters()
+    {
+        // Arrange
+        var parameters1 = CreateParametersWithNonJsonElements(new() { ["First"] = null });
+        var parameters2 = CreateParametersWithNonJsonElements(new() { ["First"] = null });
+
+        // Act
+        var result = parameters1.DefinitelyEquals(parameters2);
+
+        // Assert
+        Assert.True(result);
     }
 
     private static WebRootComponentParameters CreateParameters(Dictionary<string, object> parameters)

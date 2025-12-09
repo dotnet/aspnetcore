@@ -3,14 +3,17 @@
   <PropertyGroup>
     <Description>Implements the SignalR Hub Protocol using System.Text.Json.</Description>
     <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)TrimmingAttributes.cs" LinkBase="Shared" />
+
     <Compile Include="$(SignalRSharedSourceRoot)SystemTextJsonExtensions.cs" Link="Internal\SystemTextJsonExtensions.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)TextMessageFormatter.cs" Link="TextMessageFormatter.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)TextMessageParser.cs" Link="TextMessageParser.cs" />

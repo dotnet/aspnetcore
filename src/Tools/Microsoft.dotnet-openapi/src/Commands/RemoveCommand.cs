@@ -26,9 +26,10 @@ internal sealed class RemoveCommand : BaseCommand
 
     protected override Task<int> ExecuteCoreAsync()
     {
-        var projectFile = ResolveProjectFile(ProjectFileOption);
+        ArgumentException.ThrowIfNullOrEmpty(_sourceProjectArg.Value);
 
-        var sourceFile = Ensure.NotNullOrEmpty(_sourceProjectArg.Value, SourceArgName);
+        var projectFile = ResolveProjectFile(ProjectFileOption);
+        var sourceFile = _sourceProjectArg.Value;
 
         if (IsProjectFile(sourceFile))
         {
@@ -71,7 +72,7 @@ internal sealed class RemoveCommand : BaseCommand
 
     protected override bool ValidateArguments()
     {
-        Ensure.NotNullOrEmpty(_sourceProjectArg.Value, SourceArgName);
+        ArgumentException.ThrowIfNullOrEmpty(_sourceProjectArg.Value);
         return true;
     }
 }

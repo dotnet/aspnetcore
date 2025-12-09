@@ -154,13 +154,10 @@
     <value>Invalid constraint type '{0}' registered as '{1}'. A constraint  type must either implement '{2}', or inherit from '{3}'.</value>
   </data>
   <data name="RegexRouteContraint_NotConfigured" xml:space="preserve">
-    <value>A route parameter uses the regex constraint, which isn't registered. If this application was configured using CreateSlimBuilder(...) or AddRoutingCore(...) then this constraint is not registered by default. To use the regex constraint, configure route options at app startup: services.Configure&lt;RouteOptions&gt;(options =&gt; options.SetParameterPolicy&lt;RegexInlineRouteConstraint&gt;("regex"));</value>
+    <value>A route parameter uses the regex constraint, which isn't registered. To enable it add the property 'BlazorRoutingEnableRegexConstraint' to your project file inside a `PropertyGroup`.</value>
   </data>
   <data name="ArgumentMustBeGreaterThanOrEqualTo" xml:space="preserve">
     <value>Value must be greater than or equal to {0}.</value>
-  </data>
-  <data name="Argument_NullOrEmpty" xml:space="preserve">
-    <value>Value cannot be null or empty.</value>
   </data>
   <data name="TemplateRoute_CannotHaveCatchAllInMultiSegment" xml:space="preserve">
     <value>A path segment that contains more than one section, such as a literal section or a parameter, cannot contain a catch-all parameter.</value>

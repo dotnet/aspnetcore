@@ -45,9 +45,17 @@ internal readonly struct WebRootComponentParameters(
                 return false;
             }
 
-            var value = ((JsonElement)_serializedParameterValues[i]).GetRawText();
-            var otherValue = ((JsonElement)other._serializedParameterValues[i]).GetRawText();
-            if (!string.Equals(value, otherValue, StringComparison.Ordinal))
+            // We expect each serialized parameter value to be either a 'JsonElement' or 'null'.
+            var value = _serializedParameterValues[i];
+            var otherValue = other._serializedParameterValues[i];
+            if (value is JsonElement jsonValue && otherValue is JsonElement otherJsonValue)
+            {
+                if (!string.Equals(jsonValue.GetRawText(), otherJsonValue.GetRawText(), StringComparison.Ordinal))
+                {
+                    return false;
+                }
+            }
+            else if (!Equals(value, otherValue))
             {
                 return false;
             }

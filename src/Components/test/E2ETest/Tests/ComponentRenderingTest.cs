@@ -27,6 +27,9 @@ public sealed class ComponentRenderingTest : ComponentRenderingTestBase
 
         appElement.FindElement(By.Id("run-async-with-dispatch")).Click();
 
+        // this test assumes RendererSynchronizationContext optimization, which makes it synchronous execution.
+        // with multi-threading runtime and WebAssemblyDispatcher `InvokeAsync` will be executed asynchronously ordering it differently.
+        // See https://github.com/dotnet/aspnetcore/pull/52724#issuecomment-1895566632
         Browser.Equal("First Second Third Fourth Fifth", () => result.Text);
     }
 }

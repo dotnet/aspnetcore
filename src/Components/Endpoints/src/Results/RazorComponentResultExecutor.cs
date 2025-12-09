@@ -48,7 +48,8 @@ internal static class RazorComponentResultExecutor
         return endpointHtmlRenderer.Dispatcher.InvokeAsync(async () =>
         {
             var isErrorHandler = httpContext.Features.Get<IExceptionHandlerFeature>() is not null;
-            endpointHtmlRenderer.InitializeStreamingRenderingFraming(httpContext, isErrorHandler);
+            var isReExecuted = httpContext.Features.Get<IStatusCodeReExecuteFeature>() is not null;
+            endpointHtmlRenderer.InitializeStreamingRenderingFraming(httpContext, isErrorHandler, isReExecuted);
             EndpointHtmlRenderer.MarkAsAllowingEnhancedNavigation(httpContext);
 
             // We could pool these dictionary instances if we wanted, and possibly even the ParameterView

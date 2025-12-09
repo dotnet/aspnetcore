@@ -35,7 +35,7 @@ public class AsciiDecodingTests
 
         static void Test(Span<byte> asciiBytes)
         {
-            var s = asciiBytes.GetAsciiStringNonNullCharacters();
+            var s = asciiBytes.GetAsciiString();
 
             Assert.True(StringUtilities.BytesOrdinalEqualsStringAndAscii(s, asciiBytes));
             Assert.Equal(s.Length, asciiBytes.Length);
@@ -50,11 +50,10 @@ public class AsciiDecodingTests
         }
     }
 
-    [Theory]
-    [InlineData(0x00)]
-    [InlineData(0x80)]
-    private void ExceptionThrownForZeroOrNonAscii(byte b)
+    [Fact]
+    private void ExceptionThrownForNonAscii()
     {
+        byte b = 0x80;
         for (var length = 1; length < Vector<sbyte>.Count * 4; length++)
         {
             for (var position = 0; position < length; position++)
@@ -62,7 +61,7 @@ public class AsciiDecodingTests
                 var byteRange = Enumerable.Range(1, length).Select(x => (byte)x).ToArray();
                 byteRange[position] = b;
 
-                Assert.Throws<InvalidOperationException>(() => new Span<byte>(byteRange).GetAsciiStringNonNullCharacters());
+                Assert.Throws<InvalidOperationException>(() => new Span<byte>(byteRange).GetAsciiString());
             }
         }
     }
@@ -74,7 +73,7 @@ public class AsciiDecodingTests
         var expectedByteRange = byteRange.Concat(byteRange).ToArray();
 
         var span = new Span<byte>(expectedByteRange);
-        var s = span.GetAsciiStringNonNullCharacters();
+        var s = span.GetAsciiString();
 
         Assert.Equal(expectedByteRange.Length, s.Length);
 
@@ -96,7 +95,7 @@ public class AsciiDecodingTests
         for (var i = 1; i < byteRange.Length; i++)
         {
             var span = new Span<byte>(expectedByteRange);
-            var s = span.GetAsciiStringNonNullCharacters();
+            var s = span.GetAsciiString();
 
             Assert.True(StringUtilities.BytesOrdinalEqualsStringAndAscii(s, span));
 
@@ -133,7 +132,7 @@ public class AsciiDecodingTests
 
         static void Test(Span<byte> asciiBytes)
         {
-            var s = asciiBytes.GetAsciiStringNonNullCharacters();
+            var s = asciiBytes.GetAsciiString();
 
             // Should start as equal
             Assert.True(StringUtilities.BytesOrdinalEqualsStringAndAscii(s, asciiBytes));

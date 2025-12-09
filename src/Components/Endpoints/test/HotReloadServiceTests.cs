@@ -11,6 +11,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
+using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Tests;
 
@@ -20,9 +23,8 @@ public class HotReloadServiceTests
     public void UpdatesEndpointsWhenHotReloadChangeTokenTriggered()
     {
         // Arrange
-        var builder = CreateBuilder(typeof(ServerComponent));
         var services = CreateServices(typeof(MockEndpointProvider));
-        var endpointDataSource = CreateDataSource<App>(builder, services);
+        var endpointDataSource = CreateDataSource<App>(services, ConfigureServerComponentBuilder);
         var invoked = false;
 
         // Act
@@ -38,30 +40,34 @@ public class HotReloadServiceTests
     public void AddNewEndpointWhenDataSourceChanges()
     {
         // Arrange
-        var builder = CreateBuilder(typeof(ServerComponent));
         var services = CreateServices(typeof(MockEndpointProvider));
-        var endpointDataSource = CreateDataSource<App>(builder, services);
+        var endpointDataSource = CreateDataSource<App>(services, ConfigureServerComponentBuilder);
 
         // Assert - 1
-        var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpointDataSource.Endpoints));
+        var endpoint = Assert.IsType<RouteEndpoint>(
+            Assert.Single(endpointDataSource.Endpoints, e => e.Metadata.GetMetadata<RootComponentMetadata>() != null));
+
         Assert.Equal("/server", endpoint.RoutePattern.RawText);
 
         // Act - 2
-        endpointDataSource.Builder.Pages.AddFromLibraryInfo("TestAssembly2", new[]
-        {
-            new PageComponentBuilder
+        endpointDataSource.ComponentApplicationBuilderActions.Add(
+            b => b.Pages.AddFromLibraryInfo("TestAssembly2", new[]
             {
-                AssemblyName = "TestAssembly2",
-                PageType = typeof(StaticComponent),
-                RouteTemplates = new List<string> { "/app/test" }
-            }
-        });
+                new PageComponentBuilder
+                {
+                    AssemblyName = "TestAssembly2",
+                    PageType = typeof(StaticComponent),
+                    RouteTemplates = new List<string> { "/app/test" }
+                }
+            }));
+
         HotReloadService.UpdateApplication(null);
 
         // Assert - 2
-        Assert.Equal(2, endpointDataSource.Endpoints.Count);
+        var pageEndpoints = endpointDataSource.Endpoints.Where(e => e.Metadata.GetMetadata<RootComponentMetadata>() != null).ToList();
+        Assert.Equal(2, pageEndpoints.Count);
         Assert.Collection(
-            endpointDataSource.Endpoints,
+            pageEndpoints,
             (ep) => Assert.Equal("/app/test", ((RouteEndpoint)ep).RoutePattern.RawText),
             (ep) => Assert.Equal("/server", ((RouteEndpoint)ep).RoutePattern.RawText));
     }
@@ -70,33 +76,34 @@ public class HotReloadServiceTests
     public void RemovesEndpointWhenDataSourceChanges()
     {
         // Arrange
-        var builder = CreateBuilder(typeof(ServerComponent));
         var services = CreateServices(typeof(MockEndpointProvider));
-        var endpointDataSource = CreateDataSource<App>(builder, services);
+        var endpointDataSource = CreateDataSource<App>(services, ConfigureServerComponentBuilder);
 
         // Assert - 1
-        var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpointDataSource.Endpoints));
+        var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpointDataSource.Endpoints,
+            e => e.Metadata.GetMetadata<RootComponentMetadata>() != null));
+
         Assert.Equal("/server", endpoint.RoutePattern.RawText);
 
         // Act - 2
-        endpointDataSource.Builder.RemoveLibrary("TestAssembly");
+        endpointDataSource.ComponentApplicationBuilderActions.Add(b => b.RemoveLibrary("TestAssembly"));
         endpointDataSource.Options.ConfiguredRenderModes.Clear();
         HotReloadService.UpdateApplication(null);
 
         // Assert - 2
-        Assert.Empty(endpointDataSource.Endpoints);
+        var pageEndpoints = endpointDataSource.Endpoints.Where(e => e.Metadata.GetMetadata<RootComponentMetadata>() != null).ToList();
+        Assert.Empty(pageEndpoints);
     }
 
     [Fact]
     public void ModifiesEndpointWhenDataSourceChanges()
     {
         // Arrange
-        var builder = CreateBuilder(typeof(ServerComponent));
         var services = CreateServices(typeof(MockEndpointProvider));
-        var endpointDataSource = CreateDataSource<App>(builder, services);
+        var endpointDataSource = CreateDataSource<App>(services, ConfigureServerComponentBuilder);
 
         // Assert - 1
-        var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpointDataSource.Endpoints));
+        var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpointDataSource.Endpoints, e => e.Metadata.GetMetadata<RootComponentMetadata>() != null));
         Assert.Equal("/server", endpoint.RoutePattern.RawText);
         Assert.DoesNotContain(endpoint.Metadata, (element) => element is TestMetadata);
 
@@ -106,7 +113,7 @@ public class HotReloadServiceTests
         HotReloadService.UpdateApplication(null);
 
         // Assert - 2
-        var updatedEndpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpointDataSource.Endpoints));
+        var updatedEndpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpointDataSource.Endpoints, e => e.Metadata.GetMetadata<RootComponentMetadata>() != null));
         Assert.Equal("/server", updatedEndpoint.RoutePattern.RawText);
         Assert.Contains(updatedEndpoint.Metadata, (element) => element is TestMetadata);
     }
@@ -115,33 +122,60 @@ public class HotReloadServiceTests
     public void NotifiesCompositeEndpointDataSource()
     {
         // Arrange
-        var builder = CreateBuilder(typeof(ServerComponent));
         var services = CreateServices(typeof(MockEndpointProvider));
-        var endpointDataSource = CreateDataSource<App>(builder, services);
+        var endpointDataSource = CreateDataSource<App>(services, ConfigureServerComponentBuilder);
         var compositeEndpointDataSource = new CompositeEndpointDataSource(
             new[] { endpointDataSource });
 
         // Assert - 1
-        var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpointDataSource.Endpoints));
+        var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpointDataSource.Endpoints, e => e.Metadata.GetMetadata<RootComponentMetadata>() != null));
         Assert.Equal("/server", endpoint.RoutePattern.RawText);
-        var compositeEndpoint = Assert.IsType<RouteEndpoint>(Assert.Single(compositeEndpointDataSource.Endpoints));
+        var compositeEndpoint = Assert.IsType<RouteEndpoint>(Assert.Single(compositeEndpointDataSource.Endpoints, e => e.Metadata.GetMetadata<RootComponentMetadata>() != null));
         Assert.Equal("/server", compositeEndpoint.RoutePattern.RawText);
 
         // Act - 2
-        endpointDataSource.Builder.Pages.RemoveFromAssembly("TestAssembly");
+        endpointDataSource.ComponentApplicationBuilderActions.Add(b => b.Pages.RemoveFromAssembly("TestAssembly"));
         endpointDataSource.Options.ConfiguredRenderModes.Clear();
         HotReloadService.UpdateApplication(null);
 
         // Assert - 2
-        Assert.Empty(endpointDataSource.Endpoints);
-        Assert.Empty(compositeEndpointDataSource.Endpoints);
+        var pageEndpoints = endpointDataSource.Endpoints.Where(e => e.Metadata.GetMetadata<RootComponentMetadata>() != null).ToList();
+        var compositePageEndpoints = compositeEndpointDataSource.Endpoints.Where(e => e.Metadata.GetMetadata<RootComponentMetadata>() != null).ToList();
+        Assert.Empty(pageEndpoints);
+        Assert.Empty(compositePageEndpoints);
+    }
+
+    [Fact]
+    public void ConfirmChangeTokenDisposedHotReload()
+    {
+        // Arrange
+        var services = CreateServices(typeof(MockEndpointProvider));
+        var endpointDataSource = CreateDataSource<App>(services, ConfigureServerComponentBuilder, null);
+        var changeTokenSource = endpointDataSource.ChangeTokenSource;
+        var changeToken = endpointDataSource.GetChangeToken();
+
+        var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpointDataSource.Endpoints, e => e.Metadata.GetMetadata<RootComponentMetadata>() != null));
+        Assert.Equal("/server", endpoint.RoutePattern.RawText);
+        Assert.DoesNotContain(endpoint.Metadata, (element) => element is TestMetadata);
+
+        // Make a modification and then perform a hot reload.
+        endpointDataSource.Conventions.Add(builder =>
+            builder.Metadata.Add(new TestMetadata()));
+
+        HotReloadService.UpdateApplication(null);
+        HotReloadService.ClearCache(null);
+
+        // Confirm the change token is disposed after ClearCache
+        Assert.True(changeToken.HasChanged);
+        Assert.Throws<ObjectDisposedException>(() => changeTokenSource.Token);
     }
 
     private class TestMetadata { }
 
-    private ComponentApplicationBuilder CreateBuilder(params Type[] types)
+    private class TestAssembly : Assembly;
+
+    private static void ConfigureBuilder(ComponentApplicationBuilder builder, params Type[] types)
     {
-        var builder = new ComponentApplicationBuilder();
         builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
             "TestAssembly",
             Array.Empty<PageComponentBuilder>(),
@@ -151,8 +185,11 @@ public class HotReloadServiceTests
                 ComponentType = t,
                 RenderMode = t.GetCustomAttribute<RenderModeAttribute>()
             }).ToArray()));
+    }
 
-        return builder;
+    private static void ConfigureServerComponentBuilder(ComponentApplicationBuilder builder)
+    {
+        ConfigureBuilder(builder, typeof(ServerComponent));
     }
 
     private IServiceProvider CreateServices(params Type[] types)
@@ -163,20 +200,28 @@ public class HotReloadServiceTests
             services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(RenderModeEndpointProvider), type));
         }
 
+        services.AddSingleton<IWebHostEnvironment, TestWebHostEnvironment>();
+        services.AddLogging();
+
         return services.BuildServiceProvider();
     }
 
     private static RazorComponentEndpointDataSource<TComponent> CreateDataSource<TComponent>(
-        ComponentApplicationBuilder builder,
         IServiceProvider services,
-        IComponentRenderMode[] renderModes = null)
+        Action<ComponentApplicationBuilder> configureBuilder = null,
+        IComponentRenderMode[] renderModes = null,
+        HotReloadService hotReloadService = null)
     {
         var result = new RazorComponentEndpointDataSource<TComponent>(
-            builder,
             new[] { new MockEndpointProvider() },
-            new ApplicationBuilder(services),
+            new TestEndpointRouteBuilder(services),
             new RazorComponentEndpointFactory(),
-            new HotReloadService() { MetadataUpdateSupported = true });
+            hotReloadService ?? new HotReloadService() { MetadataUpdateSupported = true });
+
+        if (configureBuilder is not null)
+        {
+            result.ComponentApplicationBuilderActions.Add(configureBuilder);
+        }
 
         if (renderModes != null)
         {
@@ -209,5 +254,36 @@ public class HotReloadServiceTests
         }
 
         public override bool Supports(IComponentRenderMode renderMode) => true;
+    }
+
+    private class TestWebHostEnvironment : IWebHostEnvironment
+    {
+        public string ApplicationName { get; set; } = "TestApplication";
+        public string EnvironmentName { get; set; } = "TestEnvironment";
+        public string WebRootPath { get; set; } = "";
+        public IFileProvider WebRootFileProvider { get => ContentRootFileProvider; set { } }
+        public string ContentRootPath { get; set; } = Directory.GetCurrentDirectory();
+        public IFileProvider ContentRootFileProvider { get; set; } = CreateTestFileProvider();
+
+        private static TestFileProvider CreateTestFileProvider()
+        {
+            var provider = new TestFileProvider();
+            provider.AddFile("site.css", "body { color: red; }");
+            return provider;
+        }
+    }
+
+    private class TestEndpointRouteBuilder : IEndpointRouteBuilder
+    {
+        private IServiceProvider _serviceProvider;
+        private List<EndpointDataSource> _dataSources = new();
+
+        public TestEndpointRouteBuilder(IServiceProvider serviceProvider) => _serviceProvider = serviceProvider;
+
+        public IServiceProvider ServiceProvider => _serviceProvider;
+
+        public ICollection<EndpointDataSource> DataSources => _dataSources;
+
+        public IApplicationBuilder CreateApplicationBuilder() => new ApplicationBuilder(_serviceProvider);
     }
 }

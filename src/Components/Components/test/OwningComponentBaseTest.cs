@@ -29,6 +29,69 @@ public class OwningComponentBaseTest
         Assert.Equal(1, counter.DisposedCount);
     }
 
+    [Fact]
+    public async Task DisposeAsyncReleasesScopeAndService()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<Counter>();
+        services.AddTransient<MyService>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var counter = serviceProvider.GetRequiredService<Counter>();
+        var renderer = new TestRenderer(serviceProvider);
+        var component1 = (MyOwningComponent)renderer.InstantiateComponent<MyOwningComponent>();
+
+        Assert.NotNull(component1.MyService);
+        Assert.Equal(1, counter.CreatedCount);
+        Assert.Equal(0, counter.DisposedCount);
+        Assert.False(component1.IsDisposedPublic);
+
+        await ((IAsyncDisposable)component1).DisposeAsync();
+        Assert.Equal(1, counter.CreatedCount);
+        Assert.Equal(1, counter.DisposedCount);
+        Assert.True(component1.IsDisposedPublic);
+    }
+
+    [Fact]
+    public void ThrowsWhenAccessingScopedServicesAfterDispose()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<Counter>();
+        services.AddTransient<MyService>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var renderer = new TestRenderer(serviceProvider);
+        var component1 = (MyOwningComponent)renderer.InstantiateComponent<MyOwningComponent>();
+
+        // Access service first to create scope
+        var service = component1.MyService;
+
+        ((IDisposable)component1).Dispose();
+
+        // Should throw when trying to access services after disposal
+        Assert.Throws<ObjectDisposedException>(() => component1.MyService);
+    }
+
+    [Fact]
+    public async Task ThrowsWhenAccessingScopedServicesAfterDisposeAsync()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<Counter>();
+        services.AddTransient<MyService>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var renderer = new TestRenderer(serviceProvider);
+        var component1 = (MyOwningComponent)renderer.InstantiateComponent<MyOwningComponent>();
+
+        // Access service first to create scope
+        var service = component1.MyService;
+
+        await ((IAsyncDisposable)component1).DisposeAsync();
+
+        // Should throw when trying to access services after disposal
+        Assert.Throws<ObjectDisposedException>(() => component1.MyService);
+    }
+
     private class Counter
     {
         public int CreatedCount { get; set; }
@@ -51,5 +114,8 @@ public class OwningComponentBaseTest
     private class MyOwningComponent : OwningComponentBase<MyService>
     {
         public MyService MyService => Service;
+
+        // Expose IsDisposed for testing
+        public bool IsDisposedPublic => IsDisposed;
     }
 }

@@ -7,12 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BlazorUnitedApp.Client\BlazorUnitedApp.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
     <Reference Include="Microsoft.AspNetCore.HttpsPolicy" />
-    <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.AspNetCore.StaticAssets" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
   </ItemGroup>
 
 </Project>

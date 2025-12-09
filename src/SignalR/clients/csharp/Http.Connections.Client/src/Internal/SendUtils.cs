@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using System.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
@@ -40,7 +41,7 @@ internal static partial class SendUtils
 
                         // Send them in a single post
                         var request = new HttpRequestMessage(HttpMethod.Post, sendUrl);
-
+                        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
                         request.Content = new ReadOnlySequenceContent(buffer);
 
                         // ResponseHeadersRead instructs SendAsync to return once headers are read

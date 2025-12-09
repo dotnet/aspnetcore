@@ -15,6 +15,7 @@ using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using System.Net.Http;
 
 namespace Microsoft.AspNetCore.Diagnostics;
 
@@ -656,6 +657,80 @@ public class ExceptionHandlerTest
     }
 
     [Fact]
+    public async Task ExceptionHandler_SelectsStatusCode()
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services => services.AddProblemDetails())
+                    .Configure(app =>
+                    {
+                        app.UseExceptionHandler(new ExceptionHandlerOptions
+                        {
+                            StatusCodeSelector = ex => ex is ApplicationException
+                                ? StatusCodes.Status409Conflict
+                                : StatusCodes.Status500InternalServerError,
+                        });
+
+                        app.Map("/throw", innerAppBuilder =>
+                        {
+                            innerAppBuilder.Run(_ => throw new ApplicationException("Something bad happened."));
+                        });
+                    });
+            }).Build();
+
+        await host.StartAsync();
+
+        using (var server = host.GetTestServer())
+        {
+            var client = server.CreateClient();
+            var response = await client.GetAsync("throw");
+            Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        }
+    }
+
+    [Fact]
+    public async Task StatusCodeSelector_CanSelect404()
+    {
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services => services.AddProblemDetails())
+                    .Configure(app =>
+                    {
+                        app.UseExceptionHandler(new ExceptionHandlerOptions
+                        {
+                            // 404 is not allowed,
+                            // but as the exception is explicitly mapped to 404 by the StatusCodeSelector,
+                            // it should be set anyway.
+                            AllowStatusCode404Response = false,
+                            StatusCodeSelector = ex => ex is ApplicationException
+                                ? StatusCodes.Status404NotFound
+                                : StatusCodes.Status500InternalServerError,
+                        });
+
+                        app.Map("/throw", innerAppBuilder =>
+                        {
+                            innerAppBuilder.Run(_ => throw new ApplicationException("Something bad happened."));
+                        });
+                    });
+            }).Build();
+
+        await host.StartAsync();
+
+        using (var server = host.GetTestServer())
+        {
+            var client = server.CreateClient();
+            var response = await client.GetAsync("throw");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+    }
+
+    [Fact]
     public async Task ExceptionHandlerWithOwnBuilder()
     {
         var sink = new TestSink(TestSink.EnableWithTypeName<ExceptionHandlerMiddleware>);
@@ -952,6 +1027,138 @@ public class ExceptionHandlerTest
         // Act
         var response = await server.CreateClient().GetAsync("/path");
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+
+        await instrumentCollector.WaitForMeasurementsAsync(minCount: 1).DefaultTimeout();
+
+        // Assert
+        Assert.Collection(
+            instrumentCollector.GetMeasurementSnapshot(),
+            m =>
+            {
+                Assert.True(m.Value > 0);
+                Assert.Equal(404, (int)m.Tags["http.response.status_code"]);
+                Assert.Equal("System.Exception", (string)m.Tags["error.type"]);
+            });
+    }
+
+    [Fact]
+    public async Task UnhandledError_MultipleHandlers_ExceptionNameTagAddedOnce()
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        using var instrumentCollector = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http.server.request.duration");
+
+        using var host = new HostBuilder()
+            .ConfigureServices(s =>
+            {
+                s.AddSingleton<IMeterFactory>(meterFactory);
+            })
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    // Second error and handler
+                    app.UseExceptionHandler(new ExceptionHandlerOptions()
+                    {
+                        ExceptionHandler = httpContext =>
+                        {
+                            httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                            return Task.CompletedTask;
+                        }
+                    });
+                    app.Use(async (context, next) =>
+                    {
+                        await next();
+                        throw new InvalidOperationException("Test exception2");
+                    });
+
+                    // First error and handler
+                    app.UseExceptionHandler(new ExceptionHandlerOptions()
+                    {
+                        ExceptionHandler = httpContext =>
+                        {
+                            httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+                            return Task.CompletedTask;
+                        }
+                    });
+                    app.Run(context =>
+                    {
+                        throw new Exception("Test exception1");
+                    });
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        // Act
+        var response = await server.CreateClient().GetAsync("/path");
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+        await instrumentCollector.WaitForMeasurementsAsync(minCount: 1).DefaultTimeout();
+
+        // Assert
+        Assert.Collection(
+            instrumentCollector.GetMeasurementSnapshot(),
+            m =>
+            {
+                Assert.True(m.Value > 0);
+                Assert.Equal(500, (int)m.Tags["http.response.status_code"]);
+                Assert.Equal("System.Exception", (string)m.Tags["error.type"]);
+            });
+    }
+
+    [Fact]
+    public async Task UnhandledError_ErrorAfterHandler_ExceptionNameTagAddedOnce()
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        using var instrumentCollector = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Hosting", "http.server.request.duration");
+
+        using var host = new HostBuilder()
+            .ConfigureServices(s =>
+            {
+                s.AddSingleton<IMeterFactory>(meterFactory);
+            })
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    // Second error
+                    app.Use(async (context, next) =>
+                    {
+                        await next();
+
+                        throw new InvalidOperationException("Test exception2");
+                    });
+
+                    // First error and handler
+                    app.UseExceptionHandler(new ExceptionHandlerOptions()
+                    {
+                        ExceptionHandler = httpContext =>
+                        {
+                            httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+                            return httpContext.Response.WriteAsync("Custom handler");
+                        }
+                    });
+                    app.Run(context =>
+                    {
+                        throw new Exception("Test exception1");
+                    });
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+
+        // Act
+        await Assert.ThrowsAsync<HttpRequestException>(async () => await server.CreateClient().GetAsync("/path"));
 
         await instrumentCollector.WaitForMeasurementsAsync(minCount: 1).DefaultTimeout();
 

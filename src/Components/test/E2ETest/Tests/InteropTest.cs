@@ -23,12 +23,12 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: true);
+        Navigate(ServerPathBase);
         Browser.MountTestComponent<InteropComponent>();
     }
 
     [Fact]
-    public void CanInvokeDotNetMethods()
+    public void CanInvokeInteropMethods()
     {
         // Arrange
         var expectedAsyncValues = new Dictionary<string, string>
@@ -78,6 +78,7 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["testDtoAsync"] = "Same",
             ["returnPrimitiveAsync"] = "123",
             ["returnArrayAsync"] = "first,second",
+            ["elementReference"] = "Success",
             ["jsObjectReference.identity"] = "Invoked from JSObjectReference",
             ["jsObjectReference.nested.add"] = "5",
             ["addViaJSObjectReference"] = "5",
@@ -89,9 +90,29 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["invokeVoidAsyncReturnsWithoutSerializing"] = "Success",
             ["invokeVoidAsyncReturnsWithoutSerializingInJSObjectReference"] = "Success",
             ["invokeAsyncThrowsSerializingCircularStructure"] = "Success",
-            ["invokeAsyncThrowsUndefinedJSObjectReference"] = "Success",
-            ["invokeAsyncThrowsNullJSObjectReference"] = "Success",
             ["disposeJSObjectReferenceAsync"] = "Success",
+            // GetValue tests
+            ["getValueFromDataPropertyAsync"] = "10",
+            ["getValueFromGetterAsync"] = "20",
+            ["getValueFromSetterAsync"] = "Success",
+            ["getValueFromUndefinedPropertyAsync"] = "Success",
+            // SetValueTests
+            ["setValueToDataPropertyAsync"] = "30",
+            ["setValueToSetterAsync"] = "40",
+            ["setValueToUndefinedPropertyAsync"] = "50",
+            ["setValueToGetterAsync"] = "Success",
+            // InvokeConstructor tests
+            ["invokeConstructorWithClassConstructorAsync"] = "Success",
+            ["invokeConstructorWithClassConstructorAsync.dataProperty"] = "abraka",
+            ["invokeConstructorWithClassConstructorAsync.function"] = "6",
+            ["invokeConstructorWithNonConstructorAsync"] = "Success",
+            // Function reference tests
+            ["changeFunctionViaObjectReferenceAsync"] = "42",
+            // JS Object Nullable reference tests
+            ["invokeAsyncUndefinedJSObjectReference"] = "Success",
+            ["invokeAsyncNullJSObjectReference"] = "Success",
+            ["invokeAsyncNullFromVariableJSObjectReference"] = "Success",
+            ["invokeAsyncNonExistentJSObjectReference"] = "Success",
         };
 
         var expectedSyncValues = new Dictionary<string, string>
@@ -131,11 +152,6 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["invokeVoidReturnsWithoutSerializingIJSInProcessRuntime"] = "Success",
             ["invokeVoidReturnsWithoutSerializingInIJSInProcessObjectReference"] = "Success",
             ["invokeThrowsSerializingCircularStructure"] = "Success",
-            ["invokeThrowsUndefinedJSObjectReference"] = "Success",
-            ["invokeThrowsNullJSObjectReference"] = "Success",
-            ["jsUnmarshalledObjectReference.unmarshalledFunction"] = "True",
-            ["jsToDotNetStreamReturnValueUnmarshalled"] = "Success",
-            ["jsCastedUnmarshalledObjectReference.unmarshalledFunction"] = "False",
             ["stringValueUpperSync"] = "MY STRING",
             ["testDtoNonSerializedValueSync"] = "99999",
             ["testDtoSync"] = "Same",
@@ -144,7 +160,28 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["genericInstanceMethod"] = @"""Updated value 2""",
             ["requestDotNetStreamReference"] = @"""Success""",
             ["requestDotNetStreamWrapperReference"] = @"""Success""",
-            ["disposeJSInProcessObjectReference"] = "Success",
+            // GetValue tests
+            ["getValueFromDataProperty"] = "10",
+            ["getValueFromGetter"] = "20",
+            ["getValueFromSetter"] = "Success",
+            ["getValueFromUndefinedProperty"] = "Success",
+            // SetValue tests
+            ["setValueToDataProperty"] = "30",
+            ["setValueToSetter"] = "40",
+            ["setValueToUndefinedProperty"] = "50",
+            ["setValueToGetter"] = "Success",
+            // InvokeConstructor tests
+            ["invokeConstructorWithClassConstructor"] = "Success",
+            ["invokeConstructorWithClassConstructor.dataProperty"] = "abraka",
+            ["invokeConstructorWithClassConstructor.function"] = "6",
+            ["invokeConstructorWithNonConstructor"] = "Success",
+            // Function reference tests
+            ["changeFunctionViaObjectReference"] = "42",
+            // JS Object Nullable reference tests
+            ["invokeUndefinedJSObjectReference"] = "Success",
+            ["invokeNullJSObjectReference"] = "Success",
+            ["invokeNullFromVariableJSObjectReference"] = "Success",
+            ["invokeNonExistentJSObjectReference"] = "Success",
         };
 
         // Include the sync assertions only when running under WebAssembly
@@ -190,7 +227,7 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             {
                 if (expectedValue.Value != actualValue)
                 {
-                    throw new AssertActualExpectedException(expectedValue.Value, actualValue, $"Scenario '{expectedValue.Key}' failed. Expected '{expectedValue.Value}, Actual {actualValue}");
+                    throw EqualException.ForMismatchedValues(expectedValue.Value, actualValue, $"Scenario '{expectedValue.Key}' failed. Expected '{expectedValue.Value}, Actual {actualValue}");
                 }
             }
         }

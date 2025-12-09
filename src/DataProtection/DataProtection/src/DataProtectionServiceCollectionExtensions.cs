@@ -68,6 +68,8 @@ public static class DataProtectionServiceCollectionExtensions
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IConfigureOptions<KeyManagementOptions>, KeyManagementOptionsSetup>());
         services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IPostConfigureOptions<KeyManagementOptions>, KeyManagementOptionsPostSetup>());
+        services.TryAddEnumerable(
             ServiceDescriptor.Transient<IConfigureOptions<DataProtectionOptions>, DataProtectionOptionsSetup>());
 
         services.TryAddSingleton<IKeyManager, XmlKeyManager>();

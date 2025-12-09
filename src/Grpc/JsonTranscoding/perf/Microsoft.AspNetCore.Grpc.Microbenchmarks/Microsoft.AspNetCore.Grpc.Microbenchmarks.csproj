@@ -6,7 +6,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TieredCompilation>false</TieredCompilation>
     <DefineConstants>$(DefineConstants);IS_BENCHMARKS</DefineConstants>
-    <!-- TODO: Remove when Grpc.Tools on MacOS 11 is fixed. See https://github.com/grpc/grpc/issues/32558 -->
     <SkipMicrobenchmarksValidation>true</SkipMicrobenchmarksValidation>
   </PropertyGroup>
 

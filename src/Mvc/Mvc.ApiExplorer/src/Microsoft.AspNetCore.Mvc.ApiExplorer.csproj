@@ -7,6 +7,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
     <IsPackable>false</IsPackable>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,5 +21,6 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.ApiExplorer.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.OpenApi.Tests" />
   </ItemGroup>
 </Project>

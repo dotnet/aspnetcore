@@ -2,10 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace Microsoft.AspNetCore.Antiforgery;
 
@@ -45,18 +43,7 @@ internal sealed class BinaryBlob : IEquatable<BinaryBlob>
         }
     }
 
-    private string DebuggerString
-    {
-        get
-        {
-            var sb = new StringBuilder("0x", 2 + (_data.Length * 2));
-            for (var i = 0; i < _data.Length; i++)
-            {
-                sb.AppendFormat(CultureInfo.InvariantCulture, "{0:x2}", _data[i]);
-            }
-            return sb.ToString();
-        }
-    }
+    private string DebuggerString => $"0x{Convert.ToHexStringLower(_data)}";
 
     public override bool Equals(object? obj)
     {

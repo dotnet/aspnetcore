@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Http;
@@ -51,15 +50,8 @@ public class FacebookOptions : OAuthOptions
     /// </summary>
     public override void Validate()
     {
-        if (string.IsNullOrEmpty(AppId))
-        {
-            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(AppId)), nameof(AppId));
-        }
-
-        if (string.IsNullOrEmpty(AppSecret))
-        {
-            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(AppSecret)), nameof(AppSecret));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(AppId);
+        ArgumentException.ThrowIfNullOrEmpty(AppSecret);
 
         base.Validate();
     }

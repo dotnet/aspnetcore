@@ -3,13 +3,14 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Text.Json;
+using System.Reflection;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
+using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
@@ -25,10 +26,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 /// </summary>
 public sealed class WebAssemblyHostBuilder
 {
-    private readonly JsonSerializerOptions _jsonOptions;
+    private readonly IInternalJSImportMethods _jsMethods;
     private Func<IServiceProvider> _createServiceProvider;
-    private RootComponentTypeCache? _rootComponentCache;
+    private RootTypeCache? _rootComponentCache;
     private string? _persistedState;
+    private ServiceProviderOptions? _serviceProviderOptions;
 
     /// <summary>
     /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> using the most common
@@ -46,11 +48,14 @@ public sealed class WebAssemblyHostBuilder
     {
         // We don't use the args for anything right now, but we want to accept them
         // here so that it shows up this way in the project templates.
-        var builder = new WebAssemblyHostBuilder(
-            InternalJSImportMethods.Instance,
-            DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions());
+        var builder = new WebAssemblyHostBuilder(InternalJSImportMethods.Instance);
 
         WebAssemblyCultureProvider.Initialize();
+
+        // Add environment variables to configuration by default.
+        // This aligns WebAssembly behavior with server-side ASP.NET Core applications
+        // where environment variables are automatically included in IConfiguration.
+        builder.Configuration.AddEnvironmentVariables();
 
         // Right now we don't have conventions or behaviors that are specific to this method
         // however, making this the default for the template allows us to add things like that
@@ -62,38 +67,69 @@ public sealed class WebAssemblyHostBuilder
     /// <summary>
     /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> with the minimal configuration.
     /// </summary>
-    internal WebAssemblyHostBuilder(
-        IInternalJSImportMethods jsMethods,
-        JsonSerializerOptions jsonOptions)
+    internal WebAssemblyHostBuilder(IInternalJSImportMethods jsMethods)
     {
         // Private right now because we don't have much reason to expose it. This can be exposed
         // in the future if we want to give people a choice between CreateDefault and something
         // less opinionated.
-        _jsonOptions = jsonOptions;
+        _jsMethods = jsMethods;
         Configuration = new WebAssemblyHostConfiguration();
         RootComponents = new RootComponentMappingCollection();
         Services = new ServiceCollection();
         Logging = new LoggingBuilder(Services);
 
+        var assembly = Assembly.GetEntryAssembly();
+        if (assembly != null)
+        {
+            InitializeRoutingAppContextSwitch(assembly);
+        }
+
+        InitializeWebAssemblyRenderer();
+
         // Retrieve required attributes from JSRuntimeInvoker
-        InitializeNavigationManager(jsMethods);
-        InitializeRegisteredRootComponents(jsMethods);
-        InitializePersistedState(jsMethods);
+        InitializeNavigationManager();
+        InitializeRegisteredRootComponents();
+        InitializePersistedState();
         InitializeDefaultServices();
 
-        var hostEnvironment = InitializeEnvironment(jsMethods);
+        var hostEnvironment = InitializeEnvironment();
         HostEnvironment = hostEnvironment;
 
         _createServiceProvider = () =>
         {
-            return Services.BuildServiceProvider(validateScopes: WebAssemblyHostEnvironmentExtensions.IsDevelopment(hostEnvironment));
+            var isDevelopment = WebAssemblyHostEnvironmentExtensions.IsDevelopment(hostEnvironment);
+
+            // Use custom options if provided, otherwise use defaults
+            var options = _serviceProviderOptions ?? new ServiceProviderOptions
+            {
+                ValidateScopes = isDevelopment,
+                ValidateOnBuild = isDevelopment
+            };
+
+            return Services.BuildServiceProvider(options);
         };
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Root components are expected to be defined in assemblies that do not get trimmed.")]
-    private void InitializeRegisteredRootComponents(IInternalJSImportMethods jsMethods)
+    private static void InitializeRoutingAppContextSwitch(Assembly assembly)
     {
-        var componentsCount = jsMethods.RegisteredComponents_GetRegisteredComponentsCount();
+        var assemblyMetadataAttributes = assembly.GetCustomAttributes<AssemblyMetadataAttribute>();
+        foreach (var ama in assemblyMetadataAttributes)
+        {
+            if (string.Equals(ama.Key, "Microsoft.AspNetCore.Components.Routing.RegexConstraintSupport", StringComparison.Ordinal))
+            {
+                if (ama.Value != null && string.Equals((string?)ama.Value, "true", StringComparison.OrdinalIgnoreCase))
+                {
+                    AppContext.SetSwitch("Microsoft.AspNetCore.Components.Routing.RegexConstraintSupport", true);
+                }
+                return;
+            }
+        }
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Root components are expected to be defined in assemblies that do not get trimmed.")]
+    private void InitializeRegisteredRootComponents()
+    {
+        var componentsCount = _jsMethods.RegisteredComponents_GetRegisteredComponentsCount();
         if (componentsCount == 0)
         {
             return;
@@ -102,10 +138,10 @@ public sealed class WebAssemblyHostBuilder
         var registeredComponents = new ComponentMarker[componentsCount];
         for (var i = 0; i < componentsCount; i++)
         {
-            var assembly = jsMethods.RegisteredComponents_GetAssembly(i);
-            var typeName = jsMethods.RegisteredComponents_GetTypeName(i);
-            var serializedParameterDefinitions = jsMethods.RegisteredComponents_GetParameterDefinitions(i);
-            var serializedParameterValues = jsMethods.RegisteredComponents_GetParameterValues(i);
+            var assembly = _jsMethods.RegisteredComponents_GetAssembly(i);
+            var typeName = _jsMethods.RegisteredComponents_GetTypeName(i);
+            var serializedParameterDefinitions = _jsMethods.RegisteredComponents_GetParameterDefinitions(i);
+            var serializedParameterValues = _jsMethods.RegisteredComponents_GetParameterValues(i);
             registeredComponents[i] = ComponentMarker.Create(ComponentMarker.WebAssemblyMarkerType, false, null);
             registeredComponents[i].WriteWebAssemblyData(
                 assembly,
@@ -115,11 +151,11 @@ public sealed class WebAssemblyHostBuilder
             registeredComponents[i].PrerenderId = i.ToString(CultureInfo.InvariantCulture);
         }
 
-        _rootComponentCache = new RootComponentTypeCache();
+        _rootComponentCache = new RootTypeCache();
         var componentDeserializer = WebAssemblyComponentParameterDeserializer.Instance;
         foreach (var registeredComponent in registeredComponents)
         {
-            var componentType = _rootComponentCache.GetRootComponent(registeredComponent.Assembly!, registeredComponent.TypeName!);
+            var componentType = _rootComponentCache.GetRootType(registeredComponent.Assembly!, registeredComponent.TypeName!);
             if (componentType is null)
             {
                 throw new InvalidOperationException(
@@ -135,22 +171,22 @@ public sealed class WebAssemblyHostBuilder
         }
     }
 
-    private void InitializePersistedState(IInternalJSImportMethods jsMethods)
+    private void InitializePersistedState()
     {
-        _persistedState = jsMethods.GetPersistedState();
+        _persistedState = _jsMethods.GetPersistedState();
     }
 
-    private static void InitializeNavigationManager(IInternalJSImportMethods jsMethods)
+    private void InitializeNavigationManager()
     {
-        var baseUri = jsMethods.NavigationManager_GetBaseUri();
-        var uri = jsMethods.NavigationManager_GetLocationHref();
+        var baseUri = _jsMethods.NavigationManager_GetBaseUri();
+        var uri = _jsMethods.NavigationManager_GetLocationHref();
 
         WebAssemblyNavigationManager.Instance = new WebAssemblyNavigationManager(baseUri, uri);
     }
 
-    private WebAssemblyHostEnvironment InitializeEnvironment(IInternalJSImportMethods jsMethods)
+    private WebAssemblyHostEnvironment InitializeEnvironment()
     {
-        var applicationEnvironment = jsMethods.GetApplicationEnvironment();
+        var applicationEnvironment = _jsMethods.GetApplicationEnvironment();
         var hostEnvironment = new WebAssemblyHostEnvironment(applicationEnvironment, WebAssemblyNavigationManager.Instance.BaseUri);
 
         Services.AddSingleton<IWebAssemblyHostEnvironment>(hostEnvironment);
@@ -174,6 +210,28 @@ public sealed class WebAssemblyHostBuilder
         }
 
         return hostEnvironment;
+    }
+
+    private static void InitializeWebAssemblyRenderer()
+    {
+        // note that when this is running in single-threaded context or multi-threaded-CoreCLR unit tests, we don't want to install WebAssemblyDispatcher
+        if (OperatingSystem.IsBrowser())
+        {
+            var currentThread = Thread.CurrentThread;
+            if (currentThread.IsThreadPoolThread || currentThread.IsBackground)
+            {
+                throw new InvalidOperationException("WebAssemblyHostBuilder needs to be instantiated in the UI thread.");
+            }
+
+            // capture the JSSynchronizationContext from the main thread, which runtime already installed.
+            // if SynchronizationContext.Current is null, it means we are on the single-threaded runtime
+            // if user somehow installed SynchronizationContext different from JSSynchronizationContext, they need to make sure the behavior is consistent with JSSynchronizationContext.
+            if (WebAssemblyDispatcher._mainSynchronizationContext == null && SynchronizationContext.Current != null)
+            {
+                WebAssemblyDispatcher._mainSynchronizationContext = SynchronizationContext.Current;
+                WebAssemblyDispatcher._mainManagedThreadId = currentThread.ManagedThreadId;
+            }
+        }
     }
 
     /// <summary>
@@ -233,6 +291,17 @@ public sealed class WebAssemblyHostBuilder
         };
     }
 
+    // In WebAssemblyHostBuilder class:
+    /// <summary>
+    /// Configures the service provider options for this host builder.
+    /// </summary>
+    /// <param name="options">The service provider options to use.</param>
+    public WebAssemblyHostBuilder UseServiceProviderOptions(ServiceProviderOptions options)
+    {
+        _serviceProviderOptions = options ?? throw new ArgumentNullException(nameof(options));
+        return this;
+    }
+
     /// <summary>
     /// Builds a <see cref="WebAssemblyHost"/> instance based on the configuration of this builder.
     /// </summary>
@@ -257,16 +326,21 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
         Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
         Services.AddSingleton<IScrollToLocationHash>(WebAssemblyScrollToLocationHash.Instance);
+        Services.AddSingleton(_jsMethods);
         Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
-        Services.AddSingleton<RootComponentTypeCache>(_ => _rootComponentCache ?? new());
+        Services.AddSingleton(_ => _rootComponentCache ?? new());
         Services.AddSingleton<ComponentStatePersistenceManager>();
-        Services.AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
-        Services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
+        Services.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+        Services.AddSupplyValueFromPersistentComponentStateProvider();
         Services.AddSingleton<IErrorBoundaryLogger, WebAssemblyErrorBoundaryLogger>();
+        Services.AddSingleton<ResourceCollectionProvider>();
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<ResourceCollectionProvider>(Services, RenderMode.InteractiveWebAssembly);
         Services.AddLogging(builder =>
         {
             builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
         });
+        Services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AntiforgeryStateProvider>(Services, RenderMode.InteractiveWebAssembly);
         Services.AddSupplyValueFromQueryProvider();
     }
 }

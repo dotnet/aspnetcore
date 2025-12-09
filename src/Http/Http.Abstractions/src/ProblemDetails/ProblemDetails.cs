@@ -18,6 +18,7 @@ public class ProblemDetails
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyOrder(-5)]
+    [JsonPropertyName("type")]
     public string? Type { get; set; }
 
     /// <summary>
@@ -27,6 +28,7 @@ public class ProblemDetails
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyOrder(-4)]
+    [JsonPropertyName("title")]
     public string? Title { get; set; }
 
     /// <summary>
@@ -34,6 +36,7 @@ public class ProblemDetails
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyOrder(-3)]
+    [JsonPropertyName("status")]
     public int? Status { get; set; }
 
     /// <summary>
@@ -41,6 +44,7 @@ public class ProblemDetails
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyOrder(-2)]
+    [JsonPropertyName("detail")]
     public string? Detail { get; set; }
 
     /// <summary>
@@ -48,6 +52,7 @@ public class ProblemDetails
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyOrder(-1)]
+    [JsonPropertyName("instance")]
     public string? Instance { get; set; }
 
     /// <summary>

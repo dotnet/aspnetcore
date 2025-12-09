@@ -10,13 +10,13 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project template for creating an ASP.NET Core application with example ASP.NET Core Razor Pages content",
   "groupIdentity": "Microsoft.Web.RazorPages",
-  "precedence": "9900",
-  "identity": "Microsoft.Web.RazorPages.CSharp.9.0",
+  "precedence": "10000",
+  "identity": "Microsoft.Web.RazorPages.CSharp.10.0",
   "shortName": [
     "webapp",
     "razor"
   ],
-  "thirdPartyNotices": "https://aka.ms/aspnetcore/9.0-third-party-notices",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/10.0-third-party-notices",
   "tags": {
     "language": "C#",
     "type": "project"
@@ -383,12 +383,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net9.0",
-          "description": "Target net9.0"
+          "choice": "net10.0",
+          "description": "Target net10.0"
         }
       ],
-      "replaces": "net9.0",
-      "defaultValue": "net9.0"
+      "replaces": "net10.0",
+      "defaultValue": "net10.0"
     },
     "copyrightYear": {
       "type": "generated",

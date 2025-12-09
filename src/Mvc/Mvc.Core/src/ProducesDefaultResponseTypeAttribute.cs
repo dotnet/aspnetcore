@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -38,6 +38,11 @@ public sealed class ProducesDefaultResponseTypeAttribute : Attribute, IApiDefaul
     /// Gets or sets the HTTP status code of the response.
     /// </summary>
     public int StatusCode { get; }
+
+    /// <summary>
+    /// Gets or sets the description of the response.
+    /// </summary>
+    public string? Description { get; set; }
 
     /// <inheritdoc />
     void IApiResponseMetadataProvider.SetContentTypes(MediaTypeCollection contentTypes)

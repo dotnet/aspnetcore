@@ -46,16 +46,15 @@ public class JSObjectReferenceJsonConverterTest
     }
 
     [Fact]
-    public void Read_ReadsJson_IJSUnmarshalledObjectReference()
+    public void Read_ReturnsNull_WhenIdIsMinusOne()
     {
         // Arrange
-        var expectedId = 3;
-        var json = $"{{\"__jsObjectId\":{expectedId}}}";
+        var json = "{\"__jsObjectId\":-1}";
 
         // Act
-        var deserialized = (WebAssemblyJSObjectReference)JsonSerializer.Deserialize<IJSUnmarshalledObjectReference>(json, JsonSerializerOptions)!;
+        var deserialized = JsonSerializer.Deserialize<IJSObjectReference>(json, JsonSerializerOptions);
 
         // Assert
-        Assert.Equal(expectedId, deserialized?.Id);
+        Assert.Null(deserialized);
     }
 }

@@ -121,7 +121,9 @@ public class JSRuntimeTest
             ref reader);
         Assert.False(unrelatedTask.IsCompleted);
         Assert.True(task.IsCompleted);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.Equal("my result", task.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
     }
 
     [Fact]
@@ -140,7 +142,9 @@ public class JSRuntimeTest
             /* succeeded: */ true,
             ref reader);
         Assert.True(task.IsCompleted);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         var poco = task.Result;
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
         Debug.Assert(poco != null);
         Assert.Equal(10, poco.Id);
         Assert.Equal("Test", poco.Name);
@@ -163,7 +167,9 @@ public class JSRuntimeTest
             /* succeeded: */ true,
             ref reader);
         Assert.True(task.IsCompleted);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         var poco = task.Result;
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
         Debug.Assert(poco != null);
         Assert.Equal(10, poco.Id);
         Assert.Equal("Test", poco.Name);
@@ -405,7 +411,7 @@ public class JSRuntimeTest
     }
 
     [Fact]
-    public async void ReadJSDataAsStreamAsync_ThrowsNotSupportedException()
+    public async Task ReadJSDataAsStreamAsync_ThrowsNotSupportedException()
     {
         // Arrange
         var runtime = new TestJSRuntime();
@@ -439,8 +445,8 @@ public class JSRuntimeTest
 
     class TestJSRuntime : JSRuntime
     {
-        public List<BeginInvokeAsyncArgs> BeginInvokeCalls = new List<BeginInvokeAsyncArgs>();
-        public List<EndInvokeDotNetArgs> EndInvokeDotNetCalls = new List<EndInvokeDotNetArgs>();
+        public List<JSInvocationInfo> BeginInvokeCalls = [];
+        public List<EndInvokeDotNetArgs> EndInvokeDotNetCalls = [];
 
         public TimeSpan? DefaultTimeout
         {
@@ -448,13 +454,6 @@ public class JSRuntimeTest
             {
                 base.DefaultAsyncTimeout = value;
             }
-        }
-
-        public class BeginInvokeAsyncArgs
-        {
-            public long AsyncHandle { get; set; }
-            public string? Identifier { get; set; }
-            public string? ArgsJson { get; set; }
         }
 
         public class EndInvokeDotNetArgs
@@ -478,12 +477,12 @@ public class JSRuntimeTest
 
         protected override void BeginInvokeJS(long asyncHandle, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
         {
-            BeginInvokeCalls.Add(new BeginInvokeAsyncArgs
-            {
-                AsyncHandle = asyncHandle,
-                Identifier = identifier,
-                ArgsJson = argsJson,
-            });
+            throw new NotImplementedException();
+        }
+
+        protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
+        {
+            BeginInvokeCalls.Add(invocationInfo);
         }
 
         protected internal override Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)

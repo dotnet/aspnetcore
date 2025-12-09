@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -81,5 +82,6 @@ public class ValidationProblemDetails : HttpValidationProblemDetails
     /// <summary>
     /// Gets the validation errors associated with this instance of <see cref="HttpValidationProblemDetails"/>.
     /// </summary>
+    [JsonPropertyName("errors")]
     public new IDictionary<string, string[]> Errors { get { return base.Errors; } set { base.Errors = value; } }
 }

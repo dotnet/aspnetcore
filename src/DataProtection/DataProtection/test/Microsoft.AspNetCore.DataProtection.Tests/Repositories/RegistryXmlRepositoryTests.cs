@@ -42,7 +42,7 @@ public class RegistryXmlRepositoryTests
             var allElements = repository.GetAllElements();
 
             // Assert
-            Assert.Equal(0, allElements.Count);
+            Assert.Empty(allElements);
         });
     }
 
@@ -122,6 +122,97 @@ public class RegistryXmlRepositoryTests
             // Assert
             var orderedNames = allElements.Select(el => el.Name.LocalName).OrderBy(name => name);
             Assert.Equal(new[] { "element1", "element2", "element3" }, orderedNames);
+        });
+    }
+
+    [ConditionalTheory]
+    [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void DeleteElements(bool delete1, bool delete2)
+    {
+        WithUniqueTempRegKey(regKey =>
+        {
+            var repository = new RegistryXmlRepository(regKey, NullLoggerFactory.Instance);
+
+            var element1 = new XElement("element1");
+            var element2 = new XElement("element2");
+
+            repository.StoreElement(element1, friendlyName: null);
+            repository.StoreElement(element2, friendlyName: null);
+
+            var ranSelector = false;
+
+            Assert.True(repository.DeleteElements(deletableElements =>
+            {
+                ranSelector = true;
+                Assert.Equal(2, deletableElements.Count);
+
+                foreach (var element in deletableElements)
+                {
+                    switch (element.Element.Name.LocalName)
+                    {
+                        case "element1":
+                            element.DeletionOrder = delete1 ? 1 : null;
+                            break;
+                        case "element2":
+                            element.DeletionOrder = delete2 ? 2 : null;
+                            break;
+                        default:
+                            Assert.Fail("Unexpected element name: " + element.Element.Name.LocalName);
+                            break;
+                    }
+                }
+            }));
+            Assert.True(ranSelector);
+
+            var elementSet = new HashSet<string>(repository.GetAllElements().Select(e => e.Name.LocalName));
+
+            Assert.InRange(elementSet.Count, 0, 2);
+
+            Assert.Equal(!delete1, elementSet.Contains(element1.Name.LocalName));
+            Assert.Equal(!delete2, elementSet.Contains(element2.Name.LocalName));
+        });
+    }
+
+    // It would be nice to have a test paralleling the one in FileSystemXmlRepositoryTests.cs,
+    // but there's no obvious way to simulate a failure for only one of the values.  You can
+    // lock a whole key, but not individual values, and we don't have a hook to let us lock the
+    // whole key while a particular value deletion is attempted.
+    //[ConditionalFact]
+    //[ConditionalConditionalRunTestOnlyIfHkcuRegistryAvailable]
+    //public void DeleteElementsWithFailure()
+
+    [ConditionalFact]
+    [ConditionalRunTestOnlyIfHkcuRegistryAvailable]
+    public void DeleteElementsWithOutOfBandDeletion()
+    {
+        WithUniqueTempRegKey(regKey =>
+        {
+            var repository = new RegistryXmlRepository(regKey, NullLoggerFactory.Instance);
+
+            repository.StoreElement(new XElement("element1"), friendlyName: "friendly1");
+
+            Assert.NotNull(regKey.GetValue("friendly1"));
+
+            var ranSelector = false;
+
+            Assert.True(repository.DeleteElements(deletableElements =>
+            {
+                ranSelector = true;
+
+                // Now that the repository has read the element from the registry, delete it out-of-band.
+                regKey.DeleteValue("friendly1");
+
+                Assert.Single(deletableElements);
+
+                deletableElements.First().DeletionOrder = 1;
+            }));
+            Assert.True(ranSelector);
+
+            Assert.Null(regKey.GetValue("friendly1"));
         });
     }
 

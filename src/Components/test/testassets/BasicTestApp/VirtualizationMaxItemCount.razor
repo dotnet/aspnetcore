@@ -1,0 +1,33 @@
+﻿<p>
+    MaxItemCount is a safeguard against the client reporting a giant viewport and causing the server to perform a
+    correspondingly giant data load and then tracking a lot of render state.
+</p>
+
+<p>
+    If MaxItemCount is exceeded (which it never should be for a well-behaved client), we don't offer any guarantees
+    that the behavior will be nice for the end user. We just guarantee to limit the .NET-side workload. As such this
+    E2E test deliberately does a bad thing of setting MaxItemCount to a low value for test purposes. Applications
+    should not do this.
+</p>
+
+<div id="virtualize-scroll-area" style="height: 600px; overflow-y: scroll; outline: 1px solid red; background: #eee;">
+    <Virtualize ItemsProvider="GetItems" ItemSize="30" MaxItemCount="10">
+        <div class="my-item" @key="context" style="height: 30px; outline: 1px solid #ccc">
+            Id: @context.Id; Name: @context.Name
+        </div>
+    </Virtualize>
+</div>
+
+@code {
+    private async ValueTask<ItemsProviderResult<MyThing>> GetItems(ItemsProviderRequest request)
+    {
+        const int numThings = 100000;
+
+        await Task.Delay(100);
+        return new ItemsProviderResult<MyThing>(
+            Enumerable.Range(request.StartIndex, request.Count).Select(i => new MyThing(i, $"Thing {i}")),
+            numThings);
+    }
+
+    record MyThing(int Id, string Name);
+}

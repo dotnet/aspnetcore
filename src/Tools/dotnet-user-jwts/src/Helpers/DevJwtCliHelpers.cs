@@ -4,9 +4,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Nodes;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Tools.Internal;
 using Microsoft.IdentityModel.Tokens;
 
@@ -14,6 +11,8 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
 internal static class DevJwtCliHelpers
 {
+    public const string DefaultAppSettingsFile = "appsettings.Development.json";
+
     public static string GetOrSetUserSecretsId(string projectFilePath)
     {
         var resolver = new ProjectIdResolver(NullReporter.Singleton, projectFilePath);
@@ -42,6 +41,27 @@ internal static class DevJwtCliHelpers
             reporter.Error(Resources.ProjectOption_SercretIdNotFound);
             return false;
         }
+        return true;
+    }
+
+    public static bool GetAppSettingsFile(string projectPath, string appsettingsFileOption, IReporter reporter, out string appsettingsFile)
+    {
+        appsettingsFile = DevJwtCliHelpers.DefaultAppSettingsFile;
+        if (appsettingsFileOption is not null)
+        {
+            appsettingsFile = appsettingsFileOption;
+            if (!appsettingsFile.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            {
+                reporter.Error(Resources.RemoveCommand_InvalidAppsettingsFile_Error);
+                return false;
+            }
+            else if (!File.Exists(Path.Combine(Path.GetDirectoryName(projectPath), appsettingsFile)))
+            {
+                reporter.Error(Resources.FormatRemoveCommand_AppsettingsFileNotFound_Error(Path.Combine(Path.GetDirectoryName(projectPath), appsettingsFile)));
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -144,7 +164,7 @@ internal static class DevJwtCliHelpers
 
         static void PrintJwtJson(IReporter reporter, Jwt jwt, bool showAll, JwtSecurityToken fullToken)
         {
-            reporter.Output(JsonSerializer.Serialize(jwt, new JsonSerializerOptions { WriteIndented = true }));
+            reporter.Output(JsonSerializer.Serialize(jwt, JwtSerializerOptions.Default));
         }
 
         static void PrintJwtDefault(IReporter reporter, Jwt jwt, bool showAll, JwtSecurityToken fullToken)
@@ -211,4 +231,10 @@ internal static class DevJwtCliHelpers
         }
         return true;
     }
+
+    public static bool IsNullOrEmpty<T>(this IEnumerable<T> enumerable)
+    {
+        return enumerable == null || !enumerable.Any();
+    }
+
 }

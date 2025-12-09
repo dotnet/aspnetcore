@@ -13,8 +13,8 @@ try {
                 basePath: path.resolve(__dirname, ".."),
                 frameworks: ["jasmine"],
                 files: [
-                    "node_modules/@microsoft/signalr/dist/browser/signalr.js",
-                    "node_modules/@microsoft/signalr-protocol-msgpack/dist/browser/signalr-protocol-msgpack.js",
+                    "../../../../../node_modules/@microsoft/signalr/dist/browser/signalr.js",
+                    "../../../../../node_modules/@microsoft/signalr-protocol-msgpack/dist/browser/signalr-protocol-msgpack.js",
                     "wwwroot/dist/signalr-functional-tests.js"
                 ],
                 preprocessors: {

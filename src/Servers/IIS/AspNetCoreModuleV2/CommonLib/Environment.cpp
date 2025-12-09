@@ -133,6 +133,23 @@ std::wstring Environment::GetDllDirectoryValue()
     return expandedStr;
 }
 
+ProcessorArchitecture Environment::GetCurrentProcessArchitecture()
+{
+    // Use compile-time detection - we know which architectures we support
+    // and this is the most reliable and efficient approach. IsWow64Process2
+    // doesn't show the correct architecture when running under x64 emulation
+    // on ARM64.
+#if defined(_M_ARM64)
+    return ProcessorArchitecture::ARM64;
+#elif defined(_M_AMD64)
+    return ProcessorArchitecture::AMD64;
+#elif defined(_M_IX86)
+    return ProcessorArchitecture::x86;
+#else
+    static_assert(false, "Unknown target architecture");
+#endif
+}
+
 bool Environment::IsRunning64BitProcess()
 {
     // Check the bitness of the currently running process
@@ -168,7 +185,7 @@ void Environment::CopyToDirectoryInner(const std::filesystem::path& source, cons
     auto destinationDirEntry = std::filesystem::directory_entry(destination);
     if (!destinationDirEntry.exists())
     {
-        CreateDirectory(destination.wstring().c_str(), NULL);
+        CreateDirectory(destination.wstring().c_str(), nullptr);
     }
 
     for (auto& path : std::filesystem::directory_iterator(source))
@@ -231,7 +248,7 @@ bool Environment::CheckUpToDate(const std::wstring& source, const std::filesyste
             auto sourceInnerDirectory = std::filesystem::directory_entry(path);
             if (sourceInnerDirectory.path() != directoryToIgnore)
             {
-                CheckUpToDate(destination / path.path().filename(), path.path(), extension, directoryToIgnore);
+                CheckUpToDate(/* source */ path.path(), /* destination */ destination / path.path().filename(), extension, directoryToIgnore);
             }
         }
     }

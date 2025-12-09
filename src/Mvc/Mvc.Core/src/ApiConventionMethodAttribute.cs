@@ -39,10 +39,7 @@ public sealed class ApiConventionMethodAttribute : Attribute
         ConventionType = conventionType ?? throw new ArgumentNullException(nameof(conventionType));
         ApiConventionTypeAttribute.EnsureValid(conventionType);
 
-        if (string.IsNullOrEmpty(methodName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(methodName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(methodName);
 
         Method = GetConventionMethod(conventionType, methodName);
     }

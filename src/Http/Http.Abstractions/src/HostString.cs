@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Http.Abstractions;
 using Microsoft.Extensions.Primitives;
@@ -25,14 +26,14 @@ public readonly struct HostString : IEquatable<HostString>
 
     private static readonly IdnMapping s_idnMapping = new();
 
-    private readonly string _value;
+    private readonly string? _value;
 
     /// <summary>
     /// Creates a new HostString without modification. The value should be Unicode rather than punycode, and may have a port.
     /// IPv4 and IPv6 addresses are also allowed, and also may have ports.
     /// </summary>
     /// <param name="value"></param>
-    public HostString(string value)
+    public HostString(string? value)
     {
         _value = value;
     }
@@ -67,7 +68,7 @@ public readonly struct HostString : IEquatable<HostString>
     /// <summary>
     /// Returns the original value from the constructor.
     /// </summary>
-    public string Value
+    public string? Value
     {
         get { return _value; }
     }
@@ -75,6 +76,8 @@ public readonly struct HostString : IEquatable<HostString>
     /// <summary>
     /// Returns true if the host is set.
     /// </summary>
+    [MemberNotNullWhen(true, nameof(_value))]
+    [MemberNotNullWhen(true, nameof(Value))]
     public bool HasValue
     {
         get { return !string.IsNullOrEmpty(_value); }
@@ -295,7 +298,7 @@ public readonly struct HostString : IEquatable<HostString>
         {
             return !HasValue;
         }
-        return obj is HostString && Equals((HostString)obj);
+        return obj is HostString value && Equals(value);
     }
 
     /// <summary>

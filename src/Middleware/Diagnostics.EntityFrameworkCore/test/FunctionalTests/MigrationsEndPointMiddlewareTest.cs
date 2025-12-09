@@ -262,7 +262,7 @@ public class MigrationsEndPointMiddlewareTest
                 await server.CreateClient().PostAsync("http://localhost" + MigrationsEndPointOptions.DefaultPath, formData));
 
             Assert.StartsWith(StringsHelpers.GetResourceString("FormatMigrationsEndPointMiddleware_Exception", typeof(BloggingContextWithSnapshotThatThrows)), ex.Message);
-            Assert.Equal("Welcome to the invalid migration!", ex.InnerException.Message);
+            Assert.Equal("Welcome to the invalid snapshot!", ex.InnerException.Message);
         }
     }
 }

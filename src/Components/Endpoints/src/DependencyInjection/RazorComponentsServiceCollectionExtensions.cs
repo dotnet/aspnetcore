@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Endpoints.DependencyInjection;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -60,18 +62,30 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<INavigationInterception, UnsupportedNavigationInterception>();
         services.TryAddScoped<IScrollToLocationHash, UnsupportedScrollToLocationHash>();
         services.TryAddScoped<ComponentStatePersistenceManager>();
-        services.TryAddScoped<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+        services.TryAddScoped(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.TryAddScoped<IErrorBoundaryLogger, PrerenderingErrorBoundaryLogger>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IPostConfigureOptions<RazorComponentsServiceOptions>, DefaultRazorComponentsServiceOptionsConfiguration>());
         services.TryAddScoped<EndpointRoutingStateProvider>();
         services.TryAddScoped<IRoutingStateProvider>(sp => sp.GetRequiredService<EndpointRoutingStateProvider>());
+        services.TryAddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
         services.AddSupplyValueFromQueryProvider();
+        services.AddSupplyValueFromPersistentComponentStateProvider();
         services.TryAddCascadingValue(sp => sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext);
+        services.TryAddScoped<WebAssemblySettingsEmitter>();
+        services.TryAddScoped<ResourcePreloadService>();
+
+        services.TryAddScoped<ResourceCollectionProvider>();
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<ResourceCollectionProvider>(services, RenderMode.InteractiveWebAssembly);
+
+        ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(services);
+        ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(services);
 
         // Form handling
         services.AddSupplyValueFromFormProvider();
         services.TryAddScoped<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
+        services.TryAddScoped(sp => (EndpointAntiforgeryStateProvider)sp.GetRequiredService<AntiforgeryStateProvider>());
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AntiforgeryStateProvider>(services, RenderMode.InteractiveAuto);
         services.TryAddScoped<HttpContextFormDataProvider>();
         services.TryAddScoped<IFormValueMapper, HttpContextFormValueMapper>();
 

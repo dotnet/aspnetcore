@@ -88,30 +88,16 @@ public class JSObjectReferenceJsonConverterTest
         Assert.Equal($"{{\"__jsObjectId\":{jsObjectRef.Id}}}", json);
     }
 
-    private class TestJSUnmarshalledObjectReference : JSInProcessObjectReference, IJSUnmarshalledObjectReference
+    [Fact]
+    public void Read_ReturnsNull_WhenJSObjectIdIsMinusOne()
     {
-        public TestJSUnmarshalledObjectReference(long id) : base(default!, id)
-        {
-        }
+        // Arrange
+        var json = "{\"__jsObjectId\":-1}";
 
-        public TResult InvokeUnmarshalled<TResult>(string identifier)
-        {
-            throw new NotImplementedException();
-        }
+        // Act
+        var deserialized = JsonSerializer.Deserialize<IJSObjectReference>(json, JsonSerializerOptions);
 
-        public TResult InvokeUnmarshalled<T0, TResult>(string identifier, T0 arg0)
-        {
-            throw new NotImplementedException();
-        }
-
-        public TResult InvokeUnmarshalled<T0, T1, TResult>(string identifier, T0 arg0, T1 arg1)
-        {
-            throw new NotImplementedException();
-        }
-
-        public TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2)
-        {
-            throw new NotImplementedException();
-        }
+        // Assert
+        Assert.Null(deserialized);
     }
 }

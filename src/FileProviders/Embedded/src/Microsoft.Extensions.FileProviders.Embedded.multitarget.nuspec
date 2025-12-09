@@ -3,7 +3,7 @@
   <metadata>
     $CommonMetadataElements$
     <dependencies>
-      <group targetFramework=".net9.0">
+      <group targetFramework=".net10.0">
         <dependency id="Microsoft.Extensions.FileProviders.Abstractions" version="$AbstractionsVersion$" exclude="Build,Analyzers" />
       </group>
       <group targetFramework=".NETStandard2.0">

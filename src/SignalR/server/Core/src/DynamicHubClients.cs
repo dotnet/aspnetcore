@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.SignalR.Internal;
 
 namespace Microsoft.AspNetCore.SignalR;
@@ -8,6 +9,7 @@ namespace Microsoft.AspNetCore.SignalR;
 /// <summary>
 /// A class that provides <c>dynamic</c> access to connections, including the one that sent the current invocation.
 /// </summary>
+[RequiresDynamicCodeAttribute("DynamicHubClients requires dynamic code generation to construct a call site.")]
 public class DynamicHubClients
 {
     private readonly IHubCallerClients _clients;

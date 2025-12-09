@@ -64,8 +64,8 @@
 
   <Target Name="Pack" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="$(PackDependsOn)">
     <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Pack" />
-    <Message Text="> gradlew $(GradleOptions) createPackage" Importance="high" />
-    <Exec Command="../gradlew $(GradleOptions) createPackage" />
+    <Message Text="> gradlew $(GradleOptions) publishToMavenLocal" Importance="high" />
+    <Exec Command="../gradlew $(GradleOptions) publishToMavenLocal" />
     <Message Importance="high" Text="$(PackageId) -> $(PackageOutputPath)%(JavaBuildFiles.Identity)" />
     <Copy SourceFiles="$(MSBuildProjectDirectory)\build\libs\%(JavaBuildFiles.Identity)" DestinationFolder="$(PackageOutputPath)" />
   </Target>

@@ -168,6 +168,14 @@ internal sealed partial class HttpConnectionDispatcher
             {
                 transport = HttpTransportType.WebSockets;
                 connection = await GetOrCreateConnectionAsync(context, options);
+
+                if (connection is not null)
+                {
+                    Log.EstablishedConnection(_logger);
+
+                    // Allow the reads to be canceled
+                    connection.Cancellation ??= new CancellationTokenSource();
+                }
             }
             else
             {
@@ -336,7 +344,7 @@ internal sealed partial class HttpConnectionDispatcher
             var queryStringVersionValue = queryStringVersion.ToString();
             if (!int.TryParse(queryStringVersionValue, out clientProtocolVersion))
             {
-                error = $"The client requested an invalid protocol version '{queryStringVersionValue}'";
+                error = $"The client requested a non-integer protocol version.";
                 Log.InvalidNegotiateProtocolVersion(_logger, queryStringVersionValue);
             }
             else if (clientProtocolVersion < options.MinimumProtocolVersion)

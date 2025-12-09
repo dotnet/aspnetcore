@@ -30,7 +30,6 @@ export function beforeServerStart(options) {
     return new Promise((resolve, reject) => {
         options.circuitHandlers.push({
             onCircuitOpened: () => {
-                debugger;
                 appendElement('modern-circuit-opened', 'Modern "circuitOpened"');
             },
             onCircuitClosed: () => appendElement('modern-circuit-closed', 'Modern "circuitClosed"')

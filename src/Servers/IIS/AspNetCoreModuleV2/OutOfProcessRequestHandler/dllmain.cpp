@@ -16,19 +16,19 @@ BOOL                g_fProcessDetach = FALSE;
 DWORD               g_OptionalWinHttpFlags = 0;
 DWORD               g_dwTlsIndex = TLS_OUT_OF_INDEXES;
 SRWLOCK             g_srwLockRH;
-HINTERNET           g_hWinhttpSession = NULL;
-IHttpServer *       g_pHttpServer = NULL;
+HINTERNET           g_hWinhttpSession = nullptr;
+IHttpServer *       g_pHttpServer = nullptr;
 HINSTANCE           g_hWinHttpModule;
 HINSTANCE           g_hOutOfProcessRHModule;
 HINSTANCE           g_hAspNetCoreModule;
-HANDLE              g_hEventLog = NULL;
+HANDLE              g_hEventLog = nullptr;
 
 VOID
 InitializeGlobalConfiguration(
     IHttpServer * pServer
 )
 {
-    HKEY hKey;
+    HKEY hKey{};
     BOOL fLocked = FALSE;
 
     if (!g_fGlobalInitialize)
@@ -45,11 +45,11 @@ InitializeGlobalConfiguration(
         g_pHttpServer = pServer;
         if (pServer->IsCommandLineLaunch())
         {
-            g_hEventLog = RegisterEventSource(NULL, ASPNETCORE_IISEXPRESS_EVENT_PROVIDER);
+            g_hEventLog = RegisterEventSource(nullptr, ASPNETCORE_IISEXPRESS_EVENT_PROVIDER);
         }
         else
         {
-            g_hEventLog = RegisterEventSource(NULL, ASPNETCORE_EVENT_PROVIDER);
+            g_hEventLog = RegisterEventSource(nullptr, ASPNETCORE_EVENT_PROVIDER);
         }
 
         if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
@@ -58,14 +58,14 @@ InitializeGlobalConfiguration(
             KEY_READ,
             &hKey) == NO_ERROR)
         {
-            DWORD dwType;
-            DWORD dwData;
-            DWORD cbData;
+            DWORD dwType = 0;
+            DWORD dwData = 0;
+            DWORD cbData = 0;
 
             cbData = sizeof(dwData);
             if ((RegQueryValueEx(hKey,
                 L"OptionalWinHttpFlags",
-                NULL,
+                nullptr,
                 &dwType,
                 (LPBYTE)&dwData,
                 &cbData) == NO_ERROR) &&
@@ -77,7 +77,7 @@ InitializeGlobalConfiguration(
             cbData = sizeof(dwData);
             if ((RegQueryValueEx(hKey,
                 L"EnableReferenceCountTracing",
-                NULL,
+                nullptr,
                 &dwType,
                 (LPBYTE)&dwData,
                 &cbData) == NO_ERROR) &&
@@ -151,12 +151,16 @@ EnsureOutOfProcessInitializtion(IHttpApplication *pHttpApplication)
             }
         }
 
+#pragma warning(push)
+#pragma warning(disable: 26477) // NULL usage via Windows header
         g_hWinhttpSession = WinHttpOpen(L"",
             WINHTTP_ACCESS_TYPE_NO_PROXY,
             WINHTTP_NO_PROXY_NAME,
             WINHTTP_NO_PROXY_BYPASS,
             WINHTTP_FLAG_ASYNC);
-        FINISHED_LAST_ERROR_IF(g_hWinhttpSession == NULL);
+#pragma warning(pop)
+
+        FINISHED_LAST_ERROR_IF(g_hWinhttpSession == nullptr);
 
         //
         // Don't set non-blocking callbacks WINHTTP_OPTION_ASSURED_NON_BLOCKING_CALLBACKS,
@@ -171,7 +175,7 @@ EnsureOutOfProcessInitializtion(IHttpApplication *pHttpApplication)
             FORWARDING_HANDLER::OnWinHttpCompletion,
             (WINHTTP_CALLBACK_FLAG_ALL_COMPLETIONS |
                 WINHTTP_CALLBACK_STATUS_SENDING_REQUEST),
-            NULL) == WINHTTP_INVALID_STATUS_CALLBACK);
+            0) == WINHTTP_INVALID_STATUS_CALLBACK);
 
         //
         // Make sure we see the redirects (rather than winhttp doing it
@@ -219,6 +223,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
         FORWARDING_HANDLER::StaticTerminate();
         ALLOC_CACHE_HANDLER::StaticTerminate();
         DebugStop();
+        break;
     default:
         break;
     }

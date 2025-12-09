@@ -28,7 +28,7 @@ public class FloatModelBinder : IModelBinder
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _supportedStyles = supportedStyles;
-        _logger = loggerFactory.CreateLogger<FloatModelBinder>();
+        _logger = loggerFactory.CreateLogger(typeof(FloatModelBinder));
     }
 
     /// <inheritdoc />

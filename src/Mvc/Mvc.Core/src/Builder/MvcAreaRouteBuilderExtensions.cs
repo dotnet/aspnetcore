@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
 
@@ -119,11 +118,7 @@ public static class MvcAreaRouteBuilderExtensions
         object? dataTokens)
     {
         ArgumentNullException.ThrowIfNull(routeBuilder);
-
-        if (string.IsNullOrEmpty(areaName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(areaName);
 
         var defaultsDictionary = new RouteValueDictionary(defaults);
         defaultsDictionary["area"] = defaultsDictionary["area"] ?? areaName;

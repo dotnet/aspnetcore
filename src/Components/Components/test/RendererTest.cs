@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
+using System.Reflection;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.CompilerServices;
 using Microsoft.AspNetCore.Components.HotReload;
@@ -2242,7 +2243,7 @@ public class RendererTest
             .Where(frame => frame.FrameType == RenderTreeFrameType.Component)
             .Select(frame => frame.ComponentId)
             .ToList();
-        var childComponent3 = batch.ReferenceFrames.Where(f => f.ComponentId == 3)
+        var childComponent3 = batch.ReferenceFrames.Where(f => f.FrameType == RenderTreeFrameType.Component && f.ComponentId == 3)
             .Single().Component;
         Assert.Equal(new[] { 1, 2 }, childComponentIds);
         Assert.IsType<FakeComponent>(childComponent3);
@@ -3049,7 +3050,7 @@ public class RendererTest
         component.TriggerRender();
         var childComponentId = renderer.Batches.Single()
             .ReferenceFrames
-            .Where(f => f.ComponentId != 0)
+            .Where(f => f.FrameType == RenderTreeFrameType.Component && f.ComponentId != 0)
             .Single()
             .ComponentId;
         var origEventHandlerId = renderer.Batches.Single()
@@ -3065,8 +3066,8 @@ public class RendererTest
         // Assert: correct render result
         Assert.True(renderTask.IsCompletedSuccessfully);
         var newBatch = renderer.Batches.Skip(1).Single();
-        Assert.Equal(1, newBatch.DisposedComponentIDs.Count);
-        Assert.Equal(1, newBatch.DiffsByComponentId.Count);
+        Assert.Single(newBatch.DisposedComponentIDs);
+        Assert.Single(newBatch.DiffsByComponentId);
         Assert.Collection(newBatch.DiffsByComponentId[componentId].Single().Edits,
             edit =>
             {
@@ -3433,7 +3434,7 @@ public class RendererTest
         // Assert: Only the re-rendered component was notified of "after render"
         var batch2 = renderer.Batches.Skip(1).Single();
         Assert.Equal(2, batch2.DiffsInOrder.Count); // Parent and first child
-        Assert.Equal(1, batch2.DisposedComponentIDs.Count); // Third child
+        Assert.Single(batch2.DisposedComponentIDs); // Third child
         Assert.Equal(2, childComponents[0].OnAfterRenderCallCount); // Retained and re-rendered
         Assert.Equal(1, childComponents[1].OnAfterRenderCallCount); // Retained and not re-rendered
         Assert.Equal(1, childComponents[2].OnAfterRenderCallCount); // Disposed
@@ -5028,6 +5029,40 @@ public class RendererTest
     }
 
     [Fact]
+    public async Task HotReload_ReRenderPreservesAsyncLocalValues()
+    {
+        await using var renderer = new TestRenderer();
+
+        var hotReloadManager = new HotReloadManager { MetadataUpdateSupported = true };
+        renderer.HotReloadManager = hotReloadManager;
+        HotReloadManager.Default.MetadataUpdateSupported = true;
+
+        var component = new AsyncLocalCaptureComponent();
+
+        // Establish AsyncLocal value before registering hot reload handler / rendering.
+        ServiceAccessor.TestAsyncLocal.Value = "AmbientValue";
+
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId));
+
+        // Sanity: initial render should not have captured a hot-reload value yet.
+        Assert.Null(component.HotReloadValue);
+
+        // Simulate hot reload delta applied from a fresh thread (different ExecutionContext) so the AsyncLocal value is lost.
+        var expected = ServiceAccessor.TestAsyncLocal.Value;
+        var thread = new Thread(() =>
+        {
+            // Simulate environment where the ambient value is not present on the hot reload thread.
+            ServiceAccessor.TestAsyncLocal.Value = null;
+            hotReloadManager.TriggerOnDeltaApplied();
+        });
+        thread.Start();
+        thread.Join();
+
+        Assert.Equal(expected, component.HotReloadValue);
+    }
+
+    [Fact]
     public void ThrowsForUnknownRenderMode_OnComponentType()
     {
         // Arrange
@@ -5178,6 +5213,34 @@ public class RendererTest
 
         protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
             => Task.CompletedTask;
+    }
+
+    private class ServiceAccessor
+    {
+        public static AsyncLocal<string> TestAsyncLocal = new AsyncLocal<string>();
+    }
+
+    private class AsyncLocalCaptureComponent : IComponent
+    {
+        private bool _initialized;
+        private RenderHandle _renderHandle;
+        public string HotReloadValue { get; private set; }
+
+        public void Attach(RenderHandle renderHandle) => _renderHandle = renderHandle;
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            if (!_initialized)
+            {
+                _initialized = true; // First (normal) render, don't capture.
+            }
+            else
+            {
+                // Hot reload re-render path.
+                HotReloadValue = ServiceAccessor.TestAsyncLocal.Value;
+            }
+            return Task.CompletedTask;
+        }
     }
 
     private class TestComponent : IComponent, IDisposable

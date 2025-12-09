@@ -8,5 +8,6 @@ public enum RuntimeArchitecture
     arm64,
     x64,
     x86,
-    ppc64le //Power Architecture
+    ppc64le, //Power Architecture
+    s390x
 }
