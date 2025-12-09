@@ -4,6 +4,8 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <!-- EXTEXP0003: MetricCollector is experimental -->
     <NoWarn>$(NoWarn);EXTEXP0003</NoWarn>
+    <!-- Testasset has undeclared dependency on test content in its local directory, which doesn't work on Helix. -->
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
