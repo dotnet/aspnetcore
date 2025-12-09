@@ -26,16 +26,19 @@ internal static class OpenApiDocumentExtensions
 
         object? description = null;
         object? example = null;
+        object? defaultValue = null;
         if (schema is OpenApiSchema actualSchema)
         {
             actualSchema.Metadata?.TryGetValue(OpenApiConstants.RefDescriptionAnnotation, out description);
             actualSchema.Metadata?.TryGetValue(OpenApiConstants.RefExampleAnnotation, out example);
+            actualSchema.Metadata?.TryGetValue(OpenApiConstants.RefDefaultAnnotation, out defaultValue);
         }
 
         return new OpenApiSchemaReference(schemaId, document)
         {
             Description = description as string,
             Examples = example is JsonNode exampleJson ? [exampleJson] : null,
+            Default = defaultValue is JsonNode defaultValueJson ? defaultValueJson : null,
         };
     }
 }

@@ -10,6 +10,8 @@ public class OpenApiOptionsTests
     {
         // Arrange
         var options = new OpenApiOptions();
+        RemoveBuiltInTransformers(options);
+
         var transformer = new Func<OpenApiDocument, OpenApiDocumentTransformerContext, CancellationToken, Task>((document, context, cancellationToken) =>
         {
             document.Info.Title = "New Title";
@@ -32,6 +34,8 @@ public class OpenApiOptionsTests
     {
         // Arrange
         var options = new OpenApiOptions();
+        RemoveBuiltInTransformers(options);
+
         var transformer = new TestOpenApiDocumentTransformer();
 
         // Act
@@ -50,6 +54,7 @@ public class OpenApiOptionsTests
     {
         // Arrange
         var options = new OpenApiOptions();
+        RemoveBuiltInTransformers(options);
 
         // Act
         var result = options.AddDocumentTransformer<TestOpenApiDocumentTransformer>();
@@ -67,6 +72,8 @@ public class OpenApiOptionsTests
     {
         // Arrange
         var options = new OpenApiOptions();
+        RemoveBuiltInTransformers(options);
+
         var transformer = new Func<OpenApiOperation, OpenApiOperationTransformerContext, CancellationToken, Task>((operation, context, cancellationToken) =>
         {
             operation.Description = "New Description";
@@ -89,6 +96,8 @@ public class OpenApiOptionsTests
     {
         // Arrange
         var options = new OpenApiOptions();
+        RemoveBuiltInTransformers(options);
+
         var transformer = new TestOpenApiOperationTransformer();
 
         // Act
@@ -107,6 +116,7 @@ public class OpenApiOptionsTests
     {
         // Arrange
         var options = new OpenApiOptions();
+        RemoveBuiltInTransformers(options);
 
         // Act
         var result = options.AddOperationTransformer<TestOpenApiOperationTransformer>();
@@ -124,6 +134,8 @@ public class OpenApiOptionsTests
     {
         // Arrange
         var options = new OpenApiOptions();
+        RemoveBuiltInTransformers(options);
+
         var transformer = new Func<OpenApiSchema, OpenApiSchemaTransformerContext, CancellationToken, Task>((schema, context, cancellationToken) =>
         {
             schema.Description = "New Description";
@@ -146,6 +158,8 @@ public class OpenApiOptionsTests
     {
         // Arrange
         var options = new OpenApiOptions();
+        RemoveBuiltInTransformers(options);
+
         var transformer = new TestOpenApiSchemaTransformer();
 
         // Act
@@ -164,6 +178,7 @@ public class OpenApiOptionsTests
     {
         // Arrange
         var options = new OpenApiOptions();
+        RemoveBuiltInTransformers(options);
 
         // Act
         var result = options.AddSchemaTransformer<TestOpenApiSchemaTransformer>();
@@ -174,6 +189,13 @@ public class OpenApiOptionsTests
         Assert.IsType<OpenApiOptions>(result);
         Assert.Empty(options.DocumentTransformers);
         Assert.Empty(options.OperationTransformers);
+    }
+
+    private static void RemoveBuiltInTransformers(OpenApiOptions options)
+    {
+        options.DocumentTransformers.Clear();
+        options.OperationTransformers.Clear();
+        options.SchemaTransformers.Clear();
     }
 
     private class TestOpenApiDocumentTransformer : IOpenApiDocumentTransformer
