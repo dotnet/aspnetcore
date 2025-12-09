@@ -270,7 +270,6 @@
                           $(RepoRoot)src\HealthChecks\**\*.csproj;
                           $(RepoRoot)src\Testing\**\*.csproj;
                           $(RepoRoot)src\Grpc\**\*.csproj;
-                          $(RepoRoot)src\ProjectTemplates\**\*.csproj;
                           $(RepoRoot)src\Extensions\**\*.csproj;
                           $(RepoRoot)src\OpenApi\**\*.csproj;
                           $(RepoRoot)src\Validation\**\*.csproj;
