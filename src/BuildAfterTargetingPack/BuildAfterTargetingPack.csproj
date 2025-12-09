@@ -57,9 +57,14 @@
     <MSBuild Projects="@(RequiresDelayedBuild)" BuildInParallel="$(BuildInParallel)" Targets="Clean" />
   </Target>
 
+  <!--
+    Skip delayed projects when running Helix subset tests. These projects are explicitly excluded from
+    @(ProjectToBuild) via @(RequiresDelayedBuild) -> @(ProjectToExclude), so they shouldn't be included
+    when running subset-based test runs with -noBuild.
+  -->
   <Target Name="CreateHelixPayloadDelayedProjects"
       BeforeTargets="CreateHelixPayload"
-      Condition=" '$(DotNetBuildSourceOnly)' != 'true' AND ('$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'x64') "
+      Condition=" '$(DotNetBuildSourceOnly)' != 'true' AND ('$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'x64') AND '$(HelixSubset)' == '' "
       Returns="@(HelixWorkItem)">
     <MSBuild Projects="@(RequiresDelayedBuild)"
         BuildInParallel="$(BuildInParallel)"
