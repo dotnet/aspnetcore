@@ -21,7 +21,7 @@ public interface IProducesResponseTypeMetadata
     /// <summary>
     /// Gets the description of the response.
     /// </summary>
-    string? Description { get; }
+    string? Description => null;
 
     /// <summary>
     /// Gets the content types supported by the metadata.

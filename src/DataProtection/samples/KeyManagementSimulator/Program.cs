@@ -277,10 +277,26 @@ sealed class MockActivator(IXmlDecryptor decryptor, IAuthenticatedEncryptorDescr
 /// <summary>
 /// A mock authenticated encryptor that only applies the identity function (i.e. does nothing).
 /// </summary>
-sealed class MockAuthenticatedEncryptor : IAuthenticatedEncryptor
+sealed class MockAuthenticatedEncryptor : ISpanAuthenticatedEncryptor
 {
-    byte[] IAuthenticatedEncryptor.Decrypt(ArraySegment<byte> ciphertext, ArraySegment<byte> _additionalAuthenticatedData) => ciphertext.ToArray();
-    byte[] IAuthenticatedEncryptor.Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> _additionalAuthenticatedData) => plaintext.ToArray();
+    public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> _additionalAuthenticatedData) => plaintext.ToArray();
+
+    public void Encrypt<TWriter>(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination) where TWriter : System.Buffers.IBufferWriter<byte>, allows ref struct
+    {
+        var destinationSpan = destination.GetSpan(plaintext.Length);
+        plaintext.CopyTo(destinationSpan);
+        destination.Advance(destinationSpan.Length);
+    }
+
+    public byte[] Decrypt(ArraySegment<byte> ciphertext, ArraySegment<byte> _additionalAuthenticatedData) => ciphertext.ToArray();
+
+    public void Decrypt<TWriter>(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination)
+        where TWriter : System.Buffers.IBufferWriter<byte>, allows ref struct
+    {
+        var destinationSpan = destination.GetSpan(ciphertext.Length);
+        ciphertext.CopyTo(destinationSpan);
+        destination.Advance(destinationSpan.Length);
+    }
 }
 
 /// <summary>

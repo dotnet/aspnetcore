@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
 
 [Collection(IISTestSiteCollectionInProc.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class RequestResponseTests
 {
     private readonly IISTestSiteFixture _fixture;

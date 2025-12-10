@@ -61,7 +61,7 @@ public:
         DWORD dwPeriod = 0
         )
     {
-        FILETIME ftInitialWait;
+        FILETIME ftInitialWait{};
 
         if ( dwInitialWait == 0 && dwPeriod == 0 )
         {
@@ -186,12 +186,10 @@ public:
           _dwPerfCountsPerMillisecond( 0 ),
           _fUsingHighResolution( FALSE )
     {
-        LARGE_INTEGER li;
-        BOOL          fResult;
-
+        LARGE_INTEGER li{};
         _dwInitTickCount = GetTickCount64();
 
-        fResult = QueryPerformanceFrequency( &li );
+        BOOL fResult = QueryPerformanceFrequency( &li );
 
         if ( !fResult )
         {
@@ -224,7 +222,7 @@ Finished:
     LONGLONG
     QueryElapsedTime()
     {
-        LARGE_INTEGER li;
+        LARGE_INTEGER li{};
 
         if ( _fUsingHighResolution && QueryPerformanceCounter( &li ) )
         {

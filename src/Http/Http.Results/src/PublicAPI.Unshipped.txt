@@ -1,2 +1,1 @@
 #nullable enable
-static Microsoft.AspNetCore.Http.HttpResults.RedirectHttpResult.IsLocalUrl(string? url) -> bool

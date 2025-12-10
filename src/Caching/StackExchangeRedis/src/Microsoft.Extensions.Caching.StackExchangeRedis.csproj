@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <Description>Distributed cache implementation of Microsoft.Extensions.Caching.Distributed.IDistributedCache using Redis.</Description>
-    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework);netstandard2.0;$(CurrentLtsTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework);netstandard2.0</TargetFrameworks>
+    <TargetFrameworks Condition="! $(TargetFrameworks.Contains('$(CurrentLtsTargetFramework)'))">$(TargetFrameworks);$(CurrentLtsTargetFramework)</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>cache;distributedcache;redis</PackageTags>
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>

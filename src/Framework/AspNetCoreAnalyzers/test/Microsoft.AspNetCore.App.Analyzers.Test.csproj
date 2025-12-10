@@ -23,8 +23,8 @@
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.AspNetCore.RateLimiting" />
-    <Reference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing.XUnit" />
-    <Reference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" />
   </ItemGroup>
 

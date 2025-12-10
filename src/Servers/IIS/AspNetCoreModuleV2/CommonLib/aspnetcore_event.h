@@ -59,10 +59,9 @@ public:
         enumAreaFlags       AreaFlags,
         DWORD               dwVerbosity )
     {
-        HRESULT                  hr;
         HTTP_TRACE_CONFIGURATION TraceConfig;
         TraceConfig.pProviderGuid = GetProviderGuid();
-        hr = pHttpTraceContext->GetTraceConfiguration( &TraceConfig );
+        HRESULT hr = pHttpTraceContext->GetTraceConfiguration( &TraceConfig );
         if ( FAILED( hr )  || !TraceConfig.fProviderEnabled )
         {
             return FALSE;

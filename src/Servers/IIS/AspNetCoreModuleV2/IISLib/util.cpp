@@ -27,7 +27,7 @@ Return Values:
 
 --*/
 {
-    HRESULT hr;
+    HRESULT hr = S_OK;
 
     if (pszName[0] == L'\\' && pszName[1] == L'\\')
     {
@@ -74,7 +74,7 @@ Return Values:
     else
     {
         pstrPath->Reset();
-    }  
+    }
 
     return pstrPath->Append(pszName);
 }

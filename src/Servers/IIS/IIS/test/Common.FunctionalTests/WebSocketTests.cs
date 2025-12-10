@@ -8,7 +8,6 @@ using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Text;
 using Microsoft.AspNetCore.InternalTesting;
-using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Xunit.Abstractions;
@@ -28,8 +27,6 @@ namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests;
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
 
-[MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8, SkipReason = "No WebSocket supported on Win7")]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public abstract class WebSocketsTests : FunctionalTestsBase
 {
     public IISTestSiteFixture Fixture { get; }
@@ -37,7 +34,6 @@ public abstract class WebSocketsTests : FunctionalTestsBase
     public WebSocketsTests(IISTestSiteFixture fixture, ITestOutputHelper testOutput) : base(testOutput)
     {
         Fixture = fixture;
-        Fixture.DeploymentParameters.EnableLogging("C:/github/aspnetcore/artifacts/log");
     }
 
     [ConditionalFact]

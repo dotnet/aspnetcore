@@ -15,6 +15,7 @@ public class BrowserFixture : IAsyncLifetime
 {
     public static string StreamingContext { get; } = "streaming";
     public static string RoutingTestContext { get; } = "routing";
+    public static string StreamingBackForwardCacheContext { get; } = "streaming.backforwardcache";
 
     private readonly ConcurrentDictionary<string, (IWebDriver browser, ILogs log)> _browsers = new();
 
@@ -65,14 +66,20 @@ public class BrowserFixture : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        var browsers = _browsers.Values;
-        foreach (var (browser, _) in browsers)
+        try
         {
-            browser?.Quit();
-            browser?.Dispose();
-        }
+            var browsers = _browsers.Values;
+            foreach (var (browser, _) in browsers)
+            {
+                browser?.Quit();
+                browser?.Dispose();
+            }
 
-        await DeleteBrowserUserProfileDirectoriesAsync();
+            await DeleteBrowserUserProfileDirectoriesAsync();
+        }
+        catch
+        {
+        }
     }
 
     private async Task DeleteBrowserUserProfileDirectoriesAsync()
@@ -136,10 +143,17 @@ public class BrowserFixture : IAsyncLifetime
             opts.UseWebSocketUrl = true;
         }
 
-        if (context?.StartsWith(StreamingContext, StringComparison.Ordinal) == true)
+        if (context?.StartsWith(StreamingContext, StringComparison.Ordinal) == true || context?.StartsWith(StreamingBackForwardCacheContext, StringComparison.Ordinal) == true)
         {
             // Tells Selenium not to wait until the page navigation has completed before continuing with the tests
             opts.PageLoadStrategy = PageLoadStrategy.None;
+        }
+
+        if (context?.StartsWith(StreamingBackForwardCacheContext, StringComparison.Ordinal) == true)
+        {
+            // Tells Selenium to disable the back/forward cache, which is enabled by default in Chrome.
+            // This is needed for tests that rely on the browser's back/forward navigation.
+            opts.AddArgument("--disable-back-forward-cache");
         }
 
         // Force language to english for tests

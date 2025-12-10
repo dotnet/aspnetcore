@@ -6,6 +6,8 @@
     <!-- Installing Java on ARM will take some work -->
     <SkipHelixArm>true</SkipHelixArm>
     <SkipHelixAlpine>true</SkipHelixAlpine>
+    <!-- Temporary while Mac machines get new JDK -->
+    <SkipHelixQueues>OSX.15.Amd64.Open;$(SkipHelixQueues)</SkipHelixQueues>
     <PublishDir>$(OutputPath)</PublishDir>
     <TestDependsOnJava>true</TestDependsOnJava>
   </PropertyGroup>

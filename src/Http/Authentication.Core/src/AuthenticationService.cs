@@ -22,7 +22,11 @@ public class AuthenticationService : IAuthenticationService
     /// <param name="handlers">The <see cref="IAuthenticationHandlerProvider"/>.</param>
     /// <param name="transform">The <see cref="IClaimsTransformation"/>.</param>
     /// <param name="options">The <see cref="AuthenticationOptions"/>.</param>
-    public AuthenticationService(IAuthenticationSchemeProvider schemes, IAuthenticationHandlerProvider handlers, IClaimsTransformation transform, IOptions<AuthenticationOptions> options)
+    public AuthenticationService(
+        IAuthenticationSchemeProvider schemes,
+        IAuthenticationHandlerProvider handlers,
+        IClaimsTransformation transform,
+        IOptions<AuthenticationOptions> options)
     {
         Schemes = schemes;
         Handlers = handlers;
@@ -68,11 +72,7 @@ public class AuthenticationService : IAuthenticationService
             }
         }
 
-        var handler = await Handlers.GetHandlerAsync(context, scheme);
-        if (handler == null)
-        {
-            throw await CreateMissingHandlerException(scheme);
-        }
+        var handler = await Handlers.GetHandlerAsync(context, scheme) ?? throw await CreateMissingHandlerException(scheme);
 
         // Handlers should not return null, but we'll be tolerant of null values for legacy reasons.
         var result = (await handler.AuthenticateAsync()) ?? AuthenticateResult.NoResult();
@@ -81,7 +81,7 @@ public class AuthenticationService : IAuthenticationService
         {
             var principal = result.Principal!;
             var doTransform = true;
-            _transformCache ??= new HashSet<ClaimsPrincipal>();
+            _transformCache ??= [];
             if (_transformCache.Contains(principal))
             {
                 doTransform = false;
@@ -94,6 +94,7 @@ public class AuthenticationService : IAuthenticationService
             }
             return AuthenticateResult.Success(new AuthenticationTicket(principal, result.Properties, result.Ticket!.AuthenticationScheme));
         }
+
         return result;
     }
 
@@ -116,12 +117,7 @@ public class AuthenticationService : IAuthenticationService
             }
         }
 
-        var handler = await Handlers.GetHandlerAsync(context, scheme);
-        if (handler == null)
-        {
-            throw await CreateMissingHandlerException(scheme);
-        }
-
+        var handler = await Handlers.GetHandlerAsync(context, scheme) ?? throw await CreateMissingHandlerException(scheme);
         await handler.ChallengeAsync(properties);
     }
 
@@ -144,12 +140,7 @@ public class AuthenticationService : IAuthenticationService
             }
         }
 
-        var handler = await Handlers.GetHandlerAsync(context, scheme);
-        if (handler == null)
-        {
-            throw await CreateMissingHandlerException(scheme);
-        }
-
+        var handler = await Handlers.GetHandlerAsync(context, scheme) ?? throw await CreateMissingHandlerException(scheme);
         await handler.ForbidAsync(properties);
     }
 
@@ -187,14 +178,8 @@ public class AuthenticationService : IAuthenticationService
             }
         }
 
-        var handler = await Handlers.GetHandlerAsync(context, scheme);
-        if (handler == null)
-        {
-            throw await CreateMissingSignInHandlerException(scheme);
-        }
-
-        var signInHandler = handler as IAuthenticationSignInHandler;
-        if (signInHandler == null)
+        var handler = await Handlers.GetHandlerAsync(context, scheme) ?? throw await CreateMissingSignInHandlerException(scheme);
+        if (handler is not IAuthenticationSignInHandler signInHandler)
         {
             throw await CreateMismatchedSignInHandlerException(scheme, handler);
         }
@@ -221,14 +206,8 @@ public class AuthenticationService : IAuthenticationService
             }
         }
 
-        var handler = await Handlers.GetHandlerAsync(context, scheme);
-        if (handler == null)
-        {
-            throw await CreateMissingSignOutHandlerException(scheme);
-        }
-
-        var signOutHandler = handler as IAuthenticationSignOutHandler;
-        if (signOutHandler == null)
+        var handler = await Handlers.GetHandlerAsync(context, scheme) ?? throw await CreateMissingSignOutHandlerException(scheme);
+        if (handler is not IAuthenticationSignOutHandler signOutHandler)
         {
             throw await CreateMismatchedSignOutHandlerException(scheme, handler);
         }

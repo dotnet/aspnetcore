@@ -65,7 +65,7 @@ public class TargetingPackTests
             .Split(';', StringSplitOptions.RemoveEmptyEntries)
             .ToHashSet();
 
-        var versionStringWithoutPrereleaseTag = TestData.GetMicrosoftNETCoreAppPackageVersion().Split('-', 2)[0];
+        var versionStringWithoutPrereleaseTag = TestData.GetMicrosoftNETCoreAppVersion().Split('-', 2)[0];
         var version = Version.Parse(versionStringWithoutPrereleaseTag);
         var aspnetcoreVersionString = TestData.GetSharedFxVersion().Split('-', 2)[0];
         var aspnetcoreVersion = Version.Parse(aspnetcoreVersionString);
@@ -144,10 +144,27 @@ public class TargetingPackTests
             .Split(';', StringSplitOptions.RemoveEmptyEntries)
             .ToHashSet();
 
-        Assert.Equal(packageOverrideFileLines.Length, runtimeDependencies.Count + aspnetcoreDependencies.Count);
+        // Some packages are excluded from pruning because they contain build logic that is not in the SDK.
+        // These packages need their build targets to execute even though their runtime assemblies are in the shared framework.
+        string[] packagesExcludedFromPruning = ["Microsoft.Extensions.FileProviders.Embedded"]; // See https://github.com/dotnet/aspnetcore/issues/63719
+
+        foreach (var excludedPackage in packagesExcludedFromPruning)
+        {
+            aspnetcoreDependencies.Remove(excludedPackage);
+        }
+
+        // PackageOverrides will contain all Aspnetcore/Runtime ref pack libs, plus an entry for Microsoft.AspNetCore.App,
+        // minus any packages excluded from pruning
+        Assert.Equal(packageOverrideFileLines.Length, runtimeDependencies.Count + aspnetcoreDependencies.Count + 1);
+
+        // Verify that excluded packages are NOT in PackageOverrides
+        foreach (var excludedPackage in packagesExcludedFromPruning)
+        {
+            Assert.DoesNotContain(packageOverrideFileLines, line => line.StartsWith(excludedPackage + "|", StringComparison.Ordinal));
+        }
 
         // PackageOverrides versions should remain at Major.Minor.0 while servicing.
-        var netCoreAppPackageVersion = TestData.GetMicrosoftNETCoreAppPackageVersion();
+        var netCoreAppPackageVersion = TestData.GetMicrosoftNETCoreAppVersion();
         Assert.True(
             NuGetVersion.TryParse(netCoreAppPackageVersion, out var parsedVersion),
             "MicrosoftNETCoreAppPackageVersion must be convertable to a NuGetVersion.");
@@ -177,7 +194,7 @@ public class TargetingPackTests
             {
                 Assert.Equal(netCoreAppPackageVersion, packageVersion);
             }
-            else if (aspnetcoreDependencies.Contains(packageName))
+            else if (packageName.Equals("Microsoft.AspNetCore.App", StringComparison.Ordinal) || aspnetcoreDependencies.Contains(packageName))
             {
                 Assert.Equal(aspNetCoreAppPackageVersion, packageVersion);
             }

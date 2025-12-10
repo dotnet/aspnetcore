@@ -436,7 +436,7 @@ public class ServerComponentDeserializerTest
         return new ServerComponentDeserializer(
             _ephemeralDataProtectionProvider,
             NullLogger<ServerComponentDeserializer>.Instance,
-            new RootComponentTypeCache(),
+            new RootTypeCache(),
             new ComponentParameterDeserializer(NullLogger<ComponentParameterDeserializer>.Instance, new ComponentParametersTypeCache()));
     }
 

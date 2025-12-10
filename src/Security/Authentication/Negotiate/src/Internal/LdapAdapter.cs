@@ -15,8 +15,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate;
 internal static partial class LdapAdapter
 {
     [GeneratedRegex(@"(?<![^\\]\\),")]
-    internal static partial Regex DistinguishedNameSeparator();
-    
+    internal static partial Regex DistinguishedNameSeparatorRegex { get; }
+
     public static async Task RetrieveClaimsAsync(LdapSettings settings, ClaimsIdentity identity, ILogger logger)
     {
         var user = identity.Name!;
@@ -66,7 +66,7 @@ internal static partial class LdapAdapter
             {
                 // Example distinguished name: CN=TestGroup,DC=KERB,DC=local
                 var groupDN = $"{Encoding.UTF8.GetString((byte[])group)}";
-                var groupCN = DistinguishedNameSeparator().Split(groupDN)[0].Substring("CN=".Length);
+                var groupCN = DistinguishedNameSeparatorRegex.Split(groupDN)[0].Substring("CN=".Length);
 
                 if (!settings.IgnoreNestedGroups)
                 {
@@ -124,7 +124,7 @@ internal static partial class LdapAdapter
                 foreach (var member in memberof)
                 {
                     var nestedGroupDN = $"{Encoding.UTF8.GetString((byte[])member)}";
-                    var nestedGroupCN = DistinguishedNameSeparator().Split(nestedGroupDN)[0].Substring("CN=".Length);
+                    var nestedGroupCN = DistinguishedNameSeparatorRegex.Split(nestedGroupDN)[0].Substring("CN=".Length);
 
                     if (processedGroups.Contains(nestedGroupDN))
                     {

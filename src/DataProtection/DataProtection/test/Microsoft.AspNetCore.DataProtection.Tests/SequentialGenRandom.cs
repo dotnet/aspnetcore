@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using Microsoft.AspNetCore.DataProtection.Cng;
 using Microsoft.AspNetCore.DataProtection.Managed;
 
@@ -25,6 +26,14 @@ internal unsafe class SequentialGenRandom : IBCryptGenRandom, IManagedGenRandom
         for (uint i = 0; i < cbBuffer; i++)
         {
             pbBuffer[i] = _value++;
+        }
+    }
+
+    public void GenRandom(Span<byte> target)
+    {
+        for (var i = 0; i < target.Length; i++)
+        {
+            target[i] = _value++;
         }
     }
 }

@@ -1,12 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable ASPDEPR002 // WithOpenApi is deprecated
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
 using static Microsoft.AspNetCore.OpenApi.Tests.OpenApiOperationGeneratorTests;
 
 namespace Microsoft.AspNetCore.OpenApi.Tests;
@@ -74,7 +75,7 @@ public class OpenApiRouteHandlerBuilderExtensionTests
         _ = builder.MapDelete("/{id}", GetString)
             .WithOpenApi(operation => new(operation)
             {
-                Parameters = new List<OpenApiParameter>() { new() { Schema = new() { Type = "number" } } }
+                Parameters = [new OpenApiParameter() { Schema = new OpenApiSchema() { Type = JsonSchemaType.Number } }]
             });
 
         var dataSource = GetBuilderEndpointDataSource(builder);
@@ -84,7 +85,7 @@ public class OpenApiRouteHandlerBuilderExtensionTests
         var operation = endpoint.Metadata.GetMetadata<OpenApiOperation>();
         Assert.NotNull(operation);
         var parameter = Assert.Single(operation.Parameters);
-        Assert.Equal("number", parameter.Schema.Type);
+        Assert.Equal(JsonSchemaType.Number, parameter.Schema.Type);
     }
 
     [Fact]

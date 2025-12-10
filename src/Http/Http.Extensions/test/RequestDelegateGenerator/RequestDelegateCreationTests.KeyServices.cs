@@ -127,7 +127,7 @@ app.MapGet("/", (HttpContext context, [FromKeyedServices("service1")] TestServic
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
             async () => await endpoint.RequestDelegate(httpContext));
 
-        Assert.Equal("No service for type 'Microsoft.AspNetCore.Http.Generators.Tests.TestService' has been registered.", exception.Message);
+        Assert.Equal("No keyed service for type 'Microsoft.AspNetCore.Http.Generators.Tests.TestService' using key type 'System.String' has been registered.", exception.Message);
     }
 
     [Fact]
@@ -250,6 +250,23 @@ app.MapGet("/hello", ([FromKeyedServices("example")] global::Http.ExampleService
         var httpContext = CreateHttpContext(serviceProvider);
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "To be or not to be…");
+    }
+
+    [Fact]
+    public async Task SupportsDerivedFromKeyedServicesAttribute()
+    {
+        var source = """
+app.MapGet("/", (HttpContext context, [CustomFromKeyedServices("customKey")] TestService arg) => context.Items["arg"] = arg);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var myOriginalService = new TestService();
+        var serviceProvider = CreateServiceProvider((serviceCollection) => serviceCollection.AddKeyedSingleton("customKey", myOriginalService));
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
+
+        var httpContext = CreateHttpContext(serviceProvider);
+        await endpoint.RequestDelegate(httpContext);
+
+        Assert.Same(myOriginalService, httpContext.Items["arg"]);
     }
 
     private class MockServiceProvider : IServiceProvider, ISupportRequiredService

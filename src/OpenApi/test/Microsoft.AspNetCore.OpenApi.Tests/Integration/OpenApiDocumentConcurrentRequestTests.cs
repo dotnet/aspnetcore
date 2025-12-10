@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
-using System.Net.Http;
 using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.OpenApi.Tests.Integration;

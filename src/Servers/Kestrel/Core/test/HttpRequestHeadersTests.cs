@@ -379,13 +379,13 @@ public class HttpRequestHeadersTests
         Assert.Equal(new StringValues(), entries[0].Value);
 
         Assert.Equal("Host", entries[1].Key);
-        Assert.Equal(new[] { "localhost" }, entries[1].Value);
+        Assert.Equal(new[] { "localhost" }, entries[1].Value.ToArray());
 
         Assert.Equal("Content-Length", entries[2].Key);
-        Assert.Equal(new[] { "0" }, entries[2].Value);
+        Assert.Equal(new[] { "0" }, entries[2].Value.ToArray());
 
         Assert.Equal("custom", entries[3].Key);
-        Assert.Equal(new[] { "value" }, entries[3].Value);
+        Assert.Equal(new[] { "value" }, entries[3].Value.ToArray());
 
         Assert.Null(entries[4].Key);
         Assert.Equal(new StringValues(), entries[4].Value);

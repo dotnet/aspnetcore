@@ -27,13 +27,13 @@ publishing {
             from components.java
 
             artifactId 'signalr'
-            description 'ASP.NET Core SignalR Client for Java applications'
 
             pom {
                 packaging = 'jar'
                 inceptionYear = '2018'
                 url = 'https://github.com/dotnet/aspnetcore'
                 name = groupId + ':' + artifactId
+                description = 'ASP.NET Core SignalR Client for Java applications'
                 licenses {
                     license {
                         name = 'MIT License'

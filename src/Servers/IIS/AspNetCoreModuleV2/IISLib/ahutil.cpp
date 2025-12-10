@@ -489,7 +489,7 @@ DeleteElementFromCollection(
     )
 {
     HRESULT hr = NOERROR;
-    ULONG index;
+    ULONG index = 0;
 
     VARIANT varIndex;
     VariantInit( &varIndex );
@@ -627,15 +627,13 @@ FindElementInCollection(
     VARIANT varKeyValue;
     VariantInit( &varKeyValue );
 
-    DWORD   count;
-    DWORD   i;
+    DWORD   count = 0;
+    DWORD   i = 0;
 
     BSTR bstrKeyName = nullptr;
-    PFN_FIND_COMPARE_PROC compareProc;
-
-    compareProc = (BehaviorFlags & FIND_ELEMENT_CASE_INSENSITIVE)
-                      ? &FindCompareCaseInsensitive
-                      : &FindCompareCaseSensitive;
+    PFN_FIND_COMPARE_PROC compareProc = (BehaviorFlags & FIND_ELEMENT_CASE_INSENSITIVE)
+                                      ? &FindCompareCaseInsensitive
+                                      : &FindCompareCaseSensitive;
 
     bstrKeyName = SysAllocString( szKeyName );
     if( !bstrKeyName )
@@ -761,8 +759,6 @@ GetLocationFromFile(
     CComPtr<IAppHostConfigLocationCollection>   pLocationCollection;
     CComPtr<IAppHostConfigLocation>             pLocation;
 
-    BSTR bstrLocationPath = nullptr;
-
     *ppLocation = nullptr;
     *pFound = FALSE;
 
@@ -773,11 +769,11 @@ GetLocationFromFile(
     if( FAILED(hr) )
     {
         DBGERROR_HR(hr);
-        goto exit;
+        return hr;
     }
 
-    DWORD count;
-    DWORD i;
+    DWORD count = 0;
+    DWORD i = 0;
     VARIANT varIndex;
     VariantInit( &varIndex );
 
@@ -785,8 +781,10 @@ GetLocationFromFile(
     if( FAILED(hr) )
     {
         DBGERROR_HR(hr);
-        goto exit;
+        return hr;
     }
+
+    BSTR bstrLocationPath = nullptr;
 
     for( i = 0; i < count; i++ )
     {
@@ -841,8 +839,8 @@ GetSectionFromLocation(
 
     CComPtr<IAppHostElement>    pSectionElement;
 
-    DWORD count;
-    DWORD i;
+    DWORD count = 0;
+    DWORD i = 0;
 
     VARIANT varIndex;
     VariantInit( &varIndex );
@@ -1002,8 +1000,8 @@ ClearElementFromAllSites(
     CComPtr<IAppHostElementCollection> pSitesCollection;
     CComPtr<IAppHostElement> pSiteElement;
     CComPtr<IAppHostChildElementCollection> pChildCollection;
-    ENUM_INDEX index;
-    BOOL found;
+    ENUM_INDEX index{};
+    BOOL found = false;
 
     //
     // Enumerate the sites, remove the specified elements.
@@ -1074,7 +1072,7 @@ ClearElementFromAllLocations(
     CComPtr<IAppHostConfigLocationCollection> pLocationCollection;
     CComPtr<IAppHostConfigLocation> pLocation;
     CComPtr<IAppHostChildElementCollection> pChildCollection;
-    ENUM_INDEX index;
+    ENUM_INDEX index{};
 
     //
     // Enum the <location> tags, remove the specified elements.
@@ -1125,10 +1123,10 @@ ClearLocationElements(
     IN      CONST WCHAR *               szElementName
     )
 {
-    HRESULT hr;
+    HRESULT hr = S_OK;
     CComPtr<IAppHostElement> pElement;
-    ENUM_INDEX index;
-    BOOL matched;
+    ENUM_INDEX index{};
+    BOOL matched = false;
 
     for (hr = FindFirstLocationElement(pLocation, &index, &pElement) ;
          SUCCEEDED(hr) ;
@@ -1199,10 +1197,10 @@ ClearChildElementsByName(
     OUT     BOOL *                              pFound
     )
 {
-    HRESULT hr;
+    HRESULT hr = S_OK;
     CComPtr<IAppHostElement> pElement;
-    ENUM_INDEX index;
-    BOOL matched;
+    ENUM_INDEX index{};
+    BOOL matched = false;
 
     *pFound = FALSE;
 
@@ -1253,7 +1251,7 @@ GetSitesCollection(
     OUT     IAppHostElementCollection **        pSitesCollection
     )
 {
-    HRESULT hr;
+    HRESULT hr = S_OK;
     CComPtr<IAppHostElement> pSitesElement;
 
     BSTR bstrConfigPath = SysAllocString(szConfigPath);
@@ -1304,7 +1302,7 @@ GetLocationCollection(
     OUT     IAppHostConfigLocationCollection ** pLocationCollection
     )
 {
-    HRESULT hr;
+    HRESULT hr = S_OK;
     CComPtr<IAppHostConfigManager>      pConfigMgr;
     CComPtr<IAppHostConfigFile>         pConfigFile;
 

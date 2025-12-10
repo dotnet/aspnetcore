@@ -5,6 +5,7 @@ using System.IO.Pipelines;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
 
@@ -15,6 +16,21 @@ public class JsonTypeInfoExtensionsTests
     private class Container
     {
         internal delegate void ContainedTestDelegate(int x, int y);
+    }
+
+    /// <remarks>
+    /// https://github.com/dotnet/aspnetcore/issues/59092
+    /// </remarks>
+    public static class Foo<T>
+    {
+        public static class Bar<TT>
+        {
+            public class Baz
+            {
+                public required T One { get; set; }
+                public required TT Two { get; set; }
+            }
+        }
     }
 
     /// <summary>
@@ -43,8 +59,11 @@ public class JsonTypeInfoExtensionsTests
         [(new { Id = 1, Name = "Todo" }).GetType(), "AnonymousTypeOfintAndstring"],
         [typeof(IFormFile), "IFormFile"],
         [typeof(IFormFileCollection), "IFormFileCollection"],
+        [typeof(JsonPatchDocument), "JsonPatchDocument"],
+        [typeof(JsonPatchDocument<Todo>), "JsonPatchDocument"],
         [typeof(Stream), "Stream"],
         [typeof(PipeReader), "PipeReader"],
+        [typeof(FileContentResult), "FileContentResult"],
         [typeof(Results<Ok<TodoWithDueDate>, Ok<Todo>>), "ResultsOfOkOfTodoWithDueDateAndOkOfTodo"],
         [typeof(Ok<Todo>), "OkOfTodo"],
         [typeof(NotFound<TodoWithDueDate>), "NotFoundOfTodoWithDueDate"],
@@ -58,6 +77,7 @@ public class JsonTypeInfoExtensionsTests
         [typeof(Dictionary<string, string[]>), null],
         [typeof(Dictionary<string, List<string[]>>), null],
         [typeof(Dictionary<string, IEnumerable<string[]>>), null],
+        [typeof(Foo<int>.Bar<string>.Baz), "BazOfintAndstring"],
     ];
 
     [Theory]

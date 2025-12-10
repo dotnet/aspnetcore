@@ -1,6 +1,6 @@
 ﻿{
   "solution": {
-    "path": "..\\..\\AspNetCore.sln",
+    "path": "..\\..\\AspNetCore.slnx",
     "projects" : [
       "src\\Mvc\\Mvc\\src\\Microsoft.AspNetCore.Mvc.csproj",
       "src\\SignalR\\server\\SignalR\\src\\Microsoft.AspNetCore.SignalR.csproj",

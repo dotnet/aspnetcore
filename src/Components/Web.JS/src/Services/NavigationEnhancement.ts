@@ -2,7 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
-import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, isSamePageWithHash, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage } from './NavigationUtils';
+import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash } from './NavigationUtils';
+import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -70,11 +71,17 @@ export function detachProgressivelyEnhancedNavigationListener() {
   window.removeEventListener('popstate', onPopState);
 }
 
-function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, replace: boolean) {
+function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, replace: boolean) : void {
+  const originalLocation = location.href;
+
   if (replace) {
     history.replaceState(null, /* ignored title */ '', absoluteInternalHref);
   } else {
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
+  }
+
+  if (!isForSamePath(absoluteInternalHref, originalLocation)) {
+    scheduleScrollReset(ScrollResetSchedule.AfterDocumentUpdate);
   }
 
   performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ false);
@@ -90,13 +97,19 @@ function onDocumentClick(event: MouseEvent) {
   }
 
   handleClickForNavigationInterception(event, absoluteInternalHref => {
-    const shouldScrollToHash = isSamePageWithHash(absoluteInternalHref);
+    const originalLocation = location.href;
+
+    const shouldScrollToHash = isSamePageWithHash(originalLocation, absoluteInternalHref);
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
 
     if (shouldScrollToHash) {
       performScrollToElementOnTheSamePage(absoluteInternalHref);
     } else {
+      let isSelfNavigation = isForSamePath(absoluteInternalHref, originalLocation);
       performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ true);
+      if (!isSelfNavigation) {
+        scheduleScrollReset(ScrollResetSchedule.AfterDocumentUpdate);
+      }
     }
   });
 }
@@ -106,6 +119,12 @@ function onPopState(state: PopStateEvent) {
     return;
   }
 
+  if (state.state == null && isSamePageWithHash(currentContentUrl, location.href)) {
+    currentContentUrl = location.href;
+    return;
+  }
+
+  // load the new page
   performEnhancedPageLoad(location.href, /* interceptedLink */ false);
 }
 
@@ -144,7 +163,7 @@ function onDocumentSubmit(event: SubmitEvent) {
     const formData = new FormData(formElem);
 
     const submitterName = event.submitter?.getAttribute('name');
-    const submitterValue = event.submitter!.getAttribute('value');
+    const submitterValue = event.submitter?.getAttribute('value');
     if (submitterName && submitterValue) {
       formData.append(submitterName, submitterValue);
     }
@@ -177,7 +196,7 @@ function onDocumentSubmit(event: SubmitEvent) {
   }
 }
 
-export async function performEnhancedPageLoad(internalDestinationHref: string, interceptedLink: boolean, fetchOptions?: RequestInit, treatAsRedirectionFromMethod?: 'get' | 'post') {
+export async function performEnhancedPageLoad(internalDestinationHref: string, interceptedLink: boolean, fetchOptions?: RequestInit, treatAsRedirectionFromMethod?: 'get' | 'post', changeUrl: boolean = true) {
   performingEnhancedPageLoad = true;
 
   // First, stop any preceding enhanced page load
@@ -242,7 +261,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
       // For 301/302/etc redirections to internal URLs, the browser will already have followed the chain of redirections
       // to the end, and given us the final content. We do still need to update the current URL to match the final location,
       // then let the rest of enhanced nav logic run to patch the new content into the DOM.
-      if (response.redirected || treatAsRedirectionFromMethod) {
+      if (changeUrl && (response.redirected || treatAsRedirectionFromMethod)) {
         const treatAsGet = treatAsRedirectionFromMethod ? (treatAsRedirectionFromMethod === 'get') : isGetRequest;
         if (treatAsGet) {
           // For gets, the intermediate (redirecting) URL is already in the address bar, so we have to use 'replace'
@@ -259,12 +278,12 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
 
       // For enhanced nav redirecting to an external URL, we'll get a special Blazor-specific redirection command
       const externalRedirectionUrl = response.headers.get('blazor-enhanced-nav-redirect-location');
-      if (externalRedirectionUrl) {
+      if (changeUrl && externalRedirectionUrl) {
         location.replace(externalRedirectionUrl);
         return;
       }
 
-      if (!response.redirected && !isGetRequest && isSuccessResponse) {
+      if (changeUrl && !response.redirected && !isGetRequest && isSuccessResponse) {
         // If this is the result of a form post that didn't trigger a redirection.
         if (!isForSamePath(response.url, currentContentUrl)) {
           // In this case we don't want to push the currentContentUrl to the history stack because we don't know if this is a location
@@ -281,7 +300,9 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
       }
 
       // Set the currentContentUrl to the location of the last completed navigation.
-      currentContentUrl = response.url;
+      if (changeUrl) {
+        currentContentUrl = response.url;
+      }
 
       const responseContentType = response.headers.get('content-type');
       if (responseContentType?.startsWith('text/html') && initialContent) {
@@ -438,6 +459,7 @@ function enhancedNavigationIsEnabledForForm(form: HTMLFormElement): boolean {
 function retryEnhancedNavAsFullPageLoad(internalDestinationHref: string) {
   // The ? trick here is the same workaround as described in #10839, and without it, the user
   // would not be able to use the back button afterwards.
+  console.warn(`Enhanced navigation failed for destination ${internalDestinationHref}. Falling back to full page load.`);
   history.replaceState(null, '', internalDestinationHref + '?');
   location.replace(internalDestinationHref);
 }

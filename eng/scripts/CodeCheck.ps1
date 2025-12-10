@@ -107,65 +107,8 @@ try {
             "Packages in package-lock.json file resolved from wrong registry. All dependencies must be resolved from $registry"
     }
 
-    #
-    # Versions.props and Version.Details.xml
-    #
-
-    Write-Host "Checking that Versions.props and Version.Details.xml match"
-    [xml] $versionProps = Get-Content "$repoRoot/eng/Versions.props"
-    [xml] $versionDetails = Get-Content "$repoRoot/eng/Version.Details.xml"
-    $globalJson = Get-Content $repoRoot/global.json | ConvertFrom-Json
-
-    $versionVars = New-Object 'System.Collections.Generic.HashSet[string]'
-    foreach ($vars in $versionProps.SelectNodes("//PropertyGroup[`@Label=`"Automated`"]/*")) {
-        $versionVars.Add($vars.Name) | Out-Null
-    }
-
-    foreach ($dep in $versionDetails.SelectNodes('//Dependency')) {
-        Write-Verbose "Found $dep"
-
-        $expectedVersion = $dep.Version
-
-        if ($dep.Name -in $globalJson.'msbuild-sdks'.PSObject.Properties.Name) {
-            $actualVersion = $globalJson.'msbuild-sdks'.($dep.Name)
-
-            if ($expectedVersion -ne $actualVersion) {
-                LogError -filepath "$repoRoot\global.json" `
-                    ("MSBuild SDK version '$($dep.Name)' in global.json does not match the value in " +
-                     "Version.Details.xml. Expected '$expectedVersion', actual '$actualVersion'")
-            }
-        }
-        else {
-            $varName = $dep.Name -replace '\.',''
-            $varName = $varName -replace '\-',''
-            $varName = "${varName}Version"
-
-            $versionVar = $versionProps.SelectSingleNode("//PropertyGroup[`@Label=`"Automated`"]/$varName")
-            $actualVersion = $versionVar.InnerText
-            $versionVars.Remove($varName) | Out-Null
-
-            if (-not $versionVar) {
-                LogError "Missing version variable '$varName' in the 'Automated' property group in $repoRoot/eng/Versions.props"
-                continue
-            }
-
-            if ($expectedVersion -ne $actualVersion) {
-                LogError -filepath "$repoRoot\eng\Versions.props" `
-                    ("Version variable '$varName' does not match the value in Version.Details.xml. " +
-                     "Expected '$expectedVersion', actual '$actualVersion'")
-            }
-        }
-    }
-
-    foreach ($unexpectedVar in $versionVars) {
-        LogError -Filepath "$repoRoot\eng\Versions.props" `
-            ("Version variable '$unexpectedVar' does not have a matching entry in Version.Details.xml. " +
-             "See https://github.com/dotnet/aspnetcore/blob/main/docs/ReferenceResolution.md for instructions " +
-             "on how to add a new dependency.")
-    }
-
     # ComponentsWebAssembly-CSharp.sln is used by the templating engine; MessagePack.sln is irrelevant (in submodule).
-    $solution = Get-ChildItem "$repoRoot/AspNetCore.sln"
+    $solution = Get-ChildItem "$repoRoot/AspNetCore.slnx"
     $solutionFile = Split-Path -Leaf $solution
 
     Write-Host "Checking that $solutionFile is up to date"
@@ -204,11 +147,6 @@ try {
     Write-Host "  Re-generating project lists"
     Invoke-Block {
         & $PSScriptRoot\GenerateProjectList.ps1 -ci:$ci
-    }
-
-    Write-Host "  Re-generating package baselines"
-    Invoke-Block {
-        & dotnet run --project "$repoRoot/eng/tools/BaselineGenerator/"
     }
 
     Write-Host "Running git diff to check for pending changes"
@@ -268,6 +206,25 @@ try {
             LogError "Modified API baseline files:"
             foreach ($file in $changedAPIBaselines) {
                 LogError $file
+            }
+        }
+
+        # Check for relevant changes to SignalR typescript files
+        $tsChanges = $changedFilesFromTarget | Where-Object { $_ -like "src/SignalR/clients/ts/*" -and $_ -ne "src/SignalR/clients/ts/CHANGELOG.md" }
+        $changelogChanged = $changedFilesFromTarget -contains "src/SignalR/clients/ts/CHANGELOG.md"
+        $signalrChangelogOverrideMarker = "[no changelog]"
+
+        # Only enforce changelog rule if there are relevant TS changes
+        if ($tsChanges.Count -gt 0 -and -not $changelogChanged) {
+            # Check if the override marker exists in recent commit messages
+            $hasOverride = git log origin/$targetBranch..HEAD --pretty=%B | Select-String -Pattern $signalrChangelogOverrideMarker -Quiet
+
+            if (-not $hasOverride) {
+                LogError "Changes were made to 'src/SignalR/clients/ts/', but no update to 'CHANGELOG.md' was found."
+                LogError "Either update 'src/SignalR/clients/ts/CHANGELOG.md' or include '$signalrChangelogOverrideMarker' in your commit message."
+                exit 1
+            } else {
+                Write-Host "SignalR Changelog update skipped due to override marker in commit message."
             }
         }
     }

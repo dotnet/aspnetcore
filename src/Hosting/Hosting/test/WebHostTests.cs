@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
+
 using System.Collections;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Fakes;
@@ -1103,7 +1105,9 @@ public partial class WebHostTests
 
     private IWebHostBuilder CreateBuilder(IConfiguration config = null)
     {
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
         return new WebHostBuilder().UseConfiguration(config ?? new ConfigurationBuilder().Build()).UseStartup("Microsoft.AspNetCore.Hosting.Tests");
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
     }
 
     private static bool[] RegisterCallbacksThatThrow(IServiceCollection services)

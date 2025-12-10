@@ -59,7 +59,6 @@ public static partial class WebAssemblyRazorComponentsEndpointConventionBuilderE
         var descriptors = StaticAssetsEndpointDataSourceHelper.ResolveStaticAssetDescriptors(endpointBuilder, options.StaticAssetsManifestPath);
         if (descriptors != null && descriptors.Count > 0)
         {
-            ComponentWebAssemblyConventions.AddBlazorWebAssemblyConventions(descriptors, environment);
             return builder;
         }
 

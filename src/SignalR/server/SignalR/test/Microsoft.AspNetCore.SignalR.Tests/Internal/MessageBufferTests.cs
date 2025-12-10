@@ -2,11 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Pipelines;
+using System.Text.Json;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
-using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
 
@@ -160,6 +161,62 @@ public class MessageBufferTests
         buffer = res.Buffer;
         Assert.True(protocol.TryParseMessage(ref buffer, new TestBinder(), out message));
         Assert.IsType<StreamItemMessage>(message);
+
+        pipes.Application.Input.AdvanceTo(buffer.Start);
+
+        messageBuffer.ShouldProcessMessage(new SequenceMessage(1));
+
+        Assert.True(messageBuffer.ShouldProcessMessage(PingMessage.Instance));
+        Assert.False(messageBuffer.ShouldProcessMessage(CompletionMessage.WithResult("1", null)));
+    }
+
+    // Regression test for https://github.com/dotnet/aspnetcore/issues/55575
+    [Fact]
+    public async Task UnAckedSerializedMessageResentOnReconnect()
+    {
+        var protocol = new JsonHubProtocol();
+        var connection = new TestConnectionContext();
+        var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
+        connection.Transport = pipes.Transport;
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 1000, NullLogger.Instance);
+
+        var invocationMessage = new SerializedHubMessage([new SerializedMessage(protocol.Name,
+            protocol.GetMessageBytes(new InvocationMessage("method1", [1])))]);
+        await messageBuffer.WriteAsync(invocationMessage, default);
+
+        var res = await pipes.Application.Input.ReadAsync();
+
+        var buffer = res.Buffer;
+        Assert.True(protocol.TryParseMessage(ref buffer, new TestBinder(), out var message));
+        var parsedMessage = Assert.IsType<InvocationMessage>(message);
+        Assert.Equal("method1", parsedMessage.Target);
+        Assert.Equal(1, ((JsonElement)Assert.Single(parsedMessage.Arguments)).GetInt32());
+
+        pipes.Application.Input.AdvanceTo(buffer.Start);
+
+        DuplexPipe.UpdateConnectionPair(ref pipes, connection);
+        await messageBuffer.ResendAsync(pipes.Transport.Output);
+
+        Assert.True(messageBuffer.ShouldProcessMessage(PingMessage.Instance));
+        Assert.True(messageBuffer.ShouldProcessMessage(CompletionMessage.WithResult("1", null)));
+        Assert.True(messageBuffer.ShouldProcessMessage(new SequenceMessage(1)));
+
+        res = await pipes.Application.Input.ReadAsync();
+
+        buffer = res.Buffer;
+        Assert.True(protocol.TryParseMessage(ref buffer, new TestBinder(), out message));
+        var seqMessage = Assert.IsType<SequenceMessage>(message);
+        Assert.Equal(1, seqMessage.SequenceId);
+
+        pipes.Application.Input.AdvanceTo(buffer.Start);
+
+        res = await pipes.Application.Input.ReadAsync();
+
+        buffer = res.Buffer;
+        Assert.True(protocol.TryParseMessage(ref buffer, new TestBinder(), out message));
+        parsedMessage = Assert.IsType<InvocationMessage>(message);
+        Assert.Equal("method1", parsedMessage.Target);
+        Assert.Equal(1, ((JsonElement)Assert.Single(parsedMessage.Arguments)).GetInt32());
 
         pipes.Application.Input.AdvanceTo(buffer.Start);
 

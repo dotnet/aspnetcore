@@ -315,9 +315,21 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
                 parameter.IsRequired = true;
             }
 
-            if (parameter.Source == BindingSource.Path && parameter.RouteInfo != null && !parameter.RouteInfo.IsOptional)
+            if (parameter.Source == BindingSource.Path && parameter.RouteInfo != null)
             {
-                parameter.IsRequired = true;
+                // Locate the corresponding route parameter metadata.
+                var routeParam = context.RouteParameters
+                    .FirstOrDefault(rp => string.Equals(rp.Name, parameter.Name, StringComparison.OrdinalIgnoreCase));
+
+                // If the parameter is defined as a catch-all, mark it as optional.
+                if (routeParam != null && routeParam.IsCatchAll)
+                {
+                    parameter.IsRequired = false;
+                }
+                else if (!parameter.RouteInfo.IsOptional)
+                {
+                    parameter.IsRequired = true;
+                }
             }
         }
     }

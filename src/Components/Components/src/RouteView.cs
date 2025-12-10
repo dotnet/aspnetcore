@@ -28,9 +28,6 @@ public class RouteView : IComponent
         }
     }
 
-    [Inject]
-    private NavigationManager NavigationManager { get; set; }
-
     /// <summary>
     /// Gets or sets the route data. This determines the page that will be
     /// displayed and the parameter values that will be supplied to the page.
@@ -71,6 +68,7 @@ public class RouteView : IComponent
     /// Renders the component.
     /// </summary>
     /// <param name="builder">The <see cref="RenderTreeBuilder"/>.</param>
+    [UnconditionalSuppressMessage("Trimming", "IL2110", Justification = "Layout components are preserved because the LayoutAttribute constructor parameter is correctly annotated.")]
     [UnconditionalSuppressMessage("Trimming", "IL2111", Justification = "Layout components are preserved because the LayoutAttribute constructor parameter is correctly annotated.")]
     [UnconditionalSuppressMessage("Trimming", "IL2118", Justification = "Layout components are preserved because the LayoutAttribute constructor parameter is correctly annotated.")]
     protected virtual void Render(RenderTreeBuilder builder)

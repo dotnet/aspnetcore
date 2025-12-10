@@ -76,7 +76,7 @@ public class ValueProviderResultTest
 
         // Assert
         Assert.Equal(2, result.Length);
-        Assert.Equal(new string[] { "Hi", "There" }, result.Values);
+        Assert.Equal(new string[] { "Hi", "There" }, result.Values.ToArray());
         Assert.Equal("Hi", result.FirstValue);
         Assert.NotEqual(ValueProviderResult.None, result);
         Assert.Equal("Hi,There", (string)result);

@@ -22,8 +22,7 @@ $installDir = "$repoRoot\.tools\jdk\win-x64\"
 $javacExe = "$installDir\bin\javac.exe"
 $tempDir = "$repoRoot\obj"
 if (-not $JdkVersion) {
-    $globalJson = Get-Content "$repoRoot\global.json" | ConvertFrom-Json
-    $JdkVersion = $globalJson.'native-tools'.jdk
+    $JdkVersion = "11.0.24"
 }
 
 if (Test-Path $javacExe) {

@@ -21,6 +21,7 @@
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.cs" Link="Internal\TransportConnection.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.Generated.cs" Link="Internal\TransportConnection.Generated.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportConnection.FeatureCollection.cs" Link="Internal\TransportConnection.FeatureCollection.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)\DefaultSimpleMemoryPoolFactory.cs" Link="Internal\DefaultSimpleMemoryPoolFactory.cs" />
   </ItemGroup>
 
   <ItemGroup>

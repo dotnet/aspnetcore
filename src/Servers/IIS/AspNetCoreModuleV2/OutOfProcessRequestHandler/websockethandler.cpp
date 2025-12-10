@@ -468,7 +468,7 @@ Routine Description:
         //
 
         DWORD dwError = NO_ERROR;
-        USHORT uStatus;
+        USHORT uStatus = 0;
         DWORD  dwReceived = 0;
         STACK_STRU(strCloseReason, 128);
 
@@ -991,7 +991,7 @@ Routine Description:
     HRESULT    hr = S_OK;
     BOOL       fLocked = FALSE;
     CleanupReason cleanupReason = CleanupReasonUnknown;
-    WINHTTP_WEB_SOCKET_BUFFER_TYPE  BufferType;
+    WINHTTP_WEB_SOCKET_BUFFER_TYPE  BufferType{};
 
     LOG_TRACE(L"WEBSOCKET_HANDLER::OnIisReceiveComplete");
 

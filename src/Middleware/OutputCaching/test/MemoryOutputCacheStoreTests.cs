@@ -197,6 +197,43 @@ public class MemoryOutputCacheStoreTests
         Assert.Single(tag2s);
     }
 
+    [Fact]
+    public async Task ReplacedEntries_AreNotRemovedFromTags()
+    {
+        var testClock = new TestMemoryOptionsClock { UtcNow = DateTimeOffset.UtcNow };
+        var cache = new MemoryCache(new MemoryCacheOptions { SizeLimit = 1000, Clock = testClock, ExpirationScanFrequency = TimeSpan.FromMilliseconds(1) });
+        var store = new MemoryOutputCacheStore(cache);
+        var value = "abc"u8.ToArray();
+
+        await store.SetAsync("a", value, new[] { "tag1", "tag2" }, TimeSpan.FromMilliseconds(5), default);
+        await store.SetAsync("a", value, new[] { "tag1" }, TimeSpan.FromMilliseconds(20), default);
+
+        testClock.Advance(TimeSpan.FromMilliseconds(10));
+
+        // Trigger background expiration by accessing the cache.
+        _ = cache.Get("a");
+
+        var resulta = await store.GetAsync("a", default);
+
+        Assert.NotNull(resulta);
+
+        HashSet<string> tag1s, tag2s;
+
+        // Wait for the tag2 HashSet to be removed by the background expiration thread.
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+        while (store.TaggedEntries.TryGetValue("tag2", out tag2s) && !cts.IsCancellationRequested)
+        {
+            await Task.Yield();
+        }
+
+        store.TaggedEntries.TryGetValue("tag1", out tag1s);
+
+        Assert.Null(tag2s);
+        Assert.Single(tag1s);
+    }
+
     [Theory]
     [InlineData(null)]
     public async Task Store_Throws_OnInvalidTag(string tag)

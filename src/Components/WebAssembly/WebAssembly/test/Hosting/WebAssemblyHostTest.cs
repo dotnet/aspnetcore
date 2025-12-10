@@ -97,7 +97,7 @@ public class WebAssemblyHostTest
     private class TestSatelliteResourcesLoader : WebAssemblyCultureProvider
     {
         internal TestSatelliteResourcesLoader()
-            : base(CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture)
+            : base(CultureInfo.CurrentCulture)
         {
         }
 

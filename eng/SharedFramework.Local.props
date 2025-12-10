@@ -37,6 +37,7 @@
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Features" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Validation" />
 
     <!-- These assemblies are only in the shared framework -->
     <AspNetCoreAppReference Include="Microsoft.AspNetCore" />

@@ -1,3 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.Description.get -> string?
-Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.Description.set -> void

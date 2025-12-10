@@ -211,9 +211,9 @@ DebugInitialize(HMODULE hModule)
             KEY_READ,
             &hKey) == NO_ERROR)
     {
-        DWORD dwType;
-        DWORD dwData;
-        DWORD cbData;
+        DWORD dwType{0};
+        DWORD dwData{0};
+        DWORD cbData{0};
 
         cbData = sizeof(dwData);
         if ((RegQueryValueEx(hKey,
@@ -373,7 +373,7 @@ DebugPrintW(
 
         if (IsEnabled(ASPNETCORE_DEBUG_FLAG_EVENTLOG))
         {
-            WORD eventType;
+            WORD eventType = EVENTLOG_INFORMATION_TYPE;
             switch (dwFlag)
             {
                 case ASPNETCORE_DEBUG_FLAG_ERROR:

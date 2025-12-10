@@ -28,10 +28,12 @@ public sealed class ConfigureWebHostBuilder : IWebHostBuilder, ISupportsStartup
         _context = webHostBuilderContext;
     }
 
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
     IWebHost IWebHostBuilder.Build()
     {
         throw new NotSupportedException($"Call {nameof(WebApplicationBuilder)}.{nameof(WebApplicationBuilder.Build)}() instead.");
     }
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
 
     /// <inheritdoc />
     public IWebHostBuilder ConfigureAppConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate)

@@ -5,7 +5,7 @@
     <IsPackable>false</IsPackable>
     <OutputType>Exe</OutputType>
     <RootNamespace>Microsoft.Extensions.ApiDescription.Tool</RootNamespace>
-    <TargetFrameworks>netcoreapp2.1;$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework)</TargetFrameworks>
     <IsShippingPackage>false</IsShippingPackage>
     <NoWarn>$(NoWarn);nullable</NoWarn>
   </PropertyGroup>
@@ -19,13 +19,7 @@
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="4.6.0">
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp2.1'">
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
     <Reference Include="System.Diagnostics.DiagnosticSource" />
   </ItemGroup>
 

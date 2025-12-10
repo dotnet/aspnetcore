@@ -445,8 +445,8 @@ public class JSRuntimeTest
 
     class TestJSRuntime : JSRuntime
     {
-        public List<BeginInvokeAsyncArgs> BeginInvokeCalls = new List<BeginInvokeAsyncArgs>();
-        public List<EndInvokeDotNetArgs> EndInvokeDotNetCalls = new List<EndInvokeDotNetArgs>();
+        public List<JSInvocationInfo> BeginInvokeCalls = [];
+        public List<EndInvokeDotNetArgs> EndInvokeDotNetCalls = [];
 
         public TimeSpan? DefaultTimeout
         {
@@ -454,13 +454,6 @@ public class JSRuntimeTest
             {
                 base.DefaultAsyncTimeout = value;
             }
-        }
-
-        public class BeginInvokeAsyncArgs
-        {
-            public long AsyncHandle { get; set; }
-            public string? Identifier { get; set; }
-            public string? ArgsJson { get; set; }
         }
 
         public class EndInvokeDotNetArgs
@@ -484,12 +477,12 @@ public class JSRuntimeTest
 
         protected override void BeginInvokeJS(long asyncHandle, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
         {
-            BeginInvokeCalls.Add(new BeginInvokeAsyncArgs
-            {
-                AsyncHandle = asyncHandle,
-                Identifier = identifier,
-                ArgsJson = argsJson,
-            });
+            throw new NotImplementedException();
+        }
+
+        protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
+        {
+            BeginInvokeCalls.Add(invocationInfo);
         }
 
         protected internal override Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)

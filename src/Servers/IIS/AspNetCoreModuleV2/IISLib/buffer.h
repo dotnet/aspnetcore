@@ -128,7 +128,7 @@ public:
 
     --*/
     {
-        PVOID pNewMem;
+        PVOID pNewMem = nullptr;
 
         if ( cbNewSize <= m_cbBuffer )
         {

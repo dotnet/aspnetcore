@@ -10,9 +10,6 @@ using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -23,8 +20,8 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
     private readonly object _lock = new();
     private readonly List<Action<EndpointBuilder>> _conventions = [];
     private readonly List<Action<EndpointBuilder>> _finallyConventions = [];
+    private readonly List<Action<ComponentApplicationBuilder>> _componentApplicationBuilderActions = [];
     private readonly RazorComponentDataSourceOptions _options = new();
-    private readonly ComponentApplicationBuilder _builder;
     private readonly IEndpointRouteBuilder _endpointRouteBuilder;
     private readonly ResourceCollectionResolver _resourceCollectionResolver;
     private readonly RenderModeEndpointProvider[] _renderModeEndpointProviders;
@@ -35,33 +32,29 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
     private IChangeToken _changeToken;
     private IDisposable? _disposableChangeToken;   // THREADING: protected by _lock
 
-    public Func<IDisposable, IDisposable> SetDisposableChangeTokenAction = disposableChangeToken => disposableChangeToken;
-
     // Internal for testing.
-    internal ComponentApplicationBuilder Builder => _builder;
     internal List<Action<EndpointBuilder>> Conventions => _conventions;
+    internal List<Action<ComponentApplicationBuilder>> ComponentApplicationBuilderActions => _componentApplicationBuilderActions;
+    internal CancellationTokenSource ChangeTokenSource => _cancellationTokenSource;
 
     public RazorComponentEndpointDataSource(
-        ComponentApplicationBuilder builder,
         IEnumerable<RenderModeEndpointProvider> renderModeEndpointProviders,
         IEndpointRouteBuilder endpointRouteBuilder,
         RazorComponentEndpointFactory factory,
         HotReloadService? hotReloadService = null)
     {
-        _builder = builder;
         _endpointRouteBuilder = endpointRouteBuilder;
         _resourceCollectionResolver = new ResourceCollectionResolver(endpointRouteBuilder);
         _renderModeEndpointProviders = renderModeEndpointProviders.ToArray();
         _factory = factory;
         _hotReloadService = hotReloadService;
-        HotReloadService.ClearCacheEvent += OnHotReloadClearCache;
         DefaultBuilder = new RazorComponentsEndpointConventionBuilder(
             _lock,
-            builder,
             endpointRouteBuilder,
             _options,
             _conventions,
-            _finallyConventions);
+            _finallyConventions,
+            _componentApplicationBuilderActions);
 
         _cancellationTokenSource = new CancellationTokenSource();
         _changeToken = new CancellationChangeToken(_cancellationTokenSource.Token);
@@ -109,8 +102,20 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
 
         lock (_lock)
         {
+            _disposableChangeToken?.Dispose();
+            _disposableChangeToken = null;
+
             var endpoints = new List<Endpoint>();
-            var context = _builder.Build();
+
+            var componentApplicationBuilder = new ComponentApplicationBuilder();
+
+            foreach (var action in ComponentApplicationBuilderActions)
+            {
+                action?.Invoke(componentApplicationBuilder);
+            }
+
+            var context = componentApplicationBuilder.Build();
+
             var configuredRenderModesMetadata = new ConfiguredRenderModesMetadata(
                 [.. Options.ConfiguredRenderModes]);
 
@@ -171,8 +176,7 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
             oldCancellationTokenSource?.Dispose();
             if (_hotReloadService is { MetadataUpdateSupported: true })
             {
-                _disposableChangeToken?.Dispose();
-                _disposableChangeToken = SetDisposableChangeTokenAction(ChangeToken.OnChange(_hotReloadService.GetChangeToken, UpdateEndpoints));
+                _disposableChangeToken = ChangeToken.OnChange(_hotReloadService.GetChangeToken, UpdateEndpoints);
             }
         }
     }
@@ -180,7 +184,6 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
     private void AddBlazorWebEndpoints(List<Endpoint> endpoints)
     {
         List<EndpointBuilder> blazorWebEndpoints = [
-            ..GetBlazorWebJsEndpoint(_endpointRouteBuilder),
             OpaqueRedirection.GetBlazorOpaqueRedirectionEndpoint()];
 
         foreach (var endpoint in blazorWebEndpoints)
@@ -196,65 +199,6 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
             }
 
             endpoints.Add(endpoint.Build());
-        }
-    }
-
-    private static IEnumerable<EndpointBuilder> GetBlazorWebJsEndpoint(IEndpointRouteBuilder endpoints)
-    {
-        var app = endpoints.CreateApplicationBuilder();
-
-        var options = new StaticFileOptions
-        {
-            FileProvider = new ManifestEmbeddedFileProvider(typeof(RazorComponentsEndpointRouteBuilderExtensions).Assembly),
-            OnPrepareResponse = CacheHeaderSettings.SetCacheHeaders
-        };
-
-        app.Use(next => context =>
-        {
-            // Set endpoint to null so the static files middleware will handle the request.
-            context.SetEndpoint(null);
-
-            return next(context);
-        });
-
-        app.UseStaticFiles(options);
-
-        var requestDelegate = app.Build();
-
-        var blazorWebJsBuilder = new RouteEndpointBuilder(
-            requestDelegate,
-            RoutePatternFactory.Parse("/_framework/blazor.web.js"),
-            int.MinValue)
-        {
-            DisplayName = "Blazor web static files"
-        };
-
-        var allowedHttpMethods = new HttpMethodMetadata([HttpMethods.Get, HttpMethods.Head]);
-        blazorWebJsBuilder.Metadata.Add(allowedHttpMethods);
-
-#if !DEBUG
-        return [blazorWebJsBuilder];
-#else
-        // We only need to serve the sourcemap when working on the framework, not in the distributed packages
-        var blazorWebJsDebugBuilder = new RouteEndpointBuilder(
-            requestDelegate,
-            RoutePatternFactory.Parse("/_framework/blazor.web.js.map"),
-            int.MinValue)
-        {
-            DisplayName = "Blazor web static files sourcemap"
-        };
-        blazorWebJsDebugBuilder.Metadata.Add(allowedHttpMethods);
-
-        return [blazorWebJsBuilder, blazorWebJsDebugBuilder];
-#endif
-    }
-
-    public void OnHotReloadClearCache(Type[]? types)
-    {
-        lock (_lock)
-        {
-            _disposableChangeToken?.Dispose();
-            _disposableChangeToken = null;
         }
     }
 

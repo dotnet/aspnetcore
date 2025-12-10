@@ -21,6 +21,9 @@
   <Target Name="IncludeCompileJsOutput" BeforeTargets="ResolveJSModuleStaticWebAssets;ResolveJsInitializerModuleStaticWebAssets">
     <ItemGroup>
       <_JsBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**" Exclude="$(InteropWorkingDir)dist\.gitignore" />
+      <_JsBuildOutput>
+        <RelativePath>%(_JsBuildOutput.RecursiveDir)%(Filename)%(Extension)</RelativePath>
+      </_JsBuildOutput>
     </ItemGroup>
 
     <DefineStaticWebAssets Condition="'@(_JsBuildOutput)' != ''"
@@ -51,5 +54,12 @@
       <FileWrites Include="$(_JsBuildOutput)" />
     </ItemGroup>
   </Target>
+
+  <!-- Exclude JavaScript configuration files from being packaged as Content -->
+  <ItemGroup>
+    <Content Remove="js\babel.config.json" />
+    <Content Remove="js\package.json" />
+    <Content Remove="js\tsconfig.json" />
+  </ItemGroup>
 
 </Project>

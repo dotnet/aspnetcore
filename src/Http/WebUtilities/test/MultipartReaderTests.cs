@@ -80,7 +80,6 @@ public class MultipartReaderTests
 "<!DOCTYPE html><title>Content of a.html.</title>\r\n" +
 "\r\n" +
 "--9051914041544843365972754266--\r\n";
-
     private const string TwoPartBodyIncompleteBuffer =
 "--9051914041544843365972754266\r\n" +
 "Content-Disposition: form-data; name=\"text\"\r\n" +
@@ -145,6 +144,43 @@ public class MultipartReaderTests
 
         var exception = await Assert.ThrowsAsync<InvalidDataException>(() => reader.ReadNextSectionAsync());
         Assert.Equal("Line length limit 17 exceeded.", exception.Message);
+    }
+
+    [Fact]
+    public async Task MultipartReader_HeadersLengthExceeded_LargePreamble()
+    {
+        var body = $"preamble {new string('a', 17000)}\r\n" +
+            "--9051914041544843365972754266\r\n" +
+"\r\n" +
+"text default\r\n" +
+"--9051914041544843365972754266--\r\n";
+        var stream = MakeStream(body);
+        var reader = new MultipartReader(Boundary, stream);
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() => reader.ReadNextSectionAsync());
+        Assert.Equal("Multipart header length limit 16384 exceeded. Too much data before the first boundary.", exception.Message);
+    }
+
+    [Fact]
+    public async Task MultipartReader_HeadersLengthLimitSettable_LargePreamblePasses()
+    {
+        var body = $"preamble {new string('a', 100_000)}\r\n" +
+            "--9051914041544843365972754266\r\n" +
+"\r\n" +
+"text default\r\n" +
+"--9051914041544843365972754266--\r\n";
+        var stream = MakeStream(body);
+        var reader = new MultipartReader(Boundary, stream)
+        {
+            HeadersLengthLimit = 200_000,
+        };
+
+        var section = await reader.ReadNextSectionAsync();
+        Assert.NotNull(section);
+
+        var buffer = new MemoryStream();
+        await section.Body.CopyToAsync(buffer);
+        Assert.Equal("text default", Encoding.ASCII.GetString(buffer.ToArray()));
     }
 
     [Fact]
@@ -279,6 +315,43 @@ public class MultipartReaderTests
     }
 
     [Fact]
+    public async Task MultipartReader_ReadMultipartBodyWithFilesForDeferredCopy_Success()
+    {
+        var stream = MakeStream(ThreePartBody);
+        var reader = new MultipartReader(Boundary, stream);
+
+        await reader.ReadNextSectionAsync(); // skip text field section
+
+        var section = await reader.ReadNextSectionAsync();
+        Assert.NotNull(section);
+        Assert.Equal(2, section.Headers.Count);
+        Assert.Equal("form-data; name=\"file1\"; filename=\"a.txt\"", section.Headers["Content-Disposition"][0]);
+        Assert.Equal("text/plain", section.Headers["Content-Type"][0]);
+        var stream1 = section.Body;
+
+        section = await reader.ReadNextSectionAsync();
+        Assert.NotNull(section);
+        Assert.Equal(2, section.Headers.Count);
+        Assert.Equal("form-data; name=\"file2\"; filename=\"a.html\"", section.Headers["Content-Disposition"][0]);
+        Assert.Equal("text/html", section.Headers["Content-Type"][0]);
+        var stream2 = section.Body;
+
+        Assert.Null(await reader.ReadNextSectionAsync());
+
+        Assert.True(stream1.CanSeek);
+        Assert.Equal(0, stream1.Seek(0, SeekOrigin.Begin));
+        var buffer = new MemoryStream();
+        await stream1.CopyToAsync(buffer);
+        Assert.Equal("Content of a.txt.\r\n", Encoding.ASCII.GetString(buffer.ToArray()));
+
+        Assert.True(stream2.CanSeek);
+        Assert.Equal(0, stream2.Seek(0, SeekOrigin.Begin));
+        buffer = new MemoryStream();
+        await stream2.CopyToAsync(buffer);
+        Assert.Equal("<!DOCTYPE html><title>Content of a.html.</title>\r\n", Encoding.ASCII.GetString(buffer.ToArray()));
+    }
+
+    [Fact]
     public async Task MultipartReader_TwoPartBodyIncompleteBuffer_TwoSectionsReadSuccessfullyThirdSectionThrows()
     {
         var stream = MakeStream(TwoPartBodyIncompleteBuffer);
@@ -388,5 +461,29 @@ public class MultipartReaderTests
 
         var section = await reader.ReadNextSectionAsync();
         Assert.NotNull(section);
+    }
+
+    [Fact]
+    public async Task SyncReadWithOffsetWorks()
+    {
+        var stream = MakeStream(OnePartBody);
+        var reader = new MultipartReader(Boundary, stream);
+        var buffer = new byte[5];
+
+        var section = await reader.ReadNextSectionAsync();
+        Assert.NotNull(section);
+        Assert.Single(section.Headers);
+        Assert.Equal("form-data; name=\"text\"", section.Headers["Content-Disposition"][0]);
+
+        var read = section.Body.Read(buffer, 2, buffer.Length - 2);
+        Assert.Equal("\0\0tex", GetString(buffer, read + 2));
+
+        read = section.Body.Read(buffer, 1, buffer.Length - 1);
+        Assert.Equal("\0t de", GetString(buffer, read + 1));
+
+        read = section.Body.Read(buffer, 0, buffer.Length);
+        Assert.Equal("fault", GetString(buffer, read));
+
+        Assert.Null(await reader.ReadNextSectionAsync());
     }
 }

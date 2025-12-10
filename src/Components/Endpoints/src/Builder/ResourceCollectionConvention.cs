@@ -49,6 +49,7 @@ internal class ResourceCollectionConvention(ResourceCollectionResolver resolver)
         if (_collection != null && _collectionImportMap != null)
         {
             eb.Metadata.Add(_collection);
+            eb.Metadata.Add(new ResourcePreloadCollection(_collection));
 
             if (_collectionUrl != null)
             {

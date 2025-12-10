@@ -437,7 +437,7 @@ public readonly struct ParameterView
                 _currentIndex = nextIndex;
 
                 var state = _cascadingParameters[_currentIndex];
-                var currentValue = state.ValueSupplier.GetCurrentValue(state.ParameterInfo);
+                var currentValue = state.ValueSupplier.GetCurrentValue(state.Key, state.ParameterInfo);
                 _current = new ParameterValue(state.ParameterInfo.PropertyName, currentValue!, true);
                 return true;
             }

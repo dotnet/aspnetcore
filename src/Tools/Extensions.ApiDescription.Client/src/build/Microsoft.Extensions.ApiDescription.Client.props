@@ -3,6 +3,11 @@
   <PropertyGroup>
     <_ApiDescriptionClientAssemblyPath>$(MSBuildThisFileDirectory)../tasks/netstandard2.0/Microsoft.Extensions.ApiDescription.Client.dll</_ApiDescriptionClientAssemblyPath>
   </PropertyGroup>
+  
+  <!-- Emit deprecation warning for this package -->
+  <Target Name="_WarnMicrosoftExtensionsApiDescriptionClientDeprecated" BeforeTargets="BeforeCompile;Build;Restore">
+    <Warning Code="ASPDEPR001" Text="The 'Microsoft.Extensions.ApiDescription.Client' package is deprecated and will be removed in a future release." HelpLink="https://aka.ms/aspnet/deprecate/001" />
+  </Target>
   <UsingTask TaskName="GetCurrentOpenApiReference" AssemblyFile="$(_ApiDescriptionClientAssemblyPath)" />
   <UsingTask TaskName="GetOpenApiReferenceMetadata" AssemblyFile="$(_ApiDescriptionClientAssemblyPath)" />
 

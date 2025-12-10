@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.WebUtilities;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
-public class circuitIdFactoryTest
+public class CircuitIdFactoryTest
 {
     [Fact]
     public void CreateCircuitId_Generates_NewRandomId()

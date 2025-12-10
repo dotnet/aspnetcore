@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <_RepoTaskAssemblyFolder Condition="'$(MSBuildRuntimeType)' == 'core'">net9.0</_RepoTaskAssemblyFolder>
+    <_RepoTaskAssemblyFolder Condition="'$(MSBuildRuntimeType)' == 'core'">$(DefaultNetCoreTargetFramework)</_RepoTaskAssemblyFolder>
     <_RepoTaskAssemblyFolder Condition="'$(MSBuildRuntimeType)' != 'core'">net472</_RepoTaskAssemblyFolder>
     <_RepoTaskAssembly>$(ArtifactsBinDir)RepoTasks\Release\$(_RepoTaskAssemblyFolder)\RepoTasks.dll</_RepoTaskAssembly>
   </PropertyGroup>

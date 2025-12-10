@@ -24,6 +24,9 @@ param(
     [Parameter(Mandatory = $false)]
     [string] $ClientId,
     [switch] $Pwa,
+    [Parameter(Mandatory = $false)]
+    [ValidateSet("Debug", "Release")]
+    [string] $Configuration = "Release",
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]] $Args
 )
@@ -70,11 +73,12 @@ if ($UseProgramMain) {
     $templateArguments += "--use-program-main"
 }
 
-Import-Module -Name .\Test-Template.psm1;
+Import-Module -Name "$PSScriptRoot/Test-Template.psm1";
 
 Test-Template `
     -TemplateName "MyBlazorWasmApp" `
     -TemplateArguments $templateArguments `
     -MainProjectRelativePath $mainProjectRelativePath `
     -TargetFramework $Framework `
+    -Configuration $Configuration `
     -Verbose:$VerbosePreference;

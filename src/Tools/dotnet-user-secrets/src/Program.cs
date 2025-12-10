@@ -106,6 +106,6 @@ public class Program
         }
 
         var resolver = new ProjectIdResolver(reporter, _workingDirectory);
-        return resolver.Resolve(options.Project, options.Configuration);
+        return resolver.Resolve(options.Project ?? options.File, options.Configuration);
     }
 }

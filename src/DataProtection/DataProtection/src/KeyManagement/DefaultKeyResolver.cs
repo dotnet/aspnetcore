@@ -157,8 +157,9 @@ internal sealed class DefaultKeyResolver : IDefaultKeyResolver
         // fallback code below and the hypothetical advantage of making it easier for instances
         // to choose the same key in the event of a race (though we never managed to show that
         // empirically.  See also https://github.com/dotnet/aspnetcore/issues/57137.
+        var maxActivationDate = now + _maxServerToServerClockSkew;
         var preferredDefaultKey = (from key in allKeys
-                                   where key.ActivationDate <= now + _maxServerToServerClockSkew
+                                   where key.ActivationDate <= maxActivationDate
                                    orderby key.ActivationDate descending, key.KeyId ascending
                                    select key).FirstOrDefault();
 
@@ -192,13 +193,14 @@ internal sealed class DefaultKeyResolver : IDefaultKeyResolver
         // Unlike for the preferred key, we don't choose a fallback key and then reject it if
         // CanCreateAuthenticatedEncryptor is false.  We want to end up with *some* key, so we
         // keep trying until we find one that works.
+        var maxCreationDate = now - _keyPropagationWindow;
         var unrevokedKeys = allKeys.Where(key => !key.IsRevoked);
         fallbackKey = (from key in (from key in unrevokedKeys
                                     where !ReferenceEquals(key, preferredDefaultKey) // Don't reconsider it as a fallback
-                                    where key.CreationDate <= now - _keyPropagationWindow
+                                    where key.CreationDate <= maxCreationDate
                                     orderby key.CreationDate descending
                                     select key).Concat(from key in unrevokedKeys
-                                                       where key.CreationDate > now - _keyPropagationWindow
+                                                       where key.CreationDate > maxCreationDate
                                                        orderby key.CreationDate ascending
                                                        select key)
                        where CanCreateAuthenticatedEncryptor(key, ref decryptRetriesRemaining)

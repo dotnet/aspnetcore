@@ -21,6 +21,13 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate;
 public class NegotiateHandlerTests
 {
     [Fact]
+    public void EventsPropertyIsInitializedOnConstruction()
+    {
+        var options = new NegotiateOptions();
+        Assert.NotNull(options.Events);
+    }
+
+    [Fact]
     public async Task Anonymous_MissingConnectionFeatures_ThrowsNotSupported()
     {
         using var host = await CreateHostAsync();

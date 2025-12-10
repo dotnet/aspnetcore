@@ -8,9 +8,11 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.Testing" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)test\**\*.cs" LinkBase="Helpers" />
   </ItemGroup>
 

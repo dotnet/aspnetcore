@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 
@@ -29,17 +30,21 @@ public class Startup
 
     public static void Main(string[] args)
     {
-        var host = CreateWebHostBuilder(args)
+        using var host = CreateHostBuilder(args)
             .Build();
 
         host.Run();
     }
 
-    public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-        new WebHostBuilder()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseStartup<Startup>()
-            .UseKestrel()
-            .UseIISIntegration();
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseContentRoot(Directory.GetCurrentDirectory())
+                    .UseStartup<Startup>()
+                    .UseKestrel()
+                    .UseIISIntegration();
+            });
 }
 

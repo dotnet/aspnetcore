@@ -32,11 +32,11 @@ public partial class ResourceCollectionTest : ServerTestBase<BasicTestAppServerS
         var url = $"{ServerPathBase}/resource-collection";
         Navigate(url);
 
-        Browser.True(() => AppStylesRegex().IsMatch(Browser.Exists(By.Id("basic-app-styles")).Text));
+        Browser.True(() => AppStylesRegex.IsMatch(Browser.Exists(By.Id("basic-app-styles")).Text));
 
         Browser.Exists(By.Id("import-module")).Click();
 
-        Browser.True(() => JsModuleRegex().IsMatch(Browser.Exists(By.Id("js-module")).Text));
+        Browser.True(() => JsModuleRegex.IsMatch(Browser.Exists(By.Id("js-module")).Text));
     }
 
     [Theory]
@@ -49,15 +49,15 @@ public partial class ResourceCollectionTest : ServerTestBase<BasicTestAppServerS
 
         Browser.Equal(renderMode, () => Browser.Exists(By.Id("platform-name")).Text);
 
-        Browser.True(() => AppStylesRegex().IsMatch(Browser.Exists(By.Id("basic-app-styles")).Text));
+        Browser.True(() => AppStylesRegex.IsMatch(Browser.Exists(By.Id("basic-app-styles")).Text));
 
         Browser.Exists(By.Id("import-module")).Click();
 
-        Browser.True(() => JsModuleRegex().IsMatch(Browser.Exists(By.Id("js-module")).Text));
+        Browser.True(() => JsModuleRegex.IsMatch(Browser.Exists(By.Id("js-module")).Text));
     }
 
     [GeneratedRegex("""BasicTestApp\.[a-zA-Z0-9]{10}\.styles\.css""")]
-    private static partial Regex AppStylesRegex();
+    private static partial Regex AppStylesRegex { get; }
     [GeneratedRegex(""".*Index\.[a-zA-Z0-9]{10}\.mjs""")]
-    private static partial Regex JsModuleRegex();
+    private static partial Regex JsModuleRegex { get; }
 }

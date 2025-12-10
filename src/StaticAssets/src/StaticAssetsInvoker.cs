@@ -223,7 +223,7 @@ internal class StaticAssetsInvoker
 
         if (requestContext.Response.StatusCode == StatusCodes.Status200OK)
         {
-            requestContext.Response.StatusCode = StatusCodes.Status416RangeNotSatisfiable;
+            requestContext.Response.StatusCode = StatusCodes.Status206PartialContent;
         }
         await ApplyResponseHeadersAsync(requestContext, StatusCodes.Status206PartialContent);
 

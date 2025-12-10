@@ -118,7 +118,7 @@ public class PullFromJSDataStreamTest
             _data = data;
         }
 
-        public virtual ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, CancellationToken cancellationToken, object[] args)
+        public virtual ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
         {
             Assert.Equal("Blazor._internal.getJSDataStreamChunk", identifier);
             if (typeof(TValue) != typeof(byte[]))
@@ -130,10 +130,26 @@ public class PullFromJSDataStreamTest
             return ValueTask.FromResult((TValue)(object)_data.Skip((int)offset).Take(bytesToRead).ToArray());
         }
 
-        public async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, object[] args)
-        {
-            return await InvokeAsync<TValue>(identifier, CancellationToken.None, args);
-        }
+        public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
+            => await InvokeAsync<TValue>(identifier, CancellationToken.None, args);
+
+        public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object[] args)
+            => throw new NotImplementedException();
+
+        public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object[] args)
+            => throw new NotImplementedException();
+
+        public ValueTask<TValue> GetValueAsync<TValue>(string identifier)
+            => throw new NotImplementedException();
+
+        public ValueTask<TValue> GetValueAsync<TValue>(string identifier, CancellationToken cancellationToken)
+            => throw new NotImplementedException();
+
+        public ValueTask SetValueAsync<TValue>(string identifier, TValue value)
+            => throw new NotImplementedException();
+
+        public ValueTask SetValueAsync<TValue>(string identifier, TValue value, CancellationToken cancellationToken)
+            => throw new NotImplementedException();
     }
 
     class TestJSRuntime_ProvidesInsufficientData : TestJSRuntime
@@ -142,7 +158,7 @@ public class PullFromJSDataStreamTest
         {
         }
 
-        public override ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, CancellationToken cancellationToken, object[] args)
+        public override ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
         {
             var offset = (long)args[1];
             var bytesToRead = (int)args[2];
@@ -156,7 +172,7 @@ public class PullFromJSDataStreamTest
         {
         }
 
-        public override ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] TValue>(string identifier, CancellationToken cancellationToken, object[] args)
+        public override ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
         {
             var offset = (long)args[1];
             var bytesToRead = (int)args[2];

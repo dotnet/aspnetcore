@@ -24,31 +24,33 @@ public class RazorComponentEndpointDataSourceTest
     public void RegistersEndpoints()
     {
         var endpointDataSource = CreateDataSource<App>();
+        endpointDataSource.ComponentApplicationBuilderActions.Add(builder =>
+        {
+            var assembly = typeof(App).Assembly;
+            IRazorComponentApplication.GetBuilderForAssembly(builder, assembly);
+        });
 
         var endpoints = endpointDataSource.Endpoints;
 
-#if DEBUG
-        Assert.Equal(5, endpoints.Count);
-#else
-        Assert.Equal(4, endpoints.Count);
-#endif
+        Assert.Equal(3, endpoints.Count);
     }
 
     [Fact]
     public void NoDiscoveredModesDefaultsToStatic()
     {
-
-        var builder = CreateBuilder();
         var services = CreateServices(typeof(ServerEndpointProvider));
-        var endpointDataSource = CreateDataSource<App>(builder, services);
+        var endpointDataSource = CreateDataSource<App>(services);
+
+        endpointDataSource.ComponentApplicationBuilderActions.Add(builder =>
+        {
+            builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
+                "TestAssembly",
+                Array.Empty<PageComponentBuilder>(), Array.Empty<ComponentBuilder>()));
+        });
 
         var endpoints = endpointDataSource.Endpoints;
 
-#if DEBUG
-        Assert.Equal(3, endpoints.Count);
-#else
-        Assert.Equal(2, endpoints.Count);
-#endif
+        Assert.Single(endpoints);
     }
 
     // renderModes, providers, components, expectedEndpoints
@@ -207,22 +209,6 @@ public class RazorComponentEndpointDataSourceTest
             },
         };
 
-    private ComponentApplicationBuilder CreateBuilder(params Type[] types)
-    {
-        var builder = new ComponentApplicationBuilder();
-        builder.AddLibrary(new AssemblyComponentLibraryDescriptor(
-            "TestAssembly",
-            Array.Empty<PageComponentBuilder>(),
-            types.Select(t => new ComponentBuilder
-            {
-                AssemblyName = "TestAssembly",
-                ComponentType = t,
-                RenderMode = t.GetCustomAttribute<RenderModeAttribute>()
-            }).ToArray()));
-
-        return builder;
-    }
-
     private IServiceProvider CreateServices(params Type[] types)
     {
         var services = new ServiceCollection();
@@ -238,12 +224,10 @@ public class RazorComponentEndpointDataSourceTest
     }
 
     private RazorComponentEndpointDataSource<TComponent> CreateDataSource<TComponent>(
-        ComponentApplicationBuilder builder = null,
         IServiceProvider services = null,
         IComponentRenderMode[] renderModes = null)
     {
         var result = new RazorComponentEndpointDataSource<TComponent>(
-            builder ?? DefaultRazorComponentApplication<TComponent>.Instance.GetBuilder(),
             services?.GetService<IEnumerable<RenderModeEndpointProvider>>() ?? Enumerable.Empty<RenderModeEndpointProvider>(),
             new TestEndpointRouteBuilder(services ?? CreateServices()),
             new RazorComponentEndpointFactory(),

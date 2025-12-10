@@ -4,7 +4,7 @@ Daily builds include the latest source code changes. They are not supported for 
 
 If you want to download the latest daily build and use it in a project, then you need to:
 
-* Obtain the latest [build of the .NET Core SDK](https://github.com/dotnet/sdk/blob/main/documentation/package-table.md).
+* Obtain the latest [build of the .NET Core SDK](https://github.com/dotnet/dotnet/blob/main/docs/builds-table.md).
 * Add a NuGet.Config to your project directory with the following content:
 
 ## .NET 8
@@ -60,4 +60,4 @@ These are available in the [Visual Studio Preview](https://www.visualstudio.com/
 
 ## Downloading daily builds of aspnetcore
 
-Links to our daily builds can be found [here](https://github.com/dotnet/aspnetcore/blob/main/README.md#nightly-builds).
+Links to our daily builds can be found in the [ASP.NET Core nightly builds section](https://github.com/dotnet/aspnetcore/blob/main/README.md#nightly-builds).

@@ -1,9 +1,9 @@
 #nullable enable
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnection
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.HttpConnection(Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions! httpConnectionOptions, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory) -> void
-Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.HttpConnection(System.Uri! url) -> void
-Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.HttpConnection(System.Uri! url, Microsoft.AspNetCore.Http.Connections.HttpTransportType transports) -> void
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.HttpConnection(System.Uri! url, Microsoft.AspNetCore.Http.Connections.HttpTransportType transports, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory) -> void
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.HttpConnection(System.Uri! url, Microsoft.AspNetCore.Http.Connections.HttpTransportType transports) -> void
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.HttpConnection(System.Uri! url) -> void
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(Microsoft.AspNetCore.Connections.TransferFormat transferFormat, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionFactory

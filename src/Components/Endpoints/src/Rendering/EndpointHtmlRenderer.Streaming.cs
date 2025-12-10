@@ -22,11 +22,13 @@ internal partial class EndpointHtmlRenderer
     private HashSet<int>? _visitedComponentIdsInCurrentStreamingBatch;
     private string? _ssrFramingCommentMarkup;
     private bool _isHandlingErrors;
+    private bool _isReExecuted;
 
-    public void InitializeStreamingRenderingFraming(HttpContext httpContext, bool isErrorHandler)
+    public void InitializeStreamingRenderingFraming(HttpContext httpContext, bool isErrorHandler, bool isReExecuted)
     {
         _isHandlingErrors = isErrorHandler;
-        if (IsProgressivelyEnhancedNavigation(httpContext.Request))
+        _isReExecuted = isReExecuted;
+        if (!isReExecuted && IsProgressivelyEnhancedNavigation(httpContext.Request))
         {
             var id = Guid.NewGuid().ToString();
             httpContext.Response.Headers.Add(_streamingRenderingFramingHeaderName, id);
@@ -223,16 +225,27 @@ internal partial class EndpointHtmlRenderer
         writer.Write("</template><blazor-ssr-end></blazor-ssr-end></blazor-ssr>");
     }
 
+    private static void HandleNotFoundAfterResponseStarted(TextWriter writer, HttpContext httpContext, string notFoundUrl)
+    {
+        writer.Write("<blazor-ssr><template type=\"not-found\"");
+        WriteResponseTemplate(writer, httpContext, notFoundUrl, useEnhancedNav: true);
+    }
+
     private static void HandleNavigationAfterResponseStarted(TextWriter writer, HttpContext httpContext, string destinationUrl)
     {
         writer.Write("<blazor-ssr><template type=\"redirection\"");
+        bool useEnhancedNav = IsProgressivelyEnhancedNavigation(httpContext.Request);
+        WriteResponseTemplate(writer, httpContext, destinationUrl, useEnhancedNav);
+    }
 
-        if (string.Equals(httpContext.Request.Method, "POST", StringComparison.OrdinalIgnoreCase))
+    private static void WriteResponseTemplate(TextWriter writer, HttpContext httpContext, string destinationUrl, bool useEnhancedNav)
+    {
+        if (HttpMethods.IsPost(httpContext.Request.Method))
         {
             writer.Write(" from=\"form-post\"");
         }
 
-        if (IsProgressivelyEnhancedNavigation(httpContext.Request))
+        if (useEnhancedNav)
         {
             writer.Write(" enhanced=\"true\"");
         }
@@ -271,6 +284,15 @@ internal partial class EndpointHtmlRenderer
                 _httpContext.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
             }
 
+            if (marker.Type is ComponentMarker.WebAssemblyMarkerType or ComponentMarker.AutoMarkerType)
+            {
+                if (_httpContext.RequestServices.GetRequiredService<WebAssemblySettingsEmitter>().TryGetSettingsOnce(out var settings))
+                {
+                    var settingsJson = JsonSerializer.Serialize(settings, ServerComponentSerializationSettings.JsonSerializationOptions);
+                    output.Write($"<!--Blazor-WebAssembly:{settingsJson}-->");
+                }
+            }
+
             var serializedStartRecord = JsonSerializer.Serialize(marker, ServerComponentSerializationSettings.JsonSerializationOptions);
             output.Write("<!--Blazor:");
             output.Write(serializedStartRecord);
@@ -302,7 +324,7 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    private static bool IsProgressivelyEnhancedNavigation(HttpRequest request)
+    internal static bool IsProgressivelyEnhancedNavigation(HttpRequest request)
     {
         // For enhanced nav, the Blazor JS code controls the "accept" header precisely, so we can be very specific about the format
         var accept = request.Headers.Accept;

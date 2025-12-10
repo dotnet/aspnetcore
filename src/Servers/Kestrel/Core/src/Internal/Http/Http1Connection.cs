@@ -3,7 +3,6 @@
 
 using System.Buffers;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
@@ -644,16 +643,24 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             // authority component, excluding any userinfo subcomponent and its "@"
             // delimiter.
 
+            // Accessing authority always allocates, store it in a local to only allocate once
+            var authority = _absoluteRequestTarget!.Authority;
+
             // System.Uri doesn't not tell us if the port was in the original string or not.
             // When IsDefaultPort = true, we will allow Host: with or without the default port
-            if (hostText != _absoluteRequestTarget!.Authority)
+            if (hostText != authority)
             {
                 if (!_absoluteRequestTarget.IsDefaultPort
-                    || hostText != _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port.ToString(CultureInfo.InvariantCulture))
+                    || hostText != $"{authority}:{_absoluteRequestTarget.Port}")
                 {
                     if (_context.ServiceContext.ServerOptions.AllowHostHeaderOverride)
                     {
-                        hostText = _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port.ToString(CultureInfo.InvariantCulture);
+                        // No need to include the port here, it's either already in the Authority
+                        // or it's the default port
+                        // see: https://datatracker.ietf.org/doc/html/rfc2616/#section-14.23
+                        // A "host" without any trailing port information implies the default
+                        // port for the service requested (e.g., "80" for an HTTP URL).
+                        hostText = authority;
                         HttpRequestHeaders.HeaderHost = hostText;
                     }
                     else

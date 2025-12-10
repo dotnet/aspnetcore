@@ -404,9 +404,11 @@ public class Http2ConnectionTests : Http2TestBase
     {
         // Add stream to Http2Connection._completedStreams inline with SetResult().
         var serverTcs = new TaskCompletionSource();
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         await InitializeConnectionAsync(async context =>
         {
+            appTcs.TrySetResult();
             await serverTcs.Task;
             await _echoApplication(context);
         });
@@ -415,6 +417,8 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
+        // If app code is running we know the stream has been created
+        await appTcs.Task;
         var stream = _connection._streams[1];
         serverTcs.SetResult();
 
@@ -490,9 +494,12 @@ public class Http2ConnectionTests : Http2TestBase
         TaskCompletionSource appDelegateTcs = null;
         object persistedState = null;
         var requestCount = 0;
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         await InitializeConnectionAsync(async context =>
         {
+            appTcs.TrySetResult();
+
             requestCount++;
             var persistentStateCollection = context.Features.Get<IPersistentStateFeature>().State;
             if (persistentStateCollection.TryGetValue("Counter", out var value))
@@ -509,6 +516,9 @@ public class Http2ConnectionTests : Http2TestBase
         appDelegateTcs = new TaskCompletionSource();
         await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
+        // If app code is running we know the stream has been created
+        await appTcs.Task;
+        appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         // Get the in progress stream
         var stream = _connection._streams[1];
 
@@ -533,6 +543,8 @@ public class Http2ConnectionTests : Http2TestBase
         // Add stream to Http2Connection._completedStreams inline with SetResult().
         appDelegateTcs = new TaskCompletionSource();
         await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+
+        await appTcs.Task;
 
         // New stream has been taken from the pool
         Assert.Equal(0, _connection.StreamPool.Count);
@@ -564,9 +576,11 @@ public class Http2ConnectionTests : Http2TestBase
     {
         // Add (or don't add) stream to Http2Connection._completedStreams inline with SetResult().
         var serverTcs = new TaskCompletionSource();
+        var appTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         await InitializeConnectionAsync(async context =>
         {
+            appTcs.TrySetResult();
             await serverTcs.Task.DefaultTimeout();
 
             await context.Response.WriteAsync("Content");
@@ -575,6 +589,8 @@ public class Http2ConnectionTests : Http2TestBase
 
         await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
+        // If app code is running we know the stream has been created
+        await appTcs.Task;
         var stream = _connection._streams[1];
         serverTcs.SetResult();
 
@@ -3583,7 +3599,6 @@ public class Http2ConnectionTests : Http2TestBase
         AssertConnectionNoError();
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/53744")]
     [Fact]
     public async Task RST_STREAM_IncompleteRequest_AdditionalWindowUpdateFrame_ConnectionAborted()
     {
@@ -3602,10 +3617,12 @@ public class Http2ConnectionTests : Http2TestBase
         await SendRstStreamAsync(1);
         await SendWindowUpdateAsync(1, 1024);
 
-        await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1,
-            Http2ErrorCode.STREAM_CLOSED, CoreStrings.FormatHttp2ErrorStreamAborted(Http2FrameType.WINDOW_UPDATE, 1));
+        await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.STREAM_CLOSED, CoreStrings.Http2StreamAborted);
 
         tcs.TrySetResult(); // Don't let the response start until after the abort
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        AssertConnectionNoError();
     }
 
     [Fact]
@@ -5272,6 +5289,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60111")]
     public async Task IgnoreNewStreamsDuringClosedConnection()
     {
         // Remove callback that completes _pair.Application.Output on abort.

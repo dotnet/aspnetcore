@@ -301,6 +301,221 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     [Fact]
+    public void AddsResponseDescription()
+    {
+        const string expectedCreatedDescription = "A new item was created";
+        const string expectedBadRequestDescription = "Validation failed for the request";
+
+        var apiDescription = GetApiDescription(
+    [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created, Description = expectedCreatedDescription)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Description = expectedBadRequestDescription)]
+        () => TypedResults.Created("https://example.com", new TimeSpan()));
+
+        Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
+
+        var createdResponseType = apiDescription.SupportedResponseTypes[0];
+
+        Assert.Equal(201, createdResponseType.StatusCode);
+        Assert.Equal(typeof(TimeSpan), createdResponseType.Type);
+        Assert.Equal(typeof(TimeSpan), createdResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedCreatedDescription, createdResponseType.Description);
+
+        var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdResponseFormat.MediaType);
+
+        var badRequestResponseType = apiDescription.SupportedResponseTypes[1];
+
+        Assert.Equal(400, badRequestResponseType.StatusCode);
+        Assert.Equal(typeof(void), badRequestResponseType.Type);
+        Assert.Equal(typeof(void), badRequestResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedBadRequestDescription, badRequestResponseType.Description);
+    }
+
+    [Fact]
+    public void AddsResponseDescription_WorksWithGenerics()
+    {
+        const string expectedOkDescription = "The weather forecast for the next 5 days.";
+
+        var apiDescription = GetApiDescription([ProducesResponseType<GenericClass<TimeSpan>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
+        () => new GenericClass<TimeSpan> { Value = new TimeSpan() });
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(GenericClass<TimeSpan>), okResponseType.Type);
+        Assert.Equal(typeof(GenericClass<TimeSpan>), okResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedOkDescription, okResponseType.Description);
+
+        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdOkFormat.MediaType);
+    }
+
+    [Fact]
+    public void AddsResponseDescription_WorksWithGenericsAndTypedResults()
+    {
+        const string expectedOkDescription = "The weather forecast for the next 5 days.";
+
+        var apiDescription = GetApiDescription([ProducesResponseType<GenericClass<TimeSpan>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
+        () => TypedResults.Ok(new GenericClass<TimeSpan> { Value = new TimeSpan() }));
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(GenericClass<TimeSpan>), okResponseType.Type);
+        Assert.Equal(typeof(GenericClass<TimeSpan>), okResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedOkDescription, okResponseType.Description);
+
+        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdOkFormat.MediaType);
+    }
+
+    [Fact]
+    public void AddsResponseDescription_WorksWithCollections()
+    {
+        const string expectedOkDescription = "The weather forecast for the next 5 days.";
+
+        var apiDescription = GetApiDescription([ProducesResponseType<IEnumerable<TimeSpan>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
+        () => new List<TimeSpan> { new() });
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(List<TimeSpan>), okResponseType.Type); // We use List as the inferred type has higher priority than those set by metadata (attributes)
+        Assert.Equal(typeof(List<TimeSpan>), okResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedOkDescription, okResponseType.Description);
+
+        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdOkFormat.MediaType);
+    }
+
+    [Fact]
+    public void AddsResponseDescription_WorksWithCollectionsAndTypedResults()
+    {
+        const string expectedOkDescription = "The weather forecast for the next 5 days.";
+
+        var apiDescription = GetApiDescription([ProducesResponseType<IEnumerable<TimeSpan>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
+        () => TypedResults.Ok(new List<TimeSpan> { new() }));
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(List<TimeSpan>), okResponseType.Type); // We use List as the inferred type has higher priority than those set by metadata (attributes)
+        Assert.Equal(typeof(List<TimeSpan>), okResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedOkDescription, okResponseType.Description);
+
+        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdOkFormat.MediaType);
+    }
+
+    /// <summary>
+    /// EndpointMetadataApiDescriptionProvider performs a one way type check for discovering response types to match the description that's set in [ProducesResponseType]
+    /// The reason we do a one-way check instead of a bidirectional check is to prevent too many positive matches.
+    /// </summary>
+    /// <remarks>
+    /// Example: If we did a bidirectional check, we would match something scenarios like this, which can cause confusion:
+    /// [ProducesResponseType<string>(StatusCodes.Status200OK, Description = "Returned with a string")] -> TypedResults.Ok(new object())
+    /// This would match because object is assignable to string,
+    /// but it doesn't make sense to add the Description to the object type because the attribute says we should return a string.
+    ///
+    /// This test documents this desired behavior and will fail if the behavior changes, so the developer can double check if their change is intentional.
+    /// </summary>
+    [Fact]
+    public void AddsResponseDescription_ShouldFailWhenInferredTypeIsNotDirectlyAssignableToAttributeType()
+    {
+        var apiDescription = GetApiDescription([ProducesResponseType<string>(StatusCodes.Status200OK, Description = "Only returned with a string")]
+        () => TypedResults.Ok(new object()));
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(object), okResponseType.Type);
+        Assert.Equal(typeof(object), okResponseType.ModelMetadata?.ModelType);
+        Assert.Null(okResponseType.Description);
+    }
+
+    [Fact]
+    public void WithEmptyMethodBody_AddsResponseDescription()
+    {
+        const string expectedCreatedDescription = "A new item was created";
+        const string expectedBadRequestDescription = "Validation failed for the request";
+
+        var apiDescription = GetApiDescription(
+    [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created, Description = expectedCreatedDescription)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Description = expectedBadRequestDescription)]
+        () => new InferredJsonClass());
+
+        Assert.Equal(3, apiDescription.SupportedResponseTypes.Count);
+
+        var rdfInferredResponseType = apiDescription.SupportedResponseTypes[0];
+
+        Assert.Equal(200, rdfInferredResponseType.StatusCode);
+        Assert.Equal(typeof(InferredJsonClass), rdfInferredResponseType.Type);
+        Assert.Equal(typeof(InferredJsonClass), rdfInferredResponseType.ModelMetadata?.ModelType);
+
+        var rdfInferredResponseFormat = Assert.Single(rdfInferredResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", rdfInferredResponseFormat.MediaType);
+        Assert.Null(rdfInferredResponseType.Description); // There is no description set for the default "200" code, so we expect it to be null.
+
+        var createdResponseType = apiDescription.SupportedResponseTypes[1];
+
+        Assert.Equal(201, createdResponseType.StatusCode);
+        Assert.Equal(typeof(TimeSpan), createdResponseType.Type);
+        Assert.Equal(typeof(TimeSpan), createdResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedCreatedDescription, createdResponseType.Description);
+
+        var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdResponseFormat.MediaType);
+
+        var badRequestResponseType = apiDescription.SupportedResponseTypes[2];
+
+        Assert.Equal(400, badRequestResponseType.StatusCode);
+        Assert.Equal(typeof(InferredJsonClass), badRequestResponseType.Type);
+        Assert.Equal(typeof(InferredJsonClass), badRequestResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedBadRequestDescription, badRequestResponseType.Description);
+
+        var badRequestResponseFormat = Assert.Single(badRequestResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", badRequestResponseFormat.MediaType);
+    }
+
+    /// <summary>
+    /// Setting the description grabs the LAST description.
+    // To validate this, we add multiple ProducesResponseType to validate that it only grabs the LAST ONE.
+    /// </summary>
+    [Fact]
+    public void AddsResponseDescription_UsesLastOne()
+    {
+        const string expectedCreatedDescription = "A new item was created";
+        const string expectedBadRequestDescription = "Validation failed for the request";
+
+        var apiDescription = GetApiDescription(
+    [ProducesResponseType(typeof(int), StatusCodes.Status201Created, Description = "First description")] // The first item is an int, not a timespan, shouldn't match
+        [ProducesResponseType(typeof(int), StatusCodes.Status201Created, Description = "Second description")] // Not a timespan AND not the final item, shouldn't match
+        [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created, Description = expectedCreatedDescription)] // This is the last item, which should match
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Description = "First description")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Description = expectedBadRequestDescription)]
+        () => TypedResults.Created("https://example.com", new TimeSpan()));
+
+        Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
+
+        var createdResponseType = apiDescription.SupportedResponseTypes[0];
+
+        Assert.Equal(201, createdResponseType.StatusCode);
+        Assert.Equal(typeof(TimeSpan), createdResponseType.Type);
+        Assert.Equal(typeof(TimeSpan), createdResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedCreatedDescription, createdResponseType.Description);
+
+        var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdResponseFormat.MediaType);
+
+        var badRequestResponseType = apiDescription.SupportedResponseTypes[1];
+
+        Assert.Equal(400, badRequestResponseType.StatusCode);
+        Assert.Equal(typeof(void), badRequestResponseType.Type);
+        Assert.Equal(typeof(void), badRequestResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedBadRequestDescription, badRequestResponseType.Description);
+    }
+
+    [Fact]
     public void AddsResponseFormatsForTypedResultWithoutReturnType()
     {
         var apiDescription = GetApiDescription(() => TypedResults.Created("https://example.com", new InferredJsonClass()));
@@ -411,6 +626,32 @@ public class EndpointMetadataApiDescriptionProviderTest
         Assert.Equal(typeof(void), badRequestResponseType.ModelMetadata?.ModelType);
 
         Assert.Empty(badRequestResponseType.ApiResponseFormats);
+    }
+
+    [Fact]
+    public void ResponseProducesMetadataWithIResultImplementor()
+    {
+        var apiDescription = GetApiDescription(
+            [ProducesResponseType(typeof(CustomIResultImplementor), StatusCodes.Status200OK)] () => new CustomIResultImplementor { Content = "Hello, World!" });
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(CustomIResultImplementor), okResponseType.Type);
+        Assert.Equal(typeof(CustomIResultImplementor), okResponseType.ModelMetadata?.ModelType);
+
+        var okResponseFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", okResponseFormat.MediaType);
+    }
+
+    public class CustomIResultImplementor : IResult
+    {
+        public required string Content { get; set; }
+
+        public Task ExecuteAsync(HttpContext httpContext)
+        {
+            return httpContext.Response.WriteAsJsonAsync(this);
+        }
     }
 
     [Fact]
@@ -580,7 +821,9 @@ public class EndpointMetadataApiDescriptionProviderTest
     {
         Assert.Empty(GetApiDescription((IInferredServiceInterface foo) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription(([FromServices] InferredServiceClass foo) => { }).ParameterDescriptions);
+        Assert.Empty(GetApiDescription(([CustomFromServices] InferredServiceClass foo) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription(([FromKeyedServices("foo")] InferredServiceClass foo) => { }).ParameterDescriptions);
+        Assert.Empty(GetApiDescription(([CustomFromKeyedServices("foo")] InferredServiceClass foo) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription((HttpContext context) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription((HttpRequest request) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription((HttpResponse response) => { }).ParameterDescriptions);
@@ -1701,4 +1944,10 @@ public class EndpointMetadataApiDescriptionProviderTest
             return null;
         }
     }
+
+    private class GenericClass<TType> { public required TType Value { get; set; } }
+
+    private class CustomFromKeyedServicesAttribute(object key) : FromKeyedServicesAttribute(key);
+
+    private class CustomFromServicesAttribute : FromServicesAttribute;
 }

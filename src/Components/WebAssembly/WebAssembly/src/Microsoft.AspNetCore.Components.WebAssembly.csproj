@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="Microsoft.Extensions.Configuration.Binder" />
     <Reference Include="Microsoft.Extensions.Logging" />
@@ -24,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(ComponentsSharedSourceRoot)src\HotReloadManager.cs" LinkBase="HotReload" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\BrowserNavigationManagerInterop.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\PullFromJSDataStream.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\TransmitDataStreamToJS.cs" />
@@ -33,7 +35,7 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperation.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperationBatch.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperationType.cs" />
-    <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentTypeCache.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RootTypeCache.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebRendererId.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebRootComponentManager.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebRootComponentParameters.cs" />
@@ -61,10 +63,6 @@
     <Content Include="$(BlazorWebAssemblyJSFile)" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\" LinkBase="build\$(DefaultNetCoreTargetFramework)\" />
     <Content Include="targets\*.props" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\" />
   </ItemGroup>
-
-  <Target Name="_CheckBlazorServerJSPath" BeforeTargets="GenerateNuspec" DependsOnTargets="ResolveProjectReferences" Condition=" '$(IsPackable)' == 'true' ">
-    <Error Text="'$(BlazorWebAssemblyJSFile)' does not exist. Enable NodeJS to pack this project." Condition=" !EXISTS('$(BlazorWebAssemblyJSFile)') " />
-  </Target>
 
   <ItemGroup>
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />

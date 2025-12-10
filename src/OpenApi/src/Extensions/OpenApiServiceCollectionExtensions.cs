@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.ApiDescriptions;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using OpenApiConstants = Microsoft.AspNetCore.OpenApi.OpenApiConstants;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -57,10 +58,15 @@ public static class OpenApiServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configureOptions);
 
-        services.AddOpenApiCore(documentName);
-        services.Configure<OpenApiOptions>(documentName, options =>
+        // We need to register the document name in a case-insensitive manner to support case-insensitive document name resolution.
+        // The document name is used to store and retrieve keyed services and configuration options, which are all case-sensitive.
+        // To achieve parity with ASP.NET Core routing, which is case-insensitive, we need to ensure the document name is lowercased.
+        var lowercasedDocumentName = documentName.ToLowerInvariant();
+
+        services.AddOpenApiCore(lowercasedDocumentName);
+        services.Configure<OpenApiOptions>(lowercasedDocumentName, options =>
         {
-            options.DocumentName = documentName;
+            options.DocumentName = lowercasedDocumentName;
             configureOptions(options);
         });
         return services;
@@ -104,8 +110,9 @@ public static class OpenApiServiceCollectionExtensions
     {
         services.AddEndpointsApiExplorer();
         services.AddKeyedSingleton<OpenApiSchemaService>(documentName);
-        services.AddKeyedSingleton<OpenApiSchemaStore>(documentName);
         services.AddKeyedSingleton<OpenApiDocumentService>(documentName);
+        services.AddKeyedSingleton<IOpenApiDocumentProvider, OpenApiDocumentService>(documentName);
+
         // Required for build-time generation
         services.AddSingleton<IDocumentProvider, OpenApiDocumentProvider>();
         // Required to resolve document names for build-time generation

@@ -24,7 +24,6 @@
           ..\WebSites\RazorPagesClassLibrary\RazorPagesClassLibrary.csproj" />
 
     <Reference Include="AngleSharp" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="Microsoft.AspNet.WebApi.Client" />
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />

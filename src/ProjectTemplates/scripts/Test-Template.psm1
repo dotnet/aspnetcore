@@ -25,7 +25,7 @@ function Test-Template {
     }
 
     Write-Verbose "Patching Microsoft.AspNetCore.App";
-    $builtRuntime = Resolve-Path "$PSScriptRoot/../../../artifacts/installers/$Configuration/aspnetcore-runtime-*-dev-win-x64.zip";
+    $builtRuntime = Resolve-Path "$PSScriptRoot/../../../artifacts/packages/$Configuration/Shipping/aspnetcore-runtime-*-dev-win-x64.zip" | Where-Object { $_ -match "aspnetcore-runtime-[0-9.]+-dev-win-x64.zip" };
     Write-Verbose "Patching Microsoft.AspNetCore.App from $builtRuntime";
     Remove-Item "$PSScriptRoot/.runtime" -Recurse -ErrorAction Ignore;
     Expand-Archive -Path $builtRuntime -DestinationPath "$PSScriptRoot/.runtime" -Force;

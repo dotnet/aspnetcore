@@ -519,13 +519,12 @@ public class StaticAssetsIntegrationTests
                     Route = resource.Path,
                     AssetPath = $"{resource.Path}.gz",
                     Selectors = [new StaticAssetSelector("Content-Encoding", "gzip", "1.0")],
-                    Properties = [],
+                    Properties = [new("original-resource", $"\"{GetEtag(resource.Content)}\"")],
                     ResponseHeaders = [
                         new ("Accept-Ranges", "bytes"),
                         new ("Content-Type", GetContentType(filePath)),
 
                         new ("Content-Length", length.ToString(CultureInfo.InvariantCulture)),
-                        new ("ETag", $"W/\"{GetEtag(resource.Content)}\""),
                         new ("ETag", $"\"{GetEtagForFile(compressedFilePath)}\""),
                         new ("Last-Modified", lastModified.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)),
 
@@ -989,6 +988,33 @@ public class StaticAssetsIntegrationTests
         Assert.Equal(HttpStatusCode.PreconditionFailed, res2.StatusCode);
     }
 
+    // 14.35.2 Range Retrieval Requests
+    // The presence of a Range header in an unconditional GET modifies
+    // what is returned if the GET is otherwise successful. In other
+    // words, the response carries a status code of 206 (Partial
+    // Content) instead of 200 (OK).
+    [Fact]
+    public async Task RangeGivesMatchingRange()
+    {
+        var client = await CreateClient();
+
+        var req1 = new HttpRequestMessage(HttpMethod.Get, "http://localhost/sample.txt");
+        req1.Headers.Range = new RangeHeaderValue(0, 4);
+        var res1 = await client.SendAsync(req1);
+
+        var req2 = new HttpRequestMessage(HttpMethod.Get, "http://localhost/sample.txt");
+        req2.Headers.Range = new RangeHeaderValue(7, 11);
+        var res2 = await client.SendAsync(req2);
+
+        Assert.Equal(HttpStatusCode.PartialContent, res1.StatusCode);
+        Assert.Equal("Hello", await res1.Content.ReadAsStringAsync());
+        Assert.Equal(5, res1.Content.Headers.ContentLength);
+
+        Assert.Equal(HttpStatusCode.PartialContent, res2.StatusCode);
+        Assert.Equal("World", await res2.Content.ReadAsStringAsync());
+        Assert.Equal(5, res2.Content.Headers.ContentLength);
+    }
+
     public static IEnumerable<object[]> SupportedMethods => new[]
     {
             new [] { HttpMethod.Get },
@@ -1071,5 +1097,46 @@ public class StaticAssetsIntegrationTests
                 return stream;
             }
         }
+    }
+
+    [Fact]
+    public void TruncateToSeconds_RemovesSubsecondComponents()
+    {
+        var original = new DateTimeOffset(2023, 5, 15, 10, 30, 45, 123, TimeSpan.FromHours(2));
+
+        var truncated = StaticAssetDevelopmentRuntimeHandler.TruncateToSeconds(original);
+
+        Assert.Equal(2023, truncated.Year);
+        Assert.Equal(5, truncated.Month);
+        Assert.Equal(15, truncated.Day);
+        Assert.Equal(10, truncated.Hour);
+        Assert.Equal(30, truncated.Minute);
+        Assert.Equal(45, truncated.Second);
+        Assert.Equal(0, truncated.Millisecond);
+        Assert.Equal(TimeSpan.FromHours(2), truncated.Offset);
+    }
+
+    [Fact]
+    public void TruncateToSeconds_PreservesUtcOffset()
+    {
+        var utcDateTime = new DateTimeOffset(2023, 5, 15, 10, 30, 45, 500, TimeSpan.Zero);
+
+        var truncated = StaticAssetDevelopmentRuntimeHandler.TruncateToSeconds(utcDateTime);
+
+        Assert.Equal(TimeSpan.Zero, truncated.Offset);
+        Assert.Equal(0, truncated.Millisecond);
+    }
+
+    [Fact]
+    public void TruncateToSeconds_MatchesHttpDateFormat()
+    {
+        var original = new DateTimeOffset(2023, 5, 15, 10, 30, 45, 789, TimeSpan.Zero);
+
+        var httpFormatted = original.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture);
+        var parsed = DateTimeOffset.Parse(httpFormatted, CultureInfo.InvariantCulture);
+
+        var truncated = StaticAssetDevelopmentRuntimeHandler.TruncateToSeconds(original);
+
+        Assert.Equal(parsed, truncated);
     }
 }

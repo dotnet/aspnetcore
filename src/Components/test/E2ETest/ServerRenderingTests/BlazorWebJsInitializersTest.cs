@@ -33,6 +33,11 @@ public class BlazorWebJsInitializersTest : ServerTestBase<BasicTestAppServerSite
         var url = $"{ServerPathBase}/initializers?streaming={streaming}&wasm={webassembly}&server={server}";
         Navigate(url);
 
+        if (webassembly)
+        {
+            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('block-webassembly-settings', 'true')");
+        }
+
         foreach (var callback in expectedInvokedCallbacks)
         {
             Browser.Exists(By.Id(callback));
@@ -55,6 +60,11 @@ public class BlazorWebJsInitializersTest : ServerTestBase<BasicTestAppServerSite
         List<string> expectedCallbacks = ["classic-before-start", "classic-after-started", ..expectedInvokedCallbacks];
         var url = $"{ServerPathBase}/initializers?streaming={streaming}&wasm={webassembly}&server={server}";
         Navigate(url);
+
+        if (webassembly)
+        {
+            ((IJavaScriptExecutor)Browser).ExecuteScript("sessionStorage.setItem('block-webassembly-settings', 'true')");
+        }
 
         foreach (var callback in expectedCallbacks)
         {
@@ -82,12 +92,12 @@ public class BlazorWebJsInitializersTest : ServerTestBase<BasicTestAppServerSite
         {
             { false, false, false, ["classic-and-modern-before-web-start", "classic-and-modern-after-web-started","modern-before-web-start", "modern-after-web-started"] },
             { false, false, true, ["classic-and-modern-before-web-start", "classic-and-modern-after-web-started", "classic-and-modern-before-server-start", "classic-and-modern-after-server-started", "classic-and-modern-circuit-opened", "modern-before-web-start", "modern-after-web-started", "modern-before-server-start", "modern-after-server-started", "modern-circuit-opened" ] },
-            { false, true, false, ["classic-and-modern-before-web-start", "classic-and-modern-after-web-started", "classic-and-modern-before-web-assembly-start", "classic-and-modern-after-web-assembly-started", "modern-before-web-start", "modern-after-web-started", "modern-before-web-assembly-start", "modern-after-web-assembly-started"] },
-            { false, true, true, ["classic-and-modern-before-web-start", "classic-and-modern-after-web-started", "classic-and-modern-before-server-start", "classic-and-modern-circuit-opened", "classic-and-modern-after-server-started", "classic-and-modern-before-web-assembly-start", "classic-and-modern-after-web-assembly-started", "modern-before-web-start", "modern-after-web-started", "modern-before-server-start", "modern-circuit-opened", "modern-after-server-started", "modern-before-web-assembly-start", "modern-after-web-assembly-started"] },
+            { false, true, false, ["classic-and-modern-before-web-start", "classic-and-modern-after-web-started", "classic-and-modern-before-web-assembly-start", "classic-and-modern-after-web-assembly-started", "server--classic-and-modern-before-web-assembly-start", "server--classic-and-modern-after-web-assembly-started", "modern-before-web-start", "modern-after-web-started", "modern-before-web-assembly-start", "modern-after-web-assembly-started"] },
+            { false, true, true, ["classic-and-modern-before-web-start", "classic-and-modern-after-web-started", "classic-and-modern-before-server-start", "classic-and-modern-circuit-opened", "classic-and-modern-after-server-started", "classic-and-modern-before-web-assembly-start", "classic-and-modern-after-web-assembly-started", "server--classic-and-modern-before-web-assembly-start", "server--classic-and-modern-after-web-assembly-started", "modern-before-web-start", "modern-after-web-started", "modern-before-server-start", "modern-circuit-opened", "modern-after-server-started", "modern-before-web-assembly-start", "modern-after-web-assembly-started"] },
             { true, false, false, ["classic-and-modern-before-web-start", "classic-and-modern-after-web-started","modern-before-web-start", "modern-after-web-started"] },
             { true, false, true, ["classic-and-modern-before-web-start", "classic-and-modern-after-web-started", "classic-and-modern-before-server-start", "classic-and-modern-after-server-started", "classic-and-modern-circuit-opened", "modern-before-web-start", "modern-after-web-started", "modern-before-server-start", "modern-after-server-started", "modern-circuit-opened" ] },
-            { true, true, false, ["classic-and-modern-before-web-start", "classic-and-modern-after-web-started", "classic-and-modern-before-web-assembly-start", "classic-and-modern-after-web-assembly-started", "modern-before-web-start", "modern-after-web-started", "modern-before-web-assembly-start", "modern-after-web-assembly-started"] },
-            { true, true, true, ["classic-and-modern-before-web-start", "classic-and-modern-after-web-started", "classic-and-modern-before-server-start", "classic-and-modern-circuit-opened", "classic-and-modern-after-server-started", "classic-and-modern-before-web-assembly-start", "classic-and-modern-after-web-assembly-started", "modern-before-web-start", "modern-after-web-started", "modern-before-server-start", "modern-circuit-opened", "modern-after-server-started", "modern-before-web-assembly-start", "modern-after-web-assembly-started"] },
+            { true, true, false, ["classic-and-modern-before-web-start", "classic-and-modern-after-web-started", "classic-and-modern-before-web-assembly-start", "classic-and-modern-after-web-assembly-started", "server--classic-and-modern-before-web-assembly-start", "server--classic-and-modern-after-web-assembly-started", "modern-before-web-start", "modern-after-web-started", "modern-before-web-assembly-start", "modern-after-web-assembly-started"] },
+            { true, true, true, ["classic-and-modern-before-web-start", "classic-and-modern-after-web-started", "classic-and-modern-before-server-start", "classic-and-modern-circuit-opened", "classic-and-modern-after-server-started", "classic-and-modern-before-web-assembly-start", "classic-and-modern-after-web-assembly-started", "server--classic-and-modern-before-web-assembly-start", "server--classic-and-modern-after-web-assembly-started", "modern-before-web-start", "modern-after-web-started", "modern-before-server-start", "modern-circuit-opened", "modern-after-server-started", "modern-before-web-assembly-start", "modern-after-web-assembly-started"] },
         };
 
         return result;

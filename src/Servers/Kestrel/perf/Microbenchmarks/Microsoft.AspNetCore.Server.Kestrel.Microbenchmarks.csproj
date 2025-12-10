@@ -18,7 +18,6 @@
     <Compile Include="$(KestrelSharedSourceRoot)test\PipeWriterHttp2FrameExtensions.cs" Link="Internal\PipeWriterHttp2FrameExtensions.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\HPackHeaderWriter.cs" Link="Http2\HPackHeaderWriter.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\Http2HeadersEnumerator.cs" Link="Http2\Http2HeadersEnumerator.cs" />
-    <Compile Include="$(RepoRoot)src\Shared\Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
     <Compile Include="$(KestrelSharedSourceRoot)test\KestrelTestLoggerProvider.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestApplicationErrorLogger.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestHttp1Connection.cs" />

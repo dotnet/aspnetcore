@@ -302,7 +302,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
     }
 
     // We don't have a good way of checking on the underlying implementation if it is exportable, so just return true.
-    protected override bool IsExportable(X509Certificate2 c) => true;
+    internal override bool IsExportable(X509Certificate2 c) => true;
 
     protected override X509Certificate2 SaveCertificateCore(X509Certificate2 certificate, StoreName storeName, StoreLocation storeLocation)
     {

@@ -11,5 +11,6 @@ internal static class JsonSerializerOptionsProvider
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         PropertyNameCaseInsensitive = true,
+        IncludeFields = true,
     };
 }

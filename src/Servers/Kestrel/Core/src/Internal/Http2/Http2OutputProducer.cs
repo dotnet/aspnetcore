@@ -232,11 +232,8 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
                 _pipeWriter.Complete();
             }
 
-            if (_fakeMemoryOwner != null)
-            {
-                _fakeMemoryOwner.Dispose();
-                _fakeMemoryOwner = null;
-            }
+            _fakeMemoryOwner?.Dispose();
+            _fakeMemoryOwner = null;
 
             if (_fakeMemory != null)
             {
@@ -358,7 +355,7 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         }
     }
 
-    public void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appCompleted)
+    public void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, ResponseBodyMode responseBodyMode, bool appCompleted)
     {
         lock (_dataWriterLock)
         {
@@ -552,11 +549,11 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         }
     }
 
-    public ValueTask<FlushResult> FirstWriteAsync(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> data, CancellationToken cancellationToken)
+    public ValueTask<FlushResult> FirstWriteAsync(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, ResponseBodyMode responseBodyMode, ReadOnlySpan<byte> data, CancellationToken cancellationToken)
     {
         lock (_dataWriterLock)
         {
-            WriteResponseHeaders(statusCode, reasonPhrase, responseHeaders, autoChunk, appCompleted: false);
+            WriteResponseHeaders(statusCode, reasonPhrase, responseHeaders, responseBodyMode, appCompleted: false);
 
             return WriteDataToPipeAsync(data, cancellationToken);
         }
@@ -567,7 +564,7 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         throw new NotImplementedException();
     }
 
-    public ValueTask<FlushResult> FirstWriteChunkedAsync(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> data, CancellationToken cancellationToken)
+    public ValueTask<FlushResult> FirstWriteChunkedAsync(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, ResponseBodyMode responseBodyMode, ReadOnlySpan<byte> data, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

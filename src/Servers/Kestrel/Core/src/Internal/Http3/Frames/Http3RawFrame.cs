@@ -9,7 +9,7 @@ namespace System.Net.Http;
 internal partial class Http3RawFrame
 #pragma warning restore CA1852 // Seal internal types
 {
-    public long Length { get; set; }
+    public long RemainingLength { get; set; }
 
     public Http3FrameType Type { get; internal set; }
 
@@ -17,6 +17,6 @@ internal partial class Http3RawFrame
 
     public override string ToString()
     {
-        return $"{FormattedType} Length: {Length}";
+        return $"{FormattedType} Length: {RemainingLength}";
     }
 }

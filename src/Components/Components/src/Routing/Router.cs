@@ -3,13 +3,15 @@
 
 #nullable disable warnings
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Routing;
 
@@ -27,6 +29,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     string _locationAbsolute;
     bool _navigationInterceptionEnabled;
     ILogger<Router> _logger;
+    string _notFoundPageRoute;
 
     private string _updateScrollPositionForHashLastLocation;
     private bool _updateScrollPositionForHash;
@@ -68,7 +71,15 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     /// Gets or sets the content to display when no match is found for the requested route.
     /// </summary>
     [Parameter]
+    [Obsolete("NotFound is deprecated. Use NotFoundPage instead.")]
     public RenderFragment NotFound { get; set; }
+
+    /// <summary>
+    /// Gets or sets the page content to display when no match is found for the requested route.
+    /// </summary>
+    [Parameter]
+    [DynamicallyAccessedMembers(LinkerFlags.Component)]
+    public Type? NotFoundPage { get; set; }
 
     /// <summary>
     /// Gets or sets the content to display when a match is found for the requested route.
@@ -105,6 +116,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         _baseUri = NavigationManager.BaseUri;
         _locationAbsolute = NavigationManager.Uri;
         NavigationManager.LocationChanged += OnLocationChanged;
+        NavigationManager.OnNotFound += OnNotFound;
         RoutingStateProvider = ServiceProvider.GetService<IRoutingStateProvider>();
 
         if (HotReloadManager.Default.MetadataUpdateSupported)
@@ -131,6 +143,34 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             throw new InvalidOperationException($"The {nameof(Router)} component requires a value for the parameter {nameof(Found)}.");
         }
 
+        if (NotFoundPage != null)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            if (NotFound != null)
+            {
+                throw new InvalidOperationException($"Setting {nameof(NotFound)} and {nameof(NotFoundPage)} properties simultaneously is not supported. Use either {nameof(NotFound)} or {nameof(NotFoundPage)}.");
+            }
+#pragma warning restore CS0618 // Type or member is obsolete
+            if (!typeof(IComponent).IsAssignableFrom(NotFoundPage))
+            {
+                throw new InvalidOperationException($"The type {NotFoundPage.FullName} " +
+                    $"does not implement {typeof(IComponent).FullName}.");
+            }
+
+            var routeAttributes = NotFoundPage.GetCustomAttributes(typeof(RouteAttribute), inherit: true);
+            if (routeAttributes.Length == 0)
+            {
+                throw new InvalidOperationException($"The type {NotFoundPage.FullName} " +
+                    $"does not have a {typeof(RouteAttribute).FullName} applied to it.");
+            }
+
+            var routeAttribute = (RouteAttribute)routeAttributes[0];
+            if (routeAttribute.Template != null)
+            {
+                _notFoundPageRoute = routeAttribute.Template;
+            }
+        }
+
         if (!_onNavigateCalled)
         {
             _onNavigateCalled = true;
@@ -146,6 +186,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     public void Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
+        NavigationManager.OnNotFound -= OnNotFound;
         if (HotReloadManager.Default.MetadataUpdateSupported)
         {
             HotReloadManager.Default.OnDeltaApplied -= ClearRouteCaches;
@@ -195,10 +236,13 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         var relativePath = NavigationManager.ToBaseRelativePath(_locationAbsolute.AsSpan());
         var locationPathSpan = TrimQueryOrHash(relativePath);
         var locationPath = $"/{locationPathSpan}";
+        ComponentsActivityHandle activityHandle;
 
         // In order to avoid routing twice we check for RouteData
         if (RoutingStateProvider?.RouteData is { } endpointRouteData)
         {
+            activityHandle = RecordDiagnostics(endpointRouteData.PageType.FullName, endpointRouteData.Template);
+
             // Other routers shouldn't provide RouteData, this is specific to our router component
             // and must abide by our syntax and behaviors.
             // Other routers must create their own abstractions to flow data from their SSR routing
@@ -209,6 +253,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             // - Convert constrained parameters with (int, double, etc) to the target type.
             endpointRouteData = RouteTable.ProcessParameters(endpointRouteData);
             _renderHandle.Render(Found(endpointRouteData));
+
+            _renderHandle.ComponentActivitySource?.StopNavigateActivity(activityHandle, null);
             return;
         }
 
@@ -224,6 +270,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 throw new InvalidOperationException($"The type {context.Handler.FullName} " +
                     $"does not implement {typeof(IComponent).FullName}.");
             }
+
+            activityHandle = RecordDiagnostics(context.Handler.FullName, context.Entry.RoutePattern.RawText);
 
             Log.NavigatingToComponent(_logger, context.Handler, locationPath, _baseUri);
 
@@ -244,19 +292,40 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         {
             if (!isNavigationIntercepted)
             {
+                activityHandle = RecordDiagnostics("NotFound", "NotFound");
+
                 Log.DisplayingNotFound(_logger, locationPath, _baseUri);
 
                 // We did not find a Component that matches the route.
                 // Only show the NotFound content if the application developer programatically got us here i.e we did not
                 // intercept the navigation. In all other cases, force a browser navigation since this could be non-Blazor content.
-                _renderHandle.Render(NotFound ?? DefaultNotFoundContent);
+                RenderNotFound();
             }
             else
             {
+                activityHandle = RecordDiagnostics("External", "External");
+
                 Log.NavigatingToExternalUri(_logger, _locationAbsolute, locationPath, _baseUri);
                 NavigationManager.NavigateTo(_locationAbsolute, forceLoad: true);
             }
         }
+        _renderHandle.ComponentActivitySource?.StopNavigateActivity(activityHandle, null);
+    }
+
+    private ComponentsActivityHandle RecordDiagnostics(string componentType, string template)
+    {
+        ComponentsActivityHandle activityHandle = default;
+        if (_renderHandle.ComponentActivitySource != null)
+        {
+            activityHandle = _renderHandle.ComponentActivitySource.StartNavigateActivity(componentType, template);
+        }
+
+        if (_renderHandle.ComponentMetrics != null && _renderHandle.ComponentMetrics.IsNavigationEnabled)
+        {
+            _renderHandle.ComponentMetrics.Navigation(componentType, template);
+        }
+
+        return activityHandle;
     }
 
     private static void DefaultNotFoundContent(RenderTreeBuilder builder)
@@ -320,6 +389,83 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         }
     }
 
+    private void OnNotFound(object sender, NotFoundEventArgs args)
+    {
+        bool renderContentIsProvided = NotFoundPage != null || args.Path != null;
+        if (_renderHandle.IsInitialized && renderContentIsProvided)
+        {
+            if (!string.IsNullOrEmpty(args.Path))
+            {
+                // The path can be set by a subscriber not defined in blazor framework.
+                _renderHandle.Render(builder => RenderComponentByRoute(builder, args.Path));
+            }
+            else
+            {
+                // Having the path set signals to the endpoint renderer that router handled rendering.
+                args.Path = _notFoundPageRoute;
+                RenderNotFound();
+            }
+            Log.DisplayingNotFound(_logger, args.Path);
+        }
+    }
+
+    internal void RenderComponentByRoute(RenderTreeBuilder builder, string route)
+    {
+        var componentType = FindComponentTypeByRoute(route);
+
+        if (componentType is null)
+        {
+            throw new InvalidOperationException($"No component found for route '{route}'. " +
+                $"Ensure the route matches a component with a [Route] attribute.");
+        }
+
+        builder.OpenComponent<RouteView>(0);
+        builder.AddAttribute(1, nameof(RouteView.RouteData),
+            new RouteData(componentType, new Dictionary<string, object>()));
+        builder.CloseComponent();
+    }
+
+    [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+    internal Type? FindComponentTypeByRoute(string route)
+    {
+        RefreshRouteTable();
+        var normalizedRoute = route.StartsWith('/') ? route : $"/{route}";
+
+        var context = new RouteContext(normalizedRoute);
+        Routes.Route(context);
+
+        if (context.Handler is not null && typeof(IComponent).IsAssignableFrom(context.Handler))
+        {
+            return context.Handler;
+        }
+
+        return null;
+    }
+
+    private void RenderNotFound()
+    {
+        _renderHandle.Render(builder =>
+        {
+            if (NotFoundPage != null)
+            {
+                builder.OpenComponent<RouteView>(0);
+                builder.AddAttribute(1, nameof(RouteView.RouteData),
+                    new RouteData(NotFoundPage, _emptyParametersDictionary));
+                builder.CloseComponent();
+            }
+#pragma warning disable CS0618 // Type or member is obsolete
+            else if (NotFound != null)
+            {
+                NotFound(builder);
+            }
+#pragma warning restore CS0618 // Type or member is obsolete
+            else
+            {
+                DefaultNotFoundContent(builder);
+            }
+        });
+    }
+
     async Task IHandleAfterRender.OnAfterRenderAsync()
     {
         if (!_navigationInterceptionEnabled)
@@ -337,6 +483,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     private static partial class Log
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         [LoggerMessage(1, LogLevel.Debug, $"Displaying {nameof(NotFound)} because path '{{Path}}' with base URI '{{BaseUri}}' does not match any component route", EventName = "DisplayingNotFound")]
         internal static partial void DisplayingNotFound(ILogger logger, string path, string baseUri);
 
@@ -345,5 +492,9 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
         [LoggerMessage(3, LogLevel.Debug, "Navigating to non-component URI '{ExternalUri}' in response to path '{Path}' with base URI '{BaseUri}'", EventName = "NavigatingToExternalUri")]
         internal static partial void NavigatingToExternalUri(ILogger logger, string externalUri, string path, string baseUri);
+
+        [LoggerMessage(4, LogLevel.Debug, $"Displaying contents of {{displayedContentPath}} on request", EventName = "DisplayingNotFoundOnRequest")]
+        internal static partial void DisplayingNotFound(ILogger logger, string displayedContentPath);
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }

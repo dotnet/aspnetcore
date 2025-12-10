@@ -72,6 +72,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var parameters = methodInfo.GetParameters();
                 options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("p", parameters[0], hasTryParse: false, hasBindAsync: false, isOptional: false));
                 options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(global::System.Int32), contentTypes: GeneratedMetadataConstants.JsonContentType));
+                DisableCookieRedirectMetadata.AddMetadataIfMissing(options.EndpointBuilder);
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };
             RequestDelegateFactoryFunc createRequestDelegate = (del, options, inferredMetadataResult) =>
@@ -108,7 +109,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: p (Type = string?[], IsOptional = False, IsParsable = False, IsArray = True, Source = Header)
-                    var p_raw = httpContext.Request.Headers["p"];
+                    var p_raw = httpContext.Request.Headers.GetCommaSeparatedValues("p");
                     var p_temp = p_raw.ToArray();
                     string[] p_local = p_temp!;
 
@@ -125,7 +126,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 {
                     var wasParamCheckFailure = false;
                     // Endpoint Parameter: p (Type = string?[], IsOptional = False, IsParsable = False, IsArray = True, Source = Header)
-                    var p_raw = httpContext.Request.Headers["p"];
+                    var p_raw = httpContext.Request.Headers.GetCommaSeparatedValues("p");
                     var p_temp = p_raw.ToArray();
                     string[] p_local = p_temp!;
 
@@ -231,6 +232,22 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     }
 
+    file sealed class DisableCookieRedirectMetadata : IDisableCookieRedirectMetadata
+    {
+        public static readonly DisableCookieRedirectMetadata Instance = new();
+
+        private DisableCookieRedirectMetadata()
+        {
+        }
+
+        public static void AddMetadataIfMissing(EndpointBuilder builder)
+        {
+            if (!builder.Metadata.Any(m => m is IDisableCookieRedirectMetadata))
+            {
+                builder.Metadata.Add(Instance);
+            }
+        }
+    }
     %GENERATEDCODEATTRIBUTE%
     file static class GeneratedMetadataConstants
     {

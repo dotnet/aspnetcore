@@ -398,7 +398,9 @@ public class MiddlewareFilterTest
             : base(
                   logger,
                   diagnosticListener,
+#pragma warning disable ASPDEPR006 // Type or member is obsolete
                   ActionContextAccessor.Null,
+#pragma warning restore ASPDEPR006 // Type or member is obsolete
                   mapper,
                   CreateControllerContext(actionContext, valueProviderFactories, maxAllowedErrorsInModelState),
                   CreateCacheEntry((ControllerActionDescriptor)actionContext.ActionDescriptor, controllerFactory),

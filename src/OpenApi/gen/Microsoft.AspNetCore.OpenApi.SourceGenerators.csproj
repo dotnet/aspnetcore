@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <DebugSymbols>true</DebugSymbols>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <IsAnalyzersProject>true</IsAnalyzersProject>
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <Nullable>enable</Nullable>
+    <WarnOnNullable>true</WarnOnNullable>
+    <IsPackable>false</IsPackable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" IsImplicitlyDefined="true" Version="$(MicrosoftCodeAnalysisVersion_LatestVS)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="All" IsImplicitlyDefined="true" Version="$(MicrosoftCodeAnalysisVersion_LatestVS)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)IsExternalInit.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)HashCode.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\IncrementalValuesProviderExtensions.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\CodeWriter.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Diagnostics\AnalyzerDebug.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests" />
+  </ItemGroup>
+
+</Project>

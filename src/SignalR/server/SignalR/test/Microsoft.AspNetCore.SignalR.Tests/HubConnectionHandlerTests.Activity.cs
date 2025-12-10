@@ -132,7 +132,7 @@ public partial class HubConnectionHandlerTests
                 var headers = new Dictionary<string, string>
                 {
                     {"traceparent", "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01"},
-                    {"tracestate", "TraceState1"},
+                    {"tracestate", "tracestate=1"},
                     {"baggage", "Key1=value1, Key2=value2"}
                 };
 
@@ -149,7 +149,7 @@ public partial class HubConnectionHandlerTests
                 Assert.Equal(ActivityIdFormat.W3C, invocationActivity.IdFormat);
                 Assert.Equal("0123456789abcdef0123456789abcdef", invocationActivity.TraceId.ToHexString());
                 Assert.Equal("0123456789abcdef", invocationActivity.ParentSpanId.ToHexString());
-                Assert.Equal("TraceState1", invocationActivity.TraceStateString);
+                Assert.Equal("tracestate=1", invocationActivity.TraceStateString);
 
                 client.Dispose();
 
@@ -262,7 +262,7 @@ public partial class HubConnectionHandlerTests
                 var headers = new Dictionary<string, string>
                 {
                     {"traceparent", "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01"},
-                    {"tracestate", "TraceState1"},
+                    {"tracestate", "tracestate=1"},
                     {"baggage", "Key1=value1, Key2=value2"}
                 };
 
@@ -275,7 +275,7 @@ public partial class HubConnectionHandlerTests
                 Assert.Equal(ActivityIdFormat.W3C, invocationActivity.IdFormat);
                 Assert.Equal("0123456789abcdef0123456789abcdef", invocationActivity.TraceId.ToHexString());
                 Assert.Equal("0123456789abcdef", invocationActivity.ParentSpanId.ToHexString());
-                Assert.Equal("TraceState1", invocationActivity.TraceStateString);
+                Assert.Equal("tracestate=1", invocationActivity.TraceStateString);
 
                 client.Dispose();
 

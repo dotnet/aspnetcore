@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ActivatorUtilities\**\*.cs" Link="Shared\ActivatorUtilities\%(Filename)%(Extension)" />
+    <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" Link="Shared\CertificateGeneration\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" Link="Shared\CommandLineUtils\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" Link="Shared\ClosedGenericMatcher\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" Link="Shared\CopyOnWriteDictionary\%(Filename)%(Extension)" />
@@ -42,12 +43,12 @@
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\StringValuesDictionaryDebugView.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)PooledArrayBufferWriter.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Buffers\RefPooledArrayBufferWriter.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="FSharp.Core" />
-    <Reference Include="System.Reflection.Metadata" />
-    <Reference Include="System.Threading.Tasks.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.InteropServices;
+
 namespace Microsoft.AspNetCore.Hosting;
 
 internal sealed class WebHostLifetime : IDisposable
@@ -9,8 +11,11 @@ internal sealed class WebHostLifetime : IDisposable
     private readonly ManualResetEventSlim _resetEvent;
     private readonly string _shutdownMessage;
 
+    private readonly PosixSignalRegistration _sigIntRegistration;
+    private readonly PosixSignalRegistration _sigQuitRegistration;
+    private readonly PosixSignalRegistration _sigTermRegistration;
+
     private bool _disposed;
-    private bool _exitedGracefully;
 
     public WebHostLifetime(CancellationTokenSource cts, ManualResetEventSlim resetEvent, string shutdownMessage)
     {
@@ -18,13 +23,10 @@ internal sealed class WebHostLifetime : IDisposable
         _resetEvent = resetEvent;
         _shutdownMessage = shutdownMessage;
 
-        AppDomain.CurrentDomain.ProcessExit += ProcessExit;
-        Console.CancelKeyPress += CancelKeyPress;
-    }
-
-    internal void SetExitedGracefully()
-    {
-        _exitedGracefully = true;
+        Action<PosixSignalContext> handler = HandlePosixSignal;
+        _sigIntRegistration = PosixSignalRegistration.Create(PosixSignal.SIGINT, handler);
+        _sigQuitRegistration = PosixSignalRegistration.Create(PosixSignal.SIGQUIT, handler);
+        _sigTermRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, handler);
     }
 
     public void Dispose()
@@ -35,26 +37,18 @@ internal sealed class WebHostLifetime : IDisposable
         }
 
         _disposed = true;
-        AppDomain.CurrentDomain.ProcessExit -= ProcessExit;
-        Console.CancelKeyPress -= CancelKeyPress;
+
+        _sigIntRegistration.Dispose();
+        _sigQuitRegistration.Dispose();
+        _sigTermRegistration.Dispose();
     }
 
-    private void CancelKeyPress(object? sender, ConsoleCancelEventArgs eventArgs)
+    private void HandlePosixSignal(PosixSignalContext context)
     {
         Shutdown();
+
         // Don't terminate the process immediately, wait for the Main thread to exit gracefully.
-        eventArgs.Cancel = true;
-    }
-
-    private void ProcessExit(object? sender, EventArgs eventArgs)
-    {
-        Shutdown();
-        if (_exitedGracefully)
-        {
-            // On Linux if the shutdown is triggered by SIGTERM then that's signaled with the 143 exit code.
-            // Suppress that since we shut down gracefully. https://github.com/dotnet/aspnetcore/issues/6526
-            Environment.ExitCode = 0;
-        }
+        context.Cancel = true;
     }
 
     private void Shutdown()

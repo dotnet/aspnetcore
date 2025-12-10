@@ -11,36 +11,27 @@ using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 internal class ResourceCollectionProvider
 {
-    private const string ResourceCollectionUrlKey = "__ResourceCollectionUrl";
     private string? _url;
-    private ResourceAssetCollection? _resourceCollection;
-    private readonly PersistentComponentState _state;
-    private readonly IJSRuntime _jsRuntime;
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Strings are not trimmed")]
-    public ResourceCollectionProvider(PersistentComponentState state, IJSRuntime jsRuntime)
+    [PersistentState]
+    public string? ResourceCollectionUrl
     {
-        _state = state;
-        _jsRuntime = jsRuntime;
-        _ = _state.TryTakeFromJson(ResourceCollectionUrlKey, out _url);
+        get => _url;
+        set
+        {
+            if (_url != null)
+            {
+                throw new InvalidOperationException("The resource collection URL has already been set.");
+            }
+            _url = value;
+        }
     }
 
-    [MemberNotNull(nameof(_url))]
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Strings are not trimmed")]
-    internal void SetResourceCollectionUrl(string url)
+    private ResourceAssetCollection? _resourceCollection;
+    private readonly IJSRuntime _jsRuntime;
+    public ResourceCollectionProvider(IJSRuntime jsRuntime)
     {
-        if (_url != null)
-        {
-            throw new InvalidOperationException("The resource collection URL has already been set.");
-        }
-        _url = url;
-        PersistingComponentStateSubscription registration = default;
-        registration = _state.RegisterOnPersisting(() =>
-        {
-            _state.PersistAsJson(ResourceCollectionUrlKey, _url);
-            registration.Dispose();
-            return Task.CompletedTask;
-        }, RenderMode.InteractiveWebAssembly);
+        _jsRuntime = jsRuntime;
     }
 
     internal async Task<ResourceAssetCollection> GetResourceCollection()

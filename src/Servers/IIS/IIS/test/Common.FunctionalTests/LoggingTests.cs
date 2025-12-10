@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
 
 [Collection(PublishedSitesCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class LoggingTests : IISFunctionalTestBase
 {
     public LoggingTests(PublishedSitesFixture fixture) : base(fixture)

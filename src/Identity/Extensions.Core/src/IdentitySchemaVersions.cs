@@ -25,4 +25,8 @@ public static class IdentitySchemaVersions
     /// </summary>
     public static readonly Version Version2 = new Version(2, 0);
 
+    /// <summary>
+    /// Represents the 3.0 version of the identity schema
+    /// </summary>
+    public static readonly Version Version3 = new Version(3, 0);
 }

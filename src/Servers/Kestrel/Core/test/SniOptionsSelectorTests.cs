@@ -858,6 +858,12 @@ public class SniOptionsSelectorTests
             CertificateChainPolicy = new X509ChainPolicy(),
             // Defaults to true
             AllowTlsResume = false,
+#pragma warning disable CA1416
+            // Defaults to true
+            AllowRsaPssPadding = false,
+            // Defaults to true
+            AllowRsaPkcs1Padding = false,
+#pragma warning restore CA1416
         };
 
         var clonedOptions = SniOptionsSelector.CloneSslOptions(options);
@@ -905,6 +911,12 @@ public class SniOptionsSelectorTests
 
         Assert.Equal(options.AllowTlsResume, clonedOptions.AllowTlsResume);
         Assert.True(propertyNames.Remove(nameof(options.AllowTlsResume)));
+
+        Assert.Equal(options.AllowRsaPssPadding, clonedOptions.AllowRsaPssPadding);
+        Assert.True(propertyNames.Remove(nameof(options.AllowRsaPssPadding)));
+
+        Assert.Equal(options.AllowRsaPkcs1Padding, clonedOptions.AllowRsaPkcs1Padding);
+        Assert.True(propertyNames.Remove(nameof(options.AllowRsaPkcs1Padding)));
 
         // Ensure we've checked every property. When new properties get added, we'll have to update this test along with the CloneSslOptions implementation.
         Assert.Empty(propertyNames);

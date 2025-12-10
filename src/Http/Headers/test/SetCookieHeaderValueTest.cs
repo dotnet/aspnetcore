@@ -318,8 +318,8 @@ public class SetCookieHeaderValueTest
     public void SetCookieHeaderValue_Ctor1_InitializesCorrectly()
     {
         var header = new SetCookieHeaderValue("cookie");
-        Assert.Equal("cookie", header.Name);
-        Assert.Equal(string.Empty, header.Value);
+        Assert.Equal("cookie", header.Name.AsSpan());
+        Assert.Equal(string.Empty, header.Value.AsSpan());
     }
 
     [Theory]
@@ -329,18 +329,18 @@ public class SetCookieHeaderValueTest
     public void SetCookieHeaderValue_Ctor2InitializesCorrectly(string name, string value)
     {
         var header = new SetCookieHeaderValue(name, value);
-        Assert.Equal(name, header.Name);
-        Assert.Equal(value, header.Value);
+        Assert.Equal(name, header.Name.AsSpan());
+        Assert.Equal(value, header.Value.AsSpan());
     }
 
     [Fact]
     public void SetCookieHeaderValue_Value()
     {
         var cookie = new SetCookieHeaderValue("name");
-        Assert.Equal(string.Empty, cookie.Value);
+        Assert.Equal(string.Empty, cookie.Value.AsSpan());
 
         cookie.Value = "value1";
-        Assert.Equal("value1", cookie.Value);
+        Assert.Equal("value1", cookie.Value.AsSpan());
     }
 
     [Theory]
@@ -485,5 +485,31 @@ public class SetCookieHeaderValueTest
         bool result = SetCookieHeaderValue.TryParseStrictList(input, out var results);
         Assert.Null(results);
         Assert.False(result);
+    }
+
+    [Theory]
+    [InlineData("name=value; max-age=922337203686")] // One more than TimeSpan.MaxValue.TotalSeconds
+    [InlineData("name=value; max-age=999999999999999999999")] // Much larger value
+    [InlineData("name=value; max-age=-922337203686")] // Negative overflow
+    public void SetCookieHeaderValue_TryParse_MaxAgeOverflow_ReturnsFalse(string value)
+    {
+        // Should return false instead of throwing ArgumentOutOfRangeException
+        bool result = SetCookieHeaderValue.TryParse(value, out var parsedValue);
+        Assert.False(result);
+        Assert.Null(parsedValue);
+    }
+
+    [Theory]
+    [InlineData("name=value; max-age=922337203685")] // Max valid value
+    [InlineData("name=value; max-age=-922337203685")] // Min valid value
+    [InlineData("name=value; max-age=0")] // Zero
+    [InlineData("name=value; max-age=86400")] // One day in seconds
+    public void SetCookieHeaderValue_TryParse_MaxAgeValid_ReturnsTrue(string value)
+    {
+        // Should successfully parse valid max-age values
+        bool result = SetCookieHeaderValue.TryParse(value, out var parsedValue);
+        Assert.True(result);
+        Assert.NotNull(parsedValue);
+        Assert.NotNull(parsedValue!.MaxAge);
     }
 }

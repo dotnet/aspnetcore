@@ -3,7 +3,6 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.OpenApi.Models;
 
 [JsonConverter(typeof(JsonConverter))]
 internal sealed partial class OpenApiJsonSchema(OpenApiSchema schema)

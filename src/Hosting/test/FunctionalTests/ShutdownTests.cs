@@ -97,7 +97,7 @@ public class ShutdownTests : LoggedTest
                     throw new InvalidOperationException("Timeout while waiting for host process to output started message.", ex);
                 }
 
-                SendSIGINT(deployer.HostProcess.Id);
+                SendSIGTERM(deployer.HostProcess.Id);
 
                 WaitForExitOrKill(deployer.HostProcess);
 
@@ -117,7 +117,7 @@ public class ShutdownTests : LoggedTest
         }
     }
 
-    private static void SendSIGINT(int processId)
+    private static void SendSIGTERM(int processId)
     {
         var startInfo = new ProcessStartInfo
         {

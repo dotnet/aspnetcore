@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.Extensions.Logging.AzureAppServices;
 
 /// <summary>
-/// A provider of <see cref="BatchingLogger"/> instances.
+/// Represents a provider of <see cref="BatchingLogger"/> instances.
 /// </summary>
 public abstract class BatchingLoggerProvider : ILoggerProvider, ISupportExternalScope
 {
@@ -59,7 +59,7 @@ public abstract class BatchingLoggerProvider : ILoggerProvider, ISupportExternal
     }
 
     /// <summary>
-    /// Checks if the queue is enabled.
+    /// Gets a value that indicates whether the queue is enabled.
     /// </summary>
     public bool IsEnabled { get; private set; }
 
@@ -124,11 +124,11 @@ public abstract class BatchingLoggerProvider : ILoggerProvider, ISupportExternal
     }
 
     /// <summary>
-    /// Wait for the given <see cref="TimeSpan"/>.
+    /// Waits for the given <see cref="TimeSpan"/>.
     /// </summary>
     /// <param name="interval">The amount of time to wait.</param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> that can be used to cancel the delay.</param>
-    /// <returns>A <see cref="Task"/> which completes when the <paramref name="interval"/> has passed or the <paramref name="cancellationToken"/> has been canceled.</returns>
+    /// <returns>A <see cref="Task"/> that completes when the <paramref name="interval"/> has passed or the <paramref name="cancellationToken"/> has been canceled.</returns>
     protected virtual Task IntervalAsync(TimeSpan interval, CancellationToken cancellationToken)
     {
         return Task.Delay(interval, cancellationToken);

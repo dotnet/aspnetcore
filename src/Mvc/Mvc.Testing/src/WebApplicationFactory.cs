@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
@@ -9,6 +8,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,9 +28,18 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 {
     private bool _disposed;
     private bool _disposedAsync;
+
+    private bool _useKestrel;
+    private int? _kestrelPort;
+    private Action<KestrelServerOptions>? _configureKestrelOptions;
+
     private TestServer? _server;
     private IHost? _host;
     private Action<IWebHostBuilder> _configuration;
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
+    private IWebHost? _webHost;
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
+    private Uri? _webHostAddress;
     private readonly List<HttpClient> _clients = new();
     private readonly List<WebApplicationFactory<TEntryPoint>> _derivedFactories = new();
 
@@ -75,8 +86,13 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     {
         get
         {
-            EnsureServer();
-            return _server;
+            if (_useKestrel)
+            {
+                throw new NotSupportedException(Resources.TestServerNotSupportedWhenUsingKestrel);
+            }
+
+            StartServer();
+            return _server!;
         }
     }
 
@@ -87,10 +103,22 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     {
         get
         {
-            EnsureServer();
-            return _host?.Services ?? _server.Host.Services;
+            StartServer();
+            if (_useKestrel)
+            {
+                return _webHost?.Services ?? _host!.Services;
+            }
+
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
+            return _host?.Services ?? _server!.Host.Services;
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
         }
     }
+
+    /// <summary>
+    /// Helps determine if the `StartServer` method has been called already.
+    /// </summary>
+    private bool ServerStarted => _webHost != null || _host != null || _server != null;
 
     /// <summary>
     /// Gets the <see cref="IReadOnlyList{WebApplicationFactory}"/> of factories created from this factory
@@ -119,6 +147,9 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     {
         var factory = new DelegatedWebApplicationFactory(
             ClientOptions,
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
+            CreateServer,
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
             CreateServer,
             CreateHost,
             CreateWebHostBuilder,
@@ -136,10 +167,94 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         return factory;
     }
 
-    [MemberNotNull(nameof(_server))]
-    private void EnsureServer()
+    /// <summary>
+    /// Configures the factory to use Kestrel as the server.
+    /// </summary>
+    public void UseKestrel()
     {
-        if (_server != null)
+        if (ServerStarted)
+        {
+            throw new InvalidOperationException(Resources.UseKestrelCanBeCalledBeforeInitialization);
+        }
+
+        _useKestrel = true;
+    }
+
+    /// <summary>
+    /// Configures the factory to use Kestrel as the server.
+    /// </summary>
+    /// <param name="port">The port to listen to when the server starts. Use `0` to allow dynamic port selection.</param>
+    /// <exception cref="InvalidOperationException">Thrown, if this method is called after the WebHostFactory has been initialized.</exception>
+    /// <remarks>This method should be called before the factory is initialized either via one of the <see cref="CreateClient()"/> methods
+    /// or via the <see cref="StartServer"/> method.</remarks>
+    public void UseKestrel(int port)
+    {
+        UseKestrel();
+
+        this._kestrelPort = port;
+    }
+
+    /// <summary>
+    /// Configures the factory to use Kestrel as the server.
+    /// </summary>
+    /// <param name="configureKestrelOptions">A callback handler that will be used for configuring the server when it starts.</param>
+    /// <exception cref="InvalidOperationException">Thrown, if this method is called after the WebHostFactory has been initialized.</exception>
+    /// <remarks>This method should be called before the factory is initialized either via one of the <see cref="CreateClient()"/> methods
+    /// or via the <see cref="StartServer"/> method.</remarks>
+    public void UseKestrel(Action<KestrelServerOptions> configureKestrelOptions)
+    {
+        UseKestrel();
+
+        this._configureKestrelOptions = configureKestrelOptions;
+    }
+
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
+    private IWebHost CreateKestrelServer(IWebHostBuilder builder)
+    {
+        ConfigureBuilderToUseKestrel(builder);
+
+        var host = builder.Build();
+
+        TryConfigureServerPort(() => GetServerAddressFeature(host));
+
+        host.Start();
+        return host;
+    }
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
+
+    private void TryConfigureServerPort(Func<IServerAddressesFeature?> serverAddressFeatureAccessor)
+    {
+        if (_kestrelPort.HasValue)
+        {
+            var saf = serverAddressFeatureAccessor();
+            if (saf is not null)
+            {
+                saf.Addresses.Clear();
+                saf.Addresses.Add($"http://127.0.0.1:{_kestrelPort}");
+                saf.PreferHostingUrls = true;
+            }
+        }
+    }
+
+    private void ConfigureBuilderToUseKestrel(IWebHostBuilder builder)
+    {
+        if (_configureKestrelOptions is not null)
+        {
+            builder.UseKestrel(_configureKestrelOptions);
+        }
+        else
+        {
+            builder.UseKestrel();
+        }
+    }
+
+    /// <summary>
+    /// Initializes the instance by configurating the host builder.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown if the provided <typeparamref name="TEntryPoint"/> type has no factory method.</exception>
+    public void StartServer()
+    {
+        if (ServerStarted)
         {
             return;
         }
@@ -158,8 +273,8 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         {
             var deferredHostBuilder = new DeferredHostBuilder();
             deferredHostBuilder.UseEnvironment(Environments.Development);
-            // There's no helper for UseApplicationName, but we need to 
-            // set the application name to the target entry point 
+            // There's no helper for UseApplicationName, but we need to
+            // set the application name to the target entry point
             // assembly name.
             deferredHostBuilder.ConfigureHostConfiguration(config =>
             {
@@ -197,21 +312,58 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         {
             SetContentRoot(builder);
             _configuration(builder);
-            _server = CreateServer(builder);
+            if (_useKestrel)
+            {
+                _webHost = CreateKestrelServer(builder);
+
+                TryExtractHostAddress(GetServerAddressFeature(_webHost));
+            }
+            else
+            {
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
+                _server = CreateServer(builder);
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
+            }
         }
     }
 
-    [MemberNotNull(nameof(_server))]
+    private void TryExtractHostAddress(IServerAddressesFeature? serverAddressFeature)
+    {
+        if (serverAddressFeature?.Addresses.Count > 0)
+        {
+            // Store the web host address as it's going to be used every time a client is created to communicate to the server
+            _webHostAddress = new Uri(serverAddressFeature.Addresses.Last());
+            ClientOptions.BaseAddress = _webHostAddress;
+        }
+    }
+
     private void ConfigureHostBuilder(IHostBuilder hostBuilder)
     {
         hostBuilder.ConfigureWebHost(webHostBuilder =>
         {
             SetContentRoot(webHostBuilder);
             _configuration(webHostBuilder);
-            webHostBuilder.UseTestServer();
+            if (_useKestrel)
+            {
+                ConfigureBuilderToUseKestrel(webHostBuilder);
+            }
+            else
+            {
+                webHostBuilder.ConfigureServices(services =>
+                {
+                    services.AddSingleton<IServer>(CreateServer);
+                });
+            }
         });
         _host = CreateHost(hostBuilder);
-        _server = (TestServer)_host.Services.GetRequiredService<IServer>();
+        if (_useKestrel)
+        {
+            TryExtractHostAddress(GetServerAddressFeature(_host));
+        }
+        else
+        {
+            _server = (TestServer)_host.Services.GetRequiredService<IServer>();
+        }
     }
 
     private void SetContentRoot(IWebHostBuilder builder)
@@ -426,21 +578,38 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// <param name="builder">The <see cref="IWebHostBuilder"/> used to
     /// create the server.</param>
     /// <returns>The <see cref="TestServer"/> with the bootstrapped application.</returns>
+    [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the overloads that takes an IServiceProvider instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008", UrlFormat = Obsoletions.AspNetCoreDeprecate008Url)]
     protected virtual TestServer CreateServer(IWebHostBuilder builder) => new(builder);
+
+    /// <summary>
+    /// Creates the <see cref="TestServer"/> with the <see cref="IServiceProvider"/> from the bootstrapped application.
+    /// This is only called for applications using <see cref="IHostBuilder"/>. Applications based on
+    /// <see cref="IWebHostBuilder"/> will use <see cref="CreateHost"/> instead.
+    /// </summary>
+    /// <param name="serviceProvider">The <see cref="IServiceProvider"/> from the bootstrapped application.</param>
+    /// <returns></returns>
+    protected virtual TestServer CreateServer(IServiceProvider serviceProvider) => new(serviceProvider);
 
     /// <summary>
     /// Creates the <see cref="IHost"/> with the bootstrapped application in <paramref name="builder"/>.
     /// This is only called for applications using <see cref="IHostBuilder"/>. Applications based on
-    /// <see cref="IWebHostBuilder"/> will use <see cref="CreateServer"/> instead.
+    /// <see cref="IWebHostBuilder"/> will use <see cref="CreateServer(IWebHostBuilder)"/> instead.
     /// </summary>
     /// <param name="builder">The <see cref="IHostBuilder"/> used to create the host.</param>
     /// <returns>The <see cref="IHost"/> with the bootstrapped application.</returns>
     protected virtual IHost CreateHost(IHostBuilder builder)
     {
         var host = builder.Build();
+        TryConfigureServerPort(() => GetServerAddressFeature(host));
         host.Start();
         return host;
     }
+
+    private static IServerAddressesFeature? GetServerAddressFeature(IHost host) => host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>();
+
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
+    private static IServerAddressesFeature? GetServerAddressFeature(IWebHost webHost) => webHost.ServerFeatures.Get<IServerAddressesFeature>();
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
 
     /// <summary>
     /// Gives a fixture an opportunity to configure the application before it gets built.
@@ -455,8 +624,21 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// redirects and handles cookies.
     /// </summary>
     /// <returns>The <see cref="HttpClient"/>.</returns>
-    public HttpClient CreateClient() =>
-        CreateClient(ClientOptions);
+    public HttpClient CreateClient()
+    {
+        var client = CreateClient(ClientOptions);
+
+        if (_useKestrel && object.ReferenceEquals(client.BaseAddress, WebApplicationFactoryClientOptions.DefaultBaseAddres))
+        {
+            // When using Kestrel, the server may start to listen on a pre-configured port,
+            // which can differ from the one configured via ClientOptions.
+            // Hence, if the ClientOptions haven't been set explicitly to a custom value, we will assume that
+            // the user wants the client to communicate on a port that the server listens too, and because that port may be different, we overwrite it here.
+            client.BaseAddress = ClientOptions.BaseAddress;
+        }
+
+        return client;
+    }
 
     /// <summary>
     /// Creates an instance of <see cref="HttpClient"/> that automatically follows
@@ -476,12 +658,24 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// <returns>The <see cref="HttpClient"/>.</returns>
     public HttpClient CreateDefaultClient(params DelegatingHandler[] handlers)
     {
-        EnsureServer();
+        StartServer();
 
         HttpClient client;
         if (handlers == null || handlers.Length == 0)
         {
-            client = _server.CreateClient();
+            if (_useKestrel)
+            {
+                client = new HttpClient();
+            }
+            else
+            {
+                if (_server is null)
+                {
+                    throw new InvalidOperationException(Resources.ServerNotInitialized);
+                }
+
+                client = _server.CreateClient();
+            }
         }
         else
         {
@@ -490,7 +684,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
                 handlers[i - 1].InnerHandler = handlers[i];
             }
 
-            var serverHandler = _server.CreateHandler();
+            var serverHandler = CreateHandler();
             handlers[^1].InnerHandler = serverHandler;
 
             client = new HttpClient(handlers[0]);
@@ -503,6 +697,21 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         return client;
     }
 
+    private HttpMessageHandler CreateHandler()
+    {
+        if (_useKestrel)
+        {
+            return new HttpClientHandler();
+        }
+
+        if (_server is null)
+        {
+            throw new InvalidOperationException(Resources.ServerNotInitialized);
+        }
+
+        return _server.CreateHandler();
+    }
+
     /// <summary>
     /// Configures <see cref="HttpClient"/> instances created by this <see cref="WebApplicationFactory{TEntryPoint}"/>.
     /// </summary>
@@ -511,7 +720,19 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     {
         ArgumentNullException.ThrowIfNull(client);
 
-        client.BaseAddress = new Uri("http://localhost");
+        if (_useKestrel)
+        {
+            if (_webHost is null && _host is null)
+            {
+                throw new InvalidOperationException(Resources.ServerNotInitialized);
+            }
+
+            client.BaseAddress = _webHostAddress;
+        }
+        else
+        {
+            client.BaseAddress = new Uri("http://localhost");
+        }
     }
 
     /// <summary>
@@ -607,6 +828,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     private sealed class DelegatedWebApplicationFactory : WebApplicationFactory<TEntryPoint>
     {
         private readonly Func<IWebHostBuilder, TestServer> _createServer;
+        private readonly Func<IServiceProvider, TestServer> _createServerFromServiceProvider;
         private readonly Func<IHostBuilder, IHost> _createHost;
         private readonly Func<IWebHostBuilder?> _createWebHostBuilder;
         private readonly Func<IHostBuilder?> _createHostBuilder;
@@ -616,6 +838,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         public DelegatedWebApplicationFactory(
             WebApplicationFactoryClientOptions options,
             Func<IWebHostBuilder, TestServer> createServer,
+            Func<IServiceProvider, TestServer> createServerFromServiceProvider,
             Func<IHostBuilder, IHost> createHost,
             Func<IWebHostBuilder?> createWebHostBuilder,
             Func<IHostBuilder?> createHostBuilder,
@@ -625,6 +848,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         {
             ClientOptions = new WebApplicationFactoryClientOptions(options);
             _createServer = createServer;
+            _createServerFromServiceProvider = createServerFromServiceProvider;
             _createHost = createHost;
             _createWebHostBuilder = createWebHostBuilder;
             _createHostBuilder = createHostBuilder;
@@ -633,7 +857,10 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             _configuration = configureWebHost;
         }
 
+        [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the ctors that takes an IServiceProvider instead.", DiagnosticId = "ASPDEPR008", UrlFormat = Obsoletions.AspNetCoreDeprecate008Url)]
         protected override TestServer CreateServer(IWebHostBuilder builder) => _createServer(builder);
+
+        protected override TestServer CreateServer(IServiceProvider serviceProvider) => _createServerFromServiceProvider(serviceProvider);
 
         protected override IHost CreateHost(IHostBuilder builder) => _createHost(builder);
 
@@ -652,6 +879,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             return new DelegatedWebApplicationFactory(
                 ClientOptions,
                 _createServer,
+                _createServerFromServiceProvider,
                 _createHost,
                 _createWebHostBuilder,
                 _createHostBuilder,

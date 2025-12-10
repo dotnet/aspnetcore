@@ -50,7 +50,9 @@ public class ErrorPageTests : LoggedTest
     {
         // Arrange
         var factory = Factory.WithWebHostBuilder(b => b.UseStartup<ErrorPageMiddlewareWebSite.Startup>());
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
         factory = factory.WithWebHostBuilder(b => b.ConfigureTestServices(serviceCollection => serviceCollection.Configure<MvcRazorRuntimeCompilationOptions>(ConfigureRuntimeCompilationOptions)));
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
 
         var client = factory.CreateDefaultClient();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
@@ -70,6 +72,7 @@ public class ErrorPageTests : LoggedTest
         Assert.Contains(expected, content);
         Assert.DoesNotContain(PreserveCompilationContextMessage, content);
 
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
         static void ConfigureRuntimeCompilationOptions(MvcRazorRuntimeCompilationOptions options)
         {
             options.AdditionalReferencePaths.Add(typeof(string).Assembly.Location);
@@ -81,6 +84,7 @@ public class ErrorPageTests : LoggedTest
                 options.AdditionalReferencePaths.Add(path);
             }
         }
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
     }
 
     [Fact]

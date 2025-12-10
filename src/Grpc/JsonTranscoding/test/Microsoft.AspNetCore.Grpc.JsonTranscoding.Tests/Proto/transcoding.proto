@@ -235,3 +235,28 @@ message HelloReply {
 message NullValueContainer {
   google.protobuf.NullValue null_value = 1;
 }
+
+message FieldNameCaseMessage {
+  int32 a = 1;
+  int32 b = 2  [json_name="A"];
+}
+
+message PrefixEnumType {
+  enum PrefixEnum {
+    PREFIX_ENUM_UNSPECIFIED = 0;
+    PREFIX_ENUM_FOO = 1;
+    BAR = 2;
+    BAZ = 3;
+    PREFIX_ENUM_123 = 4;
+  }
+  PrefixEnum single_enum = 1;
+}
+
+message CollisionPrefixEnumType {
+  enum CollisionPrefixEnum {
+    COLLISION_PREFIX_ENUM_UNSPECIFIED = 0;
+    COLLISION_PREFIX_ENUM_FOO = 1;
+    COLLISION_PREFIX_ENUM_COLLISION_PREFIX_ENUM_FOO = 2;
+  }
+  CollisionPrefixEnum single_enum = 1;
+}

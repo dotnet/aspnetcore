@@ -47,14 +47,14 @@ public class CacheControlHeaderValueTest
         Assert.Throws<FormatException>(() => cacheControl.NoCacheHeaders.Add("invalid PLACEHOLDER"));
         cacheControl.NoCacheHeaders.Add("PLACEHOLDER");
         Assert.Single(cacheControl.NoCacheHeaders);
-        Assert.Equal("PLACEHOLDER", cacheControl.NoCacheHeaders.First());
+        Assert.Equal("PLACEHOLDER", cacheControl.NoCacheHeaders.First().AsSpan());
 
         Assert.NotNull(cacheControl.PrivateHeaders);
         Assert.Throws<ArgumentException>(() => cacheControl.PrivateHeaders.Add(null));
         Assert.Throws<FormatException>(() => cacheControl.PrivateHeaders.Add("invalid PLACEHOLDER"));
         cacheControl.PrivateHeaders.Add("PLACEHOLDER");
         Assert.Single(cacheControl.PrivateHeaders);
-        Assert.Equal("PLACEHOLDER", cacheControl.PrivateHeaders.First());
+        Assert.Equal("PLACEHOLDER", cacheControl.PrivateHeaders.First().AsSpan());
 
         // NameValueHeaderValue collection property
         Assert.NotNull(cacheControl.Extensions);

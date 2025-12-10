@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.JSInterop.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.JSInterop.Implementation;
@@ -37,7 +38,7 @@ public class JSObjectReference : IJSObjectReference
     {
         ThrowIfDisposed();
 
-        return _jsRuntime.InvokeAsync<TValue>(Id, identifier, args);
+        return _jsRuntime.InvokeAsync<TValue>(Id, identifier, JSCallType.FunctionCall, args);
     }
 
     /// <inheritdoc />
@@ -45,7 +46,55 @@ public class JSObjectReference : IJSObjectReference
     {
         ThrowIfDisposed();
 
-        return _jsRuntime.InvokeAsync<TValue>(Id, identifier, cancellationToken, args);
+        return _jsRuntime.InvokeAsync<TValue>(Id, identifier, JSCallType.FunctionCall, cancellationToken, args);
+    }
+
+    /// <inheritdoc />
+    public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object?[]? args)
+    {
+        ThrowIfDisposed();
+
+        return _jsRuntime.InvokeAsync<IJSObjectReference>(Id, identifier, JSCallType.ConstructorCall, args);
+    }
+
+    /// <inheritdoc />
+    public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
+    {
+        ThrowIfDisposed();
+
+        return _jsRuntime.InvokeAsync<IJSObjectReference>(Id, identifier, JSCallType.ConstructorCall, cancellationToken, args);
+    }
+
+    /// <inheritdoc />
+    public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier)
+    {
+        ThrowIfDisposed();
+
+        return _jsRuntime.InvokeAsync<TValue>(Id, identifier, JSCallType.GetValue, null);
+    }
+
+    /// <inheritdoc />
+    public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+
+        return _jsRuntime.InvokeAsync<TValue>(Id, identifier, JSCallType.GetValue, cancellationToken, null);
+    }
+
+    /// <inheritdoc />
+    public async ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value)
+    {
+        ThrowIfDisposed();
+
+        await _jsRuntime.InvokeAsync<TValue>(Id, identifier, JSCallType.SetValue, [value]);
+    }
+
+    /// <inheritdoc />
+    public async ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value, CancellationToken cancellationToken)
+    {
+        ThrowIfDisposed();
+
+        await _jsRuntime.InvokeAsync<TValue>(Id, identifier, JSCallType.SetValue, cancellationToken, [value]);
     }
 
     /// <inheritdoc />

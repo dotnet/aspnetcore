@@ -81,6 +81,10 @@ public sealed class UserJwtsTestFixture : IDisposable
             Path.Combine(projectPath.FullName, "appsettings.Development.json"),
             "{}");
 
+        File.WriteAllText(
+            Path.Combine(projectPath.FullName, "appsettings.Local.json"),
+            "{}");
+
         if (hasSecret)
         {
             _disposables.Push(() =>

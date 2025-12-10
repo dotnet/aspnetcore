@@ -11,50 +11,6 @@ extern std::string g_errorPageContent;
 extern IHttpServer* g_pHttpServer;
 
 //
-// Add support for certain HTTP/2.0 features like trailing headers
-// and GOAWAY or RST_STREAM frames.
-//
-
-class __declspec(uuid("1a2acc57-cae2-4f28-b4ab-00c8f96b12ec"))
-    IHttpResponse4 : public IHttpResponse3
-{
-public:
-    virtual
-        HRESULT
-        DeleteTrailer(
-            _In_ PCSTR  pszHeaderName
-        ) = 0;
-
-    virtual
-        PCSTR
-        GetTrailer(
-            _In_  PCSTR    pszHeaderName,
-            _Out_ USHORT* pcchHeaderValue = nullptr
-        ) const = 0;
-
-    virtual
-        VOID
-        ResetStream(
-            _In_ ULONG errorCode
-        ) = 0;
-
-    virtual
-        VOID
-        SetNeedGoAway(
-            VOID
-        ) = 0;
-
-    virtual
-        HRESULT
-        SetTrailer(
-            _In_ PCSTR  pszHeaderName,
-            _In_ PCSTR  pszHeaderValue,
-            _In_ USHORT cchHeaderValue,
-            _In_ BOOL fReplace
-        ) = 0;
-};
-
-//
 // Initialization export
 //
 EXTERN_C __declspec(dllexport)
@@ -114,8 +70,8 @@ http_get_server_variable(
     _Out_ BSTR* pwszReturn
 )
 {
-    PCWSTR pszVariableValue;
-    DWORD cbLength;
+    PCWSTR pszVariableValue = nullptr;
+    DWORD cbLength = 0;
 
     *pwszReturn = nullptr;
 
@@ -516,7 +472,13 @@ http_get_authentication_information(
 )
 {
     *pstrAuthType = SysAllocString(pInProcessHandler->QueryHttpContext()->GetUser()->GetAuthenticationType());
+    // prefer GetPrimaryToken over GetImpersonationToken as that's what we've been using since before .NET 10
+    // we'll fallback to GetImpersonationToken if GetPrimaryToken is not available
     *pvToken = pInProcessHandler->QueryHttpContext()->GetUser()->GetPrimaryToken();
+    if (*pvToken == nullptr)
+    {
+        *pvToken = pInProcessHandler->QueryHttpContext()->GetUser()->GetImpersonationToken();
+    }
 
     return S_OK;
 }

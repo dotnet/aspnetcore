@@ -1777,7 +1777,8 @@ public partial class ResultsTests
         (() => Results.Unauthorized(), typeof(UnauthorizedHttpResult)),
         (() => Results.UnprocessableEntity(null), typeof(UnprocessableEntity)),
         (() => Results.UnprocessableEntity(new()), typeof(UnprocessableEntity<object>)),
-        (() => Results.ValidationProblem(new Dictionary<string, string[]>(), null, null, null, null, null, null), typeof(ProblemHttpResult))
+        (() => Results.ValidationProblem(new Dictionary<string, string[]>(), null, null, null, null, null, null), typeof(ProblemHttpResult)),
+        (() => Results.ServerSentEvents(AsyncEnumerable.Empty<string>(), null), typeof(ServerSentEventsResult<string>)),
     };
 
     public static IEnumerable<object[]> FactoryMethodsFromTuples() => FactoryMethodsTuples.Select(t => new object[] { t.Item1, t.Item2 });

@@ -40,10 +40,10 @@ Return Values:
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
     };
 
-    DWORD   ib;
-    DWORD   ich;
-    DWORD   cchEncoded;
-    BYTE    b0, b1, b2;
+    DWORD   ib{0};
+    DWORD   ich{0};
+    DWORD   cchEncoded{0};
+    BYTE    b0{0}, b1{0}, b2{0};
     BYTE *  pbDecodedBuffer = static_cast<BYTE*>(pDecodedBuffer);
 
     // Calculate encoded string size.
@@ -177,10 +177,10 @@ Return Values:
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
     };
 
-    DWORD   ib;
-    DWORD   ich;
-    DWORD   cchEncoded;
-    BYTE    b0, b1, b2;
+    DWORD   ib{0};
+    DWORD   ich{0};
+    DWORD   cchEncoded{0};
+    BYTE    b0{0}, b1{0}, b2{0};
     BYTE *  pbDecodedBuffer = (BYTE *) pDecodedBuffer;
 
     // Calculate encoded string size.

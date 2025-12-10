@@ -6,7 +6,7 @@ parameters:
   enableSbom: true
   runAsPublic: false
   PackageVersion: 9.0.0
-  BuildDropPath: '$(Build.SourcesDirectory)/artifacts'
+  BuildDropPath: '$(System.DefaultWorkingDirectory)/artifacts'
 
 jobs:
 - template: /eng/common/core-templates/job/job.yml
@@ -46,6 +46,7 @@ jobs:
               artifactName: ${{ coalesce(parameters.artifacts.publish.artifacts.name , 'Artifacts_$(Agent.Os)_$(_BuildConfig)') }}
               continueOnError: true
               condition: always()
+              retryCountOnTaskFailure: 10 # for any logs being locked
       - ${{ if and(ne(parameters.artifacts.publish.logs, 'false'), ne(parameters.artifacts.publish.logs, '')) }}:
         - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
           parameters:
@@ -56,6 +57,7 @@ jobs:
               displayName: 'Publish logs'
               continueOnError: true
               condition: always()
+              retryCountOnTaskFailure: 10 # for any logs being locked
               sbomEnabled: false  # we don't need SBOM for logs
 
     - ${{ if ne(parameters.enablePublishBuildArtifacts, 'false') }}:
@@ -66,7 +68,7 @@ jobs:
             displayName: Publish Logs
             pathToPublish: '$(Build.ArtifactStagingDirectory)/artifacts/log/$(_BuildConfig)'
             publishLocation: Container
-            artifactName: ${{ coalesce(parameters.enablePublishBuildArtifacts.artifactName, '$(Agent.Os)_$(Agent.JobName)' ) }}
+            artifactName: ${{ coalesce(parameters.enablePublishBuildArtifacts.artifactName, '$(Agent.Os)_$(Agent.JobName)_Attempt$(System.JobAttempt)' ) }}
             continueOnError: true
             condition: always()
 
@@ -75,7 +77,7 @@ jobs:
         parameters:
           is1ESPipeline: false
           args:
-            targetPath: '$(Build.SourcesDirectory)\eng\common\BuildConfiguration'
+            targetPath: '$(System.DefaultWorkingDirectory)\eng\common\BuildConfiguration'
             artifactName: 'BuildConfiguration'
             displayName: 'Publish build retry configuration'
             continueOnError: true

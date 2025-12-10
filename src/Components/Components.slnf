@@ -1,9 +1,10 @@
 {
   "solution": {
-    "path": "..\\..\\AspNetCore.sln",
+    "path": "..\\..\\AspNetCore.slnx",
     "projects": [
       "src\\Analyzers\\Microsoft.AspNetCore.Analyzer.Testing\\src\\Microsoft.AspNetCore.Analyzer.Testing.csproj",
       "src\\Antiforgery\\src\\Microsoft.AspNetCore.Antiforgery.csproj",
+      "src\\Assets\\Microsoft.AspNetCore.App.Internal.Assets.csproj",
       "src\\Components\\Analyzers\\src\\Microsoft.AspNetCore.Components.Analyzers.csproj",
       "src\\Components\\Analyzers\\test\\Microsoft.AspNetCore.Components.Analyzers.Tests.csproj",
       "src\\Components\\Authorization\\src\\Microsoft.AspNetCore.Components.Authorization.csproj",
@@ -18,6 +19,7 @@
       "src\\Components\\Forms\\test\\Microsoft.AspNetCore.Components.Forms.Tests.csproj",
       "src\\Components\\QuickGrid\\Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter\\src\\Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter.csproj",
       "src\\Components\\QuickGrid\\Microsoft.AspNetCore.Components.QuickGrid\\src\\Microsoft.AspNetCore.Components.QuickGrid.csproj",
+      "src\\Components\\QuickGrid\\Microsoft.AspNetCore.Components.QuickGrid\\test\\Microsoft.AspNetCore.Components.QuickGrid.Tests.csproj",
       "src\\Components\\Samples\\BlazorServerApp\\BlazorServerApp.csproj",
       "src\\Components\\Samples\\BlazorUnitedApp.Client\\BlazorUnitedApp.Client.csproj",
       "src\\Components\\Samples\\BlazorUnitedApp\\BlazorUnitedApp.csproj",
@@ -153,6 +155,10 @@
       "src\\StaticAssets\\src\\Microsoft.AspNetCore.StaticAssets.csproj",
       "src\\StaticAssets\\test\\Microsoft.AspNetCore.StaticAssets.Tests.csproj",
       "src\\Testing\\src\\Microsoft.AspNetCore.InternalTesting.csproj",
+      "src\\Validation\\gen\\Microsoft.Extensions.Validation.ValidationsGenerator.csproj",
+      "src\\Validation\\src\\Microsoft.Extensions.Validation.csproj",
+      "src\\Validation\\test\\Microsoft.Extensions.Validation.GeneratorTests\\Microsoft.Extensions.Validation.GeneratorTests.csproj",
+      "src\\Validation\\test\\Microsoft.Extensions.Validation.Tests\\Microsoft.Extensions.Validation.Tests.csproj",
       "src\\WebEncoders\\src\\Microsoft.Extensions.WebEncoders.csproj"
     ]
   }

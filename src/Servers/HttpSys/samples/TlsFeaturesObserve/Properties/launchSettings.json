@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "TlsFeaturesObserve": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:5000",
+      "nativeDebugging": true
+    }
+  }
+}

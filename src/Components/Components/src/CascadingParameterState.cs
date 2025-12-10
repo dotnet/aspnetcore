@@ -13,17 +13,16 @@ using static Microsoft.AspNetCore.Internal.LinkerFlags;
 namespace Microsoft.AspNetCore.Components;
 
 internal readonly struct CascadingParameterState
+    (in CascadingParameterInfo parameterInfo, ICascadingValueSupplier valueSupplier, object? key)
 {
     private static readonly ConcurrentDictionary<Type, CascadingParameterInfo[]> _cachedInfos = new();
 
-    public CascadingParameterInfo ParameterInfo { get; }
-    public ICascadingValueSupplier ValueSupplier { get; }
+    public CascadingParameterInfo ParameterInfo { get; } = parameterInfo;
+    public ICascadingValueSupplier ValueSupplier { get; } = valueSupplier;
+    public object? Key { get; } = key;
 
     public CascadingParameterState(in CascadingParameterInfo parameterInfo, ICascadingValueSupplier valueSupplier)
-    {
-        ParameterInfo = parameterInfo;
-        ValueSupplier = valueSupplier;
-    }
+        : this(parameterInfo, valueSupplier, key: null) { }
 
     public static IReadOnlyList<CascadingParameterState> FindCascadingParameters(ComponentState componentState, out bool hasSingleDeliveryParameters)
     {
@@ -55,7 +54,7 @@ internal readonly struct CascadingParameterState
             {
                 // Although not all parameters might be matched, we know the maximum number
                 resultStates ??= new List<CascadingParameterState>(infos.Length - infoIndex);
-                resultStates.Add(new CascadingParameterState(info, supplier));
+                resultStates.Add(new CascadingParameterState(info, supplier, componentState));
 
                 if (info.Attribute.SingleDelivery)
                 {

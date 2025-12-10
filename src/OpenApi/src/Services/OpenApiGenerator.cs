@@ -19,7 +19,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
-using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
@@ -322,19 +321,22 @@ internal sealed class OpenApiGenerator
         return null;
     }
 
-    private List<OpenApiTag> GetOperationTags(MethodInfo methodInfo, EndpointMetadataCollection metadata)
+    private HashSet<OpenApiTagReference> GetOperationTags(MethodInfo methodInfo, EndpointMetadataCollection metadata)
     {
         var metadataList = metadata.GetOrderedMetadata<ITagsMetadata>();
+        var document = new OpenApiDocument();
 
         if (metadataList.Count > 0)
         {
-            var tags = new List<OpenApiTag>();
+            var tags = new HashSet<OpenApiTagReference>();
 
             foreach (var metadataItem in metadataList)
             {
                 foreach (var tag in metadataItem.Tags)
                 {
-                    tags.Add(new OpenApiTag() { Name = tag });
+                    document.Tags ??= new HashSet<OpenApiTag>();
+                    document.Tags.Add(new OpenApiTag { Name = tag });
+                    tags.Add(new OpenApiTagReference(tag, document));
                 }
             }
 
@@ -354,13 +356,15 @@ internal sealed class OpenApiGenerator
             controllerName = _environment?.ApplicationName ?? string.Empty;
         }
 
-        return new List<OpenApiTag>() { new OpenApiTag() { Name = controllerName } };
+        document.Tags ??= new HashSet<OpenApiTag>();
+        document.Tags.Add(new OpenApiTag { Name = controllerName });
+        return [new(controllerName, document)];
     }
 
-    private List<OpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, RoutePattern pattern, bool disableInferredBody)
+    private List<IOpenApiParameter> GetOpenApiParameters(MethodInfo methodInfo, RoutePattern pattern, bool disableInferredBody)
     {
         var parameters = PropertyAsParameterInfo.Flatten(methodInfo.GetParameters(), ParameterBindingMethodCache.Instance);
-        var openApiParameters = new List<OpenApiParameter>();
+        var openApiParameters = new List<IOpenApiParameter>();
 
         foreach (var parameter in parameters)
         {
@@ -420,7 +424,7 @@ internal sealed class OpenApiGenerator
         {
             return (true, null, null);
         }
-        else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType) || typeof(FromKeyedServicesAttribute) == a.AttributeType) ||
+        else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType) || typeof(FromKeyedServicesAttribute).IsAssignableFrom(a.AttributeType)) ||
                 parameter.ParameterType == typeof(HttpContext) ||
                 parameter.ParameterType == typeof(HttpRequest) ||
                 parameter.ParameterType == typeof(HttpResponse) ||
@@ -443,7 +447,9 @@ internal sealed class OpenApiGenerator
                 return (false, ParameterLocation.Query, null);
             }
         }
-        else if (parameter.ParameterType == typeof(IFormFile) || parameter.ParameterType == typeof(IFormFileCollection))
+        else if (parameter.ParameterType == typeof(IFormFile) ||
+                 parameter.ParameterType == typeof(IFormFileCollection) ||
+                 parameter.ParameterType.IsJsonPatchDocument())
         {
             return (true, null, null);
         }

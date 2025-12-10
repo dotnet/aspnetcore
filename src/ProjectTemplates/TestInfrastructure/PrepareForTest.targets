@@ -6,7 +6,7 @@
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>DotNetEfFullPath</_Parameter1>
-      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfVersion)/tools/net8.0/any/dotnet-ef.dll</_Parameter2>
+      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfVersion)/tools/net10.0/any/dotnet-ef.dll</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>TestPackageRestorePath</_Parameter1>
@@ -20,9 +20,17 @@
       <_Parameter1>ContinuousIntegrationBuild</_Parameter1>
       <_Parameter2>true</_Parameter2>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(DoNotCleanUpTemplates)' == 'true'">
+      <_Parameter1>DoNotCleanUpTemplates</_Parameter1>
+      <_Parameter2>true</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(DoNotCleanUpTemplates)' != 'true'">
+      <_Parameter1>DoNotCleanUpTemplates</_Parameter1>
+      <_Parameter2>false</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
-    <Target Name="GenerateTesDevCert" BeforeTargets="AssignTargetPaths">
+  <Target Name="GenerateTestDevCert" BeforeTargets="AssignTargetPaths">
 
     <PropertyGroup>
       <_DevCertFileName>aspnetcore-https.pfx</_DevCertFileName>
@@ -41,8 +49,8 @@
     <Error Condition="!Exists('$(_DevCertPath)') and '$(MSBuildRuntimeType)' != 'core'" Text="No dev cert exists at $(_DevCertPath). Ensure you follow the instructions from src/ProjectTemplates/README.md before running inside Visual Studio" />
 
     <ItemGroup>
-      <Content Include="$(_DevCertPath)" CopyToPublishDirectory="PreserveNewest" />
-      <Content Include="$(_DevCertJsonPath)" CopyToPublishDirectory="PreserveNewest" />
+      <Content Include="$(_DevCertPath)" CopyToPublishDirectory="PreserveNewest" CopyToOutputDirectory="PreserveNewest" />
+      <Content Include="$(_DevCertJsonPath)" CopyToPublishDirectory="PreserveNewest" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
   </Target>
@@ -51,7 +59,7 @@
     <PropertyGroup>
       <TestTemplateCreationFolder>$([MSBuild]::NormalizePath('$(OutputPath)$(TestTemplateCreationFolder)'))</TestTemplateCreationFolder>
       <CustomTemplateHivePath>$(TestTemplateCreationFolder)\Hives\$([System.Guid]::NewGuid())\.templateengine</CustomTemplateHivePath>
-      <TemplateTestDotNetRoot Condition="'$(IsHelixJob)' != 'true'">$(TestTemplateCreationFolder)dotnet\</TemplateTestDotNetRoot>
+      <TemplateTestDotNetRoot Condition="'$(IsHelixJob)' != 'true'">$(TestTemplateCreationFolder).dotnet\</TemplateTestDotNetRoot>
       <_DotNetHostFileName>dotnet</_DotNetHostFileName>
       <_DotNetHostFileName Condition="$([MSBuild]::IsOSPlatform(`Windows`))">dotnet.exe</_DotNetHostFileName>
     </PropertyGroup>
@@ -112,6 +120,7 @@
       <_FilesToCopy Include="$(LocalDotNetRoot)shared\**\*" DestinationRelativeFolder="shared\" />
       <_FilesToCopy Include="$(LocalDotNetRoot)sdk\**\*" DestinationRelativeFolder="sdk\" />
       <_FilesToCopy Include="$(SharedFrameworkLayoutRoot)\**\*" />
+      <_FilesToCopy Include="$(RepoRoot)\global.json" DestinationRelativeFolder="../" />
 
       <_DestinationFiles Include="@(_FilesToCopy->'$(TemplateTestDotNetRoot)%(DestinationRelativeFolder)%(RecursiveDir)%(Filename)%(Extension)')" />
     </ItemGroup>
@@ -132,7 +141,7 @@
 
     <GenerateFileFromTemplate
       TemplateFile="$(MSBuildThisFileDirectory)..\TestInfrastructure\Directory.Build.props.in"
-      Properties="RepoRoot=$(RepoRoot);ArtifactsBinDir=$(ArtifactsBinDir);TargetingPackLayoutRoot=$(TargetingPackLayoutRoot);SharedFrameworkLayoutRoot=$(SharedFrameworkLayoutRoot);TestDependsOnAspNetPackages=$(TestDependsOnAspNetPackages);"
+      Properties="RepoRoot=$(RepoRoot);ArtifactsBinDir=$(ArtifactsBinDir);TargetingPackLayoutRoot=$(TargetingPackLayoutRoot);SharedFrameworkLayoutRoot=$(SharedFrameworkLayoutRoot);TestDependsOnAspNetPackages=$(TestDependsOnAspNetPackages);MicrosoftAspNetCoreAppRuntimeVersion=$(SharedFxVersion)"
       OutputPath="$(TestTemplateCreationFolder)Directory.Build.props" />
 
     <!-- Workaround https://github.com/dotnet/core-setup/issues/6420 - there is no MSBuild setting for rollforward yet -->

@@ -21,8 +21,8 @@ public static class AuthorizationServiceExtensions
     /// <param name="resource">The resource to evaluate the policy against.</param>
     /// <param name="requirement">The requirement to evaluate the policy against.</param>
     /// <returns>
-    /// A flag indicating whether requirement evaluation has succeeded or failed.
-    /// This value is <c>true</c> when the user fulfills the policy, otherwise <c>false</c>.
+    /// A <see cref="Task{TResult}"/> that contains an <see cref="AuthorizationResult"/> indicating whether requirement evaluation has succeeded or failed.
+    /// The result's <see cref="AuthorizationResult.Succeeded"/> property is <c>true</c> when the user fulfills the policy; otherwise <c>false</c>.
     /// </returns>
     public static Task<AuthorizationResult> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, object? resource, IAuthorizationRequirement requirement)
     {
@@ -40,8 +40,8 @@ public static class AuthorizationServiceExtensions
     /// <param name="resource">The resource to evaluate the policy against.</param>
     /// <param name="policy">The policy to evaluate.</param>
     /// <returns>
-    /// A flag indicating whether policy evaluation has succeeded or failed.
-    /// This value is <c>true</c> when the user fulfills the policy, otherwise <c>false</c>.
+    /// A <see cref="Task{TResult}"/> that contains an <see cref="AuthorizationResult"/> indicating whether policy evaluation has succeeded or failed.
+    /// The result's <see cref="AuthorizationResult.Succeeded"/> property is <c>true</c> when the user fulfills the policy; otherwise <c>false</c>.
     /// </returns>
     public static Task<AuthorizationResult> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, object? resource, AuthorizationPolicy policy)
     {
@@ -58,8 +58,8 @@ public static class AuthorizationServiceExtensions
     /// <param name="user">The user to evaluate the policy against.</param>
     /// <param name="policy">The policy to evaluate.</param>
     /// <returns>
-    /// A flag indicating whether policy evaluation has succeeded or failed.
-    /// This value is <c>true</c> when the user fulfills the policy, otherwise <c>false</c>.
+    /// A <see cref="Task{TResult}"/> that contains an <see cref="AuthorizationResult"/> indicating whether policy evaluation has succeeded or failed.
+    /// The result's <see cref="AuthorizationResult.Succeeded"/> property is <c>true</c> when the user fulfills the policy; otherwise <c>false</c>.
     /// </returns>
     public static Task<AuthorizationResult> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, AuthorizationPolicy policy)
     {
@@ -76,8 +76,8 @@ public static class AuthorizationServiceExtensions
     /// <param name="user">The user to evaluate the policy against.</param>
     /// <param name="policyName">The name of the policy to evaluate.</param>
     /// <returns>
-    /// A flag indicating whether policy evaluation has succeeded or failed.
-    /// This value is <c>true</c> when the user fulfills the policy, otherwise <c>false</c>.
+    /// A <see cref="Task{TResult}"/> that contains an <see cref="AuthorizationResult"/> indicating whether policy evaluation has succeeded or failed.
+    /// The result's <see cref="AuthorizationResult.Succeeded"/> property is <c>true</c> when the user fulfills the policy; otherwise <c>false</c>.
     /// </returns>
     public static Task<AuthorizationResult> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, string policyName)
     {

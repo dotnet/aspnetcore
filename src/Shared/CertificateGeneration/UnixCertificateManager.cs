@@ -62,18 +62,32 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         // Building the chain will check whether dotnet trusts the cert.  We could, instead,
         // enumerate the Root store and/or look for the file in the OpenSSL directory, but
         // this tests the real-world behavior.
-        using var chain = new X509Chain();
-        // This is just a heuristic for whether or not we should prompt the user to re-run with `--trust`
-        // so we don't need to check revocation (which doesn't really make sense for dev certs anyway)
-        chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
-        if (chain.Build(certificate))
+        var chain = new X509Chain();
+        try
         {
-            sawTrustSuccess = true;
+            // This is just a heuristic for whether or not we should prompt the user to re-run with `--trust`
+            // so we don't need to check revocation (which doesn't really make sense for dev certs anyway)
+            chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+            if (chain.Build(certificate))
+            {
+                sawTrustSuccess = true;
+            }
+            else
+            {
+                sawTrustFailure = true;
+                Log.UnixNotTrustedByDotnet();
+            }
         }
-        else
+        finally
         {
-            sawTrustFailure = true;
-            Log.UnixNotTrustedByDotnet();
+            // Disposing the chain does not dispose the elements we potentially built.
+            // Do the full walk manually to dispose.
+            for (var i = 0; i < chain.ChainElements.Count; i++)
+            {
+                chain.ChainElements[i].Certificate.Dispose();
+            }
+
+            chain.Dispose();
         }
 
         // Will become the name of the file on disk and the nickname in the NSS DBs
@@ -94,7 +108,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
                 var certPath = Path.Combine(sslCertDir, certificateNickname + ".pem");
                 if (File.Exists(certPath))
                 {
-                    var candidate = X509CertificateLoader.LoadCertificateFromFile(certPath);
+                    using var candidate = X509CertificateLoader.LoadCertificateFromFile(certPath);
                     if (AreCertificatesEqual(certificate, candidate))
                     {
                         foundCert = true;
@@ -179,7 +193,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         // This is about correcting storage, not trust.
     }
 
-    protected override bool IsExportable(X509Certificate2 c) => true;
+    internal override bool IsExportable(X509Certificate2 c) => true;
 
     protected override TrustLevel TrustCertificateCore(X509Certificate2 certificate)
     {
@@ -776,7 +790,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     }
 
     [GeneratedRegex("OPENSSLDIR:\\s*\"([^\"]+)\"")]
-    private static partial Regex OpenSslVersionRegex();
+    private static partial Regex OpenSslVersionRegex { get; }
 
     /// <remarks>
     /// It is the caller's responsibility to ensure that <see cref="OpenSslCommand"/> is available.
@@ -803,7 +817,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
                 return false;
             }
 
-            var match = OpenSslVersionRegex().Match(stdout);
+            var match = OpenSslVersionRegex.Match(stdout);
             if (!match.Success)
             {
                 Log.UnixOpenSslVersionParsingFailed();
@@ -858,14 +872,14 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     }
 
     [GeneratedRegex("^[0-9a-f]+\\.[0-9]+$")]
-    private static partial Regex OpenSslHashFilenameRegex();
+    private static partial Regex OpenSslHashFilenameRegex { get; }
 
     /// <remarks>
     /// We only ever use .pem, but someone will eventually put their own cert in this directory,
     /// so we should handle the same extensions as c_rehash (other than .crl).
     /// </remarks>
     [GeneratedRegex("\\.(pem|crt|cer)$")]
-    private static partial Regex OpenSslCertificateExtensionRegex();
+    private static partial Regex OpenSslCertificateExtensionRegex { get; }
 
     /// <remarks>
     /// This is a simplified version of c_rehash from OpenSSL.  Using the real one would require
@@ -876,21 +890,17 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         try
         {
             // First, delete all the existing symlinks, so we don't have to worry about fragmentation or leaks.
-
-            var hashRegex = OpenSslHashFilenameRegex();
-            var extensionRegex = OpenSslCertificateExtensionRegex();
-
             var certs = new List<FileInfo>();
 
             var dirInfo = new DirectoryInfo(certificateDirectory);
             foreach (var file in dirInfo.EnumerateFiles())
             {
                 var isSymlink = (file.Attributes & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint;
-                if (isSymlink && hashRegex.IsMatch(file.Name))
+                if (isSymlink && OpenSslHashFilenameRegex.IsMatch(file.Name))
                 {
                     file.Delete();
                 }
-                else if (extensionRegex.IsMatch(file.Name))
+                else if (OpenSslCertificateExtensionRegex.IsMatch(file.Name))
                 {
                     certs.Add(file);
                 }

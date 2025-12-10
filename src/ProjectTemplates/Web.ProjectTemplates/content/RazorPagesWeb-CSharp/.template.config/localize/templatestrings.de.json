@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "ASP.NET Core Web App",
+  "name": "ASP.NET Core-Web-App (Razor Pages)",
   "description": "Eine Projektvorlage zum Erstellen einer ASP.NET Core-Anwendung mit Beispielinhalten für ASP.NET Core Razor Pages",
   "symbols/auth/choices/None/description": "Keine Authentifizierung",
   "symbols/auth/choices/Individual/description": "Individuelle Authentifizierung",
@@ -30,7 +30,7 @@
   "symbols/NoHttps/description": "Ob HTTPS deaktiviert werden soll. Diese Option gilt nur, wenn IndividualB2C, SingleOrg oder MultiOrg nicht für --auth verwendet werden.",
   "symbols/UseLocalDB/description": "Ob LocalDB anstelle von SQLite verwendet werden soll. Diese Option gilt nur, wenn --auth Individual oder --auth IndividualB2C angegeben ist.",
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
-  "symbols/Framework/choices/net10.0/description": "Target net10.0",
+  "symbols/Framework/choices/net10.0/description": "Ziel.-NET10.0",
   "symbols/CalledApiUrl/description": "URL der API, die von der Web-App aufgerufen werden soll. Diese Option gilt nur, wenn --auth SingleOrg, --auth MultiOrg oder --auth IndividualB2C angegeben ist.",
   "symbols/CallsMicrosoftGraph/description": "Gibt an, ob die Web-App Microsoft Graph aufruft. Diese Option gilt nur, wenn --auth SingleOrg oder --auth MultiOrg angegeben ist.",
   "symbols/CalledApiScopes/description": "Anzufordernde Bereiche zum Aufrufen der API von der Web-App. Diese Option gilt nur, wenn --auth SingleOrg, --auth MultiOrg oder --auth IndividualB2C angegeben ist.",

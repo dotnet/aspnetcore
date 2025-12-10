@@ -3,7 +3,7 @@
 
 import { Blazor } from '../../GlobalExports';
 import { LogLevel, Logger } from '../Logging/Logger';
-import { ReconnectDisplay } from './ReconnectDisplay';
+import { ReconnectDisplay, ReconnectDisplayUpdateOptions, ReconnectOptions } from './ReconnectDisplay';
 
 export class DefaultReconnectDisplay implements ReconnectDisplay {
   static readonly ReconnectOverlayClassName = 'components-reconnect-overlay';
@@ -28,7 +28,13 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
   reloadButton: HTMLButtonElement;
 
+  resumeButton: HTMLButtonElement;
+
   status: HTMLParagraphElement;
+
+  reconnect = true;
+
+  remote = false;
 
   retryWhenDocumentBecomesVisible: () => void;
 
@@ -64,9 +70,15 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     this.reloadButton.innerHTML = 'Retry';
     this.reloadButton.addEventListener('click', this.retry.bind(this));
 
+    this.resumeButton = document.createElement('button');
+    this.resumeButton.style.display = 'none';
+    this.resumeButton.innerHTML = 'Resume';
+    this.resumeButton.addEventListener('click', this.resume.bind(this));
+
     this.dialog.appendChild(this.rejoiningAnimation);
     this.dialog.appendChild(this.status);
     this.dialog.appendChild(this.reloadButton);
+    this.dialog.appendChild(this.resumeButton);
 
     this.overlay.appendChild(this.dialog);
 
@@ -77,10 +89,12 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     };
   }
 
-  show(): void {
+  show(options?: ReconnectDisplayUpdateOptions): void {
     if (!this.document.contains(this.host)) {
       this.document.body.appendChild(this.host);
     }
+
+    this.reconnect = options?.type === 'reconnect';
 
     this.reloadButton.style.display = 'none';
     this.rejoiningAnimation.style.display = 'block';
@@ -89,12 +103,21 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     this.overlay.classList.add(DefaultReconnectDisplay.ReconnectVisibleClassName);
   }
 
-  update(currentAttempt: number, secondsToNextAttempt: number): void {
-    if (currentAttempt === 1 || secondsToNextAttempt === 0) {
-      this.status.innerHTML = 'Rejoining the server...';
+  update(options: ReconnectDisplayUpdateOptions): void {
+    this.reconnect = options.type === 'reconnect';
+    if (this.reconnect) {
+      const { currentAttempt, secondsToNextAttempt } = options as ReconnectOptions;
+      if (currentAttempt === 1 || secondsToNextAttempt === 0) {
+        this.status.innerHTML = 'Rejoining the server...';
+      } else {
+        const unitText = secondsToNextAttempt === 1 ? 'second' : 'seconds';
+        this.status.innerHTML = `Rejoin failed... trying again in ${secondsToNextAttempt} ${unitText}`;
+      }
     } else {
-      const unitText = secondsToNextAttempt === 1 ? 'second' : 'seconds';
-      this.status.innerHTML = `Rejoin failed... trying again in ${secondsToNextAttempt} ${unitText}`;
+      this.reloadButton.style.display = 'none';
+      this.rejoiningAnimation.style.display = 'none';
+      this.status.innerHTML = 'The session has been paused by the server.';
+      this.resumeButton.style.display = 'block';
     }
   }
 
@@ -104,10 +127,16 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
   }
 
   failed(): void {
-    this.reloadButton.style.display = 'block';
     this.rejoiningAnimation.style.display = 'none';
-    this.status.innerHTML = 'Failed to rejoin.<br />Please retry or reload the page.';
-    this.document.addEventListener('visibilitychange', this.retryWhenDocumentBecomesVisible);
+    if (this.reconnect) {
+      this.reloadButton.style.display = 'block';
+      this.status.innerHTML = 'Failed to rejoin.<br />Please retry or reload the page.';
+      this.document.addEventListener('visibilitychange', this.retryWhenDocumentBecomesVisible);
+    } else {
+      this.status.innerHTML = 'Failed to resume the session.<br />Please reload the page.';
+      this.resumeButton.style.display = 'none';
+      this.reloadButton.style.display = 'none';
+    }
   }
 
   rejected(): void {
@@ -127,7 +156,29 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
       // - exception to mean we didn't reach the server (this can be sync or async)
       const successful = await Blazor.reconnect!();
       if (!successful) {
-        this.rejected();
+        // Try to resume the circuit if the reconnect failed
+        this.update({ type: 'pause', remote: this.remote });
+        const resumeSuccessful = await Blazor.resumeCircuit!();
+        if (!resumeSuccessful) {
+          this.rejected();
+        }
+      }
+    } catch (err: unknown) {
+      // We got an exception, server is currently unavailable
+      this.logger.log(LogLevel.Error, err as Error);
+      this.failed();
+    }
+  }
+
+  private async resume() {
+    try {
+      // reconnect will asynchronously return:
+      // - true to mean success
+      // - false to mean we reached the server, but it rejected the connection (e.g., unknown circuit ID)
+      // - exception to mean we didn't reach the server (this can be sync or async)
+      const successful = await Blazor.resumeCircuit!();
+      if (!successful) {
+        this.failed();
       }
     } catch (err: unknown) {
       // We got an exception, server is currently unavailable

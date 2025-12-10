@@ -1,0 +1,18 @@
+﻿@page "/authenticated"
+
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize]
+
+<PageTitle>Authenticated</PageTitle>
+
+<h1>You are authenticated!</h1>
+
+<AuthorizeView>
+    <p>Hello, @context.User.Identity?.Name!</p>
+</AuthorizeView>
+
+<form id="logout-form" action="account/logout" method="post">
+    <AntiforgeryToken />
+    <button type="submit">Log out</button>
+</form>

@@ -8,6 +8,7 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Windows.Win32;
@@ -123,7 +124,7 @@ internal sealed class Response
         if (string.IsNullOrWhiteSpace(reasonPhrase))
         {
             // If the user hasn't set this then it is generated on the fly if possible.
-            reasonPhrase = HttpReasonPhrase.Get(statusCode) ?? string.Empty;
+            reasonPhrase = ReasonPhrases.GetReasonPhrase(statusCode);
         }
         return reasonPhrase;
     }
@@ -185,10 +186,7 @@ internal sealed class Response
     // callers if they try to add them too late. E.g. after Content-Length or CompleteAsync().
     internal void MakeTrailersReadOnly()
     {
-        if (_trailers != null)
-        {
-            _trailers.IsReadOnly = true;
-        }
+        _trailers?.IsReadOnly = true;
     }
 
     internal void Abort()

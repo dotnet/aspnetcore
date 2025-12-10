@@ -8,7 +8,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -32,6 +31,36 @@ namespace Microsoft.AspNetCore.Mvc.Description;
 
 public class DefaultApiDescriptionProviderTest
 {
+    [Fact]
+    public void OnlyCatchAllParameter_IsReportedAsOptional()
+    {
+        // Arrange: Create an action descriptor with a multi-parameter route template.
+        var action = CreateActionDescriptor();
+        action.AttributeRouteInfo = new AttributeRouteInfo
+        {
+            Template = "/products/{category}/items/{group}/inventory/{**any}"
+        };
+
+        // Act: Get the API descriptions using the existing helper.
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert: Only the 'any' parameter should be optional.
+        var description = Assert.Single(descriptions);
+        var categoryParameter = Assert.Single(description.ParameterDescriptions,
+            p => string.Equals(p.Name, "category", StringComparison.OrdinalIgnoreCase));
+        var groupParameter = Assert.Single(description.ParameterDescriptions,
+            p => string.Equals(p.Name, "group", StringComparison.OrdinalIgnoreCase));
+        var anyParameter = Assert.Single(description.ParameterDescriptions,
+            p => string.Equals(p.Name, "any", StringComparison.OrdinalIgnoreCase));
+
+        // The non-catch-all parameters should be required.
+        Assert.True(categoryParameter.IsRequired);
+        Assert.True(groupParameter.IsRequired);
+
+        // The catch-all parameter should be optional.
+        Assert.False(anyParameter.IsRequired);
+    }
+
     [Fact]
     public void GetApiDescription_IgnoresNonControllerActionDescriptor()
     {
@@ -1492,6 +1521,20 @@ public class DefaultApiDescriptionProviderTest
     }
 
     [Fact]
+    public void GetApiDescription_ParameterDescription_SourceFromDerivedServices()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(AcceptsFormatters_DerivedServices));
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        Assert.Empty(description.ParameterDescriptions);
+    }
+
+    [Fact]
     public void GetApiDescription_ParameterDescription_SourceFromCustomModelBinder()
     {
         // Arrange
@@ -2479,6 +2522,10 @@ public class DefaultApiDescriptionProviderTest
     {
     }
 
+    private void AcceptsFormatters_DerivedServices([CustomFromServices] ITestService tempDataProvider, [CustomFromKeyedServices("foo")] ITestService keyedTempDataProvider)
+    {
+    }
+
     private void AcceptsProductChangeDTO(ProductChangeDTO dto)
     {
     }
@@ -2923,4 +2970,8 @@ public class DefaultApiDescriptionProviderTest
             return base.ConvertFrom(context, culture, value);
         }
     }
+
+    private class CustomFromKeyedServicesAttribute(object key) : FromKeyedServicesAttribute(key);
+
+    private class CustomFromServicesAttribute : FromServicesAttribute;
 }

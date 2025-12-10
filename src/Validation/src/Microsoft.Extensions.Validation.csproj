@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Common validation abstractions and validation infrastructure for .NET applications.</Description>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>validation</PackageTags>
+    <IsPackable>true</IsPackable>
+    <IsTrimmable>true</IsTrimmable>
+    <EnableDefaultItems>true</EnableDefaultItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Validation\gen\Microsoft.Extensions.Validation.ValidationsGenerator.csproj" Pack="false">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <OutputItemType>Content</OutputItemType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Package the generator in the analyzer directory of the nuget package -->
+    <None Include="$(OutputPath)\$(AssemblyName).ValidationsGenerator.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.Validation.Tests" />
+  </ItemGroup>
+
+</Project>

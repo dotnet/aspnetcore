@@ -348,6 +348,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Theory]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60110")]
     [MemberData(nameof(ConnectionMiddlewareData))]
     public async Task AppCanHandleClientAbortingConnectionMidResponse(ListenOptions listenOptions)
     {

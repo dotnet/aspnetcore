@@ -10,6 +10,7 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -45,7 +46,6 @@ public class AntiforgeryTests : ServerTestBase<BasicTestAppServerSiteFixture<Raz
         var submit = Browser.Exists(By.Id("submit"));
         submit.Click();
 
-        var result = Browser.Exists(By.Id("result"));
-        Browser.Equal("Test", () => result.Text);
+        Browser.Equal("Test", () => Browser.FindElement(By.Id("result")).Text);
     }
 }
