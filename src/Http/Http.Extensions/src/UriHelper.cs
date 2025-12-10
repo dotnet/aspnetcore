@@ -94,7 +94,7 @@ public static class UriHelper
                 uriComponents.Scheme.AsSpan().CopyTo(buffer);
                 buffer = buffer.Slice(uriComponents.Scheme.Length);
 
-                Uri.SchemeDelimiter.CopyTo(buffer);
+                Uri.SchemeDelimiter.AsSpan().CopyTo(buffer);
                 buffer = buffer.Slice(Uri.SchemeDelimiter.Length);
 
                 uriComponents.Host.AsSpan().CopyTo(buffer);
