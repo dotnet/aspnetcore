@@ -156,13 +156,17 @@ internal static class ITypeSymbolExtensions
 
     /// <summary>
     /// Checks if the property is marked with [JsonIgnore] attribute with a condition that affects deserialization.
-    /// Only skips validation when the condition is Always (1) or WhenReading (5).
-    /// Properties with WhenWritingDefault (2), WhenWritingNull (3), WhenWriting (4), or Never (0) are still validated.
+    /// Only skips validation when the condition is Always or WhenReading, as these affect the reading/deserialization process.
+    /// Properties with conditions that only affect writing (WhenWritingDefault, WhenWritingNull, WhenWriting) or Never are still validated.
     /// </summary>
     /// <param name="property">The property to check.</param>
     /// <param name="jsonIgnoreAttributeSymbol">The symbol representing the [JsonIgnore] attribute.</param>
     internal static bool IsJsonIgnoredProperty(this IPropertySymbol property, INamedTypeSymbol jsonIgnoreAttributeSymbol)
     {
+        // JsonIgnoreCondition enum values from System.Text.Json.Serialization
+        const int JsonIgnoreCondition_Always = 1;      // Property is always ignored
+        const int JsonIgnoreCondition_WhenReading = 5; // Property is ignored during deserialization
+        
         foreach (var attr in property.GetAttributes())
         {
             if (attr.AttributeClass is not null &&
@@ -176,11 +180,10 @@ internal static class ITypeSymbolExtensions
                         if (string.Equals(namedArgument.Key, "Condition", System.StringComparison.Ordinal))
                         {
                             // The value is an enum represented as an int
-                            // JsonIgnoreCondition.Always = 1, JsonIgnoreCondition.WhenReading = 5
                             if (namedArgument.Value.Value is int conditionValue)
                             {
-                                // Only skip validation for Always (1) or WhenReading (5)
-                                return conditionValue == 1 || conditionValue == 5;
+                                // Only skip validation for Always or WhenReading (conditions that affect reading/deserialization)
+                                return conditionValue == JsonIgnoreCondition_Always || conditionValue == JsonIgnoreCondition_WhenReading;
                             }
                         }
                     }
