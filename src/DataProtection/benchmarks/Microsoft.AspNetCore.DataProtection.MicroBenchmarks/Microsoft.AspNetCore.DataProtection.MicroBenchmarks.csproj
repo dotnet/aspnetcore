@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TieredCompilation>false</TieredCompilation>
+    <DefineConstants>$(DefineConstants);IS_BENCHMARKS</DefineConstants>
+    <SkipMicrobenchmarksValidation>true</SkipMicrobenchmarksValidation>
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="BenchmarkDotNet" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
+    <Compile Include="$(SharedSourceRoot)\Buffers\RefPooledArrayBufferWriter.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)\PooledArrayBufferWriter.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+</Project>

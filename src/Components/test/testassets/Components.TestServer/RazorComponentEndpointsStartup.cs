@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
+using Components.TestServer.RazorComponents.Pages.PersistentState;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.Circuits;
@@ -50,6 +51,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                     options.DisconnectedCircuitMaxRetained = 0;
                     options.DetailedErrors = true;
                 }
+                options.RootComponents.RegisterForJavaScript<TestContentPackage.PersistentComponents.ComponentWithPersistentState>("dynamic-js-root-counter");
             })
             .AddAuthenticationStateSerialization(options =>
             {
