@@ -1,7 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
+using System.Buffers.Text;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.ObjectPool;
 
@@ -12,7 +15,9 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
     private const string Purpose = "Microsoft.AspNetCore.Antiforgery.AntiforgeryToken.v1";
     private const byte TokenVersion = 0x01;
 
-    private readonly IDataProtector _cryptoSystem;
+    private readonly IDataProtector _defaultCryptoSystem;
+    private readonly ISpanDataProtector? _perfCryptoSystem;
+
     private readonly ObjectPool<AntiforgerySerializationContext> _pool;
 
     public DefaultAntiforgeryTokenSerializer(
@@ -22,34 +27,36 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
         ArgumentNullException.ThrowIfNull(provider);
         ArgumentNullException.ThrowIfNull(pool);
 
-        _cryptoSystem = provider.CreateProtector(Purpose);
         _pool = pool;
+
+        _defaultCryptoSystem = provider.CreateProtector(Purpose);
+        _perfCryptoSystem = _defaultCryptoSystem as ISpanDataProtector;
     }
 
     public AntiforgeryToken Deserialize(string serializedToken)
     {
-        var serializationContext = _pool.Get();
-
+        byte[]? tokenBytesRent = null;
         Exception? innerException = null;
         try
         {
-            var count = serializedToken.Length;
-            var charsRequired = WebEncoders.GetArraySizeRequiredToDecode(count);
-            var chars = serializationContext.GetChars(charsRequired);
-            var tokenBytes = WebEncoders.Base64UrlDecode(
-                serializedToken,
-                offset: 0,
-                buffer: chars,
-                bufferOffset: 0,
-                count: count);
+            var tokenDecodedSize = Base64Url.GetMaxDecodedLength(serializedToken.Length);
 
-            var unprotectedBytes = _cryptoSystem.Unprotect(tokenBytes);
-            var stream = serializationContext.Stream;
-            stream.Write(unprotectedBytes, offset: 0, count: unprotectedBytes.Length);
-            stream.Position = 0L;
+            var rent = tokenDecodedSize < 256
+                ? stackalloc byte[255]
+                : (tokenBytesRent = ArrayPool<byte>.Shared.Rent(tokenDecodedSize));
+            var tokenBytes = rent[..tokenDecodedSize];
 
-            var reader = serializationContext.Reader;
-            var token = Deserialize(reader);
+            var status = Base64Url.DecodeFromChars(serializedToken, tokenBytes, out int charsConsumed, out int bytesWritten);
+            if (status is not OperationStatus.Done)
+            {
+                throw new FormatException("Failed to decode token as Base64 char sequence.");
+            }
+
+            var tokenBytesDecoded = tokenBytes.Slice(0, bytesWritten);
+            var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[255]);
+            _perfCryptoSystem!.Unprotect(tokenBytesDecoded, ref protectBuffer);
+
+            var token = Deserialize(protectBuffer.WrittenSpan);
             if (token != null)
             {
                 return token;
@@ -62,7 +69,10 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
         }
         finally
         {
-            _pool.Return(serializationContext);
+            if (tokenBytesRent is not null)
+            {
+                ArrayPool<byte>.Shared.Return(tokenBytesRent);
+            }
         }
 
         // if we reached this point, something went wrong deserializing
@@ -81,39 +91,80 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
      *   |    `- Username: UTF-8 string with 7-bit integer length prefix
      *   `- AdditionalData: UTF-8 string with 7-bit integer length prefix
      */
-    private static AntiforgeryToken? Deserialize(BinaryReader reader)
+    private static AntiforgeryToken? Deserialize(ReadOnlySpan<byte> tokenBytes)
     {
+        var offset = 0;
+
         // we can only consume tokens of the same serialized version that we generate
-        var embeddedVersion = reader.ReadByte();
+        if (tokenBytes.Length < 1)
+        {
+            return null;
+        }
+
+        var embeddedVersion = tokenBytes[offset++];
         if (embeddedVersion != TokenVersion)
         {
             return null;
         }
 
         var deserializedToken = new AntiforgeryToken();
-        var securityTokenBytes = reader.ReadBytes(AntiforgeryToken.SecurityTokenBitLength / 8);
-        deserializedToken.SecurityToken =
-            new BinaryBlob(AntiforgeryToken.SecurityTokenBitLength, securityTokenBytes);
-        deserializedToken.IsCookieToken = reader.ReadBoolean();
+
+        // Read SecurityToken (16 bytes)
+        const int securityTokenByteLength = AntiforgeryToken.SecurityTokenBitLength / 8;
+        if (tokenBytes.Length < offset + securityTokenByteLength)
+        {
+            return null;
+        }
+
+        deserializedToken.SecurityToken = new BinaryBlob(
+            AntiforgeryToken.SecurityTokenBitLength,
+            tokenBytes.Slice(offset, securityTokenByteLength).ToArray());
+        offset += securityTokenByteLength;
+
+        // Read IsCookieToken (1 byte)
+        if (tokenBytes.Length < offset + 1)
+        {
+            return null;
+        }
+
+        deserializedToken.IsCookieToken = tokenBytes[offset++] != 0;
 
         if (!deserializedToken.IsCookieToken)
         {
-            var isClaimsBased = reader.ReadBoolean();
+            // Read IsClaimsBased (1 byte)
+            if (tokenBytes.Length < offset + 1)
+            {
+                return null;
+            }
+
+            var isClaimsBased = tokenBytes[offset++] != 0;
             if (isClaimsBased)
             {
-                var claimUidBytes = reader.ReadBytes(AntiforgeryToken.ClaimUidBitLength / 8);
-                deserializedToken.ClaimUid = new BinaryBlob(AntiforgeryToken.ClaimUidBitLength, claimUidBytes);
+                // Read ClaimUid (32 bytes)
+                const int claimUidByteLength = AntiforgeryToken.ClaimUidBitLength / 8;
+                if (tokenBytes.Length < offset + claimUidByteLength)
+                {
+                    return null;
+                }
+
+                deserializedToken.ClaimUid = new BinaryBlob(
+                    AntiforgeryToken.ClaimUidBitLength,
+                    tokenBytes.Slice(offset, claimUidByteLength).ToArray());
+                offset += claimUidByteLength;
             }
             else
             {
-                deserializedToken.Username = reader.ReadString();
+                // Read Username (7-bit encoded length prefix + UTF-8 string)
+                offset += tokenBytes.Slice(offset).Read7BitEncodedString(out var username);
+                deserializedToken.Username = username;
             }
 
-            deserializedToken.AdditionalData = reader.ReadString();
+            offset += tokenBytes.Slice(offset).Read7BitEncodedString(out var additionalData);
+            deserializedToken.AdditionalData = additionalData;
         }
 
-        // if there's still unconsumed data in the stream, fail
-        if (reader.BaseStream.ReadByte() != -1)
+        // if there's still unconsumed data in the span, fail
+        if (offset != tokenBytes.Length)
         {
             return null;
         }
@@ -153,7 +204,7 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
 
             writer.Flush();
             var stream = serializationContext.Stream;
-            var bytes = _cryptoSystem.Protect(stream.ToArray());
+            var bytes = _defaultCryptoSystem.Protect(stream.ToArray());
 
             var count = bytes.Length;
             var charsRequired = WebEncoders.GetArraySizeRequiredToEncode(count);

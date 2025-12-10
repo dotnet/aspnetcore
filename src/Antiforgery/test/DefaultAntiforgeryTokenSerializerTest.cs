@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Buffers;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.ObjectPool;
 using Moq;
@@ -138,37 +140,13 @@ public class DefaultAntiforgeryTokenSerializerTest
 
     private static Mock<IDataProtectionProvider> GetDataProtector()
     {
-        var mockCryptoSystem = new Mock<IDataProtector>();
-        mockCryptoSystem.Setup(o => o.Protect(It.IsAny<byte[]>()))
-                        .Returns<byte[]>(Protect)
-                        .Verifiable();
-        mockCryptoSystem.Setup(o => o.Unprotect(It.IsAny<byte[]>()))
-                        .Returns<byte[]>(UnProtect)
-                        .Verifiable();
+        var testSpanDataProtector = new TestSpanDataProtector();
 
         var provider = new Mock<IDataProtectionProvider>();
         provider
             .Setup(p => p.CreateProtector(It.IsAny<string>()))
-            .Returns(mockCryptoSystem.Object);
+            .Returns(testSpanDataProtector);
         return provider;
-    }
-
-    private static byte[] Protect(byte[] data)
-    {
-        var input = new List<byte>(data);
-        input.Add(_salt);
-        return input.ToArray();
-    }
-
-    private static byte[] UnProtect(byte[] data)
-    {
-        var salt = data[data.Length - 1];
-        if (salt != _salt)
-        {
-            throw new ArgumentException("Invalid salt value in data");
-        }
-
-        return data.Take(data.Length - 1).ToArray();
     }
 
     private static void AssertTokensEqual(AntiforgeryToken expected, AntiforgeryToken actual)
@@ -180,5 +158,48 @@ public class DefaultAntiforgeryTokenSerializerTest
         Assert.Equal(expected.IsCookieToken, actual.IsCookieToken);
         Assert.Equal(expected.SecurityToken, actual.SecurityToken);
         Assert.Equal(expected.Username, actual.Username);
+    }
+
+    private sealed class TestSpanDataProtector : ISpanDataProtector
+    {
+        public IDataProtector CreateProtector(string purpose) => this;
+
+        public void Protect<TWriter>(ReadOnlySpan<byte> plaintext, ref TWriter destination) where TWriter : IBufferWriter<byte>, allows ref struct
+        {
+            var result = ProtectImpl(plaintext.ToArray());
+            var destinationSpan = destination.GetSpan(result.Length);
+            result.CopyTo(destinationSpan);
+            destination.Advance(result.Length);
+        }
+
+        public void Unprotect<TWriter>(ReadOnlySpan<byte> protectedData, ref TWriter destination)
+            where TWriter : IBufferWriter<byte>, allows ref struct
+        {
+            var result = UnprotectImpl(protectedData.ToArray());
+            var destinationSpan = destination.GetSpan(result.Length);
+            result.CopyTo(destinationSpan);
+            destination.Advance(result.Length);
+        }
+
+        public byte[] Protect(byte[] plaintext) => ProtectImpl(plaintext);
+
+        public byte[] Unprotect(byte[] protectedData) => UnprotectImpl(protectedData);
+
+        private static byte[] ProtectImpl(byte[] data)
+        {
+            var input = new List<byte>(data);
+            input.Add(_salt);
+            return input.ToArray();
+        }
+
+        private static byte[] UnprotectImpl(byte[] data)
+        {
+            var salt = data[data.Length - 1];
+            if (salt != _salt)
+            {
+                throw new ArgumentException("Invalid salt value in data");
+            }
+            return data.Take(data.Length - 1).ToArray();
+        }
     }
 }

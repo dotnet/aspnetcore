@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>An antiforgery system for ASP.NET Core designed to generate and validate tokens to prevent Cross-Site Request Forgery attacks.</Description>
@@ -25,6 +25,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)HttpExtensions.cs" LinkBase="Shared"/>
+    <Compile Include="$(SharedSourceRoot)HttpExtensions.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Buffers\RefPooledArrayBufferWriter.cs" Link="Shared\Buffers\%(Filename)%(Extension)" />
+    <Compile Include="$(SharedSourceRoot)Encoding\Int7BitEncodingUtils.cs" Link="Shared\Encoding\%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>
