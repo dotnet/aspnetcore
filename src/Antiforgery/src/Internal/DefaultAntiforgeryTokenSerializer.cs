@@ -5,8 +5,6 @@ using System.Buffers;
 using System.Buffers.Text;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Shared;
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Antiforgery;
 
@@ -18,16 +16,9 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
     private readonly IDataProtector _defaultCryptoSystem;
     private readonly ISpanDataProtector? _perfCryptoSystem;
 
-    private readonly ObjectPool<AntiforgerySerializationContext> _pool;
-
-    public DefaultAntiforgeryTokenSerializer(
-        IDataProtectionProvider provider,
-        ObjectPool<AntiforgerySerializationContext> pool)
+    public DefaultAntiforgeryTokenSerializer(IDataProtectionProvider provider)
     {
         ArgumentNullException.ThrowIfNull(provider);
-        ArgumentNullException.ThrowIfNull(pool);
-
-        _pool = pool;
 
         _defaultCryptoSystem = provider.CreateProtector(Purpose);
         _perfCryptoSystem = _defaultCryptoSystem as ISpanDataProtector;
@@ -53,13 +44,21 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
             }
 
             var tokenBytesDecoded = tokenBytes.Slice(0, bytesWritten);
-            var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[255]);
-            _perfCryptoSystem!.Unprotect(tokenBytesDecoded, ref protectBuffer);
 
-            var token = Deserialize(protectBuffer.WrittenSpan);
-            if (token != null)
+            var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[255]);
+            try
             {
-                return token;
+                _perfCryptoSystem!.Unprotect(tokenBytesDecoded, ref protectBuffer);
+
+                var token = Deserialize(protectBuffer.WrittenSpan);
+                if (token != null)
+                {
+                    return token;
+                }
+            }
+            finally
+            {
+                protectBuffer.Dispose();
             }
         }
         catch (Exception ex)
@@ -177,50 +176,74 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        var serializationContext = _pool.Get();
+        var securityTokenBytes = token.SecurityToken!.GetData();
+        var claimUidBytes = token.ClaimUid?.GetData();
+
+        var totalSize =
+            1 // TokenVersion
+            + securityTokenBytes.Length + // SecurityToken
+            + 1; // IsCookieToken
+        if (!token.IsCookieToken)
+        {
+            totalSize += 1; // isClaimsBased
+
+            if (token.ClaimUid is not null)
+            {
+                totalSize += claimUidBytes!.Length;
+            }
+            else
+            {
+                var usernameByteCount = System.Text.Encoding.UTF8.GetByteCount(token.Username!);
+                totalSize += usernameByteCount.Measure7BitEncodedUIntLength() + usernameByteCount;
+            }
+
+            var additionalDataByteCount = System.Text.Encoding.UTF8.GetByteCount(token.AdditionalData);
+            totalSize += additionalDataByteCount.Measure7BitEncodedUIntLength() + additionalDataByteCount;
+        }
+
+        byte[]? tokenBytesRent = null;
+        var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[255]);
+
+        var rent = totalSize < 256
+            ? stackalloc byte[255]
+            : (tokenBytesRent = ArrayPool<byte>.Shared.Rent(totalSize));
+        var tokenBytes = rent[..totalSize];
 
         try
         {
-            var writer = serializationContext.Writer;
-            writer.Write(TokenVersion);
-            writer.Write(token.SecurityToken!.GetData());
-            writer.Write(token.IsCookieToken);
+            var offset = 0;
+            tokenBytes[offset++] = TokenVersion;
+            securityTokenBytes.CopyTo(tokenBytes.Slice(offset, securityTokenBytes.Length));
+            offset += securityTokenBytes.Length;
+            tokenBytes[offset++] = token.IsCookieToken ? (byte)1 : (byte)0;
 
             if (!token.IsCookieToken)
             {
                 if (token.ClaimUid != null)
                 {
-                    writer.Write(true /* isClaimsBased */);
-                    writer.Write(token.ClaimUid.GetData());
+                    tokenBytes[offset++] = 1; // isClaimsBased
+                    claimUidBytes!.CopyTo(tokenBytes.Slice(offset, claimUidBytes!.Length));
+                    offset += claimUidBytes.Length;
                 }
                 else
                 {
-                    writer.Write(false /* isClaimsBased */);
-                    writer.Write(token.Username!);
+                    tokenBytes[offset++] = 0; // isClaimsBased
+                    offset += tokenBytes.Slice(offset).Write7BitEncodedString(token.Username!);
                 }
-
-                writer.Write(token.AdditionalData);
+                offset += tokenBytes.Slice(offset).Write7BitEncodedString(token.AdditionalData);
             }
 
-            writer.Flush();
-            var stream = serializationContext.Stream;
-            var bytes = _defaultCryptoSystem.Protect(stream.ToArray());
-
-            var count = bytes.Length;
-            var charsRequired = WebEncoders.GetArraySizeRequiredToEncode(count);
-            var chars = serializationContext.GetChars(charsRequired);
-            var outputLength = WebEncoders.Base64UrlEncode(
-                bytes,
-                offset: 0,
-                output: chars,
-                outputOffset: 0,
-                count: count);
-
-            return new string(chars, startIndex: 0, length: outputLength);
+            _perfCryptoSystem!.Protect(tokenBytes, ref protectBuffer);
+            return Base64Url.EncodeToString(protectBuffer.WrittenSpan);
         }
         finally
         {
-            _pool.Return(serializationContext);
+            if (tokenBytesRent is not null)
+            {
+                ArrayPool<byte>.Shared.Return(tokenBytesRent);
+            }
+
+            protectBuffer.Dispose();
         }
     }
 }

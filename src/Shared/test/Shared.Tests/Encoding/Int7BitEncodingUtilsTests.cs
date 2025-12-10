@@ -218,4 +218,112 @@ public class Int7BitEncodingUtilsTests
         Assert.Equal(longString, value);
         Assert.Equal(encodedBytes.Length, bytesConsumed);
     }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("Hello")]
+    [InlineData("Hello, World!")]
+    [InlineData("UTF-8: \u00e9\u00e8\u00ea")]
+    public void Write7BitEncodedString_EncodesCorrectly(string value)
+    {
+        var expectedByteCount = Int7BitEncodingUtils.Measure7BitEncodedStringLength(value);
+        Span<byte> buffer = stackalloc byte[expectedByteCount];
+
+        var bytesWritten = buffer.Write7BitEncodedString(value);
+
+        Assert.Equal(expectedByteCount, bytesWritten);
+
+        // Verify by reading back
+        ReadOnlySpan<byte> source = buffer.Slice(0, bytesWritten);
+        var bytesConsumed = source.Read7BitEncodedString(out var decoded);
+
+        Assert.Equal(value, decoded);
+        Assert.Equal(bytesWritten, bytesConsumed);
+    }
+
+    [Fact]
+    public void Write7BitEncodedString_WithNullString_WritesZeroLength()
+    {
+        Span<byte> buffer = stackalloc byte[10];
+
+        var bytesWritten = buffer.Write7BitEncodedString(null!);
+
+        Assert.Equal(1, bytesWritten);
+        Assert.Equal(0, buffer[0]);
+    }
+
+    [Fact]
+    public void Write7BitEncodedString_WithEmptyString_WritesZeroLength()
+    {
+        Span<byte> buffer = stackalloc byte[10];
+
+        var bytesWritten = buffer.Write7BitEncodedString(string.Empty);
+
+        Assert.Equal(1, bytesWritten);
+        Assert.Equal(0, buffer[0]);
+    }
+
+    [Fact]
+    public void Write7BitEncodedString_WithLongString_UsesMultiByteLengthPrefix()
+    {
+        var longString = new string('A', 200);
+        var expectedByteCount = Int7BitEncodingUtils.Measure7BitEncodedStringLength(longString);
+        var buffer = new byte[expectedByteCount];
+
+        var bytesWritten = buffer.AsSpan().Write7BitEncodedString(longString);
+
+        Assert.Equal(expectedByteCount, bytesWritten);
+
+        // Verify the length prefix is multi-byte (200 > 127)
+        Assert.True((buffer[0] & 0x80) != 0); // Continuation bit set
+
+        // Verify by reading back
+        ReadOnlySpan<byte> source = buffer;
+        var bytesConsumed = source.Read7BitEncodedString(out var decoded);
+
+        Assert.Equal(longString, decoded);
+        Assert.Equal(bytesWritten, bytesConsumed);
+    }
+
+    [Theory]
+    [InlineData("", 1)]
+    [InlineData("A", 2)]
+    [InlineData("Hello", 6)]
+    public void Measure7BitEncodedStringLength_ReturnsCorrectLength(string value, int expectedLength)
+    {
+        var actualLength = Int7BitEncodingUtils.Measure7BitEncodedStringLength(value);
+
+        Assert.Equal(expectedLength, actualLength);
+    }
+
+    [Fact]
+    public void Measure7BitEncodedStringLength_WithNullString_ReturnsOne()
+    {
+        var length = Int7BitEncodingUtils.Measure7BitEncodedStringLength(null!);
+
+        Assert.Equal(1, length);
+    }
+
+    [Fact]
+    public void Measure7BitEncodedStringLength_WithLongString_IncludesMultiByteLengthPrefix()
+    {
+        var longString = new string('A', 200);
+
+        var length = Int7BitEncodingUtils.Measure7BitEncodedStringLength(longString);
+
+        // 200 bytes for string + 2 bytes for length prefix (200 requires 2 bytes in 7-bit encoding)
+        Assert.Equal(202, length);
+    }
+
+    [Fact]
+    public void Measure7BitEncodedStringLength_WithUtf8String_CountsUtf8Bytes()
+    {
+        // Each of these characters is 2 bytes in UTF-8
+        var utf8String = "\u00e9\u00e8\u00ea"; // 3 chars, 6 bytes
+
+        var length = Int7BitEncodingUtils.Measure7BitEncodedStringLength(utf8String);
+
+        // 6 bytes for string + 1 byte for length prefix
+        Assert.Equal(7, length);
+    }
 }

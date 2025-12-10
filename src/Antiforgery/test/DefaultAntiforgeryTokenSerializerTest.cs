@@ -46,7 +46,7 @@ public class DefaultAntiforgeryTokenSerializerTest
     public void Deserialize_BadToken_Throws(string serializedToken)
     {
         // Arrange
-        var testSerializer = new DefaultAntiforgeryTokenSerializer(_dataProtector.Object, _pool);
+        var testSerializer = new DefaultAntiforgeryTokenSerializer(_dataProtector.Object);
 
         // Act & assert
         var ex = Assert.Throws<AntiforgeryValidationException>(() => testSerializer.Deserialize(serializedToken));
@@ -57,7 +57,7 @@ public class DefaultAntiforgeryTokenSerializerTest
     public void Serialize_FieldToken_WithClaimUid_TokenRoundTripSuccessful()
     {
         // Arrange
-        var testSerializer = new DefaultAntiforgeryTokenSerializer(_dataProtector.Object, _pool);
+        var testSerializer = new DefaultAntiforgeryTokenSerializer(_dataProtector.Object);
 
         //"01" // Version
         //+ "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken
@@ -87,7 +87,7 @@ public class DefaultAntiforgeryTokenSerializerTest
     public void Serialize_FieldToken_WithUsername_TokenRoundTripSuccessful()
     {
         // Arrange
-        var testSerializer = new DefaultAntiforgeryTokenSerializer(_dataProtector.Object, _pool);
+        var testSerializer = new DefaultAntiforgeryTokenSerializer(_dataProtector.Object);
 
         //"01" // Version
         //+ "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken
@@ -118,7 +118,7 @@ public class DefaultAntiforgeryTokenSerializerTest
     public void Serialize_CookieToken_TokenRoundTripSuccessful()
     {
         // Arrange
-        var testSerializer = new DefaultAntiforgeryTokenSerializer(_dataProtector.Object, _pool);
+        var testSerializer = new DefaultAntiforgeryTokenSerializer(_dataProtector.Object);
 
         //"01" // Version
         //+ "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken
@@ -130,7 +130,7 @@ public class DefaultAntiforgeryTokenSerializerTest
         };
 
         // Act
-        string actualSerializedData = testSerializer.Serialize(token);
+        var actualSerializedData = testSerializer.Serialize(token);
         var deserializedToken = testSerializer.Deserialize(actualSerializedData);
 
         // Assert

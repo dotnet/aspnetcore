@@ -87,6 +87,43 @@ internal static class Int7BitEncodingUtils
     }
 
     /// <summary>
+    /// Writes a 7-bit length-prefixed UTF-8 encoded string to the target span.
+    /// </summary>
+    /// <param name="target">The target span to write to.</param>
+    /// <param name="value">The string to encode.</param>
+    /// <returns>The number of bytes written to the target span.</returns>
+    internal static int Write7BitEncodedString(this Span<byte> target, string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            target[0] = 0;
+            return 1;
+        }
+
+        var stringByteCount = System.Text.Encoding.UTF8.GetByteCount(value);
+        var lengthPrefixSize = target.Write7BitEncodedInt(stringByteCount);
+        System.Text.Encoding.UTF8.GetBytes(value, target.Slice(lengthPrefixSize));
+
+        return lengthPrefixSize + stringByteCount;
+    }
+
+    /// <summary>
+    /// Calculates the number of bytes required to write a 7-bit length-prefixed UTF-8 encoded string.
+    /// </summary>
+    /// <param name="value">The string to measure.</param>
+    /// <returns>The number of bytes required.</returns>
+    internal static int Measure7BitEncodedStringLength(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return 1;
+        }
+
+        var stringByteCount = System.Text.Encoding.UTF8.GetByteCount(value);
+        return stringByteCount.Measure7BitEncodedUIntLength() + stringByteCount;
+    }
+
+    /// <summary>
     /// Returns consumed length
     /// </summary>
     /// <param name="bytes"></param>
