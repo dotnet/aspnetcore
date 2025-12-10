@@ -886,7 +886,107 @@ public class NavigationManagerTest
         // Assert
         Assert.True(notFoundTriggered, "The OnNotFound event was not triggered as expected.");
     }
- 
+
+    [Fact]
+    public void NavigateTo_WithPathRelative_ResolvesRelativeToCurrentPath()
+    {
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/folder1/folder2/page.html";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.NavigateTo("sibling.html", new NavigationOptions { PathRelative = true });
+
+        Assert.Single(testNavManager.Navigations);
+        Assert.Equal("scheme://host/folder1/folder2/sibling.html", testNavManager.Navigations[0].uri);
+        Assert.True(testNavManager.Navigations[0].options.PathRelative);
+    }
+
+    [Fact]
+    public void NavigateTo_WithPathRelative_HandlesQueryAndFragmentInCurrentUri()
+    {
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/folder1/page.html?query=value#hash";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.NavigateTo("other.html", new NavigationOptions { PathRelative = true });
+
+        Assert.Single(testNavManager.Navigations);
+        Assert.Equal("scheme://host/folder1/other.html", testNavManager.Navigations[0].uri);
+    }
+
+    [Fact]
+    public void NavigateTo_WithPathRelativeFalse_DoesNotResolve()
+    {
+        var baseUri = "scheme://host/base/";
+        var currentUri = "scheme://host/base/folder1/page.html";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.NavigateTo("relative.html", new NavigationOptions { PathRelative = false });
+
+        Assert.Single(testNavManager.Navigations);
+        // When PathRelative is false, the URI is passed directly to NavigateToCore without resolution
+        Assert.Equal("relative.html", testNavManager.Navigations[0].uri);
+        Assert.False(testNavManager.Navigations[0].options.PathRelative);
+    }
+
+    [Fact]
+    public void NavigateTo_WithPathRelative_AtRootLevel()
+    {
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/page.html";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.NavigateTo("other.html", new NavigationOptions { PathRelative = true });
+
+        Assert.Single(testNavManager.Navigations);
+        Assert.Equal("scheme://host/other.html", testNavManager.Navigations[0].uri);
+    }
+
+    [Fact]
+    public void NavigateTo_WithPathRelative_NestedPaths()
+    {
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/a/b/c/d/page.html";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.NavigateTo("sibling.html", new NavigationOptions { PathRelative = true });
+
+        Assert.Single(testNavManager.Navigations);
+        Assert.Equal("scheme://host/a/b/c/d/sibling.html", testNavManager.Navigations[0].uri);
+    }
+
+    [Fact]
+    public void NavigateTo_WithPathRelative_WithQueryStringPreservesPath()
+    {
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/folder/page.html?param=value";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.NavigateTo("other.html?new=param", new NavigationOptions { PathRelative = true });
+
+        Assert.Single(testNavManager.Navigations);
+        Assert.Equal("scheme://host/folder/other.html?new=param", testNavManager.Navigations[0].uri);
+    }
+
+    [Fact]
+    public void ResolveRelativeToCurrentPath_NoSlashFound_EdgeCase()
+    {
+        // This tests the defensive edge case where no slash is found in the URI
+        // We use reflection to set _uri to an invalid value (bypassing validation)
+        var baseUri = "scheme://host/";
+        var testNavManager = new TestNavigationManager(baseUri, "scheme://host/page.html");
+
+        // Use reflection to set _uri to an invalid value that has no slash
+        var uriField = typeof(NavigationManager).GetField("_uri", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        uriField.SetValue(testNavManager, "invaliduri");
+
+        // Call the internal method directly (accessible because of InternalsVisibleTo)
+        var result = testNavManager.ResolveRelativeToCurrentPath("page.html");
+
+        // When no slash is found, it concatenates to the current URI
+        Assert.Equal("invaliduripage.html", result);
+    }
+
     private class TestNavigationManager : NavigationManager
     {
         public TestNavigationManager()
@@ -913,6 +1013,21 @@ public class NavigationManagerTest
 
         protected override void SetNavigationLockState(bool value)
         {
+        }
+    }
+
+    private class TestNavigationManagerWithNavigationTracking : TestNavigationManager
+    {
+        public List<(string uri, NavigationOptions options)> Navigations { get; } = new();
+
+        public TestNavigationManagerWithNavigationTracking(string baseUri = null, string uri = null)
+            : base(baseUri, uri)
+        {
+        }
+
+        protected override void NavigateToCore(string uri, NavigationOptions options)
+        {
+            Navigations.Add((uri, options));
         }
     }
 

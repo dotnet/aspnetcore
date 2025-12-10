@@ -19,6 +19,7 @@ public class NavLink : ComponentBase, IDisposable
 
     private bool _isActive;
     private string? _hrefAbsolute;
+    private string? _hrefToRender;
     private string? _class;
 
     /// <summary>
@@ -52,6 +53,13 @@ public class NavLink : ComponentBase, IDisposable
     [Parameter]
     public NavLinkMatch Match { get; set; }
 
+    /// <summary>
+    /// Gets or sets whether the href should be resolved relative to the current path.
+    /// When true, the href is treated as relative to the current route path.
+    /// </summary>
+    [Parameter]
+    public bool PathRelative { get; set; }
+
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
     /// <inheritdoc />
@@ -71,7 +79,14 @@ public class NavLink : ComponentBase, IDisposable
             href = Convert.ToString(obj, CultureInfo.InvariantCulture);
         }
 
+        // Resolve relative path if PathRelative is true
+        if (PathRelative && href != null)
+        {
+            href = NavigationManager.ResolveRelativeToCurrentPath(href);
+        }
+
         _hrefAbsolute = href == null ? null : NavigationManager.ToAbsoluteUri(href).AbsoluteUri;
+        _hrefToRender = _hrefAbsolute;
         _isActive = ShouldMatch(NavigationManager.Uri);
 
         _class = (string?)null;
@@ -214,12 +229,16 @@ public class NavLink : ComponentBase, IDisposable
         builder.OpenElement(0, "a");
 
         builder.AddMultipleAttributes(1, AdditionalAttributes);
-        builder.AddAttribute(2, "class", CssClass);
+        if (_hrefToRender != null)
+        {
+            builder.AddAttribute(2, "href", _hrefToRender);
+        }
+        builder.AddAttribute(3, "class", CssClass);
         if (_isActive)
         {
-            builder.AddAttribute(3, "aria-current", "page");
+            builder.AddAttribute(4, "aria-current", "page");
         }
-        builder.AddContent(4, ChildContent);
+        builder.AddContent(5, ChildContent);
 
         builder.CloseElement();
     }
