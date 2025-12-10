@@ -113,13 +113,13 @@ public static class UriHelper
                 pathBaseSpan.CopyTo(buffer);
                 buffer = buffer.Slice(pathBaseSpan.Length);
 
-                uriComponents.Path.CopyTo(buffer);
+                uriComponents.Path.AsSpan().CopyTo(buffer);
                 buffer = buffer.Slice(uriComponents.Path.Length);
 
-                uriComponents.Query.CopyTo(buffer);
+                uriComponents.Query.AsSpan().CopyTo(buffer);
                 buffer = buffer.Slice(uriComponents.Query.Length);
 
-                uriComponents.Fragment.CopyTo(buffer);
+                uriComponents.Fragment.AsSpan().CopyTo(buffer);
             });
     }
 
