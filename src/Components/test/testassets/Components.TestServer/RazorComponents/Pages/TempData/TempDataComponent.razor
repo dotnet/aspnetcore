@@ -1,0 +1,68 @@
+﻿@page "/tempdata"
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager NavigationManager
+
+<h1>TempData Basic Test</h1>
+
+<div id="ready">Ready</div>
+
+<form method="post" @formname="SetTempData" @onsubmit="SetValues">
+    <AntiforgeryToken />
+    <button type="submit" id="set-values-button">Set TempData Values</button>
+</form>
+
+<form method="post" @formname="Navigate" @onsubmit="NavigateToSamePage">
+    <AntiforgeryToken />
+    <button type="submit" id="navigate-to-the-same-page">Navigate to same page</button>
+</form>
+
+<hr />
+
+<p id="message">@_message</p>
+<p id="peeked-value">@_peekedValue</p>
+<p id="kept-value">@_keptValue</p>
+
+
+@code {
+    [CascadingParameter]
+    public ITempData? TempData { get; set; }
+
+    [SupplyParameterFromQuery]
+    public bool ShouldKeep { get; set; }
+
+    private string? _message;
+    private string? _peekedValue;
+    private string? _keptValue;
+
+    protected override void OnInitialized()
+    {
+        if (TempData is null)
+        {
+            return;
+        }
+        _message = TempData.Get("Message") as string;
+        _message ??= "No message";
+        _peekedValue = TempData.Peek("PeekedValue") as string;
+        _peekedValue ??= "No peeked value";
+        _keptValue = TempData.Get("KeptValue") as string;
+        _keptValue ??= "No kept value";
+        if (ShouldKeep && _keptValue is not null)
+        {
+            TempData.Keep("KeptValue");
+        }
+    }
+
+    private void SetValues()
+    {
+        if (TempData is null)
+        {
+            return;
+        }
+
+        TempData["Message"] = "Message";
+        TempData["PeekedValue"] = "Peeked value";
+        TempData["KeptValue"] = "Kept valie";
+    }
+
+    private void NavigateToSamePage() => NavigationManager.NavigateTo("/subdir/tempdata", forceLoad: true);
+}
