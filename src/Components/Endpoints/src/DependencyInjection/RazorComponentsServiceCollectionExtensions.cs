@@ -75,6 +75,10 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<WebAssemblySettingsEmitter>();
         services.TryAddScoped<ResourcePreloadService>();
 
+        // TO-DO: Change this for TempData to work correctly
+        services.TryAddSingleton<ITempData, TempData>();
+        services.TryAddCascadingValue(sp => sp.GetRequiredService<ITempData>());
+
         services.TryAddScoped<ResourceCollectionProvider>();
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<ResourceCollectionProvider>(services, RenderMode.InteractiveWebAssembly);
 
