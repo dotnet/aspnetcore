@@ -237,7 +237,7 @@ public static class UriHelper
         return string.Concat([request.Scheme, SchemeDelimiter, request.Host.Value, request.PathBase.Value, request.Path.Value, request.QueryString.Value]);
     }
 
-    private readonly struct UriComponents
+    private readonly ref struct UriComponents
     {
         public readonly string Scheme;
         public readonly string Host;
