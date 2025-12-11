@@ -101,11 +101,10 @@
     <ProjectReference Include="@(Reference->Distinct()->'%(ProjectPath)')" />
     <Reference Remove="@(Reference->HasMetadata('ProjectPath'))" />
   </ItemGroup>
-
+  
   <!-- Mark shared framework assemblies as non-transitive (privateassets=all) and non app-local (private=false). -->
   <ItemGroup Condition="'@(ProjectReference)' != '' and
-                        '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and
-                        '$(TargetFrameworkVersion)' == 'v$(NetCoreAppCurrentVersion)'">
+                        '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
     <_ProjectReferenceWithOriginalIdentity Include="@(ProjectReference)"
                                            OriginalIdentity="%(Identity)" />
     <_ProjectReferenceWithFilename Include="@(_ProjectReferenceWithOriginalIdentity->Metadata('Filename'))" />
