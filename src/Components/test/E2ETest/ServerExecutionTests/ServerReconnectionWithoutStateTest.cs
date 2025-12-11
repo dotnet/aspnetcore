@@ -60,7 +60,7 @@ public class ServerReconnectionWithoutStateTest : ServerTestBase<BasicTestAppSer
 
         // Check for page reload using multiple conditions:
         // 1. Previously captured element is stale
-        Browser.True(initialElement.IsStale);
+        Browser.True(() => IsElementStale(initialElement));
         // 2. Counter state is reset
         Browser.Equal("5", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
         // 3. WebSocket connection has been re-established
@@ -145,6 +145,19 @@ public class ServerReconnectionWithoutStateTest : ServerTestBase<BasicTestAppSer
         Assert.NotEqual(previousText, newText);
 
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+    }
+
+    private static bool IsElementStale(IWebElement element)
+    {
+        try
+        {
+            _ = element.Enabled;
+            return false;
+        }
+        catch (StaleElementReferenceException)
+        {
+            return true;
+        }
     }
 }
 
