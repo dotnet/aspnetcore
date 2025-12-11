@@ -19,6 +19,9 @@
     <Project Path="src/Antiforgery/src/Microsoft.AspNetCore.Antiforgery.csproj" />
     <Project Path="src/Antiforgery/test/Microsoft.AspNetCore.Antiforgery.Test.csproj" />
   </Folder>
+  <Folder Name="/src/Antiforgery/benchmarks/">
+    <Project Path="src/Antiforgery/benchmarks/Microsoft.AspNetCore.Antiforgery.Benchmarks/Microsoft.AspNetCore.Antiforgery.Benchmarks.csproj" Id="1dd9d6d8-44f5-4cc9-886d-ebfec9ec289e" />
+  </Folder>
   <Folder Name="/src/Azure/" />
   <Folder Name="/src/Azure/AzureAppServices.HostingStartup/">
     <Project Path="src/Azure/AzureAppServices.HostingStartup/src/Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj" />

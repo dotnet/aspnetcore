@@ -29,4 +29,8 @@
     <Compile Include="$(SharedSourceRoot)Buffers\RefPooledArrayBufferWriter.cs" Link="Shared\Buffers\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)Encoding\Int7BitEncodingUtils.cs" Link="Shared\Encoding\%(Filename)%(Extension)" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Antiforgery.Benchmarks"/>
+  </ItemGroup>
 </Project>
