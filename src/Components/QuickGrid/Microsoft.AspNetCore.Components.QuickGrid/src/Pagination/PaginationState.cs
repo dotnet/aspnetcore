@@ -39,6 +39,8 @@ public class PaginationState
     internal EventCallbackSubscribable<PaginationState> CurrentPageItemsChanged { get; } = new();
     internal EventCallbackSubscribable<PaginationState> TotalItemCountChangedSubscribable { get; } = new();
 
+    private bool _hasPendingTotalItemCountChangedEvent;
+
     /// <inheritdoc />
     public override int GetHashCode()
         => HashCode.Combine(ItemsPerPage, CurrentPageIndex, TotalItemCount);
@@ -60,6 +62,11 @@ public class PaginationState
     {
         if (totalItemCount == TotalItemCount)
         {
+            // Check if we have a pending event from a previous recursive call
+            if (_hasPendingTotalItemCountChangedEvent)
+            {
+                return RaiseTotalItemCountChangedAsync();
+            }
             return Task.CompletedTask;
         }
 
@@ -67,15 +74,26 @@ public class PaginationState
 
         if (CurrentPageIndex > 0 && CurrentPageIndex > LastPageIndex)
         {
+            // Set the flag because we are about to change the page index,
+            // which will trigger a refresh and call this method again.
+            _hasPendingTotalItemCountChangedEvent = true;
+
             // If the number of items has reduced such that the current page index is no longer valid, move
             // automatically to the final valid page index and trigger a further data load.
             return SetCurrentPageIndexAsync(LastPageIndex.Value);
         }
         else
         {
-            // Under normal circumstances, we just want any associated pagination UI to update
-            TotalItemCountChanged?.Invoke(this, TotalItemCount);
-            return TotalItemCountChangedSubscribable.InvokeCallbacksAsync(this);
+            return RaiseTotalItemCountChangedAsync();
         }
+    }
+
+    private Task RaiseTotalItemCountChangedAsync()
+    {
+        _hasPendingTotalItemCountChangedEvent = false; // clear the flag
+
+        // Under normal circumstances, we just want any associated pagination UI to update
+        TotalItemCountChanged?.Invoke(this, TotalItemCount);
+        return TotalItemCountChangedSubscribable.InvokeCallbacksAsync(this);
     }
 }
