@@ -96,6 +96,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
     this.reconnect = options?.type === 'reconnect';
 
+    this.resumeButton.style.display = 'none';
     this.reloadButton.style.display = 'none';
     this.rejoiningAnimation.style.display = 'block';
     this.status.innerHTML = 'Rejoining the server...';
@@ -106,6 +107,8 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
   update(options: ReconnectDisplayUpdateOptions): void {
     this.reconnect = options.type === 'reconnect';
     if (this.reconnect) {
+      this.reloadButton.style.display = 'none';
+      this.resumeButton.style.display = 'none';
       const { currentAttempt, secondsToNextAttempt } = options as ReconnectOptions;
       if (currentAttempt === 1 || secondsToNextAttempt === 0) {
         this.status.innerHTML = 'Rejoining the server...';
