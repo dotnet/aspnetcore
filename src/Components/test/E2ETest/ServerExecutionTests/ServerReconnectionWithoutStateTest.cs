@@ -54,12 +54,12 @@ public class ServerReconnectionWithoutStateTest : ServerTestBase<BasicTestAppSer
         var initialConnectedLogCount = GetConnectedLogCount();
 
         // Force close the connection
-        // Client should get rejected on both reconnection and circuit resume becaues server has no state
+        // The client should get rejected on both reconnection and circuit resume because the server has no state
         var javascript = (IJavaScriptExecutor)Browser;
         javascript.ExecuteScript("Blazor._internal.forceCloseConnection()");
 
         // Check for page reload using multiple conditions:
-        // 1. Previously caputred element is stale
+        // 1. Previously captured element is stale
         Browser.True(initialElement.IsStale);
         // 2. Counter state is reset
         Browser.Equal("5", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
