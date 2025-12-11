@@ -11,11 +11,11 @@ using TestServer;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
-public class TempDataTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
+public class TempDataTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>>>
 {
     public TempDataTest(
         BrowserFixture browserFixture,
-        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
+        BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>> serverFixture,
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
@@ -30,7 +30,6 @@ public class TempDataTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorCo
         Browser.Equal("No message", () => Browser.FindElement(By.Id("message")).Text);
 
         Browser.FindElement(By.Id("set-values-button")).Click();
-        Browser.FindElement(By.Id("navigate-to-the-same-page")).Click();
 
         Browser.Equal("Message", () => Browser.FindElement(By.Id("message")).Text);
     }
