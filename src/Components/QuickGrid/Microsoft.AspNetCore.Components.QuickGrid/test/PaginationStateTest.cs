@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Components.QuickGrid.Tests;
 
-public class PaginationTests
+public class PaginationStateTest
 {
     [Fact]
     public async Task PaginationState_RaisesTotalItemCountChanged_AfterPageResetWithSameTotalCount()
