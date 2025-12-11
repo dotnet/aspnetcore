@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core;
 internal sealed class AnyIPListenOptions : ListenOptions
 {
     internal AnyIPListenOptions(int port)
-        : base(new IPEndPoint(IPAddress.IPv6Any, port))
+        : base(new IPEndPoint(Socket.OSSupportsIPv6 ? IPAddress.IPv6Any : IPAddress.Any, port))
     {
     }
 

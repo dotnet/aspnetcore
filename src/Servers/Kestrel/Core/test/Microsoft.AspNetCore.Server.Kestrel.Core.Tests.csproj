@@ -30,5 +30,6 @@
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.Extensions.Diagnostics.Testing" />
     <Reference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <Reference Include="Microsoft.DotNet.RemoteExecutor" />
   </ItemGroup>
 </Project>
