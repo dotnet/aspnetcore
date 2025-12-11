@@ -342,5 +342,7 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AntiforgeryStateProvider>(Services, RenderMode.InteractiveWebAssembly);
         Services.AddSupplyValueFromQueryProvider();
+        ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(Services);
+        ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(Services);
     }
 }
