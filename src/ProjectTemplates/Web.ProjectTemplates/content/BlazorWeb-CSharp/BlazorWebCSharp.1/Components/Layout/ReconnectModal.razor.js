@@ -16,6 +16,7 @@ function handleReconnectStateChanged(event) {
     } else if (event.detail.state === "failed") {
         document.addEventListener("visibilitychange", retryWhenDocumentBecomesVisible);
     } else if (event.detail.state === "rejected") {
+        reconnectModal.close();
         location.reload();
     }
 }
@@ -52,7 +53,7 @@ async function resume() {
             location.reload();
         }
     } catch {
-        location.reload();
+        reconnectModal.classList.replace("components-reconnect-paused", "components-reconnect-resume-failed");
     }
 }
 
