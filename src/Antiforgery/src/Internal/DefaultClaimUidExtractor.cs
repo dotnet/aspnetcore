@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Antiforgery;
@@ -36,12 +38,28 @@ internal sealed class DefaultClaimUidExtractor : IClaimUidExtractor
         return Convert.ToBase64String(claimUidBytes);
     }
 
+    public bool TryExtractClaimUidBytes(ClaimsPrincipal claimsPrincipal, Span<byte> destination)
+    {
+        Debug.Assert(claimsPrincipal != null);
+
+        var uniqueIdentifierParameters = GetUniqueIdentifierParameters(claimsPrincipal.Identities);
+        if (uniqueIdentifierParameters is null)
+        {
+            return false;
+        }
+
+        // SHA256 always produces 32 bytes
+        Span<byte> claimUidBytes = stackalloc byte[32];
+        ComputeSha256(uniqueIdentifierParameters, claimUidBytes);
+        return true;
+    }
+
     public static IList<string>? GetUniqueIdentifierParameters(IEnumerable<ClaimsIdentity> claimsIdentities)
     {
         var identitiesList = claimsIdentities as List<ClaimsIdentity>;
         if (identitiesList == null)
         {
-            identitiesList = new List<ClaimsIdentity>(claimsIdentities);
+            identitiesList = [.. claimsIdentities];
         }
 
         for (var i = 0; i < identitiesList.Count; i++)
@@ -56,36 +74,36 @@ internal sealed class DefaultClaimUidExtractor : IClaimUidExtractor
                 claim => string.Equals("sub", claim.Type, StringComparison.Ordinal));
             if (subClaim != null && !string.IsNullOrEmpty(subClaim.Value))
             {
-                return new string[]
-                {
-                        subClaim.Type,
-                        subClaim.Value,
-                        subClaim.Issuer
-                };
+                return
+                [
+                    subClaim.Type,
+                    subClaim.Value,
+                    subClaim.Issuer
+                ];
             }
 
             var nameIdentifierClaim = identity.FindFirst(
                 claim => string.Equals(ClaimTypes.NameIdentifier, claim.Type, StringComparison.Ordinal));
             if (nameIdentifierClaim != null && !string.IsNullOrEmpty(nameIdentifierClaim.Value))
             {
-                return new string[]
-                {
-                        nameIdentifierClaim.Type,
-                        nameIdentifierClaim.Value,
-                        nameIdentifierClaim.Issuer
-                };
+                return
+                [
+                    nameIdentifierClaim.Type,
+                    nameIdentifierClaim.Value,
+                    nameIdentifierClaim.Issuer
+                ];
             }
 
             var upnClaim = identity.FindFirst(
                 claim => string.Equals(ClaimTypes.Upn, claim.Type, StringComparison.Ordinal));
             if (upnClaim != null && !string.IsNullOrEmpty(upnClaim.Value))
             {
-                return new string[]
-                {
-                        upnClaim.Type,
-                        upnClaim.Value,
-                        upnClaim.Issuer
-                };
+                return
+                [
+                    upnClaim.Type,
+                    upnClaim.Value,
+                    upnClaim.Issuer
+                ];
             }
         }
 
@@ -117,6 +135,43 @@ internal sealed class DefaultClaimUidExtractor : IClaimUidExtractor
         }
 
         return identifierParameters;
+    }
+
+    private static void ComputeSha256(IList<string> parameters, Span<byte> destination)
+    {
+        // Calculate total size needed for serialization
+        var totalSize = 0;
+        for (var i = 0; i < parameters.Count; i++)
+        {
+            var byteCount = System.Text.Encoding.UTF8.GetByteCount(parameters[i]);
+            totalSize += byteCount.Measure7BitEncodedUIntLength() + byteCount;
+        }
+
+        // Use stackalloc for small buffers, otherwise rent
+        byte[]? rentedBuffer = null;
+        var buffer = totalSize <= 256
+            ? stackalloc byte[256]
+            : (rentedBuffer = ArrayPool<byte>.Shared.Rent(totalSize));
+
+        try
+        {
+            var span = buffer[..totalSize];
+            var offset = 0;
+            for (var i = 0; i < parameters.Count; i++)
+            {
+                offset += span.Slice(offset).Write7BitEncodedString(parameters[i]);
+            }
+
+            // Hash directly into destination (SHA256 output is always 32 bytes)
+            SHA256.HashData(span.Slice(0, offset), destination);
+        }
+        finally
+        {
+            if (rentedBuffer is not null)
+            {
+                ArrayPool<byte>.Shared.Return(rentedBuffer);
+            }
+        }
     }
 
     private byte[] ComputeSha256(IEnumerable<string> parameters)

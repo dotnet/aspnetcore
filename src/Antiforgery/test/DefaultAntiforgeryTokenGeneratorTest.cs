@@ -4,6 +4,7 @@
 #nullable disable
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.InternalTesting;
 using Moq;
@@ -439,21 +440,15 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         };
 
         var differentToken = new BinaryBlob(256);
-        var mockClaimUidExtractor = new Mock<IClaimUidExtractor>();
-        mockClaimUidExtractor.Setup(o => o.ExtractClaimUid(It.Is<ClaimsPrincipal>(c => c.Identity == identity)))
-                             .Returns(Convert.ToBase64String(differentToken.GetData()));
+        var dummyClaimUidExtractor = new DummyClaimUidExtractor(identity, differentToken);
+        var tokenProvider = new DefaultAntiforgeryTokenGenerator(claimUidExtractor: dummyClaimUidExtractor, additionalDataProvider: null);
 
-        var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-            claimUidExtractor: mockClaimUidExtractor.Object,
-            additionalDataProvider: null);
-
-        string expectedMessage =
+        var expectedMessage =
             "The provided antiforgery token was meant for a different " +
             "claims-based user than the current user.";
 
         // Act
-        string message;
-        var result = tokenProvider.TryValidateTokenSet(httpContext, cookieToken, fieldtoken, out message);
+        var result = tokenProvider.TryValidateTokenSet(httpContext, cookieToken, fieldtoken, out var message);
 
         // Assert
         Assert.False(result);
@@ -581,17 +576,13 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
             ClaimUid = new BinaryBlob(256)
         };
 
-        var mockClaimUidExtractor = new Mock<IClaimUidExtractor>();
-        mockClaimUidExtractor.Setup(o => o.ExtractClaimUid(It.Is<ClaimsPrincipal>(c => c.Identity == identity)))
-                             .Returns(Convert.ToBase64String(fieldtoken.ClaimUid.GetData()));
-
+        var dummyClaimUidExtractor = new DummyClaimUidExtractor(identity, fieldtoken.ClaimUid);
         var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-            claimUidExtractor: mockClaimUidExtractor.Object,
+            claimUidExtractor: dummyClaimUidExtractor,
             additionalDataProvider: null);
 
         // Act
-        string message;
-        var result = tokenProvider.TryValidateTokenSet(httpContext, cookieToken, fieldtoken, out message);
+        var result = tokenProvider.TryValidateTokenSet(httpContext, cookieToken, fieldtoken, out var message);
 
         // Assert
         Assert.True(result);
@@ -614,6 +605,40 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         public override string Name
         {
             get { return String.Empty; }
+        }
+    }
+
+    private class DummyClaimUidExtractor : IClaimUidExtractor
+    {
+        private readonly IIdentity _identity;
+        private readonly BinaryBlob _differentToken;
+
+        public DummyClaimUidExtractor(IIdentity identity, BinaryBlob blob)
+        {
+            _identity = identity;
+            _differentToken = blob;
+        }
+
+        public string ExtractClaimUid(ClaimsPrincipal claimsPrincipal)
+        {
+            if (claimsPrincipal.Identity == _identity)
+            {
+                return Convert.ToBase64String(_differentToken.GetData());
+            }
+
+            Assert.Fail("Unexpected identity");
+            return default;
+        }
+
+        public bool TryExtractClaimUidBytes(ClaimsPrincipal claimsPrincipal, Span<byte> destination)
+        {
+            if (claimsPrincipal.Identity == _identity)
+            {
+                _differentToken.GetData().CopyTo(destination);
+                return true;
+            }
+
+            return false;
         }
     }
 }

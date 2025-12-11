@@ -137,15 +137,21 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
 
         // Is the incoming token meant for the current user?
         var currentUsername = string.Empty;
-        BinaryBlob? currentClaimUid = null;
+
+        var extractedClaimUidBytes = false;
+        Span<byte> currentClaimUidBytes = stackalloc byte[32];
 
         var authenticatedIdentity = GetAuthenticatedIdentity(httpContext.User);
         if (authenticatedIdentity != null)
         {
-            currentClaimUid = GetClaimUidBlob(_claimUidExtractor.ExtractClaimUid(httpContext.User));
-            if (currentClaimUid == null)
+            var requestTokenClaimUidLength = requestToken.ClaimUid?.Length;
+            if (requestTokenClaimUidLength is null)
             {
                 currentUsername = authenticatedIdentity.Name ?? string.Empty;
+            }
+            else
+            {
+                extractedClaimUidBytes = _claimUidExtractor.TryExtractClaimUidBytes(httpContext.User, currentClaimUidBytes);
             }
         }
 
@@ -164,14 +170,14 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
             return false;
         }
 
-        if (!object.Equals(requestToken.ClaimUid, currentClaimUid))
+        if (!AreIdenticalClaimUids(currentClaimUidBytes))
         {
             message = Resources.AntiforgeryToken_ClaimUidMismatch;
             return false;
         }
 
         // Is the AdditionalData valid?
-        if (_additionalDataProvider != null &&
+        if (_additionalDataProvider is not null &&
             !_additionalDataProvider.ValidateAdditionalData(httpContext, requestToken.AdditionalData))
         {
             message = Resources.AntiforgeryToken_AdditionalDataCheckFailed;
@@ -180,6 +186,19 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
 
         message = null;
         return true;
+
+        bool AreIdenticalClaimUids(Span<byte> claimUidBytes)
+        {
+            if (requestToken.ClaimUid is null)
+            {
+                return !extractedClaimUidBytes;
+            }
+            if (requestToken.ClaimUid.Length != claimUidBytes.Length)
+            {
+                return false;
+            }
+            return requestToken.ClaimUid.GetData().SequenceEqual(claimUidBytes);
+        }
     }
 
     private static BinaryBlob? GetClaimUidBlob(string? base64ClaimUid)

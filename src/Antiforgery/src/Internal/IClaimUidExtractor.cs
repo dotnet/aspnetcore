@@ -16,4 +16,12 @@ internal interface IClaimUidExtractor
     /// <param name="claimsPrincipal">The <see cref="ClaimsPrincipal"/>.</param>
     /// <returns>The claims identifier.</returns>
     string? ExtractClaimUid(ClaimsPrincipal claimsPrincipal);
+
+    /// <summary>
+    /// Computes and writes the SHA256 hash of the claims identifier into the provided destination span.
+    /// </summary>
+    /// <remarks>
+    /// SHA256 will always produce 32 bytes, so pre-allocate or stackalloc a byte span of that size.
+    /// </remarks>
+    bool TryExtractClaimUidBytes(ClaimsPrincipal claimsPrincipal, Span<byte> destination);
 }
