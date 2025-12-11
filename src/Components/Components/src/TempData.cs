@@ -13,19 +13,24 @@ public class TempData : ITempData
     public object? this[string key]
     {
         get => Get(key);
-        set => _data[key] = value;
+        set
+        {
+            _data[key] = value;
+            _retainedKeys.Add(key);
+        }
     }
 
     /// <inheritdoc/>
     public object? Get(string key)
     {
-        return _data.TryGetValue(key, out var value) ? value : null;
+        _retainedKeys.Remove(key);
+        return _data.GetValueOrDefault(key);
     }
 
     /// <inheritdoc/>
     public object? Peek(string key)
     {
-        return _data.TryGetValue(key, out var value) ? value : null;
+        return _data.GetValueOrDefault(key);
     }
 
     /// <inheritdoc/>
@@ -43,6 +48,29 @@ public class TempData : ITempData
         if (_data.ContainsKey(key))
         {
             _retainedKeys.Add(key);
+        }
+    }
+
+    /// <inheritdoc/>
+    public IDictionary<string, object?> GetDataToSave()
+    {
+        var dataToSave = new Dictionary<string, object?>();
+        foreach (var key in _retainedKeys)
+        {
+            dataToSave[key] = _data[key];
+        }
+        return dataToSave;
+    }
+
+    /// <inheritdoc/>
+    public void LoadDataFromCookie(IDictionary<string, object?> data)
+    {
+        _data.Clear();
+        _retainedKeys.Clear();
+        foreach (var kvp in data)
+        {
+            _data[kvp.Key] = kvp.Value;
+            _retainedKeys.Add(kvp.Key);
         }
     }
 }

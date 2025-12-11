@@ -8,8 +8,10 @@ Microsoft.AspNetCore.Components.ITempData.this[string! key].set -> void
 Microsoft.AspNetCore.Components.ITempData.Peek(string! key) -> object?
 Microsoft.AspNetCore.Components.TempData
 Microsoft.AspNetCore.Components.TempData.Get(string! key) -> object?
+Microsoft.AspNetCore.Components.TempData.GetDataToSave() -> System.Collections.Generic.IDictionary<string!, object?>!
 Microsoft.AspNetCore.Components.TempData.Keep() -> void
 Microsoft.AspNetCore.Components.TempData.Keep(string! key) -> void
+Microsoft.AspNetCore.Components.TempData.LoadDataFromCookie(System.Collections.Generic.IDictionary<string!, object?>! data) -> void
 Microsoft.AspNetCore.Components.TempData.Peek(string! key) -> object?
 Microsoft.AspNetCore.Components.TempData.TempData() -> void
 Microsoft.AspNetCore.Components.TempData.this[string! key].get -> object?

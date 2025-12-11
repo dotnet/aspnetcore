@@ -10,6 +10,4 @@ public interface ITempData
     object? Peek(string key);
     void Keep();
     void Keep(string key);
-
-    //TO-DO: Add Save to save and clean-up after request
 }

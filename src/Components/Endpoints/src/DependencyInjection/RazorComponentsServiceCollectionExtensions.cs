@@ -74,10 +74,26 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddCascadingValue(sp => sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext);
         services.TryAddScoped<WebAssemblySettingsEmitter>();
         services.TryAddScoped<ResourcePreloadService>();
-
-        // TO-DO: Change this for TempData to work correctly
-        services.TryAddSingleton<ITempData, TempData>();
-        services.TryAddCascadingValue(sp => sp.GetRequiredService<ITempData>());
+        services.TryAddCascadingValue(sp =>
+        {
+            var httpContext = sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext;
+            if (httpContext is null)
+            {
+                return null!;
+            }
+            var key = typeof(ITempData);
+            if (!httpContext.Items.TryGetValue(key, out var tempData))
+            {
+                var tempDataInstance = TempDataService.Load(httpContext);
+                httpContext.Items[key] = tempDataInstance;
+                httpContext.Response.OnStarting(() =>
+                {
+                    TempDataService.Save(httpContext, tempDataInstance);
+                    return Task.CompletedTask;
+                });
+            }
+            return (ITempData)httpContext.Items[key]!;
+        });
 
         services.TryAddScoped<ResourceCollectionProvider>();
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<ResourceCollectionProvider>(services, RenderMode.InteractiveWebAssembly);
