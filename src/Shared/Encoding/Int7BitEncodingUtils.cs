@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Shared;
 
@@ -100,9 +96,14 @@ internal static class Int7BitEncodingUtils
             return 1;
         }
 
-        var stringByteCount = System.Text.Encoding.UTF8.GetByteCount(value);
+        var stringByteCount = Encoding.UTF8.GetByteCount(value);
         var lengthPrefixSize = target.Write7BitEncodedInt(stringByteCount);
-        System.Text.Encoding.UTF8.GetBytes(value, target.Slice(lengthPrefixSize));
+#if NETCOREAPP
+        Encoding.UTF8.GetBytes(value.AsSpan(), target[lengthPrefixSize..]);
+#else
+        var stringBytes = Encoding.UTF8.GetBytes(value);
+        stringBytes.CopyTo(target.Slice(lengthPrefixSize));
+#endif
 
         return lengthPrefixSize + stringByteCount;
     }
@@ -119,7 +120,7 @@ internal static class Int7BitEncodingUtils
             return 1;
         }
 
-        var stringByteCount = System.Text.Encoding.UTF8.GetByteCount(value);
+        var stringByteCount = Encoding.UTF8.GetByteCount(value);
         return stringByteCount.Measure7BitEncodedUIntLength() + stringByteCount;
     }
 
@@ -144,7 +145,7 @@ internal static class Int7BitEncodingUtils
             throw new FormatException("Bad 7-bit encoded string.");
         }
 
-        value = System.Text.Encoding.UTF8.GetString(bytes.Slice(consumed, length));
+        value = Encoding.UTF8.GetString(bytes.Slice(consumed, length));
         consumed += length;
         return consumed;
     }
