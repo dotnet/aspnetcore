@@ -19,13 +19,13 @@ namespace Microsoft.AspNetCore.Antiforgery.Benchmarks.Benchmarks;
     |    TryValidateTokenSet_ClaimsBased | 308.4674 ns | 3.3256 ns | 3.1108 ns |     3,241,833.1 | 0.0038 |     - |     - |     312 B |
 
     this PR:
-    |                             Method |       Mean |      Error |     StdDev |     Median |          Op/s |  Gen 0 | Gen 1 | Gen 2 | Allocated |
-    |----------------------------------- |-----------:|-----------:|-----------:|-----------:|--------------:|-------:|------:|------:|----------:|
-    |     GenerateRequestToken_Anonymous |  17.814 ns |  0.3614 ns |  0.4017 ns |  17.771 ns |  56,134,225.3 | 0.0007 |     - |     - |      56 B |
-    | GenerateRequestToken_Authenticated | 459.848 ns |  9.1450 ns |  9.7851 ns | 461.283 ns |   2,174,632.5 | 0.0052 |     - |     - |     424 B |
-    |      TryValidateTokenSet_Anonymous |   9.784 ns |  0.6728 ns |  1.9837 ns |  10.357 ns | 102,207,305.5 |      - |     - |     - |         - |
-    |  TryValidateTokenSet_Authenticated |  17.300 ns |  0.4886 ns |  1.4407 ns |  17.929 ns |  57,804,630.5 |      - |     - |     - |         - |
-    |    TryValidateTokenSet_ClaimsBased | 380.134 ns | 12.9953 ns | 38.3168 ns | 394.899 ns |   2,630,649.7 | 0.0014 |     - |     - |     120 B |
+    |                             Method |       Mean  |     Error |     StdDev |          Op/s |  Gen 0 | Gen 1 | Gen 2 | Allocated |
+    |----------------------------------- |------------:|----------:|-----------:|--------------:|-------:|------:|------:|----------:|
+    |     GenerateRequestToken_Anonymous |  11.190 ns  | 0.2428 ns |  0.6046 ns |  89,364,681.9 | 0.0007 |     - |     - |      56 B |
+    | GenerateRequestToken_Authenticated | 338.056 ns  | 6.7313 ns | 14.9161 ns |   2,958,092.2 | 0.0052 |     - |     - |     424 B |
+    |      TryValidateTokenSet_Anonymous |   7.966 ns  | 0.1616 ns |  0.2915 ns | 125,531,038.3 |      - |     - |     - |         - |
+    |  TryValidateTokenSet_Authenticated |  13.386 ns  | 0.2476 ns |  0.3550 ns |  74,707,554.5 |      - |     - |     - |         - |
+    |    TryValidateTokenSet_ClaimsBased | 220.111 ns  | 4.2723 ns |  5.7034 ns |   4,543,156.3 | 0.0014 |     - |     - |     120 B |
 
  */
 

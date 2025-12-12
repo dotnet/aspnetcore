@@ -56,9 +56,9 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
         {
             isIdentityAuthenticated = true;
 
-            Span<byte> claimUidBytesRent = stackalloc byte[32];
-            var extractClaimUidBytesResult = ClaimUidExtractor.TryExtractClaimUidBytes(httpContext.User, claimUidBytesRent);
-            requestToken.ClaimUid = extractClaimUidBytesResult ? new BinaryBlob(256, claimUidBytesRent.ToArray()) : null;
+            var claimUidBytes = new byte[32];
+            var extractClaimUidBytesResult = ClaimUidExtractor.TryExtractClaimUidBytes(httpContext.User, claimUidBytes);
+            requestToken.ClaimUid = extractClaimUidBytesResult ? new BinaryBlob(256, claimUidBytes) : null;
 
             if (requestToken.ClaimUid == null)
             {
