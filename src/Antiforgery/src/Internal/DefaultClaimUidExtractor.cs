@@ -9,9 +9,12 @@ using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Antiforgery;
 
-internal static class ClaimUidExtractor
+/// <summary>
+/// Default implementation of <see cref="IClaimUidExtractor"/>.
+/// </summary>
+internal sealed class DefaultClaimUidExtractor : IClaimUidExtractor
 {
-    public static bool TryExtractClaimUidBytes(ClaimsPrincipal claimsPrincipal, Span<byte> destination)
+    public bool TryExtractClaimUidBytes(ClaimsPrincipal claimsPrincipal, Span<byte> destination)
     {
         Debug.Assert(claimsPrincipal != null);
 

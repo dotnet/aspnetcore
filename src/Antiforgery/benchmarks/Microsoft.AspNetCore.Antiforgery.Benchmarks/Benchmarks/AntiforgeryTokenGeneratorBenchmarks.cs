@@ -100,7 +100,7 @@ public class AntiforgeryTokenGeneratorBenchmarks
 
         // For claims-based users, we need to extract the ClaimUid
         var claimUid = new byte[32];
-        _ = ClaimUidExtractor.TryExtractClaimUidBytes(_claimsHttpContext.User, claimUid);
+        _ = new DefaultClaimUidExtractor().TryExtractClaimUidBytes(_claimsHttpContext.User, claimUid);
         _claimsRequestToken = new AntiforgeryToken
         {
             IsCookieToken = false,

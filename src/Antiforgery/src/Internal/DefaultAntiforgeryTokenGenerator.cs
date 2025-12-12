@@ -10,10 +10,14 @@ namespace Microsoft.AspNetCore.Antiforgery;
 
 internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenerator
 {
+    private readonly IClaimUidExtractor _claimUidExtractor;
     private readonly IAntiforgeryAdditionalDataProvider _additionalDataProvider;
 
-    public DefaultAntiforgeryTokenGenerator(IAntiforgeryAdditionalDataProvider additionalDataProvider)
+    public DefaultAntiforgeryTokenGenerator(
+        IClaimUidExtractor claimUidExtractor,
+        IAntiforgeryAdditionalDataProvider additionalDataProvider)
     {
+        _claimUidExtractor = claimUidExtractor;
         _additionalDataProvider = additionalDataProvider;
     }
 
@@ -57,7 +61,7 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
             isIdentityAuthenticated = true;
 
             var claimUidBytes = new byte[32];
-            var extractClaimUidBytesResult = ClaimUidExtractor.TryExtractClaimUidBytes(httpContext.User, claimUidBytes);
+            var extractClaimUidBytesResult = _claimUidExtractor.TryExtractClaimUidBytes(httpContext.User, claimUidBytes);
             requestToken.ClaimUid = extractClaimUidBytesResult ? new BinaryBlob(256, claimUidBytes) : null;
 
             if (requestToken.ClaimUid == null)
@@ -150,7 +154,7 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
             }
             else
             {
-                extractedClaimUidBytes = ClaimUidExtractor.TryExtractClaimUidBytes(httpContext.User, currentClaimUidBytes);
+                extractedClaimUidBytes = _claimUidExtractor.TryExtractClaimUidBytes(httpContext.User, currentClaimUidBytes);
             }
         }
 

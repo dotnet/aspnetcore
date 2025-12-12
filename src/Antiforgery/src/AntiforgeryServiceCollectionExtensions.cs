@@ -31,6 +31,7 @@ public static class AntiforgeryServiceCollectionExtensions
         services.TryAddSingleton<IAntiforgeryTokenGenerator, DefaultAntiforgeryTokenGenerator>();
         services.TryAddSingleton<IAntiforgeryTokenSerializer, DefaultAntiforgeryTokenSerializer>();
         services.TryAddSingleton<IAntiforgeryTokenStore, DefaultAntiforgeryTokenStore>();
+        services.TryAddSingleton<IClaimUidExtractor, DefaultClaimUidExtractor>();
         services.TryAddSingleton<IAntiforgeryAdditionalDataProvider, DefaultAntiforgeryAdditionalDataProvider>();
 
         return services;

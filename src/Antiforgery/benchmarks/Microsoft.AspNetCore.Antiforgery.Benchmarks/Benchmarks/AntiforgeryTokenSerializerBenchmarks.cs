@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Benchmarks.Benchmarks;
 
     This PR:
     |      Method |     Mean |     Error |    StdDev |      Op/s |  Gen 0 | Gen 1 | Gen 2 | Allocated |
-    |------------ |---------:|----------:|----------:| ----------:|-------:|------:|------:|----------:|
+    |------------ |---------:|----------:|----------:| ---------:|-------:|------:|------:|----------:|
     |   Serialize | 1.932 us | 0.0110 us | 0.0098 us | 517,688.9 | 0.0038 |     - |     - |     544 B |
     | Deserialize | 1.927 us | 0.0107 us | 0.0100 us | 519,058.2 | 0.0038 |     - |     - |     344 B |
  */
