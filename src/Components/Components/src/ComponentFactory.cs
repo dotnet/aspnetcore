@@ -83,17 +83,7 @@ internal sealed class ComponentFactory
 
         if (!_propertyInjectionDisabled)
         {
-            if (component.GetType() == componentType)
-            {
-                // Fast, common case: use the cached data we already looked up
-                var propertyActivator = _propertyActivator.GetActivator(componentType);
-                propertyActivator(serviceProvider, component);
-            }
-            else
-            {
-                // Uncommon case where the activator/resolver returned a different type. Needs an extra cache lookup.
-                PerformPropertyInjection(serviceProvider, component);
-            }
+            PerformPropertyInjection(serviceProvider, component);
         }
 
         return component;
