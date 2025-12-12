@@ -21,7 +21,10 @@
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\NamedPipesSupportedAttribute.cs" Link="shared\TransportTestHelpers\NamedPipesSupportedAttribute.cs" />
 
     <ProjectReference Include="..\..\tools\CodeGenerator\CodeGenerator.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
   </ItemGroup>
 
 </Project>

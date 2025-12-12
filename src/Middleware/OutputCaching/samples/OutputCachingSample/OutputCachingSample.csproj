@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <!-- Mvc.Core is referenced only for its attributes -->
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
   </ItemGroup>

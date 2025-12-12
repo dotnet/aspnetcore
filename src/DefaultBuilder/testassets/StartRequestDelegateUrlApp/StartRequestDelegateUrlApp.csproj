@@ -7,6 +7,8 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
   </ItemGroup>
 
 </Project>

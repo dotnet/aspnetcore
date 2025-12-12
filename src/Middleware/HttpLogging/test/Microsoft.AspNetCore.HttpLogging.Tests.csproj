@@ -10,6 +10,7 @@
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
   </ItemGroup>
 
 </Project>

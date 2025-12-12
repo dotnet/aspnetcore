@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
