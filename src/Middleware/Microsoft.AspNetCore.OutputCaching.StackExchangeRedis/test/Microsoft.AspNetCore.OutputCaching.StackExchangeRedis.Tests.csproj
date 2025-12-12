@@ -6,6 +6,8 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.OutputCaching.StackExchangeRedis" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
   </ItemGroup>
 
 </Project>

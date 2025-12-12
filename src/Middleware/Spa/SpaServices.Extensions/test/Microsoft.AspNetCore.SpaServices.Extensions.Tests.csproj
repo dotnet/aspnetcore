@@ -9,6 +9,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.SpaServices.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.Extensions.DiagnosticAdapter" />
     <Reference Include="Microsoft.Extensions.Hosting" />
