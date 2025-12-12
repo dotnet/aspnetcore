@@ -379,7 +379,7 @@ public class KestrelServerLimits
     /// The connection is aborted if the write has not completed by the time that timer expires.
     /// </para>
     /// <para>
-    /// This rate may not accurately measure how much data a client is reading. This is because data is read from the transport
+    /// This rate may not accurately measure how much data a client is reading. This is because data is read from the application
     /// until the transport's operating system buffers are full.
     /// </para>
     /// </remarks>
