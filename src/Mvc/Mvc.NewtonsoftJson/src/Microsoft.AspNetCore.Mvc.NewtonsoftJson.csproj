@@ -21,7 +21,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
     <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
-    <Reference Include="Microsoft.Microsoft.Extensions.ObjectPool" />
+    <Reference Include="Microsoft.Extensions.ObjectPool" />
     <Reference Include="Newtonsoft.Json" />
     <Reference Include="Newtonsoft.Json.Bson" />
   </ItemGroup>
