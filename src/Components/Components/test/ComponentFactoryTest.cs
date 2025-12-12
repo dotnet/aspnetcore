@@ -94,6 +94,8 @@ public class ComponentFactoryTest
         Assert.Null(component.Property4);
         // Property on the base type with the [Inject] attribute should
         Assert.NotNull(((ComponentWithInjectProperties)component).Property4);
+        // Property on derived type with [Inject] should be assigned
+        Assert.NotNull(component.Property5);
     }
 
     [Fact]
@@ -316,6 +318,71 @@ public class ComponentFactoryTest
         // Since the types differ, GetActivator is called twice (once for requested, once for actual)
         // But the activator should have been invoked for the actual component type
         Assert.True(customPropertyActivator.ActivatorInvoked);
+    }
+
+    [Fact]
+    public void InstantiateComponent_WhenActivatorReturnsSubtype_InjectsAllSubtypeProperties()
+    {
+        // Arrange
+        // Request base type but activator returns derived type
+        var requestedType = typeof(ComponentWithInjectProperties);
+        var serviceProvider = GetServiceProvider();
+        var factory = new ComponentFactory(
+            new CustomComponentActivator<DerivedComponent>(),
+            new DefaultComponentPropertyActivator(),
+            new TestRenderer());
+
+        // Act
+        var instance = factory.InstantiateComponent(serviceProvider, requestedType, null, null);
+
+        // Assert
+        var component = Assert.IsType<DerivedComponent>(instance);
+        
+        // All base type properties with [Inject] should be injected
+        Assert.NotNull(component.Property1);
+        Assert.NotNull(component.GetProperty2());
+        Assert.NotNull(component.Property3);
+        Assert.NotNull(((ComponentWithInjectProperties)component).Property4);
+        Assert.NotNull(component.KeyedProperty);
+        
+        // Derived type properties with [Inject] should also be injected
+        Assert.NotNull(component.Property5);
+        
+        // Derived type property without [Inject] should not be injected
+        Assert.Null(component.Property4);
+    }
+
+    [Fact]
+    public void InstantiateComponent_WhenActivatorReturnsExactType_InjectsPropertiesIdenticallyToSubtype()
+    {
+        // Arrange
+        // This test validates that there's no difference in property injection behavior
+        // whether the activator returns the exact type or a subtype
+        var requestedType = typeof(DerivedComponent);
+        var serviceProvider = GetServiceProvider();
+        var factory = new ComponentFactory(
+            new CustomComponentActivator<DerivedComponent>(),
+            new DefaultComponentPropertyActivator(),
+            new TestRenderer());
+
+        // Act
+        var instance = factory.InstantiateComponent(serviceProvider, requestedType, null, null);
+
+        // Assert
+        var component = Assert.IsType<DerivedComponent>(instance);
+        
+        // All base type properties with [Inject] should be injected
+        Assert.NotNull(component.Property1);
+        Assert.NotNull(component.GetProperty2());
+        Assert.NotNull(component.Property3);
+        Assert.NotNull(((ComponentWithInjectProperties)component).Property4);
+        Assert.NotNull(component.KeyedProperty);
+        
+        // Derived type properties with [Inject] should also be injected
+        Assert.NotNull(component.Property5);
+        
+        // Derived type property without [Inject] should not be injected
+        Assert.Null(component.Property4);
     }
 
     [Fact]
