@@ -42,6 +42,8 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.Net.Http.Headers" />
     <Reference Include="Microsoft.Windows.CsWin32" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
       <PrivateAssets>all</PrivateAssets>
