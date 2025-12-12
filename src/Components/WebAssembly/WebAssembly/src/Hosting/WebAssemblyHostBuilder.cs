@@ -343,8 +343,9 @@ public sealed class WebAssemblyHostBuilder
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AntiforgeryStateProvider>(Services, RenderMode.InteractiveWebAssembly);
         Services.AddSupplyValueFromQueryProvider();
         
-        // Register metrics and tracing when supported (opt-out via feature switch)
-        if (!AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out var metricsDisabled) || !metricsDisabled)
+        // Register metrics and tracing by default (opt-out via feature switch for trimming)
+        var isTelemetryDisabled = AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out var switchValue) && switchValue == false;
+        if (!isTelemetryDisabled)
         {
             ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(Services);
             ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(Services);
