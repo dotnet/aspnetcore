@@ -4,11 +4,19 @@
 
 <h1>TempData Basic Test</h1>
 
-<div id="ready">Ready</div>
-
-<form method="post" @formname="SetTempData" @onsubmit="SetValues">
+<form method="post" @formname="SetTempData" @onsubmit="() => SetValues()">
     <AntiforgeryToken />
     <button type="submit" id="set-values-button">Set TempData Values</button>
+</form>
+
+<form method="post" @formname="SetTempDataDiffPage" @onsubmit="() => SetValues(differentPage: true)">
+    <AntiforgeryToken />
+    <button type="submit" id="set-values-button-diff-page">Set TempData Values and Redirect to Different Page</button>
+</form>
+
+<form method="post" @formname="JustRedirect" @onsubmit="() => NavigateToSamePage()">
+    <AntiforgeryToken />
+    <button type="submit" id="redirect-button">Navigate to the Same Page</button>
 </form>
 
 <hr />
@@ -19,11 +27,14 @@
 
 
 @code {
+    [SupplyParameterFromForm(Name = "_handler")]
+    public string? Handler { get; set; }
+
     [CascadingParameter]
     public ITempData? TempData { get; set; }
 
     [SupplyParameterFromQuery]
-    public bool ShouldKeep { get; set; }
+    public string ValueToKeep { get; set; } = string.Empty;
 
     private string? _message;
     private string? _peekedValue;
@@ -31,34 +42,40 @@
 
     protected override void OnInitialized()
     {
-        if (TempData is null)
+        if (Handler is not null)
         {
             return;
         }
-        _message = TempData.Get("Message") as string;
-        _message ??= "No message";
-        _peekedValue = TempData.Peek("PeekedValue") as string;
-        _peekedValue ??= "No peeked value";
-        _keptValue = TempData.Get("KeptValue") as string;
-        _keptValue ??= "No kept value";
-        if (ShouldKeep && _keptValue is not null)
-        {
-            TempData.Keep("KeptValue");
-        }
-    }
+        _message = TempData!.Get("Message") as string ?? "No message";
+        _peekedValue = TempData!.Peek("PeekedValue") as string ?? "No peeked value";
+        _keptValue = TempData!.Get("KeptValue") as string ?? "No kept value";
 
-    private void SetValues()
+        Console.WriteLine("ValueToKeep = " + ValueToKeep);
+
+        if (ValueToKeep == "all")
+        {
+            TempData!.Keep();
+        }
+        else if (!string.IsNullOrEmpty(ValueToKeep))
+        {
+            TempData!.Keep(ValueToKeep);
+        }
+   }
+
+    private void SetValues(bool differentPage = false)
     {
-        if (TempData is null)
+        TempData!["Message"] = "Message";
+        TempData!["PeekedValue"] = "Peeked value";
+        TempData!["KeptValue"] = "Kept value";
+        if (differentPage)
         {
+            NavigateToDifferentPage();
             return;
         }
-
-        TempData["Message"] = "Message";
-        TempData["PeekedValue"] = "Peeked value";
-        TempData["KeptValue"] = "Kept value";
-        NavigateToSamePage();
+        NavigateToSamePageKeep(ValueToKeep);
     }
 
     private void NavigateToSamePage() => NavigationManager.NavigateTo("/subdir/tempdata", forceLoad: true);
+    private void NavigateToSamePageKeep(string valueToKeep) => NavigationManager.NavigateTo($"/subdir/tempdata?ValueToKeep={valueToKeep}", forceLoad: true);
+    private void NavigateToDifferentPage() => NavigationManager.NavigateTo("/subdir/tempdata/read", forceLoad: true);
 }
