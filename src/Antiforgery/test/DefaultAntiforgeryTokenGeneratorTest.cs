@@ -86,7 +86,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         httpContext.User = new ClaimsPrincipal(new MyAuthenticatedIdentityWithoutUsername());
 
         var options = new AntiforgeryOptions();
-        var claimUidExtractor = new Mock<IClaimUidExtractor>().Object;
+        var claimUidExtractor = new DummyClaimUidExtractor(httpContext.User.Identity!, blob: null, failsExtraction: true);
 
         var tokenProvider = new DefaultAntiforgeryTokenGenerator(
             claimUidExtractor: claimUidExtractor,
@@ -120,7 +120,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         mockAdditionalDataProvider.Setup(o => o.GetAdditionalData(httpContext))
                                   .Returns("additional-data");
 
-        var claimUidExtractor = new Mock<IClaimUidExtractor>().Object;
+        var claimUidExtractor = new DummyClaimUidExtractor(httpContext.User.Identity!, blob: null, failsExtraction: true);
 
         var tokenProvider = new DefaultAntiforgeryTokenGenerator(
             claimUidExtractor: claimUidExtractor,
@@ -183,7 +183,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
 
         httpContext.User = new ClaimsPrincipal(mockIdentity.Object);
 
-        var claimUidExtractor = new Mock<IClaimUidExtractor>().Object;
+        var claimUidExtractor = new DummyClaimUidExtractor(httpContext.User.Identity!, blob: null, failsExtraction: true);
 
         var tokenProvider = new DefaultAntiforgeryTokenGenerator(
             claimUidExtractor: claimUidExtractor,

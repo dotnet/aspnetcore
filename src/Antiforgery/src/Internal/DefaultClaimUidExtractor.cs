@@ -24,9 +24,7 @@ internal sealed class DefaultClaimUidExtractor : IClaimUidExtractor
             return false;
         }
 
-        // SHA256 always produces 32 bytes
-        Span<byte> claimUidBytes = stackalloc byte[32];
-        ComputeSha256(uniqueIdentifierParameters, claimUidBytes);
+        ComputeSha256(uniqueIdentifierParameters, destination);
         return true;
     }
 

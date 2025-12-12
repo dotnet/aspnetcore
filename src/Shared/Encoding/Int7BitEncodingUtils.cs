@@ -124,12 +124,12 @@ internal static class Int7BitEncodingUtils
     }
 
     /// <summary>
-    /// Returns consumed length
+    /// Reads a 7-bit length-prefixed UTF-8 encoded string from the specified byte span and returns the number of bytes consumed.
     /// </summary>
-    /// <param name="bytes"></param>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    /// <exception cref="FormatException"></exception>
+    /// <param name="bytes">The span of bytes containing the 7-bit encoded length and UTF-8 encoded string data.</param>
+    /// <param name="value">When this method returns, contains the decoded string value, or <see cref="string.Empty"/> if the length is zero.</param>
+    /// <returns>The total number of bytes consumed from <paramref name="bytes"/> to read the string.</returns>
+    /// <exception cref="FormatException">Thrown if the encoded length is greater than the available bytes in <paramref name="bytes"/>.</exception>
     internal static int Read7BitEncodedString(this ReadOnlySpan<byte> bytes, out string value)
     {
         value = string.Empty;
@@ -139,7 +139,7 @@ internal static class Int7BitEncodingUtils
             return consumed;
         }
 
-        if (bytes.Length < length)
+        if (bytes.Length < consumed + length)
         {
             throw new FormatException("Bad 7-bit encoded string.");
         }

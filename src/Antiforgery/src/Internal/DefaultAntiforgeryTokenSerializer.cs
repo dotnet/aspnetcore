@@ -45,20 +45,31 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
 
             var tokenBytesDecoded = tokenBytes.Slice(0, bytesWritten);
 
-            var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[255]);
-            try
+            if (_perfCryptoSystem is not null)
             {
-                _perfCryptoSystem!.Unprotect(tokenBytesDecoded, ref protectBuffer);
-
-                var token = Deserialize(protectBuffer.WrittenSpan);
-                if (token != null)
+                var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[255]);
+                try
+                {
+                    _perfCryptoSystem!.Unprotect(tokenBytesDecoded, ref protectBuffer);
+                    var token = Deserialize(protectBuffer.WrittenSpan);
+                    if (token is not null)
+                    {
+                        return token;
+                    }
+                }
+                finally
+                {
+                    protectBuffer.Dispose();
+                }
+            }
+            else
+            {
+                var unprotectedBytes = _defaultCryptoSystem.Unprotect(tokenBytesDecoded.ToArray());
+                var token = Deserialize(unprotectedBytes);
+                if (token is not null)
                 {
                     return token;
                 }
-            }
-            finally
-            {
-                protectBuffer.Dispose();
             }
         }
         catch (Exception ex)
@@ -202,7 +213,6 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
         }
 
         byte[]? tokenBytesRent = null;
-        var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[255]);
 
         var rent = totalSize < 256
             ? stackalloc byte[255]
@@ -233,8 +243,24 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
                 offset += tokenBytes[offset..].Write7BitEncodedString(token.AdditionalData);
             }
 
-            _perfCryptoSystem!.Protect(tokenBytes, ref protectBuffer);
-            return Base64Url.EncodeToString(protectBuffer.WrittenSpan);
+            if (_perfCryptoSystem is not null)
+            {
+                var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[255]);
+                try
+                {
+                    _perfCryptoSystem!.Protect(tokenBytes, ref protectBuffer);
+                    return Base64Url.EncodeToString(protectBuffer.WrittenSpan);
+                }
+                finally
+                {
+                    protectBuffer.Dispose();
+                }
+            }
+            else
+            {
+                var protectedBytes = _defaultCryptoSystem.Protect(tokenBytes.ToArray());
+                return Base64Url.EncodeToString(protectedBytes);
+            }
         }
         finally
         {
@@ -242,8 +268,6 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
             {
                 ArrayPool<byte>.Shared.Return(tokenBytesRent);
             }
-
-            protectBuffer.Dispose();
         }
     }
 }

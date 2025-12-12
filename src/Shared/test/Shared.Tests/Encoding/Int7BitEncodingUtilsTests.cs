@@ -172,6 +172,19 @@ public class Int7BitEncodingUtilsTests
     }
 
     [Fact]
+    public void Read7BitEncodedString_WithMultiByteLengthPrefixAndTruncatedData_ThrowsFormatException()
+    {
+        Assert.Throws<FormatException>(() =>
+        {
+            // Length prefix 0xC8 0x01 = 200 (multi-byte), but only 2 bytes of string data follow
+            // Total: 4 bytes, but need 2 (prefix) + 200 (data) = 202 bytes
+            ReadOnlySpan<byte> source = [0xC8, 0x01, 0x41, 0x42];
+
+            return source.Read7BitEncodedString(out _);
+        });
+    }
+
+    [Fact]
     public void Read7BitEncodedString_WithTruncatedLengthPrefix_ThrowsFormatException()
     {
         Assert.Throws<FormatException>(() =>
