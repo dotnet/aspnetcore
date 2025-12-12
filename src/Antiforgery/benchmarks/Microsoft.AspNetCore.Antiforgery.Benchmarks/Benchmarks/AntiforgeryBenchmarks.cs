@@ -11,22 +11,6 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Antiforgery.Benchmarks.Benchmarks;
 
-/*
-
-    main branch:
-    |               Method |     Mean |    Error |   StdDev |     Op/s | Gen 0 | Gen 1 | Gen 2 | Allocated |
-    |--------------------- |---------:|---------:|---------:|---------:|------:|------:|------:|----------:|
-    |    GetAndStoreTokens | 59.56 us | 2.482 us | 7.082 us | 16,789.6 |     - |     - |     - |      5 KB |
-    | ValidateRequestAsync | 50.60 us | 2.150 us | 6.167 us | 19,764.1 |     - |     - |     - |      4 KB |
-
-    this PR:
-    |               Method |     Mean |    Error |   StdDev |     Op/s | Gen 0 | Gen 1 | Gen 2 | Allocated |
-    |--------------------- |---------:|---------:|---------:|---------:|------:|------:|------:|----------:|
-    |    GetAndStoreTokens | 49.62 us | 1.386 us | 3.954 us | 20,153.9 |     - |     - |     - |      3 KB |
-    | ValidateRequestAsync | 43.67 us | 1.541 us | 4.471 us | 22,900.6 |     - |     - |     - |      3 KB |
-
- */
-
 [AspNetCoreBenchmark]
 public class AntiforgeryBenchmarks
 {

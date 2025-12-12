@@ -8,27 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Antiforgery.Benchmarks.Benchmarks;
 
-/*
-    main branch:
-    |                             Method |        Mean |     Error |    StdDev |            Op/s |  Gen 0 | Gen 1 | Gen 2 | Allocated |
-    |----------------------------------- |------------:|----------:|----------:|----------------:|-------:|------:|------:|----------:|
-    |     GenerateRequestToken_Anonymous |  11.0555 ns | 0.1203 ns | 0.1066 ns |    90,452,434.9 | 0.0007 |     - |     - |      56 B |
-    | GenerateRequestToken_Authenticated | 401.2545 ns | 7.1693 ns | 6.3554 ns |     2,492,184.2 | 0.0076 |     - |     - |     592 B |
-    |      TryValidateTokenSet_Anonymous |   6.7227 ns | 0.0357 ns | 0.0316 ns |   148,750,552.9 |      - |     - |     - |         - |
-    |  TryValidateTokenSet_Authenticated | 508.1742 ns | 4.4728 ns | 3.7350 ns |     1,967,829.1 | 0.0095 |     - |     - |     760 B |
-    |    TryValidateTokenSet_ClaimsBased | 308.4674 ns | 3.3256 ns | 3.1108 ns |     3,241,833.1 | 0.0038 |     - |     - |     312 B |
-
-    this PR:
-    |                             Method |       Mean  |     Error |     StdDev |          Op/s |  Gen 0 | Gen 1 | Gen 2 | Allocated |
-    |----------------------------------- |------------:|----------:|-----------:|--------------:|-------:|------:|------:|----------:|
-    |     GenerateRequestToken_Anonymous |  11.190 ns  | 0.2428 ns |  0.6046 ns |  89,364,681.9 | 0.0007 |     - |     - |      56 B |
-    | GenerateRequestToken_Authenticated | 338.056 ns  | 6.7313 ns | 14.9161 ns |   2,958,092.2 | 0.0052 |     - |     - |     424 B |
-    |      TryValidateTokenSet_Anonymous |   7.966 ns  | 0.1616 ns |  0.2915 ns | 125,531,038.3 |      - |     - |     - |         - |
-    |  TryValidateTokenSet_Authenticated |  13.386 ns  | 0.2476 ns |  0.3550 ns |  74,707,554.5 |      - |     - |     - |         - |
-    |    TryValidateTokenSet_ClaimsBased | 220.111 ns  | 4.2723 ns |  5.7034 ns |   4,543,156.3 | 0.0014 |     - |     - |     120 B |
-
- */
-
 [AspNetCoreBenchmark]
 public class AntiforgeryTokenGeneratorBenchmarks
 {
