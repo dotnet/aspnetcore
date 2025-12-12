@@ -7,7 +7,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp" />
-    <Reference Include="Microsoft.Extensions.Diagnostics" />
   </ItemGroup>
 
 </Project>
