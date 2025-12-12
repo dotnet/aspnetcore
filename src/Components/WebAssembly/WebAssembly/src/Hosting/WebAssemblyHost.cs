@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 /// A host object for Blazor running under WebAssembly. Use <see cref="WebAssemblyHostBuilder"/>
 /// to initialize a <see cref="WebAssemblyHost"/>.
 /// </summary>
-public sealed class WebAssemblyHost : IAsyncDisposable
+public sealed partial class WebAssemblyHost : IAsyncDisposable
 {
     private readonly AsyncServiceScope _scope;
     private readonly IServiceProvider _services;
@@ -93,7 +93,10 @@ public sealed class WebAssemblyHost : IAsyncDisposable
                 try
                 {
                     var logger = Services.GetService<ILogger<WebAssemblyHost>>();
-                    logger?.LogError(ex, "An error occurred stopping hosted services during disposal.");
+                    if (logger is not null)
+                    {
+                        Log.ErrorStoppingHostedServices(logger, ex);
+                    }
                 }
                 catch
                 {
@@ -284,5 +287,11 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         {
             throw new AggregateException(exceptions);
         }
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Error, "An error occurred stopping hosted services during disposal.", EventName = "ErrorStoppingHostedServices")]
+        public static partial void ErrorStoppingHostedServices(ILogger logger, Exception exception);
     }
 }
