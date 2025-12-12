@@ -39,7 +39,7 @@ public sealed partial class WebAssemblyHost : IAsyncDisposable
     private bool _disposed;
     private bool _started;
     private WebAssemblyRenderer? _renderer;
-    private IEnumerable<IHostedService>? _hostedServices;
+    private HostedServiceExecutor? _hostedServiceExecutor;
 
     internal WebAssemblyHost(
         WebAssemblyHostBuilder builder,
@@ -81,11 +81,11 @@ public sealed partial class WebAssemblyHost : IAsyncDisposable
         _disposed = true;
 
         // Stop hosted services first
-        if (_hostedServices is not null)
+        if (_hostedServiceExecutor is not null)
         {
             try
             {
-                await StopHostedServicesAsync(_hostedServices, CancellationToken.None);
+                await _hostedServiceExecutor.StopAsync(CancellationToken.None);
             }
             catch (Exception ex)
             {
@@ -165,8 +165,9 @@ public sealed partial class WebAssemblyHost : IAsyncDisposable
         await manager.RestoreStateAsync(store, RestoreContext.InitialValue);
 
         // Start hosted services
-        _hostedServices = Services.GetServices<IHostedService>();
-        await StartHostedServicesAsync(_hostedServices, cancellationToken);
+        var hostedServices = Services.GetServices<IHostedService>();
+        _hostedServiceExecutor = new HostedServiceExecutor(hostedServices);
+        await _hostedServiceExecutor.StartAsync(cancellationToken);
 
         var tcs = new TaskCompletionSource();
         using (cancellationToken.Register(() => tcs.TrySetResult()))
@@ -255,38 +256,6 @@ public sealed partial class WebAssemblyHost : IAsyncDisposable
         }
 
         renderer.NotifyEndUpdateRootComponents(operationBatch.BatchId);
-    }
-
-    private static async Task StartHostedServicesAsync(IEnumerable<IHostedService> hostedServices, CancellationToken cancellationToken)
-    {
-        foreach (var service in hostedServices)
-        {
-            await service.StartAsync(cancellationToken);
-        }
-    }
-
-    private static async Task StopHostedServicesAsync(IEnumerable<IHostedService> hostedServices, CancellationToken cancellationToken)
-    {
-        List<Exception>? exceptions = null;
-
-        foreach (var service in hostedServices)
-        {
-            try
-            {
-                await service.StopAsync(cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                exceptions ??= [];
-                exceptions.Add(ex);
-            }
-        }
-
-        // Throw an aggregate exception if there were any exceptions
-        if (exceptions is not null)
-        {
-            throw new AggregateException(exceptions);
-        }
     }
 
     private static partial class Log
