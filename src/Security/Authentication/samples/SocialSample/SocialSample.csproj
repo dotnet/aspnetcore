@@ -22,7 +22,7 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" />
     <Reference Include="Microsoft.AspNetCore.Authentication.OAuth" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Twitter" />
-    <Reference Include="Microsoft.AspNetCore.Builder" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
