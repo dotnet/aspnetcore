@@ -378,6 +378,10 @@ public class KestrelServerLimits
     /// bytes divided by the data rate (i.e. the maximum amount of time that write should take to complete with the specified data rate).
     /// The connection is aborted if the write has not completed by the time that timer expires.
     /// </para>
+    /// <para>
+    /// This rate may not accurately measure how much data a client is reading. This is because data is read from the transport
+    /// until the transport's operating system buffers are full.
+    /// </para>
     /// </remarks>
     public MinDataRate? MinResponseDataRate { get; set; } =
         // Matches the default IIS minBytesPerSecond
