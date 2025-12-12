@@ -7,14 +7,17 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.Antiforgery.Benchmarks.Benchmarks;
 
 /*
- * 
     main branch:
-
     |      Method |     Mean |     Error |    StdDev |      Op/s |  Gen 0 | Gen 1 | Gen 2 | Allocated |
     |------------ |---------:|----------:|----------:|----------:|-------:|------:|------:|----------:|
     |   Serialize | 2.221 us | 0.0245 us | 0.0229 us | 450,239.5 | 0.0076 |     - |     - |     872 B |
     | Deserialize | 2.436 us | 0.0463 us | 0.1036 us | 410,492.5 | 0.0076 |     - |     - |     632 B |
- * 
+
+    This PR:
+    |      Method |     Mean |     Error |    StdDev |      Op/s |  Gen 0 | Gen 1 | Gen 2 | Allocated |
+    |------------ |---------:|----------:|----------:|----------:|-------:|------:|------:|----------:|
+    |   Serialize | 1.932 us | 0.0110 us | 0.0098 us | 517,688.9 | 0.0038 |     - |     - |     544 B |
+    | Deserialize | 1.927 us | 0.0107 us | 0.0100 us | 519,058.2 | 0.0038 |     - |     - |     344 B |
  */
 
 [AspNetCoreBenchmark]

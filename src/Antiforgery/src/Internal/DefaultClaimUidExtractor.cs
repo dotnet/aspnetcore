@@ -6,39 +6,12 @@ using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Shared;
-using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Antiforgery;
 
-/// <summary>
-/// Default implementation of <see cref="IClaimUidExtractor"/>.
-/// </summary>
-internal sealed class DefaultClaimUidExtractor : IClaimUidExtractor
+internal static class ClaimUidExtractor
 {
-    private readonly ObjectPool<AntiforgerySerializationContext> _pool;
-
-    public DefaultClaimUidExtractor(ObjectPool<AntiforgerySerializationContext> pool)
-    {
-        _pool = pool;
-    }
-
-    /// <inheritdoc />
-    public string? ExtractClaimUid(ClaimsPrincipal claimsPrincipal)
-    {
-        Debug.Assert(claimsPrincipal != null);
-
-        var uniqueIdentifierParameters = GetUniqueIdentifierParameters(claimsPrincipal.Identities);
-        if (uniqueIdentifierParameters == null)
-        {
-            // No authenticated identities containing claims found.
-            return null;
-        }
-
-        var claimUidBytes = ComputeSha256(uniqueIdentifierParameters);
-        return Convert.ToBase64String(claimUidBytes);
-    }
-
-    public bool TryExtractClaimUidBytes(ClaimsPrincipal claimsPrincipal, Span<byte> destination)
+    public static bool TryExtractClaimUidBytes(ClaimsPrincipal claimsPrincipal, Span<byte> destination)
     {
         Debug.Assert(claimsPrincipal != null);
 
@@ -171,36 +144,6 @@ internal sealed class DefaultClaimUidExtractor : IClaimUidExtractor
             {
                 ArrayPool<byte>.Shared.Return(rentedBuffer);
             }
-        }
-    }
-
-    private byte[] ComputeSha256(IEnumerable<string> parameters)
-    {
-        var serializationContext = _pool.Get();
-
-        try
-        {
-            var writer = serializationContext.Writer;
-            foreach (string parameter in parameters)
-            {
-                writer.Write(parameter); // also writes the length as a prefix; unambiguous
-            }
-
-            writer.Flush();
-
-            bool success = serializationContext.Stream.TryGetBuffer(out ArraySegment<byte> buffer);
-            if (!success)
-            {
-                throw new InvalidOperationException();
-            }
-
-            var bytes = SHA256.HashData(buffer);
-
-            return bytes;
-        }
-        finally
-        {
-            _pool.Return(serializationContext);
         }
     }
 }

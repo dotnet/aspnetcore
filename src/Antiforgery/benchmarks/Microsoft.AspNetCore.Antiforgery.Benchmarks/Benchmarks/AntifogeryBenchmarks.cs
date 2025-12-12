@@ -19,6 +19,12 @@ namespace Microsoft.AspNetCore.Antiforgery.Benchmarks.Benchmarks;
     |    GetAndStoreTokens | 59.56 us | 2.482 us | 7.082 us | 16,789.6 |     - |     - |     - |      5 KB |
     | ValidateRequestAsync | 50.60 us | 2.150 us | 6.167 us | 19,764.1 |     - |     - |     - |      4 KB |
 
+    this PR:
+    |               Method |     Mean |    Error |   StdDev |     Op/s | Gen 0 | Gen 1 | Gen 2 | Allocated |
+    |--------------------- |---------:|---------:|---------:|---------:|------:|------:|------:|----------:|
+    |    GetAndStoreTokens | 46.66 us | 2.150 us | 5.958 us | 21,432.4 |     - |     - |     - |      4 KB |
+    | ValidateRequestAsync | 44.79 us | 2.279 us | 6.391 us | 22,327.2 |     - |     - |     - |      3 KB |
+
  */
 
 [AspNetCoreBenchmark]

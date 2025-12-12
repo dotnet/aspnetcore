@@ -10,14 +10,10 @@ namespace Microsoft.AspNetCore.Antiforgery;
 
 internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenerator
 {
-    private readonly IClaimUidExtractor _claimUidExtractor;
     private readonly IAntiforgeryAdditionalDataProvider _additionalDataProvider;
 
-    public DefaultAntiforgeryTokenGenerator(
-        IClaimUidExtractor claimUidExtractor,
-        IAntiforgeryAdditionalDataProvider additionalDataProvider)
+    public DefaultAntiforgeryTokenGenerator(IAntiforgeryAdditionalDataProvider additionalDataProvider)
     {
-        _claimUidExtractor = claimUidExtractor;
         _additionalDataProvider = additionalDataProvider;
     }
 
@@ -59,7 +55,10 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
         if (authenticatedIdentity != null)
         {
             isIdentityAuthenticated = true;
-            requestToken.ClaimUid = GetClaimUidBlob(_claimUidExtractor.ExtractClaimUid(httpContext.User));
+
+            Span<byte> claimUidBytesRent = stackalloc byte[32];
+            var extractClaimUidBytesResult = ClaimUidExtractor.TryExtractClaimUidBytes(httpContext.User, claimUidBytesRent);
+            requestToken.ClaimUid = extractClaimUidBytesResult ? new BinaryBlob(256, claimUidBytesRent.ToArray()) : null;
 
             if (requestToken.ClaimUid == null)
             {
@@ -151,7 +150,7 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
             }
             else
             {
-                extractedClaimUidBytes = _claimUidExtractor.TryExtractClaimUidBytes(httpContext.User, currentClaimUidBytes);
+                extractedClaimUidBytes = ClaimUidExtractor.TryExtractClaimUidBytes(httpContext.User, currentClaimUidBytes);
             }
         }
 
@@ -201,16 +200,6 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
         }
     }
 
-    private static BinaryBlob? GetClaimUidBlob(string? base64ClaimUid)
-    {
-        if (base64ClaimUid == null)
-        {
-            return null;
-        }
-
-        return new BinaryBlob(256, Convert.FromBase64String(base64ClaimUid));
-    }
-
     private static ClaimsIdentity? GetAuthenticatedIdentity(ClaimsPrincipal? claimsPrincipal)
     {
         if (claimsPrincipal == null)
@@ -218,8 +207,7 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
             return null;
         }
 
-        var identitiesList = claimsPrincipal.Identities as List<ClaimsIdentity>;
-        if (identitiesList != null)
+        if (claimsPrincipal.Identities is List<ClaimsIdentity> identitiesList)
         {
             for (var i = 0; i < identitiesList.Count; i++)
             {

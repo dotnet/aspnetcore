@@ -12,12 +12,20 @@ namespace Microsoft.AspNetCore.Antiforgery.Benchmarks.Benchmarks;
     main branch:
     |                             Method |        Mean |     Error |    StdDev |            Op/s |  Gen 0 | Gen 1 | Gen 2 | Allocated |
     |----------------------------------- |------------:|----------:|----------:|----------------:|-------:|------:|------:|----------:|
-    |                GenerateCookieToken |   5.8804 ns | 0.0756 ns | 0.0670 ns |   170,055,724.4 | 0.0007 |     - |     - |      56 B |
     |     GenerateRequestToken_Anonymous |  11.0555 ns | 0.1203 ns | 0.1066 ns |    90,452,434.9 | 0.0007 |     - |     - |      56 B |
     | GenerateRequestToken_Authenticated | 401.2545 ns | 7.1693 ns | 6.3554 ns |     2,492,184.2 | 0.0076 |     - |     - |     592 B |
     |      TryValidateTokenSet_Anonymous |   6.7227 ns | 0.0357 ns | 0.0316 ns |   148,750,552.9 |      - |     - |     - |         - |
     |  TryValidateTokenSet_Authenticated | 508.1742 ns | 4.4728 ns | 3.7350 ns |     1,967,829.1 | 0.0095 |     - |     - |     760 B |
     |    TryValidateTokenSet_ClaimsBased | 308.4674 ns | 3.3256 ns | 3.1108 ns |     3,241,833.1 | 0.0038 |     - |     - |     312 B |
+
+    this PR:
+    |                             Method |       Mean |      Error |     StdDev |     Median |          Op/s |  Gen 0 | Gen 1 | Gen 2 | Allocated |
+    |----------------------------------- |-----------:|-----------:|-----------:|-----------:|--------------:|-------:|------:|------:|----------:|
+    |     GenerateRequestToken_Anonymous |  17.814 ns |  0.3614 ns |  0.4017 ns |  17.771 ns |  56,134,225.3 | 0.0007 |     - |     - |      56 B |
+    | GenerateRequestToken_Authenticated | 459.848 ns |  9.1450 ns |  9.7851 ns | 461.283 ns |   2,174,632.5 | 0.0052 |     - |     - |     424 B |
+    |      TryValidateTokenSet_Anonymous |   9.784 ns |  0.6728 ns |  1.9837 ns |  10.357 ns | 102,207,305.5 |      - |     - |     - |         - |
+    |  TryValidateTokenSet_Authenticated |  17.300 ns |  0.4886 ns |  1.4407 ns |  17.929 ns |  57,804,630.5 |      - |     - |     - |         - |
+    |    TryValidateTokenSet_ClaimsBased | 380.134 ns | 12.9953 ns | 38.3168 ns | 394.899 ns |   2,630,649.7 | 0.0014 |     - |     - |     120 B |
 
  */
 
@@ -49,7 +57,6 @@ public class AntiforgeryTokenGeneratorBenchmarks
         var serviceProvider = serviceCollection.BuildServiceProvider();
 
         _tokenGenerator = serviceProvider.GetRequiredService<IAntiforgeryTokenGenerator>();
-        var claimUidExtractor = serviceProvider.GetRequiredService<IClaimUidExtractor>();
 
         // Setup anonymous user scenario
         _anonymousHttpContext = new DefaultHttpContext();
@@ -90,20 +97,16 @@ public class AntiforgeryTokenGeneratorBenchmarks
         _claimsHttpContext.User = new ClaimsPrincipal(claimsIdentity);
 
         _claimsCookieToken = new AntiforgeryToken { IsCookieToken = true };
+
         // For claims-based users, we need to extract the ClaimUid
-        var claimUid = claimUidExtractor.ExtractClaimUid(_claimsHttpContext.User);
+        var claimUid = new byte[32];
+        _ = ClaimUidExtractor.TryExtractClaimUidBytes(_claimsHttpContext.User, claimUid);
         _claimsRequestToken = new AntiforgeryToken
         {
             IsCookieToken = false,
             SecurityToken = _claimsCookieToken.SecurityToken,
-            ClaimUid = claimUid is not null ? new BinaryBlob(256, Convert.FromBase64String(claimUid)) : null
+            ClaimUid = claimUid is not null ? new BinaryBlob(256, claimUid) : null
         };
-    }
-
-    [Benchmark]
-    public object GenerateCookieToken()
-    {
-        return _tokenGenerator.GenerateCookieToken();
     }
 
     [Benchmark]

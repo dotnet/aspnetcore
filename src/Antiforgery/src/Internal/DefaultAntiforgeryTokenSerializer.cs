@@ -228,9 +228,9 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
                 else
                 {
                     tokenBytes[offset++] = 0; // isClaimsBased
-                    offset += tokenBytes.Slice(offset).Write7BitEncodedString(token.Username!);
+                    offset += tokenBytes[offset..].Write7BitEncodedString(token.Username!);
                 }
-                offset += tokenBytes.Slice(offset).Write7BitEncodedString(token.AdditionalData);
+                offset += tokenBytes[offset..].Write7BitEncodedString(token.AdditionalData);
             }
 
             _perfCryptoSystem!.Protect(tokenBytes, ref protectBuffer);
