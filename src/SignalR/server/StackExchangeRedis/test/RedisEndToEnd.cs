@@ -185,6 +185,7 @@ public class RedisEndToEndTests : VerifiableLoggedTest
     [ConditionalTheory]
     [SkipIfDockerNotPresent]
     [MemberData(nameof(TransportTypesAndProtocolTypes))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/63582")]
     public async Task CanSendAndReceiveUserMessagesUserNameWithPatternIsTreatedAsLiteral(HttpTransportType transportType, string protocolName)
     {
         using (StartVerifiableLog())
