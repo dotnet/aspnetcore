@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -19,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 /// A host object for Blazor running under WebAssembly. Use <see cref="WebAssemblyHostBuilder"/>
 /// to initialize a <see cref="WebAssemblyHost"/>.
 /// </summary>
-public sealed partial class WebAssemblyHost : IAsyncDisposable
+public sealed class WebAssemblyHost : IAsyncDisposable
 {
     private readonly AsyncServiceScope _scope;
     private readonly IServiceProvider _services;
@@ -87,21 +86,9 @@ public sealed partial class WebAssemblyHost : IAsyncDisposable
             {
                 await _hostedServiceExecutor.StopAsync(CancellationToken.None);
             }
-            catch (Exception ex)
+            catch
             {
-                // Log the exception but don't fail disposal
-                try
-                {
-                    var logger = Services.GetService<ILogger<WebAssemblyHost>>();
-                    if (logger is not null)
-                    {
-                        Log.ErrorStoppingHostedServices(logger, ex);
-                    }
-                }
-                catch
-                {
-                    // Ignore logging errors during disposal
-                }
+                // Ignore errors when stopping hosted services during disposal
             }
         }
 
@@ -165,8 +152,7 @@ public sealed partial class WebAssemblyHost : IAsyncDisposable
         await manager.RestoreStateAsync(store, RestoreContext.InitialValue);
 
         // Start hosted services
-        var hostedServices = Services.GetServices<IHostedService>();
-        _hostedServiceExecutor = new HostedServiceExecutor(hostedServices);
+        _hostedServiceExecutor = Services.GetRequiredService<HostedServiceExecutor>();
         await _hostedServiceExecutor.StartAsync(cancellationToken);
 
         var tcs = new TaskCompletionSource();
@@ -256,11 +242,5 @@ public sealed partial class WebAssemblyHost : IAsyncDisposable
         }
 
         renderer.NotifyEndUpdateRootComponents(operationBatch.BatchId);
-    }
-
-    private static partial class Log
-    {
-        [LoggerMessage(1, LogLevel.Error, "An error occurred stopping hosted services during disposal.", EventName = "ErrorStoppingHostedServices")]
-        public static partial void ErrorStoppingHostedServices(ILogger logger, Exception exception);
     }
 }
