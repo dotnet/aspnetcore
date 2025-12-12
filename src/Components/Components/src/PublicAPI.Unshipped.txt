@@ -16,3 +16,6 @@ Microsoft.AspNetCore.Components.TempData.Peek(string! key) -> object?
 Microsoft.AspNetCore.Components.TempData.TempData() -> void
 Microsoft.AspNetCore.Components.TempData.this[string! key].get -> object?
 Microsoft.AspNetCore.Components.TempData.this[string! key].set -> void
+*REMOVED*Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void
+*REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
+*REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void
