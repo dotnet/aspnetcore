@@ -24,8 +24,10 @@
     <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
 
     <Reference Include="Microsoft.AspNetCore.Antiforgery" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
