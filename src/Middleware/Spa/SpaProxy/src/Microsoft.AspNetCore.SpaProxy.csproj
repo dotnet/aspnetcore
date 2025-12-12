@@ -11,6 +11,8 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <None Update="build\Microsoft.AspNetCore.SpaProxy.targets" Pack="true" PackagePath="build\Microsoft.AspNetCore.SpaProxy.targets" />
   </ItemGroup>
 
