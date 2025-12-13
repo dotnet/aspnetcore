@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" />
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
