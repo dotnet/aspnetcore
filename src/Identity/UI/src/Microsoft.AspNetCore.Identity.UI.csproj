@@ -44,6 +44,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
     <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
     <Reference Include="Microsoft.AspNetCore.Razor" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
     <Reference Include="Microsoft.Extensions.Identity.Stores" />
