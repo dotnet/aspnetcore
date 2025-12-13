@@ -20,6 +20,7 @@
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
   </ItemGroup>
 
