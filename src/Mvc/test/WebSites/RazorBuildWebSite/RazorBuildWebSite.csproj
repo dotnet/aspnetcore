@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" />
 
     <!-- Faking like we had Razor-on-Build (RZC) -->

@@ -13,6 +13,7 @@
     <Reference Include="Verify.SourceGenerators" />
     <Reference Include="Verify.Xunit" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
     <Reference Include="Microsoft.AspNetCore.OpenApi" />
   </ItemGroup>
 
