@@ -11,7 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.Extensions.Localization.Abstractions" />
     <Reference Include="Microsoft.Extensions.Localization" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />

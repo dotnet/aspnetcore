@@ -9,7 +9,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.Extensions.Caching.Abstractions" />
     <Reference Include="Microsoft.Extensions.Caching.SqlServer" />
     <Reference Include="Microsoft.Data.SqlClient" />
