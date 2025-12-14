@@ -18,6 +18,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
 
     <Reference Include="Microsoft.AspNetCore.Authentication" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.AspNetCore.Localization.Routing" />
