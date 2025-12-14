@@ -10,6 +10,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" />
     <Reference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
 
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />

@@ -48,6 +48,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
     <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
     <Reference Include="Microsoft.AspNetCore.SignalR" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
     <Reference Include="Microsoft.AspNetCore.InternalTesting" />
     <Reference Include="Microsoft.AspNetCore.Razor" />
     <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
