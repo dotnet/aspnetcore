@@ -19,6 +19,7 @@
     <!-- Mvc.Core is referenced only for its attributes -->
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
