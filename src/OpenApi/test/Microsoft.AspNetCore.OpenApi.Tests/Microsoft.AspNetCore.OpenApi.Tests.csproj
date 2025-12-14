@@ -25,7 +25,6 @@
     <Reference Include="Microsoft.OpenApi" />
     <Reference Include="Microsoft.OpenApi.YamlReader" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
-    <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.OpenApi" />
