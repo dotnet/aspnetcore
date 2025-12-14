@@ -23,6 +23,7 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http" />
@@ -30,6 +31,7 @@
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.AspNetCore.Cors" />
+    <Reference Include="Microsoft.AspNetCore.Localization" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
