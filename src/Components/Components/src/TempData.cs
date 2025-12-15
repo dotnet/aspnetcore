@@ -8,8 +8,8 @@ namespace Microsoft.AspNetCore.Components;
 /// <inheritdoc/>
 public class TempData : ITempData
 {
-    private readonly Dictionary<string, object?> _data = new();
-    private readonly HashSet<string> _retainedKeys = new();
+    private readonly Dictionary<string, object?> _data = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _retainedKeys = new(StringComparer.OrdinalIgnoreCase);
 
     /// <inheritdoc/>
     public object? this[string key]
@@ -145,11 +145,40 @@ public class TempData : ITempData
 
     IEnumerator<KeyValuePair<string, object?>> IEnumerable<KeyValuePair<string, object?>>.GetEnumerator()
     {
-        throw new NotImplementedException();
+        return new TempDataEnumerator(this);
     }
 
     IEnumerator IEnumerable.GetEnumerator()
     {
-        throw new NotImplementedException();
+        return new TempDataEnumerator(this);
+    }
+
+    class TempDataEnumerator : IEnumerator<KeyValuePair<string, object?>>
+    {
+        private readonly IEnumerator<KeyValuePair<string, object?>> _innerEnumerator;
+
+        public TempDataEnumerator(TempData tempData)
+        {
+            _innerEnumerator = tempData._data.GetEnumerator();
+        }
+
+        public KeyValuePair<string, object?> Current => _innerEnumerator.Current;
+
+        object IEnumerator.Current => _innerEnumerator.Current;
+
+        public void Dispose()
+        {
+            _innerEnumerator.Dispose();
+        }
+
+        public bool MoveNext()
+        {
+            return _innerEnumerator.MoveNext();
+        }
+
+        public void Reset()
+        {
+            _innerEnumerator.Reset();
+        }
     }
 }
