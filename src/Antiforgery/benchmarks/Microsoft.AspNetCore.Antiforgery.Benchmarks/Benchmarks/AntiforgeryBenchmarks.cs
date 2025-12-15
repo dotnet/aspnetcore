@@ -19,13 +19,17 @@ public class AntiforgeryBenchmarks
     private string _cookieName = null!;
     private string _formFieldName = null!;
 
-    // For GetAndStoreTokens - fresh context each time
-    private HttpContext _getAndStoreTokensContext = null!;
+    // Reusable contexts - reset between iterations instead of recreating
+    private DefaultHttpContext _getAndStoreTokensContext = null!;
+    private DefaultHttpContext _validateRequestContext = null!;
+    private TestHttpResponseFeature _getAndStoreTokensResponseFeature = null!;
 
-    // For ValidateRequestAsync - context with valid tokens
-    private HttpContext _validateRequestContext = null!;
+    // Pre-generated tokens for validation benchmark
     private string _cookieToken = null!;
     private string _requestToken = null!;
+
+    // Pre-allocated form collection for validation benchmark
+    private FormCollection _validationFormCollection = null!;
 
     [GlobalSetup]
     public void Setup()
@@ -42,31 +46,38 @@ public class AntiforgeryBenchmarks
         _cookieName = options.Cookie.Name!;
         _formFieldName = options.FormFieldName;
 
-        // Setup context for GetAndStoreTokens (no existing tokens)
-        _getAndStoreTokensContext = CreateHttpContext();
+        // Create reusable context for GetAndStoreTokens
+        _getAndStoreTokensResponseFeature = new TestHttpResponseFeature();
+        _getAndStoreTokensContext = CreateHttpContext(_getAndStoreTokensResponseFeature);
 
         // Generate tokens for validation benchmark
-        var tokenContext = CreateHttpContext();
+        var tokenContext = CreateHttpContext(new TestHttpResponseFeature());
         var tokenSet = _antiforgery.GetAndStoreTokens(tokenContext);
         _cookieToken = tokenSet.CookieToken!;
         _requestToken = tokenSet.RequestToken!;
 
-        // Setup context for ValidateRequestAsync (with valid tokens)
-        _validateRequestContext = CreateHttpContextWithTokens(_cookieToken, _requestToken);
+        // Pre-allocate form collection for validation
+        _validationFormCollection = new FormCollection(new Dictionary<string, StringValues>
+        {
+            { _formFieldName, _requestToken }
+        });
+
+        // Create reusable context for ValidateRequestAsync
+        _validateRequestContext = CreateHttpContextWithTokens();
     }
 
     [IterationSetup(Target = nameof(GetAndStoreTokens))]
     public void SetupGetAndStoreTokens()
     {
-        // Create a fresh context for each iteration to simulate real-world usage
-        _getAndStoreTokensContext = CreateHttpContext();
+        // Reset the context instead of creating a new one
+        ResetHttpContextForGetAndStoreTokens();
     }
 
     [IterationSetup(Target = nameof(ValidateRequestAsync))]
     public void SetupValidateRequest()
     {
-        // Create a fresh context with tokens for each iteration
-        _validateRequestContext = CreateHttpContextWithTokens(_cookieToken, _requestToken);
+        // Reset the context instead of creating a new one
+        ResetHttpContextForValidation();
     }
 
     [Benchmark]
@@ -81,7 +92,7 @@ public class AntiforgeryBenchmarks
         return _antiforgery.ValidateRequestAsync(_validateRequestContext);
     }
 
-    private HttpContext CreateHttpContext()
+    private DefaultHttpContext CreateHttpContext(TestHttpResponseFeature responseFeature)
     {
         var context = new DefaultHttpContext();
         context.RequestServices = _serviceProvider;
@@ -96,14 +107,13 @@ public class AntiforgeryBenchmarks
         context.Request.ContentType = "application/x-www-form-urlencoded";
 
         // Setup response features to allow cookie writing
-        var responseFeature = new TestHttpResponseFeature();
         context.Features.Set<IHttpResponseFeature>(responseFeature);
         context.Features.Set<IHttpResponseBodyFeature>(new StreamResponseBodyFeature(Stream.Null));
 
         return context;
     }
 
-    private HttpContext CreateHttpContextWithTokens(string cookieToken, string requestToken)
+    private DefaultHttpContext CreateHttpContextWithTokens()
     {
         var context = new DefaultHttpContext();
         context.RequestServices = _serviceProvider;
@@ -118,15 +128,27 @@ public class AntiforgeryBenchmarks
         context.Request.ContentType = "application/x-www-form-urlencoded";
 
         // Set the cookie token using the actual cookie name from options
-        context.Request.Headers.Cookie = $"{_cookieName}={cookieToken}";
+        context.Request.Headers.Cookie = $"{_cookieName}={_cookieToken}";
 
-        // Set the request token in form using the actual form field name
-        context.Request.Form = new FormCollection(new Dictionary<string, StringValues>
-        {
-            { _formFieldName, requestToken }
-        });
+        // Set the request token in form using the pre-allocated form collection
+        context.Request.Form = _validationFormCollection;
 
         return context;
+    }
+
+    private void ResetHttpContextForGetAndStoreTokens()
+    {
+        // Clear the antiforgery feature so it generates fresh tokens
+        _getAndStoreTokensContext.Features.Set<IAntiforgeryFeature>(null);
+
+        // Reset response headers that antiforgery sets
+        _getAndStoreTokensResponseFeature.Headers.Clear();
+    }
+
+    private void ResetHttpContextForValidation()
+    {
+        // Clear the antiforgery feature so it deserializes tokens fresh
+        _validateRequestContext.Features.Set<IAntiforgeryFeature>(null);
     }
 
     private sealed class TestHttpResponseFeature : IHttpResponseFeature
