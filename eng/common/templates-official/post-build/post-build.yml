@@ -271,6 +271,11 @@ stages:
 
         - task: NuGetAuthenticate@1
 
+        # Darc is targeting 8.0, so make sure it's installed
+        - task: UseDotNet@2
+          inputs:
+            version: 8.0.x
+
         - task: AzureCLI@2
           displayName: Publish Using Darc
           inputs:
