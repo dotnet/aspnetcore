@@ -44,6 +44,11 @@
       TargetFramework="${DefaultNetCoreTargetFramework}"
       Condition="'@(KnownAspNetCorePack->Count())' != '0' AND
         !(@(KnownAspNetCorePack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
+    <KnownCrossgen2Pack
+      Include="@(KnownCrossgen2Pack->WithMetadataValue('TargetFramework', 'net10.0'))"
+      TargetFramework="${DefaultNetCoreTargetFramework}"
+      Condition="'@(KnownCrossgen2Pack->Count())' != '0' AND
+        !(@(KnownCrossgen2Pack->AnyHaveMetadataValue('TargetFramework', '${DefaultNetCoreTargetFramework}')))" />
   </ItemGroup>
 
   <ItemGroup>
