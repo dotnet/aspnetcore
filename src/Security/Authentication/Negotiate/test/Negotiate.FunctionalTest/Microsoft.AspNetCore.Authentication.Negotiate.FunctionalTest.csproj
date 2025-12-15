@@ -6,6 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.WebUtilities" />
