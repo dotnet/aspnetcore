@@ -26,6 +26,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.AspNetCore.RateLimiting" />
+    <Reference Include="Microsoft.AspNetCore.Razor" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" />

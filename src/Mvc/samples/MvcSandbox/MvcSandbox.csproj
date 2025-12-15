@@ -6,7 +6,14 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Razor" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
+    <Reference Include="Microsoft.AspNetCore.Razor" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
