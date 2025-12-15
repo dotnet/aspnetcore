@@ -20,11 +20,14 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Antiforgery" />
+    <Reference Include="Microsoft.AspNetCore.Authentication" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
+    <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
     <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http" />
@@ -56,6 +59,8 @@
     <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.AspNetCore.WebSockets" />
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.Caching.Hybrid" />
     <Reference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />

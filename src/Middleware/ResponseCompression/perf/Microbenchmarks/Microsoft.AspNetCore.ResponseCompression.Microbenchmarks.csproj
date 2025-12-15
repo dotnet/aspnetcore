@@ -9,6 +9,7 @@
     <Reference Include="BenchmarkDotNet" />
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.AspNetCore.ResponseCompression" />
