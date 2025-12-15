@@ -36,7 +36,7 @@ internal sealed class TempDataService
             convertedData[kvp.Key] = ConvertJsonElement(kvp.Value);
         }
 
-        returnTempData.LoadDataFromCookie(convertedData);
+        returnTempData.Load(convertedData);
         return returnTempData;
     }
 
@@ -110,7 +110,7 @@ internal sealed class TempDataService
 
     public static void Save(HttpContext httpContext, TempData tempData)
     {
-        var dataToSave = tempData.GetDataToSave();
+        var dataToSave = tempData.Save();
         foreach (var kvp in dataToSave)
         {
             if (!CanSerializeType(kvp.Value?.GetType() ?? typeof(object)))

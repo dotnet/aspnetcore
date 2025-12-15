@@ -8,13 +8,8 @@ namespace Microsoft.AspNetCore.Components;
 /// Data stored in TempData is automatically removed after it is read unless
 /// <see cref="Keep()"/> or <see cref="Keep(string)"/> is called, or it is accessed via <see cref="Peek(string)"/>.
 /// </summary>
-public interface ITempData
+public interface ITempData : IDictionary<string, object?>
 {
-    /// <summary>
-    /// Gets or sets the value associated with the specified key.
-    /// </summary>
-    object? this[string key] { get; set; }
-
     /// <summary>
     /// Gets the value associated with the specified key and then schedules it for deletion.
     /// </summary>
