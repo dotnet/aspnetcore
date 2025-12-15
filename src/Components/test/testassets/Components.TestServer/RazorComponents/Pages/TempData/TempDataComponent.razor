@@ -19,12 +19,19 @@
     <button type="submit" id="redirect-button">Navigate to the Same Page</button>
 </form>
 
+<form method="post" @formname="DeletePeekedValue" @onsubmit="() => DeletePeekedValue()">
+    <AntiforgeryToken />
+    <button type="submit" id="delete-button">Delete peeked value</button>
+</form>
+
 <hr />
 
 <p id="message">@_message</p>
 <p id="peeked-value">@_peekedValue</p>
 <p id="kept-value">@_keptValue</p>
 
+<p id="contains-message">@_containsMessageKey</p>
+<p id="contains-peeked-value">@_containsPeekedValueKey</p>
 
 @code {
     [SupplyParameterFromForm(Name = "_handler")]
@@ -36,12 +43,21 @@
     [SupplyParameterFromQuery]
     public string ValueToKeep { get; set; } = string.Empty;
 
+    [SupplyParameterFromQuery]
+    public string ContainsKey { get; set; } = string.Empty;
+
     private string? _message;
     private string? _peekedValue;
     private string? _keptValue;
 
+    private bool _containsMessageKey;
+    private bool _containsPeekedValueKey;
+
     protected override void OnInitialized()
     {
+        _containsMessageKey = TempData?.ContainsKey("Message") ?? false;
+        _containsPeekedValueKey = TempData?.ContainsKey("PeekedValue") ?? false;
+
         if (Handler is not null)
         {
             return;
@@ -49,8 +65,6 @@
         _message = TempData!.Get("Message") as string ?? "No message";
         _peekedValue = TempData!.Peek("PeekedValue") as string ?? "No peeked value";
         _keptValue = TempData!.Get("KeptValue") as string ?? "No kept value";
-
-        Console.WriteLine("ValueToKeep = " + ValueToKeep);
 
         if (ValueToKeep == "all")
         {
@@ -60,7 +74,7 @@
         {
             TempData!.Keep(ValueToKeep);
         }
-   }
+    }
 
     private void SetValues(bool differentPage = false)
     {
@@ -73,6 +87,12 @@
             return;
         }
         NavigateToSamePageKeep(ValueToKeep);
+    }
+
+    private void DeletePeekedValue()
+    {
+        TempData!.Remove("PeekedValue");
+        NavigateToSamePage();
     }
 
     private void NavigateToSamePage() => NavigationManager.NavigateTo("/subdir/tempdata", forceLoad: true);
