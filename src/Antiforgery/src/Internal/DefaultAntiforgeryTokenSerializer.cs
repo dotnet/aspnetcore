@@ -33,7 +33,7 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
             var tokenDecodedSize = Base64Url.GetMaxDecodedLength(serializedToken.Length);
 
             var rent = tokenDecodedSize < 256
-                ? stackalloc byte[255]
+                ? stackalloc byte[256]
                 : (tokenBytesRent = ArrayPool<byte>.Shared.Rent(tokenDecodedSize));
             var tokenBytes = rent[..tokenDecodedSize];
 
@@ -43,14 +43,14 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
                 throw new FormatException("Failed to decode token as Base64 char sequence.");
             }
 
-            var tokenBytesDecoded = tokenBytes.Slice(0, bytesWritten);
+            var tokenBytesDecoded = tokenBytes[..bytesWritten];
 
             if (_perfCryptoSystem is not null)
             {
-                var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[255]);
+                var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[256]);
                 try
                 {
-                    _perfCryptoSystem!.Unprotect(tokenBytesDecoded, ref protectBuffer);
+                    _perfCryptoSystem.Unprotect(tokenBytesDecoded, ref protectBuffer);
                     var token = Deserialize(protectBuffer.WrittenSpan);
                     if (token is not null)
                     {
@@ -165,11 +165,11 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
             else
             {
                 // Read Username (7-bit encoded length prefix + UTF-8 string)
-                offset += tokenBytes.Slice(offset).Read7BitEncodedString(out var username);
+                offset += tokenBytes[offset..].Read7BitEncodedString(out var username);
                 deserializedToken.Username = username;
             }
 
-            offset += tokenBytes.Slice(offset).Read7BitEncodedString(out var additionalData);
+            offset += tokenBytes[offset..].Read7BitEncodedString(out var additionalData);
             deserializedToken.AdditionalData = additionalData;
         }
 

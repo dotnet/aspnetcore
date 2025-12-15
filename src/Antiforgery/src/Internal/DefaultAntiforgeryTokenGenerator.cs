@@ -173,7 +173,7 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
             return false;
         }
 
-        if (!AreIdenticalClaimUids(currentClaimUidBytes))
+        if (!AreIdenticalClaimUids(requestToken, extractedClaimUidBytes, currentClaimUidBytes))
         {
             message = Resources.AntiforgeryToken_ClaimUidMismatch;
             return false;
@@ -190,17 +190,19 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
         message = null;
         return true;
 
-        bool AreIdenticalClaimUids(Span<byte> claimUidBytes)
+        static bool AreIdenticalClaimUids(AntiforgeryToken token, bool claimUidBytesExtracted, Span<byte> claimUidBytes)
         {
-            if (requestToken.ClaimUid is null)
+            if (token.ClaimUid is null)
             {
-                return !extractedClaimUidBytes;
+                return !claimUidBytesExtracted;
             }
-            if (requestToken.ClaimUid.Length != claimUidBytes.Length)
+
+            if (token.ClaimUid.Length != claimUidBytes.Length)
             {
                 return false;
             }
-            return requestToken.ClaimUid.GetData().SequenceEqual(claimUidBytes);
+
+            return token.ClaimUid.GetData().SequenceEqual(claimUidBytes);
         }
     }
 
