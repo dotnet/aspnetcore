@@ -80,6 +80,23 @@ public class JSObjectReferenceTest
         Assert.Equal(1, jsRuntime.BeginInvokeJSInvocationCount);
     }
 
+    [Fact]
+    public async Task JSObjectReference_DisposeAsync_IgnoresJSDisconnectedException_OnMultipleCalls()
+    {
+        // Arrange
+        var jsRuntime = new TestJSRuntimeThatThrowsJSDisconnectedException();
+        var jsObject = new JSObjectReference(jsRuntime, 0);
+
+        // Act & Assert - Should not throw on first call
+        await jsObject.DisposeAsync();
+
+        // Act & Assert - Should not throw on second call (no-op)
+        await jsObject.DisposeAsync();
+
+        // Verify dispose was only attempted once
+        Assert.Equal(1, jsRuntime.BeginInvokeJSInvocationCount);
+    }
+
     class TestJSRuntime : JSRuntime
     {
         public int BeginInvokeJSInvocationCount { get; private set; }
