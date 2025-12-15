@@ -20,6 +20,7 @@
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
