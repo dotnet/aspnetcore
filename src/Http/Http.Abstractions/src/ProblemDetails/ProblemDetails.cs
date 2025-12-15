@@ -11,9 +11,10 @@ namespace Microsoft.AspNetCore.Mvc;
 public class ProblemDetails
 {
     /// <summary>
-    /// A URI reference [RFC3986] that identifies the problem type. This specification encourages that, when
+    /// A URI reference that identifies the problem type. This specification encourages that, when
     /// dereferenced, it provide human-readable documentation for the problem type, e.g. using HTML.
-    /// When this member is not present, its value is assumed to be "about:blank".
+    /// When this member is not present, its value is assumed to be "about:blank";
+    /// see RFC 3986.
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     [JsonPropertyOrder(-5)]
