@@ -16,6 +16,7 @@ Max allowed files:
 <InputFile OnChange="LoadFiles" id="input-file" multiple />
 <br />
 
+<span id="file-count">@loadedFiles.Count</span>
 <span id="exception-message">@exceptionMessage</span>
 
 @if (isLoading)

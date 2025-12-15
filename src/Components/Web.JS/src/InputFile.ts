@@ -52,6 +52,12 @@ function init(callbackWrapper: any, elem: InputElement): void {
 
     callbackWrapper.invokeMethodAsync('NotifyChange', fileList);
   });
+
+  elem.addEventListener('cancel', function(): void {
+    // Notify with an empty list when the file dialog is cancelled.
+    elem._blazorFilesById = {};
+    callbackWrapper.invokeMethodAsync('NotifyChange', []);
+  });
 }
 
 async function toImageFile(elem: InputElement, fileId: number, format: string, maxWidth: number, maxHeight: number): Promise<BrowserFile> {
