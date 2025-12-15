@@ -26,7 +26,7 @@ function Get-MaestroChannel([int]$ChannelId) {
   $apiHeaders = Create-MaestroApiRequestHeaders
   $apiEndpoint = "$MaestroApiEndPoint/api/channels/${ChannelId}?api-version=$MaestroApiVersion"
   
-  $result = try { Invoke-WebRequest -Method Get -Uri $apiEndpoint -Headers $apiHeaders | ConvertFrom-Json } catch { Write-Host "Error: $_" }
+  $result = try { Invoke-WebRequest -UseBasicParsing -Method Get -Uri $apiEndpoint -Headers $apiHeaders | ConvertFrom-Json } catch { Write-Host "Error: $_" }
   return $result
 }
 
@@ -36,7 +36,7 @@ function Get-MaestroBuild([int]$BuildId) {
   $apiHeaders = Create-MaestroApiRequestHeaders -AuthToken $MaestroApiAccessToken
   $apiEndpoint = "$MaestroApiEndPoint/api/builds/${BuildId}?api-version=$MaestroApiVersion"
 
-  $result = try { return Invoke-WebRequest -Method Get -Uri $apiEndpoint -Headers $apiHeaders | ConvertFrom-Json } catch { Write-Host "Error: $_" }
+  $result = try { return Invoke-WebRequest -UseBasicParsing -Method Get -Uri $apiEndpoint -Headers $apiHeaders | ConvertFrom-Json } catch { Write-Host "Error: $_" }
   return $result
 }
 
@@ -47,7 +47,7 @@ function Get-MaestroSubscriptions([string]$SourceRepository, [int]$ChannelId) {
   $apiHeaders = Create-MaestroApiRequestHeaders -AuthToken $MaestroApiAccessToken
   $apiEndpoint = "$MaestroApiEndPoint/api/subscriptions?sourceRepository=$SourceRepository&channelId=$ChannelId&api-version=$MaestroApiVersion"
 
-  $result = try { Invoke-WebRequest -Method Get -Uri $apiEndpoint -Headers $apiHeaders | ConvertFrom-Json } catch { Write-Host "Error: $_" }
+  $result = try { Invoke-WebRequest -UseBasicParsing -Method Get -Uri $apiEndpoint -Headers $apiHeaders | ConvertFrom-Json } catch { Write-Host "Error: $_" }
   return $result
 }
 
@@ -56,7 +56,7 @@ function Assign-BuildToChannel([int]$BuildId, [int]$ChannelId) {
 
   $apiHeaders = Create-MaestroApiRequestHeaders -AuthToken $MaestroApiAccessToken
   $apiEndpoint = "$MaestroApiEndPoint/api/channels/${ChannelId}/builds/${BuildId}?api-version=$MaestroApiVersion"
-  Invoke-WebRequest -Method Post -Uri $apiEndpoint -Headers $apiHeaders | Out-Null
+  Invoke-WebRequest -UseBasicParsing -Method Post -Uri $apiEndpoint -Headers $apiHeaders | Out-Null
 }
 
 function Trigger-Subscription([string]$SubscriptionId) {
@@ -64,7 +64,7 @@ function Trigger-Subscription([string]$SubscriptionId) {
 
   $apiHeaders = Create-MaestroApiRequestHeaders -AuthToken $MaestroApiAccessToken
   $apiEndpoint = "$MaestroApiEndPoint/api/subscriptions/$SubscriptionId/trigger?api-version=$MaestroApiVersion"
-  Invoke-WebRequest -Uri $apiEndpoint -Headers $apiHeaders -Method Post | Out-Null
+  Invoke-WebRequest -UseBasicParsing -Uri $apiEndpoint -Headers $apiHeaders -Method Post | Out-Null
 }
 
 function Validate-MaestroVars {
