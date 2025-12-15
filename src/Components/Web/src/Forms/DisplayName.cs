@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
-using System.Reflection;
-using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -18,7 +15,6 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// <typeparam name="TValue">The type of the field.</typeparam>
 public class DisplayName<TValue> : IComponent
 {
-    private static readonly ConcurrentDictionary<MemberInfo, string> _displayNameCache = new();
 
     private RenderHandle _renderHandle;
     private Expression<Func<TValue>>? _previousFieldAccessor;
@@ -29,15 +25,6 @@ public class DisplayName<TValue> : IComponent
     /// </summary>
     [Parameter, EditorRequired]
     public Expression<Func<TValue>>? For { get; set; }
-
-    static DisplayName()
-    {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
-        {
-            HotReloadManager.Default.OnDeltaApplied += ClearCache;
-        }
-    }
-
     /// <inheritdoc />
     void IComponent.Attach(RenderHandle renderHandle)
     {
@@ -58,8 +45,7 @@ public class DisplayName<TValue> : IComponent
         // Only recalculate if the expression changed
         if (For != _previousFieldAccessor)
         {
-            var member = ExpressionMemberAccessor.GetMemberInfo(For);
-            var newDisplayName = GetDisplayName(member);
+            var newDisplayName = ExpressionMemberAccessor.GetDisplayName(For);
 
             if (newDisplayName != _displayName)
             {
@@ -78,32 +64,4 @@ public class DisplayName<TValue> : IComponent
         builder.AddContent(0, _displayName);
     }
 
-    private static string GetDisplayName(MemberInfo member)
-    {
-        return _displayNameCache.GetOrAdd(member, static m =>
-        {
-            var displayAttribute = m.GetCustomAttribute<DisplayAttribute>();
-            if (displayAttribute is not null)
-            {
-                var name = displayAttribute.GetName();
-                if (name is not null)
-                {
-                    return name;
-                }
-            }
-
-            var displayNameAttribute = m.GetCustomAttribute<DisplayNameAttribute>();
-            if (displayNameAttribute?.DisplayName is not null)
-            {
-                return displayNameAttribute.DisplayName;
-            }
-
-            return m.Name;
-        });
-    }
-
-    private static void ClearCache()
-    {
-        _displayNameCache.Clear();
-    }
 }

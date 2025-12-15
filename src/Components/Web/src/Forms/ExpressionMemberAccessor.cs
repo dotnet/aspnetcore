@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.HotReload;
@@ -11,6 +13,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 internal static class ExpressionMemberAccessor
 {
     private static readonly ConcurrentDictionary<Expression, MemberInfo> _memberInfoCache = new();
+    private static readonly ConcurrentDictionary<MemberInfo, string> _displayNameCache = new();
 
     static ExpressionMemberAccessor()
     {
@@ -20,7 +23,7 @@ internal static class ExpressionMemberAccessor
         }
     }
 
-    public static MemberInfo GetMemberInfo<TValue>(Expression<Func<TValue>> accessor)
+    private static MemberInfo GetMemberInfo<TValue>(Expression<Func<TValue>> accessor)
     {
         ArgumentNullException.ThrowIfNull(accessor);
 
@@ -47,8 +50,42 @@ internal static class ExpressionMemberAccessor
         });
     }
 
+    public static string GetDisplayName(MemberInfo member)
+    {
+        ArgumentNullException.ThrowIfNull(member);
+
+        return _displayNameCache.GetOrAdd(member, static m =>
+        {
+            var displayAttribute = m.GetCustomAttribute<DisplayAttribute>();
+            if (displayAttribute is not null)
+            {
+                var name = displayAttribute.GetName();
+                if (name is not null)
+                {
+                    return name;
+                }
+            }
+
+            var displayNameAttribute = m.GetCustomAttribute<DisplayNameAttribute>();
+            if (displayNameAttribute?.DisplayName is not null)
+            {
+                return displayNameAttribute.DisplayName;
+            }
+
+            return m.Name;
+        });
+    }
+
+    public static string GetDisplayName<TValue>(Expression<Func<TValue>> accessor)
+    {
+        ArgumentNullException.ThrowIfNull(accessor);
+        var member = GetMemberInfo(accessor);
+        return GetDisplayName(member);
+    }
+
     private static void ClearCache()
     {
         _memberInfoCache.Clear();
+        _displayNameCache.Clear();
     }
 }
