@@ -108,14 +108,13 @@ public class TempData : ITempData
 
     void IDictionary<string, object?>.Add(string key, object? value)
     {
-        _data.Add(key, value);
-        _retainedKeys.Add(key);
+        this[key] = value;
     }
 
     bool IDictionary<string, object?>.TryGetValue(string key, out object? value)
     {
-        _retainedKeys.Remove(key);
-        return _data.TryGetValue(key, out value);
+        value = Get(key);
+        return ContainsKey(key);
     }
 
     void ICollection<KeyValuePair<string, object?>>.Add(KeyValuePair<string, object?> item)
@@ -125,7 +124,7 @@ public class TempData : ITempData
 
     bool ICollection<KeyValuePair<string, object?>>.Contains(KeyValuePair<string, object?> item)
     {
-        return ContainsKey(item.Key) && _data[item.Key] == item.Value;
+        return ContainsKey(item.Key) && Equals(Peek(item.Key), item.Value);
     }
 
     void ICollection<KeyValuePair<string, object?>>.CopyTo(KeyValuePair<string, object?>[] array, int arrayIndex)
@@ -135,10 +134,9 @@ public class TempData : ITempData
 
     bool ICollection<KeyValuePair<string, object?>>.Remove(KeyValuePair<string, object?> item)
     {
-        if (((ICollection<KeyValuePair<string, object?>>)_data).Remove(item))
+        if (ContainsKey(item.Key) && Equals(Peek(item.Key), item.Value))
         {
-            _retainedKeys.Remove(item.Key);
-            return true;
+            return Remove(item.Key);
         }
         return false;
     }
