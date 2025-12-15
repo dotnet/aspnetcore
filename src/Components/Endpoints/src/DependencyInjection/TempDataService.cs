@@ -2,17 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal sealed class TempDataService
 {
     private const string CookieName = ".AspNetCore.Components.TempData";
+    private const string PurposeString = "Microsoft.AspNetCore.Components.Endpoints.TempDataService";
 
-    public TempDataService()
+    private static IDataProtector GetDataProtector(HttpContext httpContext)
     {
-        // TO-DO: Add encoding later if needed
+        var dataProtectionProvider = httpContext.RequestServices.GetRequiredService<IDataProtectionProvider>();
+        return dataProtectionProvider.CreateProtector(PurposeString);
     }
 
     public static TempData Load(HttpContext httpContext)
@@ -24,7 +29,10 @@ internal sealed class TempDataService
             return returnTempData;
         }
 
-        var dataFromCookie = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serializedDataFromCookie);
+        var protectedBytes = WebEncoders.Base64UrlDecode(serializedDataFromCookie);
+        var unprotectedBytes = GetDataProtector(httpContext).Unprotect(protectedBytes);
+        var dataFromCookie = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(unprotectedBytes);
+
         if (dataFromCookie is null)
         {
             return returnTempData;
@@ -38,6 +46,40 @@ internal sealed class TempDataService
 
         returnTempData.Load(convertedData);
         return returnTempData;
+    }
+
+    public static void Save(HttpContext httpContext, TempData tempData)
+    {
+        var dataToSave = tempData.Save();
+        foreach (var kvp in dataToSave)
+        {
+            if (!CanSerializeType(kvp.Value?.GetType() ?? typeof(object)))
+            {
+                throw new InvalidOperationException($"TempData cannot store values of type '{kvp.Value?.GetType()}'.");
+            }
+        }
+
+        if (dataToSave.Count == 0)
+        {
+            httpContext.Response.Cookies.Delete(CookieName, new CookieOptions
+            {
+                Path = httpContext.Request.PathBase.HasValue ? httpContext.Request.PathBase.Value : "/",
+            });
+            return;
+        }
+
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(dataToSave);
+        var protectedBytes = GetDataProtector(httpContext).Protect(bytes);
+        var encodedValue = WebEncoders.Base64UrlEncode(protectedBytes);
+
+        httpContext.Response.Cookies.Append(CookieName, encodedValue, new CookieOptions
+        {
+            HttpOnly = true,
+            IsEssential = true,
+            SameSite = SameSiteMode.Lax,
+            Secure = httpContext.Request.IsHttps,
+            Path = httpContext.Request.PathBase.HasValue ? httpContext.Request.PathBase.Value : "/",
+        });
     }
 
     private static object? ConvertJsonElement(JsonElement element)
@@ -106,35 +148,6 @@ internal sealed class TempDataService
             dictionary[item.Name] = item.Value.GetString();
         }
         return dictionary;
-    }
-
-    public static void Save(HttpContext httpContext, TempData tempData)
-    {
-        var dataToSave = tempData.Save();
-        foreach (var kvp in dataToSave)
-        {
-            if (!CanSerializeType(kvp.Value?.GetType() ?? typeof(object)))
-            {
-                throw new InvalidOperationException($"TempData cannot store values of type '{kvp.Value?.GetType()}'.");
-            }
-        }
-
-        if (dataToSave.Count == 0)
-        {
-            httpContext.Response.Cookies.Delete(CookieName, new CookieOptions
-            {
-                Path = httpContext.Request.PathBase.HasValue ? httpContext.Request.PathBase.Value : "/",
-            });
-            return;
-        }
-        httpContext.Response.Cookies.Append(CookieName, JsonSerializer.Serialize(dataToSave), new CookieOptions
-        {
-            HttpOnly = true,
-            IsEssential = true,
-            SameSite = SameSiteMode.Lax,
-            Secure = httpContext.Request.IsHttps,
-            Path = httpContext.Request.PathBase.HasValue ? httpContext.Request.PathBase.Value : "/",
-        });
     }
 
     private static bool CanSerializeType(Type type)
