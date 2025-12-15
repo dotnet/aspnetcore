@@ -17,6 +17,8 @@ Microsoft.AspNetCore.Components.TempData.Remove(string! key) -> bool
 Microsoft.AspNetCore.Components.TempData.ContainsKey(string! key) -> bool
 Microsoft.AspNetCore.Components.TempData.Load(System.Collections.Generic.IDictionary<string!, object?>! data) -> void
 Microsoft.AspNetCore.Components.TempData.Save() -> System.Collections.Generic.IDictionary<string!, object?>!
+Microsoft.AspNetCore.Components.IComponentPropertyActivator
+Microsoft.AspNetCore.Components.IComponentPropertyActivator.GetActivator(System.Type! componentType) -> System.Action<System.IServiceProvider!, Microsoft.AspNetCore.Components.IComponent!>!
 *REMOVED*Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void
 *REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
 *REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void
