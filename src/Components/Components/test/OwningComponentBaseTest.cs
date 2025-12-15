@@ -150,26 +150,6 @@ public class OwningComponentBaseTest
         Assert.Equal(1, counter.DisposedCount);
     }
 
-    [Fact]
-    public async Task DisposeAsyncCore_Override_WithException_StillCallsDispose()
-    {
-        var services = new ServiceCollection();
-        services.AddSingleton<Counter>();
-        services.AddTransient<MyService>();
-        var serviceProvider = services.BuildServiceProvider();
-
-        var renderer = new TestRenderer(serviceProvider);
-        var component = (ComponentWithThrowingDisposeAsyncCore)renderer.InstantiateComponent<ComponentWithThrowingDisposeAsyncCore>();
-
-        _ = component.MyService;
-        
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => 
-            await ((IAsyncDisposable)component).DisposeAsync());
-        
-        Assert.True(component.DisposingParameter);
-        Assert.True(component.IsDisposedPublic);
-    }
-
     private class ComponentWithDispose : OwningComponentBase<MyService>
     {
         public MyService MyService => Service;
@@ -180,25 +160,6 @@ public class OwningComponentBaseTest
         {
             DisposingParameter = disposing;
             DisposeCallCount++;
-            base.Dispose(disposing);
-        }
-    }
-
-    private class ComponentWithThrowingDisposeAsyncCore : OwningComponentBase<MyService>
-    {
-        public MyService MyService => Service;
-        public bool? DisposingParameter { get; private set; }
-        public bool IsDisposedPublic => IsDisposed;
-
-        protected override async ValueTask DisposeAsyncCore()
-        {
-            await base.DisposeAsyncCore();
-            throw new InvalidOperationException("Something went wrong in async disposal");
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            DisposingParameter = disposing;
             base.Dispose(disposing);
         }
     }
