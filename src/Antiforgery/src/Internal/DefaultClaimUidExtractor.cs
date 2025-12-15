@@ -28,7 +28,7 @@ internal sealed class DefaultClaimUidExtractor : IClaimUidExtractor
         return true;
     }
 
-    public static IList<string>? GetUniqueIdentifierParameters(IEnumerable<ClaimsIdentity> claimsIdentities)
+    public static List<string>? GetUniqueIdentifierParameters(IEnumerable<ClaimsIdentity> claimsIdentities)
     {
         var identitiesList = claimsIdentities as List<ClaimsIdentity>;
         if (identitiesList == null)
@@ -111,8 +111,10 @@ internal sealed class DefaultClaimUidExtractor : IClaimUidExtractor
         return identifierParameters;
     }
 
-    private static void ComputeSha256(IList<string> parameters, Span<byte> destination)
+    private static void ComputeSha256(List<string> parameters, Span<byte> destination)
     {
+        Debug.Assert(destination.Length >= SHA256.HashSizeInBytes);
+
         // Calculate total size needed for serialization
         var totalSize = 0;
         for (var i = 0; i < parameters.Count; i++)

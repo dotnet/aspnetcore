@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.Buffers.Text;
+using System.Text;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Shared;
 
@@ -103,13 +104,19 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
      */
     private static AntiforgeryToken? Deserialize(ReadOnlySpan<byte> tokenBytes)
     {
-        var offset = 0;
+        // Minimum lengths:
+        // - Cookie token: 1 (version) + 16 (securityToken) + 1 (isCookieToken) = 18 bytes
+        // - Request token (username): 18 + 1 (isClaimsBased) + 1 (username prefix) + 1 (additionalData prefix) = 21 bytes
+        // - Request token (claims): 18 + 1 (isClaimsBased) + 32 (claimUid) + 1 (additionalData prefix) = 52 bytes
+        const int minCookieTokenLength = 1 + (AntiforgeryToken.SecurityTokenBitLength / 8) + 1; // 18 bytes
+        const int minRequestTokenLength = minCookieTokenLength + 1 + 1 + 1; // 21 bytes (username-based)
 
-        // we can only consume tokens of the same serialized version that we generate
-        if (tokenBytes.Length < 1)
+        if (tokenBytes.Length < minCookieTokenLength)
         {
             return null;
         }
+
+        var offset = 0;
 
         var embeddedVersion = tokenBytes[offset++];
         if (embeddedVersion != TokenVersion)
@@ -121,38 +128,29 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
 
         // Read SecurityToken (16 bytes)
         const int securityTokenByteLength = AntiforgeryToken.SecurityTokenBitLength / 8;
-        if (tokenBytes.Length < offset + securityTokenByteLength)
-        {
-            return null;
-        }
-
         deserializedToken.SecurityToken = new BinaryBlob(
             AntiforgeryToken.SecurityTokenBitLength,
             tokenBytes.Slice(offset, securityTokenByteLength).ToArray());
         offset += securityTokenByteLength;
 
         // Read IsCookieToken (1 byte)
-        if (tokenBytes.Length < offset + 1)
-        {
-            return null;
-        }
-
         deserializedToken.IsCookieToken = tokenBytes[offset++] != 0;
 
         if (!deserializedToken.IsCookieToken)
         {
-            // Read IsClaimsBased (1 byte)
-            if (tokenBytes.Length < offset + 1)
+            // Validate minimum length for request token
+            if (tokenBytes.Length < minRequestTokenLength)
             {
                 return null;
             }
 
+            // Read IsClaimsBased (1 byte)
             var isClaimsBased = tokenBytes[offset++] != 0;
             if (isClaimsBased)
             {
                 // Read ClaimUid (32 bytes)
                 const int claimUidByteLength = AntiforgeryToken.ClaimUidBitLength / 8;
-                if (tokenBytes.Length < offset + claimUidByteLength)
+                if (tokenBytes.Length < offset + claimUidByteLength + 1) // +1 for additionalData prefix
                 {
                     return null;
                 }
@@ -187,7 +185,7 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
     {
         ArgumentNullException.ThrowIfNull(token);
 
-        var securityTokenBytes = token.SecurityToken!.GetData();
+        var securityTokenBytes = token.SecurityToken.GetData();
         var claimUidBytes = token.ClaimUid?.GetData();
 
         var totalSize =
@@ -204,11 +202,11 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
             }
             else
             {
-                var usernameByteCount = System.Text.Encoding.UTF8.GetByteCount(token.Username!);
+                var usernameByteCount = Encoding.UTF8.GetByteCount(token.Username!);
                 totalSize += usernameByteCount.Measure7BitEncodedUIntLength() + usernameByteCount;
             }
 
-            var additionalDataByteCount = System.Text.Encoding.UTF8.GetByteCount(token.AdditionalData);
+            var additionalDataByteCount = Encoding.UTF8.GetByteCount(token.AdditionalData);
             totalSize += additionalDataByteCount.Measure7BitEncodedUIntLength() + additionalDataByteCount;
         }
 
@@ -248,7 +246,7 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
                 var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[255]);
                 try
                 {
-                    _perfCryptoSystem!.Protect(tokenBytes, ref protectBuffer);
+                    _perfCryptoSystem.Protect(tokenBytes, ref protectBuffer);
                     return Base64Url.EncodeToString(protectBuffer.WrittenSpan);
                 }
                 finally
