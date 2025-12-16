@@ -31,6 +31,7 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.AspNetCore.Razor" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
     <Reference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <Reference Include="Microsoft.EntityFrameworkCore.Tools" PrivateAssets="All" />
     <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
