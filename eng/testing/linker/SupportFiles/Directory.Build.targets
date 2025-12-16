@@ -69,6 +69,25 @@
   -->
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\DefaultBuilder\src\Microsoft.AspNetCore.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\HostFiltering\src\Microsoft.AspNetCore.HostFiltering.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.Abstractions\src\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http\src\Microsoft.AspNetCore.Http.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Middleware\HttpOverrides\src\Microsoft.AspNetCore.HttpOverrides.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Http\Routing.Abstractions\src\Microsoft.AspNetCore.Routing.Abstractions.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IIS\src\Microsoft.AspNetCore.Server.IIS.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IISIntegration\src\Microsoft.AspNetCore.Server.IISIntegration.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Transport.Quic\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\Kestrel\Transport.NamedPipes\src\Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.csproj" />
+
     <ProjectReference Include="$(RepoRoot)src\DataProtection\Extensions\src\Microsoft.AspNetCore.DataProtection.Extensions.csproj" />
     <ProjectReference Include="$(RepoRoot)src\SignalR\clients\csharp\Client\src\Microsoft.AspNetCore.SignalR.Client.csproj" />
     <ProjectReference Include="$(RepoRoot)src\SignalR\server\SignalR\src\Microsoft.AspNetCore.SignalR.csproj" />
