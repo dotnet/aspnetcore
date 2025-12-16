@@ -23,6 +23,10 @@
     <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.StaticAssets" />
+    <Reference Include="Microsoft.AspNetCore.SpaServices.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Playwright" Condition="'$(IsPlaywrightAvailable)' == 'true'" />
     <Reference Include="Microsoft.Playwright" ExcludeAssets="build" Condition="'$(IsPlaywrightAvailable)' != 'true'" />
