@@ -27,7 +27,6 @@ internal sealed partial class HttpConnectionManager
     private readonly TimeSpan _disconnectTimeout;
     private readonly HttpConnectionsMetrics _metrics;
     private readonly IHostApplicationLifetime _applicationLifetime;
-    private readonly Lock _closeLock = new();
 
     public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions, HttpConnectionsMetrics metrics)
     {
@@ -188,23 +187,20 @@ internal sealed partial class HttpConnectionManager
 
     public void CloseConnections()
     {
-        lock (_closeLock)
+        // Stop firing the timer
+        _nextHeartbeat.Dispose();
+
+        var tasks = new List<Task>(_connections.Count);
+
+        // REVIEW: In the future we can consider a hybrid where we first try to wait for shutdown
+        // for a certain time frame then after some grace period we shutdown more aggressively
+        foreach (var c in _connections)
         {
-            // Stop firing the timer
-            _nextHeartbeat.Dispose();
-
-            var tasks = new List<Task>(_connections.Count);
-
-            // REVIEW: In the future we can consider a hybrid where we first try to wait for shutdown
-            // for a certain time frame then after some grace period we shutdown more aggressively
-            foreach (var c in _connections)
-            {
-                // We're shutting down so don't wait for closing the application
-                tasks.Add(DisposeAndRemoveAsync(c.Value, closeGracefully: false, HttpConnectionStopStatus.AppShutdown));
-            }
-
-            Task.WaitAll(tasks.ToArray(), TimeSpan.FromSeconds(5));
+            // We're shutting down so don't wait for closing the application
+            tasks.Add(DisposeAndRemoveAsync(c.Value, closeGracefully: false, HttpConnectionStopStatus.AppShutdown));
         }
+
+        Task.WaitAll(tasks.ToArray(), TimeSpan.FromSeconds(5));
     }
 
     internal async Task DisposeAndRemoveAsync(HttpConnectionContext connection, bool closeGracefully, HttpConnectionStopStatus status)
