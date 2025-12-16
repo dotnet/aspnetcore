@@ -1,13 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
-using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal.OpenSSL;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -110,6 +107,7 @@ public sealed class DirectSocketTransportFactory : IConnectionListenerFactory, I
         };
     }
 
+    /// <inheritdoc />
     public void Dispose()
     {
         if (!_disposed)
@@ -126,7 +124,6 @@ public sealed class DirectSocketTransportFactory : IConnectionListenerFactory, I
 internal sealed class DirectSocketConnectionListener : SocketConnectionListener
 {
     private readonly OpenSSLContext? _sslContext;
-    private readonly ILogger<DirectSocketConnectionListener> _logger;
 
     public DirectSocketConnectionListener(
         EndPoint endpoint,
@@ -136,7 +133,6 @@ internal sealed class DirectSocketConnectionListener : SocketConnectionListener
         : base(endpoint, options, loggerFactory)
     {
         _sslContext = sslContext;
-        _logger = loggerFactory.CreateLogger<DirectSocketConnectionListener>();
     }
 
     protected override ConnectionContext CreateConnectionFromSocket(Socket socket, SocketConnectionContextFactory factory)

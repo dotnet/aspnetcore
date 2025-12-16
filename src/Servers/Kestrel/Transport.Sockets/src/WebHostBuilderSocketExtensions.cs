@@ -5,7 +5,6 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal.OpenSSL;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 

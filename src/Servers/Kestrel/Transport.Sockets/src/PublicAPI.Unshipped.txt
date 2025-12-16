@@ -1,1 +1,10 @@
 #nullable enable
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSocketTransportFactory
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSocketTransportFactory.BindAsync(System.Net.EndPoint! endpoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.IConnectionListener!>
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSocketTransportFactory.CanBind(System.Net.EndPoint! endpoint) -> bool
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSocketTransportFactory.DirectSocketTransportFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSocketTransportFactory.Dispose() -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSocketTransportFactory.InitializeSslContext(System.Security.Cryptography.X509Certificates.X509Certificate2! certificate) -> void
+static Microsoft.AspNetCore.Hosting.WebHostBuilderSocketExtensions.InitializeDirectSocketSSL(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, System.Security.Cryptography.X509Certificates.X509Certificate2! certificate) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderSocketExtensions.UseDirectSocketTransport(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderSocketExtensions.UseDirectSocketTransport(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions!>! configureOptions) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!

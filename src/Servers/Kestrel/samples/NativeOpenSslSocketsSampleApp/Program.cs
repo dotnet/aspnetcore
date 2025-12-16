@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.Extensions.Hosting;
 
+throw new NotImplementedException("check!");
+
 var builder = WebApplication.CreateSlimBuilder(args);
 
 var certPath = "localhost.pfx";
@@ -49,16 +51,7 @@ var summaries = new[]
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index => new
-    {
-        date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)).ToString("O"),
-        temperatureC = Random.Shared.Next(-20, 55),
-        summary = summaries[Random.Shared.Next(summaries.Length)]
-    }).ToArray();
-    return forecast;
-});
+app.MapGet("/", () => "hello world!");
 
 Console.WriteLine("Starting NativeOpenSslSocketsSampleApp with DirectSocket Transport");
 Console.WriteLine();

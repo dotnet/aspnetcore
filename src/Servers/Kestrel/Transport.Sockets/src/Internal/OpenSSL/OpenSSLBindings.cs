@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal.OpenSSL
 /// Minimal OpenSSL bindings for direct socket-to-TLS integration.
 /// This is a foundation for zero-copy TLS processing.
 /// </summary>
-internal static class OpenSSLBindings
+internal static unsafe partial class OpenSSLBindings
 {
     private const string LibName = "libssl";
 
@@ -19,98 +19,98 @@ internal static class OpenSSLBindings
     /// <summary>
     /// SSL_new - Create a new SSL connection structure.
     /// </summary>
-    [DllImport(LibName)]
-    internal static extern IntPtr SSL_new(IntPtr ctx);
+    [LibraryImport(LibName)]
+    internal static partial IntPtr SSL_new(IntPtr ctx);
 
     /// <summary>
     /// SSL_free - Free an SSL connection structure.
     /// </summary>
-    [DllImport(LibName)]
-    internal static extern void SSL_free(IntPtr ssl);
+    [LibraryImport(LibName)]
+    internal static partial void SSL_free(IntPtr ssl);
 
     /// <summary>
     /// SSL_set_fd - Associate an OpenSSL connection with a file descriptor.
     /// </summary>
-    [DllImport(LibName)]
-    internal static extern int SSL_set_fd(IntPtr ssl, int fd);
+    [LibraryImport(LibName)]
+    internal static partial int SSL_set_fd(IntPtr ssl, int fd);
 
     /// <summary>
     /// SSL_accept - Perform SSL handshake as server.
     /// </summary>
-    [DllImport(LibName)]
-    internal static extern int SSL_accept(IntPtr ssl);
+    [LibraryImport(LibName)]
+    internal static partial int SSL_accept(IntPtr ssl);
 
     /// <summary>
     /// SSL_read - Read decrypted data from OpenSSL.
     /// </summary>
-    [DllImport(LibName)]
-    internal static extern int SSL_read(IntPtr ssl, byte[] buf, int num);
+    [LibraryImport(LibName)]
+    internal static partial int SSL_read(IntPtr ssl, byte[] buf, int num);
 
     /// <summary>
     /// SSL_write - Write data to OpenSSL for encryption.
     /// </summary>
-    [DllImport(LibName)]
-    internal static extern int SSL_write(IntPtr ssl, byte[] buf, int num);
+    [LibraryImport(LibName)]
+    internal static partial int SSL_write(IntPtr ssl, byte[] buf, int num);
 
     /// <summary>
     /// SSL_get_error - Get error code from last SSL operation.
     /// </summary>
-    [DllImport(LibName)]
-    internal static extern int SSL_get_error(IntPtr ssl, int ret);
+    [LibraryImport(LibName)]
+    internal static partial int SSL_get_error(IntPtr ssl, int ret);
 
     /// <summary>
     /// SSL_shutdown - Perform SSL shutdown.
     /// </summary>
-    [DllImport(LibName)]
-    internal static extern int SSL_shutdown(IntPtr ssl);
+    [LibraryImport(LibName)]
+    internal static partial int SSL_shutdown(IntPtr ssl);
 
     /// <summary>
     /// SSL_CTX_new - Create a new SSL context.
     /// </summary>
-    [DllImport(LibName)]
-    internal static extern IntPtr SSL_CTX_new(IntPtr method);
+    [LibraryImport(LibName)]
+    internal static partial IntPtr SSL_CTX_new(IntPtr method);
 
     /// <summary>
     /// SSL_CTX_free - Free an SSL context.
     /// </summary>
-    [DllImport(LibName)]
-    internal static extern void SSL_CTX_free(IntPtr ctx);
+    [LibraryImport(LibName)]
+    internal static partial void SSL_CTX_free(IntPtr ctx);
 
     /// <summary>
     /// TLS_server_method - Get the server-side TLS method.
     /// </summary>
-    [DllImport(LibName)]
-    internal static extern IntPtr TLS_server_method();
+    [LibraryImport(LibName)]
+    internal static partial IntPtr TLS_server_method();
 
     /// <summary>
     /// SSL_CTX_use_certificate_file - Load server certificate from file.
     /// </summary>
-    [DllImport(LibName)]
-    internal static extern int SSL_CTX_use_certificate_file(IntPtr ctx, string file, int type);
+    [LibraryImport(LibName)]
+    internal static partial int SSL_CTX_use_certificate_file(IntPtr ctx, char* file, int type);
 
     /// <summary>
     /// SSL_CTX_use_PrivateKey_file - Load private key from file.
     /// </summary>
-    [DllImport(LibName)]
-    internal static extern int SSL_CTX_use_PrivateKey_file(IntPtr ctx, string file, int type);
+    [LibraryImport(LibName)]
+    internal static partial int SSL_CTX_use_PrivateKey_file(IntPtr ctx, char* file, int type);
 
     /// <summary>
     /// SSL_get_state - Get the current state of the SSL connection.
     /// </summary>
-    [DllImport(LibName)]
-    internal static extern int SSL_get_state(IntPtr ssl);
+    [LibraryImport(LibName)]
+    internal static partial int SSL_get_state(IntPtr ssl);
 
     /// <summary>
     /// ERR_get_error - Get error from error queue.
     /// </summary>
-    [DllImport(LibName)]
-    internal static extern ulong ERR_get_error();
+    [LibraryImport(LibName)]
+    internal static partial ulong ERR_get_error();
 
     /// <summary>
     /// ERR_error_string - Convert error code to string.
     /// </summary>
-    [DllImport(LibName)]
-    internal static extern IntPtr ERR_error_string(ulong err, IntPtr buf);
+    [LibraryImport(LibName)]
+    internal static partial IntPtr ERR_error_string(ulong err, IntPtr buf);
 }
 
 /// <summary>

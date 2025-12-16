@@ -6,6 +6,7 @@
     <GenerateRazorAssemblyInfo>false</GenerateRazorAssemblyInfo>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <UserSecretsId>9e655c3c-6fbc-4088-92b4-e7b6d80ca3cf</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,8 +15,3 @@
   </ItemGroup>
 
 </Project>
-
-
-
-
-
