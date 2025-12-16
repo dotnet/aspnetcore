@@ -246,7 +246,7 @@ public abstract class NavigationManager
 
     /// <summary>
     /// Converts a relative URI into an absolute one (by resolving it
-    /// relative to the current absolute URI).
+    /// relative to the base URI).
     /// </summary>
     /// <param name="relativeUri">The relative URI.</param>
     /// <returns>The absolute URI.</returns>

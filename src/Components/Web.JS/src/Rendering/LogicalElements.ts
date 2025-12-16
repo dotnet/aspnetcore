@@ -242,6 +242,14 @@ export function isSvgElement(element: LogicalElement): boolean {
   return closestElement.namespaceURI === 'http://www.w3.org/2000/svg' && closestElement['tagName'] !== 'foreignObject';
 }
 
+// MathML elements need to be created with the MathML namespace to render correctly.
+// Similar to SVG, MathML has its own namespace (http://www.w3.org/1998/Math/MathML)
+// and elements created without this namespace will not render properly in browsers.
+export function isMathMLElement(element: LogicalElement): boolean {
+  const closestElement = getClosestDomElement(element) as any;
+  return closestElement.namespaceURI === 'http://www.w3.org/1998/Math/MathML';
+}
+
 export function getLogicalChildrenArray(element: LogicalElement): LogicalElement[] {
   return element[logicalChildrenPropname] as LogicalElement[];
 }

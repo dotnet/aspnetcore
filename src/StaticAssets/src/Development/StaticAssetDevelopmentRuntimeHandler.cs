@@ -57,7 +57,10 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler
         {
             var originalFeature = context.Features.GetRequiredFeature<IHttpResponseBodyFeature>();
             var fileInfo = context.RequestServices.GetRequiredService<IWebHostEnvironment>().WebRootFileProvider.GetFileInfo(asset.AssetPath);
-            if (fileInfo.Length != asset.GetContentLength() || fileInfo.LastModified != asset.GetLastModified())
+            // Truncating is correct because the manifest truncates the timestamp when it serializes the Last-Modified header
+            // (HTTP date format only supports second precision). We need to apply the same truncation here so that we correctly
+            // detect unchanged files rather than always seeing them as different due to subsecond precision mismatch.
+            if (fileInfo.Length != asset.GetContentLength() || TruncateToSeconds(fileInfo.LastModified) != asset.GetLastModified())
             {
                 // At this point, we know that the file has changed from what was generated at build time.
                 // This is for example, when someone changes something in the WWWRoot folder.
@@ -127,6 +130,18 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler
     {
         using var stream = fileInfo.CreateReadStream();
         return $"\"{Convert.ToBase64String(SHA256.HashData(stream))}\"";
+    }
+
+    internal static DateTimeOffset TruncateToSeconds(DateTimeOffset dateTimeOffset)
+    {
+        return new DateTimeOffset(
+            dateTimeOffset.Year,
+            dateTimeOffset.Month,
+            dateTimeOffset.Day,
+            dateTimeOffset.Hour,
+            dateTimeOffset.Minute,
+            dateTimeOffset.Second,
+            dateTimeOffset.Offset);
     }
 
     internal sealed class RuntimeStaticAssetResponseBodyFeature : IHttpResponseBodyFeature

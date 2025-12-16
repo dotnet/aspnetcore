@@ -51,6 +51,14 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                     options.DisconnectedCircuitMaxRetained = 0;
                     options.DetailedErrors = true;
                 }
+                if (Configuration.GetValue<bool>("DisableCircuitPersistence"))
+                {
+                    // This disables the circuit persistence.
+                    // In combination with DisableReconnectionCache this means that a disconnected client will always
+                    // be rejected on reconnection/resume attempts.
+                    options.PersistedCircuitInMemoryMaxRetained = 0;
+                    options.DetailedErrors = true;
+                }
                 options.RootComponents.RegisterForJavaScript<TestContentPackage.PersistentComponents.ComponentWithPersistentState>("dynamic-js-root-counter");
             })
             .AddAuthenticationStateSerialization(options =>

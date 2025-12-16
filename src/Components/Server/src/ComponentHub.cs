@@ -316,9 +316,10 @@ internal sealed partial class ComponentHub : Hub
             persistedCircuitState = await _circuitPersistenceManager.ResumeCircuitAsync(circuitId, Context.ConnectionAborted);
             if (persistedCircuitState == null)
             {
+                // The circuit state cannot be retrieved. It might have been deleted or expired.
+                // We do not send an error to the client as this is a valid scenario
+                // that will be handled by the client reconnection logic. 
                 Log.InvalidInputData(_logger);
-                await NotifyClientError(Clients.Caller, "The circuit state could not be retrieved. It may have been deleted or expired.");
-                Context.Abort();
                 return null;
             }
         }

@@ -246,8 +246,6 @@ public class ComponentHubTest
         var circuitSecret = await hub.StartCircuit("https://localhost:5000", "https://localhost:5000/subdir", "{}", null);
         var result = await hub.ResumeCircuit(circuitSecret, "https://localhost:5000", "https://localhost:5000/subdir", "[]", "");
         Assert.Null(result);
-        var errorMessage = "The circuit state could not be retrieved. It may have been deleted or expired.";
-        mockClientProxy.Verify(m => m.SendCoreAsync("JS.Error", new[] { errorMessage }, It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
