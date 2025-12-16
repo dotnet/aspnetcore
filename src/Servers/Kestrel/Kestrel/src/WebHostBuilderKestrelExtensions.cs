@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -75,6 +74,7 @@ public static class WebHostBuilderKestrelExtensions
     /// <param name="hostBuilder">
     /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder to configure.
     /// </param>
+    /// <param name="certificate"></param>
     /// <returns>
     /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
     /// </returns>
@@ -83,9 +83,6 @@ public static class WebHostBuilderKestrelExtensions
     /// This bypasses SslStream and integrates OpenSSL directly at the socket transport layer for zero-copy TLS processing.
     /// Includes less automatic functionality than <see cref="UseKestrel(IWebHostBuilder)"/> to make trimming more effective.
     /// </summary>
-    /// <param name="hostBuilder">
-    /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder to configure.
-    /// </param>
     /// <returns>
     /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
     /// </returns>
