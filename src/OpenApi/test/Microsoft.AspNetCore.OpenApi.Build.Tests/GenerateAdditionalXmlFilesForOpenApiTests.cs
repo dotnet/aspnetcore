@@ -90,7 +90,7 @@ public class Class1
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
     <ProjectReference Include="{{classLibProjectPath}}" />
   </ItemGroup>
 </Project>
