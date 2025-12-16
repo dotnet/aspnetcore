@@ -22,30 +22,43 @@ internal sealed class TempDataService
 
     public static TempData Load(HttpContext httpContext)
     {
-        var returnTempData = new TempData();
-        var serializedDataFromCookie = httpContext.Request.Cookies[CookieName];
-        if (serializedDataFromCookie is null)
+        try
         {
+            var returnTempData = new TempData();
+            var serializedDataFromCookie = httpContext.Request.Cookies[CookieName];
+            if (serializedDataFromCookie is null)
+            {
+                return returnTempData;
+            }
+
+            var protectedBytes = WebEncoders.Base64UrlDecode(serializedDataFromCookie);
+            var unprotectedBytes = GetDataProtector(httpContext).Unprotect(protectedBytes);
+            var dataFromCookie = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(unprotectedBytes);
+
+            if (dataFromCookie is null)
+            {
+                return returnTempData;
+            }
+
+            var convertedData = new Dictionary<string, object?>();
+            foreach (var kvp in dataFromCookie)
+            {
+                convertedData[kvp.Key] = ConvertJsonElement(kvp.Value);
+            }
+
+            returnTempData.Load(convertedData);
             return returnTempData;
         }
-
-        var protectedBytes = WebEncoders.Base64UrlDecode(serializedDataFromCookie);
-        var unprotectedBytes = GetDataProtector(httpContext).Unprotect(protectedBytes);
-        var dataFromCookie = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(unprotectedBytes);
-
-        if (dataFromCookie is null)
+        catch
         {
-            return returnTempData;
+            // If any error occurs during loading (e.g. data protection key changed, malformed cookie),
+            // return an empty TempData dictionary.
+            httpContext.Response.Cookies.Delete(CookieName, new CookieOptions
+            {
+                Path = httpContext.Request.PathBase.HasValue ? httpContext.Request.PathBase.Value : "/",
+            });
+            return new TempData();
         }
-
-        var convertedData = new Dictionary<string, object?>();
-        foreach (var kvp in dataFromCookie)
-        {
-            convertedData[kvp.Key] = ConvertJsonElement(kvp.Value);
-        }
-
-        returnTempData.Load(convertedData);
-        return returnTempData;
     }
 
     public static void Save(HttpContext httpContext, TempData tempData)
