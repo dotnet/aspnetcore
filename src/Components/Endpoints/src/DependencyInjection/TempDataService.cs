@@ -14,6 +14,7 @@ internal sealed partial class TempDataService
 {
     private const string CookieName = ".AspNetCore.Components.TempData";
     private const string PurposeString = "Microsoft.AspNetCore.Components.Endpoints.TempDataService";
+    private const int MaxEncodedLength = 4050;
 
     private static IDataProtector GetDataProtector(HttpContext httpContext)
     {
@@ -91,6 +92,20 @@ internal sealed partial class TempDataService
         var bytes = JsonSerializer.SerializeToUtf8Bytes(dataToSave);
         var protectedBytes = GetDataProtector(httpContext).Protect(bytes);
         var encodedValue = WebEncoders.Base64UrlEncode(protectedBytes);
+
+        if (encodedValue.Length > MaxEncodedLength)
+        {
+            if (httpContext.RequestServices.GetService<ILogger<TempDataService>>() is { } logger)
+            {
+                Log.TempDataCookieSaveFailure(logger, CookieName);
+            }
+
+            httpContext.Response.Cookies.Delete(CookieName, new CookieOptions
+            {
+                Path = httpContext.Request.PathBase.HasValue ? httpContext.Request.PathBase.Value : "/",
+            });
+            return;
+        }
 
         httpContext.Response.Cookies.Append(CookieName, encodedValue, new CookieOptions
         {
@@ -189,5 +204,8 @@ internal sealed partial class TempDataService
     {
         [LoggerMessage(3, LogLevel.Warning, "The temp data cookie {CookieName} could not be loaded.", EventName = "TempDataCookieLoadFailure")]
         public static partial void TempDataCookieLoadFailure(ILogger logger, string cookieName, Exception exception);
+
+        [LoggerMessage(3, LogLevel.Warning, "The temp data cookie {CookieName} could not be saved, because it is too large to fit in a single cookie.", EventName = "TempDataCookieSaveFailure")]
+        public static partial void TempDataCookieSaveFailure(ILogger logger, string cookieName);
     }
 }
