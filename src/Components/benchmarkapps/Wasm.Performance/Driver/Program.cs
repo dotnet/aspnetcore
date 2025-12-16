@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Text;
@@ -21,10 +20,6 @@ public class Program
 
     public static async Task<int> Main(string[] args)
     {
-        // Set culture to en-US to avoid invalid @posix suffix. Fixes https://github.com/dotnet/aspnetcore/issues/64450
-        CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
-        CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
-
         // This cancellation token manages the timeout for the stress run.
         // By default the driver executes and reports a single Benchmark run. For stress runs,
         // we'll pass in the duration to execute the runs in seconds. This will cause this driver
