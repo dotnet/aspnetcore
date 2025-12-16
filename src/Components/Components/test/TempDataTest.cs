@@ -158,7 +158,7 @@ public class TempDataTest
     public void Load_PopulatesDataFromDictionary()
     {
         var tempData = new TempData();
-        var dataToLoad = new Dictionary<string, object?>
+        var dataToLoad = new Dictionary<string, object>
         {
             ["Key1"] = "Value1",
             ["Key2"] = "Value2"
@@ -175,7 +175,7 @@ public class TempDataTest
     {
         var tempData = new TempData();
         tempData["ExistingKey"] = "ExistingValue";
-        var dataToLoad = new Dictionary<string, object?>
+        var dataToLoad = new Dictionary<string, object>
         {
             ["NewKey"] = "NewValue"
         };

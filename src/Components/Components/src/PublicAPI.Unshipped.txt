@@ -5,6 +5,7 @@ Microsoft.AspNetCore.Components.ITempData.Keep() -> void
 Microsoft.AspNetCore.Components.ITempData.Keep(string! key) -> void
 Microsoft.AspNetCore.Components.ITempData.Peek(string! key) -> object?
 Microsoft.AspNetCore.Components.TempData
+Microsoft.AspNetCore.Components.TempData.ContainsValue(object? value) -> bool
 Microsoft.AspNetCore.Components.TempData.TempData() -> void
 Microsoft.AspNetCore.Components.TempData.Get(string! key) -> object?
 Microsoft.AspNetCore.Components.TempData.this[string! key].get -> object?

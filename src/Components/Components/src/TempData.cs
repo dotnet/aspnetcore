@@ -65,6 +65,14 @@ public class TempData : ITempData
     }
 
     /// <summary>
+    /// Returns true if the TempData dictionary contains the specified <paramref name="value"/>.
+    /// </summary>
+    public bool ContainsValue(object? value)
+    {
+        return _data.ContainsValue(value);
+    }
+
+    /// <summary>
     /// Gets the data that should be saved for the next request.
     /// </summary>
     public IDictionary<string, object?> Save()
@@ -153,14 +161,24 @@ public class TempData : ITempData
 
     class TempDataEnumerator : IEnumerator<KeyValuePair<string, object?>>
     {
+        private readonly TempData _tempData;
         private readonly IEnumerator<KeyValuePair<string, object?>> _innerEnumerator;
 
         public TempDataEnumerator(TempData tempData)
         {
+            _tempData = tempData;
             _innerEnumerator = tempData._data.GetEnumerator();
         }
 
-        public KeyValuePair<string, object?> Current => _innerEnumerator.Current;
+        public KeyValuePair<string, object?> Current
+        {
+            get
+            {
+                var kvp = _innerEnumerator.Current;
+                _tempData.Remove(kvp.Key);
+                return kvp;
+            }
+        }
 
         object IEnumerator.Current => _innerEnumerator.Current;
 
