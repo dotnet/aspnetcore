@@ -10,6 +10,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
 
     <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
+    <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
     <Reference Include="Microsoft.Extensions.WebEncoders" />
   </ItemGroup>
 
