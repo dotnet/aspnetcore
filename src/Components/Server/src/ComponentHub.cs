@@ -184,6 +184,17 @@ internal sealed partial class ComponentHub : Hub
                 persistedState.RootComponents,
                 serializedComponentOperations);
 
+            if (operations == null)
+            {
+                // OR: Expired state
+                // There was an error, so kill the circuit.
+                await _circuitRegistry.TerminateAsync(circuitHost.CircuitId);
+                await NotifyClientError(Clients.Caller, "The persisted circuit state is invalid or expired.");
+                Context.Abort();
+
+                return;
+            }
+
             store = new ProtectedPrerenderComponentApplicationStore(persistedState.ApplicationState, _dataProtectionProvider);
         }
         else
@@ -332,6 +343,14 @@ internal sealed partial class ComponentHub : Hub
                 Log.InvalidInputData(_logger);
                 await NotifyClientError(Clients.Caller, "The root components or application state provided are invalid.");
                 Context.Abort();
+                return null;
+            }
+
+            // TODO (OR): Select solution variant
+            // Variant A: Server-side check in ResumeCircuit
+            if (!CircuitPersistenceManager.CheckRootComponentMarkers(_serverComponentSerializer, persistedCircuitState.RootComponents))
+            {
+                Log.InvalidInputData(_logger);
                 return null;
             }
         }

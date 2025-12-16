@@ -19,6 +19,12 @@ import { showErrorNotification } from '../../BootErrors';
 import { attachWebRendererInterop, detachWebRendererInterop } from '../../Rendering/WebRendererInteropMethods';
 import { sendJSDataStream } from './CircuitStreamingInterop';
 
+interface PersistedCircuitState {
+  components: string;
+  applicationState: string;
+  expiration: number;
+}
+
 export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private readonly _componentManager: RootComponentManager<ServerComponentDescriptor>;
@@ -53,7 +59,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _disconnectingState = new CircuitState<void>('disconnecting');
 
-  private _persistedCircuitState?: { components: string, applicationState: string };
+  private _persistedCircuitState?: PersistedCircuitState;
 
   private _isFirstRender = true;
 
@@ -70,6 +76,20 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     this._logger = logger;
     this._renderQueue = new RenderQueue(this._logger);
     this._dispatcher = DotNet.attachDispatcher(this);
+  }
+
+  private tryTakePersistedState(): PersistedCircuitState | undefined {
+    // TODO (OR): Select solution variant
+    // Variant B: Client-side check
+    if (this._persistedCircuitState && this._persistedCircuitState.expiration <= Date.now()) {
+      this._logger.log(LogLevel.Debug, 'Persisted circuit state has expired and will not be used.');
+      this._persistedCircuitState = undefined;
+      return undefined;
+    } else {
+      const state = this._persistedCircuitState;
+      this._persistedCircuitState = undefined;
+      return state;
+    }
   }
 
   public start(): Promise<boolean> {
@@ -139,14 +159,14 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.EndInvokeDotNet', this._dispatcher.endInvokeDotNetFromJS.bind(this._dispatcher));
     connection.on('JS.ReceiveByteArray', this._dispatcher.receiveByteArray.bind(this._dispatcher));
 
-    connection.on('JS.SavePersistedState', (circuitId: string, components: string, applicationState: string) => {
+    connection.on('JS.SavePersistedState', (circuitId: string, components: string, applicationState: string, expiration: number) => {
       if (!this._circuitId) {
         throw new Error('Circuit host not initialized.');
       }
       if (circuitId !== this._circuitId) {
         throw new Error(`Received persisted state for circuit ID '${circuitId}', but the current circuit ID is '${this._circuitId}'.`);
       }
-      this._persistedCircuitState = { components, applicationState };
+      this._persistedCircuitState = { components, applicationState, expiration };
       return true;
     });
 
@@ -378,8 +398,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
         }
       }
 
-      const persistedCircuitState = this._persistedCircuitState;
-      this._persistedCircuitState = undefined;
+      const persistedCircuitState = this.tryTakePersistedState();
 
       const newCircuitId = await this._connection!.invoke<string>(
         'ResumeCircuit',

@@ -25,7 +25,16 @@ internal partial class CircuitPersistenceManager(
         {
             var renderer = circuit.Renderer;
             var persistenceManager = circuit.Services.GetRequiredService<ComponentStatePersistenceManager>();
-            var collector = new CircuitPersistenceManagerCollector(circuitOptions, serverComponentSerializer, circuit.Renderer);
+
+            // TODO (OR): Select solution variant
+            // Variant B: Client-side check
+            var distributedRetention = circuitOptions.Value.PersistedCircuitDistributedRetentionPeriod;
+            var localRetention = circuitOptions.Value.PersistedCircuitInMemoryRetentionPeriod;
+            var maxRetention = (distributedRetention > localRetention ? distributedRetention : localRetention) ?? ServerComponentSerializationSettings.DataExpiration;
+            var expiration = DateTimeOffset.UtcNow.Add(maxRetention);
+
+            var collector = new CircuitPersistenceManagerCollector(serverComponentSerializer, circuit.Renderer, maxRetention);
+
             using var subscription = persistenceManager.State.RegisterOnPersisting(
                 collector.PersistRootComponents,
                 RenderMode.InteractiveServer);
@@ -34,7 +43,7 @@ internal partial class CircuitPersistenceManager(
 
             if (saveStateToClient)
             {
-                await SaveStateToClient(circuit, collector.PersistedCircuitState, cancellation);
+                await SaveStateToClient(circuit, collector.PersistedCircuitState, expiration, cancellation);
             }
             else
             {
@@ -46,10 +55,10 @@ internal partial class CircuitPersistenceManager(
         });
     }
 
-    internal async Task SaveStateToClient(CircuitHost circuit, PersistedCircuitState state, CancellationToken cancellation = default)
+    internal async Task SaveStateToClient(CircuitHost circuit, PersistedCircuitState state, DateTimeOffset expiration, CancellationToken cancellation = default)
     {
         var (rootComponents, applicationState) = await ToProtectedStateAsync(state);
-        if (!await circuit.SendPersistedStateToClient(rootComponents, applicationState, cancellation))
+        if (!await circuit.SendPersistedStateToClient(rootComponents, applicationState, expiration, cancellation))
         {
             try
             {
@@ -99,6 +108,27 @@ internal partial class CircuitPersistenceManager(
     public async Task<PersistedCircuitState> ResumeCircuitAsync(CircuitId circuitId, CancellationToken cancellation = default)
     {
         return await circuitPersistenceProvider.RestoreCircuitAsync(circuitId, cancellation);
+    }
+
+    internal static bool CheckRootComponentMarkers(IServerComponentDeserializer serverComponentDeserializer, byte[] rootComponents)
+    {
+        var persistedMarkers = TryDeserializeMarkers(rootComponents);
+
+        if (persistedMarkers == null)
+        {
+            return false;
+        }
+
+        foreach (var marker in persistedMarkers)
+        {
+            if (!serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(marker.Value, out var _))
+            {
+                // OR: Expired state
+                return false;
+            }
+        }
+
+        return true;
     }
 
     // We are going to construct a RootComponentOperationBatch but we are going to replace the descriptors from the client with the
@@ -152,6 +182,7 @@ internal partial class CircuitPersistenceManager(
 
             if (!serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(operation.Marker.Value, out var descriptor))
             {
+                // OR: Expired state
                 return null;
             }
 
@@ -159,48 +190,55 @@ internal partial class CircuitPersistenceManager(
         }
 
         return batch;
+    }
 
-        static Dictionary<int, ComponentMarker> TryDeserializeMarkers(byte[] rootComponents)
+    private static Dictionary<int, ComponentMarker> TryDeserializeMarkers(byte[] rootComponents)
+    {
+        if (rootComponents == null || rootComponents.Length == 0)
         {
-            if (rootComponents == null || rootComponents.Length == 0)
-            {
-                return null;
-            }
+            return null;
+        }
 
-            try
-            {
-                return JsonSerializer.Deserialize<Dictionary<int, ComponentMarker>>(
-                    rootComponents,
-                    JsonSerializerOptionsProvider.Options);
-            }
-            catch
-            {
-                return null;
-            }
+        try
+        {
+            return JsonSerializer.Deserialize<Dictionary<int, ComponentMarker>>(
+                rootComponents,
+                JsonSerializerOptionsProvider.Options);
+        }
+        catch
+        {
+            return null;
         }
     }
 
-    private class CircuitPersistenceManagerCollector(
-        IOptions<CircuitOptions> circuitOptions,
-        ServerComponentSerializer serverComponentSerializer,
-        RemoteRenderer renderer)
-        : IPersistentComponentStateStore
+    private class CircuitPersistenceManagerCollector : IPersistentComponentStateStore
     {
+        private readonly ServerComponentSerializer _serverComponentSerializer;
+        private readonly RemoteRenderer _renderer;
+        private readonly TimeSpan _maxRetention;
+
+        public CircuitPersistenceManagerCollector(
+            ServerComponentSerializer serverComponentSerializer,
+            RemoteRenderer renderer,
+            TimeSpan maxRetention)
+        {
+            _serverComponentSerializer = serverComponentSerializer;
+            _renderer = renderer;
+            _maxRetention = maxRetention;
+        }
+
         internal PersistedCircuitState PersistedCircuitState { get; private set; }
 
         public Task PersistRootComponents()
         {
             var persistedComponents = new Dictionary<int, ComponentMarker>();
-            var components = renderer.GetOrCreateWebRootComponentManager().GetRootComponents();
+            var components = _renderer.GetOrCreateWebRootComponentManager().GetRootComponents();
             var invocation = new ServerComponentInvocationSequence();
+
             foreach (var (id, componentKey, (componentType, parameters)) in components)
             {
-                var distributedRetention = circuitOptions.Value.PersistedCircuitInMemoryRetentionPeriod;
-                var localRetention = circuitOptions.Value.PersistedCircuitInMemoryRetentionPeriod;
-                var maxRetention = distributedRetention > localRetention ? distributedRetention : localRetention;
-
                 var marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, prerendered: false, componentKey);
-                serverComponentSerializer.SerializeInvocation(ref marker, invocation, componentType, parameters, maxRetention);
+                _serverComponentSerializer.SerializeInvocation(ref marker, invocation, componentType, parameters, _maxRetention);
                 persistedComponents.Add(id, marker);
             }
 
