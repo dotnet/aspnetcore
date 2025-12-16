@@ -6,10 +6,11 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal sealed class TempDataService
+internal sealed partial class TempDataService
 {
     private const string CookieName = ".AspNetCore.Components.TempData";
     private const string PurposeString = "Microsoft.AspNetCore.Components.Endpoints.TempDataService";
@@ -33,6 +34,7 @@ internal sealed class TempDataService
 
             var protectedBytes = WebEncoders.Base64UrlDecode(serializedDataFromCookie);
             var unprotectedBytes = GetDataProtector(httpContext).Unprotect(protectedBytes);
+
             var dataFromCookie = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(unprotectedBytes);
 
             if (dataFromCookie is null)
@@ -49,10 +51,15 @@ internal sealed class TempDataService
             returnTempData.Load(convertedData);
             return returnTempData;
         }
-        catch
+        catch (Exception ex)
         {
             // If any error occurs during loading (e.g. data protection key changed, malformed cookie),
             // return an empty TempData dictionary.
+            if (httpContext.RequestServices.GetService<ILogger<TempDataService>>() is { } logger)
+            {
+                Log.TempDataCookieLoadFailure(logger, CookieName, ex);
+            }
+
             httpContext.Response.Cookies.Delete(CookieName, new CookieOptions
             {
                 Path = httpContext.Request.PathBase.HasValue ? httpContext.Request.PathBase.Value : "/",
@@ -176,5 +183,11 @@ internal sealed class TempDataService
             typeof(ICollection<int>).IsAssignableFrom(type) ||
             typeof(ICollection<string>).IsAssignableFrom(type) ||
             typeof(IDictionary<string, string>).IsAssignableFrom(type);
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(3, LogLevel.Warning, "The temp data cookie {CookieName} could not be loaded.", EventName = "TempDataCookieLoadFailure")]
+        public static partial void TempDataCookieLoadFailure(ILogger logger, string cookieName, Exception exception);
     }
 }
