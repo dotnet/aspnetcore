@@ -195,6 +195,7 @@ internal sealed partial class HttpConnectionDispatcher
 
             if (connection.TransportType != HttpTransportType.WebSockets || connection.UseStatefulReconnect)
             {
+                // No point in canceling if there isn't an active application task yet, that means this is the initial request for the connection
                 if (connection.ApplicationTask is not null && !await connection.CancelPreviousPoll(context))
                 {
                     // Connection closed. It's already set the response status code.

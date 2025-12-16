@@ -216,6 +216,8 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             context.Response.Body = ms;
             context.Request.QueryString = new QueryString("");
             await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions());
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
             var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
 
             var error = negotiateResponse.Value<string>("error");
@@ -2558,7 +2560,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var appLifetime = new TestApplicationLifetime();
             var manager = CreateConnectionManager(LoggerFactory, appLifetime);
             var options = new HttpConnectionDispatcherOptions() { AllowStatefulReconnects = true };
-            options.WebSockets.CloseTimeout = TimeSpan.FromMilliseconds(1);
+
             // pretend negotiate occurred
             var connection = manager.CreateConnection(options, negotiateVersion: 1, useStatefulReconnect: true);
             connection.TransportType = HttpTransportType.WebSockets;
@@ -2611,7 +2613,6 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var appLifetime = new TestApplicationLifetime();
             var manager = CreateConnectionManager(LoggerFactory, appLifetime);
             var options = new HttpConnectionDispatcherOptions() { AllowStatefulReconnects = true };
-            options.WebSockets.CloseTimeout = TimeSpan.FromMilliseconds(1);
             // pretend negotiate occurred
             var connection = manager.CreateConnection(options, negotiateVersion: 1, useStatefulReconnect: true);
             connection.TransportType = HttpTransportType.WebSockets;
@@ -4217,7 +4218,7 @@ public class ReconnectConnectionHandler : ConnectionHandler
     {
         _writer.Complete();
         _writer = writer;
-        _pause.SetResult(true);
+        _pause.TrySetResult(true);
         return Task.CompletedTask;
     }
 }

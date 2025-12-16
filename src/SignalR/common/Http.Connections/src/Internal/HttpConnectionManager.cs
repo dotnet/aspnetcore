@@ -28,7 +28,6 @@ internal sealed partial class HttpConnectionManager
     private readonly HttpConnectionsMetrics _metrics;
     private readonly IHostApplicationLifetime _applicationLifetime;
     private readonly Lock _closeLock = new();
-    private bool _closed;
 
     public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions, HttpConnectionsMetrics metrics)
     {
@@ -82,15 +81,10 @@ internal sealed partial class HttpConnectionManager
         Log.CreatedNewConnection(_logger, id);
 
         var pair = CreateConnectionPair(options.TransportPipeOptions, options.AppPipeOptions);
-        var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, metricsContext, pair.Application, pair.Transport, options, useStatefulReconnect);
+        var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger,
+            metricsContext, pair.Application, pair.Transport, options, useStatefulReconnect, _applicationLifetime);
 
         _connections.TryAdd(connectionToken, connection);
-
-        // If the application is stopping don't allow new connections to be created
-        if (_applicationLifetime.ApplicationStopping.IsCancellationRequested || _closed)
-        {
-            CloseConnections();
-        }
 
         return connection;
     }
@@ -196,13 +190,8 @@ internal sealed partial class HttpConnectionManager
     {
         lock (_closeLock)
         {
-            if (!_closed)
-            {
-                // Stop firing the timer
-                _nextHeartbeat.Dispose();
-
-                _closed = true;
-            }
+            // Stop firing the timer
+            _nextHeartbeat.Dispose();
 
             var tasks = new List<Task>(_connections.Count);
 
