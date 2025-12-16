@@ -7,8 +7,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.Extensions.Hosting;
 
-throw new NotImplementedException("check!");
-
 var builder = WebApplication.CreateSlimBuilder(args);
 
 var certPath = "localhost.pfx";
