@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <Reference Include="BenchmarkDotNet" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
