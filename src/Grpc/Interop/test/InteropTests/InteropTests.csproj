@@ -1,4 +1,4 @@
-﻿ø<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ContainsFunctionalTestAssets>true</ContainsFunctionalTestAssets>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
