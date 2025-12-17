@@ -86,6 +86,7 @@
                                                  .Replace('{PublishAot}','$(IsNativeAotTestProject)')
                                                  .Replace('{MicrosoftNETCoreAppRefVersion}','$(MicrosoftNETCoreAppRefVersion)')
                                                  .Replace('{RepoRoot}', '$(RepoRoot)')
+                                                 .Replace('{AdditionalNoWarn}', '%(TestConsoleApps.AdditionalNoWarn)')
                                                  .Replace('{ExtraTrimmerArgs}', '%(TestConsoleApps.ExtraTrimmerArgs)')
                                                  .Replace('{AdditionalProperties}', '$(_additionalPropertiesString)')
                                                  .Replace('{RuntimeHostConfigurationOptions}', '$(_runtimeHostConfigurationOptionsString)')

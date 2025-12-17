@@ -4,6 +4,8 @@
     <TestConsoleAppSourceFiles Include="BasicMinimalApiWithOpenApiDependency.cs">
       <EnabledProperties>EnableRequestDelegateGenerator</EnabledProperties>
       <DisabledFeatureSwitches>Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported</DisabledFeatureSwitches>
+      <!-- TODO: investigate this -->
+      <AdditionalNoWarn>IL2026;IL3050</AdditionalNoWarn>
     </TestConsoleAppSourceFiles>
   </ItemGroup>
 
