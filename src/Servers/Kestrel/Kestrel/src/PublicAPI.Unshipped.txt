@@ -1,2 +1,2 @@
 #nullable enable
-static Microsoft.AspNetCore.Hosting.WebHostBuilderKestrelExtensions.UseKestrelDirectSocket(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, System.Security.Cryptography.X509Certificates.X509Certificate2! certificate) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderKestrelExtensions.UseKestrelDirectSocket(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!

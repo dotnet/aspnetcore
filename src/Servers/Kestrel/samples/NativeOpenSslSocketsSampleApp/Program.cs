@@ -22,20 +22,20 @@ else
 }
 
 // Configure Kestrel to use the Direct Socket Transport with native OpenSSL integration
-builder.WebHost.UseKestrelDirectSocket(cert);
+builder.WebHost.UseKestrelDirectSocket();
 
 builder.WebHost.ConfigureKestrel(options =>
 {
     // HTTP endpoint on port 5000
     options.ListenAnyIP(5000, listenOptions =>
     {
-        listenOptions.Protocols = HttpProtocols.Http1;
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
     });
 
     // HTTPS endpoint on port 5001 with DirectSocket + OpenSSL
     options.ListenAnyIP(5001, listenOptions =>
     {
-        listenOptions.Protocols = HttpProtocols.Http1;
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
     });
 });
 
@@ -53,8 +53,7 @@ app.MapGet("/", () => "hello world!");
 
 Console.WriteLine("Starting NativeOpenSslSocketsSampleApp with DirectSocket Transport");
 Console.WriteLine();
-Console.WriteLine("HTTP endpoint:  http://localhost:5000/weatherforecast");
-Console.WriteLine("HTTPS endpoint: https://localhost:5001/weatherforecast");
+Console.WriteLine("HTTPS endpoint: https://localhost:5001");
 Console.WriteLine();
 Console.WriteLine("DirectSocket Transport Features:");
 Console.WriteLine("  ✓ Direct socket to application path (no SslStream wrapper)");

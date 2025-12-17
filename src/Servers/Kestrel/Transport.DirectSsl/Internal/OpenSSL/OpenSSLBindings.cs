@@ -3,7 +3,7 @@
 
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal.OpenSSL;
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectSsl.Internal.OpenSSL;
 
 /// <summary>
 /// Minimal OpenSSL bindings for direct socket-to-TLS integration.
@@ -11,106 +11,135 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal.OpenSSL
 /// </summary>
 internal static unsafe partial class OpenSSLBindings
 {
-    private const string LibName = "libssl";
+    private const string LibSsl = "libssl";
+    private const string LibCrypto = "libcrypto";
 
-    // OpenSSL function stubs - to be implemented based on libssl availability
-    // These are placeholders for the actual OpenSSL integration
+    // SSL_FILETYPE constants
+    internal const int SSL_FILETYPE_PEM = 1;
+    internal const int SSL_FILETYPE_ASN1 = 2;
 
     /// <summary>
     /// SSL_new - Create a new SSL connection structure.
     /// </summary>
-    [LibraryImport(LibName)]
+    [LibraryImport(LibSsl)]
     internal static partial IntPtr SSL_new(IntPtr ctx);
 
     /// <summary>
     /// SSL_free - Free an SSL connection structure.
     /// </summary>
-    [LibraryImport(LibName)]
+    [LibraryImport(LibSsl)]
     internal static partial void SSL_free(IntPtr ssl);
 
     /// <summary>
     /// SSL_set_fd - Associate an OpenSSL connection with a file descriptor.
     /// </summary>
-    [LibraryImport(LibName)]
+    [LibraryImport(LibSsl)]
     internal static partial int SSL_set_fd(IntPtr ssl, int fd);
 
     /// <summary>
     /// SSL_accept - Perform SSL handshake as server.
     /// </summary>
-    [LibraryImport(LibName)]
+    [LibraryImport(LibSsl)]
     internal static partial int SSL_accept(IntPtr ssl);
 
     /// <summary>
     /// SSL_read - Read decrypted data from OpenSSL.
     /// </summary>
-    [LibraryImport(LibName)]
-    internal static partial int SSL_read(IntPtr ssl, byte[] buf, int num);
+    [LibraryImport(LibSsl)]
+    internal static partial int SSL_read(IntPtr ssl, byte* buf, int num);
 
     /// <summary>
     /// SSL_write - Write data to OpenSSL for encryption.
     /// </summary>
-    [LibraryImport(LibName)]
-    internal static partial int SSL_write(IntPtr ssl, byte[] buf, int num);
+    [LibraryImport(LibSsl)]
+    internal static partial int SSL_write(IntPtr ssl, byte* buf, int num);
 
     /// <summary>
     /// SSL_get_error - Get error code from last SSL operation.
     /// </summary>
-    [LibraryImport(LibName)]
+    [LibraryImport(LibSsl)]
     internal static partial int SSL_get_error(IntPtr ssl, int ret);
 
     /// <summary>
     /// SSL_shutdown - Perform SSL shutdown.
     /// </summary>
-    [LibraryImport(LibName)]
+    [LibraryImport(LibSsl)]
     internal static partial int SSL_shutdown(IntPtr ssl);
 
     /// <summary>
     /// SSL_CTX_new - Create a new SSL context.
     /// </summary>
-    [LibraryImport(LibName)]
+    [LibraryImport(LibSsl)]
     internal static partial IntPtr SSL_CTX_new(IntPtr method);
 
     /// <summary>
     /// SSL_CTX_free - Free an SSL context.
     /// </summary>
-    [LibraryImport(LibName)]
+    [LibraryImport(LibSsl)]
     internal static partial void SSL_CTX_free(IntPtr ctx);
 
     /// <summary>
     /// TLS_server_method - Get the server-side TLS method.
     /// </summary>
-    [LibraryImport(LibName)]
+    [LibraryImport(LibSsl)]
     internal static partial IntPtr TLS_server_method();
 
     /// <summary>
     /// SSL_CTX_use_certificate_file - Load server certificate from file.
     /// </summary>
-    [LibraryImport(LibName)]
-    internal static partial int SSL_CTX_use_certificate_file(IntPtr ctx, char* file, int type);
+    [LibraryImport(LibSsl, StringMarshalling = StringMarshalling.Utf8)]
+    internal static partial int SSL_CTX_use_certificate_file(IntPtr ctx, string file, int type);
 
     /// <summary>
     /// SSL_CTX_use_PrivateKey_file - Load private key from file.
     /// </summary>
-    [LibraryImport(LibName)]
-    internal static partial int SSL_CTX_use_PrivateKey_file(IntPtr ctx, char* file, int type);
+    [LibraryImport(LibSsl, StringMarshalling = StringMarshalling.Utf8)]
+    internal static partial int SSL_CTX_use_PrivateKey_file(IntPtr ctx, string file, int type);
+
+    /// <summary>
+    /// SSL_CTX_check_private_key - Verify private key matches certificate.
+    /// </summary>
+    [LibraryImport(LibSsl)]
+    internal static partial int SSL_CTX_check_private_key(IntPtr ctx);
 
     /// <summary>
     /// SSL_get_state - Get the current state of the SSL connection.
     /// </summary>
-    [LibraryImport(LibName)]
+    [LibraryImport(LibSsl)]
     internal static partial int SSL_get_state(IntPtr ssl);
 
     /// <summary>
     /// ERR_get_error - Get error from error queue.
     /// </summary>
-    [LibraryImport(LibName)]
+    [LibraryImport(LibCrypto)]
     internal static partial ulong ERR_get_error();
 
     /// <summary>
-    /// ERR_error_string - Convert error code to string.
+    /// ERR_error_string_n - Convert error code to string.
     /// </summary>
-    [LibraryImport(LibName)]
-    internal static partial IntPtr ERR_error_string(ulong err, IntPtr buf);
+    [LibraryImport(LibCrypto)]
+    internal static partial void ERR_error_string_n(ulong e, byte* buf, nuint len);
+
+    /// <summary>
+    /// Gets the last OpenSSL error as a string.
+    /// </summary>
+    internal static string GetLastErrorString()
+    {
+        var error = ERR_get_error();
+        if (error == 0)
+        {
+            return "No error";
+        }
+
+        Span<byte> buffer = stackalloc byte[256];
+        fixed (byte* ptr = buffer)
+        {
+            ERR_error_string_n(error, ptr, (nuint)buffer.Length);
+            var length = buffer.IndexOf((byte)0);
+            if (length < 0) length = buffer.Length;
+            return System.Text.Encoding.UTF8.GetString(buffer[..length]);
+        }
+    }
 }
 
 /// <summary>
@@ -138,81 +167,4 @@ internal enum OpenSSLState
     SSL_ST_BEFORE = 0x4000,
     SSL_ST_OK = 0x03,
     SSL_ST_ERR = 0x05,
-}
-
-/// <summary>
-/// File format types
-/// </summary>
-internal enum OpenSSLFileFormat
-{
-    SSL_FILETYPE_PEM = 1,
-    SSL_FILETYPE_ASN1 = 2,
-}
-
-/// <summary>
-/// Managed wrapper for an OpenSSL SSL_CTX* (SSL context)
-/// </summary>
-internal sealed class OpenSSLContext : IDisposable
-{
-    private IntPtr _ctx;
-    private bool _disposed;
-
-    public IntPtr Handle => _ctx;
-
-    public OpenSSLContext(IntPtr ctx)
-    {
-        _ctx = ctx;
-    }
-
-    public void Dispose()
-    {
-        if (!_disposed && _ctx != IntPtr.Zero)
-        {
-            try
-            {
-                OpenSSLBindings.SSL_CTX_free(_ctx);
-            }
-            catch
-            {
-                // Ignore errors during cleanup
-            }
-
-            _disposed = true;
-            _ctx = IntPtr.Zero;
-        }
-    }
-}
-
-/// <summary>
-/// Managed wrapper for an OpenSSL SSL* (SSL connection)
-/// </summary>
-internal sealed class OpenSSLConnection : IDisposable
-{
-    private IntPtr _ssl;
-    private bool _disposed;
-
-    public IntPtr Handle => _ssl;
-
-    public OpenSSLConnection(IntPtr ssl)
-    {
-        _ssl = ssl;
-    }
-
-    public void Dispose()
-    {
-        if (!_disposed && _ssl != IntPtr.Zero)
-        {
-            try
-            {
-                OpenSSLBindings.SSL_free(_ssl);
-            }
-            catch
-            {
-                // Ignore errors during cleanup
-            }
-
-            _disposed = true;
-            _ssl = IntPtr.Zero;
-        }
-    }
 }

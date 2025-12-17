@@ -15,26 +15,6 @@
       },
       "dotnetRunMessages": true,
       "applicationUrl": "https://localhost:7252;http://localhost:5187"
-    },
-    "WSL": {
-      "commandName": "WSL2",
-      "launchUrl": "https://localhost:7252",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_URLS": "https://localhost:7252;http://localhost:5187"
-      },
-      "distributionName": ""
-    },
-    "WSL-custom": {
-      "commandName": "WSL2",
-      "executablePath": "/home/deaglegross/code/aspnetcore/.dotnet/dotnet",
-      "commandLineArgs": "run",
-      "workingDirectory": "/home/deaglegross/code/aspnetcore/src/Servers/Kestrel/samples/NativeOpenSslSocketsSampleApp",
-      "distributionName": "Debian",
-      "environmentVariables": {
-        "NUGET_FALLBACK_PACKAGES": "",
-        "NUGET_PACKAGES": "/home/deaglegross/.nuget/packages"
-      }
     }
   },
   "$schema": "https://json.schemastore.org/launchsettings.json"

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -74,31 +73,10 @@ public static class WebHostBuilderKestrelExtensions
     /// <param name="hostBuilder">
     /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder to configure.
     /// </param>
-    /// <param name="certificate"></param>
     /// <returns>
     /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
     /// </returns>
-    /// <summary>
-    /// Specify Kestrel as the server with Direct Socket Transport (native OpenSSL integration) to be used by the web host.
-    /// This bypasses SslStream and integrates OpenSSL directly at the socket transport layer for zero-copy TLS processing.
-    /// Includes less automatic functionality than <see cref="UseKestrel(IWebHostBuilder)"/> to make trimming more effective.
-    /// </summary>
-    /// <returns>
-    /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
-    /// </returns>
-    /// <remarks>
-    /// This transport is experimental and bypasses the traditional HttpsConnectionMiddleware.
-    /// It requires OpenSSL (libssl) to be available on the system.
-    /// For HTTPS endpoints, you must call ConfigureHttpsDefaults or set certificates on endpoints manually.
-    /// 
-    /// Example:
-    /// <code>
-    /// var host = new HostBuilder()
-    ///     .UseKestrelDirectSocket()
-    ///     .Build();
-    /// </code>
-    /// </remarks>
-    public static IWebHostBuilder UseKestrelDirectSocket(this IWebHostBuilder hostBuilder, X509Certificate2 certificate)
+    public static IWebHostBuilder UseKestrelDirectSocket(this IWebHostBuilder hostBuilder)
     {
         hostBuilder.UseDirectSocketTransport();
         hostBuilder.ConfigureServices(services =>
@@ -122,6 +100,11 @@ public static class WebHostBuilderKestrelExtensions
         return hostBuilder;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="hostBuilder"></param>
+    /// <returns></returns>
     public static IWebHostBuilder UseKestrelCore(this IWebHostBuilder hostBuilder)
     {
         hostBuilder.UseSockets();

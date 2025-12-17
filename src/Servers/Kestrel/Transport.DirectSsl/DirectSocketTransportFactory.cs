@@ -5,20 +5,20 @@ using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal.OpenSSL;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.DirectSsl.Internal.OpenSSL;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.DirectSsl;
 
 /// <summary>
 /// A factory for direct socket connections with integrated OpenSSL TLS handling.
 /// This factory creates connections that bypass the traditional SslStream layer
 /// and register sockets directly with OpenSSL for zero-copy TLS processing.
 /// </summary>
-public sealed class DirectSocketTransportFactory : IConnectionListenerFactory, IConnectionListenerFactorySelector
+public sealed class DirectSocketTransportFactory : IConnectionListenerFactory, IConnectionListenerFactorySelector, IDisposable
 {
-    private readonly SocketTransportOptions _options;
+    private readonly DirectSocketTransportOptions _options;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
     private OpenSSLContext? _sslContext;
@@ -30,7 +30,7 @@ public sealed class DirectSocketTransportFactory : IConnectionListenerFactory, I
     /// <param name="options">The transport options.</param>
     /// <param name="loggerFactory">The logger factory.</param>
     public DirectSocketTransportFactory(
-        IOptions<SocketTransportOptions> options,
+        IOptions<DirectSocketTransportOptions> options,
         ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -83,6 +83,33 @@ public sealed class DirectSocketTransportFactory : IConnectionListenerFactory, I
         }
     }
 
+    /// <summary>
+    /// Initializes the SSL context with certificate and key files.
+    /// </summary>
+    /// <param name="certPath">Path to the certificate file (PEM format).</param>
+    /// <param name="keyPath">Path to the private key file (PEM format).</param>
+    public void InitializeSslContext(string certPath, string keyPath)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        if (_sslContext is not null)
+        {
+            _logger.LogWarning("SSL context is already initialized. Dispose and create a new factory to change the certificate.");
+            return;
+        }
+
+        try
+        {
+            _sslContext = new OpenSSLContext(certPath, keyPath);
+            _logger.LogInformation("Direct SSL context initialized successfully with certificate from {CertPath}", certPath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to initialize SSL context");
+            throw;
+        }
+    }
+
     /// <inheritdoc />
     public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
     {
@@ -115,40 +142,5 @@ public sealed class DirectSocketTransportFactory : IConnectionListenerFactory, I
             _sslContext?.Dispose();
             _disposed = true;
         }
-    }
-}
-
-/// <summary>
-/// Connection listener for direct socket connections with OpenSSL TLS integration.
-/// </summary>
-internal sealed class DirectSocketConnectionListener : SocketConnectionListener
-{
-    private readonly OpenSSLContext? _sslContext;
-
-    public DirectSocketConnectionListener(
-        EndPoint endpoint,
-        SocketTransportOptions options,
-        ILoggerFactory loggerFactory,
-        OpenSSLContext? sslContext)
-        : base(endpoint, options, loggerFactory)
-    {
-        _sslContext = sslContext;
-    }
-
-    protected override ConnectionContext CreateConnectionFromSocket(Socket socket, SocketConnectionContextFactory factory)
-    {
-        // Use the factory's Create() method which returns a properly configured SocketConnection
-        // For direct socket with SSL, we would need to intercept here
-        // For now, we just delegate to the factory
-        // TODO: When OpenSSL integration is complete, create DirectSocketConnection here instead
-        
-        if (_sslContext is not null)
-        {
-            _logger.LogDebug("DirectSocket with SSL context - OpenSSL integration coming in future phases");
-            // In future phases, we'll create DirectSocketConnection with SSL context
-            // For now, use standard factory
-        }
-
-        return factory.Create(socket);
     }
 }
