@@ -16,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Testing;
 
@@ -588,7 +589,16 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// </summary>
     /// <param name="serviceProvider">The <see cref="IServiceProvider"/> from the bootstrapped application.</param>
     /// <returns></returns>
-    protected virtual TestServer CreateServer(IServiceProvider serviceProvider) => new(serviceProvider);
+    protected virtual TestServer CreateServer(IServiceProvider serviceProvider)
+    {
+        var options = serviceProvider.GetService<IOptions<TestServerOptions>>();
+        if (options is not null)
+        {
+            return new(serviceProvider, options);
+        }
+
+        return new(serviceProvider);
+    }
 
     /// <summary>
     /// Creates the <see cref="IHost"/> with the bootstrapped application in <paramref name="builder"/>.
