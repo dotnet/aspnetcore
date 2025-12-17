@@ -21,7 +21,7 @@ public static partial class WebHostBuilderKestrelExtensions
     /// <returns></returns>
     public static IWebHostBuilder UseKestrelDirectSslTransport(this IWebHostBuilder hostBuilder)
     {
-        hostBuilder.UseDirectSocketTransport();
+        hostBuilder.UseDirectSslSocketTransport();
         hostBuilder.ConfigureServices(services =>
         {
             services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();

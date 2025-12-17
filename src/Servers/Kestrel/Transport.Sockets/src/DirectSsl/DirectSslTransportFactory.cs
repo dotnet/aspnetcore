@@ -16,19 +16,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl;
 public sealed class DirectSslTransportFactory : IConnectionListenerFactory, IConnectionListenerFactorySelector
 {
     private SslContext? _sslContext;
-
-    private readonly SocketTransportOptions _options;
+    private readonly DirectSslTransportOptions _options;
     
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="SocketTransportFactory"/> class.
+    /// Initializes a new instance of the <see cref="DirectSslTransportFactory"/> class.
     /// </summary>
     /// <param name="options">The transport options.</param>
     /// <param name="loggerFactory">The logger factory.</param>
     public DirectSslTransportFactory(
-        IOptions<SocketTransportOptions> options,
+        IOptions<DirectSslTransportOptions> options,
         ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -39,35 +38,23 @@ public sealed class DirectSslTransportFactory : IConnectionListenerFactory, ICon
         _logger = loggerFactory.CreateLogger<DirectSslTransportFactory>();
     }
 
-    /// <summary>
-    /// Initializes the SSL context with the provided certificate and key paths.
-    /// </summary>
-    /// <param name="certPath"></param>
-    /// <param name="keyPath"></param>
-    public void InitializeSslContext(string certPath, string keyPath)
-    {
-        if (_sslContext is not null)
-        {
-            _logger.LogWarning("SSL context is already initialized. Dispose and create a new factory to change the certificate.");
-            return;
-        }
-
-        try
-        {
-            _sslContext = new SslContext(certPath, keyPath);    
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to initialize SSL context.");
-            throw;
-        }
-    }
-
     /// <inheritdoc />
     public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
     {
-        var transport = new DirectSslConnectionListener();
+        // Initialize SSL context lazily from options
+        if (_sslContext is null)
+        {
+            if (string.IsNullOrEmpty(_options.CertificatePath) || string.IsNullOrEmpty(_options.PrivateKeyPath))
+            {
+                throw new InvalidOperationException("CertificatePath and PrivateKeyPath must be configured in DirectSslTransportOptions.");
+            }
 
+            _sslContext = new SslContext(_options.CertificatePath, _options.PrivateKeyPath);
+            _logger.LogInformation("SSL context initialized with certificate: {CertPath}", _options.CertificatePath);
+        }
+
+        var transport = new DirectSslConnectionListener(_loggerFactory, _sslContext, endpoint);
+        transport.Bind();
         return new ValueTask<IConnectionListener>(transport);
     }
 

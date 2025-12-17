@@ -27,7 +27,7 @@ public static partial class WebHostBuilderSocketExtensions
     /// It requires OpenSSL (libssl) to be available on the system.
     /// For HTTPS endpoints, you must call ConfigureHttpsDefaults or set certificates on endpoints manually.
     /// </remarks>
-    public static IWebHostBuilder UseDirectSocketTransport(this IWebHostBuilder hostBuilder)
+    public static IWebHostBuilder UseDirectSslSocketTransport(this IWebHostBuilder hostBuilder)
     {
         return hostBuilder.ConfigureServices(services =>
         {
@@ -41,6 +41,26 @@ public static partial class WebHostBuilderSocketExtensions
                 // Set the IMemoryPoolFactory from DI on SocketTransportOptions. Usually this should be the PinnedBlockMemoryPoolFactory from UseKestrelCore.
                 options.MemoryPoolFactory = factory;
             });
+        });
+    }
+
+    /// <summary>
+    /// Specify Sockets as the transport to be used by Kestrel.
+    /// </summary>
+    /// <param name="hostBuilder">
+    /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder to configure.
+    /// </param>
+    /// <param name="configureOptions">
+    /// A callback to configure transport options.
+    /// </param>
+    /// <returns>
+    /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
+    /// </returns>
+    public static IWebHostBuilder UseDirectSslSockets(this IWebHostBuilder hostBuilder, Action<DirectSslTransportOptions> configureOptions)
+    {
+        return hostBuilder.UseDirectSslSocketTransport().ConfigureServices(services =>
+        {
+            services.Configure(configureOptions);
         });
     }
 }

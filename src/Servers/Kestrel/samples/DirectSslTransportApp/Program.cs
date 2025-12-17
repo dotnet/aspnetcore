@@ -28,27 +28,13 @@ builder.WebHost.ConfigureKestrel(options =>
     });
 });
 
-var app = builder.Build();
+builder.WebHost.UseDirectSslSockets(options => {
+   options.CertificatePath = "server-p384.crt";
+   options.PrivateKeyPath = "server-p384.key";
+});
 
-// pack into nice extension?
-ConfigureSslContext(app.Services);
+var app = builder.Build();
 
 app.MapGet("/", () => "hello world!");
 
 await app.RunAsync();
-
-void ConfigureSslContext(IServiceProvider services)
-{
-    var factories = services.GetServices<IConnectionListenerFactory>();
-    foreach (var factory in factories)
-    {
-        if (factory is DirectSslTransportFactory directFactory)
-        {
-            directFactory.InitializeSslContext(certPath: "server-p384.crt", keyPath: "server-p384.key");
-            return;
-        }
-    }
-
-    // if we are here, we dont have DirectSslTransportFactory, so throw
-    throw new NotSupportedException($"Did not register {nameof(DirectSslTransportFactory)}. please reconfigure");
-}
