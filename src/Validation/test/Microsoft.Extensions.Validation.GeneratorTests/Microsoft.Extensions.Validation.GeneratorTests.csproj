@@ -35,6 +35,7 @@
     <Reference Include="Microsoft.CodeAnalysis.CSharp" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="Microsoft.Extensions.Validation" />
     <Reference Include="Verify.SourceGenerators" />
     <Reference Include="Verify.XUnit" />
