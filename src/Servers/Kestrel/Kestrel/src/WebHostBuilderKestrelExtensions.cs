@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Hosting;
 /// <summary>
 /// Kestrel <see cref="IWebHostBuilder"/> extensions.
 /// </summary>
-public static class WebHostBuilderKestrelExtensions
+public static partial class WebHostBuilderKestrelExtensions
 {
     /// <summary>
     /// In <see cref="UseKestrelCore(IWebHostBuilder)"/> scenarios, it may be necessary to explicitly

@@ -46,4 +46,10 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Server.Kestrel.Tests" />
     <InternalsVisibleTo Include="Interop.FunctionalTests" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="DirectSsl/Native/" />
+    <Folder Include="DirectSsl/Ssl/" />
+    <Folder Include="DirectSsl/Workers/" />
+  </ItemGroup>
 </Project>

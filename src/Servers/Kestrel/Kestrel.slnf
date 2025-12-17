@@ -43,6 +43,7 @@
       "src\\Servers\\Kestrel\\Transport.NamedPipes\\test\\Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Tests.csproj",
       "src\\Servers\\Kestrel\\Transport.Quic\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj",
       "src\\Servers\\Kestrel\\Transport.Quic\\test\\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests.csproj",
+      "src\\Servers\\Kestrel\\Transport.DirectSsl\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.DirectSsl.csproj",
       "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
       "src\\Servers\\Kestrel\\perf\\Microbenchmarks\\Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks.csproj",
       "src\\Servers\\Kestrel\\samples\\Http2SampleApp\\Http2SampleApp.csproj",

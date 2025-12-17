@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.DirectSslTransportFactory
+static Microsoft.AspNetCore.Hosting.WebHostBuilderSocketExtensions.UseDirectSocketTransport(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Hosting.WebHostBuilderSocketExtensions.UseDirectSocketTransport(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!

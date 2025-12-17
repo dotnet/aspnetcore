@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.AspNetCore.Hosting.WebHostBuilderKestrelExtensions.UseKestrelDirectSslTransport(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
