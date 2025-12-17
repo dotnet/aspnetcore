@@ -52,6 +52,15 @@ function init(callbackWrapper: any, elem: InputElement): void {
 
     callbackWrapper.invokeMethodAsync('NotifyChange', fileList);
   });
+
+  // The 'cancel' event is fired when the user cancels the file picker dialog.
+  // This event is part of the HTML5 standard and is supported in modern browsers.
+  // For browsers that don't support this event, it will be silently ignored.
+  elem.addEventListener('cancel', function(): void {
+    // Notify with an empty list when the file dialog is cancelled.
+    elem._blazorFilesById = {};
+    callbackWrapper.invokeMethodAsync('NotifyChange', []);
+  });
 }
 
 async function toImageFile(elem: InputElement, fileId: number, format: string, maxWidth: number, maxHeight: number): Promise<BrowserFile> {
