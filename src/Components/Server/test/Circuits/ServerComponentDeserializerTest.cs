@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.DataProtection;
@@ -73,6 +74,74 @@ public class ServerComponentDeserializerTest
         Assert.Single(parameters);
         Assert.Contains("Parameter", parameters.Keys);
         Assert.Null(parameters["Parameter"]);
+    }
+
+    [Fact]
+    public void CanParseSingleMarkerForClosedGenericComponent()
+    {
+        // Arrange
+        var markers = SerializeMarkers(CreateMarkers(typeof(GenericTestComponent<int>)));
+        var serverComponentDeserializer = CreateServerComponentDeserializer();
+
+        // Act & assert
+        Assert.True(serverComponentDeserializer.TryDeserializeComponentDescriptorCollection(markers, out var descriptors));
+        var deserializedDescriptor = Assert.Single(descriptors);
+        Assert.Equal(typeof(GenericTestComponent<int>).FullName, deserializedDescriptor.ComponentType.FullName);
+        Assert.Equal(0, deserializedDescriptor.Sequence);
+    }
+
+    [Fact]
+    public void CanParseSingleMarkerForClosedGenericComponentWithStringTypeParameter()
+    {
+        // Arrange
+        var markers = SerializeMarkers(CreateMarkers(typeof(GenericTestComponent<string>)));
+        var serverComponentDeserializer = CreateServerComponentDeserializer();
+
+        // Act & assert
+        Assert.True(serverComponentDeserializer.TryDeserializeComponentDescriptorCollection(markers, out var descriptors));
+        var deserializedDescriptor = Assert.Single(descriptors);
+        Assert.Equal(typeof(GenericTestComponent<string>).FullName, deserializedDescriptor.ComponentType.FullName);
+        Assert.Equal(0, deserializedDescriptor.Sequence);
+    }
+
+    [Fact]
+    public void CanParseSingleMarkerForClosedGenericComponentWithParameters()
+    {
+        // Arrange
+        var markers = SerializeMarkers(CreateMarkers(
+            (typeof(GenericTestComponent<int>), new Dictionary<string, object> { ["Value"] = 42 })));
+        var serverComponentDeserializer = CreateServerComponentDeserializer();
+
+        // Act & assert
+        Assert.True(serverComponentDeserializer.TryDeserializeComponentDescriptorCollection(markers, out var descriptors));
+        var deserializedDescriptor = Assert.Single(descriptors);
+        Assert.Equal(typeof(GenericTestComponent<int>).FullName, deserializedDescriptor.ComponentType.FullName);
+        Assert.Equal(0, deserializedDescriptor.Sequence);
+
+        var parameters = deserializedDescriptor.Parameters.ToDictionary();
+        Assert.Single(parameters);
+        Assert.Contains("Value", parameters.Keys);
+        Assert.Equal(42, Convert.ToInt32(parameters["Value"]!, CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
+    public void CanParseMultipleMarkersForClosedGenericComponents()
+    {
+        // Arrange
+        var markers = SerializeMarkers(CreateMarkers(typeof(GenericTestComponent<int>), typeof(GenericTestComponent<string>)));
+        var serverComponentDeserializer = CreateServerComponentDeserializer();
+
+        // Act & assert
+        Assert.True(serverComponentDeserializer.TryDeserializeComponentDescriptorCollection(markers, out var descriptors));
+        Assert.Equal(2, descriptors.Count);
+
+        var firstDescriptor = descriptors[0];
+        Assert.Equal(typeof(GenericTestComponent<int>).FullName, firstDescriptor.ComponentType.FullName);
+        Assert.Equal(0, firstDescriptor.Sequence);
+
+        var secondDescriptor = descriptors[1];
+        Assert.Equal(typeof(GenericTestComponent<string>).FullName, secondDescriptor.ComponentType.FullName);
+        Assert.Equal(1, secondDescriptor.Sequence);
     }
 
     [Fact]
@@ -514,6 +583,14 @@ public class ServerComponentDeserializerTest
 
     private class DynamicallyAddedComponent : IComponent
     {
+        public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
+        public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
+    }
+
+    private class GenericTestComponent<T> : IComponent
+    {
+        [Parameter] public T Value { get; set; }
+
         public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
         public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
     }

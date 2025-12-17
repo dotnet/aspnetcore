@@ -350,5 +350,6 @@ public sealed class WebAssemblyHostBuilder
             ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(Services);
             ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(Services);
         }
+        Services.AddSingleton<HostedServiceExecutor>();
     }
 }
