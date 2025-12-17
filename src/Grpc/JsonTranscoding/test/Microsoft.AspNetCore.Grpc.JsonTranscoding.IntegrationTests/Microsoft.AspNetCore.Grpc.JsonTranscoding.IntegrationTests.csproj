@@ -9,6 +9,11 @@
 
     <ProjectReference Include="..\testassets\IntegrationTestsWebsite\IntegrationTestsWebsite.csproj" />
 
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Connections" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" />
     <Reference Include="Grpc.Tools" PrivateAssets="All" />
