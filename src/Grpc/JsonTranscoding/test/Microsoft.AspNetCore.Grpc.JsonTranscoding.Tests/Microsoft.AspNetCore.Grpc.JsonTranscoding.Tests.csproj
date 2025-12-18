@@ -17,6 +17,9 @@
 
     <Compile Include="..\Shared\TestGrpcServiceActivator.cs" Link="Infrastructure\TestGrpcServiceActivator.cs" />
 
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Connections" />

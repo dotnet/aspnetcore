@@ -20,6 +20,9 @@
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.Grpc.Swagger" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
     <Reference Include="Grpc.Tools" PrivateAssets="All" />
   </ItemGroup>
 </Project>
