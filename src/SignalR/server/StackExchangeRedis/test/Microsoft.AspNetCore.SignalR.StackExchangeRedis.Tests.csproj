@@ -16,6 +16,7 @@
     <Reference Include="Microsoft.AspNetCore.Http.Connections" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Client" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Specification.Tests" />
     <Reference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
