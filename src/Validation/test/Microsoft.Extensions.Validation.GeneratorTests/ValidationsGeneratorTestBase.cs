@@ -72,10 +72,10 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
             references,
             new CSharpCompilationOptions(OutputKind.ConsoleApplication));
 
-        var emitResult = inputCompilation.Emit(Stream.Null);
-        if (!emitResult.Success)
+        var programEmitResult = inputCompilation.Emit(Stream.Null);
+        if (!programEmitResult.Success)
         {
-            throw new InvalidOperationException($"Failed to compile Program.cs: {string.Join(Environment.NewLine, emitResult.Diagnostics)}");
+            throw new InvalidOperationException($"Failed to compile Program.cs: {string.Join(Environment.NewLine, programEmitResult.Diagnostics)}");
         }
 
         var generator = new ValidationsGenerator();
