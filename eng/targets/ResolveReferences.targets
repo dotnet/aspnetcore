@@ -106,7 +106,10 @@
   <ItemGroup Condition="'@(ProjectReference)' != '' and
                         '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and
                         '$(IsTestProject)' != 'true' and '$(IsTestAssetProject)' != 'true' and
-                        '$(IsBenchmarkProject)' != 'true' and '$(IsSampleProject)' != 'true' and '$(IsMicrobenchmarksProject)' != 'true'" >
+                        '$(IsBenchmarkProject)' != 'true' and '$(IsSampleProject)' != 'true' and '$(IsMicrobenchmarksProject)' != 'true' and
+                        '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime' and
+                        '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime.Composite' and
+                        '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Ref'" >
     <_ProjectReferenceWithOriginalIdentity Include="@(ProjectReference)"
                                            OriginalIdentity="%(Identity)" />
     <_ProjectReferenceWithFilename Include="@(_ProjectReferenceWithOriginalIdentity->Metadata('Filename'))" />
