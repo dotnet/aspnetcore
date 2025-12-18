@@ -24,4 +24,15 @@
     </None>
   </ItemGroup>
 
+  <!-- Copy native SSL library from Transport.Sockets to output -->
+  <PropertyGroup>
+    <NativeSslSourceDir>$(MSBuildThisFileDirectory)../../Transport.Sockets/src/DirectSsl/Native/</NativeSslSourceDir>
+    <NativeSslLibName>libnative_ssl.so</NativeSslLibName>
+    <NativeSslOutput>$(NativeSslSourceDir)$(NativeSslLibName)</NativeSslOutput>
+  </PropertyGroup>
+
+  <Target Name="CopyNativeSsl" AfterTargets="Build" Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+    <Copy SourceFiles="$(NativeSslOutput)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+  </Target>
+
 </Project>

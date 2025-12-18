@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Intero
 /// </summary>
 internal static partial class NativeSsl
 {
-    private const string LibName = "libdemo_native.so";
+    private const string LibName = "libnative_ssl.so";
 
     // ========================================================================
     // Handshake status codes (must match demo_native.h)
