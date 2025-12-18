@@ -10,12 +10,12 @@ echo "=== OpenSSL Verbose Debug ==="
 echo "Target: https://$HOST:$PORT/"
 echo ""
 
-echo "GET / HTTP/1.1
-Host: $HOST
-Connection: close
-
-" | openssl s_client -connect "$HOST:$PORT" \
+# Use -ign_eof to wait for server response before closing
+# sleep gives server time to respond
+(echo -e "GET / HTTP/1.1\r\nHost: $HOST\r\nConnection: close\r\n\r\n"; sleep 2) | \
+    openssl s_client -connect "$HOST:$PORT" \
     -servername "$HOST" \
+    -ign_eof \
     -state \
     -debug \
     -msg \

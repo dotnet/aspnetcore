@@ -168,10 +168,10 @@ internal sealed class SslWorker
         switch (status)
         {
             case NativeSsl.HANDSHAKE_COMPLETE:
-                // Handshake complete - cleanup and complete
+                // Handshake complete - remove from worker tracking but keep SSL alive
+                // The caller (DirectSslConnectionContext) now owns the SSL pointer
+                // and will use it for SSL_read/SSL_write
                 _activeConnections.Remove(request.ClientFd);
-                NativeSsl.ssl_connection_destroy(request.Ssl);
-                request.Ssl = IntPtr.Zero;
                 
                 request.Completion.TrySetResult(HandshakeResult.Success);
                 break;
