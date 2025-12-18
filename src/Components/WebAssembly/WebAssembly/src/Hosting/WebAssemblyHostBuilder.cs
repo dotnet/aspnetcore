@@ -319,7 +319,6 @@ public sealed class WebAssemblyHostBuilder
 
         return new WebAssemblyHost(this, services, scope, _persistedState);
     }
-    
     [DynamicDependency(JsonSerialized, typeof(DefaultAntiforgeryStateProvider))]
     [DynamicDependency(JsonSerialized, typeof(AntiforgeryRequestToken))]
     internal void InitializeDefaultServices()
