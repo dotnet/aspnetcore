@@ -35,6 +35,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Cors" />
     <Reference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" />
+    <Reference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
