@@ -26,10 +26,6 @@ public class NewlineEndingTest : LoggedTest
         }
     }
 
-    public NewlineEndingTest()
-    {
-    }
-
     [Theory]
     [InlineData("Web.ProjectTemplates")]
     [InlineData("Web.ItemTemplates")]
@@ -60,9 +56,9 @@ public class NewlineEndingTest : LoggedTest
         foreach (var file in files)
         {
             var filePath = Path.GetFullPath(file);
-            var fileInfo = new FileInfo(filePath);
 
-            // Skip empty files
+            // Skip empty files before opening the stream
+            var fileInfo = new FileInfo(filePath);
             if (fileInfo.Length == 0)
             {
                 continue;
