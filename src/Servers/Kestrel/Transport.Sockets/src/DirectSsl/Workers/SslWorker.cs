@@ -105,8 +105,10 @@ internal sealed class SslWorker
             if (request.Ssl != IntPtr.Zero)
             {
                 NativeSsl.ssl_connection_destroy(request.Ssl);
+                request.Ssl = IntPtr.Zero;
             }
-            request.Completion.TrySetResult(HandshakeResult.Failed);
+            request.Result = HandshakeResult.SslWorkerPoolClosed;
+            request.Completion.TrySetResult(request);
         }
         _activeConnections.Clear();
 
@@ -130,7 +132,8 @@ internal sealed class SslWorker
 
             if (ssl == IntPtr.Zero)
             {
-                request.Completion.TrySetResult(HandshakeResult.Failed);
+                request.Result = HandshakeResult.ConnectionCreationFailed;
+                request.Completion.TrySetResult(request);
                 continue;
             }
 
@@ -173,7 +176,8 @@ internal sealed class SslWorker
                 // and will use it for SSL_read/SSL_write
                 _activeConnections.Remove(request.ClientFd);
                 
-                request.Completion.TrySetResult(HandshakeResult.Success);
+                request.Result = HandshakeResult.Success;
+                request.Completion.TrySetResult(request);
                 break;
 
             case NativeSsl.HANDSHAKE_WANT_READ:
@@ -188,7 +192,8 @@ internal sealed class SslWorker
                 _activeConnections.Remove(request.ClientFd);
                 NativeSsl.ssl_connection_destroy(request.Ssl);
                 request.Ssl = IntPtr.Zero;
-                request.Completion.TrySetResult(HandshakeResult.Failed);
+                request.Result = HandshakeResult.Failed;
+                request.Completion.TrySetResult(request);
                 break;
         }
     }

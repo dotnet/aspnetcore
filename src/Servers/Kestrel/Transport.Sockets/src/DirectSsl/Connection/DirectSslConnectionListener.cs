@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
@@ -18,6 +19,7 @@ internal sealed class DirectSslConnectionListener : IConnectionListener
     private readonly DirectSslTransportOptions _options;
 
     private readonly DirectSslConnectionContextFactory _factory;
+    private readonly MemoryPool<byte> _memoryPool;
 
     private readonly SslContext _sslContext;
     private readonly SslWorkerPool _sslWorkerPool;
@@ -31,16 +33,18 @@ internal sealed class DirectSslConnectionListener : IConnectionListener
         SslContext sslContext,
         SslWorkerPool sslWorkerPool,
         EndPoint endpoint,
-        DirectSslTransportOptions options)
+        DirectSslTransportOptions options,
+        MemoryPool<byte> memoryPool)
     {
         _logger = loggerFactory.CreateLogger<DirectSslConnectionListener>();
         _options = options;
+        _memoryPool = memoryPool;
 
         _sslWorkerPool = sslWorkerPool;
         _sslContext = sslContext;
         EndPoint = endpoint;
 
-        _factory = new(loggerFactory, options);
+        _factory = new(loggerFactory, memoryPool);
     }
 
     internal void Bind()

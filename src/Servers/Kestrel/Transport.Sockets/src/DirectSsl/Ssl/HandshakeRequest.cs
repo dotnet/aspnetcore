@@ -13,14 +13,15 @@ internal sealed class HandshakeRequest
     public Socket ClientSocket { get; }
     public IntPtr Ssl { get; set; }
     public int ClientFd { get; }
-    public TaskCompletionSource<HandshakeResult> Completion { get; }
+    public TaskCompletionSource<HandshakeRequest> Completion { get; }
+    public HandshakeResult Result { get; set; }
     public int WorkerId { get; set; } = -1;
 
     public HandshakeRequest(Socket clientSocket)
     {
         ClientSocket = clientSocket;
         ClientFd = (int)clientSocket.Handle;
-        Completion = new TaskCompletionSource<HandshakeResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+        Completion = new TaskCompletionSource<HandshakeRequest>(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 }
 
@@ -40,7 +41,17 @@ internal enum HandshakeResult
     Failed,
 
     /// <summary>
+    /// Handshake failed on connection create step.
+    /// </summary>
+    ConnectionCreationFailed,
+
+    /// <summary>
     /// Handshake timed out.
     /// </summary>
-    Timeout
+    Timeout,
+
+    /// <summary>
+    /// Worker pool is closed, handshake cannot be processed.
+    /// </summary>
+    SslWorkerPoolClosed,
 }

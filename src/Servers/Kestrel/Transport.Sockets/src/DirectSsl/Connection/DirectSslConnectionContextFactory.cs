@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Ssl;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Workers;
@@ -9,52 +10,61 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Connection;
 
 /// <summary>
-/// Factory for creating <see cref="DirectSslConnectionContext"/> instances.
+/// Factory for creating <see cref="DirectSslConnection"/> instances.
 /// </summary>
 internal sealed class DirectSslConnectionContextFactory : IDisposable
 {
+    private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
-    private readonly DirectSslConnectionContextFactoryOptions _options;
+    private readonly MemoryPool<byte> _memoryPool;
 
     public DirectSslConnectionContextFactory(
         ILoggerFactory loggerFactory,
-        DirectSslTransportOptions transportOptions)
-        : this(loggerFactory, new DirectSslConnectionContextFactoryOptions(transportOptions))
+        MemoryPool<byte> memoryPool)
     {
-    }
-
-    public DirectSslConnectionContextFactory(
-        ILoggerFactory loggerFactory,
-        DirectSslConnectionContextFactoryOptions options)
-    {
+        _loggerFactory = loggerFactory;
         _logger = loggerFactory.CreateLogger<DirectSslConnectionContextFactory>();
-        _options = options;
+        _memoryPool = memoryPool;
     }
 
-    public async ValueTask<DirectSslConnectionContext> CreateAsync(
+    public async ValueTask<DirectSslConnection?> CreateAsync(
         SslWorkerPool sslWorkerPool,
         Socket acceptSocket,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Creating DirectSslConnectionContext.");
+        _logger.LogDebug("Creating DirectSslConnectionContext for {RemoteEndPoint}", acceptSocket.RemoteEndPoint);
 
-        var handshakeResult = await sslWorkerPool.SubmitHandshakeAsync(acceptSocket);
-        if (handshakeResult == HandshakeResult.Success)
+        var handshakeRequest = await sslWorkerPool.SubmitHandshakeAsync(acceptSocket);
+        if (handshakeRequest.Result != HandshakeResult.Success)
         {
-            _logger.LogDebug("SSL handshake succeeded.");
-            return new DirectSslConnectionContext();
+            _logger.LogWarning("SSL handshake failed for {RemoteEndPoint}", acceptSocket.RemoteEndPoint);
+            acceptSocket.Dispose();
+            return null;
         }
 
         if (cancellationToken.IsCancellationRequested)
         {
-            _logger.LogDebug("SSL handshake canceled.");
-            throw new OperationCanceledException(cancellationToken);
+            _logger.LogWarning("Connection cancelled after SSL handshake for {RemoteEndPoint}", acceptSocket.RemoteEndPoint);
+            acceptSocket.Dispose();
+            return null;
         }
 
-        throw new NotImplementedException("failed ssl handshake!");
+        _logger.LogDebug("SSL handshake succeeded for {RemoteEndPoint}", acceptSocket.RemoteEndPoint);
+
+        var connection = new DirectSslConnection(
+            acceptSocket,
+            handshakeRequest.Ssl,
+            acceptSocket.LocalEndPoint,
+            acceptSocket.RemoteEndPoint,
+            _memoryPool,
+            _loggerFactory.CreateLogger<DirectSslConnection>());
+
+        connection.Start();
+        return connection;
     }
 
     public void Dispose()
     {
+        // MemoryPool is owned by caller
     }
 }

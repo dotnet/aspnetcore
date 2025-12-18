@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Connection;
 
 /// <summary>
-/// The options for configuring a <see cref="DirectSslConnectionContext"/>.
+/// The options for configuring a <see cref="DirectSslConnection"/>.
 /// </summary>
 internal class DirectSslConnectionContextFactoryOptions
 {

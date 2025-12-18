@@ -44,7 +44,7 @@ internal sealed class SslWorkerPool : IDisposable
     /// Returns a task that completes when handshake is done.
     /// Any free worker will pick it up.
     /// </summary>
-    public Task<HandshakeResult> SubmitHandshakeAsync(Socket clientSocket)
+    public Task<HandshakeRequest> SubmitHandshakeAsync(Socket clientSocket)
     {
         var request = new HandshakeRequest(clientSocket);
         _sharedQueue.Enqueue(request);
