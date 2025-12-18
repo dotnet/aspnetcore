@@ -27,7 +27,7 @@ internal sealed class HandshakeRequest
 /// <summary>
 /// Result of a handshake operation.
 /// </summary>
-public enum HandshakeResult
+internal enum HandshakeResult
 {
     /// <summary>
     /// Handshake succeeded.

@@ -18,13 +18,13 @@ builder.WebHost.ConfigureKestrel(options =>
     // HTTP endpoint on port 5000
     options.ListenAnyIP(5000, listenOptions =>
     {
-        listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
     });
 
     // HTTPS endpoint on port 5001 with DirectSocket + OpenSSL
     options.ListenAnyIP(5001, listenOptions =>
     {
-        listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
     });
 });
 

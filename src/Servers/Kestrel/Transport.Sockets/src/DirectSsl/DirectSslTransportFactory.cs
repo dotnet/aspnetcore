@@ -5,6 +5,8 @@ using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Ssl;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Workers;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Connection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -13,11 +15,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl;
 /// <summary>
 /// A factory for direct-ssl based connections.
 /// </summary>
-public sealed class DirectSslTransportFactory : IConnectionListenerFactory, IConnectionListenerFactorySelector
+internal sealed class DirectSslTransportFactory : IConnectionListenerFactory, IConnectionListenerFactorySelector
 {
     private SslContext? _sslContext;
+    private SslWorkerPool? _sslWorkerPool;
+
     private readonly DirectSslTransportOptions _options;
-    
+
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
 
@@ -53,7 +57,14 @@ public sealed class DirectSslTransportFactory : IConnectionListenerFactory, ICon
             _logger.LogInformation("SSL context initialized with certificate: {CertPath}", _options.CertificatePath);
         }
 
-        var transport = new DirectSslConnectionListener(_loggerFactory, _sslContext, endpoint);
+        // Initialize SSL worker pool lazily
+        if (_sslWorkerPool is null)
+        {
+             _sslWorkerPool = new SslWorkerPool(_loggerFactory, _sslContext, _options.WorkerCount);
+            _logger.LogInformation("SSL worker pool started with {WorkerCount} workers.", _options.WorkerCount);         
+        }
+
+        var transport = new DirectSslConnectionListener(_loggerFactory, _sslContext, _sslWorkerPool, endpoint, _options);
         transport.Bind();
         return new ValueTask<IConnectionListener>(transport);
     }
