@@ -7,10 +7,13 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 /// <summary>
-/// Enables component parameters to be supplied from the <see cref="TempData"/> string with <see cref="SupplyParameterFromQueryAttribute"/>.
+/// Enables component parameters to be supplied from the <see cref="TempData"/>.
 /// </summary>
 public static class TempDataProviderServiceCollectionExtensions
 {
+    /// <summary>
+    /// Enables component parameters to be supplied from the <see cref="TempData"/>.
+    /// </summary>
     public static IServiceCollection AddTempDataValueProvider(this IServiceCollection services)
     {
         services.TryAddCascadingValue(sp =>
