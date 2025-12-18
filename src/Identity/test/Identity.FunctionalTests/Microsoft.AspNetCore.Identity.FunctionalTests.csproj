@@ -29,6 +29,7 @@
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Identity" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
@@ -57,6 +58,8 @@
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Authentication.BearerToken" />
     <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <Reference Include="Microsoft.Extensions.Identity.Core" />
+    <Reference Include="Microsoft.Extensions.Identity.Stores" />
     <Reference Include="Microsoft.Extensions.Diagnostics.Testing" />
     <Reference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <Reference Include="AngleSharp" />
