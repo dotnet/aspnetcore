@@ -10,13 +10,36 @@ public class TempData : ITempData
 {
     private readonly Dictionary<string, object?> _data = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _retainedKeys = new(StringComparer.OrdinalIgnoreCase);
+    private Func<IDictionary<string, object?>>? _loadFunc;
+    private bool _loaded;
+
+    internal TempData(Func<IDictionary<string, object?>>? loadFunc = null)
+    {
+        _loadFunc = loadFunc;
+    }
+
+    private void EnsureLoaded()
+    {
+        if (!_loaded && _loadFunc is not null)
+        {
+            var dataToLoad = _loadFunc();
+            Load(dataToLoad);
+            _loadFunc = null!;
+            _loaded = true;
+        }
+    }
 
     /// <inheritdoc/>
     public object? this[string key]
     {
-        get => Get(key);
+        get
+        {
+            EnsureLoaded();
+            return Get(key);
+        }
         set
         {
+            EnsureLoaded();
             _data[key] = value;
             _retainedKeys.Add(key);
         }
@@ -25,6 +48,7 @@ public class TempData : ITempData
     /// <inheritdoc/>
     public object? Get(string key)
     {
+        EnsureLoaded();
         _retainedKeys.Remove(key);
         return _data.GetValueOrDefault(key);
     }
@@ -32,12 +56,14 @@ public class TempData : ITempData
     /// <inheritdoc/>
     public object? Peek(string key)
     {
+        EnsureLoaded();
         return _data.GetValueOrDefault(key);
     }
 
     /// <inheritdoc/>
     public void Keep()
     {
+        EnsureLoaded();
         _retainedKeys.Clear();
         _retainedKeys.UnionWith(_data.Keys);
     }
@@ -45,6 +71,7 @@ public class TempData : ITempData
     /// <inheritdoc/>
     public void Keep(string key)
     {
+        EnsureLoaded();
         if (_data.ContainsKey(key))
         {
             _retainedKeys.Add(key);
@@ -54,12 +81,14 @@ public class TempData : ITempData
     /// <inheritdoc/>
     public bool ContainsKey(string key)
     {
+        EnsureLoaded();
         return _data.ContainsKey(key);
     }
 
     /// <inheritdoc/>
     public bool Remove(string key)
     {
+        EnsureLoaded();
         _retainedKeys.Remove(key);
         return _data.Remove(key);
     }
@@ -69,6 +98,7 @@ public class TempData : ITempData
     /// </summary>
     public bool ContainsValue(object? value)
     {
+        EnsureLoaded();
         return _data.ContainsValue(value);
     }
 
@@ -77,6 +107,7 @@ public class TempData : ITempData
     /// </summary>
     public IDictionary<string, object?> Save()
     {
+        EnsureLoaded();
         var dataToSave = new Dictionary<string, object?>();
         foreach (var key in _retainedKeys)
         {
@@ -102,6 +133,7 @@ public class TempData : ITempData
     /// <inheritdoc/>
     public void Clear()
     {
+        EnsureLoaded();
         _data.Clear();
         _retainedKeys.Clear();
     }
@@ -137,6 +169,7 @@ public class TempData : ITempData
 
     void ICollection<KeyValuePair<string, object?>>.CopyTo(KeyValuePair<string, object?>[] array, int arrayIndex)
     {
+        EnsureLoaded();
         ((ICollection<KeyValuePair<string, object?>>)_data).CopyTo(array, arrayIndex);
     }
 
@@ -151,11 +184,13 @@ public class TempData : ITempData
 
     IEnumerator<KeyValuePair<string, object?>> IEnumerable<KeyValuePair<string, object?>>.GetEnumerator()
     {
+        EnsureLoaded();
         return new TempDataEnumerator(this);
     }
 
     IEnumerator IEnumerable.GetEnumerator()
     {
+        EnsureLoaded();
         return new TempDataEnumerator(this);
     }
 

@@ -22,6 +22,11 @@ internal sealed partial class TempDataService
         return dataProtectionProvider.CreateProtector(PurposeString);
     }
 
+    public static TempData CreateEmpty(HttpContext httpContext)
+    {
+        return new TempData(() => Load(httpContext));
+    }
+
     public static TempData Load(HttpContext httpContext)
     {
         try
