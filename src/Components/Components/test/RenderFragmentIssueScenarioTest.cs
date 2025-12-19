@@ -55,9 +55,9 @@ public class RenderFragmentIssueScenarioTest
     public void RenderFragment_Contravariance_WorksWithPagerComponent()
     {
         // This test simulates a more complete scenario with a pager component
-        // that expects RenderFragment<List<T>> but we provide RenderFragment<IList>
+        // that expects RenderFragment<List<Product>> but we provide RenderFragment<IList<Product>>
 
-        // Arrange - Create a base template that works with any IList
+        // Arrange - Create a base template that works with any IList<Product>
         RenderFragment<IList<Product>> baseTemplate = (IList<Product> items) => innerBuilder =>
         {
             innerBuilder.OpenElement(0, "div");
