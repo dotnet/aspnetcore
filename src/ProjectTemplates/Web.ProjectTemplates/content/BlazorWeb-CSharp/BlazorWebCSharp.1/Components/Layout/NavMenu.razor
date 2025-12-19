@@ -4,7 +4,11 @@
 @inject NavigationManager NavigationManager
 
 ##endif*@
+@*#if (UseWebAssembly && InteractiveAtRoot) -->
+<script type="module" src="@Assets["Layout/NavMenu.razor.js"]"></script>
+##else
 <script type="module" src="@Assets["Components/Layout/NavMenu.razor.js"]"></script>
+##endif*@
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
