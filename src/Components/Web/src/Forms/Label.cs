@@ -48,6 +48,9 @@ public class Label<TValue> : IComponent
     /// <inheritdoc />
     Task IComponent.SetParametersAsync(ParameterView parameters)
     {
+        var previousChildContent = ChildContent;
+        var previousAdditionalAttributes = AdditionalAttributes;
+
         parameters.SetParameterProperties(this);
 
         if (For is null)
@@ -56,14 +59,24 @@ public class Label<TValue> : IComponent
                 $"{nameof(For)} parameter.");
         }
 
-        // Only recalculate if the expression changed
+        // Only recalculate display name if the expression changed
         if (For != _previousFieldAccessor)
         {
-            _displayName = ExpressionMemberAccessor.GetDisplayName(For);
+            var newDisplayName = ExpressionMemberAccessor.GetDisplayName(For);
+
+            if (newDisplayName != _displayName)
+            {
+                _displayName = newDisplayName;
+                _renderHandle.Render(BuildRenderTree);
+            }
+
             _previousFieldAccessor = For;
         }
-
-        _renderHandle.Render(BuildRenderTree);
+        else if (ChildContent != previousChildContent || AdditionalAttributes != previousAdditionalAttributes)
+        {
+            // Re-render if other parameters changed
+            _renderHandle.Render(BuildRenderTree);
+        }
 
         return Task.CompletedTask;
     }
