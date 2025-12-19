@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
@@ -85,7 +86,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
         ErrorDescriber = errors;
         Logger = logger;
         ServiceProvider = services;
-        _metrics = services?.GetService<UserManagerMetrics>();
+        // UserManagerMetrics created from constructor because of difficulties registering internal type.        
+        _metrics = services?.GetService<IMeterFactory>() is { } factory ? new UserManagerMetrics(factory) : null;
 
         if (userValidators != null)
         {

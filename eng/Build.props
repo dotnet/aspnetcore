@@ -162,7 +162,6 @@
                           $(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj;
                           $(RepoRoot)src\Framework\App.Ref.Internal\src\Microsoft.AspNetCore.App.Ref.Internal.csproj;
                           $(RepoRoot)src\Framework\App.Runtime\src\aspnetcore-runtime.proj;
-                          $(RepoRoot)src\Framework\App.Runtime\src\aspnetcore-runtime-composite.proj;
                           $(RepoRoot)src\Framework\App.Runtime\src\aspnetcore-base-runtime.proj;
                           $(RepoRoot)src\Framework\App.Runtime\bundle\aspnetcore-runtime-bundle.bundleproj;
                           $(RepoRoot)eng\tools\HelixTestRunner\HelixTestRunner.csproj;
@@ -175,6 +174,9 @@
                           $(RepoRoot)**\bin\**\*;
                           $(RepoRoot)**\obj\**\*;"
                         Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
+        <!-- Only build the composite R2R runtime pack when we will actually ship it -->
+        <DotNetProjects Include="$(RepoRoot)src\Framework\App.Runtime\src\aspnetcore-runtime-composite.proj"
+                        Condition=" '$(BuildMainlyReferenceProviders)' != 'true' and '$(TargetOsName)' != 'win' " />
         <DotNetProjects Include="
                           $(RepoRoot)src\Assets\**\*.*proj;
                           $(RepoRoot)src\Caching\**\src\*.csproj;

@@ -17,4 +17,8 @@
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Obsoletions.cs" LinkBase="Shared" />
+  </ItemGroup>
+
 </Project>

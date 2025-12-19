@@ -11,11 +11,12 @@
         Enterprise
 .PARAMETER Channel
     Selects which channel of Visual Studio to install. Must be one of these values:
-        Release (the default)
-        Preview
+        Release/Stable (the default)
+        Preview/Insiders
 .PARAMETER Version
     Selects which version of Visual Studio to install. Must be one of these values:
         2022
+        2026
 .PARAMETER InstallPath
     The location on disk where Visual Studio should be installed or updated. Default path is location of latest
     existing installation of the specified edition, if any. If that VS edition is not currently installed, default
@@ -35,9 +36,9 @@
 param(
     [ValidateSet('BuildTools','Community', 'Professional', 'Enterprise')]
     [string]$Edition = 'Community',
-    [ValidateSet('Release', 'Preview', 'IntPreview', 'Dogfood')]
+    [ValidateSet('Release', 'Stable', 'Preview', 'Insiders', 'IntPreview', 'Dogfood')]
     [string]$Channel = 'Release',
-    [ValidateSet('2022')]
+    [ValidateSet('2022', '2026')]
     [string]$Version = '2022',
     [string]$InstallPath,
     [switch]$Passive,
@@ -67,20 +68,42 @@ $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
 if ("$Version" -eq "2022") {
     $vsversion = 17;
 }
-$channelUri = "https://aka.ms/vs/$vsversion/release"
+elseif ("$Version" -eq "2026") {
+    $vsversion = 18;
+}
+
+# Normalize channel names (Stable=Release, Insiders=Preview, Dogfood=IntPreview)
+switch ($Channel) {
+    'Stable' { $Channel = 'Release' }
+    'Insiders' { $Channel = 'Preview' }
+    'Dogfood' { $Channel = 'IntPreview' }
+}
+
 $responseFileName = "vs.$vsversion"
 if ("$Edition" -eq "BuildTools") {
     $responseFileName += ".buildtools"
 }
-if ("$Channel" -eq "Dogfood") {
-    $Channel = "IntPreview"
-}
+
+# Channel URIs differ between VS 2022 and VS 2026+
+# VS 2022: release, pre, intpreview
+# VS 2026+: stable, insiders, intpreview (canary)
 if ("$Channel" -eq "Preview") {
     $responseFileName += ".preview"
-    $channelUri = "https://aka.ms/vs/$vsversion/pre"
+    if ($vsversion -ge 18) {
+        $channelUri = "https://aka.ms/vs/$vsversion/insiders"
+    } else {
+        $channelUri = "https://aka.ms/vs/$vsversion/pre"
+    }
 } elseif ("$Channel" -eq "IntPreview") {
     $responseFileName += ".intpreview"
     $channelUri = "https://aka.ms/vs/$vsversion/intpreview"
+} else {
+    # Release channel
+    if ($vsversion -ge 18) {
+        $channelUri = "https://aka.ms/vs/$vsversion/stable"
+    } else {
+        $channelUri = "https://aka.ms/vs/$vsversion/release"
+    }
 }
 
 $responseFile = "$PSScriptRoot\$responseFileName.json"
@@ -107,11 +130,15 @@ if (-not $InstallPath) {
 }
 
 if (-not $InstallPath) {
-    if ($vsversion -eq "17") {
+    if (($vsversion -eq 17) -or ($vsversion -eq 18)) {
         $pathPrefix = "${env:ProgramFiles}";
     }
     if ("$Channel" -eq "Preview") {
-        $InstallPath = "$pathPrefix\Microsoft Visual Studio\$Version\${Edition}_Pre"
+        if ($vsversion -ge 18) {
+            $InstallPath = "$pathPrefix\Microsoft Visual Studio\$Version\${Edition}_Insiders"
+        } else {
+            $InstallPath = "$pathPrefix\Microsoft Visual Studio\$Version\${Edition}_Pre"
+        }
     } elseif ("$Channel" -eq "IntPreview") {
         $InstallPath = "$pathPrefix\Microsoft Visual Studio\$Version\${Edition}_IntPre"
     } else {
