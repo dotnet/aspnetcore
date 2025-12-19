@@ -54,13 +54,12 @@ public static class EndpointConventionBuilderResourceCollectionExtensions
         {
             // Check if there's already a resource collection on the metadata
             if (endpointBuilder.Metadata.OfType<ResourceAssetCollection>().Any() ||
-                endpointBuiilder is not IRouteEndpointBuilder routeEndpointBuilder)
-            )
+                endpointBuilder is not IEndpointRouteBuilder routeEndpointBuilder)
             {
                 return;
             }
 
-            if(_collection == null)
+            if (_collection == null)
             {
                 // We only use the resolver to get to the datasources so we can cache the results for
                 // all endpoints in the collection
@@ -73,7 +72,8 @@ public static class EndpointConventionBuilderResourceCollectionExtensions
                     _importMap = ImportMapDefinition.FromResourceCollection(_collection);
                 }
             }
-            else
+
+            if (_collection != null)
             {
                 endpointBuilder.Metadata.Add(_collection);
                 endpointBuilder.Metadata.Add(_preloadCollection!);

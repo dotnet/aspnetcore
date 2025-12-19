@@ -19,14 +19,14 @@ public class EndpointConventionBuilderResourceCollectionExtensionsTest
     public void WithStaticAssets_DoesNotAddResourceCollection_ToEndpoints_NoStaticAssetsMapped()
     {
         var routeBuilder = new TestEndpointRouteBuilder();
-        var conventionBuilder = new TestRouteGroupBuilder(routeBuilder);
+        var group = routeBuilder.MapGroup("/test");
 
-        conventionBuilder.WithStaticAssets();
-
-        var endpointBuilderInstance = new TestEndpointBuilder();
-        conventionBuilder.ApplyConventions(endpointBuilderInstance);
+        group.WithStaticAssets();
         
-        var metadata = endpointBuilderInstance.Metadata.OfType<ResourceAssetCollection>().FirstOrDefault();
+        var endpointBuilder = new TestEndpointBuilder(routeBuilder);
+        ApplyConventions(group, endpointBuilder);
+        
+        var metadata = endpointBuilder.Metadata.OfType<ResourceAssetCollection>().FirstOrDefault();
         Assert.Null(metadata);
     }
 
@@ -35,24 +35,24 @@ public class EndpointConventionBuilderResourceCollectionExtensionsTest
     {
         var routeBuilder = new TestEndpointRouteBuilder();
         routeBuilder.MapStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
-        var conventionBuilder = new TestRouteGroupBuilder(routeBuilder);
+        var group = routeBuilder.MapGroup("/test");
 
-        conventionBuilder.WithStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
+        group.WithStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
 
-        var endpointBuilderInstance = new TestEndpointBuilder();
-        conventionBuilder.ApplyConventions(endpointBuilderInstance);
+        var endpointBuilder = new TestEndpointBuilder(routeBuilder);
+        ApplyConventions(group, endpointBuilder);
         
-        var collection = endpointBuilderInstance.Metadata.OfType<ResourceAssetCollection>().FirstOrDefault();
+        var collection = endpointBuilder.Metadata.OfType<ResourceAssetCollection>().FirstOrDefault();
         Assert.NotNull(collection);
         
         var list = Assert.IsAssignableFrom<IReadOnlyList<ResourceAsset>>(collection);
         Assert.Single(list);
         Assert.Equal("named.css", list[0].Url);
         
-        var preloadCollection = endpointBuilderInstance.Metadata.OfType<ResourcePreloadCollection>().FirstOrDefault();
+        var preloadCollection = endpointBuilder.Metadata.OfType<ResourcePreloadCollection>().FirstOrDefault();
         Assert.NotNull(preloadCollection);
         
-        var importMap = endpointBuilderInstance.Metadata.OfType<ImportMapDefinition>().FirstOrDefault();
+        var importMap = endpointBuilder.Metadata.OfType<ImportMapDefinition>().FirstOrDefault();
         Assert.NotNull(importMap);
     }
 
@@ -61,16 +61,16 @@ public class EndpointConventionBuilderResourceCollectionExtensionsTest
     {
         var routeBuilder = new TestEndpointRouteBuilder();
         routeBuilder.MapStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
-        var conventionBuilder = new TestRouteGroupBuilder(routeBuilder);
+        var group = routeBuilder.MapGroup("/test");
         
         var existingCollection = new ResourceAssetCollection([]);
-        var endpointBuilderInstance = new TestEndpointBuilder();
-        endpointBuilderInstance.Metadata.Add(existingCollection);
+        var endpointBuilder = new TestEndpointBuilder(routeBuilder);
+        endpointBuilder.Metadata.Add(existingCollection);
 
-        conventionBuilder.WithStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
-        conventionBuilder.ApplyConventions(endpointBuilderInstance);
+        group.WithStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
+        ApplyConventions(group, endpointBuilder);
 
-        var collections = endpointBuilderInstance.Metadata.OfType<ResourceAssetCollection>().ToList();
+        var collections = endpointBuilder.Metadata.OfType<ResourceAssetCollection>().ToList();
         Assert.Single(collections);
         Assert.Same(existingCollection, collections[0]);
     }
@@ -80,14 +80,14 @@ public class EndpointConventionBuilderResourceCollectionExtensionsTest
     {
         var routeBuilder = new TestEndpointRouteBuilder();
         routeBuilder.MapStaticAssets();
-        var conventionBuilder = new TestRouteGroupBuilder(routeBuilder);
+        var group = routeBuilder.MapGroup("/test");
 
-        conventionBuilder.WithStaticAssets();
+        group.WithStaticAssets();
 
-        var endpointBuilderInstance = new TestEndpointBuilder();
-        conventionBuilder.ApplyConventions(endpointBuilderInstance);
+        var endpointBuilder = new TestEndpointBuilder(routeBuilder);
+        ApplyConventions(group, endpointBuilder);
         
-        var collection = endpointBuilderInstance.Metadata.OfType<ResourceAssetCollection>().FirstOrDefault();
+        var collection = endpointBuilder.Metadata.OfType<ResourceAssetCollection>().FirstOrDefault();
         Assert.NotNull(collection);
         
         var list = Assert.IsAssignableFrom<IReadOnlyList<ResourceAsset>>(collection);
@@ -95,40 +95,27 @@ public class EndpointConventionBuilderResourceCollectionExtensionsTest
         Assert.Equal("default.css", list[0].Url);
     }
 
-    // Test builder that implements both IEndpointConventionBuilder and IEndpointRouteBuilder
-    private class TestRouteGroupBuilder : IEndpointConventionBuilder, IEndpointRouteBuilder
+    private static void ApplyConventions(RouteGroupBuilder group, EndpointBuilder endpointBuilder)
     {
-        private readonly TestEndpointRouteBuilder _routeBuilder;
-        private readonly List<Action<EndpointBuilder>> _conventions = [];
-
-        public TestRouteGroupBuilder(TestEndpointRouteBuilder routeBuilder)
+        // Access conventions via reflection since they're private
+        var conventionsField = typeof(RouteGroupBuilder).GetField("_conventions", 
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var conventions = (List<Action<EndpointBuilder>>)conventionsField!.GetValue(group)!;
+        
+        foreach (var convention in conventions)
         {
-            _routeBuilder = routeBuilder;
+            convention(endpointBuilder);
         }
-
-        public void Add(Action<EndpointBuilder> convention)
-        {
-            ArgumentNullException.ThrowIfNull(convention);
-            _conventions.Add(convention);
-        }
-
-        public void ApplyConventions(EndpointBuilder endpointBuilder)
-        {
-            foreach (var convention in _conventions)
-            {
-                convention(endpointBuilder);
-            }
-        }
-
-        public IServiceProvider ServiceProvider => _routeBuilder.ServiceProvider;
-        public ICollection<EndpointDataSource> DataSources => _routeBuilder.DataSources;
-        public IApplicationBuilder CreateApplicationBuilder() => _routeBuilder.CreateApplicationBuilder();
     }
 
-    private class TestEndpointBuilder : EndpointBuilder
+    // Test builder that implements both EndpointBuilder and IEndpointRouteBuilder
+    private class TestEndpointBuilder : EndpointBuilder, IEndpointRouteBuilder
     {
-        public TestEndpointBuilder()
+        private readonly IEndpointRouteBuilder _routeBuilder;
+
+        public TestEndpointBuilder(IEndpointRouteBuilder routeBuilder)
         {
+            _routeBuilder = routeBuilder;
             ApplicationServices = TestEndpointRouteBuilder.CreateServiceProvider();
         }
 
@@ -136,6 +123,10 @@ public class EndpointConventionBuilderResourceCollectionExtensionsTest
         {
             throw new NotImplementedException();
         }
+
+        public IServiceProvider ServiceProvider => _routeBuilder.ServiceProvider;
+        public ICollection<EndpointDataSource> DataSources => _routeBuilder.DataSources;
+        public IApplicationBuilder CreateApplicationBuilder() => _routeBuilder.CreateApplicationBuilder();
     }
 
     private class TestEndpointRouteBuilder : IEndpointRouteBuilder
