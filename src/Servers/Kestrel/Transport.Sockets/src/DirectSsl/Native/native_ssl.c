@@ -130,8 +130,6 @@ SSL* ssl_connection_create(SSL_CTX* ssl_ctx, int client_fd, int epoll_fd) {
     // Optional: Set TCP_NODELAY for lower latency
     set_tcp_nodelay(client_fd);
     
-    fprintf(stderr, "[native] ssl_connection_create: fd=%d, creating SSL object\n", client_fd);
-    
     // Create new SSL object from context
     SSL* ssl = SSL_new(ssl_ctx);
     if (ssl == NULL) {
@@ -165,7 +163,6 @@ SSL* ssl_connection_create(SSL_CTX* ssl_ctx, int client_fd, int epoll_fd) {
         return NULL;
     }
     
-    fprintf(stderr, "[native] ssl_connection_create: SUCCESS fd=%d\n", client_fd);
     return ssl;
 }
 
@@ -210,9 +207,7 @@ void ssl_connection_destroy(SSL* ssl) {
  * Returns: HANDSHAKE_COMPLETE, HANDSHAKE_WANT_READ, HANDSHAKE_WANT_WRITE, or HANDSHAKE_ERROR
  */
 int ssl_try_handshake(SSL* ssl, int client_fd, int epoll_fd) {
-    fprintf(stderr, "[native] ssl_try_handshake: fd=%d, calling SSL_do_handshake\n", client_fd);
     int ret = SSL_do_handshake(ssl);
-    fprintf(stderr, "[native] ssl_try_handshake: fd=%d, SSL_do_handshake returned %d\n", client_fd, ret);
     
     if (ret == 1) {
         fprintf(stderr, "[native] ssl_try_handshake: fd=%d, HANDSHAKE_COMPLETE\n", client_fd);
@@ -222,7 +217,6 @@ int ssl_try_handshake(SSL* ssl, int client_fd, int epoll_fd) {
     }
     
     int err = SSL_get_error(ssl, ret);
-    fprintf(stderr, "[native] ssl_try_handshake: fd=%d, SSL_get_error=%d\n", client_fd, err);
     if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE) {
         fprintf(stderr, "[native] ssl_try_handshake: fd=%d, WANT_%s\n", client_fd, err == SSL_ERROR_WANT_READ ? "READ" : "WRITE");
         

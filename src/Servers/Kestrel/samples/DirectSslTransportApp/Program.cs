@@ -24,7 +24,7 @@ if (withCustomDirectTransport)
         options.CertificatePath = "server-p384.crt";
         options.PrivateKeyPath = "server-p384.key";
 
-        options.WorkerCount = 4;
+        options.WorkerCount = 1;
     });
 
     builder.WebHost.ConfigureKestrel(options =>
