@@ -203,8 +203,12 @@ internal sealed class DirectSslConnection : TransportConnection
 
     public override void Abort(ConnectionAbortedException abortReason)
     {
+        _disposed = true;
         _connectionClosedTokenSource.Cancel();
+        
+        // Cancel pending reads to unblock the loops
         Application.Input.CancelPendingRead();
+        Application.Output.CancelPendingFlush();
     }
 
     public override async ValueTask DisposeAsync()
@@ -215,17 +219,32 @@ internal sealed class DirectSslConnection : TransportConnection
         }
         _disposed = true;
 
+        // Complete the transport pipes (signals to Kestrel)
         Transport.Input.Complete();
         Transport.Output.Complete();
+        
+        // Cancel pending operations to unblock our loops
+        Application.Input.CancelPendingRead();
+        Application.Output.CancelPendingFlush();
+        
+        // Cancel any pending I/O in the worker
+        _worker.CancelIoForConnection(_clientFd);
 
-        // Wait for loops to finish
+        // Wait for loops to finish (with timeout to avoid deadlock)
+        var timeout = Task.Delay(TimeSpan.FromSeconds(5));
         if (_receiveTask != null)
         {
-            await _receiveTask;
+            if (await Task.WhenAny(_receiveTask, timeout) == timeout)
+            {
+                _logger.LogWarning("Receive loop did not complete in time");
+            }
         }
         if (_sendTask != null)
         {
-            await _sendTask;
+            if (await Task.WhenAny(_sendTask, timeout) == timeout)
+            {
+                _logger.LogWarning("Send loop did not complete in time");
+            }
         }
 
         // SSL shutdown and cleanup

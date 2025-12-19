@@ -32,8 +32,8 @@ internal sealed class SslWorker
     // Active handshakes being processed by this worker
     private readonly Dictionary<int, HandshakeRequest> _activeHandshakes = [];
     
-    // Active I/O operations waiting for socket readiness
-    private readonly Dictionary<int, SslIoRequest> _pendingIo = [];
+    // Active I/O operations waiting for socket readiness (ConcurrentDictionary for thread-safe cancellation)
+    private readonly ConcurrentDictionary<int, SslIoRequest> _pendingIo = new();
 
     private volatile bool _running;
 
@@ -85,6 +85,18 @@ internal sealed class SslWorker
     }
 
     /// <summary>
+    /// Cancel any pending I/O for a specific connection.
+    /// Called when connection is being disposed.
+    /// </summary>
+    public void CancelIoForConnection(int clientFd)
+    {
+        if (_pendingIo.TryRemove(clientFd, out var request))
+        {
+            request.Completion.TrySetCanceled();
+        }
+    }
+
+    /// <summary>
     /// Submit an SSL read request. Returns when data is available.
     /// </summary>
     public Task<int> SslReadAsync(IntPtr ssl, int clientFd, Memory<byte> buffer)
@@ -121,22 +133,20 @@ internal sealed class SslWorker
             ProcessNewIoRequests();
 
             // 3. If nothing active AND no pending work in queues, sleep briefly
-            if (_activeHandshakes.Count == 0 && _pendingIo.Count == 0 
+            if (_activeHandshakes.Count == 0 && _pendingIo.IsEmpty
                 && _ioQueue.IsEmpty && _handshakeQueue.IsEmpty)
             {
                 Thread.Sleep(1);
                 continue;
             }
 
-            // 4. If we have pending I/O or handshakes, wait for socket events
-            if (_activeHandshakes.Count > 0 || _pendingIo.Count > 0)
+            // 4. Wait for socket events (short timeout to check for new requests)
+            int readyFd = NativeSsl.epoll_wait_one(_epollFd, 10);
+
+            if (readyFd > 0)
             {
-                var result = NativeSsl.epoll_wait_one_ex(_epollFd, 10, out var readyFd, out var events);
-                if (result > 0)
-                {
-                    // 5. Handle the ready socket - could be handshake or I/O
-                    ProcessReadySocket(readyFd, events);
-                }
+                // 5. Handle the ready socket - could be handshake or I/O
+                ProcessReadySocket(readyFd);
             }
         }
 
@@ -247,13 +257,13 @@ internal sealed class SslWorker
             if (bytesRead > 0)
             {
                 // Success - complete immediately
-                _pendingIo.Remove(request.ClientFd);
+                _pendingIo.TryRemove(request.ClientFd, out _);
                 request.Completion.TrySetResult(bytesRead);
             }
             else if (bytesRead == 0)
             {
                 // EOF
-                _pendingIo.Remove(request.ClientFd);
+                _pendingIo.TryRemove(request.ClientFd, out _);
                 request.Completion.TrySetResult(0);
             }
             else if (bytesRead == -1)
@@ -264,7 +274,7 @@ internal sealed class SslWorker
             else
             {
                 // Error
-                _pendingIo.Remove(request.ClientFd);
+                _pendingIo.TryRemove(request.ClientFd, out _);
                 request.Completion.TrySetException(new IOException($"SSL_read failed: {bytesRead}"));
             }
         }
@@ -286,7 +296,7 @@ internal sealed class SslWorker
                 if (request.BytesTransferred >= request.Length)
                 {
                     // All data written - complete
-                    _pendingIo.Remove(request.ClientFd);
+                    _pendingIo.TryRemove(request.ClientFd, out _);
                     request.Completion.TrySetResult(request.BytesTransferred);
                 }
                 else
@@ -303,7 +313,7 @@ internal sealed class SslWorker
             else
             {
                 // Error
-                _pendingIo.Remove(request.ClientFd);
+                _pendingIo.TryRemove(request.ClientFd, out _);
                 request.Completion.TrySetException(new IOException($"SSL_write failed: {bytesWritten}"));
             }
         }
@@ -325,24 +335,11 @@ internal sealed class SslWorker
 
     #region Event Processing
 
-    private void ProcessReadySocket(int fd, int events)
+    private void ProcessReadySocket(int fd)
     {
         // Check if this is a handshake
         if (_activeHandshakes.TryGetValue(fd, out var handshakeRequest))
         {
-            // Check for hangup/error before attempting handshake
-            if ((events & (NativeSsl.EPOLLHUP | NativeSsl.EPOLLERR)) != 0)
-            {
-                // Client disconnected before/during TLS handshake - this is normal
-                _logger.LogDebug("Client disconnected before TLS handshake for fd={ClientFd}", fd);
-                _activeHandshakes.Remove(fd);
-                NativeSsl.ssl_connection_destroy(handshakeRequest.Ssl);
-                handshakeRequest.Ssl = IntPtr.Zero;
-                handshakeRequest.Result = HandshakeResult.Failed;
-                handshakeRequest.Completion.TrySetResult(handshakeRequest);
-                return;
-            }
-            
             TryAdvanceHandshake(handshakeRequest);
             return;
         }

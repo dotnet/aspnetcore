@@ -88,7 +88,15 @@ internal sealed class DirectSslConnectionListener : IConnectionListener
                     acceptSocket.NoDelay = _options.NoDelay;
                 }
 
-                return await _factory.CreateAsync(_sslWorkerPool, acceptSocket, cancellationToken);
+                var connection = await _factory.CreateAsync(_sslWorkerPool, acceptSocket, cancellationToken);
+                
+                // If handshake failed, continue accepting other connections
+                if (connection is null)
+                {
+                    continue;
+                }
+                
+                return connection;
             }
             catch (ObjectDisposedException)
             {
