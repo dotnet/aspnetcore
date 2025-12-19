@@ -20,7 +20,7 @@ public static class EndpointConventionBuilderResourceCollectionExtensions
     /// <param name="manifestPath">The manifest associated with the assets.</param>
     /// <returns>The <see cref="IEndpointConventionBuilder"/> that can be used to further configure the endpoints.</returns>
     /// <remarks>
-    /// This method attaches static asset metadata to endpoints. It provides a simplified way to add 
+    /// This method attaches static asset metadata to endpoints. It provides a simplified way to add
     /// resource collection metadata to any endpoint convention builder.
     /// The <paramref name="manifestPath"/> must match the path of the manifest file provided to
     /// the <see cref="StaticAssetsEndpointRouteBuilderExtensions.MapStaticAssets(IEndpointRouteBuilder, string?)"/> call.
@@ -31,45 +31,41 @@ public static class EndpointConventionBuilderResourceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        // Check if builder also implements IEndpointRouteBuilder (like RouteGroupBuilder does)
-        if (builder is IEndpointRouteBuilder routeBuilder)
-        {
-            var convention = new ResourceCollectionConvention(routeBuilder, manifestPath);
-            builder.Add(convention.Apply);
-        }
-        
+        ResourceCollectionConvention convention = new ResourceCollectionConvention(manifestPath);
+
+        builder.Add(convention.Apply);
+
         return builder;
     }
 
     private sealed class ResourceCollectionConvention
     {
-        private readonly IEndpointRouteBuilder _routeBuilder;
         private readonly string? _manifestPath;
         private ResourceAssetCollection? _collection;
         private ResourcePreloadCollection? _preloadCollection;
         private ImportMapDefinition? _importMap;
-        private bool _initialized;
 
-        public ResourceCollectionConvention(IEndpointRouteBuilder routeBuilder, string? manifestPath)
+        public ResourceCollectionConvention(string? manifestPath)
         {
-            _routeBuilder = routeBuilder;
             _manifestPath = manifestPath;
         }
 
         public void Apply(EndpointBuilder endpointBuilder)
         {
             // Check if there's already a resource collection on the metadata
-            if (endpointBuilder.Metadata.OfType<ResourceAssetCollection>().Any())
+            if (endpointBuilder.Metadata.OfType<ResourceAssetCollection>().Any() ||
+                endpointBuiilder is not IRouteEndpointBuilder routeEndpointBuilder)
+            )
             {
                 return;
             }
 
-            // Lazy initialization: resolve collection once on first endpoint
-            if (!_initialized)
+            if(_collection == null)
             {
-                _initialized = true;
-                var resolver = new ResourceCollectionResolver(_routeBuilder);
-                
+                // We only use the resolver to get to the datasources so we can cache the results for
+                // all endpoints in the collection
+                var resolver = new ResourceCollectionResolver(routeEndpointBuilder);
+
                 if (resolver.IsRegistered(_manifestPath))
                 {
                     _collection = resolver.ResolveResourceCollection(_manifestPath);
@@ -77,9 +73,7 @@ public static class EndpointConventionBuilderResourceCollectionExtensions
                     _importMap = ImportMapDefinition.FromResourceCollection(_collection);
                 }
             }
-
-            // If collection was resolved, add it to the endpoint
-            if (_collection != null)
+            else
             {
                 endpointBuilder.Metadata.Add(_collection);
                 endpointBuilder.Metadata.Add(_preloadCollection!);
