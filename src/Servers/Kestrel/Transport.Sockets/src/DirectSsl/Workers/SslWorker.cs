@@ -131,11 +131,11 @@ internal sealed class SslWorker
             // 4. If we have pending I/O or handshakes, wait for socket events
             if (_activeHandshakes.Count > 0 || _pendingIo.Count > 0)
             {
-                var readyFd = NativeSsl.epoll_wait_one(_epollFd, 10);
-                if (readyFd > 0)
+                var result = NativeSsl.epoll_wait_one_ex(_epollFd, 10, out var readyFd, out var events);
+                if (result > 0)
                 {
                     // 5. Handle the ready socket - could be handshake or I/O
-                    ProcessReadySocket(readyFd);
+                    ProcessReadySocket(readyFd, events);
                 }
             }
         }
@@ -166,8 +166,9 @@ internal sealed class SslWorker
             request.Worker = this;
             _activeHandshakes[request.ClientFd] = request;
 
-            // Try handshake immediately
-            TryAdvanceHandshake(request);
+            // Don't call handshake immediately - wait for EPOLLIN event
+            // This allows us to detect clients that close before sending ClientHello
+            // via EPOLLHUP/EPOLLERR instead of getting SSL errors
         }
     }
 
@@ -191,7 +192,18 @@ internal sealed class SslWorker
             case NativeSsl.HANDSHAKE_ERROR:
             default:
                 var errorMessage = NativeSsl.GetLastError();
-                _logger.LogError("Handshake failed for fd={ClientFd}, status={Status}, error={Error}", request.ClientFd, status, errorMessage);
+                
+                // "unexpected eof while reading" means client closed before/during TLS handshake
+                // This is normal for connection probing, pooling, or load balancers - not an error
+                if (errorMessage.Contains("unexpected eof", StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogDebug("Client closed connection before TLS handshake completed for fd={ClientFd}", request.ClientFd);
+                }
+                else
+                {
+                    _logger.LogWarning("Handshake failed for fd={ClientFd}, status={Status}, error={Error}", request.ClientFd, status, errorMessage);
+                }
+                
                 _activeHandshakes.Remove(request.ClientFd);
                 NativeSsl.ssl_connection_destroy(request.Ssl);
                 request.Ssl = IntPtr.Zero;
@@ -313,11 +325,24 @@ internal sealed class SslWorker
 
     #region Event Processing
 
-    private void ProcessReadySocket(int fd)
+    private void ProcessReadySocket(int fd, int events)
     {
         // Check if this is a handshake
         if (_activeHandshakes.TryGetValue(fd, out var handshakeRequest))
         {
+            // Check for hangup/error before attempting handshake
+            if ((events & (NativeSsl.EPOLLHUP | NativeSsl.EPOLLERR)) != 0)
+            {
+                // Client disconnected before/during TLS handshake - this is normal
+                _logger.LogDebug("Client disconnected before TLS handshake for fd={ClientFd}", fd);
+                _activeHandshakes.Remove(fd);
+                NativeSsl.ssl_connection_destroy(handshakeRequest.Ssl);
+                handshakeRequest.Ssl = IntPtr.Zero;
+                handshakeRequest.Result = HandshakeResult.Failed;
+                handshakeRequest.Completion.TrySetResult(handshakeRequest);
+                return;
+            }
+            
             TryAdvanceHandshake(handshakeRequest);
             return;
         }

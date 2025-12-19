@@ -66,6 +66,24 @@ internal static partial class NativeSsl
     [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
     public static partial int epoll_wait_one(int epoll_fd, int timeout_ms);
 
+    /// <summary>
+    /// Wait for an I/O event and return both fd and event flags.
+    /// </summary>
+    /// <param name="epoll_fd">Epoll instance</param>
+    /// <param name="timeout_ms">Timeout in milliseconds (-1 for infinite)</param>
+    /// <param name="out_fd">Output: ready fd</param>
+    /// <param name="out_events">Output: event flags (EPOLLIN, EPOLLOUT, EPOLLHUP, EPOLLERR)</param>
+    /// <returns>1: event received, 0: timeout, -1: error</returns>
+    [LibraryImport(LibName)]
+    [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    public static partial int epoll_wait_one_ex(int epoll_fd, int timeout_ms, out int out_fd, out int out_events);
+
+    // Epoll event flags
+    public const int EPOLLIN = 0x001;
+    public const int EPOLLOUT = 0x004;
+    public const int EPOLLERR = 0x008;
+    public const int EPOLLHUP = 0x010;
+
     // ========================================================================
     // Socket Utilities
     // ========================================================================

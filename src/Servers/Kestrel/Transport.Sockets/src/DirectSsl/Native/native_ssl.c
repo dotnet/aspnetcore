@@ -123,11 +123,14 @@ SSL* ssl_connection_create(SSL_CTX* ssl_ctx, int client_fd, int epoll_fd) {
     // Make socket non-blocking BEFORE creating SSL
     // This ensures SSL_do_handshake won't block
     if (set_socket_nonblocking(client_fd) < 0) {
+        fprintf(stderr, "[native] set_socket_nonblocking failed for fd=%d\n", client_fd);
         return NULL;
     }
     
     // Optional: Set TCP_NODELAY for lower latency
     set_tcp_nodelay(client_fd);
+    
+    fprintf(stderr, "[native] ssl_connection_create: fd=%d, creating SSL object\n", client_fd);
     
     // Create new SSL object from context
     SSL* ssl = SSL_new(ssl_ctx);
@@ -151,16 +154,18 @@ SSL* ssl_connection_create(SSL_CTX* ssl_ctx, int client_fd, int epoll_fd) {
     SSL_set_accept_state(ssl);
     
     // Register with epoll - EPOLLIN initially (waiting for ClientHello)
-    // Like async_mt: ADD here once, then only MOD in ssl_try_handshake
+    // ADD here once, then only MOD in ssl_try_handshake
     struct epoll_event ev;
     ev.events = EPOLLIN | EPOLLET;
     ev.data.fd = client_fd;
     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev) < 0) {
         perror("[native] epoll_ctl ADD failed");
+        fprintf(stderr, "[native] epoll_ctl ADD failed for fd=%d, epoll_fd=%d, errno=%d\n", client_fd, epoll_fd, errno);
         SSL_free(ssl);
         return NULL;
     }
     
+    fprintf(stderr, "[native] ssl_connection_create: SUCCESS fd=%d\n", client_fd);
     return ssl;
 }
 
@@ -205,16 +210,21 @@ void ssl_connection_destroy(SSL* ssl) {
  * Returns: HANDSHAKE_COMPLETE, HANDSHAKE_WANT_READ, HANDSHAKE_WANT_WRITE, or HANDSHAKE_ERROR
  */
 int ssl_try_handshake(SSL* ssl, int client_fd, int epoll_fd) {
+    fprintf(stderr, "[native] ssl_try_handshake: fd=%d, calling SSL_do_handshake\n", client_fd);
     int ret = SSL_do_handshake(ssl);
+    fprintf(stderr, "[native] ssl_try_handshake: fd=%d, SSL_do_handshake returned %d\n", client_fd, ret);
     
     if (ret == 1) {
+        fprintf(stderr, "[native] ssl_try_handshake: fd=%d, HANDSHAKE_COMPLETE\n", client_fd);
         // Handshake is complete; remove from epoll if registered
         epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
         return HANDSHAKE_COMPLETE;
     }
     
     int err = SSL_get_error(ssl, ret);
+    fprintf(stderr, "[native] ssl_try_handshake: fd=%d, SSL_get_error=%d\n", client_fd, err);
     if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE) {
+        fprintf(stderr, "[native] ssl_try_handshake: fd=%d, WANT_%s\n", client_fd, err == SSL_ERROR_WANT_READ ? "READ" : "WRITE");
         
         // OpenSSL needs I/O - modify epoll registratio        
         struct epoll_event ev;
@@ -228,9 +238,7 @@ int ssl_try_handshake(SSL* ssl, int client_fd, int epoll_fd) {
         return (err == SSL_ERROR_WANT_READ) ? HANDSHAKE_WANT_READ : HANDSHAKE_WANT_WRITE;
     }
     
-    // Real error occurred - don't print here, let C# retrieve via ssl_get_last_error()
-    // The error queue is preserved for the caller to read
-    
+    // The error queue is preserved for the caller to read and get error
     return HANDSHAKE_ERROR;
 }
 
@@ -266,6 +274,42 @@ int epoll_wait_one(int epoll_fd, int timeout_ms) {
     
     // Return the FD that is ready
     return event.data.fd;
+}
+
+/**
+ * Wait for an I/O event and return both fd and event flags.
+ * 
+ * Parameters:
+ *   epoll_fd: The epoll instance
+ *   timeout_ms: Timeout in milliseconds (-1 for infinite)
+ *   out_fd: Output parameter for the ready fd
+ *   out_events: Output parameter for the event flags (EPOLLIN, EPOLLOUT, EPOLLHUP, EPOLLERR)
+ * 
+ * Returns:
+ *   1: Event received, out_fd and out_events are set
+ *   0: Timeout (no events)
+ *   -1: Error
+ */
+int epoll_wait_one_ex(int epoll_fd, int timeout_ms, int* out_fd, int* out_events) {
+    struct epoll_event event;
+    
+    int nfds = epoll_wait(epoll_fd, &event, 1, timeout_ms);
+    
+    if (nfds < 0) {
+        if (errno == EINTR) {
+            return 0; // Interrupted, treat as timeout
+        }
+        perror("[native] epoll_wait_ex failed");
+        return -1;
+    }
+    
+    if (nfds == 0) {
+        return 0; // Timeout
+    }
+    
+    *out_fd = event.data.fd;
+    *out_events = event.events;
+    return 1;
 }
 
 // ============================================================================

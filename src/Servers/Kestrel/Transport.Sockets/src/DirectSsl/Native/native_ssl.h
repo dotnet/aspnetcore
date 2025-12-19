@@ -56,6 +56,16 @@ int ssl_get_fd(SSL* ssl);
 // If WANT_READ/WRITE, registers with epoll automatically
 int ssl_try_handshake(SSL* ssl, int client_fd, int epoll_fd);
 
+// Wait for epoll event, returns fd and event flags
+// Returns: 1 = event, 0 = timeout, -1 = error
+int epoll_wait_one_ex(int epoll_fd, int timeout_ms, int* out_fd, int* out_events);
+
+// Epoll event flags for C# interop
+#define NATIVE_EPOLLIN    0x001
+#define NATIVE_EPOLLOUT   0x004
+#define NATIVE_EPOLLERR   0x008
+#define NATIVE_EPOLLHUP   0x010
+
 // ============================================================================
 // SSL Read/Write
 // ============================================================================
