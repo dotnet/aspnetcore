@@ -11,7 +11,7 @@ internal sealed class DeserializedAuthenticationStateProvider : AuthenticationSt
 {
     private readonly Func<AuthenticationStateData?, Task<AuthenticationState>> _deserializeCallback;
 
-    [SupplyParameterFromPersistentComponentState]
+    [PersistentState]
     public AuthenticationStateData? CurrentAuthenticationState { get; set; }
 
     private static readonly Task<AuthenticationState> _defaultUnauthenticatedTask =
