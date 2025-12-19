@@ -33,27 +33,23 @@ public static class EndpointConventionBuilderResourceCollectionExtensions
 
         builder.Add(endpointBuilder =>
         {
-            // Check if there's already a resource collection on the metadata
-            if (endpointBuilder.Metadata.OfType<ResourceAssetCollection>().Any())
+            // Check if there's already a resource collection on the metadata or if the builder is not an IEndpointRouteBuilder
+            if (endpointBuilder.Metadata.OfType<ResourceAssetCollection>().Any() || builder is not IEndpointRouteBuilder routeBuilder)
             {
                 return;
             }
 
-            // Check if the builder is also an IEndpointRouteBuilder
-            if (builder is IEndpointRouteBuilder routeBuilder)
+            var resolver = new ResourceCollectionResolver(routeBuilder);
+            
+            // Only add metadata if static assets are registered
+            if (resolver.IsRegistered(manifestPath))
             {
-                var resolver = new ResourceCollectionResolver(routeBuilder);
-                
-                // Only add metadata if static assets are registered
-                if (resolver.IsRegistered(manifestPath))
-                {
-                    var collection = resolver.ResolveResourceCollection(manifestPath);
-                    var importMap = ImportMapDefinition.FromResourceCollection(collection);
+                var collection = resolver.ResolveResourceCollection(manifestPath);
+                var importMap = ImportMapDefinition.FromResourceCollection(collection);
 
-                    endpointBuilder.Metadata.Add(collection);
-                    endpointBuilder.Metadata.Add(new ResourcePreloadCollection(collection));
-                    endpointBuilder.Metadata.Add(importMap);
-                }
+                endpointBuilder.Metadata.Add(collection);
+                endpointBuilder.Metadata.Add(new ResourcePreloadCollection(collection));
+                endpointBuilder.Metadata.Add(importMap);
             }
         });
         
