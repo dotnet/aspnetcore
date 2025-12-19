@@ -24,10 +24,12 @@ void close_epoll(int epoll_fd);
 // Wait for one event, returns ready FD, 0 on timeout, -1 on error
 int epoll_wait_one(int epoll_fd, int timeout_ms);
 
+// Remove fd from epoll (call when connection closes)
+int epoll_remove(int epoll_fd, int client_fd);
+
 // ============================================================================
 // Socket Utilities
 // ============================================================================
-
 // Set socket to non-blocking mode
 int set_socket_nonblocking(int fd);
 

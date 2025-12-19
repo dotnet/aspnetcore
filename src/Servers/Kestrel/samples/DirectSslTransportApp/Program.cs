@@ -16,6 +16,8 @@ var builder = WebApplication.CreateSlimBuilder(args);
 
 if (withCustomDirectTransport)
 {
+    builder.Logging.SetMinimumLevel(LogLevel.Debug); // disable otherwise bad perf
+
     // Configure Kestrel to use the Direct Socket Transport. It by-passes the HttpsMiddleware and SslStream
     builder.WebHost.UseKestrelDirectSslTransport();
 

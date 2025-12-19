@@ -90,6 +90,10 @@ internal sealed class SslWorker
     /// </summary>
     public void CancelIoForConnection(int clientFd)
     {
+        // Remove fd from epoll FIRST to prevent stale events
+        NativeSsl.epoll_remove(_epollFd, clientFd);
+        _logger.LogDebug("Worker #{Index}: Removed fd {Fd} from epoll", WorkerId, clientFd);
+        
         if (_pendingIo.TryRemove(clientFd, out var request))
         {
             request.Completion.TrySetCanceled();
@@ -141,12 +145,20 @@ internal sealed class SslWorker
             }
 
             // 4. Wait for socket events (short timeout to check for new requests)
+            _logger.LogDebug("[WorkerLoop] epoll_wait_one: handshakes={Handshakes}, pendingIo={PendingIo}, ioQueue={IoQueue}",
+                _activeHandshakes.Count, _pendingIo.Count, _ioQueue.Count);
+            
             int readyFd = NativeSsl.epoll_wait_one(_epollFd, 10);
 
             if (readyFd > 0)
             {
+                _logger.LogDebug("[WorkerLoop] epoll returned fd={Fd}", readyFd);
                 // 5. Handle the ready socket - could be handshake or I/O
                 ProcessReadySocket(readyFd);
+            }
+            else
+            {
+                _logger.LogDebug("[WorkerLoop] epoll timeout (no events)");
             }
         }
 
@@ -253,6 +265,7 @@ internal sealed class SslWorker
         fixed (byte* ptr = request.ReadBuffer.Span)
         {
             int bytesRead = NativeSsl.ssl_read(request.Ssl, ptr, request.Length);
+            _logger.LogDebug("[TryRead] fd={Fd}, ssl_read returned {BytesRead}", request.ClientFd, bytesRead);
 
             if (bytesRead > 0)
             {
@@ -263,17 +276,20 @@ internal sealed class SslWorker
             else if (bytesRead == 0)
             {
                 // EOF
+                _logger.LogDebug("[TryRead] fd={Fd}, EOF - completing with 0", request.ClientFd);
                 _pendingIo.TryRemove(request.ClientFd, out _);
                 request.Completion.TrySetResult(0);
             }
             else if (bytesRead == -1)
             {
                 // Would block - register with epoll and wait
+                _logger.LogDebug("[TryRead] fd={Fd}, would block - registering for EPOLLIN", request.ClientFd);
                 RegisterForRead(request);
             }
             else
             {
                 // Error
+                _logger.LogError("[TryRead] fd={Fd}, error: {BytesRead}", request.ClientFd, bytesRead);
                 _pendingIo.TryRemove(request.ClientFd, out _);
                 request.Completion.TrySetException(new IOException($"SSL_read failed: {bytesRead}"));
             }
@@ -327,6 +343,7 @@ internal sealed class SslWorker
 
     private void RegisterForWrite(SslIoRequest request)
     {
+        _logger.LogDebug("[RegisterForWrite] fd={Fd}", request.ClientFd);
         _pendingIo[request.ClientFd] = request;
         NativeSsl.RegisterForWrite(_epollFd, request.ClientFd);
     }
@@ -340,6 +357,7 @@ internal sealed class SslWorker
         // Check if this is a handshake
         if (_activeHandshakes.TryGetValue(fd, out var handshakeRequest))
         {
+            _logger.LogDebug("[ProcessReadySocket] fd={Fd} is handshake", fd);
             TryAdvanceHandshake(handshakeRequest);
             return;
         }
@@ -347,6 +365,7 @@ internal sealed class SslWorker
         // Check if this is pending I/O
         if (_pendingIo.TryGetValue(fd, out var ioRequest))
         {
+            _logger.LogDebug("[ProcessReadySocket] fd={Fd} is I/O ({Type})", fd, ioRequest.Type);
             TryProcessIo(ioRequest);
             return;
         }

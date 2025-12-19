@@ -402,10 +402,13 @@ int ssl_get_fd(SSL* ssl) {
  * 
  * This uses EPOLL_CTL_MOD since socket was already added during handshake.
  * If socket wasn't added, falls back to EPOLL_CTL_ADD.
+ * 
+ * NOTE: Using level-triggered (no EPOLLET) to ensure we don't miss events
+ * like EOF that may have arrived before registration.
  */
 int epoll_register_read(int epoll_fd, int client_fd) {
     struct epoll_event ev;
-    ev.events = EPOLLIN | EPOLLET;
+    ev.events = EPOLLIN;  // Level-triggered, not edge-triggered
     ev.data.fd = client_fd;
     
     // Try MOD first (socket already in epoll from handshake)
@@ -427,10 +430,12 @@ int epoll_register_read(int epoll_fd, int client_fd) {
 /**
  * Register socket for write events (EPOLLOUT).
  * Used after SSL_write returns WANT_WRITE to wait for buffer space.
+ * 
+ * NOTE: Using level-triggered (no EPOLLET) for consistency with read.
  */
 int epoll_register_write(int epoll_fd, int client_fd) {
     struct epoll_event ev;
-    ev.events = EPOLLOUT | EPOLLET;
+    ev.events = EPOLLOUT;  // Level-triggered, not edge-triggered
     ev.data.fd = client_fd;
     
     // Try MOD first (socket already in epoll from handshake)
@@ -443,6 +448,21 @@ int epoll_register_write(int epoll_fd, int client_fd) {
             }
         } else {
             perror("[native] epoll_register_write MOD failed");
+            return -1;
+        }
+    }
+    return 0;
+}
+
+/**
+ * Remove socket from epoll.
+ * Must be called when connection is closed to prevent stale fd events.
+ */
+int epoll_remove(int epoll_fd, int client_fd) {
+    if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, NULL) < 0) {
+        // ENOENT means fd wasn't in epoll - that's fine
+        if (errno != ENOENT) {
+            perror("[native] epoll_remove failed");
             return -1;
         }
     }

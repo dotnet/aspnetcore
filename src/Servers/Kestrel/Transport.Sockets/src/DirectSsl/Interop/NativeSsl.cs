@@ -67,6 +67,13 @@ internal static partial class NativeSsl
     public static partial int epoll_wait_one(int epoll_fd, int timeout_ms);
 
     /// <summary>
+    /// Remove fd from epoll. Must be called when connection closes.
+    /// </summary>
+    [LibraryImport(LibName)]
+    [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    public static partial int epoll_remove(int epoll_fd, int client_fd);
+
+    /// <summary>
     /// Wait for an I/O event and return both fd and event flags.
     /// </summary>
     /// <param name="epoll_fd">Epoll instance</param>
