@@ -271,6 +271,26 @@ public class LabelTest
         Assert.Equal("Street Address", textFrame.TextContent);
     }
 
+    [Fact]
+    public async Task SupportsLocalizationWithResourceType()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestHostComponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Label<string>>(0);
+                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PropertyWithResourceBasedDisplay));
+                builder.CloseComponent();
+            }
+        };
+
+        var frames = await RenderAndGetFrames(rootComponent);
+
+        var textFrame = frames.First(f => f.FrameType == RenderTree.RenderTreeFrameType.Text);
+        Assert.Equal("Localized Display Name", textFrame.TextContent);
+    }
+
     private static async Task<RenderTreeFrame[]> RenderAndGetFrames(TestHostComponent rootComponent)
     {
         var testRenderer = new TestRenderer();
@@ -310,6 +330,9 @@ public class LabelTest
 
         [Display(Name = "Date Value")]
         public DateTime DateProperty { get; set; }
+
+        [Display(Name = nameof(TestResources.LocalizedDisplayName), ResourceType = typeof(TestResources))]
+        public string PropertyWithResourceBasedDisplay { get; set; } = string.Empty;
     }
 
     private class TestModelWithNestedProperty
@@ -321,5 +344,10 @@ public class LabelTest
     {
         [Display(Name = "Street Address")]
         public string Street { get; set; } = string.Empty;
+    }
+
+    public static class TestResources
+    {
+        public static string LocalizedDisplayName => "Localized Display Name";
     }
 }
