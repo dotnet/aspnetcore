@@ -17,7 +17,7 @@ internal sealed class HandshakeRequest
     public TaskCompletionSource<HandshakeRequest> Completion { get; }
     public HandshakeResult Result { get; set; }
     public SslWorker? Worker { get; set; }
-
+    
     public HandshakeRequest(Socket clientSocket)
     {
         ClientSocket = clientSocket;

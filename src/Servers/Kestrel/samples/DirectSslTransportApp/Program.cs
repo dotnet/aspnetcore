@@ -14,9 +14,6 @@ var withCustomDirectTransport = true;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
-// Disable verbose logging for better benchmark performance
-builder.Logging.SetMinimumLevel(LogLevel.Warning);
-
 if (withCustomDirectTransport)
 {
     // Configure Kestrel to use the Direct Socket Transport. It by-passes the HttpsMiddleware and SslStream
@@ -39,6 +36,9 @@ if (withCustomDirectTransport)
 }
 else
 {
+    // Disable verbose logging for better benchmark performance
+    builder.Logging.SetMinimumLevel(LogLevel.Warning);
+
     // Configure Kestrel to use the default Sockets Transport with SslStream
     builder.WebHost.UseKestrel(options =>
     {

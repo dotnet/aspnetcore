@@ -228,16 +228,8 @@ int ssl_try_handshake(SSL* ssl, int client_fd, int epoll_fd) {
         return (err == SSL_ERROR_WANT_READ) ? HANDSHAKE_WANT_READ : HANDSHAKE_WANT_WRITE;
     }
     
-    // Real error occurred
-    if (err == SSL_ERROR_SYSCALL) {
-        // Check errno for the actual error
-        if (errno != 0) {
-            perror("[native] SSL_do_handshake syscall error");
-        }
-    } else if (err == SSL_ERROR_SSL) {
-        fprintf(stderr, "[native] SSL_do_handshake SSL error\n");
-        ERR_print_errors_fp(stderr);
-    }
+    // Real error occurred - don't print here, let C# retrieve via ssl_get_last_error()
+    // The error queue is preserved for the caller to read
     
     return HANDSHAKE_ERROR;
 }

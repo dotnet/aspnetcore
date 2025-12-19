@@ -44,8 +44,7 @@ internal sealed class DirectSslConnectionContextFactory : IDisposable
 
         if (handshakeRequest.Result != HandshakeResult.Success)
         {
-            _logger.LogWarning("SSL handshake failed for {RemoteEndPoint}: {Result}", 
-                acceptSocket.RemoteEndPoint, handshakeRequest.Result);
+            _logger.LogWarning("SSL handshake failed for {RemoteEndPoint}: {Result}", acceptSocket.RemoteEndPoint, handshakeRequest.Result);
             acceptSocket.Dispose();
             return null;
         }

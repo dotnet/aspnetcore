@@ -191,8 +191,7 @@ internal sealed class SslWorker
             case NativeSsl.HANDSHAKE_ERROR:
             default:
                 var errorMessage = NativeSsl.GetLastError();
-                _logger.LogDebug("Handshake failed for fd={ClientFd}, status={Status}, error={Error}", 
-                    request.ClientFd, status, errorMessage);
+                _logger.LogError("Handshake failed for fd={ClientFd}, status={Status}, error={Error}", request.ClientFd, status, errorMessage);
                 _activeHandshakes.Remove(request.ClientFd);
                 NativeSsl.ssl_connection_destroy(request.Ssl);
                 request.Ssl = IntPtr.Zero;
