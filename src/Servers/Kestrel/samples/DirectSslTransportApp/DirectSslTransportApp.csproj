@@ -23,6 +23,9 @@
     <None Update="server-p384.key">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="server-p384.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <!-- Copy native SSL library from Transport.Sockets to output -->

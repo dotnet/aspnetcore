@@ -10,16 +10,16 @@ echo "=== OpenSSL Verbose Debug ==="
 echo "Target: https://$HOST:$PORT/"
 echo ""
 
-# Use timeout instead of -ign_eof to avoid hanging if server doesn't close
-# The response should complete within 5 seconds
-timeout 20 bash -c "echo -e 'GET / HTTP/1.1\r\nHost: $HOST\r\nConnection: close\r\n\r\n' | \
-    openssl s_client -connect '$HOST:$PORT' \
-    -servername '$HOST' \
-    -ign_eof \
+# sleep keeps stdin open long enough to receive the response
+# -alpn http/1.1 ensures compatibility with both DirectSsl and default Kestrel (SslStream)
+(echo -e "GET / HTTP/1.1\r\nHost: $HOST\r\nConnection: close\r\n\r\n"; sleep 2) | \
+    openssl s_client -connect "$HOST:$PORT" \
+    -servername "$HOST" \
+    -alpn http/1.1 \
     -state \
     -debug \
     -msg \
-    2>&1" || echo "(Timed out - server may not have closed connection)"
+    2>&1
 
 echo ""
 echo "=== Done ==="

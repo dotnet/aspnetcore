@@ -9,31 +9,41 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl;
 using Microsoft.Extensions.Hosting;
 
+var withCustomDirectTransport = false;
+
 var builder = WebApplication.CreateSlimBuilder(args);
 
-// Configure Kestrel to use the Direct Socket Transport. It by-passes the HttpsMiddleware and SslStream
-builder.WebHost.UseKestrelDirectSslTransport();
-
-builder.WebHost.ConfigureKestrel(options =>
+if (withCustomDirectTransport)
 {
-    // HTTP endpoint on port 5000
-    options.ListenAnyIP(5000, listenOptions =>
+    // Configure Kestrel to use the Direct Socket Transport. It by-passes the HttpsMiddleware and SslStream
+    builder.WebHost.UseKestrelDirectSslTransport();
+
+    builder.WebHost.UseDirectSslSockets(options =>
     {
-        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+        options.CertificatePath = "server-p384.crt";
+        options.PrivateKeyPath = "server-p384.key";
     });
 
-    // HTTPS endpoint on port 5001 with DirectSocket + OpenSSL
-    options.ListenAnyIP(5001, listenOptions =>
+    builder.WebHost.ConfigureKestrel(options =>
     {
-        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+        // HTTPS endpoint on port 5001 with DirectSocket + OpenSSL
+        options.ListenAnyIP(5001, listenOptions =>
+        {
+            listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+        });
     });
-});
-
-builder.WebHost.UseDirectSslSockets(options =>
+}
+else
 {
-   options.CertificatePath = "server-p384.crt";
-   options.PrivateKeyPath = "server-p384.key";
-});
+    // Configure Kestrel to use the default Sockets Transport with SslStream
+    builder.WebHost.UseKestrel(options =>
+    {
+        options.ListenAnyIP(5001, listenOptions =>
+        {
+            listenOptions.UseHttps(new X509Certificate2("server-p384.pfx", "testpassword"));
+        });
+    });
+}
 
 var app = builder.Build();
 
