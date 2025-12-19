@@ -29,7 +29,6 @@ using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Channels;
-using static Microsoft.AspNetCore.SignalR.Tests.Internal.TypedClientBuilderTests;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
 
