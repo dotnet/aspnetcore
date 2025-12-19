@@ -70,3 +70,5 @@ Microsoft.AspNetCore.Components.Web.Media.MediaSource.MediaSource(byte[]! data, 
 Microsoft.AspNetCore.Components.Web.Media.MediaSource.MediaSource(System.IO.Stream! stream, string! mimeType, string! cacheKey) -> void
 Microsoft.AspNetCore.Components.Web.Media.MediaSource.MimeType.get -> string!
 Microsoft.AspNetCore.Components.Web.Media.MediaSource.Stream.get -> System.IO.Stream!
+*REMOVED*Microsoft.AspNetCore.Components.Forms.InputDate<TValue>.Type.get -> Microsoft.AspNetCore.Components.Forms.InputDateType
+Microsoft.AspNetCore.Components.Forms.InputDate<TValue>.Type.get -> Microsoft.AspNetCore.Components.Forms.InputDateType?

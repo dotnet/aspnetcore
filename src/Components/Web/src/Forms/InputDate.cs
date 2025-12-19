@@ -31,8 +31,13 @@ public class InputDate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberType
 
     /// <summary>
     /// Gets or sets the type of HTML input to be rendered.
+    /// If not specified, the type is automatically inferred based on <typeparamref name="TValue"/>:
+    /// <list type="bullet">
+    /// <item><description><see cref="TimeOnly"/> defaults to <see cref="InputDateType.Time"/></description></item>
+    /// <item><description>All other types (<see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="DateOnly"/>) default to <see cref="InputDateType.Date"/></description></item>
+    /// </list>
     /// </summary>
-    [Parameter] public InputDateType Type { get; set; } = InputDateType.Date;
+    [Parameter] public InputDateType? Type { get; set; }
 
     /// <summary>
     /// Gets or sets the error message used when displaying an a parsing error.
@@ -66,18 +71,33 @@ public class InputDate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberType
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        (_typeAttributeValue, _format, var formatDescription) = Type switch
+        var effectiveType = Type ?? GetDefaultInputDateType();
+
+        (_typeAttributeValue, _format, var formatDescription) = effectiveType switch
         {
             InputDateType.Date => ("date", DateFormat, "date"),
             InputDateType.DateTimeLocal => ("datetime-local", DateTimeLocalFormat, "date and time"),
             InputDateType.Month => ("month", MonthFormat, "year and month"),
             InputDateType.Time => ("time", TimeFormat, "time"),
-            _ => throw new InvalidOperationException($"Unsupported {nameof(InputDateType)} '{Type}'.")
+            _ => throw new InvalidOperationException($"Unsupported {nameof(InputDateType)} '{effectiveType}'.")
         };
 
         _parsingErrorMessage = string.IsNullOrEmpty(ParsingErrorMessage)
             ? $"The {{0}} field must be a {formatDescription}."
             : ParsingErrorMessage;
+    }
+
+    private static InputDateType GetDefaultInputDateType()
+    {
+        var type = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
+
+        if (type == typeof(TimeOnly))
+        {
+            return InputDateType.Time;
+        }
+
+        // DateTime, DateTimeOffset, and DateOnly all default to Date for backward compatibility
+        return InputDateType.Date;
     }
 
     /// <inheritdoc />
