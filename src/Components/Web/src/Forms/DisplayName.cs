@@ -63,5 +63,4 @@ public class DisplayName<TValue> : IComponent
     {
         builder.AddContent(0, _displayName);
     }
-
 }
