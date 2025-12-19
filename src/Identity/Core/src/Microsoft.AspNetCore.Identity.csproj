@@ -13,7 +13,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)DefaultMessageEmailSender.cs" />
+    <Compile Include="$(SharedSourceRoot)DefaultMessageEmailSender.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Metrics\MetricsConstants.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ValueStopwatch\ValueStopwatch.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,7 +23,9 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.BearerToken" />
     <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
+    <Reference Include="Microsoft.Extensions.Diagnostics" />
     <Reference Include="Microsoft.Extensions.Identity.Core" />
+    <Reference Include="System.Formats.Cbor" />
   </ItemGroup>
 
   <ItemGroup>

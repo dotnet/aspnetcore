@@ -17,7 +17,7 @@ public static class RegisterPersistentComponentStateServiceCollectionExtensions
     /// Saves <typeparamref name="TService"/> state when the application is persisting state and restores it at the appropriate time automatically.
     /// </summary>
     /// <remarks>
-    /// Only public properties annotated with <see cref="SupplyParameterFromPersistentComponentStateAttribute"/> are persisted and restored.
+    /// Only public properties annotated with <see cref="PersistentStateAttribute"/> are persisted and restored.
     /// </remarks>
     /// <typeparam name="TService">The service type to register for persistence.</typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
@@ -34,7 +34,7 @@ public static class RegisterPersistentComponentStateServiceCollectionExtensions
         // We look for the assembly in the current list of loaded assemblies.
         // We look for the type inside the assembly.
         // We resolve the service from the DI container.
-        // We loop through the properties in the type and try to restore the properties that have SupplyParameterFromPersistentComponentState on them.
+        // We loop through the properties in the type and try to restore the properties that have PersistentState on them.
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IPersistentServiceRegistration>(new PersistentServiceRegistration<TService>(componentRenderMode)));
         services.TryAddSingleton<RegisteredPersistentServiceRegistrationCollection>();
 

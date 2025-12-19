@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -74,7 +73,7 @@ internal class Http3InMemory
     private FakeTimeProvider _fakeTimeProvider;
     internal HttpConnection _httpConnection;
     internal readonly TimeoutControl _timeoutControl;
-    internal readonly MemoryPool<byte> _memoryPool = PinnedBlockMemoryPoolFactory.Create();
+    internal readonly MemoryPool<byte> _memoryPool = TestMemoryPoolFactory.Create();
     internal readonly ConcurrentQueue<TestStreamContext> _streamContextPool = new ConcurrentQueue<TestStreamContext>();
     protected Task _connectionTask;
     internal ILogger Logger { get; }
@@ -301,12 +300,26 @@ internal class Http3InMemory
 
         public bool OnInboundDecoderStream(Server.Kestrel.Core.Internal.Http3.Http3ControlStream stream)
         {
-            return _inner.OnInboundDecoderStream(stream);
+            var res = _inner.OnInboundDecoderStream(stream);
+
+            if (_http3TestBase._runningStreams.TryGetValue(stream.StreamId, out var testStream))
+            {
+                testStream.OnDecoderStreamCreatedTcs.TrySetResult();
+            }
+
+            return res;
         }
 
         public bool OnInboundEncoderStream(Server.Kestrel.Core.Internal.Http3.Http3ControlStream stream)
         {
-            return _inner.OnInboundEncoderStream(stream);
+            var res = _inner.OnInboundEncoderStream(stream);
+
+            if (_http3TestBase._runningStreams.TryGetValue(stream.StreamId, out var testStream))
+            {
+                testStream.OnEncoderStreamCreatedTcs.TrySetResult();
+            }
+
+            return res;
         }
 
         public void OnStreamCompleted(IHttp3Stream stream)
@@ -480,6 +493,8 @@ internal class Http3StreamBase
     internal TaskCompletionSource OnStreamCreatedTcs { get; } = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     internal TaskCompletionSource OnStreamCompletedTcs { get; } = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     internal TaskCompletionSource OnHeaderReceivedTcs { get; } = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    internal TaskCompletionSource OnDecoderStreamCreatedTcs { get; } = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    internal TaskCompletionSource OnEncoderStreamCreatedTcs { get; } = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
     internal TestStreamContext StreamContext { get; }
     internal DuplexPipe.DuplexPipePair Pair { get; }
@@ -496,6 +511,8 @@ internal class Http3StreamBase
     public Task OnStreamCreatedTask => OnStreamCreatedTcs.Task;
     public Task OnStreamCompletedTask => OnStreamCompletedTcs.Task;
     public Task OnHeaderReceivedTask => OnHeaderReceivedTcs.Task;
+    public Task OnDecoderStreamCreatedTask => OnDecoderStreamCreatedTcs.Task;
+    public Task OnEncoderStreamCreatedTask => OnEncoderStreamCreatedTcs.Task;
 
     public ConnectionAbortedException AbortReadException => StreamContext.AbortReadException;
     public ConnectionAbortedException AbortWriteException => StreamContext.AbortWriteException;

@@ -52,6 +52,8 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     // wait for the non-streaming tasks (these ones), then start streaming until full quiescence.
     private readonly List<Task> _nonStreamingPendingTasks = new();
 
+    private string _notFoundUrl = string.Empty;
+
     public EndpointHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         : base(serviceProvider, loggerFactory)
     {
@@ -61,8 +63,9 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     }
 
     internal HttpContext? HttpContext => _httpContext;
+    internal NotFoundEventArgs? NotFoundEventArgs { get; private set; }
 
-    private void SetHttpContext(HttpContext httpContext)
+    internal void SetHttpContext(HttpContext httpContext)
     {
         if (_httpContext is null)
         {
@@ -81,12 +84,12 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         IFormCollection? form = null)
     {
         var navigationManager = httpContext.RequestServices.GetRequiredService<NavigationManager>();
-        ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request), OnNavigateTo);
+        ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(
+            GetContextBaseUri(httpContext.Request),
+            GetFullUri(httpContext.Request),
+            uri => GetErrorHandledTask(OnNavigateTo(uri)));
 
-        if (navigationManager != null)
-        {
-            navigationManager.OnNotFound += async (sender, args) => await SetNotFoundResponseAsync(navigationManager.BaseUri);
-        }
+        navigationManager?.OnNotFound += (sender, args) => NotFoundEventArgs = args;
 
         var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>();
         if (authenticationStateProvider is IHostEnvironmentAuthenticationStateProvider hostEnvironmentAuthenticationStateProvider)
@@ -123,7 +126,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         // (which will obviously not work, but should not fail)
         var componentApplicationLifetime = httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
         componentApplicationLifetime.SetPlatformRenderMode(RenderMode.InteractiveAuto);
-        await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore());
+        await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore(), RestoreContext.InitialValue);
 
         if (componentType != null)
         {
@@ -165,11 +168,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     protected override void AddPendingTask(ComponentState? componentState, Task task)
     {
-        if (_isReExecuted)
-        {
-            return;
-        }
-
         var streamRendering = componentState is null
             ? false
             : ((EndpointComponentState)componentState).StreamRendering;
@@ -183,17 +181,11 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         base.AddPendingTask(componentState, task);
     }
 
-    private void SignalRendererToFinishRenderingAfterCurrentBatch()
+    // For testing purposes only
+    internal void SignalRendererToFinishRendering()
     {
         // sets a deferred stop on the renderer, which will have an effect after the current batch is completed
         _rendererIsStopped = true;
-    }
-
-    protected override void SignalRendererToFinishRendering()
-    {
-        SignalRendererToFinishRenderingAfterCurrentBatch();
-        // sets a hard stop on the renderer, which will have an effect immediately
-        base.SignalRendererToFinishRendering();
     }
 
     protected override void ProcessPendingRender()

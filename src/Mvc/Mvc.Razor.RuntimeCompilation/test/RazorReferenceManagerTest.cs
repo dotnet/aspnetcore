@@ -15,7 +15,9 @@ public class RazorReferenceManagerTest
     public void GetCompilationReferences_CombinesApplicationPartAndOptionMetadataReferences()
     {
         // Arrange
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
         var options = new MvcRazorRuntimeCompilationOptions();
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
         var additionalReferencePath = "additional-path";
         options.AdditionalReferencePaths.Add(additionalReferencePath);
 

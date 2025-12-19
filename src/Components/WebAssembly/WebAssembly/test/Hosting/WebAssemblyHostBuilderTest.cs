@@ -98,12 +98,9 @@ public class WebAssemblyHostBuilderTest
         builder.Services.AddScoped<StringBuilder>();
         builder.Services.AddSingleton<TestServiceThatTakesStringBuilder>();
 
-        // Act
-        var host = builder.Build();
-
-        // Assert
-        Assert.NotNull(host.Services.GetRequiredService<StringBuilder>());
-        Assert.Throws<InvalidOperationException>(() => host.Services.GetRequiredService<TestServiceThatTakesStringBuilder>());
+        // Act & Assert
+        var exception = Assert.Throws<AggregateException>(() => builder.Build());
+        Assert.Contains("Cannot consume scoped service", exception.Message);
     }
 
     [Fact]
@@ -247,5 +244,101 @@ public class WebAssemblyHostBuilderTest
         Assert.NotNull(loggerProvider);
         Assert.Equal<ILoggerProvider>(provider.Object, loggerProvider);
 
+    }
+
+    [Fact]
+    public void UseDefaultServiceProvider_DetectsCircularDependencies()
+    {
+        // Arrange
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+
+        // Add a circular dependency
+        builder.Services.AddScoped<CircularServiceA>();
+        builder.Services.AddScoped<CircularServiceB>();
+
+        // Act
+        builder.UseDefaultServiceProvider(options =>
+        {
+            options.ValidateOnBuild = true;
+        });
+
+        // Assert
+        var exception = Assert.Throws<AggregateException>(() => builder.Build());
+        Assert.Contains("circular dependency", exception.Message.ToLowerInvariant());
+    }
+
+    [Fact]
+    public void UseDefaultServiceProvider_EnvironmentOverload_WorksCorrectly()
+    {
+        // Arrange
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(environment: "Development"));
+
+        // Act
+        builder.UseDefaultServiceProvider((env, options) =>
+        {
+            options.ValidateOnBuild = env.IsDevelopment();
+        });
+
+        var host = builder.Build();
+
+        // Assert
+        Assert.NotNull(host);
+    }
+
+    [Fact]
+    public void DefaultServiceProviderOptions_InDevelopment_ValidatesOnBuild()
+    {
+        // Arrange
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods(environment: "Development"));
+
+        // Add a circular dependency - should throw due to default ValidateOnBuild=true in development
+        builder.Services.AddScoped<CircularServiceA>();
+        builder.Services.AddScoped<CircularServiceB>();
+
+        // Act & Assert
+        var exception = Assert.Throws<AggregateException>(() => builder.Build());
+        Assert.Contains("circular dependency", exception.Message.ToLowerInvariant());
+    }
+
+    // Helper classes for testing circular dependencies
+    private class CircularServiceA
+    {
+        public CircularServiceA(CircularServiceB serviceB) { }
+    }
+
+    private class CircularServiceB
+    {
+        public CircularServiceB(CircularServiceA serviceA) { }
+    }
+
+    [Fact]
+    public void Configuration_IncludesEnvironmentVariables_WhenAddedExplicitly()
+    {
+        // Arrange
+        var testEnvVarKey = $"TEST_WASM_CONFIG_{Guid.NewGuid():N}";
+        var testEnvVarValue = "test-value-12345";
+
+        try
+        {
+            // Set an environment variable before creating the builder
+            Environment.SetEnvironmentVariable(testEnvVarKey, testEnvVarValue);
+
+            var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+
+            // This mimics what CreateDefault now does
+            builder.Configuration.AddEnvironmentVariables();
+
+            // Act
+            var host = builder.Build();
+
+            // Assert
+            var configuration = host.Services.GetRequiredService<IConfiguration>();
+            Assert.Equal(testEnvVarValue, configuration[testEnvVarKey]);
+        }
+        finally
+        {
+            // Clean up the environment variable
+            Environment.SetEnvironmentVariable(testEnvVarKey, null);
+        }
     }
 }

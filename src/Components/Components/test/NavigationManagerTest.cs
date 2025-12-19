@@ -1,7 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics;
+using System.Net.Http;
+using System.Text;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.InternalTesting;
 
@@ -868,6 +871,22 @@ public class NavigationManagerTest
         }
     }
 
+    [Fact]
+    public void OnNotFoundSubscriptionIsTriggeredWhenNotFoundCalled()
+    {
+        // Arrange
+        var baseUri = "scheme://host/";
+        var testNavManager = new TestNavigationManager(baseUri);
+        bool notFoundTriggered = false;
+        testNavManager.OnNotFound += (sender, args) => notFoundTriggered = true;
+
+        // Simulate a component triggered NotFound
+        testNavManager.NotFound();
+
+        // Assert
+        Assert.True(notFoundTriggered, "The OnNotFound event was not triggered as expected.");
+    }
+ 
     private class TestNavigationManager : NavigationManager
     {
         public TestNavigationManager()

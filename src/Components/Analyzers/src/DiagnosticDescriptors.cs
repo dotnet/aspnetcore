@@ -74,4 +74,22 @@ internal static class DiagnosticDescriptors
         Usage,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor SupplyParameterFromFormShouldNotHavePropertyInitializer = new(
+        "BL0008",
+        CreateLocalizableResourceString(nameof(Resources.SupplyParameterFromFormShouldNotHavePropertyInitializer_Title)),
+        CreateLocalizableResourceString(nameof(Resources.SupplyParameterFromFormShouldNotHavePropertyInitializer_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.SupplyParameterFromFormShouldNotHavePropertyInitializer_Description)));
+
+    public static readonly DiagnosticDescriptor PersistentStateShouldNotHavePropertyInitializer = new(
+        "BL0009",
+        CreateLocalizableResourceString(nameof(Resources.PersistentStateShouldNotHavePropertyInitializer_Title)),
+        CreateLocalizableResourceString(nameof(Resources.PersistentStateShouldNotHavePropertyInitializer_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.PersistentStateShouldNotHavePropertyInitializer_Description)));
 }

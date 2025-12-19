@@ -519,13 +519,12 @@ public class StaticAssetsIntegrationTests
                     Route = resource.Path,
                     AssetPath = $"{resource.Path}.gz",
                     Selectors = [new StaticAssetSelector("Content-Encoding", "gzip", "1.0")],
-                    Properties = [],
+                    Properties = [new("original-resource", $"\"{GetEtag(resource.Content)}\"")],
                     ResponseHeaders = [
                         new ("Accept-Ranges", "bytes"),
                         new ("Content-Type", GetContentType(filePath)),
 
                         new ("Content-Length", length.ToString(CultureInfo.InvariantCulture)),
-                        new ("ETag", $"W/\"{GetEtag(resource.Content)}\""),
                         new ("ETag", $"\"{GetEtagForFile(compressedFilePath)}\""),
                         new ("Last-Modified", lastModified.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)),
 
@@ -1098,5 +1097,46 @@ public class StaticAssetsIntegrationTests
                 return stream;
             }
         }
+    }
+
+    [Fact]
+    public void TruncateToSeconds_RemovesSubsecondComponents()
+    {
+        var original = new DateTimeOffset(2023, 5, 15, 10, 30, 45, 123, TimeSpan.FromHours(2));
+
+        var truncated = StaticAssetDevelopmentRuntimeHandler.TruncateToSeconds(original);
+
+        Assert.Equal(2023, truncated.Year);
+        Assert.Equal(5, truncated.Month);
+        Assert.Equal(15, truncated.Day);
+        Assert.Equal(10, truncated.Hour);
+        Assert.Equal(30, truncated.Minute);
+        Assert.Equal(45, truncated.Second);
+        Assert.Equal(0, truncated.Millisecond);
+        Assert.Equal(TimeSpan.FromHours(2), truncated.Offset);
+    }
+
+    [Fact]
+    public void TruncateToSeconds_PreservesUtcOffset()
+    {
+        var utcDateTime = new DateTimeOffset(2023, 5, 15, 10, 30, 45, 500, TimeSpan.Zero);
+
+        var truncated = StaticAssetDevelopmentRuntimeHandler.TruncateToSeconds(utcDateTime);
+
+        Assert.Equal(TimeSpan.Zero, truncated.Offset);
+        Assert.Equal(0, truncated.Millisecond);
+    }
+
+    [Fact]
+    public void TruncateToSeconds_MatchesHttpDateFormat()
+    {
+        var original = new DateTimeOffset(2023, 5, 15, 10, 30, 45, 789, TimeSpan.Zero);
+
+        var httpFormatted = original.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture);
+        var parsed = DateTimeOffset.Parse(httpFormatted, CultureInfo.InvariantCulture);
+
+        var truncated = StaticAssetDevelopmentRuntimeHandler.TruncateToSeconds(original);
+
+        Assert.Equal(parsed, truncated);
     }
 }

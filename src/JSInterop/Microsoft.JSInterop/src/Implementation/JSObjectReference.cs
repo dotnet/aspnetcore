@@ -50,19 +50,19 @@ public class JSObjectReference : IJSObjectReference
     }
 
     /// <inheritdoc />
-    public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object?[]? args)
+    public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object?[]? args)
     {
         ThrowIfDisposed();
 
-        return _jsRuntime.InvokeAsync<IJSObjectReference>(Id, identifier, JSCallType.NewCall, args);
+        return _jsRuntime.InvokeAsync<IJSObjectReference>(Id, identifier, JSCallType.ConstructorCall, args);
     }
 
     /// <inheritdoc />
-    public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
+    public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
     {
         ThrowIfDisposed();
 
-        return _jsRuntime.InvokeAsync<IJSObjectReference>(Id, identifier, JSCallType.NewCall, cancellationToken, args);
+        return _jsRuntime.InvokeAsync<IJSObjectReference>(Id, identifier, JSCallType.ConstructorCall, cancellationToken, args);
     }
 
     /// <inheritdoc />
@@ -78,7 +78,7 @@ public class JSObjectReference : IJSObjectReference
     {
         ThrowIfDisposed();
 
-        return _jsRuntime.InvokeAsync<TValue>(Id, identifier, JSCallType.GetValue, null);
+        return _jsRuntime.InvokeAsync<TValue>(Id, identifier, JSCallType.GetValue, cancellationToken, null);
     }
 
     /// <inheritdoc />
@@ -94,7 +94,7 @@ public class JSObjectReference : IJSObjectReference
     {
         ThrowIfDisposed();
 
-        await _jsRuntime.InvokeAsync<TValue>(Id, identifier, JSCallType.SetValue, [value]);
+        await _jsRuntime.InvokeAsync<TValue>(Id, identifier, JSCallType.SetValue, cancellationToken, [value]);
     }
 
     /// <inheritdoc />
@@ -104,7 +104,15 @@ public class JSObjectReference : IJSObjectReference
         {
             Disposed = true;
 
-            await _jsRuntime.InvokeVoidAsync("DotNet.disposeJSObjectReferenceById", Id);
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync("DotNet.disposeJSObjectReferenceById", Id);
+            }
+            catch (JSDisconnectedException)
+            {
+                // If the JavaScript runtime is disconnected, there's no need to dispose the JS object reference
+                // as the JS side is already gone. We can safely ignore this exception.
+            }
         }
     }
 

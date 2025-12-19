@@ -85,12 +85,12 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         => InvokeAsync<TValue>(WindowObjectId, identifier, JSCallType.FunctionCall, cancellationToken, args);
 
     /// <inheritdoc />
-    public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object?[]? args)
-        => InvokeAsync<IJSObjectReference>(WindowObjectId, identifier, JSCallType.NewCall, args);
+    public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object?[]? args)
+        => InvokeAsync<IJSObjectReference>(WindowObjectId, identifier, JSCallType.ConstructorCall, args);
 
     /// <inheritdoc />
-    public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
-        => InvokeAsync<IJSObjectReference>(WindowObjectId, identifier, JSCallType.NewCall, cancellationToken, args);
+    public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
+        => InvokeAsync<IJSObjectReference>(WindowObjectId, identifier, JSCallType.ConstructorCall, cancellationToken, args);
 
     /// <inheritdoc />
     public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier)

@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,8 +17,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 internal class TestCircuitHost : CircuitHost
 {
-    private TestCircuitHost(CircuitId circuitId, AsyncServiceScope scope, CircuitOptions options, CircuitClientProxy client, RemoteRenderer renderer, IReadOnlyList<ComponentDescriptor> descriptors, RemoteJSRuntime jsRuntime, RemoteNavigationManager navigationManager, CircuitHandler[] circuitHandlers, CircuitMetrics circuitMetrics, ComponentsActivitySource componentsActivitySource, ILogger logger)
-        : base(circuitId, scope, options, client, renderer, descriptors, jsRuntime, navigationManager, circuitHandlers, circuitMetrics, componentsActivitySource, logger)
+    private TestCircuitHost(CircuitId circuitId, AsyncServiceScope scope, CircuitOptions options, CircuitClientProxy client, RemoteRenderer renderer, IReadOnlyList<ComponentDescriptor> descriptors, RemoteJSRuntime jsRuntime, RemoteNavigationManager navigationManager, CircuitHandler[] circuitHandlers, CircuitMetrics circuitMetrics, CircuitActivitySource circuitActivitySource, ILogger logger)
+        : base(circuitId, scope, options, client, renderer, descriptors, jsRuntime, navigationManager, circuitHandlers, circuitMetrics, circuitActivitySource, logger)
     {
     }
 
@@ -29,22 +30,29 @@ internal class TestCircuitHost : CircuitHost
         CircuitHandler[] handlers = null,
         CircuitClientProxy clientProxy = null)
     {
-        serviceScope = serviceScope ?? new AsyncServiceScope(Mock.Of<IServiceScope>());
-        clientProxy = clientProxy ?? new CircuitClientProxy(Mock.Of<IClientProxy>(), Guid.NewGuid().ToString());
+        clientProxy = clientProxy ?? new CircuitClientProxy(Mock.Of<ISingleClientProxy>(), Guid.NewGuid().ToString());
         var jsRuntime = new RemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
         var navigationManager = new RemoteNavigationManager(Mock.Of<ILogger<RemoteNavigationManager>>());
-        var serviceProvider = new Mock<IServiceProvider>();
-        serviceProvider
-            .Setup(services => services.GetService(typeof(IJSRuntime)))
-            .Returns(jsRuntime);
+        var componentsActivitySource = new ComponentsActivitySource();
+        var circuitActivitySource = new CircuitActivitySource();
+        var persistenceManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            new ServiceCollection().BuildServiceProvider());
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton<IJSRuntime>(jsRuntime)
+            .AddSingleton(componentsActivitySource)
+            .AddSingleton(persistenceManager)
+            .AddSingleton(circuitActivitySource)
+            .BuildServiceProvider();
+        serviceScope ??= serviceProvider.CreateAsyncScope();
+
         var serverComponentDeserializer = Mock.Of<IServerComponentDeserializer>();
         var circuitMetrics = new CircuitMetrics(new TestMeterFactory());
-        var componentsActivitySource = new ComponentsActivitySource();
 
         if (remoteRenderer == null)
         {
             remoteRenderer = new RemoteRenderer(
-                serviceProvider.Object,
+                serviceProvider,
                 NullLoggerFactory.Instance,
                 new CircuitOptions(),
                 clientProxy,
@@ -53,6 +61,8 @@ internal class TestCircuitHost : CircuitHost
                 jsRuntime,
                 new CircuitJSComponentInterop(new CircuitOptions()));
         }
+        var linkstore = new Infrastructure.Server.ComponentsActivityLinkStore(remoteRenderer);
+        circuitActivitySource.Init(linkstore);
 
         handlers ??= Array.Empty<CircuitHandler>();
         return new TestCircuitHost(
@@ -66,7 +76,7 @@ internal class TestCircuitHost : CircuitHost
             navigationManager,
             handlers,
             circuitMetrics,
-            componentsActivitySource,
+            circuitActivitySource,
             NullLogger<CircuitHost>.Instance);
     }
 }

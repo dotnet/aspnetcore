@@ -15,6 +15,7 @@ import { shouldAutoStart } from './BootCommon';
 import { Blazor } from './GlobalExports';
 import { WebStartOptions } from './Platform/WebStartOptions';
 import { attachStreamingRenderingListener } from './Rendering/StreamingRendering';
+import { resetScrollIfNeeded, ScrollResetSchedule } from './Rendering/Renderer';
 import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
 import { WebRootComponentManager } from './Services/WebRootComponentManager';
 import { hasProgrammaticEnhancedNavigationHandler, performProgrammaticEnhancedNavigation } from './Services/NavigationUtils';
@@ -39,6 +40,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   started = true;
   options = options || {};
   options.logLevel ??= LogLevel.Error;
+  Blazor._internal.isBlazorWeb = true;
 
   // Defined here to avoid inadvertently imported enhanced navigation
   // related APIs in WebAssembly or Blazor Server contexts.
@@ -57,6 +59,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
     },
     documentUpdated: () => {
       rootComponentManager.onDocumentUpdated();
+      resetScrollIfNeeded(ScrollResetSchedule.AfterDocumentUpdate);
       jsEventRegistry.dispatchEvent('enhancedload', {});
     },
     enhancedNavigationCompleted() {

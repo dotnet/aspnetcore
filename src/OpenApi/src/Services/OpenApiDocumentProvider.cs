@@ -4,9 +4,6 @@
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi;
-using Microsoft.OpenApi.Extensions;
-using Microsoft.OpenApi.Writers;
 using System.Linq;
 
 namespace Microsoft.Extensions.ApiDescriptions;
@@ -50,9 +47,6 @@ internal sealed class OpenApiDocumentProvider(IServiceProvider serviceProvider) 
         // See OpenApiServiceCollectionExtensions.cs for more info.
         var lowercasedDocumentName = documentName.ToLowerInvariant();
 
-        // Microsoft.OpenAPI does not provide async APIs for writing the JSON
-        // document to a file. See https://github.com/microsoft/OpenAPI.NET/issues/421 for
-        // more info.
         var targetDocumentService = serviceProvider.GetRequiredKeyedService<OpenApiDocumentService>(lowercasedDocumentName);
         using var scopedService = serviceProvider.CreateScope();
         var document = await targetDocumentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider);

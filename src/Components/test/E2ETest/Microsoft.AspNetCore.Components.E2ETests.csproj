@@ -1,14 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <!--
       Skip building and running the Components E2E tests in CI unless explicitly configured otherwise via
       EXECUTE_COMPONENTS_E2E_TESTS. At least build the Components E2E tests locally unless SkipTestBuild is set.
     -->
     <_BuildAndTest>false</_BuildAndTest>
-    <_BuildAndTest
-        Condition=" '$(ContinuousIntegrationBuild)' == 'true' AND '$(EXECUTE_COMPONENTS_E2E_TESTS)' == 'true' ">true</_BuildAndTest>
-    <_BuildAndTest
-        Condition=" '$(ContinuousIntegrationBuild)' != 'true' AND '$(SkipTestBuild)' != 'true' ">true</_BuildAndTest>
+    <_BuildAndTest Condition=" '$(ContinuousIntegrationBuild)' == 'true' AND '$(EXECUTE_COMPONENTS_E2E_TESTS)' == 'true' ">true</_BuildAndTest>
+    <_BuildAndTest Condition=" '$(ContinuousIntegrationBuild)' != 'true' AND '$(SkipTestBuild)' != 'true' ">true</_BuildAndTest>
     <ExcludeFromBuild Condition=" !$(_BuildAndTest) ">true</ExcludeFromBuild>
     <SkipTests Condition=" !$(_BuildAndTest) ">true</SkipTests>
 
@@ -67,39 +65,19 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestTrimmedOrMultithreadingApps)' == 'true'">
-    <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj"
-      Targets="Build;Publish"
-      Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\Wasm.Performance.TestApp\" />
+    <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\Wasm.Performance.TestApp\" />
 
-    <ProjectReference
-      Include="..\testassets\BasicTestApp\BasicTestApp.csproj"
-      Targets="Build;Publish"
-      Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\BasicTestApp\" />
+    <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\BasicTestApp\" />
 
-    <ProjectReference
-      Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj"
-      Targets="Build;Publish"
-      Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\GlobalizationWasmApp\;" />
+    <ProjectReference Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\GlobalizationWasmApp\;" />
 
-    <ProjectReference
-      Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj"
-      Targets="Build;Publish"
-      Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\StandaloneApp\;" />
+    <ProjectReference Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\StandaloneApp\;" />
 
-    <ProjectReference
-      Include="..\..\WebAssembly\testassets\Wasm.Prerendered.Server\Wasm.Prerendered.Server.csproj"
-      Targets="Build;Publish"
-      Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\Wasm.Prerendered.Server\;" />
+    <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.Prerendered.Server\Wasm.Prerendered.Server.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\Wasm.Prerendered.Server\;" />
 
-    <ProjectReference
-      Include="..\..\WebAssembly\testassets\ThreadingApp\ThreadingApp.csproj"
-      Targets="Build;Publish"
-      Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=false;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\ThreadingApp\;" />
+    <ProjectReference Include="..\..\WebAssembly\testassets\ThreadingApp\ThreadingApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=false;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\ThreadingApp\;" />
 
-    <ProjectReference
-      Include="..\testassets\Components.TestServer\Components.TestServer.csproj"
-      Targets="Build;Publish"
-      Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\Components.TestServer\;" />
+    <ProjectReference Include="..\testassets\Components.TestServer\Components.TestServer.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\Components.TestServer\;" />
   </ItemGroup>
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->

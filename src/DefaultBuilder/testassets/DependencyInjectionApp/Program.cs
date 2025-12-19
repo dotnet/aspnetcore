@@ -1,12 +1,12 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace CreateDefaultBuilderApp;
 
@@ -14,27 +14,31 @@ public class Program
 {
     static void Main(string[] args)
     {
-        WebHost.CreateDefaultBuilder()
-            .UseUrls("http://127.0.0.1:0")
-            .ConfigureServices((context, services) =>
+        Host.CreateDefaultBuilder()
+            .ConfigureWebHostDefaults(webBuilder =>
             {
-                services.AddSingleton(typeof(IService<>), typeof(Service<>));
-                services.AddScoped<IAnotherService, AnotherService>();
-            })
-            .Configure(app =>
-            {
-                app.Run(context =>
-                {
-                    try
+                webBuilder
+                    .UseUrls("http://127.0.0.1:0")
+                    .ConfigureServices((context, services) =>
                     {
-                        context.RequestServices.GetService<IService<IAnotherService>>();
-                        return context.Response.WriteAsync("Success");
-                    }
-                    catch (Exception ex)
+                        services.AddSingleton(typeof(IService<>), typeof(Service<>));
+                        services.AddScoped<IAnotherService, AnotherService>();
+                    })
+                    .Configure(app =>
                     {
-                        return context.Response.WriteAsync(ex.ToString());
-                    }
-                });
+                        app.Run(context =>
+                        {
+                            try
+                            {
+                                context.RequestServices.GetService<IService<IAnotherService>>();
+                                return context.Response.WriteAsync("Success");
+                            }
+                            catch (Exception ex)
+                            {
+                                return context.Response.WriteAsync(ex.ToString());
+                            }
+                        });
+                    });
             })
             .Build().Run();
     }

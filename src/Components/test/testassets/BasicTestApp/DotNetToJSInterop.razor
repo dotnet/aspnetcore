@@ -90,8 +90,8 @@
 </div>
 
 <div style="margin-top: 2em">
-    <button @onclick="CreateInstanceByConstructorFunction">Call constructor function InvokeNewAsync</button>
-    <button @onclick="CreateInstanceByClassConstructor">Call class constructor with InvokeNewAsync</button>
+    <button @onclick="CreateInstanceByConstructorFunction">Call constructor function InvokeConstructorAsync</button>
+    <button @onclick="CreateInstanceByClassConstructor">Call class constructor with InvokeConstructorAsync</button>
     <button @onclick="ChangeInstanceMethodWithFunctionReference">Change instance method with function reference</button>
     <span>@InstanceMessage</span>
 </div>
@@ -147,13 +147,13 @@
 
     private async Task CreateInstanceByConstructorFunction()
     {
-        var dogRef = await JSRuntime.InvokeNewAsync("Dog", "A dog");
+        var dogRef = await JSRuntime.InvokeConstructorAsync("Dog", "A dog");
         InstanceMessage = await dogRef.InvokeAsync<string>("bark");
     }
 
     private async Task CreateInstanceByClassConstructor()
     {
-        var catRef = await JSRuntime.InvokeNewAsync("Cat", "A cat");
+        var catRef = await JSRuntime.InvokeConstructorAsync("Cat", "A cat");
         InstanceMessage = await catRef.InvokeAsync<string>("meow");
     }
 
@@ -169,9 +169,9 @@
 
     private async Task ChangeInstanceMethodWithFunctionReference()
     {
-        var dogRef = await JSRuntime.InvokeNewAsync("Dog", "A dog");
+        var dogRef = await JSRuntime.InvokeConstructorAsync("Dog", "A dog");
         var dogFuncRef = await dogRef.GetValueAsync<IJSObjectReference>("bark");
-        var catRef = await JSRuntime.InvokeNewAsync("Cat", "A cat");
+        var catRef = await JSRuntime.InvokeConstructorAsync("Cat", "A cat");
         await catRef.SetValueAsync("meow", dogFuncRef);
         InstanceMessage = await catRef.InvokeAsync<string>("meow");
     }

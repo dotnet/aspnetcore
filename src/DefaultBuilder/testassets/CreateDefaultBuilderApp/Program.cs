@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace CreateDefaultBuilderApp;
 
@@ -16,23 +16,27 @@ public class Program
     {
         string responseMessage = null;
 
-        WebHost.CreateDefaultBuilder(new[] { "--cliKey", "cliValue" })
-            .ConfigureServices((context, services) => responseMessage = responseMessage ?? GetResponseMessage(context))
-            .ConfigureKestrel(options => options
-                .Configure(options.ConfigurationLoader.Configuration)
-                .Endpoint("HTTP", endpointOptions =>
-                {
-                    if (responseMessage == null
-                        && !string.Equals("KestrelEndPointSettingValue", endpointOptions.ConfigSection["KestrelEndPointSettingName"]))
-                    {
-                        responseMessage = "Default Kestrel configuration not read.";
-                    }
-                }))
-            .Configure(app => app.Run(context =>
+        Host.CreateDefaultBuilder(new[] { "--cliKey", "cliValue" })
+            .ConfigureWebHostDefaults(webBuilder =>
             {
-                var hostingEnvironment = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
-                return context.Response.WriteAsync(responseMessage ?? hostingEnvironment.ApplicationName);
-            }))
+                webBuilder
+                    .ConfigureServices((context, services) => responseMessage = responseMessage ?? GetResponseMessage(context))
+                    .ConfigureKestrel(options => options
+                        .Configure(options.ConfigurationLoader.Configuration)
+                        .Endpoint("HTTP", endpointOptions =>
+                        {
+                            if (responseMessage == null
+                                && !string.Equals("KestrelEndPointSettingValue", endpointOptions.ConfigSection["KestrelEndPointSettingName"]))
+                            {
+                                responseMessage = "Default Kestrel configuration not read.";
+                            }
+                        }))
+                    .Configure(app => app.Run(context =>
+                    {
+                        var hostingEnvironment = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
+                        return context.Response.WriteAsync(responseMessage ?? hostingEnvironment.ApplicationName);
+                    }));
+            })
             .Build().Run();
     }
 

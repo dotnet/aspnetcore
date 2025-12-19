@@ -402,6 +402,8 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     {
         var handshake = GetTlsHandshake();
         Protocol = (SslProtocols)handshake.Protocol;
+
+        NegotiatedCipherSuite = GetTlsCipherSuite();
 #pragma warning disable SYSLIB0058 // Type or member is obsolete
         CipherAlgorithm = (CipherAlgorithmType)handshake.CipherType;
         CipherStrength = (int)handshake.CipherStrength;
@@ -413,6 +415,28 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
         var sni = GetClientSni();
         SniHostName = sni.Hostname.ToString();
+    }
+
+    private unsafe TlsCipherSuite? GetTlsCipherSuite()
+    {
+        SecPkgContext_CipherInfo cipherInfo = default;
+
+        var statusCode = NativeMethods.HttpQueryRequestProperty(
+            RequestId,
+            (HTTP_REQUEST_PROPERTY)14 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo */,
+            qualifier: null,
+            qualifierSize: 0,
+            output: &cipherInfo,
+            outputSize: (uint)sizeof(SecPkgContext_CipherInfo),
+            bytesReturned: null,
+            overlapped: IntPtr.Zero);
+
+        if (statusCode == NativeMethods.HR_OK)
+        {
+            return checked((TlsCipherSuite)cipherInfo.dwCipherSuite);
+        }
+
+        return default;
     }
 
     private unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()

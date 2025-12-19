@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+
 namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
@@ -8,6 +10,7 @@ namespace Microsoft.AspNetCore.Components;
 /// </summary>
 /// <param name="rendererName">The name of the platform.</param>
 /// <param name="isInteractive">A flag to indicate if the platform is interactive.</param>
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public sealed class RendererInfo(string rendererName, bool isInteractive)
 {
     /// <summary>
@@ -19,4 +22,6 @@ public sealed class RendererInfo(string rendererName, bool isInteractive)
     /// Gets a flag to indicate if the platform is interactive.
     /// </summary>
     public bool IsInteractive { get; } = isInteractive;
+
+    private string GetDebuggerDisplay() => $"Name: {Name}, Interactive: {IsInteractive}";
 }

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
@@ -15,7 +16,6 @@ using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests;
 
@@ -197,8 +197,7 @@ public static partial class SnapshotTestHelper
 
             var service = services.GetService(serviceType) ?? throw new InvalidOperationException("Could not resolve IDocumentProvider service.");
             using var stream = new MemoryStream();
-            var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
-            using var writer = new StreamWriter(stream, encoding, bufferSize: 1024, leaveOpen: true);
+            using var writer = new FormattingStreamWriter(stream, CultureInfo.InvariantCulture) { AutoFlush = true };
             var targetMethod = serviceType.GetMethod("GenerateAsync", [typeof(string), typeof(TextWriter)]) ?? throw new InvalidOperationException("Could not resolve GenerateAsync method.");
             targetMethod.Invoke(service, ["v1", writer]);
             stream.Position = 0;

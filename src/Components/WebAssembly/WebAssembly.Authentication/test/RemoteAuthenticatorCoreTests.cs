@@ -34,7 +34,7 @@ public class RemoteAuthenticatorCoreTests
         });
 
         // Act & assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => remoteAuthenticator.SetParametersAsync(parameters));
+        await Assert.ThrowsAsync<NullReferenceException>(() => remoteAuthenticator.SetParametersAsync(parameters));
     }
 
     [Fact]
@@ -371,37 +371,6 @@ public class RemoteAuthenticatorCoreTests
     }
 
     [Fact]
-    public async Task AuthenticationManager_Logout_RedirectsToFailureOnInvalidSignOutState()
-    {
-        // Arrange
-        var (remoteAuthenticator, renderer, authServiceMock) = CreateAuthenticationManager(
-            "https://www.example.com/base/authentication/logout",
-            new InteractiveRequestOptions { Interaction = InteractionType.SignIn, ReturnUrl = "https://www.example.com/base/fetchData" }.ToState());
-
-        if (remoteAuthenticator.SignOutManager is TestSignOutSessionStateManager testManager)
-        {
-            testManager.SignOutState = false;
-        }
-
-        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
-        {
-            [_action] = RemoteAuthenticationActions.LogOut
-        });
-
-        // Act
-        await renderer.Dispatcher.InvokeAsync<object>(() => remoteAuthenticator.SetParametersAsync(parameters));
-
-        // Assert
-        Assert.Equal(
-            "https://www.example.com/base/authentication/logout-failed",
-            remoteAuthenticator.Navigation.Uri);
-
-        Assert.Equal(
-            "The logout was not initiated from within the page.",
-            ((TestNavigationManager)remoteAuthenticator.Navigation).HistoryEntryState);
-    }
-
-    [Fact]
     public async Task AuthenticationManager_Logout_NavigatesToLogoutFailureOnError()
     {
         // Arrange
@@ -731,8 +700,6 @@ public class RemoteAuthenticatorCoreTests
             Mock.Of<IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>>>(),
             navigationManager);
 
-        remoteAuthenticator.SignOutManager = new TestSignOutSessionStateManager();
-
         remoteAuthenticator.AuthenticationService = authenticationServiceMock;
         remoteAuthenticator.AuthenticationProvider = authenticationServiceMock;
         return (remoteAuthenticator, renderer, authenticationServiceMock);
@@ -756,24 +723,6 @@ public class RemoteAuthenticatorCoreTests
         }
     }
 
-#pragma warning disable CS0618 // Type or member is obsolete, we keep it for now for backwards compatibility
-    private class TestSignOutSessionStateManager : SignOutSessionStateManager
-#pragma warning restore CS0618 // Type or member is obsolete, we keep it for now for backwards compatibility
-    {
-        public TestSignOutSessionStateManager() : base(null)
-        {
-        }
-        public bool SignOutState { get; set; } = true;
-
-        public override ValueTask SetSignOutState()
-        {
-            SignOutState = true;
-            return default;
-        }
-
-        public override Task<bool> ValidateSignOutState() => Task.FromResult(SignOutState);
-    }
-
     private class TestJsRuntime : IJSRuntime
     {
         public (string identifier, object[] args) LastInvocation { get; set; }
@@ -790,10 +739,10 @@ public class RemoteAuthenticatorCoreTests
             return default;
         }
 
-        public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object[] args)
+        public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object[] args)
             => throw new NotImplementedException();
 
-        public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object[] args)
+        public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object[] args)
             => throw new NotImplementedException();
 
         public ValueTask<TValue> GetValueAsync<TValue>(string identifier)

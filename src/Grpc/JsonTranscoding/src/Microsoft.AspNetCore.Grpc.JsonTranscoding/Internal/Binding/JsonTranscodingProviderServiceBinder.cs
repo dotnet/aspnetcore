@@ -34,6 +34,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
     private readonly GrpcServiceOptions<TService> _serviceOptions;
     private readonly IGrpcServiceActivator<TService> _serviceActivator;
     private readonly GrpcJsonTranscodingOptions _jsonTranscodingOptions;
+    private readonly InterceptorActivators _interceptorActivators;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
 
@@ -45,7 +46,8 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         GrpcServiceOptions<TService> serviceOptions,
         ILoggerFactory loggerFactory,
         IGrpcServiceActivator<TService> serviceActivator,
-        GrpcJsonTranscodingOptions jsonTranscodingOptions)
+        GrpcJsonTranscodingOptions jsonTranscodingOptions,
+        InterceptorActivators interceptorActivators)
     {
         _context = context;
         _invokerResolver = invokerResolver;
@@ -54,6 +56,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
         _serviceOptions = serviceOptions;
         _serviceActivator = serviceActivator;
         _jsonTranscodingOptions = jsonTranscodingOptions;
+        _interceptorActivators = interceptorActivators;
         _loggerFactory = loggerFactory;
         _logger = loggerFactory.CreateLogger<JsonTranscodingProviderServiceBinder<TService>>();
     }
@@ -162,7 +165,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
             httpRule,
             methodDescriptor);
 
-        var methodInvoker = new UnaryServerMethodInvoker<TService, TRequest, TResponse>(invoker, method, methodOptions, _serviceActivator);
+        var methodInvoker = new UnaryServerMethodInvoker<TService, TRequest, TResponse>(invoker, method, methodOptions, _serviceActivator, _interceptorActivators);
         var callHandler = new UnaryServerCallHandler<TService, TRequest, TResponse>(
             methodInvoker,
             _loggerFactory,
@@ -189,7 +192,7 @@ internal sealed partial class JsonTranscodingProviderServiceBinder<TService> : S
             httpRule,
             methodDescriptor);
 
-        var methodInvoker = new ServerStreamingServerMethodInvoker<TService, TRequest, TResponse>(invoker, method, methodOptions, _serviceActivator);
+        var methodInvoker = new ServerStreamingServerMethodInvoker<TService, TRequest, TResponse>(invoker, method, methodOptions, _serviceActivator, _interceptorActivators);
         var callHandler = new ServerStreamingServerCallHandler<TService, TRequest, TResponse>(
             methodInvoker,
             _loggerFactory,

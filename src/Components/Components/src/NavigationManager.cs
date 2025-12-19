@@ -54,8 +54,6 @@ public abstract class NavigationManager
 
     private EventHandler<NotFoundEventArgs>? _notFound;
 
-    private static readonly NotFoundEventArgs _notFoundEventArgs = new NotFoundEventArgs();
-
     // For the baseUri it's worth storing as a System.Uri so we can do operations
     // on that type. System.Uri gives us access to the original string anyway.
     private Uri? _baseUri;
@@ -212,7 +210,7 @@ public abstract class NavigationManager
         }
         else
         {
-            _notFound.Invoke(this, _notFoundEventArgs);
+            _notFound.Invoke(this, new NotFoundEventArgs());
         }
     }
 
@@ -248,7 +246,7 @@ public abstract class NavigationManager
 
     /// <summary>
     /// Converts a relative URI into an absolute one (by resolving it
-    /// relative to the current absolute URI).
+    /// relative to the base URI).
     /// </summary>
     /// <param name="relativeUri">The relative URI.</param>
     /// <returns>The absolute URI.</returns>

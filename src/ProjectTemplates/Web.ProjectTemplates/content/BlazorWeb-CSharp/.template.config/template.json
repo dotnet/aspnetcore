@@ -23,23 +23,23 @@
   "primaryOutputs": [
     {
       "condition": "(UseWebAssembly && (HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\"))",
-      "path": "BlazorWeb-CSharp.sln"
+      "path": "BlazorWebCSharp.1.sln"
     },
     {
       "condition": "(UseWebAssembly && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "BlazorWeb-CSharp/BlazorWeb-CSharp.csproj"
+      "path": "BlazorWebCSharp.1/BlazorWebCSharp.1.csproj"
     },
     {
       "condition": "(!UseWebAssembly)",
-      "path": "BlazorWeb-CSharp.csproj"
+      "path": "BlazorWebCSharp.1.csproj"
     },
     {
       "condition": "(UseWebAssembly && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "BlazorWeb-CSharp.Client/BlazorWeb-CSharp.Client.csproj"
+      "path": "BlazorWebCSharp.1.Client/BlazorWebCSharp.1.Client.csproj"
     }
   ],
   "shortName": "blazor",
-  "sourceName": "BlazorWeb-CSharp",
+  "sourceName": "BlazorWebCSharp.1",
   "sources": [
     {
       "source": "./",
@@ -54,35 +54,35 @@
         {
           "condition": "(!UseWebAssembly)",
           "exclude": [
-            "BlazorWeb-CSharp.Client/**",
+            "BlazorWebCSharp.1.Client/**",
             "*.sln"
           ],
           "rename": {
-            "BlazorWeb-CSharp/": "./"
+            "BlazorWebCSharp.1/": "./"
           }
         },
         {
           "condition": "(UseWebAssembly && InteractiveAtRoot)",
           "rename": {
-            "BlazorWeb-CSharp/Components/Layout/": "./BlazorWeb-CSharp.Client/Layout/",
-            "BlazorWeb-CSharp/Components/Pages/Home.razor": "./BlazorWeb-CSharp.Client/Pages/Home.razor",
-            "BlazorWeb-CSharp/Components/Pages/NotFound.razor": "./BlazorWeb-CSharp.Client/Pages/NotFound.razor",
-            "BlazorWeb-CSharp/Components/Pages/Weather.razor": "./BlazorWeb-CSharp.Client/Pages/Weather.razor",
-            "BlazorWeb-CSharp/Components/Routes.razor": "./BlazorWeb-CSharp.Client/Routes.razor"
+            "BlazorWebCSharp.1/Components/Layout/": "./BlazorWebCSharp.1.Client/Layout/",
+            "BlazorWebCSharp.1/Components/Pages/Home.razor": "./BlazorWebCSharp.1.Client/Pages/Home.razor",
+            "BlazorWebCSharp.1/Components/Pages/NotFound.razor": "./BlazorWebCSharp.1.Client/Pages/NotFound.razor",
+            "BlazorWebCSharp.1/Components/Pages/Weather.razor": "./BlazorWebCSharp.1.Client/Pages/Weather.razor",
+            "BlazorWebCSharp.1/Components/Routes.razor": "./BlazorWebCSharp.1.Client/Routes.razor"
           }
         },
         {
           "condition": "(!UseProgramMain)",
           "exclude": [
-            "BlazorWeb-CSharp/Program.Main.cs",
-            "BlazorWeb-CSharp.Client/Program.Main.cs"
+            "BlazorWebCSharp.1/Program.Main.cs",
+            "BlazorWebCSharp.1.Client/Program.Main.cs"
           ]
         },
         {
           "condition": "(UseProgramMain)",
           "exclude": [
-            "BlazorWeb-CSharp/Program.cs",
-            "BlazorWeb-CSharp.Client/Program.cs"
+            "BlazorWebCSharp.1/Program.cs",
+            "BlazorWebCSharp.1.Client/Program.cs"
           ],
           "rename": {
             "Program.Main.cs": "Program.cs"
@@ -91,37 +91,37 @@
         {
           "condition": "(!(UseServer && !UseWebAssembly))",
           "exclude": [
-            "BlazorWeb-CSharp/Components/Pages/Counter.razor"
+            "BlazorWebCSharp.1/Components/Pages/Counter.razor"
           ]
         },
         {
           "condition": "(!UseServer)",
           "exclude": [
-            "BlazorWeb-CSharp/Components/Layout/ReconnectModal.razor",
-            "BlazorWeb-CSharp/Components/Layout/ReconnectModal.razor.css",
-            "BlazorWeb-CSharp/Components/Layout/ReconnectModal.razor.js",
-            "BlazorWeb-CSharp.Client/Layout/ReconnectModal.razor",
-            "BlazorWeb-CSharp.Client/Layout/ReconnectModal.razor.css",
-            "BlazorWeb-CSharp.Client/Layout/ReconnectModal.razor.js"
+            "BlazorWebCSharp.1/Components/Layout/ReconnectModal.razor",
+            "BlazorWebCSharp.1/Components/Layout/ReconnectModal.razor.css",
+            "BlazorWebCSharp.1/Components/Layout/ReconnectModal.razor.js",
+            "BlazorWebCSharp.1.Client/Layout/ReconnectModal.razor",
+            "BlazorWebCSharp.1.Client/Layout/ReconnectModal.razor.css",
+            "BlazorWebCSharp.1.Client/Layout/ReconnectModal.razor.js"
           ]
         },
         {
           "condition": "(ExcludeLaunchSettings)",
           "exclude": [
-            "BlazorWeb-CSharp/Properties/launchSettings.json"
+            "BlazorWebCSharp.1/Properties/launchSettings.json"
           ]
         },
         {
           "condition": "(!SampleContent)",
           "exclude": [
-            "BlazorWeb-CSharp/Components/Pages/Auth.*",
-            "BlazorWeb-CSharp/Components/Pages/Counter.*",
-            "BlazorWeb-CSharp/Components/Pages/Weather.*",
-            "BlazorWeb-CSharp/Components/Layout/NavMenu.*",
-            "BlazorWeb-CSharp/wwwroot/lib/**",
-            "BlazorWeb-CSharp/wwwroot/favicon.*",
-            "BlazorWeb-CSharp.Client/Pages/**",
-            "BlazorWeb-CSharp.Client/wwwroot/**"
+            "BlazorWebCSharp.1/Components/Pages/Auth.*",
+            "BlazorWebCSharp.1/Components/Pages/Counter.*",
+            "BlazorWebCSharp.1/Components/Pages/Weather.*",
+            "BlazorWebCSharp.1/Components/Layout/NavMenu.*",
+            "BlazorWebCSharp.1/wwwroot/lib/**",
+            "BlazorWebCSharp.1/wwwroot/favicon.*",
+            "BlazorWebCSharp.1.Client/Pages/**",
+            "BlazorWebCSharp.1.Client/wwwroot/**"
           ]
         },
         {
@@ -133,70 +133,70 @@
         {
           "condition": "(!IndividualLocalAuth)",
           "exclude": [
-            "BlazorWeb-CSharp/Components/Account/**",
-            "BlazorWeb-CSharp/Data/**",
-            "BlazorWeb-CSharp.Client/UserInfo.cs",
-            "BlazorWeb-CSharp.Client/Pages/Auth.razor"
+            "BlazorWebCSharp.1/Components/Account/**",
+            "BlazorWebCSharp.1/Data/**",
+            "BlazorWebCSharp.1.Client/UserInfo.cs",
+            "BlazorWebCSharp.1.Client/Pages/Auth.razor"
           ]
         },
         {
           "condition": "(!(IndividualLocalAuth && !UseLocalDB))",
           "exclude": [
-            "BlazorWeb-CSharp/Data/app.db"
+            "BlazorWebCSharp.1/Data/app.db"
           ]
         },
         {
           "condition": "(!(IndividualLocalAuth && !UseWebAssembly))",
           "exclude": [
-            "BlazorWeb-CSharp/Components/Pages/Auth.razor"
+            "BlazorWebCSharp.1/Components/Pages/Auth.razor"
           ]
         },
         {
           "condition": "(!(IndividualLocalAuth && UseServer))",
           "exclude": [
-            "BlazorWeb-CSharp/Components/Account/IdentityRevalidatingAuthenticationStateProvider.cs"
+            "BlazorWebCSharp.1/Components/Account/IdentityRevalidatingAuthenticationStateProvider.cs"
           ]
         },
         {
           "condition": "(IndividualLocalAuth && UseLocalDB && UseWebAssembly)",
           "rename": {
-            "BlazorWeb-CSharp/Data/SqlServer/": "BlazorWeb-CSharp/Data/Migrations/"
+            "BlazorWebCSharp.1/Data/SqlServer/": "BlazorWebCSharp.1/Data/Migrations/"
           },
           "exclude": [
-            "BlazorWeb-CSharp/Data/SqlLite/**"
+            "BlazorWebCSharp.1/Data/SqlLite/**"
           ]
         },
         {
           "condition": "(IndividualLocalAuth && UseLocalDB && !UseWebAssembly)",
           "rename": {
-            "BlazorWeb-CSharp/Data/SqlServer/": "Data/Migrations/"
+            "BlazorWebCSharp.1/Data/SqlServer/": "Data/Migrations/"
           },
           "exclude": [
-            "BlazorWeb-CSharp/Data/SqlLite/**"
+            "BlazorWebCSharp.1/Data/SqlLite/**"
           ]
         },
         {
           "condition": "(IndividualLocalAuth && !UseLocalDB && UseWebAssembly)",
           "rename": {
-            "BlazorWeb-CSharp/Data/SqlLite/": "BlazorWeb-CSharp/Data/Migrations/"
+            "BlazorWebCSharp.1/Data/SqlLite/": "BlazorWebCSharp.1/Data/Migrations/"
           },
           "exclude": [
-            "BlazorWeb-CSharp/Data/SqlServer/**"
+            "BlazorWebCSharp.1/Data/SqlServer/**"
           ]
         },
         {
           "condition": "(IndividualLocalAuth && !UseLocalDB && !UseWebAssembly)",
           "rename": {
-            "BlazorWeb-CSharp/Data/SqlLite/": "Data/Migrations/"
+            "BlazorWebCSharp.1/Data/SqlLite/": "Data/Migrations/"
           },
           "exclude": [
-            "BlazorWeb-CSharp/Data/SqlServer/**"
+            "BlazorWebCSharp.1/Data/SqlServer/**"
           ]
         },
         {
           "condition": "(IndividualLocalAuth && UseWebAssembly)",
           "rename": {
-            "BlazorWeb-CSharp/Components/Account/Shared/RedirectToLogin.razor": "BlazorWeb-CSharp.Client/RedirectToLogin.razor"
+            "BlazorWebCSharp.1/Components/Account/Shared/RedirectToLogin.razor": "BlazorWebCSharp.1.Client/RedirectToLogin.razor"
           }
         }
       ]
@@ -223,8 +223,8 @@
     "UserSecretsId": {
       "type": "parameter",
       "datatype": "string",
-      "replaces": "aspnet-BlazorWeb-CSharp-53bc9b9d-9d6a-45d4-8429-2a2761773502",
-      "defaultValue": "aspnet-BlazorWeb-CSharp-53bc9b9d-9d6a-45d4-8429-2a2761773502",
+      "replaces": "aspnet-BlazorWebCSharp.1-53bc9b9d-9d6a-45d4-8429-2a2761773502",
+      "defaultValue": "aspnet-BlazorWebCSharp.1-53bc9b9d-9d6a-45d4-8429-2a2761773502",
       "description": "The ID to use for secrets (use with Individual auth)."
     },
     "skipRestore": {
@@ -322,6 +322,19 @@
         "fallbackVariableName": "iisHttpsPortGenerated"
       },
       "replaces": "44300"
+    },
+    "StyleBundleName":{
+      "type": "generated",
+      "generator": "regex",
+      "replaces": "StyleBundleName",
+      "parameters": {
+      "source": "name",
+      "steps": [
+        {
+          "regex": " ",
+          "replacement": "_"
+        }]
+      }
     },
     "InteractivityPlatform": {
       "type": "parameter",
@@ -467,6 +480,13 @@
       "defaultValue": "false",
       "displayName": "Do not use _top-level statements",
       "description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
+    },
+    "LocalhostTld": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "displayName": "Use the .dev.localhost TLD in the application URL",
+      "description": "Whether to combine the project name with the .dev.localhost TLD in the application URL for local development, e.g. https://myapp.dev.localhost:12345."
     }
   },
   "tags": {

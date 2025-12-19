@@ -10,7 +10,6 @@ using static Microsoft.AspNetCore.OpenApi.Tests.OpenApiOperationGeneratorTests;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.OpenApi;
-using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Reader;
 using System.Text;
 

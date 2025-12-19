@@ -9,6 +9,7 @@ export module DotNet {
 
   const jsObjectIdKey = "__jsObjectId";
   const dotNetObjectRefKey = "__dotNetObject";
+  const dotNetElementRefKey = "__internalId";
   const byteArrayRefKey = "__byte[]";
   const dotNetStreamRefKey = "__dotNetStream";
   const jsStreamReferenceLengthKey = "__jsStreamReferenceLength";
@@ -66,7 +67,7 @@ export module DotNet {
    */
   export enum JSCallType {
       FunctionCall = 1,
-      NewCall = 2,
+      ConstructorCall = 2,
       GetValue = 3,
       SetValue = 4
   }
@@ -155,6 +156,12 @@ export module DotNet {
    * @throws Error if the given value is not an Object.
    */
   export function createJSObjectReference(jsObject: any): any {
+      if (jsObject === null || jsObject === undefined) {
+          return {
+              [jsObjectIdKey]: -1
+          };
+      }
+
       if (jsObject && (typeof jsObject === "object" || jsObject instanceof Function)) {
           cachedJSObjectsById[nextJsObjectId] = new JSObject(jsObject);
 
@@ -220,7 +227,7 @@ export module DotNet {
   export function disposeJSObjectReference(jsObjectReference: any): void {
       const id = jsObjectReference && jsObjectReference[jsObjectIdKey];
 
-      if (typeof id === "number") {
+      if (typeof id === "number" && id !== -1) {
           disposeJSObjectReferenceById(id);
       }
   }
@@ -573,7 +580,7 @@ export module DotNet {
   }
 
   /** Traverses the object hierarchy to find an object member specified by the identifier.
-   * 
+   *
    * @param obj Root object to search in.
    * @param identifier Complete identifier of the member to find, e.g. "document.location.href".
    * @returns A tuple containing the immediate parent of the member and the member name.
@@ -586,19 +593,19 @@ export module DotNet {
       // Error handling in case of undefined last key depends on the type of operation.
       for (let i = 0; i < keys.length - 1; i++) {
           const key = keys[i];
-  
+
           if (current && typeof current === 'object' && key in current) {
               current = current[key];
           } else {
               throw new Error(`Could not find '${identifier}' ('${key}' was undefined).`);
           }
       }
-  
+
       return [current, keys[keys.length - 1]];
   }
 
   /** Takes an object member and a call type and returns a function that performs the operation specified by the call type on the member.
-   * 
+   *
    * @param parent Immediate parent of the accessed object member.
    * @param memberName Name (key) of the accessed member.
    * @param callType The type of the operation to perform on the member.
@@ -614,7 +621,7 @@ export module DotNet {
               } else {
                   throw new Error(`The value '${identifier}' is not a function.`);
               }
-          case JSCallType.NewCall:
+          case JSCallType.ConstructorCall:
               const ctor = parent[memberName];
               if (ctor instanceof Function) {
                   const bound = ctor.bind(parent);
@@ -640,50 +647,50 @@ export module DotNet {
       if (!(propName in obj)) {
           return false;
       }
-  
+
       // If the property is present we examine its descriptor, potentially needing to walk up the prototype chain.
       while (obj !== undefined) {
           const descriptor = Object.getOwnPropertyDescriptor(obj, propName);
-  
+
           if (descriptor) {
               // Return true for data property
               if (descriptor.hasOwnProperty('value')) {
                   return true
               }
-          
+
               // Return true for accessor property with defined getter.
               return descriptor.hasOwnProperty('get') && typeof descriptor.get === 'function';
           }
-  
+
           obj = Object.getPrototypeOf(obj);
       }
-  
+
       return false;
   }
-  
+
   function isWritableProperty(obj: any, propName: string) {
       // Return true for missing property if the property can be added.
       if (!(propName in obj)) {
           return Object.isExtensible(obj);
       }
-  
+
       // If the property is present we examine its descriptor, potentially needing to walk up the prototype chain.
       while (obj !== undefined) {
           const descriptor = Object.getOwnPropertyDescriptor(obj, propName);
-  
+
           if (descriptor) {
               // Return true for writable data property.
               if (descriptor.hasOwnProperty('value') && descriptor.writable) {
                   return true;
               }
-              
+
               // Return true for accessor property with defined setter.
               return descriptor.hasOwnProperty('set') && typeof descriptor.set === 'function';
           }
-  
+
           obj = Object.getPrototypeOf(obj);
       }
-  
+
       return false;
   }
 
@@ -801,7 +808,20 @@ export module DotNet {
       return result;
   }
 
+  function getCaptureIdFromElement(element: Element): string | null {
+    for (let i = 0; i < element.attributes.length; i++) {
+      const attr = element.attributes[i];
+      if (attr.name.startsWith('_bl_')) {
+        return attr.name.substring(4);
+      }
+    }
+    return null;
+}
+
   function argReplacer(key: string, value: any) {
+      if (value instanceof Element) {
+          return { [dotNetElementRefKey]: getCaptureIdFromElement(value) };
+      }
       if (value instanceof DotNetObject) {
           return value.serializeAsArg();
       } else if (value instanceof Uint8Array) {

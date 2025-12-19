@@ -1,16 +1,64 @@
-﻿@using Components.TestServer.RazorComponents.Pages.Forms
-@using Components.WasmMinimal.Pages
+﻿@implements IDisposable
+@using Components.TestServer.RazorComponents.Pages.Forms
+@using Components.WasmMinimal.Pages.NotFound
+@using TestContentPackage.NotFound
+@using Components.TestServer.RazorComponents
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Endpoints
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using System.Threading.Tasks
 
 @code {
     [Parameter]
     [SupplyParameterFromQuery(Name = "useCustomNotFoundPage")]
     public string? UseCustomNotFoundPage { get; set; }
 
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "useCustomRouter")]
+    public string? UseCustomRouter { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "appSetsEventArgsPath")]
+    public bool AppSetsEventArgsPath { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "useOnNavigateAsync")]
+    public bool ShouldDelayOnNavigateAsync { get; set; }
+
     private Type? NotFoundPageType { get; set; }
+    private NavigationManager _navigationManager = default!;
+
+    [Inject]
+    private NavigationManager NavigationManager
+    {
+        get => _navigationManager;
+        set
+        {
+            _navigationManager = value;
+        }
+    }
+
+    private void OnNotFoundEvent(object sender, NotFoundEventArgs e)
+    {
+        var type = typeof(CustomNotFoundPage);
+        var routeAttributes = type.GetCustomAttributes(typeof(RouteAttribute), inherit: true);
+        if (routeAttributes.Length == 0)
+        {
+            throw new InvalidOperationException($"The type {type.FullName} " +
+                $"does not have a {typeof(RouteAttribute).FullName} applied to it.");
+        }
+
+        var routeAttribute = (RouteAttribute)routeAttributes[0];
+        if (routeAttribute.Template != null)
+        {
+            e.Path = routeAttribute.Template;
+        }
+    }
 
     protected override void OnParametersSet()
     {
-        if (UseCustomNotFoundPage == "true")
+        if (string.Equals(UseCustomNotFoundPage, "true", StringComparison.OrdinalIgnoreCase))
         {
             NotFoundPageType = typeof(CustomNotFoundPage);
         }
@@ -18,6 +66,33 @@
         {
             NotFoundPageType = null;
         }
+        if (AppSetsEventArgsPath && _navigationManager is not null)
+        {
+            _navigationManager.OnNotFound += OnNotFoundEvent;
+        }
+    }
+
+    public void Dispose()
+    {
+        if (AppSetsEventArgsPath)
+        {
+            _navigationManager.OnNotFound -= OnNotFoundEvent;
+        }
+    }
+
+    private Task HandleOnNavigateAsync(NavigationContext args)
+    {
+        if (!ShouldDelayOnNavigateAsync)
+        {
+            return Task.CompletedTask;
+        }
+
+        return PerformOnNavigateAsyncWork();
+    }
+
+    private async Task PerformOnNavigateAsyncWork()
+    {
+        await Task.Yield();
     }
 }
 
@@ -25,17 +100,41 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <base href="/subdir/" />
+    <BasePath />
     <HeadOutlet />
 </head>
 <body>
-    <Router AppAssembly="@typeof(App).Assembly" NotFoundPage="NotFoundPageType">
-        <Found Context="routeData">
-            <RouteView RouteData="@routeData" />
-            <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />
-        </Found>
-        <NotFound>There's nothing here</NotFound>
-    </Router>
+    @if(string.Equals(UseCustomRouter, "true", StringComparison.OrdinalIgnoreCase))
+    {
+        <CustomRouter AppAssembly="@typeof(App).Assembly">
+            <Found Context="routeData">
+                <RouteView RouteData="@routeData" />
+                <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />
+            </Found>
+        </CustomRouter>
+    }
+    else
+    {
+        @if (NotFoundPageType is not null)
+        {
+            <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new[] { typeof(TestContentPackage.NotFound.NotFoundPage).Assembly }" NotFoundPage="NotFoundPageType" OnNavigateAsync="HandleOnNavigateAsync">
+                <Found Context="routeData">
+                    <RouteView RouteData="@routeData" />
+                    <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />
+                </Found>
+            </Router>
+        }
+        else
+        {
+            <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new[] { typeof(TestContentPackage.NotFound.NotFoundPage).Assembly }" OnNavigateAsync="HandleOnNavigateAsync">
+                <Found Context="routeData">
+                    <RouteView RouteData="@routeData" />
+                    <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />
+                </Found>
+                <NotFound><p id="not-found-fragment">There's nothing here</p></NotFound>
+            </Router>
+        }
+    }
     <script>
         // This script must come before blazor.web.js to test that
         // the framework does the right thing when an element is already focused.
@@ -65,7 +164,6 @@
             const suppressEnhancedNavigation = sessionStorage.getItem('suppress-enhanced-navigation') === 'true';
             const blockLoadBootResource = sessionStorage.getItem('block-load-boot-resource') === 'true';
             const blockWebassemblySettings = sessionStorage.getItem('block-webassembly-settings') === 'true';
-            sessionStorage.removeItem('suppress-enhanced-navigation');
             sessionStorage.removeItem('block-load-boot-resource');
             sessionStorage.removeItem('enable-classic-initializers');
             sessionStorage.removeItem('block-webassembly-settings');

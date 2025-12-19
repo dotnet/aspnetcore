@@ -32,7 +32,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\gen\Microsoft.AspNetCore.Http.RequestDelegateGenerator\Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj" />
-    <ProjectReference Include="..\gen\Microsoft.AspNetCore.Http.ValidationsGenerator\Microsoft.AspNetCore.Http.ValidationsGenerator.csproj" />
 
   </ItemGroup>
 
@@ -45,6 +44,5 @@
 
   <ItemGroup>
     <HelixContent Include="$(MSBuildProjectDirectory)\RequestDelegateGenerator\Baselines\**" />
-    <HelixContent Include="$(MSBuildProjectDirectory)\ValidationsGenerator\snapshots\**" />
   </ItemGroup>
 </Project>

@@ -42,6 +42,7 @@
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Options.DataAnnotations"                 Version="$(MicrosoftExtensionsOptionsDataAnnotationsVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Options"                                 Version="$(MicrosoftExtensionsOptionsVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Primitives"                              Version="$(MicrosoftExtensionsPrimitivesVersion)" />
+    <ExternalAspNetCoreAppReference Include="System.Formats.Cbor"                                          Version="$(SystemFormatsCborVersion)" />
     <ExternalAspNetCoreAppReference Include="System.Security.Cryptography.Xml"                             Version="$(SystemSecurityCryptographyXmlVersion)" />
     <ExternalAspNetCoreAppReference Include="System.Threading.RateLimiting"                                Version="$(SystemThreadingRateLimitingVersion)" />
 

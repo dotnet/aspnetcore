@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
@@ -258,7 +259,7 @@ public class CircuitHostTest
             .Returns(tcs.Task)
             .Verifiable();
 
-        var circuitHost = TestCircuitHost.Create(handlers: new[] { handler.Object }, descriptors: [new ComponentDescriptor() ]);
+        var circuitHost = TestCircuitHost.Create(handlers: new[] { handler.Object }, descriptors: [new ComponentDescriptor()]);
         circuitHost.UnhandledException += (sender, errorInfo) =>
         {
             Assert.Same(circuitHost, sender);
@@ -409,6 +410,114 @@ public class CircuitHostTest
 
         // Assert
         Assert.True(wasHandlerFuncInvoked);
+    }
+
+    [Fact]
+    public async Task SendPersistedStateToClient_WithSuccessfulInvocation_ReturnsTrue()
+    {
+        // Arrange
+        var mockClientProxy = new Mock<ISingleClientProxy>();
+        mockClientProxy
+            .Setup(c => c.InvokeCoreAsync<bool>(
+                "JS.SavePersistedState",
+                It.IsAny<object[]>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var client = new CircuitClientProxy(mockClientProxy.Object, "connection-id");
+        var circuitHost = TestCircuitHost.Create(clientProxy: client);
+
+        var rootComponents = "mock-root-components";
+        var applicationState = "mock-application-state";
+        var cancellationToken = new CancellationToken();
+
+        // Act
+        var result = await circuitHost.SendPersistedStateToClient(rootComponents, applicationState, cancellationToken);
+
+        // Assert
+        Assert.True(result);
+        mockClientProxy.Verify(
+            c => c.InvokeCoreAsync<bool>(
+                "JS.SavePersistedState",
+                It.Is<object[]>(args => args[0].Equals(circuitHost.CircuitId.Secret) &&
+                                        args[1].Equals(rootComponents) &&
+                                        args[2].Equals(applicationState)),
+                cancellationToken),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task SendPersistedStateToClient_WithFailedInvocation_ReturnsFalse()
+    {
+        // Arrange
+        var mockClientProxy = new Mock<ISingleClientProxy>();
+        mockClientProxy
+            .Setup(c => c.InvokeCoreAsync<bool>(
+                "JS.SavePersistedState",
+                It.IsAny<object[]>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var client = new CircuitClientProxy(mockClientProxy.Object, "connection-id");
+        var circuitHost = TestCircuitHost.Create(clientProxy: client);
+
+        var rootComponents = "mock-root-components";
+        var applicationState = "mock-application-state";
+        var cancellationToken = new CancellationToken();
+
+        // Act
+        var result = await circuitHost.SendPersistedStateToClient(rootComponents, applicationState, cancellationToken);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task SendPersistedStateToClient_WithException_LogsAndReturnsFalse()
+    {
+        // Arrange
+        var expectedException = new InvalidOperationException("Test exception");
+        var mockClientProxy = new Mock<ISingleClientProxy>();
+        mockClientProxy
+            .Setup(c => c.InvokeCoreAsync<bool>(
+                "JS.SavePersistedState",
+                It.IsAny<object[]>(),
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(expectedException);
+
+        var client = new CircuitClientProxy(mockClientProxy.Object, "connection-id");
+        var circuitHost = TestCircuitHost.Create(clientProxy: client);
+
+        var rootComponents = "mock-root-components";
+        var applicationState = "mock-application-state";
+        var cancellationToken = new CancellationToken();
+
+        // Act
+        var result = await circuitHost.SendPersistedStateToClient(rootComponents, applicationState, cancellationToken);
+
+        // Assert
+        Assert.False(result);
+        mockClientProxy.Verify(
+            c => c.InvokeCoreAsync<bool>(
+                "JS.SavePersistedState",
+                It.IsAny<object[]>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task SendPersistedStateToClient_WithDisconnectedClient_ReturnsFalse()
+    {
+        // Arrange
+        var client = new CircuitClientProxy(); // Creates a disconnected client
+        var circuitHost = TestCircuitHost.Create(clientProxy: client);
+
+        var rootComponents = "mock-root-components";
+        var applicationState = "mock-application-state";
+        var cancellationToken = new CancellationToken();
+
+        // Act & Assert
+        Assert.False(await circuitHost.SendPersistedStateToClient(rootComponents, applicationState, cancellationToken));
     }
 
     [Fact]
@@ -584,6 +693,95 @@ public class CircuitHostTest
             ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0));
     }
 
+    [Fact]
+    public async Task UpdateRootComponents_ValidatesOperationSequencingDuringValueUpdateRestore()
+    {
+        // Arrange
+        var testRenderer = GetRemoteRenderer();
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: testRenderer);
+
+        // Set up initial components for subsequent operations
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 0, new Dictionary<string, object>
+        {
+            [nameof(DynamicallyAddedComponent.Message)] = "Component 0"
+        });
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 1, new Dictionary<string, object>
+        {
+            [nameof(DynamicallyAddedComponent.Message)] = "Component 1"
+        });
+
+        Assert.Equal(2, testRenderer.GetOrCreateWebRootComponentManager().GetRootComponents().Count());
+        var store = new TestComponentApplicationStore(
+            new Dictionary<string, byte[]> { ["test"] = [1, 2, 3] });
+
+        var operations = new RootComponentOperation[]
+        {
+            new()
+            {
+                Type = RootComponentOperationType.Add,
+                SsrComponentId = 2,
+                Marker = CreateMarker(typeof(DynamicallyAddedComponent), "2", new Dictionary<string, object>
+                {
+                    [nameof(DynamicallyAddedComponent.Message)] = "New Component 2"
+                }),
+                Descriptor = new(
+                    componentType: typeof(DynamicallyAddedComponent),
+                    parameters: CreateWebRootComponentParameters(new Dictionary<string, object>
+                    {
+                        [nameof(DynamicallyAddedComponent.Message)] = "New Component 2"
+                    })),
+            },
+
+            new()
+            {
+                Type = RootComponentOperationType.Remove,
+                SsrComponentId = 0,
+            },
+
+            new()
+            {
+                Type = RootComponentOperationType.Update,
+                SsrComponentId = 1,
+                Marker = CreateMarker(typeof(DynamicallyAddedComponent), "1", new Dictionary<string, object>
+                {
+                    [nameof(DynamicallyAddedComponent.Message)] = "Replaced Component 1"
+                }),
+                Descriptor = new(
+                    componentType: typeof(DynamicallyAddedComponent),
+                    parameters: CreateWebRootComponentParameters(new Dictionary<string, object>
+                    {
+                        [nameof(DynamicallyAddedComponent.Message)] = "Replaced Component 1"
+                    })),
+            },
+        };
+
+        var batch = new RootComponentOperationBatch
+        {
+            BatchId = 1,
+            Operations = operations
+        };
+
+        var updateTask = circuitHost.UpdateRootComponents(batch, store, false, CancellationToken.None);
+        Assert.Equal(2, testRenderer.GetOrCreateWebRootComponentManager().GetRootComponents().Count());
+        var dynamicallyAddedComponent1 = Assert.IsType<DynamicallyAddedComponent>(testRenderer.GetTestComponentState(3).Component);
+        dynamicallyAddedComponent1.Updated = new ManualResetEvent(false);
+        Assert.Equal("Default message", dynamicallyAddedComponent1.Message);
+        var dynamicallyAddedComponent2 = Assert.IsType<DynamicallyAddedComponent>(testRenderer.GetTestComponentState(2).Component);
+        dynamicallyAddedComponent2.Updated = new ManualResetEvent(false);
+        Assert.Equal("Default message", dynamicallyAddedComponent2.Message);
+        store.Continue();
+        await updateTask;
+
+        dynamicallyAddedComponent1.Updated.WaitOne();
+        dynamicallyAddedComponent2.Updated.WaitOne();
+
+        Assert.Equal("Replaced Component 1", Assert.IsType<DynamicallyAddedComponent>(testRenderer.GetTestComponentState(3).Component).Message);
+        Assert.Equal("New Component 2", Assert.IsType<DynamicallyAddedComponent>(testRenderer.GetTestComponentState(2).Component).Message);
+
+        Assert.Equal(2, testRenderer.GetOrCreateWebRootComponentManager().GetRootComponents().Count());
+    }
+
     private async Task AddComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
         where TComponent : IComponent
     {
@@ -598,7 +796,7 @@ public class CircuitHostTest
         };
 
         // Add component
-        await circuitHost.UpdateRootComponents(new() { Operations = [addOperation] }, null, CancellationToken.None);
+        await circuitHost.UpdateRootComponents(new() { Operations = [addOperation] }, null, false, CancellationToken.None);
     }
 
     private async Task UpdateComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
@@ -614,7 +812,7 @@ public class CircuitHostTest
         };
 
         // Update component
-        await circuitHost.UpdateRootComponents(new() { Operations = [updateOperation] }, null, CancellationToken.None);
+        await circuitHost.UpdateRootComponents(new() { Operations = [updateOperation] }, null, false, CancellationToken.None);
     }
 
     private async Task RemoveComponentAsync(CircuitHost circuitHost, int ssrComponentId)
@@ -626,7 +824,7 @@ public class CircuitHostTest
         };
 
         // Remove component
-        await circuitHost.UpdateRootComponents(new() { Operations = [removeOperation] }, null, CancellationToken.None);
+        await circuitHost.UpdateRootComponents(new() { Operations = [removeOperation] }, null, false, CancellationToken.None);
     }
 
     private ProtectedPrerenderComponentApplicationStore CreateStore()
@@ -645,7 +843,7 @@ public class CircuitHostTest
         serviceCollection.AddSingleton(new Mock<IJSRuntime>().Object);
         return new TestRemoteRenderer(
             serviceCollection.BuildServiceProvider(),
-            Mock.Of<IClientProxy>());
+            Mock.Of<ISingleClientProxy>());
     }
 
     private static void SetupMockInboundActivityHandlers(MockSequence sequence, params Mock<CircuitHandler>[] circuitHandlers)
@@ -704,7 +902,7 @@ public class CircuitHostTest
 
     private class TestRemoteRenderer : RemoteRenderer
     {
-        public TestRemoteRenderer(IServiceProvider serviceProvider, IClientProxy client)
+        public TestRemoteRenderer(IServiceProvider serviceProvider, ISingleClientProxy client)
             : base(
                   serviceProvider,
                   NullLoggerFactory.Instance,
@@ -714,7 +912,7 @@ public class CircuitHostTest
                   NullLogger.Instance,
                   CreateJSRuntime(new CircuitOptions()),
                   new CircuitJSComponentInterop(new CircuitOptions()))
-        {
+        {            
         }
 
         public ComponentState GetTestComponentState(int id)
@@ -851,9 +1049,15 @@ public class CircuitHostTest
             return true;
         }
 
-        public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, out RootComponentOperationBatch operationBatch)
+        public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, out RootComponentOperationBatch operationBatch, bool deserializeDescriptors = true)
         {
             operationBatch = default;
+            return true;
+        }
+
+        public bool TryDeserializeWebRootComponentDescriptor(ComponentMarker record, [NotNullWhen(true)] out WebRootComponentDescriptor result)
+        {
+            result = default;
             return true;
         }
     }
@@ -865,6 +1069,8 @@ public class CircuitHostTest
 
         [Parameter]
         public string Message { get; set; } = "Default message";
+
+        public ManualResetEvent Updated { get; set; }
 
         private void Render(RenderTreeBuilder builder)
         {
@@ -884,6 +1090,7 @@ public class CircuitHostTest
             }
 
             TriggerRender();
+            Updated?.Set();
             return Task.CompletedTask;
         }
 
@@ -935,5 +1142,21 @@ public class CircuitHostTest
             var task = _renderHandle.Dispatcher.InvokeAsync(() => _renderHandle.Render(_renderFragment));
             Assert.True(task.IsCompletedSuccessfully);
         }
+    }
+
+    private class TestComponentApplicationStore(Dictionary<string, byte[]> dictionary) : IPersistentComponentStateStore, IClearableStore
+    {
+        private readonly TaskCompletionSource _tcs = new();
+
+        public void Clear() => dictionary.Clear();
+
+        public async Task<IDictionary<string, byte[]>> GetPersistedStateAsync()
+        {
+            await _tcs.Task;
+            return dictionary;
+        }
+
+        public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state) => throw new NotImplementedException();
+        internal void Continue() => _tcs.SetResult();
     }
 }

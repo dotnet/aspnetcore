@@ -527,4 +527,98 @@ class GsonHubProtocolTest {
         assertEquals(3, (int) invocationMessage.getArguments()[0]);
         assertEquals("four", invocationMessage.getArguments()[1]);
     }
+
+    @Test
+    public void canParseInvocationMessageWithHeaders() {
+        String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42],\"headers\":{\"a\":\"b\",\"c\":\"d\"}}\u001E";
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
+        TestBinder binder = new TestBinder(new Type[] { int.class }, null);
+
+        List<HubMessage> messages = hubProtocol.parseMessages(message, binder);
+
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+
+        assertEquals(HubMessageType.INVOCATION, messages.get(0).getMessageType());
+        InvocationMessage invocationMessage = (InvocationMessage) messages.get(0);
+
+        assertEquals("test", invocationMessage.getTarget());
+        assertEquals(null, invocationMessage.getInvocationId());
+        int messageResult = (int)invocationMessage.getArguments()[0];
+        assertEquals(42, messageResult);
+        // Headers are parsed but not stored, so we just verify the message was processed successfully
+    }
+
+    @Test
+    public void canParseInvocationMessageWithEmptyHeaders() {
+        String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42],\"headers\":{}}\u001E";
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
+        TestBinder binder = new TestBinder(new Type[] { int.class }, null);
+
+        List<HubMessage> messages = hubProtocol.parseMessages(message, binder);
+
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+
+        assertEquals(HubMessageType.INVOCATION, messages.get(0).getMessageType());
+        InvocationMessage invocationMessage = (InvocationMessage) messages.get(0);
+
+        assertEquals("test", invocationMessage.getTarget());
+        int messageResult = (int)invocationMessage.getArguments()[0];
+        assertEquals(42, messageResult);
+    }
+
+    @Test
+    public void canParseCompletionMessageWithHeaders() {
+        String stringifiedMessage = "{\"type\":3,\"invocationId\":\"1\",\"result\":42,\"headers\":{\"a\":\"b\",\"c\":\"d\"}}\u001E";
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
+        TestBinder binder = new TestBinder(null, int.class);
+
+        List<HubMessage> messages = hubProtocol.parseMessages(message, binder);
+
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+
+        assertEquals(HubMessageType.COMPLETION, messages.get(0).getMessageType());
+        CompletionMessage completionMessage = (CompletionMessage) messages.get(0);
+        assertEquals("1", completionMessage.getInvocationId());
+        assertEquals(42, completionMessage.getResult());
+        assertEquals(null, completionMessage.getError());
+    }
+
+    @Test
+    public void canParseStreamItemMessageWithHeaders() {
+        String stringifiedMessage = "{\"type\":2,\"invocationId\":\"1\",\"item\":\"test-item\",\"headers\":{\"a\":\"b\"}}\u001E";
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
+        TestBinder binder = new TestBinder(null, String.class);
+
+        List<HubMessage> messages = hubProtocol.parseMessages(message, binder);
+
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+
+        assertEquals(HubMessageType.STREAM_ITEM, messages.get(0).getMessageType());
+        StreamItem streamItem = (StreamItem) messages.get(0);
+        assertEquals("1", streamItem.getInvocationId());
+        assertEquals("test-item", streamItem.getItem());
+    }
+
+    @Test
+    public void canParseMessageWithHeadersInDifferentOrder() {
+        String stringifiedMessage = "{\"headers\":{\"First\":\"value1\",\"Second\":\"value2\"},\"type\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
+        TestBinder binder = new TestBinder(new Type[] { int.class }, null);
+
+        List<HubMessage> messages = hubProtocol.parseMessages(message, binder);
+
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+
+        assertEquals(HubMessageType.INVOCATION, messages.get(0).getMessageType());
+        InvocationMessage invocationMessage = (InvocationMessage) messages.get(0);
+
+        assertEquals("test", invocationMessage.getTarget());
+        int messageResult = (int)invocationMessage.getArguments()[0];
+        assertEquals(42, messageResult);
+    }
 }

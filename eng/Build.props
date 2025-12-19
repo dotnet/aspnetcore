@@ -9,7 +9,7 @@
     the format is correct) and undo any temporary changes. When complete, only BuildAfterTargetingPack.csproj and
     other @(RequiresDelayedBuild) projects should mention projects listed in RequiresDelayedBuildProjects.props.
   -->
-  <Import Project="RequiresDelayedBuildProjects.props" />
+  <Import Project="RequiresDelayedBuildProjects.props" Condition="'$(OnlyTestProjectTemplates)' != 'true'" />
 
   <!-- These projects are always excluded, even when -projects is specified on command line. -->
   <ItemGroup>
@@ -56,14 +56,14 @@
                       $(RepoRoot)src\SignalR\perf\benchmarkapps\**\*.csproj;
                       " />
 
-    <!-- In the VMR, we don't build the native ANCM bits in pass 1 -->
+    <!-- In the .NET product build mode, don't build the native ANCM bits in pass 1 -->
     <ProjectToExclude Include="
                       $(RepoRoot)src\Installers\**\*.vcxproj;
                       "
                       Condition=" '$(BuildNative)' == 'true' and '$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1') " />
 
 
-    <!-- This project requires inputs from x64, x86, and arm64 on Windows - therefore in the VMR, we build it in pass 2 -->
+    <!-- This project requires inputs from x64, x86, and arm64 on Windows - therefore in the .NET product build mode, build it in pass 2 -->
     <ProjectToExclude Include="
                       $(RepoRoot)src\Servers\IIS/IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj;
                       "
@@ -83,7 +83,7 @@
         </ProjectToBuild>
       </ItemGroup>
     </When>
-    <!-- Projects to build in VMR build pass 2 -->
+    <!-- Projects to build in .NET product build pass 2 -->
     <When Condition="'$(DotNetBuildPass)' == '2'">
       <ItemGroup Condition=" '$(DotNetBuild)' == 'true' AND '$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'x64' ">
         <!-- Build Hosting Bundle -->
@@ -150,55 +150,22 @@
           Use caution to avoid deep recursion. If the globbing pattern picks up something which exceeds MAX_PATH,
           the entire pattern will silently fail to evaluate correctly.
         -->
+
+        <!-- 
+          When adding new projects to this file, add them to either ProjectsWithTestsSubset1 or 
+          ProjectsWithTestsSubset2 - whichever has fewer entries.
+        -->
+
+        <!-- Strictly projects with no associated tests - projects with tests are added in subsets below. -->
         <DotNetProjects Include="
+                          $(RepoRoot)src\Assets\**\*.*proj;
                           $(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj;
                           $(RepoRoot)src\Framework\App.Ref.Internal\src\Microsoft.AspNetCore.App.Ref.Internal.csproj;
                           $(RepoRoot)src\Framework\App.Runtime\src\aspnetcore-runtime.proj;
-                          $(RepoRoot)src\Framework\App.Runtime\src\aspnetcore-runtime-composite.proj;
                           $(RepoRoot)src\Framework\App.Runtime\src\aspnetcore-base-runtime.proj;
                           $(RepoRoot)src\Framework\App.Runtime\bundle\aspnetcore-runtime-bundle.bundleproj;
-                          $(RepoRoot)src\Framework\AspNetCoreAnalyzers\test\Microsoft.AspNetCore.App.Analyzers.Test.csproj;
-                          $(RepoRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj;
-                          $(RepoRoot)src\Assets\**\*.*proj;
-                          $(RepoRoot)src\Caching\**\*.*proj;
-                          $(RepoRoot)src\DefaultBuilder\**\*.*proj;
-                          $(RepoRoot)src\Features\**\*.*proj;
-                          $(RepoRoot)src\DataProtection\**\*.*proj;
-                          $(RepoRoot)src\Antiforgery\**\*.*proj;
-                          $(RepoRoot)src\Hosting\**\*.*proj;
-                          $(RepoRoot)src\Http\**\*.*proj;
-                          $(RepoRoot)src\HttpClientFactory\**\*.*proj;
-                          $(RepoRoot)src\Html.Abstractions\**\*.*proj;
-                          $(RepoRoot)src\Identity\**\*.*proj;
-                          $(RepoRoot)src\Servers\**\*.csproj;
-                          $(RepoRoot)src\Security\**\*.*proj;
-                          $(RepoRoot)src\SiteExtensions\Microsoft.Web.Xdt.Extensions\**\*.csproj;
-                          $(RepoRoot)src\SiteExtensions\LoggingAggregate\test\**\*.csproj;
-                          $(RepoRoot)src\Shared\**\*.*proj;
-                          $(RepoRoot)src\Tools\**\*.*proj;
-                          $(RepoRoot)src\Logging.AzureAppServices\**\src\*.csproj;
-                          $(RepoRoot)src\Middleware\**\*.csproj;
-                          $(RepoRoot)src\Razor\**\*.*proj;
-                          $(RepoRoot)src\Mvc\**\*.*proj;
-                          $(RepoRoot)src\Azure\**\*.*proj;
-                          $(RepoRoot)src\SignalR\**\*.csproj;
-                          $(RepoRoot)src\StaticAssets\**\*.csproj;
-                          $(RepoRoot)src\Components\**\*.csproj;
-                          $(RepoRoot)src\Analyzers\**\*.csproj;
-                          $(RepoRoot)src\FileProviders\**\*.csproj;
-                          $(RepoRoot)src\Configuration.KeyPerFile\**\*.csproj;
-                          $(RepoRoot)src\Localization\**\*.csproj;
-                          $(RepoRoot)src\ObjectPool\**\*.csproj;
-                          $(RepoRoot)src\JSInterop\**\*.csproj;
-                          $(RepoRoot)src\WebEncoders\**\*.csproj;
-                          $(RepoRoot)src\HealthChecks\**\*.csproj;
-                          $(RepoRoot)src\Testing\**\*.csproj;
-                          $(RepoRoot)src\Grpc\**\*.csproj;
-                          $(RepoRoot)src\ProjectTemplates\**\*.csproj;
-                          $(RepoRoot)src\Extensions\**\*.csproj;
-                          $(RepoRoot)src\BuildAfterTargetingPack\*.csproj;
-                          $(RepoRoot)src\OpenApi\**\*.csproj;
                           $(RepoRoot)eng\tools\HelixTestRunner\HelixTestRunner.csproj;
+                          $(RepoRoot)src\BuildAfterTargetingPack\*.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);
@@ -207,6 +174,9 @@
                           $(RepoRoot)**\bin\**\*;
                           $(RepoRoot)**\obj\**\*;"
                         Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
+        <!-- Only build the composite R2R runtime pack when we will actually ship it -->
+        <DotNetProjects Include="$(RepoRoot)src\Framework\App.Runtime\src\aspnetcore-runtime-composite.proj"
+                        Condition=" '$(BuildMainlyReferenceProviders)' != 'true' and '$(TargetOsName)' != 'win' " />
         <DotNetProjects Include="
                           $(RepoRoot)src\Assets\**\*.*proj;
                           $(RepoRoot)src\Caching\**\src\*.csproj;
@@ -242,6 +212,7 @@
                           $(RepoRoot)src\Extensions\**\src\*.csproj;
                           $(RepoRoot)src\BuildAfterTargetingPack\*.csproj;
                           $(RepoRoot)src\OpenApi\**\src\*.csproj;
+                          $(RepoRoot)src\Validation\**\src\*.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);
@@ -250,6 +221,70 @@
                           $(RepoRoot)**\bin\**\*;
                           $(RepoRoot)**\obj\**\*;"
                         Condition=" '$(BuildMainlyReferenceProviders)' == 'true' " />
+
+
+        <ProjectsWithTestsSubset1 Include="
+                          $(RepoRoot)src\Framework\AspNetCoreAnalyzers\test\Microsoft.AspNetCore.App.Analyzers.Test.csproj;
+                          $(RepoRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj;
+                          $(RepoRoot)src\Caching\**\*.*proj;
+                          $(RepoRoot)src\DefaultBuilder\**\*.*proj;
+                          $(RepoRoot)src\Features\**\*.*proj;
+                          $(RepoRoot)src\DataProtection\**\*.*proj;
+                          $(RepoRoot)src\Antiforgery\**\*.*proj;
+                          $(RepoRoot)src\Hosting\**\*.*proj;
+                          $(RepoRoot)src\Http\**\*.*proj;
+                          $(RepoRoot)src\HttpClientFactory\**\*.*proj;
+                          $(RepoRoot)src\Html.Abstractions\**\*.*proj;
+                          $(RepoRoot)src\Identity\**\*.*proj;
+                          $(RepoRoot)src\Servers\**\*.csproj;
+                          $(RepoRoot)src\Security\**\*.*proj;
+                          $(RepoRoot)src\SiteExtensions\Microsoft.Web.Xdt.Extensions\**\*.csproj;
+                          $(RepoRoot)src\SiteExtensions\LoggingAggregate\test\**\*.csproj;
+                          $(RepoRoot)src\Shared\**\*.*proj;
+                          $(RepoRoot)src\Tools\**\*.*proj;
+                          $(RepoRoot)src\Logging.AzureAppServices\**\src\*.csproj;
+                          $(RepoRoot)src\Middleware\**\*.csproj;
+                          "
+                        Exclude="
+                          @(ProjectToBuild);
+                          @(ProjectToExclude);
+                          $(RepoRoot)**\node_modules\**\*;
+                          $(RepoRoot)**\bin\**\*;
+                          $(RepoRoot)**\obj\**\*;"
+                        Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
+
+        <ProjectsWithTestsSubset2 Include="
+                          $(RepoRoot)src\Razor\**\*.*proj;
+                          $(RepoRoot)src\Mvc\**\*.*proj;
+                          $(RepoRoot)src\Azure\**\*.*proj;
+                          $(RepoRoot)src\SignalR\**\*.csproj;
+                          $(RepoRoot)src\StaticAssets\**\*.csproj;
+                          $(RepoRoot)src\Components\**\*.csproj;
+                          $(RepoRoot)src\Analyzers\**\*.csproj;
+                          $(RepoRoot)src\FileProviders\**\*.csproj;
+                          $(RepoRoot)src\Configuration.KeyPerFile\**\*.csproj;
+                          $(RepoRoot)src\Localization\**\*.csproj;
+                          $(RepoRoot)src\ObjectPool\**\*.csproj;
+                          $(RepoRoot)src\JSInterop\**\*.csproj;
+                          $(RepoRoot)src\WebEncoders\**\*.csproj;
+                          $(RepoRoot)src\HealthChecks\**\*.csproj;
+                          $(RepoRoot)src\Testing\**\*.csproj;
+                          $(RepoRoot)src\Grpc\**\*.csproj;
+                          $(RepoRoot)src\ProjectTemplates\**\*.csproj;
+                          $(RepoRoot)src\Extensions\**\*.csproj;
+                          $(RepoRoot)src\OpenApi\**\*.csproj;
+                          $(RepoRoot)src\Validation\**\*.csproj;
+                          "
+                        Exclude="
+                          @(ProjectToBuild);
+                          @(ProjectToExclude);
+                          $(RepoRoot)**\node_modules\**\*;
+                          $(RepoRoot)**\bin\**\*;
+                          $(RepoRoot)**\obj\**\*;"
+                        Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
+
+        <DotNetProjects Condition=" '$(HelixSubset)' == '' OR '$(HelixSubset)' == '1'" Include="@(ProjectsWithTestsSubset1)" />
+        <DotNetProjects Condition=" '$(HelixSubset)' == '' OR '$(HelixSubset)' == '2'" Include="@(ProjectsWithTestsSubset2)" />
 
         <ProjectToBuild Condition=" '$(BuildManaged)' == 'true'" Include="@(DotNetProjects)" Exclude="@(ProjectToExclude)" BuildStep="managed" />
         <ProjectToExclude Condition=" '$(BuildManaged)' != 'true'" Include="@(DotNetProjects)" />
@@ -264,7 +299,7 @@
         <_VcxTargetPlatform Condition="'$(TargetArchitecture)' == 'arm64'">ARM64</_VcxTargetPlatform>
       </PropertyGroup>
 
-      <!-- In the VMR, we build the installers entirely via HostingBundle ProjectReferences in pass 2 -->
+      <!-- In .NET product build mode, build the installers entirely via HostingBundle ProjectReferences in pass 2 -->
       <ItemGroup Condition="'$(DotNetBuild)' != 'true' and '$(_BuildWindowsInstallers)' == 'true' ">
         <!-- Build the ANCM custom action -->
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x64" />

@@ -32,6 +32,7 @@ public class JwtBearerOptions : AuthenticationSchemeOptions
         SecurityTokenValidators = new List<ISecurityTokenValidator> { _defaultHandler };
 #pragma warning restore CS0618 // Type or member is obsolete
         TokenHandlers = new List<TokenHandler> { _defaultTokenHandler };
+        Events = new JwtBearerEvents();
     }
 
     /// <summary>

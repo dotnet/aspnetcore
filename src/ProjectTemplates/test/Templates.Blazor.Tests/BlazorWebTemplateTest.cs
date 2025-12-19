@@ -2,28 +2,25 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using Microsoft.AspNetCore.BrowserTesting;
-using Microsoft.AspNetCore.InternalTesting;
 using Templates.Test.Helpers;
 
 namespace BlazorTemplates.Tests;
 
-public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : BlazorTemplateTest(projectFactory)
+public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : BlazorTemplateTest(projectFactory), IClassFixture<ProjectFactoryFixture>
 {
     public override string ProjectType => "blazor";
 
-    [ConditionalTheory]
-    [SkipNonHelix]
+    [Theory]
     [InlineData(BrowserKind.Chromium, "None")]
     [InlineData(BrowserKind.Chromium, "Server")]
     [InlineData(BrowserKind.Chromium, "WebAssembly")]
     [InlineData(BrowserKind.Chromium, "Auto")]
-    public async Task BlazorWebTemplate_Works(BrowserKind browserKind, string interactivityOption)
+    [InlineData(BrowserKind.Chromium, "None", "Individual")]
+    public async Task BlazorWebTemplate_Works(BrowserKind browserKind, string interactivityOption, string authOption = "None")
     {
         var project = await CreateBuildPublishAsync(
-            args: ["-int", interactivityOption],
+            args: ["-int", interactivityOption, "-au", authOption],
             getTargetProject: GetTargetProject);
 
         // There won't be a counter page when the 'None' interactivity option is used
@@ -31,35 +28,11 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
             ? BlazorTemplatePages.Counter
             : BlazorTemplatePages.None;
 
-        var appName = project.ProjectName;
+        var authenticationFeatures = authOption is "None"
+            ? AuthenticationFeatures.None
+            : AuthenticationFeatures.RegisterAndLogIn;
 
-        // Test the built project
-        using (var aspNetProcess = project.StartBuiltProjectAsync())
-        {
-            Assert.False(
-                aspNetProcess.Process.HasExited,
-                ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
-
-            await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-            await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName, pagesToExclude);
-        }
-
-        // Test the published project
-        using (var aspNetProcess = project.StartPublishedProjectAsync())
-        {
-            Assert.False(
-                aspNetProcess.Process.HasExited,
-                ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", project, aspNetProcess.Process));
-
-            await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-
-            if (HasClientProject())
-            {
-                await AssertWebAssemblyCompressionFormatAsync(aspNetProcess, "br");
-            }
-
-            await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName, pagesToExclude);
-        }
+        await TestProjectCoreAsync(project, browserKind, pagesToExclude, authenticationFeatures);
 
         bool HasClientProject()
             => interactivityOption is "WebAssembly" or "Auto";
@@ -78,18 +51,41 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         }
     }
 
-    private static async Task AssertWebAssemblyCompressionFormatAsync(AspNetProcess aspNetProcess, string expectedEncoding)
+    [Theory]
+    [InlineData(BrowserKind.Chromium)]
+    public async Task BlazorWebTemplate_CanUsePasskeys(BrowserKind browserKind)
     {
-        var response = await aspNetProcess.SendRequest(() =>
+        var project = await CreateBuildPublishAsync(args: ["-int", "None", "-au", "Individual"]);
+        var pagesToExclude = BlazorTemplatePages.Counter;
+        var authenticationFeatures = AuthenticationFeatures.RegisterAndLogIn | AuthenticationFeatures.Passkeys;
+
+        await TestProjectCoreAsync(project, browserKind, pagesToExclude, authenticationFeatures);
+    }
+
+    private async Task TestProjectCoreAsync(Project project, BrowserKind browserKind, BlazorTemplatePages pagesToExclude, AuthenticationFeatures authenticationFeatures)
+    {
+        var appName = project.ProjectName;
+
+        // Test the built project
+        using (var aspNetProcess = project.StartBuiltProjectAsync())
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, new Uri(aspNetProcess.ListeningUri, "/_framework/blazor.boot.json"));
-            // These are the same as chrome
-            request.Headers.AcceptEncoding.Clear();
-            request.Headers.AcceptEncoding.Add(StringWithQualityHeaderValue.Parse("gzip"));
-            request.Headers.AcceptEncoding.Add(StringWithQualityHeaderValue.Parse("deflate"));
-            request.Headers.AcceptEncoding.Add(StringWithQualityHeaderValue.Parse("br"));
-            return request;
-        });
-        Assert.Equal(expectedEncoding, response.Content.Headers.ContentEncoding.Single());
+            Assert.False(
+                aspNetProcess.Process.HasExited,
+                ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
+
+            await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+            await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName, pagesToExclude, authenticationFeatures);
+        }
+
+        // Test the published project
+        using (var aspNetProcess = project.StartPublishedProjectAsync())
+        {
+            Assert.False(
+                aspNetProcess.Process.HasExited,
+                ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", project, aspNetProcess.Process));
+
+            await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+            await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName, pagesToExclude, authenticationFeatures);
+        }
     }
 }

@@ -118,5 +118,6 @@
     <TrimmableProject Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <TrimmableProject Include="Microsoft.Extensions.Features" />
     <TrimmableProject Include="Microsoft.AspNetCore.OpenApi" />
+    <TrimmableProject Include="Microsoft.Extensions.Validation" />
   </ItemGroup>
 </Project>

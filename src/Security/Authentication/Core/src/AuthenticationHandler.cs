@@ -205,7 +205,7 @@ public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler w
     {
         var target = scheme ?? Options.ForwardDefaultSelector?.Invoke(Context) ?? Options.ForwardDefault;
 
-        // Prevent self targetting
+        // Prevent self targeting
         return string.Equals(target, Scheme.Name, StringComparison.Ordinal)
             ? null
             : target;

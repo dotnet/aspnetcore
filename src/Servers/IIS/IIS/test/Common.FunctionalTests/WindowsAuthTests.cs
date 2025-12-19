@@ -28,7 +28,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
 
 [Collection(PublishedSitesCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class WindowsAuthTests : IISFunctionalTestBase
 {
     public WindowsAuthTests(PublishedSitesFixture fixture) : base(fixture)

@@ -14,8 +14,6 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Models.References;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -453,18 +451,25 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
     }
 
+#nullable enable
     public static object[][] ArrayBasedQueryParameters =>
     [
         [(int[] id) => { }, JsonSchemaType.Integer, false],
         [(int?[] id) => { }, JsonSchemaType.Integer, true],
         [(Guid[] id) => { }, JsonSchemaType.String, false],
         [(Guid?[] id) => { }, JsonSchemaType.String, true],
+        [(string[] id) => { }, JsonSchemaType.String, false],
+        // Due to runtime restrictions, we can't resolve nullability
+        // info for reference types as element types so this will still
+        // encode as non-nullable.
+        [(string?[] id) => { }, JsonSchemaType.String, false],
         [(DateTime[] id) => { }, JsonSchemaType.String, false],
         [(DateTime?[] id) => { }, JsonSchemaType.String, true],
         [(DateTimeOffset[] id) => { }, JsonSchemaType.String, false],
         [(DateTimeOffset?[] id) => { }, JsonSchemaType.String, true],
         [(Uri[] id) => { }, JsonSchemaType.String, false],
     ];
+#nullable restore
 
     [Theory]
     [MemberData(nameof(ArrayBasedQueryParameters))]
@@ -508,6 +513,86 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var operation = document.Paths["/api"].Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
             Assert.Equal("The ID of the entity", parameter.Description);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesAsParametersParametersWithDescriptionAttribute()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api", ([AsParameters] FromQueryModel model) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
+            Assert.Contains(operation.Parameters, actualMemory => actualMemory.Name == "id" && actualMemory.Description == "The ID of the entity");
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesFromQueryParametersWithDescriptionAttribute()
+    {
+        // Arrange
+        var actionDescriptor = CreateActionDescriptor(nameof(TestFromQueryController.GetWithFromQueryDto), typeof(TestFromQueryController));
+
+        // Assert
+        await VerifyOpenApiDocument(actionDescriptor, document =>
+        {
+            var operation = document.Paths["/"].Operations[HttpMethod.Get];
+            Assert.Contains(operation.Parameters, actualMemory => actualMemory.Name == "id" && actualMemory.Description == "The ID of the entity");
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesAsParametersParametersWithDefaultValueAttribute()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api", ([AsParameters] FromQueryModel model) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
+            Assert.Contains(
+                operation.Parameters,
+                actualMemory =>
+                {
+                    return actualMemory.Name == "limit" &&
+                           actualMemory.Schema != null &&
+                           actualMemory.Schema.Default != null &&
+                           actualMemory.Schema.Default.GetValueKind() == JsonValueKind.Number &&
+                           actualMemory.Schema.Default.GetValue<int>() == 20;
+                });
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesFromQueryParametersWithDefaultValueAttribute()
+    {
+        // Arrange
+        var actionDescriptor = CreateActionDescriptor(nameof(TestFromQueryController.GetWithFromQueryDto), typeof(TestFromQueryController));
+
+        // Assert
+        await VerifyOpenApiDocument(actionDescriptor, document =>
+        {
+            var operation = document.Paths["/"].Operations[HttpMethod.Get];
+            Assert.Contains(
+                operation.Parameters,
+                actualMemory =>
+                {
+                    return actualMemory.Name == "limit" &&
+                           actualMemory.Schema != null &&
+                           actualMemory.Schema.Default != null &&
+                           actualMemory.Schema.Default.GetValueKind() == JsonValueKind.Number &&
+                           actualMemory.Schema.Default.GetValue<int>() == 20;
+                });
         });
     }
 
@@ -722,4 +807,208 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             return true;
         }
     }
+
+    // Regression test for https://github.com/dotnet/aspnetcore/issues/62023
+    // Testing that the array parsing in our OpenApiJsonSchema works
+    [Fact]
+    public async Task CustomConverterThatOutputsArrayWithDefaultValue()
+    {
+        // Arrange
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new EnumArrayTypeConverter());
+        });
+        var builder = CreateBuilder(serviceCollection);
+
+        // Act
+        builder.MapPost("/api", (EnumArrayType e = EnumArrayType.None) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            var param = Assert.Single(operation.Parameters);
+            Assert.NotNull(param.Schema);
+            Assert.IsType<JsonArray>(param.Schema.Default);
+            // Type is null, it's up to the user to configure this via a custom schema
+            // transformer for types with a converter.
+            Assert.Null(param.Schema.Type);
+        });
+    }
+
+    [Fact]
+    public async Task CustomConverterThatOutputsObjectWithDefaultValue()
+    {
+        // Arrange
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new EnumObjectTypeConverter());
+        });
+        var builder = CreateBuilder(serviceCollection);
+
+        // Act
+        builder.MapPost("/api", (EnumArrayType e = EnumArrayType.None) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            var param = Assert.Single(operation.Parameters);
+            Assert.NotNull(param.Schema);
+            Assert.IsType<JsonObject>(param.Schema.Default);
+            // Type is null, it's up to the user to configure this via a custom schema
+            // transformer for types with a converter.
+            Assert.Null(param.Schema.Type);
+        });
+    }
+
+    public enum EnumArrayType
+    {
+        None = 1
+    }
+
+    public class EnumArrayTypeConverter : JsonConverter<EnumArrayType>
+    {
+        public override EnumArrayType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            return new EnumArrayType();
+        }
+
+        public override void Write(Utf8JsonWriter writer, EnumArrayType value, JsonSerializerOptions options)
+        {
+            writer.WriteStartArray();
+            writer.WriteEndArray();
+        }
+    }
+
+    public class EnumObjectTypeConverter : JsonConverter<EnumArrayType>
+    {
+        public override EnumArrayType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            return new EnumArrayType();
+        }
+
+        public override void Write(Utf8JsonWriter writer, EnumArrayType value, JsonSerializerOptions options)
+        {
+            writer.WriteStartObject();
+            writer.WriteEndObject();
+        }
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesNullableComplexTypesWithNullInType()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+#nullable enable
+        builder.MapPost("/api/nullable-todo", (Todo? todo) => { });
+        builder.MapPost("/api/nullable-account", (Account? account) => { });
+#nullable restore
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            // Verify nullable Todo parameter uses null in type directly
+            var todoOperation = document.Paths["/api/nullable-todo"].Operations[HttpMethod.Post];
+            var todoRequestBody = todoOperation.RequestBody;
+            var todoContent = Assert.Single(todoRequestBody.Content);
+            Assert.Equal("application/json", todoContent.Key);
+            var todoSchema = todoContent.Value.Schema;
+
+            // For complex types, check if it has both null and the reference type
+            if (todoSchema.OneOf != null)
+            {
+                // If it now uses oneOf, verify the structure
+                Assert.Equal(2, todoSchema.OneOf.Count);
+                Assert.Collection(todoSchema.OneOf,
+                    item =>
+                    {
+                        Assert.NotNull(item);
+                        Assert.Equal(JsonSchemaType.Null, item.Type);
+                    },
+                    item =>
+                    {
+                        Assert.NotNull(item);
+                        Assert.Equal("Todo", ((OpenApiSchemaReference)item).Reference.Id);
+                    });
+            }
+            else
+            {
+                // If it uses direct type, verify null is included
+                Assert.True(todoSchema.Type?.HasFlag(JsonSchemaType.Null));
+            }
+
+            // Verify nullable Account parameter
+            var accountOperation = document.Paths["/api/nullable-account"].Operations[HttpMethod.Post];
+            var accountRequestBody = accountOperation.RequestBody;
+            var accountContent = Assert.Single(accountRequestBody.Content);
+            Assert.Equal("application/json", accountContent.Key);
+            var accountSchema = accountContent.Value.Schema;
+
+            if (accountSchema.OneOf != null)
+            {
+                // If it now uses oneOf, verify the structure
+                Assert.Equal(2, accountSchema.OneOf.Count);
+                Assert.Collection(accountSchema.OneOf,
+                    item =>
+                    {
+                        Assert.NotNull(item);
+                        Assert.Equal(JsonSchemaType.Null, item.Type);
+                    },
+                    item =>
+                    {
+                        Assert.NotNull(item);
+                        Assert.Equal("Account", ((OpenApiSchemaReference)item).Reference.Id);
+                    });
+            }
+            else
+            {
+                // If it uses direct type, verify null is included
+                Assert.True(accountSchema.Type?.HasFlag(JsonSchemaType.Null));
+            }
+
+            // Verify component schemas are created for Todo and Account
+            Assert.Contains("Todo", document.Components.Schemas.Keys);
+            Assert.Contains("Account", document.Components.Schemas.Keys);
+        });
+    }
+
+    [ApiController]
+    [Route("[controller]/[action]")]
+    private class TestFromQueryController : ControllerBase
+    {
+        [HttpGet]
+        public Task<IActionResult> GetWithFromQueryDto([FromQuery] FromQueryModel query)
+        {
+            return Task.FromResult<IActionResult>(Ok());
+        }
+    }
+
+    [Description("A query model.")]
+    private record FromQueryModel
+    {
+        [Description("The ID of the entity")]
+        [FromQuery(Name = "id")]
+        public int Id { get; set; }
+
+        [Description("The maximum number of results")]
+        [FromQuery(Name = "limit")]
+        [DefaultValue(20)]
+        public int Limit { get; set; }
+    }
+
+#nullable enable
+    private record NullableParamsModel
+    {
+        [FromQuery(Name = "name")]
+        public string? Name { get; set; }
+
+        [FromQuery(Name = "id")]
+        public int? Id { get; set; }
+    }
+#nullable restore
 }

@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   backport:
-    uses: dotnet/arcade/.github/workflows/backport-base.yml@9bbce22e13f399ad3cb8b4b7e53960b621f92ea1 # 2025-01-13
+    uses: dotnet/arcade/.github/workflows/backport-base.yml@dd6311861abf91f883a5f6aa3b13ff095ed44179 # 2025-01-13
     with:
       pr_description_template: |
         Backport of #%source_pr_number% to %target_branch%
@@ -63,6 +63,6 @@ jobs:
 
         ----
 
-        ## When servicing release/2.1
+        ## When servicing release/2.3
 
         - [ ] Make necessary changes in eng/PatchConfig.props

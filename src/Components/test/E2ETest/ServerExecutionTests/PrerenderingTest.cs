@@ -98,24 +98,6 @@ public class PrerenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<Pre
     }
 
     [Theory]
-    [InlineData("base/relative", "prerendered/base/relative")]
-    [InlineData("/root/relative", "/root/relative")]
-    [InlineData("http://absolute/url", "http://absolute/url")]
-    public async Task CanRedirectDuringPrerendering(string destinationParam, string expectedRedirectionLocation)
-    {
-        var requestUri = new Uri(
-            _serverFixture.RootUri,
-            "prerendered/prerendered-redirection?destination=" + destinationParam);
-
-        var httpClient = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
-        var response = await httpClient.GetAsync(requestUri);
-
-        var expectedUri = new Uri(_serverFixture.RootUri, expectedRedirectionLocation);
-        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-        Assert.Equal(expectedUri, response.Headers.Location);
-    }
-
-    [Theory]
     [InlineData(null, null)]
     [InlineData(null, "Bert")]
     [InlineData("Bert", null)]

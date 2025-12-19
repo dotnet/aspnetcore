@@ -30,7 +30,7 @@
     </AssemblyAttribute>
   </ItemGroup>
 
-    <Target Name="GenerateTesDevCert" BeforeTargets="AssignTargetPaths">
+  <Target Name="GenerateTestDevCert" BeforeTargets="AssignTargetPaths">
 
     <PropertyGroup>
       <_DevCertFileName>aspnetcore-https.pfx</_DevCertFileName>
@@ -49,8 +49,8 @@
     <Error Condition="!Exists('$(_DevCertPath)') and '$(MSBuildRuntimeType)' != 'core'" Text="No dev cert exists at $(_DevCertPath). Ensure you follow the instructions from src/ProjectTemplates/README.md before running inside Visual Studio" />
 
     <ItemGroup>
-      <Content Include="$(_DevCertPath)" CopyToPublishDirectory="PreserveNewest" />
-      <Content Include="$(_DevCertJsonPath)" CopyToPublishDirectory="PreserveNewest" />
+      <Content Include="$(_DevCertPath)" CopyToPublishDirectory="PreserveNewest" CopyToOutputDirectory="PreserveNewest" />
+      <Content Include="$(_DevCertJsonPath)" CopyToPublishDirectory="PreserveNewest" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
   </Target>
@@ -59,7 +59,7 @@
     <PropertyGroup>
       <TestTemplateCreationFolder>$([MSBuild]::NormalizePath('$(OutputPath)$(TestTemplateCreationFolder)'))</TestTemplateCreationFolder>
       <CustomTemplateHivePath>$(TestTemplateCreationFolder)\Hives\$([System.Guid]::NewGuid())\.templateengine</CustomTemplateHivePath>
-      <TemplateTestDotNetRoot Condition="'$(IsHelixJob)' != 'true'">$(TestTemplateCreationFolder)dotnet\</TemplateTestDotNetRoot>
+      <TemplateTestDotNetRoot Condition="'$(IsHelixJob)' != 'true'">$(TestTemplateCreationFolder).dotnet\</TemplateTestDotNetRoot>
       <_DotNetHostFileName>dotnet</_DotNetHostFileName>
       <_DotNetHostFileName Condition="$([MSBuild]::IsOSPlatform(`Windows`))">dotnet.exe</_DotNetHostFileName>
     </PropertyGroup>
@@ -120,6 +120,7 @@
       <_FilesToCopy Include="$(LocalDotNetRoot)shared\**\*" DestinationRelativeFolder="shared\" />
       <_FilesToCopy Include="$(LocalDotNetRoot)sdk\**\*" DestinationRelativeFolder="sdk\" />
       <_FilesToCopy Include="$(SharedFrameworkLayoutRoot)\**\*" />
+      <_FilesToCopy Include="$(RepoRoot)\global.json" DestinationRelativeFolder="../" />
 
       <_DestinationFiles Include="@(_FilesToCopy->'$(TemplateTestDotNetRoot)%(DestinationRelativeFolder)%(RecursiveDir)%(Filename)%(Extension)')" />
     </ItemGroup>

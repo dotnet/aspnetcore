@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.CallHandlers;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.DependencyInjection;
 using Transcoding;
 using Xunit.Abstractions;
 using MethodOptions = Grpc.Shared.Server.MethodOptions;
@@ -339,7 +340,8 @@ public class ServerStreamingServerCallHandlerTests : LoggedTest
             invoker,
             method,
             MethodOptions.Create(new[] { serviceOptions }),
-            new TestGrpcServiceActivator<JsonTranscodingGreeterService>());
+            new TestGrpcServiceActivator<JsonTranscodingGreeterService>(),
+            new InterceptorActivators(TestHelpers.CreateServiceProvider()));
 
         var jsonSettings = jsonTranscodingOptions?.JsonSettings ?? new GrpcJsonSettings() { WriteIndented = false };
 

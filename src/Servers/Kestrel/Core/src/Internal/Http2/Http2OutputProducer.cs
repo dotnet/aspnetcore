@@ -232,11 +232,8 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
                 _pipeWriter.Complete();
             }
 
-            if (_fakeMemoryOwner != null)
-            {
-                _fakeMemoryOwner.Dispose();
-                _fakeMemoryOwner = null;
-            }
+            _fakeMemoryOwner?.Dispose();
+            _fakeMemoryOwner = null;
 
             if (_fakeMemory != null)
             {

@@ -7,11 +7,14 @@ using System.Security.Claims;
 using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
+using Components.TestServer.RazorComponents.Pages.PersistentState;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Mvc;
+using TestContentPackage;
 using TestContentPackage.Services;
 
 namespace TestServer;
@@ -28,6 +31,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
+        services.AddValidation();
+
         services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;
@@ -38,16 +43,41 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             .RegisterPersistentService<InteractiveAutoService>(RenderMode.InteractiveAuto)
             .RegisterPersistentService<InteractiveWebAssemblyService>(RenderMode.InteractiveWebAssembly)
             .AddInteractiveWebAssemblyComponents()
-            .AddInteractiveServerComponents()
+            .AddInteractiveServerComponents(options =>
+            {
+                if (Configuration.GetValue<bool>("DisableReconnectionCache"))
+                {
+                    // This disables the reconnection cache, which forces the server to persist the circuit state.
+                    options.DisconnectedCircuitMaxRetained = 0;
+                    options.DetailedErrors = true;
+                }
+                if (Configuration.GetValue<bool>("DisableCircuitPersistence"))
+                {
+                    // This disables the circuit persistence.
+                    // In combination with DisableReconnectionCache this means that a disconnected client will always
+                    // be rejected on reconnection/resume attempts.
+                    options.PersistedCircuitInMemoryMaxRetained = 0;
+                    options.DetailedErrors = true;
+                }
+                options.RootComponents.RegisterForJavaScript<TestContentPackage.PersistentComponents.ComponentWithPersistentState>("dynamic-js-root-counter");
+            })
             .AddAuthenticationStateSerialization(options =>
             {
                 bool.TryParse(Configuration["SerializeAllClaims"], out var serializeAllClaims);
                 options.SerializeAllClaims = serializeAllClaims;
             });
 
+        if (Configuration.GetValue<bool>("UseHybridCache"))
+        {
+            services.AddHybridCache();
+        }
+
         services.AddScoped<InteractiveWebAssemblyService>();
         services.AddScoped<InteractiveServerService>();
         services.AddScoped<InteractiveAutoService>();
+
+        // Register custom serializer for E2E testing of persistent component state serialization extensibility
+        services.AddSingleton<PersistentComponentStateSerializer<int>, CustomIntSerializer>();
 
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
@@ -75,21 +105,33 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         {
             app.Map("/reexecution", reexecutionApp =>
             {
-                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForErrors: true);
+                app.Map("/trigger-404", app =>
+                {
+                    app.Run(async context =>
+                    {
+                        context.Response.StatusCode = 404;
+                        await context.Response.WriteAsync("Triggered a 404 status code.");
+                    });
+                });
+                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForStatusCodePages: true);
+                reexecutionApp.UseRouting();
 
+                reexecutionApp.UseAntiforgery();
+                ConfigureEndpoints(reexecutionApp, env);
+            });
+            app.Map("/interactive-reexecution", reexecutionApp =>
+            {
+                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute-interactive", createScopeForStatusCodePages: true);
                 reexecutionApp.UseRouting();
                 reexecutionApp.UseAntiforgery();
-                reexecutionApp.UseEndpoints(endpoints =>
-                {
-                    endpoints.MapRazorComponents<TRootComponent>();
-                });
+                ConfigureEndpoints(reexecutionApp, env);
             });
 
             ConfigureSubdirPipeline(app, env);
         });
     }
 
-    protected virtual void ConfigureSubdirPipeline(IApplicationBuilder app, IWebHostEnvironment env)
+    private void ConfigureSubdirPipeline(IApplicationBuilder app, IWebHostEnvironment env)
     {
         WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
 
@@ -106,11 +148,15 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         {
             if (ctx.Request.Query.ContainsKey("add-csp"))
             {
-                 ctx.Response.Headers.Add("Content-Security-Policy", "script-src 'self' 'unsafe-inline'");
+                ctx.Response.Headers.Add("Content-Security-Policy", "script-src 'self' 'unsafe-inline'");
             }
             return nxt();
         });
+        ConfigureEndpoints(app, env);
+    }
 
+    private void ConfigureEndpoints(IApplicationBuilder app, IWebHostEnvironment env)
+    {
         _ = app.UseEndpoints(endpoints =>
         {
             var contentRootStaticAssetsPath = Path.Combine(env.ContentRootPath, "Components.TestServer.staticwebassets.endpoints.json");
@@ -124,6 +170,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             }
 
             _ = endpoints.MapRazorComponents<TRootComponent>()
+                .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"))
                 .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
                 .AddInteractiveServerRenderMode(options =>
                 {

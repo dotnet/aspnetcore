@@ -7,7 +7,7 @@ internal class DefaultAntiforgeryStateProvider : AntiforgeryStateProvider
 {
     protected AntiforgeryRequestToken? _currentToken;
 
-    [SupplyParameterFromPersistentComponentState]
+    [PersistentState]
     public AntiforgeryRequestToken? CurrentToken
     {
         get => _currentToken ??= GetAntiforgeryToken();

@@ -11,6 +11,11 @@ namespace Microsoft.Extensions.ApiDescription.Client;
 
 public class GetOpenApiReferenceMetadataTest
 {
+    string SortMetadata(string metadata)
+    {
+        return string.Join("|", metadata.Split('|').OrderBy(s => s));
+    }
+
     [Fact]
     public void Execute_AddsExpectedMetadata()
     {
@@ -60,6 +65,8 @@ public class GetOpenApiReferenceMetadataTest
             orderedMetadata.Add(key, metadata[key]);
         }
 
+        expectedMetadata["SerializedMetadata"] = SortMetadata(expectedMetadata["SerializedMetadata"]); 
+        orderedMetadata["SerializedMetadata"] = SortMetadata(orderedMetadata["SerializedMetadata"]);
         Assert.Equal(expectedMetadata, orderedMetadata);
     }
 
@@ -118,6 +125,8 @@ public class GetOpenApiReferenceMetadataTest
             orderedMetadata.Add(key, metadata[key]);
         }
 
+        expectedMetadata["SerializedMetadata"] = SortMetadata(expectedMetadata["SerializedMetadata"]);
+        orderedMetadata["SerializedMetadata"] = SortMetadata(orderedMetadata["SerializedMetadata"]);
         Assert.Equal(expectedMetadata, orderedMetadata);
     }
 
@@ -176,6 +185,8 @@ public class GetOpenApiReferenceMetadataTest
             orderedMetadata.Add(key, metadata[key]);
         }
 
+        expectedMetadata["SerializedMetadata"] = SortMetadata(expectedMetadata["SerializedMetadata"]);
+        orderedMetadata["SerializedMetadata"] = SortMetadata(orderedMetadata["SerializedMetadata"]);
         Assert.Equal(expectedMetadata, orderedMetadata);
     }
 
@@ -234,6 +245,9 @@ public class GetOpenApiReferenceMetadataTest
             orderedMetadata.Add(key, metadata[key]);
         }
 
+        // sort the values, since order is undefined for Dictionary
+        expectedMetadata["SerializedMetadata"] = SortMetadata(expectedMetadata["SerializedMetadata"]);
+        orderedMetadata["SerializedMetadata"] = SortMetadata(orderedMetadata["SerializedMetadata"]);
         Assert.Equal(expectedMetadata, orderedMetadata);
     }
 
@@ -383,7 +397,8 @@ public class GetOpenApiReferenceMetadataTest
         {
             orderedMetadata.Add(key, metadata[key]);
         }
-
+        expectedMetadata["SerializedMetadata"] = SortMetadata(expectedMetadata["SerializedMetadata"]);
+        orderedMetadata["SerializedMetadata"] = SortMetadata(orderedMetadata["SerializedMetadata"]);
         Assert.Equal(expectedMetadata, orderedMetadata);
     }
 
@@ -446,7 +461,8 @@ public class GetOpenApiReferenceMetadataTest
         {
             orderedMetadata.Add(key, metadata[key]);
         }
-
+        expectedMetadata["SerializedMetadata"] = SortMetadata(expectedMetadata["SerializedMetadata"]);
+        orderedMetadata["SerializedMetadata"] = SortMetadata(orderedMetadata["SerializedMetadata"]);
         Assert.Equal(expectedMetadata, orderedMetadata);
     }
 
@@ -545,6 +561,8 @@ public class GetOpenApiReferenceMetadataTest
                     orderedMetadata.Add(key, metadata[key]);
                 }
 
+                expectedMetadata1["SerializedMetadata"] = SortMetadata(expectedMetadata1["SerializedMetadata"]);
+                orderedMetadata["SerializedMetadata"] = SortMetadata(orderedMetadata["SerializedMetadata"]);
                 Assert.Equal(expectedMetadata1, orderedMetadata);
             },
             output =>
@@ -556,7 +574,8 @@ public class GetOpenApiReferenceMetadataTest
                 {
                     orderedMetadata.Add(key, metadata[key]);
                 }
-
+                expectedMetadata2["SerializedMetadata"] = SortMetadata(expectedMetadata2["SerializedMetadata"]);
+                orderedMetadata["SerializedMetadata"] = SortMetadata(orderedMetadata["SerializedMetadata"]);
                 Assert.Equal(expectedMetadata2, orderedMetadata);
             },
             output =>
@@ -569,6 +588,8 @@ public class GetOpenApiReferenceMetadataTest
                     orderedMetadata.Add(key, metadata[key]);
                 }
 
+                expectedMetadata3["SerializedMetadata"] = SortMetadata(expectedMetadata3["SerializedMetadata"]);
+                orderedMetadata["SerializedMetadata"] = SortMetadata(orderedMetadata["SerializedMetadata"]);
                 Assert.Equal(expectedMetadata3, orderedMetadata);
             });
     }

@@ -5,7 +5,6 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Middleware;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.DependencyInjection;
@@ -197,15 +196,6 @@ public static class ListenOptionsHttpsExtensions
 
         listenOptions.IsTls = true;
         listenOptions.HttpsOptions = httpsOptions;
-
-        if (httpsOptions.TlsClientHelloBytesCallback is not null)
-        {
-            listenOptions.Use(next =>
-            {
-                var middleware = new TlsListenerMiddleware(next, httpsOptions.TlsClientHelloBytesCallback);
-                return middleware.OnTlsClientHelloAsync;
-            });
-        }
 
         listenOptions.Use(next =>
         {

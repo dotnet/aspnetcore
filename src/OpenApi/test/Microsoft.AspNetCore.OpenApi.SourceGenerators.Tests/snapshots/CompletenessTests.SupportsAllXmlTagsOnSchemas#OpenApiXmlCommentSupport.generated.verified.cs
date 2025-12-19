@@ -39,10 +39,9 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.OpenApi;
     using Microsoft.AspNetCore.Mvc.Controllers;
+    using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
     using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.OpenApi.Models;
-    using Microsoft.OpenApi.Models.Interfaces;
-    using Microsoft.OpenApi.Models.References;
+    using Microsoft.OpenApi;
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file record XmlComment(
@@ -148,7 +147,9 @@ generic type, or the type parameter.", null, null, false, null, null, null));
 generic types to open generics for use in
 typeof expressions.", null, null, null, null, false, null, null, null));
             cache.Add(@"T:ParamsAndParamRefs", new XmlComment(@"This shows examples of typeparamref and typeparam tags", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:ExampleClass.Label", new XmlComment(null, null, @"    The string? ExampleClass.Label is a <see langword=""string"" />
+            cache.Add(@"T:DisposableType", new XmlComment(@"A class that implements the IDisposable interface.", null, null, null, null, false, null, null, null));
+            cache.Add(@"T:XmlPropertyTestClass", new XmlComment(@"This class tests different XML comment scenarios for properties.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:ExampleClass.Label", new XmlComment(null, null, @"    The string? ExampleClass.Label is a `string`
     that you use for a label.
     Note that there isn't a way to provide a ""cref"" to
 each accessor, only to the property itself.", null, @"The `Label` property represents a label
@@ -160,42 +161,49 @@ for this instance.", false, null, null, null));
             cache.Add(@"P:GenericParent.TaskOfTupleProp", new XmlComment(@"This property is a generic type containing a tuple.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:GenericParent.TupleWithGenericProp", new XmlComment(@"This property is a tuple with a generic type inside.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:GenericParent.TupleWithNestedGenericProp", new XmlComment(@"This property is a tuple with a nested generic type inside.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:ExampleClass.Add(System.Int32,System.Int32)~System.Int32", new XmlComment(@"Adds two integers and returns the result.", null, null, @"The sum of two integers.", null, false, [@"    ```int c = Math.Add(4, 5);
+            cache.Add(@"P:XmlPropertyTestClass.SummaryOnly", new XmlComment(@"A property with only summary tag.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:XmlPropertyTestClass.ValueOnly", new XmlComment(null, null, null, null, @"A property with only value tag.", false, null, null, null));
+            cache.Add(@"P:XmlPropertyTestClass.BothSummaryAndValue", new XmlComment(@"A property with both summary and value.", null, null, null, @"Additional value information.", false, null, null, null));
+            cache.Add(@"P:XmlPropertyTestClass.ReturnsOnly", new XmlComment(null, null, null, @"This should be ignored for properties.", null, false, null, null, null));
+            cache.Add(@"P:XmlPropertyTestClass.SummaryAndReturns", new XmlComment(@"A property with summary and returns.", null, null, @"This should be ignored for properties.", null, false, null, null, null));
+            cache.Add(@"M:ExampleClass.Add(System.Int32,System.Int32)", new XmlComment(@"Adds two integers and returns the result.", null, null, @"The sum of two integers.", null, false, [@"    ```int c = Math.Add(4, 5);
 if (c &gt; 10)
 {
     Console.WriteLine(c);
 }```"], [new XmlParameterComment(@"left", @"The left operand of the addition.", null, false), new XmlParameterComment(@"right", @"The right operand of the addition.", null, false)], null));
-            cache.Add(@"M:ExampleClass.AddAsync(System.Int32,System.Int32)~System.Threading.Tasks.Task{System.Int32}", new XmlComment(@"This method is an example of a method that
+            cache.Add(@"M:ExampleClass.AddAsync(System.Int32,System.Int32)", new XmlComment(@"This method is an example of a method that
 returns an awaitable item.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:ExampleClass.DoNothingAsync~System.Threading.Tasks.Task", new XmlComment(@"This method is an example of a method that
+            cache.Add(@"M:ExampleClass.DoNothingAsync", new XmlComment(@"This method is an example of a method that
 returns a Task which should map to a void return type.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:ExampleClass.AddNumbers(System.Int32[])~System.Int32", new XmlComment(@"This method is an example of a method that consumes
+            cache.Add(@"M:ExampleClass.AddNumbers(System.Int32[])", new XmlComment(@"This method is an example of a method that consumes
 an params array.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:ITestInterface.Method(System.Int32)~System.Int32", new XmlComment(@"This method is part of the test interface.", null, @"This content would be inherited by classes
+            cache.Add(@"M:ITestInterface.Method(System.Int32)", new XmlComment(@"This method is part of the test interface.", null, @"This content would be inherited by classes
 that implement this interface when the
 implementing class uses ""inheritdoc""", @"The value of arg", null, false, null, [new XmlParameterComment(@"arg", @"The argument to the method", null, false)], null));
-            cache.Add(@"M:InheritOnlyReturns.MyParentMethod(System.Boolean)~System.Boolean", new XmlComment(@"In this example, this summary is only visible for this method.", null, null, @"A boolean", null, false, null, null, null));
-            cache.Add(@"M:InheritOnlyReturns.MyChildMethod~System.Boolean", new XmlComment(null, null, null, @"A boolean", null, false, null, null, null));
-            cache.Add(@"M:InheritAllButRemarks.MyParentMethod(System.Boolean)~System.Boolean", new XmlComment(@"In this example, this summary is visible on all the methods.", null, @"The remarks can be inherited by other methods
+            cache.Add(@"M:InheritOnlyReturns.MyParentMethod(System.Boolean)", new XmlComment(@"In this example, this summary is only visible for this method.", null, null, @"A boolean", null, false, null, null, null));
+            cache.Add(@"M:InheritOnlyReturns.MyChildMethod", new XmlComment(null, null, null, @"A boolean", null, false, null, null, null));
+            cache.Add(@"M:InheritAllButRemarks.MyParentMethod(System.Boolean)", new XmlComment(@"In this example, this summary is visible on all the methods.", null, @"The remarks can be inherited by other methods
 using the xpath expression.", @"A boolean", null, false, null, null, null));
-            cache.Add(@"M:InheritAllButRemarks.MyChildMethod~System.Boolean", new XmlComment(@"In this example, this summary is visible on all the methods.", null, null, @"A boolean", null, false, null, null, null));
-            cache.Add(@"M:GenericParent.GetTaskOfTuple~System.Threading.Tasks.Task{System.ValueTuple{System.Int32,System.String}}", new XmlComment(@"This method returns a generic type containing a tuple.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:GenericParent.GetTupleOfTask~System.ValueTuple{System.Int32,System.Collections.Generic.Dictionary{System.Int32,System.String}}", new XmlComment(@"This method returns a tuple with a generic type inside.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:GenericParent.GetTupleOfTask1``1~System.ValueTuple{System.Int32,System.Collections.Generic.Dictionary{System.Int32,``0}}", new XmlComment(@"This method return a tuple with a generic type containing a
+            cache.Add(@"M:InheritAllButRemarks.MyChildMethod", new XmlComment(@"In this example, this summary is visible on all the methods.", null, null, @"A boolean", null, false, null, null, null));
+            cache.Add(@"M:GenericParent.GetTaskOfTuple", new XmlComment(@"This method returns a generic type containing a tuple.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:GenericParent.GetTupleOfTask", new XmlComment(@"This method returns a tuple with a generic type inside.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:GenericParent.GetTupleOfTask1``1", new XmlComment(@"This method return a tuple with a generic type containing a
 type parameter inside.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:GenericParent.GetTupleOfTask2``1~System.ValueTuple{``0,System.Collections.Generic.Dictionary{System.Int32,System.String}}", new XmlComment(@"This method return a tuple with a generic type containing a
+            cache.Add(@"M:GenericParent.GetTupleOfTask2``1", new XmlComment(@"This method return a tuple with a generic type containing a
 type parameter inside.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:GenericParent.GetNestedGeneric~System.Collections.Generic.Dictionary{System.Int32,System.Collections.Generic.Dictionary{System.Int32,System.String}}", new XmlComment(@"This method returns a nested generic with all types resolved.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:GenericParent.GetNestedGeneric1``1~System.Collections.Generic.Dictionary{System.Int32,System.Collections.Generic.Dictionary{System.Int32,``0}}", new XmlComment(@"This method returns a nested generic with a type parameter.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:ParamsAndParamRefs.GetGenericValue``1(``0)~``0", new XmlComment(@"The GetGenericValue method.", null, @"This sample shows how to specify the T ParamsAndParamRefs.GetGenericValue&lt;T&gt;(T para)
+            cache.Add(@"M:GenericParent.GetNestedGeneric", new XmlComment(@"This method returns a nested generic with all types resolved.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:GenericParent.GetNestedGeneric1``1", new XmlComment(@"This method returns a nested generic with a type parameter.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:ParamsAndParamRefs.GetGenericValue``1(``0)", new XmlComment(@"The GetGenericValue method.", null, @"This sample shows how to specify the T ParamsAndParamRefs.GetGenericValue&lt;T&gt;(T para)
 method as a cref attribute.
 The parameter and return value are both of an arbitrary type,
 T", null, null, false, null, null, null));
+            cache.Add(@"M:DisposableType.Dispose", new XmlComment(null, null, null, null, null, false, null, null, null));
 
             return cache;
         }
     }
 
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class DocumentationCommentIdHelper
     {
         /// <summary>
@@ -250,6 +258,30 @@ T", null, null, false, null, null, null));
                 }
                 sb.Append(')');
             }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Generates a documentation comment ID for a property given its container type and property name.
+        /// Example: P:Namespace.ContainingType.PropertyName
+        /// </summary>
+        public static string CreateDocumentationId(Type containerType, string propertyName)
+        {
+            if (containerType == null)
+            {
+                throw new ArgumentNullException(nameof(containerType));
+            }
+            if (string.IsNullOrEmpty(propertyName))
+            {
+                throw new ArgumentException("Property name cannot be null or empty.", nameof(propertyName));
+            }
+
+            var sb = new StringBuilder();
+            sb.Append("P:");
+            sb.Append(GetTypeDocId(containerType, includeGenericArguments: false, omitGenericArity: false));
+            sb.Append('.');
+            sb.Append(propertyName);
 
             return sb.ToString();
         }
@@ -405,6 +437,33 @@ T", null, null, false, null, null, null));
             // For non-generic types, use FullName (if available) and replace nested type separators.
             return (type.FullName ?? type.Name).Replace('+', '.');
         }
+
+        /// <summary>
+        /// Normalizes a documentation comment ID to match the compiler-style format.
+        /// Strips the return type suffix for ordinary methods but retains it for conversion operators.
+        /// </summary>
+        /// <param name="docId">The documentation comment ID to normalize.</param>
+        /// <returns>The normalized documentation comment ID.</returns>
+        public static string NormalizeDocId(string docId)
+        {
+            // Find the tilde character that indicates the return type suffix
+            var tildeIndex = docId.IndexOf('~');
+            if (tildeIndex == -1)
+            {
+                // No return type suffix, return as-is
+                return docId;
+            }
+
+            // Check if this is a conversion operator (op_Implicit or op_Explicit)
+            // For these operators, we need to keep the return type suffix
+            if (docId.Contains("op_Implicit") || docId.Contains("op_Explicit"))
+            {
+                return docId;
+            }
+
+            // For ordinary methods, strip the return type suffix
+            return docId.Substring(0, tildeIndex);
+        }
     }
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
@@ -420,7 +479,7 @@ T", null, null, false, null, null, null));
             {
                 return Task.CompletedTask;
             }
-            if (XmlCommentCache.Cache.TryGetValue(methodInfo.CreateDocumentationId(), out var methodComment))
+            if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(methodInfo.CreateDocumentationId()), out var methodComment))
             {
                 if (methodComment.Summary is { } summary)
                 {
@@ -491,6 +550,60 @@ T", null, null, false, null, null, null));
                     }
                 }
             }
+            foreach (var parameterDescription in context.Description.ParameterDescriptions)
+            {
+                var metadata = parameterDescription.ModelMetadata;
+                if (metadata is not null
+                    && metadata.MetadataKind == ModelMetadataKind.Property
+                    && metadata.ContainerType is { } containerType
+                    && metadata.PropertyName is { } propertyName)
+                {
+                    var propertyDocId = DocumentationCommentIdHelper.CreateDocumentationId(containerType, propertyName);
+                    if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyDocId), out var propertyComment))
+                    {
+                        var parameter = operation.Parameters?.SingleOrDefault(p => p.Name == metadata.Name);
+                        var description = propertyComment.Summary;
+                        if (!string.IsNullOrEmpty(description) && !string.IsNullOrEmpty(propertyComment.Value))
+                        {
+                            description = $"{description}\n{propertyComment.Value}";
+                        }
+                        else if (string.IsNullOrEmpty(description))
+                        {
+                            description = propertyComment.Value;
+                        }
+                        if (parameter is null)
+                        {
+                            if (operation.RequestBody is not null)
+                            {
+                                operation.RequestBody.Description = description;
+                                if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                                {
+                                    var content = operation.RequestBody.Content?.Values;
+                                    if (content is null)
+                                    {
+                                        continue;
+                                    }
+                                    var parsedExample = jsonString.Parse();
+                                    foreach (var mediaType in content)
+                                    {
+                                        mediaType.Example = parsedExample;
+                                    }
+                                }
+                            }
+                            continue;
+                        }
+                        var targetOperationParameter = UnwrapOpenApiParameter(parameter);
+                        if (targetOperationParameter is not null)
+                        {
+                            targetOperationParameter.Description = description;
+                            if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                            {
+                                targetOperationParameter.Example = jsonString.Parse();
+                            }
+                        }
+                    }
+                }
+            }
 
             return Task.CompletedTask;
         }
@@ -524,18 +637,8 @@ T", null, null, false, null, null, null));
     {
         public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
         {
-            if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
-            {
-                if (XmlCommentCache.Cache.TryGetValue(propertyInfo.CreateDocumentationId(), out var propertyComment))
-                {
-                    schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
-                    if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
-                    {
-                        schema.Example = jsonString.Parse();
-                    }
-                }
-            }
-            if (XmlCommentCache.Cache.TryGetValue(context.JsonTypeInfo.Type.CreateDocumentationId(), out var typeComment))
+            // Apply comments from the type
+            if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(context.JsonTypeInfo.Type.CreateDocumentationId()), out var typeComment))
             {
                 schema.Description = typeComment.Summary;
                 if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
@@ -543,10 +646,51 @@ T", null, null, false, null, null, null));
                     schema.Example = jsonString.Parse();
                 }
             }
+
+            if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
+            {
+                // Apply comments from the property
+                if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
+                {
+                    var description = propertyComment.Summary;
+                    if (!string.IsNullOrEmpty(description) && !string.IsNullOrEmpty(propertyComment.Value))
+                    {
+                        description = $"{description}\n{propertyComment.Value}";
+                    }
+                    else if (string.IsNullOrEmpty(description))
+                    {
+                        description = propertyComment.Value;
+                    }
+                    if (schema.Metadata is null
+                        || !schema.Metadata.TryGetValue("x-schema-id", out var schemaId)
+                        || string.IsNullOrEmpty(schemaId as string))
+                    {
+                        // Inlined schema
+                        schema.Description = description;
+                        if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                        {
+                            schema.Example = jsonString.Parse();
+                        }
+                    }
+                    else
+                    {
+                        // Schema Reference
+                        if (!string.IsNullOrEmpty(description))
+                        {
+                            schema.Metadata["x-ref-description"] = description;
+                        }
+                        if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                        {
+                            schema.Metadata["x-ref-example"] = jsonString.Parse()!;
+                        }
+                    }
+                }
+            }
             return Task.CompletedTask;
         }
     }
 
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class JsonNodeExtensions
     {
         public static JsonNode? Parse(this string? json)
