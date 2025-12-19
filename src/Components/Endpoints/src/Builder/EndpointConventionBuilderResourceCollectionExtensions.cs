@@ -31,18 +31,22 @@ public static class EndpointConventionBuilderResourceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        ResourceCollectionResolver? resolver = null;
+        // Early return if builder doesn't implement IEndpointRouteBuilder
+        if (builder is not IEndpointRouteBuilder routeBuilder)
+        {
+            return builder;
+        }
+
+        // Create resolver once outside the lambda
+        var resolver = new ResourceCollectionResolver(routeBuilder);
 
         builder.Add(endpointBuilder =>
         {
-            // Check if there's already a resource collection on the metadata or if the builder is not an IEndpointRouteBuilder
-            if (endpointBuilder.Metadata.OfType<ResourceAssetCollection>().Any() || builder is not IEndpointRouteBuilder routeBuilder)
+            // Check if there's already a resource collection on the metadata
+            if (endpointBuilder.Metadata.OfType<ResourceAssetCollection>().Any())
             {
                 return;
             }
-
-            // Initialize resolver lazily and cache it
-            resolver ??= new ResourceCollectionResolver(routeBuilder);
             
             // Only add metadata if static assets are registered
             if (resolver.IsRegistered(manifestPath))
