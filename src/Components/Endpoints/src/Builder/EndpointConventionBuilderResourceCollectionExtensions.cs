@@ -31,46 +31,60 @@ public static class EndpointConventionBuilderResourceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        // Early return if builder doesn't implement IEndpointRouteBuilder
-        if (builder is not IEndpointRouteBuilder routeBuilder)
+        // Check if builder also implements IEndpointRouteBuilder (like RouteGroupBuilder does)
+        if (builder is IEndpointRouteBuilder routeBuilder)
         {
-            return builder;
+            var convention = new ResourceCollectionConvention(routeBuilder, manifestPath);
+            builder.Add(convention.Apply);
+        }
+        
+        return builder;
+    }
+
+    private sealed class ResourceCollectionConvention
+    {
+        private readonly IEndpointRouteBuilder _routeBuilder;
+        private readonly string? _manifestPath;
+        private ResourceAssetCollection? _collection;
+        private ResourcePreloadCollection? _preloadCollection;
+        private ImportMapDefinition? _importMap;
+        private bool _initialized;
+
+        public ResourceCollectionConvention(IEndpointRouteBuilder routeBuilder, string? manifestPath)
+        {
+            _routeBuilder = routeBuilder;
+            _manifestPath = manifestPath;
         }
 
-        // Create resolver once outside the lambda
-        var resolver = new ResourceCollectionResolver(routeBuilder);
-
-        // Resolve collection and related metadata once if registered
-        ResourceAssetCollection? collection = null;
-        ResourcePreloadCollection? preloadCollection = null;
-        ImportMapDefinition? importMap = null;
-
-        if (resolver.IsRegistered(manifestPath))
+        public void Apply(EndpointBuilder endpointBuilder)
         {
-            collection = resolver.ResolveResourceCollection(manifestPath);
-            preloadCollection = new ResourcePreloadCollection(collection);
-            importMap = ImportMapDefinition.FromResourceCollection(collection);
-        }
-
-        builder.Add(endpointBuilder =>
-        {
-            // Early return if collection is not available
-            if (collection == null)
-            {
-                return;
-            }
-
             // Check if there's already a resource collection on the metadata
             if (endpointBuilder.Metadata.OfType<ResourceAssetCollection>().Any())
             {
                 return;
             }
 
-            endpointBuilder.Metadata.Add(collection);
-            endpointBuilder.Metadata.Add(preloadCollection!);
-            endpointBuilder.Metadata.Add(importMap!);
-        });
-        
-        return builder;
+            // Lazy initialization: resolve collection once on first endpoint
+            if (!_initialized)
+            {
+                _initialized = true;
+                var resolver = new ResourceCollectionResolver(_routeBuilder);
+                
+                if (resolver.IsRegistered(_manifestPath))
+                {
+                    _collection = resolver.ResolveResourceCollection(_manifestPath);
+                    _preloadCollection = new ResourcePreloadCollection(_collection);
+                    _importMap = ImportMapDefinition.FromResourceCollection(_collection);
+                }
+            }
+
+            // If collection was resolved, add it to the endpoint
+            if (_collection != null)
+            {
+                endpointBuilder.Metadata.Add(_collection);
+                endpointBuilder.Metadata.Add(_preloadCollection!);
+                endpointBuilder.Metadata.Add(_importMap!);
+            }
+        }
     }
 }
