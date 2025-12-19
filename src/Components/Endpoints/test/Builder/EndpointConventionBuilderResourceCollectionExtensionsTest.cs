@@ -95,12 +95,70 @@ public class EndpointConventionBuilderResourceCollectionExtensionsTest
         Assert.Equal("default.css", list[0].Url);
     }
 
+    [Fact]
+    public void WithStaticAssets_OnMapGet_AddsResourceCollection_WhenEndpointBuilderImplementsIEndpointRouteBuilder()
+    {
+        var routeBuilder = new TestEndpointRouteBuilder();
+        routeBuilder.MapStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
+        
+        var mapGet = routeBuilder.MapGet("/endpoint", () => "test");
+        mapGet.WithStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
+
+        // When conventions are applied to an endpoint builder that implements IEndpointRouteBuilder,
+        // the metadata is added even if the convention was added via MapGet
+        var endpointBuilder = new TestEndpointBuilder(routeBuilder);
+        ApplyConventions(mapGet, endpointBuilder);
+        
+        var collection = endpointBuilder.Metadata.OfType<ResourceAssetCollection>().FirstOrDefault();
+        Assert.NotNull(collection);
+        
+        var list = Assert.IsAssignableFrom<IReadOnlyList<ResourceAsset>>(collection);
+        Assert.Single(list);
+        Assert.Equal("named.css", list[0].Url);
+    }
+
+    [Fact]
+    public void WithStaticAssets_OnMapGetInGroup_AddsResourceCollection()
+    {
+        var routeBuilder = new TestEndpointRouteBuilder();
+        routeBuilder.MapStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
+        
+        var group = routeBuilder.MapGroup("/test");
+        group.WithStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
+        
+        var mapGet = group.MapGet("/endpoint", () => "test");
+
+        var endpointBuilder = new TestEndpointBuilder(routeBuilder);
+        ApplyConventions(group, endpointBuilder);
+        
+        // When MapGet is inside a group that has WithStaticAssets, the metadata is added
+        var collection = endpointBuilder.Metadata.OfType<ResourceAssetCollection>().FirstOrDefault();
+        Assert.NotNull(collection);
+        
+        var list = Assert.IsAssignableFrom<IReadOnlyList<ResourceAsset>>(collection);
+        Assert.Single(list);
+        Assert.Equal("named.css", list[0].Url);
+    }
+
     private static void ApplyConventions(RouteGroupBuilder group, EndpointBuilder endpointBuilder)
     {
         // Access conventions via reflection since they're private
         var conventionsField = typeof(RouteGroupBuilder).GetField("_conventions", 
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var conventions = (List<Action<EndpointBuilder>>)conventionsField!.GetValue(group)!;
+        
+        foreach (var convention in conventions)
+        {
+            convention(endpointBuilder);
+        }
+    }
+
+    private static void ApplyConventions(RouteHandlerBuilder handler, EndpointBuilder endpointBuilder)
+    {
+        // Access conventions via reflection since they're private
+        var conventionsField = typeof(RouteHandlerBuilder).GetField("_conventions", 
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var conventions = (List<Action<EndpointBuilder>>)conventionsField!.GetValue(handler)!;
         
         foreach (var convention in conventions)
         {
