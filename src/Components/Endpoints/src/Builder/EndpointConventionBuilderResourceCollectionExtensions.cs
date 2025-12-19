@@ -40,24 +40,35 @@ public static class EndpointConventionBuilderResourceCollectionExtensions
         // Create resolver once outside the lambda
         var resolver = new ResourceCollectionResolver(routeBuilder);
 
+        // Resolve collection and related metadata once if registered
+        ResourceAssetCollection? collection = null;
+        ResourcePreloadCollection? preloadCollection = null;
+        ImportMapDefinition? importMap = null;
+
+        if (resolver.IsRegistered(manifestPath))
+        {
+            collection = resolver.ResolveResourceCollection(manifestPath);
+            preloadCollection = new ResourcePreloadCollection(collection);
+            importMap = ImportMapDefinition.FromResourceCollection(collection);
+        }
+
         builder.Add(endpointBuilder =>
         {
+            // Early return if collection is not available
+            if (collection == null)
+            {
+                return;
+            }
+
             // Check if there's already a resource collection on the metadata
             if (endpointBuilder.Metadata.OfType<ResourceAssetCollection>().Any())
             {
                 return;
             }
-            
-            // Only add metadata if static assets are registered
-            if (resolver.IsRegistered(manifestPath))
-            {
-                var collection = resolver.ResolveResourceCollection(manifestPath);
-                var importMap = ImportMapDefinition.FromResourceCollection(collection);
 
-                endpointBuilder.Metadata.Add(collection);
-                endpointBuilder.Metadata.Add(new ResourcePreloadCollection(collection));
-                endpointBuilder.Metadata.Add(importMap);
-            }
+            endpointBuilder.Metadata.Add(collection);
+            endpointBuilder.Metadata.Add(preloadCollection!);
+            endpointBuilder.Metadata.Add(importMap!);
         });
         
         return builder;
