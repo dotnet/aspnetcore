@@ -171,8 +171,8 @@ internal sealed class DirectSslConnection : TransportConnection
                         {
                             // Use worker's async SSL_write (goes through epoll event loop)
                             // Worker handles partial writes internally
-                            var writeBuffer = segment.ToArray(); // Copy to managed array for Memory<byte>
-                            await _worker.SslWriteAsync(_ssl, _clientFd, writeBuffer.AsMemory(), writeBuffer.Length);
+                            // segment is ReadOnlyMemory<byte> - no copy needed!
+                            await _worker.SslWriteAsync(_ssl, _clientFd, segment, segment.Length);
                         }
                     }
                 }

@@ -21,7 +21,17 @@ internal sealed class SslIoRequest
     public SslIoType Type { get; }
     public IntPtr Ssl { get; }
     public int ClientFd { get; }
-    public Memory<byte> Buffer { get; }
+    
+    /// <summary>
+    /// Buffer for read operations (mutable - we write into it).
+    /// </summary>
+    public Memory<byte> ReadBuffer { get; }
+    
+    /// <summary>
+    /// Buffer for write operations (read-only - we read from it).
+    /// </summary>
+    public ReadOnlyMemory<byte> WriteBuffer { get; }
+    
     public int Length { get; }
     public TaskCompletionSource<int> Completion { get; }
 
@@ -30,12 +40,28 @@ internal sealed class SslIoRequest
     /// </summary>
     public int BytesTransferred { get; set; }
 
+    /// <summary>
+    /// Constructor for READ operations.
+    /// </summary>
     public SslIoRequest(SslIoType type, IntPtr ssl, int clientFd, Memory<byte> buffer, int length)
     {
         Type = type;
         Ssl = ssl;
         ClientFd = clientFd;
-        Buffer = buffer;
+        ReadBuffer = buffer;
+        Length = length;
+        Completion = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+    }
+    
+    /// <summary>
+    /// Constructor for WRITE operations.
+    /// </summary>
+    public SslIoRequest(SslIoType type, IntPtr ssl, int clientFd, ReadOnlyMemory<byte> buffer, int length)
+    {
+        Type = type;
+        Ssl = ssl;
+        ClientFd = clientFd;
+        WriteBuffer = buffer;
         Length = length;
         Completion = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
     }

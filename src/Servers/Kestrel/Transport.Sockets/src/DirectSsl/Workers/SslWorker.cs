@@ -97,7 +97,7 @@ internal sealed class SslWorker
     /// <summary>
     /// Submit an SSL write request. Returns when all data is written.
     /// </summary>
-    public Task<int> SslWriteAsync(IntPtr ssl, int clientFd, Memory<byte> buffer, int length)
+    public Task<int> SslWriteAsync(IntPtr ssl, int clientFd, ReadOnlyMemory<byte> buffer, int length)
     {
         var request = new SslIoRequest(SslIoType.Write, ssl, clientFd, buffer, length);
         _ioQueue.Enqueue(request);
@@ -226,7 +226,7 @@ internal sealed class SslWorker
 
     private unsafe void TryRead(SslIoRequest request)
     {
-        fixed (byte* ptr = request.Buffer.Span)
+        fixed (byte* ptr = request.ReadBuffer.Span)
         {
             int bytesRead = NativeSsl.ssl_read(request.Ssl, ptr, request.Length);
 
@@ -258,7 +258,7 @@ internal sealed class SslWorker
 
     private unsafe void TryWrite(SslIoRequest request)
     {
-        var remaining = request.Buffer.Slice(request.BytesTransferred);
+        var remaining = request.WriteBuffer.Slice(request.BytesTransferred);
         
         fixed (byte* ptr = remaining.Span)
         {
