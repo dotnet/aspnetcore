@@ -39,7 +39,7 @@ else
 }
 
 @code {
-    [PersistentState]
+    [PersistentState(AllowUpdates = true)]
     public WeatherForecast[]? Forecasts { get; set; }
 
     protected override async Task OnInitializedAsync()
