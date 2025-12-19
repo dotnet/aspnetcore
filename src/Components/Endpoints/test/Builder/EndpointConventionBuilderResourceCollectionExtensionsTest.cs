@@ -18,14 +18,11 @@ public class EndpointConventionBuilderResourceCollectionExtensionsTest
     [Fact]
     public void WithStaticAssets_DoesNotAddResourceCollection_ToEndpoints_NoStaticAssetsMapped()
     {
-        // Arrange
         var routeBuilder = new TestEndpointRouteBuilder();
         var conventionBuilder = new TestRouteGroupBuilder(routeBuilder);
 
-        // Act
         conventionBuilder.WithStaticAssets();
 
-        // Assert
         var endpointBuilderInstance = new TestEndpointBuilder();
         conventionBuilder.ApplyConventions(endpointBuilderInstance);
         
@@ -36,15 +33,12 @@ public class EndpointConventionBuilderResourceCollectionExtensionsTest
     [Fact]
     public void WithStaticAssets_AddsResourceCollection_ToEndpoints_WithMatchingManifest()
     {
-        // Arrange
         var routeBuilder = new TestEndpointRouteBuilder();
         routeBuilder.MapStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
         var conventionBuilder = new TestRouteGroupBuilder(routeBuilder);
 
-        // Act
         conventionBuilder.WithStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
 
-        // Assert
         var endpointBuilderInstance = new TestEndpointBuilder();
         conventionBuilder.ApplyConventions(endpointBuilderInstance);
         
@@ -55,7 +49,6 @@ public class EndpointConventionBuilderResourceCollectionExtensionsTest
         Assert.Single(list);
         Assert.Equal("named.css", list[0].Url);
         
-        // Verify other metadata is also added
         var preloadCollection = endpointBuilderInstance.Metadata.OfType<ResourcePreloadCollection>().FirstOrDefault();
         Assert.NotNull(preloadCollection);
         
@@ -66,7 +59,6 @@ public class EndpointConventionBuilderResourceCollectionExtensionsTest
     [Fact]
     public void WithStaticAssets_DoesNotAddResourceCollection_WhenAlreadyExists()
     {
-        // Arrange
         var routeBuilder = new TestEndpointRouteBuilder();
         routeBuilder.MapStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
         var conventionBuilder = new TestRouteGroupBuilder(routeBuilder);
@@ -75,11 +67,9 @@ public class EndpointConventionBuilderResourceCollectionExtensionsTest
         var endpointBuilderInstance = new TestEndpointBuilder();
         endpointBuilderInstance.Metadata.Add(existingCollection);
 
-        // Act
         conventionBuilder.WithStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
         conventionBuilder.ApplyConventions(endpointBuilderInstance);
 
-        // Assert
         var collections = endpointBuilderInstance.Metadata.OfType<ResourceAssetCollection>().ToList();
         Assert.Single(collections);
         Assert.Same(existingCollection, collections[0]);
@@ -88,15 +78,12 @@ public class EndpointConventionBuilderResourceCollectionExtensionsTest
     [Fact]
     public void WithStaticAssets_AddsResourceCollection_ToEndpoints_DefaultManifest()
     {
-        // Arrange
         var routeBuilder = new TestEndpointRouteBuilder();
         routeBuilder.MapStaticAssets();
         var conventionBuilder = new TestRouteGroupBuilder(routeBuilder);
 
-        // Act
         conventionBuilder.WithStaticAssets();
 
-        // Assert
         var endpointBuilderInstance = new TestEndpointBuilder();
         conventionBuilder.ApplyConventions(endpointBuilderInstance);
         
