@@ -8,10 +8,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
-var withCustomDirectTransport = false;
+var withCustomDirectTransport = true;
 
 var builder = WebApplication.CreateSlimBuilder(args);
+
+// Disable verbose logging for better benchmark performance
+builder.Logging.SetMinimumLevel(LogLevel.Warning);
 
 if (withCustomDirectTransport)
 {

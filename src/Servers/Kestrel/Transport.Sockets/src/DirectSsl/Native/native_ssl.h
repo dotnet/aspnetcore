@@ -66,4 +66,12 @@ int ssl_read(SSL* ssl, char* buffer, int buffer_size);
 // Write and encrypt data, returns bytes written, -1 would block, -2 error
 int ssl_write(SSL* ssl, const char* data, int length);
 
+// ============================================================================
+// Error Handling
+// ============================================================================
+
+// Get the last OpenSSL error message. Returns number of bytes written to buffer.
+// The buffer should be at least 256 bytes.
+int ssl_get_last_error(char* buffer, int buffer_size);
+
 #endif

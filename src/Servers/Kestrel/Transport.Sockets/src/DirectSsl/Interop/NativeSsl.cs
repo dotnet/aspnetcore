@@ -229,4 +229,30 @@ internal static partial class NativeSsl
     {
         epoll_register_write(epollFd, clientFd);
     }
+
+    // ========================================================================
+    // Error Handling
+    // ========================================================================
+
+    /// <summary>
+    /// Get the last OpenSSL error message.
+    /// </summary>
+    [LibraryImport(LibName)]
+    [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    public static unsafe partial int ssl_get_last_error(byte* buffer, int buffer_size);
+
+    /// <summary>
+    /// Get the last OpenSSL error as a string.
+    /// </summary>
+    public static unsafe string GetLastError()
+    {
+        const int bufferSize = 512;
+        byte* buffer = stackalloc byte[bufferSize];
+        int written = ssl_get_last_error(buffer, bufferSize);
+        if (written > 0)
+        {
+            return System.Text.Encoding.UTF8.GetString(buffer, written);
+        }
+        return "Unknown error";
+    }
 }

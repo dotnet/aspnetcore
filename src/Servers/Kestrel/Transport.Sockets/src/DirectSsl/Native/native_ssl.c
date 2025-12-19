@@ -418,3 +418,42 @@ int epoll_register_write(int epoll_fd, int client_fd) {
     }
     return 0;
 }
+
+/**
+ * Get the last OpenSSL error message.
+ * Retrieves errors from the OpenSSL error queue and formats them into a string.
+ * 
+ * Parameters:
+ *   buffer: Output buffer to write error message
+ *   buffer_size: Size of the output buffer (recommend at least 256)
+ * 
+ * Returns: Number of bytes written to buffer (excluding null terminator)
+ */
+int ssl_get_last_error(char* buffer, int buffer_size) {
+    if (buffer == NULL || buffer_size <= 0) {
+        return 0;
+    }
+    
+    unsigned long err = ERR_get_error();
+    if (err == 0) {
+        // No error in queue, check errno
+        if (errno != 0) {
+            return snprintf(buffer, buffer_size, "System error: %s", strerror(errno));
+        }
+        return snprintf(buffer, buffer_size, "No error");
+    }
+    
+    // Get the error string from OpenSSL
+    ERR_error_string_n(err, buffer, buffer_size);
+    
+    // Append any additional errors in the queue
+    int written = strlen(buffer);
+    unsigned long next_err;
+    while ((next_err = ERR_get_error()) != 0 && written < buffer_size - 50) {
+        written += snprintf(buffer + written, buffer_size - written, "; ");
+        ERR_error_string_n(next_err, buffer + written, buffer_size - written);
+        written = strlen(buffer);
+    }
+    
+    return written;
+}
