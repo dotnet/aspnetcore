@@ -193,4 +193,40 @@ internal static partial class NativeSsl
     [LibraryImport(LibName)]
     [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
     public static unsafe partial int ssl_write(IntPtr ssl, byte* data, int length);
+
+    // ========================================================================
+    // Epoll Registration for I/O
+    // ========================================================================
+
+    /// <summary>
+    /// Register a socket for read events (EPOLLIN).
+    /// Used after SSL_read returns WANT_READ.
+    /// </summary>
+    [LibraryImport(LibName)]
+    [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    public static partial int epoll_register_read(int epoll_fd, int client_fd);
+
+    /// <summary>
+    /// Register a socket for write events (EPOLLOUT).
+    /// Used after SSL_write returns WANT_WRITE.
+    /// </summary>
+    [LibraryImport(LibName)]
+    [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    public static partial int epoll_register_write(int epoll_fd, int client_fd);
+
+    /// <summary>
+    /// Helper to register for read events.
+    /// </summary>
+    public static void RegisterForRead(int epollFd, int clientFd)
+    {
+        epoll_register_read(epollFd, clientFd);
+    }
+
+    /// <summary>
+    /// Helper to register for write events.
+    /// </summary>
+    public static void RegisterForWrite(int epollFd, int clientFd)
+    {
+        epoll_register_write(epollFd, clientFd);
+    }
 }

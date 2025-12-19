@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Sockets;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Workers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Ssl;
 
@@ -15,7 +16,7 @@ internal sealed class HandshakeRequest
     public int ClientFd { get; }
     public TaskCompletionSource<HandshakeRequest> Completion { get; }
     public HandshakeResult Result { get; set; }
-    public int WorkerId { get; set; } = -1;
+    public SslWorker? Worker { get; set; }
 
     public HandshakeRequest(Socket clientSocket)
     {

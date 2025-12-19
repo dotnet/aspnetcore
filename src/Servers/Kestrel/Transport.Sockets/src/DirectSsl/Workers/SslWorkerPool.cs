@@ -9,16 +9,21 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Workers;
 
 /// <summary>
-/// Pool of dedicated SSL worker threads.
-/// Each worker has its own epoll instance and processes handshakes independently.
-/// All workers share a common queue of incoming handshake requests.
+/// Pool of dedicated SSL worker threads - nginx-style.
+/// 
+/// Each worker has its own epoll instance and handles:
+/// - TLS handshakes
+/// - SSL read/write I/O for connections assigned to it
+/// 
+/// After handshake completes, the connection stays assigned to the same worker
+/// for all subsequent I/O operations, eliminating context switching.
 /// </summary>
 internal sealed class SslWorkerPool : IDisposable
 {
     private readonly ILogger _logger;
 
-    readonly SslWorker[] _workers;
-    private readonly ConcurrentQueue<HandshakeRequest> _sharedQueue = new(); // Shared across all workers
+    private readonly SslWorker[] _workers;
+    private readonly ConcurrentQueue<HandshakeRequest> _sharedQueue = new();
 
     private readonly SslContext _sslContext;
     private bool _disposed;
@@ -36,19 +41,18 @@ internal sealed class SslWorkerPool : IDisposable
             _workers[i].Start();
         }
 
-        _logger.LogInformation("Started {workerCount} workers with shared queue", workerCount);
+        _logger.LogInformation("Started {WorkerCount} SSL workers with shared queue", workerCount);
     }
 
     /// <summary>
     /// Submit a socket for TLS handshake.
     /// Returns a task that completes when handshake is done.
-    /// Any free worker will pick it up.
+    /// The HandshakeRequest contains WorkerId to identify which worker handled it.
     /// </summary>
     public Task<HandshakeRequest> SubmitHandshakeAsync(Socket clientSocket)
     {
         var request = new HandshakeRequest(clientSocket);
         _sharedQueue.Enqueue(request);
-        
         return request.Completion.Task;
     }
 

@@ -361,3 +361,60 @@ int ssl_write(SSL* ssl, const char* data, int length) {
 int ssl_get_fd(SSL* ssl) {
     return SSL_get_fd(ssl);
 }
+
+// ============================================================================
+// Epoll Registration for I/O (post-handshake)
+// ============================================================================
+
+/**
+ * Register socket for read events (EPOLLIN).
+ * Used after SSL_read returns WANT_READ to wait for data.
+ * 
+ * This uses EPOLL_CTL_MOD since socket was already added during handshake.
+ * If socket wasn't added, falls back to EPOLL_CTL_ADD.
+ */
+int epoll_register_read(int epoll_fd, int client_fd) {
+    struct epoll_event ev;
+    ev.events = EPOLLIN | EPOLLET;
+    ev.data.fd = client_fd;
+    
+    // Try MOD first (socket already in epoll from handshake)
+    if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, client_fd, &ev) < 0) {
+        // If MOD fails, try ADD (socket not in epoll yet)
+        if (errno == ENOENT) {
+            if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev) < 0) {
+                perror("[native] epoll_register_read ADD failed");
+                return -1;
+            }
+        } else {
+            perror("[native] epoll_register_read MOD failed");
+            return -1;
+        }
+    }
+    return 0;
+}
+
+/**
+ * Register socket for write events (EPOLLOUT).
+ * Used after SSL_write returns WANT_WRITE to wait for buffer space.
+ */
+int epoll_register_write(int epoll_fd, int client_fd) {
+    struct epoll_event ev;
+    ev.events = EPOLLOUT | EPOLLET;
+    ev.data.fd = client_fd;
+    
+    // Try MOD first (socket already in epoll from handshake)
+    if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, client_fd, &ev) < 0) {
+        // If MOD fails, try ADD (socket not in epoll yet)
+        if (errno == ENOENT) {
+            if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, client_fd, &ev) < 0) {
+                perror("[native] epoll_register_write ADD failed");
+                return -1;
+            }
+        } else {
+            perror("[native] epoll_register_write MOD failed");
+            return -1;
+        }
+    }
+    return 0;
+}

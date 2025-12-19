@@ -7,18 +7,25 @@ using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Interop;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Workers;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Connection;
 
 /// <summary>
-/// Connection context that uses native OpenSSL for TLS.
-/// After handshake completes, owns the SSL pointer and uses SSL_read/SSL_write for data transfer.
+/// Connection context that uses native OpenSSL for TLS - nginx-style.
+/// 
+/// After handshake completes:
+/// - Owns the SSL pointer
+/// - Uses the assigned SslWorker for all I/O (read/write via epoll)
+/// - All I/O happens on the worker's thread for maximum performance
 /// </summary>
-internal sealed unsafe class DirectSslConnection : TransportConnection
+internal sealed class DirectSslConnection : TransportConnection
 {
     private readonly Socket _socket;
     private readonly IntPtr _ssl;
+    private readonly int _clientFd;
+    private readonly SslWorker _worker;
     private readonly ILogger _logger;
     private readonly MemoryPool<byte> _memoryPool;
     private readonly CancellationTokenSource _connectionClosedTokenSource = new();
@@ -30,6 +37,7 @@ internal sealed unsafe class DirectSslConnection : TransportConnection
     public DirectSslConnection(
         Socket socket,
         IntPtr ssl,
+        SslWorker worker,
         EndPoint? localEndPoint,
         EndPoint? remoteEndPoint,
         MemoryPool<byte> memoryPool,
@@ -37,6 +45,8 @@ internal sealed unsafe class DirectSslConnection : TransportConnection
     {
         _socket = socket;
         _ssl = ssl;
+        _clientFd = (int)socket.Handle;
+        _worker = worker;
         _memoryPool = memoryPool;
         _logger = logger;
 
@@ -75,6 +85,7 @@ internal sealed unsafe class DirectSslConnection : TransportConnection
 
     /// <summary>
     /// Receive loop: SSL_read -> write to Application.Output (Kestrel reads from Transport.Input)
+    /// Uses the worker's epoll-based async SSL_read.
     /// </summary>
     private async Task ReceiveLoopAsync()
     {
@@ -86,13 +97,8 @@ internal sealed unsafe class DirectSslConnection : TransportConnection
             {
                 var memory = Application.Output.GetMemory();
 
-                int bytesRead;
-                fixed (byte* ptr = memory.Span)
-                {
-                    // Blocking SSL_read - TODO: make non-blocking with epoll 
-                    // This may be achieved by using same worker thread for read and write as well
-                    bytesRead = NativeSsl.ssl_read(_ssl, ptr, memory.Length);
-                }
+                // Use worker's async SSL_read (goes through epoll event loop)
+                int bytesRead = await _worker.SslReadAsync(_ssl, _clientFd, memory);
 
                 if (bytesRead > 0)
                 {
@@ -109,19 +115,18 @@ internal sealed unsafe class DirectSslConnection : TransportConnection
                     _logger.LogDebug("SSL connection closed by peer");
                     break;
                 }
-                else if (bytesRead == -1)
-                {
-                    // Would block - shouldn't happen with blocking socket, but handle it
-                    await Task.Delay(1);
-                }
                 else
                 {
-                    // Error
-                    _logger.LogError("SSL_read error: {Error}", bytesRead);
-                    error = new IOException($"SSL_read failed with error {bytesRead}");
+                    // Negative = error (shouldn't happen with async API, but handle it)
+                    _logger.LogError("SSL_read returned unexpected value: {BytesRead}", bytesRead);
+                    error = new IOException($"SSL_read failed with {bytesRead}");
                     break;
                 }
             }
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected during shutdown
         }
         catch (Exception ex)
         {
@@ -136,6 +141,7 @@ internal sealed unsafe class DirectSslConnection : TransportConnection
 
     /// <summary>
     /// Send loop: read from Application.Input (Kestrel writes to Transport.Output) -> SSL_write
+    /// Uses the worker's epoll-based async SSL_write.
     /// </summary>
     private async Task SendLoopAsync()
     {
@@ -146,54 +152,43 @@ internal sealed unsafe class DirectSslConnection : TransportConnection
             while (!_disposed)
             {
                 var result = await Application.Input.ReadAsync();
-                var buffer = result.Buffer;
-
-                if (buffer.IsEmpty && result.IsCompleted)
+                
+                // Check for cancellation first
+                if (result.IsCanceled)
                 {
                     break;
                 }
+                
+                var buffer = result.Buffer;
 
-                try
+                // Process buffer data BEFORE checking IsCompleted
+                // This ensures the final chunk (e.g., "0\r\n\r\n" terminator) is sent
+                if (!buffer.IsEmpty)
                 {
                     foreach (var segment in buffer)
                     {
-                        var remaining = segment;
-                        while (remaining.Length > 0)
+                        if (segment.Length > 0)
                         {
-                            int bytesWritten;
-                            fixed (byte* ptr = remaining.Span)
-                            {
-                                // Blocking SSL_write - TODO: make non-blocking with epoll
-                                bytesWritten = NativeSsl.ssl_write(_ssl, ptr, remaining.Length);
-                            }
-
-                            if (bytesWritten > 0)
-                            {
-                                remaining = remaining.Slice(bytesWritten);
-                            }
-                            else if (bytesWritten == -1)
-                            {
-                                // Would block - retry
-                                await Task.Delay(1);
-                            }
-                            else
-                            {
-                                // Error
-                                throw new IOException($"SSL_write failed with error {bytesWritten}");
-                            }
+                            // Use worker's async SSL_write (goes through epoll event loop)
+                            // Worker handles partial writes internally
+                            var writeBuffer = segment.ToArray(); // Copy to managed array for Memory<byte>
+                            await _worker.SslWriteAsync(_ssl, _clientFd, writeBuffer.AsMemory(), writeBuffer.Length);
                         }
                     }
                 }
-                finally
-                {
-                    Application.Input.AdvanceTo(buffer.End);
-                }
 
+                Application.Input.AdvanceTo(buffer.End);
+
+                // Check completion AFTER processing and advancing (matches Kestrel's DoSend pattern)
                 if (result.IsCompleted)
                 {
                     break;
                 }
             }
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected during shutdown
         }
         catch (Exception ex)
         {

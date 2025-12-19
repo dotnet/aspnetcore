@@ -4,6 +4,7 @@
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl;
 using Microsoft.Extensions.Hosting;
@@ -28,13 +29,17 @@ builder.WebHost.ConfigureKestrel(options =>
     });
 });
 
-builder.WebHost.UseDirectSslSockets(options => {
+builder.WebHost.UseDirectSslSockets(options =>
+{
    options.CertificatePath = "server-p384.crt";
    options.PrivateKeyPath = "server-p384.key";
 });
 
 var app = builder.Build();
 
-app.MapGet("/", () => "hello world!");
+app.MapGet("/", (HttpContext ctx) =>
+{
+    return "Hello world";
+});
 
 await app.RunAsync();
