@@ -17,7 +17,6 @@ public static class EndpointConventionBuilderResourceCollectionExtensions
     /// Provides a helper to attach ResourceCollection metadata to endpoints.
     /// </summary>
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
-    /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to resolve static assets from.</param>
     /// <param name="manifestPath">The manifest associated with the assets.</param>
     /// <returns>The <see cref="IEndpointConventionBuilder"/> that can be used to further configure the endpoints.</returns>
     /// <remarks>
@@ -26,17 +25,12 @@ public static class EndpointConventionBuilderResourceCollectionExtensions
     /// The <paramref name="manifestPath"/> must match the path of the manifest file provided to
     /// the <see cref="StaticAssetsEndpointRouteBuilderExtensions.MapStaticAssets(IEndpointRouteBuilder, string?)"/> call.
     /// </remarks>
-    public static TBuilder WithStaticAssets<TBuilder>(
-        this TBuilder builder,
-        IEndpointRouteBuilder endpoints,
+    public static IEndpointConventionBuilder WithStaticAssets(
+        this IEndpointConventionBuilder builder,
         string? manifestPath = null)
-        where TBuilder : IEndpointConventionBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
-        ArgumentNullException.ThrowIfNull(endpoints);
 
-        var resolver = new ResourceCollectionResolver(endpoints);
-        
         builder.Add(endpointBuilder =>
         {
             // Check if there's already a resource collection on the metadata
@@ -45,15 +39,21 @@ public static class EndpointConventionBuilderResourceCollectionExtensions
                 return;
             }
 
-            // Only add metadata if static assets are registered
-            if (resolver.IsRegistered(manifestPath))
+            // Check if the builder is also an IEndpointRouteBuilder
+            if (builder is IEndpointRouteBuilder routeBuilder)
             {
-                var collection = resolver.ResolveResourceCollection(manifestPath);
-                var importMap = ImportMapDefinition.FromResourceCollection(collection);
+                var resolver = new ResourceCollectionResolver(routeBuilder);
+                
+                // Only add metadata if static assets are registered
+                if (resolver.IsRegistered(manifestPath))
+                {
+                    var collection = resolver.ResolveResourceCollection(manifestPath);
+                    var importMap = ImportMapDefinition.FromResourceCollection(collection);
 
-                endpointBuilder.Metadata.Add(collection);
-                endpointBuilder.Metadata.Add(new ResourcePreloadCollection(collection));
-                endpointBuilder.Metadata.Add(importMap);
+                    endpointBuilder.Metadata.Add(collection);
+                    endpointBuilder.Metadata.Add(new ResourcePreloadCollection(collection));
+                    endpointBuilder.Metadata.Add(importMap);
+                }
             }
         });
         

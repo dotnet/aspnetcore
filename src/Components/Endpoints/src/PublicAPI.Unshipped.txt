@@ -1,5 +1,5 @@
 #nullable enable
 Microsoft.AspNetCore.Builder.EndpointConventionBuilderResourceCollectionExtensions
-static Microsoft.AspNetCore.Builder.EndpointConventionBuilderResourceCollectionExtensions.WithStaticAssets<TBuilder>(this TBuilder builder, Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string? manifestPath = null) -> TBuilder
+static Microsoft.AspNetCore.Builder.EndpointConventionBuilderResourceCollectionExtensions.WithStaticAssets(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder! builder, string? manifestPath = null) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
 Microsoft.AspNetCore.Components.Endpoints.BasePath
 Microsoft.AspNetCore.Components.Endpoints.BasePath.BasePath() -> void
