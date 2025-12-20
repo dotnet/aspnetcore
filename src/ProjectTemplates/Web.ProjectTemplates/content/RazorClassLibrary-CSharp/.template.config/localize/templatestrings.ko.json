@@ -10,5 +10,5 @@
   "postActions/restore/description": "이 프로젝트에 필요한 NuGet 패키지를 복원합니다.",
   "postActions/restore/manualInstructions/default/text": "'dotnet restore' 실행",
   "postActions/openPageInEditor/description": "편집기에서 Areas/MyFeature/Pages/Page1.cshtml을 엽니다.",
-  "postActions/openComponentInEditor/description": "Opens Component1.razor in the editor"
+  "postActions/openComponentInEditor/description": "편집기에서 Component1.razor를 엽니다."
 }
