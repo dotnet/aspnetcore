@@ -31,30 +31,36 @@ public static class EndpointConventionBuilderResourceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        ResourceCollectionConvention convention = new ResourceCollectionConvention(manifestPath);
-
-        builder.Add(convention.Apply);
+        // Only add the convention if the builder also implements IEndpointRouteBuilder
+        // (e.g., RouteGroupBuilder). For other builders like RouteHandlerBuilder,
+        // the convention won't be able to resolve static assets.
+        if (builder is IEndpointRouteBuilder routeBuilder)
+        {
+            ResourceCollectionConvention convention = new ResourceCollectionConvention(routeBuilder, manifestPath);
+            builder.Add(convention.Apply);
+        }
 
         return builder;
     }
 
     private sealed class ResourceCollectionConvention
     {
+        private readonly IEndpointRouteBuilder _routeBuilder;
         private readonly string? _manifestPath;
         private ResourceAssetCollection? _collection;
         private ResourcePreloadCollection? _preloadCollection;
         private ImportMapDefinition? _importMap;
 
-        public ResourceCollectionConvention(string? manifestPath)
+        public ResourceCollectionConvention(IEndpointRouteBuilder routeBuilder, string? manifestPath)
         {
+            _routeBuilder = routeBuilder;
             _manifestPath = manifestPath;
         }
 
         public void Apply(EndpointBuilder endpointBuilder)
         {
             // Check if there's already a resource collection on the metadata
-            if (endpointBuilder.Metadata.OfType<ResourceAssetCollection>().Any() ||
-                endpointBuilder is not IEndpointRouteBuilder routeEndpointBuilder)
+            if (endpointBuilder.Metadata.OfType<ResourceAssetCollection>().Any())
             {
                 return;
             }
@@ -63,7 +69,7 @@ public static class EndpointConventionBuilderResourceCollectionExtensions
             {
                 // We only use the resolver to get to the datasources so we can cache the results for
                 // all endpoints in the collection
-                var resolver = new ResourceCollectionResolver(routeEndpointBuilder);
+                var resolver = new ResourceCollectionResolver(_routeBuilder);
 
                 if (resolver.IsRegistered(_manifestPath))
                 {
