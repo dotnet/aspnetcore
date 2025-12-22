@@ -11,9 +11,11 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -1530,5 +1532,114 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         ex.Data["error_description"] = description;
         ex.Data["error_uri"] = errorUri;
         return ex;
+    }
+
+    /// <summary>
+    /// Handles the `ValidatePrincipal event fired from the underlying CookieAuthenticationHandler.
+    /// This is used for refreshing OIDC auth. token if needed.
+    /// </summary>
+    /// <param name="context">The CookieValidatePrincipalContext passed as part of the event.</param>
+    internal static async Task ValidatePrincipal(CookieValidatePrincipalContext context)
+    {
+        var authHandlerProvider = context.HttpContext.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
+        var handler = await authHandlerProvider.GetHandlerAsync(context.HttpContext, context.Scheme.Name);
+        if (handler is OpenIdConnectHandler oidcHandler)
+        {
+            await oidcHandler.HandleValidatePrincipalAsync(context);
+        }
+    }
+
+    private async Task HandleValidatePrincipalAsync(CookieValidatePrincipalContext validateContext)
+    {
+        var accessTokenExpirationText = validateContext.Properties.GetTokenValue("expires_at");
+        if (!DateTimeOffset.TryParse(accessTokenExpirationText, out var accessTokenExpiration))
+        {
+            return;
+        }
+
+        var oidcOptions = this.OptionsMonitor.Get(validateContext.Scheme.Name);
+        var now = oidcOptions.TimeProvider!.GetUtcNow();
+        if (now + TimeSpan.FromMinutes(5) < accessTokenExpiration)
+        {
+            return;
+        }
+
+        var tokenRefreshContext = new Events.TokenRefreshContext(Context, Scheme, oidcOptions, validateContext.Principal!, validateContext.Properties);
+        await Options.Events.TokenRefreshing(tokenRefreshContext);
+        if (tokenRefreshContext.ShouldRefresh)
+        {
+            var oidcConfiguration = await oidcOptions.ConfigurationManager!.GetConfigurationAsync(validateContext.HttpContext.RequestAborted);
+            var tokenEndpoint = oidcConfiguration.TokenEndpoint ?? throw new InvalidOperationException("Cannot refresh cookie. TokenEndpoint missing!");
+
+            using var refreshResponse = await oidcOptions.Backchannel.PostAsync(tokenEndpoint,
+                new FormUrlEncodedContent(new Dictionary<string, string?>()
+                {
+                    ["grant_type"] = "refresh_token",
+                    ["client_id"] = oidcOptions.ClientId,
+                    ["client_secret"] = oidcOptions.ClientSecret,
+                    ["scope"] = string.Join(" ", oidcOptions.Scope),
+                    ["refresh_token"] = validateContext.Properties.GetTokenValue("refresh_token"),
+                }));
+
+            if (!refreshResponse.IsSuccessStatusCode)
+            {
+                validateContext.RejectPrincipal();
+                return;
+            }
+
+            var refreshJson = await refreshResponse.Content.ReadAsStringAsync();
+            var message = new OpenIdConnectMessage(refreshJson);
+
+            var validationParameters = oidcOptions.TokenValidationParameters.Clone();
+            if (oidcOptions.ConfigurationManager is BaseConfigurationManager baseConfigurationManager)
+            {
+                validationParameters.ConfigurationManager = baseConfigurationManager;
+            }
+            else
+            {
+                validationParameters.ValidIssuer = oidcConfiguration.Issuer;
+                validationParameters.IssuerSigningKeys = oidcConfiguration.SigningKeys;
+            }
+
+            var validationResult = await oidcOptions.TokenHandler.ValidateTokenAsync(message.IdToken, validationParameters);
+
+            if (!validationResult.IsValid)
+            {
+                validateContext.RejectPrincipal();
+                return;
+            }
+
+            var validatedIdToken = JwtSecurityTokenConverter.Convert(validationResult.SecurityToken as JsonWebToken);
+            validatedIdToken.Payload["nonce"] = null;
+            Options.ProtocolValidator.ValidateTokenResponse(new()
+            {
+                ProtocolMessage = message,
+                ClientId = oidcOptions.ClientId,
+                ValidatedIdToken = validatedIdToken,
+            });
+
+            var principal = new ClaimsPrincipal(validationResult.ClaimsIdentity);
+            validateContext.ReplacePrincipal(principal);
+            tokenRefreshContext.ReplacePrincipal(principal);
+
+            var expiresIn = int.Parse(message.ExpiresIn, NumberStyles.Integer, CultureInfo.InvariantCulture);
+            var expiresAt = now + TimeSpan.FromSeconds(expiresIn);
+            validateContext.Properties.StoreTokens([
+                new() { Name = "access_token", Value = message.AccessToken },
+            new() { Name = "id_token", Value = message.IdToken },
+            new() { Name = "refresh_token", Value = message.RefreshToken },
+            new() { Name = "token_type", Value = message.TokenType },
+            new() { Name = "expires_at", Value = expiresAt.ToString("o", CultureInfo.InvariantCulture) },
+        ]);
+        }
+        else
+        {
+            // a handler for the `OpenIdConnectOptions.Events.TokenRefreshing` event has updated the principal,
+            // so we need to pass that down through the validateContext.
+            validateContext.ReplacePrincipal(tokenRefreshContext.Principal);
+        }
+
+        validateContext.ShouldRenew = true;
+        await Options.Events.TokenRefreshed(tokenRefreshContext);
     }
 }

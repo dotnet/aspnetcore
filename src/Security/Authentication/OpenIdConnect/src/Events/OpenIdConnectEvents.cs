@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Authentication.OpenIdConnect.Events;
+
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
 /// <summary>
@@ -67,6 +69,16 @@ public class OpenIdConnectEvents : RemoteAuthenticationEvents
     public Func<PushedAuthorizationContext, Task> OnPushAuthorization { get; set; } = context => Task.CompletedTask;
 
     /// <summary>
+    /// Invoked when the the token needs to be refreshed.
+    /// </summary>
+    public Func<TokenRefreshContext, Task> OnTokenRefreshing { get; set; } = context => Task.CompletedTask;
+
+    /// <summary>
+    /// Invoked immedaitely after the ticket has been refreshed.
+    /// </summary>
+    public Func<TokenRefreshContext, Task> OnTokenRefreshed { get; set; } = context => Task.CompletedTask;
+
+    /// <summary>
     /// Invoked if exceptions are thrown during request processing. The exceptions will be re-thrown after this event unless suppressed.
     /// </summary>
     public virtual Task AuthenticationFailed(AuthenticationFailedContext context) => OnAuthenticationFailed(context);
@@ -125,4 +137,8 @@ public class OpenIdConnectEvents : RemoteAuthenticationEvents
     /// <param name="context"></param>
     /// <returns></returns>
     public virtual Task PushAuthorization(PushedAuthorizationContext context) => OnPushAuthorization(context);
+
+    public virtual Task TokenRefreshing(TokenRefreshContext context) => OnTokenRefreshing(context);
+
+    public virtual Task TokenRefreshed(TokenRefreshContext context) => OnTokenRefreshed(context);
 }
