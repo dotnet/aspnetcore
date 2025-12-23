@@ -337,6 +337,7 @@ internal static partial class NativeSsl
     public const uint EPOLLERR = 0x008;
     public const uint EPOLLHUP = 0x010;
     public const uint EPOLLET = 0x80000000;
+    public const uint EPOLLRDHUP = 0x2000;
 
     // fcntl
     public const int F_GETFL = 3;

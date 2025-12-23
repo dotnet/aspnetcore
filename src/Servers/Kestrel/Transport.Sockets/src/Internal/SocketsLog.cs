@@ -89,4 +89,15 @@ internal static partial class SocketsLog
             ConnectionResumeCore(logger, connection.ConnectionId);
         }
     }
+
+    [LoggerMessage(30, LogLevel.Debug, @"Connection id ""{ConnectionId}"" failed on TLS handshake: {Exception}", EventName = "SslHandshakeFailed", SkipEnabledCheck = true)]
+    public static partial void SslHandshakeFailed(ILogger logger, string connectionId, string exception);
+
+    public static void SslHandshakeFailed(ILogger logger, string connectionId, Exception exception)
+    {
+        if (logger.IsEnabled(LogLevel.Debug))
+        {
+            SslHandshakeFailed(logger, connectionId, exception.ToString());
+        }
+    }
 }

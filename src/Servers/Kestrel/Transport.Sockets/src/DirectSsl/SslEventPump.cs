@@ -41,7 +41,7 @@ internal sealed class SslEventPump : IDisposable
 
         var ev = new EpollEvent
         {
-            Events = NativeSsl.EPOLLIN | NativeSsl.EPOLLOUT | NativeSsl.EPOLLET,
+            Events = NativeSsl.EPOLLIN | NativeSsl.EPOLLOUT | NativeSsl.EPOLLET | NativeSsl.EPOLLRDHUP,
             Data = new EpollData { Fd = conn.Fd }
         };
         

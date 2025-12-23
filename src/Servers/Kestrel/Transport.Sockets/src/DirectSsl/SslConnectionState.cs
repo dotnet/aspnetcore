@@ -46,8 +46,7 @@ internal sealed class SslConnectionState : IDisposable
 
         if (error == NativeSsl.SSL_ERROR_WANT_READ || error == NativeSsl.SSL_ERROR_WANT_WRITE)
         {
-            _handshakeTcs = new TaskCompletionSource<bool>(
-                TaskCreationOptions.RunContinuationsAsynchronously);
+            _handshakeTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             return new ValueTask(_handshakeTcs.Task);
         }
 
@@ -328,7 +327,7 @@ internal sealed class SslConnectionState : IDisposable
         // Send close_notify alert for graceful TLS shutdown
         // SSL_shutdown may return 0 (need to call again) or 1 (complete)
         // We call it once - if peer has already closed, that's fine
-        NativeSsl.SSL_shutdown(Ssl);
+        NativeSslNativeSsl.SSL_shutdown(Ssl);
         NativeSsl.SSL_free(Ssl);
     }
 }

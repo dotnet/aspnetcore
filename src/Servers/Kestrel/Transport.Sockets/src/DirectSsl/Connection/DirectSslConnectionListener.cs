@@ -112,6 +112,10 @@ internal sealed class DirectSslConnectionListener : IConnectionListener
                 // The connection got reset while it was in the backlog, so we try again.
                 SocketsLog.ConnectionReset(_logger, connectionId: "(null)");
             }
+            catch (SslException ex)
+            {
+                SocketsLog.SslHandshakeFailed(_logger, connectionId: "(null)", ex);
+            }
         }
 
         throw new OperationCanceledException(cancellationToken);
