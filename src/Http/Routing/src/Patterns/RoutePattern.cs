@@ -160,7 +160,63 @@ internal sealed class RoutePattern
     // 3. RouteEndpoint display name.
     internal string DebuggerToString()
     {
-        return RawText ?? string.Join(SeparatorString, PathSegments.Select(s => s.DebuggerToString()));
+        // If there are no required values, use the simple approach
+        if (RequiredValues.Count == 0)
+        {
+            return RawText ?? string.Join(SeparatorString, PathSegments.Select(s => s.DebuggerToString()));
+        }
+
+        // Build the string replacing parameters with their required values when available
+        var segments = new List<string>(PathSegments.Count);
+        foreach (var segment in PathSegments)
+        {
+            var segmentString = GetSegmentDebuggerToString(segment);
+            segments.Add(segmentString);
+        }
+
+        return string.Join(SeparatorString, segments);
+    }
+
+    private string GetSegmentDebuggerToString(RoutePatternPathSegment segment)
+    {
+        // Simple segment with single parameter that has a required value - just return the required value
+        if (segment.IsSimple && segment.Parts[0] is RoutePatternParameterPart parameter)
+        {
+            if (TryGetRequiredValue(parameter.Name, out var requiredValue))
+            {
+                return requiredValue;
+            }
+        }
+
+        // For complex segments, build the string part by part
+        var parts = new List<string>(segment.Parts.Count);
+        foreach (var part in segment.Parts)
+        {
+            if (part is RoutePatternParameterPart paramPart && TryGetRequiredValue(paramPart.Name, out var value))
+            {
+                parts.Add(value);
+            }
+            else
+            {
+                parts.Add(part.DebuggerToString());
+            }
+        }
+
+        return string.Join(string.Empty, parts);
+    }
+
+    private bool TryGetRequiredValue(string parameterName, out string value)
+    {
+        if (RequiredValues.TryGetValue(parameterName, out var requiredValue) &&
+            requiredValue is not null &&
+            !IsRequiredValueAny(requiredValue))
+        {
+            value = requiredValue.ToString() ?? string.Empty;
+            return !string.IsNullOrEmpty(value);
+        }
+
+        value = string.Empty;
+        return false;
     }
 
     [DebuggerDisplay("{DebuggerToString(),nq}")]
