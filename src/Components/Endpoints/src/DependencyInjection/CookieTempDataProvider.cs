@@ -16,11 +16,14 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
     private const string Purpose = "Microsoft.AspNetCore.Components.CookieTempDataProviderToken.v1";
     private const int MaxEncodedLength = 4050;
     private readonly IDataProtector _dataProtector;
+    private readonly ITempDataSerializer _tempDataSerializer;
 
     public CookieTempDataProvider(
-        IDataProtectionProvider dataProtectionProvider)
+        IDataProtectionProvider dataProtectionProvider,
+        ITempDataSerializer tempDataSerializer)
     {
         _dataProtector = dataProtectionProvider.CreateProtector(Purpose);
+        _tempDataSerializer = tempDataSerializer;
     }
 
     public IDictionary<string, object?> LoadTempData(HttpContext context)
@@ -46,7 +49,7 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
             var convertedData = new Dictionary<string, object?>();
             foreach (var kvp in dataFromCookie)
             {
-                convertedData[kvp.Key] = TempDataSerializer.ConvertJsonElement(kvp.Value);
+                convertedData[kvp.Key] = _tempDataSerializer.ConvertJsonElement(kvp.Value);
             }
             return convertedData;
         }
@@ -71,7 +74,7 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
     {
         foreach (var kvp in values)
         {
-            if (!TempDataSerializer.CanSerializeType(kvp.Value?.GetType() ?? typeof(object)))
+            if (!_tempDataSerializer.CanSerializeType(kvp.Value?.GetType() ?? typeof(object)))
             {
                 throw new InvalidOperationException($"TempData cannot store values of type '{kvp.Value?.GetType()}'.");
             }

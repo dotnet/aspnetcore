@@ -18,6 +18,7 @@ public static class TempDataProviderServiceCollectionExtensions
     public static IServiceCollection AddTempDataValueProvider(this IServiceCollection services)
     {
         services.TryAddSingleton<ITempDataProvider, CookieTempDataProvider>();
+        services.TryAddSingleton<ITempDataSerializer, JsonTempDataSerializer>();
         services.TryAddSingleton<TempDataService>();
 
         services.TryAddCascadingValue(sp =>

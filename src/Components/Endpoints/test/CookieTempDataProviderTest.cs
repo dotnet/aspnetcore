@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public class CookieTempDataProviderTest
 {
-    private readonly CookieTempDataProvider cookieTempDataProvider = new CookieTempDataProvider(new EphemeralDataProtectionProvider());
+    private readonly CookieTempDataProvider cookieTempDataProvider = new CookieTempDataProvider(new EphemeralDataProtectionProvider(), new JsonTempDataSerializer());
 
     [Fact]
     public void Load_ReturnsEmptyTempData_WhenNoCookieExists()
