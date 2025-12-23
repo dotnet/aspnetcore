@@ -49,7 +49,7 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
             var convertedData = new Dictionary<string, object?>();
             foreach (var kvp in dataFromCookie)
             {
-                convertedData[kvp.Key] = _tempDataSerializer.ConvertJsonElement(kvp.Value);
+                convertedData[kvp.Key] = _tempDataSerializer.Deserialize(kvp.Value);
             }
             return convertedData;
         }
@@ -74,7 +74,7 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
     {
         foreach (var kvp in values)
         {
-            if (!_tempDataSerializer.CanSerializeType(kvp.Value?.GetType() ?? typeof(object)))
+            if (!_tempDataSerializer.EnsureObjectCanBeSerialized(kvp.Value?.GetType() ?? typeof(object)))
             {
                 throw new InvalidOperationException($"TempData cannot store values of type '{kvp.Value?.GetType()}'.");
             }

@@ -2,39 +2,62 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal class JsonTempDataSerializer : ITempDataSerializer
 {
-    public object? ConvertJsonElement(JsonElement element)
+    private static readonly Dictionary<JsonValueKind, Func<JsonElement, object?>> _elementConverters = new(4)
     {
-        switch (element.ValueKind)
+        { JsonValueKind.Number, static e => e.GetInt32() },
+        { JsonValueKind.True, static e => e.GetBoolean() },
+        { JsonValueKind.False, static e => e.GetBoolean() },
+        { JsonValueKind.Null, static _ => null },
+    };
+
+    public object? Deserialize(JsonElement element)
+    {
+        try
         {
-            case JsonValueKind.String:
-                if (element.TryGetGuid(out var guid))
-                {
-                    return guid;
-                }
-                if (element.TryGetDateTime(out var dateTime))
-                {
-                    return dateTime;
-                }
-                return element.GetString();
-            case JsonValueKind.Number:
-                return element.GetInt32();
-            case JsonValueKind.True:
-            case JsonValueKind.False:
-                return element.GetBoolean();
-            case JsonValueKind.Null:
-                return null;
-            case JsonValueKind.Array:
-                return DeserializeArray(element);
-            case JsonValueKind.Object:
-                return DeserializeDictionaryEntry(element);
-            default:
-                throw new InvalidOperationException($"TempData cannot deserialize value of type '{element.ValueKind}'.");
+            return DeserializeSimpleType(element);
         }
+        catch (InvalidOperationException)
+        {
+            return element.ValueKind switch
+            {
+                JsonValueKind.Array => DeserializeArray(element),
+                JsonValueKind.Object => DeserializeDictionaryEntry(element),
+                _ => throw new InvalidOperationException($"TempData cannot deserialize value of type '{element.ValueKind}'.")
+            };
+        }
+    }
+
+    private static object? DeserializeSimpleType(JsonElement element)
+    {
+        if (_elementConverters.TryGetValue(element.ValueKind, out var converter))
+        {
+            return converter(element);
+        }
+
+        return element.ValueKind switch
+        {
+            JsonValueKind.String => DeserializeString(element),
+            _ => throw new InvalidOperationException($"TempData cannot deserialize value of type '{element.ValueKind}'.")
+        };
+    }
+
+    private static object? DeserializeString(JsonElement element)
+    {
+        if (element.TryGetGuid(out var guid))
+        {
+            return guid;
+        }
+        if (element.TryGetDateTime(out var dateTime))
+        {
+            return dateTime;
+        }
+        return element.GetString();
     }
 
     private static object? DeserializeArray(JsonElement arrayElement)
@@ -42,51 +65,70 @@ internal class JsonTempDataSerializer : ITempDataSerializer
         var arrayLength = arrayElement.GetArrayLength();
         if (arrayLength == 0)
         {
-            return null;
+            return Array.Empty<object?>();
         }
-        if (arrayElement[0].ValueKind == JsonValueKind.String)
+        var array = new object?[arrayLength];
+        for (var i = 0; i < arrayLength; i++)
         {
-            var array = new List<string?>(arrayLength);
-            foreach (var item in arrayElement.EnumerateArray())
-            {
-                array.Add(item.GetString());
-            }
-            return array.ToArray();
+            array[i] = DeserializeSimpleType(arrayElement[i]);
         }
-        else if (arrayElement[0].ValueKind == JsonValueKind.Number)
-        {
-            var array = new List<int>(arrayLength);
-            foreach (var item in arrayElement.EnumerateArray())
-            {
-                array.Add(item.GetInt32());
-            }
-            return array.ToArray();
-        }
-        throw new InvalidOperationException($"TempData cannot deserialize array of type '{arrayElement[0].ValueKind}'.");
+        return array;
     }
 
-    private static Dictionary<string, string?> DeserializeDictionaryEntry(JsonElement objectElement)
+    private static Dictionary<string, object?> DeserializeDictionaryEntry(JsonElement objectElement)
     {
-        var dictionary = new Dictionary<string, string?>(StringComparer.Ordinal);
+        var dictionary = new Dictionary<string, object?>(StringComparer.Ordinal);
         foreach (var item in objectElement.EnumerateObject())
         {
-            dictionary[item.Name] = item.Value.GetString();
+            // JSON object keys are always strings by specification
+            dictionary[item.Name] = DeserializeSimpleType(item.Value);
         }
+
         return dictionary;
     }
 
-    public bool CanSerializeType(Type type)
+    public bool EnsureObjectCanBeSerialized(Type type)
     {
-        type = Nullable.GetUnderlyingType(type) ?? type;
-        return
+        var actualType = type;
+        if (type.IsArray)
+        {
+            actualType = type.GetElementType();
+        }
+        else if (type.IsGenericType)
+        {
+            var genericTypeArguments = type.GenericTypeArguments;
+            if (ClosedGenericMatcher.ExtractGenericInterface(type, typeof(IList<>)) != null && genericTypeArguments.Length == 1)
+            {
+                actualType = genericTypeArguments[0];
+            }
+            else if (ClosedGenericMatcher.ExtractGenericInterface(type, typeof(IDictionary<,>)) != null && genericTypeArguments.Length == 2 && genericTypeArguments[0] == typeof(string))
+            {
+                actualType = genericTypeArguments[1];
+            }
+            else
+            {
+                return false;
+            }
+        }
+        actualType = Nullable.GetUnderlyingType(actualType) ?? actualType;
+
+        if (!IsSimpleType(actualType))
+        {
+            return false;
+        }
+        return true;
+    }
+
+    private static bool IsSimpleType(Type type)
+    {
+        return type.IsPrimitive ||
             type.IsEnum ||
-            type == typeof(int) ||
-            type == typeof(string) ||
-            type == typeof(bool) ||
-            type == typeof(DateTime) ||
-            type == typeof(Guid) ||
-            typeof(ICollection<int>).IsAssignableFrom(type) ||
-            typeof(ICollection<string>).IsAssignableFrom(type) ||
-            typeof(IDictionary<string, string>).IsAssignableFrom(type);
+            type.Equals(typeof(decimal)) ||
+            type.Equals(typeof(string)) ||
+            type.Equals(typeof(DateTime)) ||
+            type.Equals(typeof(Guid)) ||
+            type.Equals(typeof(DateTimeOffset)) ||
+            type.Equals(typeof(TimeSpan)) ||
+            type.Equals(typeof(Uri));
     }
 }

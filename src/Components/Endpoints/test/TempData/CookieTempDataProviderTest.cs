@@ -163,7 +163,7 @@ public class CookieTempDataProviderTest
         SimulateCookieRoundTrip(httpContext);
         var loadedTempData = cookieTempDataProvider.LoadTempData(httpContext);
 
-        var loadedDict = Assert.IsType<Dictionary<string, string>>(loadedTempData["DictKey"]);
+        var loadedDict = Assert.IsType<Dictionary<string, object>>(loadedTempData["DictKey"]);
         Assert.Equal("1", loadedDict["a"]);
         Assert.Equal("2", loadedDict["b"]);
     }
