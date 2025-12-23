@@ -14,11 +14,15 @@ internal static class HostingTelemetryHelpers
     // Note: Not all telemetry code is using these const attribute names yet.
     public const string AttributeHttpRequestMethod = "http.request.method";
     public const string AttributeHttpRequestMethodOriginal = "http.request.method_original";
+    public const string AttributeHttpResponseStatusCode = "http.response.status_code";
+    public const string AttributeHttpRoute = "http.route";
     public const string AttributeUrlScheme = "url.scheme";
     public const string AttributeUrlPath = "url.path";
     public const string AttributeServerAddress = "server.address";
     public const string AttributeServerPort = "server.port";
     public const string AttributeUserAgentOriginal = "user_agent.original";
+    public const string AttributeNetworkProtocolVersion = "network.protocol.version";
+    public const string AttributeErrorType = "error.type";
 
     // The value "_OTHER" is used for non-standard HTTP methods.
     // https://github.com/open-telemetry/semantic-conventions/blob/v1.23.0/docs/http/http-spans.md#common-attributes
@@ -69,7 +73,7 @@ internal static class HostingTelemetryHelpers
 
     public static object GetBoxedStatusCode(int statusCode)
     {
-        object[] boxes = BoxedStatusCodes;
+        var boxes = BoxedStatusCodes;
         return (uint)statusCode < (uint)boxes.Length
             ? boxes[statusCode] ??= statusCode
             : statusCode;

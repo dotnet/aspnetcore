@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Diagnostics.Tracing;
+using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -1212,6 +1213,273 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
 
         Assert.Equal(expectedPort != null, tags.TryGetValue("server.port", out var actualPort));
         Assert.Equal(expectedPort, (int?)actualPort);
+    }
+
+    [Fact]
+    public void ActivityListeners_DontSuppressActivityTags_EndTagsAdded()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
+        {
+            c.Request.Protocol = "HTTP/1.1";
+            c.Request.Scheme = "http";
+            c.Request.Method = "GET";
+            c.Request.Path = "/hello";
+            c.Response.StatusCode = 200;
+        });
+
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        context.HttpContext.SetEndpoint(new Endpoint(
+            c => Task.CompletedTask,
+            new EndpointMetadataCollection(new TestRouteDiagnosticsMetadata()),
+            "Test endpoint"));
+        hostingApplication.DisposeContext(context, null);
+
+        Assert.NotNull(stoppedActivity);
+        var tags = stoppedActivity.TagObjects.ToDictionary();
+
+        Assert.Equal(200, tags["http.response.status_code"]);
+        Assert.Equal("1.1", tags["network.protocol.version"]);
+        Assert.Equal("hello/{name}", tags["http.route"]);
+        Assert.False(tags.ContainsKey("error.type"));
+        Assert.Equal(ActivityStatusCode.Unset, stoppedActivity.Status);
+    }
+
+    [Fact]
+    public void ActivityListeners_DontSuppressActivityTags_ErrorStatusCodeSetsErrorType()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
+        {
+            c.Request.Protocol = "HTTP/2";
+            c.Request.Scheme = "https";
+            c.Request.Method = "POST";
+            c.Request.Path = "/api/test";
+            c.Response.StatusCode = 500;
+        });
+
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        hostingApplication.DisposeContext(context, null);
+
+        Assert.NotNull(stoppedActivity);
+        var tags = stoppedActivity.TagObjects.ToDictionary();
+
+        Assert.Equal(500, tags["http.response.status_code"]);
+        Assert.Equal("2", tags["network.protocol.version"]);
+        Assert.Equal("500", tags["error.type"]);
+        Assert.Equal(ActivityStatusCode.Error, stoppedActivity.Status);
+    }
+
+    [Fact]
+    public void ActivityListeners_DontSuppressActivityTags_ExceptionSetsErrorType()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
+        {
+            c.Request.Protocol = "HTTP/1.1";
+            c.Request.Scheme = "http";
+            c.Request.Method = "GET";
+            c.Request.Path = "/error";
+            c.Response.StatusCode = 500;
+        });
+
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        var exception = new InvalidOperationException("Test exception");
+        hostingApplication.DisposeContext(context, exception);
+
+        Assert.NotNull(stoppedActivity);
+        var tags = stoppedActivity.TagObjects.ToDictionary();
+
+        Assert.Equal(500, tags["http.response.status_code"]);
+        Assert.Equal("1.1", tags["network.protocol.version"]);
+        Assert.Equal("System.InvalidOperationException", tags["error.type"]);
+        Assert.Equal(ActivityStatusCode.Error, stoppedActivity.Status);
+        Assert.Equal("Test exception", stoppedActivity.StatusDescription);
+    }
+
+    [Theory]
+    [InlineData("HTTP/1.0", "1.0")]
+    [InlineData("HTTP/1.1", "1.1")]
+    [InlineData("HTTP/2", "2")]
+    [InlineData("HTTP/3", "3")]
+    public void ActivityListeners_DontSuppressActivityTags_HttpVersionMapped(string protocol, string expectedVersion)
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
+        {
+            c.Request.Protocol = protocol;
+            c.Request.Scheme = "http";
+            c.Request.Method = "GET";
+            c.Request.Path = "/";
+            c.Response.StatusCode = 200;
+        });
+
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        hostingApplication.DisposeContext(context, null);
+
+        Assert.NotNull(stoppedActivity);
+        var tags = stoppedActivity.TagObjects.ToDictionary();
+
+        Assert.Equal(expectedVersion, tags["network.protocol.version"]);
+    }
+
+    [Fact]
+    public void ActivityListeners_SuppressActivityTags_NoEndTagsAdded()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        // Default is to suppress OTel data
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, configure: c =>
+        {
+            c.Request.Protocol = "HTTP/1.1";
+            c.Request.Scheme = "http";
+            c.Request.Method = "GET";
+            c.Request.Path = "/hello";
+            c.Response.StatusCode = 200;
+        });
+
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        context.HttpContext.SetEndpoint(new Endpoint(
+            c => Task.CompletedTask,
+            new EndpointMetadataCollection(new TestRouteDiagnosticsMetadata()),
+            "Test endpoint"));
+        hostingApplication.DisposeContext(context, null);
+
+        Assert.NotNull(stoppedActivity);
+        var tags = stoppedActivity.TagObjects.ToDictionary();
+
+        // No end tags should be added when suppressed
+        Assert.False(tags.ContainsKey("http.response.status_code"));
+        Assert.False(tags.ContainsKey("network.protocol.version"));
+        Assert.False(tags.ContainsKey("http.route"));
+        Assert.False(tags.ContainsKey("error.type"));
+    }
+
+    [Theory]
+    [InlineData(400)]
+    [InlineData(404)]
+    [InlineData(499)]
+    [InlineData(500)]
+    [InlineData(503)]
+    public void ActivityListeners_DontSuppressActivityTags_ErrorStatusCodesSetErrorType(int statusCode)
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
+        {
+            c.Request.Protocol = "HTTP/1.1";
+            c.Request.Scheme = "http";
+            c.Request.Method = "GET";
+            c.Request.Path = "/";
+            c.Response.StatusCode = statusCode;
+        });
+
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        hostingApplication.DisposeContext(context, null);
+
+        Assert.NotNull(stoppedActivity);
+        var tags = stoppedActivity.TagObjects.ToDictionary();
+
+        Assert.Equal(statusCode, tags["http.response.status_code"]);
+        Assert.Equal(statusCode.ToString(CultureInfo.InvariantCulture), tags["error.type"]);
+        Assert.Equal(ActivityStatusCode.Error, stoppedActivity.Status);
+    }
+
+    [Theory]
+    [InlineData(200)]
+    [InlineData(201)]
+    [InlineData(204)]
+    [InlineData(301)]
+    [InlineData(399)]
+    public void ActivityListeners_DontSuppressActivityTags_SuccessStatusCodesNoErrorType(int statusCode)
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
+        {
+            c.Request.Protocol = "HTTP/1.1";
+            c.Request.Scheme = "http";
+            c.Request.Method = "GET";
+            c.Request.Path = "/";
+            c.Response.StatusCode = statusCode;
+        });
+
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        hostingApplication.DisposeContext(context, null);
+
+        Assert.NotNull(stoppedActivity);
+        var tags = stoppedActivity.TagObjects.ToDictionary();
+
+        Assert.Equal(statusCode, tags["http.response.status_code"]);
+        Assert.False(tags.ContainsKey("error.type"));
+        Assert.Equal(ActivityStatusCode.Unset, stoppedActivity.Status);
     }
 
     [Fact]
