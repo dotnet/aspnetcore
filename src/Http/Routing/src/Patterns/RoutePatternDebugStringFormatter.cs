@@ -7,12 +7,13 @@ namespace Microsoft.AspNetCore.Routing.Patterns;
 
 internal static class RoutePatternDebugStringFormatter
 {
+    private const char Separator = '/';
     private const string SeparatorString = "/";
 
     public static string Format(RoutePattern pattern)
     {
         // If there are no required values that match parameters, use the simple approach
-        if (pattern.RawText is { } rawText && !HasMatchingRequiredValues(pattern))
+        if (pattern.RawText is { Length: > 0 } rawText && !HasMatchingRequiredValues(pattern))
         {
             return rawText;
         }
@@ -26,7 +27,21 @@ internal static class RoutePatternDebugStringFormatter
             segments[i] = segmentString;
         }
 
-        return string.Join(SeparatorString, segments);
+        var result = string.Join(Separator, segments);
+
+        // Preserve leading slash from raw text
+        if (pattern.RawText is { Length: > 0 } rt && rt[0] == Separator)
+        {
+            result = Separator + result;
+        }
+
+        // Return "/" for empty results
+        if (result.Length == 0)
+        {
+            return SeparatorString;
+        }
+
+        return result;
     }
 
     private static bool HasMatchingRequiredValues(RoutePattern pattern)

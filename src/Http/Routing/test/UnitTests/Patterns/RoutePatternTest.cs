@@ -262,6 +262,79 @@ public class RoutePatternTest
         Assert.NotNull(reparsed);
     }
 
+    [Fact]
+    public void DebuggerToString_WithLeadingSlash_PreservesLeadingSlash()
+    {
+        // Arrange
+        var pattern = RoutePatternFactory.Parse(
+            "/{controller}/{action}",
+            defaults: null,
+            parameterPolicies: null,
+            requiredValues: new { controller = "Home", action = "Index" });
+
+        // Act
+        var result = pattern.DebuggerToString();
+
+        // Assert
+        Assert.Equal("/Home/Index", result);
+    }
+
+    [Fact]
+    public void DebuggerToString_WithLeadingSlashAndPartialRequiredValues_PreservesLeadingSlash()
+    {
+        // Arrange
+        var pattern = RoutePatternFactory.Parse(
+            "/{controller}/{action}/{id?}",
+            defaults: null,
+            parameterPolicies: null,
+            requiredValues: new { controller = "Store" });
+
+        // Act
+        var result = pattern.DebuggerToString();
+
+        // Assert
+        Assert.Equal("/Store/{action}/{id?}", result);
+    }
+
+    [Fact]
+    public void DebuggerToString_WithLeadingSlashNoRequiredValues_PreservesRawText()
+    {
+        // Arrange
+        var pattern = RoutePatternFactory.Parse("/{controller}/{action}");
+
+        // Act
+        var result = pattern.DebuggerToString();
+
+        // Assert
+        Assert.Equal("/{controller}/{action}", result);
+    }
+
+    [Fact]
+    public void DebuggerToString_EmptyPattern_ReturnsSlash()
+    {
+        // Arrange
+        var pattern = RoutePatternFactory.Parse("");
+
+        // Act
+        var result = pattern.DebuggerToString();
+
+        // Assert
+        Assert.Equal("/", result);
+    }
+
+    [Fact]
+    public void DebuggerToString_SlashOnlyPattern_ReturnsSlash()
+    {
+        // Arrange
+        var pattern = RoutePatternFactory.Parse("/");
+
+        // Act
+        var result = pattern.DebuggerToString();
+
+        // Assert
+        Assert.Equal("/", result);
+    }
+
     private static RouteValueDictionary ParseRequiredValues(string requiredValuesText)
     {
         var requiredValues = new RouteValueDictionary();
