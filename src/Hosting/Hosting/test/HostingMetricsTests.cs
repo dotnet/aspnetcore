@@ -177,6 +177,90 @@ public class HostingMetricsTests
         Assert.NotEqual(overridenFeature, contextFeature);
     }
 
+    [Theory]
+    [InlineData(500)]
+    [InlineData(503)]
+    [InlineData(599)]
+    public void RequestDuration_ServerErrorStatusCode_ErrorTypeSet(int statusCode)
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var hostingApplication = CreateApplication(meterFactory: meterFactory);
+        var httpContext = new DefaultHttpContext();
+
+        using var requestDurationCollector = new MetricCollector<double>(meterFactory, HostingMetrics.MeterName, "http.server.request.duration");
+
+        // Act
+        httpContext.Request.Protocol = HttpProtocol.Http11;
+        var context = hostingApplication.CreateContext(httpContext.Features);
+        context.HttpContext.Response.StatusCode = statusCode;
+        hostingApplication.DisposeContext(context, null);
+
+        // Assert
+        var measurements = requestDurationCollector.GetMeasurementSnapshot();
+        Assert.Single(measurements);
+
+        var measurement = measurements[0];
+        Assert.Equal(statusCode, (int)measurement.Tags[HostingTelemetryHelpers.AttributeHttpResponseStatusCode]);
+        Assert.Equal(statusCode.ToString(System.Globalization.CultureInfo.InvariantCulture), (string)measurement.Tags[HostingTelemetryHelpers.AttributeErrorType]);
+    }
+
+    [Theory]
+    [InlineData(200)]
+    [InlineData(301)]
+    [InlineData(400)]
+    [InlineData(404)]
+    [InlineData(499)]
+    public void RequestDuration_NonServerErrorStatusCode_NoErrorType(int statusCode)
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var hostingApplication = CreateApplication(meterFactory: meterFactory);
+        var httpContext = new DefaultHttpContext();
+
+        using var requestDurationCollector = new MetricCollector<double>(meterFactory, HostingMetrics.MeterName, "http.server.request.duration");
+
+        // Act
+        httpContext.Request.Protocol = HttpProtocol.Http11;
+        var context = hostingApplication.CreateContext(httpContext.Features);
+        context.HttpContext.Response.StatusCode = statusCode;
+        hostingApplication.DisposeContext(context, null);
+
+        // Assert
+        var measurements = requestDurationCollector.GetMeasurementSnapshot();
+        Assert.Single(measurements);
+
+        var measurement = measurements[0];
+        Assert.Equal(statusCode, (int)measurement.Tags[HostingTelemetryHelpers.AttributeHttpResponseStatusCode]);
+        Assert.False(measurement.Tags.ContainsKey(HostingTelemetryHelpers.AttributeErrorType));
+    }
+
+    [Fact]
+    public void RequestDuration_ExceptionWithServerErrorStatusCode_ExceptionTakesPrecedence()
+    {
+        // Arrange
+        var meterFactory = new TestMeterFactory();
+        var hostingApplication = CreateApplication(meterFactory: meterFactory);
+        var httpContext = new DefaultHttpContext();
+
+        using var requestDurationCollector = new MetricCollector<double>(meterFactory, HostingMetrics.MeterName, "http.server.request.duration");
+
+        // Act
+        httpContext.Request.Protocol = HttpProtocol.Http11;
+        var context = hostingApplication.CreateContext(httpContext.Features);
+        context.HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        hostingApplication.DisposeContext(context, new InvalidOperationException("Test error"));
+
+        // Assert
+        var measurements = requestDurationCollector.GetMeasurementSnapshot();
+        Assert.Single(measurements);
+
+        var measurement = measurements[0];
+        Assert.Equal(StatusCodes.Status500InternalServerError, (int)measurement.Tags[HostingTelemetryHelpers.AttributeHttpResponseStatusCode]);
+        // When there's an exception, it should be used as error.type, not the status code
+        Assert.Equal("System.InvalidOperationException", (string)measurement.Tags[HostingTelemetryHelpers.AttributeErrorType]);
+    }
+
     private sealed class TestHttpMetricsTagsFeature : IHttpMetricsTagsFeature
     {
         public ICollection<KeyValuePair<string, object>> Tags { get; } = new Collection<KeyValuePair<string, object>>();

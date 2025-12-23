@@ -1216,6 +1216,58 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     }
 
     [Fact]
+    public void ActivityListeners_PropagationDataSample_EndTagsNotAdded()
+    {
+        // When Activity.IsAllDataRequested is false (PropagationData sample result),
+        // end tags should NOT be added as they are only relevant when all data is requested.
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
+        {
+            c.Request.Protocol = "HTTP/1.1";
+            c.Request.Scheme = "http";
+            c.Request.Method = "GET";
+            c.Request.Path = "/hello";
+            c.Response.StatusCode = 500;
+        });
+
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.PropagationData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        context.HttpContext.SetEndpoint(new Endpoint(
+            c => Task.CompletedTask,
+            new EndpointMetadataCollection(new TestRouteDiagnosticsMetadata()),
+            "Test endpoint"));
+
+        var exception = new InvalidOperationException("Test exception");
+        hostingApplication.DisposeContext(context, exception);
+
+        Assert.NotNull(stoppedActivity);
+        Assert.False(stoppedActivity.IsAllDataRequested);
+
+        var tags = stoppedActivity.TagObjects.ToDictionary();
+
+        // Verify sampling tags are still present
+        Assert.True(tags.ContainsKey(HostingTelemetryHelpers.AttributeHttpRequestMethod));
+        Assert.True(tags.ContainsKey(HostingTelemetryHelpers.AttributeUrlScheme));
+        Assert.True(tags.ContainsKey(HostingTelemetryHelpers.AttributeUrlPath));
+
+        // Verify end tags are NOT present since IsAllDataRequested is false
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeHttpResponseStatusCode));
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeNetworkProtocolVersion));
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeHttpRoute));
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeErrorType));
+        Assert.Equal(ActivityStatusCode.Unset, stoppedActivity.Status);
+    }
+
+    [Fact]
     public void ActivityListeners_EndTagsAdded()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
@@ -1404,11 +1456,9 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     }
 
     [Theory]
-    [InlineData(400)]
-    [InlineData(404)]
-    [InlineData(499)]
     [InlineData(500)]
     [InlineData(503)]
+    [InlineData(599)]
     public void ActivityListeners_ErrorStatusCodesSetErrorType(int statusCode)
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
@@ -1448,6 +1498,9 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     [InlineData(204)]
     [InlineData(301)]
     [InlineData(399)]
+    [InlineData(400)]
+    [InlineData(404)]
+    [InlineData(499)]
     public void ActivityListeners_SuccessStatusCodesNoErrorType(int statusCode)
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());

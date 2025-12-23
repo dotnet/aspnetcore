@@ -132,4 +132,10 @@ internal static class HostingTelemetryHelpers
             tags.Add(AttributeHttpRequestMethodOriginal, originalHttpMethod);
         }
     }
+
+    /// <summary>
+    /// Determines if the status code indicates a server error (5xx).
+    /// Client errors (4xx) are not considered server errors.
+    /// </summary>
+    public static bool IsErrorStatusCode(int statusCode) => statusCode >= 500;
 }
