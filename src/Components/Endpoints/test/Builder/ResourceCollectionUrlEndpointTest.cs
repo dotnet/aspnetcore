@@ -1,0 +1,176 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Reflection;
+
+namespace Microsoft.AspNetCore.Components.Endpoints;
+
+public class ResourceCollectionUrlEndpointTest
+{
+    [Fact]
+    public void ComputeFingerprintSuffix_IncludesIntegrityForNonFingerprintedAssets()
+    {
+        // Arrange - Create a collection with non-fingerprinted assets that have integrity hashes
+        var resources = new List<ResourceAsset>
+        {
+            // Non-fingerprinted asset with integrity (simulates WasmFingerprintAssets=false scenario)
+            new ResourceAsset("/_framework/MyApp.dll", new[]
+            {
+                new ResourceAssetProperty("integrity", "sha256-ABC123")
+            }),
+            new ResourceAsset("/_framework/System.dll", new[]
+            {
+                new ResourceAssetProperty("integrity", "sha256-XYZ789")
+            })
+        };
+        var collection = new ResourceAssetCollection(resources);
+
+        // Act
+        var fingerprint1 = InvokeComputeFingerprintSuffix(collection);
+
+        // Arrange - Change the integrity of one asset (simulates content change between builds)
+        resources = new List<ResourceAsset>
+        {
+            new ResourceAsset("/_framework/MyApp.dll", new[]
+            {
+                new ResourceAssetProperty("integrity", "sha256-CHANGED")
+            }),
+            new ResourceAsset("/_framework/System.dll", new[]
+            {
+                new ResourceAssetProperty("integrity", "sha256-XYZ789")
+            })
+        };
+        collection = new ResourceAssetCollection(resources);
+
+        // Act
+        var fingerprint2 = InvokeComputeFingerprintSuffix(collection);
+
+        // Assert - Fingerprints should be different because integrity changed
+        Assert.NotEqual(fingerprint1, fingerprint2);
+    }
+
+    [Fact]
+    public void ComputeFingerprintSuffix_DoesNotIncludeIntegrityForFingerprintedAssets()
+    {
+        // Arrange - Create a collection with fingerprinted assets (have label property)
+        var resources = new List<ResourceAsset>
+        {
+            // Fingerprinted asset with label (simulates WasmFingerprintAssets=true scenario)
+            new ResourceAsset("/_framework/MyApp.ABC123.dll", new[]
+            {
+                new ResourceAssetProperty("label", "MyApp.dll"),
+                new ResourceAssetProperty("integrity", "sha256-ABC123")
+            }),
+            new ResourceAsset("/_framework/System.XYZ789.dll", new[]
+            {
+                new ResourceAssetProperty("label", "System.dll"),
+                new ResourceAssetProperty("integrity", "sha256-XYZ789")
+            })
+        };
+        var collection = new ResourceAssetCollection(resources);
+
+        // Act
+        var fingerprint1 = InvokeComputeFingerprintSuffix(collection);
+
+        // Arrange - Change the integrity (but not the URL) of one asset
+        // For fingerprinted assets, the URL already contains the hash, so we don't need to include integrity
+        resources = new List<ResourceAsset>
+        {
+            new ResourceAsset("/_framework/MyApp.ABC123.dll", new[]
+            {
+                new ResourceAssetProperty("label", "MyApp.dll"),
+                new ResourceAssetProperty("integrity", "sha256-CHANGED")
+            }),
+            new ResourceAsset("/_framework/System.XYZ789.dll", new[]
+            {
+                new ResourceAssetProperty("label", "System.dll"),
+                new ResourceAssetProperty("integrity", "sha256-XYZ789")
+            })
+        };
+        collection = new ResourceAssetCollection(resources);
+
+        // Act
+        var fingerprint2 = InvokeComputeFingerprintSuffix(collection);
+
+        // Assert - Fingerprints should be the same because for fingerprinted assets,
+        // the URL (not integrity) is what matters, and the URL didn't change
+        Assert.Equal(fingerprint1, fingerprint2);
+    }
+
+    [Fact]
+    public void ComputeFingerprintSuffix_HandlesMixedAssets()
+    {
+        // Arrange - Mix of fingerprinted and non-fingerprinted assets
+        var resources = new List<ResourceAsset>
+        {
+            // Fingerprinted asset
+            new ResourceAsset("/_framework/MyApp.ABC123.dll", new[]
+            {
+                new ResourceAssetProperty("label", "MyApp.dll"),
+                new ResourceAssetProperty("integrity", "sha256-ABC123")
+            }),
+            // Non-fingerprinted asset
+            new ResourceAsset("/_framework/custom.js", new[]
+            {
+                new ResourceAssetProperty("integrity", "sha256-CUSTOM")
+            })
+        };
+        var collection = new ResourceAssetCollection(resources);
+
+        // Act
+        var fingerprint1 = InvokeComputeFingerprintSuffix(collection);
+
+        // Arrange - Change only the non-fingerprinted asset's integrity
+        resources = new List<ResourceAsset>
+        {
+            // Fingerprinted asset (same as before)
+            new ResourceAsset("/_framework/MyApp.ABC123.dll", new[]
+            {
+                new ResourceAssetProperty("label", "MyApp.dll"),
+                new ResourceAssetProperty("integrity", "sha256-ABC123")
+            }),
+            // Non-fingerprinted asset with changed integrity
+            new ResourceAsset("/_framework/custom.js", new[]
+            {
+                new ResourceAssetProperty("integrity", "sha256-MODIFIED")
+            })
+        };
+        collection = new ResourceAssetCollection(resources);
+
+        // Act
+        var fingerprint2 = InvokeComputeFingerprintSuffix(collection);
+
+        // Assert - Fingerprints should be different because non-fingerprinted asset's integrity changed
+        Assert.NotEqual(fingerprint1, fingerprint2);
+    }
+
+    [Fact]
+    public void ComputeFingerprintSuffix_HandlesAssetsWithNoProperties()
+    {
+        // Arrange
+        var resources = new List<ResourceAsset>
+        {
+            new ResourceAsset("/_framework/file1.dll", null),
+            new ResourceAsset("/_framework/file2.dll", new ResourceAssetProperty[] { })
+        };
+        var collection = new ResourceAssetCollection(resources);
+
+        // Act & Assert - Should not throw
+        var fingerprint = InvokeComputeFingerprintSuffix(collection);
+        Assert.NotNull(fingerprint);
+        Assert.StartsWith(".", fingerprint);
+    }
+
+    private static string InvokeComputeFingerprintSuffix(ResourceAssetCollection collection)
+    {
+        // Use reflection to invoke the private static method
+        var method = typeof(ResourceCollectionUrlEndpoint).GetMethod(
+            "ComputeFingerprintSuffix",
+            BindingFlags.NonPublic | BindingFlags.Static);
+
+        Assert.NotNull(method);
+
+        var result = method.Invoke(null, new object[] { collection });
+        return result as string;
+    }
+}

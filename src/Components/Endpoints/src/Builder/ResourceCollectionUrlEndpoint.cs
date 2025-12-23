@@ -118,6 +118,33 @@ internal partial class ResourceCollectionUrlEndpoint
         {
             var url = resource.Url;
             AppendToHash(incrementalHash, buffer, ref rented, url);
+
+            // For non-fingerprinted assets (those without a 'label' property), we need to include
+            // the integrity hash in the fingerprint calculation. This ensures that if the content
+            // changes between builds, the resource-collection fingerprint also changes.
+            if (resource.Properties != null)
+            {
+                var hasLabel = false;
+                string? integrity = null;
+                foreach (var property in resource.Properties)
+                {
+                    if (property.Name.Equals("label", StringComparison.OrdinalIgnoreCase))
+                    {
+                        hasLabel = true;
+                        break;
+                    }
+                    else if (property.Name.Equals("integrity", StringComparison.OrdinalIgnoreCase))
+                    {
+                        integrity = property.Value;
+                    }
+                }
+
+                // If there's no label (non-fingerprinted) but there is an integrity value, include it
+                if (!hasLabel && integrity != null)
+                {
+                    AppendToHash(incrementalHash, buffer, ref rented, integrity);
+                }
+            }
         }
         incrementalHash.GetCurrentHash(result);
         // Base64 encoding at most increases size by (4 * byteSize / 3 + 2),
