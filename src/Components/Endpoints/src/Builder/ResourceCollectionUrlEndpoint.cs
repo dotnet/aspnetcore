@@ -119,33 +119,10 @@ internal partial class ResourceCollectionUrlEndpoint
             var url = resource.Url;
             AppendToHash(incrementalHash, buffer, ref rented, url);
 
-            // For non-fingerprinted assets (those without a 'label' property), we need to include
-            // the integrity hash in the fingerprint calculation. This ensures that if the content
-            // changes between builds, the resource-collection fingerprint also changes.
-            if (resource.Properties != null)
+            var additionalData = GetAdditionalDataForFingerprint(resource);
+            if (additionalData != null)
             {
-                var hasLabel = false;
-                string? integrity = null;
-                foreach (var property in resource.Properties)
-                {
-                    if (property.Name.Equals("label", StringComparison.OrdinalIgnoreCase))
-                    {
-                        hasLabel = true;
-                        // No need to continue if we found a label - we won't use integrity
-                        break;
-                    }
-                    else if (property.Name.Equals("integrity", StringComparison.OrdinalIgnoreCase))
-                    {
-                        integrity = property.Value;
-                        // Continue searching in case there's also a label property
-                    }
-                }
-
-                // If there's no label (non-fingerprinted) but there is an integrity value, include it
-                if (!hasLabel && integrity != null)
-                {
-                    AppendToHash(incrementalHash, buffer, ref rented, integrity);
-                }
+                AppendToHash(incrementalHash, buffer, ref rented, additionalData);
             }
         }
         incrementalHash.GetCurrentHash(result);
@@ -155,6 +132,37 @@ internal partial class ResourceCollectionUrlEndpoint
         var length = WebUtilities.WebEncoders.Base64UrlEncode(result, fingerprintSpan[1..]);
         fingerprintSpan[0] = '.';
         return fingerprintSpan[..(length + 1)].ToString();
+    }
+
+    private static string? GetAdditionalDataForFingerprint(ResourceAsset resource)
+    {
+        // For non-fingerprinted assets (those without a 'label' property), we need to include
+        // the integrity hash in the fingerprint calculation. This ensures that if the content
+        // changes between builds, the resource-collection fingerprint also changes.
+        if (resource.Properties == null)
+        {
+            return null;
+        }
+
+        var hasLabel = false;
+        string? integrity = null;
+        foreach (var property in resource.Properties)
+        {
+            if (property.Name.Equals("label", StringComparison.OrdinalIgnoreCase))
+            {
+                hasLabel = true;
+                // No need to continue if we found a label - we won't use integrity
+                break;
+            }
+            else if (property.Name.Equals("integrity", StringComparison.OrdinalIgnoreCase))
+            {
+                integrity = property.Value;
+                // Continue searching in case there's also a label property
+            }
+        }
+
+        // If there's no label (non-fingerprinted) but there is an integrity value, return it
+        return !hasLabel ? integrity : null;
     }
 
     private static void AppendToHash(IncrementalHash incrementalHash, Span<byte> buffer, ref byte[]? rented, string value)
