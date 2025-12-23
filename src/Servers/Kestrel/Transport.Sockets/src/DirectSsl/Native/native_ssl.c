@@ -329,6 +329,7 @@ int epoll_wait_one_ex(int epoll_fd, int timeout_ms, int* out_fd, int* out_events
  *   0: Connection closed (EOF)
  *   -1: Would block (WANT_READ) - no data available yet
  *   -2: Error
+ *   -3: WANT_WRITE (TLS 1.3 key update requires write)
  */
 int ssl_read(SSL* ssl, char* buffer, int buffer_size) {
     int ret = SSL_read(ssl, buffer, buffer_size);
@@ -343,11 +344,17 @@ int ssl_read(SSL* ssl, char* buffer, int buffer_size) {
         return -1;  // Would block, try again later
     }
     
+    if (err == SSL_ERROR_WANT_WRITE) {
+        return -3;  // TLS 1.3: need to write (key update)
+    }
+    
     if (err == SSL_ERROR_ZERO_RETURN) {
         return 0;  // Clean shutdown
     }
     
-    // Error
+    // Error - log it for debugging
+    fprintf(stderr, "[native] ssl_read error: SSL_get_error=%d\n", err);
+    ERR_print_errors_fp(stderr);
     return -2;
 }
 
@@ -367,6 +374,7 @@ int ssl_read(SSL* ssl, char* buffer, int buffer_size) {
  *   > 0: Number of bytes written
  *   -1: Would block (WANT_WRITE) - buffer full
  *   -2: Error
+ *   -3: WANT_READ (TLS 1.3 key update requires read)
  */
 int ssl_write(SSL* ssl, const char* data, int length) {
     int ret = SSL_write(ssl, data, length);
@@ -381,7 +389,13 @@ int ssl_write(SSL* ssl, const char* data, int length) {
         return -1;  // Would block, try again later
     }
     
-    // Error
+    if (err == SSL_ERROR_WANT_READ) {
+        return -3;  // TLS 1.3: need to read (key update)
+    }
+    
+    // Error - log it for debugging
+    fprintf(stderr, "[native] ssl_write error: SSL_get_error=%d\n", err);
+    ERR_print_errors_fp(stderr);
     return -2;
 }
 

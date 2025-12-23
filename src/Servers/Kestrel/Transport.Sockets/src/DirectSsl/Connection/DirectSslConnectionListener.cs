@@ -7,7 +7,6 @@ using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Ssl;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Workers;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -22,8 +21,8 @@ internal sealed class DirectSslConnectionListener : IConnectionListener
     private readonly MemoryPool<byte> _memoryPool;
 
     private readonly SslContext _sslContext;
-    private readonly SslWorkerPool _sslWorkerPool;
-    
+    private readonly SslEventPumpPool _pumpPool;
+
     private Socket? _listenSocket;
 
     public EndPoint EndPoint { get; private set; }
@@ -31,7 +30,7 @@ internal sealed class DirectSslConnectionListener : IConnectionListener
     public DirectSslConnectionListener(
         ILoggerFactory loggerFactory,
         SslContext sslContext,
-        SslWorkerPool sslWorkerPool,
+        SslEventPumpPool pumpPool,
         EndPoint endpoint,
         DirectSslTransportOptions options,
         MemoryPool<byte> memoryPool)
@@ -40,11 +39,11 @@ internal sealed class DirectSslConnectionListener : IConnectionListener
         _options = options;
         _memoryPool = memoryPool;
 
-        _sslWorkerPool = sslWorkerPool;
+        _pumpPool = pumpPool;
         _sslContext = sslContext;
         EndPoint = endpoint;
 
-        _factory = new(loggerFactory, memoryPool);
+        _factory = new(loggerFactory, _sslContext, memoryPool);
     }
 
     internal void Bind()
@@ -88,8 +87,8 @@ internal sealed class DirectSslConnectionListener : IConnectionListener
                     acceptSocket.NoDelay = _options.NoDelay;
                 }
 
-                var connection = await _factory.CreateAsync(_sslWorkerPool, acceptSocket, cancellationToken);
-                
+                var connection = await _factory.CreateAsync(_pumpPool, acceptSocket, cancellationToken);
+
                 // If handshake failed, continue accepting other connections
                 if (connection is null)
                 {

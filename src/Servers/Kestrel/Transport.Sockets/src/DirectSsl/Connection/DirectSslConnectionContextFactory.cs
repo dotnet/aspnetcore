@@ -4,70 +4,82 @@
 using System.Buffers;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Ssl;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Workers;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Connection;
 
 /// <summary>
 /// Factory for creating <see cref="DirectSslConnection"/> instances.
+/// Performs TLS handshake and assigns connection to an event pump.
 /// </summary>
 internal sealed class DirectSslConnectionContextFactory : IDisposable
 {
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger _logger;
     private readonly MemoryPool<byte> _memoryPool;
+    private readonly SslContext _sslContext;
 
     public DirectSslConnectionContextFactory(
         ILoggerFactory loggerFactory,
+        SslContext sslContext,
         MemoryPool<byte> memoryPool)
     {
         _loggerFactory = loggerFactory;
         _logger = loggerFactory.CreateLogger<DirectSslConnectionContextFactory>();
         _memoryPool = memoryPool;
+        _sslContext = sslContext;
     }
 
     public async ValueTask<DirectSslConnection?> CreateAsync(
-        SslWorkerPool sslWorkerPool,
+        SslEventPumpPool pumpPool,
         Socket acceptSocket,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Creating DirectSslConnection for {RemoteEndPoint}", acceptSocket.RemoteEndPoint);
+        int fd = (int)acceptSocket.Handle;
+        NativeSsl.SetNonBlocking(fd);
 
-        var handshakeRequest = await sslWorkerPool.SubmitHandshakeAsync(acceptSocket);
-        if (cancellationToken.IsCancellationRequested)
+        // 3. Create SSL and bind to socket
+        IntPtr ssl = NativeSsl.SSL_new(_sslContext.Handle);
+        if (ssl == IntPtr.Zero)
         {
-            _logger.LogWarning("Connection cancelled after SSL handshake for {RemoteEndPoint}", acceptSocket.RemoteEndPoint);
             acceptSocket.Dispose();
-            return null;
+            throw new SslException("Failed to create SSL object.");
         }
 
-        if (handshakeRequest.Result != HandshakeResult.Success)
-        {
-            _logger.LogWarning("SSL handshake failed for {RemoteEndPoint}: {Result}", acceptSocket.RemoteEndPoint, handshakeRequest.Result);
-            acceptSocket.Dispose();
-            return null;
-        }
+        NativeSsl.SSL_set_fd(ssl, fd);
+        NativeSsl.SSL_set_accept_state(ssl);
 
-        if (handshakeRequest.Worker is not SslWorker sslWorker)
-        {
-            _logger.LogError("SSL handshake succeeded but no worker assigned for {RemoteEndPoint}", acceptSocket.RemoteEndPoint);
-            acceptSocket.Dispose();
-            return null;
-        }
+        // 4. Create connection state
+        var connectionState = new SslConnectionState(fd, ssl);
 
-        _logger.LogDebug("SSL handshake succeeded for {RemoteEndPoint}, assigned to worker {WorkerId}",
-            acceptSocket.RemoteEndPoint, handshakeRequest.Worker.WorkerId);
+        // 5. Register with pump BEFORE handshake
+        var pump = pumpPool.GetNextPump();
+        pump.Register(connectionState);
+
+        // 6. Perform async handshake
+        try
+        {
+            await connectionState.HandshakeAsync();
+
+            cancellationToken.ThrowIfCancellationRequested();
+        }
+        catch (Exception ex)
+        {
+            pump.Unregister(fd);
+            connectionState.Dispose();
+            acceptSocket.Dispose();
+            throw new SslException("Failed to perform handshake", ex);
+        }
 
         var connection = new DirectSslConnection(
             acceptSocket,
-            handshakeRequest.Ssl,
-            sslWorker,
+            connectionState,
+            pump,
             acceptSocket.LocalEndPoint,
             acceptSocket.RemoteEndPoint,
             _memoryPool,
             _loggerFactory.CreateLogger<DirectSslConnection>());
-
+            
         connection.Start();
         return connection;
     }

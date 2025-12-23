@@ -6,26 +6,24 @@ using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Interop;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Workers;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Connection;
 
 /// <summary>
-/// Connection context that uses native OpenSSL for TLS - nginx-style.
+/// Connection context that uses native OpenSSL for TLS.
 /// 
 /// After handshake completes:
-/// - Owns the SSL pointer
-/// - Uses the assigned SslWorker for all I/O (read/write via epoll)
-/// - All I/O happens on the worker's thread for maximum performance
+/// - Owns the SslConnectionState (which contains SSL pointer)
+/// - Uses the assigned SslEventPump for all I/O (read/write via epoll)
+/// - SSL operations happen on the pump's dedicated thread
+/// - Completions are dispatched to ThreadPool where pipelines run
 /// </summary>
 internal sealed class DirectSslConnection : TransportConnection
 {
     private readonly Socket _socket;
-    private readonly IntPtr _ssl;
-    private readonly int _clientFd;
-    private readonly SslWorker _worker;
+    private readonly SslConnectionState _connectionState;
+    private readonly SslEventPump _pump;
     private readonly ILogger _logger;
     private readonly MemoryPool<byte> _memoryPool;
     private readonly CancellationTokenSource _connectionClosedTokenSource = new();
@@ -36,17 +34,16 @@ internal sealed class DirectSslConnection : TransportConnection
 
     public DirectSslConnection(
         Socket socket,
-        IntPtr ssl,
-        SslWorker worker,
+        SslConnectionState connectionState,
+        SslEventPump pump,
         EndPoint? localEndPoint,
         EndPoint? remoteEndPoint,
         MemoryPool<byte> memoryPool,
         ILogger logger)
     {
         _socket = socket;
-        _ssl = ssl;
-        _clientFd = (int)socket.Handle;
-        _worker = worker;
+        _connectionState = connectionState;
+        _pump = pump;
         _memoryPool = memoryPool;
         _logger = logger;
 
@@ -85,7 +82,7 @@ internal sealed class DirectSslConnection : TransportConnection
 
     /// <summary>
     /// Receive loop: SSL_read -> write to Application.Output (Kestrel reads from Transport.Input)
-    /// Uses the worker's epoll-based async SSL_read.
+    /// Uses the pump's epoll-based async SSL_read.
     /// </summary>
     private async Task ReceiveLoopAsync()
     {
@@ -97,8 +94,8 @@ internal sealed class DirectSslConnection : TransportConnection
             {
                 var memory = Application.Output.GetMemory();
 
-                // Use worker's async SSL_read (goes through epoll event loop)
-                int bytesRead = await _worker.SslReadAsync(_ssl, _clientFd, memory);
+                // Use pump's async SSL_read (waits for epoll event, does SSL_read on pump thread)
+                int bytesRead = await _connectionState.ReadAsync(memory);
 
                 if (bytesRead > 0)
                 {
@@ -141,7 +138,7 @@ internal sealed class DirectSslConnection : TransportConnection
 
     /// <summary>
     /// Send loop: read from Application.Input (Kestrel writes to Transport.Output) -> SSL_write
-    /// Uses the worker's epoll-based async SSL_write.
+    /// Uses the pump's epoll-based async SSL_write.
     /// </summary>
     private async Task SendLoopAsync()
     {
@@ -152,27 +149,32 @@ internal sealed class DirectSslConnection : TransportConnection
             while (!_disposed)
             {
                 var result = await Application.Input.ReadAsync();
-                
+
                 // Check for cancellation first
                 if (result.IsCanceled)
                 {
                     break;
                 }
-                
+
                 var buffer = result.Buffer;
 
                 // Process buffer data BEFORE checking IsCompleted
-                // This ensures the final chunk (e.g., "0\r\n\r\n" terminator) is sent
+                // This ensures the final chunk (e.g., "0\\r\\n\\r\\n" terminator) is sent
                 if (!buffer.IsEmpty)
                 {
                     foreach (var segment in buffer)
                     {
                         if (segment.Length > 0)
                         {
-                            // Use worker's async SSL_write (goes through epoll event loop)
-                            // Worker handles partial writes internally
-                            // segment is ReadOnlyMemory<byte> - no copy needed!
-                            await _worker.SslWriteAsync(_ssl, _clientFd, segment, segment.Length);
+                            // Use pump's async SSL_write (waits for epoll event if needed)
+                            // Pump handles the SSL_write on its dedicated thread
+                            var written = await _connectionState.WriteAsync(segment);
+                            if (written == 0)
+                            {
+                                // Peer closed connection
+                                _logger.LogError("Peer closed connection during write");
+                                return;
+                            }
                         }
                     }
                 }
@@ -205,7 +207,7 @@ internal sealed class DirectSslConnection : TransportConnection
     {
         _disposed = true;
         _connectionClosedTokenSource.Cancel();
-        
+
         // Cancel pending reads to unblock the loops
         Application.Input.CancelPendingRead();
         Application.Output.CancelPendingFlush();
@@ -219,47 +221,35 @@ internal sealed class DirectSslConnection : TransportConnection
         }
         _disposed = true;
 
-        // Complete the transport pipes (signals to Kestrel)
-        Transport.Input.Complete();
-        Transport.Output.Complete();
-        
-        // Cancel pending operations to unblock our loops
+        // 1. Cancel pending SSL operations (unblocks ReadAsync/WriteAsync TCS)
+        _connectionState.Cancel();
+
+        // 2. Unregister from pump (removes from epoll, prevents new events)
+        _pump.Unregister(_connectionState.Fd);
+
+        // 3. Cancel pending pipeline operations to unblock our loops
         Application.Input.CancelPendingRead();
         Application.Output.CancelPendingFlush();
-        
-        // Cancel any pending I/O in the worker
-        _worker.CancelIoForConnection(_clientFd);
 
-        // Wait for loops to finish (with timeout to avoid deadlock)
-        var timeout = Task.Delay(TimeSpan.FromSeconds(5));
+        // 4. Wait for loops to finish (they should complete quickly now)
         if (_receiveTask != null)
         {
-            if (await Task.WhenAny(_receiveTask, timeout) == timeout)
-            {
-                _logger.LogWarning("Receive loop did not complete in time");
-            }
+            await _receiveTask.ConfigureAwait(false);
         }
         if (_sendTask != null)
         {
-            if (await Task.WhenAny(_sendTask, timeout) == timeout)
-            {
-                _logger.LogWarning("Send loop did not complete in time");
-            }
+            await _sendTask.ConfigureAwait(false);
         }
 
-        // SSL shutdown and cleanup
-        try
-        {
-            NativeSsl.ssl_connection_destroy(_ssl);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Error during SSL shutdown");
-        }
+        // 5. Complete the transport pipes (signals to Kestrel)
+        Transport.Input.Complete();
+        Transport.Output.Complete();
 
-        // Close socket
+        // 6. Graceful SSL shutdown and cleanup
+        _connectionState.Dispose();
         _socket.Dispose();
 
+        // 7. Signal connection closed
         _connectionClosedTokenSource.Cancel();
         _connectionClosedTokenSource.Dispose();
     }

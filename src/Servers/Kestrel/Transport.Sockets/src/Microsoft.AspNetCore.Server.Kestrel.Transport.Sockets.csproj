@@ -50,7 +50,6 @@
   <ItemGroup>
     <Folder Include="DirectSsl/Native/" />
     <Folder Include="DirectSsl/Ssl/" />
-    <Folder Include="DirectSsl/Workers/" />
   </ItemGroup>
 
   <!-- Build native SSL library for DirectSsl transport -->
@@ -62,9 +61,7 @@
 
   <Target Name="BuildNativeSsl" BeforeTargets="Build" Condition="$([MSBuild]::IsOSPlatform('Linux'))">
     <Message Importance="High" Text="Building native SSL library: $(NativeSslLibName)" />
-    <Exec Command="gcc -shared -fPIC -O2 -o $(NativeSslLibName) native_ssl.c -lssl -lcrypto"
-          WorkingDirectory="$(NativeSslSourceDir)"
-          ConsoleToMSBuild="true" />
+    <Exec Command="gcc -shared -fPIC -O2 -o $(NativeSslLibName) native_ssl.c -lssl -lcrypto" WorkingDirectory="$(NativeSslSourceDir)" ConsoleToMSBuild="true" />
     <!-- Add to Content items after building so it gets copied to output -->
     <ItemGroup>
       <Content Include="$(NativeSslOutput)">

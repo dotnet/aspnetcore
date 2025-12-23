@@ -6,7 +6,6 @@ using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Ssl;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Workers;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Connection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -19,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl;
 internal sealed class DirectSslTransportFactory : IConnectionListenerFactory, IConnectionListenerFactorySelector
 {
     private SslContext? _sslContext;
-    private SslWorkerPool? _sslWorkerPool;
+    private SslEventPumpPool? _pumpPool;
 
     private readonly DirectSslTransportOptions _options;
 
@@ -58,11 +57,11 @@ internal sealed class DirectSslTransportFactory : IConnectionListenerFactory, IC
             _logger.LogInformation("SSL context initialized with certificate: {CertPath}", _options.CertificatePath);
         }
 
-        // Initialize SSL worker pool lazily
-        if (_sslWorkerPool is null)
+        // Initialize SSL event pump pool lazily
+        if (_pumpPool is null)
         {
-             _sslWorkerPool = new SslWorkerPool(_loggerFactory, _sslContext, _options.WorkerCount);
-            _logger.LogInformation("SSL worker pool started with {WorkerCount} workers.", _options.WorkerCount);         
+            _pumpPool = new SslEventPumpPool(_options.WorkerCount);
+            _logger.LogInformation("SSL event pump pool started with {PumpCount} pumps.", _options.WorkerCount);
         }
 
         // Using shared memory pool for simplicity
@@ -70,7 +69,7 @@ internal sealed class DirectSslTransportFactory : IConnectionListenerFactory, IC
         var transport = new DirectSslConnectionListener(
             _loggerFactory,
             _sslContext,
-            _sslWorkerPool,
+            _pumpPool,
             endpoint,
             _options,
             memoryPool);
