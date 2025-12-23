@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Interop;
 using Microsoft.Extensions.Logging;
@@ -13,7 +15,7 @@ internal sealed class SslEventPump : IDisposable
     private readonly int _id;
 
     private readonly int _epollFd;
-    private readonly Dictionary<int, SslConnectionState> _connections = new();
+    private readonly ConcurrentDictionary<int, SslConnectionState> _connections = new();
     private readonly Thread _pumpThread;
     private volatile bool _running = true;
 
@@ -38,6 +40,8 @@ internal sealed class SslEventPump : IDisposable
 
     public void Register(SslConnectionState conn)
     {
+        _logger?.LogDebug("Registering fd={Fd} with epoll", conn.Fd);
+        
         lock (_connections)
         {
             _connections[conn.Fd] = conn;
@@ -49,19 +53,22 @@ internal sealed class SslEventPump : IDisposable
             Data = new EpollData { Fd = conn.Fd }
         };
         
-        if (NativeSsl.epoll_ctl(_epollFd, NativeSsl.EPOLL_CTL_ADD, conn.Fd, ref ev) < 0)
+        int result = NativeSsl.epoll_ctl(_epollFd, NativeSsl.EPOLL_CTL_ADD, conn.Fd, ref ev);
+        if (result < 0)
         {
-            throw new InvalidOperationException($"epoll_ctl ADD failed: {Marshal.GetLastWin32Error()}");
+            int errno = Marshal.GetLastWin32Error();
+            _logger?.LogError("epoll_ctl ADD failed for fd={Fd}: errno={Errno}", conn.Fd, errno);
+            throw new InvalidOperationException($"epoll_ctl ADD failed: {errno}");
         }
+        
+        _logger?.LogDebug("Successfully registered fd={Fd} with epoll", conn.Fd);
     }
 
     public void Unregister(int fd)
     {
-        lock (_connections)
-        {
-            _connections.Remove(fd);
-        }
-        
+        var removed = _connections.TryRemove(fd, out _);
+        Debug.Assert(removed, "Unregister called for fd not in connections");
+
         NativeSsl.epoll_ctl(_epollFd, NativeSsl.EPOLL_CTL_DEL, fd, IntPtr.Zero);
     }
 
@@ -93,11 +100,14 @@ internal sealed class SslEventPump : IDisposable
                 int fd = events[i].Data.Fd;
                 uint mask = events[i].Events;
 
-                SslConnectionState? conn;
-                lock (_connections)
+                if (fd == 0 && mask == 0)
                 {
-                    _connections.TryGetValue(fd, out conn);
+                    _logger?.LogDebug("Skipping spurious event with fd=0 and mask=0");
+                    continue;
                 }
+
+                SslConnectionState? conn;
+                _ = _connections.TryGetValue(fd, out conn);
 
                 if (conn == null)
                 {

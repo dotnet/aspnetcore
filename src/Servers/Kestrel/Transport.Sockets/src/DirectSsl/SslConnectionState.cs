@@ -2,11 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl;
 
 internal sealed class SslConnectionState : IDisposable
 {
+    private readonly ILogger? _logger;
+
     public readonly int Fd;
     public readonly IntPtr Ssl;
 
@@ -22,8 +25,10 @@ internal sealed class SslConnectionState : IDisposable
     private TaskCompletionSource<int>? _writeTcs;
     private ReadOnlyMemory<byte> _writeBuffer;
 
-    public SslConnectionState(int fd, IntPtr ssl)
+    public SslConnectionState(int fd, IntPtr ssl, ILogger? logger = null)
     {
+        _logger = logger;
+
         Fd = fd;
         Ssl = ssl;
     }
@@ -124,6 +129,7 @@ internal sealed class SslConnectionState : IDisposable
         var tcs = _readTcs;
         if (tcs == null)
         {
+            _logger?.LogDebug("TryCompleteRead called but no read tcs is pending");
             return; // Race: cancelled or completed between check and call
         }
 
@@ -212,7 +218,7 @@ internal sealed class SslConnectionState : IDisposable
         var tcs = _writeTcs;
         if (tcs == null)
         {
-            
+            _logger?.LogDebug("TryCompleteWrite called but no write tcs is pending");
             return; // Race: cancelled or completed between check and call
         }
 

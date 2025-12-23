@@ -109,7 +109,7 @@ internal sealed class DirectSslConnection : TransportConnection
                 else if (bytesRead == 0)
                 {
                     // Connection closed (EOF)
-                    _logger.LogDebug("SSL connection closed by peer");
+                    _logger.LogDebug("SSL connection closed by peer: fd={Fd}", _connectionState.Fd);
                     break;
                 }
                 else

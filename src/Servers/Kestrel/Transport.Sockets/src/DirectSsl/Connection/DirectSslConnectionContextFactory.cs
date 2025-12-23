@@ -50,17 +50,28 @@ internal sealed class DirectSslConnectionContextFactory : IDisposable
         NativeSsl.SSL_set_accept_state(ssl);
 
         // 4. Create connection state
-        var connectionState = new SslConnectionState(fd, ssl);
+        var connectionState = new SslConnectionState(fd, ssl, _loggerFactory.CreateLogger<SslConnectionState>());
 
-        // 5. Register with pump BEFORE handshake
+        // 5. Get pump for this connection
         var pump = pumpPool.GetNextPump();
-        pump.Register(connectionState);
 
         // 6. Perform async handshake
+        // IMPORTANT: Start handshake BEFORE registering with pump.
+        // This ensures _handshakeTcs is set before any epoll events can arrive.
+        // With edge-triggered epoll, EPOLLIN fires immediately on registration
+        // if data is already available (e.g., ClientHello from client).
         try
         {
             _logger.LogDebug($"Initiating handshake for fd={connectionState.Fd}, ssl={connectionState.Ssl}");
-            await connectionState.HandshakeAsync();
+            
+            // Try initial handshake - this will set _handshakeTcs if it needs to wait
+            var handshakeTask = connectionState.HandshakeAsync();
+            
+            // Now register with pump - safe because _handshakeTcs is already set if needed
+            pump.Register(connectionState);
+            
+            // Wait for handshake to complete
+            await handshakeTask;
 
             cancellationToken.ThrowIfCancellationRequested();
         }
@@ -69,7 +80,7 @@ internal sealed class DirectSslConnectionContextFactory : IDisposable
             pump.Unregister(fd);
             connectionState.Dispose();
             acceptSocket.Dispose();
-            throw new SslException("Failed to perform handshake", ex);
+            throw new SslException($"Failed to perform handshake: fd={fd}", ex);
         }
 
         var connection = new DirectSslConnection(
