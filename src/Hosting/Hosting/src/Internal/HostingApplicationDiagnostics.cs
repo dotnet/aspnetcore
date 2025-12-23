@@ -536,7 +536,7 @@ internal sealed class HostingApplicationDiagnostics
         }
         else if (HostingTelemetryHelpers.IsErrorStatusCode(response.StatusCode))
         {
-            activity.SetTag(HostingTelemetryHelpers.AttributeErrorType, response.StatusCode.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            activity.SetTag(HostingTelemetryHelpers.AttributeErrorType, response.StatusCode.ToString(CultureInfo.InvariantCulture));
             activity.SetStatus(ActivityStatusCode.Error);
         }
     }
