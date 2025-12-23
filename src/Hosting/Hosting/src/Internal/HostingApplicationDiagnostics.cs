@@ -58,10 +58,10 @@ internal sealed class HostingApplicationDiagnostics
 
     private static bool GetSuppressActivityOpenTelemetryData()
     {
-        // Default to true if the switch isn't set.
+        // Default to false if the switch isn't set.
         if (!AppContext.TryGetSwitch("Microsoft.AspNetCore.Hosting.SuppressActivityOpenTelemetryData", out var enabled))
         {
-            return true;
+            return false;
         }
 
         return enabled;

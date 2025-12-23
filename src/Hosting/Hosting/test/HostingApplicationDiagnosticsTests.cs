@@ -1082,10 +1082,10 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     }
 
     [Fact]
-    public void ActivityListenersAreCalled()
+    public void ActivityListeners_SuppressActivityTags_NoTagsAdded()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
-        var hostingApplication = CreateApplication(out var features, activitySource: testSource);
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: true);
         var parentSpanId = "";
         var tags = new List<KeyValuePair<string, object>>();
         using var listener = new ActivityListener
@@ -1124,7 +1124,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     }
 
     [Fact]
-    public void ActivityListeners_DontSuppressActivityTags_TagsAdded()
+    public void ActivityListeners_TagsAdded()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
         var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false);
@@ -1216,7 +1216,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     }
 
     [Fact]
-    public void ActivityListeners_DontSuppressActivityTags_EndTagsAdded()
+    public void ActivityListeners_EndTagsAdded()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
         var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
@@ -1256,7 +1256,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     }
 
     [Fact]
-    public void ActivityListeners_DontSuppressActivityTags_ErrorStatusCodeSetsErrorType()
+    public void ActivityListeners_ErrorStatusCodeSetsErrorType()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
         var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
@@ -1291,7 +1291,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     }
 
     [Fact]
-    public void ActivityListeners_DontSuppressActivityTags_ExceptionSetsErrorType()
+    public void ActivityListeners_ExceptionSetsErrorType()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
         var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
@@ -1332,7 +1332,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     [InlineData("HTTP/1.1", "1.1")]
     [InlineData("HTTP/2", "2")]
     [InlineData("HTTP/3", "3")]
-    public void ActivityListeners_DontSuppressActivityTags_HttpVersionMapped(string protocol, string expectedVersion)
+    public void ActivityListeners_HttpVersionMapped(string protocol, string expectedVersion)
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
         var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
@@ -1367,8 +1367,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     public void ActivityListeners_SuppressActivityTags_NoEndTagsAdded()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
-        // Default is to suppress OTel data
-        var hostingApplication = CreateApplication(out var features, activitySource: testSource, configure: c =>
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: true, configure: c =>
         {
             c.Request.Protocol = "HTTP/1.1";
             c.Request.Scheme = "http";
@@ -1410,7 +1409,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     [InlineData(499)]
     [InlineData(500)]
     [InlineData(503)]
-    public void ActivityListeners_DontSuppressActivityTags_ErrorStatusCodesSetErrorType(int statusCode)
+    public void ActivityListeners_ErrorStatusCodesSetErrorType(int statusCode)
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
         var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
@@ -1449,7 +1448,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     [InlineData(204)]
     [InlineData(301)]
     [InlineData(399)]
-    public void ActivityListeners_DontSuppressActivityTags_SuccessStatusCodesNoErrorType(int statusCode)
+    public void ActivityListeners_SuccessStatusCodesNoErrorType(int statusCode)
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
         var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
