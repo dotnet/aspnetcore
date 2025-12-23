@@ -9,17 +9,18 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-public class TempDataServiceTest
+public class CookieTempDataProviderTest
 {
     [Fact]
     public void Load_ReturnsEmptyTempData_WhenNoCookieExists()
     {
         var httpContext = CreateHttpContext();
-
-        var tempData = TempDataService.Load(httpContext);
+        var cookieTempDataProvider = new CookieTempDataProvider();
+         
+        var tempData = cookieTempDataProvider.LoadTempData(httpContext);
 
         Assert.NotNull(tempData);
-        Assert.Empty(tempData.Save());
+        Assert.Empty(tempData);
     }
 
     [Fact]
@@ -27,8 +28,9 @@ public class TempDataServiceTest
     {
         var httpContext = CreateHttpContext();
         var tempData = new TempData();
+        var cookieTempDataProvider = new CookieTempDataProvider();
 
-        TempDataService.Save(httpContext, tempData);
+        cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
 
         var cookieFeature = httpContext.Features.Get<TestResponseCookiesFeature>();
         Assert.NotNull(cookieFeature);
@@ -40,9 +42,10 @@ public class TempDataServiceTest
     {
         var httpContext = CreateHttpContext();
         var tempData = new TempData();
+        var cookieTempDataProvider = new CookieTempDataProvider();
         tempData["Key1"] = "Value1";
 
-        TempDataService.Save(httpContext, tempData);
+        cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
 
         var cookieFeature = httpContext.Features.Get<TestResponseCookiesFeature>();
         Assert.NotNull(cookieFeature);
@@ -56,11 +59,12 @@ public class TempDataServiceTest
         var tempData = new TempData();
         tempData["StringKey"] = "StringValue";
 
-        TempDataService.Save(httpContext, tempData);
+        var cookieTempDataProvider = new CookieTempDataProvider();
+        cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
         SimulateCookieRoundTrip(httpContext);
-        var loadedTempData = TempDataService.Load(httpContext);
+        var loadedTempData = cookieTempDataProvider.LoadTempData(httpContext);
 
-        Assert.Equal("StringValue", loadedTempData.Peek("StringKey"));
+        Assert.Equal("StringValue", loadedTempData["StringKey"]);
     }
 
     [Fact]
@@ -70,11 +74,12 @@ public class TempDataServiceTest
         var tempData = new TempData();
         tempData["IntKey"] = 42;
 
-        TempDataService.Save(httpContext, tempData);
+        var cookieTempDataProvider = new CookieTempDataProvider();
+        cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
         SimulateCookieRoundTrip(httpContext);
-        var loadedTempData = TempDataService.Load(httpContext);
+        var loadedTempData = cookieTempDataProvider.LoadTempData(httpContext);
 
-        Assert.Equal(42, loadedTempData.Peek("IntKey"));
+        Assert.Equal(42, loadedTempData["IntKey"]);
     }
 
     [Fact]
@@ -84,11 +89,12 @@ public class TempDataServiceTest
         var tempData = new TempData();
         tempData["BoolKey"] = true;
 
-        TempDataService.Save(httpContext, tempData);
+        var cookieTempDataProvider = new CookieTempDataProvider();
+        cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
         SimulateCookieRoundTrip(httpContext);
-        var loadedTempData = TempDataService.Load(httpContext);
+        var loadedTempData = cookieTempDataProvider.LoadTempData(httpContext);
 
-        Assert.Equal(true, loadedTempData.Peek("BoolKey"));
+        Assert.Equal(true, loadedTempData["BoolKey"]);
     }
 
     [Fact]
@@ -99,11 +105,12 @@ public class TempDataServiceTest
         var guid = Guid.NewGuid();
         tempData["GuidKey"] = guid;
 
-        TempDataService.Save(httpContext, tempData);
+        var cookieTempDataProvider = new CookieTempDataProvider();
+        cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
         SimulateCookieRoundTrip(httpContext);
-        var loadedTempData = TempDataService.Load(httpContext);
-
-        Assert.Equal(guid, loadedTempData.Peek("GuidKey"));
+        var loadedTempData = cookieTempDataProvider.LoadTempData(httpContext);
+            
+        Assert.Equal(guid, loadedTempData["GuidKey"]);
     }
 
     [Fact]
@@ -114,11 +121,12 @@ public class TempDataServiceTest
         var dateTime = new DateTime(2025, 12, 15, 10, 30, 0, DateTimeKind.Utc);
         tempData["DateTimeKey"] = dateTime;
 
-        TempDataService.Save(httpContext, tempData);
+        var cookieTempDataProvider = new CookieTempDataProvider();
+        cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
         SimulateCookieRoundTrip(httpContext);
-        var loadedTempData = TempDataService.Load(httpContext);
+        var loadedTempData = cookieTempDataProvider.LoadTempData(httpContext);
 
-        Assert.Equal(dateTime, loadedTempData.Peek("DateTimeKey"));
+        Assert.Equal(dateTime, loadedTempData["DateTimeKey"]);
     }
 
     [Fact]
@@ -129,11 +137,12 @@ public class TempDataServiceTest
         var array = new[] { "one", "two", "three" };
         tempData["ArrayKey"] = array;
 
-        TempDataService.Save(httpContext, tempData);
+        var cookieTempDataProvider = new CookieTempDataProvider();
+        cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
         SimulateCookieRoundTrip(httpContext);
-        var loadedTempData = TempDataService.Load(httpContext);
+        var loadedTempData = cookieTempDataProvider.LoadTempData(httpContext);
 
-        Assert.Equal(array, loadedTempData.Peek("ArrayKey"));
+        Assert.Equal(array, loadedTempData["ArrayKey"]);
     }
 
     [Fact]
@@ -144,11 +153,12 @@ public class TempDataServiceTest
         var array = new[] { 1, 2, 3 };
         tempData["ArrayKey"] = array;
 
-        TempDataService.Save(httpContext, tempData);
+        var cookieTempDataProvider = new CookieTempDataProvider();
+        cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
         SimulateCookieRoundTrip(httpContext);
-        var loadedTempData = TempDataService.Load(httpContext);
+        var loadedTempData = cookieTempDataProvider.LoadTempData(httpContext);
 
-        Assert.Equal(array, loadedTempData.Peek("ArrayKey"));
+        Assert.Equal(array, loadedTempData["ArrayKey"]);
     }
 
     [Fact]
@@ -159,11 +169,12 @@ public class TempDataServiceTest
         var dict = new Dictionary<string, string> { ["a"] = "1", ["b"] = "2" };
         tempData["DictKey"] = dict;
 
-        TempDataService.Save(httpContext, tempData);
+        var cookieTempDataProvider = new CookieTempDataProvider();
+        cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
         SimulateCookieRoundTrip(httpContext);
-        var loadedTempData = TempDataService.Load(httpContext);
+        var loadedTempData = cookieTempDataProvider.LoadTempData(httpContext);
 
-        var loadedDict = Assert.IsType<Dictionary<string, string>>(loadedTempData.Peek("DictKey"));
+        var loadedDict = Assert.IsType<Dictionary<string, string>>(loadedTempData["DictKey"]);
         Assert.Equal("1", loadedDict["a"]);
         Assert.Equal("2", loadedDict["b"]);
     }
@@ -177,13 +188,14 @@ public class TempDataServiceTest
         tempData["Key2"] = 123;
         tempData["Key3"] = true;
 
-        TempDataService.Save(httpContext, tempData);
+        var cookieTempDataProvider = new CookieTempDataProvider();
+        cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
         SimulateCookieRoundTrip(httpContext);
-        var loadedTempData = TempDataService.Load(httpContext);
+        var loadedTempData = cookieTempDataProvider.LoadTempData(httpContext);
 
-        Assert.Equal("Value1", loadedTempData.Peek("Key1"));
-        Assert.Equal(123, loadedTempData.Peek("Key2"));
-        Assert.Equal(true, loadedTempData.Peek("Key3"));
+        Assert.Equal("Value1", loadedTempData["Key1"]);
+        Assert.Equal(123, loadedTempData["Key2"]);
+        Assert.Equal(true, loadedTempData["Key3"]);
     }
 
     [Fact]
@@ -193,7 +205,8 @@ public class TempDataServiceTest
         var tempData = new TempData();
         tempData["Key"] = new object();
 
-        Assert.Throws<InvalidOperationException>(() => TempDataService.Save(httpContext, tempData));
+        var cookieTempDataProvider = new CookieTempDataProvider();
+        Assert.Throws<InvalidOperationException>(() => cookieTempDataProvider.SaveTempData(httpContext, tempData.Save()));
     }
 
     [Fact]
@@ -202,10 +215,11 @@ public class TempDataServiceTest
         var httpContext = CreateHttpContext();
         httpContext.Request.Headers["Cookie"] = ".AspNetCore.Components.TempData=not-valid-base64!!!";
 
-        var tempData = TempDataService.Load(httpContext);
+        var cookieTempDataProvider = new CookieTempDataProvider();
+        var tempData = cookieTempDataProvider.LoadTempData(httpContext);
 
         Assert.NotNull(tempData);
-        Assert.Empty(tempData.Save());
+        Assert.Empty(tempData);
     }
 
     [Fact]
@@ -216,10 +230,11 @@ public class TempDataServiceTest
         var encoded = Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(System.Text.Encoding.UTF8.GetBytes(json));
         httpContext.Request.Headers["Cookie"] = $".AspNetCore.Components.TempData={encoded}";
 
-        var tempData = TempDataService.Load(httpContext);
+        var cookieTempDataProvider = new CookieTempDataProvider();
+        var tempData = cookieTempDataProvider.LoadTempData(httpContext);
 
         Assert.NotNull(tempData);
-        Assert.Empty(tempData.Save());
+        Assert.Empty(tempData);
     }
 
     private static DefaultHttpContext CreateHttpContext()

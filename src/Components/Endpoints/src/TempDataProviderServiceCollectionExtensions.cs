@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -16,6 +17,9 @@ public static class TempDataProviderServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddTempDataValueProvider(this IServiceCollection services)
     {
+        services.TryAddSingleton<ITempDataProvider, CookieTempDataProvider>();
+        services.TryAddSingleton<TempDataService>();
+
         services.TryAddCascadingValue(sp =>
         {
             var httpContext = sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext;
@@ -33,11 +37,12 @@ public static class TempDataProviderServiceCollectionExtensions
         var key = typeof(ITempData);
         if (!httpContext.Items.TryGetValue(key, out var tempData))
         {
-            var tempDataInstance = TempDataService.Load(httpContext);
+            var tempDataService = httpContext.RequestServices.GetRequiredService<TempDataService>();
+            var tempDataInstance = tempDataService.CreateEmpty(httpContext);
             httpContext.Items[key] = tempDataInstance;
             httpContext.Response.OnStarting(() =>
             {
-                TempDataService.Save(httpContext, tempDataInstance);
+                tempDataService.Save(httpContext, tempDataInstance);
                 return Task.CompletedTask;
             });
         }

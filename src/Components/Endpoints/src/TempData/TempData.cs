@@ -96,7 +96,7 @@ public class TempData : ITempData
     /// <summary>
     /// Returns true if the TempData dictionary contains the specified <paramref name="value"/>.
     /// </summary>
-    public bool ContainsValue(object? value)
+    public bool ContainsValue(object value)
     {
         EnsureLoaded();
         return _data.ContainsValue(value);
