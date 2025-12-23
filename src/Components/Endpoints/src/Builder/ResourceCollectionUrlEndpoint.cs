@@ -107,7 +107,7 @@ internal partial class ResourceCollectionUrlEndpoint
         return content.ToArray();
     }
 
-    private static string ComputeFingerprintSuffix(ResourceAssetCollection resourceCollection)
+    internal static string ComputeFingerprintSuffix(ResourceAssetCollection resourceCollection)
     {
         var resources = (IReadOnlyList<ResourceAsset>)resourceCollection;
         var incrementalHash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
@@ -131,11 +131,13 @@ internal partial class ResourceCollectionUrlEndpoint
                     if (property.Name.Equals("label", StringComparison.OrdinalIgnoreCase))
                     {
                         hasLabel = true;
+                        // No need to continue if we found a label - we won't use integrity
                         break;
                     }
                     else if (property.Name.Equals("integrity", StringComparison.OrdinalIgnoreCase))
                     {
                         integrity = property.Value;
+                        // Continue searching in case there's also a label property
                     }
                 }
 

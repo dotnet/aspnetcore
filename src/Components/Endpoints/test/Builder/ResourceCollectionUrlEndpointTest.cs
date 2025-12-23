@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Reflection;
-
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 public class ResourceCollectionUrlEndpointTest
@@ -26,7 +24,7 @@ public class ResourceCollectionUrlEndpointTest
         var collection = new ResourceAssetCollection(resources);
 
         // Act
-        var fingerprint1 = InvokeComputeFingerprintSuffix(collection);
+        var fingerprint1 = ResourceCollectionUrlEndpoint.ComputeFingerprintSuffix(collection);
 
         // Arrange - Change the integrity of one asset (simulates content change between builds)
         resources = new List<ResourceAsset>
@@ -43,7 +41,7 @@ public class ResourceCollectionUrlEndpointTest
         collection = new ResourceAssetCollection(resources);
 
         // Act
-        var fingerprint2 = InvokeComputeFingerprintSuffix(collection);
+        var fingerprint2 = ResourceCollectionUrlEndpoint.ComputeFingerprintSuffix(collection);
 
         // Assert - Fingerprints should be different because integrity changed
         Assert.NotEqual(fingerprint1, fingerprint2);
@@ -70,7 +68,7 @@ public class ResourceCollectionUrlEndpointTest
         var collection = new ResourceAssetCollection(resources);
 
         // Act
-        var fingerprint1 = InvokeComputeFingerprintSuffix(collection);
+        var fingerprint1 = ResourceCollectionUrlEndpoint.ComputeFingerprintSuffix(collection);
 
         // Arrange - Change the integrity (but not the URL) of one asset
         // For fingerprinted assets, the URL already contains the hash, so we don't need to include integrity
@@ -90,7 +88,7 @@ public class ResourceCollectionUrlEndpointTest
         collection = new ResourceAssetCollection(resources);
 
         // Act
-        var fingerprint2 = InvokeComputeFingerprintSuffix(collection);
+        var fingerprint2 = ResourceCollectionUrlEndpoint.ComputeFingerprintSuffix(collection);
 
         // Assert - Fingerprints should be the same because for fingerprinted assets,
         // the URL (not integrity) is what matters, and the URL didn't change
@@ -118,7 +116,7 @@ public class ResourceCollectionUrlEndpointTest
         var collection = new ResourceAssetCollection(resources);
 
         // Act
-        var fingerprint1 = InvokeComputeFingerprintSuffix(collection);
+        var fingerprint1 = ResourceCollectionUrlEndpoint.ComputeFingerprintSuffix(collection);
 
         // Arrange - Change only the non-fingerprinted asset's integrity
         resources = new List<ResourceAsset>
@@ -138,7 +136,7 @@ public class ResourceCollectionUrlEndpointTest
         collection = new ResourceAssetCollection(resources);
 
         // Act
-        var fingerprint2 = InvokeComputeFingerprintSuffix(collection);
+        var fingerprint2 = ResourceCollectionUrlEndpoint.ComputeFingerprintSuffix(collection);
 
         // Assert - Fingerprints should be different because non-fingerprinted asset's integrity changed
         Assert.NotEqual(fingerprint1, fingerprint2);
@@ -156,21 +154,8 @@ public class ResourceCollectionUrlEndpointTest
         var collection = new ResourceAssetCollection(resources);
 
         // Act & Assert - Should not throw
-        var fingerprint = InvokeComputeFingerprintSuffix(collection);
+        var fingerprint = ResourceCollectionUrlEndpoint.ComputeFingerprintSuffix(collection);
         Assert.NotNull(fingerprint);
         Assert.StartsWith(".", fingerprint);
-    }
-
-    private static string InvokeComputeFingerprintSuffix(ResourceAssetCollection collection)
-    {
-        // Use reflection to invoke the private static method
-        var method = typeof(ResourceCollectionUrlEndpoint).GetMethod(
-            "ComputeFingerprintSuffix",
-            BindingFlags.NonPublic | BindingFlags.Static);
-
-        Assert.NotNull(method);
-
-        var result = method.Invoke(null, new object[] { collection });
-        return result as string;
     }
 }
