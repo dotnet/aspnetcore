@@ -158,4 +158,40 @@ public class ResourceCollectionUrlEndpointTest
         Assert.NotNull(fingerprint);
         Assert.StartsWith(".", fingerprint);
     }
+
+    [Fact]
+    public void ComputeFingerprintSuffix_ChangesWhenNonFingerprintedAssetIntegrityChanges()
+    {
+        // This test simulates the original bug scenario:
+        // When WasmFingerprintAssets=false, changing a file (e.g., Counter.razor or wwwroot/styles.css)
+        // updates its integrity hash but not its URL. The resource-collection fingerprint must change
+        // to prevent serving stale cached resource-collection.js with outdated integrity values.
+
+        // Arrange - Initial state: non-fingerprinted asset with original integrity
+        var collection1 = new ResourceAssetCollection(
+        [
+            new("/_framework/app.styles.css",
+            [
+                new("integrity", "sha256-OriginalHash123456")
+            ])
+        ]);
+
+        // Act - Compute initial fingerprint
+        var fingerprintSuffix1 = ResourceCollectionUrlEndpoint.ComputeFingerprintSuffix(collection1);
+
+        // Arrange - Simulate content change: same URL, different integrity (e.g., after modifying styles.css)
+        var collection2 = new ResourceAssetCollection(
+        [
+            new("/_framework/app.styles.css",
+            [
+                new("integrity", "sha256-ModifiedHash789012")
+            ])
+        ]);
+
+        // Act - Compute fingerprint after content change
+        var fingerprintSuffix2 = ResourceCollectionUrlEndpoint.ComputeFingerprintSuffix(collection2);
+
+        // Assert - Fingerprint must be different to ensure browser fetches updated resource-collection.js
+        Assert.NotEqual(fingerprintSuffix1, fingerprintSuffix2);
+    }
 }
