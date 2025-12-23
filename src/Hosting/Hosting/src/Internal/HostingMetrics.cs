@@ -87,6 +87,11 @@ internal sealed class HostingMetrics : IDisposable
                 // then we don't want to add a duplicate tag here because that breaks some metrics systems.
                 tags.TryAddTag(HostingTelemetryHelpers.AttributeErrorType, exception.GetType().FullName);
             }
+            else if (HostingTelemetryHelpers.IsErrorStatusCode(statusCode))
+            {
+                // Add error.type for 5xx status codes when there's no exception.
+                tags.TryAddTag(HostingTelemetryHelpers.AttributeErrorType, statusCode.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            }
 
             var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
             _requestDuration.Record(duration.TotalSeconds, tags);

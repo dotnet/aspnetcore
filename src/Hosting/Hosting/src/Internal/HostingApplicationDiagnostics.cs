@@ -458,6 +458,8 @@ internal sealed class HostingApplicationDiagnostics
         // Missing values recommended by the spec are:
         // - url.query (need configuration around redaction to do properly)
         // - http.request.header.<key>
+        //
+        // Note that these tags are added even if Activity.IsAllDataRequested is false, as they may be used in sampling decisions.
 
         var request = httpContext.Request;
         var creationTags = new TagList();
@@ -494,7 +496,7 @@ internal sealed class HostingApplicationDiagnostics
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void StopActivity(HttpContext httpContext, Activity activity, Exception? exception, bool hasDiagnosticListener)
     {
-        if (!SuppressActivityOpenTelemetryData)
+        if (!SuppressActivityOpenTelemetryData && activity.IsAllDataRequested)
         {
             SetActivityEndTags(httpContext, activity, exception);
         }
@@ -532,14 +534,12 @@ internal sealed class HostingApplicationDiagnostics
             activity.SetTag(HostingTelemetryHelpers.AttributeErrorType, exception.GetType().FullName);
             activity.SetStatus(ActivityStatusCode.Error, exception.Message);
         }
-        else if (IsErrorStatusCode(response.StatusCode))
+        else if (HostingTelemetryHelpers.IsErrorStatusCode(response.StatusCode))
         {
             activity.SetTag(HostingTelemetryHelpers.AttributeErrorType, response.StatusCode.ToString(System.Globalization.CultureInfo.InvariantCulture));
             activity.SetStatus(ActivityStatusCode.Error);
         }
     }
-
-    private static bool IsErrorStatusCode(int statusCode) => statusCode >= 400;
 
     // These are versions of DiagnosticSource.Start/StopActivity that don't allocate strings per call (see https://github.com/dotnet/corefx/issues/37055)
     // DynamicDependency matches the properties selected in:
