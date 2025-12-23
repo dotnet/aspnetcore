@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Routing.Constraints;
 
 namespace Microsoft.AspNetCore.Routing.Patterns;
 
-public class RoutePatternTest
+public class RoutePatternDebugStringFormatterTest
 {
     [Fact]
     public void DebuggerToString_WithNoRequiredValues_ReturnsRawText()
