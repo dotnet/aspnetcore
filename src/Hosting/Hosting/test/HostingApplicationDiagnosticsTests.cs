@@ -261,8 +261,8 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             m =>
             {
                 Assert.Equal(1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             });
 
         context.HttpContext.Request.Protocol = "HTTP/2";
@@ -277,14 +277,14 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             m =>
             {
                 Assert.Equal(1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             },
             m =>
             {
                 Assert.Equal(-1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             });
 
         Assert.Empty(context.MetricsTagsFeature.TagsList);
@@ -320,8 +320,8 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             m =>
             {
                 Assert.Equal(1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             });
 
         context.HttpContext.SetEndpoint(new Endpoint(
@@ -336,20 +336,20 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             m =>
             {
                 Assert.Equal(1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             },
             m =>
             {
                 Assert.Equal(-1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             });
         Assert.Collection(requestDurationCollector.GetMeasurementSnapshot(),
             m =>
             {
                 Assert.True(m.Value > 0);
-                Assert.Equal("hello/{name}", m.Tags["http.route"]);
+                Assert.Equal("hello/{name}", m.Tags[HostingTelemetryHelpers.AttributeHttpRoute]);
             });
     }
 
@@ -385,8 +385,8 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             m =>
             {
                 Assert.Equal(1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             });
 
         context.HttpContext.SetEndpoint(new Endpoint(
@@ -401,20 +401,20 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             m =>
             {
                 Assert.Equal(1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             },
             m =>
             {
                 Assert.Equal(-1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             });
         Assert.Collection(requestDurationCollector.GetMeasurementSnapshot(),
             m =>
             {
                 Assert.True(m.Value > 0);
-                Assert.Equal("/", m.Tags["http.route"]);
+                Assert.Equal("/", m.Tags[HostingTelemetryHelpers.AttributeHttpRoute]);
             });
     }
 
@@ -445,8 +445,8 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             m =>
             {
                 Assert.Equal(1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             });
 
         context.HttpContext.SetEndpoint(new Endpoint(
@@ -461,14 +461,14 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             m =>
             {
                 Assert.Equal(1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             },
             m =>
             {
                 Assert.Equal(-1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             });
         Assert.Empty(requestDurationCollector.GetMeasurementSnapshot());
     }
@@ -500,8 +500,8 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             m =>
             {
                 Assert.Equal(1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             });
 
         context.HttpContext.Features.Get<IHttpMetricsTagsFeature>().MetricsDisabled = true;
@@ -516,14 +516,14 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             m =>
             {
                 Assert.Equal(1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             },
             m =>
             {
                 Assert.Equal(-1, m.Value);
-                Assert.Equal("http", m.Tags["url.scheme"]);
-                Assert.Equal("POST", m.Tags["http.request.method"]);
+                Assert.Equal("http", m.Tags[HostingTelemetryHelpers.AttributeUrlScheme]);
+                Assert.Equal("POST", m.Tags[HostingTelemetryHelpers.AttributeHttpRequestMethod]);
             });
         Assert.Empty(requestDurationCollector.GetMeasurementSnapshot());
         Assert.False(context.MetricsTagsFeature.MetricsDisabled);
@@ -1248,10 +1248,10 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         Assert.NotNull(stoppedActivity);
         var tags = stoppedActivity.TagObjects.ToDictionary();
 
-        Assert.Equal(200, tags["http.response.status_code"]);
-        Assert.Equal("1.1", tags["network.protocol.version"]);
-        Assert.Equal("hello/{name}", tags["http.route"]);
-        Assert.False(tags.ContainsKey("error.type"));
+        Assert.Equal(200, tags[HostingTelemetryHelpers.AttributeHttpResponseStatusCode]);
+        Assert.Equal("1.1", tags[HostingTelemetryHelpers.AttributeNetworkProtocolVersion]);
+        Assert.Equal("hello/{name}", tags[HostingTelemetryHelpers.AttributeHttpRoute]);
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeErrorType));
         Assert.Equal(ActivityStatusCode.Unset, stoppedActivity.Status);
     }
 
@@ -1284,9 +1284,9 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         Assert.NotNull(stoppedActivity);
         var tags = stoppedActivity.TagObjects.ToDictionary();
 
-        Assert.Equal(500, tags["http.response.status_code"]);
-        Assert.Equal("2", tags["network.protocol.version"]);
-        Assert.Equal("500", tags["error.type"]);
+        Assert.Equal(500, tags[HostingTelemetryHelpers.AttributeHttpResponseStatusCode]);
+        Assert.Equal("2", tags[HostingTelemetryHelpers.AttributeNetworkProtocolVersion]);
+        Assert.Equal("500", tags[HostingTelemetryHelpers.AttributeErrorType]);
         Assert.Equal(ActivityStatusCode.Error, stoppedActivity.Status);
     }
 
@@ -1320,9 +1320,9 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         Assert.NotNull(stoppedActivity);
         var tags = stoppedActivity.TagObjects.ToDictionary();
 
-        Assert.Equal(500, tags["http.response.status_code"]);
-        Assert.Equal("1.1", tags["network.protocol.version"]);
-        Assert.Equal("System.InvalidOperationException", tags["error.type"]);
+        Assert.Equal(500, tags[HostingTelemetryHelpers.AttributeHttpResponseStatusCode]);
+        Assert.Equal("1.1", tags[HostingTelemetryHelpers.AttributeNetworkProtocolVersion]);
+        Assert.Equal("System.InvalidOperationException", tags[HostingTelemetryHelpers.AttributeErrorType]);
         Assert.Equal(ActivityStatusCode.Error, stoppedActivity.Status);
         Assert.Equal("Test exception", stoppedActivity.StatusDescription);
     }
@@ -1360,7 +1360,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         Assert.NotNull(stoppedActivity);
         var tags = stoppedActivity.TagObjects.ToDictionary();
 
-        Assert.Equal(expectedVersion, tags["network.protocol.version"]);
+        Assert.Equal(expectedVersion, tags[HostingTelemetryHelpers.AttributeNetworkProtocolVersion]);
     }
 
     [Fact]
@@ -1398,10 +1398,10 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         var tags = stoppedActivity.TagObjects.ToDictionary();
 
         // No end tags should be added when suppressed
-        Assert.False(tags.ContainsKey("http.response.status_code"));
-        Assert.False(tags.ContainsKey("network.protocol.version"));
-        Assert.False(tags.ContainsKey("http.route"));
-        Assert.False(tags.ContainsKey("error.type"));
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeHttpResponseStatusCode));
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeNetworkProtocolVersion));
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeHttpRoute));
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeErrorType));
     }
 
     [Theory]
@@ -1438,8 +1438,8 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         Assert.NotNull(stoppedActivity);
         var tags = stoppedActivity.TagObjects.ToDictionary();
 
-        Assert.Equal(statusCode, tags["http.response.status_code"]);
-        Assert.Equal(statusCode.ToString(CultureInfo.InvariantCulture), tags["error.type"]);
+        Assert.Equal(statusCode, tags[HostingTelemetryHelpers.AttributeHttpResponseStatusCode]);
+        Assert.Equal(statusCode.ToString(CultureInfo.InvariantCulture), tags[HostingTelemetryHelpers.AttributeErrorType]);
         Assert.Equal(ActivityStatusCode.Error, stoppedActivity.Status);
     }
 
@@ -1477,8 +1477,8 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         Assert.NotNull(stoppedActivity);
         var tags = stoppedActivity.TagObjects.ToDictionary();
 
-        Assert.Equal(statusCode, tags["http.response.status_code"]);
-        Assert.False(tags.ContainsKey("error.type"));
+        Assert.Equal(statusCode, tags[HostingTelemetryHelpers.AttributeHttpResponseStatusCode]);
+        Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeErrorType));
         Assert.Equal(ActivityStatusCode.Unset, stoppedActivity.Status);
     }
 
