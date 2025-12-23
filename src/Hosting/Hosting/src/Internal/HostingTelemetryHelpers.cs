@@ -11,7 +11,6 @@ namespace Microsoft.AspNetCore.Hosting;
 internal static class HostingTelemetryHelpers
 {
     // Semantic Conventions for HTTP.
-    // Note: Not all telemetry code is using these const attribute names yet.
     public const string AttributeHttpRequestMethod = "http.request.method";
     public const string AttributeHttpRequestMethodOriginal = "http.request.method_original";
     public const string AttributeHttpResponseStatusCode = "http.response.status_code";
