@@ -181,6 +181,7 @@ internal sealed class TempData : ITempData
     {
         private readonly TempData _tempData;
         private readonly IEnumerator<KeyValuePair<string, object?>> _innerEnumerator;
+        private readonly List<string> _keysToRemove = new();
 
         public TempDataEnumerator(TempData tempData)
         {
@@ -193,7 +194,7 @@ internal sealed class TempData : ITempData
             get
             {
                 var kvp = _innerEnumerator.Current;
-                _tempData.Remove(kvp.Key);
+                _keysToRemove.Add(kvp.Key);
                 return kvp;
             }
         }
@@ -203,6 +204,10 @@ internal sealed class TempData : ITempData
         public void Dispose()
         {
             _innerEnumerator.Dispose();
+            foreach (var key in _keysToRemove)
+            {
+                _tempData._retainedKeys.Remove(key);
+            }
         }
 
         public bool MoveNext()
@@ -213,6 +218,7 @@ internal sealed class TempData : ITempData
         public void Reset()
         {
             _innerEnumerator.Reset();
+            _keysToRemove.Clear();
         }
     }
 }
