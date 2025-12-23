@@ -101,10 +101,15 @@
     <ProjectReference Include="@(Reference->Distinct()->'%(ProjectPath)')" />
     <Reference Remove="@(Reference->HasMetadata('ProjectPath'))" />
   </ItemGroup>
-  
-  <!-- Mark shared framework assemblies as non-transitive (privateassets=all) and non app-local (private=false). -->
+
+  <!-- For source projects, mark shared framework assemblies as non-transitive (privateassets=all) and non app-local (private=false). -->
   <ItemGroup Condition="'@(ProjectReference)' != '' and
-                        '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
+                        '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and
+                        '$(IsTestProject)' != 'true' and '$(IsTestAssetProject)' != 'true' and
+                        '$(IsBenchmarkProject)' != 'true' and '$(IsSampleProject)' != 'true' and '$(IsMicrobenchmarksProject)' != 'true' and
+                        '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime' and
+                        '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime.Composite' and
+                        '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Ref'" >
     <_ProjectReferenceWithOriginalIdentity Include="@(ProjectReference)"
                                            OriginalIdentity="%(Identity)" />
     <_ProjectReferenceWithFilename Include="@(_ProjectReferenceWithOriginalIdentity->Metadata('Filename'))" />

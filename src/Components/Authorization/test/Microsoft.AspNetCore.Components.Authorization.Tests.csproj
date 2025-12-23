@@ -6,6 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>

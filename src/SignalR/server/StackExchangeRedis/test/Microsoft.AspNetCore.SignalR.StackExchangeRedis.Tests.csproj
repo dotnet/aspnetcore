@@ -9,10 +9,23 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Connections" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Client" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Specification.Tests" />
     <Reference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
     <Reference Include="Microsoft.AspNetCore.SignalR" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Logging" />
   </ItemGroup>

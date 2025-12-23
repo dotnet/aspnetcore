@@ -7,9 +7,15 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
     <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
 
