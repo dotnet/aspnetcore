@@ -12,14 +12,31 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 /// </summary>
 public static class TempDataProviderServiceCollectionExtensions
 {
+
+    internal static IServiceCollection AddDefaultTempDataValueProvider(this IServiceCollection services)
+    {
+        services.TryAddSingleton<ITempDataProvider, CookieTempDataProvider>();
+        services.TryAddSingleton<ITempDataSerializer, JsonTempDataSerializer>();
+        services.TryAddSingleton<TempDataService>();
+
+        services.TryAddCascadingValue(sp =>
+        {
+            var httpContext = sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext;
+            if (httpContext is null)
+            {
+                return null!;
+            }
+            return GetOrCreateTempData(httpContext);
+        });
+        return services;
+    }
+
     /// <summary>
     /// Enables component parameters to be supplied from the <see cref="TempData"/>.
     /// </summary>
     public static IServiceCollection AddTempDataValueProvider(this IServiceCollection services)
     {
-        services.TryAddSingleton<ITempDataProvider, CookieTempDataProvider>();
-        services.TryAddSingleton<ITempDataSerializer, JsonTempDataSerializer>();
-        services.TryAddSingleton<TempDataService>();
+        // add services based on options
 
         services.TryAddCascadingValue(sp =>
         {

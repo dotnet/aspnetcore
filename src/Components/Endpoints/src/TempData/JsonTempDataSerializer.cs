@@ -110,6 +110,11 @@ internal class JsonTempDataSerializer : ITempDataSerializer
                 return false;
             }
         }
+        if (actualType is null)
+        {
+            return false;
+        }
+
         actualType = Nullable.GetUnderlyingType(actualType) ?? actualType;
 
         if (!IsSimpleType(actualType))

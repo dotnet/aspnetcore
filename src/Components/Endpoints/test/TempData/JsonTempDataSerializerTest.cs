@@ -203,7 +203,7 @@ public class JsonTempDataSerializerTest
         var result = serializer.Deserialize(element);
 
         // Assert
-        var array = Assert.IsType<object?[]>(result);
+        var array = Assert.IsType<object[]>(result);
         Assert.Equal(3, array.Length);
         Assert.Equal(1, array[0]);
         Assert.Equal(2, array[1]);
@@ -221,7 +221,7 @@ public class JsonTempDataSerializerTest
         var result = serializer.Deserialize(element);
 
         // Assert
-        var array = Assert.IsType<object?[]>(result);
+        var array = Assert.IsType<object[]>(result);
         Assert.Empty(array);
     }
 
@@ -236,7 +236,7 @@ public class JsonTempDataSerializerTest
         var result = serializer.Deserialize(element);
 
         // Assert
-        var dictionary = Assert.IsType<Dictionary<string, object?>>(result);
+        var dictionary = Assert.IsType<Dictionary<string, object>>(result);
         Assert.Equal(2, dictionary.Count);
         Assert.Equal(1, dictionary["key1"]);
         Assert.Equal(2, dictionary["key2"]);
@@ -253,7 +253,7 @@ public class JsonTempDataSerializerTest
         var result = serializer.Deserialize(element);
 
         // Assert
-        var array = Assert.IsType<object?[]>(result);
+        var array = Assert.IsType<object[]>(result);
         Assert.Equal(2, array.Length);
         Assert.Equal("foo", array[0]);
         Assert.Equal("bar", array[1]);
@@ -270,7 +270,7 @@ public class JsonTempDataSerializerTest
         var result = serializer.Deserialize(element);
 
         // Assert
-        var dictionary = Assert.IsType<Dictionary<string, object?>>(result);
+        var dictionary = Assert.IsType<Dictionary<string, object>>(result);
         Assert.Equal(2, dictionary.Count);
         Assert.Equal("value1", dictionary["key1"]);
         Assert.Equal("value2", dictionary["key2"]);
