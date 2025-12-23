@@ -601,6 +601,16 @@ internal sealed class OpenApiDocumentService(
             {
                 var description = parameter.Single();
                 var parameterSchema = await _componentService.GetOrCreateSchemaAsync(document, description.Type, scopedServiceProvider, schemaTransformers, description, cancellationToken: cancellationToken);
+
+                if (GetParameterDescriptionFromAttribute(description) is { } parameterDescription)
+                {
+                    parameterSchema = new OpenApiSchema
+                    {
+                        Description = parameterDescription,
+                        AllOf = [parameterSchema]
+                    };
+                }
+
                 // Form files are keyed by their parameter name so we must capture the parameter name
                 // as a property in the schema.
                 if (description.Type == typeof(IFormFile) || description.Type == typeof(IFormFileCollection))
@@ -689,7 +699,19 @@ internal sealed class OpenApiDocumentService(
                     var propertySchema = new OpenApiSchema { Type = JsonSchemaType.Object, Properties = new Dictionary<string, IOpenApiSchema>() };
                     foreach (var description in parameter)
                     {
-                        propertySchema.Properties[description.Name] = await _componentService.GetOrCreateSchemaAsync(document, description.Type, scopedServiceProvider, schemaTransformers, description, cancellationToken: cancellationToken);
+                        var propSchema = await _componentService.GetOrCreateSchemaAsync(document, description.Type, scopedServiceProvider, schemaTransformers, description, cancellationToken: cancellationToken);
+
+                        // Apply description from [Description] attribute if present
+                        if (GetParameterDescriptionFromAttribute(description) is { } parameterDescription)
+                        {
+                            propSchema = new OpenApiSchema
+                            {
+                                Description = parameterDescription,
+                                AllOf = [propSchema]
+                            };
+                        }
+
+                        propertySchema.Properties[description.Name] = propSchema;
                     }
                     schema.AllOf ??= [];
                     schema.AllOf.Add(propertySchema);
@@ -698,8 +720,20 @@ internal sealed class OpenApiDocumentService(
                 {
                     foreach (var description in parameter)
                     {
+                        var propSchema = await _componentService.GetOrCreateSchemaAsync(document, description.Type, scopedServiceProvider, schemaTransformers, description, cancellationToken: cancellationToken);
+
+                        // Apply description from [Description] attribute if present
+                        if (GetParameterDescriptionFromAttribute(description) is { } parameterDescription)
+                        {
+                            propSchema = new OpenApiSchema
+                            {
+                                Description = parameterDescription,
+                                AllOf = [propSchema]
+                            };
+                        }
+
                         schema.Properties ??= new Dictionary<string, IOpenApiSchema>();
-                        schema.Properties[description.Name] = await _componentService.GetOrCreateSchemaAsync(document, description.Type, scopedServiceProvider, schemaTransformers, description, cancellationToken: cancellationToken);
+                        schema.Properties[description.Name] = propSchema;
                     }
                 }
             }
