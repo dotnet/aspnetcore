@@ -531,7 +531,12 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
 
     private sealed class TestRouteDiagnosticsMetadata : IRouteDiagnosticsMetadata
     {
-        public string Route { get; } = "hello/{name}";
+        public TestRouteDiagnosticsMetadata(string route = "hello/{name}")
+        {
+            Route = route;
+        }
+
+        public string Route { get; }
     }
 
     [Fact]
@@ -1532,6 +1537,58 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         Assert.Equal(statusCode, tags[HostingTelemetryHelpers.AttributeHttpResponseStatusCode]);
         Assert.False(tags.ContainsKey(HostingTelemetryHelpers.AttributeErrorType));
         Assert.Equal(ActivityStatusCode.Unset, stoppedActivity.Status);
+    }
+
+    [Theory]
+    [InlineData("GET", null, "GET")]
+    [InlineData("get", null, "GET")]
+    [InlineData("POST", null, "POST")]
+    [InlineData("PUT", null, "PUT")]
+    [InlineData("DELETE", null, "DELETE")]
+    [InlineData("PATCH", null, "PATCH")]
+    [InlineData("HEAD", null, "HEAD")]
+    [InlineData("OPTIONS", null, "OPTIONS")]
+    [InlineData("TRACE", null, "TRACE")]
+    [InlineData("CONNECT", null, "CONNECT")]
+    [InlineData("CUSTOM", null, "HTTP")]
+    [InlineData("weird", null, "HTTP")]
+    [InlineData("GET", "hello/{name}", "GET hello/{name}")]
+    [InlineData("POST", "hello/{name}", "POST hello/{name}")]
+    [InlineData("CUSTOM", "hello/{name}", "HTTP hello/{name}")]
+    public void ActivityListeners_DisplayName(string method, string route, string expectedDisplayName)
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, configure: c =>
+        {
+            c.Request.Protocol = "HTTP/1.1";
+            c.Request.Scheme = "http";
+            c.Request.Method = method;
+            c.Request.Path = "/api/test";
+            c.Response.StatusCode = 200;
+        });
+
+        Activity stoppedActivity = null;
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStopped = activity => stoppedActivity = activity
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        var context = hostingApplication.CreateContext(features);
+        if (route is not null)
+        {
+            context.HttpContext.SetEndpoint(new Endpoint(
+                c => Task.CompletedTask,
+                new EndpointMetadataCollection(new TestRouteDiagnosticsMetadata(route)),
+                "Test endpoint"));
+        }
+        hostingApplication.DisposeContext(context, null);
+
+        Assert.NotNull(stoppedActivity);
+        Assert.Equal(expectedDisplayName, stoppedActivity.DisplayName);
     }
 
     [Fact]

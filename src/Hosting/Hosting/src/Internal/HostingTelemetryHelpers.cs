@@ -138,4 +138,12 @@ internal static class HostingTelemetryHelpers
     /// Client errors (4xx) are not considered server errors.
     /// </summary>
     public static bool IsErrorStatusCode(int statusCode) => statusCode >= 500;
+
+    public static string GetActivityDisplayName(string originalHttpMethod, string? httpRoute = null)
+    {
+        var normalizedHttpMethod = GetNormalizedHttpMethod(originalHttpMethod);
+        var namePrefix = normalizedHttpMethod == OtherHttpMethod ? "HTTP" : normalizedHttpMethod;
+
+        return string.IsNullOrEmpty(httpRoute) ? namePrefix : $"{namePrefix} {httpRoute}";
+    }
 }

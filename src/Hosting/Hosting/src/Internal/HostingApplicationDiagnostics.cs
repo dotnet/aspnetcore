@@ -435,6 +435,13 @@ internal sealed class HostingApplicationDiagnostics
             return null;
         }
 
+        if (!SuppressActivityOpenTelemetryData)
+        {
+            // Set the initial display name to just the HTTP method.
+            // It will be updated to include the route if one is matched.
+            activity.DisplayName = HostingTelemetryHelpers.GetActivityDisplayName(httpContext.Request.Method);
+        }
+
         _diagnosticListener.OnActivityImport(activity, httpContext);
 
         if (_diagnosticListener.IsEnabled(ActivityStartKey))
@@ -524,9 +531,11 @@ internal sealed class HostingApplicationDiagnostics
 
         var endpoint = HttpExtensions.GetOriginalEndpoint(httpContext);
         var route = endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
-        if (route != null)
+        if (route is not null)
         {
-            activity.SetTag(HostingTelemetryHelpers.AttributeHttpRoute, RouteDiagnosticsHelpers.ResolveHttpRoute(route));
+            var resolvedRoute = RouteDiagnosticsHelpers.ResolveHttpRoute(route);
+            activity.SetTag(HostingTelemetryHelpers.AttributeHttpRoute, resolvedRoute);
+            activity.DisplayName = HostingTelemetryHelpers.GetActivityDisplayName(httpContext.Request.Method, resolvedRoute);
         }
 
         if (exception != null)
