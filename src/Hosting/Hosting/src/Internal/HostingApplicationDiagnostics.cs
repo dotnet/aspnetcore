@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Hosting;
 
@@ -233,7 +234,7 @@ internal sealed class HostingApplicationDiagnostics
         // can capture the activity as a metric exemplar.
         if (activity is not null)
         {
-            StopActivity(httpContext, activity, context.HasDiagnosticListener);
+            StopActivity(httpContext, activity, exception, context.HasDiagnosticListener);
         }
 
         if (context.EventLogEnabled)
@@ -473,7 +474,7 @@ internal sealed class HostingApplicationDiagnostics
 
         HostingTelemetryHelpers.SetActivityHttpMethodTags(ref creationTags, request.Method);
 
-        if (request.Headers.TryGetValue("User-Agent", out var values))
+        if (request.Headers.TryGetValue(HeaderNames.UserAgent, out var values))
         {
             var userAgent = values.Count > 0 ? values[0] : null;
             if (!string.IsNullOrEmpty(userAgent))
@@ -491,8 +492,13 @@ internal sealed class HostingApplicationDiagnostics
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void StopActivity(HttpContext httpContext, Activity activity, bool hasDiagnosticListener)
+    private void StopActivity(HttpContext httpContext, Activity activity, Exception? exception, bool hasDiagnosticListener)
     {
+        if (!SuppressActivityOpenTelemetryData)
+        {
+            SetActivityEndTags(httpContext, activity, exception);
+        }
+
         if (hasDiagnosticListener)
         {
             StopActivity(activity, httpContext);
@@ -502,6 +508,38 @@ internal sealed class HostingApplicationDiagnostics
             activity.Stop();
         }
     }
+
+    private static void SetActivityEndTags(HttpContext httpContext, Activity activity, Exception? exception)
+    {
+        var response = httpContext.Response;
+
+        activity.SetTag(HostingTelemetryHelpers.AttributeHttpResponseStatusCode, HostingTelemetryHelpers.GetBoxedStatusCode(response.StatusCode));
+
+        if (HostingTelemetryHelpers.TryGetHttpVersion(httpContext.Request.Protocol, out var httpVersion))
+        {
+            activity.SetTag(HostingTelemetryHelpers.AttributeNetworkProtocolVersion, httpVersion);
+        }
+
+        var endpoint = HttpExtensions.GetOriginalEndpoint(httpContext);
+        var route = endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
+        if (route != null)
+        {
+            activity.SetTag(HostingTelemetryHelpers.AttributeHttpRoute, RouteDiagnosticsHelpers.ResolveHttpRoute(route));
+        }
+
+        if (exception != null)
+        {
+            activity.SetTag(HostingTelemetryHelpers.AttributeErrorType, exception.GetType().FullName);
+            activity.SetStatus(ActivityStatusCode.Error, exception.Message);
+        }
+        else if (IsErrorStatusCode(response.StatusCode))
+        {
+            activity.SetTag(HostingTelemetryHelpers.AttributeErrorType, response.StatusCode.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            activity.SetStatus(ActivityStatusCode.Error);
+        }
+    }
+
+    private static bool IsErrorStatusCode(int statusCode) => statusCode >= 400;
 
     // These are versions of DiagnosticSource.Start/StopActivity that don't allocate strings per call (see https://github.com/dotnet/corefx/issues/37055)
     // DynamicDependency matches the properties selected in:
