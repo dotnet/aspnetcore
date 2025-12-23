@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Routing.Template;
 
@@ -161,17 +162,18 @@ internal sealed class RoutePattern
     internal string DebuggerToString()
     {
         // If there are no required values, use the simple approach
-        if (RequiredValues.Count == 0)
+        if (RequiredValues.Count == 0 && RawText is { } rawText)
         {
-            return RawText ?? string.Join(SeparatorString, PathSegments.Select(s => s.DebuggerToString()));
+            return rawText;
         }
 
         // Build the string replacing parameters with their required values when available
-        var segments = new List<string>(PathSegments.Count);
-        foreach (var segment in PathSegments)
+        var segments = new string[PathSegments.Count];
+        for (var i = 0; i < PathSegments.Count; i++)
         {
+            var segment = PathSegments[i];
             var segmentString = GetSegmentDebuggerToString(segment);
-            segments.Add(segmentString);
+            segments[i] = segmentString;
         }
 
         return string.Join(SeparatorString, segments);
@@ -189,33 +191,30 @@ internal sealed class RoutePattern
         }
 
         // For complex segments, build the string part by part
-        var parts = new List<string>(segment.Parts.Count);
-        foreach (var part in segment.Parts)
+        var parts = new string[segment.Parts.Count];
+        for (var i = 0; i < segment.Parts.Count; i++)
         {
-            if (part is RoutePatternParameterPart paramPart && TryGetRequiredValue(paramPart.Name, out var value))
-            {
-                parts.Add(value);
-            }
-            else
-            {
-                parts.Add(part.DebuggerToString());
-            }
+            var part = segment.Parts[i];
+            parts[i] = part is RoutePatternParameterPart paramPart && TryGetRequiredValue(paramPart.Name, out var value)
+                ? value
+                : part.DebuggerToString();
         }
 
         return string.Join(string.Empty, parts);
     }
 
-    private bool TryGetRequiredValue(string parameterName, out string value)
+    private bool TryGetRequiredValue(string parameterName, [NotNullWhen(true)]out string? value)
     {
         if (RequiredValues.TryGetValue(parameterName, out var requiredValue) &&
             requiredValue is not null &&
-            !IsRequiredValueAny(requiredValue))
+            !IsRequiredValueAny(requiredValue) &&
+            requiredValue.ToString() is { Length: > 0 } v)
         {
-            value = requiredValue.ToString() ?? string.Empty;
-            return !string.IsNullOrEmpty(value);
+            value = v;
+            return true;
         }
 
-        value = string.Empty;
+        value = null;
         return false;
     }
 
