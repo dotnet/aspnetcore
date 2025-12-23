@@ -5,7 +5,9 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Interop;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Ssl;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 using Microsoft.Extensions.Logging;
@@ -66,8 +68,26 @@ internal sealed class DirectSslConnectionListener : IConnectionListener
         Debug.Assert(listenSocket.LocalEndPoint != null);
         EndPoint = listenSocket.LocalEndPoint;
 
-        listenSocket.Listen(_options.Backlog);
+        // Set TCP_DEFER_ACCEPT - kernel waits for client data before completing accept()
+        // This guarantees ClientHello is in buffer when AcceptAsync returns (for TLS handshake)
+        if (OperatingSystem.IsLinux())
+        {
+            int fd = (int)listenSocket.Handle;
+            int timeout = 1;  // seconds
+            int result = NativeLibc.SetSocketOption(fd, ref timeout, sizeof(int));
+            if (result < 0)
+            {
+                int errno = Marshal.GetLastWin32Error();
+                _logger?.LogWarning("Failed to set TCP_DEFER_ACCEPT: errno={Errno}", errno);
+                // Don't throw - it's an optimization, not required
+            }
+            else
+            {
+                _logger?.LogDebug("TCP_DEFER_ACCEPT enabled on listening socket");
+            }
+        }
 
+        listenSocket.Listen(_options.Backlog);
         _listenSocket = listenSocket;
     }
 

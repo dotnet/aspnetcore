@@ -23,7 +23,7 @@ builder.Logging.AddProvider(new FileLoggerProvider(logFilePath));
 
 if (withCustomDirectTransport)
 {
-    builder.Logging.SetMinimumLevel(LogLevel.Debug); // disable otherwise bad perf
+    builder.Logging.SetMinimumLevel(LogLevel.Error); // disable otherwise bad perf
 
     // Configure Kestrel to use the Direct Socket Transport. It by-passes the HttpsMiddleware and SslStream
     builder.WebHost.UseKestrelDirectSslTransport();
@@ -33,7 +33,7 @@ if (withCustomDirectTransport)
         options.CertificatePath = "server-p384.crt";
         options.PrivateKeyPath = "server-p384.key";
 
-        options.WorkerCount = 1;
+        options.WorkerCount = 4;
     });
 
     builder.WebHost.ConfigureKestrel(options =>
