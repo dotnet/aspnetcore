@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Microsoft.AspNetCore.Routing.Template;
 
 namespace Microsoft.AspNetCore.Routing.Patterns;
@@ -35,8 +33,6 @@ internal sealed class RoutePattern
     {
         return object.ReferenceEquals(RequiredValueAny, value);
     }
-
-    private const string SeparatorString = "/";
 
     internal RoutePattern(
         string? rawText,
@@ -159,64 +155,7 @@ internal sealed class RoutePattern
     // 1. RoutePattern debug string.
     // 2. Default IRouteDiagnosticsMetadata value.
     // 3. RouteEndpoint display name.
-    internal string DebuggerToString()
-    {
-        // If there are no required values, use the simple approach
-        if (RequiredValues.Count == 0 && RawText is { } rawText)
-        {
-            return rawText;
-        }
-
-        // Build the string replacing parameters with their required values when available
-        var segments = new string[PathSegments.Count];
-        for (var i = 0; i < PathSegments.Count; i++)
-        {
-            var segment = PathSegments[i];
-            var segmentString = GetSegmentDebuggerToString(segment);
-            segments[i] = segmentString;
-        }
-
-        return string.Join(SeparatorString, segments);
-    }
-
-    private string GetSegmentDebuggerToString(RoutePatternPathSegment segment)
-    {
-        // Simple segment with single parameter that has a required value - just return the required value
-        if (segment.IsSimple && segment.Parts[0] is RoutePatternParameterPart parameter)
-        {
-            if (TryGetRequiredValue(parameter.Name, out var requiredValue))
-            {
-                return requiredValue;
-            }
-        }
-
-        // For complex segments, build the string part by part
-        var parts = new string[segment.Parts.Count];
-        for (var i = 0; i < segment.Parts.Count; i++)
-        {
-            var part = segment.Parts[i];
-            parts[i] = part is RoutePatternParameterPart paramPart && TryGetRequiredValue(paramPart.Name, out var value)
-                ? value
-                : part.DebuggerToString();
-        }
-
-        return string.Join(string.Empty, parts);
-    }
-
-    private bool TryGetRequiredValue(string parameterName, [NotNullWhen(true)]out string? value)
-    {
-        if (RequiredValues.TryGetValue(parameterName, out var requiredValue) &&
-            requiredValue is not null &&
-            !IsRequiredValueAny(requiredValue) &&
-            requiredValue.ToString() is { Length: > 0 } v)
-        {
-            value = v;
-            return true;
-        }
-
-        value = null;
-        return false;
-    }
+    internal string DebuggerToString() => RoutePatternDebugStringFormatter.Format(this);
 
     [DebuggerDisplay("{DebuggerToString(),nq}")]
     private sealed class RequiredValueAnySentinal
