@@ -11,12 +11,12 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public class CookieTempDataProviderTest
 {
+    private readonly CookieTempDataProvider cookieTempDataProvider = new CookieTempDataProvider(new EphemeralDataProtectionProvider());
+
     [Fact]
     public void Load_ReturnsEmptyTempData_WhenNoCookieExists()
     {
         var httpContext = CreateHttpContext();
-        var cookieTempDataProvider = new CookieTempDataProvider();
-         
         var tempData = cookieTempDataProvider.LoadTempData(httpContext);
 
         Assert.NotNull(tempData);
@@ -28,8 +28,6 @@ public class CookieTempDataProviderTest
     {
         var httpContext = CreateHttpContext();
         var tempData = new TempData();
-        var cookieTempDataProvider = new CookieTempDataProvider();
-
         cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
 
         var cookieFeature = httpContext.Features.Get<TestResponseCookiesFeature>();
@@ -42,7 +40,6 @@ public class CookieTempDataProviderTest
     {
         var httpContext = CreateHttpContext();
         var tempData = new TempData();
-        var cookieTempDataProvider = new CookieTempDataProvider();
         tempData["Key1"] = "Value1";
 
         cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
@@ -59,7 +56,6 @@ public class CookieTempDataProviderTest
         var tempData = new TempData();
         tempData["StringKey"] = "StringValue";
 
-        var cookieTempDataProvider = new CookieTempDataProvider();
         cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
         SimulateCookieRoundTrip(httpContext);
         var loadedTempData = cookieTempDataProvider.LoadTempData(httpContext);
@@ -74,7 +70,6 @@ public class CookieTempDataProviderTest
         var tempData = new TempData();
         tempData["IntKey"] = 42;
 
-        var cookieTempDataProvider = new CookieTempDataProvider();
         cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
         SimulateCookieRoundTrip(httpContext);
         var loadedTempData = cookieTempDataProvider.LoadTempData(httpContext);
@@ -89,7 +84,6 @@ public class CookieTempDataProviderTest
         var tempData = new TempData();
         tempData["BoolKey"] = true;
 
-        var cookieTempDataProvider = new CookieTempDataProvider();
         cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
         SimulateCookieRoundTrip(httpContext);
         var loadedTempData = cookieTempDataProvider.LoadTempData(httpContext);
@@ -105,11 +99,10 @@ public class CookieTempDataProviderTest
         var guid = Guid.NewGuid();
         tempData["GuidKey"] = guid;
 
-        var cookieTempDataProvider = new CookieTempDataProvider();
         cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
         SimulateCookieRoundTrip(httpContext);
         var loadedTempData = cookieTempDataProvider.LoadTempData(httpContext);
-            
+
         Assert.Equal(guid, loadedTempData["GuidKey"]);
     }
 
@@ -121,7 +114,6 @@ public class CookieTempDataProviderTest
         var dateTime = new DateTime(2025, 12, 15, 10, 30, 0, DateTimeKind.Utc);
         tempData["DateTimeKey"] = dateTime;
 
-        var cookieTempDataProvider = new CookieTempDataProvider();
         cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
         SimulateCookieRoundTrip(httpContext);
         var loadedTempData = cookieTempDataProvider.LoadTempData(httpContext);
@@ -137,7 +129,6 @@ public class CookieTempDataProviderTest
         var array = new[] { "one", "two", "three" };
         tempData["ArrayKey"] = array;
 
-        var cookieTempDataProvider = new CookieTempDataProvider();
         cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
         SimulateCookieRoundTrip(httpContext);
         var loadedTempData = cookieTempDataProvider.LoadTempData(httpContext);
@@ -153,7 +144,6 @@ public class CookieTempDataProviderTest
         var array = new[] { 1, 2, 3 };
         tempData["ArrayKey"] = array;
 
-        var cookieTempDataProvider = new CookieTempDataProvider();
         cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
         SimulateCookieRoundTrip(httpContext);
         var loadedTempData = cookieTempDataProvider.LoadTempData(httpContext);
@@ -169,7 +159,6 @@ public class CookieTempDataProviderTest
         var dict = new Dictionary<string, string> { ["a"] = "1", ["b"] = "2" };
         tempData["DictKey"] = dict;
 
-        var cookieTempDataProvider = new CookieTempDataProvider();
         cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
         SimulateCookieRoundTrip(httpContext);
         var loadedTempData = cookieTempDataProvider.LoadTempData(httpContext);
@@ -188,7 +177,6 @@ public class CookieTempDataProviderTest
         tempData["Key2"] = 123;
         tempData["Key3"] = true;
 
-        var cookieTempDataProvider = new CookieTempDataProvider();
         cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
         SimulateCookieRoundTrip(httpContext);
         var loadedTempData = cookieTempDataProvider.LoadTempData(httpContext);
@@ -205,7 +193,6 @@ public class CookieTempDataProviderTest
         var tempData = new TempData();
         tempData["Key"] = new object();
 
-        var cookieTempDataProvider = new CookieTempDataProvider();
         Assert.Throws<InvalidOperationException>(() => cookieTempDataProvider.SaveTempData(httpContext, tempData.Save()));
     }
 
@@ -214,8 +201,6 @@ public class CookieTempDataProviderTest
     {
         var httpContext = CreateHttpContext();
         httpContext.Request.Headers["Cookie"] = ".AspNetCore.Components.TempData=not-valid-base64!!!";
-
-        var cookieTempDataProvider = new CookieTempDataProvider();
         var tempData = cookieTempDataProvider.LoadTempData(httpContext);
 
         Assert.NotNull(tempData);
@@ -229,8 +214,6 @@ public class CookieTempDataProviderTest
         var json = "{\"Key\":[true, false, true]}";
         var encoded = Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(System.Text.Encoding.UTF8.GetBytes(json));
         httpContext.Request.Headers["Cookie"] = $".AspNetCore.Components.TempData={encoded}";
-
-        var cookieTempDataProvider = new CookieTempDataProvider();
         var tempData = cookieTempDataProvider.LoadTempData(httpContext);
 
         Assert.NotNull(tempData);

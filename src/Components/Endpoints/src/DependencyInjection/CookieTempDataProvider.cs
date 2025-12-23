@@ -10,16 +10,18 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-/// <summary>
-///
-/// </summary>
-public partial class CookieTempDataProvider : ITempDataProvider
+internal sealed partial class CookieTempDataProvider : ITempDataProvider
 {
     private const string CookieName = ".AspNetCore.Components.TempData";
-    private const string Purpose = "Microsoft.AspNetCore.Mvc.CookieTempDataProviderToken.v1";
+    private const string Purpose = "Microsoft.AspNetCore.Components.CookieTempDataProviderToken.v1";
     private const int MaxEncodedLength = 4050;
+    private readonly IDataProtector _dataProtector;
 
-    /// <inheritdoc/>
+    public CookieTempDataProvider(IDataProtectionProvider dataProtectionProvider)
+    {
+        _dataProtector = dataProtectionProvider.CreateProtector(Purpose);
+    }
+
     public IDictionary<string, object?> LoadTempData(HttpContext context)
     {
         try
@@ -31,7 +33,7 @@ public partial class CookieTempDataProvider : ITempDataProvider
             }
 
             var protectedBytes = WebEncoders.Base64UrlDecode(serializedDataFromCookie);
-            var unprotectedBytes = GetDataProtector(context).Unprotect(protectedBytes);
+            var unprotectedBytes = _dataProtector.Unprotect(protectedBytes);
 
             var dataFromCookie = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(unprotectedBytes);
 
@@ -64,7 +66,6 @@ public partial class CookieTempDataProvider : ITempDataProvider
         }
     }
 
-    /// <inheritdoc/>
     public void SaveTempData(HttpContext context, IDictionary<string, object?> values)
     {
         foreach (var kvp in values)
@@ -85,7 +86,7 @@ public partial class CookieTempDataProvider : ITempDataProvider
         }
 
         var bytes = JsonSerializer.SerializeToUtf8Bytes(values);
-        var protectedBytes = GetDataProtector(context).Protect(bytes);
+        var protectedBytes = _dataProtector.Protect(bytes);
         var encodedValue = WebEncoders.Base64UrlEncode(protectedBytes);
 
         if (encodedValue.Length > MaxEncodedLength)
@@ -193,12 +194,6 @@ public partial class CookieTempDataProvider : ITempDataProvider
             typeof(ICollection<int>).IsAssignableFrom(type) ||
             typeof(ICollection<string>).IsAssignableFrom(type) ||
             typeof(IDictionary<string, string>).IsAssignableFrom(type);
-    }
-
-    private static IDataProtector GetDataProtector(HttpContext httpContext)
-    {
-        var dataProtectionProvider = httpContext.RequestServices.GetRequiredService<IDataProtectionProvider>();
-        return dataProtectionProvider.CreateProtector(Purpose);
     }
 
     private static partial class Log

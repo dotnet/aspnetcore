@@ -1,30 +1,14 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Endpoints.BasePath
 Microsoft.AspNetCore.Components.Endpoints.BasePath.BasePath() -> void
-Microsoft.AspNetCore.Components.Endpoints.CookieTempDataProvider
-Microsoft.AspNetCore.Components.Endpoints.CookieTempDataProvider.CookieTempDataProvider() -> void
-Microsoft.AspNetCore.Components.Endpoints.CookieTempDataProvider.LoadTempData(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Collections.Generic.IDictionary<string!, object?>!
-Microsoft.AspNetCore.Components.Endpoints.CookieTempDataProvider.SaveTempData(Microsoft.AspNetCore.Http.HttpContext! context, System.Collections.Generic.IDictionary<string!, object?>! values) -> void
 Microsoft.AspNetCore.Components.Endpoints.ITempDataProvider
 Microsoft.AspNetCore.Components.Endpoints.ITempDataProvider.LoadTempData(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Collections.Generic.IDictionary<string!, object?>!
 Microsoft.AspNetCore.Components.Endpoints.ITempDataProvider.SaveTempData(Microsoft.AspNetCore.Http.HttpContext! context, System.Collections.Generic.IDictionary<string!, object?>! values) -> void
 Microsoft.AspNetCore.Components.Endpoints.TempDataProviderServiceCollectionExtensions
 Microsoft.AspNetCore.Components.ITempData
+Microsoft.AspNetCore.Components.ITempData.ContainsValue(object! value) -> bool
 Microsoft.AspNetCore.Components.ITempData.Get(string! key) -> object?
 Microsoft.AspNetCore.Components.ITempData.Keep() -> void
 Microsoft.AspNetCore.Components.ITempData.Keep(string! key) -> void
 Microsoft.AspNetCore.Components.ITempData.Peek(string! key) -> object?
-Microsoft.AspNetCore.Components.TempData
-Microsoft.AspNetCore.Components.TempData.Clear() -> void
-Microsoft.AspNetCore.Components.TempData.this[string! key].get -> object?
-Microsoft.AspNetCore.Components.TempData.this[string! key].set -> void
-Microsoft.AspNetCore.Components.TempData.ContainsKey(string! key) -> bool
-Microsoft.AspNetCore.Components.TempData.ContainsValue(object! value) -> bool
-Microsoft.AspNetCore.Components.TempData.Get(string! key) -> object?
-Microsoft.AspNetCore.Components.TempData.Peek(string! key) -> object?
-Microsoft.AspNetCore.Components.TempData.Keep() -> void
-Microsoft.AspNetCore.Components.TempData.Keep(string! key) -> void
-Microsoft.AspNetCore.Components.TempData.Remove(string! key) -> bool
-Microsoft.AspNetCore.Components.TempData.Load(System.Collections.Generic.IDictionary<string!, object?>! data) -> void
-Microsoft.AspNetCore.Components.TempData.Save() -> System.Collections.Generic.IDictionary<string!, object?>!
 static Microsoft.AspNetCore.Components.Endpoints.TempDataProviderServiceCollectionExtensions.AddTempDataValueProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

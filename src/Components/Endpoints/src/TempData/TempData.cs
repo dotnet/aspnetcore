@@ -6,7 +6,7 @@ using System.Collections;
 namespace Microsoft.AspNetCore.Components;
 
 /// <inheritdoc/>
-public class TempData : ITempData
+internal sealed class TempData : ITempData
 {
     private readonly Dictionary<string, object?> _data = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _retainedKeys = new(StringComparer.OrdinalIgnoreCase);
@@ -29,7 +29,6 @@ public class TempData : ITempData
         }
     }
 
-    /// <inheritdoc/>
     public object? this[string key]
     {
         get
@@ -45,7 +44,6 @@ public class TempData : ITempData
         }
     }
 
-    /// <inheritdoc/>
     public object? Get(string key)
     {
         EnsureLoaded();
@@ -53,14 +51,12 @@ public class TempData : ITempData
         return _data.GetValueOrDefault(key);
     }
 
-    /// <inheritdoc/>
     public object? Peek(string key)
     {
         EnsureLoaded();
         return _data.GetValueOrDefault(key);
     }
 
-    /// <inheritdoc/>
     public void Keep()
     {
         EnsureLoaded();
@@ -68,7 +64,6 @@ public class TempData : ITempData
         _retainedKeys.UnionWith(_data.Keys);
     }
 
-    /// <inheritdoc/>
     public void Keep(string key)
     {
         EnsureLoaded();
@@ -78,14 +73,18 @@ public class TempData : ITempData
         }
     }
 
-    /// <inheritdoc/>
+    public bool ContainsValue(object value)
+    {
+        EnsureLoaded();
+        return _data.ContainsValue(value);
+    }
+
     public bool ContainsKey(string key)
     {
         EnsureLoaded();
         return _data.ContainsKey(key);
     }
 
-    /// <inheritdoc/>
     public bool Remove(string key)
     {
         EnsureLoaded();
@@ -93,18 +92,6 @@ public class TempData : ITempData
         return _data.Remove(key);
     }
 
-    /// <summary>
-    /// Returns true if the TempData dictionary contains the specified <paramref name="value"/>.
-    /// </summary>
-    public bool ContainsValue(object value)
-    {
-        EnsureLoaded();
-        return _data.ContainsValue(value);
-    }
-
-    /// <summary>
-    /// Gets the data that should be saved for the next request.
-    /// </summary>
     public IDictionary<string, object?> Save()
     {
         EnsureLoaded();
@@ -116,9 +103,6 @@ public class TempData : ITempData
         return dataToSave;
     }
 
-    /// <summary>
-    /// Loads data from a <paramref name="data"/> into the TempData dictionary.
-    /// </summary>
     public void Load(IDictionary<string, object?> data)
     {
         _data.Clear();
@@ -130,7 +114,6 @@ public class TempData : ITempData
         }
     }
 
-    /// <inheritdoc/>
     public void Clear()
     {
         EnsureLoaded();

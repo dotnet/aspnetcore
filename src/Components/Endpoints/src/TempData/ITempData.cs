@@ -29,4 +29,9 @@ public interface ITempData : IDictionary<string, object?>
     /// Makes the element with the <paramref name="key"/> persist for another request.
     /// </summary>
     void Keep(string key);
+
+    /// <summary>
+    /// Returns true if the TempData dictionary contains the specified <paramref name="value"/>.
+    /// </summary>
+    bool ContainsValue(object value);
 }
