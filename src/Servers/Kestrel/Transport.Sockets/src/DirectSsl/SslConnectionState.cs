@@ -121,7 +121,11 @@ internal sealed class SslConnectionState : IDisposable
 
     private void TryCompleteRead()
     {
-        var tcs = _readTcs!;
+        var tcs = _readTcs;
+        if (tcs == null)
+        {
+            return; // Race: cancelled or completed between check and call
+        }
 
         int n = DoSslRead(_readBuffer);
 
@@ -205,7 +209,12 @@ internal sealed class SslConnectionState : IDisposable
 
     private void TryCompleteWrite()
     {
-        var tcs = _writeTcs!;
+        var tcs = _writeTcs;
+        if (tcs == null)
+        {
+            
+            return; // Race: cancelled or completed between check and call
+        }
 
         var n = DoSslWrite(_writeBuffer);
         if (n > 0)
@@ -327,7 +336,7 @@ internal sealed class SslConnectionState : IDisposable
         // Send close_notify alert for graceful TLS shutdown
         // SSL_shutdown may return 0 (need to call again) or 1 (complete)
         // We call it once - if peer has already closed, that's fine
-        NativeSslNativeSsl.SSL_shutdown(Ssl);
+        NativeSsl.SSL_shutdown(Ssl);
         NativeSsl.SSL_free(Ssl);
     }
 }

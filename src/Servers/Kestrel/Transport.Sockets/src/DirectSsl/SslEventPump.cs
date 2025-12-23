@@ -3,11 +3,13 @@
 
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Interop;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl;
 
 internal sealed class SslEventPump : IDisposable
 {
+    private readonly ILogger? _logger;
     private readonly int _id;
 
     private readonly int _epollFd;
@@ -15,9 +17,11 @@ internal sealed class SslEventPump : IDisposable
     private readonly Thread _pumpThread;
     private volatile bool _running = true;
 
-    public SslEventPump(int id)
+    public SslEventPump(ILogger? sslPumpLogger, int id)
     {
         _id = id;
+        _logger = sslPumpLogger;
+
         _epollFd = NativeSsl.epoll_create1(0);
         if (_epollFd < 0)
         {
@@ -69,6 +73,7 @@ internal sealed class SslEventPump : IDisposable
         while (_running)
         {
             int numEvents = NativeSsl.epoll_wait(_epollFd, events, MaxEvents, timeout: 1000);
+            _logger?.LogDebug("epoll_wait returned {NumEvents} events", numEvents);
 
             if (numEvents < 0)
             {
@@ -83,6 +88,8 @@ internal sealed class SslEventPump : IDisposable
 
             for (int i = 0; i < numEvents; i++)
             {
+                _logger?.LogDebug("Processing event fd={Fd}, events={Events:X}", events[i].Data.Fd, events[i].Events);
+
                 int fd = events[i].Data.Fd;
                 uint mask = events[i].Events;
 

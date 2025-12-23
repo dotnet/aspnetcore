@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Logging;
+
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl;
 
 /// <summary>
@@ -12,7 +14,7 @@ internal sealed class SslEventPumpPool : IDisposable
     private readonly SslEventPump[] _pumps;
     private int _nextPump;
 
-    public SslEventPumpPool(int pumpCount = 0)
+    public SslEventPumpPool(int pumpCount = 0, ILoggerFactory? loggerFactory = null)
     {
         // Default: 1 pump per CPU core, like nginx
         pumpCount = pumpCount > 0 ? pumpCount : Environment.ProcessorCount;
@@ -20,7 +22,7 @@ internal sealed class SslEventPumpPool : IDisposable
         _pumps = new SslEventPump[pumpCount];
         for (int i = 0; i < pumpCount; i++)
         {
-            _pumps[i] = new SslEventPump(i);
+            _pumps[i] = new SslEventPump(loggerFactory?.CreateLogger<SslEventPump>(), i);
         }
     }
 

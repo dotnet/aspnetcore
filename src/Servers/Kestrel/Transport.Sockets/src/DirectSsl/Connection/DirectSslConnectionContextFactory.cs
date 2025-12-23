@@ -59,6 +59,7 @@ internal sealed class DirectSslConnectionContextFactory : IDisposable
         // 6. Perform async handshake
         try
         {
+            _logger.LogDebug($"Initiating handshake for fd={connectionState.Fd}, ssl={connectionState.Ssl}");
             await connectionState.HandshakeAsync();
 
             cancellationToken.ThrowIfCancellationRequested();

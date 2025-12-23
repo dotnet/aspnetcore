@@ -60,7 +60,7 @@ internal sealed class DirectSslTransportFactory : IConnectionListenerFactory, IC
         // Initialize SSL event pump pool lazily
         if (_pumpPool is null)
         {
-            _pumpPool = new SslEventPumpPool(_options.WorkerCount);
+            _pumpPool = new SslEventPumpPool(_options.WorkerCount, _loggerFactory);
             _logger.LogInformation("SSL event pump pool started with {PumpCount} pumps.", _options.WorkerCount);
         }
 
