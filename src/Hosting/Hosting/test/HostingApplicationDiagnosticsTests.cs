@@ -1506,6 +1506,8 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     [InlineData(400)]
     [InlineData(404)]
     [InlineData(499)]
+    [InlineData(600)]
+    [InlineData(999)]
     public void ActivityListeners_SuccessStatusCodesNoErrorType(int statusCode)
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
