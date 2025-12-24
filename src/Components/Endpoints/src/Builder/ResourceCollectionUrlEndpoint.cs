@@ -120,7 +120,7 @@ internal partial class ResourceCollectionUrlEndpoint
             AppendToHash(incrementalHash, buffer, ref rented, url);
 
             var additionalData = GetAdditionalDataForFingerprint(resource);
-            if (additionalData != null)
+            if (additionalData is not null)
             {
                 AppendToHash(incrementalHash, buffer, ref rented, additionalData);
             }
