@@ -139,7 +139,7 @@ internal partial class ResourceCollectionUrlEndpoint
         // For non-fingerprinted assets (those without a 'label' property), we need to include
         // the integrity hash in the fingerprint calculation. This ensures that if the content
         // changes between builds, the resource-collection fingerprint also changes.
-        if (resource.Properties == null)
+        if (resource.Properties is null)
         {
             return null;
         }
