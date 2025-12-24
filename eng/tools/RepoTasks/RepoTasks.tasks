@@ -9,7 +9,6 @@
   <UsingTask TaskName="RepoTasks.GetMsiProperty" AssemblyFile="$(_RepoTaskAssembly)" Condition="'$(MSBuildRuntimeType)' != 'core'" />
   <UsingTask TaskName="RepoTasks.GenerateSharedFrameworkDepsFile" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.CreateFrameworkListFile" AssemblyFile="$(_RepoTaskAssembly)" />
-  <UsingTask TaskName="RepoTasks.RemoveSharedFrameworkDependencies" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.GenerateTestDevCert" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="DownloadFile" AssemblyFile="$(ArcadeSdkBuildTasksAssembly)" />
 </Project>
