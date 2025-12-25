@@ -10,5 +10,5 @@
   "postActions/restore/description": "还原此项目所需的 NuGet 包。",
   "postActions/restore/manualInstructions/default/text": "运行 \"dotnet restore\"",
   "postActions/openPageInEditor/description": "在编辑器中打开 Areas/MyFeature/Pages/Page1.cshtml",
-  "postActions/openComponentInEditor/description": "Opens Component1.razor in the editor"
+  "postActions/openComponentInEditor/description": "在编辑器中打开 Component1.razor"
 }
