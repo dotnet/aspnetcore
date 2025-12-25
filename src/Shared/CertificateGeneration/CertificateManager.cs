@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.Linq;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -19,8 +20,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation;
 
 internal abstract class CertificateManager
 {
-    internal const int CurrentAspNetCoreCertificateVersion = 5;
-    internal const int CurrentMinimumAspNetCoreCertificateVersion = 5;
+    internal const int CurrentAspNetCoreCertificateVersion = 6;
+    internal const int CurrentMinimumAspNetCoreCertificateVersion = 6;
 
     // OID used for HTTPS certs
     internal const string AspNetHttpsOid = "1.3.6.1.4.1.311.84.1.1";
@@ -697,6 +698,8 @@ internal abstract class CertificateManager
         sanBuilder.AddDnsName(InternalWildcardHttpsDnsName);
         sanBuilder.AddDnsName(LocalhostDockerHttpsDnsName);
         sanBuilder.AddDnsName(ContainersDockerHttpsDnsName);
+        sanBuilder.AddIpAddress(IPAddress.Loopback);
+        sanBuilder.AddIpAddress(IPAddress.IPv6Loopback);
 
         var keyUsage = new X509KeyUsageExtension(X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature, critical: true);
         var enhancedKeyUsage = new X509EnhancedKeyUsageExtension(

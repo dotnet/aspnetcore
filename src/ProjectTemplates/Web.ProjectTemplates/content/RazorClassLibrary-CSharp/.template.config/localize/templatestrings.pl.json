@@ -9,5 +9,6 @@
   "symbols/SupportPagesAndViews/description": "Określa, czy obsługiwać dodawanie tradycyjnych stron Razor i wyświetleń do tej biblioteki.",
   "postActions/restore/description": "Przywróć pakiety NuGet wymagane przez ten projekt.",
   "postActions/restore/manualInstructions/default/text": "Uruchom polecenie \"dotnet restore\"",
-  "postActions/openInEditor/description": "Otwiera plik Areas/MyFeature/Pages/Page1.cshtml w edytorze"
+  "postActions/openPageInEditor/description": "Otwiera plik Areas/MyFeature/Pages/Page1.cshtml w edytorze",
+  "postActions/openComponentInEditor/description": "Otwiera plik Component1.razor w edytorze"
 }

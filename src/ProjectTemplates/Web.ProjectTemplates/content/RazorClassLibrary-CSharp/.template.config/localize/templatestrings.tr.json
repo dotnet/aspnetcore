@@ -9,5 +9,6 @@
   "symbols/SupportPagesAndViews/description": "Bu kitaplığa geleneksel Razor sayfaları ve görünümleri eklemenin desteklenip desteklenmeyeceği.",
   "postActions/restore/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
   "postActions/restore/manualInstructions/default/text": "'dotnet restore' çalıştır",
-  "postActions/openInEditor/description": "Düzenleyicide Areas/MyFeature/Pages/Page1.cshtml dosyasını açar"
+  "postActions/openPageInEditor/description": "Düzenleyicide Areas/MyFeature/Pages/Page1.cshtml dosyasını açar",
+  "postActions/openComponentInEditor/description": "Component1.razor'ı düzenleyicide açar"
 }

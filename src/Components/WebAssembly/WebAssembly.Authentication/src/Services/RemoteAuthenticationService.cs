@@ -64,23 +64,6 @@ public class RemoteAuthenticationService<
     /// <param name="options">The options to be passed down to the underlying JavaScript library handling the authentication operations.</param>
     /// <param name="navigation">The <see cref="NavigationManager"/> used to generate URLs.</param>
     /// <param name="accountClaimsPrincipalFactory">The <see cref="AccountClaimsPrincipalFactory{TAccount}"/> used to generate the <see cref="ClaimsPrincipal"/> for the user.</param>
-    [Obsolete("Use the constructor RemoteAuthenticationService(IJSRuntime,IOptionsSnapshot<RemoteAuthenticationOptions<TProviderOptions>>,NavigationManager,AccountClaimsPrincipalFactory<TAccount>,ILogger<RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>>) instead.")]
-    public RemoteAuthenticationService(
-        IJSRuntime jsRuntime,
-        IOptionsSnapshot<RemoteAuthenticationOptions<TProviderOptions>> options,
-        NavigationManager navigation,
-        AccountClaimsPrincipalFactory<TAccount> accountClaimsPrincipalFactory)
-        : this(jsRuntime, options, navigation, accountClaimsPrincipalFactory, null)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance.
-    /// </summary>
-    /// <param name="jsRuntime">The <see cref="IJSRuntime"/> to use for performing JavaScript interop operations.</param>
-    /// <param name="options">The options to be passed down to the underlying JavaScript library handling the authentication operations.</param>
-    /// <param name="navigation">The <see cref="NavigationManager"/> used to generate URLs.</param>
-    /// <param name="accountClaimsPrincipalFactory">The <see cref="AccountClaimsPrincipalFactory{TAccount}"/> used to generate the <see cref="ClaimsPrincipal"/> for the user.</param>
     /// <param name="logger">The logger to use for login authentication operations.</param>
     public RemoteAuthenticationService(
         IJSRuntime jsRuntime,
