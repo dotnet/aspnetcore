@@ -8,13 +8,13 @@
   <Import Project="Version.Details.props" />
 
   <PropertyGroup Label="Version settings">
-    <AspNetCoreMajorVersion>10</AspNetCoreMajorVersion>
+    <AspNetCoreMajorVersion>11</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
-    <PreReleaseVersionIteration>3</PreReleaseVersionIteration>
+    <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
     <IdentityModelVersion Condition="'$(IsIdentityModelTestJob)' != 'true'">8.0.1</IdentityModelVersion>
     <IdentityModelVersion Condition="'$(IsIdentityModelTestJob)' == 'true'">*-*</IdentityModelVersion>
-    <PreReleaseVersionLabel>rc</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>alpha</PreReleaseVersionLabel>
     <!-- Allowed values: '', 'prerelease', 'release'. Set to 'release' when stabilizing. -->
     <DotNetFinalVersionKind></DotNetFinalVersionKind>
 
