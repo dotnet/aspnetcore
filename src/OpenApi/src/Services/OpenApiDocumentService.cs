@@ -536,6 +536,26 @@ internal sealed class OpenApiDocumentService(
         return null;
     }
 
+    private static void ApplyDescriptionToSchema(IOpenApiSchema schema, string description)
+    {
+        if (schema is OpenApiSchema actualSchema)
+        {
+            if (actualSchema.IsComponentizedSchema())
+            {
+                actualSchema.Metadata ??= new Dictionary<string, object>();
+                actualSchema.Metadata[OpenApiConstants.RefDescriptionAnnotation] = description;
+            }
+            else
+            {
+                actualSchema.Description = description;
+            }
+        }
+        else if (schema is OpenApiSchemaReference schemaReference)
+        {
+            schemaReference.Description = description;
+        }
+    }
+
     private async Task<OpenApiRequestBody?> GetRequestBodyAsync(OpenApiDocument document, ApiDescription description, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, CancellationToken cancellationToken)
     {
         // Only one parameter can be bound from the body in each request.
@@ -604,11 +624,7 @@ internal sealed class OpenApiDocumentService(
 
                 if (GetParameterDescriptionFromAttribute(description) is { } parameterDescription)
                 {
-                    parameterSchema = new OpenApiSchema
-                    {
-                        Description = parameterDescription,
-                        AllOf = [parameterSchema]
-                    };
+                    ApplyDescriptionToSchema(parameterSchema, parameterDescription);
                 }
 
                 // Form files are keyed by their parameter name so we must capture the parameter name
@@ -704,11 +720,7 @@ internal sealed class OpenApiDocumentService(
                         // Apply description from [Description] attribute if present
                         if (GetParameterDescriptionFromAttribute(description) is { } parameterDescription)
                         {
-                            propSchema = new OpenApiSchema
-                            {
-                                Description = parameterDescription,
-                                AllOf = [propSchema]
-                            };
+                            ApplyDescriptionToSchema(propSchema, parameterDescription);
                         }
 
                         propertySchema.Properties[description.Name] = propSchema;
@@ -725,11 +737,7 @@ internal sealed class OpenApiDocumentService(
                         // Apply description from [Description] attribute if present
                         if (GetParameterDescriptionFromAttribute(description) is { } parameterDescription)
                         {
-                            propSchema = new OpenApiSchema
-                            {
-                                Description = parameterDescription,
-                                AllOf = [propSchema]
-                            };
+                            ApplyDescriptionToSchema(propSchema, parameterDescription);
                         }
 
                         schema.Properties ??= new Dictionary<string, IOpenApiSchema>();
