@@ -1022,6 +1022,15 @@ public class LongRunningHub : Hub
         return 12;
     }
 
+    public async Task<int> CancelableInvocation(CancellationToken token)
+    {
+        _tcsService.StartedMethod.SetResult(null);
+        // Wait for cancellation. Test timeout is enforced by .DefaultTimeout() in the test itself.
+        await token.WaitForCancellationAsync();
+        _tcsService.EndMethod.SetResult(null);
+        return 42;
+    }
+
     public async Task<ChannelReader<string>> LongRunningStream()
     {
         _tcsService.StartedMethod.TrySetResult(null);
