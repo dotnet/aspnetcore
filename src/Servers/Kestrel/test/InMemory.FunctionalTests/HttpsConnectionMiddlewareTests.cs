@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Security.Authentication;
@@ -1515,6 +1516,164 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     {
         return new SslStream(rawStream, false, (sender, certificate, chain, errors) => true,
             (sender, host, certificates, certificate, issuers) => clientCertificate ?? _x509Certificate2);
+    }
+
+    [ConditionalFact]
+    [TlsAlpnSupported]
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing platform support.")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/33566#issuecomment-892031659", Queues = HelixConstants.AlmaLinuxAmd64)] // Outdated OpenSSL client
+    public async Task UseHttpsWithBothOptionsAndCallback_AppliesBothSettings()
+    {
+        var clientHelloCalled = false;
+        var onConnectionCalled = false;
+        var remoteValidationCalled = false;
+
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            var httpsOptions = new HttpsConnectionAdapterOptions()
+            {
+                ClientCertificateMode = ClientCertificateMode.DelayCertificate,
+                ClientCertificateValidation = (cert, chain, errors) =>
+                {
+                    remoteValidationCalled = true;
+                    return true;
+                },
+                TlsClientHelloBytesCallback = (context, bytes) =>
+                {
+                    clientHelloCalled = true;
+                }
+            };
+
+            var callbackOptions = new TlsHandshakeCallbackOptions()
+            {
+                OnConnection = context =>
+                {
+                    onConnectionCalled = true;
+                    context.AllowDelayedClientCertificateNegotation = true;
+                    return ValueTask.FromResult(new SslServerAuthenticationOptions()
+                    {
+                        ServerCertificate = _x509Certificate2,
+                        ClientCertificateRequired = false,
+                        RemoteCertificateValidationCallback = (_, _, _, _) => true,
+                    });
+                }
+            };
+
+            listenOptions.UseHttps(httpsOptions, callbackOptions);
+        }
+
+        await using var server = new TestServer(async context =>
+        {
+            var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
+            Assert.NotNull(tlsFeature);
+            Assert.Null(tlsFeature.ClientCertificate);
+            Assert.Null(context.Connection.ClientCertificate);
+
+            var clientCert = await context.Connection.GetClientCertificateAsync();
+            Assert.NotNull(clientCert);
+            Assert.NotNull(tlsFeature.ClientCertificate);
+            Assert.NotNull(context.Connection.ClientCertificate);
+
+            await context.Response.WriteAsync("hello world");
+        }, new TestServiceContext(LoggerFactory), ConfigureListenOptions);
+
+        using var connection = server.CreateConnection();
+        var stream = OpenSslStreamWithCert(connection.Stream);
+        await stream.AuthenticateAsClientAsync(Guid.NewGuid().ToString());
+        await AssertConnectionResult(stream, true);
+
+        Assert.True(clientHelloCalled, "TlsClientHelloBytesCallback from HttpsConnectionAdapterOptions should be called");
+        Assert.True(onConnectionCalled, "OnConnection from TlsHandshakeCallbackOptions should be called");
+        Assert.True(remoteValidationCalled, "ClientCertificateValidation from HttpsConnectionAdapterOptions should be called");
+    }
+
+    [Fact]
+    public async Task UseHttpsWithBothOptionsAndCallback_WorksWithBasicScenario()
+    {
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            var httpsOptions = new HttpsConnectionAdapterOptions()
+            {
+                CheckCertificateRevocation = false,
+                ClientCertificateMode = ClientCertificateMode.NoCertificate
+            };
+
+            var callbackOptions = new TlsHandshakeCallbackOptions()
+            {
+                OnConnection = context =>
+                {
+                    return ValueTask.FromResult(new SslServerAuthenticationOptions()
+                    {
+                        ServerCertificate = _x509Certificate2,
+                    });
+                }
+            };
+
+            listenOptions.UseHttps(httpsOptions, callbackOptions);
+        }
+
+        await using (var server = new TestServer(App, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+        {
+            var result = await server.HttpClientSlim.PostAsync($"https://localhost:{server.Port}/",
+                new FormUrlEncodedContent(new[] {
+                        new KeyValuePair<string, string>("content", "Hello World?")
+                }),
+                validateCertificate: false);
+
+            Assert.Equal("content=Hello+World%3F", result);
+        }
+    }
+
+    [Fact]
+    public void UseHttpsWithBothOptionsAndCallback_ThrowsIfCallbackOptionsIsNull()
+    {
+        var serverOptions = CreateServerOptions();
+        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+        {
+            KestrelServerOptions = serverOptions
+        };
+
+        var httpsOptions = new HttpsConnectionAdapterOptions();
+
+        var ex = Assert.Throws<ArgumentNullException>(() =>
+            listenOptions.UseHttps(httpsOptions, callbackOptions: null));
+        Assert.Equal("callbackOptions", ex.ParamName);
+    }
+
+    [Fact]
+    public void UseHttpsWithBothOptionsAndCallback_ThrowsIfHttpsOptionsIsNull()
+    {
+        var serverOptions = CreateServerOptions();
+        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+        {
+            KestrelServerOptions = serverOptions
+        };
+
+        var callbackOptions = new TlsHandshakeCallbackOptions()
+        {
+            OnConnection = context => ValueTask.FromResult(new SslServerAuthenticationOptions())
+        };
+
+        var ex = Assert.Throws<ArgumentNullException>(() =>
+            listenOptions.UseHttps(httpsOptions: null, callbackOptions));
+        Assert.Equal("httpsOptions", ex.ParamName);
+    }
+
+    [Fact]
+    public void UseHttpsWithBothOptionsAndCallback_ThrowsIfOnConnectionIsNull()
+    {
+        var serverOptions = CreateServerOptions();
+        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+        {
+            KestrelServerOptions = serverOptions
+        };
+
+        var httpsOptions = new HttpsConnectionAdapterOptions();
+        var callbackOptions = new TlsHandshakeCallbackOptions();
+
+        var ex = Assert.Throws<ArgumentException>(() =>
+            listenOptions.UseHttps(httpsOptions, callbackOptions));
+        Assert.Contains("OnConnection", ex.Message);
     }
 
     private static async Task AssertConnectionResult(SslStream stream, bool success, string body = null)
