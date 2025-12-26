@@ -79,11 +79,11 @@ internal class TypeForwardingActivator : SimpleActivator
         // Type, Assembly, Version={Version}, Culture={Culture}, PublicKeyToken={Token}
 
         var versionStartIndex = forwardedTypeName.IndexOf(", Version=", StringComparison.Ordinal);
-        while (versionStartIndex != -1)
+        while (versionStartIndex >= 0)
         {
             var versionEndIndex = forwardedTypeName.IndexOf(',', versionStartIndex + ", Version=".Length);
 
-            if (versionEndIndex == -1)
+            if (versionEndIndex < 0)
             {
                 // No end index, so are done and can remove the rest
                 return forwardedTypeName.Substring(0, versionStartIndex);

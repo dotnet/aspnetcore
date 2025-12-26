@@ -91,7 +91,7 @@ internal static class AcceptHeaderParser
         {
             // The parsing failed.
             currentIndex = value.IndexOf(',', currentIndex);
-            if (currentIndex == -1)
+            if (currentIndex < 0)
             {
                 index = value.Length;
                 return false;

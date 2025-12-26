@@ -157,7 +157,7 @@ public class RouteCollection : IRouteCollection
             var urlWithoutQueryString = url;
             var queryString = string.Empty;
 
-            if (indexOfSeparator != -1)
+            if (indexOfSeparator >= 0)
             {
                 urlWithoutQueryString = url.Substring(0, indexOfSeparator);
                 queryString = url.Substring(indexOfSeparator);

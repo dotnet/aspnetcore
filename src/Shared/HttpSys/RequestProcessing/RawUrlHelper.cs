@@ -34,7 +34,7 @@ internal static class RawUrlHelper
                 // between the authority and the '?' character: It's safe to just look for the first
                 // '/' after the authority to determine the beginning of the path.
                 pathStartIndex = Find(raw, authorityStartIndex, (byte)'/');
-                if (pathStartIndex == -1)
+                if (pathStartIndex < 0)
                 {
                     // e.g. for request lines like: 'GET http://myserver' (no final '/')
                     // At this point we can return a path with a slash.
@@ -133,7 +133,7 @@ internal static class RawUrlHelper
     private static int Find(Span<byte> raw, int begin, byte target)
     {
         var idx = raw.Slice(begin).IndexOf(target);
-        if (idx != -1)
+        if (idx >= 0)
         {
             return idx + begin;
         }

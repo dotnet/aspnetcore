@@ -72,7 +72,7 @@ internal static class BufferExtensions
         if (source.IsSingleSegment)
         {
             int index = source.First.Span.IndexOfAny(value0, value1);
-            if (index != -1)
+            if (index >= 0)
             {
                 return source.GetPosition(index);
             }
@@ -92,7 +92,7 @@ internal static class BufferExtensions
         while (source.TryGet(ref position, out ReadOnlyMemory<T> memory))
         {
             int index = memory.Span.IndexOfAny(value0, value1);
-            if (index != -1)
+            if (index >= 0)
             {
                 return source.GetPosition(index, result);
             }

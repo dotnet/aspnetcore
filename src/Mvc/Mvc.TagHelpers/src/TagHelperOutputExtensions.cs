@@ -296,7 +296,7 @@ public static class TagHelperOutputExtensions
         {
             var previousName = allAttributes[i].Name;
             var index = IndexOfFirstMatch(previousName, tagHelperOutput.Attributes);
-            if (index != -1)
+            if (index >= 0)
             {
                 tagHelperOutput.Attributes.Insert(index + 1, existingAttribute);
                 return;
@@ -311,7 +311,7 @@ public static class TagHelperOutputExtensions
         {
             var nextName = allAttributes[i].Name;
             var index = IndexOfFirstMatch(nextName, tagHelperOutput.Attributes);
-            if (index != -1)
+            if (index >= 0)
             {
                 tagHelperOutput.Attributes.Insert(index, existingAttribute);
                 return;

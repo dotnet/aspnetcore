@@ -102,7 +102,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
     public ITimeoutControl TimeoutControl => _context.TimeoutControl;
 
     // The default error value is -1. If it hasn't been changed before abort is called then default to HTTP/3's NoError value.
-    private Http3ErrorCode Http3ErrorCodeOrNoError => _errorCodeFeature.Error == -1 ? Http3ErrorCode.NoError : (Http3ErrorCode)_errorCodeFeature.Error;
+    private Http3ErrorCode Http3ErrorCodeOrNoError => _errorCodeFeature.Error < 0 ? Http3ErrorCode.NoError : (Http3ErrorCode)_errorCodeFeature.Error;
 
     public void StopProcessingNextRequest(ConnectionEndReason reason)
         => StopProcessingNextRequest(serverInitiated: true, reason);

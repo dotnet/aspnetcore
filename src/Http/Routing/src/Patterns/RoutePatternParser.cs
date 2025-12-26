@@ -545,7 +545,7 @@ internal static class RoutePatternParser
 
         private string DebuggerToString()
         {
-            if (_index == -1)
+            if (_index < 0)
             {
                 return _template;
             }
