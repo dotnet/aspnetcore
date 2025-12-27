@@ -33,7 +33,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private bool _onConnectionDownFired;
     private bool _disposed;
     private long _startTime;
-    private PersistedCircuitState _persistedCircuitState;
+    private PersistedCircuitState? _persistedCircuitState;
 
     // This event is fired when there's an unrecoverable exception coming from the circuit, and
     // it need so be torn down. The registry listens to this even so that the circuit can
@@ -944,7 +944,7 @@ internal partial class CircuitHost : IAsyncDisposable
         return result;
     }
 
-    internal async Task<bool> SendPersistedStateToClient(string rootComponents, string applicationState, CancellationToken cancellation)
+    internal async Task<bool> SendPersistedStateToClient(string rootComponents, string applicationState, DateTimeOffset expiration, CancellationToken cancellation)
     {
         try
         {
@@ -953,6 +953,7 @@ internal partial class CircuitHost : IAsyncDisposable
                 CircuitId.Secret,
                 rootComponents,
                 applicationState,
+                expiration.ToUnixTimeMilliseconds(),
                 cancellationToken: cancellation);
             return succeded;
         }

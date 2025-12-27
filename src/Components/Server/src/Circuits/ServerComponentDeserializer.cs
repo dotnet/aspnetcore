@@ -249,6 +249,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         }
         catch (Exception e)
         {
+            // OR: Expired state
             Log.FailedToUnprotectDescriptor(_logger, e);
             result = default;
             return false;
