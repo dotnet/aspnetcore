@@ -344,6 +344,14 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AntiforgeryStateProvider>(Services, RenderMode.InteractiveWebAssembly);
         Services.AddSupplyValueFromQueryProvider();
+        
+        // Register metrics and tracing by default (opt-out via feature switch for trimming)
+        var isTelemetryDisabled = AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out var switchValue) && switchValue == false;
+        if (!isTelemetryDisabled)
+        {
+            ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(Services);
+            ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(Services);
+        }
         Services.AddSingleton<HostedServiceExecutor>();
     }
 }

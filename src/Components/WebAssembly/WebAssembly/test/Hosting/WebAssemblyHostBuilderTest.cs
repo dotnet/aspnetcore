@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.Metrics;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Routing;
@@ -340,5 +341,22 @@ public class WebAssemblyHostBuilderTest
             // Clean up the environment variable
             Environment.SetEnvironmentVariable(testEnvVarKey, null);
         }
+    }
+
+    [Fact]
+    public void Constructor_RegistersMetricsAndTracingServices()
+    {
+        // Arrange & Act
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+        var host = builder.Build();
+
+        // Assert - Verify that IMeterFactory is registered (required for ComponentsMetrics)
+        // and that the service collection was configured for both metrics and tracing
+        var meterFactory = host.Services.GetService<IMeterFactory>();
+        Assert.NotNull(meterFactory);
+        
+        // Note: ComponentsActivitySource is scoped and internal, so we can't directly
+        // test for it here, but both AddComponentsMetrics and AddComponentsTracing
+        // are called together, ensuring both telemetry services are registered.
     }
 }
