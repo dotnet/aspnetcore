@@ -51,6 +51,8 @@ internal sealed class ComponentSymbols
         var supplyParameterFromFormAttribute = compilation.GetTypeByMetadataName(ComponentsApi.SupplyParameterFromFormAttribute.MetadataName);
         var persistentStateAttribute = compilation.GetTypeByMetadataName(ComponentsApi.PersistentStateAttribute.MetadataName);
         var componentBaseType = compilation.GetTypeByMetadataName(ComponentsApi.ComponentBase.MetadataName);
+        var layoutAttribute = compilation.GetTypeByMetadataName(ComponentsApi.LayoutAttribute.MetadataName);
+        var layoutComponentBase = compilation.GetTypeByMetadataName(ComponentsApi.LayoutComponentBase.MetadataName);
 
         symbols = new ComponentSymbols(
             parameterAttribute,
@@ -59,7 +61,9 @@ internal sealed class ComponentSymbols
             persistentStateAttribute,
             componentBaseType,
             parameterCaptureUnmatchedValuesRuntimeType,
-            icomponentType);
+            icomponentType,
+            layoutAttribute,
+            layoutComponentBase);
         return true;
     }
 
@@ -70,7 +74,9 @@ internal sealed class ComponentSymbols
         INamedTypeSymbol persistentStateAttribute,
         INamedTypeSymbol componentBaseType,
         INamedTypeSymbol parameterCaptureUnmatchedValuesRuntimeType,
-        INamedTypeSymbol icomponentType)
+        INamedTypeSymbol icomponentType,
+        INamedTypeSymbol layoutAttribute,
+        INamedTypeSymbol layoutComponentBase)
     {
         ParameterAttribute = parameterAttribute;
         CascadingParameterAttribute = cascadingParameterAttribute;
@@ -79,6 +85,8 @@ internal sealed class ComponentSymbols
         ComponentBaseType = componentBaseType; // Can be null
         ParameterCaptureUnmatchedValuesRuntimeType = parameterCaptureUnmatchedValuesRuntimeType;
         IComponentType = icomponentType;
+        LayoutAttribute = layoutAttribute; // Can be null
+        LayoutComponentBase = layoutComponentBase; // Can be null
     }
 
     public INamedTypeSymbol ParameterAttribute { get; }
@@ -95,4 +103,8 @@ internal sealed class ComponentSymbols
     public INamedTypeSymbol ComponentBaseType { get; } // Can be null if not available
 
     public INamedTypeSymbol IComponentType { get; }
+
+    public INamedTypeSymbol LayoutAttribute { get; } // Can be null if not available
+
+    public INamedTypeSymbol LayoutComponentBase { get; } // Can be null if not available
 }
