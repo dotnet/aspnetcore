@@ -198,4 +198,13 @@
   <data name="PersistentStateShouldNotHavePropertyInitializer_Title" xml:space="preserve">
     <value>Property with [PersistentState] should not have initializer</value>
   </data>
+  <data name="ComponentParametersShouldNotUseRequiredOrInit_Description" xml:space="preserve">
+    <value>Component parameters should not use 'required' or 'init' modifiers because they don't work as expected with Blazor's parameter binding. Use the [EditorRequired] attribute instead to make parameters required in tooling.</value>
+  </data>
+  <data name="ComponentParametersShouldNotUseRequiredOrInit_Format" xml:space="preserve">
+    <value>Component parameter '{0}' should not use '{1}' modifier. Consider using [EditorRequired] attribute instead.</value>
+  </data>
+  <data name="ComponentParametersShouldNotUseRequiredOrInit_Title" xml:space="preserve">
+    <value>Component parameter should not use 'required' or 'init' modifier</value>
+  </data>
 </root>
