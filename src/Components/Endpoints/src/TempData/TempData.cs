@@ -1,0 +1,224 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Collections;
+
+namespace Microsoft.AspNetCore.Components;
+
+/// <inheritdoc/>
+internal sealed class TempData : ITempData
+{
+    private readonly Dictionary<string, object?> _data = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _retainedKeys = new(StringComparer.OrdinalIgnoreCase);
+    private Func<IDictionary<string, object?>>? _loadFunc;
+    private bool _loaded;
+
+    internal TempData(Func<IDictionary<string, object?>>? loadFunc = null)
+    {
+        _loadFunc = loadFunc;
+    }
+
+    private void EnsureLoaded()
+    {
+        if (!_loaded && _loadFunc is not null)
+        {
+            var dataToLoad = _loadFunc();
+            Load(dataToLoad);
+            _loadFunc = null!;
+            _loaded = true;
+        }
+    }
+
+    public object? this[string key]
+    {
+        get
+        {
+            EnsureLoaded();
+            return Get(key);
+        }
+        set
+        {
+            EnsureLoaded();
+            _data[key] = value;
+            _retainedKeys.Add(key);
+        }
+    }
+
+    public object? Get(string key)
+    {
+        EnsureLoaded();
+        _retainedKeys.Remove(key);
+        return _data.GetValueOrDefault(key);
+    }
+
+    public object? Peek(string key)
+    {
+        EnsureLoaded();
+        return _data.GetValueOrDefault(key);
+    }
+
+    public void Keep()
+    {
+        EnsureLoaded();
+        _retainedKeys.Clear();
+        _retainedKeys.UnionWith(_data.Keys);
+    }
+
+    public void Keep(string key)
+    {
+        EnsureLoaded();
+        if (_data.ContainsKey(key))
+        {
+            _retainedKeys.Add(key);
+        }
+    }
+
+    public bool ContainsValue(object value)
+    {
+        EnsureLoaded();
+        return _data.ContainsValue(value);
+    }
+
+    public bool ContainsKey(string key)
+    {
+        EnsureLoaded();
+        return _data.ContainsKey(key);
+    }
+
+    public bool Remove(string key)
+    {
+        EnsureLoaded();
+        _retainedKeys.Remove(key);
+        return _data.Remove(key);
+    }
+
+    public IDictionary<string, object?> Save()
+    {
+        EnsureLoaded();
+        var dataToSave = new Dictionary<string, object?>();
+        foreach (var key in _retainedKeys)
+        {
+            dataToSave[key] = _data[key];
+        }
+        return dataToSave;
+    }
+
+    public void Load(IDictionary<string, object?> data)
+    {
+        _data.Clear();
+        _retainedKeys.Clear();
+        foreach (var kvp in data)
+        {
+            _data[kvp.Key] = kvp.Value;
+            _retainedKeys.Add(kvp.Key);
+        }
+    }
+
+    public void Clear()
+    {
+        EnsureLoaded();
+        _data.Clear();
+        _retainedKeys.Clear();
+    }
+
+    ICollection<string> IDictionary<string, object?>.Keys => _data.Keys;
+
+    ICollection<object?> IDictionary<string, object?>.Values => _data.Values;
+
+    int ICollection<KeyValuePair<string, object?>>.Count => _data.Count;
+
+    bool ICollection<KeyValuePair<string, object?>>.IsReadOnly => ((ICollection<KeyValuePair<string, object?>>)_data).IsReadOnly;
+
+    void IDictionary<string, object?>.Add(string key, object? value)
+    {
+        this[key] = value;
+    }
+
+    bool IDictionary<string, object?>.TryGetValue(string key, out object? value)
+    {
+        value = Get(key);
+        return ContainsKey(key);
+    }
+
+    void ICollection<KeyValuePair<string, object?>>.Add(KeyValuePair<string, object?> item)
+    {
+        ((IDictionary<string, object?>)this).Add(item.Key, item.Value);
+    }
+
+    bool ICollection<KeyValuePair<string, object?>>.Contains(KeyValuePair<string, object?> item)
+    {
+        return ContainsKey(item.Key) && Equals(Peek(item.Key), item.Value);
+    }
+
+    void ICollection<KeyValuePair<string, object?>>.CopyTo(KeyValuePair<string, object?>[] array, int arrayIndex)
+    {
+        EnsureLoaded();
+        ((ICollection<KeyValuePair<string, object?>>)_data).CopyTo(array, arrayIndex);
+    }
+
+    bool ICollection<KeyValuePair<string, object?>>.Remove(KeyValuePair<string, object?> item)
+    {
+        if (ContainsKey(item.Key) && Equals(Peek(item.Key), item.Value))
+        {
+            return Remove(item.Key);
+        }
+        return false;
+    }
+
+    IEnumerator<KeyValuePair<string, object?>> IEnumerable<KeyValuePair<string, object?>>.GetEnumerator()
+    {
+        EnsureLoaded();
+        return new TempDataEnumerator(this);
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        EnsureLoaded();
+        return new TempDataEnumerator(this);
+    }
+
+    class TempDataEnumerator : IEnumerator<KeyValuePair<string, object?>>
+    {
+        private readonly TempData _tempData;
+        private readonly IEnumerator<KeyValuePair<string, object?>> _innerEnumerator;
+        private readonly List<string> _keysToRemove = new();
+
+        public TempDataEnumerator(TempData tempData)
+        {
+            _tempData = tempData;
+            _innerEnumerator = tempData._data.GetEnumerator();
+        }
+
+        public KeyValuePair<string, object?> Current
+        {
+            get
+            {
+                var kvp = _innerEnumerator.Current;
+                _keysToRemove.Add(kvp.Key);
+                return kvp;
+            }
+        }
+
+        object IEnumerator.Current => _innerEnumerator.Current;
+
+        public void Dispose()
+        {
+            _innerEnumerator.Dispose();
+            foreach (var key in _keysToRemove)
+            {
+                _tempData._retainedKeys.Remove(key);
+            }
+        }
+
+        public bool MoveNext()
+        {
+            return _innerEnumerator.MoveNext();
+        }
+
+        public void Reset()
+        {
+            _innerEnumerator.Reset();
+            _keysToRemove.Clear();
+        }
+    }
+}
