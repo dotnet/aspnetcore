@@ -22,11 +22,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 [Collection(IISTestSiteCollectionInProc.Name)]
 [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8, SkipReason = "No WebSocket supported on Win7")]
-#if IISEXPRESS_FUNCTIONALS
-#else
-// These queues do not have websockets enabled currently for full IIS
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.Server2022.Open")]
-#endif
 public class WebSocketsInProcessTests : WebSocketsTests
 {
     public WebSocketsInProcessTests(IISTestSiteFixture fixture, ITestOutputHelper testOutput) : base(fixture, testOutput)
