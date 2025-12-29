@@ -13,6 +13,7 @@
     <Protobuf Include="Proto\xmldoc.proto" GrpcServices="Both" />
     <Protobuf Include="Proto\greeter.proto" GrpcServices="Both" />
     <Protobuf Include="Proto\messages.proto" GrpcServices="Both" />
+    <Protobuf Include="Proto\resources.proto" GrpcServices="Both" />
 
     <Reference Include="Microsoft.AspNetCore.Grpc.Swagger" />
     <Reference Include="Grpc.Tools" PrivateAssets="All" />

@@ -178,9 +178,43 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
             var routeParameter = routeParameters.SingleOrDefault(kvp => kvp.Value.RouteVariable.StartSegment == i).Value;
             if (routeParameter != null)
             {
-                sb.Append('{');
-                sb.Append(routeParameter.JsonPath);
-                sb.Append('}');
+                // For variables that span multiple segments (e.g., {name=widgets/*}),
+                // include the literal segments to make unique OpenAPI paths.
+                var startSegment = routeParameter.RouteVariable.StartSegment;
+                var endSegment = routeParameter.RouteVariable.EndSegment;
+
+                if (endSegment - startSegment > 1)
+                {
+                    // Multi-segment variable - include literal segments for uniqueness
+                    for (var j = startSegment; j < endSegment; j++)
+                    {
+                        if (j > startSegment)
+                        {
+                            sb.Append('/');
+                        }
+
+                        var segment = httpRoutePattern.Segments[j];
+                        if (segment == "*" || segment == "**")
+                        {
+                            // Replace wildcard with parameter
+                            sb.Append('{');
+                            sb.Append(routeParameter.JsonPath);
+                            sb.Append('}');
+                        }
+                        else
+                        {
+                            // Include literal segment as-is
+                            sb.Append(segment);
+                        }
+                    }
+                }
+                else
+                {
+                    // Single-segment variable
+                    sb.Append('{');
+                    sb.Append(routeParameter.JsonPath);
+                    sb.Append('}');
+                }
 
                 // Skip segments if variable is multiple segment.
                 i = routeParameter.RouteVariable.EndSegment - 1;
