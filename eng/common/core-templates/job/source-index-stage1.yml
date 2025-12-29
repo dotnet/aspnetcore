@@ -6,7 +6,7 @@ parameters:
   sourceIndexBuildCommand: powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "eng/common/build.ps1 -restore -build -binarylog -ci"
   preSteps: []
   binlogPath: artifacts/log/Debug/Build.binlog
-  condition: ''
+  condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
   dependsOn: ''
   pool: ''
   is1ESPipeline: ''
