@@ -24,6 +24,11 @@
     <button type="submit" id="delete-button">Delete peeked value</button>
 </form>
 
+<form method="post" @formname="RedirectToNotReadPage" @onsubmit="() => SetValues(notReadPage: true)">
+    <AntiforgeryToken />
+    <button type="submit" id="set-values-not-read">Navigate to the Page That Does Not Access TempData</button>
+</form>
+
 <hr />
 
 <p id="message">@_message</p>
@@ -76,7 +81,7 @@
         }
     }
 
-    private void SetValues(bool differentPage = false)
+    private void SetValues(bool differentPage = false, bool notReadPage = false)
     {
         TempData!["Message"] = "Message";
         TempData!["PeekedValue"] = "Peeked value";
@@ -84,6 +89,11 @@
         if (differentPage)
         {
             NavigateToDifferentPage();
+            return;
+        }
+        if (notReadPage)
+        {
+            NavigateToWithoutReadPage();
             return;
         }
         NavigateToSamePageKeep(ValueToKeep);
@@ -98,4 +108,5 @@
     private void NavigateToSamePage() => NavigationManager.NavigateTo("/subdir/tempdata", forceLoad: true);
     private void NavigateToSamePageKeep(string valueToKeep) => NavigationManager.NavigateTo($"/subdir/tempdata?ValueToKeep={valueToKeep}", forceLoad: true);
     private void NavigateToDifferentPage() => NavigationManager.NavigateTo("/subdir/tempdata/read", forceLoad: true);
+    private void NavigateToWithoutReadPage() => NavigationManager.NavigateTo("/subdir/tempdata/notread", forceLoad: true);
 }

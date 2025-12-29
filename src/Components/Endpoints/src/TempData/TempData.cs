@@ -8,6 +8,7 @@ namespace Microsoft.AspNetCore.Components;
 /// <inheritdoc/>
 internal sealed class TempData : ITempData
 {
+    public bool WasAccessed => _loaded && _loadFunc is null;
     private readonly Dictionary<string, object?> _data = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _retainedKeys = new(StringComparer.OrdinalIgnoreCase);
     private Func<IDictionary<string, object?>>? _loadFunc;
@@ -18,14 +19,18 @@ internal sealed class TempData : ITempData
         _loadFunc = loadFunc;
     }
 
-    private void EnsureLoaded()
+    private Dictionary<string, object?> Data
     {
-        if (!_loaded && _loadFunc is not null)
+        get
         {
-            var dataToLoad = _loadFunc();
-            Load(dataToLoad);
-            _loadFunc = null!;
-            _loaded = true;
+            if (!_loaded && _loadFunc is not null)
+            {
+                var dataToLoad = _loadFunc();
+                Load(dataToLoad);
+                _loadFunc = null!;
+                _loaded = true;
+            }
+            return _data;
         }
     }
 
@@ -33,41 +38,35 @@ internal sealed class TempData : ITempData
     {
         get
         {
-            EnsureLoaded();
             return Get(key);
         }
         set
         {
-            EnsureLoaded();
-            _data[key] = value;
+            Data[key] = value;
             _retainedKeys.Add(key);
         }
     }
 
     public object? Get(string key)
     {
-        EnsureLoaded();
         _retainedKeys.Remove(key);
-        return _data.GetValueOrDefault(key);
+        return Data.GetValueOrDefault(key);
     }
 
     public object? Peek(string key)
     {
-        EnsureLoaded();
-        return _data.GetValueOrDefault(key);
+        return Data.GetValueOrDefault(key);
     }
 
     public void Keep()
     {
-        EnsureLoaded();
         _retainedKeys.Clear();
         _retainedKeys.UnionWith(_data.Keys);
     }
 
     public void Keep(string key)
     {
-        EnsureLoaded();
-        if (_data.ContainsKey(key))
+        if (Data.ContainsKey(key))
         {
             _retainedKeys.Add(key);
         }
@@ -75,26 +74,22 @@ internal sealed class TempData : ITempData
 
     public bool ContainsValue(object value)
     {
-        EnsureLoaded();
-        return _data.ContainsValue(value);
+        return Data.ContainsValue(value);
     }
 
     public bool ContainsKey(string key)
     {
-        EnsureLoaded();
-        return _data.ContainsKey(key);
+        return Data.ContainsKey(key);
     }
 
     public bool Remove(string key)
     {
-        EnsureLoaded();
         _retainedKeys.Remove(key);
-        return _data.Remove(key);
+        return Data.Remove(key);
     }
 
     public IDictionary<string, object?> Save()
     {
-        EnsureLoaded();
         var dataToSave = new Dictionary<string, object?>();
         foreach (var key in _retainedKeys)
         {
@@ -116,18 +111,16 @@ internal sealed class TempData : ITempData
 
     public void Clear()
     {
-        EnsureLoaded();
-        _data.Clear();
+        Data.Clear();
         _retainedKeys.Clear();
     }
 
-    ICollection<string> IDictionary<string, object?>.Keys => _data.Keys;
+    ICollection<string> IDictionary<string, object?>.Keys => Data.Keys;
 
-    ICollection<object?> IDictionary<string, object?>.Values => _data.Values;
+    ICollection<object?> IDictionary<string, object?>.Values => Data.Values;
 
-    int ICollection<KeyValuePair<string, object?>>.Count => _data.Count;
-
-    bool ICollection<KeyValuePair<string, object?>>.IsReadOnly => ((ICollection<KeyValuePair<string, object?>>)_data).IsReadOnly;
+    int ICollection<KeyValuePair<string, object?>>.Count => Data.Count;
+    bool ICollection<KeyValuePair<string, object?>>.IsReadOnly => ((ICollection<KeyValuePair<string, object?>>)Data).IsReadOnly;
 
     void IDictionary<string, object?>.Add(string key, object? value)
     {
@@ -152,8 +145,7 @@ internal sealed class TempData : ITempData
 
     void ICollection<KeyValuePair<string, object?>>.CopyTo(KeyValuePair<string, object?>[] array, int arrayIndex)
     {
-        EnsureLoaded();
-        ((ICollection<KeyValuePair<string, object?>>)_data).CopyTo(array, arrayIndex);
+        ((ICollection<KeyValuePair<string, object?>>)Data).CopyTo(array, arrayIndex);
     }
 
     bool ICollection<KeyValuePair<string, object?>>.Remove(KeyValuePair<string, object?> item)
@@ -167,13 +159,11 @@ internal sealed class TempData : ITempData
 
     IEnumerator<KeyValuePair<string, object?>> IEnumerable<KeyValuePair<string, object?>>.GetEnumerator()
     {
-        EnsureLoaded();
         return new TempDataEnumerator(this);
     }
 
     IEnumerator IEnumerable.GetEnumerator()
     {
-        EnsureLoaded();
         return new TempDataEnumerator(this);
     }
 

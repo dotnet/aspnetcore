@@ -11,6 +11,11 @@ namespace Microsoft.AspNetCore.Components;
 public interface ITempData : IDictionary<string, object?>
 {
     /// <summary>
+    /// Gets a value indicating whether the TempData has been accessed.
+    /// </summary>
+    public bool WasAccessed { get; }
+
+    /// <summary>
     /// Gets the value associated with the specified key and then schedules it for deletion.
     /// </summary>
     object? Get(string key);

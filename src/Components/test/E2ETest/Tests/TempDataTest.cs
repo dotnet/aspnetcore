@@ -123,4 +123,14 @@ public class TempDataTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorCo
         Browser.Equal("True", () => Browser.FindElement(By.Id("contains-peeked-value")).Text);
         Browser.Equal("False", () => Browser.FindElement(By.Id("contains-message")).Text);
     }
+
+    [Fact]
+    public void TempDataPersistWithoutAccessing()
+    {
+        Navigate($"{ServerPathBase}/tempdata");
+        Browser.Equal("No message", () => Browser.FindElement(By.Id("message")).Text);
+        Browser.FindElement(By.Id("set-values-not-read")).Click();
+        Browser.FindElement(By.Id("redirect-button")).Click();
+        Browser.Equal("Message", () => Browser.FindElement(By.Id("message")).Text);
+    }
 }

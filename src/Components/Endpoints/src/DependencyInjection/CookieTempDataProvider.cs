@@ -117,6 +117,11 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
         });
     }
 
+    public void PersistExistingTempData(HttpContext context)
+    {
+        // No action needed since TempData is persisted automatically in cookies.
+    }
+
     private static partial class Log
     {
         [LoggerMessage(3, LogLevel.Warning, "The temp data cookie {CookieName} could not be loaded.", EventName = "TempDataCookieLoadFailure")]

@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
 public class TempDataTest
 {
@@ -206,5 +206,43 @@ public class TempDataTest
         tempData["Key1"] = "Value1";
         var value = tempData["KEY1"];
         Assert.Equal("Value1", value);
+    }
+
+    [Fact]
+    public void Save_DoesNotLoadsTempData()
+    {
+        var loadCalled = false;
+        var tempData = new TempData(() =>
+        {
+            loadCalled = true;
+            return new Dictionary<string, object?> { ["Key"] = "Value" };
+        });
+        var saved = tempData.Save();
+
+        Assert.False(loadCalled);
+        Assert.False(tempData.WasAccessed);
+        Assert.Empty(saved);
+    }
+
+    [Fact]
+    public void TempData_Loads_WhenAccessed()
+    {
+        var loadCalled = false;
+        var numberOfLoads = 0;
+        var tempData = new TempData(() =>
+        {
+            loadCalled = true;
+            numberOfLoads++;
+            return new Dictionary<string, object?> { ["Key"] = "Value" };
+        });
+
+        var value = tempData["Key"];
+        _ = tempData.Peek("Key");
+        _ = tempData.ContainsKey("Key");
+
+        Assert.True(loadCalled);
+        Assert.Equal(1, numberOfLoads);
+        Assert.True(tempData.WasAccessed);
+        Assert.Equal("Value", value);
     }
 }
