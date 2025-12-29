@@ -5218,6 +5218,99 @@ public class RendererTest
         Assert.NotNull(listComponent.Template);
     }
 
+    [Fact]
+    public void RenderFragmentContravariance_WorksWithStructWrapperParameter()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        // Using reference type wrapper around struct to demonstrate contravariance
+        var baseFragment = (RenderFragment<StructWrapperBase>)((StructWrapperBase wrapper) => builder =>
+        {
+            builder.AddContent(0, $"Value: {wrapper.GetValue()}");
+        });
+
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<ComponentWithRenderFragmentOfStructWrapperDerived>(0);
+            builder.AddComponentParameter(1, nameof(ComponentWithRenderFragmentOfStructWrapperDerived.Template), baseFragment);
+            builder.CloseComponent();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        // Assert - Should compile and render without exception
+        var batch = renderer.Batches.Single();
+        var componentFrame = batch.ReferenceFrames
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
+        Assert.IsType<ComponentWithRenderFragmentOfStructWrapperDerived>(componentFrame.Component);
+        var wrapperComponent = (ComponentWithRenderFragmentOfStructWrapperDerived)componentFrame.Component;
+        Assert.NotNull(wrapperComponent.Template);
+    }
+
+    [Fact]
+    public void RenderFragmentContravariance_WorksWithStringParameter()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        // String is a reference type, so contravariance works like with classes
+        var baseFragment = (RenderFragment<object>)((object value) => builder =>
+        {
+            builder.AddContent(0, $"Value: {value}");
+        });
+
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<ComponentWithRenderFragmentOfString>(0);
+            builder.AddComponentParameter(1, nameof(ComponentWithRenderFragmentOfString.Template), baseFragment);
+            builder.CloseComponent();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        // Assert - Should compile and render without exception
+        var batch = renderer.Batches.Single();
+        var componentFrame = batch.ReferenceFrames
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
+        Assert.IsType<ComponentWithRenderFragmentOfString>(componentFrame.Component);
+        var stringComponent = (ComponentWithRenderFragmentOfString)componentFrame.Component;
+        Assert.NotNull(stringComponent.Template);
+    }
+
+    [Fact]
+    public void RenderFragmentContravariance_WorksWithEnumWrapperParameter()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        // Using reference type wrapper around enum to demonstrate contravariance
+        var baseFragment = (RenderFragment<EnumWrapperBase>)((EnumWrapperBase wrapper) => builder =>
+        {
+            builder.AddContent(0, $"Enum: {wrapper.GetValue()}");
+        });
+
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<ComponentWithRenderFragmentOfEnumWrapperDerived>(0);
+            builder.AddComponentParameter(1, nameof(ComponentWithRenderFragmentOfEnumWrapperDerived.Template), baseFragment);
+            builder.CloseComponent();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        // Assert - Should compile and render without exception
+        var batch = renderer.Batches.Single();
+        var componentFrame = batch.ReferenceFrames
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
+        Assert.IsType<ComponentWithRenderFragmentOfEnumWrapperDerived>(componentFrame.Component);
+        var enumWrapperComponent = (ComponentWithRenderFragmentOfEnumWrapperDerived)componentFrame.Component;
+        Assert.NotNull(enumWrapperComponent.Template);
+    }
+
     [HasUnknownRenderMode]
     private class ComponentWithUnknownRenderMode : IComponent
     {
@@ -6260,6 +6353,87 @@ public class RendererTest
             {
                 var list = new List<string> { "Item1", "Item2", "Item3" };
                 builder.AddContent(0, Template(list));
+            }
+        }
+    }
+
+    // Struct wrapper types for testing contravariance with structs
+    private struct TestStruct
+    {
+        public int Value { get; set; }
+        public string Name { get; set; }
+    }
+
+    private class StructWrapperBase
+    {
+        public virtual string GetValue() => "base";
+    }
+
+    private class StructWrapperDerived : StructWrapperBase
+    {
+        public TestStruct Struct { get; set; }
+        public override string GetValue() => $"Struct: {Struct.Value}, {Struct.Name}";
+    }
+
+    private class ComponentWithRenderFragmentOfStructWrapperDerived : AutoRenderComponent
+    {
+        [Parameter]
+        public RenderFragment<StructWrapperDerived> Template { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (Template != null)
+            {
+                var wrapper = new StructWrapperDerived { Struct = new TestStruct { Value = 42, Name = "Test" } };
+                builder.AddContent(0, Template(wrapper));
+            }
+        }
+    }
+
+    private class ComponentWithRenderFragmentOfString : AutoRenderComponent
+    {
+        [Parameter]
+        public RenderFragment<string> Template { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (Template != null)
+            {
+                builder.AddContent(0, Template("test string"));
+            }
+        }
+    }
+
+    // Enum wrapper types for testing contravariance with enums
+    private enum TestEnum
+    {
+        Value1,
+        Value2,
+        Value3
+    }
+
+    private class EnumWrapperBase
+    {
+        public virtual string GetValue() => "base";
+    }
+
+    private class EnumWrapperDerived : EnumWrapperBase
+    {
+        public TestEnum Enum { get; set; }
+        public override string GetValue() => $"Enum: {Enum}";
+    }
+
+    private class ComponentWithRenderFragmentOfEnumWrapperDerived : AutoRenderComponent
+    {
+        [Parameter]
+        public RenderFragment<EnumWrapperDerived> Template { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (Template != null)
+            {
+                var wrapper = new EnumWrapperDerived { Enum = TestEnum.Value2 };
+                builder.AddContent(0, Template(wrapper));
             }
         }
     }
