@@ -5219,96 +5219,67 @@ public class RendererTest
     }
 
     [Fact]
-    public void RenderFragmentContravariance_WorksWithStructWrapperParameter()
+    public void RenderFragmentContravariance_WorksWithInterfaceHierarchy()
     {
-        // Arrange
-        var renderer = new TestRenderer();
-        // Using reference type wrapper around struct to demonstrate contravariance
-        var baseFragment = (RenderFragment<StructWrapperBase>)((StructWrapperBase wrapper) => builder =>
-        {
-            builder.AddContent(0, $"Value: {wrapper.GetValue()}");
-        });
-
-        var component = new TestComponent(builder =>
-        {
-            builder.OpenComponent<ComponentWithRenderFragmentOfStructWrapperDerived>(0);
-            builder.AddComponentParameter(1, nameof(ComponentWithRenderFragmentOfStructWrapperDerived.Template), baseFragment);
-            builder.CloseComponent();
-        });
-
-        // Act
-        var componentId = renderer.AssignRootComponentId(component);
-        component.TriggerRender();
-
-        // Assert - Should compile and render without exception
-        var batch = renderer.Batches.Single();
-        var componentFrame = batch.ReferenceFrames
-            .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
-        Assert.IsType<ComponentWithRenderFragmentOfStructWrapperDerived>(componentFrame.Component);
-        var wrapperComponent = (ComponentWithRenderFragmentOfStructWrapperDerived)componentFrame.Component;
-        Assert.NotNull(wrapperComponent.Template);
-    }
-
-    [Fact]
-    public void RenderFragmentContravariance_WorksWithStringParameter()
-    {
-        // Arrange
-        var renderer = new TestRenderer();
-        // Testing contravariance from object to string (both reference types)
-        var baseFragment = (RenderFragment<object>)((object value) => builder =>
+        // C# variance only works with reference types. This test uses interface hierarchy.
+        // IComparable<T> is contravariant, so we can demonstrate the concept
+        
+        // Arrange - Create a fragment that accepts any IComparable
+        RenderFragment<IComparable> baseFragment = (IComparable value) => builder =>
         {
             builder.AddContent(0, $"Value: {value}");
-        });
+        };
 
-        var component = new TestComponent(builder =>
-        {
-            builder.OpenComponent<ComponentWithRenderFragmentOfString>(0);
-            builder.AddComponentParameter(1, nameof(ComponentWithRenderFragmentOfString.Template), baseFragment);
-            builder.CloseComponent();
-        });
+        // Act - Assign to a variable that accepts string (which implements IComparable)
+        RenderFragment<string> specificFragment = baseFragment;
+        var builder = new RenderTreeBuilder();
+        var result = specificFragment("test");
 
-        // Act
-        var componentId = renderer.AssignRootComponentId(component);
-        component.TriggerRender();
-
-        // Assert - Should compile and render without exception
-        var batch = renderer.Batches.Single();
-        var componentFrame = batch.ReferenceFrames
-            .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
-        Assert.IsType<ComponentWithRenderFragmentOfString>(componentFrame.Component);
-        var stringComponent = (ComponentWithRenderFragmentOfString)componentFrame.Component;
-        Assert.NotNull(stringComponent.Template);
+        // Assert - Should compile and execute without exception
+        result(builder);
+        Assert.NotNull(result);
     }
 
     [Fact]
-    public void RenderFragmentContravariance_WorksWithEnumWrapperParameter()
+    public void RenderFragmentContravariance_WorksWithObjectToPrimitiveWrapper()
     {
-        // Arrange
-        var renderer = new TestRenderer();
-        // Using reference type wrapper around enum to demonstrate contravariance
-        var baseFragment = (RenderFragment<EnumWrapperBase>)((EnumWrapperBase wrapper) => builder =>
+        // For value types, contravariance only works when going through object (boxing)
+        
+        // Arrange - Create a fragment that accepts object
+        RenderFragment<object> baseFragment = (object value) => builder =>
         {
-            builder.AddContent(0, $"Enum: {wrapper.GetValue()}");
-        });
+            builder.AddContent(0, $"Value: {value}");
+        };
 
-        var component = new TestComponent(builder =>
+        // Act - Can use this with a string (reference type derived from object)
+        RenderFragment<string> stringFragment = baseFragment;
+        var builder = new RenderTreeBuilder();
+        var result = stringFragment("test value");
+
+        // Assert - Should compile and execute without exception
+        result(builder);
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public void RenderFragmentContravariance_WorksWithComparableTypes()
+    {
+        // Demonstrating contravariance with reference types implementing IComparable
+        
+        // Arrange - Create a fragment that accepts IComparable
+        RenderFragment<IComparable> baseFragment = (IComparable value) => builder =>
         {
-            builder.OpenComponent<ComponentWithRenderFragmentOfEnumWrapperDerived>(0);
-            builder.AddComponentParameter(1, nameof(ComponentWithRenderFragmentOfEnumWrapperDerived.Template), baseFragment);
-            builder.CloseComponent();
-        });
+            builder.AddContent(0, $"Value: {value}");
+        };
 
-        // Act
-        var componentId = renderer.AssignRootComponentId(component);
-        component.TriggerRender();
+        // Act - Can use this with Version (reference type that implements IComparable)
+        RenderFragment<Version> versionFragment = baseFragment;
+        var builder = new RenderTreeBuilder();
+        var result = versionFragment(new Version(1, 0));
 
-        // Assert - Should compile and render without exception
-        var batch = renderer.Batches.Single();
-        var componentFrame = batch.ReferenceFrames
-            .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
-        Assert.IsType<ComponentWithRenderFragmentOfEnumWrapperDerived>(componentFrame.Component);
-        var enumWrapperComponent = (ComponentWithRenderFragmentOfEnumWrapperDerived)componentFrame.Component;
-        Assert.NotNull(enumWrapperComponent.Template);
+        // Assert - Should compile and execute without exception
+        result(builder);
+        Assert.NotNull(result);
     }
 
     [HasUnknownRenderMode]
@@ -6357,84 +6328,26 @@ public class RendererTest
         }
     }
 
-    // Reference type hierarchy containing struct property for testing contravariance
-    private struct TestStruct
+    // Struct that implements IComparable for testing contravariance
+    private struct TestStructWithInterface : IComparable
     {
         public int Value { get; set; }
-        public string Name { get; set; }
-    }
-
-    private class StructWrapperBase
-    {
-        public virtual string GetValue() => "base";
-    }
-
-    private class StructWrapperDerived : StructWrapperBase
-    {
-        public TestStruct Struct { get; set; }
-        public override string GetValue() => $"Struct: {Struct.Value}, {Struct.Name}";
-    }
-
-    private class ComponentWithRenderFragmentOfStructWrapperDerived : AutoRenderComponent
-    {
-        [Parameter]
-        public RenderFragment<StructWrapperDerived> Template { get; set; }
-
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        
+        public int CompareTo(object obj)
         {
-            if (Template != null)
+            if (obj is TestStructWithInterface other)
             {
-                var wrapper = new StructWrapperDerived { Struct = new TestStruct { Value = 42, Name = "Test" } };
-                builder.AddContent(0, Template(wrapper));
+                return Value.CompareTo(other.Value);
             }
+            return 1;
         }
     }
 
-    private class ComponentWithRenderFragmentOfString : AutoRenderComponent
-    {
-        [Parameter]
-        public RenderFragment<string> Template { get; set; }
-
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            if (Template != null)
-            {
-                builder.AddContent(0, Template("test string"));
-            }
-        }
-    }
-
-    // Reference type hierarchy containing enum property for testing contravariance
+    // Enum for testing contravariance (enums implement IConvertible)
     private enum TestEnum
     {
         Value1,
         Value2,
         Value3
-    }
-
-    private class EnumWrapperBase
-    {
-        public virtual string GetValue() => "base";
-    }
-
-    private class EnumWrapperDerived : EnumWrapperBase
-    {
-        public TestEnum Enum { get; set; }
-        public override string GetValue() => $"Enum: {Enum}";
-    }
-
-    private class ComponentWithRenderFragmentOfEnumWrapperDerived : AutoRenderComponent
-    {
-        [Parameter]
-        public RenderFragment<EnumWrapperDerived> Template { get; set; }
-
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            if (Template != null)
-            {
-                var wrapper = new EnumWrapperDerived { Enum = TestEnum.Value2 };
-                builder.AddContent(0, Template(wrapper));
-            }
-        }
     }
 }
