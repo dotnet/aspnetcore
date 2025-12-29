@@ -5254,7 +5254,7 @@ public class RendererTest
     {
         // Arrange
         var renderer = new TestRenderer();
-        // String is a reference type, so contravariance works like with classes
+        // Testing contravariance from object to string (both reference types)
         var baseFragment = (RenderFragment<object>)((object value) => builder =>
         {
             builder.AddContent(0, $"Value: {value}");
@@ -6357,7 +6357,7 @@ public class RendererTest
         }
     }
 
-    // Struct wrapper types for testing contravariance with structs
+    // Reference type hierarchy containing struct property for testing contravariance
     private struct TestStruct
     {
         public int Value { get; set; }
@@ -6404,7 +6404,7 @@ public class RendererTest
         }
     }
 
-    // Enum wrapper types for testing contravariance with enums
+    // Reference type hierarchy containing enum property for testing contravariance
     private enum TestEnum
     {
         Value1,
