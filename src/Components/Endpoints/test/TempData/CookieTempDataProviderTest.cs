@@ -292,7 +292,15 @@ public class CookieTempDataProviderTest
 
             public void Append(string key, string value, CookieOptions options)
             {
-                _feature.SetCookies[key] = value;
+                // ChunkingCookieManager deletes by appending with expired date (UnixEpoch)
+                if (options.Expires.HasValue && options.Expires.Value <= DateTimeOffset.UnixEpoch)
+                {
+                    _feature.DeletedCookies.Add(key);
+                }
+                else
+                {
+                    _feature.SetCookies[key] = value;
+                }
             }
 
             public void Delete(string key) => Delete(key, new CookieOptions());
