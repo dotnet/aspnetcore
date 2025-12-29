@@ -6,12 +6,23 @@ using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
 public class CookieTempDataProviderTest
 {
-    private readonly CookieTempDataProvider cookieTempDataProvider = new CookieTempDataProvider(new EphemeralDataProtectionProvider(), new JsonTempDataSerializer());
+    private readonly CookieTempDataProvider cookieTempDataProvider;
+
+    public CookieTempDataProviderTest()
+    {
+        cookieTempDataProvider = new CookieTempDataProvider(
+            new EphemeralDataProtectionProvider(),
+            Options.Create<CookieTempDataProviderOptions>(new()),
+            new JsonTempDataSerializer());
+    }
 
     [Fact]
     public void Load_ReturnsEmptyTempData_WhenNoCookieExists()

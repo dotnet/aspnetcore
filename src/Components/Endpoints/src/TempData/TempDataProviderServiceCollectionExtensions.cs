@@ -18,26 +18,30 @@ public static class TempDataProviderServiceCollectionExtensions
         services.TryAddSingleton<ITempDataProvider, CookieTempDataProvider>();
         services.TryAddSingleton<ITempDataSerializer, JsonTempDataSerializer>();
         services.TryAddSingleton<TempDataService>();
-
-        services.TryAddCascadingValue(sp =>
-        {
-            var httpContext = sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext;
-            if (httpContext is null)
-            {
-                return null!;
-            }
-            return GetOrCreateTempData(httpContext);
-        });
+        services = AddTempDataCascadingValue(services);
         return services;
     }
 
     /// <summary>
     /// Enables component parameters to be supplied from the <see cref="TempData"/>.
     /// </summary>
-    public static IServiceCollection AddTempDataValueProvider(this IServiceCollection services)
+    public static IServiceCollection AddCookieTempDataValueProvider(
+        this IServiceCollection services,
+        Action<CookieTempDataProviderOptions>? configureOptions)
     {
-        // add services based on options
+        services.Replace(ServiceDescriptor.Singleton<ITempDataProvider, CookieTempDataProvider>());
+        services.TryAddSingleton<ITempDataSerializer, JsonTempDataSerializer>();
+        services.TryAddSingleton<TempDataService>();
+        if (configureOptions is not null)
+        {
+            services.Configure(configureOptions);
+        }
+        services = AddTempDataCascadingValue(services);
+        return services;
+    }
 
+    private static IServiceCollection AddTempDataCascadingValue(IServiceCollection services)
+    {
         services.TryAddCascadingValue(sp =>
         {
             var httpContext = sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext;

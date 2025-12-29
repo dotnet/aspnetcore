@@ -215,7 +215,7 @@ public class TempDataTest
         var tempData = new TempData(() =>
         {
             loadCalled = true;
-            return new Dictionary<string, object?> { ["Key"] = "Value" };
+            return new Dictionary<string, object> { ["Key"] = "Value" };
         });
         var saved = tempData.Save();
 
@@ -233,7 +233,7 @@ public class TempDataTest
         {
             loadCalled = true;
             numberOfLoads++;
-            return new Dictionary<string, object?> { ["Key"] = "Value" };
+            return new Dictionary<string, object> { ["Key"] = "Value" };
         });
 
         var value = tempData["Key"];

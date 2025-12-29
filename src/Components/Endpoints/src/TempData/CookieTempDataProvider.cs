@@ -7,30 +7,35 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal sealed partial class CookieTempDataProvider : ITempDataProvider
 {
-    private const string CookieName = ".AspNetCore.Components.TempData";
-    private const string Purpose = "Microsoft.AspNetCore.Components.CookieTempDataProviderToken.v1";
+    public const string CookieName = ".AspNetCore.Components.TempData";
+    private const string Purpose = "Microsoft.AspNetCore.Components.CookieTempDataProviderToken";
     private const int MaxEncodedLength = 4050;
     private readonly IDataProtector _dataProtector;
     private readonly ITempDataSerializer _tempDataSerializer;
+    private readonly CookieTempDataProviderOptions _options;
 
     public CookieTempDataProvider(
         IDataProtectionProvider dataProtectionProvider,
+        IOptions<CookieTempDataProviderOptions> options,
         ITempDataSerializer tempDataSerializer)
     {
         _dataProtector = dataProtectionProvider.CreateProtector(Purpose);
         _tempDataSerializer = tempDataSerializer;
+        _options = options.Value;
     }
 
     public IDictionary<string, object?> LoadTempData(HttpContext context)
     {
         try
         {
-            var serializedDataFromCookie = context.Request.Cookies[CookieName];
+            var cookieName = _options.Cookie.Name ?? CookieName;
+            var serializedDataFromCookie = context.Request.Cookies[cookieName];
             if (serializedDataFromCookie is null)
             {
                 return new Dictionary<string, object?>();
@@ -38,7 +43,6 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
 
             var protectedBytes = WebEncoders.Base64UrlDecode(serializedDataFromCookie);
             var unprotectedBytes = _dataProtector.Unprotect(protectedBytes);
-
             var dataFromCookie = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(unprotectedBytes);
 
             if (dataFromCookie is null)
@@ -55,17 +59,15 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
         }
         catch (Exception ex)
         {
-            // If any error occurs during loading (e.g. data protection key changed, malformed cookie),
-            // return an empty TempData dictionary.
+            var cookieName = _options.Cookie.Name ?? CookieName;
             if (context.RequestServices.GetService<ILogger<CookieTempDataProvider>>() is { } logger)
             {
-                Log.TempDataCookieLoadFailure(logger, CookieName, ex);
+                Log.TempDataCookieLoadFailure(logger, cookieName, ex);
             }
 
-            context.Response.Cookies.Delete(CookieName, new CookieOptions
-            {
-                Path = context.Request.PathBase.HasValue ? context.Request.PathBase.Value : "/",
-            });
+            var cookieOptions = _options.Cookie.Build(context);
+            SetCookiePath(context, cookieOptions);
+            context.Response.Cookies.Delete(cookieName, cookieOptions);
             return new Dictionary<string, object?>();
         }
     }
@@ -80,12 +82,13 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
             }
         }
 
+        var cookieName = _options.Cookie.Name ?? CookieName;
+        var cookieOptions = _options.Cookie.Build(context);
+        SetCookiePath(context, cookieOptions);
+
         if (values.Count == 0)
         {
-            context.Response.Cookies.Delete(CookieName, new CookieOptions
-            {
-                Path = context.Request.PathBase.HasValue ? context.Request.PathBase.Value : "/",
-            });
+            context.Response.Cookies.Delete(cookieName, cookieOptions);
             return;
         }
 
@@ -97,29 +100,35 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
         {
             if (context.RequestServices.GetService<ILogger<CookieTempDataProvider>>() is { } logger)
             {
-                Log.TempDataCookieSaveFailure(logger, CookieName);
+                Log.TempDataCookieSaveFailure(logger, cookieName);
             }
 
-            context.Response.Cookies.Delete(CookieName, new CookieOptions
-            {
-                Path = context.Request.PathBase.HasValue ? context.Request.PathBase.Value : "/",
-            });
+            context.Response.Cookies.Delete(cookieName, cookieOptions);
             return;
         }
 
-        context.Response.Cookies.Append(CookieName, encodedValue, new CookieOptions
-        {
-            HttpOnly = true,
-            IsEssential = true,
-            SameSite = SameSiteMode.Lax,
-            Secure = context.Request.IsHttps,
-            Path = context.Request.PathBase.HasValue ? context.Request.PathBase.Value : "/",
-        });
+        context.Response.Cookies.Append(cookieName, encodedValue, cookieOptions);
     }
 
     public void PersistExistingTempData(HttpContext context)
     {
         // No action needed since TempData is persisted automatically in cookies.
+    }
+
+    private void SetCookiePath(HttpContext httpContext, CookieOptions cookieOptions)
+    {
+        if (!string.IsNullOrEmpty(_options.Cookie.Path))
+        {
+            cookieOptions.Path = _options.Cookie.Path;
+        }
+        else
+        {
+            var pathBase = httpContext.Request.PathBase.ToString();
+            if (!string.IsNullOrEmpty(pathBase))
+            {
+                cookieOptions.Path = pathBase;
+            }
+        }
     }
 
     private static partial class Log

@@ -20,7 +20,6 @@ public interface ITempDataProvider
     /// </summary>
     void SaveTempData(HttpContext context, IDictionary<string, object?> values);
 
-
     /// <summary>
     /// Persists existing TempData without modification.
     /// </summary>
