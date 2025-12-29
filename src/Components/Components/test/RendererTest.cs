@@ -5158,6 +5158,66 @@ public class RendererTest
         }
     }
 
+    [Fact]
+    public void RenderFragmentContravariance_WorksWithBaseClassParameter()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var baseFragment = (RenderFragment<Animal>)((Animal animal) => builder =>
+        {
+            builder.AddContent(0, $"Animal: {animal.Name}");
+        });
+
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<ComponentWithRenderFragmentOfDog>(0);
+            builder.AddComponentParameter(1, nameof(ComponentWithRenderFragmentOfDog.Template), baseFragment);
+            builder.CloseComponent();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        // Assert - Should compile and render without exception
+        var batch = renderer.Batches.Single();
+        var componentFrame = batch.ReferenceFrames
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
+        Assert.IsType<ComponentWithRenderFragmentOfDog>(componentFrame.Component);
+        var dogComponent = (ComponentWithRenderFragmentOfDog)componentFrame.Component;
+        Assert.NotNull(dogComponent.Template);
+    }
+
+    [Fact]
+    public void RenderFragmentContravariance_WorksWithInterfaceParameter()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var baseFragment = (RenderFragment<IList<string>>)((IList<string> items) => builder =>
+        {
+            builder.AddContent(0, $"Count: {items.Count}");
+        });
+
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<ComponentWithRenderFragmentOfListOfString>(0);
+            builder.AddComponentParameter(1, nameof(ComponentWithRenderFragmentOfListOfString.Template), baseFragment);
+            builder.CloseComponent();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        // Assert - Should compile and render without exception
+        var batch = renderer.Batches.Single();
+        var componentFrame = batch.ReferenceFrames
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
+        Assert.IsType<ComponentWithRenderFragmentOfListOfString>(componentFrame.Component);
+        var listComponent = (ComponentWithRenderFragmentOfListOfString)componentFrame.Component;
+        Assert.NotNull(listComponent.Template);
+    }
+
     [HasUnknownRenderMode]
     private class ComponentWithUnknownRenderMode : IComponent
     {
@@ -6161,5 +6221,46 @@ public class RendererTest
         }
 
         public static implicit operator string(ImplicitlyConvertsToString value) => value._value;
+    }
+
+    // Test classes for RenderFragment contravariance
+    private class Animal
+    {
+        public string Name { get; set; } = string.Empty;
+    }
+
+    private class Dog : Animal
+    {
+        public string Breed { get; set; } = string.Empty;
+    }
+
+    private class ComponentWithRenderFragmentOfDog : AutoRenderComponent
+    {
+        [Parameter]
+        public RenderFragment<Dog> Template { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (Template != null)
+            {
+                var dog = new Dog { Name = "Buddy", Breed = "Golden Retriever" };
+                builder.AddContent(0, Template(dog));
+            }
+        }
+    }
+
+    private class ComponentWithRenderFragmentOfListOfString : AutoRenderComponent
+    {
+        [Parameter]
+        public RenderFragment<List<string>> Template { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (Template != null)
+            {
+                var list = new List<string> { "Item1", "Item2", "Item3" };
+                builder.AddContent(0, Template(list));
+            }
+        }
     }
 }
