@@ -9,8 +9,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.AspNetCore.Analyzers.Verifiers;
 
@@ -19,20 +19,20 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
 {
     /// <inheritdoc cref="AnalyzerVerifier{TAnalyzer, TTest, TVerifier}.Diagnostic()"/>
     public static DiagnosticResult Diagnostic()
-        => CSharpAnalyzerVerifier<TAnalyzer, XUnitVerifier>.Diagnostic();
+        => CSharpAnalyzerVerifier<TAnalyzer, DefaultVerifier>.Diagnostic();
 
     /// <inheritdoc cref="AnalyzerVerifier{TAnalyzer, TTest, TVerifier}.Diagnostic(string)"/>
     public static DiagnosticResult Diagnostic(string diagnosticId)
-        => CSharpAnalyzerVerifier<TAnalyzer, XUnitVerifier>.Diagnostic(diagnosticId);
+        => CSharpAnalyzerVerifier<TAnalyzer, DefaultVerifier>.Diagnostic(diagnosticId);
 
     /// <inheritdoc cref="AnalyzerVerifier{TAnalyzer, TTest, TVerifier}.Diagnostic(DiagnosticDescriptor)"/>
     public static DiagnosticResult Diagnostic(DiagnosticDescriptor descriptor)
-        => CSharpAnalyzerVerifier<TAnalyzer, XUnitVerifier>.Diagnostic(descriptor);
+        => CSharpAnalyzerVerifier<TAnalyzer, DefaultVerifier>.Diagnostic(descriptor);
 
     /// <inheritdoc cref="AnalyzerVerifier{TAnalyzer, TTest, TVerifier}.VerifyAnalyzerAsync(string, DiagnosticResult[])"/>
     public static async Task VerifyAnalyzerAsync(string source, params DiagnosticResult[] expected)
     {
-        var test = new CSharpAnalyzerTest<TAnalyzer, XUnitVerifier>
+        var test = new CSharpAnalyzerTest<TAnalyzer, DefaultVerifier>
         {
             TestCode = source.ReplaceLineEndings(),
             // We need to set the output type to an exe to properly
@@ -53,20 +53,22 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
                 Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"),
                 "NuGet.config") :
             Path.Combine(TestData.GetRepoRoot(), "NuGet.config");
-        var net8Ref = new ReferenceAssemblies(
-            "net9.0",
+        var net10Ref = new ReferenceAssemblies(
+            "net10.0",
             new PackageIdentity(
                 "Microsoft.NETCore.App.Ref",
                 TestData.GetMicrosoftNETCoreAppRefPackageVersion()),
-            Path.Combine("ref", "net9.0"))
+            Path.Combine("ref", "net10.0"))
         .WithNuGetConfigFilePath(nugetConfigPath);
 
-        return net8Ref.AddAssemblies(ImmutableArray.Create(
+        return net10Ref.AddAssemblies(ImmutableArray.Create(
             TrimAssemblyExtension(typeof(System.IO.Pipelines.PipeReader).Assembly.Location),
+            TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Authorization.IAuthorizeData).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Mvc.ModelBinding.IBinderTypeProviderMetadata).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Mvc.BindAttribute).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Hosting.WebHostBuilderExtensions).Assembly.Location),
+            TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Hosting.WebHostBuilderKestrelExtensions).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.Extensions.Hosting.IHostBuilder).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.Extensions.Hosting.HostingHostBuilderExtensions).Assembly.Location),
             TrimAssemblyExtension(typeof(Microsoft.AspNetCore.Builder.ConfigureHostBuilder).Assembly.Location),

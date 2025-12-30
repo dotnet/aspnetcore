@@ -1,0 +1,38 @@
+﻿@page "/componentplatform"
+@using TestContentPackage
+
+<h3>Component platform tests</h3>
+
+<p>
+    Defines a component and applies the render mode in the query string value for ComponentRenderMode.
+    The component prints the render mode and whether its interactive.
+</p>
+
+<ComponentPlatformDetails @rendermode="_renderMode" />
+
+@code {
+    [SupplyParameterFromQuery] public string ComponentRenderMode { get; set; }
+
+    IComponentRenderMode _renderMode;
+
+    protected override void OnInitialized()
+    {
+        switch (ComponentRenderMode)
+        {
+            case "server":
+                _renderMode = RenderMode.InteractiveServer;
+                break;
+            case "webassembly":
+                _renderMode = RenderMode.InteractiveWebAssembly;
+                break;
+            case "auto":
+                _renderMode = RenderMode.InteractiveAuto;
+                break;
+            case "static":
+                _renderMode = null;
+                break;
+            default:
+                throw new InvalidOperationException($"Unknown component render mode: {ComponentRenderMode}");
+        }
+    }
+}

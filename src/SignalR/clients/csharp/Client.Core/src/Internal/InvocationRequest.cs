@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -13,15 +15,17 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal;
 internal abstract partial class InvocationRequest : IDisposable
 {
     private readonly CancellationTokenRegistration _cancellationTokenRegistration;
+    private int _isActivityStopping;
 
     protected ILogger Logger { get; }
 
     public Type ResultType { get; }
     public CancellationToken CancellationToken { get; }
     public string InvocationId { get; }
-    public HubConnection HubConnection { get; private set; }
+    public HubConnection HubConnection { get; }
+    public Activity? Activity { get; }
 
-    protected InvocationRequest(CancellationToken cancellationToken, Type resultType, string invocationId, ILogger logger, HubConnection hubConnection)
+    protected InvocationRequest(CancellationToken cancellationToken, Type resultType, string invocationId, ILogger logger, HubConnection hubConnection, Activity? activity)
     {
         _cancellationTokenRegistration = cancellationToken.Register(self => ((InvocationRequest)self!).Cancel(), this);
 
@@ -30,21 +34,28 @@ internal abstract partial class InvocationRequest : IDisposable
         ResultType = resultType;
         Logger = logger;
         HubConnection = hubConnection;
+        Activity = activity;
 
         Log.InvocationCreated(Logger, InvocationId);
     }
 
-    public static InvocationRequest Invoke(CancellationToken cancellationToken, Type resultType, string invocationId, ILoggerFactory loggerFactory, HubConnection hubConnection, out Task<object?> result)
+    [MemberNotNullWhen(true, nameof(Activity))]
+    protected bool TryBeginStopActivity()
     {
-        var req = new NonStreaming(cancellationToken, resultType, invocationId, loggerFactory, hubConnection);
+        return Activity != null && Interlocked.Exchange(ref _isActivityStopping, 1) == 0;
+    }
+
+    public static InvocationRequest Invoke(CancellationToken cancellationToken, Type resultType, string invocationId, ILoggerFactory loggerFactory, HubConnection hubConnection, Activity? activity, out Task<object?> result)
+    {
+        var req = new NonStreaming(cancellationToken, resultType, invocationId, loggerFactory, hubConnection, activity);
         result = req.Result;
         return req;
     }
 
     public static InvocationRequest Stream(CancellationToken cancellationToken, Type resultType, string invocationId,
-        ILoggerFactory loggerFactory, HubConnection hubConnection, out ChannelReader<object?> result)
+        ILoggerFactory loggerFactory, HubConnection hubConnection, Activity? activity, out ChannelReader<object?> result)
     {
-        var req = new Streaming(cancellationToken, resultType, invocationId, loggerFactory, hubConnection);
+        var req = new Streaming(cancellationToken, resultType, invocationId, loggerFactory, hubConnection, activity);
         result = req.Result;
         return req;
     }
@@ -69,8 +80,8 @@ internal abstract partial class InvocationRequest : IDisposable
     {
         private readonly Channel<object?> _channel = Channel.CreateUnbounded<object?>();
 
-        public Streaming(CancellationToken cancellationToken, Type resultType, string invocationId, ILoggerFactory loggerFactory, HubConnection hubConnection)
-            : base(cancellationToken, resultType, invocationId, loggerFactory.CreateLogger(typeof(Streaming)), hubConnection)
+        public Streaming(CancellationToken cancellationToken, Type resultType, string invocationId, ILoggerFactory loggerFactory, HubConnection hubConnection, Activity? activity)
+            : base(cancellationToken, resultType, invocationId, loggerFactory.CreateLogger(typeof(Streaming)), hubConnection, activity)
         {
         }
 
@@ -82,7 +93,15 @@ internal abstract partial class InvocationRequest : IDisposable
             if (completionMessage.Result != null)
             {
                 Log.ReceivedUnexpectedComplete(Logger, InvocationId);
+
+                if (TryBeginStopActivity())
+                {
+                    Activity.SetStatus(ActivityStatusCode.Error);
+                    Activity.Stop();
+                }
+
                 _channel.Writer.TryComplete(new InvalidOperationException("Server provided a result in a completion response to a streamed invocation."));
+                return;
             }
 
             if (!string.IsNullOrEmpty(completionMessage.Error))
@@ -91,12 +110,25 @@ internal abstract partial class InvocationRequest : IDisposable
                 return;
             }
 
+            if (TryBeginStopActivity())
+            {
+                Activity.Stop();
+            }
+
             _channel.Writer.TryComplete();
         }
 
         public override void Fail(Exception exception)
         {
             Log.InvocationFailed(Logger, InvocationId);
+
+            if (TryBeginStopActivity())
+            {
+                Activity.SetStatus(ActivityStatusCode.Error);
+                Activity.SetTag("error.type", exception.GetType().FullName);
+                Activity.Stop();
+            }
+
             _channel.Writer.TryComplete(exception);
         }
 
@@ -121,6 +153,13 @@ internal abstract partial class InvocationRequest : IDisposable
 
         protected override void Cancel()
         {
+            if (TryBeginStopActivity())
+            {
+                Activity.SetStatus(ActivityStatusCode.Error);
+                Activity.SetTag("error.type", typeof(OperationCanceledException).FullName);
+                Activity.Stop();
+            }
+
             _channel.Writer.TryComplete(new OperationCanceledException());
         }
     }
@@ -129,8 +168,8 @@ internal abstract partial class InvocationRequest : IDisposable
     {
         private readonly TaskCompletionSource<object?> _completionSource = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public NonStreaming(CancellationToken cancellationToken, Type resultType, string invocationId, ILoggerFactory loggerFactory, HubConnection hubConnection)
-            : base(cancellationToken, resultType, invocationId, loggerFactory.CreateLogger(typeof(NonStreaming)), hubConnection)
+        public NonStreaming(CancellationToken cancellationToken, Type resultType, string invocationId, ILoggerFactory loggerFactory, HubConnection hubConnection, Activity? activity)
+            : base(cancellationToken, resultType, invocationId, loggerFactory.CreateLogger(typeof(NonStreaming)), hubConnection, activity)
         {
         }
 
@@ -145,12 +184,26 @@ internal abstract partial class InvocationRequest : IDisposable
             }
 
             Log.InvocationCompleted(Logger, InvocationId);
+
+            if (TryBeginStopActivity())
+            {
+                Activity.Stop();
+            }
+
             _completionSource.TrySetResult(completionMessage.Result);
         }
 
         public override void Fail(Exception exception)
         {
             Log.InvocationFailed(Logger, InvocationId);
+
+            if (TryBeginStopActivity())
+            {
+                Activity.SetStatus(ActivityStatusCode.Error);
+                Activity.SetTag("error.type", exception.GetType().FullName);
+                Activity.Stop();
+            }
+
             _completionSource.TrySetException(exception);
         }
 
@@ -165,6 +218,13 @@ internal abstract partial class InvocationRequest : IDisposable
 
         protected override void Cancel()
         {
+            if (TryBeginStopActivity())
+            {
+                Activity.SetStatus(ActivityStatusCode.Error);
+                Activity.SetTag("error.type", typeof(OperationCanceledException).FullName);
+                Activity.Stop();
+            }
+
             _completionSource.TrySetCanceled();
         }
     }

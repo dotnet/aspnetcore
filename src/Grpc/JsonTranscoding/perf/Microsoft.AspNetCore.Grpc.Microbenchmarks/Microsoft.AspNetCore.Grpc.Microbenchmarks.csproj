@@ -6,6 +6,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TieredCompilation>false</TieredCompilation>
     <DefineConstants>$(DefineConstants);IS_BENCHMARKS</DefineConstants>
+    <SkipMicrobenchmarksValidation>true</SkipMicrobenchmarksValidation>
   </PropertyGroup>
 
   <ItemGroup>

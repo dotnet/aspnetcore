@@ -23,11 +23,7 @@ public class SkipStatusCodePagesAttribute : Attribute, IResourceFilter, ISkipSta
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        var statusCodeFeature = context.HttpContext.Features.Get<IStatusCodePagesFeature>();
-        if (statusCodeFeature != null)
-        {
-            // Turn off the StatusCodePages feature.
-            statusCodeFeature.Enabled = false;
-        }
+        // Turn off the StatusCodePages feature.
+        context.HttpContext.Features.Get<IStatusCodePagesFeature>()?.Enabled = false;
     }
 }

@@ -4,7 +4,7 @@ We maintain several on-going releases at once and produce patches for them. An e
 
 See the [.NET Core release lifecycle](https://dotnet.microsoft.com/platform/support/policy/dotnet-core#lifecycle) for more details on the currently-supported .NET releases.
 
-The status of current servicing fixes can be found on the [Servicing Status](https://github.com/dotnet/aspnetcore/projects/11) GitHub project.
+The status of current servicing fixes can be found on the [Servicing Status](https://github.com/orgs/dotnet/projects/448) GitHub project.
 
 ## Servicing Bar
 

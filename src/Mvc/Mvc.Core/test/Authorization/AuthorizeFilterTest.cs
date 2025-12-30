@@ -448,7 +448,7 @@ public class AuthorizeFilterTest
         Assert.Same(authorizeFilter, result);
     }
 
-    public static TheoryData AuthorizeFiltersCreatedWithoutPolicyOrPolicyProvider
+    public static TheoryData<AuthorizeFilter> AuthorizeFiltersCreatedWithoutPolicyOrPolicyProvider
     {
         get
         {

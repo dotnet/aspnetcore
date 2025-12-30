@@ -20,17 +20,18 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 {
     public static readonly DefaultWebAssemblyJSRuntime Instance = new();
 
-    private readonly RootComponentTypeCache _rootComponentCache = new();
+    private readonly RootTypeCache _rootComponentCache = new();
 
     public ElementReferenceContext ElementReferenceContext { get; }
 
-    public event Action<RootComponentOperationBatch>? OnUpdateRootComponents;
+    public event Action<RootComponentOperationBatch, string>? OnUpdateRootComponents;
 
     [DynamicDependency(nameof(InvokeDotNet))]
     [DynamicDependency(nameof(EndInvokeJS))]
     [DynamicDependency(nameof(BeginInvokeDotNet))]
     [DynamicDependency(nameof(ReceiveByteArrayFromJS))]
     [DynamicDependency(nameof(UpdateRootComponentsCore))]
+    [DynamicDependency(JsonSerialized, typeof(KeyValuePair<,>))]
     private DefaultWebAssemblyJSRuntime()
     {
         ElementReferenceContext = new WebElementReferenceContext(this);
@@ -94,12 +95,12 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 
     [SupportedOSPlatform("browser")]
     [JSExport]
-    public static void UpdateRootComponentsCore(string operationsJson)
+    public static void UpdateRootComponentsCore(string operationsJson, string appState)
     {
         try
         {
             var operations = DeserializeOperations(operationsJson);
-            Instance.OnUpdateRootComponents?.Invoke(operations);
+            Instance.OnUpdateRootComponents?.Invoke(operations, appState);
         }
         catch (Exception ex)
         {
@@ -130,7 +131,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
                 throw new InvalidOperationException($"The component operation of type '{operation.Type}' requires a '{nameof(operation.Marker)}' to be specified.");
             }
 
-            var componentType = Instance._rootComponentCache.GetRootComponent(operation.Marker!.Value.Assembly!, operation.Marker.Value.TypeName!)
+            var componentType = Instance._rootComponentCache.GetRootType(operation.Marker!.Value.Assembly!, operation.Marker.Value.TypeName!)
                 ?? throw new InvalidOperationException($"Root component type '{operation.Marker.Value.TypeName}' could not be found in the assembly '{operation.Marker.Value.Assembly}'.");
             var parameters = DeserializeComponentParameters(operation.Marker.Value);
             operation.Descriptor = new(componentType, parameters);
@@ -168,4 +169,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 
     string IInternalWebJSInProcessRuntime.InvokeJS(string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
         => InvokeJS(identifier, argsJson, resultType, targetInstanceId);
+
+    string IInternalWebJSInProcessRuntime.InvokeJS(in JSInvocationInfo invocationInfo)
+        => InvokeJS(invocationInfo);
 }

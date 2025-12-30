@@ -15,6 +15,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
+/// <remarks>
+/// Instantiated by <see cref="HttpConnectionMiddleware{TContext}"/> when a connection is received.
+/// <para/>
+/// Not related, type-wise, to <see cref="Http1Connection{TContext}"/>, <see cref="Http2Connection"/>,
+/// or <see cref="Http3Connection"/>. It does, however, instantiate one of those types as its
+/// <see cref="_requestProcessor"/> based on the protocol.
+/// </remarks>
 internal sealed class HttpConnection : ITimeoutHandler
 {
     private static ReadOnlySpan<byte> Http2Id => "h2"u8;
@@ -23,7 +30,7 @@ internal sealed class HttpConnection : ITimeoutHandler
     private readonly TimeProvider _timeProvider;
     private readonly TimeoutControl _timeoutControl;
 
-    private readonly object _protocolSelectionLock = new object();
+    private readonly Lock _protocolSelectionLock = new();
     private ProtocolSelectionState _protocolSelectionState = ProtocolSelectionState.Initializing;
     private Http1Connection? _http1Connection;
 
@@ -45,8 +52,12 @@ internal sealed class HttpConnection : ITimeoutHandler
 
     public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> httpApplication) where TContext : notnull
     {
+        IConnectionMetricsTagsFeature? connectionMetricsTagsFeature = null;
+
         try
         {
+            connectionMetricsTagsFeature = _context.ConnectionFeatures.Get<IConnectionMetricsTagsFeature>();
+
             // Ensure TimeoutControl._lastTimestamp is initialized before anything that could set timeouts runs.
             _timeoutControl.Initialize();
 
@@ -100,7 +111,7 @@ internal sealed class HttpConnection : ITimeoutHandler
                 connectionHeartbeatFeature?.OnHeartbeat(state => ((HttpConnection)state).Tick(), this);
 
                 // Register for graceful shutdown of the server
-                using var shutdownRegistration = connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((HttpConnection)state!).StopProcessingNextRequest(), this);
+                using var shutdownRegistration = connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((HttpConnection)state!).StopProcessingNextRequest(ConnectionEndReason.GracefulAppShutdown), this);
 
                 // Register for connection close
                 using var closedRegistration = _context.ConnectionContext.ConnectionClosed.Register(state => ((HttpConnection)state!).OnConnectionClosed(), this);
@@ -111,6 +122,14 @@ internal sealed class HttpConnection : ITimeoutHandler
         catch (Exception ex)
         {
             Log.LogCritical(0, ex, $"Unexpected exception in {nameof(HttpConnection)}.{nameof(ProcessRequestsAsync)}.");
+        }
+        finally
+        {
+            // Before exiting HTTP layer, set the end reason on the context as a connection metrics tag.
+            if (_context.MetricsContext.ConnectionEndReason is { } connectionEndReason)
+            {
+                KestrelMetrics.AddConnectionEndReason(connectionMetricsTagsFeature, connectionEndReason);
+            }
         }
     }
 
@@ -131,7 +150,7 @@ internal sealed class HttpConnection : ITimeoutHandler
         _protocolSelectionState = ProtocolSelectionState.Selected;
     }
 
-    private void StopProcessingNextRequest()
+    private void StopProcessingNextRequest(ConnectionEndReason reason)
     {
         ProtocolSelectionState previousState;
         lock (_protocolSelectionLock)
@@ -143,7 +162,7 @@ internal sealed class HttpConnection : ITimeoutHandler
         switch (previousState)
         {
             case ProtocolSelectionState.Selected:
-                _requestProcessor!.StopProcessingNextRequest();
+                _requestProcessor!.StopProcessingNextRequest(reason);
                 break;
             case ProtocolSelectionState.Aborted:
                 break;
@@ -169,7 +188,7 @@ internal sealed class HttpConnection : ITimeoutHandler
         }
     }
 
-    private void Abort(ConnectionAbortedException ex)
+    private void Abort(ConnectionAbortedException ex, ConnectionEndReason reason)
     {
         ProtocolSelectionState previousState;
 
@@ -184,7 +203,7 @@ internal sealed class HttpConnection : ITimeoutHandler
         switch (previousState)
         {
             case ProtocolSelectionState.Selected:
-                _requestProcessor!.Abort(ex);
+                _requestProcessor!.Abort(ex, reason);
                 break;
             case ProtocolSelectionState.Aborted:
                 break;
@@ -259,7 +278,7 @@ internal sealed class HttpConnection : ITimeoutHandler
         switch (reason)
         {
             case TimeoutReason.KeepAlive:
-                _requestProcessor!.StopProcessingNextRequest();
+                _requestProcessor!.StopProcessingNextRequest(ConnectionEndReason.KeepAliveTimeout);
                 break;
             case TimeoutReason.RequestHeaders:
                 _requestProcessor!.HandleRequestHeadersTimeout();
@@ -269,11 +288,11 @@ internal sealed class HttpConnection : ITimeoutHandler
                 break;
             case TimeoutReason.WriteDataRate:
                 Log.ResponseMinimumDataRateNotSatisfied(_context.ConnectionId, _http1Connection?.TraceIdentifier);
-                Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied));
+                Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied), ConnectionEndReason.MinResponseDataRate);
                 break;
             case TimeoutReason.RequestBodyDrain:
             case TimeoutReason.TimeoutFeature:
-                Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedOutByServer));
+                Abort(new ConnectionAbortedException(CoreStrings.ConnectionTimedOutByServer), ConnectionEndReason.ServerTimeout);
                 break;
             default:
                 Debug.Assert(false, "Invalid TimeoutReason");

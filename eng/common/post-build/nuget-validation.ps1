@@ -2,20 +2,18 @@
 # tool: https://github.com/NuGet/NuGetGallery/tree/jver-verify/src/VerifyMicrosoftPackage
 
 param(
-  [Parameter(Mandatory=$true)][string] $PackagesPath,           # Path to where the packages to be validated are
-  [Parameter(Mandatory=$true)][string] $ToolDestinationPath     # Where the validation tool should be downloaded to
+  [Parameter(Mandatory=$true)][string] $PackagesPath # Path to where the packages to be validated are
 )
 
+# `tools.ps1` checks $ci to perform some actions. Since the post-build
+# scripts don't necessarily execute in the same agent that run the
+# build.ps1/sh script this variable isn't automatically set.
+$ci = $true
+$disableConfigureToolsetImport = $true
+. $PSScriptRoot\..\tools.ps1
+
 try {
-  . $PSScriptRoot\post-build-utils.ps1
-
-  $url = 'https://raw.githubusercontent.com/NuGet/NuGetGallery/3e25ad135146676bcab0050a516939d9958bfa5d/src/VerifyMicrosoftPackage/verify.ps1'
-
-  New-Item -ItemType 'directory' -Path ${ToolDestinationPath} -Force
-
-  Invoke-WebRequest $url -OutFile ${ToolDestinationPath}\verify.ps1 
-
-  & ${ToolDestinationPath}\verify.ps1 ${PackagesPath}\*.nupkg
+  & $PSScriptRoot\nuget-verification.ps1 ${PackagesPath}\*.nupkg
 } 
 catch {
   Write-Host $_.ScriptStackTrace

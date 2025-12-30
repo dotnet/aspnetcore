@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http;
 
@@ -131,10 +132,69 @@ public class UseMiddlewareTest
     }
 
     [Fact]
+    public async Task UseMiddleware_ThrowsIfKeyedArgCantBeResolvedFromContainer()
+    {
+        var builder = new ApplicationBuilder(new DummyKeyedServiceProvider());
+        builder.UseMiddleware(typeof(MiddlewareKeyedInjectInvoke));
+        var app = builder.Build();
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => app(new DefaultHttpContext()));
+        Assert.Equal(
+            Resources.FormatException_InvokeMiddlewareNoService(
+                typeof(IKeyedServiceProvider),
+                typeof(MiddlewareKeyedInjectInvoke)),
+            exception.Message);
+    }
+
+    [Fact]
+    public void UseMiddleware_ThrowsIfKeyedConstructorArgCantBeResolvedFromContainer()
+    {
+        var builder = new ApplicationBuilder(new DummyKeyedServiceProvider());
+        builder.UseMiddleware(typeof(MiddlewareKeyedConstructorInjectInvoke));
+        var exception = Assert.Throws<InvalidOperationException>(builder.Build);
+        Assert.Equal(
+            $"Unable to resolve service for type '{typeof(IKeyedServiceProvider)}' while attempting to activate '{typeof(MiddlewareKeyedConstructorInjectInvoke)}'.",
+            exception.Message);
+    }
+
+    [Fact]
+    public async Task UseMiddleware_ThrowsIfServiceProviderIsNotAIKeyedServiceProvider()
+    {
+        var builder = new ApplicationBuilder(new DummyServiceProvider());
+        builder.UseMiddleware(typeof(MiddlewareKeyedInjectInvoke));
+        var app = builder.Build();
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => app(new DefaultHttpContext()));
+        Assert.Equal(
+            Resources.Exception_KeyedServicesNotSupported,
+            exception.Message);
+    }
+
+    [Fact]
     public void UseMiddlewareWithInvokeArg()
     {
         var builder = new ApplicationBuilder(new DummyServiceProvider());
         builder.UseMiddleware(typeof(MiddlewareInjectInvoke));
+        var app = builder.Build();
+        app(new DefaultHttpContext());
+    }
+
+    [Fact]
+    public void UseMiddlewareWithInvokeKeyedArg()
+    {
+        var keyedServiceProvider = new DummyKeyedServiceProvider();
+        keyedServiceProvider.AddKeyedService("test", typeof(DummyKeyedServiceProvider), keyedServiceProvider);
+        var builder = new ApplicationBuilder(keyedServiceProvider);
+        builder.UseMiddleware(typeof(MiddlewareKeyedInjectInvoke));
+        var app = builder.Build();
+        app(new DefaultHttpContext());
+    }
+
+    [Fact]
+    public void UseMiddlewareWithConstructorKeyedArg()
+    {
+        var keyedServiceProvider = new DummyKeyedServiceProvider();
+        keyedServiceProvider.AddKeyedService("test", typeof(DummyKeyedServiceProvider), keyedServiceProvider);
+        var builder = new ApplicationBuilder(keyedServiceProvider);
+        builder.UseMiddleware(typeof(MiddlewareKeyedConstructorInjectInvoke));
         var app = builder.Build();
         app(new DefaultHttpContext());
     }
@@ -274,6 +334,54 @@ public class UseMiddlewareTest
         }
     }
 
+    private class DummyKeyedServiceProvider : IKeyedServiceProvider
+    {
+        private readonly Dictionary<object, Tuple<Type, object>> _services = new Dictionary<object, Tuple<Type, object>>();
+
+        public DummyKeyedServiceProvider()
+        {
+                
+        }
+
+        public void AddKeyedService(object key, Type type, object value) => _services[key] = new Tuple<Type, object>(type, value);
+
+        public object? GetKeyedService(Type serviceType, object? serviceKey)
+        {
+            if (_services.TryGetValue(serviceKey!, out var value))
+            {
+                return value.Item2;
+            }
+
+            return null;
+        }
+
+        public object GetRequiredKeyedService(Type serviceType, object? serviceKey)
+        {
+            var service = GetKeyedService(serviceType, serviceKey);
+
+            if (service == null)
+            {
+                throw new InvalidOperationException($"No service for type '{serviceType}' has been registered.");
+            }
+
+            return service;
+        }
+
+        public object? GetService(Type serviceType)
+        {
+            if (serviceType == typeof(IServiceProvider))
+            {
+                return this;
+            }
+
+            if (_services.TryGetValue(serviceType, out var value))
+            {
+                return value;
+            }
+            return null;
+        }
+    }
+
     public class MiddlewareInjectWithOutAndRefParams
     {
         public MiddlewareInjectWithOutAndRefParams(RequestDelegate next) { }
@@ -298,6 +406,20 @@ public class UseMiddlewareTest
         public MiddlewareInjectInvoke(RequestDelegate next) { }
 
         public Task Invoke(HttpContext context, IServiceProvider provider) => Task.CompletedTask;
+    }
+
+    private class MiddlewareKeyedInjectInvoke
+    {
+        public MiddlewareKeyedInjectInvoke(RequestDelegate next) { }
+
+        public Task Invoke(HttpContext context, [FromKeyedServices("test")] IKeyedServiceProvider provider) => Task.CompletedTask;
+    }
+
+    private class MiddlewareKeyedConstructorInjectInvoke
+    {
+        public MiddlewareKeyedConstructorInjectInvoke(RequestDelegate next, [FromKeyedServices("test")] IKeyedServiceProvider provider) { }
+
+        public Task Invoke(HttpContext context) => Task.CompletedTask;
     }
 
     private class MiddlewareNoParametersStub

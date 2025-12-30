@@ -17,7 +17,6 @@
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
 
-    <Compile Include="..\..\..\Hybrid\src\Internal\RecyclableArrayBufferWriter.cs" LinkBase="Microsoft.Extensions.Caching.Hybrid" />
     <!--<Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />-->
 
     <Compile Include="$(SharedSourceRoot)IsExternalInit.cs" LinkBase="Shared" />

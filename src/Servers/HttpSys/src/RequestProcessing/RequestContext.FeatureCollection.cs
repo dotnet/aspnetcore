@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Net;
+using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
@@ -36,6 +37,7 @@ internal partial class RequestContext :
     IHttpResponseTrailersFeature,
     IHttpResetFeature,
     IHttpSysRequestDelegationFeature,
+    IHttpSysRequestPropertyFeature,
     IConnectionLifetimeNotificationFeature
 {
     private IFeatureCollection? _features;
@@ -64,6 +66,7 @@ internal partial class RequestContext :
     private bool _bodyCompleted;
     private IHeaderDictionary _responseHeaders = default!;
     private IHeaderDictionary? _responseTrailers;
+    private ulong? _requestId;
 
     private Fields _initializedFields;
 
@@ -98,11 +101,26 @@ internal partial class RequestContext :
         TraceIdentifier = 0x200,
     }
 
-    protected internal void InitializeFeatures()
+    protected internal bool InitializeFeatures()
     {
         _initialized = true;
 
-        Request = new Request(this);
+        // Get the ID before creating the Request object as the Request ctor releases the native memory
+        // We want the ID in case request processing fails and we need the ID to cancel the native request
+        _requestId = RequestId;
+        try
+        {
+            Request = new Request(this);
+        }
+        catch (Exception ex)
+        {
+            Log.RequestParsingError(Logger, ex);
+            // Synchronously calls Http.Sys and tells it to send an http response
+            // No one has written to the response yet (haven't even created the response object below)
+            Server.SendError(_requestId.Value, StatusCodes.Status400BadRequest, authChallenges: null);
+            return false;
+        }
+
         Response = new Response(this);
 
         _features = new FeatureCollection(new StandardFeatureCollection(this));
@@ -124,6 +142,7 @@ internal partial class RequestContext :
 
         _responseStream = new ResponseStream(Response.Body, OnResponseStart);
         _responseHeaders = Response.Headers;
+        return true;
     }
 
     private bool IsNotInitialized(Fields field)
@@ -575,6 +594,9 @@ internal partial class RequestContext :
 
     SslProtocols ITlsHandshakeFeature.Protocol => Request.Protocol;
 
+    TlsCipherSuite? ITlsHandshakeFeature.NegotiatedCipherSuite => Request.NegotiatedCipherSuite;
+
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
     CipherAlgorithmType ITlsHandshakeFeature.CipherAlgorithm => Request.CipherAlgorithm;
 
     int ITlsHandshakeFeature.CipherStrength => Request.CipherStrength;
@@ -586,6 +608,7 @@ internal partial class RequestContext :
     ExchangeAlgorithmType ITlsHandshakeFeature.KeyExchangeAlgorithm => Request.KeyExchangeAlgorithm;
 
     int ITlsHandshakeFeature.KeyExchangeStrength => Request.KeyExchangeStrength;
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
 
     string ITlsHandshakeFeature.HostName => Request.SniHostName;
 
@@ -733,5 +756,10 @@ internal partial class RequestContext :
         {
             Response.Headers[HeaderNames.Connection] = "close";
         }
+    }
+
+    public bool TryGetTlsClientHello(Span<byte> tlsClientHelloBytesDestination, out int bytesReturned)
+    {
+        return TryGetTlsClientHelloMessageBytes(tlsClientHelloBytesDestination, out bytesReturned);
     }
 }

@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:latest AS build
 
 ENV StressRunDuration=0
 ARG DEBIAN_FRONTEND=noninteractive
@@ -25,11 +25,11 @@ RUN git init \
 
 RUN ./restore.sh
 RUN npm run build
-RUN .dotnet/dotnet publish -c Release --no-restore -o /app ./src/Components/benchmarkapps/Wasm.Performance/Driver/Wasm.Performance.Driver.csproj
+RUN .dotnet/dotnet publish -c Release -r linux-x64 --sc true -o /app ./src/Components/benchmarkapps/Wasm.Performance/Driver/Wasm.Performance.Driver.csproj -p:BlazorFingerprintBlazorJs=false
 RUN chmod +x /app/Wasm.Performance.Driver
 
 WORKDIR /app
-FROM selenium/standalone-chrome:124.0 as final
+FROM mcr.microsoft.com/playwright/dotnet:v1.56.0-jammy-amd64 AS final
 COPY --from=build ./app ./
 COPY ./exec.sh ./
 

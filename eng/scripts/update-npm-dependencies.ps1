@@ -1,11 +1,13 @@
+# This script needs to be run on PowerShell 7+ (for ConvertFrom-Json) on Windows (for vsts-npm-auth).
+# The GitHub CLI (gh) is required unless `-SkipPullRequestCreation` is passed.
+
 param (
     [switch]$WhatIf,
-    [switch]$SkipPullRequestCreation
+    [switch]$SkipPullRequestCreation,
+    [switch]$SkipClearCache
 )
 
 $ErrorActionPreference = "Stop"
-
-$env:npm_config_cache = "$PWD/src/submodules/Node-Externals/cache"
 
 Write-Host "Ensuring the repository is clean"
 if (-not $WhatIf) {
@@ -17,11 +19,30 @@ if (-not $WhatIf) {
     Remove-Item .\package-lock.json
 }
 
+try {
+    Get-Command vsts-npm-auth -CommandType ExternalScript
+    Write-Host "vsts-npm-auth is already installed"
+}
+catch {
+    Write-Host "Installing vsts-npm-auth"
+    if (-not $WhatIf) {
+        npm install -g vsts-npm-auth
+    }
+}
+
+Write-Host "Provisioning a token for the NPM registry. You might be prompted to authenticate."
+if (-not $WhatIf) {
+    # This command provisions a PAT token for the VSTS NPM registry that lasts for 15 minutes, which is more than enough time to run npm install
+    # and ensure any missing package is mirrored.
+    vsts-npm-auth -E 15 -F -C .\.npmrc
+}
+
 Write-Host "Running npm install"
 if (-not $WhatIf) {
     npm install --prefer-online --include optional
 }
 
+# Add optional dependencies to the cache to ensure that they get mirrored
 Write-Host "Adding optional dependencies to the cache"
 $rollupOptionalDependencies = (Get-Content .\package-lock.json | ConvertFrom-Json -AsHashtable).packages['node_modules/rollup'].optionalDependencies |
 Select-Object '@rollup/rollup-*';
@@ -48,48 +69,18 @@ if ($null -ne $commonOptionalDependencyVersion) {
     }
 }
 
-Write-Host "Verifying the cache"
-if(-not $WhatIf) {
-    npm cache verify
-}
-
-# Navigate to the Node-Externals submodule
-# Checkout a branch named infrastructure/update-npm-package-cache-<date>
-# Stage the changes in the folder
-# Commit the changes with the message "Updated npm package cache <date>"
-# Use the GH CLI to create a PR for the branch in the origin remote
-
-Push-Location src/submodules/Node-Externals
-$branchName = "infrastructure/update-npm-package-cache-$(Get-Date -Format 'yyyy-MM-dd')"
-if (-not $WhatIf) {
-    git branch -D $branchName 2>$null
-    git checkout -b $branchName
-    git add .
-    git commit -m "Updated npm package cache $(Get-Date -Format 'yyyy-MM-dd')"
-}
-
-if ($WhatIf -or $SkipPullRequestCreation) {
-    Write-Host "Skipping pull request creation for Node-Externals submodule"
-}
-else {
-    Write-Host "Creating pull request for Node-Externals submodule"
-    git branch --set-upstream-to=origin/main
-    git push origin $branchName`:$branchName --force;
-    gh repo set-default dotnet/Node-Externals
-    gh pr create --base main --head "infrastructure/update-npm-package-cache-$(Get-Date -Format 'yyyy-MM-dd')" --title "[Infrastructure] Updated npm package cache $(Get-Date -Format 'yyyy-MM-dd')" --body ""
-}
 
 ## Navigate to the root of the repository
-## Checkout a branch named infrastructure/update-npm-package-cache-<date>
+## Checkout a branch named infrastructure/update-npm-packages-<date>
 ## Stage the changes in the folder
-## Commit the changes with the message "Updated npm package cache <date>"
+## Commit the changes with the message "Updated npm packages <date>"
 ## Use the GH CLI to create a PR for the branch in the origin remote
-Pop-Location
 if(-not $WhatIf) {
+    $branchName = "infrastructure/update-npm-packages-$(Get-Date -Format 'yyyy-MM-dd')"
     git branch -D $branchName 2>$null
     git checkout -b $branchName
     git add .
-    git commit -m "Updated npm package cache $(Get-Date -Format 'yyyy-MM-dd')"
+    git commit -m "Updated npm packages $(Get-Date -Format 'yyyy-MM-dd')"
 }
 
 if ($WhatIf -or $SkipPullRequestCreation) {
@@ -100,5 +91,5 @@ else {
     git branch --set-upstream-to=origin/main
     git push origin $branchName`:$branchName --force;
     gh repo set-default dotnet/aspnetcore
-    gh pr create --base main --head $branchName --title "[Infrastructure] Updated npm package cache $(Get-Date -Format 'yyyy-MM-dd')" --body ""
+    gh pr create --base main --head $branchName --title "[Infrastructure] Updated npm packages $(Get-Date -Format 'yyyy-MM-dd')" --body ""
 }

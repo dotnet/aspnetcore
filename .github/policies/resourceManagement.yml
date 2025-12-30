@@ -1,10 +1,11 @@
-id: 
+# Policybot docs live at https://eng.ms/docs/more/github-inside-microsoft/policies/resource-management
+id:
 name: GitOps.PullRequestIssueManagement
 description: GitOps.PullRequestIssueManagement primitive
-owner: 
+owner:
 resource: repository
 disabled: false
-where: 
+where:
 configuration:
   resourceManagementConfiguration:
     scheduledSearches:
@@ -167,6 +168,45 @@ configuration:
             To make sure no conflicting changes have occurred, please rerun validation before merging. You can do this by leaving an `/azp run` comment here (requires commit rights), or by simply closing and reopening.
       - addLabel:
           label: pending-ci-rerun
+    - description: '[Idle Issue Management] Tag aspnet-build on dependency PRs (non-weekend)'
+      frequencies:
+      - weekday:
+          day: Tuesday
+          time: 0:0
+      - weekday:
+          day: Wednesday
+          time: 0:0
+      - weekday:
+          day: Thursday
+          time: 0:0
+      - weekday:
+          day: Friday
+          time: 0:0
+      filters:
+      - isPullRequest
+      - isOpen
+      - hasLabel:
+          label: 'build-ops'
+      - noActivitySince:
+          days: 1
+      actions:
+      - addReply:
+          reply: This dependency PR has had no activity for a full business day - @dotnet/aspnet-build please take a look if you are on build-ops.
+    - description: '[Idle Issue Management] Tag aspnet-build on dependency PRs (weekend)'
+      frequencies:
+      - weekday:
+          day: Monday
+          time: 0:0
+      filters:
+      - isPullRequest
+      - isOpen
+      - hasLabel:
+          label: 'build-ops'
+      - noActivitySince:
+          days: 3
+      actions:
+      - addReply:
+          reply: This dependency PR has had no activity for a full business day - @dotnet/aspnet-build please take a look if you are on build-ops.
     eventResponderTasks:
     - if:
       - payloadType: Issue_Comment
@@ -231,9 +271,13 @@ configuration:
       - isActivitySender:
           user: dotnet-maestro[bot]
           issueAuthor: False
-      - titleContains:
-          pattern: Update dependencies
-          isRegex: False
+      - or:
+        - titleContains:
+            pattern: Update dependencies
+            isRegex: False
+        - titleContains:
+            pattern: Source code updates
+            isRegex: False
       then:
       - addLabel:
           label: area-infrastructure
@@ -247,16 +291,40 @@ configuration:
       - isAction:
           action: Opened
       - isActivitySender:
+          user: dotnet-maestro[bot]
+          issueAuthor: False
+      - targetsBranch:
+          branch: main
+      - or:
+        - titleContains:
+            pattern: Update dependencies
+            isRegex: False
+        - titleContains:
+            pattern: Source code updates
+            isRegex: False
+      then:
+      - addLabel:
+          label: 'build-ops'
+      description: '[Infrastructure PRs] Add build-ops label to dependency update Pull Requests against main'
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Opened
+      - isActivitySender:
           user: dotnet-maestro-bot
           issueAuthor: False
       - titleContains:
           pattern: Merge branch
           isRegex: False
+      - targetsBranch:
+          branch: main
       then:
       - addLabel:
           label: area-infrastructure
       - addLabel:
           label: 'Type: Merge Forward :fast_forward:'
+      - addLabel:
+          label: 'build-ops'
       - approvePullRequest:
           comment: Auto-approving branch merge.
       description: '[Infrastructure PRs] Add area-infrastructure label to auto-merge Pull Requests'
@@ -279,140 +347,15 @@ configuration:
       - payloadType: Pull_Request
       - isAction:
           action: Opened
-      - or:
-        - includesModifiedFiles:
-            files:
-            - src/Shared/Runtime
+      - includesModifiedFiles:
+          files:
+          - src/Shared/Runtime
       then:
       - addReply:
-          reply: Greetings human! You've submitted a PR that modifies code that is shared with https://github.com/dotnet/runtime . Please make sure you synchronize this code with the changes in that repo!
+          reply: Greetings! You've submitted a PR that modifies code that is shared with https://github.com/dotnet/runtime . Please make sure you synchronize this code with the changes in that repo!
       - addLabel:
           label: 'Attention: Shared Code Modified'
       description: '[Shared Code PRs] Flag PRs that affect shared code src/Shared/Runtime'
-    - if:
-      - payloadType: Pull_Request
-      then:
-      - if:
-        - includesModifiedFiles:
-            files:
-            - src/Components/
-            - src/ProjectTemplates/BlazorWasm.ProjectTemplates/
-        then:
-        - addLabel:
-            label: area-blazor
-      - if:
-        - includesModifiedFiles:
-            files:
-            - src/Tools/
-        then:
-        - addLabel:
-            label: area-commandlinetools
-      - if:
-        - includesModifiedFiles:
-            files:
-            - src/DataProtection/
-        then:
-        - addLabel:
-            label: area-dataprotection
-      - if:
-        - includesModifiedFiles:
-            files:
-            - src/Identity/
-        then:
-        - addLabel:
-            label: area-identity
-      - if:
-        - includesModifiedFiles:
-            files:
-            - global.json
-            - .azure
-            - .config
-            - .github
-            - eng
-            - src/Framework/
-            - src/Installers/
-        then:
-        - addLabel:
-            label: area-infrastructure
-      - if:
-        - includesModifiedFiles:
-            files:
-            - src/ProjectTemplates/
-            - src/Razor/
-            - src/Mvc/Mvc.Localization/
-            - src/Mvc/Mvc.DataAnnotations/
-            - src/Mvc/Mvc.Razor.RuntimeCompilation/
-            - src/Mvc/Mvc.Razor/
-            - src/Mvc/Mvc.RazorPages/
-            - src/Mvc/Mvc.TagHelpers/
-            - src/Mvc/Mvc.ViewFeatures/
-        then:
-        - addLabel:
-            label: area-mvc
-      - if:
-        - includesModifiedFiles:
-            files:
-            - src/Security/
-            - src/Azure/AzureAD/
-        then:
-        - addLabel:
-            label: area-security
-      - if:
-        - includesModifiedFiles:
-            files:
-            - src/Servers/
-            - src/Http/
-            - src/Azure/AzureAppServicesIntegration/
-            - src/Azure/AzureAppServices.HostingStartup/
-            - src/Middleware/
-            - src/HttpClientFactory/
-            - src/SiteExtensions/
-        then:
-        - addLabel:
-            label: area-networking
-      - if:
-        - includesModifiedFiles:
-            files:
-            - src/SignalR/
-        then:
-        - addLabel:
-            label: area-signalr
-      - if:
-        - includesModifiedFiles:
-            files:
-            - src/Grpc/
-        then:
-        - addLabel:
-            label: area-grpc
-      - if:
-        - includesModifiedFiles:
-            files:
-            - src/Mvc/Mvc.Abstractions/
-            - src/Mvc/Mvc.Analyzers/
-            - src/Mvc/Mvc.Api.Analyzers/
-            - src/Mvc/Mvc.ApiExplorer/
-            - src/Mvc/Mvc.Core/
-            - src/Mvc/Mvc.Cors/
-            - src/Mvc/Mvc.Formatters.Json/
-            - src/Mvc/Mvc.Formatters.Xml/
-            - src/Mvc/Mvc.NewtonsoftJson/
-            - src/Mvc/Mvc.Testing.Tasks/src/
-            - src/Mvc/Mvc.Testing/
-            - src/Mvc/Mvc/
-            - src/OpenApi/
-            - src/Mvc/perf/
-        then:
-        - addLabel:
-            label: area-mvc
-      - if:
-        - includesModifiedFiles:
-            files:
-            - src/DefaultBuilder/
-            - src/Hosting/
-        then:
-        - addLabel:
-            label: area-hosting
-      description: '[PR Labelling] Apply `area-` labels to PRs'
     - if:
       - payloadType: Pull_Request
       - labelAdded:
@@ -497,19 +440,8 @@ configuration:
           branch: main
       then:
       - addMilestone:
-          milestone: 9.0-preview5
+          milestone: 11.0-preview1
       description: '[Milestone Assignments] Assign Milestone to PRs merged to the `main` branch'
-    - if:
-      - payloadType: Pull_Request
-      - isAction:
-          action: Closed
-      - targetsBranch:
-          branch: release/9.0-preview4
-      then:
-      - removeMilestone
-      - addMilestone:
-          milestone: 9.0-preview4
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0-preview4 branch'
     - if:
       - payloadType: Issues
       - isAction:
@@ -527,7 +459,7 @@ configuration:
 
             Because there are different components involved in providing debugging experience, we've put together a small troubleshooting guide that you can follow, to help us better understand where to direct this issue to, to get a faster resolution.
 
-            You can find it [here](https://learn.microsoft.com/en-us/aspnet/core/blazor/debug?tabs=visual-studio#troubleshoot).
+            You can find it [here](https://learn.microsoft.com/aspnet/core/blazor/debug?tabs=visual-studio#troubleshoot).
 
             If these troubleshooting docs resolve your problem, please close the issue. Otherwise we'll follow up.
       description: Provide Blazor WASM Debugging Troubleshooting link
@@ -582,6 +514,21 @@ configuration:
       - isAction:
           action: Opened
       - targetsBranch:
+          branch: release/9.0
+      then:
+      - addMilestone:
+          milestone: 9.0.x
+      - addReply:
+          reply: >-
+            Hi @${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.
+
+            Otherwise, please add `tell-mode` label.
+      description: Add release/9.0 targeting PRs to the servicing project
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Opened
+      - targetsBranch:
           branch: release/8.0
       then:
       - addMilestone:
@@ -597,31 +544,35 @@ configuration:
       - isAction:
           action: Opened
       - targetsBranch:
-          branch: release/6.0
+          branch: release/2.3
       then:
       - addMilestone:
-          milestone: 6.0.x
+          milestone: 2.3.x
       - addReply:
           reply: >-
             Hi @${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.
 
             Otherwise, please add `tell-mode` label.
-      description: Add release/6.0 targeting PRs to the servicing project
+      description: Add release/2.3 targeting PRs to the servicing project
     - if:
       - payloadType: Pull_Request
       - isAction:
           action: Opened
       - targetsBranch:
-          branch: release/2.1
+          branch: release/10.0
+      - activitySenderHasPermission:
+          permission: Read
+      - not:
+          isActivitySender:
+            user: dotnet-maestro
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: dotnet-maestro-bot
+            issueAuthor: False
       then:
-      - addMilestone:
-          milestone: 2.1.x
-      - addReply:
-          reply: >-
-            Hi @${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.
-
-            Otherwise, please add `tell-mode` label.
-      description: Add release/2.1 targeting PRs to the servicing project
+      - addLabel:
+          label: servicing-consider
     - if:
       - payloadType: Pull_Request
       - labelAdded:
@@ -666,12 +617,23 @@ configuration:
       - isAction:
           action: Closed
       - targetsBranch:
-          branch: release/6.0
+          branch: release/10.0
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 6.0.31
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/6.0 branch'
+          milestone: 10.0.2
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/10.0 branch'
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Closed
+      - targetsBranch:
+          branch: release/9.0
+      then:
+      - removeMilestone
+      - addMilestone:
+          milestone: 9.0.12
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0 branch'
     - if:
       - payloadType: Pull_Request
       - isAction:
@@ -681,7 +643,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 8.0.6
+          milestone: 8.0.23
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/8.0 branch'
     - if:
       - payloadType: Issues
@@ -761,13 +723,48 @@ configuration:
       - titleContains:
           pattern: Update .NET SDK
           isRegex: False
+      - targetsBranch:
+          branch: main
       then:
       - addLabel:
           label: area-infrastructure
       - addLabel:
           label: 'Type: Dependency Update :arrow_up_small:'
+      - addLabel:
+          label: 'build-ops'
       - approvePullRequest:
           comment: Auto-approving SDK update.
-      description: '[Infrastructure PRs] Add area-infrastructure label to SDK update Pull Requests'
-onFailure: 
-onSuccess: 
+      - enableAutoMerge:
+          mergeMethod: "squash"
+      description: '[Infrastructure PRs] Add area-infrastructure label to SDK update Pull Requests & enable auto-merge'
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Opened
+      - isActivitySender:
+          user: dependabot[bot]
+          issueAuthor: False
+      - targetsBranch:
+          branch: main
+      then:
+      - addLabel:
+          label: area-infrastructure
+      - addLabel:
+          label: 'Type: Dependency Update :arrow_up_small:'
+      - addLabel:
+          label: 'build-ops'
+      - approvePullRequest:
+          comment: Auto-approving dependabot update.
+      - enableAutoMerge:
+          mergeMethod: "squash"
+      description: '[Infrastructure PRs] Add area-infrastructure label to dependabot update Pull Requests & enable auto-merge'
+onFailure:
+onSuccess:
+
+
+
+
+
+
+
+

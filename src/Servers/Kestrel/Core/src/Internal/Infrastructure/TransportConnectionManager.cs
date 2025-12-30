@@ -77,6 +77,11 @@ internal sealed class TransportConnectionManager
         {
             if (kvp.Value.TryGetConnection(out var connection))
             {
+                // Connection didn't shutdown in allowed time. Force close the connection and set the end reason.
+                KestrelMetrics.AddConnectionEndReason(
+                    connection.TransportConnection.Features.Get<IConnectionMetricsContextFeature>()?.MetricsContext,
+                    ConnectionEndReason.AppShutdownTimeout, overwrite: true);
+
                 connection.TransportConnection.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedDuringServerShutdown));
                 abortTasks.Add(connection.ExecutionTask);
             }

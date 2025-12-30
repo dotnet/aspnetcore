@@ -321,7 +321,7 @@ public class AuthorizeViewTest
         // (This wouldn't happen under the sync context or in wasm)
         var renderTcs = new TaskCompletionSource();
         renderer.OnUpdateDisplayComplete = () => renderTcs.SetResult();
-        authTcs.SetResult(CreateAuthenticationState("Monsieur").Result);
+        authTcs.SetResult(await CreateAuthenticationState("Monsieur"));
 
         await renderTcs.Task;
         Assert.Equal(2, renderer.Batches.Count);
@@ -347,7 +347,7 @@ public class AuthorizeViewTest
     }
 
     [Fact]
-    public void RendersAuthorizingUntilAuthorizationCompleted()
+    public async Task RendersAuthorizingUntilAuthorizationCompleted()
     {
         // Arrange
         var @event = new ManualResetEventSlim();
@@ -377,7 +377,7 @@ public class AuthorizeViewTest
 
         // Act/Assert 2: Auth process completes asynchronously
         @event.Reset();
-        authTcs.SetResult(CreateAuthenticationState("Monsieur").Result);
+        authTcs.SetResult(await CreateAuthenticationState("Monsieur"));
 
         // We need to wait here because the continuations of SetResult will be scheduled to run asynchronously.
         @event.Wait(Timeout);

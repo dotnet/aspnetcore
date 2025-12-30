@@ -25,12 +25,10 @@ public sealed class WebAssemblyComponentsEndpointOptions
     /// Note that enabling this feature can restrict your ability to use other JavaScript APIs. For more
     /// information, see <see href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer#security_requirements" />.
     /// </summary>
-    public bool ServeMultithreadingHeaders { get; set; }
+    internal bool ServeMultithreadingHeaders { get; set; }
 
     /// <summary>
     /// Gets or sets the <see cref="string"/> that determines the static assets manifest path mapped to this app.
     /// </summary>
     public string? StaticAssetsManifestPath { get; set; }
-
-    internal bool ConventionsApplied { get; set; }
 }

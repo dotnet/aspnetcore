@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Globalization;
 using System.IO.Compression;
 using System.IO.Pipelines;
@@ -15,7 +16,6 @@ using Microsoft.AspNetCore.StaticAssets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -23,9 +23,16 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.Builder;
 
 // Handles changes during development to support common scenarios where for example, a developer changes a file in the wwwroot folder.
-internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAssetDescriptor> descriptors)
+internal sealed partial class StaticAssetDevelopmentRuntimeHandler
 {
     internal const string ReloadStaticAssetsAtRuntimeKey = "ReloadStaticAssetsAtRuntime";
+
+    private readonly Dictionary<(string Route, string ETag), StaticAssetDescriptor> _descriptorsMap = [];
+
+    public StaticAssetDevelopmentRuntimeHandler(List<StaticAssetDescriptor> descriptors)
+    {
+        CreateDescriptorMap(descriptors);
+    }
 
     public void AttachRuntimePatching(EndpointBuilder builder)
     {
@@ -33,17 +40,27 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
         var asset = builder.Metadata.OfType<StaticAssetDescriptor>().Single();
         if (asset.HasContentEncoding())
         {
-            // This is a compressed asset, which might get out of "sync" with the original uncompressed version.
-            // We are going to find the original by using the weak etag from this compressed asset and locating an asset with the same etag.
-            var eTag = asset.GetWeakETag();
-            asset = FindOriginalAsset(eTag.Tag.Value!, descriptors);
+            var originalETag = GetDescriptorOriginalResourceProperty(asset);
+            StaticAssetDescriptor? originalAsset = null;
+            if (originalETag is not null && _descriptorsMap.TryGetValue((asset.Route, originalETag), out originalAsset))
+            {
+                asset = originalAsset;
+            }
+            else
+            {
+                Debug.Assert(originalETag != null, $"The static asset descriptor {asset.Route} - {asset.AssetPath} does not have an original-resource property.");
+                Debug.Assert(originalAsset != null, $"The static asset descriptor {asset.Route} - {asset.AssetPath} has an original-resource property that does not match any known static asset descriptor.");
+            }
         }
 
         builder.RequestDelegate = async context =>
         {
             var originalFeature = context.Features.GetRequiredFeature<IHttpResponseBodyFeature>();
-            var fileInfo = context.RequestServices.GetRequiredService<IWebHostEnvironment>().WebRootFileProvider.GetFileInfo(asset.AssetFile);
-            if (fileInfo.Length != asset.GetContentLength() || fileInfo.LastModified != asset.GetLastModified())
+            var fileInfo = context.RequestServices.GetRequiredService<IWebHostEnvironment>().WebRootFileProvider.GetFileInfo(asset.AssetPath);
+            // Truncating is correct because the manifest truncates the timestamp when it serializes the Last-Modified header
+            // (HTTP date format only supports second precision). We need to apply the same truncation here so that we correctly
+            // detect unchanged files rather than always seeing them as different due to subsecond precision mismatch.
+            if (fileInfo.Length != asset.GetContentLength() || TruncateToSeconds(fileInfo.LastModified) != asset.GetLastModified())
             {
                 // At this point, we know that the file has changed from what was generated at build time.
                 // This is for example, when someone changes something in the WWWRoot folder.
@@ -58,10 +75,73 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
         };
     }
 
+    private static string? GetDescriptorOriginalResourceProperty(StaticAssetDescriptor descriptor)
+    {
+        for (var i = 0; i < descriptor.Properties.Count; i++)
+        {
+            var property = descriptor.Properties[i];
+            if (string.Equals(property.Name, "original-resource", StringComparison.OrdinalIgnoreCase))
+            {
+                return property.Value;
+            }
+        }
+
+        return null;
+    }
+
+    private static string? GetDescriptorETagResponseHeader(StaticAssetDescriptor descriptor)
+    {
+        for (var i = 0; i < descriptor.ResponseHeaders.Count; i++)
+        {
+            var header = descriptor.ResponseHeaders[i];
+            if (string.Equals(header.Name, HeaderNames.ETag, StringComparison.OrdinalIgnoreCase))
+            {
+                return header.Value;
+            }
+        }
+
+        return null;
+    }
+
+    private void CreateDescriptorMap(List<StaticAssetDescriptor> descriptors)
+    {
+        for (var i = 0; i < descriptors.Count; i++)
+        {
+            var descriptor = descriptors[i];
+            if (descriptor.HasContentEncoding())
+            {
+                continue;
+            }
+            var etag = GetDescriptorETagResponseHeader(descriptor);
+            if (etag != null && !_descriptorsMap.ContainsKey((descriptor.Route, etag)))
+            {
+                _descriptorsMap[(descriptor.Route, etag)] = descriptor;
+            }
+            else
+            {
+                Debug.Assert(etag != null, $"The static asset descriptor {descriptor.Route} - {descriptor.AssetPath} does not have an ETag response header.");
+                Debug.Assert(_descriptorsMap.ContainsKey((descriptor.Route, etag)),
+                    $"The static asset descriptor {descriptor.Route} - {descriptor.AssetPath} has an ETag response header that is already registered in the map. This should not happen, as the ETag should be unique for each static asset.");
+            }
+        }
+    }
+
     internal static string GetETag(IFileInfo fileInfo)
     {
         using var stream = fileInfo.CreateReadStream();
         return $"\"{Convert.ToBase64String(SHA256.HashData(stream))}\"";
+    }
+
+    internal static DateTimeOffset TruncateToSeconds(DateTimeOffset dateTimeOffset)
+    {
+        return new DateTimeOffset(
+            dateTimeOffset.Year,
+            dateTimeOffset.Month,
+            dateTimeOffset.Day,
+            dateTimeOffset.Hour,
+            dateTimeOffset.Minute,
+            dateTimeOffset.Second,
+            dateTimeOffset.Offset);
     }
 
     internal sealed class RuntimeStaticAssetResponseBodyFeature : IHttpResponseBodyFeature
@@ -93,12 +173,12 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
 
         public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellationToken = default)
         {
-            var fileInfo = _context.RequestServices.GetRequiredService<IWebHostEnvironment>().WebRootFileProvider.GetFileInfo(_asset.AssetFile);
+            var fileInfo = _context.RequestServices.GetRequiredService<IWebHostEnvironment>().WebRootFileProvider.GetFileInfo(_asset.AssetPath);
             var endpoint = _context.GetEndpoint()!;
             var assetDescriptor = endpoint.Metadata.OfType<StaticAssetDescriptor>().Single();
             _context.Response.Headers.ETag = "";
 
-            if (assetDescriptor.AssetFile != _asset.AssetFile)
+            if (assetDescriptor.AssetPath != _asset.AssetPath)
             {
                 // This was a compressed asset, asset contains the path to the original file, we'll re-compress the asset on the fly and replace the body
                 // and the content length.
@@ -115,10 +195,7 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
                 _context.Response.Headers.ContentLength = stream.Length;
 
                 var eTag = Convert.ToBase64String(SHA256.HashData(stream));
-                var weakETag = $"W/{GetETag(fileInfo)}";
-
-                // Here we add the ETag for the Gzip stream as well as the weak ETag for the original asset.
-                _context.Response.Headers.ETag = new StringValues([$"\"{eTag}\"", weakETag]);
+                _context.Response.Headers.ETag = new StringValues($"\"{eTag}\"");
 
                 stream.Seek(0, SeekOrigin.Begin);
                 return stream.CopyToAsync(_context.Response.Body, cancellationToken);
@@ -139,28 +216,15 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
 
         public Task StartAsync(CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            return _original.StartAsync(cancellationToken);
         }
     }
 
-    private static StaticAssetDescriptor FindOriginalAsset(string tag, List<StaticAssetDescriptor> descriptors)
-    {
-        for (var i = 0; i < descriptors.Count; i++)
-        {
-            if (descriptors[i].HasETag(tag))
-            {
-                return descriptors[i];
-            }
-        }
-
-        throw new InvalidOperationException("The original asset was not found.");
-    }
-
-    internal static bool IsEnabled(IServiceProvider serviceProvider, IWebHostEnvironment environment)
+    internal static bool IsEnabled(bool isBuildManifest, IServiceProvider serviceProvider)
     {
         var config = serviceProvider.GetRequiredService<IConfiguration>();
         var explicitlyConfigured = bool.TryParse(config[ReloadStaticAssetsAtRuntimeKey], out var hotReload);
-        return (!explicitlyConfigured && environment.IsDevelopment()) || (explicitlyConfigured && hotReload);
+        return (!explicitlyConfigured && isBuildManifest) || (explicitlyConfigured && hotReload);
     }
 
     internal static void EnableSupport(
@@ -172,7 +236,22 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
         var config = endpoints.ServiceProvider.GetRequiredService<IConfiguration>();
         var hotReloadHandler = new StaticAssetDevelopmentRuntimeHandler(descriptors);
         builder.Add(hotReloadHandler.AttachRuntimePatching);
-        var disableFallback = bool.TryParse(config["DisableStaticAssetNotFoundRuntimeFallback"], out var disableFallbackValue) && disableFallbackValue;
+        var disableFallback = IsEnabled(config, "DisableStaticAssetNotFoundRuntimeFallback");
+
+        foreach (var descriptor in descriptors)
+        {
+            var enableDevelopmentCaching = IsEnabled(config, "EnableStaticAssetsDevelopmentCaching");
+            if (!enableDevelopmentCaching)
+            {
+                DisableCachingHeaders(descriptor);
+            }
+
+            var enableDevelopmentIntegrity = IsEnabled(config, "EnableStaticAssetsDevelopmentIntegrity");
+            if (!enableDevelopmentIntegrity)
+            {
+                RemoveIntegrityProperty(descriptor);
+            }
+        }
 
         if (!disableFallback)
         {
@@ -224,6 +303,62 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
 
             // Limit matching to supported methods.
             fallback.Add(b => b.Metadata.Add(new HttpMethodMetadata(["GET", "HEAD"])));
+        }
+    }
+
+    private static bool IsEnabled(IConfiguration config, string key)
+    {
+        return bool.TryParse(config[key], out var value) && value;
+    }
+
+    private static void DisableCachingHeaders(StaticAssetDescriptor descriptor)
+    {
+        if (descriptor.ResponseHeaders.Count == 0)
+        {
+            return;
+        }
+
+        var responseHeaders = new List<StaticAssetResponseHeader>(descriptor.ResponseHeaders);
+        var replaced = false;
+        for (var i = 0; i < descriptor.ResponseHeaders.Count; i++)
+        {
+            var responseHeader = descriptor.ResponseHeaders[i];
+            if (string.Equals(responseHeader.Name, HeaderNames.CacheControl, StringComparison.OrdinalIgnoreCase))
+            {
+                if (!string.Equals(responseHeader.Value, "no-cache", StringComparison.OrdinalIgnoreCase))
+                {
+                    responseHeaders.RemoveAt(i);
+                    responseHeaders.Insert(i, new StaticAssetResponseHeader(HeaderNames.CacheControl, "no-cache"));
+                    replaced = true;
+                }
+            }
+        }
+
+        if (replaced)
+        {
+            descriptor.ResponseHeaders = responseHeaders;
+        }
+    }
+
+    private static void RemoveIntegrityProperty(StaticAssetDescriptor descriptor)
+    {
+        if (descriptor.Properties.Count == 0)
+        {
+            return;
+        }
+        var propertiesList = new List<StaticAssetProperty>(descriptor.Properties);
+        for (var i = 0; i < descriptor.Properties.Count; i++)
+        {
+            var property = descriptor.Properties[i];
+            if (string.Equals(property.Name, "integrity", StringComparison.OrdinalIgnoreCase))
+            {
+                propertiesList.RemoveAt(i);
+            }
+        }
+
+        if (propertiesList.Count < descriptor.Properties.Count)
+        {
+            descriptor.Properties = propertiesList;
         }
     }
 

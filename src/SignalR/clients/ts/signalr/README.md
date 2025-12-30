@@ -1,5 +1,7 @@
 JavaScript and TypeScript clients for SignalR for ASP.NET Core and Azure SignalR Service
 
+[Changelog](https://github.com/dotnet/aspnetcore/tree/main/src/SignalR/clients/ts/CHANGELOG.md)
+
 ## Installation
 
 ```bash

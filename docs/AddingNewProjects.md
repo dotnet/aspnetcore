@@ -28,13 +28,13 @@ Sample PR of final result: https://github.com/dotnet/aspnetcore/pull/41945
   - If VS has not already modified these files, open the `.slnf` you want to add the project to. Create a solution folder for your project if doesn't exist already. Then right click solution folder -> Add -> Existing Project... -> follow the wizard.
 1. Run the `eng/scripts/GenerateProjectList.ps1` file to regenerate a number of `eng/*.props` files e.g. ProjectReferences.props.
 
-**Note:** If you are adding a new project to the root `src` directory, you will also need to add a reference in both of the `DotNetProjects` lists of the `eng/Build.props` file. The first list (the one with condition `'$(BuildMainlyReferenceProviders)' != 'true'"`) has items in the format of:
+**Note:** If you are adding a new project to the root `src` directory, you will also need to add a reference in both the `ProjectsWithTestsSubsetN` and `DotNetProjects` lists of the `eng/Build.props` file. The `ProjectsWithTestsSubsetN` lists (the one with condition `'$(BuildMainlyReferenceProviders)' != 'true'"`) has items in the format of:
   ```XML
-   <DotNetProjects Include="
+   <ProjectsWithTestsSubsetN Include="
                           $(RepoRoot)src\[YOUR FOLDER]\**\*.csproj;
                           ...
   ```
-while the second (the one with condition `'$(BuildMainlyReferenceProviders)' == 'true'"`) has them in the format of (note the second `src`):
+. You should add your project to whichever `ProjectsWithTestsSubsetN` list is shorter (`ProjectsWithTestsSubset1` or `ProjectsWithTestsSubset2`). The `DotNetProjects` list (the one with condition `'$(BuildMainlyReferenceProviders)' == 'true'"`) has them in the format of (note the second `src`):
   ```XML
   <DotNetProjects Include="
                         $(RepoRoot)src\[YOUR FOLDER]\**\src\*.csproj;
@@ -50,4 +50,4 @@ while the second (the one with condition `'$(BuildMainlyReferenceProviders)' == 
 3. Add your project name to the lists in `src\Framework\test\TestData.cs`. This is not strictly necessary for the project to work but there is a test on CI that will fail if this is not done. Make sure to include your project in a way that maintains alphabetical order.
 
 ## Manually saving solution and solution filter files
-VS is pretty good at keeping the files up to date and organized correctly. It will also prompt you if it finds an error and, in most cases, offer a solution to fix the issue. Sometimes just saving the file will trigger VS to resolve any issues automatically. However, if you would like to add a new solution filter file or update one manually you can find a tutorial link [here](https://learn.microsoft.com/en-us/visualstudio/ide/filtered-solutions).
+VS is pretty good at keeping the files up to date and organized correctly. It will also prompt you if it finds an error and, in most cases, offer a solution to fix the issue. Sometimes just saving the file will trigger VS to resolve any issues automatically. However, if you would like to add a new solution filter file or update one manually you can find a [tutorial on filtered solutions in Visual Studio](https://learn.microsoft.com/visualstudio/ide/filtered-solutions).

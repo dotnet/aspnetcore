@@ -46,7 +46,7 @@ public class ErrorBoundaryTest : ServerTestBase<ToggleExecutionModeServerFixture
         Browser.Collection(() => container.FindElements(By.CssSelector("*")),
             elem =>
             {
-                Assert.Equal("blazor-error-boundary", elem.GetAttribute("class"));
+                Assert.Equal("blazor-error-boundary", elem.GetDomAttribute("class"));
                 Assert.Empty(elem.FindElements(By.CssSelector("*")));
             });
 
@@ -123,6 +123,17 @@ public class ErrorBoundaryTest : ServerTestBase<ToggleExecutionModeServerFixture
         Browser.Collection(() => container.FindElements(By.ClassName("received-exception")),
             elem => Assert.Equal("Delayed asynchronous exception in OnParametersSetAsync", elem.Text));
 
+        AssertGlobalErrorState(false);
+    }
+
+    [Fact]
+    public void CanHandleErrorsAfterDisposingErrorBoundaryComponent()
+    {
+        var container = Browser.Exists(By.Id("multiple-errors-at-once-test"));
+        container.FindElement(By.ClassName("throw-multiple-errors")).Click();
+        // The error boundary is still there, so we see the error message
+        Browser.Collection(() => container.FindElements(By.ClassName("error-message")),
+            elem => Assert.Equal("OnInitializedAsyncError", elem.Text));
         AssertGlobalErrorState(false);
     }
 

@@ -709,8 +709,10 @@ public class KeyRingProviderTests
         Assert.True(mreBackgroundThreadHasCalledGetCurrentKeyRing.Wait(testTimeout), "Test timed out.");
         mreForegroundThreadIsCallingGetCurrentKeyRing.Set();
         var foregroundRetVal = keyRingProvider.GetCurrentKeyRingCore(now);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         backgroundGetKeyRingTask.Wait(testTimeout);
         var backgroundRetVal = backgroundGetKeyRingTask.GetAwaiter().GetResult();
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
         // Assert - underlying provider only should have been called once
         Assert.Same(expectedKeyRing, foregroundRetVal);
@@ -802,76 +804,6 @@ public class KeyRingProviderTests
             });
 
         return CreateKeyRingProvider(mockKeyManager.Object, mockDefaultKeyResolver.Object, keyManagementOptions);
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55227")]
-    public async Task MultipleThreadsForceRefresh(bool failsToReadKeyRing)
-    {
-        const int taskCount = 10;
-        var now = StringToDateTime("2015-03-01 00:00:00Z");
-
-        var expectedKeyRing = new Mock<IKeyRing>();
-        var expectedException = new InvalidOperationException(nameof(MultipleThreadsForceRefresh));
-
-        var mockCacheableKeyRingProvider = new Mock<ICacheableKeyRingProvider>();
-        mockCacheableKeyRingProvider
-            .Setup(o => o.GetCacheableKeyRing(now))
-            .Returns<DateTimeOffset>(_ =>
-            {
-                // Simulate doing actual work.  We need this so that other threads have an opportunity
-                // to bypass the critical section.
-                Thread.Sleep(200);
-
-                if (failsToReadKeyRing)
-                {
-                    throw expectedException;
-                }
-
-                return new CacheableKeyRing(
-                    expirationToken: CancellationToken.None,
-                    expirationTime: now.AddDays(1),
-                    keyRing: expectedKeyRing.Object);
-            });
-
-        var keyRingProvider = CreateKeyRingProvider(mockCacheableKeyRingProvider.Object);
-
-        var tasks = new Task<IKeyRing>[taskCount];
-        for (var i = 0; i < taskCount; i++)
-        {
-            tasks[i] = Task.Run(() =>
-            {
-                var keyRing = keyRingProvider.GetCurrentKeyRingCore(now, forceRefresh: true);
-                return keyRing;
-            });
-        }
-
-        if (failsToReadKeyRing)
-        {
-            await Task.WhenAll(tasks).ContinueWith(static _ => { }, TaskScheduler.Default); // Swallow exceptions - we'll inspect individual tasks
-            Assert.All(tasks, task => Assert.NotNull(task.Exception));
-
-            // We expect only one task to have thrown expectedException, but it's possible that multiple
-            // threads made it into the critical section (in sequence, obviously) and each saw expectedException.
-            // This check is descriptive, rather than normative - it would probably be preferable to have all of
-            // them see expectedException, but it's presently not propagated to threads that simply wait.
-            Assert.InRange(tasks.Count(task => ReferenceEquals(expectedException, task.Exception.InnerException)), 1, taskCount);
-        }
-        else
-        {
-            var actualKeyRings = await Task.WhenAll(tasks);
-            Assert.All(actualKeyRings, actualKeyRing => ReferenceEquals(expectedKeyRing, actualKeyRing));
-        }
-
-        // We'd like there to be exactly one call, but it's possible that the first thread will actually
-        // release the critical section before the last thread attempts to acquire it and the work will
-        // be redone (by design, since the refresh is forced).
-        // Even asserting < taskCount is probabilistic - it's possible, though very unlikely, that each
-        // thread could finish before the next even attempts to enter the criticial section.  If this
-        // proves to be flaky, we could increase taskCount or intentionally slow down GetCacheableKeyRing.
-        mockCacheableKeyRingProvider.Verify(o => o.GetCacheableKeyRing(It.IsAny<DateTimeOffset>()), Times.AtMost(taskCount - 1));
     }
 
     [Fact]

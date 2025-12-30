@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -497,6 +498,7 @@ public class HealthCheckPublisherHostedServiceTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/56245")]
     public async Task RunAsync_CanFilterHealthChecks()
     {
         // Arrange
@@ -798,9 +800,17 @@ public class HealthCheckPublisherHostedServiceTest
         public TestPublisher()
         {
             _started = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _entries = new ConcurrentQueue<(HealthReport report, CancellationToken cancellationToken)>();
         }
 
-        public List<(HealthReport report, CancellationToken cancellationToken)> Entries { get; } = new List<(HealthReport report, CancellationToken cancellationToken)>();
+        private readonly ConcurrentQueue<(HealthReport report, CancellationToken cancellationToken)> _entries;
+        public IReadOnlyList<(HealthReport report, CancellationToken cancellationToken)> Entries
+        {
+            get
+            {
+                return _entries.ToList();
+            }
+        }
 
         public Exception? Exception { get; set; }
 
@@ -810,7 +820,7 @@ public class HealthCheckPublisherHostedServiceTest
 
         public async Task PublishAsync(HealthReport report, CancellationToken cancellationToken)
         {
-            Entries.Add((report, cancellationToken));
+            _entries.Enqueue((report, cancellationToken));
 
             // Signal that we've started
             _started.SetResult(null);

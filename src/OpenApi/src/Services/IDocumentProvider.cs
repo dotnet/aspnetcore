@@ -20,4 +20,5 @@ internal interface IDocumentProvider
 {
     IEnumerable<string> GetDocumentNames();
     Task GenerateAsync(string documentName, TextWriter writer);
+    Task GenerateAsync(string documentName, TextWriter writer, OpenApiSpecVersion openApiSpecVersion);
 }

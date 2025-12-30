@@ -25,6 +25,8 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
     public string PathBase { get; set; }
     public string ContentRoot { get; private set; }
 
+    public bool RequiresMultithreadingHeaders { get; set; }
+
     protected override IHost CreateWebHost()
     {
         if (TestTrimmedOrMultithreadingApps)
@@ -61,7 +63,7 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
             args.Add(Environment);
         }
 
-        if (WebAssemblyTestHelper.MultithreadingIsEnabled())
+        if (RequiresMultithreadingHeaders || WebAssemblyTestHelper.MultithreadingIsEnabled())
         {
             args.Add("--apply-cop-headers");
         }

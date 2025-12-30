@@ -685,6 +685,34 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public async Task RequestDelegateHandlesFromFormStringArrayParameter()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
+        {
+            ["form"] = new(new[] { "1", "2", "3" })
+        });
+
+        var factoryResult = RequestDelegateFactory.Create(
+            (HttpContext context, [FromForm(Name = "form")] string[] formValues) =>
+        {
+            context.Items["form"] = formValues;
+        });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        var parameterBindingMetadata = factoryResult.EndpointMetadata
+            .FirstOrDefault(e => e is ParameterBindingMetadata metadata &&
+                metadata.Name == "formValues") as ParameterBindingMetadata;
+
+        Assert.NotNull(parameterBindingMetadata);
+        Assert.Equal(typeof(string[]), parameterBindingMetadata.ParameterInfo.ParameterType);
+        Assert.Equal(new StringValues(new[] { "1", "2", "3" }), httpContext.Items["form"]!);
+    }
+
+    [Fact]
     public async Task RequestDelegateCanAwaitValueTasksThatAreNotImmediatelyCompleted()
     {
         var httpContext = CreateHttpContext();
@@ -2533,7 +2561,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var @delegate = () => new object();
         var result = RequestDelegateFactory.Create(@delegate);
 
-        var responseMetadata = Assert.IsAssignableFrom<IProducesResponseTypeMetadata>(Assert.Single(result.EndpointMetadata));
+        var responseMetadata = Assert.Single(result.EndpointMetadata.OfType<IProducesResponseTypeMetadata>());
 
         Assert.Equal("application/json", Assert.Single(responseMetadata.ContentTypes));
         Assert.Equal(typeof(object), responseMetadata.Type);
@@ -2545,10 +2573,10 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var @delegate = () => "Hello";
         var result = RequestDelegateFactory.Create(@delegate);
 
-        var responseMetadata = Assert.IsAssignableFrom<IProducesResponseTypeMetadata>(Assert.Single(result.EndpointMetadata));
+        var responseMetadata = Assert.Single(result.EndpointMetadata.OfType<IProducesResponseTypeMetadata>());
 
         Assert.Equal("text/plain", Assert.Single(responseMetadata.ContentTypes));
-        Assert.Null(responseMetadata.Type);
+        Assert.Equal(typeof(string), responseMetadata.Type);
     }
 
     [Fact]
@@ -2567,6 +2595,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         // but we just specified our CustomEndpointMetadata in this test.
         Assert.Collection(result.EndpointMetadata,
             m => Assert.Same(customMetadata, m),
+            m => Assert.True(m is IParameterBindingMetadata { HasBindAsync : true }),
             m => Assert.True(m is ParameterNameMetadata { Name: "param1" }),
             m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Parameter }));
     }
@@ -2682,6 +2711,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         // Assert
         Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        Assert.DoesNotContain(result.EndpointMetadata, m => m is IProducesResponseTypeMetadata);
         // Expecting '1' because only initial metadata will be in the metadata list when this metadata item is added
         Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 1 });
     }
@@ -2704,6 +2734,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         // Assert
         Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        Assert.DoesNotContain(result.EndpointMetadata, m => m is IProducesResponseTypeMetadata);
         // Expecting '1' because only initial metadata will be in the metadata list when this metadata item is added
         Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 1 });
     }
@@ -2726,6 +2757,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         // Assert
         Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        Assert.DoesNotContain(result.EndpointMetadata, m => m is IProducesResponseTypeMetadata);
         // Expecting '1' because only initial metadata will be in the metadata list when this metadata item is added
         Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 1 });
     }
@@ -2748,6 +2780,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         // Assert
         Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        Assert.DoesNotContain(result.EndpointMetadata, m => m is IProducesResponseTypeMetadata);
         // Expecting '1' because only initial metadata will be in the metadata list when this metadata item is added
         Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 1 });
     }
@@ -2818,14 +2851,18 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Caller }),
             // Inferred AcceptsMetadata from RDF for complex type
             m => Assert.True(m is AcceptsMetadata am && am.RequestType == typeof(AddsCustomParameterMetadata)),
-            // Inferred ProducesResopnseTypeMetadata from RDF for complex type
+            // Inferred ParameterBinding metadata
+            m => Assert.True(m is IParameterBindingMetadata { Name: "param1" }),
+            // Inferred IDisableCookieRedirectMetadata from RDF for complex request and response type
+            m => Assert.True(m is IDisableCookieRedirectMetadata),
+            // Inferred ProducesResponseTypeMetadata from RDF for complex type
             m => Assert.Equal(typeof(CountsDefaultEndpointMetadataPoco), ((IProducesResponseTypeMetadata)m).Type),
             // Metadata provided by parameters implementing IEndpointParameterMetadataProvider
             m => Assert.True(m is ParameterNameMetadata { Name: "param1" }),
             // Metadata provided by parameters implementing IEndpointMetadataProvider
             m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Parameter }),
             // Metadata provided by return type implementing IEndpointMetadataProvider
-            m => Assert.True(m is MetadataCountMetadata { Count: 5 }));
+            m => Assert.True(m is MetadataCountMetadata { Count: 7 }));
     }
 
     [Fact]
@@ -2878,7 +2915,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var result = RequestDelegateFactory.Create(@delegate, options, metadataResult);
 
         // Assert
-        Assert.Empty(result.EndpointMetadata);
+        Assert.Contains(result.EndpointMetadata, m => m is IParameterBindingMetadata { Name: "param1" });
         Assert.Same(options.EndpointBuilder.Metadata, result.EndpointMetadata);
 
         // Make extra sure things are running as expected, as this non-InferMetadata path is no longer exercised by RouteEndpointDataSource,
@@ -3148,6 +3185,55 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Null(httpContext.Items["RequiredRouteParam"]);
         Assert.Null(httpContext.Items["RequiredQueryParam"]);
         Assert.Null(httpContext.Items["RequiredHeaderParam"]);
+    }
+
+    private class ParameterListFromHeaderCommaSeparatedValues
+    {
+        [FromHeader(Name = "q")]
+        public required StringValues? BoundToStringValues { get; set; }
+
+        [FromHeader(Name = "q")]
+        public string? BoundToString { get; set; }
+
+        [FromHeader(Name = "q")]
+        public string[]? BoundToStringArray { get; set; }
+
+        [FromHeader(Name = "q")]
+        public int[]? BoundToIntArray { get; set; }
+    }
+
+    [Theory]
+    [InlineData("", new string[] { }, new int[] {})]
+    [InlineData(" ", new string[] { }, new int[] { })]
+    [InlineData(",", new string[] { }, new int[] { })]
+    [InlineData("100", new string[] { "100" }, new int[] { 100 })]
+    [InlineData("1,2", new string[] { "1", "2" }, new int[] { 1, 2 })]
+    [InlineData("1, 2 ,  3", new string[] { "1", "2", "3" }, new int[] { 1, 2, 3 })]
+    public async Task RequestDelegateFactory_FromHeader_CommaSeparatedValues(string headerValue, string[] expectedStringArray, int[] expectedIntArray)
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers["q"] = headerValue;
+
+        void TestAction([AsParameters] ParameterListFromHeaderCommaSeparatedValues args)
+        {
+            httpContext.Items[nameof(args.BoundToStringValues)] = args.BoundToStringValues;
+            httpContext.Items[nameof(args.BoundToString)] = args.BoundToString;
+            httpContext.Items[nameof(args.BoundToStringArray)] = args.BoundToStringArray;
+            httpContext.Items[nameof(args.BoundToIntArray)] = args.BoundToIntArray;
+        }
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        // Act
+        await requestDelegate(httpContext);
+
+        // Assert
+        Assert.Equal(headerValue, httpContext.Items[nameof(ParameterListFromHeaderCommaSeparatedValues.BoundToString)]);
+        Assert.Equal(new StringValues(headerValue), httpContext.Items[nameof(ParameterListFromHeaderCommaSeparatedValues.BoundToStringValues)]);
+        Assert.Equal(expectedStringArray, httpContext.Items[nameof(ParameterListFromHeaderCommaSeparatedValues.BoundToStringArray)]);
+        Assert.Equal(expectedIntArray, httpContext.Items[nameof(ParameterListFromHeaderCommaSeparatedValues.BoundToIntArray)]);
     }
 
 #nullable disable

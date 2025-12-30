@@ -2,6 +2,8 @@
 
 This document is for common build errors and how to resolve them.
 
+NB: Some problems might be due to older build assets that conflict with newer commits. It's recommended to run `git clean -xddff` between checkouts. If this command fails due to locked files you can try to stop any existing `dotnet` or `.NET Host` process and retry.
+
 ## Warning BUILD001
 
 > warning BUILD001: Reference to '&hellip;' was removed since the last stable release of this package. &hellip;

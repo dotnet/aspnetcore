@@ -1,0 +1,44 @@
+﻿@page "/resource-collection"
+@using Microsoft.AspNetCore.Components.Web;
+@using Microsoft.AspNetCore.Components.Endpoints;
+
+<PageTitle>Resource Collection</PageTitle>
+
+<HeadContent>
+  <ImportMap></ImportMap>
+</HeadContent>
+
+<h1>Hello from resource collection</h1>
+
+<p>
+    This page demonstrates the workings of resource collection.
+
+    The ResourceCollectionSample component will display fingerprinted URLs for the BasicTestApp.styles.css
+    and will trigger an import of a JavaScript module via it's human readable name.
+
+    Upon import, the script will append a new element to the dom and will display its import.meta.url, which
+    when the importmap works will show the fingerprinted URL.
+
+    The test runs in Static, Server and WebAssembly render modes.
+</p>
+
+<TestContentPackage.ResourceCollectionSample @rendermode="_renderMode"></TestContentPackage.ResourceCollectionSample>
+
+@code
+{
+    [SupplyParameterFromQuery(Name = "render-mode")]
+    public string SelectedRenderMode { get; set; }
+
+    private IComponentRenderMode? _renderMode;
+
+    protected override void OnInitialized()
+    {
+        var assets = Assets;
+        _renderMode = SelectedRenderMode switch
+        {
+            "Server" => RenderMode.InteractiveServer,
+            "WebAssembly" => RenderMode.InteractiveWebAssembly,
+            _ => null
+        };
+    }
+}

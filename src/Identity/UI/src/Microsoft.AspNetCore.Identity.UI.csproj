@@ -34,8 +34,30 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Authentication" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
+    <Reference Include="Microsoft.AspNetCore.Authorization" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.Identity" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Razor" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Razor" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
+    <Reference Include="Microsoft.AspNetCore.Razor" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
+    <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
     <Reference Include="Microsoft.Extensions.Identity.Stores" />
@@ -90,11 +112,27 @@
         <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
       </V5AssetsCandidates>
     </ItemGroup>
-    
-    <DefineStaticWebAssets Condition="'@(V4AssetsCandidates->Count())' != '0'" CandidateAssets="@(V4AssetsCandidates)" SourceId="$(PackageId)" SourceType="Discovered" AssetKind="All" ContentRoot="assets/V4" BasePath="$(StaticWebAssetBasePath)">
+
+    <DefineStaticWebAssets
+      Condition="'@(V4AssetsCandidates->Count())' != '0'"
+      CandidateAssets="@(V4AssetsCandidates)" SourceId="$(PackageId)"
+      SourceType="Package"
+      AssetKind="All"
+      ContentRoot="assets/V4"
+      BasePath="$(StaticWebAssetBasePath)"
+    >
       <Output TaskParameter="Assets" ItemName="V4Assets" />
     </DefineStaticWebAssets>
-    <DefineStaticWebAssets Condition="'@(V5AssetsCandidates->Count())' != '0'" CandidateAssets="@(V5AssetsCandidates)" SourceId="$(PackageId)" SourceType="Discovered" AssetKind="All" ContentRoot="assets/V5" BasePath="$(StaticWebAssetBasePath)">
+
+    <DefineStaticWebAssets
+      Condition="'@(V5AssetsCandidates->Count())' != '0'"
+      CandidateAssets="@(V5AssetsCandidates)"
+      SourceId="$(PackageId)"
+      SourceType="Package"
+      AssetKind="All"
+      ContentRoot="assets/V5"
+      BasePath="$(StaticWebAssetBasePath)"
+    >
       <Output TaskParameter="Assets" ItemName="V5Assets" />
     </DefineStaticWebAssets>
 
@@ -106,7 +144,7 @@
     >
       <Output TaskParameter="Endpoints" ItemName="V4AssetEndpoints" />
     </DefineStaticWebAssetEndpoints>
-    
+
     <DefineStaticWebAssetEndpoints
       Condition="'@(V5Assets)' != ''"
       CandidateAssets="@(V5Assets)"
@@ -116,23 +154,34 @@
       <Output TaskParameter="Endpoints" ItemName="V5AssetEndpoints" />
     </DefineStaticWebAssetEndpoints>
 
-    <GenerateStaticWebAssetsPropsFile StaticWebAssets="@(V4Assets)" PackagePathPrefix="staticwebassets/V4" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V4.targets" />
-    <GenerateStaticWebAssetsPropsFile StaticWebAssets="@(V5Assets)" PackagePathPrefix="staticwebassets/V5" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V5.targets" />
+    <ItemGroup>
+      <FinalV4Assets Include="@(V4Assets)">
+        <SourceType>Discovered</SourceType>
+      </FinalV4Assets>
+      <FinalV5Assets Include="@(V5Assets)">
+        <SourceType>Discovered</SourceType>
+      </FinalV5Assets>
+    </ItemGroup>
+
+    <GenerateStaticWebAssetsPropsFile StaticWebAssets="@(FinalV4Assets)" PackagePathPrefix="staticwebassets/V4" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V4.targets" />
+    <GenerateStaticWebAssetsPropsFile StaticWebAssets="@(FinalV5Assets)" PackagePathPrefix="staticwebassets/V5" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V5.targets" />
 
     <GenerateStaticWebAssetEndpointsPropsFile
       StaticWebAssets="@(V4Assets)"
+      PackagePathPrefix="staticwebassets/V4"
       StaticWebAssetEndpoints="@(V4AssetEndpoints)"
       TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V4.endpoints.targets" />
 
     <GenerateStaticWebAssetEndpointsPropsFile
       StaticWebAssets="@(V5Assets)"
+      PackagePathPrefix="staticwebassets/V5"
       StaticWebAssetEndpoints="@(V5AssetEndpoints)"
       TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V5.endpoints.targets" />
 
-    <ComputeStaticWebAssetsTargetPaths Assets="@(V4Assets)" PathPrefix="staticwebassets/V4" AdjustPathsForPack="true">
+    <ComputeStaticWebAssetsTargetPaths Assets="@(FinalV4Assets)" PathPrefix="staticwebassets/V4" AdjustPathsForPack="true">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackStaticWebAssetWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
-    <ComputeStaticWebAssetsTargetPaths Assets="@(V5Assets)" PathPrefix="staticwebassets/V5" AdjustPathsForPack="true">
+    <ComputeStaticWebAssetsTargetPaths Assets="@(FinalV5Assets)" PathPrefix="staticwebassets/V5" AdjustPathsForPack="true">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackStaticWebAssetWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
 

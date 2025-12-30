@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components.HotReload;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -1667,6 +1668,14 @@ public static class BindConverter
     {
         private static readonly ConcurrentDictionary<Type, Delegate> _cache = new ConcurrentDictionary<Type, Delegate>();
 
+        static FormatterDelegateCache()
+        {
+            if (HotReloadManager.Default.MetadataUpdateSupported)
+            {
+                HotReloadManager.Default.OnDeltaApplied += _cache.Clear;
+            }
+        }
+
         private static MethodInfo? _makeArrayFormatter;
 
         [UnconditionalSuppressMessage(
@@ -1676,6 +1685,10 @@ public static class BindConverter
         [UnconditionalSuppressMessage(
             "ReflectionAnalysis",
             "IL2075:MakeGenericMethod",
+            Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
+        [UnconditionalSuppressMessage(
+            "ReflectionAnalysis",
+            "IL2076:MakeGenericMethod",
             Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
         public static BindFormatter<T> Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
         {
@@ -1852,6 +1865,14 @@ public static class BindConverter
     {
         private static readonly ConcurrentDictionary<Type, Delegate> _cache = new ConcurrentDictionary<Type, Delegate>();
 
+        static ParserDelegateCache()
+        {
+            if (HotReloadManager.Default.MetadataUpdateSupported)
+            {
+                HotReloadManager.Default.OnDeltaApplied += _cache.Clear;
+            }
+        }
+
         private static MethodInfo? _convertToEnum;
         private static MethodInfo? _convertToNullableEnum;
         private static MethodInfo? _makeArrayTypeConverter;
@@ -1863,6 +1884,10 @@ public static class BindConverter
         [UnconditionalSuppressMessage(
             "ReflectionAnalysis",
             "IL2075:MakeGenericMethod",
+            Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
+        [UnconditionalSuppressMessage(
+            "ReflectionAnalysis",
+            "IL2076:MakeGenericMethod",
             Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
         public static BindParser<T> Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
         {

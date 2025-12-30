@@ -65,7 +65,7 @@ public class BytesToStringBenchmark
     {
         for (uint i = 0; i < Iterations; i++)
         {
-            HttpUtilities.GetAsciiStringNonNullCharacters(_asciiBytes);
+            HttpUtilities.GetAsciiString(_asciiBytes);
         }
     }
 

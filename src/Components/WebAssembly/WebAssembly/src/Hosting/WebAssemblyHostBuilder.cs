@@ -28,8 +28,9 @@ public sealed class WebAssemblyHostBuilder
 {
     private readonly IInternalJSImportMethods _jsMethods;
     private Func<IServiceProvider> _createServiceProvider;
-    private RootComponentTypeCache? _rootComponentCache;
+    private RootTypeCache? _rootComponentCache;
     private string? _persistedState;
+    private ServiceProviderOptions? _serviceProviderOptions;
 
     /// <summary>
     /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> using the most common
@@ -50,6 +51,11 @@ public sealed class WebAssemblyHostBuilder
         var builder = new WebAssemblyHostBuilder(InternalJSImportMethods.Instance);
 
         WebAssemblyCultureProvider.Initialize();
+
+        // Add environment variables to configuration by default.
+        // This aligns WebAssembly behavior with server-side ASP.NET Core applications
+        // where environment variables are automatically included in IConfiguration.
+        builder.Configuration.AddEnvironmentVariables();
 
         // Right now we don't have conventions or behaviors that are specific to this method
         // however, making this the default for the template allows us to add things like that
@@ -91,7 +97,16 @@ public sealed class WebAssemblyHostBuilder
 
         _createServiceProvider = () =>
         {
-            return Services.BuildServiceProvider(validateScopes: WebAssemblyHostEnvironmentExtensions.IsDevelopment(hostEnvironment));
+            var isDevelopment = WebAssemblyHostEnvironmentExtensions.IsDevelopment(hostEnvironment);
+
+            // Use custom options if provided, otherwise use defaults
+            var options = _serviceProviderOptions ?? new ServiceProviderOptions
+            {
+                ValidateScopes = isDevelopment,
+                ValidateOnBuild = isDevelopment
+            };
+
+            return Services.BuildServiceProvider(options);
         };
     }
 
@@ -136,11 +151,11 @@ public sealed class WebAssemblyHostBuilder
             registeredComponents[i].PrerenderId = i.ToString(CultureInfo.InvariantCulture);
         }
 
-        _rootComponentCache = new RootComponentTypeCache();
+        _rootComponentCache = new RootTypeCache();
         var componentDeserializer = WebAssemblyComponentParameterDeserializer.Instance;
         foreach (var registeredComponent in registeredComponents)
         {
-            var componentType = _rootComponentCache.GetRootComponent(registeredComponent.Assembly!, registeredComponent.TypeName!);
+            var componentType = _rootComponentCache.GetRootType(registeredComponent.Assembly!, registeredComponent.TypeName!);
             if (componentType is null)
             {
                 throw new InvalidOperationException(
@@ -276,6 +291,17 @@ public sealed class WebAssemblyHostBuilder
         };
     }
 
+    // In WebAssemblyHostBuilder class:
+    /// <summary>
+    /// Configures the service provider options for this host builder.
+    /// </summary>
+    /// <param name="options">The service provider options to use.</param>
+    public WebAssemblyHostBuilder UseServiceProviderOptions(ServiceProviderOptions options)
+    {
+        _serviceProviderOptions = options ?? throw new ArgumentNullException(nameof(options));
+        return this;
+    }
+
     /// <summary>
     /// Builds a <see cref="WebAssemblyHost"/> instance based on the configuration of this builder.
     /// </summary>
@@ -294,23 +320,30 @@ public sealed class WebAssemblyHostBuilder
         return new WebAssemblyHost(this, services, scope, _persistedState);
     }
 
+    [DynamicDependency(JsonSerialized, typeof(DefaultAntiforgeryStateProvider))]
+    [DynamicDependency(JsonSerialized, typeof(AntiforgeryRequestToken))]
     internal void InitializeDefaultServices()
     {
         Services.AddSingleton<IJSRuntime>(DefaultWebAssemblyJSRuntime.Instance);
         Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
         Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
         Services.AddSingleton<IScrollToLocationHash>(WebAssemblyScrollToLocationHash.Instance);
-        Services.AddSingleton<IInternalJSImportMethods>(_jsMethods);
+        Services.AddSingleton(_jsMethods);
         Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
-        Services.AddSingleton<RootComponentTypeCache>(_ => _rootComponentCache ?? new());
+        Services.AddSingleton(_ => _rootComponentCache ?? new());
         Services.AddSingleton<ComponentStatePersistenceManager>();
-        Services.AddSingleton<PersistentComponentState>(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
-        Services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
+        Services.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+        Services.AddSupplyValueFromPersistentComponentStateProvider();
         Services.AddSingleton<IErrorBoundaryLogger, WebAssemblyErrorBoundaryLogger>();
+        Services.AddSingleton<ResourceCollectionProvider>();
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<ResourceCollectionProvider>(Services, RenderMode.InteractiveWebAssembly);
         Services.AddLogging(builder =>
         {
             builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
         });
+        Services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AntiforgeryStateProvider>(Services, RenderMode.InteractiveWebAssembly);
         Services.AddSupplyValueFromQueryProvider();
+        Services.AddSingleton<HostedServiceExecutor>();
     }
 }

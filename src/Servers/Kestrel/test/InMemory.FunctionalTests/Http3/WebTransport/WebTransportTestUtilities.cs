@@ -137,6 +137,8 @@ internal class WebTransportTestUtilities
             return GetMemory(sizeHint).Span;
         }
 
+        public long UnflushedBytes => 0;
+
         public ValueTask<FlushResult> ProduceContinueAsync()
         {
             // no-op

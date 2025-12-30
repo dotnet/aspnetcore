@@ -33,7 +33,7 @@ public class EnableCorsAttribute : Attribute, IEnableCorsAttribute
     /// <inheritdoc />
     public string? PolicyName { get; set; }
 
-    /// <inheritdoc/>>
+    /// <inheritdoc/>
     public override string ToString()
     {
         return DebuggerHelpers.GetDebugText(nameof(PolicyName), PolicyName, prefix: "CORS");

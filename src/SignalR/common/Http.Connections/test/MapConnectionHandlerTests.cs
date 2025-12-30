@@ -52,7 +52,7 @@ public class MapConnectionHandlerTests
                     var policies = endpoint.Metadata.GetOrderedMetadata<AuthorizationPolicy>();
                     Assert.Equal(2, policies.Count);
                     Assert.Equal(policy1, policies[0]);
-                    Assert.Equal(1, policies[1].Requirements.Count);
+                    Assert.Single(policies[1].Requirements);
                     Assert.Equal(req, policies[1].Requirements.First());
                 },
                 endpoint =>
@@ -62,7 +62,7 @@ public class MapConnectionHandlerTests
                     var policies = endpoint.Metadata.GetOrderedMetadata<AuthorizationPolicy>();
                     Assert.Equal(2, policies.Count);
                     Assert.Equal(policy1, policies[0]);
-                    Assert.Equal(1, policies[1].Requirements.Count);
+                    Assert.Single(policies[1].Requirements);
                     Assert.Equal(req, policies[1].Requirements.First());
                 });
         }

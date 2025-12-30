@@ -25,6 +25,14 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private int _visibleItemCapacity;
 
+    // If the client reports a viewport so large that it could show more than MaxItemCount items,
+    // we keep track of the "unused" capacity, which is the amount of blank space we want to leave
+    // at the bottom of the viewport (as a number of items). If we didn't leave this blank space,
+    // then the bottom spacer would always stay visible and the client would request more items in an
+    // infinite (but asynchronous) loop, as it would believe there are more items to render and
+    // enough space to render them into.
+    private int _unusedItemCapacity;
+
     private int _itemCount;
 
     private int _loadedItemsStartIndex;
@@ -119,6 +127,17 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     public string SpacerElement { get; set; } = "div";
 
     /// <summary>
+    /// Gets or sets the maximum number of items that will be rendered, even if the client reports
+    /// that its viewport is large enough to show more. The default value is 100.
+    ///
+    /// This should only be used as a safeguard against excessive memory usage or large data loads.
+    /// Do not set this to a smaller number than you expect to fit on a realistic-sized window, because
+    /// that will leave a blank gap below and the user may not be able to see the rest of the content.
+    /// </summary>
+    [Parameter]
+    public int MaxItemCount { get; set; } = 100;
+
+    /// <summary>
     /// Instructs the component to re-request data from its <see cref="ItemsProvider"/>.
     /// This is useful if external data may have changed. There is no need to call this
     /// when using <see cref="Items"/>.
@@ -204,7 +223,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         builder.OpenElement(0, SpacerElement);
         builder.AddAttribute(1, "style", GetSpacerStyle(_itemsBefore));
-        builder.AddElementReferenceCapture(2, elementReference => _spacerBefore = elementReference);
+        builder.AddAttribute(2, "aria-hidden", "true");
+        builder.AddElementReferenceCapture(3, elementReference => _spacerBefore = elementReference);
         builder.CloseElement();
 
         var lastItemIndex = Math.Min(_itemsBefore + _visibleItemCapacity, _itemCount);
@@ -264,18 +284,24 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         var itemsAfter = Math.Max(0, _itemCount - _visibleItemCapacity - _itemsBefore);
 
         builder.OpenElement(7, SpacerElement);
-        builder.AddAttribute(8, "style", GetSpacerStyle(itemsAfter));
-        builder.AddElementReferenceCapture(9, elementReference => _spacerAfter = elementReference);
+        builder.AddAttribute(8, "aria-hidden", "true");
+        builder.AddAttribute(9, "style", GetSpacerStyle(itemsAfter, _unusedItemCapacity));
+        builder.AddElementReferenceCapture(10, elementReference => _spacerAfter = elementReference);
 
         builder.CloseElement();
     }
+
+    private string GetSpacerStyle(int itemsInSpacer, int numItemsGapAbove)
+        => numItemsGapAbove == 0
+        ? GetSpacerStyle(itemsInSpacer)
+        : $"height: {(itemsInSpacer * _itemSize).ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0; transform: translateY({(numItemsGapAbove * _itemSize).ToString(CultureInfo.InvariantCulture)}px);";
 
     private string GetSpacerStyle(int itemsInSpacer)
         => $"height: {(itemsInSpacer * _itemSize).ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0;";
 
     void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
     {
-        CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity);
+        CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
 
         // Since we know the before spacer is now visible, we absolutely have to slide the window up
         // by at least one element. If we're not doing that, the previous item size info we had must
@@ -286,12 +312,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             itemsBefore--;
         }
 
-        UpdateItemDistribution(itemsBefore, visibleItemCapacity);
+        UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
     }
 
     void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
     {
-        CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity);
+        CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
 
         var itemsBefore = Math.Max(0, _itemCount - itemsAfter - visibleItemCapacity);
 
@@ -304,7 +330,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             itemsBefore++;
         }
 
-        UpdateItemDistribution(itemsBefore, visibleItemCapacity);
+        UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
     }
 
     private void CalcualteItemDistribution(
@@ -312,7 +338,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         float spacerSeparation,
         float containerSize,
         out int itemsInSpacer,
-        out int visibleItemCapacity)
+        out int visibleItemCapacity,
+        out int unusedItemCapacity)
     {
         if (_lastRenderedItemCount > 0)
         {
@@ -326,11 +353,26 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _itemSize = ItemSize;
         }
 
+        // This AppContext data was added as a stopgap for .NET 8 and earlier, since it was added in a patch
+        // where we couldn't add new public API. For backcompat we still support the AppContext setting, but
+        // new applications should use the much more convenient MaxItemCount parameter.
+        var maxItemCount = AppContext.GetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount") switch
+        {
+            int val => Math.Min(val, MaxItemCount),
+            _ => MaxItemCount
+        };
+
+        // Count the OverscanCount as used capacity, so we don't end up in a situation where
+        // the user has set a very low MaxItemCount and we end up in an infinite loading loop.
+        maxItemCount += OverscanCount * 2;
+
         itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / _itemSize) - OverscanCount);
         visibleItemCapacity = (int)Math.Ceiling(containerSize / _itemSize) + 2 * OverscanCount;
+        unusedItemCapacity = Math.Max(0, visibleItemCapacity - maxItemCount);
+        visibleItemCapacity -= unusedItemCapacity;
     }
 
-    private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity)
+    private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity, int unusedItemCapacity)
     {
         // If the itemcount just changed to a lower number, and we're already scrolled past the end of the new
         // reduced set of items, clamp the scroll position to the new maximum
@@ -340,10 +382,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
 
         // If anything about the offset changed, re-render
-        if (itemsBefore != _itemsBefore || visibleItemCapacity != _visibleItemCapacity)
+        if (itemsBefore != _itemsBefore || visibleItemCapacity != _visibleItemCapacity || unusedItemCapacity != _unusedItemCapacity)
         {
             _itemsBefore = itemsBefore;
             _visibleItemCapacity = visibleItemCapacity;
+            _unusedItemCapacity = unusedItemCapacity;
             var refreshTask = RefreshDataCoreAsync(renderOnSuccess: true);
 
             if (!refreshTask.IsCompleted)

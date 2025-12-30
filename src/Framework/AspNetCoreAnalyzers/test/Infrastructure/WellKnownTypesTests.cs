@@ -82,7 +82,9 @@ class Program
         return stream;
     }
 
+#pragma warning disable RS1041 // Compiler extensions should be implemented in assemblies targeting netstandard2.0
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
+#pragma warning restore RS1041 // Compiler extensions should be implemented in assemblies targeting netstandard2.0
     private class TestAnalyzer : DiagnosticAnalyzer
     {
         internal static readonly DiagnosticDescriptor SuccessDescriptor = new(

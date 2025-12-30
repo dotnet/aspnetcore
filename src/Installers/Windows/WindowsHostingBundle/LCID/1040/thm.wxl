@@ -1,0 +1,87 @@
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  
+  <String Id="Caption" Value="Installazione di [WixBundleName]"/>
+  
+  <String Id="Title" Value="[BundleNameShort]"/>
+  
+  <String Id="SubTitle" Value="[BundleNameSub]"/>
+  
+  <String Id="InstallVersion" Value="Versione di [WixBundleVersion]"/>
+  <String Id="ConfirmCancelMessage" Value="Annullare?"/>
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Versione precedente"/>
+  <String Id="HelpHeader" Value="Guida all'installazione"/>
+  
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - Consente di installare, riparare, disinstallare o creare una copia locale completa del pacchetto nella directory. /install è l'opzione predefinita.
+
+/passive | /quiet - Consente di visualizzare un'interfaccia utente minima senza richieste o di non visualizzare alcuna interfaccia utente e alcuna richiesta. Per impostazione predefinita, vengono visualizzate l'interfaccia utente e tutte le richieste.
+
+/norestart - Consente di impedire qualsiasi tentativo di riavvio. Per impostazione predefinita, prima del riavvio verrà visualizzata una richiesta nell'interfaccia utente.
+
+/log &lt;LOG_FILE&gt; - Consente di eseguire la registrazione in un file specifico. Per impostazione predefinita, viene creato un file di log in %TEMP%."/>
+  <String Id="HelpCloseButton" Value="&amp;Chiudi"/>
+  <String Id="InstallAcceptCheckbox" Value="A&amp;ccetto i termini e le condizioni di licenza"/>
+  <String Id="InstallInstallButton" Value="&amp;Installa"/>
+  <String Id="InstallCloseButton" Value="&amp;Chiudi"/>
+  <String Id="ProgressHeader" Value="Stato dell'installazione"/>
+  <String Id="ProgressLabel" Value="Elaborazione:"/>
+  <String Id="OverallProgressPackageText" Value="Inizializzazione in corso..."/>
+  <String Id="ProgressCancelButton" Value="&amp;Annulla"/>
+  <String Id="ModifyHeader" Value="Modifica installazione"/>
+  <String Id="ModifyRepairButton" Value="&amp;Ripristina"/>
+  <String Id="ModifyUninstallButton" Value="&amp;Disinstalla"/>
+  <String Id="ModifyCloseButton" Value="&amp;Chiudi"/>
+  <String Id="SuccessCacheHeader" Value="Memorizzazione nella cache completata"/>
+  <String Id="SuccessModifyHeader" Value="Modifica completata"/>
+  <String Id="SuccessRepairHeader" Value="Riparazione completata"/>
+  <String Id="SuccessUninstallHeader" Value="Disinstallazione completata"/>
+  <String Id="SuccessUnsafeUninstallHeader" Value="Disinstallazione completata"/>
+  <String Id="SuccessInstallHeader" Value="Installazione completata correttamente"/>
+  <String Id="SuccessHeader" Value="Configurazione completata"/>
+  <String Id="SuccessLaunchButton" Value="&amp;Avvio"/>
+  <String Id="SuccessLayoutHeader" Value="Layout completato"/>
+  <String Id="SuccessRestartText" Value="Per poter usare il software, è necessario riavviare il computer."/>
+  <String Id="SuccessUninstallRestartText" Value="È necessario riavviare il computer per completare la rimozione del software."/>
+  <String Id="SuccessRestartButton" Value="&amp;Riavvia"/>
+  <String Id="SuccessCloseButton" Value="&amp;Chiudi"/>
+  <String Id="FailureHeader" Value="Configurazione non riuscita"/>
+  <String Id="FailureCacheHeader" Value="Memorizzazione nella cache non riuscita"/>
+  <String Id="FailureLayoutHeader" Value="Layout non riuscito"/>
+  <String Id="FailureModifyHeader" Value="Modifica non riuscita"/>
+  <String Id="FailureInstallHeader" Value="Configurazione non riuscita"/>
+  <String Id="FailureUnsafeUninstallHeader" Value="Disinstallazione non riuscita"/>
+  <String Id="FailureUninstallHeader" Value="Disinstallazione non riuscita"/>
+  <String Id="FailureRepairHeader" Value="Riparazione non riuscita"/>
+  <String Id="FailureHyperlinkLogText" Value="L'installazione non è stata completata a causa di uno o più problemi. Risolvere i problemi e quindi riprovare a eseguire l'installazione. Per altre informazioni, vedere il &lt;a href=&quot;#&quot;&gt;file di log&lt;/a&gt;."/>
+  <String Id="FailureRestartText" Value="Per completare il rollback del software, è necessario riavviare il computer."/>
+  <String Id="FailureRestartButton" Value="&amp;Riavvia"/>
+  <String Id="FailureCloseButton" Value="&amp;Chiudi"/>
+  <String Id="FilesInUseHeader" Value="File in uso"/>
+  <String Id="FilesInUseLabel" Value="Le applicazioni seguenti usano file che necessitano di aggiornamento:"/>
+  <String Id="FilesInUseCloseRadioButton" Value="&amp;Chiudi tutte le applicazioni e tenta di riavviarle."/>
+  <String Id="FilesInUseNetfxCloseRadioButton" Value="Chiudi le &amp;applicazioni."/>
+  <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Non chiudere le applicazioni. Sarà necessario riavviare il sistema."/>
+  <String Id="FilesInUseOkButton" Value="&amp;OK"/>
+  <String Id="FilesInUseCancelButton" Value="&amp;Annulla"/>
+  <String Id="FilesInUseRetryButton" Value="&amp;Riprova"/>
+  <String Id="FilesInUseIgnoreButton" Value="&amp;Ignora"/>
+  <String Id="FilesInUseExitButton" Value="E&amp;sci"/>
+  <String Id="FilesInUseTitle" Value="File in uso"/>
+  <String Id="LicenseAssent" Value="Facendo clic su Installa, si accettano le condizioni seguenti:"/>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;Informativa sulla privacy&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;Informazioni sulle licenze per .NET&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Raccolta di telemetria e rifiuto esplicito&lt;/A&gt;"/>
+
+  <!-- Custom UI strings -->
+  
+  <String Id="Welcome" Value="Installazione di [WixBundleName]."/>
+  
+  <String Id="InstallResetIIS" Value="Al termine dell'installazione, riavviare IIS. Altre informazioni sono disponibili &lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;qui&lt;/a&gt;."/>
+  
+  <String Id="InstallNoIIS" Value="IIS non è abilitato su questo computer. Per eseguire applicazioni ASP.NET Core con IIS, è necessario installare IIS prima di eseguire il programma di installazione. Altre informazioni sono disponibili &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;qui&lt;/a&gt;."/>
+  
+  <String Id="EulaPrivacy" Value="&lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;Condizioni di licenza&lt;/a&gt; e &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;Informativa sulla privacy&lt;/a&gt; di [WixBundleName]"/>
+  
+  <String Id="ModifyResetIIS" Value="Al termine dell'installazione, riavviare IIS. Altre informazioni sono disponibili &lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;qui&lt;/a&gt;."/>
+  
+  <String Id="ModifyNoIIS" Value="IIS non è abilitato su questo computer. Per eseguire applicazioni ASP.NET Core con IIS, è necessario installare IIS prima di eseguire il programma di installazione. Altre informazioni sono disponibili &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;qui&lt;/a&gt;."/>
+</WixLocalization>

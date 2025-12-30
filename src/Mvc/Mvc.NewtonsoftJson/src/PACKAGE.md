@@ -65,7 +65,7 @@ public class MyModel
     public int Age { get; set; }
 }
 ```
-For more information on configuring and using Newtonsoft.Json in ASP.NET Core MVC, refer to the [official documentation](https://learn.microsoft.com/en-us/aspnet/core/mvc/overview?view=aspnetcore-8.0).
+For more information on configuring and using Newtonsoft.Json in ASP.NET Core MVC, refer to the [official documentation](https://learn.microsoft.com/aspnet/core/mvc/overview?view=aspnetcore-8.0).
 
 ## Main Types
 
@@ -81,7 +81,7 @@ The main types provided by this library are:
 
 <!-- Links to further documentation. Remove conceptual documentation if not available for the library. -->
 
-* [Overview of ASP.NET Core MVC](https://learn.microsoft.com/en-us/aspnet/core/mvc/overview?view=aspnetcore-8.0)
+* [Overview of ASP.NET Core MVC](https://learn.microsoft.com/aspnet/core/mvc/overview?view=aspnetcore-8.0)
 
 ## Feedback & Contributing
 

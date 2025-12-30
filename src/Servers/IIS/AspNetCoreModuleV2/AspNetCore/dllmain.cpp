@@ -57,6 +57,7 @@ BOOL WINAPI DllMain(HMODULE hModule,
         // this is a bug in IIS. To try to avoid AVs, we will set a global flag
         g_fInShutdown = TRUE;
         StaticCleanup();
+        break;
     default:
         break;
     }

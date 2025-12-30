@@ -516,10 +516,17 @@ public class Http2WebSocketTests : Http2TestBase
     [Fact]
     public async Task ExtendedCONNECTMethod_CanHaveNon200ResponseWithBody()
     {
+        var finishedSendingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
         await InitializeConnectionAsync(async context =>
         {
             var connectFeature = context.Features.Get<IHttpExtendedConnectFeature>();
             Assert.True(connectFeature.IsExtendedConnect);
+
+            // The EndStreamReceived flag might not have been sent let alone received by the server by the time application code completes
+            // which would result in a RST_STREAM being sent to the client. We wait for the data frame to finish sending
+            // before allowing application code to complete (relies on inline Pipe completions which we use for tests)
+            await finishedSendingTcs.Task;
 
             context.Response.StatusCode = Http.StatusCodes.Status418ImATeapot;
             context.Response.ContentLength = 2;
@@ -542,6 +549,8 @@ public class Http2WebSocketTests : Http2TestBase
         await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS, headers);
 
         await SendDataAsync(1, new byte[10241], endStream: true);
+
+        finishedSendingTcs.SetResult();
 
         var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
             withLength: 40,

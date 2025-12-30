@@ -1029,8 +1029,10 @@ public class RouteTableFactoryTests
     [Theory]
     [InlineData("/literal", "/Literal/")]
     [InlineData("/{parameter}", "/{parameter}/")]
+    [InlineData("/{parameter}part", "/part{parameter}")]
     [InlineData("/literal/{parameter}", "/Literal/{something}")]
     [InlineData("/{parameter}/literal/{something}", "{param}/Literal/{else}")]
+    [InlineData("/{parameter}part/literal/part{something}", "{param}Part/Literal/part{else}")]
     public void DetectsAmbiguousRoutes(string left, string right)
     {
         // Arrange
@@ -1044,6 +1046,22 @@ public class RouteTableFactoryTests
             .AddRoute(right).Build());
 
         Assert.Equal(expectedMessage, exception.Message);
+    }
+
+    [Theory]
+    [InlineData("/literal/{parameter}", "/Literal/")]
+    [InlineData("/literal/literal2/{parameter}", "/literal/literal3/{parameter}")]
+    [InlineData("/literal/part{parameter}part", "/literal/part{parameter}")]
+    [InlineData("/{parameter}", "/{{parameter}}")]
+    public void DetectsAmbiguousRoutesNoFalsePositives(string left, string right)
+    {
+        // Act
+
+        new TestRouteTableBuilder()
+            .AddRoute(left)
+            .AddRoute(right).Build();
+
+        // Assertion is that it doesn't throw
     }
 
     [Fact]

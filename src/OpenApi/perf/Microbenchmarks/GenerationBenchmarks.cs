@@ -5,6 +5,7 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.OpenApi.Microbenchmarks;
 
@@ -22,6 +23,7 @@ public class GenerationBenchmarks : OpenApiDocumentServiceTestBase
     private readonly IEndpointRouteBuilder _builder = CreateBuilder();
     private readonly OpenApiOptions _options = new OpenApiOptions();
     private OpenApiDocumentService _documentService;
+    private IServiceProvider _serviceProvider;
 
     [GlobalSetup(Target = nameof(GenerateDocument))]
     public void OperationTransformerAsDelegate_Setup()
@@ -34,11 +36,12 @@ public class GenerationBenchmarks : OpenApiDocumentServiceTestBase
             _builder.MapDelete($"/{i}", (string id) => Results.NoContent());
         }
         _documentService = CreateDocumentService(_builder, _options);
+        _serviceProvider = _builder.ServiceProvider.CreateScope().ServiceProvider;
     }
 
     [Benchmark]
     public async Task GenerateDocument()
     {
-        await _documentService.GetOpenApiDocumentAsync();
+        await _documentService.GetOpenApiDocumentAsync(_serviceProvider);
     }
 }

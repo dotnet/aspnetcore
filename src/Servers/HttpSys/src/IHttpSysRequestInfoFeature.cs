@@ -7,8 +7,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 
 /// <summary>
 /// This exposes the Http.Sys HTTP_REQUEST_INFO extensibility point as opaque data for the caller to interperate.
-/// <see href="https://learn.microsoft.com/en-us/windows/win32/api/http/ns-http-http_request_v2"/>,
-/// <see href="https://learn.microsoft.com/en-us/windows/win32/api/http/ns-http-http_request_info"/>
+/// <see href="https://learn.microsoft.com/windows/win32/api/http/ns-http-http_request_v2"/>,
+/// <see href="https://learn.microsoft.com/windows/win32/api/http/ns-http-http_request_info"/>
 /// </summary>
 public interface IHttpSysRequestInfoFeature
 {

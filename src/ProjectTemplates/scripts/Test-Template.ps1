@@ -47,10 +47,10 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isBlazorWa
         foreach ($projPath in $proj) {
             $projContent = Get-Content -Path $projPath -Raw
             if ($isBlazorWasmHosted) {
-                $importPath = "$PSScriptRoot/../test/Templates.Tests/bin/Debug/net9.0/TestTemplates"
+                $importPath = "$PSScriptRoot/../test/Templates.Tests/bin/Debug/net10.0/TestTemplates"
             }
             else {
-                $importPath = "$PSScriptRoot/../test/Templates.Tests/bin/Debug/net9.0/TestTemplates"
+                $importPath = "$PSScriptRoot/../test/Templates.Tests/bin/Debug/net10.0/TestTemplates"
             }
             $projContent = $projContent -replace ('(?:<Project Sdk="Microsoft.NET.(?<SdkSuffix>Sdk\.\w+)">)', ('<Project Sdk="Microsoft.NET.${SdkSuffix}">
                 <Import Project="' + $importPath + '/Directory.Build.props" />

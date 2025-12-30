@@ -16,7 +16,7 @@ public class ApiBehaviorOptionsSetupTest
     public void Configure_AddsClientErrorMappings()
     {
         // Arrange
-        var expected = new[] { 400, 401, 403, 404, 405, 406, 408, 409, 412, 415, 422, 426, 500, 502, 503, 504 };
+        var expected = new[] { 400, 401, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 421, 422, 426, 500, 501, 502, 503, 504, 505 };
         var optionsSetup = new ApiBehaviorOptionsSetup();
         var options = new ApiBehaviorOptions();
 

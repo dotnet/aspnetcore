@@ -1,9 +1,1 @@
 #nullable enable
-*REMOVED*~Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2) -> TResult
-*REMOVED*~Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeUnmarshalled<T0, T1, TResult>(string identifier, T0 arg0, T1 arg1) -> TResult
-*REMOVED*~Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeUnmarshalled<T0, TResult>(string identifier, T0 arg0) -> TResult
-*REMOVED*~Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeUnmarshalled<TResult>(string identifier) -> TResult
-*REMOVED*Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeUnmarshalled<T0, T1, T2, TResult>(string! identifier, T0 arg0, T1 arg1, T2 arg2) -> TResult
-*REMOVED*Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeUnmarshalled<T0, T1, TResult>(string! identifier, T0 arg0, T1 arg1) -> TResult
-*REMOVED*Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeUnmarshalled<T0, TResult>(string! identifier, T0 arg0) -> TResult
-*REMOVED*Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeUnmarshalled<TResult>(string! identifier) -> TResult

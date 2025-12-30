@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <OutDirName Condition="'$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref'">aspnetcore-ref</OutDirName>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+</Project>

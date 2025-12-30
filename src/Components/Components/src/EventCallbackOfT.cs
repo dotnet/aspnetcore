@@ -80,5 +80,5 @@ public readonly struct EventCallback<TValue> : IEventCallback
     public override bool Equals(object? obj)
         => obj is EventCallback<TValue> other
         && ReferenceEquals(Receiver, other.Receiver)
-        && ReferenceEquals(Delegate, other.Delegate);
+        && (Delegate?.Equals(other.Delegate) ?? (other.Delegate == null));
 }

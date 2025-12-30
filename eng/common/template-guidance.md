@@ -50,14 +50,14 @@ extends:
           - task: CopyFiles@2
               displayName: Gather build output
               inputs:
-                SourceFolder: '$(Build.SourcesDirectory)/artifacts/marvel'
+                SourceFolder: '$(System.DefaultWorkingDirectory)/artifacts/marvel'
                 Contents: '**'
                 TargetFolder: '$(Build.ArtifactStagingDirectory)/artifacts/marvel'
 ```
 
 Note: Multiple outputs are ONLY applicable to 1ES PT publishing (only usable when referencing `templates-official`).
 
-# Development notes
+## Development notes
 
 **Folder / file structure**
 
@@ -76,13 +76,11 @@ eng\common\
             source-build.yml                 (shim)
         post-build\
             post-build.yml                   (shim)
-            trigger-subscription.yml         (shim)
             common-variabls.yml              (shim)
             setup-maestro-vars.yml           (shim)
         steps\
             publish-build-artifacts.yml      (logic)
             publish-pipeline-artifacts.yml   (logic)
-            add-build-channel.yml            (shim)
             component-governance.yml         (shim)
             generate-sbom.yml                (shim)
             publish-logs.yml                 (shim)
@@ -107,9 +105,7 @@ eng\common\
             common-variabls.yml              (logic)
             post-build.yml                   (logic)
             setup-maestro-vars.yml           (logic)
-            trigger-subscription.yml         (logic)
         steps\
-            add-build-to-channel.yml         (logic)
             component-governance.yml         (logic)
             generate-sbom.yml                (logic)
             publish-build-artifacts.yml      (redirect)

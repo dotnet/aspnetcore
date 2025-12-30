@@ -16,7 +16,7 @@ public class RangeHeaderValueTest
     {
         var range = new RangeHeaderValue();
         range.Unit = "myunit";
-        Assert.Equal("myunit", range.Unit);
+        Assert.Equal("myunit", range.Unit.AsSpan());
 
         Assert.Throws<ArgumentException>(() => range.Unit = null);
         Assert.Throws<ArgumentException>(() => range.Unit = "");

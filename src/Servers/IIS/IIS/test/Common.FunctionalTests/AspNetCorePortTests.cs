@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
 
 [Collection(PublishedSitesCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class AspNetCorePortTests : IISFunctionalTestBase
 {
     // Port range allowed by ANCM config
@@ -125,7 +124,7 @@ public class AspNetCorePortTests : IISFunctionalTestBase
         if (i == 10)
         {
             // Didn't restart after 10 retries
-            Assert.False(true);
+            Assert.Fail();
         }
 
         // Shutdown again
@@ -143,7 +142,7 @@ public class AspNetCorePortTests : IISFunctionalTestBase
         }
 
         // Test failure if this happens.
-        Assert.False(true);
+        Assert.Fail();
     }
 
     private static int GetUnusedRandomPort()

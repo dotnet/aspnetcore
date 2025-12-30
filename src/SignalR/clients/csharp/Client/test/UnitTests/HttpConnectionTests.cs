@@ -2,20 +2,25 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
+using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
+using Moq.Protected;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests;
@@ -156,5 +161,45 @@ public partial class HttpConnectionTests : VerifiableLoggedTest
         Assert.Equal(2, writeList.Count);
         Assert.Equal("SendingHttpRequest", writeList[0].EventId.Name);
         Assert.Equal("UnsuccessfulHttpResponse", writeList[1].EventId.Name);
+    }
+
+    [Fact]
+    public async Task NegotiateAsyncAppendsCorrectAcceptHeader()
+    {
+        var testHttpHandler = new TestHttpMessageHandler(false);
+        var negotiateUrlTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        
+        testHttpHandler.OnNegotiate((request, cancellationToken) =>
+        {
+            var headerFound = request.Headers.Accept?.Contains(new MediaTypeWithQualityHeaderValue("*/*")) == true;
+            negotiateUrlTcs.SetResult(headerFound);
+            return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent());
+        });
+
+        var httpOptions = new HttpConnectionOptions
+        {
+            Url = new Uri("http://fakeurl.org/"),
+            SkipNegotiation = false,
+            Transports = HttpTransportType.WebSockets,
+            HttpMessageHandlerFactory = inner => testHttpHandler
+        };
+
+        try
+        {
+            await WithConnectionAsync(
+                CreateConnection(httpOptions),
+                async (connection) =>
+                {
+                    await connection.StartAsync().DefaultTimeout();
+                });
+        }
+        catch
+        {
+            // ignore connection error
+        }
+
+        Assert.True(negotiateUrlTcs.Task.IsCompleted);
+        var headerWasFound = await negotiateUrlTcs.Task.DefaultTimeout();
+        Assert.True(headerWasFound);
     }
 }

@@ -4,13 +4,7 @@
 #pragma once
 
 #include <httptrace.h>
-
-#pragma warning( push )
-#pragma warning ( disable : ALL_CODE_ANALYSIS_WARNINGS )
-
 #include "aspnetcore_event.h"
-
-#pragma warning( pop )
 
 template< class EVENT, typename ...Params >
 void RaiseEvent(IHttpTraceContext * pTraceContext,Params&&... params)

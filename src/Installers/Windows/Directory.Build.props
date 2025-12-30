@@ -9,6 +9,9 @@
       Read more here => https://github.com/dotnet/project-system/blob/main/docs/build-acceleration.md#limitations
     -->
     <AccelerateBuildsInVisualStudio>false</AccelerateBuildsInVisualStudio>
+
+    <!-- Suppress validation to avoid Applocker failures when running light.exe on dev machines. -->
+    <SuppressValidation>true</SuppressValidation>
   </PropertyGroup>
 
 </Project>

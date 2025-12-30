@@ -4,4 +4,10 @@
     <!-- Avoid source build issues with WebAssembly -->
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
   </PropertyGroup>
+  <PropertyGroup>
+    <WasmPreloadAssets>false</WasmPreloadAssets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <BlazorCacheBootResources>false</BlazorCacheBootResources>
+  </PropertyGroup>
 </Project>

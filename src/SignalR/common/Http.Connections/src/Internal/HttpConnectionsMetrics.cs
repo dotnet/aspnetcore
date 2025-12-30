@@ -33,7 +33,8 @@ internal sealed class HttpConnectionsMetrics : IDisposable
         _connectionDuration = _meter.CreateHistogram<double>(
             "signalr.server.connection.duration",
             unit: "s",
-            description: "The duration of connections on the server.");
+            description: "The duration of connections on the server.",
+            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.LongSecondsBucketBoundaries });
 
         _currentConnectionsCounter = _meter.CreateUpDownCounter<long>(
             "signalr.server.active_connections",

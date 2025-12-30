@@ -287,6 +287,61 @@ public class RemoteJSDataStreamTest
         Assert.False(success);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ValueLinkedCts_Works_WhenOneTokenCannotBeCanceled(bool isToken1Cancelable)
+    {
+        var cts = new CancellationTokenSource();
+        var token1 = isToken1Cancelable ? cts.Token : CancellationToken.None;
+        var token2 = isToken1Cancelable ? CancellationToken.None : cts.Token;
+
+        using var linkedCts = RemoteJSDataStream.ValueLinkedCancellationTokenSource.Create(token1, token2);
+
+        Assert.False(linkedCts.HasLinkedCancellationTokenSource);
+        Assert.False(linkedCts.Token.IsCancellationRequested);
+
+        cts.Cancel();
+
+        Assert.True(linkedCts.Token.IsCancellationRequested);
+    }
+
+    [Fact]
+    public void ValueLinkedCts_Works_WhenBothTokensCannotBeCanceled()
+    {
+        using var linkedCts = RemoteJSDataStream.ValueLinkedCancellationTokenSource.Create(
+            CancellationToken.None,
+            CancellationToken.None);
+
+        Assert.False(linkedCts.HasLinkedCancellationTokenSource);
+        Assert.False(linkedCts.Token.IsCancellationRequested);
+    }
+
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void ValueLinkedCts_Works_WhenBothTokensCanBeCanceled(bool shouldCancelToken1, bool shouldCancelToken2)
+    {
+        var cts1 = new CancellationTokenSource();
+        var cts2 = new CancellationTokenSource();
+        using var linkedCts = RemoteJSDataStream.ValueLinkedCancellationTokenSource.Create(cts1.Token, cts2.Token);
+
+        Assert.True(linkedCts.HasLinkedCancellationTokenSource);
+        Assert.False(linkedCts.Token.IsCancellationRequested);
+
+        if (shouldCancelToken1)
+        {
+            cts1.Cancel();
+        }
+        if (shouldCancelToken2)
+        {
+            cts2.Cancel();
+        }
+
+        Assert.True(linkedCts.Token.IsCancellationRequested);
+    }
+
     private static async Task<RemoteJSDataStream> CreateRemoteJSDataStreamAsync(TestRemoteJSRuntime jsRuntime = null)
     {
         var jsStreamReference = Mock.Of<IJSStreamReference>();

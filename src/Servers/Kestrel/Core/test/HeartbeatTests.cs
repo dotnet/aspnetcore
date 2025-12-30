@@ -20,8 +20,8 @@ public class HeartbeatTests : LoggedTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55297")]
-    public async void HeartbeatLoopRunsWithSpecifiedInterval()
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60371")]
+    public async Task HeartbeatLoopRunsWithSpecifiedInterval()
     {
         var heartbeatCallCount = 0;
         var tcs = new TaskCompletionSource();
@@ -177,7 +177,7 @@ public class HeartbeatTests : LoggedTest
 
         heartbeatHandler.Verify(h => h.OnHeartbeat(), Times.Once());
 
-        Assert.Empty(TestSink.Writes.Where(w => w.EventId.Name == "HeartbeatSlow"));
+        Assert.DoesNotContain(TestSink.Writes, w => w.EventId.Name == "HeartbeatSlow");
     }
 
     [Fact]

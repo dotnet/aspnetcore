@@ -32,6 +32,7 @@ internal static class WellKnownTypeData
         Microsoft_AspNetCore_Http_IFormCollection,
         Microsoft_AspNetCore_Http_IFormFileCollection,
         Microsoft_AspNetCore_Http_IFormFile,
+        System_Collections_IEnumerable,
         System_DateOnly,
         System_DateTimeOffset,
         System_IO_Stream,
@@ -112,11 +113,24 @@ internal static class WellKnownTypeData
         Microsoft_AspNetCore_Authorization_AuthorizeAttribute,
         Microsoft_Extensions_DependencyInjection_PolicyServiceCollectionExtensions,
         Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute,
-        Microsoft_AspNetCore_Authorization_AuthorizationOptions
+        Microsoft_AspNetCore_Authorization_AuthorizationOptions,
+        Microsoft_Extensions_DependencyInjection_IServiceCollection,
+        Microsoft_AspNetCore_Authorization_IAllowAnonymous,
+        Microsoft_AspNetCore_Authorization_IAuthorizeData,
+        System_AttributeUsageAttribute,
+        System_Text_Json_Serialization_JsonDerivedTypeAttribute,
+        System_Text_Json_Serialization_JsonIgnoreAttribute,
+        System_ComponentModel_DataAnnotations_DisplayAttribute,
+        System_ComponentModel_DataAnnotations_ValidationAttribute,
+        System_ComponentModel_DataAnnotations_RequiredAttribute,
+        System_ComponentModel_DataAnnotations_CustomValidationAttribute,
+        System_ComponentModel_DataAnnotations_IValidatableObject,
+        Microsoft_Extensions_Validation_SkipValidationAttribute,
+        System_Type,
     }
 
-    public static string[] WellKnownTypeNames = new[]
-    {
+    public static string[] WellKnownTypeNames =
+    [
         "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder",
         "Microsoft.AspNetCore.Http.IHeaderDictionary",
         "Microsoft.AspNetCore.Http.Metadata.IEndpointMetadataProvider",
@@ -142,6 +156,7 @@ internal static class WellKnownTypeData
         "Microsoft.AspNetCore.Http.IFormCollection",
         "Microsoft.AspNetCore.Http.IFormFileCollection",
         "Microsoft.AspNetCore.Http.IFormFile",
+        "System.Collections.IEnumerable",
         "System.DateOnly",
         "System.DateTimeOffset",
         "System.IO.Stream",
@@ -222,6 +237,19 @@ internal static class WellKnownTypeData
         "Microsoft.AspNetCore.Authorization.AuthorizeAttribute",
         "Microsoft.Extensions.DependencyInjection.PolicyServiceCollectionExtensions",
         "Microsoft.Extensions.DependencyInjection.FromKeyedServicesAttribute",
-        "Microsoft.AspNetCore.Authorization.AuthorizationOptions"
-    };
+        "Microsoft.AspNetCore.Authorization.AuthorizationOptions",
+        "Microsoft.Extensions.DependencyInjection.IServiceCollection",
+        "Microsoft.AspNetCore.Authorization.IAllowAnonymous",
+        "Microsoft.AspNetCore.Authorization.IAuthorizeData",
+        "System.AttributeUsageAttribute",
+        "System.Text.Json.Serialization.JsonDerivedTypeAttribute",
+        "System.Text.Json.Serialization.JsonIgnoreAttribute",
+        "System.ComponentModel.DataAnnotations.DisplayAttribute",
+        "System.ComponentModel.DataAnnotations.ValidationAttribute",
+        "System.ComponentModel.DataAnnotations.RequiredAttribute",
+        "System.ComponentModel.DataAnnotations.CustomValidationAttribute",
+        "System.ComponentModel.DataAnnotations.IValidatableObject",
+        "Microsoft.Extensions.Validation.SkipValidationAttribute",
+        "System.Type",
+    ];
 }

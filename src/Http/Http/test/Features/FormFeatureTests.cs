@@ -222,7 +222,7 @@ InvalidContentDispositionValue +
         // Content
         Assert.Equal(0, formCollection.Count);
         Assert.NotNull(formCollection.Files);
-        Assert.Equal(0, formCollection.Files.Count);
+        Assert.Empty(formCollection.Files);
 
         // Cleanup
         await responseFeature.CompleteAsync();
@@ -259,7 +259,7 @@ InvalidContentDispositionValue +
         Assert.Equal("Foo", formCollection["description"]);
 
         Assert.NotNull(formCollection.Files);
-        Assert.Equal(0, formCollection.Files.Count);
+        Assert.Empty(formCollection.Files);
 
         // Cleanup
         await responseFeature.CompleteAsync();
@@ -295,7 +295,7 @@ InvalidContentDispositionValue +
         Assert.Equal(0, formCollection.Count);
 
         Assert.NotNull(formCollection.Files);
-        Assert.Equal(1, formCollection.Files.Count);
+        Assert.Single(formCollection.Files);
 
         var file = formCollection.Files["myfile1"];
         Assert.Equal("myfile1", file.Name);
@@ -344,7 +344,7 @@ InvalidContentDispositionValue +
         Assert.Equal("Foo", formCollection["description"]);
 
         Assert.NotNull(formCollection.Files);
-        Assert.Equal(0, formCollection.Files.Count);
+        Assert.Empty(formCollection.Files);
 
         // Cleanup
         await responseFeature.CompleteAsync();
@@ -380,7 +380,7 @@ InvalidContentDispositionValue +
         Assert.Equal(0, formCollection.Count);
 
         Assert.NotNull(formCollection.Files);
-        Assert.Equal(1, formCollection.Files.Count);
+        Assert.Single(formCollection.Files);
 
         var file = formCollection.Files["myfile1"];
         Assert.Equal("myfile1", file.Name);
@@ -429,7 +429,7 @@ InvalidContentDispositionValue +
         Assert.Equal("Foo", formCollection["description"]);
 
         Assert.NotNull(formCollection.Files);
-        Assert.Equal(1, formCollection.Files.Count);
+        Assert.Single(formCollection.Files);
 
         var file = formCollection.Files["myfile1"];
         Assert.Equal("text/html", file.ContentType);
@@ -578,7 +578,7 @@ InvalidContentDispositionValue +
         Assert.Equal("Foo", formCollection["description"]);
 
         Assert.NotNull(formCollection.Files);
-        Assert.Equal(1, formCollection.Files.Count);
+        Assert.Single(formCollection.Files);
 
         var file = formCollection.Files["myfile1"];
         Assert.Equal("text/html", file.ContentType);

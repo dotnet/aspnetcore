@@ -25,7 +25,7 @@ public class ConcurrentPipeWriterTests
                     new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
                 };
 
-            var sync = new object();
+            var sync = new Lock();
             var mockPipeWriter = new MockPipeWriter(pipeWriterFlushTcsArray);
             var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool, sync);
 
@@ -89,7 +89,7 @@ public class ConcurrentPipeWriterTests
                     new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
                 };
 
-            var sync = new object();
+            var sync = new Lock();
             var mockPipeWriter = new MockPipeWriter(pipeWriterFlushTcsArray);
             var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool, sync);
             var flushTask0 = default(ValueTask<FlushResult>);
@@ -186,7 +186,7 @@ public class ConcurrentPipeWriterTests
                     new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
                 };
 
-            var sync = new object();
+            var sync = new Lock();
             var mockPipeWriter = new MockPipeWriter(pipeWriterFlushTcsArray);
             var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool, sync);
             var memory = default(Memory<byte>);
@@ -270,7 +270,7 @@ public class ConcurrentPipeWriterTests
                     new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
                 };
 
-            var sync = new object();
+            var sync = new Lock();
             var mockPipeWriter = new MockPipeWriter(pipeWriterFlushTcsArray);
             var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool, sync);
             var memory = default(Memory<byte>);
@@ -338,7 +338,7 @@ public class ConcurrentPipeWriterTests
                     new TaskCompletionSource<FlushResult>(TaskCreationOptions.RunContinuationsAsynchronously),
                 };
 
-            var sync = new object();
+            var sync = new Lock();
             var mockPipeWriter = new MockPipeWriter(pipeWriterFlushTcsArray);
             var concurrentPipeWriter = new ConcurrentPipeWriter(mockPipeWriter, diagnosticPool, sync);
             var flushTask0 = default(ValueTask<FlushResult>);

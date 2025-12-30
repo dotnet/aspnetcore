@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis;
 /// </summary>
 public partial class RedisCache : IBufferDistributedCache, IDisposable
 {
-    // Note that the "force reconnect" pattern as described https://learn.microsoft.com/en-us/azure/azure-cache-for-redis/cache-best-practices-connection#using-forcereconnect-with-stackexchangeredis
+    // Note that the "force reconnect" pattern as described https://learn.microsoft.com/azure/azure-cache-for-redis/cache-best-practices-connection#using-forcereconnect-with-stackexchangeredis
     // can be enabled via the "Microsoft.AspNetCore.Caching.StackExchangeRedis.UseForceReconnect" app-context switch
 
     private const string AbsoluteExpirationKey = "absexp";
@@ -52,6 +52,8 @@ public partial class RedisCache : IBufferDistributedCache, IDisposable
     private long _lastConnectTicks = DateTimeOffset.UtcNow.Ticks;
     private long _firstErrorTimeTicks;
     private long _previousErrorTimeTicks;
+
+    internal virtual bool IsHybridCacheActive() => false;
 
     // StackExchange.Redis will also be trying to reconnect internally,
     // so limit how often we recreate the ConnectionMultiplexer instance
@@ -375,6 +377,11 @@ public partial class RedisCache : IBufferDistributedCache, IDisposable
         {
             connection.AddLibraryNameSuffix("aspnet");
             connection.AddLibraryNameSuffix("DC");
+
+            if (IsHybridCacheActive())
+            {
+                connection.AddLibraryNameSuffix("HC");
+            }
         }
         catch (Exception ex)
         {

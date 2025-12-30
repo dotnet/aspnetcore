@@ -881,6 +881,7 @@ public class CacheTagHelperTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/57567")]
     public async Task ProcessAsync_AwaitersUseTheResultOfExecutor()
     {
         // Arrange

@@ -16,7 +16,7 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
 
     public PrerenderComponentApplicationStore()
     {
-        ExistingState = new();
+        ExistingState = new Dictionary<string, byte[]>();
     }
 
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "Simple deserialize of primitive types.")]

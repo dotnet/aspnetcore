@@ -74,6 +74,15 @@ internal static partial class LoggingExtensions
     [LoggerMessage(37, LogLevel.Debug, "The UserInformationReceived event returned Skipped.", EventName = "UserInformationReceivedSkipped")]
     public static partial void UserInformationReceivedSkipped(this ILogger logger);
 
+    [LoggerMessage(57, LogLevel.Debug, "The PushAuthorization event handled client authentication", EventName = "PushAuthorizationHandledClientAuthentication")]
+    public static partial void PushAuthorizationHandledClientAuthentication(this ILogger logger);
+
+    [LoggerMessage(58, LogLevel.Debug, "The PushAuthorization event handled pushing authorization", EventName = "PushAuthorizationHandledPush")]
+    public static partial void PushAuthorizationHandledPush(this ILogger logger);
+
+    [LoggerMessage(59, LogLevel.Debug, "The PushAuthorization event skipped pushing authorization", EventName = "PushAuthorizationSkippedPush")]
+    public static partial void PushAuthorizationSkippedPush(this ILogger logger);
+
     [LoggerMessage(3, LogLevel.Warning, "The query string for Logout is not a well-formed URI. Redirect URI: '{RedirectUrl}'.", EventName = "InvalidLogoutQueryStringRedirectUrl")]
     public static partial void InvalidLogoutQueryStringRedirectUrl(this ILogger logger, string redirectUrl);
 

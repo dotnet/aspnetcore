@@ -50,7 +50,7 @@ public:
 
     static DWORD WINAPI CopyAndShutdown(FILE_WATCHER* watcher);
 
-    HRESULT HandleChangeCompletion(DWORD cbCompletion);
+    HRESULT HandleChangeCompletion(_In_ DWORD bytesTransferred);
 
     HRESULT Monitor();
     void StopMonitor();

@@ -57,7 +57,7 @@ public class PathStringTests
     [Theory]
     [InlineData(null, null)]
     [InlineData("", null)]
-    public void AddPathString_HandlesNullAndEmptyStrings(string appString, string concatString)
+    public void AddPathString_HandlesNullAndEmptyStrings(string? appString, string? concatString)
     {
         // Arrange
         var appPath = new PathString(appString);
@@ -77,7 +77,7 @@ public class PathStringTests
     [InlineData("/", "/test", "/test")]
     [InlineData("/myapp/", "/test/bar", "/myapp/test/bar")]
     [InlineData("/myapp/", "/test/bar/", "/myapp/test/bar/")]
-    public void AddPathString_HandlesLeadingAndTrailingSlashes(string appString, string concatString, string expected)
+    public void AddPathString_HandlesLeadingAndTrailingSlashes(string appString, string? concatString, string expected)
     {
         // Arrange
         var appPath = new PathString(appString);

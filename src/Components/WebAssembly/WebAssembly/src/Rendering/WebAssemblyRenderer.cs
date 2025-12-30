@@ -4,6 +4,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.JavaScript;
+using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
@@ -23,27 +25,44 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
 {
     private readonly ILogger _logger;
     private readonly Dispatcher _dispatcher;
+    private readonly ResourceAssetCollection _resourceCollection;
     private readonly IInternalJSImportMethods _jsMethods;
+    private readonly ComponentStatePersistenceManager _componentStatePersistenceManager;
+    private static readonly RendererInfo _componentPlatform = new("WebAssembly", isInteractive: true);
 
-    public WebAssemblyRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
+    public WebAssemblyRenderer(IServiceProvider serviceProvider, ResourceAssetCollection resourceCollection, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
     {
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
         _jsMethods = serviceProvider.GetRequiredService<IInternalJSImportMethods>();
+        _componentStatePersistenceManager = serviceProvider.GetRequiredService<ComponentStatePersistenceManager>();
 
         // if SynchronizationContext.Current is null, it means we are on the single-threaded runtime
         _dispatcher = WebAssemblyDispatcher._mainSynchronizationContext == null
             ? NullDispatcher.Instance
             : new WebAssemblyDispatcher();
 
+        _resourceCollection = resourceCollection;
+
         ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
         DefaultWebAssemblyJSRuntime.Instance.OnUpdateRootComponents += OnUpdateRootComponents;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
-    private void OnUpdateRootComponents(RootComponentOperationBatch batch)
+    private void OnUpdateRootComponents(RootComponentOperationBatch batch, string appState)
     {
         var webRootComponentManager = GetOrCreateWebRootComponentManager();
+        TaskCompletionSource? taskCompletionSource = null;
+        var stateUpdateTask = Task.CompletedTask;
+        var store = !string.IsNullOrEmpty(appState) ? new PrerenderComponentApplicationStore(appState) : null;
+        if (store != null)
+        {
+            taskCompletionSource = new TaskCompletionSource();
+            stateUpdateTask = EnqueueRestore(taskCompletionSource.Task, _componentStatePersistenceManager, store);
+        }
+
+        webRootComponentManager.SetCurrentUpdateTask(stateUpdateTask);
+
         for (var i = 0; i < batch.Operations.Length; i++)
         {
             var operation = batch.Operations[i];
@@ -68,14 +87,31 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
                     break;
             }
         }
+        taskCompletionSource?.SetResult();
+        store?.ExistingState.Clear();
 
         NotifyEndUpdateRootComponents(batch.BatchId);
     }
+
+    private static async Task EnqueueRestore(
+        Task task,
+        ComponentStatePersistenceManager componentStatePersistenceManager,
+        PrerenderComponentApplicationStore store)
+    {
+        await task;
+        await componentStatePersistenceManager.RestoreStateAsync(store, RestoreContext.ValueUpdate);
+    }
+
+    protected override IComponentRenderMode? GetComponentRenderMode(IComponent component) => RenderMode.InteractiveWebAssembly;
 
     public void NotifyEndUpdateRootComponents(long batchId)
     {
         _jsMethods.EndUpdateRootComponents(batchId);
     }
+
+    protected override ResourceAssetCollection Assets => _resourceCollection;
+
+    protected override RendererInfo RendererInfo => _componentPlatform;
 
     public override Dispatcher Dispatcher => _dispatcher;
 
@@ -180,6 +216,18 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
             InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode => componentActivator.CreateInstance(componentType),
             _ => throw new NotSupportedException($"Cannot create a component of type '{componentType}' because its render mode '{renderMode}' is not supported by WebAssembly rendering."),
         };
+
+    protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
+    {
+        return new WebAssemblyComponentState(this, componentId, component, parentComponentState);
+    }
+
+    internal ComponentMarkerKey GetMarkerKey(WebAssemblyComponentState webAssemblyComponentState)
+    {
+        return webAssemblyComponentState.ParentComponentState != null ?
+            default :
+            _webRootComponentManager!.GetRootComponentKey(webAssemblyComponentState.ComponentId);
+    }
 
     private static partial class Log
     {

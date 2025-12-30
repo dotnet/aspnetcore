@@ -1,8 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.Tracing;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -38,4 +40,40 @@ public class ExceptionHandlerOptions
     /// the original exception.
     /// </summary>
     public bool AllowStatusCode404Response { get; set; }
+
+    /// <summary>
+    /// Gets or sets a delegate used to map an exception to an HTTP status code.
+    /// </summary>
+    /// <remarks>
+    /// If <see cref="StatusCodeSelector"/> is <c>null</c>, the default exception status code 500 is used.
+    /// </remarks>
+    public Func<Exception, int>? StatusCodeSelector { get; set; }
+
+    /// <summary>
+    /// Gets or sets a callback that can return <see langword="true" /> to suppress diagnostics in <see cref="ExceptionHandlerMiddleware" />.
+    /// <para>
+    /// If <see cref="SuppressDiagnosticsCallback"/> is <c>null</c>, the default behavior is to suppress diagnostics if the exception was handled by
+    /// an <see cref="IExceptionHandler"/> service instance registered in the DI container.
+    /// To always record diagnostics for handled exceptions, set a callback that returns <see langword="false" />.
+    /// </para>
+    /// <para>
+    /// This callback is only run if the exception was handled by the middleware.
+    /// Unhandled exceptions and exceptions thrown after the response has started are always logged.
+    /// </para>
+    /// <para>
+    /// Suppressed diagnostics include:
+    /// </para>
+    /// <list type="bullet">
+    ///   <item>
+    ///     <description>Logging <c>UnhandledException</c> to <see cref="ILogger"/>.</description>
+    ///   </item>
+    ///   <item>
+    ///     <description>Writing the <c>Microsoft.AspNetCore.Diagnostics.HandledException</c> event to <see cref="EventSource" />.</description>
+    ///   </item>
+    ///   <item>
+    ///     <description>Adding the <c>error.type</c> tag to the <c>http.server.request.duration</c> metric.</description>
+    ///   </item>
+    /// </list>
+    /// </summary>
+    public Func<ExceptionHandlerSuppressDiagnosticsContext, bool>? SuppressDiagnosticsCallback { get; set; }
 }

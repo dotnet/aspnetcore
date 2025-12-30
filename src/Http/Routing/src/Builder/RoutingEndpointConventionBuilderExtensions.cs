@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebUtilities;
@@ -22,6 +23,20 @@ public static class RoutingEndpointConventionBuilderExtensions
     /// An empty collection means any host will be accepted.
     /// </param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
+    /// <remarks>
+    /// APIs that depend on the <see href="https://developer.mozilla.org/docs/Web/HTTP/Headers/Host">Host header</see>, including
+    /// <see cref="HttpRequest.Host"/> and <see cref="RequireHost"/>, are vulnerable to client spoofing.
+    ///
+    /// To safeguard against host and port spoofing:
+    /// <list type="bullet">
+    /// <item><description>
+    /// Verify the server name used during the TLS handshake using <see href="https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.connections.features.itlshandshakefeature.hostname">ITlsHandshakeFeature.HostName</see>.
+    /// </description></item>
+    /// <item><description>
+    /// Verify the local port where the connection was accepted using <see cref="HttpContext.Connection"/> (specifically <see cref="ConnectionInfo.LocalPort"/>).
+    /// </description></item>
+    /// </list>
+    /// </remarks>
     public static TBuilder RequireHost<TBuilder>(this TBuilder builder, params string[] hosts) where TBuilder : IEndpointConventionBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -112,10 +127,9 @@ public static class RoutingEndpointConventionBuilderExtensions
     }
 
     /// <summary>
-    /// Sets the <see cref="EndpointGroupNameAttribute"/> for all endpoints produced
-    /// on the target <see cref="IEndpointConventionBuilder"/> given the <paramref name="endpointGroupName" />.
-    /// The <see cref="IEndpointGroupNameMetadata" /> on the endpoint is used to set the endpoint's
-    /// GroupName in the OpenAPI specification.
+    /// Sets the <see cref="IEndpointGroupNameMetadata"/> with the given <paramref name="endpointGroupName"/>
+    /// in the endpoint <see cref="Http.Endpoint.Metadata"/> for all endpoints produced on the target
+    /// <see cref="IEndpointConventionBuilder"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
     /// <param name="endpointGroupName">The endpoint group name.</param>

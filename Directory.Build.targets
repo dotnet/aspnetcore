@@ -53,8 +53,6 @@
          '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' OR '$(IsMicrobenchmarksProject)' == 'true') ">false</IsPackable>
   </PropertyGroup>
 
-  <Import Project="eng\Baseline.Designer.props" />
-
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(IsServicingBuild)' == 'true' ">
     <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">true</IsPackageInThisPatch>
     <!-- Used to distinguish between packages building -->
@@ -71,24 +69,6 @@
 
   <PropertyGroup>
     <PackageVersionForPackageVersionInfo>$(PackageVersion)</PackageVersionForPackageVersionInfo>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(IsPackageInThisPatch)' != 'true' AND '$(BaselinePackageVersion)' != '' AND '$(IsServicingBuild)' == 'true' ">
-    <!-- This keeps assembly and package versions consistent across patches. If a package is not included in a patch, its version should stay at the baseline. -->
-    <AssemblyVersion Condition="$(BaselinePackageVersion.Contains('-'))">$(BaselinePackageVersion.Substring(0, $(BaselinePackageVersion.IndexOf('-')))).0</AssemblyVersion>
-    <AssemblyVersion Condition="! $(BaselinePackageVersion.Contains('-'))">$(BaselinePackageVersion).0</AssemblyVersion>
-    <!--
-      Ideally, we would also set the project version to match the baseline in case NuGet turns a ProjectReference into a nuspec depenendency, but
-      NuGet does not currently handle conflicts between packages and projects which have the same package id/version.
-      See https://github.com/NuGet/Home/issues/6795.
-
-      Because we still use static analysis to scrape versions, only set this during static analysis, which can be detected by checking for both NoBuild and DesignTimeBuild.
-    -->
-    <Version Condition="'$(NoBuild)' == 'true' AND '$(DesignTimeBuild)' == 'true'">$(BaselinePackageVersion)</Version>
-    <PackageVersion Condition="'$(NoBuild)' == 'true' AND '$(DesignTimeBuild)' == 'true'">$(BaselinePackageVersion)</PackageVersion>
-
-    <!-- For servicing builds, we want to resolve baseline versions of project packages that aren't building, always -->
-    <PackageVersionForPackageVersionInfo>$(BaselinePackageVersion)</PackageVersionForPackageVersionInfo>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -119,7 +99,7 @@
     <IsPackable Condition="'$(IsPackable)' == '' ">false</IsPackable>
 
     <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND $(IsTestProject) ">true</BuildHelixPayload>
-    <SkipTests Condition="'$(SkipHelixReadyTests)' == 'true' AND '$(BuildHelixPayload)' == 'true'">true</SkipTests>
+    <SkipTests Condition="'$(SkipTests)' == '' AND '$(SkipHelixReadyTests)' == 'true' AND '$(BuildHelixPayload)' == 'true'">true</SkipTests>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -172,6 +152,17 @@
         SkipUnchangedFiles="$(SkipCopyUnchangedFiles)" />
   </Target>
 
+  <!--
+    Remove the implicit package reference for Microsoft.AspNetCore.App.Internal.Assets.
+    Projects within the repo will consume framework assets by importing
+    Microsoft.AspNetCore.App.Internal.Assets.targets directly
+  -->
+  <Target Name="_RemoveAspNetCoreAppInternalAssetsReference" AfterTargets="ProcessFrameworkReferences">
+    <ItemGroup>
+      <PackageReference Remove="Microsoft.AspNetCore.App.Internal.Assets" />
+    </ItemGroup>
+  </Target>
+
   <Import Project="eng\Workarounds.targets" />
   <Import Project="artifacts\bin\GenerateFiles\Directory.Build.targets" Condition=" '$(MSBuildProjectName)' != 'GenerateFiles' " />
   <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />
@@ -179,7 +170,9 @@
   <Import Project="eng\targets\CSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
   <Import Project="eng\targets\FSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.fsproj'" />
   <Import Project="eng\targets\Wix.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
+  <Import Project="eng\targets\Node.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.nodeproj'" />
   <Import Project="eng\targets\Java.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.javaproj'" />
+  <Import Project="eng\targets\Sfx.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.sfxproj'" />
   <Import Project="eng\testing\linker\trimmingTests.targets" Condition="'$(IsPublishedAppTestProject)' == 'true'" />
   <Import Project="eng\targets\Helix.targets" Condition=" $(IsTestProject) " />
   <Import Project="eng\targets\FunctionalTestWithAssets.targets"

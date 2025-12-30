@@ -35,7 +35,9 @@ internal sealed class PageActionInvoker : ResourceInvoker, IActionInvoker
         IPageHandlerMethodSelector handlerMethodSelector,
         DiagnosticListener diagnosticListener,
         ILogger logger,
+#pragma warning disable ASPDEPR006 // Type or member is obsolete
         IActionContextAccessor actionContextAccessor,
+#pragma warning restore ASPDEPR006 // Type or member is obsolete
         IActionResultTypeMapper mapper,
         PageContext pageContext,
         IFilterMetadata[] filterMetadata,

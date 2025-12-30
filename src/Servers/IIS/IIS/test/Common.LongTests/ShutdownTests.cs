@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 // Contains all tests related to shutdown, including app_offline, abort, and app recycle
 [Collection(PublishedSitesCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class ShutdownTests : IISFunctionalTestBase
 {
     public ShutdownTests(PublishedSitesFixture fixture) : base(fixture)
@@ -49,7 +48,7 @@ public class ShutdownTests : IISFunctionalTestBase
 
         StopServer();
 
-        EventLogHelpers.VerifyEventLogEvents(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEvents(deploymentResult,
             EventLogHelpers.InProcessStarted(deploymentResult),
             EventLogHelpers.InProcessFailedToStop(deploymentResult, ""));
     }
@@ -256,7 +255,7 @@ public class ShutdownTests : IISFunctionalTestBase
         deploymentResult.AssertWorkerProcessStop();
 
         // Shutdown should be graceful here!
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
             EventLogHelpers.ShutdownMessage(deploymentResult), Logger);
     }
 
@@ -293,7 +292,7 @@ public class ShutdownTests : IISFunctionalTestBase
         await deploymentResult.AssertRecycledAsync();
 
         // Shutdown should be graceful here!
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
             EventLogHelpers.ShutdownMessage(deploymentResult), Logger);
     }
 
@@ -330,7 +329,7 @@ public class ShutdownTests : IISFunctionalTestBase
         await deploymentResult.AssertRecycledAsync();
 
         // Shutdown should be graceful here!
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
             EventLogHelpers.ShutdownMessage(deploymentResult), Logger);
     }
 
@@ -390,7 +389,6 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
     [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
     public async Task AppOfflineAddedAndRemovedStress_InProcess()
     {
@@ -537,6 +535,7 @@ public class ShutdownTests : IISFunctionalTestBase
         await deploymentResult.HttpClient.RetryRequestAsync("/ProcessId", async r => await r.Content.ReadAsStringAsync() == processBefore);
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55937")]
     [ConditionalFact]
     public async Task OutOfProcessToInProcessHostingModelSwitchWorks()
     {
@@ -559,7 +558,6 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
     public async Task ConfigurationTouchedStress_InProcess()
     {
         await ConfigurationTouchedStress(HostingModel.InProcess);
@@ -639,7 +637,7 @@ public class ShutdownTests : IISFunctionalTestBase
             var deploymentResult = await DeployAsync(deploymentParameters);
             var response = await deploymentResult.HttpClient.GetAsync("/Abort").TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
 
-            Assert.True(false, "Should not reach here");
+            Assert.Fail("Should not reach here");
         }
         catch (HttpRequestException)
         {

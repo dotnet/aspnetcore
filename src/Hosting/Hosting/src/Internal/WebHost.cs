@@ -19,6 +19,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Hosting;
 
+[Obsolete("WebHost is obsolete. Use Host.CreateDefaultBuilder or WebApplication.CreateBuilder instead.")]
 internal sealed partial class WebHost : IWebHost, IAsyncDisposable
 {
     private const string DeprecatedServerUrlsKey = "server.urls";
@@ -214,7 +215,7 @@ internal sealed partial class WebHost : IWebHost, IAsyncDisposable
             Action<IApplicationBuilder> configure = _startup!.Configure;
             if (startupFilters != null)
             {
-                foreach (var filter in startupFilters.Reverse())
+                foreach (var filter in Enumerable.Reverse(startupFilters))
                 {
                     configure = filter.Configure(configure);
                 }

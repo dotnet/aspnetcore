@@ -1,37 +1,172 @@
-﻿@using Components.TestServer.RazorComponents.Pages.Forms
+﻿@implements IDisposable
+@using Components.TestServer.RazorComponents.Pages.Forms
+@using Components.WasmMinimal.Pages.NotFound
+@using TestContentPackage.NotFound
+@using Components.TestServer.RazorComponents
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Endpoints
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using System.Threading.Tasks
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "useCustomNotFoundPage")]
+    public string? UseCustomNotFoundPage { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "useCustomRouter")]
+    public string? UseCustomRouter { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "appSetsEventArgsPath")]
+    public bool AppSetsEventArgsPath { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "useOnNavigateAsync")]
+    public bool ShouldDelayOnNavigateAsync { get; set; }
+
+    private Type? NotFoundPageType { get; set; }
+    private NavigationManager _navigationManager = default!;
+
+    [Inject]
+    private NavigationManager NavigationManager
+    {
+        get => _navigationManager;
+        set
+        {
+            _navigationManager = value;
+        }
+    }
+
+    private void OnNotFoundEvent(object sender, NotFoundEventArgs e)
+    {
+        var type = typeof(CustomNotFoundPage);
+        var routeAttributes = type.GetCustomAttributes(typeof(RouteAttribute), inherit: true);
+        if (routeAttributes.Length == 0)
+        {
+            throw new InvalidOperationException($"The type {type.FullName} " +
+                $"does not have a {typeof(RouteAttribute).FullName} applied to it.");
+        }
+
+        var routeAttribute = (RouteAttribute)routeAttributes[0];
+        if (routeAttribute.Template != null)
+        {
+            e.Path = routeAttribute.Template;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (string.Equals(UseCustomNotFoundPage, "true", StringComparison.OrdinalIgnoreCase))
+        {
+            NotFoundPageType = typeof(CustomNotFoundPage);
+        }
+        else
+        {
+            NotFoundPageType = null;
+        }
+        if (AppSetsEventArgsPath && _navigationManager is not null)
+        {
+            _navigationManager.OnNotFound += OnNotFoundEvent;
+        }
+    }
+
+    public void Dispose()
+    {
+        if (AppSetsEventArgsPath)
+        {
+            _navigationManager.OnNotFound -= OnNotFoundEvent;
+        }
+    }
+
+    private Task HandleOnNavigateAsync(NavigationContext args)
+    {
+        if (!ShouldDelayOnNavigateAsync)
+        {
+            return Task.CompletedTask;
+        }
+
+        return PerformOnNavigateAsyncWork();
+    }
+
+    private async Task PerformOnNavigateAsyncWork()
+    {
+        await Task.Yield();
+    }
+}
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <base href="/subdir/" />
+    <BasePath />
     <HeadOutlet />
 </head>
 <body>
-    <Router AppAssembly="@typeof(App).Assembly">
-        <Found Context="routeData">
-            <RouteView RouteData="@routeData" />
-            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-        </Found>
-        <NotFound>There's nothing here</NotFound>
-    </Router>
-    <script src="_framework/blazor.web.js" autostart="false" suppress-error="BL9992"></script>
-    <script src="_content/TestContentPackage/counterInterop.js"></script>
+    @if(string.Equals(UseCustomRouter, "true", StringComparison.OrdinalIgnoreCase))
+    {
+        <CustomRouter AppAssembly="@typeof(App).Assembly">
+            <Found Context="routeData">
+                <RouteView RouteData="@routeData" />
+                <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />
+            </Found>
+        </CustomRouter>
+    }
+    else
+    {
+        @if (NotFoundPageType is not null)
+        {
+            <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new[] { typeof(TestContentPackage.NotFound.NotFoundPage).Assembly }" NotFoundPage="NotFoundPageType" OnNavigateAsync="HandleOnNavigateAsync">
+                <Found Context="routeData">
+                    <RouteView RouteData="@routeData" />
+                    <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />
+                </Found>
+            </Router>
+        }
+        else
+        {
+            <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new[] { typeof(TestContentPackage.NotFound.NotFoundPage).Assembly }" OnNavigateAsync="HandleOnNavigateAsync">
+                <Found Context="routeData">
+                    <RouteView RouteData="@routeData" />
+                    <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />
+                </Found>
+                <NotFound><p id="not-found-fragment">There's nothing here</p></NotFound>
+            </Router>
+        }
+    }
     <script>
-        function appendHiddenParagraph(id) {
-            const paragraph = document.createElement('p');
-            paragraph.id = id;
-            paragraph.style = 'display: none;';
-            document.body.appendChild(paragraph);
+        // This script must come before blazor.web.js to test that
+        // the framework does the right thing when an element is already focused.
+        const elementToFocus = document.querySelector('[data-focus-on-load]');
+        if (elementToFocus) {
+            elementToFocus.focus();
+        }
+    </script>
+    <script src="@Assets["_framework/blazor.web.js"]" autostart="false" suppress-error="BL9992"></script>
+    <script src="_content/TestContentPackage/counterInterop.js"></script>
+    <script src="js/circuitContextTest.js"></script>
+    <script>
+        // This is called by the Components.WasmMinimal project.
+        function getQueryParam(key) {
+            return new URLSearchParams(location.search).get(key);
         }
 
         function callBlazorStart() {
+            function appendHiddenParagraph(id) {
+                const paragraph = document.createElement('p');
+                paragraph.id = id;
+                paragraph.style = 'display: none;';
+                document.body.appendChild(paragraph);
+            }
+
             const enableClassicInitializers = sessionStorage.getItem('enable-classic-initializers') === 'true';
             const suppressEnhancedNavigation = sessionStorage.getItem('suppress-enhanced-navigation') === 'true';
             const blockLoadBootResource = sessionStorage.getItem('block-load-boot-resource') === 'true';
-            sessionStorage.removeItem('suppress-enhanced-navigation');
+            const blockWebassemblySettings = sessionStorage.getItem('block-webassembly-settings') === 'true';
             sessionStorage.removeItem('block-load-boot-resource');
             sessionStorage.removeItem('enable-classic-initializers');
+            sessionStorage.removeItem('block-webassembly-settings');
 
             let loadBootResourceUnblocked = null;
             if (blockLoadBootResource) {
@@ -52,6 +187,35 @@
 
             let maxParallelResourceDownloadCount = 0;
             let currentParallelResourceDownloadCount = 0;
+            let webAssemblySettings = {
+                loadBootResource: function (type, name, defaultUri, integrity) {
+                    switch (type) {
+                        case 'manifest':
+                        case 'dotnetjs':
+                        case 'dotnetwasm':
+                            // note this is resolved to absolute URL using document.baseURI
+                            return `WasmMinimal/_framework/${name}`;
+                        default:
+                            // The following allows us to arbitrarily delay the loading of WebAssembly resources.
+                            // This is useful for guaranteeing that auto mode components will fall back on
+                            // using Blazor server.
+                            currentParallelResourceDownloadCount++;
+                            return fetch(`${document.baseURI}WasmMinimal/_framework/${name}?`, {
+                                method: "GET",
+                            }).then(async (response) => {
+                                if (currentParallelResourceDownloadCount > maxParallelResourceDownloadCount) {
+                                    maxParallelResourceDownloadCount = currentParallelResourceDownloadCount;
+                                    window['__aspnetcore__testing__max__parallel__resource__download__count'] = maxParallelResourceDownloadCount;
+                                }
+                                currentParallelResourceDownloadCount--;
+                                await loadBootResourceUnblocked;
+                                return response;
+                            });
+                    }
+                },
+            };
+            if (blockWebassemblySettings)
+                webAssemblySettings = null;
 
             Blazor.start({
                 ssr: {
@@ -61,31 +225,12 @@
                     circuitInactivityTimeoutMs: 100,
                 },
                 enableClassicInitializers: enableClassicInitializers,
-                webAssembly: {
-                    loadBootResource: function (type, name, defaultUri, integrity) {
-                        switch (type) {
-                            case 'manifest':
-                            case 'dotnetjs':
-                            case 'dotnetwasm':
-                                // note this is resolved to absolute URL using document.baseURI
-                                return `WasmMinimal/_framework/${name}`;
-                            default:
-                                // The following allows us to arbitrarily delay the loading of WebAssembly resources.
-                                // This is useful for guaranteeing that auto mode components will fall back on
-                                // using Blazor server.
-                                currentParallelResourceDownloadCount++;
-                                return fetch(`${document.baseURI}WasmMinimal/_framework/${name}?`, {
-                                    method: "GET",
-                                }).then(async (response) => {
-                                    if (currentParallelResourceDownloadCount > maxParallelResourceDownloadCount) {
-                                        maxParallelResourceDownloadCount = currentParallelResourceDownloadCount;
-                                        window['__aspnetcore__testing__max__parallel__resource__download__count'] = maxParallelResourceDownloadCount;
-                                    }
-                                    currentParallelResourceDownloadCount--;
-                                    await loadBootResourceUnblocked;
-                                    return response;
-                                });
-                        }
+                webAssembly: webAssemblySettings,
+                circuit: {
+                    reconnectionOptions: {
+                        // It's easier to test the reconnection logic if we wait a bit
+                        // before attempting to reconnect
+                        retryIntervalMilliseconds: 5000,
                     },
                 },
             }).then(() => appendHiddenParagraph('blazor-started'));

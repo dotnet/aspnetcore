@@ -27,7 +27,11 @@ internal sealed partial class RequestContext<TContext> : RequestContext where TC
 
         try
         {
-            InitializeFeatures();
+            if (!InitializeFeatures())
+            {
+                Abort();
+                return;
+            }
 
             if (messagePump.Stopping)
             {

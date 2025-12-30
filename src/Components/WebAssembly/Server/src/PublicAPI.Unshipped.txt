@@ -1,5 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions.ServeMultithreadingHeaders.get -> bool
-Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions.ServeMultithreadingHeaders.set -> void
-Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions.StaticAssetsManifestPath.get -> string?
-Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions.StaticAssetsManifestPath.set -> void

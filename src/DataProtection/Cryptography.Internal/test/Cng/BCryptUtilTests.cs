@@ -55,6 +55,6 @@ public unsafe class BCryptUtilTests
             }
         }
 
-        Assert.True(false, "Buffer was not filled as expected.");
+        Assert.Fail("Buffer was not filled as expected.");
     }
 }

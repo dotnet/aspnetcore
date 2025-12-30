@@ -49,28 +49,6 @@ public static class HttpClientExtensions
             // No-op
         }
 
-        throw new StatusCodeMismatchException
-        {
-            ExpectedStatusCode = expectedStatusCode,
-            ActualStatusCode = response.StatusCode,
-            ResponseContent = responseContent,
-        };
-    }
-
-    private class StatusCodeMismatchException : XunitException
-    {
-        public HttpStatusCode ExpectedStatusCode { get; set; }
-
-        public HttpStatusCode ActualStatusCode { get; set; }
-
-        public string ResponseContent { get; set; }
-
-        public override string Message
-        {
-            get
-            {
-                return $"Expected status code {ExpectedStatusCode}. Actual {ActualStatusCode}. Response Content:" + Environment.NewLine + ResponseContent;
-            }
-        }
+        throw EqualException.ForMismatchedValues(expectedStatusCode, response.StatusCode, $"Expected status code {expectedStatusCode}. Actual {response.StatusCode}. Response Content:" + Environment.NewLine + responseContent);
     }
 }

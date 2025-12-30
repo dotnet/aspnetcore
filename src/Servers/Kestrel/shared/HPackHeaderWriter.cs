@@ -10,6 +10,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 #endif
 
+internal enum HeaderWriteResult : byte
+{
+    // Not all headers written.
+    MoreHeaders = 0,
+
+    // All headers written.
+    Done = 1,
+
+    // Oversized header for the given buffer.
+    BufferTooSmall = 2,
+}
+
 // This file is used by Kestrel to write response headers and tests to write request headers.
 // To avoid adding test code to Kestrel this file is shared. Test specifc code is excluded from Kestrel by ifdefs.
 internal static class HPackHeaderWriter
@@ -17,7 +29,7 @@ internal static class HPackHeaderWriter
     /// <summary>
     /// Begin encoding headers in the first HEADERS frame.
     /// </summary>
-    public static bool BeginEncodeHeaders(int statusCode, DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
+    public static HeaderWriteResult BeginEncodeHeaders(int statusCode, DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
     {
         length = 0;
 
@@ -35,12 +47,12 @@ internal static class HPackHeaderWriter
 
         if (!headersEnumerator.MoveNext())
         {
-            return true;
+            return HeaderWriteResult.Done;
         }
 
-        // We're ok with not throwing if no headers were encoded because we've already encoded the status.
+        // Since we've already encoded the status, we know we didn't start with an empty buffer.  We don't need to increase it immediately because
         // There is a small chance that the header will encode if there is no other content in the next HEADERS frame.
-        var done = EncodeHeadersCore(hpackEncoder, headersEnumerator, buffer.Slice(length), throwIfNoneEncoded: false, out var headersLength);
+        var done = EncodeHeadersCore(hpackEncoder, headersEnumerator, buffer.Slice(length), canRequestLargerBuffer: false, out var headersLength);
         length += headersLength;
         return done;
     }
@@ -48,7 +60,19 @@ internal static class HPackHeaderWriter
     /// <summary>
     /// Begin encoding headers in the first HEADERS frame.
     /// </summary>
-    public static bool BeginEncodeHeaders(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
+    public static HeaderWriteResult BeginEncodeHeaders(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length) =>
+        BeginEncodeHeaders(hpackEncoder, headersEnumerator, buffer, iterateBeforeFirstElement: true, out length);
+
+    /// <summary>
+    /// Begin encoding headers in the first HEADERS frame without stepping the iterator.
+    /// </summary>
+    public static HeaderWriteResult RetryBeginEncodeHeaders(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length) =>
+        BeginEncodeHeaders(hpackEncoder, headersEnumerator, buffer, iterateBeforeFirstElement: false, out length);
+
+    /// <summary>
+    /// Begin encoding headers in the first HEADERS frame.
+    /// </summary>
+    private static HeaderWriteResult BeginEncodeHeaders(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, bool iterateBeforeFirstElement, out int length)
     {
         length = 0;
 
@@ -58,12 +82,12 @@ internal static class HPackHeaderWriter
         }
         length += sizeUpdateLength;
 
-        if (!headersEnumerator.MoveNext())
+        if (iterateBeforeFirstElement && !headersEnumerator.MoveNext())
         {
-            return true;
+            return HeaderWriteResult.Done;
         }
 
-        var done = EncodeHeadersCore(hpackEncoder, headersEnumerator, buffer.Slice(length), throwIfNoneEncoded: true, out var headersLength);
+        var done = EncodeHeadersCore(hpackEncoder, headersEnumerator, buffer.Slice(length), canRequestLargerBuffer: true, out var headersLength);
         length += headersLength;
         return done;
     }
@@ -71,9 +95,9 @@ internal static class HPackHeaderWriter
     /// <summary>
     /// Continue encoding headers in the next HEADERS frame. The enumerator should already have a current value.
     /// </summary>
-    public static bool ContinueEncodeHeaders(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
+    public static HeaderWriteResult ContinueEncodeHeaders(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, out int length)
     {
-        return EncodeHeadersCore(hpackEncoder, headersEnumerator, buffer, throwIfNoneEncoded: true, out length);
+        return EncodeHeadersCore(hpackEncoder, headersEnumerator, buffer, canRequestLargerBuffer: true, out length);
     }
 
     private static bool EncodeStatusHeader(int statusCode, DynamicHPackEncoder hpackEncoder, Span<byte> buffer, out int length)
@@ -91,7 +115,7 @@ internal static class HPackHeaderWriter
         }
     }
 
-    private static bool EncodeHeadersCore(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, bool throwIfNoneEncoded, out int length)
+    private static HeaderWriteResult EncodeHeadersCore(DynamicHPackEncoder hpackEncoder, Http2HeadersEnumerator headersEnumerator, Span<byte> buffer, bool canRequestLargerBuffer, out int length)
     {
         var currentLength = 0;
         do
@@ -115,22 +139,21 @@ internal static class HPackHeaderWriter
                 out var headerLength))
             {
                 // If the header wasn't written, and no headers have been written, then the header is too large.
-                // Throw an error to avoid an infinite loop of attempting to write large header.
-                if (currentLength == 0 && throwIfNoneEncoded)
+                // Request for a larger buffer to write large header.
+                if (currentLength == 0 && canRequestLargerBuffer)
                 {
-                    throw new HPackEncodingException(SR.net_http_hpack_encode_failure);
+                    length = 0;
+                    return HeaderWriteResult.BufferTooSmall;
                 }
-
                 length = currentLength;
-                return false;
+                return HeaderWriteResult.MoreHeaders;
             }
 
             currentLength += headerLength;
         }
         while (headersEnumerator.MoveNext());
-
         length = currentLength;
-        return true;
+        return HeaderWriteResult.Done;
     }
 
     private static HeaderEncodingHint ResolveHeaderEncodingHint(int staticTableId, string name)

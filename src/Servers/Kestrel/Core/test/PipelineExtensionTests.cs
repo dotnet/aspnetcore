@@ -1,15 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Text;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
+
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
 
 public class PipelineExtensionTests : IDisposable
 {
@@ -17,7 +16,7 @@ public class PipelineExtensionTests : IDisposable
     private const int _ulongMaxValueLength = 20;
 
     private readonly Pipe _pipe;
-    private readonly MemoryPool<byte> _memoryPool = PinnedBlockMemoryPoolFactory.Create();
+    private readonly MemoryPool<byte> _memoryPool = TestMemoryPoolFactory.Create();
 
     public PipelineExtensionTests()
     {
@@ -47,6 +46,25 @@ public class PipelineExtensionTests : IDisposable
         var numAsStr = number.ToString(CultureInfo.InvariantCulture);
         var expected = Encoding.ASCII.GetBytes(numAsStr);
         AssertExtensions.Equal(expected, reader.Buffer.Slice(0, numAsStr.Length).ToArray());
+    }
+
+    [Fact]
+    public void WritesNumericToAsciiFastPath()
+    {
+        for (ulong number = 0; number < 1000; number++)
+        {
+            var writerBuffer = _pipe.Writer;
+            var writer = new BufferWriter<PipeWriter>(writerBuffer);
+            writer.WriteNumeric(number);
+            writer.Commit();
+            writerBuffer.FlushAsync().GetAwaiter().GetResult();
+
+            var readResult = _pipe.Reader.ReadAsync().GetAwaiter().GetResult();
+            var numAsStr = number.ToString(CultureInfo.InvariantCulture);
+            var expected = Encoding.ASCII.GetBytes(numAsStr);
+            AssertExtensions.Equal(expected, readResult.Buffer.Slice(0, numAsStr.Length).ToArray());
+            _pipe.Reader.AdvanceTo(readResult.Buffer.End);
+        }
     }
 
     [Theory]

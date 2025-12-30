@@ -1,56 +1,62 @@
 plugins {
     id 'java'
-    id 'maven'
+    id 'maven-publish'
 }
 
 group 'com.microsoft.signalr.messagepack'
 
+java
+{
+    withJavadocJar()
+    withSourcesJar()
+}
+
 dependencies {
     implementation project(':core')
-    compile 'org.msgpack:msgpack-core:0.8.20'
-    compile 'org.msgpack:jackson-dataformat-msgpack:0.8.20'
+    implementation 'org.msgpack:msgpack-core:0.8.20'
+    implementation 'org.msgpack:jackson-dataformat-msgpack:0.8.20'
 }
 
-archivesBaseName = 'signalr-messagepack'
-
-task sourceJar(type: Jar) {
-    classifier "sources"
-    from sourceSets.main.allJava
+base {
+    archivesName = 'signalr-messagepack'
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier "javadoc"
-    from javadoc.destinationDir
-}
+publishing {
+    publications {
+        release(MavenPublication) {
+            from components.java
 
-task generatePOM {
-    pom {
-        project {
             artifactId 'signalr-messagepack'
-            inceptionYear '2020'
-            description 'MessagePack protocol implementation for ASP.NET Core SignalR Client for Java applications'
-            url 'https://github.com/dotnet/aspnetcore'
-            name groupId + ':' + artifactId
-            licenses {
-                license {
-                    name 'MIT License'
-                    url 'https://opensource.org/licenses/MIT'
-                    distribution 'repo'
+
+            pom {
+                packaging = 'jar'
+                inceptionYear = '2020'
+                url = 'https://github.com/dotnet/aspnetcore'
+                name = groupId + ':' + artifactId
+                description = 'MessagePack protocol implementation for ASP.NET Core SignalR Client for Java applications'
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://opensource.org/licenses/MIT'
+                        distribution = 'repo'
+                    }
                 }
-            }
-            scm {
-                connection 'scm:git:https://github.com/dotnet/aspnetcore.git'
-                developerConnection 'scm:git:https://github.com/dotnet/aspnetcore.git'
-                url 'https://github.com/dotnet/aspnetcore/tree/main'
-            }
-            developers {
-                developer {
-                    id 'microsoft'
-                    name 'Microsoft'
+                scm {
+                    connection = 'scm:git:https://github.com/dotnet/aspnetcore.git'
+                    developerConnection = 'scm:git:https://github.com/dotnet/aspnetcore.git'
+                    url = 'https://github.com/dotnet/aspnetcore/tree/main'
+                }
+                developers {
+                    developer {
+                        id = 'microsoft'
+                        name = 'Microsoft'
+                    }
                 }
             }
         }
-    }.writeTo("${buildDir}/libs/signalr-messagepack-${project.version}.pom")
+    }
 }
 
-task createPackage(dependsOn: [jar,sourceJar,javadocJar,generatePOM])
+tasks.withType(GenerateMavenPom).all {
+    destination = layout.buildDirectory.file("libs/signalr-messagepack-${project.version}.pom").get().asFile
+}

@@ -223,7 +223,7 @@ public class CookieChunkingTests
             "TestCookieC5=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure; extension",
             "TestCookieC6=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure; extension",
             "TestCookieC7=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure; extension",
-        }, cookies);
+        }, cookies.ToArray());
     }
 
     [Fact]
@@ -240,7 +240,7 @@ public class CookieChunkingTests
             "TestCookie=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
             "TestCookieC1=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
             "TestCookieC2=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
-        }, cookies);
+        }, cookies.ToArray());
     }
 
     [Fact]
@@ -258,7 +258,7 @@ public class CookieChunkingTests
             "TestCookie=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
             "TestCookieC1=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
             "TestCookieC2=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
-        }, cookies);
+        }, cookies.ToArray());
     }
 
     [Fact]
@@ -311,6 +311,6 @@ public class CookieChunkingTests
                 "TestCookieC5=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure; extension",
                 "TestCookieC6=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure; extension",
                 "TestCookieC7=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure; extension"
-            }, httpContext.Response.Headers[HeaderNames.SetCookie]);
+            }, httpContext.Response.Headers[HeaderNames.SetCookie].ToArray());
     }
 }

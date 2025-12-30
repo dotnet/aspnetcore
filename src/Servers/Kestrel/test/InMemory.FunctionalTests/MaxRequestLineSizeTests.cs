@@ -1,13 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading.Tasks;
+using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.InternalTesting;
-using Microsoft.Extensions.Logging.Testing;
-using Xunit;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -28,7 +28,10 @@ public class MaxRequestLineSizeTests : LoggedTest
     [InlineData("DELETE /a%20b%20c/d%20e?f=ghi HTTP/1.1\r\nHost:\r\n\r\n", 1027)]
     public async Task ServerAcceptsRequestLineWithinLimit(string request, int limit)
     {
-        await using (var server = CreateServer(limit))
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        await using (var server = CreateServer(limit, testMeterFactory))
         {
             using (var connection = server.CreateConnection())
             {
@@ -45,6 +48,8 @@ public class MaxRequestLineSizeTests : LoggedTest
                     "");
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Theory]
@@ -54,7 +59,10 @@ public class MaxRequestLineSizeTests : LoggedTest
     [InlineData("DELETE /a%20b%20c/d%20e?f=ghi HTTP/1.1\r\n")]
     public async Task ServerRejectsRequestLineExceedingLimit(string requestLine)
     {
-        await using (var server = CreateServer(requestLine.Length - 1))
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        await using (var server = CreateServer(requestLine.Length - 1, testMeterFactory))
         {
             using (var connection = server.CreateConnection())
             {
@@ -68,11 +76,13 @@ public class MaxRequestLineSizeTests : LoggedTest
                     "");
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.InvalidRequestLine, m.Tags));
     }
 
-    private TestServer CreateServer(int maxRequestLineSize)
+    private TestServer CreateServer(int maxRequestLineSize, IMeterFactory meterFactory)
     {
-        return new TestServer(async httpContext => await httpContext.Response.WriteAsync("hello, world"), new TestServiceContext(LoggerFactory)
+        return new TestServer(async httpContext => await httpContext.Response.WriteAsync("hello, world"), new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(meterFactory))
         {
             ServerOptions = new KestrelServerOptions
             {

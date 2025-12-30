@@ -72,19 +72,19 @@ public class FormFeature : IFormFeature
     {
         get
         {
-			MediaTypeHeaderValue? mt = null;
+            MediaTypeHeaderValue? mt = null;
 
-			if (_request is not null)
-			{
-				_ = MediaTypeHeaderValue.TryParse(_request.ContentType, out mt);
-			}
+            if (_request is not null)
+            {
+                _ = MediaTypeHeaderValue.TryParse(_request.ContentType, out mt);
+            }
 
-			if (_form is not null && mt is null)
-			{
-				mt = _formContentType;
-			}
+            if (_form is not null && mt is null)
+            {
+                mt = _formContentType;
+            }
 
-			return mt;
+            return mt;
         }
     }
 
@@ -127,9 +127,9 @@ public class FormFeature : IFormFeature
             {
                 _formContentType = null;
             }
-			else
+            else
             {
-				_formContentType ??= new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+                _formContentType ??= new MediaTypeHeaderValue("application/x-www-form-urlencoded");
             }
         }
     }
@@ -334,7 +334,7 @@ public class FormFeature : IFormFeature
     private static Encoding FilterEncoding(Encoding? encoding)
     {
         // UTF-7 is insecure and should not be honored. UTF-8 will succeed for most cases.
-        // https://learn.microsoft.com/en-us/dotnet/core/compatibility/syslib-warnings/syslib0001
+        // https://learn.microsoft.com/dotnet/core/compatibility/syslib-warnings/syslib0001
         if (encoding == null || encoding.CodePage == 65000)
         {
             return Encoding.UTF8;

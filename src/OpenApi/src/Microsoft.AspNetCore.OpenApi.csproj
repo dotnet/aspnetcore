@@ -7,19 +7,28 @@
     <!-- Needed to support compiling Utf8BufferTextWriter implementation shared with SignalR -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Description>Provides APIs for annotating route handler endpoints in ASP.NET Core with OpenAPI annotations.</Description>
-    <IsAotCompatible>true</IsAotCompatible>
+    <IsTrimmable>true</IsTrimmable>
     <!-- Required to generated native AoT friendly `MapOpenApi` endpoint. -->
     <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
     <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.AspNetCore.Http.Generated</InterceptorsPreviewNamespaces>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.OpenApi" />
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
-    <Reference Include="Microsoft.AspNetCore.Routing" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.OpenApi" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,6 +37,7 @@
     <Compile Include="$(SharedSourceRoot)PropertyAsParameterInfo.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ParameterBindingMethodCache.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)TypeNameHelper\TypeNameHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Obsoletions.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,7 +52,18 @@
 
   <!-- Required to generated native AoT friendly `MapOpenApi` endpoint. -->
   <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)/src/Http/Http.Extensions/gen/Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(RepoRoot)/src/Http/Http.Extensions/gen/Microsoft.AspNetCore.Http.RequestDelegateGenerator/Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <!-- Required to bundle source generator related assets into build. -->
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)/src/OpenApi/gen/Microsoft.AspNetCore.OpenApi.SourceGenerators.csproj" ReferenceOutputAssembly="false" />
+    <None Include="$(ArtifactsBinDir)\Microsoft.AspNetCore.OpenApi.SourceGenerators\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.OpenApi.SourceGenerators.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="..\build\Microsoft.AspNetCore.OpenApi.targets" Pack="true" PackagePath="build" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.OpenApi" />
   </ItemGroup>
 
 </Project>

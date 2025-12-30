@@ -2,14 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.Marshalling;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
@@ -44,6 +40,11 @@ public partial class Startup
         {
             app.UseHttpsRedirection();
         }
+
+#if !FORWARDCOMPAT
+        app.UseWebSockets();
+#endif
+
         TestStartup.Register(app, this);
         _httpContextAccessor = httpContextAccessor;
     }

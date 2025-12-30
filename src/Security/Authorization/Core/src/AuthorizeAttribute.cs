@@ -43,7 +43,7 @@ public class AuthorizeAttribute : Attribute, IAuthorizeData
     /// </summary>
     public string? AuthenticationSchemes { get; set; }
 
-    /// <inheritdoc/>>
+    /// <inheritdoc/>
     public override string ToString()
     {
         return DebuggerHelpers.GetDebugText(nameof(Policy), Policy, nameof(Roles), Roles, nameof(AuthenticationSchemes), AuthenticationSchemes, includeNullValues: false, prefix: "Authorize");
