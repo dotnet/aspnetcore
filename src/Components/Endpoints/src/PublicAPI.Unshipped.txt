@@ -11,10 +11,8 @@ Microsoft.AspNetCore.Components.Endpoints.ITempDataProvider.PersistExistingTempD
 Microsoft.AspNetCore.Components.Endpoints.ITempDataProvider.SaveTempData(Microsoft.AspNetCore.Http.HttpContext! context, System.Collections.Generic.IDictionary<string!, object?>! values) -> void
 Microsoft.AspNetCore.Components.Endpoints.TempDataProviderServiceCollectionExtensions
 Microsoft.AspNetCore.Components.ITempData
-Microsoft.AspNetCore.Components.ITempData.ContainsValue(object! value) -> bool
 Microsoft.AspNetCore.Components.ITempData.Get(string! key) -> object?
 Microsoft.AspNetCore.Components.ITempData.Keep() -> void
 Microsoft.AspNetCore.Components.ITempData.Keep(string! key) -> void
 Microsoft.AspNetCore.Components.ITempData.Peek(string! key) -> object?
-Microsoft.AspNetCore.Components.ITempData.WasAccessed.get -> bool
 static Microsoft.AspNetCore.Components.Endpoints.TempDataProviderServiceCollectionExtensions.AddCookieTempDataValueProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Components.Endpoints.CookieTempDataProviderOptions!>? configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

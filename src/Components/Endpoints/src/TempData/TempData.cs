@@ -72,11 +72,6 @@ internal sealed class TempData : ITempData
         }
     }
 
-    public bool ContainsValue(object value)
-    {
-        return Data.ContainsValue(value);
-    }
-
     public bool ContainsKey(string key)
     {
         return Data.ContainsKey(key);

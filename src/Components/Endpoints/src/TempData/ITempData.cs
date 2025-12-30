@@ -10,10 +10,7 @@ namespace Microsoft.AspNetCore.Components;
 /// </summary>
 public interface ITempData : IDictionary<string, object?>
 {
-    /// <summary>
-    /// Gets a value indicating whether the TempData has been accessed.
-    /// </summary>
-    bool WasAccessed { get; }
+    internal bool WasAccessed { get; }
 
     /// <summary>
     /// Gets the value associated with the specified key and then schedules it for deletion.
@@ -34,9 +31,4 @@ public interface ITempData : IDictionary<string, object?>
     /// Makes the element with the <paramref name="key"/> persist for another request.
     /// </summary>
     void Keep(string key);
-
-    /// <summary>
-    /// Returns true if the TempData dictionary contains the specified <paramref name="value"/>.
-    /// </summary>
-    bool ContainsValue(object value);
 }

@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -20,16 +19,19 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
     private readonly ITempDataSerializer _tempDataSerializer;
     private readonly CookieTempDataProviderOptions _options;
     private readonly ChunkingCookieManager _chunkingCookieManager;
+    private readonly ILogger<CookieTempDataProvider> _logger;
 
     public CookieTempDataProvider(
         IDataProtectionProvider dataProtectionProvider,
         IOptions<CookieTempDataProviderOptions> options,
-        ITempDataSerializer tempDataSerializer)
+        ITempDataSerializer tempDataSerializer,
+        ILogger<CookieTempDataProvider> logger)
     {
         _dataProtector = dataProtectionProvider.CreateProtector(Purpose);
         _tempDataSerializer = tempDataSerializer;
         _options = options.Value;
         _chunkingCookieManager = new ChunkingCookieManager();
+        _logger = logger;
     }
 
     public IDictionary<string, object?> LoadTempData(HttpContext context)
@@ -37,9 +39,9 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
         try
         {
             var cookieName = _options.Cookie.Name ?? CookieName;
-            if (!context.Request.Cookies.ContainsKey(cookieName) && context.RequestServices.GetService<ILogger<CookieTempDataProvider>>() is { } logger)
+            if (!context.Request.Cookies.ContainsKey(cookieName))
             {
-                Log.TempDataCookieNotFound(logger, cookieName);
+                Log.TempDataCookieNotFound(_logger, cookieName);
                 return new Dictionary<string, object?>();
             }
             var serializedDataFromCookie = _chunkingCookieManager.GetRequestCookie(context, cookieName);
@@ -62,15 +64,13 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
             {
                 convertedData[kvp.Key] = _tempDataSerializer.Deserialize(kvp.Value);
             }
+            Log.TempDataCookieLoadSuccess(_logger, cookieName);
             return convertedData;
         }
         catch (Exception ex)
         {
             var cookieName = _options.Cookie.Name ?? CookieName;
-            if (context.RequestServices.GetService<ILogger<CookieTempDataProvider>>() is { } logger)
-            {
-                Log.TempDataCookieLoadFailure(logger, cookieName, ex);
-            }
+            Log.TempDataCookieLoadFailure(_logger, cookieName, ex);
 
             var cookieOptions = _options.Cookie.Build(context);
             SetCookiePath(context, cookieOptions);
@@ -103,6 +103,7 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
         var protectedBytes = _dataProtector.Protect(bytes);
         var encodedValue = WebEncoders.Base64UrlEncode(protectedBytes);
         _chunkingCookieManager.AppendResponseCookie(context, cookieName, encodedValue, cookieOptions);
+        Log.TempDataCookieSaveSuccess(_logger, cookieName);
     }
 
     public void PersistExistingTempData(HttpContext context)
@@ -134,7 +135,10 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
         [LoggerMessage(2, LogLevel.Warning, "The temp data cookie {CookieName} could not be loaded.", EventName = "TempDataCookieLoadFailure")]
         public static partial void TempDataCookieLoadFailure(ILogger logger, string cookieName, Exception exception);
 
-        [LoggerMessage(3, LogLevel.Warning, "The temp data cookie {CookieName} could not be saved, because it is too large to fit in a single cookie.", EventName = "TempDataCookieSaveFailure")]
-        public static partial void TempDataCookieSaveFailure(ILogger logger, string cookieName);
+        [LoggerMessage(3, LogLevel.Debug, "The temp data cookie {CookieName} was successfully saved.", EventName = "TempDataCookieSaveSuccess")]
+        public static partial void TempDataCookieSaveSuccess(ILogger logger, string cookieName);
+
+        [LoggerMessage(4, LogLevel.Debug, "The temp data cookie {CookieName} was successfully loaded.", EventName = "TempDataCookieLoadSuccess")]
+        public static partial void TempDataCookieLoadSuccess(ILogger logger, string cookieName);
     }
 }
