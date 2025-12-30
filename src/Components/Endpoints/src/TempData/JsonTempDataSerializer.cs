@@ -16,6 +16,16 @@ internal class JsonTempDataSerializer : ITempDataSerializer
         { JsonValueKind.Null, static _ => null },
     };
 
+    private static Type GetArrayTypeInfo(JsonValueKind kind)
+    {
+        return kind switch
+        {
+            JsonValueKind.String => typeof(string),
+            JsonValueKind.Number => typeof(int),
+            _ => typeof(object)
+        };
+    }
+
     public object? Deserialize(JsonElement element)
     {
         try
@@ -65,12 +75,12 @@ internal class JsonTempDataSerializer : ITempDataSerializer
         var arrayLength = arrayElement.GetArrayLength();
         if (arrayLength == 0)
         {
-            return Array.Empty<object?>();
+            return null;
         }
-        var array = new object?[arrayLength];
+        var array = Array.CreateInstance(GetArrayTypeInfo(arrayElement[0].ValueKind), arrayLength);
         for (var i = 0; i < arrayLength; i++)
         {
-            array[i] = DeserializeSimpleType(arrayElement[i]);
+            array.SetValue(DeserializeSimpleType(arrayElement[i]), i);
         }
         return array;
     }

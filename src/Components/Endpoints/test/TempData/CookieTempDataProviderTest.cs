@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
@@ -21,7 +22,8 @@ public class CookieTempDataProviderTest
         cookieTempDataProvider = new CookieTempDataProvider(
             new EphemeralDataProtectionProvider(),
             Options.Create<CookieTempDataProviderOptions>(new()),
-            new JsonTempDataSerializer());
+            new JsonTempDataSerializer(),
+            NullLogger<CookieTempDataProvider>.Instance);
     }
 
     [Fact]

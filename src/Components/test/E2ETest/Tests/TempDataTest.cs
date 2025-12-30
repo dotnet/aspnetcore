@@ -133,4 +133,18 @@ public class TempDataTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorCo
         Browser.FindElement(By.Id("redirect-button")).Click();
         Browser.Equal("Message", () => Browser.FindElement(By.Id("message")).Text);
     }
+
+    [Fact]
+    public void TempDataPreservesTypedArrays()
+    {
+        Navigate($"{ServerPathBase}/tempdata");
+
+        Browser.Equal("Wrong type: null", () => Browser.FindElement(By.Id("string-array")).Text);
+        Browser.Equal("Wrong type: null", () => Browser.FindElement(By.Id("int-array")).Text);
+
+        Browser.FindElement(By.Id("set-values-button")).Click();
+
+        Browser.Equal("a,b,c", () => Browser.FindElement(By.Id("string-array")).Text);
+        Browser.Equal("1,2,3", () => Browser.FindElement(By.Id("int-array")).Text);
+    }
 }

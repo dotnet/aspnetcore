@@ -35,6 +35,9 @@
 <p id="peeked-value">@_peekedValue</p>
 <p id="kept-value">@_keptValue</p>
 
+<p id="string-array">@_stringArrayResult</p>
+<p id="int-array">@_intArrayResult</p>
+
 <p id="contains-message">@_containsMessageKey</p>
 <p id="contains-peeked-value">@_containsPeekedValueKey</p>
 
@@ -54,6 +57,8 @@
     private string? _message;
     private string? _peekedValue;
     private string? _keptValue;
+    private string? _stringArrayResult;
+    private string? _intArrayResult;
 
     private bool _containsMessageKey;
     private bool _containsPeekedValueKey;
@@ -71,6 +76,12 @@
         _peekedValue = TempData!.Peek("PeekedValue") as string ?? "No peeked value";
         _keptValue = TempData!.Get("KeptValue") as string ?? "No kept value";
 
+        // Test typed array deserialization - these should be string[] and int[], not object[]
+        var stringArray = TempData!.Get("StringArray");
+        var intArray = TempData!.Get("IntArray");
+        _stringArrayResult = stringArray is string[] arr ? string.Join(",", arr) : $"Wrong type: {stringArray?.GetType().Name ?? "null"}";
+        _intArrayResult = intArray is int[] nums ? string.Join(",", nums) : $"Wrong type: {intArray?.GetType().Name ?? "null"}";
+
         if (ValueToKeep == "all")
         {
             TempData!.Keep();
@@ -86,6 +97,8 @@
         TempData!["Message"] = "Message";
         TempData!["PeekedValue"] = "Peeked value";
         TempData!["KeptValue"] = "Kept value";
+        TempData!["StringArray"] = new string[] { "a", "b", "c" };
+        TempData!["IntArray"] = new int[] { 1, 2, 3 };
         if (differentPage)
         {
             NavigateToDifferentPage();
