@@ -2,10 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
+#if !IGNITOR
 using Microsoft.AspNetCore.Components.RenderTree;
+#endif
 
 #if BLAZOR_WEBVIEW
 namespace Microsoft.AspNetCore.Components.WebView;
+#elif IGNITOR
+namespace Ignitor;
 #else
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 #endif

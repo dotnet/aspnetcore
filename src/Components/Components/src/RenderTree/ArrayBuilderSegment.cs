@@ -5,7 +5,11 @@
 
 using System.Collections;
 
+#if IGNITOR
+namespace Ignitor;
+#else
 namespace Microsoft.AspNetCore.Components.RenderTree;
+#endif
 
 /// <summary>
 /// Types in the Microsoft.AspNetCore.Components.RenderTree are not recommended for use outside

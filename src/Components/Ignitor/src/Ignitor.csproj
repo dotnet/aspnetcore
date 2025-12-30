@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsShippingPackage>false</IsShippingPackage>
+    <!-- This package is not shipping, ignore API doc requirements -->
+    <NoWarn>$(NoWarn);CS1591;CA1822;CA2201;CA1510;IDE2000;IDE0060</NoWarn>
+    <DefineConstants>$(DefineConstants);IGNITOR</DefineConstants>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Shared ArrayBuilder source -->
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
+    <!-- RenderTree types - linked from Components source -->
+    <Compile Include="..\..\Components\src\RenderTree\ArrayBuilderExtensions.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\ArrayBuilderSegment.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\ArrayRange.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\EventFieldInfo.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\NamedEventChange.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\NamedEventChangeType.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\RenderBatch.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\RenderTreeDiff.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\RenderTreeEdit.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\RenderTreeEditType.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\RenderTreeFrame.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\RenderTreeFrameType.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Components\src\RenderTree\ComponentFrameFlags.cs" LinkBase="RenderTree" />
+    <Compile Include="..\..\Web\src\WebEventDescriptor.cs" LinkBase="RenderTree" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.SignalR.Client" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />
+    <Reference Include="Microsoft.Extensions.Logging.Console" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalVisibleTo Include="Ignitor.Test" />
+  </ItemGroup>
+
+</Project>
