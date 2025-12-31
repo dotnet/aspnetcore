@@ -1367,9 +1367,49 @@ public class ServicesHub : TestHub
         return true;
     }
 
+    public bool ServiceWithAttribute([FromService] Service1 service)
+    {
+        return true;
+    }
+
+    public int ServiceWithStringAttribute([FromService] Service1 service, string value)
+    {
+        return 115;
+    }
+
     public bool MultipleServices([FromService] Service1 service, [FromService] Service2 service2, [FromService] Service3 service3)
     {
         return true;
+    }
+
+    public bool MultipleServicesWithAttribute([FromService] Service1 service, [FromService] Service2 service2)
+    {
+        return true;
+    }
+
+    public int MixedParamsWithAttribute(int num, string text, [FromService] Service1 service, [FromService] Service2 service2)
+    {
+        return 111;
+    }
+
+    public int ServiceAttributeBeforeParam([FromService] Service1 service, int num)
+    {
+        return num + 1;
+    }
+
+    public async Task<int> UploadWithServiceAttribute(int value, [FromService] Service1 service, ChannelReader<int> channelReader)
+    {
+        int total = 0;
+        while (await channelReader.WaitToReadAsync())
+        {
+            total += await channelReader.ReadAsync();
+        }
+        return total + value + 1;
+    }
+
+    public int ServiceWithOptionalParam([FromService] Service1 service, int value = 42)
+    {
+        return value + 1;
     }
 
     public async Task<int> ServicesAndParams(int value, [FromService] Service1 service, ChannelReader<int> channelReader, [FromService] Service2 service2, bool value2)
@@ -1380,11 +1420,6 @@ public class ServicesHub : TestHub
             total += await channelReader.ReadAsync();
         }
         return total + value;
-    }
-    
-    public int ServiceWithStringAttribute([FromService] Service1 service, string value)
-    {
-        return 115;
     }
 
     public int ServiceWithoutAttribute(Service1 service)
