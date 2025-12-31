@@ -21,7 +21,7 @@ internal static partial class LdapAdapter
     {
         var user = identity.Name!;
         var userAccountNameIndex = user.IndexOf('@');
-        var userAccountName = userAccountNameIndex == -1 ? user : user.Substring(0, userAccountNameIndex);
+        var userAccountName = userAccountNameIndex < 0 ? user : user.Substring(0, userAccountNameIndex);
 
         if (settings.ClaimsCache == null)
         {

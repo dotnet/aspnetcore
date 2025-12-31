@@ -64,7 +64,7 @@ internal sealed class AnsiConsole
         for (; ; )
         {
             var escapeIndex = message.IndexOf("\x1b[", escapeScan, StringComparison.Ordinal);
-            if (escapeIndex == -1)
+            if (escapeIndex < 0)
             {
                 var text = message.Substring(escapeScan);
                 Writer.Write(text);

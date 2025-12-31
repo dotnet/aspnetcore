@@ -111,7 +111,7 @@ internal partial class IISHttpContext
                 }
 
                 // Read was not canceled because of incoming write or IO stopping
-                if (read != -1)
+                if (read > 0)
                 {
                     _consumedBytes += read;
                     _bodyInputPipe.Writer.Advance(read);

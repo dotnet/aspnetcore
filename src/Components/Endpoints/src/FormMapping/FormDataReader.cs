@@ -138,7 +138,7 @@ internal struct FormDataReader : IDisposable
             while (startIndex >= 0)
             {
                 var endIndex = key.Value.Span[startIndex..].IndexOf(']') + startIndex;
-                if (endIndex == -1)
+                if (endIndex < 0)
                 {
                     // Ignore malformed keys
                     break;
@@ -157,7 +157,7 @@ internal struct FormDataReader : IDisposable
 
                 var nextOpenBracket = key.Value.Span[(endIndex + 1)..].IndexOf('[');
 
-                startIndex = nextOpenBracket != -1 ? endIndex + 1 + nextOpenBracket : -1;
+                startIndex = nextOpenBracket >= 0 ? endIndex + 1 + nextOpenBracket : -1;
             }
         }
 
@@ -264,7 +264,7 @@ internal struct FormDataReader : IDisposable
     internal string GetLastPrefixSegment()
     {
         var index = _currentPrefixBuffer.Span.LastIndexOfAny(".[");
-        if (index == -1)
+        if (index < 0)
         {
             return _currentPrefixBuffer.ToString();
         }

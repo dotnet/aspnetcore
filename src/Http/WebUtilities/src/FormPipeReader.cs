@@ -167,7 +167,7 @@ public class FormPipeReader
             var ampersand = span.IndexOf(andDelimiter);
             ReadOnlySpan<byte> keyValuePair;
             int equals;
-            var foundAmpersand = ampersand != -1;
+            var foundAmpersand = ampersand >= 0;
 
             if (foundAmpersand)
             {
@@ -196,7 +196,7 @@ public class FormPipeReader
 
             equals = keyValuePair.IndexOf(equalsDelimiter);
 
-            if (equals == -1)
+            if (equals < 0)
             {
                 // Too long for the whole segment to be a key.
                 if (keyValuePair.Length > KeyLengthLimit)

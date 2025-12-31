@@ -35,7 +35,7 @@ public class DefaultPersonalDataProtector : IPersonalDataProtector
     {
         Debug.Assert(data != null);
         var split = data.IndexOf(':');
-        if (split == -1 || split == data.Length - 1)
+        if (split < 0 || split == data.Length - 1)
         {
             throw new InvalidOperationException("Malformed data.");
         }
