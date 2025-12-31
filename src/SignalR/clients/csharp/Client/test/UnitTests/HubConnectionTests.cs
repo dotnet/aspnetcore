@@ -343,6 +343,35 @@ public partial class HubConnectionTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task CanCancelTokenDuringInvoke_SendsCancelInvocation()
+    {
+        using (StartVerifiableLog())
+        {
+            var connection = new TestConnection();
+            var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+
+            await hubConnection.StartAsync().DefaultTimeout();
+
+            using var cts = new CancellationTokenSource();
+            var invokeTask = hubConnection.InvokeAsync<int>("TestMethod", cts.Token);
+
+            var item = await connection.ReadSentJsonAsync().DefaultTimeout();
+            var invocationId = item["invocationId"];
+
+            // Cancel the invocation
+            cts.Cancel();
+
+            // Should receive CancelInvocationMessage
+            item = await connection.ReadSentJsonAsync().DefaultTimeout();
+            Assert.Equal(HubProtocolConstants.CancelInvocationMessageType, item["type"]);
+            Assert.Equal(invocationId, item["invocationId"]);
+
+            // Invocation on client-side completes with cancellation
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await invokeTask).DefaultTimeout();
+        }
+    }
+
+    [Fact]
     public async Task ConnectionTerminatedIfServerTimeoutIntervalElapsesWithNoMessages()
     {
         bool ExpectedErrors(WriteContext writeContext)
