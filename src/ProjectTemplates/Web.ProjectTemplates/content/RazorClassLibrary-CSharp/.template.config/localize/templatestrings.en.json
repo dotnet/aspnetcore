@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": "Razor Class Library",
-  "description": "A project for creating a Razor class library that targets .NET",
+  "description": "Reusable web UI components you can share across projects",
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",

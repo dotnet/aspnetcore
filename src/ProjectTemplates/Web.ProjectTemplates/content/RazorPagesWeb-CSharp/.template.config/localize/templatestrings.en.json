@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": "ASP.NET Core Web App (Razor Pages)",
-  "description": "A project template for creating an ASP.NET Core application with example ASP.NET Core Razor Pages content",
+  "description": "A web app with Razor Pages, ideal for building dynamic websites quickly",
   "symbols/auth/choices/None/description": "No authentication",
   "symbols/auth/choices/Individual/description": "Individual authentication",
   "symbols/auth/choices/IndividualB2C/description": "Individual authentication with Azure AD B2C",

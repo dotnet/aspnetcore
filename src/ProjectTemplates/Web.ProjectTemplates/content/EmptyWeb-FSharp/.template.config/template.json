@@ -6,7 +6,7 @@
   ],
   "name": "ASP.NET Core Empty",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "An empty project template for creating an ASP.NET Core application. This template does not have any content in it.",
+  "description": "A clean starting point for building fast, modern web apps.",
   "groupIdentity": "Microsoft.Web.Empty",
   "precedence": "10000",
   "identity": "Microsoft.Web.Empty.FSharp.10.0",
