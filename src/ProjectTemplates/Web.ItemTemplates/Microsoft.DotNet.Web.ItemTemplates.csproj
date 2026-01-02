@@ -4,7 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PackageId>Microsoft.DotNet.Web.ItemTemplates.$(AspNetCoreMajorMinorVersion)</PackageId>
     <Description>Web File Templates for Microsoft Template Engine.</Description>
-    <UsingToolTemplateLocalizer>true</UsingToolTemplateLocalizer>
+    <UsingToolTemplateLocalizer>false</UsingToolTemplateLocalizer>
   </PropertyGroup>
 
 </Project>
