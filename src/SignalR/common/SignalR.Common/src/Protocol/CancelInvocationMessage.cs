@@ -17,4 +17,7 @@ public class CancelInvocationMessage : HubInvocationMessage
     public CancelInvocationMessage(string invocationId) : base(invocationId)
     {
     }
+
+    /// <inheritdoc cref="HubInvocationMessage.InvocationId" />
+    public new string InvocationId => base.InvocationId!;
 }
