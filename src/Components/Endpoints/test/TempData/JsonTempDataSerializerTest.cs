@@ -203,7 +203,7 @@ public class JsonTempDataSerializerTest
         var result = serializer.Deserialize(element);
 
         // Assert
-        var array = Assert.IsType<object[]>(result);
+        var array = Assert.IsType<int[]>(result);
         Assert.Equal(3, array.Length);
         Assert.Equal(1, array[0]);
         Assert.Equal(2, array[1]);
@@ -253,7 +253,7 @@ public class JsonTempDataSerializerTest
         var result = serializer.Deserialize(element);
 
         // Assert
-        var array = Assert.IsType<object[]>(result);
+        var array = Assert.IsType<string[]>(result);
         Assert.Equal(2, array.Length);
         Assert.Equal("foo", array[0]);
         Assert.Equal("bar", array[1]);

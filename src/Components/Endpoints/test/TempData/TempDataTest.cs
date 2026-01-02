@@ -209,7 +209,7 @@ public class TempDataTest
     }
 
     [Fact]
-    public void Save_DoesNotLoadsTempData()
+    public void Save_DoesNotLoadTempData()
     {
         var loadCalled = false;
         var tempData = new TempData(() =>
@@ -220,12 +220,12 @@ public class TempDataTest
         var saved = tempData.Save();
 
         Assert.False(loadCalled);
-        Assert.False(tempData.WasAccessed);
+        Assert.False(tempData.WasLoaded);
         Assert.Empty(saved);
     }
 
     [Fact]
-    public void TempData_Loads_WhenAccessed()
+    public void TempData_Loads_WhenLoaded()
     {
         var loadCalled = false;
         var numberOfLoads = 0;
@@ -242,7 +242,7 @@ public class TempDataTest
 
         Assert.True(loadCalled);
         Assert.Equal(1, numberOfLoads);
-        Assert.True(tempData.WasAccessed);
+        Assert.True(tempData.WasLoaded);
         Assert.Equal("Value", value);
     }
 }

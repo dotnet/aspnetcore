@@ -75,9 +75,10 @@ internal class JsonTempDataSerializer : ITempDataSerializer
         var arrayLength = arrayElement.GetArrayLength();
         if (arrayLength == 0)
         {
-            return null;
+            return Array.Empty<object>();
         }
         var array = Array.CreateInstance(GetArrayTypeInfo(arrayElement[0].ValueKind), arrayLength);
+
         for (var i = 0; i < arrayLength; i++)
         {
             array.SetValue(DeserializeSimpleType(arrayElement[i]), i);

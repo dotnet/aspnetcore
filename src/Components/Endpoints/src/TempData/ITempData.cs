@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components;
 /// </summary>
 public interface ITempData : IDictionary<string, object?>
 {
-    internal bool WasAccessed { get; }
+    internal bool WasLoaded { get; }
 
     /// <summary>
     /// Gets the value associated with the specified key and then schedules it for deletion.

@@ -26,7 +26,7 @@ internal sealed partial class TempDataService
 
     public void Save(HttpContext httpContext, TempData tempData)
     {
-        if (!tempData.WasAccessed)
+        if (!tempData.WasLoaded)
         {
             return;
         }

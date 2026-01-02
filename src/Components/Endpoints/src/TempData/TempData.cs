@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components;
 /// <inheritdoc/>
 internal sealed class TempData : ITempData
 {
-    public bool WasAccessed => _loaded && _loadFunc is null;
+    public bool WasLoaded => _loaded && _loadFunc is null;
     private readonly Dictionary<string, object?> _data = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _retainedKeys = new(StringComparer.OrdinalIgnoreCase);
     private Func<IDictionary<string, object?>>? _loadFunc;
@@ -124,8 +124,12 @@ internal sealed class TempData : ITempData
 
     bool IDictionary<string, object?>.TryGetValue(string key, out object? value)
     {
-        value = Get(key);
-        return ContainsKey(key);
+        if (Data.TryGetValue(key, out value))
+        {
+            _retainedKeys.Remove(key);
+            return true;
+        }
+        return false;
     }
 
     void ICollection<KeyValuePair<string, object?>>.Add(KeyValuePair<string, object?> item)

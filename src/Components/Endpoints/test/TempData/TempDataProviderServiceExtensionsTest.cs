@@ -31,6 +31,27 @@ public class TempDataProviderServiceCollectionExtensionsTest
     }
 
     [Fact]
+    public void AddSessionStorageTempDataValueProvider_RegistersExpectedServices()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddLogging();
+
+        // Act
+        services.AddSessionStorageTempDataValueProvider();
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert
+        var tempDataProvider = serviceProvider.GetService<ITempDataProvider>();
+        var tempDataSerializer = serviceProvider.GetService<ITempDataSerializer>();
+        var tempDataService = serviceProvider.GetService<TempDataService>();
+
+        Assert.NotNull(tempDataProvider);
+        Assert.NotNull(tempDataSerializer);
+        Assert.NotNull(tempDataService);
+    }
+
+    [Fact]
     public void AddCookieTempDataValueProvider_WithOptions_ConfiguresOptions()
     {
         // Arrange
