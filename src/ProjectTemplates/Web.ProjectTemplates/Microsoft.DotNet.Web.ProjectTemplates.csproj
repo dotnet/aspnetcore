@@ -19,10 +19,16 @@
       MicrosoftEntityFrameworkCoreToolsVersion=$(MicrosoftEntityFrameworkCoreToolsVersion);
       MicrosoftExtensionsHostingVersion=$(MicrosoftExtensionsHostingVersion);
       MicrosoftExtensionsHttpVersion=$(MicrosoftExtensionsHttpVersion);
+      MicrosoftExtensionsHttpResilienceVersion=$(MicrosoftExtensionsHttpResilienceVersion);
+      MicrosoftExtensionsServiceDiscoveryVersion=$(MicrosoftExtensionsServiceDiscoveryVersion);
       MicrosoftIdentityWebVersion=$(MicrosoftIdentityWebVersion);
       MicrosoftIdentityWebGraphServiceClientVersion=$(MicrosoftIdentityWebGraphServiceClientVersion);
       MicrosoftIdentityWebUIVersion=$(MicrosoftIdentityWebUIVersion);
       MicrosoftIdentityWebDownstreamApiVersion=$(MicrosoftIdentityWebDownstreamApiVersion);
+      OpenTelemetryExporterOpenTelemetryProtocolVersion=$(OpenTelemetryExporterOpenTelemetryProtocolVersion);
+      OpenTelemetryExtensionsHostingVersion=$(OpenTelemetryExtensionsHostingVersion);
+      OpenTelemetryInstrumentationHttpVersion=$(OpenTelemetryInstrumentationHttpVersion);
+      OpenTelemetryInstrumentationRuntimeVersion=$(OpenTelemetryInstrumentationRuntimeVersion);
       SystemNetHttpJsonVersion=$(SystemNetHttpJsonVersion);
       MicrosoftGraphVersion=$(MicrosoftGraphVersion);
     </GeneratedContentProperties>
@@ -62,6 +68,7 @@
     <GeneratedContent Include="Worker-FSharp.fsproj.in" OutputPath="content/Worker-FSharp/Company.Application1.fsproj" />
     <GeneratedContent Include="BlazorWebCSharp.csproj.in" OutputPath="content/BlazorWeb-CSharp/BlazorWebCSharp.1/BlazorWebCSharp.1.csproj" />
     <GeneratedContent Include="BlazorWebCSharp.Client.csproj.in" OutputPath="content/BlazorWeb-CSharp/BlazorWebCSharp.1.Client/BlazorWebCSharp.1.Client.csproj" />
+    <GeneratedContent Include="BlazorWasmServiceDefaults-CSharp.csproj.in" OutputPath="content/BlazorWasmServiceDefaults-CSharp/BlazorWasm.ServiceDefaults1.csproj" />
     <GeneratedContent Include="ComponentsWebAssembly-CSharp.csproj.in" OutputPath="content/ComponentsWebAssembly-CSharp/ComponentsWebAssembly-CSharp.csproj" />
   </ItemGroup>
 

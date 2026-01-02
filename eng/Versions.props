@@ -156,6 +156,9 @@
     <GrpcNetClientVersion>2.64.0</GrpcNetClientVersion>
     <GrpcToolsVersion>2.64.0</GrpcToolsVersion>
     <MessagePackVersion>2.5.187</MessagePackVersion>
+    <!-- Extensions packages for Blazor WASM Service Defaults -->
+    <MicrosoftExtensionsHttpResilienceVersion>10.0.0</MicrosoftExtensionsHttpResilienceVersion>
+    <MicrosoftExtensionsServiceDiscoveryVersion>10.0.0</MicrosoftExtensionsServiceDiscoveryVersion>
     <MicrosoftIdentityWebVersion>3.14.1</MicrosoftIdentityWebVersion>
     <MicrosoftIdentityWebGraphServiceClientVersion>3.14.1</MicrosoftIdentityWebGraphServiceClientVersion>
     <MicrosoftIdentityWebUIVersion>3.14.1</MicrosoftIdentityWebUIVersion>
@@ -168,6 +171,11 @@
     <NewtonsoftJsonBsonVersion>1.0.2</NewtonsoftJsonBsonVersion>
     <NewtonsoftJsonVersion>13.0.3</NewtonsoftJsonVersion>
     <NSwagApiDescriptionClientVersion>13.0.4</NSwagApiDescriptionClientVersion>
+    <!-- OpenTelemetry packages for Blazor WASM Service Defaults -->
+    <OpenTelemetryExporterOpenTelemetryProtocolVersion>1.10.0</OpenTelemetryExporterOpenTelemetryProtocolVersion>
+    <OpenTelemetryExtensionsHostingVersion>1.10.0</OpenTelemetryExtensionsHostingVersion>
+    <OpenTelemetryInstrumentationHttpVersion>1.10.0</OpenTelemetryInstrumentationHttpVersion>
+    <OpenTelemetryInstrumentationRuntimeVersion>1.10.0</OpenTelemetryInstrumentationRuntimeVersion>
     <PhotinoNETVersion>2.5.2</PhotinoNETVersion>
     <MicrosoftPlaywrightVersion>1.56.0</MicrosoftPlaywrightVersion>
     <PollyExtensionsHttpVersion>3.0.0</PollyExtensionsHttpVersion>
