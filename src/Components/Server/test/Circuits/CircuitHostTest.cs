@@ -429,10 +429,11 @@ public class CircuitHostTest
 
         var rootComponents = "mock-root-components";
         var applicationState = "mock-application-state";
+        var expiration = DateTimeOffset.UtcNow.Add(TimeSpan.FromMinutes(5));
         var cancellationToken = new CancellationToken();
 
         // Act
-        var result = await circuitHost.SendPersistedStateToClient(rootComponents, applicationState, cancellationToken);
+        var result = await circuitHost.SendPersistedStateToClient(rootComponents, applicationState, expiration, cancellationToken);
 
         // Assert
         Assert.True(result);
@@ -463,10 +464,11 @@ public class CircuitHostTest
 
         var rootComponents = "mock-root-components";
         var applicationState = "mock-application-state";
+        var expiration = DateTimeOffset.UtcNow.Add(TimeSpan.FromMinutes(5));
         var cancellationToken = new CancellationToken();
 
         // Act
-        var result = await circuitHost.SendPersistedStateToClient(rootComponents, applicationState, cancellationToken);
+        var result = await circuitHost.SendPersistedStateToClient(rootComponents, applicationState, expiration, cancellationToken);
 
         // Assert
         Assert.False(result);
@@ -490,10 +492,11 @@ public class CircuitHostTest
 
         var rootComponents = "mock-root-components";
         var applicationState = "mock-application-state";
+        var expiration = DateTimeOffset.UtcNow.Add(TimeSpan.FromMinutes(5));
         var cancellationToken = new CancellationToken();
 
         // Act
-        var result = await circuitHost.SendPersistedStateToClient(rootComponents, applicationState, cancellationToken);
+        var result = await circuitHost.SendPersistedStateToClient(rootComponents, applicationState, expiration, cancellationToken);
 
         // Assert
         Assert.False(result);
@@ -514,10 +517,11 @@ public class CircuitHostTest
 
         var rootComponents = "mock-root-components";
         var applicationState = "mock-application-state";
+        var expiration = DateTimeOffset.UtcNow.Add(TimeSpan.FromMinutes(5));
         var cancellationToken = new CancellationToken();
 
         // Act & Assert
-        Assert.False(await circuitHost.SendPersistedStateToClient(rootComponents, applicationState, cancellationToken));
+        Assert.False(await circuitHost.SendPersistedStateToClient(rootComponents, applicationState, expiration, cancellationToken));
     }
 
     [Fact]
