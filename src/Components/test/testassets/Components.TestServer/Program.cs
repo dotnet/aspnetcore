@@ -38,6 +38,7 @@ public class Program
             ["Hot Reload"] = (BuildWebHost<HotReloadStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Dev server client-side blazor"] = CreateDevServerHost(CreateAdditionalArgs(args)),
             ["Global Interactivity"] = (BuildWebHost<RazorComponentEndpointsStartup<GlobalInteractivityApp>>(CreateAdditionalArgs(args)), "/subdir"),
+            ["SSR (No Interactivity)"] = (BuildWebHost<RazorComponentEndpointsNoInteractivityStartup<App>>(CreateAdditionalArgs(args)), "/subdir"),
         };
 
         var mainHost = BuildWebHost(args);
