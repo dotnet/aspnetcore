@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [ "Web", "ASP.NET" ],
+  "name": "MVC ViewStart",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "An MVC ViewStart Page",
+  "tags": {
+    "language": "C#",
+    "type": "item"
+  },
+  "groupIdentity": "Microsoft.AspNetCore.Mvc.ViewStart",
+  "precedence": "10000",
+  "identity": "Microsoft.AspNetCore.Mvc.ViewStart.10.0",
+  "shortName": "viewstart",
+  "sourceName": "ignoreme",
+  "primaryOutputs": [
+    {
+      "path": "_ViewStart.cshtml"
+    }
+  ],
+  "defaultName": "_ViewStart",
+  "symbols": {
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    }
+  },
+  "postActions": [
+    {
+      "id": "openInEditor",
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "description": "Opens _ViewStart.cshtml in the editor",
+      "manualInstructions": [ ],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "0"
+      },
+      "continueOnError": true
+    }
+  ]
+}
