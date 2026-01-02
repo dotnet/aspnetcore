@@ -87,4 +87,84 @@ public static class TestApi
         var result = XmlCommentGenerator.NormalizeDocId(input);
         Assert.Equal(expected, result);
     }
+
+    [Fact]
+    public async Task ShouldNotDuplicateDocumentationIds()
+    {
+        var source = """
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddOpenApi();
+
+var app = builder.Build();
+app.MapOpenApi();
+
+app.MapPost("/", (GenericFoo<bool> fooBool) => new Bar());
+
+app.Run();
+
+/// <summary>
+/// Should not be duplicated. <see cref="T" />
+/// </summary>
+public class GenericFoo<T>
+{
+}
+
+public class Bar
+{
+    /// <summary>
+    /// FooString property xml comment.
+    /// </summary>
+    public GenericFoo<string> FooString { get; set; }
+
+    /// <summary>
+    /// FooInt property xml comment.
+    /// </summary>
+    public GenericFoo<int> FooInt { get; set; }
+
+    /// <summary>
+    /// Method with GenericFoo<double> parameter.
+    /// </summary>
+    /// <param name="fooDouble">The GenericFoo of double.</param>
+    public void Test(GenericFoo<double> fooDouble)
+    {
+
+    }
+}
+
+namespace Sample {
+
+    /// <summary>
+    /// Duplicated internal class.
+    /// </summary>
+    internal class Duplicate {
+    }
+}
+""";
+
+        var internalDuplicatedSource = """
+namespace Sample {
+
+    /// <summary>
+    /// Duplicated internal class.
+    /// </summary>
+    internal class Duplicate {
+    }
+}
+""";
+        var references = new Dictionary<string, List<string>>
+        {
+            { "InternalDuplicateLibrary1", [internalDuplicatedSource] },
+            { "InternalDuplicateLibrary2", [internalDuplicatedSource] }
+        };
+
+        var generator = new XmlCommentGenerator();
+        await SnapshotTestHelper.Verify(source, generator, references, out var compilation, out var additionalAssemblies);
+        await SnapshotTestHelper.VerifyOpenApi(compilation, additionalAssemblies, Assert.NotNull);
+    }
 }
