@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using Templates.Test.Helpers;
 using Xunit;
@@ -19,12 +20,47 @@ namespace Templates.Blazor.Test;
 
 #pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
 
-public class BlazorWasmTemplateTest : BlazorTemplateTest
+public class BlazorWasmTemplateTest : LoggedTest
 {
     public BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory)
-        : base(projectFactory) { }
+    {
+        ProjectFactory = projectFactory;
+    }
 
-    public override string ProjectType { get; } = "blazorwasm";
+    public ProjectFactoryFixture ProjectFactory { get; set; }
+
+    private ITestOutputHelper _output;
+    public ITestOutputHelper Output
+    {
+        get
+        {
+            if (_output == null)
+            {
+                _output = new TestOutputLogger(Logger);
+            }
+            return _output;
+        }
+    }
+
+    public string ProjectType { get; } = "blazorwasm";
+
+    protected async Task<Project> CreateBuildPublishAsync(string auth = null, string[] args = null, string targetFramework = null)
+    {
+        // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
+        Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+
+        var project = await ProjectFactory.CreateProject(Output);
+        if (targetFramework != null)
+        {
+            project.TargetFramework = targetFramework;
+        }
+
+        await project.RunDotNetNewAsync(ProjectType, auth: auth, args: args, errorOnRestoreError: false);
+
+        await project.RunDotNetPublishAsync(noRestore: false);
+
+        return project;
+    }
 
     [Fact]
     public async Task BlazorWasmStandaloneTemplateCanCreateBuildPublish()
@@ -81,4 +117,27 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     [Fact]
     public Task BlazorWasmStandalonePwaEmptyTemplateNoHttpsCanCreateBuildPublish()
         => CreateBuildPublishAsync(args: new[] { ArgConstants.Pwa, ArgConstants.NoHttps, ArgConstants.Empty });
+}
+
+internal sealed class TestOutputLogger : ITestOutputHelper
+{
+    private readonly ILogger _logger;
+
+    public TestOutputLogger(ILogger logger)
+    {
+        _logger = logger;
+    }
+
+    public void WriteLine(string message)
+    {
+        _logger.LogInformation(message);
+    }
+
+    public void WriteLine(string format, params object[] args)
+    {
+        if (_logger.IsEnabled(LogLevel.Information))
+        {
+            _logger.LogInformation(string.Format(System.Globalization.CultureInfo.InvariantCulture, format, args));
+        }
+    }
 }

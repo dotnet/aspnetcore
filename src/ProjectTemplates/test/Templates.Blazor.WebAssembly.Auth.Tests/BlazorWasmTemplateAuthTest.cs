@@ -1,19 +1,59 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging;
 using Templates.Test.Helpers;
+using Xunit.Abstractions;
 
 namespace Templates.Blazor.Test;
 
 #pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
 
-public class BlazorWasmTemplateAuthTest : BlazorTemplateTest
+public class BlazorWasmTemplateAuthTest : LoggedTest
 {
     public BlazorWasmTemplateAuthTest(ProjectFactoryFixture projectFactory)
-        : base(projectFactory) { }
+    {
+        ProjectFactory = projectFactory;
+    }
 
-    public override string ProjectType { get; } = "blazorwasm";
+    public ProjectFactoryFixture ProjectFactory { get; set; }
+
+    private ITestOutputHelper _output;
+    public ITestOutputHelper Output
+    {
+        get
+        {
+            if (_output == null)
+            {
+                _output = new TestOutputLogger(Logger);
+            }
+            return _output;
+        }
+    }
+
+    public string ProjectType { get; } = "blazorwasm";
+
+    protected async Task<Project> CreateBuildPublishAsync(string auth = null, string[] args = null, string targetFramework = null)
+    {
+        // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
+        Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+
+        var project = await ProjectFactory.CreateProject(Output);
+        if (targetFramework != null)
+        {
+            project.TargetFramework = targetFramework;
+        }
+
+        await project.RunDotNetNewAsync(ProjectType, auth: auth, args: args, errorOnRestoreError: false);
+
+        await project.RunDotNetPublishAsync(noRestore: false);
+
+        return project;
+    }
 
     [Fact]
     public async Task BlazorWasmStandaloneTemplate_IndividualAuth_CreateBuildPublish()
@@ -113,4 +153,27 @@ public class BlazorWasmTemplateAuthTest : BlazorTemplateTest
     [MemberData(nameof(TemplateDataSingleOrgProgramMain))]
     public Task BlazorWasmStandaloneTemplate_AzureActiveDirectoryTemplate_SingleOrg_NoHttps_ProgramMain_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(auth: instance.Auth, args: instance.Arguments.Union(new[] { ArgConstants.NoHttps }).ToArray(), targetFramework: "netstandard2.1");
+}
+
+internal sealed class TestOutputLogger : ITestOutputHelper
+{
+    private readonly ILogger _logger;
+
+    public TestOutputLogger(ILogger logger)
+    {
+        _logger = logger;
+    }
+
+    public void WriteLine(string message)
+    {
+        _logger.LogInformation(message);
+    }
+
+    public void WriteLine(string format, params object[] args)
+    {
+        if (_logger.IsEnabled(LogLevel.Information))
+        {
+            _logger.LogInformation(string.Format(System.Globalization.CultureInfo.InvariantCulture, format, args));
+        }
+    }
 }
