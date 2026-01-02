@@ -28,7 +28,6 @@ internal sealed partial class TempDataService
     {
         if (!tempData.WasAccessed)
         {
-            _tempDataProvider.PersistExistingTempData(httpContext);
             return;
         }
         _tempDataProvider.SaveTempData(httpContext, tempData.Save());

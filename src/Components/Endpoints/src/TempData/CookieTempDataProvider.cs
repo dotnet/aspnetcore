@@ -106,11 +106,6 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
         Log.TempDataCookieSaveSuccess(_logger, cookieName);
     }
 
-    public void PersistExistingTempData(HttpContext context)
-    {
-        // No action needed since TempData is persisted automatically in cookies.
-    }
-
     private void SetCookiePath(HttpContext httpContext, CookieOptions cookieOptions)
     {
         if (!string.IsNullOrEmpty(_options.Cookie.Path))

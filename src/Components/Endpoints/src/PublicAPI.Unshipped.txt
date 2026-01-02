@@ -7,7 +7,6 @@ Microsoft.AspNetCore.Components.Endpoints.BasePath
 Microsoft.AspNetCore.Components.Endpoints.BasePath.BasePath() -> void
 Microsoft.AspNetCore.Components.Endpoints.ITempDataProvider
 Microsoft.AspNetCore.Components.Endpoints.ITempDataProvider.LoadTempData(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Collections.Generic.IDictionary<string!, object?>!
-Microsoft.AspNetCore.Components.Endpoints.ITempDataProvider.PersistExistingTempData(Microsoft.AspNetCore.Http.HttpContext! context) -> void
 Microsoft.AspNetCore.Components.Endpoints.ITempDataProvider.SaveTempData(Microsoft.AspNetCore.Http.HttpContext! context, System.Collections.Generic.IDictionary<string!, object?>! values) -> void
 Microsoft.AspNetCore.Components.Endpoints.TempDataProviderServiceCollectionExtensions
 Microsoft.AspNetCore.Components.ITempData
@@ -16,3 +15,4 @@ Microsoft.AspNetCore.Components.ITempData.Keep() -> void
 Microsoft.AspNetCore.Components.ITempData.Keep(string! key) -> void
 Microsoft.AspNetCore.Components.ITempData.Peek(string! key) -> object?
 static Microsoft.AspNetCore.Components.Endpoints.TempDataProviderServiceCollectionExtensions.AddCookieTempDataValueProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Components.Endpoints.CookieTempDataProviderOptions!>? configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Components.Endpoints.TempDataProviderServiceCollectionExtensions.AddSessionStorageTempDataValueProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

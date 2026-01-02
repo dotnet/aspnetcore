@@ -23,7 +23,7 @@ public static class TempDataProviderServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Enables component parameters to be supplied from the <see cref="TempData"/>.
+    /// Enables component parameters to be supplied from the <see cref="TempData"/> using Cookies.
     /// </summary>
     public static IServiceCollection AddCookieTempDataValueProvider(
         this IServiceCollection services,
@@ -36,6 +36,19 @@ public static class TempDataProviderServiceCollectionExtensions
         {
             services.Configure(configureOptions);
         }
+        services = AddTempDataCascadingValue(services);
+        return services;
+    }
+
+    /// <summary>
+    /// Enables component parameters to be supplied from the <see cref="TempData"/> using Session storage>.
+    /// </summary>
+    public static IServiceCollection AddSessionStorageTempDataValueProvider(
+        this IServiceCollection services)
+    {
+        services.Replace(ServiceDescriptor.Singleton<ITempDataProvider, SessionStorageTempDataProvider>());
+        services.TryAddSingleton<ITempDataSerializer, JsonTempDataSerializer>();
+        services.TryAddSingleton<TempDataService>();
         services = AddTempDataCascadingValue(services);
         return services;
     }

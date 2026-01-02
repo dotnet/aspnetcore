@@ -11,11 +11,11 @@ using TestServer;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
-public class TempDataTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>>>
+public class TempDataCookieTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>>>
 {
     private const string TempDataCookieName = ".AspNetCore.Components.TempData";
 
-    public TempDataTest(
+    public TempDataCookieTest(
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>> serverFixture,
         ITestOutputHelper output)

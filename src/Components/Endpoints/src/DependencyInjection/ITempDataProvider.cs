@@ -19,9 +19,4 @@ public interface ITempDataProvider
     /// Saves temporary data to the given <see cref="HttpContext"/>.
     /// </summary>
     void SaveTempData(HttpContext context, IDictionary<string, object?> values);
-
-    /// <summary>
-    /// Persists existing TempData without modification.
-    /// </summary>
-    void PersistExistingTempData(HttpContext context);
 }
