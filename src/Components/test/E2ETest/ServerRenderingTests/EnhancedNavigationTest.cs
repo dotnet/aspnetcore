@@ -698,6 +698,41 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Fact]
+    public void PreventDefaultOnClickIsRespectedWithEnhancedNavigation()
+    {
+        // See: https://github.com/dotnet/aspnetcore/issues/52514
+        // Verifies that @onclick:preventDefault on a link prevents enhanced navigation from intercepting the click
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("PreventDefault link test")).Click();
+        Browser.Equal("PreventDefault Link Test", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id("current-count")).Text);
+
+        // Store the current URL to verify it doesn't change
+        var originalUrl = Browser.Url;
+        Assert.EndsWith("/nav/prevent-default-link", originalUrl);
+
+        // Click the link with @onclick:preventDefault - should increment count but NOT navigate
+        Browser.Exists(By.Id("prevent-default-link")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("current-count")).Text);
+        Assert.Equal(originalUrl, Browser.Url); // URL should not have changed
+
+        // Click again to verify it continues working
+        Browser.Exists(By.Id("prevent-default-link")).Click();
+        Browser.Equal("2", () => Browser.Exists(By.Id("current-count")).Text);
+        Assert.Equal(originalUrl, Browser.Url);
+
+        // Also verify the button works (reference case)
+        Browser.Exists(By.Id("increment-button")).Click();
+        Browser.Equal("3", () => Browser.Exists(By.Id("current-count")).Text);
+
+        // No errors should be logged
+        var logs = Browser.GetBrowserLogs(LogLevel.Warning);
+        Assert.DoesNotContain(logs, log => log.Message.Contains("Error"));
+    }
+
+    [Fact]
     public void CanUpdateHrefOnLinkTagWithIntegrity()
     {
         // Represents issue https://github.com/dotnet/aspnetcore/issues/54250
