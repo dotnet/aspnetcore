@@ -45,6 +45,10 @@ namespace Microsoft.AspNetCore.Components.Web;
 
 [BindElement("select", null, "value", "onchange")]
 [BindElement("textarea", null, "value", "onchange")]
+
+// <details> element binds to the 'open' attribute using the 'ontoggle' event
+[BindElement("details", null, "open", "ontoggle")]
+[BindElement("details", "open", "open", "ontoggle")]
 public static class BindAttributes
 {
 }
