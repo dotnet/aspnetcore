@@ -1376,7 +1376,7 @@ public class JwtBearerTests_Handler : SharedAuthenticationTests<JwtBearerOptions
         // Assert
         var jwtBearerOptions = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
         Assert.Null(jwtBearerOptions.Authority);
-        Assert.Equal(default!, jwtBearerOptions.MetadataAddress);
+        Assert.Null(jwtBearerOptions.MetadataAddress);
     }
 
     [Fact]
@@ -1397,7 +1397,7 @@ public class JwtBearerTests_Handler : SharedAuthenticationTests<JwtBearerOptions
         // Assert
         var jwtBearerOptions = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
         Assert.Null(jwtBearerOptions.Authority);
-        Assert.Equal(default!, jwtBearerOptions.MetadataAddress);
+        Assert.Null(jwtBearerOptions.MetadataAddress);
     }
 
     [Fact]
