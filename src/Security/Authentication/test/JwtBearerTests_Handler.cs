@@ -1357,4 +1357,67 @@ public class JwtBearerTests_Handler : SharedAuthenticationTests<JwtBearerOptions
         var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
         return (tokenText, key);
     }
+
+    [Fact]
+    public void AuthorityNotSetFromEmptyConfiguration()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var config = new ConfigurationBuilder().AddInMemoryCollection([
+            new("Authentication:Schemes:Bearer:Authority", ""),
+            new("Authentication:Schemes:Bearer:MetadataAddress", ""),
+        ]).Build();
+        services.AddSingleton<IConfiguration>(config);
+
+        // Act
+        RegisterAuth(services.AddAuthentication());
+        var sp = services.BuildServiceProvider();
+
+        // Assert
+        var jwtBearerOptions = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
+        Assert.Null(jwtBearerOptions.Authority);
+        Assert.Equal(default!, jwtBearerOptions.MetadataAddress);
+    }
+
+    [Fact]
+    public void AuthorityNotSetFromWhitespaceConfiguration()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var config = new ConfigurationBuilder().AddInMemoryCollection([
+            new("Authentication:Schemes:Bearer:Authority", "   "),
+            new("Authentication:Schemes:Bearer:MetadataAddress", "   "),
+        ]).Build();
+        services.AddSingleton<IConfiguration>(config);
+
+        // Act
+        RegisterAuth(services.AddAuthentication());
+        var sp = services.BuildServiceProvider();
+
+        // Assert
+        var jwtBearerOptions = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
+        Assert.Null(jwtBearerOptions.Authority);
+        Assert.Equal(default!, jwtBearerOptions.MetadataAddress);
+    }
+
+    [Fact]
+    public void AuthoritySetFromValidConfiguration()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var config = new ConfigurationBuilder().AddInMemoryCollection([
+            new("Authentication:Schemes:Bearer:Authority", "https://example.com"),
+            new("Authentication:Schemes:Bearer:MetadataAddress", "https://example.com/.well-known/openid-configuration"),
+        ]).Build();
+        services.AddSingleton<IConfiguration>(config);
+
+        // Act
+        RegisterAuth(services.AddAuthentication());
+        var sp = services.BuildServiceProvider();
+
+        // Assert
+        var jwtBearerOptions = sp.GetRequiredService<IOptionsMonitor<JwtBearerOptions>>().Get(JwtBearerDefaults.AuthenticationScheme);
+        Assert.Equal("https://example.com", jwtBearerOptions.Authority);
+        Assert.Equal("https://example.com/.well-known/openid-configuration", jwtBearerOptions.MetadataAddress);
+    }
 }
