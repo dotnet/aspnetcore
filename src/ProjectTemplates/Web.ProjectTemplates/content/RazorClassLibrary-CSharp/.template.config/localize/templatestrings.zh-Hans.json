@@ -9,5 +9,6 @@
   "symbols/SupportPagesAndViews/description": "是否支持将传统的 Razor Pages 和视图添加到此库。",
   "postActions/restore/description": "还原此项目所需的 NuGet 包。",
   "postActions/restore/manualInstructions/default/text": "运行 \"dotnet restore\"",
-  "postActions/openInEditor/description": "在编辑器中打开 Areas/MyFeature/Pages/Page1.cshtml"
+  "postActions/openPageInEditor/description": "在编辑器中打开 Areas/MyFeature/Pages/Page1.cshtml",
+  "postActions/openComponentInEditor/description": "在编辑器中打开 Component1.razor"
 }

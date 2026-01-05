@@ -9,5 +9,6 @@
   "symbols/SupportPagesAndViews/description": "このライブラリに対して、従来の Razor ページとビューの追加をサポートするかどうか。",
   "postActions/restore/description": "このプロジェクトに必要な NuGet パッケージを復元します。",
   "postActions/restore/manualInstructions/default/text": "'dotnet restore' を実行する",
-  "postActions/openInEditor/description": "エディターで Areas/MyFeature/Pages/Page1.cshtml を開きます"
+  "postActions/openPageInEditor/description": "エディターで Areas/MyFeature/Pages/Page1.cshtml を開きます",
+  "postActions/openComponentInEditor/description": "エディターで Component1.razor を開きます"
 }

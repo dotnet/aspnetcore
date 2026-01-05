@@ -9,5 +9,6 @@
   "symbols/SupportPagesAndViews/description": "Určuje, jestli se má podporovat přidávání dalších stránek a zobrazení Razor do této knihovny.",
   "postActions/restore/description": "Obnoví balíčky NuGet vyžadované tímto projektem.",
   "postActions/restore/manualInstructions/default/text": "Spustit dotnet restore",
-  "postActions/openInEditor/description": "Otevře soubor areas/MyFeature/Pages/Page1.cshtml v editoru."
+  "postActions/openPageInEditor/description": "Otevře soubor areas/MyFeature/Pages/Page1.cshtml v editoru.",
+  "postActions/openComponentInEditor/description": "Otevře soubor Component1.razor v editoru."
 }

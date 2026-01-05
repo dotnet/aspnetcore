@@ -37,6 +37,7 @@ internal static class TemplatePackageInstaller
             "Microsoft.DotNet.Web.ProjectTemplates.8.0",
             "Microsoft.DotNet.Web.ProjectTemplates.9.0",
             "Microsoft.DotNet.Web.ProjectTemplates.10.0",
+            "Microsoft.DotNet.Web.ProjectTemplates.11.0",
             "Microsoft.AspNetCore.Blazor.Templates",
         };
 
