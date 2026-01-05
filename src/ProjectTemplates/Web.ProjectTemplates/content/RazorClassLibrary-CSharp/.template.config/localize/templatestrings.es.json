@@ -10,5 +10,5 @@
   "postActions/restore/description": "Restaure los paquetes NuGet necesarios para este proyecto.",
   "postActions/restore/manualInstructions/default/text": "Ejecutar \"dotnet restore\"",
   "postActions/openPageInEditor/description": "Abre Areas/MyFeature/Pages/Page1.cshtml en el editor",
-  "postActions/openComponentInEditor/description": "Opens Component1.razor in the editor"
+  "postActions/openComponentInEditor/description": "Abre Component1.razor en el editor"
 }
