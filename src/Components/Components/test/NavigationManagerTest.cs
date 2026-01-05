@@ -987,6 +987,57 @@ public class NavigationManagerTest
         Assert.Equal("invaliduripage.html", result);
     }
 
+    [Theory]
+    [InlineData("https://evil.com/malware")]
+    [InlineData("http://example.com/page")]
+    [InlineData("ftp://files.example.com/file.txt")]
+    [InlineData("/absolute-path")]
+    [InlineData("/folder/page.html")]
+    [InlineData("//cdn.example.com/script.js")]
+    [InlineData("scheme://host/other-page")]
+    public void NavigateTo_WithPathRelative_ThrowsForAbsoluteUri(string absoluteUri)
+    {
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/folder/page.html";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        var ex = Assert.Throws<ArgumentException>(() =>
+            testNavManager.NavigateTo(absoluteUri, new NavigationOptions { PathRelative = true }));
+
+        Assert.Contains("is not a relative URI", ex.Message);
+        Assert.Contains("PathRelative", ex.Message);
+    }
+
+    [Theory]
+    [InlineData("sibling.html")]
+    [InlineData("folder/page.html")]
+    [InlineData("../parent.html")]
+    [InlineData("./current.html")]
+    [InlineData("path/to/file.html")]
+    [InlineData("folder/file:with:colons.html")] // Colons after path segment separator are OK
+    [InlineData("page.html?query=http://example.com")] // Absolute URI in query string is OK
+    public void NavigateTo_WithPathRelative_AcceptsRelativeUri(string relativeUri)
+    {
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/folder/page.html";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        // Should not throw
+        testNavManager.NavigateTo(relativeUri, new NavigationOptions { PathRelative = true });
+
+        Assert.Single(testNavManager.Navigations);
+    }
+
+    [Fact]
+    public void ResolveRelativeToCurrentPath_ThrowsForNullUri()
+    {
+        var baseUri = "scheme://host/";
+        var testNavManager = new TestNavigationManager(baseUri, "scheme://host/page.html");
+
+        Assert.Throws<ArgumentNullException>(() =>
+            testNavManager.ResolveRelativeToCurrentPath(null!));
+    }
+
     private class TestNavigationManager : NavigationManager
     {
         public TestNavigationManager()

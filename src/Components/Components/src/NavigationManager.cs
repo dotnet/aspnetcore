@@ -171,6 +171,13 @@ public abstract class NavigationManager
 
     internal string ResolveRelativeToCurrentPath(string relativeUri)
     {
+        if (IsAbsoluteUri(relativeUri))
+        {
+            throw new ArgumentException(
+                $"The URI '{relativeUri}' is not a relative URI. When PathRelative is true, the URI must be relative (e.g., 'page.html', 'folder/page', '../other').",
+                nameof(relativeUri));
+        }
+
         var currentUri = _uri!.AsSpan();
         
         // Find the last slash in the path portion (before any query or fragment)
@@ -188,6 +195,20 @@ public abstract class NavigationManager
         // Keep everything up to and including the last slash, then append the relative URI
         var basePathLength = lastSlashIndex + 1;
         return string.Concat(currentUri[..basePathLength], relativeUri.AsSpan());
+    }
+
+    private static bool IsAbsoluteUri(string uri)
+    {
+        if (uri.StartsWith('/'))
+        {
+            return true;
+        }
+
+        var span = uri.AsSpan();
+        var queryOrFragmentIndex = span.IndexOfAny('?', '#');
+        var pathPortion = queryOrFragmentIndex >= 0 ? span[..queryOrFragmentIndex] : span;
+
+        return pathPortion.Contains("://".AsSpan(), StringComparison.Ordinal);
     }
 
     /// <summary>
