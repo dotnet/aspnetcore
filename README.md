@@ -1,3 +1,13 @@
+## My Focus Areas
+
+- ASP.NET Core middleware exploration
+- Request pipeline understanding
+- Performance experiments
+- Custom logging and filters
+## Fork Information
+
+This repository is forked from the official Microsoft ASP.NET Core repository.
+Custom changes and experiments are maintained in this fork for learning and development purposes.
 ASP.NET Core
 ============
 
