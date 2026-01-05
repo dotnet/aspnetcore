@@ -969,22 +969,76 @@ public class NavigationManagerTest
     }
 
     [Fact]
-    public void ResolveRelativeToCurrentPath_NoSlashFound_EdgeCase()
+    public void NavigateTo_WithPathRelative_CurrentUriEndsWithSlash()
     {
-        // This tests the defensive edge case where no slash is found in the URI
-        // We use reflection to set _uri to an invalid value (bypassing validation)
+        // When current URI is a directory (ends with slash), the relative path 
+        // should be appended to that directory
         var baseUri = "scheme://host/";
-        var testNavManager = new TestNavigationManager(baseUri, "scheme://host/page.html");
+        var currentUri = "scheme://host/folder/";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
 
-        // Use reflection to set _uri to an invalid value that has no slash
-        var uriField = typeof(NavigationManager).GetField("_uri", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        uriField.SetValue(testNavManager, "invaliduri");
+        testNavManager.NavigateTo("sibling.html", new NavigationOptions { PathRelative = true });
 
-        // Call the internal method directly (accessible because of InternalsVisibleTo)
-        var result = testNavManager.ResolveRelativeToCurrentPath("page.html");
+        Assert.Single(testNavManager.Navigations);
+        Assert.Equal("scheme://host/folder/sibling.html", testNavManager.Navigations[0].uri);
+    }
 
-        // When no slash is found, it concatenates to the current URI
-        Assert.Equal("invaliduripage.html", result);
+    [Fact]
+    public void NavigateTo_WithPathRelative_FragmentOnly()
+    {
+        // Fragment-only navigation should append to the current directory
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/folder/page.html";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.NavigateTo("#section", new NavigationOptions { PathRelative = true });
+
+        Assert.Single(testNavManager.Navigations);
+        Assert.Equal("scheme://host/folder/#section", testNavManager.Navigations[0].uri);
+    }
+
+    [Fact]
+    public void NavigateTo_WithPathRelative_QueryOnly()
+    {
+        // Query-only navigation should append to the current directory
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/folder/page.html";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.NavigateTo("?param=value", new NavigationOptions { PathRelative = true });
+
+        Assert.Single(testNavManager.Navigations);
+        Assert.Equal("scheme://host/folder/?param=value", testNavManager.Navigations[0].uri);
+    }
+
+    [Fact]
+    public void NavigateTo_WithPathRelative_ParentDirectory()
+    {
+        // Verify that ../ produces the expected (non-normalized) result that browsers will normalize
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/folder1/folder2/page.html";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.NavigateTo("../sibling.html", new NavigationOptions { PathRelative = true });
+
+        Assert.Single(testNavManager.Navigations);
+        // The result contains ../ which browsers normalize to /folder1/sibling.html
+        Assert.Equal("scheme://host/folder1/folder2/../sibling.html", testNavManager.Navigations[0].uri);
+    }
+
+    [Fact]
+    public void NavigateTo_WithPathRelative_CurrentDirectory()
+    {
+        // Verify that ./ produces the expected (non-normalized) result that browsers will normalize
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/folder/page.html";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.NavigateTo("./sibling.html", new NavigationOptions { PathRelative = true });
+
+        Assert.Single(testNavManager.Navigations);
+        // The result contains ./ which browsers normalize to /folder/sibling.html
+        Assert.Equal("scheme://host/folder/./sibling.html", testNavManager.Navigations[0].uri);
     }
 
     [Theory]
