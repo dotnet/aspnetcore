@@ -1,3 +1,0 @@
-#nullable enable
-Microsoft.AspNetCore.Components.Endpoints.BasePath
-Microsoft.AspNetCore.Components.Endpoints.BasePath.BasePath() -> void

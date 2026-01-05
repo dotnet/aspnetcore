@@ -1,7 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <ItemGroup>
-    <TestConsoleAppSourceFiles Include="UseStartupThrowsForStructContainersTest.cs" />
-  </ItemGroup>
-
-</Project>

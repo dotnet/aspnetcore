@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "QueueSharing": {
-      "commandName": "Project",
-      "launchBrowser": true
-    }
-  }
-}
-

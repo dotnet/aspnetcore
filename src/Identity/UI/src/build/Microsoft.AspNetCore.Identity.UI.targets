@@ -1,3 +1,0 @@
-<Project>
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.StaticWebAssets.targets"/>
-</Project>
