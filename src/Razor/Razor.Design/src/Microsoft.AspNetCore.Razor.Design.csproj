@@ -47,7 +47,7 @@
     <!-- These files should be signed by dotnet/corefx -->
     <ExcludePackageFileFromSigning Include="System.Text.Encoding.CodePages.dll" />
     <SignedPackageFile Include="rzc.dll" Certificate="MicrosoftSHA2" Visible="false" />
-    <SignedPackageFile Include="Microsoft.AspNetCore.Razor.Tasks.dll" Certificate="MicrosoftSHA2" Visible="false" />
+    <SignedPackageFile Include="tasks/net46/Microsoft.AspNetCore.Razor.Tasks.dll" Certificate="MicrosoftSHA2" Visible="false" />
     <SignedPackageFile Include="Newtonsoft.Json.dll" Certificate="3PartySHA2" Visible="false" />
   </ItemGroup>
 
