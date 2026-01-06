@@ -1,0 +1,34 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComponentsWebAssembly-CSharp", "ComponentsWebAssembly-CSharp.csproj", "{5990939C-7E7B-4CFA-86FF-44CA5756498A}"
+EndProject
+#if (WebWorker)
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComponentsWebAssembly-CSharp.WorkerClient", "ComponentsWebAssembly-CSharp.WorkerClient\ComponentsWebAssembly-CSharp.WorkerClient.csproj", "{7A8B9C0D-1E2F-3A4B-5C6D-7E8F9A0B1C2D}"
+EndProject
+#endif
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5990939C-7E7B-4CFA-86FF-44CA5756498A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5990939C-7E7B-4CFA-86FF-44CA5756498A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5990939C-7E7B-4CFA-86FF-44CA5756498A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5990939C-7E7B-4CFA-86FF-44CA5756498A}.Release|Any CPU.Build.0 = Release|Any CPU
+#if (WebWorker)
+		{7A8B9C0D-1E2F-3A4B-5C6D-7E8F9A0B1C2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A8B9C0D-1E2F-3A4B-5C6D-7E8F9A0B1C2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A8B9C0D-1E2F-3A4B-5C6D-7E8F9A0B1C2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A8B9C0D-1E2F-3A4B-5C6D-7E8F9A0B1C2D}.Release|Any CPU.Build.0 = Release|Any CPU
+#endif
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4C26868E-5E7C-458D-82E3-040509D0C71F}
+	EndGlobalSection
+EndGlobal

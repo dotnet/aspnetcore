@@ -1,0 +1,28 @@
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-control-range {
+    width: 100%;
+    max-width: 400px;
+}
+
+.images-container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.image-wrapper {
+    flex: 1;
+    min-width: 300px;
+}
+
+.image-wrapper h4 {
+    margin-bottom: 10px;
+}
+
+canvas {
+    max-width: 100%;
+    border: 1px solid #ccc;
+}

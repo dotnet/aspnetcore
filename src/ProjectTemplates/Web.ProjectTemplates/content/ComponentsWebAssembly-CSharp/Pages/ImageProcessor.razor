@@ -1,0 +1,37 @@
+@page "/imageprocessor"
+@using Microsoft.AspNetCore.Components.Forms
+
+<PageTitle>Image Processor</PageTitle>
+
+<h1>Image Grayscale Converter</h1>
+
+<div class="form-group">
+    <label for="fileInput">Upload an image:</label>
+    <InputFile id="fileInput" OnChange="OnFileSelected" accept="image/*" />
+</div>
+
+@if (_hasImage)
+{
+    <div class="form-group">
+        <label for="intensitySlider">Grayscale intensity: @_intensity.ToString("P0")</label>
+        <input type="range" class="form-control-range" id="intensitySlider" 
+               min="0" max="100" step="1" value="@((int)(_intensity * 100))"
+               @oninput="OnIntensityChanged" />
+    </div>
+
+    <div class="images-container">
+        <div class="image-wrapper">
+            <h4>Original</h4>
+            <canvas id="originalCanvas" @ref="_originalCanvasRef"></canvas>
+        </div>
+        <div class="image-wrapper">
+            <h4>Processed</h4>
+            <canvas id="processedCanvas" @ref="_processedCanvasRef"></canvas>
+        </div>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(_errorMessage))
+{
+    <div class="alert alert-danger">@_errorMessage</div>
+}
