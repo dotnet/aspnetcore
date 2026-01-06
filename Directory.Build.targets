@@ -17,7 +17,7 @@
 
     <!-- We shipped every package other than Razor in 2.3.8 -->
     <IsPackageInThisPatch Condition=" '$(AspNetCorePatchVersion)' == '8'">true</IsPackageInThisPatch>
-    <IsPackageInThisPatch Condition="$(PackageId.StartsWith('Microsoft.Aspnetcore.Razor'))">false</IsPackageInThisPatch>
+    <IsPackageInThisPatch Condition="$(PackageId.StartsWith('Microsoft.AspNetCore.Razor'))">false</IsPackageInThisPatch>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(IsServicingBuild)' == 'true' ">
