@@ -267,7 +267,7 @@ function GetDotNetInstallScript([string] $dotnetRoot) {
 
     Retry({
       Write-Host "GET $uri"
-      Invoke-WebRequest $uri -OutFile $installScript
+      Invoke-WebRequest $uri -UseBasicParsing -OutFile $installScript
     })
   }
 
@@ -501,7 +501,7 @@ function InitializeXCopyMSBuild([string]$packageVersion, [bool]$install) {
     Write-Host "Downloading $packageName $packageVersion"
     $ProgressPreference = 'SilentlyContinue' # Don't display the console progress UI - it's a huge perf hit
     Retry({
-      Invoke-WebRequest "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/flat2/$packageName/$packageVersion/$packageName.$packageVersion.nupkg" -OutFile $packagePath
+      Invoke-WebRequest "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/flat2/$packageName/$packageVersion/$packageName.$packageVersion.nupkg" -UseBasicParsing -OutFile $packagePath
     })
 
     Unzip $packagePath $packageDir
@@ -541,7 +541,7 @@ function LocateVisualStudio([object]$vsRequirements = $null){
     Create-Directory $vsWhereDir
     Write-Host 'Downloading vswhere'
     Retry({
-      Invoke-WebRequest "https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/vswhere/$vswhereVersion/vswhere.exe" -OutFile $vswhereExe
+      Invoke-WebRequest "https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/vswhere/$vswhereVersion/vswhere.exe" -UseBasicParsing -OutFile $vswhereExe
     })
   }
 
