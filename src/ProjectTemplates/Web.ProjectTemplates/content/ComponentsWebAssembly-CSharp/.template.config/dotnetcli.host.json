@@ -8,6 +8,9 @@
     "PWA": {
       "longName": "pwa"
     },
+    "WebWorker": {
+      "longName": "webworker"
+    },
     "Framework": {
       "longName": "framework"
     },

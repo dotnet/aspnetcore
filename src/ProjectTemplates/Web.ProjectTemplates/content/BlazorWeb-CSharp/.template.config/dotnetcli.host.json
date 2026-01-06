@@ -54,6 +54,9 @@
       "longName": "use-program-main",
       "shortName": ""
     },
+    "WebWorker": {
+      "longName": "webworker"
+    },
     "LocalhostTld": {
       "longName": "localhost-tld",
       "shortName": ""
