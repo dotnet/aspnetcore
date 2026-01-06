@@ -14,6 +14,9 @@
     
     <!-- ANCM always builds every patch as we don't push temporary nuget packages anymore and that ANCM itself is a global singleton -->
     <IsPackageInThisPatch Condition="'$(IsANCMPackage)' == 'true'">true</IsPackageInThisPatch>
+
+    <!-- We shipped every package in 2.3.8 -->
+    <IsPackageInThisPatch Condition=" '$(AspNetCorePatchVersion)' == '8'">true</IsPackageInThisPatch>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(IsServicingBuild)' == 'true' ">
