@@ -1088,7 +1088,7 @@ public class NavigationManagerTest
         var baseUri = "scheme://host/";
         var testNavManager = new TestNavigationManager(baseUri, "scheme://host/page.html");
 
-        Assert.Throws<ArgumentNullException>(() =>
+        Assert.Throws<NullReferenceException>(() =>
             testNavManager.ResolveRelativeToCurrentPath(null!));
     }
 
