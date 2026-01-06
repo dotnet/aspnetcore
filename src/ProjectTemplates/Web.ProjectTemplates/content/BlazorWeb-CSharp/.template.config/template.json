@@ -15,7 +15,8 @@
     "4C26868E-5E7C-458D-82E3-040509D0C71F",
     "5990939C-7E7B-4CFA-86FF-44CA5756498A",
     "650B3CE7-2E93-4CC4-9F46-466686815EAA",
-    "53bc9b9d-9d6a-45d4-8429-2a2761773502"
+    "53bc9b9d-9d6a-45d4-8429-2a2761773502",
+    "7A8B9C0D-1E2F-3A4B-5C6D-7E8F9A0B1C2D"
   ],
   "identity": "Microsoft.Web.Blazor.CSharp.10.0",
   "thirdPartyNotices": "https://aka.ms/aspnetcore/10.0-third-party-notices",
@@ -36,6 +37,10 @@
     {
       "condition": "(UseWebAssembly && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "path": "BlazorWebCSharp.1.Client/BlazorWebCSharp.1.Client.csproj"
+    },
+    {
+      "condition": "(UseWebWorker && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "BlazorWebCSharp.1.WorkerClient/BlazorWebCSharp.1.WorkerClient.csproj"
     }
   ],
   "shortName": "blazor",
@@ -103,6 +108,18 @@
             "BlazorWebCSharp.1.Client/Layout/ReconnectModal.razor",
             "BlazorWebCSharp.1.Client/Layout/ReconnectModal.razor.css",
             "BlazorWebCSharp.1.Client/Layout/ReconnectModal.razor.js"
+          ]
+        },
+        {
+          "condition": "(!UseWebWorker)",
+          "exclude": [
+            "BlazorWebCSharp.1.WorkerClient/**",
+            "BlazorWebCSharp.1.Client/Worker/**",
+            "BlazorWebCSharp.1.Client/Models/**",
+            "BlazorWebCSharp.1.Client/Services/**",
+            "BlazorWebCSharp.1.Client/Pages/ImageProcessor.razor",
+            "BlazorWebCSharp.1.Client/Pages/ImageProcessor.razor.cs",
+            "BlazorWebCSharp.1.Client/Pages/ImageProcessor.razor.css"
           ]
         },
         {
@@ -392,6 +409,18 @@
     "UseServer": {
       "type": "computed",
       "value": "(InteractivityPlatform == \"Server\" || InteractivityPlatform == \"Auto\")"
+    },
+    "WebWorker": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "displayName": "Include _WebWorker support",
+      "description": "Adds WebWorker support for running .NET code in a separate worker thread. Only available when using WebAssembly interactivity.",
+      "isEnabled": "(UseWebAssembly)"
+    },
+    "UseWebWorker": {
+      "type": "computed",
+      "value": "(WebWorker && UseWebAssembly)"
     },
     "IncludeSampleContent": {
       "type": "parameter",
