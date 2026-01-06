@@ -52,4 +52,9 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.HttpOverrides;
     </PackagesInPatch>
   </PropertyGroup>
+  <!-- We shipped all packages in 2.3.8. This is empty because we did it via Directory.Build.Targets -->
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.8' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>

@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>2.3.6</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>2.3.7</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: dotnet-dev-certs-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
@@ -464,7 +464,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.HttpOverrides-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.HttpOverrides' ">
-    <BaselinePackageVersion>2.3.5</BaselinePackageVersion>
+    <BaselinePackageVersion>2.3.7</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.HttpOverrides' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.3.0, )" />
