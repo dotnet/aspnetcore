@@ -508,7 +508,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, ICustomAttributeProvider attributeProvider, string? name)
         {
             var parameters = operation.Parameters;
-            if (parameters is null)
+            if (parameters is null || parameters.Count == 0)
             {
                 return null;
             }
