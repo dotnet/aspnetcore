@@ -3,6 +3,7 @@
 
 using System.Net;
 using Microsoft.AspNetCore.BrowserTesting;
+using Microsoft.Playwright;
 using Templates.Test.Helpers;
 
 namespace BlazorTemplates.Tests;
