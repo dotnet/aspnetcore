@@ -348,11 +348,11 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     foreach (var parameterComment in methodComment.Parameters)
                     {
                         var parameterInfo = methodInfo.GetParameters().SingleOrDefault(info => info.Name == parameterComment.Name);
-                        if (parameterInfo is null || parameterInfo.ParameterType == typeof(CancellationToken))
+                        if (parameterInfo?.ParameterType == typeof(CancellationToken))
                         {
                             continue;
                         }
-                        var operationParameter = GetOperationParameter(operation, parameterInfo);
+                        var operationParameter = GetOperationParameter(operation, parameterInfo, parameterComment);
                         if (operationParameter is not null)
                         {
                             var targetOperationParameter = UnwrapOpenApiParameter(operationParameter);
@@ -468,15 +468,15 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
 
         private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, PropertyInfo propertyInfo)
         {
-            return GetOperationParameter(operation, propertyInfo, propertyInfo.Name);
+            return GetOperationParameter(operation, propertyInfo, propertyInfo?.Name);
         }
 
-        private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, ParameterInfo parameterInfo)
+        private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, ParameterInfo? parameterInfo, XmlParameterComment comment)
         {
-            return GetOperationParameter(operation, parameterInfo, parameterInfo.Name);
+            return GetOperationParameter(operation, parameterInfo, parameterInfo?.Name ?? comment.Name);
         }
 
-        private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, ICustomAttributeProvider attributeProvider, string? name)
+        private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, ICustomAttributeProvider? attributeProvider, string? name)
         {
             var parameters = operation.Parameters;
             if (parameters is null || parameters.Count == 0)
@@ -504,18 +504,26 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             return null;
         }
 
-        private static IReadOnlySet<string> GetModelNames(ICustomAttributeProvider attributeProvider, string? name)
+        private static IReadOnlySet<string> GetModelNames(ICustomAttributeProvider? attributeProvider, string? name)
         {
-            var modelNames = attributeProvider
-                .GetCustomAttributes(inherit: false)
-                .OfType<IModelNameProvider>()
-                .Where(p => !string.IsNullOrEmpty(p.Name))
-                .Select(p => p.Name!)
-                .ToHashSet();
+            var modelNames = new HashSet<string>();
 
             if (!string.IsNullOrEmpty(name))
             {
                 modelNames.Add(name);
+            }
+
+            if (attributeProvider is null)
+            {
+                return modelNames;
+            }
+
+            foreach (var attribute in attributeProvider.GetCustomAttributes(inherit: false))
+            {
+                if (attribute is IModelNameProvider modelNameProvider && !string.IsNullOrEmpty(modelNameProvider.Name))
+                {
+                    modelNames.Add(modelNameProvider.Name);
+                }
             }
 
             return modelNames;
