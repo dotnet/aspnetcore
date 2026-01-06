@@ -369,10 +369,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     void IDisposable.Dispose()
     {
         // When initialization in the SetParametersAsync method fails, the EditContext property can remain equal to null
-        if (EditContext is not null)
-        {
-            EditContext.OnValidationStateChanged -= _validationStateChangedHandler;
-        }
+        EditContext?.OnValidationStateChanged -= _validationStateChangedHandler;
 
         // Clear parsing validation messages store owned by the input when the input is disposed.
         if (_parsingValidationMessages != null)

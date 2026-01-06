@@ -36,7 +36,7 @@ public class NewlineEndingTest : LoggedTest
 
         var filesWithoutNewlineEnding = new List<string>();
 
-        // Get all template source files (excluding third-party libraries)
+        // Get all template source files (excluding third-party libraries and auto-generated localization files)
         var files = Directory.GetFiles(templateDirectoryPath, "*.cs", SearchOption.AllDirectories)
             .Concat(Directory.GetFiles(templateDirectoryPath, "*.fs", SearchOption.AllDirectories))
             .Concat(Directory.GetFiles(templateDirectoryPath, "*.razor", SearchOption.AllDirectories))
@@ -50,7 +50,8 @@ public class NewlineEndingTest : LoggedTest
             .Concat(Directory.GetFiles(templateDirectoryPath, "*.xml", SearchOption.AllDirectories))
             .Concat(Directory.GetFiles(templateDirectoryPath, "*.csproj", SearchOption.AllDirectories))
             .Concat(Directory.GetFiles(templateDirectoryPath, "*.fsproj", SearchOption.AllDirectories))
-            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}wwwroot{Path.DirectorySeparatorChar}lib{Path.DirectorySeparatorChar}")); // Exclude third-party libraries
+            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}wwwroot{Path.DirectorySeparatorChar}lib{Path.DirectorySeparatorChar}")) // Exclude third-party libraries
+            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}.template.config{Path.DirectorySeparatorChar}localize{Path.DirectorySeparatorChar}")); // Exclude auto-generated localization files in localize directory
 
         foreach (var file in files)
         {
