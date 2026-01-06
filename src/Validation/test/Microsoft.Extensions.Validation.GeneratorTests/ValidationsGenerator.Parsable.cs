@@ -42,10 +42,10 @@ public class ComplexTypeWithParsableProperties
     public string? Url { get; set; } = "https://example.com";
 
     [Required]
-    [Range(typeof(DateOnly), "2023-01-01", "2025-12-31", ErrorMessage = "Date must be between 2023-01-01 and 2025-12-31")]
+    [Range(typeof(DateOnly), "2023-01-01", "2030-12-31", ErrorMessage = "Date must be between 2023-01-01 and 2030-12-31")]
     public DateOnly? DateOnlyWithRange { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);
 
-    [Range(typeof(DateTime), "2023-01-01", "2025-12-31", ErrorMessage = "DateTime must be between 2023-01-01 and 2025-12-31")]
+    [Range(typeof(DateTime), "2023-01-01", "2030-12-31", ErrorMessage = "DateTime must be between 2023-01-01 and 2030-12-31")]
     public DateTime? DateTimeWithRange { get; set; } = DateTime.UtcNow;
 
     [Range(typeof(decimal), "0.1", "100.5", ErrorMessage = "Amount must be between 0.1 and 100.5", ParseLimitsInInvariantCulture = true)]
@@ -71,7 +71,7 @@ public class ComplexTypeWithParsableProperties
               "StringWithLength": "AB",
               "Email": "invalid-email",
               "Url": "invalid-url",
-              "DateOnlyWithRange": "2026-05-01",
+              "DateOnlyWithRange": "2031-05-01",
               "DecimalWithRange": "150.75",
               "TimeSpanWithHourRange": "22:00:00",
               "VersionWithRegex": "1.0",
@@ -89,7 +89,7 @@ public class ComplexTypeWithParsableProperties
                 error =>
                 {
                     Assert.Equal("DateOnlyWithRange", error.Key);
-                    Assert.Contains("Date must be between 2023-01-01 and 2025-12-31", error.Value);
+                    Assert.Contains("Date must be between 2023-01-01 and 2030-12-31", error.Value);
                 },
                 error =>
                 {
