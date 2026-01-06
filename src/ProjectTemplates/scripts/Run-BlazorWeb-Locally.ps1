@@ -28,6 +28,8 @@
         [Parameter(Mandatory = $false)]
         [switch] $UseProgramMain,
         [Parameter(Mandatory = $false)]
+        [switch] $WebWorker,
+        [Parameter(Mandatory = $false)]
         [ValidateSet("Debug", "Release")]
         [string] $Configuration = "Release",
         [Parameter(ValueFromRemainingArguments = $true)]
@@ -76,6 +78,10 @@
 
     if ($UseProgramMain) {
         $templateArguments += "--use-program-main"
+    }
+
+    if ($WebWorker) {
+        $templateArguments += "--webworker"
     }
 
     Import-Module -Name "$PSScriptRoot/Test-Template.psm1";

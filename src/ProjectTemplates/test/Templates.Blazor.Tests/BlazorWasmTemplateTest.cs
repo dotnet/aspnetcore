@@ -207,4 +207,66 @@ public class BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory) : Blaz
                 $"Couldn't find listening url:\n{string.Join(Environment.NewLine, buffer.Append(process.Error))}");
         }
     }
+
+    [Theory]
+    [InlineData(BrowserKind.Chromium)]
+    public async Task BlazorWasmWebWorkerTemplate_Works(BrowserKind browserKind)
+    {
+        var project = await CreateBuildPublishAsync(args: ["--webworker"]);
+        var appName = project.ProjectName;
+
+        // Verify the WorkerClient project was created
+        var workerClientDir = Path.Combine(project.TemplateOutputDir, $"{appName}.WorkerClient");
+        Assert.True(Directory.Exists(workerClientDir), "WebWorker templates should produce a WorkerClient project");
+
+        // Test the built project
+        using (var aspNetProcess = project.StartBuiltProjectAsync())
+        {
+            Assert.False(
+                aspNetProcess.Process.HasExited,
+                ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
+
+            await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+            await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName);
+
+            // Test the ImageProcessor page loads
+            await TestImageProcessorPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri);
+        }
+
+        // Test the published project
+        var (serveProcess, listeningUri) = RunPublishedStandaloneBlazorProject(project);
+        using (serveProcess)
+        {
+            await TestBasicInteractionInNewPageAsync(browserKind, listeningUri, appName);
+
+            // Test the ImageProcessor page loads
+            await TestImageProcessorPageAsync(browserKind, listeningUri);
+        }
+    }
+
+    private async Task TestImageProcessorPageAsync(BrowserKind browserKind, string baseUri)
+    {
+        if (!BrowserManager.IsAvailable(browserKind))
+        {
+            EnsureBrowserAvailable(browserKind);
+            return;
+        }
+
+        await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+        var page = await browser.NewPageAsync();
+
+        Output.WriteLine($"Opening browser at {baseUri}imageprocessor...");
+        await page.GotoAsync($"{baseUri.TrimEnd('/')}/imageprocessor", new() { WaitUntil = WaitUntilState.NetworkIdle });
+
+        // Verify the page title and content
+        await page.WaitForSelectorAsync("h1 >> text=Image Processor");
+
+        // Verify the Worker Status element exists
+        await page.WaitForSelectorAsync("text=Worker Status:");
+
+        // Verify the file input exists
+        await page.WaitForSelectorAsync("input[type='file']");
+
+        await page.CloseAsync();
+    }
 }

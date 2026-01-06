@@ -62,6 +62,67 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         await TestProjectCoreAsync(project, browserKind, pagesToExclude, authenticationFeatures);
     }
 
+    [Theory]
+    [InlineData(BrowserKind.Chromium, "WebAssembly")]
+    [InlineData(BrowserKind.Chromium, "Auto")]
+    public async Task BlazorWebWebWorkerTemplate_Works(BrowserKind browserKind, string interactivityOption)
+    {
+        var project = await CreateBuildPublishAsync(
+            args: ["-int", interactivityOption, "--webworker"],
+            getTargetProject: GetTargetProject);
+
+        var appName = project.ProjectName;
+
+        // Verify the WorkerClient project was created
+        var workerClientDir = Path.Combine(project.TemplateOutputDir, "..", $"{appName}.WorkerClient");
+        Assert.True(Directory.Exists(workerClientDir), "WebWorker templates should produce a WorkerClient project");
+
+        await TestProjectCoreAsync(project, browserKind, BlazorTemplatePages.None, AuthenticationFeatures.None);
+
+        // Test the ImageProcessor page loads
+        await TestImageProcessorPageAsync(project, browserKind);
+
+        Project GetTargetProject(Project rootProject)
+        {
+            // Multiple projects were created, so we need to specifically select the server
+            // project to be used
+            return GetSubProject(rootProject, rootProject.ProjectName, rootProject.ProjectName);
+        }
+    }
+
+    private async Task TestImageProcessorPageAsync(Project project, BrowserKind browserKind)
+    {
+        using var aspNetProcess = project.StartBuiltProjectAsync();
+
+        Assert.False(
+            aspNetProcess.Process.HasExited,
+            ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project for ImageProcessor test", project, aspNetProcess.Process));
+
+        if (!BrowserManager.IsAvailable(browserKind))
+        {
+            EnsureBrowserAvailable(browserKind);
+            return;
+        }
+
+        await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+        var page = await browser.NewPageAsync();
+
+        var imageProcessorUrl = $"{aspNetProcess.ListeningUri.AbsoluteUri.TrimEnd('/')}/imageprocessor";
+        Output.WriteLine($"Opening browser at {imageProcessorUrl}...");
+        await page.GotoAsync(imageProcessorUrl, new() { WaitUntil = WaitUntilState.NetworkIdle });
+
+        // Verify the page title and content
+        await page.WaitForSelectorAsync("h1 >> text=Image Processor");
+
+        // Verify the Worker Status element exists
+        await page.WaitForSelectorAsync("text=Worker Status:");
+
+        // Verify the file input exists
+        await page.WaitForSelectorAsync("input[type='file']");
+
+        await page.CloseAsync();
+    }
+
     private async Task TestProjectCoreAsync(Project project, BrowserKind browserKind, BlazorTemplatePages pagesToExclude, AuthenticationFeatures authenticationFeatures)
     {
         var appName = project.ProjectName;

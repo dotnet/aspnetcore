@@ -20,6 +20,8 @@ param(
     [Parameter(Mandatory = $false)]
     [switch] $UseProgramMain,
     [Parameter(Mandatory = $false)]
+    [switch] $WebWorker,
+    [Parameter(Mandatory = $false)]
     [string] $Authority,
     [Parameter(Mandatory = $false)]
     [string] $ClientId,
@@ -71,6 +73,10 @@ if ($Pwa) {
 
 if ($UseProgramMain) {
     $templateArguments += "--use-program-main"
+}
+
+if ($WebWorker) {
+    $templateArguments += "--webworker"
 }
 
 Import-Module -Name "$PSScriptRoot/Test-Template.psm1";
