@@ -124,7 +124,7 @@ public class TestController : ControllerBase
 {
     /// <param name="userId">The id of the user.</param>
     [HttpGet("{userId}")]
-    public string Get(int userId)
+    public string Get()
     {
         return "Hello, World!";
     }
