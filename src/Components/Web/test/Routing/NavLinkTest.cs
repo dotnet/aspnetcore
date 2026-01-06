@@ -120,8 +120,38 @@ public class NavLinkTest
 
         var batch = renderer.Batches.Single();
         var hrefFrame = batch.ReferenceFrames.First(f => f.AttributeName == "href");
-        // Should resolve relative to base URI, not current path
-        Assert.Equal("https://example.com/relative", hrefFrame.AttributeValue);
+        // Should preserve the original relative href as-is
+        Assert.Equal("relative", hrefFrame.AttributeValue);
+    }
+
+    [Fact]
+    public async Task NavLink_WithoutPathRelative_RendersOriginalRelativeHref()
+    {
+        // This test verifies backward compatibility: NavLink should render the original
+        // href value (relative or absolute) without converting it to an absolute URI.
+        var testNavigationManager = new TestNavigationManager();
+        testNavigationManager.Initialize("https://example.com/", "https://example.com/some/nested/page");
+
+        var renderer = new TestRenderer();
+        var component = new NavLink();
+        
+        var componentId = renderer.AssignRootComponentId(component);
+        SetNavigationManager(component, testNavigationManager);
+        
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
+        {
+            [nameof(NavLink.AdditionalAttributes)] = new Dictionary<string, object>
+            {
+                ["href"] = "Account/Manage"
+            }
+        });
+        
+        await renderer.RenderRootComponentAsync(componentId, parameters);
+
+        var batch = renderer.Batches.Single();
+        var hrefFrame = batch.ReferenceFrames.First(f => f.AttributeName == "href");
+        // The rendered href should be the original relative value, not an absolute URI
+        Assert.Equal("Account/Manage", hrefFrame.AttributeValue);
     }
 
     [Fact]

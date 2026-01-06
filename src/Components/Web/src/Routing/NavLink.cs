@@ -86,7 +86,7 @@ public class NavLink : ComponentBase, IDisposable
         }
 
         _hrefAbsolute = href == null ? null : NavigationManager.ToAbsoluteUri(href).AbsoluteUri;
-        _hrefToRender = _hrefAbsolute;
+        _hrefToRender = href;
         _isActive = ShouldMatch(NavigationManager.Uri);
 
         _class = (string?)null;
