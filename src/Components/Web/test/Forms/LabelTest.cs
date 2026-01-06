@@ -229,6 +229,35 @@ public class LabelTest
     }
 
     [Fact]
+    public async Task ThrowsWhenForAttributeIsPassedInAdditionalAttributes()
+    {
+        var model = new TestModel();
+        var additionalAttributes = new Dictionary<string, object>
+        {
+            { "for", "some-id" }
+        };
+
+        var rootComponent = new TestHostComponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Label<string>>(0);
+                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PlainProperty));
+                builder.AddComponentParameter(2, "AdditionalAttributes", additionalAttributes);
+                builder.CloseComponent();
+            }
+        };
+
+        var testRenderer = new TestRenderer();
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => testRenderer.RenderRootComponentAsync(componentId));
+
+        Assert.Contains("for", exception.Message);
+        Assert.Contains("implicit label association", exception.Message);
+    }
+
+    [Fact]
     public async Task RendersWithoutChildContent()
     {
         var model = new TestModel();
