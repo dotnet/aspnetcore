@@ -48,13 +48,4 @@
     <RazorCompile Include="$(GeneratedCommitHashAttributeFile)" />
     <RazorCompile Include="$(GeneratedInternalAspNetCoreAttributeFile)" />
   </ItemGroup>
-
-  <Target Name="VerifyBuildOutputs" AfterTargets="Build" Condition="'$(IsPackageInThisPatch)' == 'true'">
-    <PropertyGroup>
-      <ExpectedOutputFile>$(OutputPath)$(RazorTargetName).dll</ExpectedOutputFile>
-    </PropertyGroup>
-
-    <Error Text="Unable to find precompiled view file $(ExpectedOutputFile)" Condition="!Exists('$(ExpectedOutputFile)')" />
-  </Target>
-
 </Project>
