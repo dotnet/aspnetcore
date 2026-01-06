@@ -84,6 +84,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             cache.Add(@"P:MixedParametersClass.Age", new XmlComment(@"The user's age in years.", null, null, null, null, false, [@"25"], null, null));
             cache.Add(@"P:MixedParametersClass.IsActive", new XmlComment(@"Whether the user is active.", null, null, null, null, false, [@"true"], null, null));
             cache.Add(@"P:BindingSourceParametersClass.QueryParam", new XmlComment(@"Query parameter from URL.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:BindingSourceParametersClass.QueryParamWithCustomName", new XmlComment(@"Query parameter from URL with custom name.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:BindingSourceParametersClass.HeaderParam", new XmlComment(@"Header value from request.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:XmlDocPriorityParametersClass.SummaryOnlyProperty", new XmlComment(@"Property with only summary documentation.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:XmlDocPriorityParametersClass.SummaryAndReturnsProperty", new XmlComment(@"Property with summary documentation that should be overridden.", null, null, @"Returns-based description that should take precedence over summary.", null, false, null, null, null));
