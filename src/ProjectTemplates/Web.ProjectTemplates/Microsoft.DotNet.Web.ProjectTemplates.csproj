@@ -63,6 +63,8 @@
     <GeneratedContent Include="BlazorWebCSharp.csproj.in" OutputPath="content/BlazorWeb-CSharp/BlazorWebCSharp.1/BlazorWebCSharp.1.csproj" />
     <GeneratedContent Include="BlazorWebCSharp.Client.csproj.in" OutputPath="content/BlazorWeb-CSharp/BlazorWebCSharp.1.Client/BlazorWebCSharp.1.Client.csproj" />
     <GeneratedContent Include="ComponentsWebAssembly-CSharp.csproj.in" OutputPath="content/ComponentsWebAssembly-CSharp/ComponentsWebAssembly-CSharp.csproj" />
+    <GeneratedContent Include="BlazorWebWorker-CSharp.csproj.in" OutputPath="content/BlazorWebWorker-CSharp/BlazorWebWorker.1/BlazorWebWorker.1.csproj" />
+    <GeneratedContent Include="BlazorWebWorker-CSharp.WorkerClient.csproj.in" OutputPath="content/BlazorWebWorker-CSharp/BlazorWebWorker.1.WorkerClient/BlazorWebWorker.1.WorkerClient.csproj" />
   </ItemGroup>
 
 </Project>

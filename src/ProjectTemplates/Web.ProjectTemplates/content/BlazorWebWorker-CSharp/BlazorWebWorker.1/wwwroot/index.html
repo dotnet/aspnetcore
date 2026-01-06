@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BlazorWebWorker.1</title>
+    <base href="/" />
+    <link rel="preload" id="webassembly" />
+    <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="BlazorWebWorker.1.styles.css" rel="stylesheet" />
+    <script type="importmap"></script>
+</head>
+
+<body>
+    <div id="app">
+        <svg class="loading-progress">
+            <circle r="40%" cx="50%" cy="50%" />
+            <circle r="40%" cx="50%" cy="50%" />
+        </svg>
+        <div class="loading-progress-text"></div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+    <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
+    <script>
+        // Store original pixels in JS to avoid large byte array transfers
+        let storedPixels = null;
+        let storedWidth = 0;
+        let storedHeight = 0;
+
+        // Fetch image from URL and return as byte array
+        window.fetchImageAsBytes = async function(url) {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const arrayBuffer = await blob.arrayBuffer();
+            return new Uint8Array(arrayBuffer);
+        };
+
+        // Load image to canvas and store pixel data
+        window.loadImageToCanvas = async function(canvas, base64Data, contentType) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = function() {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    const imageData = ctx.getImageData(0, 0, img.width, img.height);
+                    
+                    // Store pixels in JS memory
+                    storedPixels = new Uint8Array(imageData.data);
+                    storedWidth = img.width;
+                    storedHeight = img.height;
+                    
+                    resolve({
+                        success: true,
+                        width: img.width,
+                        height: img.height
+                    });
+                };
+                img.onerror = function() {
+                    resolve({ success: false, error: 'Failed to load image' });
+                };
+                img.src = `data:${contentType};base64,${base64Data}`;
+            });
+        };
+
+        // Get stored pixels as byte array for worker
+        window.getStoredPixels = function() {
+            return storedPixels;
+        };
+
+        // Get image dimensions
+        window.getImageDimensions = function() {
+            return { width: storedWidth, height: storedHeight };
+        };
+
+        // Draw processed pixels to canvas
+        window.drawPixelsToCanvas = function(canvas, pixels, width, height) {
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            const imageData = ctx.createImageData(width, height);
+            for (let i = 0; i < pixels.length; i++) {
+                imageData.data[i] = pixels[i];
+            }
+            ctx.putImageData(imageData, 0, 0);
+        };
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,260 @@
+{
+  "$schema": "https://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "Web",
+    "Blazor",
+    "WebAssembly",
+    "WebWorker"
+  ],
+  "name": "Blazor WebAssembly with Web Worker",
+  "defaultName": "BlazorWebWorkerApp",
+  "description": "A project template for creating a Blazor WebAssembly app with Web Worker support for running .NET code in a separate thread. This template enables offloading CPU-intensive work from the UI thread.",
+  "groupIdentity": "Microsoft.Web.Blazor.WebWorker",
+  "precedence": "10000",
+  "guids": [
+    "4C26868E-5E7C-458D-82E3-040509D0C71F",
+    "5990939C-7E7B-4CFA-86FF-44CA5756498A",
+    "650B3CE7-2E93-4CC4-9F46-466686815EAA"
+  ],
+  "identity": "Microsoft.Web.Blazor.WebWorker.CSharp.10.0",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/10.0-third-party-notices",
+  "preferNameDirectory": true,
+  "primaryOutputs": [
+    {
+      "condition": "(HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")",
+      "path": "BlazorWebWorker.1.sln"
+    },
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "BlazorWebWorker.1/BlazorWebWorker.1.csproj"
+    },
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "BlazorWebWorker.1.WorkerClient/BlazorWebWorker.1.WorkerClient.csproj"
+    }
+  ],
+  "shortName": "blazorworker",
+  "sourceName": "BlazorWebWorker.1",
+  "sources": [
+    {
+      "source": "./",
+      "target": "./",
+      "exclude": [
+        ".template.config/**"
+      ],
+      "modifiers": [
+        {
+          "condition": "(!UseProgramMain)",
+          "exclude": [
+            "BlazorWebWorker.1/Program.Main.cs"
+          ]
+        },
+        {
+          "condition": "(UseProgramMain)",
+          "exclude": [
+            "BlazorWebWorker.1/Program.cs"
+          ],
+          "rename": {
+            "Program.Main.cs": "Program.cs"
+          }
+        },
+        {
+          "condition": "(ExcludeLaunchSettings)",
+          "exclude": [
+            "BlazorWebWorker.1/Properties/launchSettings.json"
+          ]
+        },
+        {
+          "condition": "(!SampleContent)",
+          "exclude": [
+            "BlazorWebWorker.1/Pages/**",
+            "BlazorWebWorker.1/Worker/**",
+            "BlazorWebWorker.1/wwwroot/css/**"
+          ]
+        },
+        {
+          "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+          "exclude": [
+            "*.sln"
+          ]
+        }
+      ]
+    }
+  ],
+  "symbols": {
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "net10.0",
+          "description": "Target net10.0"
+        }
+      ],
+      "replaces": "net10.0",
+      "defaultValue": "net10.0"
+    },
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "defaultValue": "false"
+    },
+    "ExcludeLaunchSettings": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to exclude launchSettings.json from the generated template."
+    },
+    "kestrelHttpPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTP endpoint in launchSettings.json."
+    },
+    "kestrelHttpPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 5000,
+        "high": 5300
+      }
+    },
+    "kestrelHttpPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "kestrelHttpPort",
+        "fallbackVariableName": "kestrelHttpPortGenerated"
+      },
+      "replaces": "5000"
+    },
+    "kestrelHttpsPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTPS endpoint in launchSettings.json."
+    },
+    "kestrelHttpsPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 7000,
+        "high": 7300
+      }
+    },
+    "kestrelHttpsPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "kestrelHttpsPort",
+        "fallbackVariableName": "kestrelHttpsPortGenerated"
+      },
+      "replaces": "5001"
+    },
+    "iisHttpPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the IIS Express HTTP endpoint in launchSettings.json."
+    },
+    "iisHttpPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 8000,
+        "high": 8300
+      }
+    },
+    "iisHttpPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "iisHttpPort",
+        "fallbackVariableName": "iisHttpPortGenerated"
+      },
+      "replaces": "8080"
+    },
+    "iisHttpsPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the IIS Express HTTPS endpoint in launchSettings.json."
+    },
+    "iisHttpsPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 44300,
+        "high": 44399
+      }
+    },
+    "iisHttpsPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "iisHttpsPort",
+        "fallbackVariableName": "iisHttpsPortGenerated"
+      },
+      "replaces": "44300"
+    },
+    "NoHttps": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to turn off HTTPS."
+    },
+    "UseProgramMain": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "displayName": "Do not use top-level statements",
+      "description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
+    },
+    "SampleContent": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "displayName": "Include sample pages",
+      "description": "Configures whether to add sample pages and a Web Worker example demonstrating QR code generation."
+    },
+    "Empty": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Configures whether to omit sample pages and styling that demonstrate basic usage patterns."
+    },
+    "IncludeSampleContent": {
+      "type": "computed",
+      "value": "(SampleContent && !Empty)"
+    },
+    "copyrightYear": {
+      "type": "generated",
+      "generator": "now",
+      "replaces": "copyrightYear",
+      "parameters": {
+        "format": "yyyy"
+      }
+    }
+  },
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "postActions": [
+    {
+      "id": "restore",
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore'"
+        }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    }
+  ]
+}

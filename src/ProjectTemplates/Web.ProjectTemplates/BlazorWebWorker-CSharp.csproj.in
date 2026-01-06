@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">True</NoDefaultLaunchSettingsFile>
+    <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">BlazorWebWorker._1</RootNamespace>
+    <AssemblyName Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">`$(AssemblyName.Replace(' ', '_'))</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="${MicrosoftAspNetCoreComponentsWebAssemblyVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="${MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion}" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BlazorWebWorker.1.WorkerClient\BlazorWebWorker.1.WorkerClient.csproj" />
+  </ItemGroup>
+
+</Project>
