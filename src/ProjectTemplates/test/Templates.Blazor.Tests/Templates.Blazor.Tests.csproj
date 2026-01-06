@@ -48,6 +48,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="AngleSharp" />
