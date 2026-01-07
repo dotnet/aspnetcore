@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Components.Forms;
 public class Label<TValue> : IComponent
 {
     private RenderHandle _renderHandle;
-    private Expression<Func<TValue>>? _previousFieldAccessor;
     private string? _displayName;
 
     /// <summary>
@@ -48,6 +47,7 @@ public class Label<TValue> : IComponent
     /// <inheritdoc />
     Task IComponent.SetParametersAsync(ParameterView parameters)
     {
+        var previousFor = For;
         var previousChildContent = ChildContent;
         var previousAdditionalAttributes = AdditionalAttributes;
 
@@ -67,7 +67,7 @@ public class Label<TValue> : IComponent
         }
 
         // Only recalculate display name if the expression changed
-        if (For != _previousFieldAccessor)
+        if (For != previousFor)
         {
             var newDisplayName = ExpressionMemberAccessor.GetDisplayName(For);
 
@@ -76,8 +76,6 @@ public class Label<TValue> : IComponent
                 _displayName = newDisplayName;
                 _renderHandle.Render(BuildRenderTree);
             }
-
-            _previousFieldAccessor = For;
         }
         else if (ChildContent != previousChildContent || AdditionalAttributes != previousAdditionalAttributes)
         {
