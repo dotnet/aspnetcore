@@ -360,9 +360,24 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             if (!string.IsNullOrEmpty(existingSslCertDir))
             {
                 var existingDirs = existingSslCertDir.Split(Path.PathSeparator);
+                var certDirFullPath = Path.GetFullPath(certDir);
                 var isCertDirIncluded = existingDirs.Any(dir =>
-                    string.Equals(Path.GetFullPath(dir), Path.GetFullPath(certDir), StringComparison.Ordinal));
+                {
+                    if (string.IsNullOrWhiteSpace(dir))
+                    {
+                        return false;
+                    }
 
+                    try
+                    {
+                        return string.Equals(Path.GetFullPath(dir), certDirFullPath, StringComparison.Ordinal);
+                    }
+                    catch
+                    {
+                        // Ignore invalid directory entries in SSL_CERT_DIR
+                        return false;
+                    }
+                });
                 if (isCertDirIncluded)
                 {
                     // The certificate directory is already in SSL_CERT_DIR, no action needed
