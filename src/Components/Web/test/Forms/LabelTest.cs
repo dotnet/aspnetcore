@@ -320,6 +320,60 @@ public class LabelTest
         Assert.Equal("Localized Display Name", textFrame.TextContent);
     }
 
+    [Fact]
+    public async Task ReRendersWhenForChangesWithSameDisplayNameButAttributesChange()
+    {
+        var model = new TestModel();
+        System.Linq.Expressions.Expression<Func<string>> forExpression1 = () => model.PlainProperty;
+        System.Linq.Expressions.Expression<Func<string>> forExpression2 = () => model.PlainProperty;
+
+        var attributes1 = new Dictionary<string, object> { { "class", "label-1" } };
+        var attributes2 = new Dictionary<string, object> { { "class", "label-2" } };
+
+        var currentFor = forExpression1;
+        var currentAttributes = attributes1;
+
+        var testRenderer = new TestRenderer();
+        var rootComponent = new TestHostComponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Label<string>>(0);
+                builder.AddComponentParameter(1, "For", currentFor);
+                builder.AddComponentParameter(2, "AdditionalAttributes", currentAttributes);
+                builder.CloseComponent();
+            }
+        };
+
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        // Verify initial render has class="label-1"
+        var initialFrames = testRenderer.Batches.Last().ReferenceFrames;
+        var initialClassAttr = initialFrames.First(f =>
+            f.FrameType == RenderTree.RenderTreeFrameType.Attribute && f.AttributeName == "class");
+        Assert.Equal("label-1", initialClassAttr.AttributeValue);
+
+        // Change both For (different object, same display name) and AdditionalAttributes
+        currentFor = forExpression2;
+        currentAttributes = attributes2;
+        rootComponent.InnerContent = builder =>
+        {
+            builder.OpenComponent<Label<string>>(0);
+            builder.AddComponentParameter(1, "For", currentFor);
+            builder.AddComponentParameter(2, "AdditionalAttributes", currentAttributes);
+            builder.CloseComponent();
+        };
+
+        await testRenderer.Dispatcher.InvokeAsync(() => rootComponent.TriggerRender());
+
+        // Should have re-rendered with the new attributes
+        var updatedFrames = testRenderer.Batches.Last().ReferenceFrames;
+        var updatedClassAttr = updatedFrames.First(f =>
+            f.FrameType == RenderTree.RenderTreeFrameType.Attribute && f.AttributeName == "class");
+        Assert.Equal("label-2", updatedClassAttr.AttributeValue);
+    }
+
     private static async Task<RenderTreeFrame[]> RenderAndGetFrames(TestHostComponent rootComponent)
     {
         var testRenderer = new TestRenderer();
@@ -337,6 +391,11 @@ public class LabelTest
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             InnerContent(builder);
+        }
+
+        public void TriggerRender()
+        {
+            StateHasChanged();
         }
     }
 

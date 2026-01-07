@@ -67,19 +67,20 @@ public class Label<TValue> : IComponent
         }
 
         // Only recalculate display name if the expression changed
+        var displayNameChanged = false;
         if (For != previousFor)
         {
             var newDisplayName = ExpressionMemberAccessor.GetDisplayName(For);
-
             if (newDisplayName != _displayName)
             {
                 _displayName = newDisplayName;
-                _renderHandle.Render(BuildRenderTree);
+                displayNameChanged = true;
             }
         }
-        else if (ChildContent != previousChildContent || AdditionalAttributes != previousAdditionalAttributes)
+
+        var otherParamsChanged = ChildContent != previousChildContent || AdditionalAttributes != previousAdditionalAttributes;
+        if (displayNameChanged || otherParamsChanged)
         {
-            // Re-render if other parameters changed
             _renderHandle.Render(BuildRenderTree);
         }
 
