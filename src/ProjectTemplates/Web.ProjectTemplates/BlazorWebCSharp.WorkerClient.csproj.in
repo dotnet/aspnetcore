@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
+    <OutputType>Library</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
