@@ -617,6 +617,8 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         // PowerShell command to import the certificate into the CurrentUser Root store.
         // We use Import-Certificate which can handle PEM files on modern Windows.
         // The -CertStoreLocation parameter specifies the store location.
+        // Using -EncodedCommand with Base64 encoding to avoid all shell escaping issues,
+        // particularly command injection vulnerabilities from paths with special characters.
         var escapedPath = certificatePath.Replace("'", "''");
         var escapedFriendlyName = WslFriendlyName.Replace("'", "''");
         var powershellScript = $@"
@@ -628,7 +630,10 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             $store.Close()
         ";
 
-        var startInfo = new ProcessStartInfo(PowerShellCommand, $"-NoProfile -NonInteractive -Command \"{powershellScript}\"")
+        // Encode the PowerShell script to Base64 (UTF-16LE as required by PowerShell)
+        var encodedCommand = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(powershellScript));
+
+        var startInfo = new ProcessStartInfo(PowerShellCommand, $"-NoProfile -NonInteractive -EncodedCommand {encodedCommand}")
         {
             RedirectStandardOutput = true,
             RedirectStandardError = true,
