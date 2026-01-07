@@ -679,7 +679,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.ViewCompilation' ">
     <BaselinePackageVersion>2.3.0</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.ViewCompilation' AND '$(TargetFramework)' == 'net461' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.ViewCompilation' AND '$(TargetFramework)' == 'net462' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.3.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.RazorPages" Version="[2.3.0, )" />
   </ItemGroup>
