@@ -617,11 +617,14 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         // PowerShell command to import the certificate into the CurrentUser Root store.
         // We use Import-Certificate which can handle PEM files on modern Windows.
         // The -CertStoreLocation parameter specifies the store location.
-        // Using -EncodedCommand with Base64 encoding to avoid all shell escaping issues,
-        // particularly command injection vulnerabilities from paths with special characters.
+        // Using -EncodedCommand with Base64 encoding to avoid command shell escaping issues.
+        // We still need to escape single quotes within the PowerShell script itself to prevent
+        // PowerShell injection vulnerabilities.
+        var escapedPath = certificatePath.Replace("'", "''");
+        var escapedFriendlyName = WslFriendlyName.Replace("'", "''");
         var powershellScript = $@"
-            $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2('{certificatePath}')
-            $cert.FriendlyName = '{WslFriendlyName}'
+            $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2('{escapedPath}')
+            $cert.FriendlyName = '{escapedFriendlyName}'
             $store = New-Object System.Security.Cryptography.X509Certificates.X509Store('Root', 'CurrentUser')
             $store.Open('ReadWrite')
             $store.Add($cert)
