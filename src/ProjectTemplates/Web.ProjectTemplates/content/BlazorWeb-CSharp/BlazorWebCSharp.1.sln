@@ -6,7 +6,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWebCSharp.1", "Blazor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWebCSharp.1.Client", "BlazorWebCSharp.1.Client\BlazorWebCSharp.1.Client.csproj", "{5990939C-7E7B-4CFA-86FF-44CA5756498A}"
 EndProject
-#if (UseWebWorker)
+#if (WebWorker)
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWebCSharp.1.WorkerClient", "BlazorWebCSharp.1.WorkerClient\BlazorWebCSharp.1.WorkerClient.csproj", "{7A8B9C0D-1E2F-3A4B-5C6D-7E8F9A0B1C2D}"
 EndProject
 #endif
@@ -44,7 +44,7 @@ Global
 		{650B3CE7-2E93-4CC4-9F46-466686815EAA}.Release|x64.Build.0 = Release|Any CPU
 		{650B3CE7-2E93-4CC4-9F46-466686815EAA}.Release|x86.ActiveCfg = Release|Any CPU
 		{650B3CE7-2E93-4CC4-9F46-466686815EAA}.Release|x86.Build.0 = Release|Any CPU
-#if (UseWebWorker)
+#if (WebWorker)
 		{7A8B9C0D-1E2F-3A4B-5C6D-7E8F9A0B1C2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7A8B9C0D-1E2F-3A4B-5C6D-7E8F9A0B1C2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7A8B9C0D-1E2F-3A4B-5C6D-7E8F9A0B1C2D}.Debug|x64.ActiveCfg = Debug|Any CPU

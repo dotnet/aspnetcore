@@ -9,9 +9,9 @@
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">BlazorWebCSharp._1.Client</RootNamespace>
     <AssemblyName Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">`$(AssemblyName.Replace(' ', '_'))</AssemblyName>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
-#if (UseWebWorker)
+<!--#if (WebWorker) -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-#endif
+<!--#endif -->
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,10 +19,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="${MicrosoftAspNetCoreComponentsWebAssemblyAuthenticationVersion}" Condition="'$(IndividualLocalAuth)' == 'True'" />
   </ItemGroup>
 
-#if (UseWebWorker)
+<!--#if (WebWorker) -->
   <ItemGroup>
     <ProjectReference Include="..\BlazorWebCSharp.1.WorkerClient\BlazorWebCSharp.1.WorkerClient.csproj" />
   </ItemGroup>
-#endif
+<!--#endif -->
 
 </Project>
