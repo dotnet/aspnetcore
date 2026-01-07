@@ -416,7 +416,7 @@
       "defaultValue": "false",
       "displayName": "Include _WebWorker support",
       "description": "Adds WebWorker support for running .NET code in a separate worker thread. Only available when using WebAssembly interactivity.",
-      "isEnabled": "(UseWebAssembly)"
+      "isEnabled": "(InteractivityPlatform == \"WebAssembly\" || InteractivityPlatform == \"Auto\")"
     },
     "UseWebWorker": {
       "type": "computed",

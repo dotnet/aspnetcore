@@ -26,6 +26,10 @@
   "primaryOutputs": [
     {
       "path": "ComponentsWebAssembly-CSharp.csproj"
+    },
+    {
+      "condition": "(WebWorker && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "ComponentsWebAssembly-CSharp.WorkerClient/ComponentsWebAssembly-CSharp.WorkerClient.csproj"
     }
   ],
   "shortName": "blazorwasm",
