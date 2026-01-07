@@ -131,7 +131,7 @@ internal sealed class Program
                     }
                     else
                     {
-                        listener.EnableEvents(CertificateManager.Log, System.Diagnostics.Tracing.EventLevel.LogAlways);
+                        listener.EnableEvents(CertificateManager.Log, System.Diagnostics.Tracing.EventLevel.Critical);
                     }
 
                     if (checkJsonOutput.HasValue())
