@@ -17,7 +17,8 @@
     "5990939C-7E7B-4CFA-86FF-44CA5756498A",
     "650B3CE7-2E93-4CC4-9F46-466686815EAA",
     "0AFFA7FD-4E37-4636-AB91-3753E746DB98",
-    "53bc9b9d-9d6a-45d4-8429-2a2761773502" // Client ID
+    "53bc9b9d-9d6a-45d4-8429-2a2761773502",
+    "7A8B9C0D-1E2F-3A4B-5C6D-7E8F9A0B1C2D"
   ],
   "identity": "Microsoft.Web.Blazor.Wasm.CSharp.10.0",
   "thirdPartyNotices": "https://aka.ms/aspnetcore/10.0-third-party-notices",
@@ -40,6 +41,19 @@
         "**/wwwroot/bootstrap/**"
       ],
       "modifiers": [
+        {
+          "condition": "(!WebWorker)",
+          "exclude": [
+            "ComponentsWebAssembly-CSharp.sln",
+            "ComponentsWebAssembly-CSharp.WorkerClient/**",
+            "Worker/**",
+            "Models/**",
+            "Services/**",
+            "Pages/ImageProcessor.razor",
+            "Pages/ImageProcessor.razor.cs",
+            "Pages/ImageProcessor.razor.css"
+          ]
+        },
         {
           "condition": "(!PWA)",
           "exclude": [
@@ -133,6 +147,13 @@
     }
   ],
   "symbols": {
+    "WebWorker": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "displayName": "Include _WebWorker support",
+      "description": "Adds WebWorker support for running .NET code in a separate worker thread."
+    },
     "Framework": {
       "type": "parameter",
       "description": "The target framework for the project.",
