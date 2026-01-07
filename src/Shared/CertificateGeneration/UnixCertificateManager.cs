@@ -619,11 +619,9 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         // The -CertStoreLocation parameter specifies the store location.
         // Using -EncodedCommand with Base64 encoding to avoid all shell escaping issues,
         // particularly command injection vulnerabilities from paths with special characters.
-        var escapedPath = certificatePath.Replace("'", "''");
-        var escapedFriendlyName = WslFriendlyName.Replace("'", "''");
         var powershellScript = $@"
-            $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2('{escapedPath}')
-            $cert.FriendlyName = '{escapedFriendlyName}'
+            $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2('{certificatePath}')
+            $cert.FriendlyName = '{WslFriendlyName}'
             $store = New-Object System.Security.Cryptography.X509Certificates.X509Store('Root', 'CurrentUser')
             $store.Open('ReadWrite')
             $store.Add($cert)
