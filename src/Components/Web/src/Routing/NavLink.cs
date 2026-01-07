@@ -55,7 +55,9 @@ public class NavLink : ComponentBase, IDisposable
 
     /// <summary>
     /// Gets or sets whether the href should be resolved relative to the current path.
-    /// When true, the href is treated as relative to the current route path.
+    /// When <c>true</c>, relative hrefs (e.g., "sibling") are resolved against the current route's
+    /// directory path and rendered as root-relative URLs (e.g., "/folder/sibling").
+    /// When <c>false</c> (default), the href is rendered as-is from the attribute value.
     /// </summary>
     [Parameter]
     public bool PathRelative { get; set; }
@@ -80,13 +82,15 @@ public class NavLink : ComponentBase, IDisposable
         }
 
         // Resolve relative path if PathRelative is true
+        _hrefToRender = null;
         if (PathRelative && href != null)
         {
             href = NavigationManager.ResolveRelativeToCurrentPath(href);
+            var resolvedUri = NavigationManager.ToAbsoluteUri(href);
+            _hrefToRender = resolvedUri.PathAndQuery + resolvedUri.Fragment;
         }
 
         _hrefAbsolute = href == null ? null : NavigationManager.ToAbsoluteUri(href).AbsoluteUri;
-        _hrefToRender = _hrefAbsolute;
         _isActive = ShouldMatch(NavigationManager.Uri);
 
         _class = (string?)null;

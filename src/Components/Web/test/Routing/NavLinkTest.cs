@@ -36,7 +36,7 @@ public class NavLinkTest
 
         var batch = renderer.Batches.Single();
         var hrefFrame = batch.ReferenceFrames.First(f => f.AttributeName == "href");
-        Assert.Equal("https://example.com/sub-site/details", hrefFrame.AttributeValue);
+        Assert.Equal("/sub-site/details", hrefFrame.AttributeValue);
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public class NavLinkTest
 
         var batch = renderer.Batches.Single();
         var hrefFrame = batch.ReferenceFrames.First(f => f.AttributeName == "href");
-        Assert.Equal("https://example.com/a/b/c/sibling", hrefFrame.AttributeValue);
+        Assert.Equal("/a/b/c/sibling", hrefFrame.AttributeValue);
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public class NavLinkTest
 
         var batch = renderer.Batches.Single();
         var hrefFrame = batch.ReferenceFrames.First(f => f.AttributeName == "href");
-        Assert.Equal("https://example.com/folder/other", hrefFrame.AttributeValue);
+        Assert.Equal("/folder/other", hrefFrame.AttributeValue);
     }
 
     [Fact]
@@ -120,8 +120,8 @@ public class NavLinkTest
 
         var batch = renderer.Batches.Single();
         var hrefFrame = batch.ReferenceFrames.First(f => f.AttributeName == "href");
-        // Should resolve relative to base URI, not current path
-        Assert.Equal("https://example.com/relative", hrefFrame.AttributeValue);
+        // Should keep the original href as-is (from AdditionalAttributes)
+        Assert.Equal("relative", hrefFrame.AttributeValue);
     }
 
     [Fact]
@@ -149,7 +149,7 @@ public class NavLinkTest
 
         var batch = renderer.Batches.Single();
         var hrefFrame = batch.ReferenceFrames.First(f => f.AttributeName == "href");
-        Assert.Equal("https://example.com/other", hrefFrame.AttributeValue);
+        Assert.Equal("/other", hrefFrame.AttributeValue);
     }
 
     [Fact]
@@ -178,6 +178,35 @@ public class NavLinkTest
         var batch = renderer.Batches.Single();
         var classFrame = batch.ReferenceFrames.FirstOrDefault(f => f.AttributeName == "class");
         Assert.Equal("active", classFrame.AttributeValue);
+    }
+
+    [Fact]
+    public async Task NavLink_WithPathRelative_WorksWithDeeplyNestedBaseUri()
+    {
+        // App hosted at https://example.com/org/project/app/
+        var testNavigationManager = new TestNavigationManager();
+        testNavigationManager.Initialize("https://example.com/org/project/app/", "https://example.com/org/project/app/admin/users");
+
+        var renderer = new TestRenderer();
+        var component = new NavLink();
+        
+        var componentId = renderer.AssignRootComponentId(component);
+        SetNavigationManager(component, testNavigationManager);
+        
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
+        {
+            [nameof(NavLink.PathRelative)] = true,
+            [nameof(NavLink.AdditionalAttributes)] = new Dictionary<string, object>
+            {
+                ["href"] = "roles"
+            }
+        });
+        
+        await renderer.RenderRootComponentAsync(componentId, parameters);
+
+        var batch = renderer.Batches.Single();
+        var hrefFrame = batch.ReferenceFrames.First(f => f.AttributeName == "href");
+        Assert.Equal("/org/project/app/admin/roles", hrefFrame.AttributeValue);
     }
 
     private void SetNavigationManager(NavLink component, NavigationManager navigationManager)
