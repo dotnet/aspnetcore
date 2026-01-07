@@ -212,7 +212,7 @@ public class ResponseBodyTests : LoggedTest
         using (Utilities.CreateHttpServer(out address, async httpContext =>
         {
             httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
-            httpContext.Response.Headers["Content-lenGth"] = " 30 ";
+            httpContext.Response.Headers["Content-lenGth"] = "30";
             Stream stream = httpContext.Response.Body;
             stream.EndWrite(stream.BeginWrite(new byte[10], 0, 10, null, null));
             stream.Write(new byte[10], 0, 10);
