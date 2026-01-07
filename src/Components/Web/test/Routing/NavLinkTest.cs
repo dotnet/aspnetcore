@@ -36,7 +36,7 @@ public class NavLinkTest
 
         var batch = renderer.Batches.Single();
         var hrefFrame = batch.ReferenceFrames.First(f => f.AttributeName == "href");
-        Assert.Equal("/sub-site/details", hrefFrame.AttributeValue);
+        Assert.Equal("https://example.com/sub-site/details", hrefFrame.AttributeValue);
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public class NavLinkTest
 
         var batch = renderer.Batches.Single();
         var hrefFrame = batch.ReferenceFrames.First(f => f.AttributeName == "href");
-        Assert.Equal("/a/b/c/sibling", hrefFrame.AttributeValue);
+        Assert.Equal("https://example.com/a/b/c/sibling", hrefFrame.AttributeValue);
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public class NavLinkTest
 
         var batch = renderer.Batches.Single();
         var hrefFrame = batch.ReferenceFrames.First(f => f.AttributeName == "href");
-        Assert.Equal("/folder/other", hrefFrame.AttributeValue);
+        Assert.Equal("https://example.com/folder/other", hrefFrame.AttributeValue);
     }
 
     [Fact]
@@ -149,7 +149,7 @@ public class NavLinkTest
 
         var batch = renderer.Batches.Single();
         var hrefFrame = batch.ReferenceFrames.First(f => f.AttributeName == "href");
-        Assert.Equal("/other", hrefFrame.AttributeValue);
+        Assert.Equal("https://example.com/other", hrefFrame.AttributeValue);
     }
 
     [Fact]
@@ -206,7 +206,7 @@ public class NavLinkTest
 
         var batch = renderer.Batches.Single();
         var hrefFrame = batch.ReferenceFrames.First(f => f.AttributeName == "href");
-        Assert.Equal("/org/project/app/admin/roles", hrefFrame.AttributeValue);
+        Assert.Equal("https://example.com/org/project/app/admin/roles", hrefFrame.AttributeValue);
     }
 
     private void SetNavigationManager(NavLink component, NavigationManager navigationManager)

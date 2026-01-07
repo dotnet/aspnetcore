@@ -198,18 +198,7 @@ public abstract class NavigationManager
     }
 
     private static bool IsAbsoluteUri(string uri)
-    {
-        if (uri.StartsWith('/'))
-        {
-            return true;
-        }
-
-        var span = uri.AsSpan();
-        var queryOrFragmentIndex = span.IndexOfAny('?', '#');
-        var pathPortion = queryOrFragmentIndex >= 0 ? span[..queryOrFragmentIndex] : span;
-
-        return pathPortion.Contains("://".AsSpan(), StringComparison.Ordinal);
-    }
+        => uri.StartsWith('/') || System.Uri.TryCreate(uri, UriKind.Absolute, out _);
 
     /// <summary>
     /// Navigates to the specified URI.
