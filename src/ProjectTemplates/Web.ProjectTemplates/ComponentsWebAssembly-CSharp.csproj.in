@@ -8,8 +8,17 @@
     <!--#if PWA -->
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
     <!--#endif -->
+<!--#if (WebWorker) -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+<!--#endif -->
   </PropertyGroup>
 
+<!--#if (WebWorker) -->
+  <ItemGroup>
+    <ProjectReference Include="ComponentsWebAssembly-CSharp.WorkerClient\ComponentsWebAssembly-CSharp.WorkerClient.csproj" />
+  </ItemGroup>
+
+<!--#endif -->
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="${MicrosoftAspNetCoreComponentsWebAssemblyVersion}" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="${MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion}" PrivateAssets="all" />
