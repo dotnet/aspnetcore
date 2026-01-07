@@ -32,6 +32,10 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     private const string BrowserFamilyChromium = "Chromium";
     private const string BrowserFamilyFirefox = "Firefox";
 
+    private const string PowerShellCommand = "powershell.exe";
+    private const string WslInteropPath = "/proc/sys/fs/binfmt_misc/WSLInterop";
+    private const string WslInteropLatePath = "/proc/sys/fs/binfmt_misc/WSLInterop-late";
+
     private const string OpenSslCommand = "openssl";
     private const string CertUtilCommand = "certutil";
 
@@ -365,6 +369,21 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             }
         }
 
+        // Check to see if we're running in WSL; if so, use powershell.exe to add the certificate to the Windows trust store as well
+        if (IsRunningOnWsl())
+        {
+            if (TryTrustCertificateInWindowsStore(certPath))
+            {
+                Log.WslWindowsTrustSucceeded();
+                sawTrustSuccess = true;
+            }
+            else
+            {
+                Log.WslWindowsTrustFailed();
+                sawTrustFailure = true;
+            }
+        }
+
         return sawTrustFailure
             ? TrustLevel.Partial
             : TrustLevel.Full;
@@ -562,6 +581,55 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     private static string GetCertificateNickname(X509Certificate2 certificate)
     {
         return $"aspnetcore-localhost-{certificate.Thumbprint}";
+    }
+
+    /// <summary>
+    /// Detects if the current environment is Windows Subsystem for Linux (WSL).
+    /// </summary>
+    /// <returns>True if running on WSL; otherwise, false.</returns>
+    private static bool IsRunningOnWsl()
+    {
+        // WSL exposes special files that indicate WSL interop is enabled.
+        // Either WSLInterop or WSLInterop-late may be present depending on the WSL version and configuration.
+        return File.Exists(WslInteropPath) || File.Exists(WslInteropLatePath);
+    }
+
+    /// <summary>
+    /// Attempts to trust the certificate in the Windows certificate store via PowerShell when running on WSL.
+    /// </summary>
+    /// <param name="certificatePath">The path to the certificate file (PEM format).</param>
+    /// <returns>True if the certificate was successfully added to the Windows store; otherwise, false.</returns>
+    private static bool TryTrustCertificateInWindowsStore(string certificatePath)
+    {
+        // PowerShell command to import the certificate into the CurrentUser Root store.
+        // We use Import-Certificate which can handle PEM files on modern Windows.
+        // The -CertStoreLocation parameter specifies the store location.
+        var escapedPath = certificatePath.Replace("'", "''");
+        var powershellScript = $@"
+            $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2('{escapedPath}')
+            $store = New-Object System.Security.Cryptography.X509Certificates.X509Store('Root', 'CurrentUser')
+            $store.Open('ReadWrite')
+            $store.Add($cert)
+            $store.Close()
+        ";
+
+        var startInfo = new ProcessStartInfo(PowerShellCommand, $"-NoProfile -NonInteractive -Command \"{powershellScript}\"")
+        {
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+
+        try
+        {
+            using var process = Process.Start(startInfo)!;
+            process.WaitForExit();
+            return process.ExitCode == 0;
+        }
+        catch (Exception ex)
+        {
+            Log.WslWindowsTrustException(ex.Message);
+            return false;
+        }
     }
 
     /// <remarks>

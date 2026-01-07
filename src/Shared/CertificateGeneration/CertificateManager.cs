@@ -1313,6 +1313,15 @@ internal abstract class CertificateManager
 
         [Event(112, Level = EventLevel.Warning, Message = "Directory '{0}' may be readable by other users.")]
         internal void DirectoryPermissionsNotSecure(string directoryPath) => WriteEvent(112, directoryPath);
+
+        [Event(113, Level = EventLevel.Verbose, Message = "Successfully trusted the certificate in the Windows certificate store via WSL.")]
+        internal void WslWindowsTrustSucceeded() => WriteEvent(113);
+
+        [Event(114, Level = EventLevel.Warning, Message = "Failed to trust the certificate in the Windows certificate store via WSL.")]
+        internal void WslWindowsTrustFailed() => WriteEvent(114);
+
+        [Event(115, Level = EventLevel.Warning, Message = "Failed to trust the certificate in the Windows certificate store via WSL: {0}.")]
+        internal void WslWindowsTrustException(string exceptionMessage) => WriteEvent(115, exceptionMessage);
     }
 
     internal sealed class UserCancelledTrustException : Exception
