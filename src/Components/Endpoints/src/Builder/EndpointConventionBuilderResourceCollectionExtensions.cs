@@ -33,7 +33,7 @@ public static class EndpointConventionBuilderResourceCollectionExtensions
 
         // Only add the convention if the builder also implements IEndpointRouteBuilder
         // (e.g., RouteGroupBuilder). For other builders like RouteHandlerBuilder,
-        // the convention won't be able to resolve static assets.
+        // we can't resolve static assets without access to the route builder.
         if (builder is IEndpointRouteBuilder routeBuilder)
         {
             ResourceCollectionConvention convention = new ResourceCollectionConvention(routeBuilder, manifestPath);
