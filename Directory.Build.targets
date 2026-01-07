@@ -16,7 +16,7 @@
     <IsPackageInThisPatch Condition="'$(IsANCMPackage)' == 'true'">true</IsPackageInThisPatch>
 
     <!-- We shipped every package other than Razor in 2.3.8 -->
-    <IsPackageInThisPatch Condition=" '$(AspNetCorePatchVersion)' == '8'">true</IsPackageInThisPatch>
+    <IsPackageInThisPatch Condition=" '$(AspNetCorePatchVersion)' == '9'">true</IsPackageInThisPatch>
     <IsPackageInThisPatch Condition="$(PackageId.StartsWith('Microsoft.AspNetCore.Razor'))">false</IsPackageInThisPatch>
     <IsPackageInThisPatch Condition="$(PackageId.StartsWith('Microsoft.AspNetCore.Mvc.Razor'))">false</IsPackageInThisPatch>
     <IsPackageInThisPatch Condition="$(PackageId.StartsWith('Microsoft.AspNetCore.Mvc.Razor.ViewCompilation'))">false</IsPackageInThisPatch>
