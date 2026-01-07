@@ -21,7 +21,7 @@ public class EndpointConventionBuilderResourceCollectionExtensionsTest
         var routeBuilder = new TestEndpointRouteBuilder();
         
         var group = routeBuilder.MapGroup("/test");
-        group.WithStaticAssets();
+        group.WithStaticAssets(routeBuilder);
         group.MapGet("/endpoint", () => "test");
 
         // Get the endpoint from the data source created by the group
@@ -39,7 +39,7 @@ public class EndpointConventionBuilderResourceCollectionExtensionsTest
         routeBuilder.MapStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
         
         var group = routeBuilder.MapGroup("/test");
-        group.WithStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
+        group.WithStaticAssets(routeBuilder, "TestManifests/Test.staticwebassets.endpoints.json");
         group.MapGet("/endpoint", () => "test");
 
         // Get the endpoint from the data source created by the group
@@ -69,7 +69,7 @@ public class EndpointConventionBuilderResourceCollectionExtensionsTest
         var existingCollection = new ResourceAssetCollection([]);
         var group = routeBuilder.MapGroup("/test");
         ((IEndpointConventionBuilder)group).Add(eb => eb.Metadata.Add(existingCollection));
-        group.WithStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
+        group.WithStaticAssets(routeBuilder, "TestManifests/Test.staticwebassets.endpoints.json");
         group.MapGet("/endpoint", () => "test");
 
         // Get the endpoint from the data source created by the group
@@ -88,7 +88,7 @@ public class EndpointConventionBuilderResourceCollectionExtensionsTest
         routeBuilder.MapStaticAssets();
         
         var group = routeBuilder.MapGroup("/test");
-        group.WithStaticAssets();
+        group.WithStaticAssets(routeBuilder);
         group.MapGet("/endpoint", () => "test");
 
         // Get the endpoint from the data source created by the group
@@ -110,7 +110,7 @@ public class EndpointConventionBuilderResourceCollectionExtensionsTest
         routeBuilder.MapStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
         
         routeBuilder.MapGet("/endpoint", () => "test")
-            .WithStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
+            .WithStaticAssets(routeBuilder, "TestManifests/Test.staticwebassets.endpoints.json");
 
         // Get the endpoint from the data source created by MapGet
         var dataSource = Assert.Single(routeBuilder.DataSources.Skip(1));
@@ -131,7 +131,7 @@ public class EndpointConventionBuilderResourceCollectionExtensionsTest
         routeBuilder.MapStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
         
         var group = routeBuilder.MapGroup("/test");
-        group.WithStaticAssets("TestManifests/Test.staticwebassets.endpoints.json");
+        group.WithStaticAssets(routeBuilder, "TestManifests/Test.staticwebassets.endpoints.json");
         group.MapGet("/endpoint", () => "test");
 
         // Get the endpoint from the data source created by the group

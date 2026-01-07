@@ -17,6 +17,7 @@ public static class EndpointConventionBuilderResourceCollectionExtensions
     /// Provides a helper to attach ResourceCollection metadata to endpoints.
     /// </summary>
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
+    /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> that contains the static assets data sources.</param>
     /// <param name="manifestPath">The manifest associated with the assets.</param>
     /// <returns>The <see cref="IEndpointConventionBuilder"/> that can be used to further configure the endpoints.</returns>
     /// <remarks>
@@ -27,18 +28,14 @@ public static class EndpointConventionBuilderResourceCollectionExtensions
     /// </remarks>
     public static IEndpointConventionBuilder WithStaticAssets(
         this IEndpointConventionBuilder builder,
+        IEndpointRouteBuilder endpoints,
         string? manifestPath = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(endpoints);
 
-        // Only add the convention if the builder also implements IEndpointRouteBuilder
-        // (e.g., RouteGroupBuilder). For other builders like RouteHandlerBuilder,
-        // we can't resolve static assets without access to the route builder.
-        if (builder is IEndpointRouteBuilder routeBuilder)
-        {
-            ResourceCollectionConvention convention = new ResourceCollectionConvention(routeBuilder, manifestPath);
-            builder.Add(convention.Apply);
-        }
+        ResourceCollectionConvention convention = new ResourceCollectionConvention(endpoints, manifestPath);
+        builder.Add(convention.Apply);
 
         return builder;
     }
