@@ -35,6 +35,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     private const string PowerShellCommand = "powershell.exe";
     private const string WslInteropPath = "/proc/sys/fs/binfmt_misc/WSLInterop";
     private const string WslInteropLatePath = "/proc/sys/fs/binfmt_misc/WSLInterop-late";
+    private const string WslFriendlyName = AspNetHttpsOidFriendlyName + " (WSL)";
 
     private const string OpenSslCommand = "openssl";
     private const string CertUtilCommand = "certutil";
@@ -370,7 +371,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         }
 
         // Check to see if we're running in WSL; if so, use powershell.exe to add the certificate to the Windows trust store as well
-        if (IsRunningOnWsl())
+        if (IsRunningOnWslWithInterop())
         {
             if (TryTrustCertificateInWindowsStore(certPath))
             {
@@ -584,14 +585,26 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     }
 
     /// <summary>
-    /// Detects if the current environment is Windows Subsystem for Linux (WSL).
+    /// Detects if the current environment is Windows Subsystem for Linux (WSL) with interop enabled.
     /// </summary>
-    /// <returns>True if running on WSL; otherwise, false.</returns>
-    private static bool IsRunningOnWsl()
+    /// <returns>True if running on WSL with interop; otherwise, false.</returns>
+    private static bool IsRunningOnWslWithInterop()
     {
         // WSL exposes special files that indicate WSL interop is enabled.
         // Either WSLInterop or WSLInterop-late may be present depending on the WSL version and configuration.
-        return File.Exists(WslInteropPath) || File.Exists(WslInteropLatePath);
+        if (File.Exists(WslInteropPath) || File.Exists(WslInteropLatePath))
+        {
+            return true;
+        }
+
+        // Additionally check for standard WSL environment variables as a fallback.
+        // WSL_INTEROP is set to the path of the interop socket.
+        if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WSL_INTEROP")))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -605,8 +618,10 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         // We use Import-Certificate which can handle PEM files on modern Windows.
         // The -CertStoreLocation parameter specifies the store location.
         var escapedPath = certificatePath.Replace("'", "''");
+        var escapedFriendlyName = WslFriendlyName.Replace("'", "''");
         var powershellScript = $@"
             $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2('{escapedPath}')
+            $cert.FriendlyName = '{escapedFriendlyName}'
             $store = New-Object System.Security.Cryptography.X509Certificates.X509Store('Root', 'CurrentUser')
             $store.Open('ReadWrite')
             $store.Add($cert)
