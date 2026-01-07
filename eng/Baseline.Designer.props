@@ -1114,7 +1114,7 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.HostFiltering" Version="[2.3.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.3.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Routing" Version="[2.3.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="[2.1.7, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="[2.3.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="[2.3.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" Version="[2.3.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="[8.0.0, )" />
