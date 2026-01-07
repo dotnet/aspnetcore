@@ -373,7 +373,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         // Check to see if we're running in WSL; if so, use powershell.exe to add the certificate to the Windows trust store as well
         if (IsRunningOnWslWithInterop())
         {
-            if (TryTrustCertificateInWindowsStore(certPath))
+            if (TryTrustCertificateInWindowsStore(certificate))
             {
                 Log.WslWindowsTrustSucceeded();
                 sawTrustSuccess = true;
@@ -610,38 +610,38 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     /// <summary>
     /// Attempts to trust the certificate in the Windows certificate store via PowerShell when running on WSL.
     /// </summary>
-    /// <param name="certificatePath">The path to the certificate file (PEM format).</param>
+    /// <param name="certificate">The certificate to trust.</param>
     /// <returns>True if the certificate was successfully added to the Windows store; otherwise, false.</returns>
-    private static bool TryTrustCertificateInWindowsStore(string certificatePath)
+    private static bool TryTrustCertificateInWindowsStore(X509Certificate2 certificate)
     {
-        // PowerShell command to import the certificate into the CurrentUser Root store.
-        // We use Import-Certificate which can handle PEM files on modern Windows.
-        // The -CertStoreLocation parameter specifies the store location.
-        // Using -EncodedCommand with Base64 encoding to avoid command shell escaping issues.
-        // We still need to escape single quotes within the PowerShell script itself to prevent
-        // PowerShell injection vulnerabilities.
-        var escapedPath = certificatePath.Replace("'", "''");
-        var escapedFriendlyName = WslFriendlyName.Replace("'", "''");
-        var powershellScript = $@"
-            $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2('{escapedPath}')
-            $cert.FriendlyName = '{escapedFriendlyName}'
-            $store = New-Object System.Security.Cryptography.X509Certificates.X509Store('Root', 'CurrentUser')
-            $store.Open('ReadWrite')
-            $store.Add($cert)
-            $store.Close()
-        ";
-
-        // Encode the PowerShell script to Base64 (UTF-16LE as required by PowerShell)
-        var encodedCommand = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(powershellScript));
-
-        var startInfo = new ProcessStartInfo(PowerShellCommand, $"-NoProfile -NonInteractive -EncodedCommand {encodedCommand}")
-        {
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-        };
-
         try
         {
+            // Export the certificate as DER-encoded bytes (no private key needed for trust)
+            // and embed it directly in the PowerShell script as Base64 to avoid file path
+            // translation issues between WSL and Windows.
+            var certBytes = certificate.Export(X509ContentType.Cert);
+            var certBase64 = Convert.ToBase64String(certBytes);
+
+            var escapedFriendlyName = WslFriendlyName.Replace("'", "''");
+            var powershellScript = $@"
+                $certBytes = [Convert]::FromBase64String('{certBase64}')
+                $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2(,$certBytes)
+                $cert.FriendlyName = '{escapedFriendlyName}'
+                $store = New-Object System.Security.Cryptography.X509Certificates.X509Store('Root', 'CurrentUser')
+                $store.Open('ReadWrite')
+                $store.Add($cert)
+                $store.Close()
+            ";
+
+            // Encode the PowerShell script to Base64 (UTF-16LE as required by PowerShell)
+            var encodedCommand = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(powershellScript));
+
+            var startInfo = new ProcessStartInfo(PowerShellCommand, $"-NoProfile -NonInteractive -EncodedCommand {encodedCommand}")
+            {
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+
             using var process = Process.Start(startInfo)!;
             process.WaitForExit();
             return process.ExitCode == 0;
