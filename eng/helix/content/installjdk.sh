@@ -22,7 +22,7 @@ fi
 echo "PlatformArch: $platformarch"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 output_dir="$DIR/java"
-url="https://netcorenativeassets.blob.core.windows.net/resource-packages/external/linux/java/jdk-${java_version}_${platformarch}_bin.tar.gz"
+url="https://netcorenativeassets.blob.core.windows.net/resource-packages/external/linux/java/microsoft-jdk-${java_version}_${platformarch}.tar.gz"
 echo "Downloading from: $url"
 tmp="$(mktemp -d -t install-jdk.XXXXXX)"
 
