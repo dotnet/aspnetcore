@@ -11,7 +11,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.9.3'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.2'
-    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'com.google.code.gson:gson:2.8.9'
     implementation 'ch.qos.logback:logback-classic:1.2.3'
     implementation project(':core')
     implementation project(':messagepack')
