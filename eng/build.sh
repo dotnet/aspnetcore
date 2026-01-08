@@ -379,10 +379,6 @@ restore=$run_restore
 nodeReuse=false
 export MSBUILDDISABLENODEREUSE=1
 
-if [ "$build_java" = true ]; then
-    export JDK_JAVA_OPTIONS="--enable-native-access=ALL-UNNAMED"
-fi
-
 # Ensure passing neither --bl nor --nobl on CI avoids errors in tools.sh. This is needed because we set both variables
 # to false by default i.e. they always exist. (We currently avoid binary logs but that is made visible in the YAML.)
 if [[ "$ci" == true && "$exclude_ci_binary_log" == false ]]; then
