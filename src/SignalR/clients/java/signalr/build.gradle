@@ -28,8 +28,8 @@ allprojects {
     repositories {
         mavenCentral()
     }
-    
-    environment "DK_JAVA_OPTIONS", "--enable-native-access=ALL-UNNAMED"
+
+    environment "JDK_JAVA_OPTIONS", "--enable-native-access=ALL-UNNAMED"
 }
 
 spotless {
