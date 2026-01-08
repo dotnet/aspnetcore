@@ -924,7 +924,6 @@ public class NavigationManagerTest
         testNavManager.NavigateTo("relative.html", new NavigationOptions { PathRelative = false });
 
         Assert.Single(testNavManager.Navigations);
-        // When PathRelative is false, the URI is passed directly to NavigateToCore without resolution
         Assert.Equal("relative.html", testNavManager.Navigations[0].uri);
         Assert.False(testNavManager.Navigations[0].options.PathRelative);
     }
@@ -971,8 +970,6 @@ public class NavigationManagerTest
     [Fact]
     public void NavigateTo_WithPathRelative_CurrentUriEndsWithSlash()
     {
-        // When current URI is a directory (ends with slash), the relative path 
-        // should be appended to that directory
         var baseUri = "scheme://host/";
         var currentUri = "scheme://host/folder/";
         var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
@@ -983,65 +980,49 @@ public class NavigationManagerTest
         Assert.Equal("scheme://host/folder/sibling.html", testNavManager.Navigations[0].uri);
     }
 
-    [Fact]
-    public void NavigateTo_WithPathRelative_FragmentOnly()
-    {
-        // Fragment-only navigation should append to the current directory
-        var baseUri = "scheme://host/";
-        var currentUri = "scheme://host/folder/page.html";
-        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
-
-        testNavManager.NavigateTo("#section", new NavigationOptions { PathRelative = true });
-
-        Assert.Single(testNavManager.Navigations);
-        Assert.Equal("scheme://host/folder/#section", testNavManager.Navigations[0].uri);
-    }
-
-    [Fact]
-    public void NavigateTo_WithPathRelative_QueryOnly()
-    {
-        // Query-only navigation should append to the current directory
-        var baseUri = "scheme://host/";
-        var currentUri = "scheme://host/folder/page.html";
-        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
-
-        testNavManager.NavigateTo("?param=value", new NavigationOptions { PathRelative = true });
-
-        Assert.Single(testNavManager.Navigations);
-        Assert.Equal("scheme://host/folder/?param=value", testNavManager.Navigations[0].uri);
-    }
-
-    [Fact]
-    public void NavigateTo_WithPathRelative_ParentDirectory()
-    {
-        // Verify that ../ produces the expected (non-normalized) result that browsers will normalize
-        var baseUri = "scheme://host/";
-        var currentUri = "scheme://host/folder1/folder2/page.html";
-        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
-
-        testNavManager.NavigateTo("../sibling.html", new NavigationOptions { PathRelative = true });
-
-        Assert.Single(testNavManager.Navigations);
-        // The result contains ../ which browsers normalize to /folder1/sibling.html
-        Assert.Equal("scheme://host/folder1/folder2/../sibling.html", testNavManager.Navigations[0].uri);
-    }
-
-    [Fact]
-    public void NavigateTo_WithPathRelative_CurrentDirectory()
-    {
-        // Verify that ./ produces the expected (non-normalized) result that browsers will normalize
-        var baseUri = "scheme://host/";
-        var currentUri = "scheme://host/folder/page.html";
-        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
-
-        testNavManager.NavigateTo("./sibling.html", new NavigationOptions { PathRelative = true });
-
-        Assert.Single(testNavManager.Navigations);
-        // The result contains ./ which browsers normalize to /folder/sibling.html
-        Assert.Equal("scheme://host/folder/./sibling.html", testNavManager.Navigations[0].uri);
-    }
-
     [Theory]
+    [InlineData("scheme://host/folder/page.html", "sibling.html", "scheme://host/folder/sibling.html")]
+    [InlineData("scheme://host/folder/page.html", "#section", "scheme://host/folder/page.html#section")]
+    [InlineData("scheme://host/folder/page.html", "?param=value", "scheme://host/folder/page.html?param=value")]
+    [InlineData("scheme://host/folder/page.html?existing=query", "?new=value", "scheme://host/folder/page.html?new=value")]
+    [InlineData("scheme://host/folder/page.html#existing", "#new", "scheme://host/folder/page.html#new")]
+    [InlineData("scheme://host/folder/", "sibling.html", "scheme://host/folder/sibling.html")]
+    [InlineData("http://a/b/c/d", "g:h", "http://a/b/c/g:h")]
+    // RFC 3986 Section 5.4 Reference Resolution Examples
+    [InlineData("http://a/b/c/d;p?q", "g", "http://a/b/c/g")]
+    [InlineData("http://a/b/c/d;p?q", "./g", "http://a/b/c/./g")]
+    [InlineData("http://a/b/c/d;p?q", "g/", "http://a/b/c/g/")]
+    [InlineData("http://a/b/c/d;p?q", "?y", "http://a/b/c/d;p?y")]
+    [InlineData("http://a/b/c/d;p?q", "g?y", "http://a/b/c/g?y")]
+    [InlineData("http://a/b/c/d;p?q", "#s", "http://a/b/c/d;p?q#s")]
+    [InlineData("http://a/b/c/d;p?q", "g#s", "http://a/b/c/g#s")]
+    [InlineData("http://a/b/c/d;p?q", "g?y#s", "http://a/b/c/g?y#s")]
+    [InlineData("http://a/b/c/d;p?q", ";x", "http://a/b/c/;x")]
+    [InlineData("http://a/b/c/d;p?q", "g;x", "http://a/b/c/g;x")]
+    [InlineData("http://a/b/c/d;p?q", "g;x?y#s", "http://a/b/c/g;x?y#s")]
+    [InlineData("http://a/b/c/d;p?q", ".", "http://a/b/c/.")]
+    [InlineData("http://a/b/c/d;p?q", "./", "http://a/b/c/./")]
+    [InlineData("http://a/b/c/d;p?q", "..", "http://a/b/c/..")]
+    [InlineData("http://a/b/c/d;p?q", "../", "http://a/b/c/../")]
+    [InlineData("http://a/b/c/d;p?q", "../g", "http://a/b/c/../g")]
+    [InlineData("http://a/b/c/d;p?q", "../..", "http://a/b/c/../..")]
+    [InlineData("http://a/b/c/d;p?q", "../../", "http://a/b/c/../../")]
+    [InlineData("http://a/b/c/d;p?q", "../../g", "http://a/b/c/../../g")]
+    public void NavigateTo_WithPathRelative_ResolvesCorrectly(string currentUri, string relativeUri, string expectedUri)
+    {
+        var baseUri = new Uri(currentUri).GetLeftPart(UriPartial.Authority) + "/";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.NavigateTo(relativeUri, new NavigationOptions { PathRelative = true });
+
+        Assert.Single(testNavManager.Navigations);
+        Assert.Equal(expectedUri, testNavManager.Navigations[0].uri);
+    }
+
+    // These are absolute URIs and should throw
+    [Theory]
+    [InlineData("/g")]
+    [InlineData("//g")]
     [InlineData("https://evil.com/malware")]
     [InlineData("http://example.com/page")]
     [InlineData("ftp://files.example.com/file.txt")]
@@ -1060,26 +1041,6 @@ public class NavigationManagerTest
 
         Assert.Contains("is not a relative URI", ex.Message);
         Assert.Contains("PathRelative", ex.Message);
-    }
-
-    [Theory]
-    [InlineData("sibling.html")]
-    [InlineData("folder/page.html")]
-    [InlineData("../parent.html")]
-    [InlineData("./current.html")]
-    [InlineData("path/to/file.html")]
-    [InlineData("folder/file:with:colons.html")] // Colons after path segment separator are OK
-    [InlineData("page.html?query=http://example.com")] // Absolute URI in query string is OK
-    public void NavigateTo_WithPathRelative_AcceptsRelativeUri(string relativeUri)
-    {
-        var baseUri = "scheme://host/";
-        var currentUri = "scheme://host/folder/page.html";
-        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
-
-        // Should not throw
-        testNavManager.NavigateTo(relativeUri, new NavigationOptions { PathRelative = true });
-
-        Assert.Single(testNavManager.Navigations);
     }
 
     [Fact]

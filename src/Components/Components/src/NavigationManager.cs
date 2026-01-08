@@ -179,8 +179,30 @@ public abstract class NavigationManager
         }
 
         var currentUri = _uri!.AsSpan();
-        
-        // Find the last slash in the path portion (before any query or fragment)
+
+        // fragment-only and query-only references are special cases
+        // that resolve against the full current URI
+        if (relativeUri.StartsWith('#'))
+        {
+            var existingFragmentIndex = currentUri.IndexOf('#');
+            if (existingFragmentIndex >= 0)
+            {
+                return string.Concat(currentUri[..existingFragmentIndex], relativeUri.AsSpan());
+            }
+            return string.Concat(_uri, relativeUri);
+        }
+
+        if (relativeUri.StartsWith('?'))
+        {
+            var existingQueryOrFragmentIndex = currentUri.IndexOfAny('?', '#');
+            if (existingQueryOrFragmentIndex >= 0)
+            {
+                return string.Concat(currentUri[..existingQueryOrFragmentIndex], relativeUri.AsSpan());
+            }
+            return string.Concat(_uri, relativeUri);
+        }
+
+        // For path-based relative URIs, resolve against the directory (strip last segment)
         var queryOrFragmentIndex = currentUri.IndexOfAny('?', '#');
         var pathOnlyLength = queryOrFragmentIndex >= 0 ? queryOrFragmentIndex : currentUri.Length;
         var lastSlashIndex = currentUri[..pathOnlyLength].LastIndexOf('/');
