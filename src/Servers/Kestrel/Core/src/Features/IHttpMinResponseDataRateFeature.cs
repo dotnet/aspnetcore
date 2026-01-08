@@ -18,8 +18,8 @@ public interface IHttpMinResponseDataRateFeature
     /// for server-wide configuration which applies to both HTTP/2 and HTTP/1.x.
     /// </summary>
     /// <remarks>
-    /// This rate may not accurately measure how much data a client is reading. This is because data is read from the application
-    /// until the transport's operating system buffers are full.
+    /// This rate may not accurately measure how much data a client is reading.
+    /// Data is immediately copied into operating system buffers until those are full, and the rate only applies to the application buffers.
     /// </remarks>
     MinDataRate? MinDataRate { get; set; }
 }
