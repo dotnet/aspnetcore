@@ -1,7 +1,7 @@
 <Project>
   <ItemGroup Condition="'$(TestDependsOnJava)' == 'true'">
-    <HelixPreCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="call RunPowershell.cmd InstallJdk.ps1 11.0.3 %25HELIX_CORRELATION_PAYLOAD%25\jdk &amp;&amp; set %22JAVA_HOME=%25HELIX_CORRELATION_PAYLOAD%25\jdk%22" />
-    <HelixPreCommand Condition="'$(IsWindowsHelixQueue)' != 'true' AND '$(IsMacHelixQueue)' != 'true'" Include="./installjdk.sh 10.0.2 x64 &amp;&amp; if [ &quot;%24JAVA_HOME&quot; = &quot;&quot; ]%3B then export JAVA_HOME=%24PWD/java%3B fi" />
+    <HelixPreCommand Condition="'$(IsWindowsHelixQueue)' == 'true'" Include="call RunPowershell.cmd InstallJdk.ps1 21.0.5 %25HELIX_CORRELATION_PAYLOAD%25\jdk &amp;&amp; set %22JAVA_HOME=%25HELIX_CORRELATION_PAYLOAD%25\jdk%22" />
+    <HelixPreCommand Condition="'$(IsWindowsHelixQueue)' != 'true' AND '$(IsMacHelixQueue)' != 'true'" Include="./installjdk.sh 21.0.5 x64 &amp;&amp; if [ &quot;%24JAVA_HOME&quot; = &quot;&quot; ]%3B then export JAVA_HOME=%24PWD/java%3B fi" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestDependsOnMssql)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true' AND '$(IsArm64HelixQueue)' != 'true'">
