@@ -22,7 +22,7 @@ $installDir = "$repoRoot\.tools\jdk\win-x64\"
 $javacExe = "$installDir\bin\javac.exe"
 $tempDir = "$repoRoot\obj"
 if (-not $JdkVersion) {
-    $JdkVersion = "11.0.24"
+    $JdkVersion = "25.0.1"
 }
 
 if (Test-Path $javacExe) {
