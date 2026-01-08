@@ -321,6 +321,13 @@ if ($Projects) {
     }
 }
 
+if ($BuildJava) 
+{  
+    $env:JDK_JAVA_OPTIONS="--enable-native-access=ALL-UNNAMED"
+}
+
+$env:MSBUILDDISABLENODEREUSE=1
+
 if ($NoBuildInstallers) { $MSBuildOnlyArguments += "/p:BuildInstallers=false"; $BuildInstallers = $false }
 if ($BuildInstallers) { $MSBuildOnlyArguments += "/p:BuildInstallers=true" }
 
