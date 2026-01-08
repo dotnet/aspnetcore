@@ -53,7 +53,8 @@ Add-Type -assembly "System.IO.Compression.FileSystem"
 
 Write-Host "Expanded JDK to $tempDir"
 Write-Host "Installing JDK to $installDir"
-Move-Item "$tempDir/jdk/jdk-${JdkVersion}/*" $installDir
+# The name of the file directory within the zip is based on the version, but may contain a +N for build number.
+Move-Item "$(Get-ChildItem -Path "$tempDir/jdk" | Select-Object -First 1 -ExpandProperty FullName)/*" $installDir
 Write-Host "Done installing JDK to $installDir"
 Remove-Item -Force -Recurse $tempDir -ErrorAction Ignore | out-null
 
