@@ -4,7 +4,7 @@
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 
-namespace ComponentsWebAssembly_CSharp.Worker;
+namespace BlazorWebCSharp._1.Client.Workers;
 
 /// <summary>
 /// Image processing worker that runs in a WebWorker.

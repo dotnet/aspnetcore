@@ -133,7 +133,7 @@ public partial class ImageProcessor
             var originalPixels = await CanvasService.GetStoredPixelsAsync();
 
             var processedPixels = await Worker.InvokeAsync(
-                "BlazorWebCSharp._1.Client.Worker.GrayscaleWorker.ApplyGrayscale",
+                "BlazorWebCSharp._1.Client.Workers.GrayscaleWorker.ApplyGrayscale",
                 originalPixels,
                 _intensity);
 

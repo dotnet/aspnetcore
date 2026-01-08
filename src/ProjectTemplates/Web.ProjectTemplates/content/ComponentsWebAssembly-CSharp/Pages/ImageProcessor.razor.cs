@@ -133,7 +133,7 @@ public partial class ImageProcessor
             var originalPixels = await CanvasService.GetStoredPixelsAsync();
 
             var processedPixels = await Worker.InvokeAsync(
-                "ComponentsWebAssembly_CSharp.Worker.GrayscaleWorker.ApplyGrayscale",
+                "ComponentsWebAssembly_CSharp.Workers.GrayscaleWorker.ApplyGrayscale",
                 originalPixels,
                 _intensity);
 
