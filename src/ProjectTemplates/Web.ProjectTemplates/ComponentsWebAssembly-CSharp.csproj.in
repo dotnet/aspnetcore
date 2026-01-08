@@ -18,6 +18,13 @@
     <ProjectReference Include="ComponentsWebAssembly-CSharp.WorkerClient\ComponentsWebAssembly-CSharp.WorkerClient.csproj" />
   </ItemGroup>
 
+  <!-- Exclude WorkerClient subfolder from main project compilation -->
+  <ItemGroup>
+    <Compile Remove="ComponentsWebAssembly-CSharp.WorkerClient\**" />
+    <Content Remove="ComponentsWebAssembly-CSharp.WorkerClient\**" />
+    <None Remove="ComponentsWebAssembly-CSharp.WorkerClient\**" />
+  </ItemGroup>
+
 <!--#endif -->
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="${MicrosoftAspNetCoreComponentsWebAssemblyVersion}" />
