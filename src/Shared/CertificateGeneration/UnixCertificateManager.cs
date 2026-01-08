@@ -373,14 +373,21 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         // Check to see if we're running in WSL; if so, use powershell.exe to add the certificate to the Windows trust store as well
         if (IsRunningOnWslWithInterop())
         {
-            if (TryTrustCertificateInWindowsStore(certificate))
+            try
             {
-                Log.WslWindowsTrustSucceeded();
-                sawTrustSuccess = true;
+                if (TrustCertificateInWindowsStore(certificate))
+                {
+                    Log.WslWindowsTrustSucceeded();
+                }
+                else
+                {
+                    Log.WslWindowsTrustFailed();
+                    sawTrustFailure = true;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Log.WslWindowsTrustFailed();
+                Log.WslWindowsTrustException(ex.Message);
                 sawTrustFailure = true;
             }
         }
@@ -609,48 +616,41 @@ internal sealed partial class UnixCertificateManager : CertificateManager
 
     /// <summary>
     /// Attempts to trust the certificate in the Windows certificate store via PowerShell when running on WSL.
+    /// If the certificate already exists in the store, this is a no-op.
     /// </summary>
     /// <param name="certificate">The certificate to trust.</param>
     /// <returns>True if the certificate was successfully added to the Windows store; otherwise, false.</returns>
-    private static bool TryTrustCertificateInWindowsStore(X509Certificate2 certificate)
+    private static bool TrustCertificateInWindowsStore(X509Certificate2 certificate)
     {
-        try
+        // Export the certificate as DER-encoded bytes (no private key needed for trust)
+        // and embed it directly in the PowerShell script as Base64 to avoid file path
+        // translation issues between WSL and Windows.
+        var certBytes = certificate.Export(X509ContentType.Cert);
+        var certBase64 = Convert.ToBase64String(certBytes);
+
+        var escapedFriendlyName = WslFriendlyName.Replace("'", "''");
+        var powershellScript = $@"
+            $certBytes = [Convert]::FromBase64String('{certBase64}')
+            $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2(,$certBytes)
+            $cert.FriendlyName = '{escapedFriendlyName}'
+            $store = New-Object System.Security.Cryptography.X509Certificates.X509Store('Root', 'CurrentUser')
+            $store.Open('ReadWrite')
+            $store.Add($cert)
+            $store.Close()
+        ";
+
+        // Encode the PowerShell script to Base64 (UTF-16LE as required by PowerShell)
+        var encodedCommand = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(powershellScript));
+
+        var startInfo = new ProcessStartInfo(PowerShellCommand, $"-NoProfile -NonInteractive -EncodedCommand {encodedCommand}")
         {
-            // Export the certificate as DER-encoded bytes (no private key needed for trust)
-            // and embed it directly in the PowerShell script as Base64 to avoid file path
-            // translation issues between WSL and Windows.
-            var certBytes = certificate.Export(X509ContentType.Cert);
-            var certBase64 = Convert.ToBase64String(certBytes);
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
 
-            var escapedFriendlyName = WslFriendlyName.Replace("'", "''");
-            var powershellScript = $@"
-                $certBytes = [Convert]::FromBase64String('{certBase64}')
-                $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2(,$certBytes)
-                $cert.FriendlyName = '{escapedFriendlyName}'
-                $store = New-Object System.Security.Cryptography.X509Certificates.X509Store('Root', 'CurrentUser')
-                $store.Open('ReadWrite')
-                $store.Add($cert)
-                $store.Close()
-            ";
-
-            // Encode the PowerShell script to Base64 (UTF-16LE as required by PowerShell)
-            var encodedCommand = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(powershellScript));
-
-            var startInfo = new ProcessStartInfo(PowerShellCommand, $"-NoProfile -NonInteractive -EncodedCommand {encodedCommand}")
-            {
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-            };
-
-            using var process = Process.Start(startInfo)!;
-            process.WaitForExit();
-            return process.ExitCode == 0;
-        }
-        catch (Exception ex)
-        {
-            Log.WslWindowsTrustException(ex.Message);
-            return false;
-        }
+        using var process = Process.Start(startInfo)!;
+        process.WaitForExit();
+        return process.ExitCode == 0;
     }
 
     /// <remarks>
