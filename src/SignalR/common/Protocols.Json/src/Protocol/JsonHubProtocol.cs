@@ -850,7 +850,7 @@ public sealed class JsonHubProtocol : IHubProtocol
                 }
                 catch (Exception ex)
                 {
-                    throw new InvalidDataException("Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.", ex);
+                    throw new InvalidDataException($"Error binding argument {paramIndex + 1}. Make sure that the types of the provided values match the types of the hub method being invoked.", ex);
                 }
             }
             else

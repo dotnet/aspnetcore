@@ -399,7 +399,8 @@ class GsonHubProtocolTest {
 
         assertEquals(InvocationBindingFailureMessage.class, messages.get(0).getClass());
         InvocationBindingFailureMessage invocationBindingFailureMessage = (InvocationBindingFailureMessage) messages.get(0);
-        assertEquals("java.lang.NumberFormatException: For input string: \"true\"", invocationBindingFailureMessage.getException().getMessage());
+        assertEquals("Error binding argument 1. Make sure that the types of the provided values match the types of the method being invoked.", invocationBindingFailureMessage.getException().getMessage());
+        assertEquals("java.lang.NumberFormatException: For input string: \"true\"", invocationBindingFailureMessage.getException().getCause().getMessage());
     }
 
     @Test
@@ -415,7 +416,8 @@ class GsonHubProtocolTest {
 
         assertEquals(InvocationBindingFailureMessage.class, messages.get(0).getClass());
         InvocationBindingFailureMessage invocationBindingFailureMessage = (InvocationBindingFailureMessage) messages.get(0);
-        assertEquals("java.lang.NumberFormatException: For input string: \"true\"", invocationBindingFailureMessage.getException().getMessage());
+        assertEquals("Error binding argument 1. Make sure that the types of the provided values match the types of the method being invoked.", invocationBindingFailureMessage.getException().getMessage());
+        assertEquals("java.lang.NumberFormatException: For input string: \"true\"", invocationBindingFailureMessage.getException().getCause().getMessage());
         assertEquals("123", invocationBindingFailureMessage.getInvocationId());
     }
 
@@ -444,7 +446,9 @@ class GsonHubProtocolTest {
         assertEquals(HubMessageType.INVOCATION_BINDING_FAILURE, message.getMessageType());
         InvocationBindingFailureMessage failureMessage = (InvocationBindingFailureMessage) messages.get(0);
 
-        assertEquals("com.google.gson.JsonSyntaxException", failureMessage.getException().getClass().getName());
+        assertEquals("Error binding argument 1. Make sure that the types of the provided values match the types of the method being invoked.", failureMessage.getException().getMessage());
+        // Inner exception is inconsistent across versions/implementations, so we don't assert specifics
+        assertNotNull(failureMessage.getException().getCause());
     }
 
     @Test
