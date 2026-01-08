@@ -1,6 +1,6 @@
 buildscript {
   dependencies {
-    classpath "com.diffplug.spotless:spotless-plugin-gradle:6.6.1"
+    classpath "com.diffplug.spotless:spotless-plugin-gradle:8.1.0"
   }
 }
 
@@ -41,7 +41,7 @@ spotless {
         replace      'Not enough space after do', 'do{', 'do {'
         replaceRegex 'Too much space after if', 'if +\\(', 'if ('
         trimTrailingWhitespace()
-        indentWithSpaces(4)
+        leadingTabsToSpaces(4)
         removeUnusedImports() // removes any unused imports
     }
 }
