@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.Linq;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -19,8 +20,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation;
 
 internal abstract class CertificateManager
 {
-    internal const int CurrentAspNetCoreCertificateVersion = 4;
-    internal const int CurrentMinimumAspNetCoreCertificateVersion = 4;
+    internal const int CurrentAspNetCoreCertificateVersion = 6;
+    internal const int CurrentMinimumAspNetCoreCertificateVersion = 6;
 
     // OID used for HTTPS certs
     internal const string AspNetHttpsOid = "1.3.6.1.4.1.311.84.1.1";
@@ -28,7 +29,10 @@ internal abstract class CertificateManager
 
     private const string ServerAuthenticationEnhancedKeyUsageOid = "1.3.6.1.5.5.7.3.1";
     private const string ServerAuthenticationEnhancedKeyUsageOidFriendlyName = "Server Authentication";
-    
+
+    internal const string SubjectKeyIdentifierOid = "2.5.29.14";
+    internal const string AuthorityKeyIdentifierOid = "2.5.29.35";
+
     // dns names of the host from a container
     private const string LocalhostDockerHttpsDnsName = "host.docker.internal";
     private const string ContainersDockerHttpsDnsName = "host.containers.internal";
@@ -694,6 +698,8 @@ internal abstract class CertificateManager
         sanBuilder.AddDnsName(InternalWildcardHttpsDnsName);
         sanBuilder.AddDnsName(LocalhostDockerHttpsDnsName);
         sanBuilder.AddDnsName(ContainersDockerHttpsDnsName);
+        sanBuilder.AddIpAddress(IPAddress.Loopback);
+        sanBuilder.AddIpAddress(IPAddress.IPv6Loopback);
 
         var keyUsage = new X509KeyUsageExtension(X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature, critical: true);
         var enhancedKeyUsage = new X509EnhancedKeyUsageExtension(
@@ -826,6 +832,20 @@ internal abstract class CertificateManager
         foreach (var extension in extensions)
         {
             request.CertificateExtensions.Add(extension);
+        }
+
+        // Only add the SKI and AKI extensions if neither is already present.
+        // OpenSSL needs these to correctly identify the trust chain for a private key. If multiple certificates don't have a subject key identifier and share the same subject,
+        // the wrong certificate can be chosen for the trust chain, leading to validation errors.
+        if (!request.CertificateExtensions.Any(ext => ext.Oid?.Value is SubjectKeyIdentifierOid or AuthorityKeyIdentifierOid))
+        {
+            // RFC 5280 section 4.2.1.2
+            var subjectKeyIdentifier = new X509SubjectKeyIdentifierExtension(request.PublicKey, X509SubjectKeyIdentifierHashAlgorithm.Sha256, critical: false);
+            // RFC 5280 section 4.2.1.1
+            var authorityKeyIdentifier = X509AuthorityKeyIdentifierExtension.CreateFromSubjectKeyIdentifier(subjectKeyIdentifier);
+
+            request.CertificateExtensions.Add(subjectKeyIdentifier);
+            request.CertificateExtensions.Add(authorityKeyIdentifier);
         }
 
         var result = request.CreateSelfSigned(notBefore, notAfter);

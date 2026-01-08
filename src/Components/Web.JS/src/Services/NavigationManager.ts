@@ -2,11 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import '@microsoft/dotnet-js-interop';
-import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
+import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/Events/EventDelegator';
 import { attachEnhancedNavigationListener, getInteractiveRouterRendererId, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isForSamePath, isSamePageWithHash, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, performScrollToElementOnTheSamePage, scrollToElement, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
 import { WebRendererId } from '../Rendering/WebRendererId';
 import { isRendererAttached } from '../Rendering/WebRendererInteropMethods';
+import { IBlazor } from '../GlobalExports';
 
 let hasRegisteredNavigationEventListeners = false;
 let currentHistoryIndex = 0;
@@ -116,18 +117,21 @@ function navigateToFromDotNet(uri: string, options: NavigationOptions): void {
 
 function navigateToCore(uri: string, options: NavigationOptions, skipLocationChangingCallback = false): void {
   const absoluteUri = toAbsoluteUri(uri);
+  const pageLoadMechanism = currentPageLoadMechanism();
 
-  if (!options.forceLoad && isWithinBaseUriSpace(absoluteUri)) {
-    if (shouldUseClientSideRouting()) {
-      performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.historyEntryState, skipLocationChangingCallback);
-    } else {
-      performProgrammaticEnhancedNavigation(absoluteUri, options.replaceHistoryEntry);
-    }
-  } else {
+  if (options.forceLoad || !isWithinBaseUriSpace(absoluteUri) || pageLoadMechanism === 'serverside-fullpageload') {
     // For external navigation, we work in terms of the originally-supplied uri string,
     // not the computed absoluteUri. This is in case there are some special URI formats
     // we're unable to translate into absolute URIs.
     performExternalNavigation(uri, options.replaceHistoryEntry);
+  } else if (pageLoadMechanism === 'clientside-router') {
+    performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.historyEntryState, skipLocationChangingCallback);
+  } else if (pageLoadMechanism === 'serverside-enhanced') {
+    performProgrammaticEnhancedNavigation(absoluteUri, options.replaceHistoryEntry);
+  } else {
+    // Force a compile-time error if some other case needs to be handled in the future
+    const unreachable: never = pageLoadMechanism;
+    throw new Error(`Unsupported page load mechanism: ${unreachable}`);
   }
 }
 
@@ -170,7 +174,7 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
   // To avoid ugly flickering effects, we don't want to change the scroll position until
   // we render the new page. As a best approximation, wait until the next batch.
   if (!isForSamePath(absoluteInternalHref, location.href)) {
-    resetScrollAfterNextBatch();
+    scheduleScrollReset(ScrollResetSchedule.AfterBatch);
   }
 
   saveToBrowserHistory(absoluteInternalHref, replace, state);
@@ -266,7 +270,7 @@ async function notifyLocationChanged(interceptedLink: boolean, internalDestinati
 }
 
 async function onPopState(state: PopStateEvent) {
-  if (popStateCallback && shouldUseClientSideRouting()) {
+  if (popStateCallback && currentPageLoadMechanism() !== 'serverside-enhanced') {
     await popStateCallback(state);
   }
 
@@ -282,9 +286,23 @@ function getInteractiveRouterNavigationCallbacks(): NavigationCallbacks | undefi
   return navigationCallbacks.get(interactiveRouterRendererId);
 }
 
-function shouldUseClientSideRouting() {
-  return hasInteractiveRouter() || !hasProgrammaticEnhancedNavigationHandler();
+function currentPageLoadMechanism(): PageLoadMechanism {
+  if (hasInteractiveRouter()) {
+    return 'clientside-router';
+  } else if (hasProgrammaticEnhancedNavigationHandler()) {
+    return 'serverside-enhanced';
+  } else {
+    // For back-compat, in blazor.server.js or blazor.webassembly.js, we always behave as if there's an interactive
+    // router even if there isn't one attached. This preserves a niche case where people may call Blazor.navigateTo
+    // without a router and expect to receive a notification on the .NET side but no page load occurs.
+    // In blazor.web.js, we explicitly recognize the case where you have neither an interactive nor enhanced SSR router
+    // attached, and then handle Blazor.navigateTo by doing a full page load because that's more useful (issue #51636).
+    const isBlazorWeb = (window['Blazor'] as IBlazor)._internal.isBlazorWeb;
+    return isBlazorWeb ? 'serverside-fullpageload' : 'clientside-router';
+  }
 }
+
+type PageLoadMechanism = 'clientside-router' | 'serverside-enhanced' | 'serverside-fullpageload';
 
 // Keep in sync with Components/src/NavigationOptions.cs
 export interface NavigationOptions {

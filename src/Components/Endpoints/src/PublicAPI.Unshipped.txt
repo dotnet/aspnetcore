@@ -1,5 +1,3 @@
 #nullable enable
-Microsoft.AspNetCore.Components.ResourcePreloader
-Microsoft.AspNetCore.Components.ResourcePreloader.ResourcePreloader() -> void
-Microsoft.Extensions.DependencyInjection.RazorComponentsRazorComponentBuilderExtensions
-static Microsoft.Extensions.DependencyInjection.RazorComponentsRazorComponentBuilderExtensions.RegisterPersistentService<TPersistentService>(this Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder! builder, Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!
+Microsoft.AspNetCore.Components.Endpoints.BasePath
+Microsoft.AspNetCore.Components.Endpoints.BasePath.BasePath() -> void

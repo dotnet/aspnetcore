@@ -95,13 +95,13 @@ internal static class ITypeSymbolExtensions
     // types themselves so we short-circuit on them.
     internal static bool IsExemptType(this ITypeSymbol type, WellKnownTypes wellKnownTypes)
     {
-        return SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_HttpContext))
-               || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_HttpRequest))
-               || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_HttpResponse))
+        return SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.GetOptional(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_HttpContext))
+               || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.GetOptional(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_HttpRequest))
+               || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.GetOptional(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_HttpResponse))
                || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Threading_CancellationToken))
-               || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_IFormCollection))
-               || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_IFormFileCollection))
-               || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_IFormFile))
+               || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.GetOptional(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_IFormCollection))
+               || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.GetOptional(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_IFormFileCollection))
+               || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.GetOptional(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_IFormFile))
                || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_IO_Stream))
                || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_IO_Pipelines_PipeReader));
     }
@@ -155,15 +155,46 @@ internal static class ITypeSymbolExtensions
     }
 
     /// <summary>
-    /// Checks if the property is marked with [JsonIgnore] attribute.
+    /// Checks if the property is marked with [JsonIgnore] attribute with a condition that affects deserialization.
+    /// Only skips validation when the condition is Always or WhenReading, as these affect the reading/deserialization process.
+    /// Properties with conditions that only affect writing (WhenWritingDefault, WhenWritingNull, WhenWriting) or Never are still validated.
     /// </summary>
     /// <param name="property">The property to check.</param>
     /// <param name="jsonIgnoreAttributeSymbol">The symbol representing the [JsonIgnore] attribute.</param>
     internal static bool IsJsonIgnoredProperty(this IPropertySymbol property, INamedTypeSymbol jsonIgnoreAttributeSymbol)
     {
-        return property.GetAttributes().Any(attr =>
-            attr.AttributeClass is not null &&
-            SymbolEqualityComparer.Default.Equals(attr.AttributeClass, jsonIgnoreAttributeSymbol));
+        // JsonIgnoreCondition enum values from System.Text.Json.Serialization
+        const int JsonIgnoreCondition_Always = 1;      // Property is always ignored
+        const int JsonIgnoreCondition_WhenReading = 5; // Property is ignored during deserialization
+        
+        foreach (var attr in property.GetAttributes())
+        {
+            if (attr.AttributeClass is not null &&
+                SymbolEqualityComparer.Default.Equals(attr.AttributeClass, jsonIgnoreAttributeSymbol))
+            {
+                // Check if the Condition property is set
+                if (!attr.NamedArguments.IsDefaultOrEmpty)
+                {
+                    foreach (var namedArgument in attr.NamedArguments)
+                    {
+                        if (string.Equals(namedArgument.Key, "Condition", System.StringComparison.Ordinal))
+                        {
+                            // The value is an enum represented as an int
+                            if (namedArgument.Value.Value is int conditionValue)
+                            {
+                                // Only skip validation for Always or WhenReading (conditions that affect reading/deserialization)
+                                return conditionValue == JsonIgnoreCondition_Always || conditionValue == JsonIgnoreCondition_WhenReading;
+                            }
+                        }
+                    }
+                }
+                
+                // If no Condition is specified, the default behavior is Always (skip validation)
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     internal static bool IsSkippedValidationProperty(this IPropertySymbol property, INamedTypeSymbol skipValidationAttributeSymbol)

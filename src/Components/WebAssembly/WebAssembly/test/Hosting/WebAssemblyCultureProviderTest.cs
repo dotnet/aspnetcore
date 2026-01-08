@@ -47,7 +47,7 @@ public class WebAssemblyCultureProviderTest
         try
         {
             // WebAssembly is initialized with en-US
-            var cultureProvider = new WebAssemblyCultureProvider(new CultureInfo("en-US"), new CultureInfo("en-US"));
+            var cultureProvider = new WebAssemblyCultureProvider(new CultureInfo("en-US"));
 
             // Culture is changed to fr-FR as part of the app
             using var cultureReplacer = new CultureReplacer("fr-FR");

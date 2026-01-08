@@ -1,0 +1,87 @@
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  
+  <String Id="Caption" Value="[WixBundleName] 安装"/>
+  
+  <String Id="Title" Value="[BundleNameShort]"/>
+  
+  <String Id="SubTitle" Value="[BundleNameSub]"/>
+  
+  <String Id="InstallVersion" Value="版本 [WixBundleVersion]"/>
+  <String Id="ConfirmCancelMessage" Value="是否确实要取消?"/>
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="上一个版本"/>
+  <String Id="HelpHeader" Value="安装帮助"/>
+  
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]目录[\]] - 在目录中安装、修复、卸载或创建捆绑包的完整本地副本。Install 为默认值。
+
+/passive | /quiet - 在无提示的情况下显示最小 UI 或不显示 UI 和提示。默认情况下，将显示 UI 和所有提示。
+
+/norestart - 抑制任何重启尝试。默认情况下，UI 将在重启前提示。
+
+/log &lt;LOG_FILE&gt; - 记录到特定文件。默认在 %TEMP% 中创建日志文件。"/>
+  <String Id="HelpCloseButton" Value="关闭(&amp;C)"/>
+  <String Id="InstallAcceptCheckbox" Value="我同意(&amp;A)许可条款和条件"/>
+  <String Id="InstallInstallButton" Value="安装(&amp;I)"/>
+  <String Id="InstallCloseButton" Value="关闭(&amp;C)"/>
+  <String Id="ProgressHeader" Value="安装进度"/>
+  <String Id="ProgressLabel" Value="正在处理:"/>
+  <String Id="OverallProgressPackageText" Value="正在初始化..."/>
+  <String Id="ProgressCancelButton" Value="取消(&amp;C)"/>
+  <String Id="ModifyHeader" Value="修改安装"/>
+  <String Id="ModifyRepairButton" Value="修复(&amp;R)"/>
+  <String Id="ModifyUninstallButton" Value="卸载(&amp;U)"/>
+  <String Id="ModifyCloseButton" Value="关闭(&amp;C)"/>
+  <String Id="SuccessCacheHeader" Value="已成功完成缓存"/>
+  <String Id="SuccessModifyHeader" Value="已成功完成修改"/>
+  <String Id="SuccessRepairHeader" Value="已成功完成修复"/>
+  <String Id="SuccessUninstallHeader" Value="已成功完成卸载"/>
+  <String Id="SuccessUnsafeUninstallHeader" Value="已成功完成卸载"/>
+  <String Id="SuccessInstallHeader" Value="已成功完成安装"/>
+  <String Id="SuccessHeader" Value="安装成功"/>
+  <String Id="SuccessLaunchButton" Value="启动(&amp;L)"/>
+  <String Id="SuccessLayoutHeader" Value="已成功完成布局"/>
+  <String Id="SuccessRestartText" Value="在使用此软件之前，您必须重新启动计算机。"/>
+  <String Id="SuccessUninstallRestartText" Value="必须重启计算机才能完成软件移除。"/>
+  <String Id="SuccessRestartButton" Value="重启(&amp;R)"/>
+  <String Id="SuccessCloseButton" Value="关闭(&amp;C)"/>
+  <String Id="FailureHeader" Value="安装失败"/>
+  <String Id="FailureCacheHeader" Value="缓存失败"/>
+  <String Id="FailureLayoutHeader" Value="布局失败"/>
+  <String Id="FailureModifyHeader" Value="修改失败"/>
+  <String Id="FailureInstallHeader" Value="安装失败"/>
+  <String Id="FailureUnsafeUninstallHeader" Value="卸载失败"/>
+  <String Id="FailureUninstallHeader" Value="卸载失败"/>
+  <String Id="FailureRepairHeader" Value="修复失败"/>
+  <String Id="FailureHyperlinkLogText" Value="一个或多个问题导致了安装失败。请修复问题，然后重试安装。有关详细信息，请参阅&lt;a href=&quot;#&quot;&gt;日志文件&lt;/a&gt;。"/>
+  <String Id="FailureRestartText" Value="必须重新启动计算机才能完成软件回退。"/>
+  <String Id="FailureRestartButton" Value="重启(&amp;R)"/>
+  <String Id="FailureCloseButton" Value="关闭(&amp;C)"/>
+  <String Id="FilesInUseHeader" Value="文件正在使用"/>
+  <String Id="FilesInUseLabel" Value="以下应用程序正在使用的文件需要更新:"/>
+  <String Id="FilesInUseCloseRadioButton" Value="关闭应用程序，并尝试重启它们(&amp;A)。"/>
+  <String Id="FilesInUseNetfxCloseRadioButton" Value="关闭应用程序(&amp;A)。"/>
+  <String Id="FilesInUseDontCloseRadioButton" Value="不关闭应用程序(&amp;D)。需要重新启动。"/>
+  <String Id="FilesInUseOkButton" Value="确定(&amp;O)"/>
+  <String Id="FilesInUseCancelButton" Value="取消(&amp;C)"/>
+  <String Id="FilesInUseRetryButton" Value="重试(&amp;R)"/>
+  <String Id="FilesInUseIgnoreButton" Value="忽略(&amp;I)"/>
+  <String Id="FilesInUseExitButton" Value="退出(&amp;X)"/>
+  <String Id="FilesInUseTitle" Value="文件正在使用"/>
+  <String Id="LicenseAssent" Value="单击“安装”即表示你同意以下条款:"/>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;隐私声明&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;.NET 的许可信息&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;遥测收集和选择退出&lt;/A&gt;"/>
+
+  <!-- Custom UI strings -->
+  
+  <String Id="Welcome" Value="欢迎使用 [WixBundleName] 安装程序。"/>
+  
+  <String Id="InstallResetIIS" Value="请在安装完成后重启 IIS。可在&lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;此处&lt;/a&gt;找到其他信息。"/>
+  
+  <String Id="InstallNoIIS" Value="此计算机上未启用 IIS。如果打算通过 IIS 运行 ASP.NET Core 应用程序，必须先安装 IIS，然后再运行此安装程序。可在&lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;此处&lt;/a&gt;找到其他信息。"/>
+  
+  <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;许可条款&lt;/a&gt;和&lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;隐私声明&lt;/a&gt;。"/>
+  
+  <String Id="ModifyResetIIS" Value="请在安装完成后重启 IIS。可在&lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;此处&lt;/a&gt;找到其他信息。"/>
+  
+  <String Id="ModifyNoIIS" Value="此计算机上未启用 IIS。如果打算通过 IIS 运行 ASP.NET Core 应用程序，必须先安装 IIS，然后再运行此安装程序。可在&lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;此处&lt;/a&gt;找到其他信息。"/>
+</WixLocalization>

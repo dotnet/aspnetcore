@@ -1,6 +1,6 @@
 parameters:
-  sourceIndexUploadPackageVersion: 2.0.0-20250818.1
-  sourceIndexProcessBinlogPackageVersion: 1.0.1-20250818.1
+  sourceIndexUploadPackageVersion: 2.0.0-20250906.1
+  sourceIndexProcessBinlogPackageVersion: 1.0.1-20250906.1
   sourceIndexPackageSource: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json
   binlogPath: artifacts/log/Debug/Build.binlog
 
@@ -14,8 +14,8 @@ steps:
     workingDirectory: $(Agent.TempDirectory)
 
 - script: |
-    $(Agent.TempDirectory)/dotnet/dotnet tool install BinLogToSln --version ${{parameters.sourceIndexProcessBinlogPackageVersion}} --add-source ${{parameters.SourceIndexPackageSource}} --tool-path $(Agent.TempDirectory)/.source-index/tools
-    $(Agent.TempDirectory)/dotnet/dotnet tool install UploadIndexStage1 --version ${{parameters.sourceIndexUploadPackageVersion}} --add-source ${{parameters.SourceIndexPackageSource}} --tool-path $(Agent.TempDirectory)/.source-index/tools
+    $(Agent.TempDirectory)/dotnet/dotnet tool install BinLogToSln --version ${{parameters.sourceIndexProcessBinlogPackageVersion}} --source ${{parameters.SourceIndexPackageSource}} --tool-path $(Agent.TempDirectory)/.source-index/tools
+    $(Agent.TempDirectory)/dotnet/dotnet tool install UploadIndexStage1 --version ${{parameters.sourceIndexUploadPackageVersion}} --source ${{parameters.SourceIndexPackageSource}} --tool-path $(Agent.TempDirectory)/.source-index/tools
   displayName: "Source Index: Download netsourceindex Tools"
   # Set working directory to temp directory so 'dotnet' doesn't try to use global.json and use the repo's sdk.
   workingDirectory: $(Agent.TempDirectory)

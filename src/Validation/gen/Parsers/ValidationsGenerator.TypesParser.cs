@@ -27,9 +27,9 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             ? method.Parameters
             : [];
 
-        var fromServiceMetadataSymbol = wellKnownTypes.Get(
+        var fromServiceMetadataSymbol = wellKnownTypes.GetOptional(
             WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata);
-        var fromKeyedServiceAttributeSymbol = wellKnownTypes.Get(
+        var fromKeyedServiceAttributeSymbol = wellKnownTypes.GetOptional(
             WellKnownTypeData.WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute);
         var skipValidationAttributeSymbol = wellKnownTypes.Get(
             WellKnownTypeData.WellKnownType.Microsoft_Extensions_Validation_SkipValidationAttribute);
@@ -127,9 +127,9 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         var members = new List<ValidatableProperty>();
         var resolvedRecordProperty = new List<IPropertySymbol>();
 
-        var fromServiceMetadataSymbol = wellKnownTypes.Get(
+        var fromServiceMetadataSymbol = wellKnownTypes.GetOptional(
             WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata);
-        var fromKeyedServiceAttributeSymbol = wellKnownTypes.Get(
+        var fromKeyedServiceAttributeSymbol = wellKnownTypes.GetOptional(
             WellKnownTypeData.WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute);
         var jsonIgnoreAttributeSymbol = wellKnownTypes.Get(
             WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonIgnoreAttribute);

@@ -27,9 +27,6 @@ internal sealed class ForwardedHeadersOptionsSetup : IConfigureOptions<Forwarded
         options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
         // Only loopback proxies are allowed by default. Clear that restriction because forwarders are
         // being enabled by explicit configuration.
-#pragma warning disable ASPDEPR005 // KnownNetworks is obsolete
-        options.KnownNetworks.Clear();
-#pragma warning restore ASPDEPR005 // KnownNetworks is obsolete
         options.KnownIPNetworks.Clear();
         options.KnownProxies.Clear();
     }
