@@ -11,7 +11,7 @@ namespace ComponentsWebAssembly_CSharp.WorkerClient;
 /// Initialize once, then call worker methods dynamically.
 /// </summary>
 [SupportedOSPlatform("browser")]
-public static partial class WorkerClient
+public static partial class Worker
 {
     /// <summary>
     /// Default timeout for worker method invocations.
@@ -33,7 +33,7 @@ public static partial class WorkerClient
 
         _initialized = true;
         await JSHost.ImportAsync(
-            moduleName: nameof(WorkerClient),
+            moduleName: nameof(Worker),
             moduleUrl: $"../_content/ComponentsWebAssembly-CSharp.WorkerClient/worker-client.js");
     }
 
@@ -48,16 +48,16 @@ public static partial class WorkerClient
     {
         if (!_initialized)
         {
-            throw new InvalidOperationException("WorkerClient is not initialized. Call InitializeAsync first.");
+            throw new InvalidOperationException("Worker is not initialized. Call InitializeAsync first.");
         }
 
         await WaitForReadyInternal();
     }
 
-    [JSImport("waitForReady", nameof(WorkerClient))]
+    [JSImport("waitForReady", nameof(Worker))]
     private static partial Task WaitForReadyInternal();
 
-    [JSImport("invoke", nameof(WorkerClient))]
+    [JSImport("invoke", nameof(Worker))]
     private static partial Task<JSObject> InvokeInternal(string method, [JSMarshalAs<JSType.Array<JSType.Any>>] object[] args);
 
     /// <summary>
@@ -89,7 +89,7 @@ public static partial class WorkerClient
     {
         if (!_initialized)
         {
-            throw new InvalidOperationException("WorkerClient is not initialized. Call InitializeAsync first.");
+            throw new InvalidOperationException("Worker is not initialized. Call InitializeAsync first.");
         }
 
         Task<JSObject> workerTask = InvokeInternal(method, args);
@@ -127,7 +127,7 @@ public static partial class WorkerClient
     {
         if (!_initialized)
         {
-            throw new InvalidOperationException("WorkerClient is not initialized. Call InitializeAsync first.");
+            throw new InvalidOperationException("Worker is not initialized. Call InitializeAsync first.");
         }
 
         Task<JSObject> workerTask = InvokeInternal(method, args);
@@ -162,13 +162,13 @@ public static partial class WorkerClient
     {
         if (!_initialized)
         {
-            throw new InvalidOperationException("WorkerClient is not initialized. Call InitializeAsync first.");
+            throw new InvalidOperationException("Worker is not initialized. Call InitializeAsync first.");
         }
 
         TerminateInternal();
     }
 
-    [JSImport("terminate", nameof(WorkerClient))]
+    [JSImport("terminate", nameof(Worker))]
     private static partial void TerminateInternal();
 
     [JSImport("globalThis.Uint8Array.prototype.slice.call")]

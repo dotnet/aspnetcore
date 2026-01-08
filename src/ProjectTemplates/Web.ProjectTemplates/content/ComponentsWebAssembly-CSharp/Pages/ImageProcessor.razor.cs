@@ -41,8 +41,8 @@ public partial class ImageProcessor
 
     private async Task InitializeWorkerAndLoadDefaultImageAsync()
     {
-        await WorkerClient.InitializeAsync();
-        await WorkerClient.WaitForReadyAsync();
+        await Worker.InitializeAsync();
+        await Worker.WaitForReadyAsync();
         await LoadDefaultImageAsync();
     }
 
@@ -132,7 +132,7 @@ public partial class ImageProcessor
 
             var originalPixels = await CanvasService.GetStoredPixelsAsync();
 
-            var processedPixels = await WorkerClient.InvokeAsync(
+            var processedPixels = await Worker.InvokeAsync(
                 "ComponentsWebAssembly_CSharp.Worker.GrayscaleWorker.ApplyGrayscale",
                 originalPixels,
                 _intensity);
