@@ -233,7 +233,7 @@
       "type": "derived",
       "valueSource": "name",
       "valueTransform": "lowerCaseInvariantWithHyphens",
-      "replaces": "blazorwebcsharp__1"
+      "replaces": "LocalhostTldHostNamePrefix"
     },
     "Framework": {
       "type": "parameter",

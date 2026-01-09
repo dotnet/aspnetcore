@@ -79,7 +79,7 @@
       "type": "derived",
       "valueSource": "name",
       "valueTransform": "lowerCaseInvariantWithHyphens",
-      "replaces": "company_webapplication1"
+      "replaces": "LocalhostTldHostNamePrefix"
     },
     "ExcludeLaunchSettings": {
       "type": "parameter",
