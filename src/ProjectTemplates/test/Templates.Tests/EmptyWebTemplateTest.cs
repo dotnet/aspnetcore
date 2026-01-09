@@ -74,69 +74,22 @@ public class EmptyWebTemplateTest : LoggedTest
         await EmtpyTemplateCore("F#", args: new[] { ArgConstants.NoHttps });
     }
 
-    [ConditionalFact]
+    [ConditionalTheory]
+    [InlineData("my.namespace.web", "my-namespace-web")]
+    [InlineData(".StartWithDot", "startwithdot")]
+    [InlineData("EndWithDot.", "endwithdot")]
+    [InlineData("My..Test__Project", "my--test--project")]
+    [InlineData("Project123.Test456", "project123-test456")]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public async Task EmptyWebTemplateLocalhostTldWithDots()
+    public async Task EmptyWebTemplateLocalhostTld_GeneratesDnsCompliantHostnames(string projectName, string expectedHostname)
     {
-        var project = await ProjectFactory.CreateProject(Output, "my.namespace.web");
+        var project = await ProjectFactory.CreateProject(Output, projectName);
 
         await project.RunDotNetNewAsync("web", args: new[] { ArgConstants.LocalhostTld });
 
         var expectedLaunchProfileNames = new[] { "http", "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
-        await project.VerifyDnsCompliantHostname("my-namespace-web");
-    }
-
-    [ConditionalFact]
-    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public async Task EmptyWebTemplateLocalhostTldWithLeadingDot()
-    {
-        var project = await ProjectFactory.CreateProject(Output, ".StartWithDot");
-
-        await project.RunDotNetNewAsync("web", args: new[] { ArgConstants.LocalhostTld });
-
-        var expectedLaunchProfileNames = new[] { "http", "https" };
-        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
-        await project.VerifyDnsCompliantHostname("startwithdot");
-    }
-
-    [ConditionalFact]
-    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public async Task EmptyWebTemplateLocalhostTldWithTrailingDot()
-    {
-        var project = await ProjectFactory.CreateProject(Output, "EndWithDot.");
-
-        await project.RunDotNetNewAsync("web", args: new[] { ArgConstants.LocalhostTld });
-
-        var expectedLaunchProfileNames = new[] { "http", "https" };
-        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
-        await project.VerifyDnsCompliantHostname("endwithdot");
-    }
-
-    [ConditionalFact]
-    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public async Task EmptyWebTemplateLocalhostTldWithMultipleInvalidChars()
-    {
-        var project = await ProjectFactory.CreateProject(Output, "My..Test__Project");
-
-        await project.RunDotNetNewAsync("web", args: new[] { ArgConstants.LocalhostTld });
-
-        var expectedLaunchProfileNames = new[] { "http", "https" };
-        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
-        await project.VerifyDnsCompliantHostname("my--test--project");
-    }
-
-    [ConditionalFact]
-    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public async Task EmptyWebTemplateLocalhostTldWithNumbers()
-    {
-        var project = await ProjectFactory.CreateProject(Output, "Project123.Test456");
-
-        await project.RunDotNetNewAsync("web", args: new[] { ArgConstants.LocalhostTld });
-
-        var expectedLaunchProfileNames = new[] { "http", "https" };
-        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
-        await project.VerifyDnsCompliantHostname("project123-test456");
+        await project.VerifyDnsCompliantHostname(expectedHostname);
     }
 
     private async Task EmtpyTemplateCore(string languageOverride, string[] args = null)

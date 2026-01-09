@@ -91,68 +91,21 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         }
     }
 
-    [ConditionalFact]
+    [ConditionalTheory]
+    [InlineData("my.namespace.blazor", "my-namespace-blazor")]
+    [InlineData(".StartWithDot", "startwithdot")]
+    [InlineData("EndWithDot.", "endwithdot")]
+    [InlineData("My..Test__Project", "my--test--project")]
+    [InlineData("Project123.Test456", "project123-test456")]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public async Task BlazorWebTemplateLocalhostTldWithDots()
+    public async Task BlazorWebTemplateLocalhostTld_GeneratesDnsCompliantHostnames(string projectName, string expectedHostname)
     {
-        var project = await ProjectFactory.CreateProject(Output, "my.namespace.blazor");
+        var project = await ProjectFactory.CreateProject(Output, projectName);
 
         await project.RunDotNetNewAsync("blazor", args: new[] { ArgConstants.LocalhostTld, ArgConstants.NoInteractivity });
 
         var expectedLaunchProfileNames = new[] { "http", "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
-        await project.VerifyDnsCompliantHostname("my-namespace-blazor");
-    }
-
-    [ConditionalFact]
-    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public async Task BlazorWebTemplateLocalhostTldWithLeadingDot()
-    {
-        var project = await ProjectFactory.CreateProject(Output, ".StartWithDot");
-
-        await project.RunDotNetNewAsync("blazor", args: new[] { ArgConstants.LocalhostTld, ArgConstants.NoInteractivity });
-
-        var expectedLaunchProfileNames = new[] { "http", "https" };
-        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
-        await project.VerifyDnsCompliantHostname("startwithdot");
-    }
-
-    [ConditionalFact]
-    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public async Task BlazorWebTemplateLocalhostTldWithTrailingDot()
-    {
-        var project = await ProjectFactory.CreateProject(Output, "EndWithDot.");
-
-        await project.RunDotNetNewAsync("blazor", args: new[] { ArgConstants.LocalhostTld, ArgConstants.NoInteractivity });
-
-        var expectedLaunchProfileNames = new[] { "http", "https" };
-        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
-        await project.VerifyDnsCompliantHostname("endwithdot");
-    }
-
-    [ConditionalFact]
-    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public async Task BlazorWebTemplateLocalhostTldWithMultipleInvalidChars()
-    {
-        var project = await ProjectFactory.CreateProject(Output, "My..Test__Project");
-
-        await project.RunDotNetNewAsync("blazor", args: new[] { ArgConstants.LocalhostTld, ArgConstants.NoInteractivity });
-
-        var expectedLaunchProfileNames = new[] { "http", "https" };
-        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
-        await project.VerifyDnsCompliantHostname("my--test--project");
-    }
-
-    [ConditionalFact]
-    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public async Task BlazorWebTemplateLocalhostTldWithNumbers()
-    {
-        var project = await ProjectFactory.CreateProject(Output, "Project123.Test456");
-
-        await project.RunDotNetNewAsync("blazor", args: new[] { ArgConstants.LocalhostTld, ArgConstants.NoInteractivity });
-
-        var expectedLaunchProfileNames = new[] { "http", "https" };
-        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
-        await project.VerifyDnsCompliantHostname("project123-test456");
+        await project.VerifyDnsCompliantHostname(expectedHostname);
     }
 }
