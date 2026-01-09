@@ -181,7 +181,7 @@ public class NavLinkTest
     }
 
     [Fact]
-    public async Task NavLink_WithPathRelative_WorksWithDeeplyNestedBaseUri()
+    public async Task NavLink_WithRelativeToCurrentUri_WorksWithDeeplyNestedBaseUri()
     {
         // App hosted at https://example.com/org/project/app/
         var testNavigationManager = new TestNavigationManager();
@@ -195,7 +195,7 @@ public class NavLinkTest
         
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
         {
-            [nameof(NavLink.PathRelative)] = true,
+            [nameof(NavLink.RelativeToCurrentUri)] = true,
             [nameof(NavLink.AdditionalAttributes)] = new Dictionary<string, object>
             {
                 ["href"] = "roles"

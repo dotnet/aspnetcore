@@ -309,5 +309,5 @@ export interface NavigationOptions {
   forceLoad: boolean;
   replaceHistoryEntry: boolean;
   historyEntryState?: string;
-  pathRelative?: boolean;
+  relativeToCurrentUri?: boolean;
 }
