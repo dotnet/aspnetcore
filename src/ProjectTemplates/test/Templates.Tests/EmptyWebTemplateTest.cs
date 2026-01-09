@@ -84,7 +84,7 @@ public class EmptyWebTemplateTest : LoggedTest
 
         var expectedLaunchProfileNames = new[] { "http", "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
-        await VerifyDnsCompliantHostname(project, "my-namespace-web");
+        await project.VerifyDnsCompliantHostname("my-namespace-web");
     }
 
     [ConditionalFact]
@@ -97,7 +97,7 @@ public class EmptyWebTemplateTest : LoggedTest
 
         var expectedLaunchProfileNames = new[] { "http", "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
-        await VerifyDnsCompliantHostname(project, "startwithdot");
+        await project.VerifyDnsCompliantHostname("startwithdot");
     }
 
     [ConditionalFact]
@@ -110,7 +110,7 @@ public class EmptyWebTemplateTest : LoggedTest
 
         var expectedLaunchProfileNames = new[] { "http", "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
-        await VerifyDnsCompliantHostname(project, "endwithdot");
+        await project.VerifyDnsCompliantHostname("endwithdot");
     }
 
     [ConditionalFact]
@@ -123,43 +123,7 @@ public class EmptyWebTemplateTest : LoggedTest
 
         var expectedLaunchProfileNames = new[] { "http", "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
-        await VerifyDnsCompliantHostname(project, "my--test--project");
-    }
-
-    private async Task VerifyDnsCompliantHostname(Project project, string expectedHostname)
-    {
-        var launchSettingsPath = Path.Combine(project.TemplateOutputDir, "Properties", "launchSettings.json");
-        Assert.True(File.Exists(launchSettingsPath), $"launchSettings.json not found at {launchSettingsPath}");
-
-        var launchSettingsContent = await File.ReadAllTextAsync(launchSettingsPath);
-        using var launchSettings = JsonDocument.Parse(launchSettingsContent);
-
-        var profiles = launchSettings.RootElement.GetProperty("profiles");
-
-        foreach (var profile in profiles.EnumerateObject())
-        {
-            if (profile.Value.TryGetProperty("applicationUrl", out var applicationUrl))
-            {
-                var urls = applicationUrl.GetString();
-                if (!string.IsNullOrEmpty(urls))
-                {
-                    // Verify the hostname in the URL matches expected DNS-compliant format
-                    Assert.Contains($"{expectedHostname}.dev.localhost:", urls);
-                    
-                    // Verify no underscores in hostname (RFC 952/1123 compliance)
-                    var hostnamePattern = @"://([^:]+)\.dev\.localhost:";
-                    var matches = System.Text.RegularExpressions.Regex.Matches(urls, hostnamePattern);
-                    foreach (System.Text.RegularExpressions.Match match in matches)
-                    {
-                        var hostname = match.Groups[1].Value;
-                        Assert.DoesNotContain("_", hostname);
-                        Assert.DoesNotContain(".", hostname);
-                        Assert.False(hostname.StartsWith("-", StringComparison.Ordinal), $"Hostname '{hostname}' should not start with hyphen (RFC 952/1123 violation)");
-                        Assert.False(hostname.EndsWith("-", StringComparison.Ordinal), $"Hostname '{hostname}' should not end with hyphen (RFC 952/1123 violation)");
-                    }
-                }
-            }
-        }
+        await project.VerifyDnsCompliantHostname("my--test--project");
     }
 
     private async Task EmtpyTemplateCore(string languageOverride, string[] args = null)
