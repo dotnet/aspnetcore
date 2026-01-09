@@ -142,4 +142,17 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
         await project.VerifyDnsCompliantHostname("my--test--project");
     }
+
+    [ConditionalFact]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    public async Task BlazorWebTemplateLocalhostTldWithNumbers()
+    {
+        var project = await ProjectFactory.CreateProject(Output, "Project123.Test456");
+
+        await project.RunDotNetNewAsync("blazor", args: new[] { ArgConstants.LocalhostTld, ArgConstants.NoInteractivity });
+
+        var expectedLaunchProfileNames = new[] { "http", "https" };
+        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
+        await project.VerifyDnsCompliantHostname("project123-test456");
+    }
 }

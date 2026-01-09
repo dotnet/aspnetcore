@@ -111,7 +111,9 @@ public class Project : IDisposable
         // We omit the hive argument and the template output dir as they are not relevant and add noise.
         ProjectArguments = argString.Replace(hiveArg, "");
 
-        if (!string.IsNullOrEmpty(ProjectName))
+        // Only add -n parameter if ProjectName is set and args doesn't already contain -n or --name
+        if (!string.IsNullOrEmpty(ProjectName) && 
+            args?.Any(a => a.Contains("-n ") || a.Contains("--name ") || a == "-n" || a == "--name") != true)
         {
             argString += $" -n \"{ProjectName}\"";
         }

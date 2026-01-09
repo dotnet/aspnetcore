@@ -126,6 +126,19 @@ public class EmptyWebTemplateTest : LoggedTest
         await project.VerifyDnsCompliantHostname("my--test--project");
     }
 
+    [ConditionalFact]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    public async Task EmptyWebTemplateLocalhostTldWithNumbers()
+    {
+        var project = await ProjectFactory.CreateProject(Output, "Project123.Test456");
+
+        await project.RunDotNetNewAsync("web", args: new[] { ArgConstants.LocalhostTld });
+
+        var expectedLaunchProfileNames = new[] { "http", "https" };
+        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
+        await project.VerifyDnsCompliantHostname("project123-test456");
+    }
+
     private async Task EmtpyTemplateCore(string languageOverride, string[] args = null)
     {
         var project = await ProjectFactory.CreateProject(Output);
