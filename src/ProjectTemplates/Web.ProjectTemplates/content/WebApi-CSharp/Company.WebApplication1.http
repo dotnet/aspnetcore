@@ -1,5 +1,12 @@
 @Company.WebApplication1_HostAddress = http://localhost:5000
 
+#if (EnableOpenAPI)
+GET {{Company.WebApplication1_HostAddress}}/openapi/v1.json
+Accept: application/json
+
+###
+#endif
+
 GET {{Company.WebApplication1_HostAddress}}/weatherforecast/
 Accept: application/json
 
