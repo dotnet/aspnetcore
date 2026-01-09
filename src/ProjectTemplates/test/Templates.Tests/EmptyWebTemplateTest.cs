@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.InternalTesting;
 using Templates.Test.Helpers;
@@ -71,6 +72,94 @@ public class EmptyWebTemplateTest : LoggedTest
     public async Task EmptyWebTemplateNoHttpsFSharp()
     {
         await EmtpyTemplateCore("F#", args: new[] { ArgConstants.NoHttps });
+    }
+
+    [ConditionalFact]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    public async Task EmptyWebTemplateLocalhostTldWithDots()
+    {
+        var project = await ProjectFactory.CreateProject(Output, "my.namespace.web");
+
+        await project.RunDotNetNewAsync("web", args: new[] { ArgConstants.LocalhostTld });
+
+        var expectedLaunchProfileNames = new[] { "http", "https" };
+        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
+        await VerifyDnsCompliantHostname(project, "my-namespace-web");
+    }
+
+    [ConditionalFact]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    public async Task EmptyWebTemplateLocalhostTldWithLeadingDot()
+    {
+        var project = await ProjectFactory.CreateProject(Output, ".StartWithDot");
+
+        await project.RunDotNetNewAsync("web", args: new[] { ArgConstants.LocalhostTld });
+
+        var expectedLaunchProfileNames = new[] { "http", "https" };
+        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
+        await VerifyDnsCompliantHostname(project, "startwithdot");
+    }
+
+    [ConditionalFact]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    public async Task EmptyWebTemplateLocalhostTldWithTrailingDot()
+    {
+        var project = await ProjectFactory.CreateProject(Output, "EndWithDot.");
+
+        await project.RunDotNetNewAsync("web", args: new[] { ArgConstants.LocalhostTld });
+
+        var expectedLaunchProfileNames = new[] { "http", "https" };
+        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
+        await VerifyDnsCompliantHostname(project, "endwithdot");
+    }
+
+    [ConditionalFact]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    public async Task EmptyWebTemplateLocalhostTldWithMultipleInvalidChars()
+    {
+        var project = await ProjectFactory.CreateProject(Output, "My..Test__Project");
+
+        await project.RunDotNetNewAsync("web", args: new[] { ArgConstants.LocalhostTld });
+
+        var expectedLaunchProfileNames = new[] { "http", "https" };
+        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
+        await VerifyDnsCompliantHostname(project, "my--test--project");
+    }
+
+    private async Task VerifyDnsCompliantHostname(Project project, string expectedHostname)
+    {
+        var launchSettingsPath = Path.Combine(project.TemplateOutputDir, "Properties", "launchSettings.json");
+        Assert.True(File.Exists(launchSettingsPath), $"launchSettings.json not found at {launchSettingsPath}");
+
+        var launchSettingsContent = await File.ReadAllTextAsync(launchSettingsPath);
+        using var launchSettings = JsonDocument.Parse(launchSettingsContent);
+
+        var profiles = launchSettings.RootElement.GetProperty("profiles");
+
+        foreach (var profile in profiles.EnumerateObject())
+        {
+            if (profile.Value.TryGetProperty("applicationUrl", out var applicationUrl))
+            {
+                var urls = applicationUrl.GetString();
+                if (!string.IsNullOrEmpty(urls))
+                {
+                    // Verify the hostname in the URL matches expected DNS-compliant format
+                    Assert.Contains($"{expectedHostname}.dev.localhost:", urls);
+                    
+                    // Verify no underscores in hostname (RFC 952/1123 compliance)
+                    var hostnamePattern = @"://([^:]+)\.dev\.localhost:";
+                    var matches = System.Text.RegularExpressions.Regex.Matches(urls, hostnamePattern);
+                    foreach (System.Text.RegularExpressions.Match match in matches)
+                    {
+                        var hostname = match.Groups[1].Value;
+                        Assert.DoesNotContain("_", hostname);
+                        Assert.DoesNotContain(".", hostname);
+                        Assert.False(hostname.StartsWith("-", StringComparison.Ordinal), $"Hostname '{hostname}' should not start with hyphen (RFC 952/1123 violation)");
+                        Assert.False(hostname.EndsWith("-", StringComparison.Ordinal), $"Hostname '{hostname}' should not end with hyphen (RFC 952/1123 violation)");
+                    }
+                }
+            }
+        }
     }
 
     private async Task EmtpyTemplateCore(string languageOverride, string[] args = null)

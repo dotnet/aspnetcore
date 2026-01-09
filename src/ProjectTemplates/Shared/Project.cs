@@ -111,6 +111,11 @@ public class Project : IDisposable
         // We omit the hive argument and the template output dir as they are not relevant and add noise.
         ProjectArguments = argString.Replace(hiveArg, "");
 
+        if (!string.IsNullOrEmpty(ProjectName))
+        {
+            argString += $" -n \"{ProjectName}\"";
+        }
+
         argString += $" -o {TemplateOutputDir}";
 
         if (Directory.Exists(TemplateOutputDir))
