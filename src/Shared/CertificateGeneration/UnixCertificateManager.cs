@@ -355,14 +355,57 @@ internal sealed partial class UnixCertificateManager : CertificateManager
                 ? Path.Combine("$HOME", certDir[homeDirectoryWithSlash.Length..])
                 : certDir;
 
-            if (TryGetOpenSslDirectory(out var openSslDir))
+            var hasValidSslCertDir = false;
+
+            // Check if SSL_CERT_DIR is already set and if certDir is already included
+            var existingSslCertDir = Environment.GetEnvironmentVariable(OpenSslCertificateDirectoryVariableName);
+            if (!string.IsNullOrEmpty(existingSslCertDir))
+            {
+                var existingDirs = existingSslCertDir.Split(Path.PathSeparator);
+                var certDirFullPath = Path.GetFullPath(certDir);
+                var isCertDirIncluded = existingDirs.Any(dir =>
+                {
+                    if (string.IsNullOrWhiteSpace(dir))
+                    {
+                        return false;
+                    }
+
+                    try
+                    {
+                        return string.Equals(Path.GetFullPath(dir), certDirFullPath, StringComparison.Ordinal);
+                    }
+                    catch
+                    {
+                        // Ignore invalid directory entries in SSL_CERT_DIR
+                        return false;
+                    }
+                });
+
+                if (isCertDirIncluded)
+                {
+                    // The certificate directory is already in SSL_CERT_DIR, no action needed
+                    Log.UnixOpenSslCertificateDirectoryAlreadyConfigured(prettyCertDir, OpenSslCertificateDirectoryVariableName);
+                    hasValidSslCertDir = true;
+                }
+                else
+                {
+                    // SSL_CERT_DIR is set but doesn't include our directory - suggest appending
+                    Log.UnixSuggestAppendingToEnvironmentVariable(prettyCertDir, OpenSslCertificateDirectoryVariableName);
+                    hasValidSslCertDir = false;
+                }
+            }
+            else if (TryGetOpenSslDirectory(out var openSslDir))
             {
                 Log.UnixSuggestSettingEnvironmentVariable(prettyCertDir, Path.Combine(openSslDir, "certs"), OpenSslCertificateDirectoryVariableName);
+                hasValidSslCertDir = false;
             }
             else
             {
                 Log.UnixSuggestSettingEnvironmentVariableWithoutExample(prettyCertDir, OpenSslCertificateDirectoryVariableName);
+                hasValidSslCertDir = false;
             }
+
+            sawTrustFailure = !hasValidSslCertDir;
         }
 
         return sawTrustFailure
