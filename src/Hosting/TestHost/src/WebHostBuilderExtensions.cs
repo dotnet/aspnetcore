@@ -163,6 +163,23 @@ public static class WebHostBuilderExtensions
         }
         while (directoryInfo is not null);
 
+        if (string.Equals(solutionName, "*.sln", StringComparison.OrdinalIgnoreCase))
+        {
+            directoryInfo = new DirectoryInfo(applicationBasePath);
+            do
+            {
+                var solutionPath = Directory.EnumerateFiles(directoryInfo.FullName, "*.slnx").FirstOrDefault();
+                if (solutionPath != null)
+                {
+                    builder.UseContentRoot(Path.GetFullPath(Path.Combine(directoryInfo.FullName, solutionRelativePath)));
+                    return builder;
+                }
+
+                directoryInfo = directoryInfo.Parent;
+            }
+            while (directoryInfo is not null);
+        }
+
         throw new InvalidOperationException($"Solution root could not be located using application root {applicationBasePath}.");
     }
 
