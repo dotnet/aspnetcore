@@ -48,7 +48,27 @@
       ]
     }
   ],
+  "forms": {
+    "lowerCaseInvariantWithHyphens": {
+      "identifier": "chain",
+      "steps": [
+        "lowerCaseInvariant",
+        "replaceDnsInvalidChars"
+      ]
+    },
+    "replaceDnsInvalidChars": {
+      "identifier": "replace",
+      "pattern": "[^a-z0-9-]",
+      "replacement": "-"
+    }
+  },
   "symbols": {
+    "hostName": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "lowerCaseInvariantWithHyphens",
+      "replaces": "company_webapplication1"
+    },
     "ExcludeLaunchSettings": {
       "type": "parameter",
       "datatype": "bool",
