@@ -1,6 +1,6 @@
 #nullable enable
-Microsoft.AspNetCore.Components.Routing.NavLink.PathRelative.get -> bool
-Microsoft.AspNetCore.Components.Routing.NavLink.PathRelative.set -> void
+Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.get -> bool
+Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.set -> void
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxBufferSize.get -> int
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxBufferSize.set -> void

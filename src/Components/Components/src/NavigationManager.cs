@@ -161,7 +161,7 @@ public abstract class NavigationManager
     {
         AssertInitialized();
 
-        if (options.PathRelative)
+        if (options.RelativeToCurrentUri)
         {
             uri = ResolveRelativeToCurrentPath(uri);
         }
@@ -174,7 +174,7 @@ public abstract class NavigationManager
         if (IsAbsoluteUri(relativeUri))
         {
             throw new ArgumentException(
-                $"The URI '{relativeUri}' is not a relative URI. When PathRelative is true, the URI must be relative (e.g., 'page.html', 'folder/page', '../other').",
+                $"The URI '{relativeUri}' is not a relative URI. When RelativeToCurrentUri is true, the URI must be relative (e.g., 'page.html', 'folder/page', '../other').",
                 nameof(relativeUri));
         }
 

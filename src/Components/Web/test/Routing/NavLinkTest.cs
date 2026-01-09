@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Routing;
 public class NavLinkTest
 {
     [Fact]
-    public async Task NavLink_WithPathRelative_ResolvesHrefRelativeToCurrentPath()
+    public async Task NavLink_WithRelativeToCurrentUri_ResolvesHrefRelativeToCurrentPath()
     {
         var testNavigationManager = new TestNavigationManager();
         testNavigationManager.Initialize("https://example.com/", "https://example.com/sub-site/page-a");
@@ -25,7 +25,7 @@ public class NavLinkTest
         
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
         {
-            [nameof(NavLink.PathRelative)] = true,
+            [nameof(NavLink.RelativeToCurrentUri)] = true,
             [nameof(NavLink.AdditionalAttributes)] = new Dictionary<string, object>
             {
                 ["href"] = "details"
@@ -40,7 +40,7 @@ public class NavLinkTest
     }
 
     [Fact]
-    public async Task NavLink_WithPathRelative_HandlesNestedPaths()
+    public async Task NavLink_WithRelativeToCurrentUri_HandlesNestedPaths()
     {
         var testNavigationManager = new TestNavigationManager();
         testNavigationManager.Initialize("https://example.com/", "https://example.com/a/b/c/page");
@@ -53,7 +53,7 @@ public class NavLinkTest
         
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
         {
-            [nameof(NavLink.PathRelative)] = true,
+            [nameof(NavLink.RelativeToCurrentUri)] = true,
             [nameof(NavLink.AdditionalAttributes)] = new Dictionary<string, object>
             {
                 ["href"] = "sibling"
@@ -68,7 +68,7 @@ public class NavLinkTest
     }
 
     [Fact]
-    public async Task NavLink_WithPathRelative_HandlesQueryAndFragment()
+    public async Task NavLink_WithRelativeToCurrentUri_HandlesQueryAndFragment()
     {
         var testNavigationManager = new TestNavigationManager();
         testNavigationManager.Initialize("https://example.com/", "https://example.com/folder/page?query=value#hash");
@@ -81,7 +81,7 @@ public class NavLinkTest
         
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
         {
-            [nameof(NavLink.PathRelative)] = true,
+            [nameof(NavLink.RelativeToCurrentUri)] = true,
             [nameof(NavLink.AdditionalAttributes)] = new Dictionary<string, object>
             {
                 ["href"] = "other"
@@ -96,7 +96,7 @@ public class NavLinkTest
     }
 
     [Fact]
-    public async Task NavLink_WithPathRelativeFalse_DoesNotResolve()
+    public async Task NavLink_WithRelativeToCurrentUriFalse_DoesNotResolve()
     {
         var testNavigationManager = new TestNavigationManager();
         testNavigationManager.Initialize("https://example.com/", "https://example.com/folder/page");
@@ -109,7 +109,7 @@ public class NavLinkTest
         
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
         {
-            [nameof(NavLink.PathRelative)] = false,
+            [nameof(NavLink.RelativeToCurrentUri)] = false,
             [nameof(NavLink.AdditionalAttributes)] = new Dictionary<string, object>
             {
                 ["href"] = "relative"
@@ -125,7 +125,7 @@ public class NavLinkTest
     }
 
     [Fact]
-    public async Task NavLink_WithPathRelative_AtRootLevel()
+    public async Task NavLink_WithRelativeToCurrentUri_AtRootLevel()
     {
         var testNavigationManager = new TestNavigationManager();
         testNavigationManager.Initialize("https://example.com/", "https://example.com/page");
@@ -138,7 +138,7 @@ public class NavLinkTest
         
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
         {
-            [nameof(NavLink.PathRelative)] = true,
+            [nameof(NavLink.RelativeToCurrentUri)] = true,
             [nameof(NavLink.AdditionalAttributes)] = new Dictionary<string, object>
             {
                 ["href"] = "other"
@@ -153,7 +153,7 @@ public class NavLinkTest
     }
 
     [Fact]
-    public async Task NavLink_WithPathRelative_PreservesActiveClassLogic()
+    public async Task NavLink_WithRelativeToCurrentUri_PreservesActiveClassLogic()
     {
         var testNavigationManager = new TestNavigationManager();
         testNavigationManager.Initialize("https://example.com/", "https://example.com/sub-site/details");
@@ -166,7 +166,7 @@ public class NavLinkTest
         
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
         {
-            [nameof(NavLink.PathRelative)] = true,
+            [nameof(NavLink.RelativeToCurrentUri)] = true,
             [nameof(NavLink.AdditionalAttributes)] = new Dictionary<string, object>
             {
                 ["href"] = "details"
