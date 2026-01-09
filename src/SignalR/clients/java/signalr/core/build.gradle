@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
 }
 
-group 'com.microsoft.signalr'
+group = 'com.microsoft.signalr'
 
 java {
     withJavadocJar()
@@ -12,7 +12,7 @@ java {
 
 dependencies {
     implementation 'com.google.code.gson:gson:2.8.9'
-    implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     api 'io.reactivex.rxjava3:rxjava:3.0.11'
     implementation 'org.slf4j:slf4j-api:1.7.25'
 }
@@ -26,7 +26,7 @@ publishing {
         release(MavenPublication) {
             from components.java
 
-            artifactId 'signalr'
+            artifactId = 'signalr'
 
             pom {
                 packaging = 'jar'
