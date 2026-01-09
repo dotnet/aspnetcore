@@ -81,4 +81,43 @@ public class BlazorWasmTemplateTest : BlazorTemplateTest
     [Fact]
     public Task BlazorWasmStandalonePwaEmptyTemplateNoHttpsCanCreateBuildPublish()
         => CreateBuildPublishAsync(args: new[] { ArgConstants.Pwa, ArgConstants.NoHttps, ArgConstants.Empty });
+
+    [Fact]
+    public async Task BlazorWasmWebWorkerTemplateCanCreateBuildPublish()
+    {
+        var project = await CreateBuildPublishAsync(args: new[] { ArgConstants.WebWorker });
+
+        // Verify the WorkerClient project was created
+        var workerClientDir = Path.Combine(project.TemplateOutputDir, $"{project.ProjectName}.WorkerClient");
+        Assert.True(Directory.Exists(workerClientDir), "WebWorker templates should produce a WorkerClient project");
+
+        // Verify worker files exist
+        Assert.True(File.Exists(Path.Combine(workerClientDir, "WorkerClient.cs")), "WorkerClient.cs should exist in WorkerClient project");
+        Assert.True(File.Exists(Path.Combine(workerClientDir, "wwwroot", "worker.js")), "worker.js should exist in WorkerClient project");
+        Assert.True(File.Exists(Path.Combine(workerClientDir, "wwwroot", "worker-client.js")), "worker-client.js should exist in WorkerClient project");
+
+        // Verify the ImageProcessor page was created
+        var imageProcessorPath = Path.Combine(project.TemplateOutputDir, "Pages", "ImageProcessor.razor");
+        Assert.True(File.Exists(imageProcessorPath), "ImageProcessor.razor should exist in Pages folder");
+    }
+
+    [Fact]
+    public async Task BlazorWasmWebWorkerTemplateEmptyCanCreateBuildPublish()
+    {
+        var project = await CreateBuildPublishAsync(args: new[] { ArgConstants.WebWorker, ArgConstants.Empty });
+
+        // Verify the WorkerClient project was created
+        var workerClientDir = Path.Combine(project.TemplateOutputDir, $"{project.ProjectName}.WorkerClient");
+        Assert.True(Directory.Exists(workerClientDir), "WebWorker templates should produce a WorkerClient project");
+    }
+
+    [Fact]
+    public async Task BlazorWasmWebWorkerTemplateNoHttpsCanCreateBuildPublish()
+    {
+        var project = await CreateBuildPublishAsync(args: new[] { ArgConstants.WebWorker, ArgConstants.NoHttps });
+
+        // Verify the WorkerClient project was created
+        var workerClientDir = Path.Combine(project.TemplateOutputDir, $"{project.ProjectName}.WorkerClient");
+        Assert.True(Directory.Exists(workerClientDir), "WebWorker templates should produce a WorkerClient project");
+    }
 }

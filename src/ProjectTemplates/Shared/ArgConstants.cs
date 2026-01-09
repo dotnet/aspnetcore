@@ -30,4 +30,5 @@ internal static class ArgConstants
     public const string GlobalInteractivity = "--all-interactive";
     public const string Empty = "--empty";
     public const string IndividualAuth = "--auth Individual";
+    public const string WebWorker = "--webworker";
 }
