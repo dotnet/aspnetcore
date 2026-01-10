@@ -23,6 +23,7 @@ internal sealed class SslConnectionState : IDisposable
     // Read
     private TaskCompletionSource<int>? _readTcs;
     private Memory<byte> _readBuffer;
+    private bool _readWantsWrite;  // SSL_read returned WANT_WRITE (renegotiation)
 
     // Write
     private TaskCompletionSource<int>? _writeTcs;
@@ -117,14 +118,26 @@ internal sealed class SslConnectionState : IDisposable
 
         int error = NativeSsl.SSL_get_error(Ssl, n);
 
-        if (error == NativeSsl.SSL_ERROR_WANT_READ)
+        switch (error)
         {
-            _readBuffer = buffer;
-            _readTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-            return new ValueTask<int>(_readTcs.Task);
-        }
+            case NativeSsl.SSL_ERROR_WANT_READ:
+                _readBuffer = buffer;
+                _readTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _readWantsWrite = false;
+                return new ValueTask<int>(_readTcs.Task);
 
-        return ValueTask.FromException<int>(new SslException($"SSL_read failed: {error}"));
+            case NativeSsl.SSL_ERROR_WANT_WRITE:
+                // SSL_read needs to write (TLS renegotiation or post-handshake auth)
+                // Register for EPOLLOUT - OnWritable will call TryCompleteRead
+                _readBuffer = buffer;
+                _readTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _readWantsWrite = true;
+                Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN | NativeSsl.EPOLLOUT);
+                return new ValueTask<int>(_readTcs.Task);
+
+            default:
+                return ValueTask.FromException<int>(new SslException($"SSL_read failed: {error}"));
+        }
     }
 
     private void TryCompleteRead()
@@ -140,31 +153,66 @@ internal sealed class SslConnectionState : IDisposable
 
         if (n > 0)
         {
+            var wasWaitingForWrite = _readWantsWrite;
             _readTcs = null;
             _readBuffer = default;
+            _readWantsWrite = false;
+            
+            // If we were waiting for write, remove EPOLLOUT now that read completed
+            if (wasWaitingForWrite)
+            {
+                Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN);
+            }
+            
             tcs.TrySetResult(n);
             return;
         }
 
         if (n == 0)
         {
+            var wasWaitingForWrite = _readWantsWrite;
             _readTcs = null;
             _readBuffer = default;
+            _readWantsWrite = false;
+            
+            if (wasWaitingForWrite)
+            {
+                Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN);
+            }
+            
             tcs.TrySetResult(0);
             return;
         }
 
         int error = NativeSsl.SSL_get_error(Ssl, n);
 
-        if (error == NativeSsl.SSL_ERROR_WANT_READ)
+        switch (error)
         {
-            // Keep waiting
-            return;
-        }
+            case NativeSsl.SSL_ERROR_WANT_READ:
+                // Need to wait for more data - if we were waiting for write, switch back to read
+                if (_readWantsWrite)
+                {
+                    _readWantsWrite = false;
+                    Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN);
+                }
+                return;
 
-        _readTcs = null;
-        _readBuffer = default;
-        tcs.TrySetException(new SslException($"SSL_read failed: {error}"));
+            case NativeSsl.SSL_ERROR_WANT_WRITE:
+                // Need to write - register for EPOLLOUT if not already
+                if (!_readWantsWrite)
+                {
+                    _readWantsWrite = true;
+                    Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN | NativeSsl.EPOLLOUT);
+                }
+                return;
+
+            default:
+                _readTcs = null;
+                _readBuffer = default;
+                _readWantsWrite = false;
+                tcs.TrySetException(new SslException($"SSL_read failed: {error}"));
+                return;
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -290,6 +338,13 @@ internal sealed class SslConnectionState : IDisposable
         if (_handshakeTcs != null)
         {
             ContinueHandshake();
+            return;
+        }
+
+        // Check if a pending read was waiting for write (renegotiation)
+        if (_readWantsWrite && _readTcs != null)
+        {
+            TryCompleteRead();
             return;
         }
 
