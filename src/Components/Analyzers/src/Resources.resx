@@ -198,4 +198,13 @@
   <data name="PersistentStateShouldNotHavePropertyInitializer_Title" xml:space="preserve">
     <value>Property with [PersistentState] should not have initializer</value>
   </data>
+  <data name="LayoutComponentCannotReferenceItself_Description" xml:space="preserve">
+    <value>Layout components cannot reference themselves as their layout, as this would create an infinite rendering loop.</value>
+  </data>
+  <data name="LayoutComponentCannotReferenceItself_Format" xml:space="preserve">
+    <value>Layout component '{0}' has a [Layout] attribute that references itself, which will cause an infinite rendering loop.</value>
+  </data>
+  <data name="LayoutComponentCannotReferenceItself_Title" xml:space="preserve">
+    <value>Layout component cannot reference itself</value>
+  </data>
 </root>
