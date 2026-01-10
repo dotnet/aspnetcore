@@ -71,6 +71,11 @@ public class Project : IDisposable
         // Used to set special options in MSBuild
         IDictionary<string, string> environmentVariables = null)
     {
+        if (templateName.Contains(' '))
+        {
+            throw new ArgumentException("Template name cannot contain spaces.");
+        }
+
         var hiveArg = $"--debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
         var argString = $"new {templateName} {hiveArg}";
         environmentVariables ??= new Dictionary<string, string>();
@@ -112,7 +117,7 @@ public class Project : IDisposable
         ProjectArguments = argString.Replace(hiveArg, "");
 
         // Only add -n parameter if ProjectName is set and args doesn't already contain -n or --name
-        if (!string.IsNullOrEmpty(ProjectName) && 
+        if (!string.IsNullOrEmpty(ProjectName) &&
             args?.Any(a => a.Contains("-n ") || a.Contains("--name ") || a == "-n" || a == "--name") != true)
         {
             argString += $" -n \"{ProjectName}\"";
