@@ -113,7 +113,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
             // check covers that the sequence starts by 0.
             if (lastSequence != serverComponent.Sequence - 1)
             {
-                if (lastSequence == -1)
+                if (lastSequence < 0)
                 {
                     Log.DescriptorSequenceMustStartAtZero(_logger, serverComponent.Sequence);
                 }
@@ -125,7 +125,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
                 return false;
             }
 
-            if (lastSequence != -1 && !previousInstance.InvocationId.Equals(serverComponent.InvocationId))
+            if (lastSequence >= 0 && !previousInstance.InvocationId.Equals(serverComponent.InvocationId))
             {
                 Log.MismatchedInvocationId(_logger, previousInstance.InvocationId.ToString("N"), serverComponent.InvocationId.ToString("N"));
                 descriptors.Clear();

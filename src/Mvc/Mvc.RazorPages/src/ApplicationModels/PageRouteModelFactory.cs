@@ -69,7 +69,7 @@ internal sealed partial class PageRouteModelFactory
             selectorModel.AttributeRouteModel!.SuppressLinkGeneration = true;
 
             var index = pageRoute.LastIndexOf('/');
-            var parentDirectoryPath = index == -1 ?
+            var parentDirectoryPath = index < 0 ?
                 string.Empty :
                 pageRoute.Substring(0, index);
             model.Selectors.Add(CreateSelectorModel(parentDirectoryPath, routeTemplate));
@@ -89,7 +89,7 @@ internal sealed partial class PageRouteModelFactory
         Debug.Assert(relativePath.StartsWith('/'));
         // Parse the area root directory.
         var areaRootEndIndex = relativePath.IndexOf('/', startIndex: 1);
-        if (areaRootEndIndex == -1 ||
+        if (areaRootEndIndex < 0 ||
             areaRootEndIndex >= relativePath.Length - 1 || // There's at least one token after the area root.
             !relativePath.StartsWith(_normalizedAreaRootDirectory, StringComparison.OrdinalIgnoreCase)) // The path must start with area root.
         {
@@ -99,7 +99,7 @@ internal sealed partial class PageRouteModelFactory
 
         // The first directory that follows the area root is the area name.
         var areaEndIndex = relativePath.IndexOf('/', startIndex: areaRootEndIndex + 1);
-        if (areaEndIndex == -1 || areaEndIndex == relativePath.Length)
+        if (areaEndIndex < 0 || areaEndIndex == relativePath.Length)
         {
             Log.UnsupportedAreaPath(_logger, relativePath);
             return false;

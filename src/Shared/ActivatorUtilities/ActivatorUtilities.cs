@@ -45,7 +45,7 @@ internal static class ActivatorUtilities
             }
         }
 
-        if (bestLength == -1)
+        if (bestLength < 0)
         {
             var message = $"A suitable constructor for type '{instanceType}' could not be located. Ensure the type is concrete and services are registered for all parameters of a public constructor.";
             throw new InvalidOperationException(message);

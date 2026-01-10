@@ -278,7 +278,7 @@ public class MediaTypeHeaderValue
         {
             var subType = SubType;
             var startOfSuffix = subType.LastIndexOf(PlusCharacter);
-            if (startOfSuffix == -1)
+            if (startOfSuffix < 0)
             {
                 return subType;
             }
@@ -303,7 +303,7 @@ public class MediaTypeHeaderValue
         {
             var subType = SubType;
             var startOfSuffix = subType.LastIndexOf(PlusCharacter);
-            if (startOfSuffix == -1)
+            if (startOfSuffix < 0)
             {
                 return default(StringSegment);
             }
@@ -718,7 +718,7 @@ public class MediaTypeHeaderValue
 
         StringSegment suffix;
         var startOfSuffix = subType.LastIndexOf(PlusCharacter);
-        if (startOfSuffix == -1)
+        if (startOfSuffix < 0)
         {
             suffix = default(StringSegment);
         }
@@ -756,7 +756,7 @@ public class MediaTypeHeaderValue
     private bool MatchesSubtypeWithoutSuffix(StringSegment subType, int startOfSuffix)
     {
         StringSegment subTypeWithoutSuffix;
-        if (startOfSuffix == -1)
+        if (startOfSuffix < 0)
         {
             subTypeWithoutSuffix = subType;
         }

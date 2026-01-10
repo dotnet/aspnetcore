@@ -487,7 +487,7 @@ public class ContentDispositionHeaderValue
 
         if (needsQuotes)
         {
-            if (result.IndexOfAny(EscapeChars) != -1)
+            if (result.IndexOfAny(EscapeChars) >= 0)
             {
                 // '\' and '"' must be escaped in a quoted string
                 result = result.ToString().Replace(@"\", @"\\").Replace(@"""", @"\""");
