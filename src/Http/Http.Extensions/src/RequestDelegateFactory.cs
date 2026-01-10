@@ -131,6 +131,30 @@ public static partial class RequestDelegateFactory
     private static readonly string[] PlaintextContentType = new[] { "text/plain" };
     private static readonly Type[] StringTypes = new[] {typeof(string), typeof(StringValues), typeof(StringValues?) };
 
+    // Helper method to check if a type is a collection interface or List<T> that can be treated as an array
+    private static bool IsBindableCollectionInterface(Type type, out Type? elementType)
+    {
+        elementType = null;
+
+        // Check for IEnumerable<T>, IList<T>, ICollection<T>, List<T>
+        if (type.IsGenericType)
+        {
+            var genericTypeDefinition = type.GetGenericTypeDefinition();
+            if (genericTypeDefinition == typeof(IEnumerable<>) ||
+                genericTypeDefinition == typeof(IList<>) ||
+                genericTypeDefinition == typeof(ICollection<>) ||
+                genericTypeDefinition == typeof(List<>))
+            {
+                elementType = type.GetGenericArguments()[0];
+                // Only use simple binding for collection types when element type is string or has TryParse
+                // This ensures we don't try to use TryParse on string itself
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /// <summary>
     /// Returns metadata inferred automatically for the <see cref="RequestDelegate"/> created by <see cref="Create(Delegate, RequestDelegateFactoryOptions?, RequestDelegateMetadataResult?)"/>.
     /// This includes metadata inferred by <see cref="IEndpointMetadataProvider"/> and <see cref="IEndpointParameterMetadataProvider"/> implemented by parameter and return types to the <paramref name="methodInfo"/>.
@@ -796,7 +820,13 @@ public static partial class RequestDelegateFactory
                 ParameterBindingMethodCache.Instance.HasTryParseMethod(parameter.ParameterType) ||
                 (parameter.ParameterType.IsArray &&
                 (StringTypes.Contains(parameter.ParameterType.GetElementType()) ||
-                ParameterBindingMethodCache.Instance.HasTryParseMethod(parameter.ParameterType.GetElementType()!)));
+                ParameterBindingMethodCache.Instance.HasTryParseMethod(parameter.ParameterType.GetElementType()!))) ||
+                // Only use simple binding for collection interfaces when used as properties in AsParameters
+                // Direct [FromForm] parameters with collection types should use complex binding (FormDataMapper)
+                (parameter is PropertyAsParameterInfo &&
+                IsBindableCollectionInterface(parameter.ParameterType, out var collectionElementType) &&
+                (StringTypes.Contains(collectionElementType) ||
+                ParameterBindingMethodCache.Instance.HasTryParseMethod(collectionElementType!)));
             hasTryParse = useSimpleBinding;
             return useSimpleBinding
                 ? BindParameterFromFormItem(parameter, formAttribute.Name ?? parameter.Name, factoryContext)
@@ -1677,7 +1707,13 @@ public static partial class RequestDelegateFactory
         }
 
         var isOptional = IsOptionalParameter(parameter, factoryContext);
-        var argument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
+
+        // Check if this is a collection interface that we'll bind as an array
+        var isCollectionInterface = IsBindableCollectionInterface(parameter.ParameterType, out var collectionElementType);
+
+        // For collection interfaces, we'll create an array internally and cast to the interface
+        var actualParameterType = isCollectionInterface ? collectionElementType!.MakeArrayType() : parameter.ParameterType;
+        var argument = Expression.Variable(actualParameterType, $"{parameter.Name}_local");
 
         var parameterTypeNameConstant = Expression.Constant(TypeNameHelper.GetTypeDisplayName(parameter.ParameterType, fullName: false));
         var parameterNameConstant = Expression.Constant(parameter.Name);
@@ -1685,7 +1721,15 @@ public static partial class RequestDelegateFactory
 
         factoryContext.UsingTempSourceString = true;
 
-        var targetParseType = parameter.ParameterType.IsArray ? parameter.ParameterType.GetElementType()! : parameter.ParameterType;
+        var targetParseType = (parameter.ParameterType.IsArray || isCollectionInterface)
+            ? (isCollectionInterface ? collectionElementType! : parameter.ParameterType.GetElementType()!)
+            : parameter.ParameterType;
+
+        // If the target type is a string type (for arrays/collections of strings), use the expression binding
+        if (StringTypes.Contains(targetParseType))
+        {
+            return BindParameterFromExpression(parameter, valueExpression, factoryContext, source);
+        }
 
         var underlyingNullableType = Nullable.GetUnderlyingType(targetParseType);
         var isNotNullable = underlyingNullableType is null;
@@ -1793,30 +1837,32 @@ public static partial class RequestDelegateFactory
         var index = Expression.Variable(typeof(int), "index");
 
         // If the parameter is nullable, we need to assign the "parsedValue" local to the nullable parameter on success.
+        var isArrayOrCollection = parameter.ParameterType.IsArray || isCollectionInterface;
         var tryParseExpression = Expression.Block(new[] { parsedValue },
                 Expression.IfThenElse(tryParseCall,
-                    Expression.Assign(parameter.ParameterType.IsArray ? Expression.ArrayAccess(argument, index) : argument, Expression.Convert(parsedValue, targetParseType)),
+                    Expression.Assign(isArrayOrCollection ? Expression.ArrayAccess(argument, index) : argument, Expression.Convert(parsedValue, targetParseType)),
                     failBlock));
 
         var ifNotNullTryParse = !parameter.HasDefaultValue
             ? Expression.IfThen(TempSourceStringNotNullExpr, tryParseExpression)
             : Expression.IfThenElse(TempSourceStringNotNullExpr, tryParseExpression,
                 Expression.Assign(argument,
-                CreateDefaultValueExpression(parameter.DefaultValue, parameter.ParameterType)));
+                CreateDefaultValueExpression(parameter.DefaultValue, isCollectionInterface ? actualParameterType : parameter.ParameterType)));
 
         var loopExit = Expression.Label();
 
         // REVIEW: We can reuse this like we reuse temp source string
-        var stringArrayExpr = parameter.ParameterType.IsArray ? Expression.Variable(typeof(string[]), "tempStringArray") : null;
-        var elementTypeNullabilityInfo = parameter.ParameterType.IsArray ? factoryContext.NullabilityContext.Create(parameter)?.ElementType : null;
+        var stringArrayExpr = isArrayOrCollection ? Expression.Variable(typeof(string[]), "tempStringArray") : null;
+        var elementTypeNullabilityInfo = isArrayOrCollection ? factoryContext.NullabilityContext.Create(parameter)?.ElementType : null;
 
         // Determine optionality of the element type of the array
         var elementTypeOptional = !isNotNullable || (elementTypeNullabilityInfo?.ReadState != NullabilityState.NotNull);
 
         // The loop that populates the resulting array values
-        var arrayLoop = parameter.ParameterType.IsArray ? Expression.Block(
+        var arrayElementType = isCollectionInterface ? collectionElementType! : parameter.ParameterType.GetElementType()!;
+        var arrayLoop = isArrayOrCollection ? Expression.Block(
                         // param_local = new int[values.Length];
-                        Expression.Assign(argument, Expression.NewArrayBounds(parameter.ParameterType.GetElementType()!, Expression.ArrayLength(stringArrayExpr!))),
+                        Expression.Assign(argument, Expression.NewArrayBounds(arrayElementType, Expression.ArrayLength(stringArrayExpr!))),
                         // index = 0
                         Expression.Assign(index, Expression.Constant(0)),
                         // while (index < values.Length)
@@ -1839,7 +1885,7 @@ public static partial class RequestDelegateFactory
                         , loopExit)
                     ) : null;
 
-        var fullParamCheckBlock = (parameter.ParameterType.IsArray, isOptional) switch
+        var fullParamCheckBlock = (isArrayOrCollection, isOptional) switch
         {
             // (isArray: true, optional: true)
             (true, true) =>
@@ -1891,6 +1937,22 @@ public static partial class RequestDelegateFactory
 
         factoryContext.ExtraLocals.Add(argument);
         factoryContext.ParamCheckExpressions.Add(fullParamCheckBlock);
+
+        // For collection interfaces, we created an array internally
+        if (isCollectionInterface)
+        {
+            // For List<T>, use the constructor: new List<T>(array)
+            if (parameter.ParameterType.IsGenericType && parameter.ParameterType.GetGenericTypeDefinition() == typeof(List<>))
+            {
+                var listConstructor = parameter.ParameterType.GetConstructor(new[] { actualParameterType });
+                return Expression.New(listConstructor!, argument);
+            }
+            // For interfaces (IEnumerable<T>, IList<T>, ICollection<T>), just cast the array
+            else
+            {
+                return Expression.Convert(argument, parameter.ParameterType);
+            }
+        }
 
         return argument;
     }
@@ -1971,13 +2033,15 @@ public static partial class RequestDelegateFactory
     {
         var valueExpression = (source == "header" && parameter.ParameterType.IsArray)
             ? Expression.Call(GetHeaderSplitMethod, property, Expression.Constant(key))
-            : GetValueFromProperty(property, itemProperty, key, GetExpressionType(parameter.ParameterType));
+            : GetValueFromProperty(property, itemProperty, key, GetExpressionType(parameter.ParameterType, parameter));
 
         return BindParameterFromValue(parameter, valueExpression, factoryContext, source);
     }
 
-    private static Type? GetExpressionType(Type type) =>
+    private static Type? GetExpressionType(Type type, ParameterInfo? parameter = null) =>
         type.IsArray ? typeof(string[]) :
+        // Only treat collection interfaces as string[] when used as AsParameters properties
+        (parameter is PropertyAsParameterInfo && IsBindableCollectionInterface(type, out _)) ? typeof(string[]) :
         type == typeof(StringValues) ? typeof(StringValues) :
         type == typeof(StringValues?) ? typeof(StringValues?) :
         null;
@@ -2112,7 +2176,7 @@ public static partial class RequestDelegateFactory
         string key,
         RequestDelegateFactoryContext factoryContext)
     {
-        var valueExpression = GetValueFromProperty(FormExpr, FormIndexerProperty, key, GetExpressionType(parameter.ParameterType));
+        var valueExpression = GetValueFromProperty(FormExpr, FormIndexerProperty, key, GetExpressionType(parameter.ParameterType, parameter));
 
         factoryContext.FirstFormRequestBodyParameter ??= parameter;
         factoryContext.TrackedParameters.Add(key, RequestDelegateFactoryConstants.FormAttribute);
