@@ -48,7 +48,39 @@
       ]
     }
   ],
+  "forms": {
+    "lowerCaseInvariantWithHyphens": {
+      "identifier": "chain",
+      "steps": [
+        "lowerCaseInvariant",
+        "replaceDnsInvalidChars",
+        "trimLeadingHyphens",
+        "trimTrailingHyphens"
+      ]
+    },
+    "replaceDnsInvalidChars": {
+      "identifier": "replace",
+      "pattern": "[^a-z0-9-]",
+      "replacement": "-"
+    },
+    "trimLeadingHyphens": {
+      "identifier": "replace",
+      "pattern": "^-+",
+      "replacement": ""
+    },
+    "trimTrailingHyphens": {
+      "identifier": "replace",
+      "pattern": "-+$",
+      "replacement": ""
+    }
+  },
   "symbols": {
+    "hostName": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "lowerCaseInvariantWithHyphens",
+      "replaces": "LocalhostTldHostNamePrefix"
+    },
     "ExcludeLaunchSettings": {
       "type": "parameter",
       "datatype": "bool",

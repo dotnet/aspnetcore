@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Text.Json;
 using Microsoft.AspNetCore.BrowserTesting;
+using Microsoft.AspNetCore.InternalTesting;
 using Templates.Test.Helpers;
 
 namespace BlazorTemplates.Tests;
@@ -87,5 +89,23 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
             await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
             await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName, pagesToExclude, authenticationFeatures);
         }
+    }
+
+    [ConditionalTheory]
+    [InlineData("my.namespace.blazor", "my-namespace-blazor")]
+    [InlineData(".StartWithDot", "startwithdot")]
+    [InlineData("EndWithDot.", "endwithdot")]
+    [InlineData("My..Test__Project", "my--test--project")]
+    [InlineData("Project123.Test456", "project123-test456")]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    public async Task BlazorWebTemplateLocalhostTld_GeneratesDnsCompliantHostnames(string projectName, string expectedHostname)
+    {
+        var project = await ProjectFactory.CreateProject(Output, projectName);
+
+        await project.RunDotNetNewAsync("blazor", args: new[] { ArgConstants.LocalhostTld, ArgConstants.NoInteractivity });
+
+        var expectedLaunchProfileNames = new[] { "http", "https" };
+        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
+        await project.VerifyDnsCompliantHostname(expectedHostname);
     }
 }
