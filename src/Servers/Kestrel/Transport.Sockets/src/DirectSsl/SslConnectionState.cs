@@ -28,6 +28,7 @@ internal sealed class SslConnectionState : IDisposable
     // Write
     private TaskCompletionSource<int>? _writeTcs;
     private ReadOnlyMemory<byte> _writeBuffer;
+    private bool _writeWantsRead;  // SSL_write returned WANT_READ (renegotiation)
 
     public SslConnectionState(int fd, IntPtr ssl, ILogger? logger = null)
     {
@@ -243,10 +244,20 @@ internal sealed class SslConnectionState : IDisposable
             case NativeSsl.SSL_ERROR_WANT_WRITE:
                 _writeBuffer = buffer;
                 _writeTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _writeWantsRead = false;
                 
                 // Dynamically add EPOLLOUT since the write would block
                 Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN | NativeSsl.EPOLLOUT);
                 
+                return new ValueTask<int>(_writeTcs.Task);
+
+            case NativeSsl.SSL_ERROR_WANT_READ:
+                // SSL_write needs to read (TLS renegotiation or post-handshake auth)
+                // Stay registered for EPOLLIN - OnReadable will call TryCompleteWrite
+                _writeBuffer = buffer;
+                _writeTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _writeWantsRead = true;
+                // EPOLLIN is already registered, no need to modify
                 return new ValueTask<int>(_writeTcs.Task);
 
             case NativeSsl.SSL_ERROR_ZERO_RETURN:
@@ -281,11 +292,16 @@ internal sealed class SslConnectionState : IDisposable
         var n = DoSslWrite(_writeBuffer);
         if (n > 0)
         {
+            var wasWaitingForRead = _writeWantsRead;
             _writeTcs = null;
             _writeBuffer = default;
+            _writeWantsRead = false;
             
-            // Write completed - remove EPOLLOUT to avoid spurious wakeups
-            Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN);
+            // Write completed - remove EPOLLOUT if we had it registered
+            if (!wasWaitingForRead)
+            {
+                Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN);
+            }
             
             tcs.TrySetResult(n);
             return;
@@ -295,13 +311,28 @@ internal sealed class SslConnectionState : IDisposable
         switch (error)
         {
             case NativeSsl.SSL_ERROR_WANT_WRITE:
-                // Keep waiting (EPOLLOUT stays registered)
+                // Need to wait for write - if we were waiting for read, switch to write
+                if (_writeWantsRead)
+                {
+                    _writeWantsRead = false;
+                    Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN | NativeSsl.EPOLLOUT);
+                }
+                return;
+
+            case NativeSsl.SSL_ERROR_WANT_READ:
+                // Need to read - remove EPOLLOUT if we had it, stay on EPOLLIN
+                if (!_writeWantsRead)
+                {
+                    _writeWantsRead = true;
+                    Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN);
+                }
                 return;
 
             case NativeSsl.SSL_ERROR_ZERO_RETURN:
                 // Peer closed - return 0
                 _writeTcs = null;
                 _writeBuffer = default;
+                _writeWantsRead = false;
                 Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN);
                 tcs.TrySetResult(0);
                 return;
@@ -309,6 +340,7 @@ internal sealed class SslConnectionState : IDisposable
             default:
                 _writeTcs = null;
                 _writeBuffer = default;
+                _writeWantsRead = false;
                 Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN);
                 tcs.TrySetException(new SslException($"SSL_write failed: {error}"));
                 return;
@@ -324,6 +356,13 @@ internal sealed class SslConnectionState : IDisposable
         if (_handshakeTcs != null)
         {
             ContinueHandshake();
+            return;
+        }
+
+        // Check if a pending write was waiting for read (renegotiation)
+        if (_writeWantsRead && _writeTcs != null)
+        {
+            TryCompleteWrite();
             return;
         }
 
