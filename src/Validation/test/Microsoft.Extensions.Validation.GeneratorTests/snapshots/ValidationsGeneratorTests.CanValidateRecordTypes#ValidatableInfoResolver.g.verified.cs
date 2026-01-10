@@ -193,6 +193,39 @@ namespace Microsoft.Extensions.Validation.Generated
                             name: "PropertyWithMultipleAttributes",
                             displayName: "PropertyWithMultipleAttributes"
                         ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ValidatableRecord),
+                            propertyType: typeof(int),
+                            name: "IntegerWithRangeAndDisplay",
+                            displayName: "display-name"
+                        ),
+                    ]
+                );
+                return true;
+            }
+            if (type == typeof(global::ValidatableRecordWithJsonPropertyNames))
+            {
+                validatableInfo = new GeneratedValidatableTypeInfo(
+                    type: typeof(global::ValidatableRecordWithJsonPropertyNames),
+                    members: [
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ValidatableRecordWithJsonPropertyNames),
+                            propertyType: typeof(int),
+                            name: "DefaultPropertyName",
+                            displayName: "DefaultPropertyName"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ValidatableRecordWithJsonPropertyNames),
+                            propertyType: typeof(int),
+                            name: "CustomJsonPropertyName",
+                            displayName: "custom-property-name"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ValidatableRecordWithJsonPropertyNames),
+                            propertyType: typeof(int),
+                            name: "CustomJsonPropertyNameWithDisplayName",
+                            displayName: "display-name"
+                        ),
                     ]
                 );
                 return true;
