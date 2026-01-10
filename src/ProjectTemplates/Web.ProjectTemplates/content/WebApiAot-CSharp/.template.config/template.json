@@ -9,7 +9,7 @@
   ],
   "name": "ASP.NET Core Web API (native AOT)",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project template for creating a RESTful Web API using ASP.NET Core minimal APIs published as native AOT, with optional support for OpenAPI.",
+  "description": "A web service that apps and websites can use to send and receive data with native AOT, with optional support for OpenAPI.",
   "groupIdentity": "Microsoft.Web.WebApiAot",
   "precedence": "10000",
   "identity": "Microsoft.Web.WebApiAot.CSharp.10.0",

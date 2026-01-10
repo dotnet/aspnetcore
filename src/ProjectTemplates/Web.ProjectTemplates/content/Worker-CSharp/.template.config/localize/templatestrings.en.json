@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": "Worker Service",
-  "description": "An empty project template for creating a worker service.",
+  "description": "An app that runs background jobs without showing a window.",
   "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/choices/net10.0/description": "Target net10.0",
