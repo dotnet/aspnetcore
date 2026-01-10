@@ -101,7 +101,7 @@
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
     <CastleCorePackageVersion>4.2.1</CastleCorePackageVersion>
     <DevDependency_MicrosoftDotNetBuildTasksFeedPackageVersion>2.1.0-prerelease-02430-04</DevDependency_MicrosoftDotNetBuildTasksFeedPackageVersion>
-    <DevDependency_MicrosoftExtensionsDependencyModelPackageVersion>2.1.0</DevDependency_MicrosoftExtensionsDependencyModelPackageVersion>
+    <DevDependency_MicrosoftExtensionsDependencyModelPackageVersion>8.0.2</DevDependency_MicrosoftExtensionsDependencyModelPackageVersion>
     <DevDependency_AzureStorageBlobsPackageVersion>12.10.0</DevDependency_AzureStorageBlobsPackageVersion>
     <FSharpCorePackageVersion>4.2.3</FSharpCorePackageVersion>
     <GoogleProtobufPackageVersion>3.15.0</GoogleProtobufPackageVersion>
@@ -128,7 +128,7 @@
     <MicrosoftDiaSymReaderNativePackageVersion>1.7.0</MicrosoftDiaSymReaderNativePackageVersion>
     <MicrosoftDotNetArchivePackageVersion>0.2.0-beta-63019-01</MicrosoftDotNetArchivePackageVersion>
     <MicrosoftDotNetProjectModelPackageVersion>1.0.0-rc3-1-003177</MicrosoftDotNetProjectModelPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>8.0.2</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftExtensionsPlatformAbstractionsPackageVersion>1.1.0</MicrosoftExtensionsPlatformAbstractionsPackageVersion>
     <MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>3.14.2</MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>
     <MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>5.7.0</MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>
