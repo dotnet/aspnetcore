@@ -1,0 +1,59 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+
+package resources;
+
+// Service for testing Google AIP-131 style resource patterns
+service ResourceService {
+  // Get a widget by name
+  rpc GetWidget (WidgetRequest) returns (WidgetResponse) {
+    option (google.api.http) = {
+      get: "/v1/{name=widgets/*}"
+    };
+  }
+
+  // Get a thing by name
+  rpc GetThing (ThingRequest) returns (ThingResponse) {
+    option (google.api.http) = {
+      get: "/v1/{name=things/*}"
+    };
+  }
+
+  // Get a gadget with nested path
+  rpc GetGadget (GadgetRequest) returns (GadgetResponse) {
+    option (google.api.http) = {
+      get: "/v1/{name=gadgets/*/items/*}"
+    };
+  }
+}
+
+message WidgetRequest {
+  string name = 1;
+}
+
+message WidgetResponse {
+  string id = 1;
+  string name = 2;
+}
+
+message ThingRequest {
+  string name = 1;
+}
+
+message ThingResponse {
+  string id = 1;
+  string name = 2;
+}
+
+message GadgetRequest {
+  string name = 1;
+}
+
+message GadgetResponse {
+  string id = 1;
+  string name = 2;
+}
