@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "Blazor",
+    "WebAssembly",
+    "Library",
+    "OpenTelemetry"
+  ],
+  "name": "Blazor WebAssembly Service Defaults",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "A project template for creating a service defaults library for Blazor WebAssembly applications. Includes OpenTelemetry, service discovery, and resilience support for Aspire integration.",
+  "groupIdentity": "Microsoft.Web.Blazor.Wasm.ServiceDefaults",
+  "precedence": "10000",
+  "identity": "Microsoft.Web.Blazor.Wasm.ServiceDefaults.CSharp.10.0",
+  "shortName": "blazor-wasm-servicedefaults",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/10.0-third-party-notices",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "BlazorWasm.ServiceDefaults1",
+  "preferNameDirectory": true,
+  "symbols": {
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "net10.0",
+          "description": "Target net10.0"
+        }
+      ],
+      "replaces": "net10.0",
+      "defaultValue": "net10.0"
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "defaultValue": "false"
+    }
+  },
+  "primaryOutputs": [
+    {
+      "path": "BlazorWasm.ServiceDefaults1.csproj"
+    }
+  ],
+  "defaultName": "BlazorWasm.ServiceDefaults",
+  "postActions": [
+    {
+      "id": "restore",
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore'"
+        }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    }
+  ]
+}
