@@ -148,10 +148,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
         _url = _httpConnectionOptions.Url;
 
-        if (!httpConnectionOptions.SkipNegotiation || httpConnectionOptions.Transports != HttpTransportType.WebSockets)
-        {
-            _httpClient = CreateHttpClient();
-        }
+        _httpClient = CreateHttpClient();
 
         if (httpConnectionOptions.Transports == HttpTransportType.ServerSentEvents && OperatingSystem.IsBrowser())
         {
