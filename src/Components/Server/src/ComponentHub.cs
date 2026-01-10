@@ -181,8 +181,18 @@ internal sealed partial class ComponentHub : Hub
         {
             operations = CircuitPersistenceManager.ToRootComponentOperationBatch(
                 _serverComponentSerializer,
-                persistedState.RootComponents,
+                persistedState.RootComponentDescriptors,
                 serializedComponentOperations);
+
+            if (operations == null)
+            {
+                // There was an error, so kill the circuit.
+                await _circuitRegistry.TerminateAsync(circuitHost.CircuitId);
+                await NotifyClientError(Clients.Caller, "The persisted circuit state is invalid.");
+                Context.Abort();
+
+                return;
+            }
 
             store = new ProtectedPrerenderComponentApplicationStore(persistedState.ApplicationState, _dataProtectionProvider);
         }
@@ -348,6 +358,18 @@ internal sealed partial class ComponentHub : Hub
             return null;
         }
 
+        if (!CircuitPersistenceManager.TryDeserializeWebRootComponentDescriptors(_serverComponentSerializer, persistedCircuitState.RootComponents, out var rootComponentDescriptors))
+        {
+            Log.InvalidInputData(_logger);
+            return null;
+        }
+
+        var resumedPersistedCircuitState = new ResumedPersistedCircuitState
+        {
+            ApplicationState = persistedCircuitState.ApplicationState,
+            RootComponentDescriptors = rootComponentDescriptors
+        };
+
         try
         {
             var circuitClient = new CircuitClientProxy(Clients.Caller, Context.ConnectionId);
@@ -369,7 +391,7 @@ internal sealed partial class ComponentHub : Hub
             // take care of its own errors anyway.
             _ = circuitHost.InitializeAsync(store: null, httpActivityContext, Context.ConnectionAborted);
 
-            circuitHost.AttachPersistedState(persistedCircuitState);
+            circuitHost.AttachPersistedState(resumedPersistedCircuitState);
 
             // It's safe to *publish* the circuit now because nothing will be able
             // to run inside it until after InitializeAsync completes.
