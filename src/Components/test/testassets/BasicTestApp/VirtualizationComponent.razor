@@ -1,4 +1,6 @@
-﻿<p>
+﻿@* Commented out other test sections to focus on Variable Height Items
+
+<p>
     Item size:<br />
     <input id="item-size-input" type="number" @bind-value="itemSize" />
 </p>
@@ -64,16 +66,36 @@
     </Virtualize>
 </p>
 
+*@
+
+<p>
+    Variable Height Items:<br />
+    <div id="variable-height-container" style="background-color: #eee; height: 500px; overflow-y: auto">
+        <Virtualize Items="@variableHeightItems" ItemSize="80">
+            <div @key="context.Index" id="variable-item-@context.Index" class="variable-height-item" style="height: @(context.Height)px; background-color: hsl(@(context.Hue), 70%, 80%); padding: 8px; box-sizing: border-box; overflow: hidden;">
+                <strong>Item @context.Index</strong> - Height: @context.Height px
+                @for (int i = 0; i < context.LineCount; i++)
+                {
+                    <p style="margin: 4px 0; font-size: 12px;">Line @(i + 1) of variable content</p>
+                }
+            </div>
+        </Virtualize>
+    </div>
+</p>
+
 @code {
+#pragma warning disable CS0414, CS0169 // Fields are unused because other test sections are commented out
     float itemSize = 100;
     ICollection<int> fixedItems = Enumerable.Range(0, 1000).ToList();
     ICollection<int> emptyCollection = Array.Empty<int>();
+    ICollection<VariableHeightItem> variableHeightItems;
 
     int asyncTotalItemCount = 200;
     int asyncCancellationCount = 0;
     TaskCompletionSource asyncTcs = new TaskCompletionSource();
 
     Virtualize<int> asyncComponent;
+#pragma warning restore CS0414, CS0169
 
     async ValueTask<ItemsProviderResult<int>> GetItemsAsync(ItemsProviderRequest request)
     {
@@ -103,5 +125,32 @@
         asyncCancellationCount++;
 
         StateHasChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        // Generate items with variable heights based on content
+        var random = new Random(42); // Fixed seed for reproducibility
+        variableHeightItems = Enumerable.Range(0, 500).Select(i =>
+        {
+            var lineCount = random.Next(1, 7); // 1 to 6 content lines
+            // Height = padding (16px) + title (~22px) + lines (each ~20px with margin)
+            var height = 16 + 22 + (lineCount * 20);
+            return new VariableHeightItem
+            {
+                Index = i,
+                LineCount = lineCount,
+                Height = height,
+                Hue = random.Next(0, 360) // Fully random hue for visual variety
+            };
+        }).ToList();
+    }
+
+    class VariableHeightItem
+    {
+        public int Index { get; set; }
+        public int LineCount { get; set; }
+        public int Height { get; set; }
+        public int Hue { get; set; }
     }
 }

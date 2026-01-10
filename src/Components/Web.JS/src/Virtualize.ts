@@ -8,6 +8,11 @@ export const Virtualize = {
   dispose,
 };
 
+interface ItemMeasurement {
+  index: number;
+  height: number;
+}
+
 const dispatcherObserversByDotNetIdPropname = Symbol();
 
 function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | null {
@@ -26,6 +31,46 @@ function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | 
   }
 
   return findClosestScrollContainer(element.parentElement);
+}
+
+function getCumulativeScaleFactor(element: HTMLElement | null): number {
+  let scale = 1;
+  while (element && element !== document.body && element !== document.documentElement) {
+    const style = getComputedStyle(element);
+    const transform = style.transform;
+    if (transform && transform !== 'none') {
+      // Parse the scale from the transform matrix
+      const match = transform.match(/matrix\(([^,]+)/);
+      if (match) {
+        scale *= parseFloat(match[1]);
+      }
+    }
+    element = element.parentElement;
+  }
+  return scale;
+}
+
+function measureRenderedItems(
+  spacerBefore: HTMLElement,
+  spacerAfter: HTMLElement
+): ItemMeasurement[] {
+  const measurements: ItemMeasurement[] = [];
+  const scaleFactor = getCumulativeScaleFactor(spacerBefore);
+
+  let current = spacerBefore.nextElementSibling;
+  const startIndexAttr = spacerBefore.getAttribute('data-virtualize-start');
+  let index = startIndexAttr ? parseInt(startIndexAttr, 10) : 0;
+
+  while (current && current !== spacerAfter) {
+    const rect = current.getBoundingClientRect();
+    measurements.push({
+      index: index++,
+      height: rect.height / scaleFactor
+    });
+    current = current.nextElementSibling;
+  }
+
+  return measurements;
 }
 
 function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spacerAfter: HTMLElement, rootMargin = 50): void {
@@ -87,6 +132,9 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         return;
       }
 
+      // Measure currently rendered items for variable-height support
+      const measurements = measureRenderedItems(spacerBefore, spacerAfter);
+
       // To compute the ItemSize, work out the separation between the two spacers. We can't just measure an individual element
       // because each conceptual item could be made from multiple elements. Using getBoundingClientRect allows for the size to be
       // a fractional value. It's important not to add or subtract any such fractional values (e.g., to subtract the 'top' of
@@ -98,12 +146,12 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       const containerSize = entry.rootBounds?.height;
 
       if (entry.target === spacerBefore) {
-        dotNetHelper.invokeMethodAsync('OnSpacerBeforeVisible', entry.intersectionRect.top - entry.boundingClientRect.top, spacerSeparation, containerSize);
+        dotNetHelper.invokeMethodAsync('OnSpacerBeforeVisible', entry.intersectionRect.top - entry.boundingClientRect.top, spacerSeparation, containerSize, measurements);
       } else if (entry.target === spacerAfter && spacerAfter.offsetHeight > 0) {
         // When we first start up, both the "before" and "after" spacers will be visible, but it's only relevant to raise a
         // single event to load the initial data. To avoid raising two events, skip the one for the "after" spacer if we know
         // it's meaningless to talk about any overlap into it.
-        dotNetHelper.invokeMethodAsync('OnSpacerAfterVisible', entry.boundingClientRect.bottom - entry.intersectionRect.bottom, spacerSeparation, containerSize);
+        dotNetHelper.invokeMethodAsync('OnSpacerAfterVisible', entry.boundingClientRect.bottom - entry.intersectionRect.bottom, spacerSeparation, containerSize, measurements);
       }
     });
   }

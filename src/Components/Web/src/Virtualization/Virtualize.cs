@@ -59,6 +59,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private bool _loading;
 
+    // Variable-height virtualization support
+    private readonly Dictionary<int, float> _measuredHeights = new();
+    private float _averageMeasuredHeight;
+    private int _measuredItemCount;
+
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -224,7 +229,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         builder.OpenElement(0, SpacerElement);
         builder.AddAttribute(1, "style", GetSpacerStyle(_itemsBefore));
         builder.AddAttribute(2, "aria-hidden", "true");
-        builder.AddElementReferenceCapture(3, elementReference => _spacerBefore = elementReference);
+        builder.AddAttribute(3, "data-virtualize-start", _itemsBefore.ToString(CultureInfo.InvariantCulture));
+        builder.AddElementReferenceCapture(4, elementReference => _spacerBefore = elementReference);
         builder.CloseElement();
 
         var lastItemIndex = Math.Min(_itemsBefore + _visibleItemCapacity, _itemCount);
@@ -292,15 +298,109 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     }
 
     private string GetSpacerStyle(int itemsInSpacer, int numItemsGapAbove)
-        => numItemsGapAbove == 0
-        ? GetSpacerStyle(itemsInSpacer)
-        : $"height: {(itemsInSpacer * _itemSize).ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0; transform: translateY({(numItemsGapAbove * _itemSize).ToString(CultureInfo.InvariantCulture)}px);";
+    {
+        if (numItemsGapAbove == 0)
+        {
+            return GetSpacerStyleForAfter(itemsInSpacer);
+        }
+
+        var height = CalculateTotalHeightForAfter(itemsInSpacer);
+        var gapHeight = _measuredItemCount > 0 ? numItemsGapAbove * _averageMeasuredHeight : numItemsGapAbove * _itemSize;
+        return $"height: {height.ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0; transform: translateY({gapHeight.ToString(CultureInfo.InvariantCulture)}px);";
+    }
+
+    private string GetSpacerStyleForAfter(int itemsInSpacer)
+    {
+        var height = CalculateTotalHeightForAfter(itemsInSpacer);
+        return $"height: {height.ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0;";
+    }
+
+    private float CalculateTotalHeightForAfter(int count)
+    {
+        // Items after the visible area start after _itemsBefore + _visibleItemCapacity
+        var startIndex = _itemsBefore + _visibleItemCapacity;
+        return CalculateTotalHeight(startIndex, count);
+    }
 
     private string GetSpacerStyle(int itemsInSpacer)
-        => $"height: {(itemsInSpacer * _itemSize).ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0;";
+        => $"height: {CalculateTotalHeight(0, itemsInSpacer).ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0;";
 
-    void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
+    private float GetItemHeight(int index)
     {
+        // Use measured height if available, otherwise use average or ItemSize
+        if (_measuredHeights.TryGetValue(index, out var height))
+        {
+            return height;
+        }
+
+        return _measuredItemCount > 0 ? _averageMeasuredHeight : _itemSize;
+    }
+
+    private float CalculateTotalHeight(int startIndex, int count)
+    {
+        float total = 0;
+        for (int i = startIndex; i < startIndex + count && i < _itemCount; i++)
+        {
+            total += GetItemHeight(i);
+        }
+        return total;
+    }
+
+    private void RecordMeasurement(int index, float height)
+    {
+        if (!_measuredHeights.ContainsKey(index))
+        {
+            _measuredItemCount++;
+        }
+        _measuredHeights[index] = height;
+
+        // Update running average
+        if (_measuredHeights.Count > 0)
+        {
+            _averageMeasuredHeight = _measuredHeights.Values.Sum() / _measuredHeights.Count;
+        }
+    }
+
+    private void ProcessMeasurements(ItemMeasurement[]? measurements)
+    {
+        if (measurements == null || measurements.Length == 0)
+        {
+            return;
+        }
+
+        foreach (var measurement in measurements)
+        {
+            RecordMeasurement(measurement.Index, measurement.Height);
+        }
+    }
+
+    // Reserved for future use in more sophisticated item distribution calculation
+#pragma warning disable IDE0051 // Remove unused private members
+    private int FindItemCountInHeight(float targetHeight, int startIndex, int maxItems)
+#pragma warning restore IDE0051 // Remove unused private members
+    {
+        float cumulative = 0;
+        int count = 0;
+
+        for (int i = startIndex; i < startIndex + maxItems && i < _itemCount; i++)
+        {
+            var itemHeight = GetItemHeight(i);
+            if (cumulative + itemHeight > targetHeight)
+            {
+                break;
+            }
+            cumulative += itemHeight;
+            count++;
+        }
+
+        return count;
+    }
+
+    void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, ItemMeasurement[]? measurements)
+    {
+        // Process any item measurements from JavaScript
+        ProcessMeasurements(measurements);
+
         CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
 
         // Since we know the before spacer is now visible, we absolutely have to slide the window up
@@ -315,8 +415,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
     }
 
-    void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
+    void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, ItemMeasurement[]? measurements)
     {
+        // Process any item measurements from JavaScript
+        ProcessMeasurements(measurements);
+
         CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
 
         var itemsBefore = Math.Max(0, _itemCount - itemsAfter - visibleItemCapacity);
@@ -366,8 +469,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // the user has set a very low MaxItemCount and we end up in an infinite loading loop.
         maxItemCount += OverscanCount * 2;
 
-        itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / _itemSize) - OverscanCount);
-        visibleItemCapacity = (int)Math.Ceiling(containerSize / _itemSize) + 2 * OverscanCount;
+        // Use average measured height for calculations if we have measurements, otherwise use _itemSize
+        var effectiveItemSize = _measuredItemCount > 0 ? _averageMeasuredHeight : _itemSize;
+
+        itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / effectiveItemSize) - OverscanCount);
+        visibleItemCapacity = (int)Math.Ceiling(containerSize / effectiveItemSize) + 2 * OverscanCount;
         unusedItemCapacity = Math.Max(0, visibleItemCapacity - maxItemCount);
         visibleItemCapacity -= unusedItemCapacity;
     }
@@ -379,6 +485,14 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         if (itemsBefore + visibleItemCapacity > _itemCount)
         {
             itemsBefore = Math.Max(0, _itemCount - visibleItemCapacity);
+        }
+
+        // Prevent flickering: only reduce visibleItemCapacity if the reduction is significant (more than 1 item).
+        // This prevents oscillation caused by small changes in average item height calculations.
+        // Always allow increases to ensure we render enough items.
+        if (visibleItemCapacity < _visibleItemCapacity && _visibleItemCapacity - visibleItemCapacity <= 1)
+        {
+            visibleItemCapacity = _visibleItemCapacity;
         }
 
         // If anything about the offset changed, re-render
