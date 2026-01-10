@@ -172,9 +172,6 @@ internal sealed partial class HttpConnectionDispatcher
                 if (connection is not null)
                 {
                     Log.EstablishedConnection(_logger);
-
-                    // Allow the reads to be canceled
-                    connection.Cancellation ??= new CancellationTokenSource();
                 }
             }
             else
@@ -198,7 +195,8 @@ internal sealed partial class HttpConnectionDispatcher
 
             if (connection.TransportType != HttpTransportType.WebSockets || connection.UseStatefulReconnect)
             {
-                if (!await connection.CancelPreviousPoll(context))
+                // No point in canceling if there isn't an active application task yet, that means this is the initial request for the connection
+                if (connection.ApplicationTask is not null && !await connection.CancelPreviousPoll(context))
                 {
                     // Connection closed. It's already set the response status code.
                     return;
@@ -215,6 +213,9 @@ internal sealed partial class HttpConnectionDispatcher
                 case HttpTransportType.None:
                     break;
                 case HttpTransportType.WebSockets:
+                    // Allow the reads to be canceled
+                    connection.Cancellation ??= new CancellationTokenSource();
+
                     var isReconnect = connection.ApplicationTask is not null;
                     var ws = new WebSocketsServerTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
                     if (!connection.TryActivatePersistentConnection(connectionDelegate, ws, currentRequestTcs.Task, context, _logger))
@@ -376,6 +377,11 @@ internal sealed partial class HttpConnectionDispatcher
         if (error == null)
         {
             connection = CreateConnection(options, clientProtocolVersion, useStatefulReconnect);
+            if (connection.Status == HttpConnectionStatus.Disposed)
+            {
+                // Happens if the server is shutting down when a new negotiate request comes in
+                error = "The connection was closed before negotiation completed.";
+            }
         }
 
         // Set the Connection ID on the logging scope so that logs from now on will have the
