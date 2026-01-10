@@ -2,9 +2,9 @@
 
 One of the easiest ways to contribute is to participate in discussions on GitHub issues. You can also contribute by submitting pull requests with code changes.
 
-## General feedback and discussions?
+## General questions and discussions?
 
-Start a discussion on the [repository issue tracker](https://github.com/dotnet/aspnetcore/issues).
+Start a [discussion](https://github.com/dotnet/aspnetcore/discussions) with our helpful community of ASP.NET Core developers and contributors.
 
 ## Bugs and feature requests?
 
