@@ -13,6 +13,9 @@ internal sealed class SslConnectionState : IDisposable
     public readonly int Fd;
     public readonly IntPtr Ssl;
 
+    // Reference to pump for dynamic event modification
+    internal SslEventPump? Pump { get; set; }
+
     // Handshake
     private TaskCompletionSource<bool>? _handshakeTcs;
     public bool IsHandshaked { get; private set; }
@@ -192,6 +195,10 @@ internal sealed class SslConnectionState : IDisposable
             case NativeSsl.SSL_ERROR_WANT_WRITE:
                 _writeBuffer = buffer;
                 _writeTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+                
+                // Dynamically add EPOLLOUT since the write would block
+                Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN | NativeSsl.EPOLLOUT);
+                
                 return new ValueTask<int>(_writeTcs.Task);
 
             case NativeSsl.SSL_ERROR_ZERO_RETURN:
@@ -218,8 +225,9 @@ internal sealed class SslConnectionState : IDisposable
         var tcs = _writeTcs;
         if (tcs == null)
         {
-            _logger?.LogDebug("TryCompleteWrite called but no write tcs is pending");
-            return; // Race: cancelled or completed between check and call
+            // Spurious EPOLLOUT - remove it to avoid future wakeups
+            Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN);
+            return;
         }
 
         var n = DoSslWrite(_writeBuffer);
@@ -227,6 +235,10 @@ internal sealed class SslConnectionState : IDisposable
         {
             _writeTcs = null;
             _writeBuffer = default;
+            
+            // Write completed - remove EPOLLOUT to avoid spurious wakeups
+            Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN);
+            
             tcs.TrySetResult(n);
             return;
         }
@@ -235,19 +247,21 @@ internal sealed class SslConnectionState : IDisposable
         switch (error)
         {
             case NativeSsl.SSL_ERROR_WANT_WRITE:
-                // Keep waiting
+                // Keep waiting (EPOLLOUT stays registered)
                 return;
 
             case NativeSsl.SSL_ERROR_ZERO_RETURN:
                 // Peer closed - return 0
                 _writeTcs = null;
                 _writeBuffer = default;
+                Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN);
                 tcs.TrySetResult(0);
                 return;
 
             default:
                 _writeTcs = null;
                 _writeBuffer = default;
+                Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN);
                 tcs.TrySetException(new SslException($"SSL_write failed: {error}"));
                 return;
         }

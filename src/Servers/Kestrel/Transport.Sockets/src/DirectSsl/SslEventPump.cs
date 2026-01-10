@@ -42,14 +42,14 @@ internal sealed class SslEventPump : IDisposable
     {
         _logger?.LogDebug("Registering fd={Fd} with epoll", conn.Fd);
         
-        lock (_connections)
-        {
-            _connections[conn.Fd] = conn;
-        }
+        conn.Pump = this;
+        _connections[conn.Fd] = conn;
 
+        // Only register for EPOLLIN initially - EPOLLOUT will be added dynamically when needed
+        // This avoids spurious wakeups since sockets are almost always writable
         var ev = new EpollEvent
         {
-            Events = NativeSsl.EPOLLIN | NativeSsl.EPOLLOUT | NativeSsl.EPOLLET | NativeSsl.EPOLLRDHUP,
+            Events = NativeSsl.EPOLLIN | NativeSsl.EPOLLET | NativeSsl.EPOLLRDHUP,
             Data = new EpollData { Fd = conn.Fd }
         };
         
@@ -70,6 +70,26 @@ internal sealed class SslEventPump : IDisposable
         Debug.Assert(removed, "Unregister called for fd not in connections");
 
         NativeSsl.epoll_ctl(_epollFd, NativeSsl.EPOLL_CTL_DEL, fd, IntPtr.Zero);
+    }
+
+    /// <summary>
+    /// Modify the epoll events for a file descriptor.
+    /// Used to dynamically add EPOLLOUT when a write would block.
+    /// </summary>
+    public void ModifyEvents(int fd, uint events)
+    {
+        var ev = new EpollEvent
+        {
+            Events = events | NativeSsl.EPOLLET | NativeSsl.EPOLLRDHUP,
+            Data = new EpollData { Fd = fd }
+        };
+
+        int result = NativeSsl.epoll_ctl(_epollFd, NativeSsl.EPOLL_CTL_MOD, fd, ref ev);
+        if (result < 0)
+        {
+            int errno = Marshal.GetLastWin32Error();
+            _logger?.LogWarning("epoll_ctl MOD failed for fd={Fd}: errno={Errno}", fd, errno);
+        }
     }
 
     private void PumpLoop()
