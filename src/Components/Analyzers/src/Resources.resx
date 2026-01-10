@@ -175,10 +175,13 @@
     <value>Do not use RenderTree types</value>
   </data>
   <data name="ComponentParametersShouldBeAutoProperties_Message" xml:space="preserve">
-    <value>Component parameter '{0}' should be auto property</value>
+    <value>Component parameter '{0}' should be auto property. Manipulating component parameters can result in infinite loops and unintended side effects.</value>
   </data>
   <data name="ComponentParametersShouldBeAutoProperties_Title" xml:space="preserve">
     <value>Component parameters should be auto properties</value>
+  </data>
+  <data name="ComponentParametersShouldBeAutoProperties_Description" xml:space="preserve">
+    <value>Component parameters should be auto properties. Manipulating component parameters can result in infinite loops and unintended side effects. Use @bind:after or @bind:set instead to adjust values or trigger additional callbacks.</value>
   </data>
   <data name="SupplyParameterFromFormShouldNotHavePropertyInitializer_Description" xml:space="preserve">
     <value>The value of a property decorated with [SupplyParameterFromForm] and initialized with a property initializer can be overwritten with null when the component receives parameters. To ensure the initialized value is not overwritten, move the initialization to a component lifecycle method like OnInitialized or OnInitializedAsync</value>
