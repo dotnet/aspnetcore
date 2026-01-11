@@ -1,5 +1,8 @@
 <Project>
   <PropertyGroup>
+    <!-- Workaround while there is no SDK available that understands the TFM; suppress unsupported version errors. -->
+    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
+
     <!-- Disable IsTrimmable on non-DefaultNetCoreTargetFrameworks even if explicitly enabled or else we'll get NETSDK1195 and NETSDK1210 errors -->
     <IsTrimmable Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'"></IsTrimmable>
     <EnableAOTAnalyzer Condition=" '$(EnableAOTAnalyzer)' == '' ">$([MSBuild]::ValueOrDefault($(IsTrimmable),'false'))</EnableAOTAnalyzer>
