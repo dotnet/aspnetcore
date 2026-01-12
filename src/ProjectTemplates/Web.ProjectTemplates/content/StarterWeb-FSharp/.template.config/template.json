@@ -12,7 +12,7 @@
   "precedence": "11000",
   "identity": "Microsoft.Web.Mvc.FSharp.11.0",
   "shortName": "mvc",
-  "thirdPartyNotices": "https://aka.ms/aspnetcore/10.0-third-party-notices",
+  "thirdPartyNotices": "https://aka.ms/aspnetcore/11.0-third-party-notices",
   "tags": {
     "language": "F#",
     "type": "project"
