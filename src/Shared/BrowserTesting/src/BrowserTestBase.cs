@@ -21,6 +21,9 @@ public class BrowserTestBase : LoggedTest, IAsyncLifetime
         !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ContinuousIntegrationBuild")) ||
         !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("Helix"));
 
+    private static readonly bool _isContainerEnvironment =
+        File.Exists("/.dockerenv") || File.Exists("/run/.containerenv");
+
     private static readonly BrowserManagerConfiguration _config = new BrowserManagerConfiguration(CreateConfiguration());
 
     public BrowserTestBase(ITestOutputHelper output = null) : base(output) { }
@@ -53,6 +56,11 @@ public class BrowserTestBase : LoggedTest, IAsyncLifetime
         {
             builder.AddJsonFile(Path.Combine(basePath, "playwrightSettings.ci.json"), optional: true)
                 .AddJsonFile(Path.Combine(basePath, $"playwrightSettings.ci.{os}.json"), optional: true);
+        }
+
+        if (_isContainerEnvironment)
+        {
+            builder.AddJsonFile(Path.Combine(basePath, "playwrightSettings.container.json"), optional: true);
         }
 
         if (Debugger.IsAttached)
