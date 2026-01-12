@@ -54,6 +54,7 @@
       "steps": [
         "lowerCaseInvariant",
         "replaceDnsInvalidChars",
+        "replaceRepeatedHyphens",
         "trimLeadingHyphens",
         "trimTrailingHyphens"
       ]
@@ -61,6 +62,11 @@
     "replaceDnsInvalidChars": {
       "identifier": "replace",
       "pattern": "[^a-z0-9-]",
+      "replacement": "-"
+    },
+    "replaceRepeatedHyphens": {
+      "identifier": "replace",
+      "pattern": "-{2,}",
       "replacement": "-"
     },
     "trimLeadingHyphens": {
