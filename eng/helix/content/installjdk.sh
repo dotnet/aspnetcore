@@ -41,6 +41,6 @@ curl -Lsfo $(basename $url) "$url" --retry 5
 echo "Installing java from $(basename $url) $url"
 mkdir $output_dir
 echo "Unpacking to $output_dir"
-tar --strip-components 1 -xzf "jdk-${java_version}-${platformarch}.tar.gz" --no-same-owner --directory "$output_dir"
+tar --strip-components 1 -xzf "microsoft-jdk-${java_version}-${platformarch}.tar.gz" --no-same-owner --directory "$output_dir"
 
 popd
