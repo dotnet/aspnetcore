@@ -556,6 +556,32 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    public void DisplayNameReadsAttributesCorrectly()
+    {
+        var appElement = Browser.MountTestComponent<DisplayNameComponent>();
+
+        // Check that DisplayAttribute.Name is displayed
+        var displayNameLabel = appElement.FindElement(By.Id("product-name-label"));
+        Browser.Equal("Product Name", () => displayNameLabel.Text);
+
+        // Check that DisplayNameAttribute is displayed
+        var priceLabel = appElement.FindElement(By.Id("price-label"));
+        Browser.Equal("Unit Price", () => priceLabel.Text);
+
+        // Check that DisplayAttribute takes precedence over DisplayNameAttribute
+        var stockLabel = appElement.FindElement(By.Id("stock-label"));
+        Browser.Equal("Stock Quantity", () => stockLabel.Text);
+
+        // Check fallback to property name when no attributes present
+        var descriptionLabel = appElement.FindElement(By.Id("description-label"));
+        Browser.Equal("Description", () => descriptionLabel.Text);
+
+        // Check that ResourceType localization works with English resources
+        var localizedLabel = appElement.FindElement(By.Id("localized-label"));
+        Browser.Equal("Product Name", () => localizedLabel.Text);
+    }
+
+    [Fact]
     public void InputComponentsCauseContainerToRerenderOnChange()
     {
         var appElement = MountTypicalValidationComponent();

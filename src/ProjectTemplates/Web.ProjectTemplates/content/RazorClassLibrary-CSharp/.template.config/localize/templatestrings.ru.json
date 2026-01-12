@@ -9,5 +9,6 @@
   "symbols/SupportPagesAndViews/description": "Следует ли поддерживать добавление традиционных страниц и представлений Razor в эту библиотеку.",
   "postActions/restore/description": "Восстановление пакетов NuGet, необходимых для этого проекта.",
   "postActions/restore/manualInstructions/default/text": "Выполнить команду \"dotnet restore\"",
-  "postActions/openInEditor/description": "Открывает Areas/MyFeature/Pages/Page1.cshtml в редакторе"
+  "postActions/openPageInEditor/description": "Открывает Areas/MyFeature/Pages/Page1.cshtml в редакторе",
+  "postActions/openComponentInEditor/description": "Открывает Component1.razor в редакторе"
 }

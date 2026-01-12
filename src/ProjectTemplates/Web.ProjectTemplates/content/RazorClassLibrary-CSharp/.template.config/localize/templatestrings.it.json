@@ -9,5 +9,6 @@
   "symbols/SupportPagesAndViews/description": "Indica se supportare l'aggiunta di pagine e visualizzazioni Razor tradizionali a questa libreria.",
   "postActions/restore/description": "Ripristina i pacchetti NuGet richiesti da questo progetto.",
   "postActions/restore/manualInstructions/default/text": "Esegui 'dotnet restore'",
-  "postActions/openInEditor/description": "Apre Areas/MyFeature/Pages/Page1.cshtml nell'editor"
+  "postActions/openPageInEditor/description": "Apre Areas/MyFeature/Pages/Page1.cshtml nell'editor",
+  "postActions/openComponentInEditor/description": "Apre Component1.razor nell'editor"
 }

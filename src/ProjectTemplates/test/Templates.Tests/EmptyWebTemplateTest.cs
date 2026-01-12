@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.InternalTesting;
 using Templates.Test.Helpers;
@@ -71,6 +72,24 @@ public class EmptyWebTemplateTest : LoggedTest
     public async Task EmptyWebTemplateNoHttpsFSharp()
     {
         await EmtpyTemplateCore("F#", args: new[] { ArgConstants.NoHttps });
+    }
+
+    [ConditionalTheory]
+    [InlineData("my.namespace.web", "my-namespace-web")]
+    [InlineData(".StartWithDot", "startwithdot")]
+    [InlineData("EndWithDot.", "endwithdot")]
+    [InlineData("My..Test__Project", "my--test--project")]
+    [InlineData("Project123.Test456", "project123-test456")]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    public async Task EmptyWebTemplateLocalhostTld_GeneratesDnsCompliantHostnames(string projectName, string expectedHostname)
+    {
+        var project = await ProjectFactory.CreateProject(Output, projectName);
+
+        await project.RunDotNetNewAsync("web", args: new[] { ArgConstants.LocalhostTld });
+
+        var expectedLaunchProfileNames = new[] { "http", "https" };
+        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
+        await project.VerifyDnsCompliantHostname(expectedHostname);
     }
 
     private async Task EmtpyTemplateCore(string languageOverride, string[] args = null)

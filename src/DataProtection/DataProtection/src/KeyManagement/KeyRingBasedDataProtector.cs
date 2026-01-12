@@ -21,18 +21,19 @@ using Microsoft.AspNetCore.DataProtection.Internal;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
-internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedDataProtector
+internal unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedDataProtector
 {
     // This magic header identifies a v0 protected data blob. It's the high 28 bits of the SHA1 hash of
     // "Microsoft.AspNet.DataProtection.KeyManagement.KeyRingBasedDataProtector" [US-ASCII], big-endian.
     // The last nibble reserved for version information. There's also the nice property that "F0 C9"
     // can never appear in a well-formed UTF8 sequence, so attempts to treat a protected payload as a
     // UTF8-encoded string will fail, and devs can catch the mistake early.
-    private const uint MAGIC_HEADER_V0 = 0x09F0C9F0;
+    protected const uint MAGIC_HEADER_V0 = 0x09F0C9F0;
+    protected static readonly int _magicHeaderKeyIdSize = sizeof(uint) + sizeof(Guid);
 
-    private AdditionalAuthenticatedDataTemplate _aadTemplate;
-    private readonly IKeyRingProvider _keyRingProvider;
-    private readonly ILogger? _logger;
+    protected AdditionalAuthenticatedDataTemplate _aadTemplate;
+    protected readonly IKeyRingProvider _keyRingProvider;
+    protected readonly ILogger? _logger;
 
     public KeyRingBasedDataProtector(IKeyRingProvider keyRingProvider, ILogger? logger, string[]? originalPurposes, string newPurpose)
     {
@@ -65,6 +66,22 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
     {
         ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
+        var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
+        var encryptor = currentKeyRing.DefaultAuthenticatedEncryptor;
+
+#if NET
+        if (encryptor is ISpanAuthenticatedEncryptor)
+        {
+            // allows caller to check if dataProtector supports Span APIs
+            // and use more performant APIs
+            return new KeyRingBasedSpanDataProtector(
+                logger: _logger,
+                keyRingProvider: _keyRingProvider,
+                originalPurposes: Purposes,
+                newPurpose: purpose);
+        }
+#endif
+
         return new KeyRingBasedDataProtector(
             logger: _logger,
             keyRingProvider: _keyRingProvider,
@@ -72,22 +89,9 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
             newPurpose: purpose);
     }
 
-    private static string JoinPurposesForLog(IEnumerable<string> purposes)
+    protected static string JoinPurposesForLog(IEnumerable<string> purposes)
     {
         return "(" + String.Join(", ", purposes.Select(p => "'" + p + "'")) + ")";
-    }
-
-    // allows decrypting payloads whose keys have been revoked
-    public byte[] DangerousUnprotect(byte[] protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked)
-    {
-        // argument & state checking
-        ArgumentNullThrowHelper.ThrowIfNull(protectedData);
-
-        UnprotectStatus status;
-        var retVal = UnprotectCore(protectedData, ignoreRevocationErrors, status: out status);
-        requiresMigration = (status != UnprotectStatus.Ok);
-        wasRevoked = (status == UnprotectStatus.DecryptionKeyWasRevoked);
-        return retVal;
     }
 
     public byte[] Protect(byte[] plaintext)
@@ -140,7 +144,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
         }
     }
 
-    private static Guid ReadGuid(void* ptr)
+    protected static Guid ReadGuid(void* ptr)
     {
 #if NETCOREAPP
         // Performs appropriate endianness fixups
@@ -153,15 +157,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
 #endif
     }
 
-    private static uint ReadBigEndian32BitInteger(byte* ptr)
-    {
-        return ((uint)ptr[0] << 24)
-            | ((uint)ptr[1] << 16)
-            | ((uint)ptr[2] << 8)
-            | ((uint)ptr[3]);
-    }
-
-    private static bool TryGetVersionFromMagicHeader(uint magicHeader, out int version)
+    protected static bool TryGetVersionFromMagicHeader(uint magicHeader, out int version)
     {
         const uint MAGIC_HEADER_VERSION_MASK = 0xFU;
         if ((magicHeader & ~MAGIC_HEADER_VERSION_MASK) == MAGIC_HEADER_V0)
@@ -187,14 +183,26 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
             wasRevoked: out _);
     }
 
+    // allows decrypting payloads whose keys have been revoked
+    public byte[] DangerousUnprotect(byte[] protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked)
+    {
+        // argument & state checking
+        ArgumentNullThrowHelper.ThrowIfNull(protectedData);
+
+        UnprotectStatus status;
+        var retVal = UnprotectCore(protectedData, ignoreRevocationErrors, status: out status);
+        requiresMigration = (status != UnprotectStatus.Ok);
+        wasRevoked = (status == UnprotectStatus.DecryptionKeyWasRevoked);
+        return retVal;
+    }
+
     private byte[] UnprotectCore(byte[] protectedData, bool allowOperationsOnRevokedKeys, out UnprotectStatus status)
     {
         Debug.Assert(protectedData != null);
 
         try
         {
-            // argument & state checking
-            if (protectedData.Length < sizeof(uint) /* magic header */ + sizeof(Guid) /* key id */)
+            if (protectedData.Length < _magicHeaderKeyIdSize)
             {
                 // payload must contain at least the magic header and key id
                 throw Error.ProtectionProvider_BadMagicHeader();
@@ -203,17 +211,15 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
             // Need to check that protectedData := { magicHeader || keyId || encryptorSpecificProtectedPayload }
 
             // Parse the payload version number and key id.
-            uint magicHeaderFromPayload;
+            var magicHeaderFromPayload = BinaryPrimitives.ReadUInt32BigEndian(protectedData.AsSpan(0, sizeof(uint)));
             Guid keyIdFromPayload;
             fixed (byte* pbInput = protectedData)
             {
-                magicHeaderFromPayload = ReadBigEndian32BitInteger(pbInput);
                 keyIdFromPayload = ReadGuid(&pbInput[sizeof(uint)]);
             }
 
             // Are the magic header and version information correct?
-            int payloadVersion;
-            if (!TryGetVersionFromMagicHeader(magicHeaderFromPayload, out payloadVersion))
+            if (!TryGetVersionFromMagicHeader(magicHeaderFromPayload, out var payloadVersion))
             {
                 throw Error.ProtectionProvider_BadMagicHeader();
             }
@@ -293,7 +299,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
         }
     }
 
-    private static void WriteGuid(void* ptr, Guid value)
+    protected static void WriteGuid(void* ptr, Guid value)
     {
 #if NETCOREAPP
         var span = new Span<byte>(ptr, sizeof(Guid));
@@ -309,7 +315,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
 #endif
     }
 
-    private static void WriteBigEndianInteger(byte* ptr, uint value)
+    protected static void WriteBigEndianInteger(byte* ptr, uint value)
     {
         ptr[0] = (byte)(value >> 24);
         ptr[1] = (byte)(value >> 16);

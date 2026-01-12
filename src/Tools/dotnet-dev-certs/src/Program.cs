@@ -124,16 +124,20 @@ internal sealed class Program
                 {
                     var reporter = new ConsoleReporter(PhysicalConsole.Singleton, verbose.HasValue(), quiet.HasValue());
 
+                    var listener = new ReporterEventListener(reporter);
                     if (verbose.HasValue())
                     {
-                        var listener = new ReporterEventListener(reporter);
                         listener.EnableEvents(CertificateManager.Log, System.Diagnostics.Tracing.EventLevel.Verbose);
+                    }
+                    else
+                    {
+                        listener.EnableEvents(CertificateManager.Log, System.Diagnostics.Tracing.EventLevel.Critical);
                     }
 
                     if (checkJsonOutput.HasValue())
                     {
                         if (exportPath.HasValue() || trust?.HasValue() == true || format.HasValue() || noPassword.HasValue() || check.HasValue() || clean.HasValue() ||
-                           (!import.HasValue() && password.HasValue()) || 
+                           (!import.HasValue() && password.HasValue()) ||
                            (import.HasValue() && !password.HasValue()))
                         {
                             reporter.Error(InvalidUsageErrorMessage);

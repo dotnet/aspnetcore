@@ -102,6 +102,29 @@
     <Reference Remove="@(Reference->HasMetadata('ProjectPath'))" />
   </ItemGroup>
 
+  <!-- For source projects, mark shared framework assemblies as non-transitive (privateassets=all) and non app-local (private=false). -->
+  <ItemGroup Condition="'@(ProjectReference)' != '' and
+                        '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and
+                        '$(IsTestProject)' != 'true' and '$(IsTestAssetProject)' != 'true' and
+                        '$(IsBenchmarkProject)' != 'true' and '$(IsSampleProject)' != 'true' and '$(IsMicrobenchmarksProject)' != 'true' and
+                        '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime' and
+                        '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime.Composite' and
+                        '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Ref'" >
+    <_ProjectReferenceWithOriginalIdentity Include="@(ProjectReference)"
+                                           OriginalIdentity="%(Identity)" />
+    <_ProjectReferenceWithFilename Include="@(_ProjectReferenceWithOriginalIdentity->Metadata('Filename'))" />
+
+    <_ProjectReferenceExcludedWithFilename Include="@(_ProjectReferenceWithFilename)"
+                                           Exclude="@(AspNetCoreAppReference)" />
+    <_FrameworkProjectReference Include="@(_ProjectReferenceWithFilename)"
+                                Exclude="@(_ProjectReferenceExcludedWithFilename)" />
+
+    <ProjectReference Update="@(_FrameworkProjectReference->Metadata('OriginalIdentity'))">
+      <PrivateAssets Condition="'%(PrivateAssets)' == ''">all</PrivateAssets>
+      <Private Condition="'%(Private)' == ''">false</Private>
+    </ProjectReference>
+  </ItemGroup>
+
   <!--
     This target helps ensure projects within the shared framework do not unintentionally add new references, and that
     assemblies outside the shared framework reference the framework as a whole instead of using individual assemblies.
