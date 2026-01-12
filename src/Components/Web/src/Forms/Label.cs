@@ -59,13 +59,6 @@ public class Label<TValue> : IComponent
                 $"{nameof(For)} parameter.");
         }
 
-        if (AdditionalAttributes?.ContainsKey("for") == true)
-        {
-            throw new InvalidOperationException($"{GetType()} does not support the 'for' attribute " +
-                $"because it uses implicit label association by nesting the input inside the label element. " +
-                $"Remove the 'for' attribute.");
-        }
-
         // Only recalculate display name if the expression changed
         var displayNameChanged = false;
         if (For != previousFor)

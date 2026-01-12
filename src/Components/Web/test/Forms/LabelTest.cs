@@ -229,7 +229,7 @@ public class LabelTest
     }
 
     [Fact]
-    public async Task ThrowsWhenForAttributeIsPassedInAdditionalAttributes()
+    public async Task AllowsForAttributeInAdditionalAttributes()
     {
         var model = new TestModel();
         var additionalAttributes = new Dictionary<string, object>
@@ -248,13 +248,13 @@ public class LabelTest
             }
         };
 
-        var testRenderer = new TestRenderer();
-        var componentId = testRenderer.AssignRootComponentId(rootComponent);
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => testRenderer.RenderRootComponentAsync(componentId));
+        var frames = await RenderAndGetFrames(rootComponent);
 
-        Assert.Contains("for", exception.Message);
-        Assert.Contains("implicit label association", exception.Message);
+        var labelElement = frames.First(f => f.FrameType == RenderTree.RenderTreeFrameType.Element && f.ElementName == "label");
+        Assert.Equal("label", labelElement.ElementName);
+
+        var forAttribute = frames.First(f => f.FrameType == RenderTree.RenderTreeFrameType.Attribute && f.AttributeName == "for");
+        Assert.Equal("some-id", forAttribute.AttributeValue);
     }
 
     [Fact]
