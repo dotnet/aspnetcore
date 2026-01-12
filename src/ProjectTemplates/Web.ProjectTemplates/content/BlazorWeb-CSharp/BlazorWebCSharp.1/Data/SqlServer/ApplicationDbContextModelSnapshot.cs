@@ -319,7 +319,9 @@ namespace BlazorWebCSharp._1.Migrations
 
                             b1.ToTable("AspNetUserPasskeys");
 
+                            #pragma warning disable EF8001 // Owned JSON entities are obsolete
                             b1.ToJson("Data");
+                            #pragma warning restore EF8001 // Owned JSON entities are obsolete
 
                             b1.WithOwner()
                                 .HasForeignKey("IdentityUserPasskeyCredentialId");
