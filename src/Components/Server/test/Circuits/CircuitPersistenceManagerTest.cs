@@ -307,7 +307,7 @@ public class CircuitPersistenceManagerTest
     }
 
     [Fact]
-    public void Fails_IfDifferentNumberOfRootComponentsAndOperations()
+    public void ToRootComponentOperationBatch_Fails_IfDifferentNumberOfRootComponentsAndOperations()
     {
         var deserializer = SetupMockDeserializer(
             new RootComponentOperationBatch
@@ -320,7 +320,7 @@ public class CircuitPersistenceManagerTest
     }
 
     [Fact]
-    public void Fails_IfDescriptorForOperationNotFound()
+    public void ToRootComponentOperationBatch_Fails_IfDescriptorForOperationNotFound()
     {
         var deserializer = SetupMockDeserializer(
             new RootComponentOperationBatch
@@ -337,7 +337,7 @@ public class CircuitPersistenceManagerTest
     }
 
     [Fact]
-    public void WorksWhen_RootComponentsAndOperations_MatchAndCanBeDeserialized()
+    public void ToRootComponentOperationBatch_WorksWhen_RootComponentsAndOperations_MatchAndCanBeDeserialized()
     {
         var deserializer = SetupMockDeserializer(
             new RootComponentOperationBatch
