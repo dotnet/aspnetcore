@@ -41,7 +41,7 @@ public static class TempDataProviderServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Enables component parameters to be supplied from the <see cref="TempData"/> using Session storage>.
+    /// Enables component parameters to be supplied from the <see cref="TempData"/> using Session storage.
     /// </summary>
     public static IServiceCollection AddSessionStorageTempDataValueProvider(
         this IServiceCollection services)
@@ -58,11 +58,9 @@ public static class TempDataProviderServiceCollectionExtensions
         services.TryAddCascadingValue(sp =>
         {
             var httpContext = sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext;
-            if (httpContext is null)
-            {
-                return null!;
-            }
-            return GetOrCreateTempData(httpContext);
+            return httpContext is null
+                ? null
+                : GetOrCreateTempData(httpContext);
         });
         return services;
     }
@@ -70,7 +68,7 @@ public static class TempDataProviderServiceCollectionExtensions
     private static ITempData GetOrCreateTempData(HttpContext httpContext)
     {
         var key = typeof(ITempData);
-        if (!httpContext.Items.TryGetValue(key, out var tempData))
+        if (!httpContext.Items.ContainsKey(key))
         {
             var tempDataService = httpContext.RequestServices.GetRequiredService<TempDataService>();
             var tempDataInstance = tempDataService.CreateEmpty(httpContext);

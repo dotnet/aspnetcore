@@ -27,7 +27,7 @@ internal sealed class TempData : ITempData
             {
                 var dataToLoad = _loadFunc();
                 Load(dataToLoad);
-                _loadFunc = null!;
+                _loadFunc = null;
                 _loaded = true;
             }
             return _data;

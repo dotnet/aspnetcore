@@ -62,7 +62,7 @@ internal sealed partial class SessionStorageTempDataProvider : ITempDataProvider
 
         foreach (var kvp in values)
         {
-            if (!_tempDataSerializer.EnsureObjectCanBeSerialized(kvp.Value?.GetType() ?? typeof(object)))
+            if (kvp.Value is not null && !_tempDataSerializer.EnsureObjectCanBeSerialized(kvp.Value.GetType()))
             {
                 throw new InvalidOperationException($"TempData cannot store values of type '{kvp.Value?.GetType()}'.");
             }

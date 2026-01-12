@@ -15,6 +15,7 @@ public class TempDataProviderServiceCollectionExtensionsTest
         // Arrange
         var services = new ServiceCollection();
         services.AddDataProtection();
+        services.AddLogging();
 
         // Act
         services.AddCookieTempDataValueProvider(configureOptions: null);
