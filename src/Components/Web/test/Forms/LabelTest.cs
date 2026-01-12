@@ -281,6 +281,76 @@ public class LabelTest
     }
 
     [Fact]
+    public async Task RendersForAttributeWhenNoChildContent()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestHostComponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Label<string>>(0);
+                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PlainProperty));
+                builder.CloseComponent();
+            }
+        };
+
+        var frames = await RenderAndGetFrames(rootComponent);
+
+        var forAttribute = frames.First(f => f.FrameType == RenderTree.RenderTreeFrameType.Attribute && f.AttributeName == "for");
+        Assert.Equal("model.PlainProperty", forAttribute.AttributeValue);
+    }
+
+    [Fact]
+    public async Task DoesNotRenderForAttributeWhenChildContentProvided()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestHostComponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Label<string>>(0);
+                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PlainProperty));
+                builder.AddComponentParameter(2, "ChildContent", (RenderFragment)(childBuilder =>
+                {
+                    childBuilder.AddContent(0, "Input goes here");
+                }));
+                builder.CloseComponent();
+            }
+        };
+
+        var frames = await RenderAndGetFrames(rootComponent);
+
+        var forAttributes = frames.Where(f => f.FrameType == RenderTree.RenderTreeFrameType.Attribute && f.AttributeName == "for");
+        Assert.Empty(forAttributes);
+    }
+
+    [Fact]
+    public async Task NonNestedLabel_ExplicitForOverridesGenerated()
+    {
+        var model = new TestModel();
+        var additionalAttributes = new Dictionary<string, object>
+        {
+            { "for", "custom-input-id" }
+        };
+
+        var rootComponent = new TestHostComponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Label<string>>(0);
+                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PlainProperty));
+                builder.AddComponentParameter(2, "AdditionalAttributes", additionalAttributes);
+                builder.CloseComponent();
+            }
+        };
+
+        var frames = await RenderAndGetFrames(rootComponent);
+
+        var forAttribute = frames.First(f => f.FrameType == RenderTree.RenderTreeFrameType.Attribute && f.AttributeName == "for");
+        Assert.Equal("custom-input-id", forAttribute.AttributeValue);
+    }
+
+    [Fact]
     public async Task WorksWithNestedProperties()
     {
         var model = new TestModelWithNestedProperty();

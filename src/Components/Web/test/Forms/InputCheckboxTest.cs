@@ -6,73 +6,70 @@ using Microsoft.AspNetCore.Components.Test.Helpers;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
-public class InputTextTest
+public class InputCheckboxTest
 {
     private readonly TestRenderer _testRenderer = new TestRenderer();
 
     [Fact]
     public async Task InputElementIsAssignedSuccessfully()
     {
-        // Arrange
         var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputText>
+        var rootComponent = new TestInputHostComponent<bool, InputCheckbox>
         {
             EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
+            ValueExpression = () => model.BoolProperty,
         };
 
-        // Act
-        var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+        var inputCheckboxComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
-        // Assert
-        Assert.NotNull(inputSelectComponent.Element);
+        Assert.NotNull(inputCheckboxComponent.Element);
     }
 
     [Fact]
     public async Task RendersIdAttribute()
     {
         var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputText>
+        var rootComponent = new TestInputHostComponent<bool, InputCheckbox>
         {
             EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
+            ValueExpression = () => model.BoolProperty,
         };
 
-        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
+        var componentId = await RenderAndGetInputCheckboxComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
         var idAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
-        Assert.Equal("model.StringProperty", idAttribute.AttributeValue);
+        Assert.Equal("model.BoolProperty", idAttribute.AttributeValue);
     }
 
     [Fact]
     public async Task ExplicitIdOverridesGenerated()
     {
         var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputText>
+        var rootComponent = new TestInputHostComponent<bool, InputCheckbox>
         {
             EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-            AdditionalAttributes = new Dictionary<string, object> { { "id", "custom-id" } }
+            ValueExpression = () => model.BoolProperty,
+            AdditionalAttributes = new Dictionary<string, object> { { "id", "custom-checkbox-id" } }
         };
 
-        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
+        var componentId = await RenderAndGetInputCheckboxComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
         var idAttribute = frames.Array.First(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
-        Assert.Equal("custom-id", idAttribute.AttributeValue);
+        Assert.Equal("custom-checkbox-id", idAttribute.AttributeValue);
     }
 
-    private async Task<int> RenderAndGetInputTextComponentIdAsync(TestInputHostComponent<string, InputText> hostComponent)
+    private async Task<int> RenderAndGetInputCheckboxComponentIdAsync(TestInputHostComponent<bool, InputCheckbox> hostComponent)
     {
         var hostComponentId = _testRenderer.AssignRootComponentId(hostComponent);
         await _testRenderer.RenderRootComponentAsync(hostComponentId);
         var batch = _testRenderer.Batches.Single();
-        return batch.GetComponentFrames<InputText>().Single().ComponentId;
+        return batch.GetComponentFrames<InputCheckbox>().Single().ComponentId;
     }
 
     private class TestModel
     {
-        public string StringProperty { get; set; }
+        public bool BoolProperty { get; set; }
     }
 }
