@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 /// <summary>
-/// Provides programmatic configuration for cookies set by <see cref="CookieTempDataProvider"/>
+/// Provides programmatic configuration for cookies set by <see cref="CookieTempDataProvider"/>.
 /// </summary>
 public class CookieTempDataProviderOptions
 {

@@ -166,7 +166,7 @@ internal sealed class TempData : ITempData
         return new TempDataEnumerator(this);
     }
 
-    class TempDataEnumerator : IEnumerator<KeyValuePair<string, object?>>
+    sealed class TempDataEnumerator : IEnumerator<KeyValuePair<string, object?>>
     {
         private readonly TempData _tempData;
         private readonly IEnumerator<KeyValuePair<string, object?>> _innerEnumerator;

@@ -36,6 +36,8 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
 
     public IDictionary<string, object?> LoadTempData(HttpContext context)
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         try
         {
             var cookieName = _options.Cookie.Name ?? CookieName;
@@ -81,11 +83,13 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
 
     public void SaveTempData(HttpContext context, IDictionary<string, object?> values)
     {
+        ArgumentNullException.ThrowIfNull(context);
+
         foreach (var kvp in values)
         {
             if (kvp.Value is not null && !_tempDataSerializer.EnsureObjectCanBeSerialized(kvp.Value.GetType()))
             {
-                throw new InvalidOperationException($"TempData cannot store values of type '{kvp.Value?.GetType()}'.");
+                throw new InvalidOperationException($"TempData cannot store values of type '{kvp.Value.GetType()}'.");
             }
         }
 
