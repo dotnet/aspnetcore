@@ -6,14 +6,12 @@ using System.Diagnostics;
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-internal class ResumedPersistedCircuitState
+internal sealed class ResumedPersistedCircuitState
 {
     public required IReadOnlyDictionary<string, byte[]> ApplicationState { get; init; }
 
     public required IReadOnlyDictionary<int, WebRootComponentDescriptor> RootComponentDescriptors { get; init; }
 
-    private string GetDebuggerDisplay()
-    {
-        return $"ApplicationStateCount={ApplicationState?.Count ?? 0}, RootComponentCount={RootComponentDescriptors?.Count ?? 0}";
-    }
+    private string GetDebuggerDisplay() =>
+        $"ApplicationStateCount={ApplicationState?.Count ?? 0}, RootComponentCount={RootComponentDescriptors?.Count ?? 0}";
 }
