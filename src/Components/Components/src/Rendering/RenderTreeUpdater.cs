@@ -15,6 +15,10 @@ internal sealed class RenderTreeUpdater
         {
             return;
         }
+        if (newFieldValue is bool boolValue)
+        {
+            newFieldValue = boolValue ? "true" : "false";
+        }
 
         // Find the element that contains the event handler
         var frames = renderTreeBuilder.GetFrames();
