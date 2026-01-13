@@ -56,6 +56,12 @@
       "defaultValue": "false",
       "description": "If specified, creates only the WorkerClient infrastructure without sample worker code."
     },
+    "UseRenderMode": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "If specified, adds @rendermode InteractiveWebAssembly to pages. Required for Blazor Web Apps with WebAssembly interactivity."
+    },
     "IncludeSampleContent": {
       "type": "computed",
       "value": "(!Empty)"
