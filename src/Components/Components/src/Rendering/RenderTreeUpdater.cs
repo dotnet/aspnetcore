@@ -13,9 +13,9 @@ internal sealed class RenderTreeUpdater
         // values we output on attributes that go to the client
         if (newFieldValue is bool boolValue)
         {
-            if (boolValue)
+            if (OperatingSystem.IsBrowser() && boolValue)
             {
-                newFieldValue = "true";
+                newFieldValue = "";
             }
         }
         else if (!(newFieldValue is string))
