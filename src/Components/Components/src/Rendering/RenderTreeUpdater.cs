@@ -11,13 +11,16 @@ internal sealed class RenderTreeUpdater
     {
         // We only allow the client to supply string or bool currently, since those are the only kinds of
         // values we output on attributes that go to the client
-        if (!(newFieldValue is string || newFieldValue is bool))
-        {
-            return;
-        }
         if (newFieldValue is bool boolValue)
         {
-            newFieldValue = boolValue ? "true" : "false";
+            if (boolValue)
+            {
+                newFieldValue = "true";
+            }
+        }
+        else if (!(newFieldValue is string))
+        {
+            return;
         }
 
         // Find the element that contains the event handler

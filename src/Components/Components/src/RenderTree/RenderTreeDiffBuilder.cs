@@ -1020,10 +1020,6 @@ internal static class RenderTreeDiffBuilder
         {
             diffContext.Renderer.AssignEventHandlerId(diffContext.ComponentId, ref newFrame);
         }
-        else if (newFrame.AttributeValueField is bool b)
-        {
-            newFrame.AttributeValueField = b ? "true" : "false";
-        }
     }
 
     private static void InitializeNewElementReferenceCaptureFrame(ref DiffContext diffContext, ref RenderTreeFrame newFrame)

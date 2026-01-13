@@ -541,10 +541,6 @@ public sealed class RenderTreeBuilder : IDisposable
         switch (parentFrame.FrameTypeField)
         {
             case RenderTreeFrameType.Element:
-                if (value is bool boolValue)
-                {
-                    value = boolValue ? "true" : "false";
-                }
                 parentFrame.ElementKeyField = value; // It's a ref var, so this writes to the array
                 break;
             case RenderTreeFrameType.Component:
@@ -764,10 +760,6 @@ public sealed class RenderTreeBuilder : IDisposable
         if ((attributeValue == null) || (attributeValue is bool boolValue && !boolValue))
         {
             return false;
-        }
-        if (attributeValue is bool b && b)
-        {
-            attributeValue = "true";
         }
 
         _entries.InsertExpensive(insertAtIndex, RenderTreeFrame.Attribute(sequence, attributeName, attributeValue));
