@@ -1,0 +1,19 @@
+{
+  "author": "Microsoft",
+  "name": "Blazor WebWorker",
+  "description": "向 Blazor WebAssembly 应用程序添加 WebWorker 支持，使 .NET 代码能够在主 UI 线程之外运行，以提供响应式用户体验。从 Blazor WebAssembly 项目目录（用于独立应用）或 .Client 项目目录（用于 Blazor Web Apps）运行此模板。",
+  "symbols/Framework/description": "项目的目标框架。",
+  "symbols/Framework/choices/net10.0/description": "目标 net10.0",
+  "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",
+  "symbols/Empty/description": "如果指定，则仅创建 WorkerClient 基础结构，不包含示例工作线程代码。",
+  "postActions/restore/description": "还原此项目所需的 NuGet 包。",
+  "postActions/restore/manualInstructions/default/text": "运行 'dotnet restore'",
+  "postActions/addToSolution/description": "将 WorkerClient 项目添加到解决方案。",
+  "postActions/addToSolution/manualInstructions/default/text": "将生成的 WorkerClient 项目添加到解决方案：dotnet sln add WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
+  "postActions/addReference/description": "添加对 WorkerClient 的项目引用。",
+  "postActions/addReference/manualInstructions/default/text": "添加项目引用：dotnet add reference ../WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
+  "postActions/addUnsafeBlocksWindows/description": "将 AllowUnsafeBlocks 添加到项目。",
+  "postActions/addUnsafeBlocksWindows/manualInstructions/default/text": "将 <AllowUnsafeBlocks>true</AllowUnsafeBlocks> 添加到您的项目",
+  "postActions/addUnsafeBlocksUnix/description": "将 AllowUnsafeBlocks 添加到项目。",
+  "postActions/addUnsafeBlocksUnix/manualInstructions/default/text": "将 <AllowUnsafeBlocks>true</AllowUnsafeBlocks> 添加到您的项目"
+}

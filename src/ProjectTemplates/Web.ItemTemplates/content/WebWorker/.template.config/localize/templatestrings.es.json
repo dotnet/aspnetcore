@@ -1,0 +1,19 @@
+{
+  "author": "Microsoft",
+  "name": "Blazor WebWorker",
+  "description": "Agrega compatibilidad con WebWorker a una aplicación Blazor WebAssembly, lo que permite que el código .NET se ejecute fuera del subproceso principal de la interfaz de usuario para experiencias de usuario con capacidad de respuesta. Ejecute esta plantilla desde el directorio del proyecto Blazor WebAssembly (para aplicaciones independientes) o desde el directorio del proyecto .Client (para Blazor Web Apps).",
+  "symbols/Framework/description": "La plataforma de destino del proyecto.",
+  "symbols/Framework/choices/net10.0/description": "Destino net10.0",
+  "symbols/skipRestore/description": "Si se especifica, omite la restauración automática del proyecto en la creación.",
+  "symbols/Empty/description": "Si se especifica, crea solo la infraestructura WorkerClient sin código de worker de ejemplo.",
+  "postActions/restore/description": "Restaura los paquetes NuGet requeridos por este proyecto.",
+  "postActions/restore/manualInstructions/default/text": "Ejecute 'dotnet restore'",
+  "postActions/addToSolution/description": "Agrega el proyecto WorkerClient a la solución.",
+  "postActions/addToSolution/manualInstructions/default/text": "Agregue el proyecto WorkerClient generado a su solución: dotnet sln add WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
+  "postActions/addReference/description": "Agrega una referencia de proyecto a WorkerClient.",
+  "postActions/addReference/manualInstructions/default/text": "Agregue una referencia de proyecto: dotnet add reference ../WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
+  "postActions/addUnsafeBlocksWindows/description": "Agrega AllowUnsafeBlocks al proyecto.",
+  "postActions/addUnsafeBlocksWindows/manualInstructions/default/text": "Agregue <AllowUnsafeBlocks>true</AllowUnsafeBlocks> a su proyecto",
+  "postActions/addUnsafeBlocksUnix/description": "Agrega AllowUnsafeBlocks al proyecto.",
+  "postActions/addUnsafeBlocksUnix/manualInstructions/default/text": "Agregue <AllowUnsafeBlocks>true</AllowUnsafeBlocks> a su proyecto"
+}

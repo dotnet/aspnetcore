@@ -1,0 +1,19 @@
+{
+  "author": "Microsoft",
+  "name": "Blazor WebWorker",
+  "description": "Adiciona suporte a WebWorker a um aplicativo Blazor WebAssembly, permitindo que o código .NET seja executado fora do thread principal da interface do usuário para experiências de usuário responsivas. Execute este modelo a partir do diretório do projeto Blazor WebAssembly (para aplicativos autônomos) ou do diretório do projeto .Client (para Blazor Web Apps).",
+  "symbols/Framework/description": "A estrutura de destino para o projeto.",
+  "symbols/Framework/choices/net10.0/description": "Destino net10.0",
+  "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto na criação.",
+  "symbols/Empty/description": "Se especificado, cria apenas a infraestrutura WorkerClient sem código de worker de exemplo.",
+  "postActions/restore/description": "Restaura os pacotes NuGet exigidos por este projeto.",
+  "postActions/restore/manualInstructions/default/text": "Execute 'dotnet restore'",
+  "postActions/addToSolution/description": "Adiciona o projeto WorkerClient à solução.",
+  "postActions/addToSolution/manualInstructions/default/text": "Adicione o projeto WorkerClient gerado à sua solução: dotnet sln add WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
+  "postActions/addReference/description": "Adiciona uma referência de projeto ao WorkerClient.",
+  "postActions/addReference/manualInstructions/default/text": "Adicione uma referência de projeto: dotnet add reference ../WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
+  "postActions/addUnsafeBlocksWindows/description": "Adiciona AllowUnsafeBlocks ao projeto.",
+  "postActions/addUnsafeBlocksWindows/manualInstructions/default/text": "Adicione <AllowUnsafeBlocks>true</AllowUnsafeBlocks> ao seu projeto",
+  "postActions/addUnsafeBlocksUnix/description": "Adiciona AllowUnsafeBlocks ao projeto.",
+  "postActions/addUnsafeBlocksUnix/manualInstructions/default/text": "Adicione <AllowUnsafeBlocks>true</AllowUnsafeBlocks> ao seu projeto"
+}

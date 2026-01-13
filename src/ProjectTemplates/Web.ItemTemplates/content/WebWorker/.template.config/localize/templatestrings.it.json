@@ -1,0 +1,19 @@
+{
+  "author": "Microsoft",
+  "name": "Blazor WebWorker",
+  "description": "Aggiunge il supporto WebWorker a un'applicazione Blazor WebAssembly, consentendo al codice .NET di essere eseguito al di fuori del thread dell'interfaccia utente principale per esperienze utente reattive. Eseguire questo modello dalla directory del progetto Blazor WebAssembly (per app autonome) o dalla directory del progetto .Client (per Blazor Web Apps).",
+  "symbols/Framework/description": "Il framework di destinazione per il progetto.",
+  "symbols/Framework/choices/net10.0/description": "Destinazione net10.0",
+  "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto alla creazione.",
+  "symbols/Empty/description": "Se specificato, crea solo l'infrastruttura WorkerClient senza codice worker di esempio.",
+  "postActions/restore/description": "Ripristina i pacchetti NuGet richiesti da questo progetto.",
+  "postActions/restore/manualInstructions/default/text": "Eseguire 'dotnet restore'",
+  "postActions/addToSolution/description": "Aggiunge il progetto WorkerClient alla soluzione.",
+  "postActions/addToSolution/manualInstructions/default/text": "Aggiungere il progetto WorkerClient generato alla soluzione: dotnet sln add WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
+  "postActions/addReference/description": "Aggiunge un riferimento al progetto WorkerClient.",
+  "postActions/addReference/manualInstructions/default/text": "Aggiungere un riferimento al progetto: dotnet add reference ../WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
+  "postActions/addUnsafeBlocksWindows/description": "Aggiunge AllowUnsafeBlocks al progetto.",
+  "postActions/addUnsafeBlocksWindows/manualInstructions/default/text": "Aggiungere <AllowUnsafeBlocks>true</AllowUnsafeBlocks> al progetto",
+  "postActions/addUnsafeBlocksUnix/description": "Aggiunge AllowUnsafeBlocks al progetto.",
+  "postActions/addUnsafeBlocksUnix/manualInstructions/default/text": "Aggiungere <AllowUnsafeBlocks>true</AllowUnsafeBlocks> al progetto"
+}

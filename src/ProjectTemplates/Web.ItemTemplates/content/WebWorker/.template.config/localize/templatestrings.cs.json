@@ -1,0 +1,19 @@
+{
+  "author": "Microsoft",
+  "name": "Blazor WebWorker",
+  "description": "Přidá podporu WebWorker do aplikace Blazor WebAssembly, což umožňuje spouštění .NET kódu mimo hlavní vlákno uživatelského rozhraní pro responzivní uživatelské prostředí. Spusťte tuto šablonu z adresáře projektu Blazor WebAssembly (pro samostatné aplikace) nebo z adresáře projektu .Client (pro Blazor Web Apps).",
+  "symbols/Framework/description": "Cílová architektura pro projekt.",
+  "symbols/Framework/choices/net10.0/description": "Cíl net10.0",
+  "symbols/skipRestore/description": "Pokud je zadáno, přeskočí automatické obnovení projektu při vytvoření.",
+  "symbols/Empty/description": "Pokud je zadáno, vytvoří pouze infrastrukturu WorkerClient bez ukázkového kódu workeru.",
+  "postActions/restore/description": "Obnoví balíčky NuGet vyžadované tímto projektem.",
+  "postActions/restore/manualInstructions/default/text": "Spusťte 'dotnet restore'",
+  "postActions/addToSolution/description": "Přidá projekt WorkerClient do řešení.",
+  "postActions/addToSolution/manualInstructions/default/text": "Přidejte vygenerovaný projekt WorkerClient do řešení: dotnet sln add WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
+  "postActions/addReference/description": "Přidá odkaz na projekt WorkerClient.",
+  "postActions/addReference/manualInstructions/default/text": "Přidejte odkaz na projekt: dotnet add reference ../WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
+  "postActions/addUnsafeBlocksWindows/description": "Přidá AllowUnsafeBlocks do projektu.",
+  "postActions/addUnsafeBlocksWindows/manualInstructions/default/text": "Přidejte <AllowUnsafeBlocks>true</AllowUnsafeBlocks> do projektu",
+  "postActions/addUnsafeBlocksUnix/description": "Přidá AllowUnsafeBlocks do projektu.",
+  "postActions/addUnsafeBlocksUnix/manualInstructions/default/text": "Přidejte <AllowUnsafeBlocks>true</AllowUnsafeBlocks> do projektu"
+}

@@ -1,0 +1,19 @@
+{
+  "author": "Microsoft",
+  "name": "Blazor WebWorker",
+  "description": "Fügt WebWorker-Unterstützung zu einer Blazor WebAssembly-Anwendung hinzu, wodurch .NET-Code außerhalb des Haupt-UI-Threads für reaktionsschnelle Benutzererfahrungen ausgeführt werden kann. Führen Sie diese Vorlage aus dem Blazor WebAssembly-Projektverzeichnis (für eigenständige Apps) oder aus dem .Client-Projektverzeichnis (für Blazor Web Apps) aus.",
+  "symbols/Framework/description": "Das Zielframework für das Projekt.",
+  "symbols/Framework/choices/net10.0/description": "Ziel net10.0",
+  "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts bei der Erstellung übersprungen.",
+  "symbols/Empty/description": "Wenn angegeben, wird nur die WorkerClient-Infrastruktur ohne Beispiel-Worker-Code erstellt.",
+  "postActions/restore/description": "Stellt die für dieses Projekt erforderlichen NuGet-Pakete wieder her.",
+  "postActions/restore/manualInstructions/default/text": "Führen Sie 'dotnet restore' aus",
+  "postActions/addToSolution/description": "Fügt das WorkerClient-Projekt zur Projektmappe hinzu.",
+  "postActions/addToSolution/manualInstructions/default/text": "Fügen Sie das generierte WorkerClient-Projekt zu Ihrer Projektmappe hinzu: dotnet sln add WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
+  "postActions/addReference/description": "Fügt einen Projektverweis auf WorkerClient hinzu.",
+  "postActions/addReference/manualInstructions/default/text": "Fügen Sie einen Projektverweis hinzu: dotnet add reference ../WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
+  "postActions/addUnsafeBlocksWindows/description": "Fügt AllowUnsafeBlocks zum Projekt hinzu.",
+  "postActions/addUnsafeBlocksWindows/manualInstructions/default/text": "Fügen Sie <AllowUnsafeBlocks>true</AllowUnsafeBlocks> zu Ihrem Projekt hinzu",
+  "postActions/addUnsafeBlocksUnix/description": "Fügt AllowUnsafeBlocks zum Projekt hinzu.",
+  "postActions/addUnsafeBlocksUnix/manualInstructions/default/text": "Fügen Sie <AllowUnsafeBlocks>true</AllowUnsafeBlocks> zu Ihrem Projekt hinzu"
+}

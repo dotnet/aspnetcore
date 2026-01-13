@@ -1,0 +1,19 @@
+{
+  "author": "Microsoft",
+  "name": "Blazor WebWorker",
+  "description": "Dodaje obsługę WebWorker do aplikacji Blazor WebAssembly, umożliwiając uruchamianie kodu .NET poza głównym wątkiem interfejsu użytkownika w celu zapewnienia responsywnego środowiska użytkownika. Uruchom ten szablon z katalogu projektu Blazor WebAssembly (dla aplikacji autonomicznych) lub z katalogu projektu .Client (dla Blazor Web Apps).",
+  "symbols/Framework/description": "Platforma docelowa dla projektu.",
+  "symbols/Framework/choices/net10.0/description": "Cel net10.0",
+  "symbols/skipRestore/description": "Jeśli określono, pomija automatyczne przywracanie projektu podczas tworzenia.",
+  "symbols/Empty/description": "Jeśli określono, tworzy tylko infrastrukturę WorkerClient bez przykładowego kodu workera.",
+  "postActions/restore/description": "Przywraca pakiety NuGet wymagane przez ten projekt.",
+  "postActions/restore/manualInstructions/default/text": "Uruchom 'dotnet restore'",
+  "postActions/addToSolution/description": "Dodaje projekt WorkerClient do rozwiązania.",
+  "postActions/addToSolution/manualInstructions/default/text": "Dodaj wygenerowany projekt WorkerClient do rozwiązania: dotnet sln add WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
+  "postActions/addReference/description": "Dodaje odwołanie do projektu WorkerClient.",
+  "postActions/addReference/manualInstructions/default/text": "Dodaj odwołanie do projektu: dotnet add reference ../WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
+  "postActions/addUnsafeBlocksWindows/description": "Dodaje AllowUnsafeBlocks do projektu.",
+  "postActions/addUnsafeBlocksWindows/manualInstructions/default/text": "Dodaj <AllowUnsafeBlocks>true</AllowUnsafeBlocks> do projektu",
+  "postActions/addUnsafeBlocksUnix/description": "Dodaje AllowUnsafeBlocks do projektu.",
+  "postActions/addUnsafeBlocksUnix/manualInstructions/default/text": "Dodaj <AllowUnsafeBlocks>true</AllowUnsafeBlocks> do projektu"
+}

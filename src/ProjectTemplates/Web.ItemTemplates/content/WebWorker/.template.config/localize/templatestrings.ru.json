@@ -1,0 +1,19 @@
+{
+  "author": "Microsoft",
+  "name": "Blazor WebWorker",
+  "description": "Добавляет поддержку WebWorker в приложение Blazor WebAssembly, позволяя коду .NET выполняться вне основного потока пользовательского интерфейса для отзывчивого взаимодействия с пользователем. Запустите этот шаблон из каталога проекта Blazor WebAssembly (для автономных приложений) или из каталога проекта .Client (для Blazor Web Apps).",
+  "symbols/Framework/description": "Целевая платформа для проекта.",
+  "symbols/Framework/choices/net10.0/description": "Целевая net10.0",
+  "symbols/skipRestore/description": "Если указано, пропускает автоматическое восстановление проекта при создании.",
+  "symbols/Empty/description": "Если указано, создаёт только инфраструктуру WorkerClient без примера кода воркера.",
+  "postActions/restore/description": "Восстанавливает пакеты NuGet, необходимые для этого проекта.",
+  "postActions/restore/manualInstructions/default/text": "Выполните 'dotnet restore'",
+  "postActions/addToSolution/description": "Добавляет проект WorkerClient в решение.",
+  "postActions/addToSolution/manualInstructions/default/text": "Добавьте сгенерированный проект WorkerClient в решение: dotnet sln add WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
+  "postActions/addReference/description": "Добавляет ссылку на проект WorkerClient.",
+  "postActions/addReference/manualInstructions/default/text": "Добавьте ссылку на проект: dotnet add reference ../WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
+  "postActions/addUnsafeBlocksWindows/description": "Добавляет AllowUnsafeBlocks в проект.",
+  "postActions/addUnsafeBlocksWindows/manualInstructions/default/text": "Добавьте <AllowUnsafeBlocks>true</AllowUnsafeBlocks> в ваш проект",
+  "postActions/addUnsafeBlocksUnix/description": "Добавляет AllowUnsafeBlocks в проект.",
+  "postActions/addUnsafeBlocksUnix/manualInstructions/default/text": "Добавьте <AllowUnsafeBlocks>true</AllowUnsafeBlocks> в ваш проект"
+}

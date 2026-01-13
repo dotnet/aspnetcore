@@ -1,0 +1,19 @@
+{
+  "author": "Microsoft",
+  "name": "Blazor WebWorker",
+  "description": "Blazor WebAssembly uygulamasına WebWorker desteği ekler ve .NET kodunun duyarlı kullanıcı deneyimleri için ana kullanıcı arabirimi iş parçacığı dışında çalışmasını sağlar. Bu şablonu Blazor WebAssembly proje dizininden (bağımsız uygulamalar için) veya .Client proje dizininden (Blazor Web Apps için) çalıştırın.",
+  "symbols/Framework/description": "Proje için hedef çerçeve.",
+  "symbols/Framework/choices/net10.0/description": "net10.0 hedefle",
+  "symbols/skipRestore/description": "Belirtilirse, oluşturma sırasında projenin otomatik geri yüklemesini atlar.",
+  "symbols/Empty/description": "Belirtilirse, örnek çalışan kodu olmadan yalnızca WorkerClient altyapısını oluşturur.",
+  "postActions/restore/description": "Bu proje için gereken NuGet paketlerini geri yükler.",
+  "postActions/restore/manualInstructions/default/text": "'dotnet restore' komutunu çalıştırın",
+  "postActions/addToSolution/description": "WorkerClient projesini çözüme ekler.",
+  "postActions/addToSolution/manualInstructions/default/text": "Oluşturulan WorkerClient projesini çözümünüze ekleyin: dotnet sln add WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
+  "postActions/addReference/description": "WorkerClient'a proje başvurusu ekler.",
+  "postActions/addReference/manualInstructions/default/text": "Proje başvurusu ekleyin: dotnet add reference ../WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
+  "postActions/addUnsafeBlocksWindows/description": "Projeye AllowUnsafeBlocks ekler.",
+  "postActions/addUnsafeBlocksWindows/manualInstructions/default/text": "Projenize <AllowUnsafeBlocks>true</AllowUnsafeBlocks> ekleyin",
+  "postActions/addUnsafeBlocksUnix/description": "Projeye AllowUnsafeBlocks ekler.",
+  "postActions/addUnsafeBlocksUnix/manualInstructions/default/text": "Projenize <AllowUnsafeBlocks>true</AllowUnsafeBlocks> ekleyin"
+}

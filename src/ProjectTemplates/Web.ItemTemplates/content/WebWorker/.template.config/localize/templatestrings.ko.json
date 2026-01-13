@@ -1,0 +1,19 @@
+{
+  "author": "Microsoft",
+  "name": "Blazor WebWorker",
+  "description": "Blazor WebAssembly 애플리케이션에 WebWorker 지원을 추가하여 반응형 사용자 경험을 위해 기본 UI 스레드 외부에서 .NET 코드를 실행할 수 있습니다. 이 템플릿을 Blazor WebAssembly 프로젝트 디렉터리(독립 실행형 앱의 경우) 또는 .Client 프로젝트 디렉터리(Blazor Web Apps의 경우)에서 실행하세요.",
+  "symbols/Framework/description": "프로젝트의 대상 프레임워크입니다.",
+  "symbols/Framework/choices/net10.0/description": "net10.0 대상",
+  "symbols/skipRestore/description": "지정된 경우 생성 시 프로젝트의 자동 복원을 건너뜁니다.",
+  "symbols/Empty/description": "지정된 경우 샘플 작업자 코드 없이 WorkerClient 인프라만 생성합니다.",
+  "postActions/restore/description": "이 프로젝트에 필요한 NuGet 패키지를 복원합니다.",
+  "postActions/restore/manualInstructions/default/text": "'dotnet restore' 실행",
+  "postActions/addToSolution/description": "솔루션에 WorkerClient 프로젝트를 추가합니다.",
+  "postActions/addToSolution/manualInstructions/default/text": "생성된 WorkerClient 프로젝트를 솔루션에 추가합니다: dotnet sln add WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
+  "postActions/addReference/description": "WorkerClient에 대한 프로젝트 참조를 추가합니다.",
+  "postActions/addReference/manualInstructions/default/text": "프로젝트 참조를 추가합니다: dotnet add reference ../WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
+  "postActions/addUnsafeBlocksWindows/description": "프로젝트에 AllowUnsafeBlocks를 추가합니다.",
+  "postActions/addUnsafeBlocksWindows/manualInstructions/default/text": "프로젝트에 <AllowUnsafeBlocks>true</AllowUnsafeBlocks> 추가",
+  "postActions/addUnsafeBlocksUnix/description": "프로젝트에 AllowUnsafeBlocks를 추가합니다.",
+  "postActions/addUnsafeBlocksUnix/manualInstructions/default/text": "프로젝트에 <AllowUnsafeBlocks>true</AllowUnsafeBlocks> 추가"
+}
