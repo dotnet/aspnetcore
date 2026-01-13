@@ -48,7 +48,7 @@
         <div class="card h-100">
             <div class="card-body d-flex flex-column justify-content-center">
                 <button class="btn btn-primary btn-lg mb-2" @onclick="FetchWithWorkerAsync" disabled="@_isProcessing">
-                    @if (_isProcessing)
+                    @if (_isProcessing && _processingMode == "worker")
                     {
                         <span class="spinner-border spinner-border-sm me-2"></span>
                         <span>Fetching...</span>
@@ -56,6 +56,17 @@
                     else
                     {
                         <span>⚡ Fetch with WebWorker</span>
+                    }
+                </button>
+                <button class="btn btn-outline-danger" @onclick="FetchOnUIThreadAsync" disabled="@_isProcessing">
+                    @if (_isProcessing && _processingMode == "ui")
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        <span>Fetching...</span>
+                    }
+                    else
+                    {
+                        <span>🔥 Fetch on UI Thread</span>
                     }
                 </button>
             </div>
@@ -81,29 +92,58 @@
     </div>
 }
 
-@if (_metrics != null)
-{
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card border-primary">
+<div class="row mb-4">
+    @if (_metricsWorker != null)
+    {
+        <div class="col-md-6">
+            <div class="card border-primary h-100">
+                <div class="card-header bg-primary text-white">⚡ WebWorker Result</div>
                 <div class="card-body">
                     <h5 class="card-title">
-                        <a href="https://github.com/@_metrics.Repository" target="_blank">@_metrics.Repository</a>
+                        <a href="https://github.com/@_metricsWorker.Repository" target="_blank">@_metricsWorker.Repository</a>
                     </h5>
                     <div class="row mb-3">
-                        <div class="col-4"><strong>Total Items:</strong> @_metrics.TotalItems</div>
-                        <div class="col-4"><strong>Open:</strong> @_metrics.OpenItems</div>
-                        <div class="col-4"><strong>Closed:</strong> @_metrics.ClosedItems</div>
+                        <div class="col-6"><strong>Total Items:</strong> @_metricsWorker.TotalItems</div>
+                        <div class="col-6"><strong>Open:</strong> @_metricsWorker.OpenItems / <strong>Closed:</strong> @_metricsWorker.ClosedItems</div>
                     </div>
                     <div class="row">
-                        <div class="col-4"><strong>Fetch Time:</strong> @_metrics.FetchTimeMs.ToString("F0") ms</div>
-                        <div class="col-4"><strong>Deserialize:</strong> @_metrics.DeserializationTimeMs.ToString("F0") ms</div>
-                        <div class="col-4"><strong>Compute:</strong> @_metrics.ComputationTimeMs.ToString("F2") ms</div>
+                        <div class="col-4"><strong>Fetch:</strong> @_metricsWorker.FetchTimeMs.ToString("F0") ms</div>
+                        <div class="col-4"><strong>Deserialize:</strong> @_metricsWorker.DeserializationTimeMs.ToString("F0") ms</div>
+                        <div class="col-4"><strong>Compute:</strong> @_metricsWorker.ComputationTimeMs.ToString("F2") ms</div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    }
+    @if (_metricsUI != null)
+    {
+        <div class="col-md-6">
+            <div class="card border-danger h-100">
+                <div class="card-header bg-danger text-white">🔥 UI Thread Result</div>
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a href="https://github.com/@_metricsUI.Repository" target="_blank">@_metricsUI.Repository</a>
+                    </h5>
+                    <div class="row mb-3">
+                        <div class="col-6"><strong>Total Items:</strong> @_metricsUI.TotalItems</div>
+                        <div class="col-6"><strong>Open:</strong> @_metricsUI.OpenItems / <strong>Closed:</strong> @_metricsUI.ClosedItems</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4"><strong>Fetch:</strong> @_metricsUI.FetchTimeMs.ToString("F0") ms</div>
+                        <div class="col-4"><strong>Deserialize:</strong> @_metricsUI.DeserializationTimeMs.ToString("F0") ms</div>
+                        <div class="col-4"><strong>Compute:</strong> @_metricsUI.ComputationTimeMs.ToString("F2") ms</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@{
+    var metrics = _metricsWorker ?? _metricsUI;
+}
+@if (metrics != null)
+{
 
     <div class="row">
         <div class="col-md-6 mb-4">
@@ -112,7 +152,7 @@
                 <div class="card-body" style="max-height: 300px; overflow-y: auto;">
                     <table class="table table-sm">
                         <tbody>
-                            @foreach (var label in _metrics.TopLabels)
+                            @foreach (var label in metrics.TopLabels)
                             {
                                 <tr>
                                     <td><code>@label.Label</code></td>
@@ -133,7 +173,7 @@
                             <tr><th>Author</th><th class="text-end">Items</th></tr>
                         </thead>
                         <tbody>
-                            @foreach (var author in _metrics.TopAuthors)
+                            @foreach (var author in metrics.TopAuthors)
                             {
                                 <tr>
                                     <td><a href="https://github.com/@author.Author" target="_blank">@@@author.Author</a></td>
