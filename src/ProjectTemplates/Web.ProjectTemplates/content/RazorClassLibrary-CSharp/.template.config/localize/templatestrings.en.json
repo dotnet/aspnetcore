@@ -11,3 +11,4 @@
   "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
   "postActions/openPageInEditor/description": "Opens Areas/MyFeature/Pages/Page1.cshtml in the editor",
   "postActions/openComponentInEditor/description": "Opens Component1.razor in the editor"
+}
