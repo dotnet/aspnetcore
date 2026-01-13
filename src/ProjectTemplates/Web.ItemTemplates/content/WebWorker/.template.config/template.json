@@ -9,7 +9,7 @@
   ],
   "name": "Blazor WebWorker",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "Adds WebWorker support to a Blazor WebAssembly application, enabling .NET code to run off the main UI thread for responsive user experiences.",
+  "description": "Adds WebWorker support to a Blazor WebAssembly application, enabling .NET code to run off the main UI thread for responsive user experiences. Run this template from the Blazor WebAssembly project directory (for standalone apps) or from the .Client project directory (for Blazor Web Apps).",
   "tags": {
     "language": "C#",
     "type": "project"
@@ -30,6 +30,11 @@
     "HostIdentifier": {
       "type": "bind",
       "binding": "HostIdentifier"
+    },
+    "StaticWebAssetProjectMode": {
+      "type": "bind",
+      "binding": "msbuild:StaticWebAssetProjectMode",
+      "defaultValue": ""
     },
     "Framework": {
       "type": "parameter",
@@ -57,10 +62,8 @@
       "description": "If specified, creates only the WorkerClient infrastructure without sample worker code."
     },
     "UseRenderMode": {
-      "type": "parameter",
-      "datatype": "bool",
-      "defaultValue": "false",
-      "description": "If specified, adds @rendermode InteractiveWebAssembly to pages. Required for Blazor Web Apps with WebAssembly interactivity."
+      "type": "computed",
+      "value": "(StaticWebAssetProjectMode == \"Default\")"
     },
     "IncludeSampleContent": {
       "type": "computed",
@@ -144,7 +147,7 @@
       "continueOnError": true,
       "args": {
         "executable": "powershell",
-        "args": "-Command \"$f=Get-ChildItem *.csproj|Select -First 1;if($f -and !(Select-String AllowUnsafeBlocks $f)){(Get-Content $f) -replace '</PropertyGroup>','    <AllowUnsafeBlocks>true</AllowUnsafeBlocks></PropertyGroup>'|Set-Content $f}\""
+        "args": "-Command \"$f=Get-ChildItem *.csproj|Where-Object{(Get-Content $_) -match 'Microsoft.AspNetCore.Components.WebAssembly'}|Select -First 1;if(!$f){$f=Get-ChildItem *.csproj|Select -First 1};if($f -and !(Select-String AllowUnsafeBlocks $f)){(Get-Content $f) -replace '</PropertyGroup>','    <AllowUnsafeBlocks>true</AllowUnsafeBlocks></PropertyGroup>'|Set-Content $f}\""
       }
     },
     {
@@ -160,7 +163,7 @@
       "continueOnError": true,
       "args": {
         "executable": "bash",
-        "args": "-c \"f=$(ls *.csproj 2>/dev/null|head -1);[ -n \\\"$f\\\" ]&&! grep -q AllowUnsafeBlocks \\\"$f\\\"&&sed -i 's|</PropertyGroup>|    <AllowUnsafeBlocks>true</AllowUnsafeBlocks></PropertyGroup>|' \\\"$f\\\"\""
+        "args": "-c \"f=$(grep -l 'Microsoft.AspNetCore.Components.WebAssembly' *.csproj 2>/dev/null|head -1);[ -z \\\"$f\\\" ]&&f=$(ls *.csproj 2>/dev/null|head -1);[ -n \\\"$f\\\" ]&&! grep -q AllowUnsafeBlocks \\\"$f\\\"&&sed -i 's|</PropertyGroup>|    <AllowUnsafeBlocks>true</AllowUnsafeBlocks></PropertyGroup>|' \\\"$f\\\"\""
       }
     }
   ]
