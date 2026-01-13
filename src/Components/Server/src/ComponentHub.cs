@@ -328,7 +328,7 @@ internal sealed partial class ComponentHub : Hub
             {
                 // The circuit state cannot be retrieved. It might have been deleted or expired.
                 // We do not send an error to the client as this is a valid scenario
-                // that will be handled by the client reconnection logic. 
+                // that will be handled by the client reconnection logic.
                 Log.InvalidInputData(_logger);
                 return null;
             }
@@ -358,7 +358,13 @@ internal sealed partial class ComponentHub : Hub
             return null;
         }
 
-        if (!CircuitPersistenceManager.TryDeserializeWebRootComponentDescriptors(_serverComponentSerializer, persistedCircuitState.RootComponents, out var rootComponentDescriptors))
+        // Deserialize the root component descriptors to check whether they are valid and not expired.
+        // If successful, the data will be attached to the CircuitHost instance and used later in UpdateRootComponents.
+        // If not, return null and not send an error to allow the client to handle the rejection.
+        if (!CircuitPersistenceManager.TryDeserializeWebRootComponentDescriptors(
+            _serverComponentSerializer,
+            persistedCircuitState.RootComponents,
+            out var rootComponentDescriptors))
         {
             Log.InvalidInputData(_logger);
             return null;
