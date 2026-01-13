@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "Web",
+    "Blazor",
+    "WebAssembly",
+    "Worker"
+  ],
+  "name": "Blazor WebWorker",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "Adds WebWorker support to a Blazor WebAssembly application, enabling .NET code to run off the main UI thread for responsive user experiences.",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "groupIdentity": "Microsoft.AspNetCore.Blazor.WebWorker",
+  "precedence": "10000",
+  "identity": "Microsoft.AspNetCore.Blazor.WebWorker.CSharp.10.0",
+  "shortName": "webworker",
+  "sourceName": "WebWorkerTemplate",
+  "preferNameDirectory": true,
+  "primaryOutputs": [
+    {
+      "path": "../WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj"
+    }
+  ],
+  "defaultName": "MyApp",
+  "symbols": {
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "net10.0",
+          "description": "Target net10.0"
+        }
+      ],
+      "replaces": "net10.0",
+      "defaultValue": "net10.0"
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "defaultValue": "false"
+    },
+    "Empty": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "If specified, creates only the WorkerClient infrastructure without sample worker code."
+    },
+    "IncludeSampleContent": {
+      "type": "computed",
+      "value": "(!Empty)"
+    }
+  },
+  "sources": [
+    {
+      "source": "./",
+      "target": "./",
+      "exclude": [
+        ".template.config/**",
+        "WebWorkerTemplate.WorkerClient/**"
+      ],
+      "modifiers": [
+        {
+          "condition": "(Empty)",
+          "exclude": [
+            "Worker/**",
+            "Models/**",
+            "Pages/**"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "./WebWorkerTemplate.WorkerClient",
+      "target": "../WebWorkerTemplate.WorkerClient"
+    }
+  ],
+  "postActions": [
+    {
+      "id": "restore",
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore'"
+        }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    },
+    {
+      "id": "addToSolution",
+      "description": "Add the WorkerClient project to the solution.",
+      "manualInstructions": [
+        {
+          "text": "Add the generated WorkerClient project to your solution: dotnet sln add WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj"
+        }
+      ],
+      "actionId": "D396686C-DE0E-4DE6-906D-291CD29FC5DE",
+      "continueOnError": true
+    },
+    {
+      "id": "addReference",
+      "description": "Add project reference to WorkerClient.",
+      "manualInstructions": [
+        {
+          "text": "Add a project reference: dotnet add reference ../WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj"
+        }
+      ],
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "continueOnError": true,
+      "applyFileRenamesToArgs": [ "reference" ],
+      "args": {
+        "referenceType": "project",
+        "reference": "../WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj"
+      }
+    },
+    {
+      "id": "addUnsafeBlocksWindows",
+      "condition": "(OS == \"Windows_NT\")",
+      "description": "Add AllowUnsafeBlocks to the project.",
+      "manualInstructions": [
+        {
+          "text": "Add <AllowUnsafeBlocks>true</AllowUnsafeBlocks> to your project"
+        }
+      ],
+      "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
+      "continueOnError": true,
+      "args": {
+        "executable": "powershell",
+        "args": "-Command \"$f=Get-ChildItem *.csproj|Select -First 1;if($f -and !(Select-String AllowUnsafeBlocks $f)){(Get-Content $f) -replace '</PropertyGroup>','    <AllowUnsafeBlocks>true</AllowUnsafeBlocks></PropertyGroup>'|Set-Content $f}\""
+      }
+    },
+    {
+      "id": "addUnsafeBlocksUnix",
+      "condition": "(OS != \"Windows_NT\")",
+      "description": "Add AllowUnsafeBlocks to the project.",
+      "manualInstructions": [
+        {
+          "text": "Add <AllowUnsafeBlocks>true</AllowUnsafeBlocks> to your project"
+        }
+      ],
+      "actionId": "3A7C4B45-1F5D-4A30-959A-51B88E82B5D2",
+      "continueOnError": true,
+      "args": {
+        "executable": "bash",
+        "args": "-c \"f=$(ls *.csproj 2>/dev/null|head -1);[ -n \\\"$f\\\" ]&&! grep -q AllowUnsafeBlocks \\\"$f\\\"&&sed -i 's|</PropertyGroup>|    <AllowUnsafeBlocks>true</AllowUnsafeBlocks></PropertyGroup>|' \\\"$f\\\"\""
+      }
+    }
+  ]
+}

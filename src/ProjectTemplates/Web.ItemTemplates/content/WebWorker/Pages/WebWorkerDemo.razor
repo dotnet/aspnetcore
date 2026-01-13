@@ -1,0 +1,146 @@
+@page "/webworker-demo"
+@namespace WebWorkerTemplate.Pages
+@using WebWorkerTemplate.Models
+
+<PageTitle>WebWorker Demo - GitHub Analytics</PageTitle>
+
+<h1>🐙 GitHub Analytics</h1>
+<p class="lead">Fetch live data from GitHub API and process it in a WebWorker.</p>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Repository</h5>
+                <div class="mb-3">
+                    <label class="form-label small text-muted">GitHub Token (optional - increases rate limit)</label>
+                    <input type="password" class="form-control form-control-sm" @bind="_githubToken" placeholder="ghp_..." />
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">github.com/</span>
+                    <input type="text" class="form-control" @bind="_repository" placeholder="dotnet/aspnetcore" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small text-muted">Pages to fetch (100 items/page)</label>
+                    <input type="number" class="form-control" @bind="_maxPages" min="1" max="10" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-warning h-100">
+            <div class="card-body">
+                <h5 class="card-title">UI Responsiveness Test</h5>
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-warning btn-lg" @onclick="IncrementCounter">
+                        👆 Click!
+                    </button>
+                    <span class="display-5">@_clickCount</span>
+                </div>
+                <p class="text-muted small mt-2 mb-0">Try clicking during fetch to verify the UI stays responsive.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
+                <button class="btn btn-primary btn-lg mb-2" @onclick="FetchWithWorkerAsync" disabled="@_isProcessing">
+                    @if (_isProcessing)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        <span>Fetching...</span>
+                    }
+                    else
+                    {
+                        <span>⚡ Fetch with WebWorker</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(_progressMessage))
+{
+    <div class="alert alert-info">
+        <div class="d-flex align-items-center">
+            <div class="spinner-border spinner-border-sm me-3" role="status"></div>
+            <div>@_progressMessage</div>
+        </div>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(_errorMessage))
+{
+    <div class="alert alert-danger alert-dismissible">
+        @_errorMessage
+        <button type="button" class="btn-close" @onclick="() => _errorMessage = string.Empty"></button>
+    </div>
+}
+
+@if (_metrics != null)
+{
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a href="https://github.com/@_metrics.Repository" target="_blank">@_metrics.Repository</a>
+                    </h5>
+                    <div class="row mb-3">
+                        <div class="col-4"><strong>Total Items:</strong> @_metrics.TotalItems</div>
+                        <div class="col-4"><strong>Open:</strong> @_metrics.OpenItems</div>
+                        <div class="col-4"><strong>Closed:</strong> @_metrics.ClosedItems</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4"><strong>Fetch Time:</strong> @_metrics.FetchTimeMs.ToString("F0") ms</div>
+                        <div class="col-4"><strong>Deserialize:</strong> @_metrics.DeserializationTimeMs.ToString("F0") ms</div>
+                        <div class="col-4"><strong>Compute:</strong> @_metrics.ComputationTimeMs.ToString("F2") ms</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">Top Labels</div>
+                <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                    <table class="table table-sm">
+                        <tbody>
+                            @foreach (var label in _metrics.TopLabels)
+                            {
+                                <tr>
+                                    <td><code>@label.Label</code></td>
+                                    <td class="text-end">@label.Count</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">Top Contributors</div>
+                <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr><th>Author</th><th class="text-end">Items</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var author in _metrics.TopAuthors)
+                            {
+                                <tr>
+                                    <td><a href="https://github.com/@author.Author" target="_blank">@@@author.Author</a></td>
+                                    <td class="text-end">@author.TotalItems</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
