@@ -195,4 +195,21 @@ public class GlobalInteractivityTest(
     }
     private void AssertReExecutedPageRendered() =>
         Browser.Equal("Welcome On Page Re-executed After Not Found Event", () => Browser.Exists(By.Id("test-info")).Text);
+
+    [Fact]
+    public async Task HeadRequestReturnsSuccessWithNoBody()
+    {
+        // Arrange
+        using var client = new HttpClient() { BaseAddress = _serverFixture.RootUri };
+        var request = new HttpRequestMessage(HttpMethod.Head, "/subdir/globally-interactive");
+
+        // Act
+        var response = await client.SendAsync(request);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("text/html; charset=utf-8", response.Content.Headers.ContentType?.ToString());
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.Empty(body);
+    }
 }

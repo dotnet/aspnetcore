@@ -9,5 +9,6 @@
   "symbols/SupportPagesAndViews/description": "이 라이브러리에 기존 Razor 페이지 및 보기 추가를 지원할지 여부입니다.",
   "postActions/restore/description": "이 프로젝트에 필요한 NuGet 패키지를 복원합니다.",
   "postActions/restore/manualInstructions/default/text": "'dotnet restore' 실행",
-  "postActions/openInEditor/description": "편집기에서 Areas/MyFeature/Pages/Page1.cshtml을 엽니다."
+  "postActions/openPageInEditor/description": "편집기에서 Areas/MyFeature/Pages/Page1.cshtml을 엽니다.",
+  "postActions/openComponentInEditor/description": "편집기에서 Component1.razor를 엽니다."
 }
