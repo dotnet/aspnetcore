@@ -19,7 +19,7 @@ internal sealed class RenderTreeUpdater
             }
             else if (OperatingSystem.IsBrowser() && !boolValue)
             {
-                newFieldValue = "\u2400"; // Unicode symbol for null
+                newFieldValue = null!;
             }
         }
         else if (!(newFieldValue is string))

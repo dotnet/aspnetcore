@@ -98,8 +98,6 @@ export const monoPlatform: Platform = {
       // If the stored value is a bool, the behavior we want is empty string ('') for true, or null for false.
       if (value === '\u22A8') {
         return '';
-      } else if (value === '\u2400') {
-        return null;
       }
     }
     return value;
