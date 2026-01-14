@@ -227,7 +227,7 @@ public class InputSelectTest
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
         var idAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
-        Assert.Equal("model.NotNullableEnum", idAttribute.AttributeValue);
+        Assert.Equal("model_NotNullableEnum", idAttribute.AttributeValue);
     }
 
     [Fact]

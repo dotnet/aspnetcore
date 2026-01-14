@@ -107,7 +107,7 @@ public class InputNumberTest
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
         var idAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
-        Assert.Equal("model.SomeNumber", idAttribute.AttributeValue);
+        Assert.Equal("model_SomeNumber", idAttribute.AttributeValue);
     }
 
     [Fact]

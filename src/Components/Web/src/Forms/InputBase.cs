@@ -225,7 +225,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     /// </summary>
     /// <remarks>
     /// If an explicit "id" is provided via <see cref="AdditionalAttributes"/>, that value takes precedence.
-    /// Otherwise, the id defaults to the same value as <see cref="NameAttributeValue"/>.
+    /// Otherwise, the id is derived from <see cref="NameAttributeValue"/> with invalid characters sanitized.
     /// </remarks>
     protected string IdAttributeValue
     {
@@ -236,7 +236,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
                 return Convert.ToString(idAttributeValue, CultureInfo.InvariantCulture) ?? string.Empty;
             }
 
-            return NameAttributeValue;
+            return FieldIdGenerator.SanitizeHtmlId(NameAttributeValue);
         }
     }
 

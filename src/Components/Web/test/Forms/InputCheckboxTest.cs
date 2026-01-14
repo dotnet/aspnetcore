@@ -39,7 +39,7 @@ public class InputCheckboxTest
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
         var idAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
-        Assert.Equal("model.BoolProperty", idAttribute.AttributeValue);
+        Assert.Equal("model_BoolProperty", idAttribute.AttributeValue);
     }
 
     [Fact]

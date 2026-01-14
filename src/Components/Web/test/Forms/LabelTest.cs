@@ -298,7 +298,7 @@ public class LabelTest
         var frames = await RenderAndGetFrames(rootComponent);
 
         var forAttribute = frames.First(f => f.FrameType == RenderTree.RenderTreeFrameType.Attribute && f.AttributeName == "for");
-        Assert.Equal("model.PlainProperty", forAttribute.AttributeValue);
+        Assert.Equal("model_PlainProperty", forAttribute.AttributeValue);
     }
 
     [Fact]

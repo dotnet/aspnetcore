@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq.Expressions;
-using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -86,8 +85,9 @@ public class Label<TValue> : IComponent
                 _displayName = newDisplayName;
                 displayNameChanged = true;
             }
-            _fieldId = FieldPrefix != null ? FieldPrefix.GetFieldName(For) :
-                ExpressionFormatter.FormatLambda(For);
+            _fieldId = FieldIdGenerator.SanitizeHtmlId(
+                FieldPrefix != null ? FieldPrefix.GetFieldName(For) :
+                ExpressionFormatter.FormatLambda(For));
         }
 
         var otherParamsChanged = ChildContent != previousChildContent || AdditionalAttributes != previousAdditionalAttributes;

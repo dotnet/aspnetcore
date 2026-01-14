@@ -39,7 +39,7 @@ public class InputHiddenTest
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
         var idAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
-        Assert.Equal("model.StringProperty", idAttribute.AttributeValue);
+        Assert.Equal("model_StringProperty", idAttribute.AttributeValue);
     }
 
     [Fact]
