@@ -14,20 +14,11 @@ public class FieldIdGeneratorTest
     [InlineData("name", "name")]
     [InlineData("Model.Address.Street", "Model_Address_Street")]
     [InlineData("Model.Items[0].Name", "Model_Items[0]_Name")]
+    [InlineData("Field\tName\nWith\rVariousWhitespace", "Field_Name_With_VariousWhitespace")]
     public void SanitizeHtmlId_ProducesValidId(string? input, string expected)
     {
         var result = FieldIdGenerator.SanitizeHtmlId(input);
 
         Assert.Equal(expected, result);
-    }
-
-    [Fact]
-    public void SanitizeHtmlId_ReplacesWhitespaceWithUnderscores()
-    {
-        var input = "Field\tName\nWith\rVariousWhitespace";
-
-        var result = FieldIdGenerator.SanitizeHtmlId(input);
-
-        Assert.Equal("Field_Name_With_VariousWhitespace", result);
     }
 }
