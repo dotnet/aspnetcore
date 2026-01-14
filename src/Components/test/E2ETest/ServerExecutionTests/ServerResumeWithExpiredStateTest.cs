@@ -18,16 +18,16 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests;
 
-public class ServerReconnectionWithoutStateTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<Root>>>
+public class ServerResumeWithExpiredStateTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<Root>>>
 {
-    public ServerReconnectionWithoutStateTest(
+    public ServerResumeWithExpiredStateTest(
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<Root>> serverFixture,
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
-        serverFixture.AdditionalArguments.AddRange("--DisableReconnectionCache", "true");
-        serverFixture.AdditionalArguments.AddRange("--DisableCircuitPersistence", "true");
+        // Make the serialized circuit state received by the client from the pauseCircuit call always expired.
+        serverFixture.AdditionalArguments.AddRange("--PersistedCircuitRetentionPeriod", "0");
     }
 
     protected override void InitializeAsyncCore()
@@ -41,7 +41,7 @@ public class ServerReconnectionWithoutStateTest : ServerTestBase<BasicTestAppSer
     public bool UseCustomReconnectionUI { get; set; }
 
     [Fact]
-    public void ReloadsPage_AfterDisconnection_WithoutServerState()
+    public async Task ReloadsPage_AfterClientPause_WithExpiredState()
     {
         // Check interactivity
         Browser.Equal("5", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
@@ -55,8 +55,7 @@ public class ServerReconnectionWithoutStateTest : ServerTestBase<BasicTestAppSer
 
         // Force close the connection
         // The client should get rejected on both reconnection and circuit resume because the server has no state
-        var javascript = (IJavaScriptExecutor)Browser;
-        javascript.ExecuteScript("Blazor._internal.forceCloseConnection()");
+        PauseAndResumeClient();
 
         // Check for page reload using multiple conditions:
         // 1. Previously captured element is stale
@@ -68,38 +67,6 @@ public class ServerReconnectionWithoutStateTest : ServerTestBase<BasicTestAppSer
 
         int GetConnectedLogCount() => Browser.Manage().Logs.GetLog(LogType.Browser)
             .Where(l => l.Level == LogLevel.Info && l.Message.Contains("Information: WebSocket connected")).Count();
-    }
-
-    [Fact]
-    public void CanResume_AfterClientPause_WithoutServerState()
-    {
-        // Initial state: NonPersistedCounter should be 5
-        Browser.Equal("5", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
-
-        // Increment both counters
-        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
-        Browser.Exists(By.Id("increment-non-persisted-counter")).Click();
-
-        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
-        Browser.Equal("6", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
-
-        PauseAndResumeClient();
-        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
-
-        // After first reconnection:
-        Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
-        Browser.Equal("0", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
-
-        // Increment non-persisted counter again
-        Browser.Exists(By.Id("increment-non-persisted-counter")).Click();
-        Browser.Equal("1", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
-
-        PauseAndResumeClient();
-        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
-
-        // After second reconnection:
-        Browser.Equal("3", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
-        Browser.Equal("0", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
     }
 
     private void PauseAndResumeClient()
@@ -130,9 +97,9 @@ public class ServerReconnectionWithoutStateTest : ServerTestBase<BasicTestAppSer
     }
 }
 
-public class ServerReconnectionWithoutStateCustomUITest : ServerReconnectionWithoutStateTest
+public class ServerResumeWithExpiredStateCustomUITest : ServerResumeWithExpiredStateTest
 {
-    public ServerReconnectionWithoutStateCustomUITest(
+    public ServerResumeWithExpiredStateCustomUITest(
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<Root>> serverFixture,
         ITestOutputHelper output)
