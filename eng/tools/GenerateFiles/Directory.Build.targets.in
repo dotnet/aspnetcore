@@ -146,6 +146,42 @@
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
   </PropertyGroup>
 
+  <Target Name="RestoreAspNetFrameworkLayout" 
+          Condition="'$(DotNetBuildPass)' == '2'"
+          AfterTargets="ResolveFrameworkReferences" 
+          BeforeTargets="ResolveLiveBuiltAspnetCoreKnownFramework;ResolveReferenceItemsForPackage">
+    <PropertyGroup>
+      <CrossArchitectureInstallerBasePathNormalized>$([MSBuild]::NormalizeDirectory('$(CrossArchitectureInstallerBasePath)', 'aspnetcore', 'Runtime'))</CrossArchitectureInstallerBasePathNormalized>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <AspNetRuntimeArchive 
+          Include="$(CrossArchitectureInstallerBasePathNormalized)**\$(RuntimeInstallerBaseName)-*-win-$(Platform).zip"
+          Exclude="$(CrossArchitectureInstallerBasePathNormalized)**\$(RuntimeInstallerBaseName)-composite*" />
+      <AspNetTargetingPackArchive 
+          Include="$(CrossArchitectureInstallerBasePathNormalized)**\$(TargetingPackInstallerBaseName)-*-win-$(Platform).zip"
+          Exclude="$(CrossArchitectureInstallerBasePathNormalized)**\$(TargetingPackInstallerBaseName)-composite*" />
+    </ItemGroup>
+
+    <Unzip
+        SourceFiles="@(AspNetRuntimeArchive)"
+        DestinationFolder="$(RedistSharedFrameworkLayoutRoot)"
+        OverwriteReadOnlyFiles="true"
+        Condition="!Exists('$(RedistSharedFrameworkLayoutRoot)LICENSE.txt')" />
+
+    <Unzip
+        SourceFiles="@(AspNetRuntimeArchive)"
+        DestinationFolder="$(SharedFrameworkLayoutRoot)"
+        OverwriteReadOnlyFiles="true" 
+        Condition="!Exists('$(SharedFrameworkLayoutRoot)LICENSE.txt')"/>
+
+    <Unzip
+        SourceFiles="@(AspNetTargetingPackArchive)"
+        DestinationFolder="$(TargetingPackLayoutRoot)"
+        OverwriteReadOnlyFiles="true"
+        Condition="!Exists('$(TargetingPackLayoutRoot)packs\Microsoft.AspNetCore.App.Ref\${MicrosoftAspNetCoreAppRefVersion}\data\FrameworkList.xml')" />
+  </Target>
+
   <Target Name="ResolveLiveBuiltAspnetCoreKnownFramework" Condition="'$(UpdateAspNetCoreKnownFramework)' == 'true' AND '$(HELIX_CORRELATION_PAYLOAD)' == ''" AfterTargets="ResolveFrameworkReferences">
     <Error Text="Requested Microsoft.AspNetCore.App v${MicrosoftAspNetCoreAppRefVersion} ref pack does not exist."
         Condition="!Exists('$(TargetingPackLayoutRoot)packs\Microsoft.AspNetCore.App.Ref\${MicrosoftAspNetCoreAppRefVersion}\data\FrameworkList.xml') " />

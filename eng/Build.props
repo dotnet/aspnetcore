@@ -98,6 +98,14 @@
         <ProjectToBuild Include="$(RepoRoot)src\SiteExtensions\LoggingAggregate\src\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj">
           <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
         </ProjectToBuild>
+        <!-- Build Grpc Transcoding -->
+        <ProjectToBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\**\*.csproj">
+          <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
+        </ProjectToBuild>
+        <!-- Build DotNetApiDocs.Transport -->
+        <ProjectToBuild Include="$(RepoRoot)src\Framework\Microsoft.Internal.Aspnetcore.DotNetApiDocs.Transport\**\*.csproj">
+          <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
+        </ProjectToBuild>
       </ItemGroup>
     </When>
     <Otherwise>
