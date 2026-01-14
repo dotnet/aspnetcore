@@ -1,8 +1,9 @@
 <Project>
-    <Import Project="..\..\..\..\build\sources.props" Condition="Exists('..\..\..\..\build\sources.props')" />
     <!--
-        This file intentionally left mostly blank to ensure the template projects
-        are independent from the template package build config (other than to share
-        the same NuGet restore sources).
+        This file intentionally left blank to ensure the template content projects
+        are independent from the template package build config.
+
+        The generated template .csproj files in this directory are excluded from build
+        via ProjectToExclude in eng/Build.props.
     -->
 </Project>
