@@ -18,7 +18,7 @@ public class TempDataProviderServiceCollectionExtensionsTest
         services.AddLogging();
 
         // Act
-        services.AddCookieTempDataValueProvider(configureOptions: null);
+        services.AddCookieTempDataValueProvider();
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
@@ -61,20 +61,21 @@ public class TempDataProviderServiceCollectionExtensionsTest
         var expectedCookieName = ".MyApp.CustomTempData";
 
         // Act
-        services.AddCookieTempDataValueProvider(options =>
+        services.Configure<RazorComponentsServiceOptions>(options =>
         {
-            options.Cookie.Name = expectedCookieName;
-            options.Cookie.HttpOnly = false;
-            options.Cookie.SameSite = SameSiteMode.Strict;
+            options.TempDataCookie.Name = expectedCookieName;
+            options.TempDataCookie.HttpOnly = false;
+            options.TempDataCookie.SameSite = SameSiteMode.Strict;
         });
+        services.AddCookieTempDataValueProvider();
 
         var serviceProvider = services.BuildServiceProvider();
-        var options = serviceProvider.GetRequiredService<IOptions<CookieTempDataProviderOptions>>();
+        var options = serviceProvider.GetRequiredService<IOptions<RazorComponentsServiceOptions>>();
 
         // Assert
-        Assert.Equal(expectedCookieName, options.Value.Cookie.Name);
-        Assert.False(options.Value.Cookie.HttpOnly);
-        Assert.Equal(SameSiteMode.Strict, options.Value.Cookie.SameSite);
+        Assert.Equal(expectedCookieName, options.Value.TempDataCookie.Name);
+        Assert.False(options.Value.TempDataCookie.HttpOnly);
+        Assert.Equal(SameSiteMode.Strict, options.Value.TempDataCookie.SameSite);
     }
 
     [Fact]
@@ -87,14 +88,15 @@ public class TempDataProviderServiceCollectionExtensionsTest
         TempDataProviderServiceCollectionExtensions.AddDefaultTempDataValueProvider(services);
 
         // Act - User calls AddCookieTempDataValueProvider to customize
-        services.AddCookieTempDataValueProvider(options =>
+        services.Configure<RazorComponentsServiceOptions>(options =>
         {
-            options.Cookie.Name = ".Custom.TempData";
+            options.TempDataCookie.Name = ".Custom.TempData";
         });
+        services.AddCookieTempDataValueProvider();
 
         // Options should be configured
         var serviceProvider = services.BuildServiceProvider();
-        var options = serviceProvider.GetRequiredService<IOptions<CookieTempDataProviderOptions>>();
-        Assert.Equal(".Custom.TempData", options.Value.Cookie.Name);
+        var options = serviceProvider.GetRequiredService<IOptions<RazorComponentsServiceOptions>>();
+        Assert.Equal(".Custom.TempData", options.Value.TempDataCookie.Name);
     }
 }

@@ -17,13 +17,13 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
     private const string Purpose = "Microsoft.AspNetCore.Components.CookieTempDataProviderToken";
     private readonly IDataProtector _dataProtector;
     private readonly ITempDataSerializer _tempDataSerializer;
-    private readonly CookieTempDataProviderOptions _options;
+    private readonly RazorComponentsServiceOptions _options;
     private readonly ChunkingCookieManager _chunkingCookieManager;
     private readonly ILogger<CookieTempDataProvider> _logger;
 
     public CookieTempDataProvider(
         IDataProtectionProvider dataProtectionProvider,
-        IOptions<CookieTempDataProviderOptions> options,
+        IOptions<RazorComponentsServiceOptions> options,
         ITempDataSerializer tempDataSerializer,
         ILogger<CookieTempDataProvider> logger)
     {
@@ -40,7 +40,7 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
 
         try
         {
-            var cookieName = _options.Cookie.Name ?? CookieName;
+            var cookieName = _options.TempDataCookie.Name ?? CookieName;
             if (!context.Request.Cookies.ContainsKey(cookieName))
             {
                 Log.TempDataCookieNotFound(_logger, cookieName);
@@ -71,10 +71,10 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
         }
         catch (Exception ex)
         {
-            var cookieName = _options.Cookie.Name ?? CookieName;
+            var cookieName = _options.TempDataCookie.Name ?? CookieName;
             Log.TempDataCookieLoadFailure(_logger, cookieName, ex);
 
-            var cookieOptions = _options.Cookie.Build(context);
+            var cookieOptions = _options.TempDataCookie.Build(context);
             SetCookiePath(context, cookieOptions);
             context.Response.Cookies.Delete(cookieName, cookieOptions);
             return new Dictionary<string, object?>();
@@ -93,8 +93,8 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
             }
         }
 
-        var cookieName = _options.Cookie.Name ?? CookieName;
-        var cookieOptions = _options.Cookie.Build(context);
+        var cookieName = _options.TempDataCookie.Name ?? CookieName;
+        var cookieOptions = _options.TempDataCookie.Build(context);
         SetCookiePath(context, cookieOptions);
 
         if (values.Count == 0)
@@ -112,9 +112,9 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
 
     private void SetCookiePath(HttpContext httpContext, CookieOptions cookieOptions)
     {
-        if (!string.IsNullOrEmpty(_options.Cookie.Path))
+        if (!string.IsNullOrEmpty(_options.TempDataCookie.Path))
         {
-            cookieOptions.Path = _options.Cookie.Path;
+            cookieOptions.Path = _options.TempDataCookie.Path;
         }
         else
         {

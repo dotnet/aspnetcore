@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -81,6 +82,24 @@ public sealed class RazorComponentsServiceOptions
             ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(value.TotalMilliseconds, 0);
             _temporaryRedirectionUrlValidityDuration = value;
         }
+    }
+
+    private CookieBuilder _tempDataCookie = new CookieBuilder
+    {
+        Name = CookieTempDataProvider.CookieName,
+        HttpOnly = true,
+        SameSite = SameSiteMode.Lax,
+        IsEssential = false,
+        SecurePolicy = CookieSecurePolicy.SameAsRequest,
+    };
+
+    /// <summary>
+    /// Determines the settings used to create the TempData cookie.
+    /// </summary>
+    public CookieBuilder TempDataCookie
+    {
+        get => _tempDataCookie;
+        set => _tempDataCookie = value;
     }
 
     internal string? JavaScriptInitializers { get; set; }

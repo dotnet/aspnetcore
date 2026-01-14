@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 /// <summary>
 /// Enables component parameters to be supplied from the <see cref="TempData"/>.
 /// </summary>
-public static class TempDataProviderServiceCollectionExtensions
+internal static class TempDataProviderServiceCollectionExtensions
 {
 
     internal static IServiceCollection AddDefaultTempDataValueProvider(this IServiceCollection services)
@@ -25,17 +25,12 @@ public static class TempDataProviderServiceCollectionExtensions
     /// <summary>
     /// Enables component parameters to be supplied from the <see cref="TempData"/> using Cookies.
     /// </summary>
-    public static IServiceCollection AddCookieTempDataValueProvider(
-        this IServiceCollection services,
-        Action<CookieTempDataProviderOptions>? configureOptions)
+    internal static IServiceCollection AddCookieTempDataValueProvider(
+        this IServiceCollection services)
     {
         services.Replace(ServiceDescriptor.Singleton<ITempDataProvider, CookieTempDataProvider>());
         services.TryAddSingleton<ITempDataSerializer, JsonTempDataSerializer>();
         services.TryAddSingleton<TempDataService>();
-        if (configureOptions is not null)
-        {
-            services.Configure(configureOptions);
-        }
         services = AddTempDataCascadingValue(services);
         return services;
     }
@@ -43,7 +38,7 @@ public static class TempDataProviderServiceCollectionExtensions
     /// <summary>
     /// Enables component parameters to be supplied from the <see cref="TempData"/> using Session storage.
     /// </summary>
-    public static IServiceCollection AddSessionStorageTempDataValueProvider(
+    internal static IServiceCollection AddSessionStorageTempDataValueProvider(
         this IServiceCollection services)
     {
         services.Replace(ServiceDescriptor.Singleton<ITempDataProvider, SessionStorageTempDataProvider>());
