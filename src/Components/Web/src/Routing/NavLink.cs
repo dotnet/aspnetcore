@@ -62,7 +62,7 @@ public class NavLink : ComponentBase, IDisposable
     [Parameter]
     public bool RelativeToCurrentUri { get; set; }
 
-    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] internal NavigationManager NavigationManager { get; set; } = default!;
 
     /// <inheritdoc />
     protected override void OnInitialized()

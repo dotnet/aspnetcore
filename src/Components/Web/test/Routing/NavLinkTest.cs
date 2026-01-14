@@ -211,9 +211,7 @@ public class NavLinkTest
 
     private void SetNavigationManager(NavLink component, NavigationManager navigationManager)
     {
-        var navManagerProperty = typeof(NavLink).GetProperty("NavigationManager",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        navManagerProperty!.SetValue(component, navigationManager);
+        component.NavigationManager = navigationManager;
     }
 
     private class TestNavigationManager : NavigationManager
