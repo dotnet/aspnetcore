@@ -1,8 +1,11 @@
 <Project>
-    <Import Project="..\..\..\..\build\sources.props" />
     <!--
         This file intentionally left mostly blank to ensure the template projects
-        are independent from the template package build config (other than to share
-        the same NuGet restore sources).
+        are independent from the template package build config.
+        
+        Unlike Web.ProjectTemplates, we don't import sources.props because:
+        1. The build/sources.props file doesn't exist in this repo
+        2. The generated .csproj files in this content folder should be completely
+           isolated from the repo's build system
     -->
 </Project>
