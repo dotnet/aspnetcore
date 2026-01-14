@@ -3,6 +3,7 @@
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -20,7 +21,7 @@ public class LabelTest
             InnerContent = builder =>
             {
                 builder.OpenComponent<Label<string>>(0);
-                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PlainProperty));
+                builder.AddComponentParameter(1, "For", (Expression<Func<string>>)(() => model.PlainProperty));
                 builder.CloseComponent();
             }
         };
@@ -40,7 +41,7 @@ public class LabelTest
             InnerContent = builder =>
             {
                 builder.OpenComponent<Label<string>>(0);
-                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PropertyWithDisplayAttribute));
+                builder.AddComponentParameter(1, "For", (Expression<Func<string>>)(() => model.PropertyWithDisplayAttribute));
                 builder.CloseComponent();
             }
         };
@@ -60,7 +61,7 @@ public class LabelTest
             InnerContent = builder =>
             {
                 builder.OpenComponent<Label<string>>(0);
-                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PlainProperty));
+                builder.AddComponentParameter(1, "For", (Expression<Func<string>>)(() => model.PlainProperty));
                 builder.CloseComponent();
             }
         };
@@ -80,7 +81,7 @@ public class LabelTest
             InnerContent = builder =>
             {
                 builder.OpenComponent<Label<string>>(0);
-                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PropertyWithDisplayNameAttribute));
+                builder.AddComponentParameter(1, "For", (Expression<Func<string>>)(() => model.PropertyWithDisplayNameAttribute));
                 builder.CloseComponent();
             }
         };
@@ -100,7 +101,7 @@ public class LabelTest
             InnerContent = builder =>
             {
                 builder.OpenComponent<Label<string>>(0);
-                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PropertyWithBothAttributes));
+                builder.AddComponentParameter(1, "For", (Expression<Func<string>>)(() => model.PropertyWithBothAttributes));
                 builder.CloseComponent();
             }
         };
@@ -126,7 +127,7 @@ public class LabelTest
             InnerContent = builder =>
             {
                 builder.OpenComponent<Label<string>>(0);
-                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PlainProperty));
+                builder.AddComponentParameter(1, "For", (Expression<Func<string>>)(() => model.PlainProperty));
                 builder.AddComponentParameter(2, "AdditionalAttributes", additionalAttributes);
                 builder.CloseComponent();
             }
@@ -152,7 +153,7 @@ public class LabelTest
             InnerContent = builder =>
             {
                 builder.OpenComponent<Label<string>>(0);
-                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PlainProperty));
+                builder.AddComponentParameter(1, "For", (Expression<Func<string>>)(() => model.PlainProperty));
                 builder.AddComponentParameter(2, "ChildContent", (RenderFragment)(childBuilder =>
                 {
                     childBuilder.OpenElement(0, "input");
@@ -184,7 +185,7 @@ public class LabelTest
             InnerContent = builder =>
             {
                 builder.OpenComponent<Label<int>>(0);
-                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<int>>)(() => model.IntProperty));
+                builder.AddComponentParameter(1, "For", (Expression<Func<int>>)(() => model.IntProperty));
                 builder.CloseComponent();
             }
         };
@@ -193,7 +194,7 @@ public class LabelTest
             InnerContent = builder =>
             {
                 builder.OpenComponent<Label<DateTime>>(0);
-                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<DateTime>>)(() => model.DateProperty));
+                builder.AddComponentParameter(1, "For", (Expression<Func<DateTime>>)(() => model.DateProperty));
                 builder.CloseComponent();
             }
         };
@@ -242,7 +243,7 @@ public class LabelTest
             InnerContent = builder =>
             {
                 builder.OpenComponent<Label<string>>(0);
-                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PlainProperty));
+                builder.AddComponentParameter(1, "For", (Expression<Func<string>>)(() => model.PlainProperty));
                 builder.AddComponentParameter(2, "AdditionalAttributes", additionalAttributes);
                 builder.CloseComponent();
             }
@@ -266,7 +267,7 @@ public class LabelTest
             InnerContent = builder =>
             {
                 builder.OpenComponent<Label<string>>(0);
-                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PlainProperty));
+                builder.AddComponentParameter(1, "For", (Expression<Func<string>>)(() => model.PlainProperty));
                 builder.CloseComponent();
             }
         };
@@ -289,7 +290,7 @@ public class LabelTest
             InnerContent = builder =>
             {
                 builder.OpenComponent<Label<string>>(0);
-                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PlainProperty));
+                builder.AddComponentParameter(1, "For", (Expression<Func<string>>)(() => model.PlainProperty));
                 builder.CloseComponent();
             }
         };
@@ -309,7 +310,7 @@ public class LabelTest
             InnerContent = builder =>
             {
                 builder.OpenComponent<Label<string>>(0);
-                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PlainProperty));
+                builder.AddComponentParameter(1, "For", (Expression<Func<string>>)(() => model.PlainProperty));
                 builder.AddComponentParameter(2, "ChildContent", (RenderFragment)(childBuilder =>
                 {
                     childBuilder.AddContent(0, "Input goes here");
@@ -338,7 +339,7 @@ public class LabelTest
             InnerContent = builder =>
             {
                 builder.OpenComponent<Label<string>>(0);
-                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PlainProperty));
+                builder.AddComponentParameter(1, "For", (Expression<Func<string>>)(() => model.PlainProperty));
                 builder.AddComponentParameter(2, "AdditionalAttributes", additionalAttributes);
                 builder.CloseComponent();
             }
@@ -359,7 +360,7 @@ public class LabelTest
             InnerContent = builder =>
             {
                 builder.OpenComponent<Label<string>>(0);
-                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.Address.Street));
+                builder.AddComponentParameter(1, "For", (Expression<Func<string>>)(() => model.Address.Street));
                 builder.CloseComponent();
             }
         };
@@ -379,7 +380,7 @@ public class LabelTest
             InnerContent = builder =>
             {
                 builder.OpenComponent<Label<string>>(0);
-                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PropertyWithResourceBasedDisplay));
+                builder.AddComponentParameter(1, "For", (Expression<Func<string>>)(() => model.PropertyWithResourceBasedDisplay));
                 builder.CloseComponent();
             }
         };
@@ -394,8 +395,8 @@ public class LabelTest
     public async Task ReRendersWhenForChangesWithSameDisplayNameButAttributesChange()
     {
         var model = new TestModel();
-        System.Linq.Expressions.Expression<Func<string>> forExpression1 = () => model.PlainProperty;
-        System.Linq.Expressions.Expression<Func<string>> forExpression2 = () => model.PlainProperty;
+        Expression<Func<string>> forExpression1 = () => model.PlainProperty;
+        Expression<Func<string>> forExpression2 = () => model.PlainProperty;
 
         var attributes1 = new Dictionary<string, object> { { "class", "label-1" } };
         var attributes2 = new Dictionary<string, object> { { "class", "label-2" } };
