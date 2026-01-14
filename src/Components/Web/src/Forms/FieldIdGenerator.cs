@@ -29,17 +29,7 @@ internal static class FieldIdGenerator
         }
 
         // Fast path: check if sanitization is needed
-        var needsSanitization = false;
-        foreach (var c in fieldName)
-        {
-            if (char.IsWhiteSpace(c) || c == '.')
-            {
-                needsSanitization = true;
-                break;
-            }
-        }
-
-        if (!needsSanitization)
+        if (fieldName.IndexOfAny([' ', '\t', '\n', '\r', '.']) < 0)
         {
             return fieldName;
         }

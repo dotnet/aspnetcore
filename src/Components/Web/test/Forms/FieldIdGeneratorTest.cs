@@ -65,4 +65,14 @@ public class FieldIdGeneratorTest
 
         Assert.Equal("Field_Name", result);
     }
+
+    [Fact]
+    public void SanitizeHtmlId_ReplacesVariousWhitespaceCharacters()
+    {
+        var input = "Field\tName\nWith\rVariousWhitespace";
+
+        var result = FieldIdGenerator.SanitizeHtmlId(input);
+
+        Assert.Equal("Field_Name_With_VariousWhitespace", result);
+    }
 }
