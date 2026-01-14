@@ -17,10 +17,12 @@ import { JSInitializer } from '../../JSInitializers/JSInitializers';
 // initially undefined and only fully initialized after createEmscriptenModuleInstance()
 export let dispatcher: DotNet.ICallDispatcher = undefined as any;
 let MONO_INTERNAL: any = undefined as any;
+let isMonoRuntime = true;
 let runtime: RuntimeAPI = undefined as any;
 let jsInitializer: JSInitializer;
 
 let currentHeapLock: MonoHeapLock | null = null;
+let textDecoderUtf16: TextDecoder = null as any;
 
 export function getInitializer() {
   return jsInitializer;
@@ -45,14 +47,16 @@ export const monoPlatform: Platform = {
   },
 
   getArrayEntryPtr: function getArrayEntryPtr<TPtr extends Pointer>(array: System_Array<TPtr>, index: number, itemSize: number): TPtr {
-    // First byte is array length, followed by entries
-    const address = getArrayDataPointer(array) + 4 + index * itemSize;
+    const address = isMonoRuntime
+      ? getArrayDataPointer(array) + 4 + index * itemSize
+      : getArrayDataPointer(array) + (index * itemSize);
     return address as any as TPtr;
   },
 
   getObjectFieldsBaseAddress: function getObjectFieldsBaseAddress(referenceTypedObject: System_Object): Pointer {
-    // The first two int32 values are internal Mono data
-    return (referenceTypedObject as any + 8) as any as Pointer;
+    return (isMonoRuntime
+      ? (referenceTypedObject as any + 8)
+      : (referenceTypedObject as any + 4)) as any as Pointer;
   },
 
   readInt16Field: function readHeapInt16(baseAddress: Pointer, fieldOffset?: number): number {
@@ -76,18 +80,29 @@ export const monoPlatform: Platform = {
     if (fieldValue === 0) {
       return null;
     }
-
+    let value: string;
+    if (!isMonoRuntime) {
+      if (!textDecoderUtf16) {
+        textDecoderUtf16 = new TextDecoder('utf-16le');
+      }
+      // TODO cache interned strings
+      const length = runtime.getHeapI16(fieldValue as any + 4);
+      const ptr = fieldValue + 8;
+      const view = runtime.localHeapViewU8();
+      value = textDecoderUtf16.decode(view.slice(ptr, ptr + length * 2));
+    } else {
+      value = MONO_INTERNAL.monoStringToStringUnsafe(fieldValue);
+    }
     if (readBoolValueAsString) {
       // Some fields are stored as a union of bool | string | null values, but need to read as a string.
       // If the stored value is a bool, the behavior we want is empty string ('') for true, or null for false.
-
-      const unboxedValue = MONO_INTERNAL.monoObjectAsBoolOrNullUnsafe(fieldValue as any as System_Object);
-      if (typeof (unboxedValue) === 'boolean') {
-        return unboxedValue ? '' : null;
+      if (value === '\u22A8') {
+        return '';
+      } else if (value === '\u2400') {
+        return null;
       }
     }
-
-    return MONO_INTERNAL.monoStringToStringUnsafe(fieldValue as any as System_String);
+    return value;
   },
 
   readStructField: function readStructField<T extends Pointer>(baseAddress: Pointer, fieldOffset?: number): T {
@@ -207,6 +222,7 @@ async function configureRuntimeInstance(): Promise<PlatformApi> {
 
   const { setModuleImports, INTERNAL: mono_internal, getConfig, invokeLibraryInitializers } = runtime;
   MONO_INTERNAL = mono_internal;
+  isMonoRuntime = typeof MONO_INTERNAL.monoStringToStringUnsafe === 'function';
 
   attachDebuggerHotkey(getConfig());
 
@@ -245,7 +261,11 @@ export const printErr = line => {
 };
 
 function getArrayDataPointer<T>(array: System_Array<T>): number {
-  return <number><any>array + 12; // First byte from here is length, then following bytes are entries
+  if (isMonoRuntime) {
+    return <number><any>array + 12;
+  } else {
+    return <number><any>array + 8;
+  }
 }
 
 function attachInteropInvoker(): void {
@@ -310,7 +330,9 @@ class MonoHeapLock implements HeapLock {
       throw new Error('Trying to release a lock which isn\'t current');
     }
 
-    MONO_INTERNAL.mono_wasm_gc_unlock();
+    if (isMonoRuntime) {
+      MONO_INTERNAL.mono_wasm_gc_unlock();
+    }
 
     currentHeapLock = null;
 
@@ -326,7 +348,9 @@ class MonoHeapLock implements HeapLock {
   }
 
   static create(): MonoHeapLock {
-    MONO_INTERNAL.mono_wasm_gc_lock();
+    if (isMonoRuntime) {
+      MONO_INTERNAL.mono_wasm_gc_lock();
+    }
     return new MonoHeapLock();
   }
 }

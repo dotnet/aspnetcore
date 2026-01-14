@@ -11,7 +11,18 @@ internal sealed class RenderTreeUpdater
     {
         // We only allow the client to supply string or bool currently, since those are the only kinds of
         // values we output on attributes that go to the client
-        if (!(newFieldValue is string || newFieldValue is bool))
+        if (newFieldValue is bool boolValue)
+        {
+            if (OperatingSystem.IsBrowser() && boolValue)
+            {
+                newFieldValue = "\u22A8"; // Unicode symbol for true
+            }
+            else if (OperatingSystem.IsBrowser() && !boolValue)
+            {
+                newFieldValue = "\u2400"; // Unicode symbol for null
+            }
+        }
+        else if (!(newFieldValue is string))
         {
             return;
         }
