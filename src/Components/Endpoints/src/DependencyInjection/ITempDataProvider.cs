@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 /// <summary>
 /// Provides an abstraction for a provider that stores and retrieves temporary data.
 /// </summary>
-public interface ITempDataProvider
+internal interface ITempDataProvider
 {
     /// <summary>
     /// Loads temporary data from the given <see cref="HttpContext"/>.
