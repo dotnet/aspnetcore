@@ -45,7 +45,7 @@ internal static class FieldIdGenerator
 
         foreach (var c in fieldName)
         {
-            if (char.IsWhiteSpace(c) || c == '.')
+            if (InvalidIdChars.Contains(c))
             {
                 result.Append('_');
             }
