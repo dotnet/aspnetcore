@@ -75,7 +75,7 @@ self.addEventListener('message', async function (e) {
         // Last part is method, second-to-last is class, rest is namespace
         const parts = e.data.method.split('.');
         if (parts.length < 3) {
-            throw new Error(`Invalid method path: ${e.data.method}. Expected format: Namespace.ClassName.MethodName`);
+            throw new Error(`Invalid method path: ${e.data.method}. Expected format: Namespace[.SubNamespace].ClassName.MethodName (at least 3 parts)`);
         }
         
         const methodName = parts.pop();
