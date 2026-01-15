@@ -1,6 +1,6 @@
 # WorkerClient
 
-A lightweight library for running .NET code in a WebWorker from Blazor WebAssembly, keeping your UI responsive during heavy computations.
+A lightweight library for running .NET code in a WebWorker from Blazor WebAssembly, keeping your UI responsive during heavy computations. If need more feature complete and opinionated solution, have look at https://github.com/Tewr/BlazorWorker community project as an alternative.
 
 ## Quick Start
 
