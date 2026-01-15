@@ -1,6 +1,6 @@
 {
   "sdk": {
-    "version": "11.0.100-alpha.1.25618.104",
+    "version": "11.0.100-alpha.1.26062.101",
     "paths": [
       ".dotnet",
       "$host$"
@@ -8,7 +8,7 @@
     "errorMessage": "The .NET SDK could not be found, run ./restore.cmd or ./restore.sh first."
   },
   "tools": {
-    "dotnet": "11.0.100-alpha.1.25618.104",
+    "dotnet": "11.0.100-alpha.1.26062.101",
     "runtimes": {
       "dotnet/x86": [
         "$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)"
@@ -22,9 +22,9 @@
     "jdk": "latest"
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "11.0.0-beta.26057.107",
-    "Microsoft.DotNet.Helix.Sdk": "11.0.0-beta.26057.107",
-    "Microsoft.DotNet.SharedFramework.Sdk": "11.0.0-beta.26057.107",
+    "Microsoft.DotNet.Arcade.Sdk": "11.0.0-beta.26064.120",
+    "Microsoft.DotNet.Helix.Sdk": "11.0.0-beta.26064.120",
+    "Microsoft.DotNet.SharedFramework.Sdk": "11.0.0-beta.26064.120",
     "Microsoft.Build.NoTargets": "3.7.0",
     "Microsoft.Build.Traversal": "3.4.0",
     "Microsoft.WixToolset.Sdk": "5.0.2-dotnet.2811440"
