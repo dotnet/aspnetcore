@@ -16,7 +16,7 @@ public class CookieTempDataProviderTest
 
     internal TempData CreateTempData()
     {
-        return new TempData(() => new Dictionary<string, object?>());
+        return new TempData(() => new Dictionary<string, object>());
     }
 
     public CookieTempDataProviderTest()

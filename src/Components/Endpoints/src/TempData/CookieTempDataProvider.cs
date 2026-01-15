@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.ObjectModel;
 using System.Text.Json;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
@@ -44,12 +45,12 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
             if (!context.Request.Cookies.ContainsKey(cookieName))
             {
                 Log.TempDataCookieNotFound(_logger, cookieName);
-                return new Dictionary<string, object?>();
+                return ReadOnlyDictionary<string, object?>.Empty;
             }
             var serializedDataFromCookie = _chunkingCookieManager.GetRequestCookie(context, cookieName);
             if (serializedDataFromCookie is null)
             {
-                return new Dictionary<string, object?>();
+                return ReadOnlyDictionary<string, object?>.Empty;
             }
 
             var protectedBytes = WebEncoders.Base64UrlDecode(serializedDataFromCookie);
@@ -58,13 +59,13 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
 
             if (dataFromCookie is null)
             {
-                return new Dictionary<string, object?>();
+                return ReadOnlyDictionary<string, object?>.Empty;
             }
 
-            var convertedData = new Dictionary<string, object?>();
+            var convertedData = new Dictionary<string, object?>(dataFromCookie.Count, StringComparer.OrdinalIgnoreCase);
             foreach (var kvp in dataFromCookie)
             {
-                convertedData[kvp.Key] = _tempDataSerializer.Deserialize(kvp.Value);
+                convertedData.Add(kvp.Key, _tempDataSerializer.Deserialize(kvp.Value));
             }
             Log.TempDataCookieLoadSuccess(_logger, cookieName);
             return convertedData;
@@ -76,7 +77,7 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
             var cookieOptions = _options.TempDataCookie.Build(context);
             SetCookiePath(context, cookieOptions);
             context.Response.Cookies.Delete(cookieName, cookieOptions);
-            return new Dictionary<string, object?>();
+            return ReadOnlyDictionary<string, object?>.Empty;
         }
     }
 
