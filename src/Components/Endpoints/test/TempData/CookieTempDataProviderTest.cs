@@ -14,6 +14,11 @@ public class CookieTempDataProviderTest
 {
     private readonly CookieTempDataProvider _cookieTempDataProvider;
 
+    internal TempData CreateTempData()
+    {
+        return new TempData(() => new Dictionary<string, object?>());
+    }
+
     public CookieTempDataProviderTest()
     {
         _cookieTempDataProvider = new CookieTempDataProvider(
@@ -53,7 +58,7 @@ public class CookieTempDataProviderTest
     public void Save_DeletesCookie_WhenNoDataToSave()
     {
         var httpContext = CreateHttpContext();
-        var tempData = new TempData();
+        var tempData = CreateTempData();
 
         _cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
 
@@ -66,7 +71,7 @@ public class CookieTempDataProviderTest
     public void Save_SetsCookie_WhenDataExists()
     {
         var httpContext = CreateHttpContext();
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         tempData["Key1"] = "Value1";
 
         _cookieTempDataProvider.SaveTempData(httpContext, tempData.Save());
@@ -80,7 +85,7 @@ public class CookieTempDataProviderTest
     public void Save_ThrowsForUnsupportedType()
     {
         var httpContext = CreateHttpContext();
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         tempData["Key"] = new object();
 
         Assert.Throws<InvalidOperationException>(() => _cookieTempDataProvider.SaveTempData(httpContext, tempData.Save()));
@@ -90,7 +95,7 @@ public class CookieTempDataProviderTest
     public void RoundTrip_SaveAndLoad_WorksCorrectly()
     {
         var httpContext = CreateHttpContext();
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         tempData["StringKey"] = "StringValue";
         tempData["IntKey"] = 42;
 

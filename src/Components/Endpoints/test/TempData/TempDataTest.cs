@@ -5,10 +5,15 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 public class TempDataTest
 {
+    internal TempData CreateTempData()
+    {
+        return new TempData(() => new Dictionary<string, object>());
+    }
+
     [Fact]
     public void Indexer_CanSetAndGetValues()
     {
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         tempData["Key1"] = "Value1";
         var value = tempData["Key1"];
         Assert.Equal("Value1", value);
@@ -17,7 +22,7 @@ public class TempDataTest
     [Fact]
     public void Get_ReturnsValueAndRemovesFromRetainedKeys()
     {
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         tempData["Key1"] = "Value1";
 
         var value = tempData.Get("Key1");
@@ -30,7 +35,7 @@ public class TempDataTest
     [Fact]
     public void Get_ReturnsNullForNonExistentKey()
     {
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         var value = tempData.Get("NonExistent");
         Assert.Null(value);
     }
@@ -38,7 +43,7 @@ public class TempDataTest
     [Fact]
     public void Peek_ReturnsValueWithoutRemovingFromRetainedKeys()
     {
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         tempData["Key1"] = "Value1";
         var value = tempData.Peek("Key1");
         Assert.Equal("Value1", value);
@@ -49,7 +54,7 @@ public class TempDataTest
     [Fact]
     public void Peek_ReturnsNullForNonExistentKey()
     {
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         var value = tempData.Peek("NonExistent");
         Assert.Null(value);
     }
@@ -57,7 +62,7 @@ public class TempDataTest
     [Fact]
     public void Keep_RetainsAllKeys()
     {
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         tempData["Key1"] = "Value1";
         tempData["Key2"] = "Value2";
         _ = tempData.Get("Key1");
@@ -74,7 +79,7 @@ public class TempDataTest
     [Fact]
     public void KeepWithKey_RetainsSpecificKey()
     {
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         tempData["Key1"] = "Value1";
         tempData["Key2"] = "Value2";
         _ = tempData.Get("Key1");
@@ -90,7 +95,7 @@ public class TempDataTest
     [Fact]
     public void KeepWithKey_DoesNothingForNonExistentKey()
     {
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         tempData["Key1"] = "Value1";
         _ = tempData.Get("Key1");
 
@@ -103,7 +108,7 @@ public class TempDataTest
     [Fact]
     public void ContainsKey_ReturnsTrueForExistingKey()
     {
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         tempData["Key1"] = "Value1";
         var result = tempData.ContainsKey("Key1");
         Assert.True(result);
@@ -112,7 +117,7 @@ public class TempDataTest
     [Fact]
     public void ContainsKey_ReturnsFalseForNonExistentKey()
     {
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         var result = tempData.ContainsKey("NonExistent");
         Assert.False(result);
     }
@@ -120,7 +125,7 @@ public class TempDataTest
     [Fact]
     public void Remove_RemovesKeyAndReturnsTrue()
     {
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         tempData["Key1"] = "Value1";
 
         var result = tempData.Remove("Key1");
@@ -133,7 +138,7 @@ public class TempDataTest
     [Fact]
     public void Remove_ReturnsFalseForNonExistentKey()
     {
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         var result = tempData.Remove("NonExistent");
         Assert.False(result);
     }
@@ -141,7 +146,7 @@ public class TempDataTest
     [Fact]
     public void Save_ReturnsOnlyRetainedKeys()
     {
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         tempData["Key1"] = "Value1";
         tempData["Key2"] = "Value2";
         tempData["Key3"] = "Value3";
@@ -157,7 +162,7 @@ public class TempDataTest
     [Fact]
     public void Load_PopulatesDataFromDictionary()
     {
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         var dataToLoad = new Dictionary<string, object>
         {
             ["Key1"] = "Value1",
@@ -173,7 +178,7 @@ public class TempDataTest
     [Fact]
     public void Load_ClearsExistingDataBeforeLoading()
     {
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         tempData["ExistingKey"] = "ExistingValue";
         var dataToLoad = new Dictionary<string, object>
         {
@@ -189,7 +194,7 @@ public class TempDataTest
     [Fact]
     public void Clear_RemovesAllData()
     {
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         tempData["Key1"] = "Value1";
         tempData["Key2"] = "Value2";
 
@@ -202,7 +207,7 @@ public class TempDataTest
     [Fact]
     public void Indexer_IsCaseInsensitive()
     {
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         tempData["Key1"] = "Value1";
         var value = tempData["KEY1"];
         Assert.Equal("Value1", value);

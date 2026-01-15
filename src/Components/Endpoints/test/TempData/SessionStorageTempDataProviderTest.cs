@@ -11,6 +11,11 @@ public class SessionStorageTempDataProviderTest
 {
     private readonly SessionStorageTempDataProvider _sessionStateTempDataProvider;
 
+    internal TempData CreateTempData()
+    {
+        return new TempData(() => new Dictionary<string, object?>());
+    }
+
     public SessionStorageTempDataProviderTest()
     {
         _sessionStateTempDataProvider = new SessionStorageTempDataProvider(
@@ -35,7 +40,7 @@ public class SessionStorageTempDataProviderTest
         var session = (TestSession)httpContext.Session;
         session.Set(SessionStorageTempDataProvider.TempDataSessionStateKey, new byte[] { 1, 2, 3 });
 
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         _sessionStateTempDataProvider.SaveTempData(httpContext, tempData.Save());
 
         Assert.DoesNotContain(SessionStorageTempDataProvider.TempDataSessionStateKey, session.Keys);
@@ -45,7 +50,7 @@ public class SessionStorageTempDataProviderTest
     public void Save_SetsSessionData_WhenDataExists()
     {
         var httpContext = CreateHttpContext();
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         tempData["Key1"] = "Value1";
 
         _sessionStateTempDataProvider.SaveTempData(httpContext, tempData.Save());
@@ -58,7 +63,7 @@ public class SessionStorageTempDataProviderTest
     public void Save_ThrowsForUnsupportedType()
     {
         var httpContext = CreateHttpContext();
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         tempData["Key"] = new object();
 
         Assert.Throws<InvalidOperationException>(() => _sessionStateTempDataProvider.SaveTempData(httpContext, tempData.Save()));
@@ -91,7 +96,7 @@ public class SessionStorageTempDataProviderTest
     public void RoundTrip_SaveAndLoad_WorksCorrectly()
     {
         var httpContext = CreateHttpContext();
-        var tempData = new TempData();
+        var tempData = CreateTempData();
         tempData["StringKey"] = "StringValue";
         tempData["IntKey"] = 42;
 

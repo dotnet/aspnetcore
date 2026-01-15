@@ -37,10 +37,10 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
     public IDictionary<string, object?> LoadTempData(HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
+        var cookieName = _options.TempDataCookie.Name ?? CookieName;
 
         try
         {
-            var cookieName = _options.TempDataCookie.Name ?? CookieName;
             if (!context.Request.Cookies.ContainsKey(cookieName))
             {
                 Log.TempDataCookieNotFound(_logger, cookieName);
@@ -71,7 +71,6 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
         }
         catch (Exception ex)
         {
-            var cookieName = _options.TempDataCookie.Name ?? CookieName;
             Log.TempDataCookieLoadFailure(_logger, cookieName, ex);
 
             var cookieOptions = _options.TempDataCookie.Build(context);

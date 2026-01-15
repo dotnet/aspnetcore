@@ -14,7 +14,7 @@ internal sealed class TempData : ITempData
     private Func<IDictionary<string, object?>>? _loadFunc;
     private bool _loaded;
 
-    internal TempData(Func<IDictionary<string, object?>>? loadFunc = null)
+    internal TempData(Func<IDictionary<string, object?>> loadFunc)
     {
         _loadFunc = loadFunc;
     }
@@ -102,6 +102,7 @@ internal sealed class TempData : ITempData
             _data[kvp.Key] = kvp.Value;
             _retainedKeys.Add(kvp.Key);
         }
+        _loaded = true;
     }
 
     public void Clear()
