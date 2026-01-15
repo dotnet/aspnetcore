@@ -22,8 +22,8 @@ C_ASSERT(sizeof(FORWARDING_HANDLER) <= 632);
 
 #define WEBSOCKET_TOKEN_LENGTH 9  // Length of "websocket"
 
-// Helper function to check if a comma-separated header value contains "websocket".
-// This handles cases like "websocket", "websocket, websocket", "websocket, other", etc.
+// Helper function to check if a comma-separated header value contains expected token.
+// This handles cases like "<token>", "<token>, <token>", "<token>, other", etc.
 static
 bool
 ContainsToken(
