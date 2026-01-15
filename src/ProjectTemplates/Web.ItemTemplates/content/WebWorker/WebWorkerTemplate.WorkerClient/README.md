@@ -254,9 +254,8 @@ Terminates the current worker and creates a new one. All pending requests will b
 
 ## Worker Method Requirements
 
-Your worker methods must:
-
-1. Be `static` and `partial`
+1. Be `static`
 2. Have the `[JSExport]` attribute
-3. Use only [supported parameter/return types](https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.javascript.jsmarshalasattribute)
-4. Return JSON strings for complex objects.
+3. Be declared in a `partial` class
+4. Use only [supported parameter/return types](https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.javascript.jsmarshalasattribute)
+5. Return JSON strings for complex objects.
