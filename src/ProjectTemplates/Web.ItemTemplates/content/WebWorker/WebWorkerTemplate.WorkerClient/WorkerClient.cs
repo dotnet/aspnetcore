@@ -108,12 +108,12 @@ public static partial class WorkerClient
     private static partial Task<string> InvokeStringInternal(string method, [JSMarshalAs<JSType.Array<JSType.Any>>] object[] args);
 
     /// <summary>
-    /// Invokes a method on the worker that returns a JSON string.
+    /// Invokes a method on the worker that returns a string.
     /// Uses <see cref="DefaultTimeout"/> for timeout.
     /// </summary>
     /// <param name="method">Full method path: "Namespace.ClassName.MethodName"</param>
     /// <param name="args">Arguments to pass to the method</param>
-    /// <returns>JSON string result from the worker method</returns>
+    /// <returns>String result from the worker method</returns>
     /// <exception cref="InvalidOperationException">Thrown if InitializeAsync was not called</exception>
     /// <exception cref="JSException">Thrown if the worker method throws an exception</exception>
     /// <exception cref="TimeoutException">Thrown if the worker method exceeds the default timeout</exception>
@@ -123,12 +123,12 @@ public static partial class WorkerClient
     }
 
     /// <summary>
-    /// Invokes a method on the worker that returns a JSON string.
+    /// Invokes a method on the worker that returns a string.
     /// </summary>
     /// <param name="method">Full method path: "Namespace.ClassName.MethodName"</param>
     /// <param name="timeout">Maximum time to wait for the worker to complete. Use <see cref="Timeout.InfiniteTimeSpan"/> to disable.</param>
     /// <param name="args">Arguments to pass to the method</param>
-    /// <returns>JSON string result from the worker method</returns>
+    /// <returns>String result from the worker method</returns>
     /// <exception cref="InvalidOperationException">Thrown if InitializeAsync was not called</exception>
     /// <exception cref="JSException">Thrown if the worker method throws an exception</exception>
     /// <exception cref="TimeoutException">Thrown if the worker method exceeds the specified timeout</exception>
