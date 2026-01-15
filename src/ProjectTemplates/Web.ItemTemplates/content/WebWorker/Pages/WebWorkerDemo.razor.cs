@@ -42,11 +42,6 @@ public partial class WebWorkerDemo : ComponentBase
         {
             await WorkerClient.WorkerClient.InitializeAsync();
             await WorkerClient.WorkerClient.WaitForReadyAsync();
-            WorkerClient.WorkerClient.SetProgressCallback((message, current, total) =>
-            {
-                _progressMessage = $"{message} ({current}/{total})";
-                InvokeAsync(StateHasChanged);
-            });
             _workerReady = true;
             StateHasChanged();
         }
@@ -77,6 +72,13 @@ public partial class WebWorkerDemo : ComponentBase
 
         try
         {
+            // Set up progress callback for this operation
+            WorkerClient.WorkerClient.SetProgressCallback((message, current, total) =>
+            {
+                _progressMessage = $"{message} ({current}/{total})";
+                InvokeAsync(StateHasChanged);
+            });
+
             var owner = parts[0].Trim();
             var repo = parts[1].Trim();
 

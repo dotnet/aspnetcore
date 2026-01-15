@@ -161,7 +161,7 @@ var json = await WorkerClient.InvokeStringAsync(
 public static void SetProgressCallback(Action<string, int, int>? callback)
 ```
 
-Sets a callback to receive progress updates from worker operations.
+Sets a callback to receive progress updates from worker operations. Set before each operation and clear when done.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -169,16 +169,25 @@ Sets a callback to receive progress updates from worker operations.
 
 **Example:**
 ```csharp
-WorkerClient.SetProgressCallback((message, current, total) =>
+private async Task RunLongTaskAsync()
 {
-    _status = $"{message} ({current}/{total})";
-    InvokeAsync(StateHasChanged);
-});
+    try
+    {
+        // Set callback before each operation
+        WorkerClient.SetProgressCallback((message, current, total) =>
+        {
+            _status = $"{message} ({current}/{total})";
+            InvokeAsync(StateHasChanged);
+        });
 
-var json = await WorkerClient.InvokeStringAsync("MyApp.Worker.LongTask.Run");
-var result = JsonSerializer.Deserialize<Result>(json);
-
-WorkerClient.SetProgressCallback(null); // Clear when done
+        var json = await WorkerClient.InvokeStringAsync("MyApp.Worker.LongTask.Run");
+        var result = JsonSerializer.Deserialize<Result>(json);
+    }
+    finally
+    {
+        WorkerClient.SetProgressCallback(null); // Clear when done
+    }
+}
 ```
 
 To report progress from your worker, use `[JSImport]`:

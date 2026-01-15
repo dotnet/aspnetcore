@@ -25,6 +25,13 @@ export function setProgressCallback(callback) {
 }
 
 /**
+ * Clears the progress callback function.
+ */
+export function clearProgressCallback() {
+    progressCallback = null;
+}
+
+/**
  * Creates and initializes the WebWorker with event handlers.
  */
 function createWorker() {

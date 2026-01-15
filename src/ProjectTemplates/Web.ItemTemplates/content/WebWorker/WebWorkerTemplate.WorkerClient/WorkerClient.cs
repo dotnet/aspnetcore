@@ -41,10 +41,13 @@ public static partial class WorkerClient
     [JSImport("setProgressCallback", nameof(WorkerClient))]
     private static partial void SetProgressCallbackInternal([JSMarshalAs<JSType.Function<JSType.String, JSType.Number, JSType.Number>>] Action<string, int, int> callback);
 
+    [JSImport("clearProgressCallback", nameof(WorkerClient))]
+    private static partial void ClearProgressCallbackInternal();
+
     /// <summary>
     /// Sets a callback to receive progress updates from worker operations.
     /// </summary>
-    /// <param name="callback">Callback function receiving (message, current, total)</param>
+    /// <param name="callback">Callback function receiving (message, current, total), or null to clear</param>
     public static void SetProgressCallback(Action<string, int, int>? callback)
     {
         if (!_initialized)
@@ -54,7 +57,7 @@ public static partial class WorkerClient
 
         if (callback == null)
         {
-            SetProgressCallbackInternal((_, _, _) => { }); // Clear callback
+            ClearProgressCallbackInternal();
         }
         else
         {
