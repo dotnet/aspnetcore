@@ -20,6 +20,8 @@ C_ASSERT(sizeof(FORWARDING_HANDLER) <= 632);
 #define FORWARDING_HANDLER_SIGNATURE        ((DWORD)'FHLR')
 #define FORWARDING_HANDLER_SIGNATURE_FREE   ((DWORD)'fhlr')
 
+#define WEBSOCKET_TOKEN_LENGTH 9  // Length of "websocket"
+
 // Helper function to check if a comma-separated header value contains "websocket".
 // This handles cases like "websocket", "websocket, websocket", "websocket, other", etc.
 static
@@ -59,10 +61,10 @@ ContainsWebSocketToken(
             pszTokenTrimEnd--;
         }
 
-        size_t cchToken = pszTokenTrimEnd - pszCurrent;
+        ptrdiff_t cchToken = pszTokenTrimEnd - pszCurrent;
 
         // Check if this token is "websocket" (case-insensitive)
-        if (cchToken == 9 && _strnicmp(pszCurrent, "websocket", 9) == 0)
+        if (cchToken == WEBSOCKET_TOKEN_LENGTH && _strnicmp(pszCurrent, "websocket", WEBSOCKET_TOKEN_LENGTH) == 0)
         {
             return true;
         }
