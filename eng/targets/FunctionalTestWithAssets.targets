@@ -37,8 +37,13 @@
     <!--
       These are separate invocations to ensure Publish sees restored setup. Platform and PlatformTarget removals
       are to fix builds inside VS.
+
+      When CentralizedRestore is true, skip restore here because test assets are already restored via the
+      solution file. This avoids NuGet race condition where parallel restore of the same project causes
+      "Cannot create a file when that file already exists" errors. See https://github.com/NuGet/Home/issues/7648
     -->
     <MSBuild Projects="@(_ProjectsToPublish->WithMetadataValue('SkipBuild', 'false'))"
+        Condition="'$(CentralizedRestore)' != 'true'"
         BuildInParallel="$(BuildInParallel)"
         Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())"
         RemoveProperties="Platform;PlatformTarget"

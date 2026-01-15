@@ -44,8 +44,13 @@
       BeforeTargets="Build"
       Condition=" '$(DotNetBuildSourceOnly)' != 'true' AND ('$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'x64') "
       Returns="@(TargetPathWithTargetPlatformMoniker)">
+    <!--
+      Use sequential restore when CentralizedRestore is enabled to avoid NuGet race condition where
+      parallel restore of the same project causes "Cannot create a file when that file already exists" errors.
+      See https://github.com/NuGet/Home/issues/7648
+    -->
     <MSBuild Projects="@(RequiresDelayedBuild)"
-        BuildInParallel="$(BuildInParallel)"
+        BuildInParallel="'$(CentralizedRestore)' != 'true'"
         Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())"
         Targets="Restore" />
     <MSBuild Projects="@(RequiresDelayedBuild)" BuildInParallel="$(BuildInParallel)" Targets="Build">

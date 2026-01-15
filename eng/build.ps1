@@ -206,6 +206,10 @@ param(
     [Alias('pb')]
     [switch]$ProductBuild,
 
+    # Use centralized restore to avoid NuGet parallel restore race conditions (NuGet/Home#7648)
+    # When set, performs a single upfront restore then builds without restore
+    [switch]$CentralizedRestore,
+
     # Intentionally lowercase as tools.ps1 depends on it
     [switch]$fromVMR,
 
@@ -271,7 +275,9 @@ $RunBuild = if ($NoBuild) { $false } else { $true }
 
 # Run restore by default unless -NoRestore is set.
 # -NoBuild implies -NoRestore, unless -Restore is explicitly set (as in restore.cmd)
+# -CentralizedRestore performs a single upfront restore then disables per-project restore
 $RunRestore = if ($NoRestore) { $false }
+    elseif ($CentralizedRestore) { $false } # Will do centralized restore separately
     elseif ($Restore) { $true }
     elseif ($NoBuild) { $false }
     else { $true }
@@ -482,6 +488,44 @@ try {
 
     if ($ci) {
         $global:VerbosePreference = 'Continue'
+    }
+
+    # Perform centralized restore if requested - this restores everything upfront in a single
+    # coordinated operation to avoid NuGet race conditions (https://github.com/NuGet/Home/issues/7648)
+    if ($CentralizedRestore) {
+        Write-Host
+        Write-Host "===== Centralized Restore =====" -ForegroundColor Cyan
+        Write-Host "Restoring all projects upfront to avoid NuGet parallel restore race conditions" -ForegroundColor Cyan
+
+        # Restore via the solution file with --disable-parallel to avoid NuGet internal race conditions
+        # NuGet's RestoreTask is not thread-safe when same project is restored in parallel
+        Write-Host "Restoring AspNetCore.slnx (sequential)..." -ForegroundColor Yellow
+        & dotnet restore "$RepoRoot\AspNetCore.slnx" --disable-parallel --verbosity $Verbosity
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "Solution restore failed"
+            exit $LASTEXITCODE
+        }
+
+        # Generate files that other projects depend on (normally done AfterTargets="Restore" in Tools.props)
+        # Must be done BEFORE any other project evaluation since they import these generated files
+        Write-Host "Generating build files..." -ForegroundColor Yellow
+        & dotnet restore "$RepoRoot\eng\tools\GenerateFiles\GenerateFiles.csproj" --verbosity $Verbosity
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "GenerateFiles restore failed"
+            exit $LASTEXITCODE
+        }
+        & dotnet msbuild "$RepoRoot\eng\tools\GenerateFiles\GenerateFiles.csproj" /t:GenerateDirectoryBuildFiles /p:Configuration=$Configuration /verbosity:$Verbosity
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "GenerateFiles build failed"
+            exit $LASTEXITCODE
+        }
+
+        # Note: Delayed build projects (RequiresDelayedBuild) are NOT restored here because they
+        # require the targeting pack to be built first.
+        # They will be restored later by BuildAfterTargetingPack.csproj with sequential restore.
+
+        Write-Host "===== Centralized Restore Complete =====" -ForegroundColor Cyan
+        Write-Host
     }
 
     if (-not $NoBuildRepoTasks) {
