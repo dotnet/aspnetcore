@@ -37,10 +37,6 @@
     {
       "condition": "(UseWebAssembly && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "path": "BlazorWebCSharp.1.Client/BlazorWebCSharp.1.Client.csproj"
-    },
-    {
-      "condition": "(UseWebWorker && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "BlazorWebCSharp.1.WorkerClient/BlazorWebCSharp.1.WorkerClient.csproj"
     }
   ],
   "shortName": "blazor",
