@@ -64,7 +64,7 @@ ContainsToken(
 
         ptrdiff_t cchToken = pszTokenTrimEnd - pszCurrent;
 
-        // Check if this token is "websocket" (case-insensitive)
+        // Check if this token matches the expected token (case-insensitive)
         if (cchToken == (ptrdiff_t)cchExpectedToken && 
             _strnicmp(pszCurrent, pszExpectedToken, cchExpectedToken) == 0)
         {
@@ -239,7 +239,7 @@ FORWARDING_HANDLER::ExecuteRequestHandler()
     {
         USHORT cchHeader = 0;
         PCSTR pszWebSocketHeader = pRequest->GetHeader("Upgrade", &cchHeader);
-        if (ContainsToken(pszWebSocketHeader, cchHeader, "websocket", 9 /* websocket string length */))
+        if (ContainsToken(pszWebSocketHeader, cchHeader, "websocket", WEBSOCKET_TOKEN_LENGTH))
         {
             m_fWebSocketEnabled = TRUE;
 
