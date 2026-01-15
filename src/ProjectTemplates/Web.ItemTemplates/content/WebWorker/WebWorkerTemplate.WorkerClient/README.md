@@ -72,11 +72,9 @@ var result = JsonSerializer.Deserialize<MyResult>(json);
 
 ---
 
-## API Reference
+## `WorkerClient` Static Class
 
-### `WorkerClient` Static Class
-
-#### Properties
+### Properties
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
