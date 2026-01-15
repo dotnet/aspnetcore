@@ -26,56 +26,8 @@ public static partial class GitHubWorker
     private static partial void ReportProgress(string message, int current, int total);
 
     /// <summary>
-    /// Analyzes GitHub issues/PRs from raw JSON data and computes metrics.
-    /// This method only does CPU-intensive processing (deserialization + computation) in the worker.
-    /// The JSON data should be fetched on the main thread and passed to this method.
-    /// </summary>
-    /// <param name="owner">Repository owner (e.g., "dotnet")</param>
-    /// <param name="repo">Repository name (e.g., "runtime")</param>
-    /// <param name="jsonPages">Array of JSON strings, each containing a page of GitHub issues</param>
-    /// <returns>Serialized GitHubMetrics as JSON string</returns>
-    [JSExport]
-    public static string AnalyzeIssuesJsonAsync(string owner, string repo, string[] jsonPages)
-    {
-        var startTicks = Environment.TickCount64;
-
-        var allIssues = new List<GitHubIssue>();
-        var totalBytes = 0;
-
-        // Deserialize all pages
-        foreach (var json in jsonPages)
-        {
-            totalBytes += json.Length * 2; // UTF-16 in .NET
-            
-            var issues = JsonSerializer.Deserialize<List<GitHubIssue>>(json, JsonOptions);
-            
-            if (issues != null && issues.Count > 0)
-            {
-                allIssues.AddRange(issues);
-            }
-        }
-
-        if (allIssues.Count == 0)
-        {
-            throw new InvalidOperationException($"No issues found in {owner}/{repo}. The data may be empty.");
-        }
-
-        // Compute metrics
-        var metrics = ComputeMetrics(allIssues, owner, repo);
-        
-        var elapsedMs = Environment.TickCount64 - startTicks;
-        metrics.FetchTimeMs = 0; // Fetch happened on main thread
-        metrics.ComputationTimeMs = elapsedMs;
-        metrics.JsonSizeBytes = totalBytes;
-        metrics.PagesLoaded = jsonPages.Length;
-
-        return JsonSerializer.Serialize(metrics, JsonOptions);
-    }
-
-    /// <summary>
     /// Fetches issues (including PRs) from a GitHub repository and computes metrics.
     /// Uses the GitHub Issues API which returns both issues and PRs.
-    /// DEPRECATED: Use AnalyzeIssuesJsonAsync instead for better performance (fetch on main thread, process in worker).
     /// </summary>
     /// <param name="owner">Repository owner (e.g., "dotnet")</param>
     /// <param name="repo">Repository name (e.g., "runtime")</param>
