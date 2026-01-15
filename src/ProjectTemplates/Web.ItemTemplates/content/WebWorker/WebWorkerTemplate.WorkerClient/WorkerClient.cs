@@ -149,8 +149,8 @@ public static partial class WorkerClient
             return await workerTask;
         }
 
-        Task completedTask = await Task.WhenAny(workerTask, Task.Delay(timeout));
-        if (completedTask != workerTask)
+        await Task.WhenAny(workerTask, Task.Delay(timeout));
+        if (!workerTask.IsCompleted)
         {
             throw new TimeoutException($"Worker method '{method}' did not complete within {timeout.TotalSeconds:F1} seconds.");
         }
