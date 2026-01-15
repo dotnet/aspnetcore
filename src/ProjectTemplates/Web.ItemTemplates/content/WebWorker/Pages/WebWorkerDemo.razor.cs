@@ -1,6 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+// ============================================================================
+// SAMPLE CODE - This page demonstrates WebWorker usage patterns.
+// Feel free to delete this file and create your own pages.
+// ============================================================================
+
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Runtime.Versioning;

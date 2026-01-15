@@ -1,6 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+// ============================================================================
+// SAMPLE CODE - This file demonstrates how to create a WebWorker method.
+// Feel free to delete this file and create your own worker classes.
+// ============================================================================
+
 using System.Net;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices.JavaScript;

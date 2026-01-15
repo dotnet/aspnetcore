@@ -1,6 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+// ============================================================================
+// SAMPLE CODE - These DTOs are used by the sample GitHubWorker.
+// Feel free to delete this file and create your own model classes.
+// ============================================================================
+
 using System.Text.Json.Serialization;
 
 namespace WebWorkerTemplate.Models;
