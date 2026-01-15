@@ -80,7 +80,7 @@ public partial class WebWorkerDemo : ComponentBase
             var owner = parts[0].Trim();
             var repo = parts[1].Trim();
 
-            var json = await WorkerClient.WorkerClient.InvokeJsonAsync(
+            var json = await WorkerClient.WorkerClient.InvokeStringAsync(
                 "WebWorkerTemplate.Worker.GitHubWorker.FetchAndAnalyzeAsync",
                 TimeSpan.FromMinutes(2),
                 owner,

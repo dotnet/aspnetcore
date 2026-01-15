@@ -60,7 +60,7 @@ public partial class MyWorker
 
 ```csharp
 // Call the worker and get JSON string result
-string json = await WorkerClient.InvokeJsonAsync(
+string json = await WorkerClient.InvokeStringAsync(
     "YourApp.Worker.MyWorker.ComputeHeavyTask", 
     "my input");
 
@@ -68,7 +68,7 @@ string json = await WorkerClient.InvokeJsonAsync(
 var result = JsonSerializer.Deserialize<MyResult>(json);
 ```
 
-> 💡 **Need a different invocation pattern?** The `WorkerClient.cs` file is part of your project. If `InvokeJsonAsync` doesn't fit your needs, open `WorkerClient.cs` and implement your own method using the existing `[JSImport]` bindings as a reference.
+> 💡 **Need a different invocation pattern?** The `WorkerClient.cs` file is part of your project. If `InvokeStringAsync` doesn't fit your needs, open `WorkerClient.cs` and implement your own method using the existing `[JSImport]` bindings as a reference.
 
 ---
 
@@ -96,10 +96,10 @@ Initializes the WebWorker client. **Must be called once before any other methods
 
 ---
 
-##### `InvokeJsonAsync(method, args)`
+##### `InvokeStringAsync(method, args)`
 
 ```csharp
-public static Task<string> InvokeJsonAsync(string method, params object[] args)
+public static Task<string> InvokeStringAsync(string method, params object[] args)
 ```
 
 Invokes a worker method and returns the JSON string result. Deserialize manually using `JsonSerializer.Deserialize<T>()`.
@@ -118,7 +118,7 @@ Invokes a worker method and returns the JSON string result. Deserialize manually
 
 **Example:**
 ```csharp
-var json = await WorkerClient.InvokeJsonAsync(
+var json = await WorkerClient.InvokeStringAsync(
     "MyApp.Worker.GitHubWorker.FetchMetrics",
     "dotnet/aspnetcore",
     5);
@@ -128,10 +128,10 @@ var metrics = JsonSerializer.Deserialize<RepoMetrics>(json);
 
 ---
 
-##### `InvokeJsonAsync(method, timeout, args)`
+##### `InvokeStringAsync(method, timeout, args)`
 
 ```csharp
-public static Task<string> InvokeJsonAsync(string method, TimeSpan timeout, params object[] args)
+public static Task<string> InvokeStringAsync(string method, TimeSpan timeout, params object[] args)
 ```
 
 Same as above, but with a custom timeout.
@@ -139,7 +139,7 @@ Same as above, but with a custom timeout.
 **Example:**
 ```csharp
 // 2 minute timeout for long operations
-var json = await WorkerClient.InvokeJsonAsync(
+var json = await WorkerClient.InvokeStringAsync(
     "MyApp.Worker.ReportGenerator.Generate",
     TimeSpan.FromMinutes(2),
     reportId);
@@ -147,7 +147,7 @@ var json = await WorkerClient.InvokeJsonAsync(
 var result = JsonSerializer.Deserialize<Report>(json);
 
 // No timeout
-var json = await WorkerClient.InvokeJsonAsync(
+var json = await WorkerClient.InvokeStringAsync(
     "MyApp.Worker.DataProcessor.Process",
     Timeout.InfiniteTimeSpan,
     data);
@@ -175,7 +175,7 @@ WorkerClient.SetProgressCallback((message, current, total) =>
     InvokeAsync(StateHasChanged);
 });
 
-var json = await WorkerClient.InvokeJsonAsync("MyApp.Worker.LongTask.Run");
+var json = await WorkerClient.InvokeStringAsync("MyApp.Worker.LongTask.Run");
 var result = JsonSerializer.Deserialize<Result>(json);
 
 WorkerClient.SetProgressCallback(null); // Clear when done

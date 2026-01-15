@@ -69,7 +69,7 @@ public static partial class WorkerClient
     /// </summary>
     /// <remarks>
     /// After calling Terminate, the worker will be automatically recreated.
-    /// The next InvokeJsonAsync call will use the new worker instance.
+    /// The next InvokeStringAsync call will use the new worker instance.
     /// Note: This is an expensive operation as it requires reloading the .NET runtime in the worker.
     /// </remarks>
     /// <exception cref="InvalidOperationException">Thrown if InitializeAsync was not called</exception>
@@ -117,9 +117,9 @@ public static partial class WorkerClient
     /// <exception cref="InvalidOperationException">Thrown if InitializeAsync was not called</exception>
     /// <exception cref="JSException">Thrown if the worker method throws an exception</exception>
     /// <exception cref="TimeoutException">Thrown if the worker method exceeds the default timeout</exception>
-    public static Task<string> InvokeJsonAsync(string method, params object[] args)
+    public static Task<string> InvokeStringAsync(string method, params object[] args)
     {
-        return InvokeJsonAsync(method, DefaultTimeout, args);
+        return InvokeStringAsync(method, DefaultTimeout, args);
     }
 
     /// <summary>
@@ -132,7 +132,7 @@ public static partial class WorkerClient
     /// <exception cref="InvalidOperationException">Thrown if InitializeAsync was not called</exception>
     /// <exception cref="JSException">Thrown if the worker method throws an exception</exception>
     /// <exception cref="TimeoutException">Thrown if the worker method exceeds the specified timeout</exception>
-    public static async Task<string> InvokeJsonAsync(string method, TimeSpan timeout, params object[] args)
+    public static async Task<string> InvokeStringAsync(string method, TimeSpan timeout, params object[] args)
     {
         if (!_initialized)
         {
