@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices.JavaScript;
@@ -38,7 +37,7 @@ public static partial class GitHubWorker
     [JSExport]
     public static string AnalyzeIssuesJsonAsync(string owner, string repo, string[] jsonPages)
     {
-        var sw = Stopwatch.StartNew();
+        var startTicks = Environment.TickCount64;
 
         var allIssues = new List<GitHubIssue>();
         var totalBytes = 0;
@@ -64,9 +63,9 @@ public static partial class GitHubWorker
         // Compute metrics
         var metrics = ComputeMetrics(allIssues, owner, repo);
         
-        sw.Stop();
+        var elapsedMs = Environment.TickCount64 - startTicks;
         metrics.FetchTimeMs = 0; // Fetch happened on main thread
-        metrics.ComputationTimeMs = sw.Elapsed.TotalMilliseconds;
+        metrics.ComputationTimeMs = elapsedMs;
         metrics.JsonSizeBytes = totalBytes;
         metrics.PagesLoaded = jsonPages.Length;
 
@@ -86,7 +85,7 @@ public static partial class GitHubWorker
     [JSExport]
     public static async Task<string> FetchAndAnalyzeAsync(string owner, string repo, int maxPages = 5, string token = "")
     {
-        var sw = Stopwatch.StartNew();
+        var startTicks = Environment.TickCount64;
 
         using var httpClient = CreateGitHubClient(token);
 
@@ -116,10 +115,9 @@ public static partial class GitHubWorker
             totalBytes += json.Length * 2; // UTF-16 in .NET
             
             // Measure deserialization separately
-            var deserializeSw = Stopwatch.StartNew();
+            var deserializeStart = Environment.TickCount64;
             var issues = JsonSerializer.Deserialize<List<GitHubIssue>>(json, JsonOptions);
-            deserializeSw.Stop();
-            deserializationTimeMs += deserializeSw.Elapsed.TotalMilliseconds;
+            deserializationTimeMs += Environment.TickCount64 - deserializeStart;
             
             if (issues == null || issues.Count == 0)
             {
@@ -137,8 +135,8 @@ public static partial class GitHubWorker
             }
         }
 
-        sw.Stop();
-        var fetchTimeMs = sw.Elapsed.TotalMilliseconds - deserializationTimeMs;
+        var totalElapsedMs = Environment.TickCount64 - startTicks;
+        var fetchTimeMs = totalElapsedMs - deserializationTimeMs;
 
         if (allIssues.Count == 0)
         {
@@ -147,13 +145,13 @@ public static partial class GitHubWorker
 
         // Compute metrics
         ReportProgress("Computing metrics...", maxPages, maxPages + 1);
-        sw.Restart();
+        var computeStart = Environment.TickCount64;
         var metrics = ComputeMetrics(allIssues, owner, repo);
-        sw.Stop();
+        var computeElapsedMs = Environment.TickCount64 - computeStart;
 
         metrics.FetchTimeMs = fetchTimeMs;
         metrics.DeserializationTimeMs = deserializationTimeMs;
-        metrics.ComputationTimeMs = sw.Elapsed.TotalMilliseconds;
+        metrics.ComputationTimeMs = computeElapsedMs;
         metrics.JsonSizeBytes = totalBytes;
         metrics.PagesLoaded = pagesLoaded;
 

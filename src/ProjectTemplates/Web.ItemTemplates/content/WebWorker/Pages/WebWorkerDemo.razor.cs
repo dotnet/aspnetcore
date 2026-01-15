@@ -25,7 +25,7 @@ public partial class WebWorkerDemo : ComponentBase
     private int _clickCount;
     private bool _isProcessing;
     private string _processingMode = "";
-    private bool _isInitialized;
+    private bool _workerReady;
     private string _progressMessage = "";
     private string _errorMessage = "";
     private GitHubMetrics? _metricsWorker;
@@ -41,12 +41,13 @@ public partial class WebWorkerDemo : ComponentBase
         if (firstRender)
         {
             await WorkerClient.WorkerClient.InitializeAsync();
+            await WorkerClient.WorkerClient.WaitForReadyAsync();
             WorkerClient.WorkerClient.SetProgressCallback((message, current, total) =>
             {
                 _progressMessage = $"{message} ({current}/{total})";
                 InvokeAsync(StateHasChanged);
             });
-            _isInitialized = true;
+            _workerReady = true;
             StateHasChanged();
         }
     }
@@ -58,7 +59,7 @@ public partial class WebWorkerDemo : ComponentBase
 
     private async Task FetchWithWorkerAsync()
     {
-        if (!_isInitialized || _isProcessing || string.IsNullOrWhiteSpace(_repository))
+        if (!_workerReady || _isProcessing || string.IsNullOrWhiteSpace(_repository))
             return;
 
         var parts = _repository.Split('/');
@@ -79,7 +80,7 @@ public partial class WebWorkerDemo : ComponentBase
             var owner = parts[0].Trim();
             var repo = parts[1].Trim();
 
-            _metricsWorker = await WorkerClient.WorkerClient.InvokeJsonAsync<GitHubMetrics>(
+            var json = await WorkerClient.WorkerClient.InvokeJsonAsync(
                 "WebWorkerTemplate.Worker.GitHubWorker.FetchAndAnalyzeAsync",
                 TimeSpan.FromMinutes(2),
                 owner,
@@ -87,6 +88,7 @@ public partial class WebWorkerDemo : ComponentBase
                 _maxPages,
                 _githubToken);
 
+            _metricsWorker = JsonSerializer.Deserialize<GitHubMetrics>(json, JsonOptions);
             _progressMessage = "";
         }
         catch (Exception ex)

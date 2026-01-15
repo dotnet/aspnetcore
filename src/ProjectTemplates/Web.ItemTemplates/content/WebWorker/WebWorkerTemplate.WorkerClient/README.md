@@ -6,18 +6,31 @@ A lightweight library for running .NET code in a WebWorker from Blazor WebAssemb
 
 ### 1. Initialize the Client
 
-Call `InitializeAsync()` once, typically in `OnAfterRenderAsync`:
+Call `InitializeAsync()` and `WaitForReadyAsync()` once in `OnAfterRenderAsync` to eagerly load the worker:
 
 ```csharp
 using WebWorkerTemplate.WorkerClient;
+
+private bool _workerReady;
 
 protected override async Task OnAfterRenderAsync(bool firstRender)
 {
     if (firstRender)
     {
         await WorkerClient.InitializeAsync();
+        await WorkerClient.WaitForReadyAsync(); // Pre-load .NET runtime in worker
+        _workerReady = true;
+        StateHasChanged();
     }
 }
+```
+
+Use `_workerReady` to conditionally enable UI elements that depend on the worker:
+
+```razor
+<button @onclick="FetchDataAsync" disabled="@(!_workerReady)">
+    @(_workerReady ? "Fetch Data" : "Loading Worker...")
+</button>
 ```
 
 ### 2. Create a Worker Class
@@ -46,10 +59,13 @@ public partial class MyWorker
 ### 3. Invoke Worker Methods
 
 ```csharp
-// For methods returning strings/primitives
-string result = await WorkerClient.InvokeJsonAsync<string>(
+// Call the worker and get JSON string result
+string json = await WorkerClient.InvokeJsonAsync(
     "YourApp.Worker.MyWorker.ComputeHeavyTask", 
     "my input");
+
+// Deserialize the result
+var result = JsonSerializer.Deserialize<MyResult>(json);
 ```
 
 > 💡 **Need a different invocation pattern?** The `WorkerClient.cs` file is part of your project. If `InvokeJsonAsync` doesn't fit your needs, open `WorkerClient.cs` and implement your own method using the existing `[JSImport]` bindings as a reference.
@@ -80,20 +96,20 @@ Initializes the WebWorker client. **Must be called once before any other methods
 
 ---
 
-##### `InvokeJsonAsync<T>(method, args)`
+##### `InvokeJsonAsync(method, args)`
 
 ```csharp
-public static Task<T?> InvokeJsonAsync<T>(string method, params object[] args)
+public static Task<string> InvokeJsonAsync(string method, params object[] args)
 ```
 
-Invokes a worker method that returns JSON and deserializes the result.
+Invokes a worker method and returns the JSON string result. Deserialize manually using `JsonSerializer.Deserialize<T>()`.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `method` | `string` | Full method path: `"Namespace.ClassName.MethodName"` |
 | `args` | `object[]` | Arguments passed to the worker method |
 
-**Returns:** Deserialized result of type `T`
+**Returns:** JSON string result from the worker method
 
 **Throws:**
 - `InvalidOperationException` - If `InitializeAsync()` was not called
@@ -102,18 +118,20 @@ Invokes a worker method that returns JSON and deserializes the result.
 
 **Example:**
 ```csharp
-var metrics = await WorkerClient.InvokeJsonAsync<RepoMetrics>(
+var json = await WorkerClient.InvokeJsonAsync(
     "MyApp.Worker.GitHubWorker.FetchMetrics",
     "dotnet/aspnetcore",
     5);
+
+var metrics = JsonSerializer.Deserialize<RepoMetrics>(json);
 ```
 
 ---
 
-##### `InvokeJsonAsync<T>(method, timeout, args)`
+##### `InvokeJsonAsync(method, timeout, args)`
 
 ```csharp
-public static Task<T?> InvokeJsonAsync<T>(string method, TimeSpan timeout, params object[] args)
+public static Task<string> InvokeJsonAsync(string method, TimeSpan timeout, params object[] args)
 ```
 
 Same as above, but with a custom timeout.
@@ -121,13 +139,15 @@ Same as above, but with a custom timeout.
 **Example:**
 ```csharp
 // 2 minute timeout for long operations
-var result = await WorkerClient.InvokeJsonAsync<Report>(
+var json = await WorkerClient.InvokeJsonAsync(
     "MyApp.Worker.ReportGenerator.Generate",
     TimeSpan.FromMinutes(2),
     reportId);
 
+var result = JsonSerializer.Deserialize<Report>(json);
+
 // No timeout
-var result = await WorkerClient.InvokeJsonAsync<Data>(
+var json = await WorkerClient.InvokeJsonAsync(
     "MyApp.Worker.DataProcessor.Process",
     Timeout.InfiniteTimeSpan,
     data);
@@ -155,7 +175,8 @@ WorkerClient.SetProgressCallback((message, current, total) =>
     InvokeAsync(StateHasChanged);
 });
 
-await WorkerClient.InvokeJsonAsync<Result>("MyApp.Worker.LongTask.Run");
+var json = await WorkerClient.InvokeJsonAsync("MyApp.Worker.LongTask.Run");
+var result = JsonSerializer.Deserialize<Result>(json);
 
 WorkerClient.SetProgressCallback(null); // Clear when done
 ```
@@ -190,12 +211,22 @@ public partial class LongTask
 public static Task WaitForReadyAsync()
 ```
 
-Waits for the worker to be fully initialized and ready. The worker loads the .NET runtime lazily on first invocation; use this if you want to pre-warm it.
+Waits for the worker to be fully initialized and ready. The worker loads the .NET runtime lazily on first invocation. **Recommended:** Call this in `OnAfterRenderAsync` for eager initialization to avoid delays on first worker call.
 
 **Example:**
 ```csharp
-await WorkerClient.InitializeAsync();
-await WorkerClient.WaitForReadyAsync(); // Pre-load .NET runtime in worker
+private bool _workerReady;
+
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (firstRender)
+    {
+        await WorkerClient.InitializeAsync();
+        await WorkerClient.WaitForReadyAsync(); // Pre-load .NET runtime
+        _workerReady = true;
+        StateHasChanged();
+    }
+}
 ```
 
 ---
@@ -219,4 +250,4 @@ Your worker methods must:
 1. Be `static` and `partial`
 2. Have the `[JSExport]` attribute
 3. Use only [supported parameter/return types](https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.javascript.jsmarshalasattribute)
-4. Return JSON strings for complex objects (use `InvokeJsonAsync<T>`)
+4. Return JSON strings for complex objects.
