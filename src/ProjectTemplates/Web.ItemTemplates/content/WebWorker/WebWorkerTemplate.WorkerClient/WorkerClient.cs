@@ -35,8 +35,13 @@ public static partial class WorkerClient
             moduleName: nameof(WorkerClient),
             moduleUrl: $"../_content/WebWorkerTemplate.WorkerClient/worker-client.js");
 
+        CreateWorkerInternal();
+
         _initialized = true;
     }
+
+    [JSImport("createWorker", nameof(WorkerClient))]
+    private static partial void CreateWorkerInternal();
 
     [JSImport("setProgressCallback", nameof(WorkerClient))]
     private static partial void SetProgressCallbackInternal([JSMarshalAs<JSType.Function<JSType.String, JSType.Number, JSType.Number>>] Action<string, int, int> callback);

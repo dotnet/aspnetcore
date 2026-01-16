@@ -33,8 +33,9 @@ export function clearProgressCallback() {
 
 /**
  * Creates and initializes the WebWorker with event handlers.
+ * Must be called once before using invoke methods.
  */
-function createWorker() {
+export function createWorker() {
     worker = new Worker('_content/WebWorkerTemplate.WorkerClient/worker.js', { type: "module" });
     workerError = null;
     workerReady = false;
@@ -108,9 +109,6 @@ function rejectAllPending(errorMessage) {
         delete pendingRequests[id];
     }
 }
-
-// Create the initial worker
-createWorker();
 
 /**
  * Invoke a method on the worker.
