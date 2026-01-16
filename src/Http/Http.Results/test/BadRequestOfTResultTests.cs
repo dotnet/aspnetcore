@@ -6,6 +6,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -326,7 +327,9 @@ public class BadRequestOfTResultTests
     private static ServiceCollection CreateServiceCollection()
     {
         var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
+        services.AddOptions();
+        services.AddTransient(typeof(ILogger<>), typeof(NullLogger<>));
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         return services;
     }
 
