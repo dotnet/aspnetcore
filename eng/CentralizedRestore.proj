@@ -1,0 +1,73 @@
+<Project>
+  <!--
+    Centralized restore project that restores ALL projects in a single MSBuild invocation.
+    This avoids the NuGet race condition (https://github.com/NuGet/Home/issues/7648) where
+    parallel restore of the same project from multiple callers causes "Cannot create a file
+    when that file already exists" errors.
+
+    Usage in CI:
+      ./eng/build.cmd -ci -CentralizedRestore ...
+
+    Or manually:
+      dotnet restore AspNetCore.slnx
+      dotnet msbuild eng/CentralizedRestore.proj /t:RestoreDelayedOnly /p:Configuration=Release
+      ./eng/build.cmd -ci -NoRestore /p:RestoreForTestAssets=false /p:RestoreForDelayedProjects=false ...
+  -->
+
+  <Import Project="RequiresDelayedBuildProjects.props" />
+
+  <PropertyGroup>
+    <RepoRoot Condition="'$(RepoRoot)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..'))</RepoRoot>
+  </PropertyGroup>
+
+  <!--
+    Restore only delayed build projects and test assets (projects not in the main solution).
+    Called after `dotnet restore AspNetCore.slnx` to complete the restore.
+  -->
+  <Target Name="RestoreDelayedOnly">
+    <Message Importance="High" Text="======================================" />
+    <Message Importance="High" Text="Restoring delayed build projects and test assets" />
+    <Message Importance="High" Text="======================================" />
+
+    <!-- Filter to only restorable projects (not .proj or .nodeproj) -->
+    <ItemGroup>
+      <_DelayedProjectsToRestore Include="@(RequiresDelayedBuild)"
+          Condition="'%(Extension)' != '.nodeproj' AND '%(Extension)' != '.proj'" />
+    </ItemGroup>
+
+    <MSBuild Projects="@(_DelayedProjectsToRestore)"
+        Targets="Restore"
+        BuildInParallel="false"
+        Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())" />
+
+    <Message Importance="High" Text="======================================" />
+    <Message Importance="High" Text="Delayed projects restore complete" />
+    <Message Importance="High" Text="======================================" />
+  </Target>
+
+  <!--
+    Full restore of everything - alternative to solution-based restore.
+    Slower but more comprehensive.
+  -->
+  <Target Name="RestoreAll">
+    <Message Importance="High" Text="======================================" />
+    <Message Importance="High" Text="Centralized Restore - Restoring all projects" />
+    <Message Importance="High" Text="======================================" />
+
+    <Exec Command="dotnet restore &quot;$(RepoRoot)AspNetCore.slnx&quot;" />
+
+    <ItemGroup>
+      <_DelayedProjectsToRestore Include="@(RequiresDelayedBuild)"
+          Condition="'%(Extension)' != '.nodeproj' AND '%(Extension)' != '.proj'" />
+    </ItemGroup>
+
+    <MSBuild Projects="@(_DelayedProjectsToRestore)"
+        Targets="Restore"
+        BuildInParallel="false"
+        Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())" />
+
+    <Message Importance="High" Text="======================================" />
+    <Message Importance="High" Text="Centralized Restore Complete" />
+    <Message Importance="High" Text="======================================" />
+  </Target>
+</Project>
