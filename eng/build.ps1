@@ -497,6 +497,12 @@ try {
         Write-Host "===== Centralized Restore =====" -ForegroundColor Cyan
         Write-Host "Restoring all projects upfront to avoid NuGet parallel restore race conditions" -ForegroundColor Cyan
 
+        # Create artifacts package directories so projects that reference them as RestoreAdditionalProjectSources
+        # don't fail restore (e.g., InteropWebsite.csproj references ArtifactsShippingPackagesDir)
+        $packagesDir = "$RepoRoot\artifacts\packages\$Configuration"
+        New-Item -ItemType Directory -Force -Path "$packagesDir\Shipping" | Out-Null
+        New-Item -ItemType Directory -Force -Path "$packagesDir\NonShipping" | Out-Null
+
         # Restore via the solution file with --disable-parallel to avoid NuGet internal race conditions
         # NuGet's RestoreTask is not thread-safe when same project is restored in parallel
         Write-Host "Restoring AspNetCore.slnx (sequential)..." -ForegroundColor Yellow
