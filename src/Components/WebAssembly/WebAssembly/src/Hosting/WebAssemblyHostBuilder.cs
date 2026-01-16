@@ -320,6 +320,8 @@ public sealed class WebAssemblyHostBuilder
         return new WebAssemblyHost(this, services, scope, _persistedState);
     }
 
+    [DynamicDependency(JsonSerialized, typeof(DefaultAntiforgeryStateProvider))]
+    [DynamicDependency(JsonSerialized, typeof(AntiforgeryRequestToken))]
     internal void InitializeDefaultServices()
     {
         Services.AddSingleton<IJSRuntime>(DefaultWebAssemblyJSRuntime.Instance);
@@ -342,5 +344,6 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AntiforgeryStateProvider>(Services, RenderMode.InteractiveWebAssembly);
         Services.AddSupplyValueFromQueryProvider();
+        Services.AddSingleton<HostedServiceExecutor>();
     }
 }
