@@ -116,9 +116,9 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
             return null;
         }
 
-        var offset = 0;
+        var embeddedVersion = tokenBytes[0];
+        tokenBytes = tokenBytes[1..];
 
-        var embeddedVersion = tokenBytes[offset++];
         if (embeddedVersion != TokenVersion)
         {
             return null;
@@ -128,13 +128,15 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
 
         // Read SecurityToken (16 bytes)
         const int securityTokenByteLength = AntiforgeryToken.SecurityTokenBitLength / 8;
+
         deserializedToken.SecurityToken = new BinaryBlob(
             AntiforgeryToken.SecurityTokenBitLength,
-            tokenBytes.Slice(offset, securityTokenByteLength).ToArray());
-        offset += securityTokenByteLength;
+            tokenBytes[..securityTokenByteLength].ToArray());
+        tokenBytes = tokenBytes[securityTokenByteLength..];
 
         // Read IsCookieToken (1 byte)
-        deserializedToken.IsCookieToken = tokenBytes[offset++] != 0;
+        deserializedToken.IsCookieToken = tokenBytes[0] != 0;
+        tokenBytes = tokenBytes[1..];
 
         if (!deserializedToken.IsCookieToken)
         {
@@ -145,34 +147,39 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
             }
 
             // Read IsClaimsBased (1 byte)
-            var isClaimsBased = tokenBytes[offset++] != 0;
+            var isClaimsBased = tokenBytes[0] != 0;
+            tokenBytes = tokenBytes[1..];
+
             if (isClaimsBased)
             {
                 // Read ClaimUid (32 bytes)
                 const int claimUidByteLength = AntiforgeryToken.ClaimUidBitLength / 8;
-                if (tokenBytes.Length < offset + claimUidByteLength + 1) // +1 for additionalData prefix
+                if (tokenBytes.Length < claimUidByteLength + 1) // +1 for additionalData prefix
                 {
                     return null;
                 }
 
                 deserializedToken.ClaimUid = new BinaryBlob(
                     AntiforgeryToken.ClaimUidBitLength,
-                    tokenBytes.Slice(offset, claimUidByteLength).ToArray());
-                offset += claimUidByteLength;
+                    tokenBytes[..claimUidByteLength].ToArray());
+                tokenBytes = tokenBytes[claimUidByteLength..];
             }
             else
             {
                 // Read Username (7-bit encoded length prefix + UTF-8 string)
-                offset += tokenBytes[offset..].Read7BitEncodedString(out var username);
+                var usernameLength = tokenBytes.Read7BitEncodedString(out var username);
+                tokenBytes = tokenBytes[usernameLength..];
+
                 deserializedToken.Username = username;
             }
 
-            offset += tokenBytes[offset..].Read7BitEncodedString(out var additionalData);
+            var additionalDataLength = tokenBytes.Read7BitEncodedString(out var additionalData);
+            tokenBytes = tokenBytes[additionalDataLength..];
             deserializedToken.AdditionalData = additionalData;
         }
 
         // if there's still unconsumed data in the span, fail
-        if (offset != tokenBytes.Length)
+        if (tokenBytes.Length != 0)
         {
             return null;
         }
