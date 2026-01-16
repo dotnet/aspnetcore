@@ -8,9 +8,6 @@
     <!-- Required because Swashbuckle.AspNetCore uses shared runtime -->
     <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
 
-    <!-- Work around https://github.com/dotnet/aspnetcore/issues/61178 -->
-    <RestoreDisableParallel>true</RestoreDisableParallel>
-
     <!-- Workaround lack of Linux MUSL x64 support. -->
     <ExcludeFromBuild
         Condition=" '$(TargetOsName)' == 'linux-musl' and '$(TargetArchitecture)' == 'x64' ">true</ExcludeFromBuild>
