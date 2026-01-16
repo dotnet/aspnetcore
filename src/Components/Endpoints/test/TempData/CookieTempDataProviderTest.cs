@@ -104,7 +104,7 @@ public class CookieTempDataProviderTest
         var loadedTempData = _cookieTempDataProvider.LoadTempData(httpContext);
 
         Assert.Equal("StringValue", loadedTempData["StringKey"]);
-        Assert.Equal(42, loadedTempData["IntKey"]);
+        Assert.Equal(42, Assert.IsType<int>(loadedTempData["IntKey"]));
     }
 
     private static DefaultHttpContext CreateHttpContext()

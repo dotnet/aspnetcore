@@ -7,6 +7,9 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal interface ITempDataSerializer
 {
-    public object? Deserialize(JsonElement element);
-    public bool EnsureObjectCanBeSerialized(Type type);
+    public IDictionary<string, object?> DeserializeData(IDictionary<string, JsonElement> data);
+
+    public byte[] SerializeData(IDictionary<string, object?> data);
+
+    public bool CanSerialize(Type type);
 }

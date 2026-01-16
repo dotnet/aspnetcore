@@ -37,11 +37,7 @@ internal sealed partial class SessionStorageTempDataProvider : ITempDataProvider
                     return new Dictionary<string, object?>();
                 }
 
-                var convertedData = new Dictionary<string, object?>();
-                foreach (var kvp in dataFromSession)
-                {
-                    convertedData[kvp.Key] = _tempDataSerializer.Deserialize(kvp.Value);
-                }
+                var convertedData = _tempDataSerializer.DeserializeData(dataFromSession);
                 Log.TempDataSessionLoadSuccess(_logger);
                 return convertedData;
             }
@@ -59,10 +55,9 @@ internal sealed partial class SessionStorageTempDataProvider : ITempDataProvider
     public void SaveTempData(HttpContext context, IDictionary<string, object?> values)
     {
         ArgumentNullException.ThrowIfNull(context);
-
         foreach (var kvp in values)
         {
-            if (kvp.Value is not null && !_tempDataSerializer.EnsureObjectCanBeSerialized(kvp.Value.GetType()))
+            if (kvp.Value is not null && !_tempDataSerializer.CanSerialize(kvp.Value.GetType()))
             {
                 throw new InvalidOperationException($"TempData cannot store values of type '{kvp.Value.GetType()}'.");
             }
@@ -75,7 +70,7 @@ internal sealed partial class SessionStorageTempDataProvider : ITempDataProvider
             return;
         }
 
-        var bytes = JsonSerializer.SerializeToUtf8Bytes(values);
+        var bytes = _tempDataSerializer.SerializeData(values);
         session.Set(TempDataSessionStateKey, bytes);
         Log.TempDataSessionSaveSuccess(_logger);
     }
