@@ -31,12 +31,12 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
         Exception? innerException = null;
         try
         {
-            var tokenDecodedSize = Base64Url.GetMaxDecodedLength(serializedToken.Length);
+            var maxTokenDecodedSize = Base64Url.GetMaxDecodedLength(serializedToken.Length);
 
-            var rent = tokenDecodedSize < 256
+            var rent = maxTokenDecodedSize <= 256
                 ? stackalloc byte[256]
-                : (tokenBytesRent = ArrayPool<byte>.Shared.Rent(tokenDecodedSize));
-            var tokenBytes = rent[..tokenDecodedSize];
+                : (tokenBytesRent = ArrayPool<byte>.Shared.Rent(maxTokenDecodedSize));
+            var tokenBytes = rent[..maxTokenDecodedSize];
 
             var status = Base64Url.DecodeFromChars(serializedToken, tokenBytes, out int charsConsumed, out int bytesWritten);
             if (status is not OperationStatus.Done)
@@ -213,7 +213,7 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
         byte[]? tokenBytesRent = null;
 
         var rent = totalSize < 256
-            ? stackalloc byte[255]
+            ? stackalloc byte[256]
             : (tokenBytesRent = ArrayPool<byte>.Shared.Rent(totalSize));
         var tokenBytes = rent[..totalSize];
 
@@ -243,7 +243,7 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
 
             if (_perfCryptoSystem is not null)
             {
-                var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[255]);
+                var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[256]);
                 try
                 {
                     _perfCryptoSystem.Protect(tokenBytes, ref protectBuffer);

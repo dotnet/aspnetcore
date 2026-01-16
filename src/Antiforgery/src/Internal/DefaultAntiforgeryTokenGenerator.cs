@@ -147,8 +147,7 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
         var authenticatedIdentity = GetAuthenticatedIdentity(httpContext.User);
         if (authenticatedIdentity != null)
         {
-            var requestTokenClaimUidLength = requestToken.ClaimUid?.Length;
-            if (requestTokenClaimUidLength is null)
+            if (requestToken.ClaimUid is null)
             {
                 currentUsername = authenticatedIdentity.Name ?? string.Empty;
             }
