@@ -105,7 +105,7 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
         // - Request token (username): 18 + 1 (isClaimsBased) + 1 (username prefix) + 1 (additionalData prefix) = 21 bytes
         // - Request token (claims): 18 + 1 (isClaimsBased) + 32 (claimUid) + 1 (additionalData prefix) = 52 bytes
         const int minCookieTokenLength = 1 + (AntiforgeryToken.SecurityTokenBitLength / 8) + 1; // 18 bytes
-        const int minRequestTokenLength = minCookieTokenLength + 1 + 1 + 1; // 21 bytes (username-based)
+        const int minRequestTokenPayloadLength = 1 + 1 + 1; // 3 bytes: isClaimsBased + username prefix + additionalData prefix
 
         if (tokenBytes.Length < minCookieTokenLength)
         {
@@ -136,8 +136,8 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
 
         if (!deserializedToken.IsCookieToken)
         {
-            // Validate minimum length for request token
-            if (tokenBytes.Length < minRequestTokenLength)
+            // Validate minimum length for request token payload (after header has been consumed)
+            if (tokenBytes.Length < minRequestTokenPayloadLength)
             {
                 return null;
             }
