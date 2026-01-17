@@ -146,7 +146,11 @@ internal static class Int7BitEncodingUtils
             throw new FormatException("Bad 7-bit encoded string.");
         }
 
+#if NETCOREAPP
         value = Encoding.UTF8.GetString(bytes.Slice(consumed, length));
+#else
+        value = Encoding.UTF8.GetString(bytes.Slice(consumed, length).ToArray());
+#endif
         consumed += length;
         return consumed;
     }
