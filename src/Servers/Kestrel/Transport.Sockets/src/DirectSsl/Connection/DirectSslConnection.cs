@@ -30,7 +30,8 @@ internal sealed class DirectSslConnection : TransportConnection
 
     private Task? _receiveTask;
     private Task? _sendTask;
-    private volatile bool _disposed;
+    private volatile bool _aborted;
+    private int _disposed; // 0 = not disposed, 1 = disposed (for thread-safe CAS)
 
     public DirectSslConnection(
         Socket socket,
@@ -50,6 +51,10 @@ internal sealed class DirectSslConnection : TransportConnection
         LocalEndPoint = localEndPoint;
         RemoteEndPoint = remoteEndPoint;
         ConnectionClosed = _connectionClosedTokenSource.Token;
+        
+        // Subscribe to fatal errors from the SSL connection state
+        // This ensures we get notified even if no read/write is pending when peer disconnects
+        _connectionState.OnFatalError = OnSslFatalError;
 
         // Create duplex pipe pair for Kestrel
         var inputOptions = new PipeOptions(
@@ -90,7 +95,7 @@ internal sealed class DirectSslConnection : TransportConnection
 
         try
         {
-            while (!_disposed)
+            while (!_aborted)
             {
                 var memory = Application.Output.GetMemory();
 
@@ -146,7 +151,7 @@ internal sealed class DirectSslConnection : TransportConnection
 
         try
         {
-            while (!_disposed)
+            while (!_aborted)
             {
                 var result = await Application.Input.ReadAsync();
 
@@ -205,21 +210,65 @@ internal sealed class DirectSslConnection : TransportConnection
 
     public override void Abort(ConnectionAbortedException abortReason)
     {
-        _disposed = true;
-        _connectionClosedTokenSource.Cancel();
+        if (_aborted)
+        {
+            return;
+        }
+        _aborted = true;
+        
+        // CTS may already be disposed if DisposeAsync completed first
+        try
+        {
+            _connectionClosedTokenSource.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Already disposed, ignore
+        }
 
         // Cancel pending reads to unblock the loops
         Application.Input.CancelPendingRead();
         Application.Output.CancelPendingFlush();
     }
 
-    public override async ValueTask DisposeAsync()
+    /// <summary>
+    /// Called when the SSL connection encounters a fatal error (e.g., peer disconnect via EPOLLRDHUP).
+    /// This triggers cleanup even if no read/write was pending.
+    /// </summary>
+    private void OnSslFatalError(Exception ex)
     {
-        if (_disposed)
+        // Check if already disposed or aborted - connection may have been cleaned up already
+        if (_aborted || Volatile.Read(ref _disposed) != 0)
         {
             return;
         }
-        _disposed = true;
+
+        _logger.LogDebug(ex, "SSL fatal error for fd={Fd}, triggering disposal", _connectionState.Fd);
+        
+        // First abort to cancel pending operations
+        Abort(new ConnectionAbortedException("SSL connection error", ex));
+        
+        // Queue async disposal on thread pool since we can't await here
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await DisposeAsync();
+            }
+            catch (Exception disposeEx)
+            {
+                _logger.LogDebug(disposeEx, "Error during disposal triggered by SSL fatal error");
+            }
+        });
+    }
+
+    public override async ValueTask DisposeAsync()
+    {
+        // Thread-safe check: only one call to DisposeAsync proceeds
+        if (Interlocked.CompareExchange(ref _disposed, 1, 0) != 0)
+        {
+            return;
+        }
 
         // 1. Cancel pending SSL operations (unblocks ReadAsync/WriteAsync TCS)
         _connectionState.Cancel();

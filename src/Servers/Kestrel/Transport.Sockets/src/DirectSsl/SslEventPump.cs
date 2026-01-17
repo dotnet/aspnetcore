@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Interop;
 using Microsoft.Extensions.Logging;
@@ -18,6 +17,12 @@ internal sealed class SslEventPump : IDisposable
     private readonly ConcurrentDictionary<int, SslConnectionState> _connections = new();
     private readonly Thread _pumpThread;
     private volatile bool _running = true;
+    
+    // Counters for debugging
+    private long _totalRegistered;
+    private long _totalUnregistered;
+    private long _totalErrors;
+    private DateTime _lastLogTime = DateTime.UtcNow;
 
     public SslEventPump(ILogger? sslPumpLogger, int id)
     {
@@ -44,12 +49,13 @@ internal sealed class SslEventPump : IDisposable
         
         conn.Pump = this;
         _connections[conn.Fd] = conn;
+        Interlocked.Increment(ref _totalRegistered);
 
-        // Only register for EPOLLIN initially - EPOLLOUT will be added dynamically when needed
-        // This avoids spurious wakeups since sockets are almost always writable
+        // Register for EPOLLIN initially - EPOLLOUT will be added dynamically when needed
+        // Using level-triggered mode (no EPOLLET) for stability
         var ev = new EpollEvent
         {
-            Events = NativeSsl.EPOLLIN | NativeSsl.EPOLLET | NativeSsl.EPOLLRDHUP,
+            Events = NativeSsl.EPOLLIN | NativeSsl.EPOLLRDHUP,
             Data = new EpollData { Fd = conn.Fd }
         };
         
@@ -67,7 +73,10 @@ internal sealed class SslEventPump : IDisposable
     public void Unregister(int fd)
     {
         var removed = _connections.TryRemove(fd, out _);
-        Debug.Assert(removed, "Unregister called for fd not in connections");
+        if (removed)
+        {
+            Interlocked.Increment(ref _totalUnregistered);
+        }
 
         NativeSsl.epoll_ctl(_epollFd, NativeSsl.EPOLL_CTL_DEL, fd, IntPtr.Zero);
     }
@@ -78,9 +87,10 @@ internal sealed class SslEventPump : IDisposable
     /// </summary>
     public void ModifyEvents(int fd, uint events)
     {
+        // Using level-triggered mode (no EPOLLET) for stability
         var ev = new EpollEvent
         {
-            Events = events | NativeSsl.EPOLLET | NativeSsl.EPOLLRDHUP,
+            Events = events | NativeSsl.EPOLLRDHUP,
             Data = new EpollData { Fd = fd }
         };
 
@@ -100,7 +110,14 @@ internal sealed class SslEventPump : IDisposable
         while (_running)
         {
             int numEvents = NativeSsl.epoll_wait(_epollFd, events, MaxEvents, timeout: 1000);
-            _logger?.LogDebug("epoll_wait returned {NumEvents} events", numEvents);
+            
+            // Log stats every 5 seconds
+            var now = DateTime.UtcNow;
+            if ((now - _lastLogTime).TotalSeconds >= 5)
+            {
+                _lastLogTime = now;
+                Console.WriteLine($"[Pump {_id}] Connections: {_connections.Count}, Registered: {_totalRegistered}, Unregistered: {_totalUnregistered}, Errors: {_totalErrors}");
+            }
 
             if (numEvents < 0)
             {
@@ -134,9 +151,14 @@ internal sealed class SslEventPump : IDisposable
                     continue;
                 }
 
-                if ((mask & (NativeSsl.EPOLLERR | NativeSsl.EPOLLHUP)) != 0)
+                if ((mask & (NativeSsl.EPOLLERR | NativeSsl.EPOLLHUP | NativeSsl.EPOLLRDHUP)) != 0)
                 {
-                    conn.OnError(new IOException("Socket error or hangup"));
+                    // Remove from tracking to prevent further event processing
+                    _connections.TryRemove(fd, out _);
+                    Interlocked.Increment(ref _totalErrors);
+                    
+                    // Notify connection of error (will trigger disposal via pipeline completion)
+                    conn.OnError(new IOException("Socket error, hangup, or peer closed"));
                     continue;
                 }
 

@@ -14,6 +14,11 @@
     
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.Extensions.Hosting" />
+    
+    <!-- Override Transport.Sockets to use our local build instead of shared framework -->
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" 
+               HintPath="$(ArtifactsBinDir)Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets/$(Configuration)/$(DefaultNetCoreTargetFramework)/Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.dll"
+               Private="true" />
   </ItemGroup>
 
   <ItemGroup>

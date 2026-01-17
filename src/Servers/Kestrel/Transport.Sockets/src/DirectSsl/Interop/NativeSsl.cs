@@ -305,6 +305,10 @@ internal static partial class NativeSsl
     [LibraryImport(LIBSSL)] public static partial int SSL_shutdown(IntPtr ssl);
     [LibraryImport(LIBSSL)] public static partial void SSL_free(IntPtr ssl);
     [LibraryImport(LIBSSL)] public static partial void SSL_CTX_free(IntPtr ctx);
+    
+    // Error handling - libcrypto
+    private const string LIBCRYPTO = "libcrypto.so.3";
+    [LibraryImport(LIBCRYPTO)] public static partial void ERR_clear_error();
 
     // SSL error codes
     public const int SSL_ERROR_NONE = 0;

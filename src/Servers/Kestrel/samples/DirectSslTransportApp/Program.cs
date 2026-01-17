@@ -10,28 +10,47 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-var withCustomDirectTransport = true;
+// Use environment variable to switch between DirectSsl and standard TLS
+// Set USE_STANDARD_TLS=1 to use standard Kestrel TLS (SslStream)
+var useStandardTls = Environment.GetEnvironmentVariable("USE_STANDARD_TLS") == "1";
 var logFilePath = "directssl.log";
 
 // Clear log file on startup
-File.WriteAllText(logFilePath, $"=== DirectSslTransportApp started at {DateTime.Now} ===\n");
+File.WriteAllText(logFilePath, $"=== DirectSslTransportApp started at {DateTime.Now} (StandardTLS={useStandardTls}) ===\n");
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
-// Add simple file logging
-builder.Logging.AddProvider(new FileLoggerProvider(logFilePath));
+// Disable file logging for benchmarking (causes I/O contention)
+// builder.Logging.AddProvider(new FileLoggerProvider(logFilePath));
 
-if (withCustomDirectTransport)
+// Add global exception handlers to catch crashes
+AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
 {
-    builder.Logging.SetMinimumLevel(LogLevel.Error); // disable otherwise bad perf
+    var msg = $"[FATAL] UnhandledException: {e.ExceptionObject}\n";
+    Console.Error.WriteLine(msg);
+    File.AppendAllText(logFilePath, msg);
+};
+
+TaskScheduler.UnobservedTaskException += (sender, e) =>
+{
+    var msg = $"[FATAL] UnobservedTaskException: {e.Exception}\n";
+    Console.Error.WriteLine(msg);
+    File.AppendAllText(logFilePath, msg);
+    e.SetObserved();
+};
+
+if (!useStandardTls)
+{
+    Console.WriteLine("Using DirectSsl transport (OpenSSL)");
+    builder.Logging.SetMinimumLevel(LogLevel.None); // Disable for benchmarking
 
     // Configure Kestrel to use the Direct Socket Transport. It by-passes the HttpsMiddleware and SslStream
     builder.WebHost.UseKestrelDirectSslTransport();
 
     builder.WebHost.UseDirectSslSockets(options =>
     {
-        options.CertificatePath = "server-p384.crt";
-        options.PrivateKeyPath = "server-p384.key";
+        options.CertificatePath = "server-p256.crt";
+        options.PrivateKeyPath = "server-p256.key";
 
         options.WorkerCount = 4;
     });
@@ -47,6 +66,7 @@ if (withCustomDirectTransport)
 }
 else
 {
+    Console.WriteLine("Using standard Kestrel TLS (SslStream)");
     // Disable verbose logging for better benchmark performance
     builder.Logging.SetMinimumLevel(LogLevel.Warning);
 
@@ -55,7 +75,8 @@ else
     {
         options.ListenAnyIP(5001, listenOptions =>
         {
-            listenOptions.UseHttps(new X509Certificate2("server-p384.pfx", "testpassword"));
+            listenOptions.UseHttps(new X509Certificate2("server-p256.pfx", "testpassword"));
+            listenOptions.Protocols = HttpProtocols.Http1;  // HTTP/1.1 only for fair comparison
         });
     });
 }

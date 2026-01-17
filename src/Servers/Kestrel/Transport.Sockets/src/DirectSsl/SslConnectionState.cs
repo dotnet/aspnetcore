@@ -15,6 +15,9 @@ internal sealed class SslConnectionState : IDisposable
 
     // Reference to pump for dynamic event modification
     internal SslEventPump? Pump { get; set; }
+    
+    // Callback for fatal errors (e.g., peer disconnect) - allows owner to trigger disposal
+    internal Action<Exception>? OnFatalError { get; set; }
 
     // Handshake
     private TaskCompletionSource<bool>? _handshakeTcs;
@@ -44,6 +47,8 @@ internal sealed class SslConnectionState : IDisposable
 
     public ValueTask HandshakeAsync()
     {
+        // Clear any stale errors before handshake
+        NativeSsl.ERR_clear_error();
         int n = NativeSsl.SSL_do_handshake(Ssl);
 
         if (n == 1)
@@ -67,6 +72,8 @@ internal sealed class SslConnectionState : IDisposable
     {
         var tcs = _handshakeTcs!;
 
+        // Clear any stale errors before handshake continuation
+        NativeSsl.ERR_clear_error();
         int n = NativeSsl.SSL_do_handshake(Ssl);
 
         if (n == 1)
@@ -402,6 +409,9 @@ internal sealed class SslConnectionState : IDisposable
         _handshakeTcs = null;
         _readTcs = null;
         _writeTcs = null;
+        
+        // Notify owner about fatal error so it can trigger disposal
+        OnFatalError?.Invoke(ex);
     }
 
     /// <summary>
@@ -425,6 +435,8 @@ internal sealed class SslConnectionState : IDisposable
 
     private int DoSslRead(Memory<byte> buffer)
     {
+        // Clear any stale errors before SSL operation
+        NativeSsl.ERR_clear_error();
         unsafe
         {
             fixed (byte* ptr = buffer.Span)
@@ -436,6 +448,8 @@ internal sealed class SslConnectionState : IDisposable
 
     private int DoSslWrite(ReadOnlyMemory<byte> buffer)
     {
+        // Clear any stale errors before SSL operation
+        NativeSsl.ERR_clear_error();
         unsafe
         {
             fixed (byte* ptr = buffer.Span)
@@ -447,6 +461,9 @@ internal sealed class SslConnectionState : IDisposable
 
     public void Dispose()
     {
+        // Clear any stale errors before shutdown
+        NativeSsl.ERR_clear_error();
+        
         // Send close_notify alert for graceful TLS shutdown
         // SSL_shutdown may return 0 (need to call again) or 1 (complete)
         // We call it once - if peer has already closed, that's fine
