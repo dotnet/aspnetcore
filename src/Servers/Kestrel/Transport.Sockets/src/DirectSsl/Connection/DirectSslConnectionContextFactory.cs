@@ -37,6 +37,13 @@ internal sealed class DirectSslConnectionContextFactory : IDisposable
     {
         int fd = (int)acceptSocket.Handle;
         NativeSsl.SetNonBlocking(fd);
+        
+        // Set TCP_NODELAY to disable Nagle's algorithm for lower latency
+        acceptSocket.NoDelay = true;
+        
+        // Set SO_LINGER to ensure graceful close with timeout
+        // This prevents RST being sent when there's data in the send buffer
+        acceptSocket.LingerState = new LingerOption(true, 5);  // linger for up to 5 seconds
 
         // 3. Create SSL and bind to socket
         IntPtr ssl = NativeSsl.SSL_new(_sslContext.Handle);

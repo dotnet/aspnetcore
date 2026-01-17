@@ -60,7 +60,7 @@ if (!useStandardTls)
         // HTTPS endpoint on port 5001 with DirectSocket + OpenSSL
         options.ListenAnyIP(5001, listenOptions =>
         {
-            listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+            listenOptions.Protocols = HttpProtocols.Http1;  // HTTP/1.1 only for fair comparison
         });
     });
 }

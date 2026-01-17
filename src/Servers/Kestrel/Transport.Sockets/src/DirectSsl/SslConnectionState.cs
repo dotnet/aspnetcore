@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.InteropServices;
+// Uncomment the following line to enable debug counters for SSL diagnostics
+// #define DIRECTSSL_DEBUG_COUNTERS
+
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl;
@@ -142,8 +144,62 @@ internal sealed class SslConnectionState : IDisposable
                 _readWantsWrite = true;
                 Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN | NativeSsl.EPOLLOUT);
                 return new ValueTask<int>(_readTcs.Task);
+            
+            case NativeSsl.SSL_ERROR_ZERO_RETURN:
+                // Peer sent close_notify - treat as EOF
+#if DIRECTSSL_DEBUG_COUNTERS
+                Interlocked.Increment(ref SslEventPump.TotalSslErrorZeroReturn);
+#endif
+                return new ValueTask<int>(0);
+                
+            case NativeSsl.SSL_ERROR_SYSCALL:
+#if DIRECTSSL_DEBUG_COUNTERS
+                Interlocked.Increment(ref SslEventPump.TotalSslErrorSyscall);
+                Interlocked.Increment(ref SslEventPump.TotalSslErrorSyscallImmediate);
+                if (n == 0)
+                {
+                    Interlocked.Increment(ref SslEventPump.TotalSslErrorSyscallRet0);
+                }
+                else
+                {
+                    Interlocked.Increment(ref SslEventPump.TotalSslErrorSyscallRetNeg1);
+                }
+                // Track errno distribution
+                if (_lastErrno == 0)
+                {
+                    Interlocked.Increment(ref SslEventPump.TotalSslErrorSyscallErrno0);
+                }
+                else if (_lastErrno == 11)
+                {
+                    Interlocked.Increment(ref SslEventPump.TotalSslErrorSyscallErrno11);
+                }
+                else
+                {
+                    Interlocked.Increment(ref SslEventPump.TotalSslErrorSyscallErrnoOther);
+                }
+#endif
+                
+                // For SSL_ERROR_SYSCALL: if n==0 it's unexpected EOF, if n==-1 check errno
+                // Use _lastErrno which was captured immediately after SSL_read
+                if (n == 0 || _lastErrno == 0 || _lastErrno == 104 /* ECONNRESET */)
+                {
+                    return new ValueTask<int>(0);  // Treat as EOF
+                }
+                if (_lastErrno == 11 /* EAGAIN */ || _lastErrno == 115 /* EINPROGRESS */)
+                {
+                    // No data available - should wait for epoll
+                    _readBuffer = buffer;
+                    _readTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    _readWantsWrite = false;
+                    return new ValueTask<int>(_readTcs.Task);
+                }
+                // There's an actual error
+                return ValueTask.FromException<int>(new SslException($"SSL_read syscall error: errno={_lastErrno}"));
 
             default:
+#if DIRECTSSL_DEBUG_COUNTERS
+                Interlocked.Increment(ref SslEventPump.TotalSslErrorOther);
+#endif
                 return ValueTask.FromException<int>(new SslException($"SSL_read failed: {error}"));
         }
     }
@@ -213,8 +269,66 @@ internal sealed class SslConnectionState : IDisposable
                     Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN | NativeSsl.EPOLLOUT);
                 }
                 return;
+            
+            case NativeSsl.SSL_ERROR_ZERO_RETURN:
+                // Peer sent close_notify - treat as EOF
+#if DIRECTSSL_DEBUG_COUNTERS
+                Interlocked.Increment(ref SslEventPump.TotalSslErrorZeroReturn);
+#endif
+                _readTcs = null;
+                _readBuffer = default;
+                _readWantsWrite = false;
+                tcs.TrySetResult(0);
+                return;
+
+            case NativeSsl.SSL_ERROR_SYSCALL:
+#if DIRECTSSL_DEBUG_COUNTERS
+                Interlocked.Increment(ref SslEventPump.TotalSslErrorSyscall);
+                Interlocked.Increment(ref SslEventPump.TotalSslErrorSyscallAfterEpoll);
+                if (n == 0)
+                {
+                    Interlocked.Increment(ref SslEventPump.TotalSslErrorSyscallRet0);
+                }
+                else
+                {
+                    Interlocked.Increment(ref SslEventPump.TotalSslErrorSyscallRetNeg1);
+                }
+#endif
+                // For SSL_ERROR_SYSCALL: if n==0 it's unexpected EOF, if n==-1 check errno
+                // Use _lastErrno which was captured immediately after SSL_read
+                if (n == 0 || _lastErrno == 0 || _lastErrno == 104 /* ECONNRESET */)
+                {
+                    _readTcs = null;
+                    _readBuffer = default;
+                    _readWantsWrite = false;
+                    tcs.TrySetResult(0);  // Treat as EOF
+                    return;
+                }
+                if (_lastErrno == 11 /* EAGAIN */ || _lastErrno == 115 /* EINPROGRESS */)
+                {
+                    // No data available - wait for more (shouldn't happen after epoll wakeup)
+                    return;
+                }
+                _readTcs = null;
+                _readBuffer = default;
+                _readWantsWrite = false;
+                tcs.TrySetException(new SslException($"SSL_read syscall error: errno={_lastErrno}"));
+                return;
+            
+            case NativeSsl.SSL_ERROR_SSL:
+#if DIRECTSSL_DEBUG_COUNTERS
+                Interlocked.Increment(ref SslEventPump.TotalSslErrorSsl);
+#endif
+                _readTcs = null;
+                _readBuffer = default;
+                _readWantsWrite = false;
+                tcs.TrySetException(new SslException($"SSL_read failed: {error}"));
+                return;
 
             default:
+#if DIRECTSSL_DEBUG_COUNTERS
+                Interlocked.Increment(ref SslEventPump.TotalSslErrorOther);
+#endif
                 _readTcs = null;
                 _readBuffer = default;
                 _readWantsWrite = false;
@@ -242,6 +356,9 @@ internal sealed class SslConnectionState : IDisposable
         var n = DoSslWrite(buffer);
         if (n > 0)
         {
+#if DIRECTSSL_DEBUG_COUNTERS
+            Interlocked.Increment(ref SslEventPump.TotalWriteImmediate);
+#endif
             return new ValueTask<int>(n);
         }
 
@@ -249,6 +366,9 @@ internal sealed class SslConnectionState : IDisposable
         switch (error)
         {
             case NativeSsl.SSL_ERROR_WANT_WRITE:
+#if DIRECTSSL_DEBUG_COUNTERS
+                Interlocked.Increment(ref SslEventPump.TotalWriteWouldBlock);
+#endif
                 _writeBuffer = buffer;
                 _writeTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _writeWantsRead = false;
@@ -272,14 +392,13 @@ internal sealed class SslConnectionState : IDisposable
                 return new ValueTask<int>(0);
 
             case NativeSsl.SSL_ERROR_SYSCALL:
-                // Check if it's just a connection reset
-                int errno = Marshal.GetLastWin32Error();
-                if (errno == 0 || errno == 104 /* ECONNRESET */)
+                // nginx pattern: check ERR_peek_error() == 0 to detect clean EOF
+                if (NativeSsl.ERR_peek_error() == 0)
                 {
                     return new ValueTask<int>(0);  // Treat as EOF
                 }
 
-                return ValueTask.FromException<int>(new IOException($"SSL syscall error: {errno}"));
+                return ValueTask.FromException<int>(new IOException($"SSL write syscall error"));
 
             default:
                 return ValueTask.FromException<int>(new SslException($"SSL_write failed: {error}"));
@@ -441,10 +560,16 @@ internal sealed class SslConnectionState : IDisposable
         {
             fixed (byte* ptr = buffer.Span)
             {
-                return NativeSsl.SSL_read(Ssl, ptr, buffer.Length);
+                int result = NativeSsl.SSL_read(Ssl, ptr, buffer.Length);
+                // Capture errno immediately after syscall, before any other calls
+                _lastErrno = System.Runtime.InteropServices.Marshal.GetLastWin32Error();
+                return result;
             }
         }
     }
+    
+    // Stored errno from the last SSL_read call
+    private int _lastErrno;
 
     private int DoSslWrite(ReadOnlyMemory<byte> buffer)
     {
@@ -464,10 +589,16 @@ internal sealed class SslConnectionState : IDisposable
         // Clear any stale errors before shutdown
         NativeSsl.ERR_clear_error();
         
-        // Send close_notify alert for graceful TLS shutdown
-        // SSL_shutdown may return 0 (need to call again) or 1 (complete)
-        // We call it once - if peer has already closed, that's fine
+        // Use quiet shutdown (nginx's approach) - don't wait for peer's close_notify
+        // This is appropriate because:
+        // 1. The peer may have already closed the connection (SSL_ERROR_SYSCALL with errno=0)
+        // 2. Waiting for close_notify can block or fail if connection is broken
+        // 3. nginx sets SSL_set_quiet_shutdown(1) when c->timedout || c->error || c->buffered
+        NativeSsl.SSL_set_quiet_shutdown(Ssl, 1);
+        
+        // Single SSL_shutdown call - with quiet shutdown, this just cleans up locally
         NativeSsl.SSL_shutdown(Ssl);
+        
         NativeSsl.SSL_free(Ssl);
     }
 }

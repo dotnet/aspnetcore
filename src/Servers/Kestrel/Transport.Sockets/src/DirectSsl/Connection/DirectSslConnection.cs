@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+// Uncomment the following line to enable debug counters for SSL diagnostics
+// #define DIRECTSSL_DEBUG_COUNTERS
+
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Net;
@@ -114,13 +117,17 @@ internal sealed class DirectSslConnection : TransportConnection
                 else if (bytesRead == 0)
                 {
                     // Connection closed (EOF)
-                    _logger.LogDebug("SSL connection closed by peer: fd={Fd}", _connectionState.Fd);
+#if DIRECTSSL_DEBUG_COUNTERS
+                    Interlocked.Increment(ref SslEventPump.TotalReadEof);
+#endif
                     break;
                 }
                 else
                 {
                     // Negative = error (shouldn't happen with async API, but handle it)
-                    _logger.LogError("SSL_read returned unexpected value: {BytesRead}", bytesRead);
+#if DIRECTSSL_DEBUG_COUNTERS
+                    Interlocked.Increment(ref SslEventPump.TotalReadErrors);
+#endif
                     error = new IOException($"SSL_read failed with {bytesRead}");
                     break;
                 }
@@ -132,8 +139,10 @@ internal sealed class DirectSslConnection : TransportConnection
         }
         catch (Exception ex)
         {
+#if DIRECTSSL_DEBUG_COUNTERS
+            Interlocked.Increment(ref SslEventPump.TotalReadErrors);
+#endif
             error = ex;
-            _logger.LogError(ex, "Error in SSL receive loop");
         }
         finally
         {
@@ -177,7 +186,9 @@ internal sealed class DirectSslConnection : TransportConnection
                             if (written == 0)
                             {
                                 // Peer closed connection
-                                _logger.LogError("Peer closed connection during write");
+#if DIRECTSSL_DEBUG_COUNTERS
+                                Interlocked.Increment(ref SslEventPump.TotalWriteEof);
+#endif
                                 return;
                             }
                         }
@@ -199,8 +210,10 @@ internal sealed class DirectSslConnection : TransportConnection
         }
         catch (Exception ex)
         {
+#if DIRECTSSL_DEBUG_COUNTERS
+            Interlocked.Increment(ref SslEventPump.TotalWriteErrors);
+#endif
             error = ex;
-            _logger.LogError(ex, "Error in SSL send loop");
         }
         finally
         {
@@ -226,14 +239,14 @@ internal sealed class DirectSslConnection : TransportConnection
             // Already disposed, ignore
         }
 
-        // Cancel pending reads to unblock the loops
+        // Only cancel Application.Input to unblock SendLoop (matches Kestrel's Abort pattern)
+        // Don't cancel Application.Output - let ReceiveLoop exit naturally
         Application.Input.CancelPendingRead();
-        Application.Output.CancelPendingFlush();
     }
 
     /// <summary>
     /// Called when the SSL connection encounters a fatal error (e.g., peer disconnect via EPOLLRDHUP).
-    /// This triggers cleanup even if no read/write was pending.
+    /// This just aborts the connection - disposal will happen when Kestrel calls DisposeAsync.
     /// </summary>
     private void OnSslFatalError(Exception ex)
     {
@@ -243,23 +256,19 @@ internal sealed class DirectSslConnection : TransportConnection
             return;
         }
 
-        _logger.LogDebug(ex, "SSL fatal error for fd={Fd}, triggering disposal", _connectionState.Fd);
-        
-        // First abort to cancel pending operations
-        Abort(new ConnectionAbortedException("SSL connection error", ex));
-        
-        // Queue async disposal on thread pool since we can't await here
-        _ = Task.Run(async () =>
+        try
         {
-            try
-            {
-                await DisposeAsync();
-            }
-            catch (Exception disposeEx)
-            {
-                _logger.LogDebug(disposeEx, "Error during disposal triggered by SSL fatal error");
-            }
-        });
+            _logger.LogDebug(ex, "SSL fatal error for fd={Fd}, aborting connection", _connectionState.Fd);
+            
+            // Just abort to cancel pending operations - don't trigger disposal here
+            // Kestrel will call DisposeAsync when it's done with the connection
+            // This prevents premature disposal while SendLoop is still writing
+            Abort(new ConnectionAbortedException("SSL connection error", ex));
+        }
+        catch (ObjectDisposedException)
+        {
+            // Race with DisposeAsync - connection is already being torn down
+        }
     }
 
     public override async ValueTask DisposeAsync()
@@ -294,8 +303,27 @@ internal sealed class DirectSslConnection : TransportConnection
         Transport.Input.Complete();
         Transport.Output.Complete();
 
-        // 6. Graceful SSL shutdown and cleanup
-        _connectionState.Dispose();
+        // 6. Graceful SSL and socket shutdown (matching Kestrel's SocketConnection pattern)
+        try
+        {
+            // SSL shutdown sends close_notify alert
+            _connectionState.Dispose();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "SSL shutdown failed for fd={Fd}", _connectionState.Fd);
+        }
+        
+        try
+        {
+            // Shutdown both directions (matching Kestrel's SocketConnection.Shutdown)
+            _socket.Shutdown(SocketShutdown.Both);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Socket shutdown failed for fd={Fd}", _connectionState.Fd);
+        }
+        
         _socket.Dispose();
 
         // 7. Signal connection closed

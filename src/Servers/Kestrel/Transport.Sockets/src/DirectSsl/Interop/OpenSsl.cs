@@ -27,6 +27,12 @@ internal static unsafe partial class OpenSsl
 
     // File types for SSL_CTX_use_certificate_file
     public const int SSL_FILETYPE_PEM = 1;
+    
+    // SSL_CTX modes (set via SSL_CTX_set_mode)
+    public const long SSL_MODE_ENABLE_PARTIAL_WRITE = 0x00000001;
+    public const long SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER = 0x00000002;
+    public const long SSL_MODE_AUTO_RETRY = 0x00000004;
+    public const long SSL_MODE_RELEASE_BUFFERS = 0x00000010;
 
     #region SSL Context Management
 
@@ -55,6 +61,10 @@ internal static unsafe partial class OpenSsl
     [LibraryImport(LibSsl)]
     [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
     public static partial long SSL_CTX_set_options(IntPtr ctx, long options);
+
+    [LibraryImport(LibSsl)]
+    [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    public static partial long SSL_CTX_set_mode(IntPtr ctx, long mode);
 
     #endregion
 
@@ -99,6 +109,10 @@ internal static unsafe partial class OpenSsl
     [LibraryImport(LibSsl)]
     [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
     public static partial int SSL_shutdown(IntPtr ssl);
+
+    [LibraryImport(LibSsl)]
+    [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    public static partial void SSL_set_quiet_shutdown(IntPtr ssl, int mode);
 
     #endregion
 

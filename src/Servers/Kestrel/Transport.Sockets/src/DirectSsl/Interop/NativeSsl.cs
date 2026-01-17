@@ -300,15 +300,17 @@ internal static partial class NativeSsl
     [LibraryImport(LIBSSL)] public static partial void SSL_set_accept_state(IntPtr ssl);
     [LibraryImport(LIBSSL)] public static partial int SSL_do_handshake(IntPtr ssl);
     [LibraryImport(LIBSSL)] public static partial int SSL_get_error(IntPtr ssl, int ret);
-    [LibraryImport(LIBSSL)] public static unsafe partial int SSL_read(IntPtr ssl, byte* buf, int num);
-    [LibraryImport(LIBSSL)] public static unsafe partial int SSL_write(IntPtr ssl, byte* buf, int num);
+    [LibraryImport(LIBSSL, SetLastError = true)] public static unsafe partial int SSL_read(IntPtr ssl, byte* buf, int num);
+    [LibraryImport(LIBSSL, SetLastError = true)] public static unsafe partial int SSL_write(IntPtr ssl, byte* buf, int num);
     [LibraryImport(LIBSSL)] public static partial int SSL_shutdown(IntPtr ssl);
+    [LibraryImport(LIBSSL)] public static partial void SSL_set_quiet_shutdown(IntPtr ssl, int mode);
     [LibraryImport(LIBSSL)] public static partial void SSL_free(IntPtr ssl);
     [LibraryImport(LIBSSL)] public static partial void SSL_CTX_free(IntPtr ctx);
     
     // Error handling - libcrypto
     private const string LIBCRYPTO = "libcrypto.so.3";
     [LibraryImport(LIBCRYPTO)] public static partial void ERR_clear_error();
+    [LibraryImport(LIBCRYPTO)] public static partial ulong ERR_peek_error();
 
     // SSL error codes
     public const int SSL_ERROR_NONE = 0;
