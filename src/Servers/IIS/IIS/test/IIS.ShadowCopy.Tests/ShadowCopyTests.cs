@@ -138,6 +138,45 @@ public class ShadowCopyTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
+    public async Task ShadowCopyDetectsSubdirectoryDllChange()
+    {
+        using var directory = TempDirectory.Create();
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+        deploymentParameters.HandlerSettings["enableShadowCopy"] = "true";
+        deploymentParameters.HandlerSettings["shadowCopyDirectory"] = directory.DirectoryPath;
+
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        var response = await deploymentResult.HttpClient.GetAsync("Wow!");
+        Assert.True(response.IsSuccessStatusCode);
+
+        // Find a DLL in a subdirectory and touch it to trigger change detection
+        var contentRoot = new DirectoryInfo(deploymentResult.ContentRoot);
+        string? dllPath = null;
+
+        foreach (var subDir in contentRoot.GetDirectories())
+        {
+            var dll = subDir.GetFiles("*.dll", SearchOption.AllDirectories).FirstOrDefault();
+            if (dll is not null)
+            {
+                dllPath = dll.FullName;
+                break;
+            }
+        }
+
+        Assert.NotNull(dllPath);
+
+        // Rewrite the file to update its timestamp
+        var fileContents = File.ReadAllBytes(dllPath);
+        File.WriteAllBytes(dllPath, fileContents);
+
+        await deploymentResult.AssertRecycledAsync();
+
+        response = await deploymentResult.HttpClient.GetAsync("Wow!");
+        Assert.True(response.IsSuccessStatusCode);
+    }
+
+    [ConditionalFact]
     public async Task ShadowCopyDeleteFolderDuringShutdownWorks()
     {
         using var directory = TempDirectory.Create();
