@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Antiforgery.Benchmarks.Benchmarks;
+namespace Microsoft.AspNetCore.Antiforgery.Microbenchmarks.Benchmarks;
 
 [AspNetCoreBenchmark]
 public class AntiforgeryBenchmarks

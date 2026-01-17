@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>An antiforgery system for ASP.NET Core designed to generate and validate tokens to prevent Cross-Site Request Forgery attacks.</Description>
@@ -31,6 +31,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.Antiforgery.Benchmarks"/>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Antiforgery.Microbenchmarks"/>
   </ItemGroup>
 </Project>

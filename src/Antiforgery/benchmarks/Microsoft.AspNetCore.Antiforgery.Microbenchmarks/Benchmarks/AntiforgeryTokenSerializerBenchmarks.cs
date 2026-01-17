@@ -4,7 +4,7 @@
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Antiforgery.Benchmarks.Benchmarks;
+namespace Microsoft.AspNetCore.Antiforgery.Microbenchmarks.Benchmarks;
    
 [AspNetCoreBenchmark]
 public class AntiforgeryTokenSerializerBenchmarks

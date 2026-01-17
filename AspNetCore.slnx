@@ -16,6 +16,7 @@
     <Project Path="src/Analyzers/Analyzers/test/Microsoft.AspNetCore.Analyzers.Test.csproj" />
   </Folder>
   <Folder Name="/src/Antiforgery/">
+    <Project Path="src/Antiforgery/benchmarks/Microsoft.AspNetCore.Antiforgery.Microbenchmarks/Microsoft.AspNetCore.Antiforgery.Microbenchmarks.csproj" />
     <Project Path="src/Antiforgery/src/Microsoft.AspNetCore.Antiforgery.csproj" />
     <Project Path="src/Antiforgery/test/Microsoft.AspNetCore.Antiforgery.Test.csproj" />
   </Folder>
