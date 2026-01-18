@@ -59,17 +59,21 @@ public sealed class BadRequest<TValue> : IResult, IEndpointMetadataProvider, ISt
         if (Value is ProblemDetails problemDetails)
         {
             var problemDetailsService = httpContext.RequestServices.GetService<IProblemDetailsService>();
-            if (problemDetailsService is not null &&
-                await problemDetailsService.TryWriteAsync(new() { HttpContext = httpContext, ProblemDetails = problemDetails }))
+            if (problemDetailsService is null || !await problemDetailsService.TryWriteAsync(new() { HttpContext = httpContext, ProblemDetails = problemDetails }))
             {
-                return;
+                await HttpResultsHelper.WriteResultAsJsonAsync(
+                    httpContext,
+                    logger,
+                    Value);
             }
         }
-
-        await HttpResultsHelper.WriteResultAsJsonAsync(
+        else
+        {
+            await HttpResultsHelper.WriteResultAsJsonAsync(
                 httpContext,
-                logger: logger,
+                logger,
                 Value);
+        }
     }
 
     /// <inheritdoc/>
