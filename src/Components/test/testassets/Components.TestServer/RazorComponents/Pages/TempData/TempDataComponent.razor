@@ -121,5 +121,5 @@
     private void NavigateToSamePage() => NavigationManager.NavigateTo("/subdir/tempdata", forceLoad: true);
     private void NavigateToSamePageKeep(string valueToKeep) => NavigationManager.NavigateTo($"/subdir/tempdata?ValueToKeep={valueToKeep}", forceLoad: true);
     private void NavigateToDifferentPage() => NavigationManager.NavigateTo("/subdir/tempdata/read", forceLoad: true);
-    private void NavigateToWithoutReadPage() => NavigationManager.NavigateTo("/subdir/tempdata/notread", forceLoad: true);
+    private void NavigateToWithoutReadPage() => NavigationManager.NavigateTo("/subdir/tempdata/redirect_without_read", forceLoad: true);
 }
