@@ -15,6 +15,8 @@
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
     <BuildHelixPayload>false</BuildHelixPayload>
     <EnablePackageValidation>false</EnablePackageValidation>
+    <!-- Work around https://github.com/dotnet/aspnetcore/issues/61178 -->
+    <RestoreDisableParallel>true</RestoreDisableParallel>
   </PropertyGroup>
 
   <ItemGroup>
