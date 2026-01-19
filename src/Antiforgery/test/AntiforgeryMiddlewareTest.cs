@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Antiforgery.CrossOrigin;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Moq;
@@ -17,7 +18,7 @@ public class AntiforgeryMiddlewareTest
     {
         var antiforgeryService = new Mock<IAntiforgery>();
         antiforgeryService.Setup(af => af.ValidateRequestAsync(It.IsAny<HttpContext>())).Returns(Task.FromResult(true));
-        var antiforgeryMiddleware = new AntiforgeryMiddleware(antiforgeryService.Object, hc => Task.CompletedTask);
+        var antiforgeryMiddleware = new AntiforgeryMiddleware(CreateCrossOriginAntiforgeryThatReturnsUnknown(), antiforgeryService.Object, hc => Task.CompletedTask);
         var httpContext = GetHttpContext();
         httpContext.Request.Method = method;
 
@@ -31,7 +32,7 @@ public class AntiforgeryMiddlewareTest
     public async Task RespectsIgnoreAntiforgeryMetadata()
     {
         var antiforgeryService = new Mock<IAntiforgery>();
-        var antiforgeryMiddleware = new AntiforgeryMiddleware(antiforgeryService.Object, hc => Task.CompletedTask);
+        var antiforgeryMiddleware = new AntiforgeryMiddleware(CreateCrossOriginAntiforgeryThatReturnsUnknown(), antiforgeryService.Object, hc => Task.CompletedTask);
         var httpContext = GetHttpContext(hasIgnoreMetadata: true);
 
         await antiforgeryMiddleware.Invoke(httpContext);
@@ -49,7 +50,7 @@ public class AntiforgeryMiddlewareTest
     public async Task IgnoresUnsupportedHttpMethods(string method)
     {
         var antiforgeryService = new Mock<IAntiforgery>();
-        var antiforgeryMiddleware = new AntiforgeryMiddleware(antiforgeryService.Object, hc => Task.CompletedTask);
+        var antiforgeryMiddleware = new AntiforgeryMiddleware(CreateCrossOriginAntiforgeryThatReturnsUnknown(), antiforgeryService.Object, hc => Task.CompletedTask);
         var httpContext = GetHttpContext();
         httpContext.Request.Method = method;
 
@@ -65,12 +66,24 @@ public class AntiforgeryMiddlewareTest
     {
         var antiforgeryService = new Mock<IAntiforgery>();
         antiforgeryService.Setup(af => af.ValidateRequestAsync(It.IsAny<HttpContext>())).Returns(Task.FromResult(true));
-        var antiforgeryMiddleware = new AntiforgeryMiddleware(antiforgeryService.Object, hc => Task.CompletedTask);
+        var antiforgeryMiddleware = new AntiforgeryMiddleware(CreateCrossOriginAntiforgeryThatReturnsUnknown(), antiforgeryService.Object, hc => Task.CompletedTask);
         var httpContext = GetHttpContext(hasIgnoreMetadata);
 
         await antiforgeryMiddleware.Invoke(httpContext);
 
         Assert.True(httpContext.Items.ContainsKey("__AntiforgeryMiddlewareWithEndpointInvoked"));
+    }
+
+    /// <summary>
+    /// Creates a mock ICrossOriginAntiforgery that always returns Unknown,
+    /// which triggers fallback to token-based validation.
+    /// This simulates the behavior for legacy clients or when cross-origin validation is inconclusive.
+    /// </summary>
+    private static ICrossOriginAntiforgery CreateCrossOriginAntiforgeryThatReturnsUnknown()
+    {
+        var mock = new Mock<ICrossOriginAntiforgery>();
+        mock.Setup(c => c.Validate(It.IsAny<HttpContext>())).Returns(CrossOriginValidationResult.Unknown);
+        return mock.Object;
     }
 
     internal static DefaultHttpContext GetHttpContext(bool hasIgnoreMetadata = false)
