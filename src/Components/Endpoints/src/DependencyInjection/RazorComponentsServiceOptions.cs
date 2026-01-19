@@ -103,4 +103,10 @@ public sealed class RazorComponentsServiceOptions
     }
 
     internal string? JavaScriptInitializers { get; set; }
+
+    /// <summary>
+    /// Gets or sets the storage provider type for TempData.
+    /// Defaults to <see cref="TempDataProviderType.Cookie"/>.
+    /// </summary>
+    public TempDataProviderType TempDataProviderType { get; set; } = TempDataProviderType.Cookie;
 }

@@ -43,7 +43,10 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
-            builder.AddSessionStorageTempDataValueProvider();
+            services.Configure<RazorComponentsServiceOptions>(options =>
+            {
+                options.TempDataProviderType = TempDataProviderType.SessionStorage;
+            });
         }
     }
 
