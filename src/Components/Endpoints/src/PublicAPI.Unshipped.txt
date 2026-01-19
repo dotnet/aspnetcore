@@ -9,5 +9,5 @@ Microsoft.AspNetCore.Components.ITempData.Get(string! key) -> object?
 Microsoft.AspNetCore.Components.ITempData.Keep() -> void
 Microsoft.AspNetCore.Components.ITempData.Keep(string! key) -> void
 Microsoft.AspNetCore.Components.ITempData.Peek(string! key) -> object?
-static Microsoft.AspNetCore.Components.Endpoints.TempDataProviderServiceCollectionExtensions.AddCookieTempDataValueProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-static Microsoft.AspNetCore.Components.Endpoints.TempDataProviderServiceCollectionExtensions.AddSessionStorageTempDataValueProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Components.Endpoints.TempDataProviderServiceCollectionExtensions.AddCookieTempDataValueProvider(this Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!
+static Microsoft.AspNetCore.Components.Endpoints.TempDataProviderServiceCollectionExtensions.AddSessionStorageTempDataValueProvider(this Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!

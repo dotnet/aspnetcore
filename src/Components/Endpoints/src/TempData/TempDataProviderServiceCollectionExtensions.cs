@@ -25,27 +25,27 @@ public static class TempDataProviderServiceCollectionExtensions
     /// <summary>
     /// Enables component parameters to be supplied from the <see cref="TempData"/> using Cookies.
     /// </summary>
-    public static IServiceCollection AddCookieTempDataValueProvider(
-        this IServiceCollection services)
+    public static IRazorComponentsBuilder AddCookieTempDataValueProvider(
+        this IRazorComponentsBuilder builder)
     {
-        services.Replace(ServiceDescriptor.Singleton<ITempDataProvider, CookieTempDataProvider>());
-        services.TryAddSingleton<ITempDataSerializer, JsonTempDataSerializer>();
-        services.TryAddSingleton<TempDataService>();
-        services = AddTempDataCascadingValue(services);
-        return services;
+        builder.Services.Replace(ServiceDescriptor.Singleton<ITempDataProvider, CookieTempDataProvider>());
+        builder.Services.TryAddSingleton<ITempDataSerializer, JsonTempDataSerializer>();
+        builder.Services.TryAddSingleton<TempDataService>();
+        AddTempDataCascadingValue(builder.Services);
+        return builder;
     }
 
     /// <summary>
     /// Enables component parameters to be supplied from the <see cref="TempData"/> using Session storage.
     /// </summary>
-    public static IServiceCollection AddSessionStorageTempDataValueProvider(
-        this IServiceCollection services)
+    public static IRazorComponentsBuilder AddSessionStorageTempDataValueProvider(
+        this IRazorComponentsBuilder builder)
     {
-        services.Replace(ServiceDescriptor.Singleton<ITempDataProvider, SessionStorageTempDataProvider>());
-        services.TryAddSingleton<ITempDataSerializer, JsonTempDataSerializer>();
-        services.TryAddSingleton<TempDataService>();
-        services = AddTempDataCascadingValue(services);
-        return services;
+        builder.Services.Replace(ServiceDescriptor.Singleton<ITempDataProvider, SessionStorageTempDataProvider>());
+        builder.Services.TryAddSingleton<ITempDataSerializer, JsonTempDataSerializer>();
+        builder.Services.TryAddSingleton<TempDataService>();
+        AddTempDataCascadingValue(builder.Services);
+        return builder;
     }
 
     private static IServiceCollection AddTempDataCascadingValue(IServiceCollection services)

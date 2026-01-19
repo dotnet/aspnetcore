@@ -2,7 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -14,11 +17,14 @@ public class TempDataProviderServiceCollectionExtensionsTest
     {
         // Arrange
         var services = new ServiceCollection();
+        var builder = services.AddRazorComponents();
         services.AddDataProtection();
         services.AddLogging();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+        services.AddSingleton<IWebHostEnvironment>(new TestWebHostEnvironment());
 
         // Act
-        services.AddCookieTempDataValueProvider();
+        builder.AddCookieTempDataValueProvider();
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
@@ -36,10 +42,13 @@ public class TempDataProviderServiceCollectionExtensionsTest
     {
         // Arrange
         var services = new ServiceCollection();
+        var builder = services.AddRazorComponents();
         services.AddLogging();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+        services.AddSingleton<IWebHostEnvironment>(new TestWebHostEnvironment());
 
         // Act
-        services.AddSessionStorageTempDataValueProvider();
+        builder.AddSessionStorageTempDataValueProvider();
         var serviceProvider = services.BuildServiceProvider();
 
         // Assert
@@ -57,7 +66,11 @@ public class TempDataProviderServiceCollectionExtensionsTest
     {
         // Arrange
         var services = new ServiceCollection();
+        var builder = services.AddRazorComponents();
         services.AddDataProtection();
+        services.AddLogging();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+        services.AddSingleton<IWebHostEnvironment>(new TestWebHostEnvironment());
         var expectedCookieName = ".MyApp.CustomTempData";
 
         // Act
@@ -67,7 +80,7 @@ public class TempDataProviderServiceCollectionExtensionsTest
             options.TempDataCookie.HttpOnly = false;
             options.TempDataCookie.SameSite = SameSiteMode.Strict;
         });
-        services.AddCookieTempDataValueProvider();
+        builder.AddCookieTempDataValueProvider();
 
         var serviceProvider = services.BuildServiceProvider();
         var options = serviceProvider.GetRequiredService<IOptions<RazorComponentsServiceOptions>>();
@@ -83,7 +96,11 @@ public class TempDataProviderServiceCollectionExtensionsTest
     {
         // Arrange
         var services = new ServiceCollection();
+        var builder = services.AddRazorComponents();
         services.AddDataProtection();
+        services.AddLogging();
+        services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+        services.AddSingleton<IWebHostEnvironment>(new TestWebHostEnvironment());
         // Simulate AddRazorComponents calling AddDefaultTempDataValueProvider
         TempDataProviderServiceCollectionExtensions.AddDefaultTempDataValueProvider(services);
 
@@ -92,11 +109,21 @@ public class TempDataProviderServiceCollectionExtensionsTest
         {
             options.TempDataCookie.Name = ".Custom.TempData";
         });
-        services.AddCookieTempDataValueProvider();
+        builder.AddCookieTempDataValueProvider();
 
         // Options should be configured
         var serviceProvider = services.BuildServiceProvider();
         var options = serviceProvider.GetRequiredService<IOptions<RazorComponentsServiceOptions>>();
         Assert.Equal(".Custom.TempData", options.Value.TempDataCookie.Name);
     }
+
+    private class TestWebHostEnvironment : IWebHostEnvironment
+{
+    public string WebRootPath { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+    public IFileProvider WebRootFileProvider { get; set; } = new NullFileProvider();
+    public string EnvironmentName { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+    public string ApplicationName { get; set; } = "App";
+    public string ContentRootPath { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+    public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
+}
 }
