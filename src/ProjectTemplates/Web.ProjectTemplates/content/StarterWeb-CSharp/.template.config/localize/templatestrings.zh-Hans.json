@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "ASP.NET Core Web 应用(模型-视图-控制器)",
   "description": "用于创建包含示例 ASP.NET Core MVC 视图和控制器的 ASP.NET Core 应用程序的项目模板。此模板还可以用于 RESTful HTTP 服务。",
@@ -29,7 +29,6 @@
   "symbols/NoHttps/description": "是否禁用 HTTPS。仅当 IndividualB2C、SingleOrg 或 MultiOrg 不用于 --auth 时，此选项才适用。",
   "symbols/UseLocalDB/description": "是否使用 LocalDB 而不是 SQLite。仅当指定了 --auth Individual 或 --auth IndividualB2C 时，此选项才适用。",
   "symbols/Framework/description": "项目的目标框架。",
-  "symbols/Framework/choices/net11.0/description": "目标 net11.0",
   "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",
   "symbols/CalledApiUrl/description": "要从 Web 应用调用的 API 的 URL。仅当指定了 --auth SingleOrg、--auth MultiOrg 或 --auth IndividualB2C 时，此选项才适用。",
   "symbols/CallsMicrosoftGraph/description": "指定 Web 应用是否调用 Microsoft Graph。仅当指定了 --auth SingleOrg 或 --auth MultiOrg 时，此选项才适用。",

@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Webové rozhraní API pro ASP.NET Core",
   "description": "Šablona projektu pro vytvoření aplikace ASP.NET Core s ukázkovým kontrolerem pro službu RESTful HTTP. Tato šablona se dá použít i pro zobrazení a kontrolery ASP.NET Core MVC.",
@@ -8,7 +8,6 @@
   "symbols/iisHttpPort/description": "Číslo portu, který se má použít pro koncový bod IIS Express HTTP v souboru launchSettings.json.",
   "symbols/iisHttpsPort/description": "Číslo portu, který se má použít pro koncový bod IIS Express HTTPS v souboru launchSettings.json.",
   "symbols/Framework/description": "Cílová architektura pro projekt",
-  "symbols/Framework/choices/net11.0/description": "Target net11.0",
   "symbols/skipRestore/description": "Pokud se tato možnost zadá, přeskočí automatické obnovení projektu při vytvoření.",
   "symbols/NoHttps/description": "Určuje, jestli se má vypnout protokol HTTPS.",
   "postActions/restore/description": "Obnoví balíčky NuGet vyžadované tímto projektem.",

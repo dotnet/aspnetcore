@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "ASP.NET 核心 Web API (Native AOT)",
   "description": "此專案範本可用於使用發佈為原生 AOT 的 ASP.NET Core 最小 API 來建立 RESTful Web API 的專案範本，並可選擇性地支援 OpenAPI。",
@@ -6,7 +6,6 @@
   "symbols/kestrelHttpPort/description": "launchSettings.json 中 HTTP 端點要使用的連接埠號碼。",
   "symbols/iisHttpPort/description": "launchSettings.json 中 IIS Express HTTP 端點要使用的連接埠號碼。",
   "symbols/Framework/description": "專案的目標 Framework。",
-  "symbols/Framework/choices/net11.0/description": "目標 net11.0",
   "symbols/skipRestore/description": "若指定，會在建立時跳過專案的自動還原。",
   "symbols/UseProgramMain/displayName": "不要使用最上層陳述式(_T)",
   "symbols/UseProgramMain/description": "是否要產生明確的 Program 類別和 Main 方法，而非最上層語句。",

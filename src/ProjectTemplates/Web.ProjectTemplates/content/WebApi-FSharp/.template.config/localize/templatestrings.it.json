@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "API Web ASP.NET Core",
   "description": "Modello di progetto per la creazione di un'applicazione ASP.NET Core con un controller di esempio per un servizio HTTP RESTful. È possibile usare questo modello anche per i controller e le viste di ASP.NET Core MVC.",
@@ -8,7 +8,6 @@
   "symbols/iisHttpPort/description": "Numero di porta da usare per l'endpoint HTTP IIS Express in launchSettings.json.",
   "symbols/iisHttpsPort/description": "Numero di porta da usare per l'endpoint HTTPS IIS Express in launchSettings.json.",
   "symbols/Framework/description": "Il framework di destinazione per il progetto.",
-  "symbols/Framework/choices/net11.0/description": "Destinazione net11.0",
   "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",
   "symbols/NoHttps/description": "Indica se disattivare HTTPS.",
   "postActions/restore/description": "Ripristina i pacchetti NuGet richiesti da questo progetto.",

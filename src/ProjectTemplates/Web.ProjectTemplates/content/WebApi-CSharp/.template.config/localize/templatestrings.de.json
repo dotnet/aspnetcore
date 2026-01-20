@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "ASP.NET Core-Web-API",
   "description": "Eine Projektvorlage zum Erstellen einer RESTful-Web-API mit ASP.NET Core-Controllern oder minimalen APIs mit optionaler Unterstützung für OpenAPI und Authentifizierung.",
@@ -24,7 +24,6 @@
   "symbols/NoHttps/description": "Ob HTTPS deaktiviert werden soll. Diese Option gilt nur, wenn IndividualB2C, SingleOrg oder MultiOrg nicht für --auth verwendet werden.",
   "symbols/UseLocalDB/description": "Ob LocalDB anstelle von SQLite verwendet werden soll. Diese Option gilt nur, wenn --auth Individual oder --auth IndividualB2C angegeben ist.",
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
-  "symbols/Framework/choices/net11.0/description": "Ziel net11.0",
   "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
   "symbols/CalledApiUrl/description": "URL der API, die von der Web-App aufgerufen werden soll. Diese Option gilt nur, wenn --auth SingleOrg oder --auth IndividualB2C angegeben ist.",
   "symbols/CallsMicrosoftGraph/description": "Gibt an, ob die Web App Microsoft Graph aufruft. Diese Option gilt nur, wenn --auth SingleOrg angegeben ist.",

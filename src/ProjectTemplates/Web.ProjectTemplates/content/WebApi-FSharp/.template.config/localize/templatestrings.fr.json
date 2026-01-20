@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "API web ASP.NET Core",
   "description": "Modèle de projet permettant de créer une application ASP.NET Core avec un exemple de contrôleur pour un service HTTP RESTful. Vous pouvez également utiliser ce modèle pour les vues et contrôleurs ASP.NET Core MVC.",
@@ -8,7 +8,6 @@
   "symbols/iisHttpPort/description": "Numéro de port à utiliser pour le point de terminaison HTTP IIS Express dans launchSettings.json.",
   "symbols/iisHttpsPort/description": "Numéro de port à utiliser pour le point de terminaison HTTPS IIS Express dans launchSettings.json.",
   "symbols/Framework/description": "Framework cible du projet.",
-  "symbols/Framework/choices/net11.0/description": "Net11.0 cible",
   "symbols/skipRestore/description": "S’il est spécifié, ignore la restauration automatique du projet lors de la création.",
   "symbols/NoHttps/description": "Indique s’il faut désactiver HTTPS.",
   "postActions/restore/description": "Restaurez les packages NuGet requis par ce projet.",

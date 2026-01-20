@@ -1,9 +1,8 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Bibliothèque de classes Razor",
   "description": "Projet de création d’une bibliothèque de classes Razor qui cible .NET",
   "symbols/Framework/description": "Framework cible du projet.",
-  "symbols/Framework/choices/net11.0/description": "Net11.0 cible",
   "symbols/skipRestore/description": "S’il est spécifié, ignore la restauration automatique du projet lors de la création.",
   "symbols/SupportPagesAndViews/displayName": "Prendre en charge les pages et les vues",
   "symbols/SupportPagesAndViews/description": "Indique si l’ajout de pages et de vues Razor classiques à cette bibliothèque.",
