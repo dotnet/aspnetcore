@@ -1,0 +1,3 @@
+This file is a temporary marker for reverting the googletest submodule changes.
+The googletest submodule pointer was unintentionally changed in commit e2e4db0f.
+This commit reverts it back to match the main branch (commit cb1bd881).
