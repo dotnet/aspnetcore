@@ -157,9 +157,6 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
     return $global:_DotNetInstallDir
   }
 
-  # Don't resolve runtime, shared framework, or SDK from other locations to ensure build determinism
-  $env:DOTNET_MULTILEVEL_LOOKUP=0
-
   # Disable first run since we do not need all ASP.NET packages restored.
   $env:DOTNET_NOLOGO=1
 
@@ -225,7 +222,6 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
   # Make Sure that our bootstrapped dotnet cli is available in future steps of the Azure Pipelines build
   Write-PipelinePrependPath -Path $dotnetRoot
 
-  Write-PipelineSetVariable -Name 'DOTNET_MULTILEVEL_LOOKUP' -Value '0'
   Write-PipelineSetVariable -Name 'DOTNET_NOLOGO' -Value '1'
 
   return $global:_DotNetInstallDir = $dotnetRoot
@@ -277,7 +273,7 @@ function GetDotNetInstallScript([string] $dotnetRoot) {
 
     Retry({
       Write-Host "GET $uri"
-      Invoke-WebRequest $uri -OutFile $installScript
+      Invoke-WebRequest $uri -UseBasicParsing -OutFile $installScript
     })
   }
 
@@ -510,7 +506,7 @@ function InitializeXCopyMSBuild([string]$packageVersion, [bool]$install) {
     Write-Host "Downloading $packageName $packageVersion"
     $ProgressPreference = 'SilentlyContinue' # Don't display the console progress UI - it's a huge perf hit
     Retry({
-      Invoke-WebRequest "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/flat2/$packageName/$packageVersion/$packageName.$packageVersion.nupkg" -OutFile $packagePath
+      Invoke-WebRequest "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/flat2/$packageName/$packageVersion/$packageName.$packageVersion.nupkg" -UseBasicParsing -OutFile $packagePath
     })
 
     if (!(Test-Path $packagePath)) {
@@ -556,23 +552,30 @@ function LocateVisualStudio([object]$vsRequirements = $null){
     Write-Host "Downloading vswhere $vswhereVersion"
     $ProgressPreference = 'SilentlyContinue' # Don't display the console progress UI - it's a huge perf hit
     Retry({
-      Invoke-WebRequest "https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/vswhere/$vswhereVersion/vswhere.exe" -OutFile $vswhereExe
+      Invoke-WebRequest "https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/vswhere/$vswhereVersion/vswhere.exe" -UseBasicParsing -OutFile $vswhereExe
     })
   }
 
-  if (!$vsRequirements) { $vsRequirements = $GlobalJson.tools.vs }
+  if (!$vsRequirements) {
+    if (Get-Member -InputObject $GlobalJson.tools -Name 'vs' -ErrorAction SilentlyContinue) {
+      $vsRequirements = $GlobalJson.tools.vs
+    } else {
+      $vsRequirements = $null
+    }
+  }
+
   $args = @('-latest', '-format', 'json', '-requires', 'Microsoft.Component.MSBuild', '-products', '*')
 
   if (!$excludePrereleaseVS) {
     $args += '-prerelease'
   }
 
-  if (Get-Member -InputObject $vsRequirements -Name 'version') {
+  if ($vsRequirements -and (Get-Member -InputObject $vsRequirements -Name 'version' -ErrorAction SilentlyContinue)) {
     $args += '-version'
     $args += $vsRequirements.version
   }
 
-  if (Get-Member -InputObject $vsRequirements -Name 'components') {
+  if ($vsRequirements -and (Get-Member -InputObject $vsRequirements -Name 'components' -ErrorAction SilentlyContinue)) {
     foreach ($component in $vsRequirements.components) {
       $args += '-requires'
       $args += $component

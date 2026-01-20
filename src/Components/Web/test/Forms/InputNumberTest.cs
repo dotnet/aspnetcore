@@ -93,6 +93,41 @@ public class InputNumberTest
         Assert.Equal("range", typeAttributeFrame.AttributeValue);
     }
 
+    [Fact]
+    public async Task RendersIdAttribute()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<int, TestInputNumberComponent>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.SomeNumber,
+        };
+
+        var componentId = await RenderAndGetTestInputNumberComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var idAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
+        Assert.Equal("model_SomeNumber", idAttribute.AttributeValue);
+    }
+
+    [Fact]
+    public async Task ExplicitIdOverridesGenerated()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<int, TestInputNumberComponent>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.SomeNumber,
+            AdditionalAttributes = new Dictionary<string, object> { { "id", "custom-number-id" } }
+        };
+
+        var componentId = await RenderAndGetTestInputNumberComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var idAttribute = frames.Array.First(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
+        Assert.Equal("custom-number-id", idAttribute.AttributeValue);
+    }
+
     private async Task<int> RenderAndGetTestInputNumberComponentIdAsync(TestInputHostComponent<int, TestInputNumberComponent> hostComponent)
     {
         var hostComponentId = _testRenderer.AssignRootComponentId(hostComponent);
