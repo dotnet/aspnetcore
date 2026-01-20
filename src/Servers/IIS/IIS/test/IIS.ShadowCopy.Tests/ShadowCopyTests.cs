@@ -152,7 +152,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
 
         // Find a DLL in a subdirectory and touch it to trigger change detection
         var contentRoot = new DirectoryInfo(deploymentResult.ContentRoot);
-        string? dllPath = null;
+        string dllPath = null;
 
         foreach (var subDir in contentRoot.GetDirectories())
         {
