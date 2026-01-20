@@ -245,7 +245,11 @@
       "type": "parameter",
       "description": "The target framework for the project.",
       "datatype": "choice",
-      "choices": [],
+      "choices": [
+        {
+          "choice": "net11.0"
+        }
+      ],
       "replaces": "net11.0",
       "defaultValue": "net11.0"
     },
@@ -356,18 +360,17 @@
       },
       "replaces": "44300"
     },
-    "StyleBundleName": {
+    "StyleBundleName":{
       "type": "generated",
       "generator": "regex",
       "replaces": "StyleBundleName",
       "parameters": {
-        "source": "name",
-        "steps": [
-          {
-            "regex": " ",
-            "replacement": "_"
-          }
-        ]
+      "source": "name",
+      "steps": [
+        {
+          "regex": " ",
+          "replacement": "_"
+        }]
       }
     },
     "InteractivityPlatform": {
