@@ -768,7 +768,7 @@ public static class NavigationManagerExtensions
     /// added, updated, or removed.
     /// </summary>
     /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
-    /// <param name="hash">The hash string. If empty or null, the hash will be removed from the URI.</param>
+    /// <param name="hash">The hash string. If empty, the hash will be removed from the URI.</param>
     /// <returns>The URI with the specified hash.</returns>
     /// <remarks>
     /// <para>
@@ -786,9 +786,10 @@ public static class NavigationManagerExtensions
     /// </code>
     /// </example>
     /// </remarks>
-    public static string GetUriWithHash(this NavigationManager navigationManager, string? hash)
+    public static string GetUriWithHash(this NavigationManager navigationManager, string hash)
     {
         ArgumentNullException.ThrowIfNull(navigationManager);
+        ArgumentNullException.ThrowIfNull(hash);
 
         var uri = navigationManager.Uri;
         var existingHashIndex = uri.IndexOf('#');
@@ -796,7 +797,7 @@ public static class NavigationManagerExtensions
         // Determine the length of the URI without the existing hash
         var uriWithoutHashLength = existingHashIndex < 0 ? uri.Length : existingHashIndex;
 
-        if (string.IsNullOrEmpty(hash))
+        if (hash.Length == 0)
         {
             // If removing hash and there wasn't one, return original URI
             if (existingHashIndex < 0)

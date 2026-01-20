@@ -222,6 +222,11 @@ public class NavigationManagerTest
     [InlineData("scheme://host/path?query=value#oldHash", "section1", "scheme://host/path?query=value#section1")]
     [InlineData("scheme://host/path#oldHash", "newHash", "scheme://host/path#newHash")]
     [InlineData("scheme://host/path#old", "#new", "scheme://host/path#new")]
+    // Tests with non-root base paths (e.g., when using <base href="/subdir/">)
+    [InlineData("scheme://host/subdir/page", "section1", "scheme://host/subdir/page#section1")]
+    [InlineData("scheme://host/subdir/page", "#section1", "scheme://host/subdir/page#section1")]
+    [InlineData("scheme://host/subdir/page#old", "section1", "scheme://host/subdir/page#section1")]
+    [InlineData("scheme://host/app/subdir/page?query=value", "section1", "scheme://host/app/subdir/page?query=value#section1")]
     public void GetUriWithHash_AddsOrReplacesHash(string baseUri, string hash, string expectedUri)
     {
         var navigationManager = new TestNavigationManager(baseUri);
@@ -235,12 +240,12 @@ public class NavigationManagerTest
     [InlineData("scheme://host/path", "scheme://host/path")]
     [InlineData("scheme://host/path#hash", "scheme://host/path")]
     [InlineData("scheme://host/path?query=value#hash", "scheme://host/path?query=value")]
-    public void GetUriWithHash_RemovesHashWhenHashIsNullOrEmpty(string baseUri, string expectedUri)
+    // Tests with non-root base paths (e.g., when using <base href="/subdir/">)
+    [InlineData("scheme://host/subdir/page#hash", "scheme://host/subdir/page")]
+    [InlineData("scheme://host/app/subdir/page?query=value#hash", "scheme://host/app/subdir/page?query=value")]
+    public void GetUriWithHash_RemovesHashWhenHashIsEmpty(string baseUri, string expectedUri)
     {
         var navigationManager = new TestNavigationManager(baseUri);
-
-        var actualUriWithNull = navigationManager.GetUriWithHash(null);
-        Assert.Equal(expectedUri, actualUriWithNull);
 
         var actualUriWithEmpty = navigationManager.GetUriWithHash(string.Empty);
         Assert.Equal(expectedUri, actualUriWithEmpty);
@@ -253,6 +258,15 @@ public class NavigationManagerTest
 
         var exception = Assert.Throws<ArgumentNullException>(() => navigationManager.GetUriWithHash("hash"));
         Assert.Equal("navigationManager", exception.ParamName);
+    }
+
+    [Fact]
+    public void GetUriWithHash_ThrowsWhenHashIsNull()
+    {
+        var navigationManager = new TestNavigationManager("scheme://host/");
+
+        var exception = Assert.Throws<ArgumentNullException>(() => navigationManager.GetUriWithHash(null));
+        Assert.Equal("hash", exception.ParamName);
     }
 
     [Fact]
