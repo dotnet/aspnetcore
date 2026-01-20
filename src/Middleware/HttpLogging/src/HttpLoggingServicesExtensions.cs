@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -22,7 +23,7 @@ public static class HttpLoggingServicesExtensions
         ArgumentNullException.ThrowIfNull(services);
         
         services.TryAddSingleton(ObjectPool.ObjectPool.Create<HttpLoggingInterceptorContext>());
-        services.TryAddSingleton(ObjectPool.ObjectPool.Create(new ResponseBufferingStreamPooledObjectPolicy()));
+        services.TryAddSingleton(new DefaultObjectPoolProvider().Create(new ResponseBufferingStreamPooledObjectPolicy()));
         services.TryAddSingleton(TimeProvider.System);
         return services;
     }

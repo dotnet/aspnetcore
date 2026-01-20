@@ -44,7 +44,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
             ObjectPool.Create<HttpLoggingInterceptorContext>(),
-            ObjectPool.Create(new ResponseBufferingStreamPooledObjectPolicy()),
+            new DefaultObjectPoolProvider().Create(new ResponseBufferingStreamPooledObjectPolicy()),
             TimeProvider.System));
 
         Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(c =>
@@ -55,7 +55,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
             ObjectPool.Create<HttpLoggingInterceptorContext>(),
-            ObjectPool.Create(new ResponseBufferingStreamPooledObjectPolicy()),
+            new DefaultObjectPoolProvider().Create(new ResponseBufferingStreamPooledObjectPolicy()),
             TimeProvider.System));
 
         Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(c =>
@@ -66,7 +66,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             null,
             Array.Empty<IHttpLoggingInterceptor>(),
             ObjectPool.Create<HttpLoggingInterceptorContext>(),
-            ObjectPool.Create(new ResponseBufferingStreamPooledObjectPolicy()),
+            new DefaultObjectPoolProvider().Create(new ResponseBufferingStreamPooledObjectPolicy()),
             TimeProvider.System));
 
         Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(c =>
@@ -77,7 +77,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             null,
             ObjectPool.Create<HttpLoggingInterceptorContext>(),
-            ObjectPool.Create(new ResponseBufferingStreamPooledObjectPolicy()),
+            new DefaultObjectPoolProvider().Create(new ResponseBufferingStreamPooledObjectPolicy()),
             TimeProvider.System));
 
         Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(c =>
@@ -88,7 +88,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
             null,
-            ObjectPool.Create(new ResponseBufferingStreamPooledObjectPolicy()),
+            new DefaultObjectPoolProvider().Create(new ResponseBufferingStreamPooledObjectPolicy()),
             TimeProvider.System));
 
         Assert.Throws<ArgumentNullException>(() => new HttpLoggingMiddleware(c =>
@@ -110,7 +110,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             Array.Empty<IHttpLoggingInterceptor>(),
             ObjectPool.Create<HttpLoggingInterceptorContext>(),
-            ObjectPool.Create(new ResponseBufferingStreamPooledObjectPolicy()),
+            new DefaultObjectPoolProvider().Create(new ResponseBufferingStreamPooledObjectPolicy()),
             null));
     }
 
@@ -2131,7 +2131,7 @@ public class HttpLoggingMiddlewareTests : LoggedTest
             LoggerFactory.CreateLogger<HttpLoggingMiddleware>(),
             interceptor == null ? Array.Empty<IHttpLoggingInterceptor>() : [interceptor],
             ObjectPool.Create<HttpLoggingInterceptorContext>(),
-            ObjectPool.Create(new ResponseBufferingStreamPooledObjectPolicy()),
+            new DefaultObjectPoolProvider().Create(new ResponseBufferingStreamPooledObjectPolicy()),
             TimeProvider.System);
     }
 
