@@ -124,12 +124,7 @@
       "type": "parameter",
       "description": "The target framework for the project.",
       "datatype": "choice",
-      "choices": [
-        {
-          "choice": "net11.0",
-          "description": "Target net11.0"
-        }
-      ],
+      "choices": [],
       "replaces": "net11.0",
       "defaultValue": "net11.0"
     },

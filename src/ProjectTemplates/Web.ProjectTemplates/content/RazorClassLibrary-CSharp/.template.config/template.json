@@ -46,12 +46,7 @@
       "type": "parameter",
       "description": "The target framework for the project.",
       "datatype": "choice",
-      "choices": [
-        {
-          "choice": "net11.0",
-          "description": "Target net11.0"
-        }
-      ],
+      "choices": [],
       "defaultValue": "net11.0"
     },
     "HostIdentifier": {

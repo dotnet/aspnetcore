@@ -21,7 +21,7 @@
   "sourceName": "Company.WebApplication1",
   "preferNameDirectory": true,
   "guids": [
-    "53bc9b9d-9d6a-45d4-8429-2a2761773502" // Client ID
+    "53bc9b9d-9d6a-45d4-8429-2a2761773502"
   ],
   "sources": [
     {
@@ -323,12 +323,7 @@
       "type": "parameter",
       "description": "The target framework for the project.",
       "datatype": "choice",
-      "choices": [
-        {
-          "choice": "net11.0",
-          "description": "Target net11.0"
-        }
-      ],
+      "choices": [],
       "replaces": "net11.0",
       "defaultValue": "net11.0"
     },
