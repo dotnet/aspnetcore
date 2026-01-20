@@ -182,6 +182,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         builder.MapGet("/~health", () => "Healthy");
         builder.MapGet("/~api/todos", () => { });
         builder.MapGet("/~api/todos/{id}", () => { });
+        builder.MapGet("~/health2", () => "Healthy2");
 
         // Assert
         await VerifyOpenApiDocument(builder, document =>
@@ -202,6 +203,12 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                 path =>
                 {
                     Assert.Equal("/~health", path.Key);
+                    Assert.Single(path.Value.Operations);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                },
+                path =>
+                {
+                    Assert.Equal("/health2", path.Key);
                     Assert.Single(path.Value.Operations);
                     Assert.Contains(HttpMethod.Get, path.Value.Operations);
                 }
@@ -229,6 +236,29 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         });
     }
 
+    [Fact]
+    public async Task GetOpenApiPaths_HandlesRoutesStartingWithTildeBeforeSlash_MvcAction()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(ActionWithTildeBeforeSlashRoute));
+
+        // Assert
+        await VerifyOpenApiDocument(action, document =>
+        {
+            Assert.Collection(document.Paths.OrderBy(p => p.Key),
+                path =>
+                {
+                    Assert.Equal("/health", path.Key);
+                    Assert.Single(path.Value.Operations);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                }
+            );
+        });
+    }
+
     [Route("/~health")]
     private void ActionWithTildeRoute() { }
+
+    [Route("~/health")]
+    private void ActionWithTildeBeforeSlashRoute() { }
 }

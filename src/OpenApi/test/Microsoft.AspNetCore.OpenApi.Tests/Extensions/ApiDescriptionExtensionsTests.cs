@@ -36,6 +36,9 @@ public class ApiDescriptionExtensionsTests
     [InlineData("/~health", "~health", "/~health")]
     [InlineData("/~api/todos", "~api/todos", "/~api/todos")]
     [InlineData("/~api/todos/{id}", "~api/todos/{id}", "/~api/todos/{id}")]
+    [InlineData("~/health", "health", "/health")]
+    [InlineData("~/api/todos", "api/todos", "/api/todos")]
+    [InlineData("~/api/todos/{id}", "api/todos/{id}", "/api/todos/{id}")]
     public void MapRelativePathToItemPath_WithRoutePattern_HandlesRoutesThatStartWithTilde(string rawPattern, string relativePath, string expectedItemPath)
     {
         // Arrange

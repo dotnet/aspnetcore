@@ -98,9 +98,6 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
         string? groupName)
     {
         var parsedTemplate = ParseTemplate(action);
-        var routePattern = parsedTemplate != null && action.AttributeRouteInfo?.Template != null
-            ? RoutePatternFactory.Parse(action.AttributeRouteInfo.Template)
-            : null;
 
         var apiDescription = new ApiDescription()
         {
@@ -108,7 +105,9 @@ public class DefaultApiDescriptionProvider : IApiDescriptionProvider
             GroupName = groupName,
             HttpMethod = httpMethod,
             RelativePath = GetRelativePath(parsedTemplate),
-            RoutePattern = routePattern,
+            RoutePattern = action.AttributeRouteInfo?.Template is not null
+                ? RoutePatternFactory.Parse(action.AttributeRouteInfo.Template)
+                : null,
         };
 
         var templateParameters = parsedTemplate?.Parameters?.ToList() ?? new List<TemplatePart>();
