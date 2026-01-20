@@ -172,7 +172,7 @@ internal abstract class CertificateManager
 
                 // Ensure the certificate meets the minimum version requirement.
                 var validMinVersionCertificates = validCertificates
-                    .Where(c => IsMinimumVersionHttpsDevelopmentCertificate(c, MinimumAspNetHttpsCertificateVersion))
+                    .Where(c => GetCertificateVersion(c) >= MinimumAspNetHttpsCertificateVersion)
                     .ToArray();
 
                 if (Log.IsEnabled())
@@ -226,17 +226,6 @@ internal abstract class CertificateManager
             (!requireExportable || IsExportable(certificate));
     }
 
-    /// <summary>
-    /// Determines if the given certificate is at least the specified minimum version of an ASP.NET Core HTTPS development certificate.
-    /// </summary>
-    /// <param name="certificate">The certificate to test.</param>
-    /// <param name="minimumVersion">The minimum version to check against.</param>
-    /// <returns>True if the certificate meets or exceeds the minimum version; otherwise, false.</returns>
-    internal bool IsMinimumVersionHttpsDevelopmentCertificate(X509Certificate2 certificate, int minimumVersion = MinimumAspNetHttpsCertificateVersion)
-    {
-        return GetCertificateVersion(certificate) >= minimumVersion;
-    }
-
     internal static byte GetCertificateVersion(X509Certificate2 c)
     {
         var byteArray = c.Extensions.OfType<X509Extension>()
@@ -282,7 +271,7 @@ internal abstract class CertificateManager
 
         var filteredCertificates = certificates.Where(c => c.Subject == Subject &&
             // For purposes of updating the dev cert, only consider certificates with the current version or higher as valid
-            IsMinimumVersionHttpsDevelopmentCertificate(c, AspNetHttpsCertificateVersion));
+            GetCertificateVersion(c) >= AspNetHttpsCertificateVersion);
 
         if (Log.IsEnabled())
         {

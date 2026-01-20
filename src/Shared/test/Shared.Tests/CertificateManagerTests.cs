@@ -130,22 +130,4 @@ public class CertificateManagerTests
         // The Authority Key Identifier should match the Subject Key Identifier
         Assert.True(authorityKeyIdentifier.KeyIdentifier?.Span.SequenceEqual(subjectKeyIdentifier.SubjectKeyIdentifierBytes.Span));
     }
-
-    [Fact]
-    public void IsMinimumVersionHttpsDevelopmentCertificate_ReturnsFalseForLowerVersion()
-    {
-        // Instantiate a certificate manager that creates version 2 certificates
-        var testCertificateManager = new CertificateManager("CN=TestCertificate", 2);
-        var notBefore = DateTimeOffset.Now;
-        var notAfter = notBefore.AddMinutes(5);
-
-        var certificate = testCertificateManager.CreateAspNetCoreHttpsDevelopmentCertificate(notBefore, notAfter);
-
-        // Verify that the certificate manager default settings consider the certificate valid (version 2 >= version 2)
-        Assert.True(testCertificateManager.IsHttpsDevelopmentCertificate(certificate));
-        // Verify that the certificate meets a minimum version of 1 and 2, but not 3
-        Assert.True(testCertificateManager.IsMinimumVersionHttpsDevelopmentCertificate(certificate, 1));
-        Assert.True(testCertificateManager.IsMinimumVersionHttpsDevelopmentCertificate(certificate, 2));
-        Assert.False(testCertificateManager.IsMinimumVersionHttpsDevelopmentCertificate(certificate, 3));
-    }
 }
