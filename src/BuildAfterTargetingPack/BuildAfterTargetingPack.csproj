@@ -31,6 +31,10 @@
     -->
     <!-- RequiresDelayedBuild Include="..." / -->
 
+    <!-- In the VMR, we build the Grpc JsonTranscoding projects in BuildPass 2 to avoid transient file conflict issues -->
+    <RequiresDelayedBuild Remove="$(RepoRoot)src\Grpc\JsonTranscoding\**\*" Condition="'$(DotNetBuild)' == 'true'" />
+    <RequiresDelayedBuild Remove="$(RepoRoot)src\Framework\Microsoft.Internal.Aspnetcore.DotNetApiDocs.Transport\**\*" Condition="'$(DotNetBuild)' == 'true'" />
+    
     <!-- Enforce build order. Need shared Fx before building the important projects. -->
     <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj"
       Private="false"
@@ -45,8 +49,8 @@
       Condition=" '$(DotNetBuildSourceOnly)' != 'true' AND ('$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'x64') "
       Returns="@(TargetPathWithTargetPlatformMoniker)">
     <MSBuild Projects="@(RequiresDelayedBuild)"
-        BuildInParallel="$(BuildInParallel)"
-        Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())"
+        BuildInParallel="false"
+        Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid());RestoreDisableParallel=true"
         Targets="Restore" />
     <MSBuild Projects="@(RequiresDelayedBuild)" BuildInParallel="$(BuildInParallel)" Targets="Build">
       <Output TaskParameter="TargetOutputs" ItemName="TargetPathWithTargetPlatformMoniker" />

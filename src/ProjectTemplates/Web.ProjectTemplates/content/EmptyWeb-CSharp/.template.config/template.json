@@ -9,8 +9,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "An empty project template for creating an ASP.NET Core application. This template does not have any content in it.",
   "groupIdentity": "Microsoft.Web.Empty",
-  "precedence": "10000",
-  "identity": "Microsoft.Web.Empty.CSharp.10.0",
+  "precedence": "11000",
+  "identity": "Microsoft.Web.Empty.CSharp.11.0",
   "shortName": "web",
   "tags": {
     "language": "C#",
@@ -48,7 +48,45 @@
       ]
     }
   ],
+  "forms": {
+    "lowerCaseInvariantWithHyphens": {
+      "identifier": "chain",
+      "steps": [
+        "lowerCaseInvariant",
+        "replaceDnsInvalidChars",
+        "replaceRepeatedHyphens",
+        "trimLeadingHyphens",
+        "trimTrailingHyphens"
+      ]
+    },
+    "replaceDnsInvalidChars": {
+      "identifier": "replace",
+      "pattern": "[^a-z0-9-]",
+      "replacement": "-"
+    },
+    "replaceRepeatedHyphens": {
+      "identifier": "replace",
+      "pattern": "-{2,}",
+      "replacement": "-"
+    },
+    "trimLeadingHyphens": {
+      "identifier": "replace",
+      "pattern": "^-+",
+      "replacement": ""
+    },
+    "trimTrailingHyphens": {
+      "identifier": "replace",
+      "pattern": "-+$",
+      "replacement": ""
+    }
+  },
   "symbols": {
+    "hostName": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "lowerCaseInvariantWithHyphens",
+      "replaces": "LocalhostTldHostNamePrefix"
+    },
     "ExcludeLaunchSettings": {
       "type": "parameter",
       "datatype": "bool",
@@ -145,12 +183,11 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net10.0",
-          "description": "Target net10.0"
+          "choice": "net11.0"
         }
       ],
-      "replaces": "net10.0",
-      "defaultValue": "net10.0"
+      "replaces": "net11.0",
+      "defaultValue": "net11.0"
     },
     "copyrightYear": {
       "type": "generated",
