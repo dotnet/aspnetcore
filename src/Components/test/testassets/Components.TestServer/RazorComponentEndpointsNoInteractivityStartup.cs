@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Security.Claims;
 using System.Web;
+
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
@@ -33,6 +34,12 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
         });
         services.AddHttpContextAccessor();
         services.AddCascadingAuthenticationState();
+        services.AddDistributedMemoryCache();
+        services.AddSession(options =>
+        {
+            options.Cookie.HttpOnly = true;
+            options.Cookie.IsEssential = true;
+        });
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -87,6 +94,8 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                         .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"));
                 });
             });
+
+            app.UseSession();
 
             ConfigureSubdirPipeline(app, env);
         });

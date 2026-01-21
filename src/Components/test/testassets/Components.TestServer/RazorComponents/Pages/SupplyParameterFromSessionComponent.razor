@@ -1,0 +1,27 @@
+﻿@page "/supply-parameter-from-session"
+@using Microsoft.AspNetCore.Components.Forms
+@inject IHttpContextAccessor HttpContextAccessor
+
+<h3>SupplyParameterFromSessionComponent</h3>
+
+<p id="text-email">@Email</p>
+
+<form @onsubmit="SetEmail" @formname="set-email" method="post">
+    <AntiforgeryToken />
+    <input id="input-email" @bind="EmailInput" name="EmailInput"/>
+    <button type="submit">Set Email</button>
+</form>
+
+@code {
+    [SupplyParameterFromSession]
+    public string? Email { get; set; }
+
+    [SupplyParameterFromForm]
+    public string? EmailInput { get; set; }
+
+    void SetEmail()
+    {
+        HttpContextAccessor.HttpContext?.Session.SetString(nameof(Email), EmailInput);
+        Email = EmailInput;
+    }
+}

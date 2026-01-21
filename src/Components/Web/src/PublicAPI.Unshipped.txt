@@ -1,6 +1,10 @@
 #nullable enable
+Microsoft.AspNetCore.Components.ISessionValueMapper
+Microsoft.AspNetCore.Components.ISessionValueMapper.GetValue(string! sessionKey) -> object?
 Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.get -> bool
 Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.set -> void
+Microsoft.Extensions.DependencyInjection.SupplyParameterFromSessionServiceCollectionExtensions
+static Microsoft.Extensions.DependencyInjection.SupplyParameterFromSessionServiceCollectionExtensions.AddSupplyValueFromSessionProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxBufferSize.get -> int
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxBufferSize.set -> void

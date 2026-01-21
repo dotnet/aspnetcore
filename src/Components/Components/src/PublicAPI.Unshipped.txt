@@ -6,3 +6,7 @@ Microsoft.AspNetCore.Components.IComponentPropertyActivator.GetActivator(System.
 *REMOVED*Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void
 *REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
 *REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void
+Microsoft.AspNetCore.Components.SupplyParameterFromSessionAttribute
+Microsoft.AspNetCore.Components.SupplyParameterFromSessionAttribute.Name.get -> string?
+Microsoft.AspNetCore.Components.SupplyParameterFromSessionAttribute.Name.set -> void
+Microsoft.AspNetCore.Components.SupplyParameterFromSessionAttribute.SupplyParameterFromSessionAttribute() -> void
