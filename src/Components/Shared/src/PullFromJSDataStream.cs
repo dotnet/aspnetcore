@@ -129,6 +129,7 @@ internal sealed class PullFromJSDataStream : Stream
 
         base.Dispose(disposing);
     }
+
     public override async ValueTask DisposeAsync()
     {
         if (_isDisposed)
