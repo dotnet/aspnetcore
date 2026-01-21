@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.Web;
 /// </remarks>
 public sealed class EnvironmentBoundary : ComponentBase
 {
-    private static readonly char[] NameSeparator = [','];
+    private static readonly char NameSeparator = ',';
 
     [Inject]
     private IHostEnvironment HostEnvironment { get; set; } = default!;
@@ -129,15 +129,8 @@ public sealed class EnvironmentBoundary : ComponentBase
         return false;
     }
 
-    private static IEnumerable<string> ParseEnvironmentNames(string names)
+    private static string[] ParseEnvironmentNames(string names)
     {
-        foreach (var segment in names.Split(NameSeparator, StringSplitOptions.RemoveEmptyEntries))
-        {
-            var trimmed = segment.Trim();
-            if (trimmed.Length > 0)
-            {
-                yield return trimmed;
-            }
-        }
+        return names.Split(NameSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     }
 }
