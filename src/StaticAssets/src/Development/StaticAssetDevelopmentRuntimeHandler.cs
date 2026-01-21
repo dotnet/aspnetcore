@@ -193,13 +193,27 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler
                 _context.Response.Headers.ETag = GetETag(fileInfo);
                 _context.Response.Headers.LastModified = fileInfo.LastModified.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture);
 
-                // For range requests (206 Partial Content), we preserve the original offset and count to send the correct range.
+                // For range requests (206 Partial Content), we need to validate the range against the modified file size.
                 // For normal requests (200 OK), we send the entire file.
                 var isRangeRequest = _context.Response.StatusCode == StatusCodes.Status206PartialContent;
                 if (isRangeRequest)
                 {
+                    // Validate that the requested range is satisfiable with the modified file size.
+                    // The range was validated against the original descriptor size, but the file may have changed.
+                    if (offset >= fileInfo.Length || (count.HasValue && offset + count.Value > fileInfo.Length))
+                    {
+                        // Range is not satisfiable with the modified file - return 416.
+                        _context.Response.StatusCode = StatusCodes.Status416RangeNotSatisfiable;
+                        _context.Response.Headers.ContentRange = $"*/{fileInfo.Length}";
+                        _context.Response.ContentLength = 0;
+                        return Task.CompletedTask;
+                    }
+
+                    // Adjust count if it extends beyond the modified file size.
+                    var actualCount = count.HasValue ? Math.Min(count.Value, fileInfo.Length - offset) : fileInfo.Length - offset;
+                    
                     // Send the requested range from the modified file.
-                    return _original.SendFileAsync(fileInfo.PhysicalPath!, offset, count, cancellationToken);
+                    return _original.SendFileAsync(fileInfo.PhysicalPath!, offset, actualCount, cancellationToken);
                 }
                 else
                 {
