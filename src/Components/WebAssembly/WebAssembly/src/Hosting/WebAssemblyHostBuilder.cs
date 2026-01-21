@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
@@ -190,6 +191,7 @@ public sealed class WebAssemblyHostBuilder
         var hostEnvironment = new WebAssemblyHostEnvironment(applicationEnvironment, WebAssemblyNavigationManager.Instance.BaseUri);
 
         Services.AddSingleton<IWebAssemblyHostEnvironment>(hostEnvironment);
+        Services.AddSingleton<IHostEnvironment>(sp => new WebAssemblyHostEnvironmentAdapter(sp.GetRequiredService<IWebAssemblyHostEnvironment>()));
 
         var configFiles = new[]
         {
