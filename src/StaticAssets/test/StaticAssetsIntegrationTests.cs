@@ -511,7 +511,7 @@ public class StaticAssetsIntegrationTests
         Assert.Equal(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
         var contentRange = await response.Content.ReadAsStringAsync();
         Assert.True(response.Content.Headers.TryGetValues("Content-Range", out var values));
-        Assert.Contains("*/5", values);
+        Assert.Contains("bytes */5", values);
 
         Directory.Delete(webRoot, true);
     }

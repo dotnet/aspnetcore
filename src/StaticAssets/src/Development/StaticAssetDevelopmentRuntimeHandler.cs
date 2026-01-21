@@ -204,7 +204,7 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler
                     {
                         // Range is not satisfiable with the modified file - return 416.
                         _context.Response.StatusCode = StatusCodes.Status416RangeNotSatisfiable;
-                        _context.Response.Headers.ContentRange = $"*/{fileInfo.Length}";
+                        _context.Response.GetTypedHeaders().ContentRange = new ContentRangeHeaderValue(fileInfo.Length);
                         _context.Response.ContentLength = 0;
                         return Task.CompletedTask;
                     }
