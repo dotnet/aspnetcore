@@ -1,4 +1,5 @@
 #nullable enable
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithHash(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! hash) -> string!
 Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.get -> bool
 Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.init -> void
 Microsoft.AspNetCore.Components.IComponentPropertyActivator
