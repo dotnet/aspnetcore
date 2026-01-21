@@ -1379,10 +1379,10 @@ internal abstract class CertificateManager
         internal void WslWindowsTrustException(string exceptionMessage) => WriteEvent(117, exceptionMessage);
 
         [Event(118, Level = EventLevel.Verbose, Message = "Meets minimum version certificates: {0}")]
-        public void DescribeMinimumVersionCertificates(string validCertificates) => WriteEvent(118, validCertificates);
+        public void DescribeMinimumVersionCertificates(string meetsMinimumVersionCertificates) => WriteEvent(118, meetsMinimumVersionCertificates);
 
         [Event(119, Level = EventLevel.Verbose, Message = "Below minimum version certificates: {0}")]
-        public void DescribeBelowMinimumVersionCertificates(string invalidCertificates) => WriteEvent(119, invalidCertificates);
+        public void DescribeBelowMinimumVersionCertificates(string belowMinimumVersionCertificates) => WriteEvent(119, belowMinimumVersionCertificates);
     }
 
     internal sealed class UserCancelledTrustException : Exception
