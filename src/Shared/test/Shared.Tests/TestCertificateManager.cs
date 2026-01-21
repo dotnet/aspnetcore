@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Certificates.Generation;
 
 namespace Microsoft.AspNetCore.Internal.Tests;
 
-internal sealed class CertificateManagerTest : CertificateManager
+internal sealed class TestCertificateManager : CertificateManager
 {
     private readonly Dictionary<StoreKey, List<InMemoryCertificateEntry>> _stores = new();
     private readonly Dictionary<string, byte[]> _createdFiles = new(StringComparer.OrdinalIgnoreCase);
@@ -21,7 +21,7 @@ internal sealed class CertificateManagerTest : CertificateManager
     private readonly List<X509Certificate2> _trustedCertificates = new();
     private readonly Dictionary<string, bool> _exportableByThumbprint = new(StringComparer.OrdinalIgnoreCase);
 
-    public CertificateManagerTest(
+    public TestCertificateManager(
         IDictionary<StoreKey, IEnumerable<X509Certificate2>>? initialStores = null,
         string? subject = null,
         int? generatedVersion = null,

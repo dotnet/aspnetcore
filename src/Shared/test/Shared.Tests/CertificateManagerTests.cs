@@ -138,7 +138,7 @@ public class CertificateManagerTests
         var notBefore = now.AddMinutes(-5);
         var notAfter = now.AddMinutes(5);
 
-        var manager = new CertificateManagerTest(generatedVersion: 6, minimumVersion: 4);
+        var manager = new TestCertificateManager(generatedVersion: 6, minimumVersion: 4);
 
         var v3Certificate = manager.CreateDevelopmentCertificateWithVersion(3, notBefore, notAfter);
         var v4Certificate = manager.CreateDevelopmentCertificateWithVersion(4, notBefore, notAfter);
@@ -162,7 +162,7 @@ public class CertificateManagerTests
         var notBefore = now.AddMinutes(-5);
         var notAfter = now.AddMinutes(5);
 
-        var manager = new CertificateManagerTest(generatedVersion: 6, minimumVersion: 4);
+        var manager = new TestCertificateManager(generatedVersion: 6, minimumVersion: 4);
         var olderCertificate = manager.CreateDevelopmentCertificateWithVersion(5, notBefore, notAfter);
 
         manager.AddCertificate(StoreName.My, StoreLocation.CurrentUser, olderCertificate, isExportable: true);
@@ -182,7 +182,7 @@ public class CertificateManagerTests
         var notBefore = now.AddMinutes(-5);
         var notAfter = now.AddMinutes(5);
 
-        var manager = new CertificateManagerTest(generatedVersion: 6, minimumVersion: 4);
+        var manager = new TestCertificateManager(generatedVersion: 6, minimumVersion: 4);
         var minimumCertificate = manager.CreateDevelopmentCertificateWithVersion(4, notBefore, notAfter);
         manager.AddCertificate(StoreName.My, StoreLocation.CurrentUser, minimumCertificate, isExportable: true);
 
@@ -204,7 +204,7 @@ public class CertificateManagerTests
         var notBefore = now.AddMinutes(-5);
         var notAfter = now.AddMinutes(5);
 
-        var manager = new CertificateManagerTest(generatedVersion: 6, minimumVersion: 4);
+        var manager = new TestCertificateManager(generatedVersion: 6, minimumVersion: 4);
         var currentCertificate = manager.CreateAspNetCoreHttpsDevelopmentCertificate(notBefore, notAfter);
         manager.AddCertificate(StoreName.My, StoreLocation.CurrentUser, currentCertificate, isExportable: true);
 
@@ -223,7 +223,7 @@ public class CertificateManagerTests
         var notBefore = now.AddMinutes(-5);
         var notAfter = now.AddMinutes(5);
 
-        var manager = new CertificateManagerTest(generatedVersion: 6, minimumVersion: 4);
+        var manager = new TestCertificateManager(generatedVersion: 6, minimumVersion: 4);
         var newerCertificate = manager.CreateDevelopmentCertificateWithVersion(7, notBefore, notAfter);
         manager.AddCertificate(StoreName.My, StoreLocation.CurrentUser, newerCertificate, isExportable: true);
 
