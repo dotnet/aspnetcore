@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Aplicativo Autônomo Blazor WebAssembly",
   "description": "Um modelo de projeto para criar um aplicativo Blazor que é executado no WebAssembly. Esse modelo pode ser usado para aplicativos Web com UIs (interfaces do usuário) completas e dinâmicas.",

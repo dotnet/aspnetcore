@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core Web API (native AOT)",
   "description": "Šablona projektu pro vytvoření webového rozhraní RESTful API s využitím minimálních rozhraní API ASP.NET Core publikovaných jako nativní AOT s volitelnou podporou OpenAPI.",

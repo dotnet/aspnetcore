@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core gRPC サービス",
   "description": "ASP.NET Core を使用して gRPC サービスを作成するプロジェクト テンプレート。native AOT としての公開もオプションでサポートされます。",

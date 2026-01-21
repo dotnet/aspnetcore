@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core Web API'si",
   "description": "OpenAPI ve kimlik doğrulaması için isteğe bağlı destek ile birlikte ASP.NET Core denetleyicilerini veya minimal API'leri kullanarak RESTful Web API'si oluşturmaya yönelik proje şablonu.",

@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Aplicación web Blazor",
   "description": "Plantilla de proyecto para crear una aplicación web de Blazor que admita tanto la representación del lado del servidor como la interactividad del cliente. Esta plantilla se puede usar para las aplicaciones web con interfaces de usuario dinámicas enriquecidas.",

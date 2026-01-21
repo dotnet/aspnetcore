@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Webová aplikace Blazor",
   "description": "Šablona projektu pro vytvoření webové aplikace Blazor, která podporuje vykreslování na straně serveru i interaktivitu klienta. Tato šablona se dá použít pro webové aplikace s bohatými dynamickými uživatelskými rozhraními (UI).",

@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "API web ASP.NET Core",
   "description": "Modèle de projet pour la création d’une API web RESTful à l’aide de contrôleurs ASP.NET Core ou d’API minimales, avec prise en charge facultative pour OpenAPI et l’authentification.",

@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core Web API",
   "description": "Una plantilla de proyecto para crear una API web RESTful utilizando controladores ASP.NET Core o API mínimas, con soporte opcional para OpenAPI y autenticación.",

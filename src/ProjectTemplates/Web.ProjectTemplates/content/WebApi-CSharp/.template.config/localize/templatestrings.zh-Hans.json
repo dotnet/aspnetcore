@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core Web API",
   "description": "用于使用 ASP.NET Core 控制器或最小 API 创建 RESTful Web API 的项目模板，可选择支持 OpenAPI 和身份验证。",

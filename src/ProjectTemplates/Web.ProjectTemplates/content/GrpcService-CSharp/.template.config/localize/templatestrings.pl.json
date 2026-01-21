@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Usługa gRPC platformy ASP.NET Core",
   "description": "Szablon projektu służący do tworzenia usługi platformy gRPC przy użyciu platformy ASP.NET Core z opcjonalną obsługą publikowania jako native AOT.",

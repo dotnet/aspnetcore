@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "API web ASP.NET Core",
   "description": "Modèle de projet permettant de créer une application ASP.NET Core avec un exemple de contrôleur pour un service HTTP RESTful. Vous pouvez également utiliser ce modèle pour les vues et contrôleurs ASP.NET Core MVC.",

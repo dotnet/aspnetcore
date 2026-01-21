@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core Web API",
   "description": "ASP.NET Core コントローラーまたは最小限の API を使用して RESTful Web API を作成するプロジェクト テンプレート。OpenAPI と認証もオプションでサポートされます。",

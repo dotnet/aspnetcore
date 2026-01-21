@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Servicio gRPC de ASP.NET Core",
   "description": "Una plantilla de proyecto para crear un servicio gRPC utilizando ASP.NET Core, con soporte opcional para publicar como native AOT.",

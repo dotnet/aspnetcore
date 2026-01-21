@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Веб-API ASP.NET Core (native AOT)",
   "description": "Шаблон проекта для создания веб-API на основе REST с использованием минимальных API ASP.NET Core, опубликованных как \"native AOT\" с необязательной поддержкой OpenAPI.",

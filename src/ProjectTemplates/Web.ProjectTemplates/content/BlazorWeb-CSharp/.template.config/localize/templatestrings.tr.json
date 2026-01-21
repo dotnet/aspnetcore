@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Blazor Web Uygulaması",
   "description": "Hem sunucu tarafı işlemeyi hem de istemci etkileşimini destekleyen bir Blazor web uygulaması oluşturmaya yönelik proje şablonu. Bu şablon, zengin dinamik kullanıcı arabirimlerine (UI) sahip web uygulamaları için kullanılabilir.",

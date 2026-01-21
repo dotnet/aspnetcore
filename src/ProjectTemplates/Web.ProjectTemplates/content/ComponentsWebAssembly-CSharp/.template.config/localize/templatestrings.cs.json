@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Samostatná aplikace Blazor WebAssembly",
   "description": "Šablona projektu pro vytvoření aplikace Blazor, která běží ve WebAssembly. Tato šablona se dá využít pro webové aplikace s propracovanými dynamickými uživatelskými rozhraními (UI).",

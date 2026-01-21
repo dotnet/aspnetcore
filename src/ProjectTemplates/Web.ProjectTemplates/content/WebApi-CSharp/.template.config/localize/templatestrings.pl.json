@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Internetowy interfejs API platformy ASP.NET Core",
   "description": "Szablon projektu służący do tworzenia internetowego interfejsu API RESTful przy użyciu kontrolerów platformy ASP.NET Core lub minimalnych interfejsów API z opcjonalną obsługą interfejsu OpenAPI i uwierzytelniania.",

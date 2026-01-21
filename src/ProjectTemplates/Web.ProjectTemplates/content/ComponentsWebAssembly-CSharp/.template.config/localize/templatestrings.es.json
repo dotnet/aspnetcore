@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Aplicación independiente WebAssembly de Blazor",
   "description": "Plantilla de proyecto para crear una aplicación Blazor que se ejecuta en WebAssembly. Esta plantilla se puede usar para las aplicaciones web con interfaces de usuario dinámicas enriquecidas.",

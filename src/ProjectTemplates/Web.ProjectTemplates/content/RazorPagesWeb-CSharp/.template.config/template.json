@@ -381,7 +381,11 @@
       "type": "parameter",
       "description": "The target framework for the project.",
       "datatype": "choice",
-      "choices": [      ],
+      "choices": [
+        {
+          "choice": "net11.0"
+        }
+      ],
       "replaces": "net11.0",
       "defaultValue": "net11.0"
     },

@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Autonomiczna aplikacja zestawu WebAssembly platformy Blazor",
   "description": "Szablon projektu służący do tworzenia aplikacji Blazor działającej na zestawie WebAssembly. Ten szablon może być używany dla aplikacji internetowych z rozbudowanymi, dynamicznymi interfejsami użytkowników.",

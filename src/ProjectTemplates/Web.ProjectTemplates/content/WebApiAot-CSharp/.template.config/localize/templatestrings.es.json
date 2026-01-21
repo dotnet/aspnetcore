@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "API web ASP.NET Core (native AOT)",
   "description": "Plantilla de proyecto para crear una API web de RESTful mediante las API mínimas básicas de ASP.NET Core publicadas como AOT nativo, con compatibilidad opcional con OpenAPI.",

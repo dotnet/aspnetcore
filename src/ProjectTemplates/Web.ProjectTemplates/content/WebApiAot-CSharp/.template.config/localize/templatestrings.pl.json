@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Internetowy interfejs API platformy ASP.NET Core (native AOT)",
   "description": "Szablon projektu służący do tworzenia internetowego interfejsu API RESTful przy użyciu minimalnych interfejsów API ASP.NET Core opublikowanych jako natywne AOT z opcjonalną obsługą interfejsu OpenAPI.",

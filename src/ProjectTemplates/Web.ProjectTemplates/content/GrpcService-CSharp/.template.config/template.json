@@ -56,7 +56,11 @@
       "type": "parameter",
       "description": "The target framework for the project.",
       "datatype": "choice",
-      "choices": [],
+      "choices": [
+        {
+          "choice": "net11.0"
+        }
+      ],
       "defaultValue": "net11.0"
     },
     "ExcludeLaunchSettings": {
@@ -122,7 +126,7 @@
       "displayName": "Do not use _top-level statements",
       "description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
     },
-    "NativeAot": {
+    "NativeAot" : {
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",

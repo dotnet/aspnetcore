@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core Web API'si (yerel AOT)",
   "description": "OpenAPI için isteğe bağlı destekle yerel AOT olarak yayımlanan ASP.NET Core minimal API’ları kullanarak RESTful Web API oluşturmaya yönelik proje şablonu.",

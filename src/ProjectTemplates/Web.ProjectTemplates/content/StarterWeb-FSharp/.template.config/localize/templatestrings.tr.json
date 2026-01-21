@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core Web Uygulaması (Model-Görünüm-Denetleyici)",
   "description": "Örnek ASP.NET Core MVC Görünümleri ve Denetleyicileri içeren bir ASP.NET Core uygulaması oluşturmaya yönelik proje şablonu. Bu şablon aynı zamanda RESTful HTTP hizmetleri için de kullanılabilir.",

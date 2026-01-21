@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Blazor-Web-App",
   "description": "Eine Projektvorlage zum Erstellen einer Blazor-Web-App, die sowohl serverseitiges Rendering als auch Clientinteraktivität unterstützt. Diese Vorlage kann für Web-Apps mit umfangreichen dynamischen Benutzeroberflächen (UIs) verwendet werden.",

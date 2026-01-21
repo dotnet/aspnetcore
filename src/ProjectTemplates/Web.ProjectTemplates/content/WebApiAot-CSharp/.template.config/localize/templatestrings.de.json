@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "ASP.NET Core Web-API (native AOT)",
   "description": "Eine Projektvorlage zum Erstellen einer RESTful-Web-API mit ASP.NET Core minimalen APIs, die als native AOT veröffentlicht wurden, mit optionalem Support für OpenAPI.",

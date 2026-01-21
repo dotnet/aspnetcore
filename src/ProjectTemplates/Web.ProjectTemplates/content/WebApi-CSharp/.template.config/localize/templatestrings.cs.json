@@ -1,4 +1,4 @@
-{
+﻿{
   "author": "Microsoft",
   "name": "Webové rozhraní API pro ASP.NET Core",
   "description": "Šablona projektu pro vytvoření webového rozhraní RESTful API s využitím kontrolerů ASP.NET Core nebo minimálních rozhraní API s volitelnou podporou OpenAPI a ověřování.",
