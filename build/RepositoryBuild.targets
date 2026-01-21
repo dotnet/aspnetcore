@@ -157,7 +157,7 @@
       <RepositoryTestResult Include="$(RepositoryToBuild)" Success="false" />
     </ItemGroup>
 
-    <!-- To enable this test, either publish the shared runtime to https://dotnetcli.blob.core.windows.net/dotnet, or override the install location by setting AspNetCoreFxFeed. -->
+    <!-- To enable this test, either publish the shared runtime to https://builds.dotnet.microsoft.com/dotnet, or override the install location by setting AspNetCoreFxFeed. -->
     <Warning Text="Skipping tests because InstallSharedRuntimeFromPreviousBuild != 'true'." Condition="'$(SkipTestsDueToMissingSharedFx)' == 'true' "/>
 
     <Message Text="============ Testing $(RepositoryToBuild) ============" Importance="High" />

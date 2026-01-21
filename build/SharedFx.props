@@ -35,7 +35,7 @@
     -->
     <SharedFxIntermediateArchiveBaseName>$(SharedFxInstallerName)-internal</SharedFxIntermediateArchiveBaseName>
     <DebConfigInFile>$(_PackagingDir)debian_config.json.in</DebConfigInFile>
-    <PublicCoreFeedPrefix>https://dotnetcli.blob.core.windows.net/dotnet/</PublicCoreFeedPrefix>
+    <PublicCoreFeedPrefix>https://builds.dotnet.microsoft.com/dotnet/</PublicCoreFeedPrefix>
 
     <!-- In an orchestrated build, this may be overriden to other Azure feeds. -->
     <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)'==''">$(PublicCoreFeedPrefix)</DotNetAssetRootUrl>

@@ -46,42 +46,42 @@ Microsoft.AspNetCore              | [![][metapackage-myget-badge]][metapackage-m
 
 Updated versions of the ASP.NET Core runtime can be installed separately from SDK updates. Runtime-only installers can be downloaded here:
 
-[badge-master]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-win-x64-version-badge.svg
-[win-x64-zip]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-win-x64.zip
-[win-x64-exe]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-win-x64.exe
-[win-x86-zip]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-win-x86.zip
-[win-x86-exe]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-win-x86.exe
-[linux-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-linux-x64.tar.gz
-[linux-arm-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-linux-arm.tar.gz
-[linux-arm64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-linux-arm64.tar.gz
-[osx-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-osx-x64.tar.gz
-[debian-x64-deb]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-x64.deb
-[redhat-x64-rpm]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-x64.rpm
-[linux-musl-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-linux-musl-x64.tar.gz
+[badge-master]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-win-x64-version-badge.svg
+[win-x64-zip]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-win-x64.zip
+[win-x64-exe]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-win-x64.exe
+[win-x86-zip]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-win-x86.zip
+[win-x86-exe]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-win-x86.exe
+[linux-x64-tar]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-linux-x64.tar.gz
+[linux-arm-tar]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-linux-arm.tar.gz
+[linux-arm64-tar]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-linux-arm64.tar.gz
+[osx-x64-tar]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-osx-x64.tar.gz
+[debian-x64-deb]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-x64.deb
+[redhat-x64-rpm]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-x64.rpm
+[linux-musl-x64-tar]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-linux-musl-x64.tar.gz
 
-[badge-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-win-x64-version-badge.svg
-[win-x64-zip-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-win-x64.zip
-[win-x64-exe-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-win-x64.exe
-[win-x86-zip-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-win-x86.zip
-[win-x86-exe-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-win-x86.exe
-[linux-x64-tar-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-linux-x64.tar.gz
-[osx-x64-tar-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-osx-x64.tar.gz
-[debian-x64-deb-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-x64.deb
-[redhat-x64-rpm-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-x64.rpm
-[linux-arm-tar-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-linux-arm.tar.gz
-[linux-musl-x64-tar-rel-22]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-linux-musl-x64.tar.gz
+[badge-rel-22]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-win-x64-version-badge.svg
+[win-x64-zip-rel-22]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-win-x64.zip
+[win-x64-exe-rel-22]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-win-x64.exe
+[win-x86-zip-rel-22]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-win-x86.zip
+[win-x86-exe-rel-22]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-win-x86.exe
+[linux-x64-tar-rel-22]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-linux-x64.tar.gz
+[osx-x64-tar-rel-22]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-osx-x64.tar.gz
+[debian-x64-deb-rel-22]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-x64.deb
+[redhat-x64-rpm-rel-22]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-x64.rpm
+[linux-arm-tar-rel-22]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-linux-arm.tar.gz
+[linux-musl-x64-tar-rel-22]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.2/aspnetcore-runtime-latest-linux-musl-x64.tar.gz
 
-[badge-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-win-x64-version-badge.svg
-[win-x64-zip-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-win-x64.zip
-[win-x64-exe-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-win-x64.exe
-[win-x86-zip-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-win-x86.zip
-[win-x86-exe-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-win-x86.exe
-[linux-x64-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-linux-x64.tar.gz
-[osx-x64-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-osx-x64.tar.gz
-[debian-x64-deb-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-x64.deb
-[redhat-x64-rpm-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-x64.rpm
-[linux-arm-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-linux-arm.tar.gz
-[linux-musl-x64-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-linux-musl-x64.tar.gz
+[badge-rel-21]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-win-x64-version-badge.svg
+[win-x64-zip-rel-21]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-win-x64.zip
+[win-x64-exe-rel-21]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-win-x64.exe
+[win-x86-zip-rel-21]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-win-x86.zip
+[win-x86-exe-rel-21]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-win-x86.exe
+[linux-x64-tar-rel-21]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-linux-x64.tar.gz
+[osx-x64-tar-rel-21]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-osx-x64.tar.gz
+[debian-x64-deb-rel-21]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-x64.deb
+[redhat-x64-rpm-rel-21]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-x64.rpm
+[linux-arm-tar-rel-21]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-linux-arm.tar.gz
+[linux-musl-x64-tar-rel-21]: https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-linux-musl-x64.tar.gz
 
 Platform              | Latest (master branch) <br> ![][badge-master]                      | release/2.2 <br> ![][badge-rel-22] | release/2.1 <br> ![][badge-rel-21]
 :---------------------|:----------------------------------------------------------------|:------------------------------------------------------------------------- |:-------------------------------------------------------------------------
