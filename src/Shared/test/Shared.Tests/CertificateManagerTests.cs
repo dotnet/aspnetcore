@@ -156,7 +156,7 @@ public class CertificateManagerTests
     }
 
     [Fact]
-    public void EnsureAspNetCoreHttpsDevelopmentCertificate_UsesCurrentVersionWhenSelectingCertificate()
+    public void EnsureAspNetCoreHttpsDevelopmentCertificate_InteractiveUsesCurrentVersionWhenSelectingCertificate()
     {
         var now = DateTimeOffset.Now;
         var notBefore = now.AddMinutes(-5);
@@ -167,7 +167,7 @@ public class CertificateManagerTests
 
         manager.AddCertificate(StoreName.My, StoreLocation.CurrentUser, olderCertificate, isExportable: true);
 
-        var result = manager.EnsureAspNetCoreHttpsDevelopmentCertificate(notBefore, notAfter, isInteractive: false);
+        var result = manager.EnsureAspNetCoreHttpsDevelopmentCertificate(notBefore, notAfter, isInteractive: true);
 
         Assert.Equal(EnsureCertificateResult.Succeeded, result);
 
@@ -176,7 +176,7 @@ public class CertificateManagerTests
     }
 
     [Fact]
-    public void EnsureAspNetCoreHttpsDevelopmentCertificate_CreatesWhenOnlyMinimumVersionExists()
+    public void EnsureAspNetCoreHttpsDevelopmentCertificate_NonInteractiveAcceptsMinimumVersionCertificate()
     {
         var now = DateTimeOffset.Now;
         var notBefore = now.AddMinutes(-5);
@@ -188,6 +188,27 @@ public class CertificateManagerTests
 
         var beforeCount = manager.GetStoreCertificates(StoreName.My, StoreLocation.CurrentUser).Count;
         var result = manager.EnsureAspNetCoreHttpsDevelopmentCertificate(notBefore, notAfter, isInteractive: false);
+        var afterCount = manager.GetStoreCertificates(StoreName.My, StoreLocation.CurrentUser).Count;
+
+        Assert.Equal(EnsureCertificateResult.ValidCertificatePresent, result);
+        Assert.Equal(beforeCount, afterCount);
+        Assert.DoesNotContain(manager.GetStoreCertificates(StoreName.My, StoreLocation.CurrentUser),
+            cert => CertificateManager.GetCertificateVersion(cert) == 6);
+    }
+
+    [Fact]
+    public void EnsureAspNetCoreHttpsDevelopmentCertificate_InteractiveCreatesWhenOnlyMinimumVersionExists()
+    {
+        var now = DateTimeOffset.Now;
+        var notBefore = now.AddMinutes(-5);
+        var notAfter = now.AddMinutes(5);
+
+        var manager = new TestCertificateManager(generatedVersion: 6, minimumVersion: 4);
+        var minimumCertificate = manager.CreateDevelopmentCertificateWithVersion(4, notBefore, notAfter);
+        manager.AddCertificate(StoreName.My, StoreLocation.CurrentUser, minimumCertificate, isExportable: true);
+
+        var beforeCount = manager.GetStoreCertificates(StoreName.My, StoreLocation.CurrentUser).Count;
+        var result = manager.EnsureAspNetCoreHttpsDevelopmentCertificate(notBefore, notAfter, isInteractive: true);
         var afterCount = manager.GetStoreCertificates(StoreName.My, StoreLocation.CurrentUser).Count;
         var certificates = manager.GetStoreCertificates(StoreName.My, StoreLocation.CurrentUser);
 

@@ -253,6 +253,27 @@ internal abstract class CertificateManager
     public IList<X509Certificate2> GetHttpsCertificates() =>
         ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, requireExportable: true);
 
+    /// <summary>
+    /// Ensures that a valid ASP.NET Core HTTPS development certificate is present.
+    /// </summary>
+    /// <param name="notBefore">The date and time before which the certificate is not valid.</param>
+    /// <param name="notAfter">The date and time after which the certificate is not valid.</param>
+    /// <param name="path">Path to export the certificate (directory must exist).</param>
+    /// <param name="trust">Whether to trust the certificate or simply add it to the CurrentUser/My store.</param>
+    /// <param name="includePrivateKey">Whether to include the private key in the exported certificate.</param>
+    /// <param name="password">Password for the exported certificate.</param>
+    /// <param name="keyExportFormat">Format for exporting the certificate key.</param>
+    /// <param name="isInteractive">Whether the operation is interactive (dotnet dev-certs tool) or non-interactive (first run experience).</param>
+    /// <returns>The result of the ensure operation.</returns>
+    /// <exception cref="InvalidOperationException">There was an error ensuring the certificate exists.</exception>
+    /// <remarks>
+    /// The minimum certificate version checks behave differently based on whether the operation is interactive or not. In interactive mode,
+    /// the certificate will only be considered valid if it meets or exceeds the current version of the certificate. In non-interactive mode,
+    /// the certificate will be considered valid as long as it meets the minimum supported version requirement. This is to allow first run
+    /// to upgrade a certificate if it becomes necessary to bump the minimum version due to security issues, etc. while not leaving users with
+    /// a partially valid certificate after a normal first run experience. Interactive scenarios such as the dotnet dev-certs tool should always
+    /// ensure the certificate is updated to at least the latest supported version.
+    /// </remarks>
     public EnsureCertificateResult EnsureAspNetCoreHttpsDevelopmentCertificate(
         DateTimeOffset notBefore,
         DateTimeOffset notAfter,
@@ -269,9 +290,16 @@ internal abstract class CertificateManager
         var localMachineCertificates = ListCertificates(StoreName.My, StoreLocation.LocalMachine, isValid: true, requireExportable: true);
         var certificates = currentUserCertificates.Concat(localMachineCertificates);
 
-        var filteredCertificates = certificates.Where(c => c.Subject == Subject &&
+        var filteredCertificates = certificates.Where(c => c.Subject == Subject);
+        if (isInteractive)
+        {
             // For purposes of updating the dev cert, only consider certificates with the current version or higher as valid
-            GetCertificateVersion(c) >= AspNetHttpsCertificateVersion);
+            // Only applies to interactive scenarios where we want to ensure we're generating the latest certificate
+            // For non-interactive scenarios (e.g. first run experience), we want to accept older versions of the certificate as long as they meet the minimum version requirement
+            // This will allow us to respond to scenarios where we need to invalidate older certificates due to security issues, etc. but not leave users
+            // with a partially valid certificate after their first run experience.
+            filteredCertificates = filteredCertificates.Where(c => GetCertificateVersion(c) >= AspNetHttpsCertificateVersion);
+        }
 
         if (Log.IsEnabled())
         {
