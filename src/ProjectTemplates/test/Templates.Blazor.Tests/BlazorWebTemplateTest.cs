@@ -95,8 +95,9 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
     [InlineData("my.namespace.blazor", "my-namespace-blazor")]
     [InlineData(".StartWithDot", "startwithdot")]
     [InlineData("EndWithDot.", "endwithdot")]
-    [InlineData("My..Test__Project", "my--test--project")]
+    [InlineData("My..Test__Project", "my-test-project")]
     [InlineData("Project123.Test456", "project123-test456")]
+    [InlineData("xn--My.Test.Project", "xn-my-test-project")]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
     public async Task BlazorWebTemplateLocalhostTld_GeneratesDnsCompliantHostnames(string projectName, string expectedHostname)
     {

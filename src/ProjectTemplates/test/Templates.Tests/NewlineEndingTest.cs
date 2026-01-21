@@ -51,7 +51,9 @@ public class NewlineEndingTest : LoggedTest
             .Concat(Directory.GetFiles(templateDirectoryPath, "*.csproj", SearchOption.AllDirectories))
             .Concat(Directory.GetFiles(templateDirectoryPath, "*.fsproj", SearchOption.AllDirectories))
             .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}wwwroot{Path.DirectorySeparatorChar}lib{Path.DirectorySeparatorChar}")) // Exclude third-party libraries
-            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}.template.config{Path.DirectorySeparatorChar}localize{Path.DirectorySeparatorChar}")); // Exclude auto-generated localization files in localize directory
+            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}.template.config{Path.DirectorySeparatorChar}localize{Path.DirectorySeparatorChar}")) // Exclude auto-generated localization files in localize directory
+            .Where(f => !(f.Contains($"{Path.DirectorySeparatorChar}.template.config{Path.DirectorySeparatorChar}")
+                       && f.Contains("strings.json"))); // Exclude strings.json files in .template.config directories
 
         foreach (var file in files)
         {
