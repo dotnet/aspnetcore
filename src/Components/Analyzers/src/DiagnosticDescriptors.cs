@@ -92,4 +92,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.PersistentStateShouldNotHavePropertyInitializer_Description)));
+
+    public static readonly DiagnosticDescriptor LayoutComponentCannotReferenceItself = new(
+        "BL0010",
+        CreateLocalizableResourceString(nameof(Resources.LayoutComponentCannotReferenceItself_Title)),
+        CreateLocalizableResourceString(nameof(Resources.LayoutComponentCannotReferenceItself_Format)),
+        Usage,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.LayoutComponentCannotReferenceItself_Description)));
 }
