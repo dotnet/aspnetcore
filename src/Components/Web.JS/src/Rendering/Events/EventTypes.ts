@@ -23,6 +23,12 @@ export function registerCustomEventType(eventName: string, options: EventTypeOpt
     throw new Error(`The event '${eventName}' is already registered.`);
   }
 
+  // When aliasing a browser event, the custom event name must be different from the browser event name
+  // to avoid double-triggering (once for the browser event, once for the custom event wrapper)
+  if (options.browserEventName && eventName === options.browserEventName) {
+    throw new Error(`The custom event '${eventName}' cannot have the same name as its browserEventName '${options.browserEventName}'. Choose a different name for the custom event.`);
+  }
+
   // If applicable, register this as an alias of the given browserEventName
   if (options.browserEventName) {
     const aliasGroup = browserEventNamesToAliases.get(options.browserEventName);
