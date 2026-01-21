@@ -10,10 +10,7 @@ using Microsoft.AspNetCore.DataProtection;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-/// <summary>
-/// Enables component parameters to be supplied from the <see cref="TempData"/>.
-/// </summary>
-public static class TempDataProviderServiceCollectionExtensions
+internal static class TempDataProviderServiceCollectionExtensions
 {
 
     internal static IServiceCollection AddTempData(this IServiceCollection services)

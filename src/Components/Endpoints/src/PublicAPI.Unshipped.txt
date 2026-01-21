@@ -5,7 +5,6 @@ Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempData
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataCookie.set -> void
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataProviderType.get -> Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataProviderType.set -> void
-Microsoft.AspNetCore.Components.Endpoints.TempDataProviderServiceCollectionExtensions
 Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType
 Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType.Cookie = 0 -> Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType
 Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType.SessionStorage = 1 -> Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType
