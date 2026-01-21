@@ -181,8 +181,18 @@ internal sealed partial class ComponentHub : Hub
         {
             operations = CircuitPersistenceManager.ToRootComponentOperationBatch(
                 _serverComponentSerializer,
-                persistedState.RootComponents,
+                persistedState.RootComponentDescriptors,
                 serializedComponentOperations);
+
+            if (operations == null)
+            {
+                // There was an error, so kill the circuit.
+                await _circuitRegistry.TerminateAsync(circuitHost.CircuitId);
+                await NotifyClientError(Clients.Caller, "The persisted circuit state is invalid.");
+                Context.Abort();
+
+                return;
+            }
 
             store = new ProtectedPrerenderComponentApplicationStore(persistedState.ApplicationState, _dataProtectionProvider);
         }
@@ -316,9 +326,10 @@ internal sealed partial class ComponentHub : Hub
             persistedCircuitState = await _circuitPersistenceManager.ResumeCircuitAsync(circuitId, Context.ConnectionAborted);
             if (persistedCircuitState == null)
             {
+                // The circuit state cannot be retrieved. It might have been deleted or expired.
+                // We do not send an error to the client as this is a valid scenario
+                // that will be handled by the client reconnection logic.
                 Log.InvalidInputData(_logger);
-                await NotifyClientError(Clients.Caller, "The circuit state could not be retrieved. It may have been deleted or expired.");
-                Context.Abort();
                 return null;
             }
         }
@@ -347,6 +358,24 @@ internal sealed partial class ComponentHub : Hub
             return null;
         }
 
+        // Deserialize the root component descriptors to check whether they are valid and not expired.
+        // If successful, the data will be attached to the CircuitHost instance and used later in UpdateRootComponents.
+        // If not, return null and not send an error to allow the client to handle the rejection.
+        if (!CircuitPersistenceManager.TryDeserializeWebRootComponentDescriptors(
+            _serverComponentSerializer,
+            persistedCircuitState.RootComponents,
+            out var rootComponentDescriptors))
+        {
+            Log.InvalidInputData(_logger);
+            return null;
+        }
+
+        var resumedPersistedCircuitState = new ResumedPersistedCircuitState
+        {
+            ApplicationState = persistedCircuitState.ApplicationState,
+            RootComponentDescriptors = rootComponentDescriptors
+        };
+
         try
         {
             var circuitClient = new CircuitClientProxy(Clients.Caller, Context.ConnectionId);
@@ -368,7 +397,7 @@ internal sealed partial class ComponentHub : Hub
             // take care of its own errors anyway.
             _ = circuitHost.InitializeAsync(store: null, httpActivityContext, Context.ConnectionAborted);
 
-            circuitHost.AttachPersistedState(persistedCircuitState);
+            circuitHost.AttachPersistedState(resumedPersistedCircuitState);
 
             // It's safe to *publish* the circuit now because nothing will be able
             // to run inside it until after InitializeAsync completes.

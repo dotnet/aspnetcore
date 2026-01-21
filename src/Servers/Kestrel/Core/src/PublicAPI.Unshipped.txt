@@ -1,3 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.TlsClientHelloBytesCallback.get -> System.Action<Microsoft.AspNetCore.Connections.ConnectionContext!, System.Buffers.ReadOnlySequence<byte>>?
-Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.TlsClientHelloBytesCallback.set -> void

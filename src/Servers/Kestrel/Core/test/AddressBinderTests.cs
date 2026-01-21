@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -60,6 +61,36 @@ public class AddressBinderTests
         Assert.Equal(IPAddress.IPv6Any, listenOptions.IPEndPoint.Address);
         Assert.Equal(80, listenOptions.IPEndPoint.Port);
         Assert.False(https);
+    }
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void ParseAddressOnOSWithoutIPv6()
+    {
+        var tmpDir = Directory.CreateTempSubdirectory();
+
+        try
+        {
+            var options = new RemoteInvokeOptions();
+            options.StartInfo.WorkingDirectory = tmpDir.FullName;
+            options.StartInfo.EnvironmentVariables["DOTNET_SYSTEM_NET_DISABLEIPV6"] = "1";
+
+            using var remoteHandle = RemoteExecutor.Invoke(static () =>
+            {
+                Assert.False(Socket.OSSupportsIPv6);
+
+                var listenOptions = AddressBinder.ParseAddress($"http://*:80", out var https);
+                Assert.IsType<AnyIPListenOptions>(listenOptions);
+                Assert.IsType<IPEndPoint>(listenOptions.EndPoint);
+                Assert.Equal(IPAddress.Any, listenOptions.IPEndPoint.Address);
+                Assert.Equal(80, listenOptions.IPEndPoint.Port);
+                Assert.False(https);
+            }, options);
+        }
+        finally
+        {
+            tmpDir.Delete(recursive: true);
+        }
     }
 
     [Fact]

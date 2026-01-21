@@ -10,7 +10,7 @@
     <BlazorFrameworkStaticWebAssetRoot Condition="'$(BlazorFrameworkStaticWebAssetRoot)' == ''">$(MSBuildThisFileDirectory)..\_framework</BlazorFrameworkStaticWebAssetRoot>
   </PropertyGroup>
 
-  <Target Name="_AddBlazorFrameworkStaticWebAssets" Condition="'$(OutputType)' == 'Exe'">
+  <Target Name="_AddBlazorFrameworkStaticWebAssets" Condition="'$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe'">
     <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true'">
       <_FrameworkStaticWebAssetCandidate Include="$(BlazorFrameworkStaticWebAssetRoot)\blazor.web.js">
         <RelativePath>_framework/blazor.web.js</RelativePath>

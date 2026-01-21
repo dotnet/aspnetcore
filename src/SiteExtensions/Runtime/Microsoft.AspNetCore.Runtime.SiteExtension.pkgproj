@@ -44,18 +44,6 @@
   </ItemGroup>
 
   <Target Name="ResolveReferenceItemsForPackage" DependsOnTargets="ResolveReferences" BeforeTargets="_GetPackageFiles">
-    <ItemGroup>
-      <AspNetRuntimeArchive 
-          Include="$(CrossArchitectureInstallerBasePathNormalized)**\$(RuntimeInstallerBaseName)-*-win-$(Platform).zip"
-          Exclude="$(CrossArchitectureInstallerBasePathNormalized)**\$(RuntimeInstallerBaseName)-composite*" />
-    </ItemGroup>
-
-    <Unzip
-        SourceFiles="@(AspNetRuntimeArchive)"
-        DestinationFolder="$(DotNetUnpackFolder)"
-        OverwriteReadOnlyFiles="true"
-        Condition="'$(DotNetBuildPass)' == '2'" />
-
     <Error Condition="!Exists('$(DotNetUnpackFolder)')" Text="AspNetCore Shared Framework layout should be available for AspNetCoreRuntime .nupkg, but isn't." />
     <Error Condition="!Exists('$(MicrosoftWebXdtExtensionsPath)')" Text="Microsoft.Web.Xdt.Extensions.dll should be available for AspNetCoreRuntime .nupkg, but isn't." />
 
