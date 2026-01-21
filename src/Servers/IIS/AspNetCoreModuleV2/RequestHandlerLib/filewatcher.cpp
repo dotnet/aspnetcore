@@ -438,7 +438,7 @@ FILE_WATCHER::RunNotificationCallback(
 HRESULT
 FILE_WATCHER::Monitor(VOID)
 {
-    DWORD   cbRead;
+    DWORD   cbRead = 0;
     ZeroMemory(&_overlapped, sizeof(_overlapped));
 
     // Watch subdirectories when shadow copy is enabled to detect DLL changes in nested folders.
