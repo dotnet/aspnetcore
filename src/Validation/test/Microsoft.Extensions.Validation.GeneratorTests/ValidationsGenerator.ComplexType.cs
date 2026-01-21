@@ -623,4 +623,172 @@ public class AccessibilityTestType
             }
         });
     }
+
+    [Fact]
+    public async Task ValidatesPropertiesWithJsonIgnoreWhenWritingConditions()
+    {
+        // Arrange
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Serialization;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/json-ignore-conditions", (JsonIgnoreConditionsModel model) => Results.Ok("Passed"!));
+
+app.Run();
+
+public class JsonIgnoreConditionsModel
+{
+    // JsonIgnore without Condition defaults to Always - should be ignored
+    [JsonIgnore]
+    [MaxLength(10)]
+    public string? PropertyWithJsonIgnoreOnly { get; set; }
+
+    // JsonIgnoreCondition.Always - should be ignored
+    [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+    [MaxLength(10)]
+    public string? PropertyWithAlways { get; set; }
+
+    // JsonIgnoreCondition.WhenWritingDefault - should be validated (only affects writing)
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    [MaxLength(10)]
+    public string? PropertyWithWhenWritingDefault { get; set; }
+
+    // JsonIgnoreCondition.WhenWritingNull - should be validated (only affects writing)
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    [MaxLength(10)]
+    public string? PropertyWithWhenWritingNull { get; set; }
+
+    // JsonIgnoreCondition.Never - should be validated (never ignored)
+    [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
+    [MaxLength(10)]
+    public string? PropertyWithNever { get; set; }
+    
+    // JsonIgnoreCondition.WhenReading - should be ignored (affects reading/deserialization)
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenReading)]
+    [MaxLength(10)]
+    public string? PropertyWithWhenReading { get; set; }
+}
+""";
+        await Verify(source, out var compilation);
+        await VerifyEndpoint(compilation, "/json-ignore-conditions", async (endpoint, serviceProvider) =>
+        {
+            // Test that WhenWritingDefault is validated
+            await InvalidPropertyWithWhenWritingDefaultProducesError(endpoint);
+            
+            // Test that WhenWritingNull is validated
+            await InvalidPropertyWithWhenWritingNullProducesError(endpoint);
+            
+            // Test that Never is validated
+            await InvalidPropertyWithNeverProducesError(endpoint);
+            
+            // Test that Always and JsonIgnore (without condition) are NOT validated (no error expected)
+            await InvalidPropertiesWithAlwaysAndDefaultAreIgnored(endpoint);
+            
+            // Test that WhenReading is NOT validated (no error expected)
+            await InvalidPropertyWithWhenReadingIsIgnored(endpoint);
+
+            async Task InvalidPropertyWithWhenWritingDefaultProducesError(Endpoint endpoint)
+            {
+                var payload = """
+                {
+                    "PropertyWithWhenWritingDefault": "ExceedsMaxLength"
+                }
+                """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+                await endpoint.RequestDelegate(context);
+
+                var problemDetails = await AssertBadRequest(context);
+                Assert.Collection(problemDetails.Errors, kvp =>
+                {
+                    Assert.Equal("PropertyWithWhenWritingDefault", kvp.Key);
+                    Assert.Contains("maximum length", kvp.Value.Single());
+                });
+            }
+
+            async Task InvalidPropertyWithWhenWritingNullProducesError(Endpoint endpoint)
+            {
+                var payload = """
+                {
+                    "PropertyWithWhenWritingNull": "ExceedsMaxLength"
+                }
+                """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+                await endpoint.RequestDelegate(context);
+
+                var problemDetails = await AssertBadRequest(context);
+                Assert.Collection(problemDetails.Errors, kvp =>
+                {
+                    Assert.Equal("PropertyWithWhenWritingNull", kvp.Key);
+                    Assert.Contains("maximum length", kvp.Value.Single());
+                });
+            }
+
+            async Task InvalidPropertyWithNeverProducesError(Endpoint endpoint)
+            {
+                var payload = """
+                {
+                    "PropertyWithNever": "ExceedsMaxLength"
+                }
+                """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+                await endpoint.RequestDelegate(context);
+
+                var problemDetails = await AssertBadRequest(context);
+                Assert.Collection(problemDetails.Errors, kvp =>
+                {
+                    Assert.Equal("PropertyWithNever", kvp.Key);
+                    Assert.Contains("maximum length", kvp.Value.Single());
+                });
+            }
+
+            async Task InvalidPropertiesWithAlwaysAndDefaultAreIgnored(Endpoint endpoint)
+            {
+                var payload = """
+                {
+                    "PropertyWithJsonIgnoreOnly": "ExceedsMaxLength",
+                    "PropertyWithAlways": "ExceedsMaxLength"
+                }
+                """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+                await endpoint.RequestDelegate(context);
+
+                // Should succeed because these properties are ignored during validation
+                Assert.Equal(200, context.Response.StatusCode);
+            }
+
+            async Task InvalidPropertyWithWhenReadingIsIgnored(Endpoint endpoint)
+            {
+                var payload = """
+                {
+                    "PropertyWithWhenReading": "ExceedsMaxLength"
+                }
+                """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+                await endpoint.RequestDelegate(context);
+
+                // Should succeed because this property is ignored during reading/deserialization
+                Assert.Equal(200, context.Response.StatusCode);
+            }
+        });
+    }
 }

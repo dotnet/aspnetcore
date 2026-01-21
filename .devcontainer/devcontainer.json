@@ -31,8 +31,7 @@
   // This is needed so that things like the C# extension can resolve the correct SDK version
   "remoteEnv": {
     "PATH": "${containerWorkspaceFolder}/.dotnet:${containerEnv:PATH}",
-    "DOTNET_MULTILEVEL_LOOKUP": "0",
-    "TARGET": "net10.0",
+    "TARGET": "net11.0",
     "DOTNET_WATCH_SUPPRESS_LAUNCH_BROWSER": "true"
   },
   // Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.

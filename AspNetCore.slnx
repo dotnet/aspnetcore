@@ -7,7 +7,6 @@
   </Configurations>
   <Folder Name="/eng/" />
   <Folder Name="/eng/tools/">
-    <Project Path="eng/tools/BaselineGenerator/BaselineGenerator.csproj" />
     <Project Path="eng/tools/RepoTasks/RepoTasks.csproj" />
   </Folder>
   <Folder Name="/src/" />
@@ -160,6 +159,9 @@
   <Folder Name="/src/DataProtection/Abstractions/">
     <Project Path="src/DataProtection/Abstractions/src/Microsoft.AspNetCore.DataProtection.Abstractions.csproj" />
     <Project Path="src/DataProtection/Abstractions/test/Microsoft.AspNetCore.DataProtection.Abstractions.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/DataProtection/benchmarks/">
+    <Project Path="src/DataProtection/benchmarks/Microsoft.AspNetCore.DataProtection.MicroBenchmarks/Microsoft.AspNetCore.DataProtection.MicroBenchmarks.csproj" />
   </Folder>
   <Folder Name="/src/DataProtection/Cryptography.Internal/">
     <Project Path="src/DataProtection/Cryptography.Internal/src/Microsoft.AspNetCore.Cryptography.Internal.csproj" />
@@ -469,14 +471,6 @@
     <Project Path="src/Logging.AzureAppServices/test/Microsoft.Extensions.Logging.AzureAppServices.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Middleware/" />
-  <Folder Name="/src/Middleware/ConcurrencyLimiter/">
-    <Project Path="src/Middleware/ConcurrencyLimiter/sample/ConcurrencyLimiterSample.csproj" />
-    <Project Path="src/Middleware/ConcurrencyLimiter/src/Microsoft.AspNetCore.ConcurrencyLimiter.csproj" />
-    <Project Path="src/Middleware/ConcurrencyLimiter/test/Microsoft.AspNetCore.ConcurrencyLimiter.Tests.csproj" />
-  </Folder>
-  <Folder Name="/src/Middleware/ConcurrencyLimiter/perf/">
-    <Project Path="src/Middleware/ConcurrencyLimiter/perf/Microbenchmarks/Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks.csproj" />
-  </Folder>
   <Folder Name="/src/Middleware/CORS/">
     <Project Path="src/Middleware/CORS/src/Microsoft.AspNetCore.Cors.csproj" />
   </Folder>
@@ -1143,6 +1137,7 @@
     <Project Path="src/SignalR/server/StackExchangeRedis/src/Microsoft.AspNetCore.SignalR.StackExchangeRedis.csproj" />
     <Project Path="src/SignalR/server/StackExchangeRedis/test/Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests.csproj" />
   </Folder>
+  <Folder Name="/src/SiteExtensions/" />
   <Folder Name="/src/SiteExtensions/Microsoft.Web.Xdt.Extensions/">
     <Project Path="src/SiteExtensions/Microsoft.Web.Xdt.Extensions/src/Microsoft.Web.Xdt.Extensions.csproj" />
     <Project Path="src/SiteExtensions/Microsoft.Web.Xdt.Extensions/tests/Microsoft.Web.Xdt.Extensions.Tests.csproj" />
@@ -1190,8 +1185,8 @@
     <Project Path="src/Validation/src/Microsoft.Extensions.Validation.csproj" />
   </Folder>
   <Folder Name="/src/Validation/test/">
-    <Project Path="src/Validation/test/Microsoft.Extensions.Validation.Tests/Microsoft.Extensions.Validation.Tests.csproj" />
     <Project Path="src/Validation/test/Microsoft.Extensions.Validation.GeneratorTests/Microsoft.Extensions.Validation.GeneratorTests.csproj" />
+    <Project Path="src/Validation/test/Microsoft.Extensions.Validation.Tests/Microsoft.Extensions.Validation.Tests.csproj" />
   </Folder>
   <Folder Name="/src/WebEncoders/">
     <Project Path="src/WebEncoders/src/Microsoft.Extensions.WebEncoders.csproj" />

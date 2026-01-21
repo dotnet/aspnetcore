@@ -309,6 +309,7 @@ public static class TestData
                 { "Microsoft.Net.Http.Headers" },
                 { "System.Diagnostics.EventLog" },
                 { "System.Formats.Cbor" },
+                { "System.Security.Cryptography.Pkcs" },
                 { "System.Security.Cryptography.Xml" },
                 { "System.Threading.RateLimiting" },
             };

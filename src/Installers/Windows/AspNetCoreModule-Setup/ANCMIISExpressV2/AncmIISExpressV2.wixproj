@@ -84,7 +84,8 @@
                       '$(AspNetCoreMinorVersion)' ^
                       '$(PackageIcon)' ^
                       '$(PackageIconFullPath)' ^
-                      '$(PackageLicenseExpression)' " />
+                      '$(PackageLicenseExpression)' ^
+                      '$(DotNetTool)' " />
   </Target>
 
   <Target Name="BeforeBuild" Condition="'$(Platform)' == 'arm64'" >

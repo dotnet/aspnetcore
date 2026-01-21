@@ -1,0 +1,4 @@
+#nullable enable
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ISpanAuthenticatedEncryptor
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ISpanAuthenticatedEncryptor.Decrypt<TWriter>(System.ReadOnlySpan<byte> ciphertext, System.ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination) -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ISpanAuthenticatedEncryptor.Encrypt<TWriter>(System.ReadOnlySpan<byte> plaintext, System.ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination) -> void

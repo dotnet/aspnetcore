@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Net.Http;
 using System.Text;
 using Components.TestServer.RazorComponents;
+using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -1634,7 +1635,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             if (!dispatch.FormIsEnhanced)
             {
                 // Verify the same form element is *not* still in the page
-                Browser.True(() => IsElementStale(form));
+                Browser.True(() => form.IsStale());
             }
             else if (!dispatch.SuppressEnhancedNavigation)
             {
@@ -1684,19 +1685,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     private void GoTo(string relativePath)
     {
         Navigate($"{ServerPathBase}/{relativePath}");
-    }
-
-    private static bool IsElementStale(IWebElement element)
-    {
-        try
-        {
-            _ = element.Enabled;
-            return false;
-        }
-        catch (StaleElementReferenceException)
-        {
-            return true;
-        }
     }
 
     private struct TempFile

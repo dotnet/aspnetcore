@@ -2243,7 +2243,7 @@ public class RendererTest
             .Where(frame => frame.FrameType == RenderTreeFrameType.Component)
             .Select(frame => frame.ComponentId)
             .ToList();
-        var childComponent3 = batch.ReferenceFrames.Where(f => f.ComponentId == 3)
+        var childComponent3 = batch.ReferenceFrames.Where(f => f.FrameType == RenderTreeFrameType.Component && f.ComponentId == 3)
             .Single().Component;
         Assert.Equal(new[] { 1, 2 }, childComponentIds);
         Assert.IsType<FakeComponent>(childComponent3);
@@ -3050,7 +3050,7 @@ public class RendererTest
         component.TriggerRender();
         var childComponentId = renderer.Batches.Single()
             .ReferenceFrames
-            .Where(f => f.ComponentId != 0)
+            .Where(f => f.FrameType == RenderTreeFrameType.Component && f.ComponentId != 0)
             .Single()
             .ComponentId;
         var origEventHandlerId = renderer.Batches.Single()
@@ -5158,6 +5158,130 @@ public class RendererTest
         }
     }
 
+    [Fact]
+    public void RenderFragmentContravariance_WorksWithBaseClassParameter()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var baseFragment = (RenderFragment<Animal>)((Animal animal) => builder =>
+        {
+            builder.AddContent(0, $"Animal: {animal.Name}");
+        });
+
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<ComponentWithRenderFragmentOfDog>(0);
+            builder.AddComponentParameter(1, nameof(ComponentWithRenderFragmentOfDog.Template), baseFragment);
+            builder.CloseComponent();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        // Assert - Should compile and render without exception
+        var batch = renderer.Batches.Single();
+        var componentFrame = batch.ReferenceFrames
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
+        Assert.IsType<ComponentWithRenderFragmentOfDog>(componentFrame.Component);
+        var dogComponent = (ComponentWithRenderFragmentOfDog)componentFrame.Component;
+        Assert.NotNull(dogComponent.Template);
+    }
+
+    [Fact]
+    public void RenderFragmentContravariance_WorksWithInterfaceParameter()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var baseFragment = (RenderFragment<IList<string>>)((IList<string> items) => builder =>
+        {
+            builder.AddContent(0, $"Count: {items.Count}");
+        });
+
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<ComponentWithRenderFragmentOfListOfString>(0);
+            builder.AddComponentParameter(1, nameof(ComponentWithRenderFragmentOfListOfString.Template), baseFragment);
+            builder.CloseComponent();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        // Assert - Should compile and render without exception
+        var batch = renderer.Batches.Single();
+        var componentFrame = batch.ReferenceFrames
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
+        Assert.IsType<ComponentWithRenderFragmentOfListOfString>(componentFrame.Component);
+        var listComponent = (ComponentWithRenderFragmentOfListOfString)componentFrame.Component;
+        Assert.NotNull(listComponent.Template);
+    }
+
+    [Fact]
+    public void RenderFragmentContravariance_WorksWithInterfaceHierarchy()
+    {
+        // C# variance only works with reference types. This test uses interface hierarchy.
+        // IComparable<T> is contravariant, so we can demonstrate the concept
+        
+        // Arrange - Create a fragment that accepts any IComparable
+        RenderFragment<IComparable> baseFragment = (IComparable value) => builder =>
+        {
+            builder.AddContent(0, $"Value: {value}");
+        };
+
+        // Act - Assign to a variable that accepts string (which implements IComparable)
+        RenderFragment<string> specificFragment = baseFragment;
+        var builder = new RenderTreeBuilder();
+        var result = specificFragment("test");
+
+        // Assert - Should compile and execute without exception
+        result(builder);
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public void RenderFragmentContravariance_WorksWithObjectToPrimitiveWrapper()
+    {
+        // For value types, contravariance only works when going through object (boxing)
+        
+        // Arrange - Create a fragment that accepts object
+        RenderFragment<object> baseFragment = (object value) => builder =>
+        {
+            builder.AddContent(0, $"Value: {value}");
+        };
+
+        // Act - Can use this with a string (reference type derived from object)
+        RenderFragment<string> stringFragment = baseFragment;
+        var builder = new RenderTreeBuilder();
+        var result = stringFragment("test value");
+
+        // Assert - Should compile and execute without exception
+        result(builder);
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public void RenderFragmentContravariance_WorksWithComparableTypes()
+    {
+        // Demonstrating contravariance with reference types implementing IComparable
+        
+        // Arrange - Create a fragment that accepts IComparable
+        RenderFragment<IComparable> baseFragment = (IComparable value) => builder =>
+        {
+            builder.AddContent(0, $"Value: {value}");
+        };
+
+        // Act - Can use this with Version (reference type that implements IComparable)
+        RenderFragment<Version> versionFragment = baseFragment;
+        var builder = new RenderTreeBuilder();
+        var result = versionFragment(new Version(1, 0));
+
+        // Assert - Should compile and execute without exception
+        result(builder);
+        Assert.NotNull(result);
+    }
+
     [HasUnknownRenderMode]
     private class ComponentWithUnknownRenderMode : IComponent
     {
@@ -6161,5 +6285,69 @@ public class RendererTest
         }
 
         public static implicit operator string(ImplicitlyConvertsToString value) => value._value;
+    }
+
+    // Test classes for RenderFragment contravariance
+    private class Animal
+    {
+        public string Name { get; set; } = string.Empty;
+    }
+
+    private class Dog : Animal
+    {
+        public string Breed { get; set; } = string.Empty;
+    }
+
+    private class ComponentWithRenderFragmentOfDog : AutoRenderComponent
+    {
+        [Parameter]
+        public RenderFragment<Dog> Template { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (Template != null)
+            {
+                var dog = new Dog { Name = "Buddy", Breed = "Golden Retriever" };
+                builder.AddContent(0, Template(dog));
+            }
+        }
+    }
+
+    private class ComponentWithRenderFragmentOfListOfString : AutoRenderComponent
+    {
+        [Parameter]
+        public RenderFragment<List<string>> Template { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (Template != null)
+            {
+                var list = new List<string> { "Item1", "Item2", "Item3" };
+                builder.AddContent(0, Template(list));
+            }
+        }
+    }
+
+    // Struct that implements IComparable for testing contravariance
+    private struct TestStructWithInterface : IComparable
+    {
+        public int Value { get; set; }
+        
+        public int CompareTo(object obj)
+        {
+            if (obj is TestStructWithInterface other)
+            {
+                return Value.CompareTo(other.Value);
+            }
+            return 1;
+        }
+    }
+
+    // Enum for testing contravariance (enums implement IConvertible)
+    private enum TestEnum
+    {
+        Value1,
+        Value2,
+        Value3
     }
 }

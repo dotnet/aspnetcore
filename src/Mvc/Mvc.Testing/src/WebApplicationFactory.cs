@@ -10,11 +10,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Testing;
 
@@ -577,7 +579,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// <param name="builder">The <see cref="IWebHostBuilder"/> used to
     /// create the server.</param>
     /// <returns>The <see cref="TestServer"/> with the bootstrapped application.</returns>
-    [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the overloads that takes an IServiceProvider instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008")]
+    [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the overloads that takes an IServiceProvider instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008", UrlFormat = Obsoletions.AspNetCoreDeprecate008Url)]
     protected virtual TestServer CreateServer(IWebHostBuilder builder) => new(builder);
 
     /// <summary>
@@ -587,7 +589,16 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// </summary>
     /// <param name="serviceProvider">The <see cref="IServiceProvider"/> from the bootstrapped application.</param>
     /// <returns></returns>
-    protected virtual TestServer CreateServer(IServiceProvider serviceProvider) => new(serviceProvider);
+    protected virtual TestServer CreateServer(IServiceProvider serviceProvider)
+    {
+        var options = serviceProvider.GetService<IOptions<TestServerOptions>>();
+        if (options is not null)
+        {
+            return new(serviceProvider, options);
+        }
+
+        return new(serviceProvider);
+    }
 
     /// <summary>
     /// Creates the <see cref="IHost"/> with the bootstrapped application in <paramref name="builder"/>.
@@ -856,7 +867,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             _configuration = configureWebHost;
         }
 
-        [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the ctors that takes an IServiceProvider instead.", DiagnosticId = "ASPDEPR008")]
+        [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the ctors that takes an IServiceProvider instead.", DiagnosticId = "ASPDEPR008", UrlFormat = Obsoletions.AspNetCoreDeprecate008Url)]
         protected override TestServer CreateServer(IWebHostBuilder builder) => _createServer(builder);
 
         protected override TestServer CreateServer(IServiceProvider serviceProvider) => _createServerFromServiceProvider(serviceProvider);

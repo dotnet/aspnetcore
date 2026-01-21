@@ -77,7 +77,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" ProjectPath="$(RepoRoot)src\Tools\FirstRunCertGenerator\src\Microsoft.AspNetCore.DeveloperCertificates.XPlat.csproj" />
     <ProjectReferenceProvider Include="GetDocument.Insider" ProjectPath="$(RepoRoot)src\Tools\GetDocumentInsider\src\GetDocument.Insider.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Logging.AzureAppServices" ProjectPath="$(RepoRoot)src\Logging.AzureAppServices\src\Microsoft.Extensions.Logging.AzureAppServices.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.ConcurrencyLimiter" ProjectPath="$(RepoRoot)src\Middleware\ConcurrencyLimiter\src\Microsoft.AspNetCore.ConcurrencyLimiter.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Cors" ProjectPath="$(RepoRoot)src\Middleware\CORS\src\Microsoft.AspNetCore.Cors.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Diagnostics.Abstractions" ProjectPath="$(RepoRoot)src\Middleware\Diagnostics.Abstractions\src\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" ProjectPath="$(RepoRoot)src\Middleware\Diagnostics.EntityFrameworkCore\src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj" />

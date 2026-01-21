@@ -5,6 +5,7 @@
 
 <div id="preserved-content" data-permanent></div>
 <div id="non-preserved-content"></div>
+<div id="preserved-attributes" data-permanent></div>
 
 <InteractiveNavigationComponent @rendermode="@_interactiveNavigationRenderMode" />
 
@@ -18,9 +19,11 @@
     //# sourceURL=preserve-content.js
     const preservedContent = document.getElementById('preserved-content');
     const nonPreservedContent = document.getElementById('non-preserved-content');
+    const preservedAttributes = document.getElementById('preserved-attributes');
 
     preservedContent.textContent = 'Preserved content';
     nonPreservedContent.textContent = 'Non preserved content';
+    preservedAttributes.classList.add('dynamically-added-class');
 
     const onEnhancedLoad = (ev) => {
         window.enhancedPageUpdateCount++;

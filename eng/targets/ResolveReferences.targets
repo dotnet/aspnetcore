@@ -10,8 +10,6 @@
 
   Items used by the resolution strategy:
 
-    * BaselinePackageReference = a list of packages that were referenced in the last release of the project currently building
-      - mainly used to ensure references do not change in servicing builds unless $(UseLatestPackageReferences) is not true.
     * LatestPackageReference = a list of the latest versions of packages
     * Reference = a list of the references which are needed for compilation or runtime
     * ProjectReferenceProvider = a list which maps of assembly names to the project file that produces it
@@ -46,7 +44,7 @@
         Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsPackageInThisPatch)' == 'true' ">true</UseLatestPackageReferences>
     <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' ">false</UseLatestPackageReferences>
 
-    <!-- Projects should use project references (instead of baseline packages) in almost all cases. -->
+    <!-- Projects should use project references in almost all cases. -->
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">true</UseProjectReferences>
   </PropertyGroup>
 
@@ -104,6 +102,29 @@
     <Reference Remove="@(Reference->HasMetadata('ProjectPath'))" />
   </ItemGroup>
 
+  <!-- For source projects, mark shared framework assemblies as non-transitive (privateassets=all) and non app-local (private=false). -->
+  <ItemGroup Condition="'@(ProjectReference)' != '' and
+                        '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and
+                        '$(IsTestProject)' != 'true' and '$(IsTestAssetProject)' != 'true' and
+                        '$(IsBenchmarkProject)' != 'true' and '$(IsSampleProject)' != 'true' and '$(IsMicrobenchmarksProject)' != 'true' and
+                        '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime' and
+                        '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime.Composite' and
+                        '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Ref'" >
+    <_ProjectReferenceWithOriginalIdentity Include="@(ProjectReference)"
+                                           OriginalIdentity="%(Identity)" />
+    <_ProjectReferenceWithFilename Include="@(_ProjectReferenceWithOriginalIdentity->Metadata('Filename'))" />
+
+    <_ProjectReferenceExcludedWithFilename Include="@(_ProjectReferenceWithFilename)"
+                                           Exclude="@(AspNetCoreAppReference)" />
+    <_FrameworkProjectReference Include="@(_ProjectReferenceWithFilename)"
+                                Exclude="@(_ProjectReferenceExcludedWithFilename)" />
+
+    <ProjectReference Update="@(_FrameworkProjectReference->Metadata('OriginalIdentity'))">
+      <PrivateAssets Condition="'%(PrivateAssets)' == ''">all</PrivateAssets>
+      <Private Condition="'%(Private)' == ''">false</Private>
+    </ProjectReference>
+  </ItemGroup>
+
   <!--
     This target helps ensure projects within the shared framework do not unintentionally add new references, and that
     assemblies outside the shared framework reference the framework as a whole instead of using individual assemblies.
@@ -142,18 +163,6 @@
         <IncludeAssets Condition="'%(IsSharedSource)' == 'true'">ContentFiles;Build</IncludeAssets>
         <PrivateAssets Condition="'%(IsSharedSource)' == 'true'">All</PrivateAssets>
       </Reference>
-
-      <!-- Identify if any references were present in the last release of this package, but have been removed. -->
-      <UnusedBaselinePackageReference Include="@(BaselinePackageReference)"
-          Exclude="@(Reference);@(PackageReference);@(ProjectReference->'%(Filename)')" />
-
-      <!-- Handle suppressions needed because above Exclude is not aware of references added in .nuspec files. -->
-      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference->WithMetadataValue('InNuspecFile', 'true'))"
-          Condition=" '$(IsServicingBuild)' == 'true' " />
-
-      <!-- Allow suppressions of any baseline changes in non-servicing builds. -->
-      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)"
-          Condition=" '$(IsServicingBuild)' != 'true' " />
     </ItemGroup>
 
     <JoinItems Left="@(Reference)" Right="@(LatestPackageReference)" LeftMetadata="*" RightMetadata="Version"
@@ -165,18 +174,6 @@
       <PackageReference Include="@(_LatestPackageReferenceWithVersion)" IsImplicitlyDefined="true" />
       <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
       <Reference Remove="@(_LatestPackageReferenceWithVersion)" />
-    </ItemGroup>
-
-    <!-- Resolve references from BaselinePackageReference for servicing builds in corner cases. May be unused. -->
-    <JoinItems Left="@(Reference)" Right="@(BaselinePackageReference)" LeftMetadata="*" RightMetadata="Version"
-        Condition=" '$(IsServicingBuild)' == 'true' OR '$(UseLatestPackageReferences)' != 'true' ">
-      <Output TaskParameter="JoinResult" ItemName="_BaselinePackageReferenceWithVersion" />
-    </JoinItems>
-
-    <ItemGroup>
-      <PackageReference Include="@(_BaselinePackageReferenceWithVersion)" IsImplicitlyDefined="true" />
-      <!-- Remove reference items that have been resolved to a BaselinePackageReference item. -->
-      <Reference Remove="@(_BaselinePackageReferenceWithVersion)" />
     </ItemGroup>
 
     <!-- For PrivateAssets=All references, like .Sources packages, fallback to LatestPackageReferences. -->
@@ -194,7 +191,6 @@
 
       <!-- Free up memory for unnecessary items -->
       <_LatestPackageReferenceWithVersion Remove="@(_LatestPackageReferenceWithVersion)" />
-      <_BaselinePackageReferenceWithVersion Remove="@(_BaselinePackageReferenceWithVersion)" />
       <_PrivatePackageReferenceWithVersion Remove="@(_PrivatePackageReferenceWithVersion)" />
       <_ImplicitPackageReference Remove="@(_ImplicitPackageReference)" />
     </ItemGroup>
@@ -208,14 +204,9 @@
     </ItemGroup>
 
     <Error
-        Condition=" '$(IsServicingBuild)' == 'true' AND '@(UnusedBaselinePackageReference->Count())' != '0' "
-        Code="BUILD002"
-        Text="Package references changed since the last release. This could be a breaking change and is not allowed in a servicing update. References removed:%0A - @(UnusedBaselinePackageReference, '%0A - ')" />
-
-    <Error
         Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND '%(Reference.Identity)' != '' AND ! Exists('%(Reference.Identity)') AND '$(DisablePackageReferenceRestrictions)' != 'true'"
         Code="MSB3245"
-        Text="Could not resolve this reference. Could not locate the package or project for &quot;%(Reference.Identity)&quot;. Did you update baselines and dependencies lists? See docs/ReferenceResolution.md for more details." />
+        Text="Could not resolve this reference. Could not locate the package or project for &quot;%(Reference.Identity)&quot;. Did you update dependencies lists? See docs/ReferenceResolution.md for more details." />
 
     <!--
       At this point, most if not all @(Reference) items have been converted to @(PackageReference) or
