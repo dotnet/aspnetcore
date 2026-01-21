@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.Web;
 /// </remarks>
 public sealed class EnvironmentBoundary : ComponentBase
 {
-    private static readonly char NameSeparator = ',';
+    private const char NameSeparator = ',';
 
     [Inject]
     private IHostEnvironment HostEnvironment { get; set; } = default!;
