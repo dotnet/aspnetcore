@@ -83,7 +83,7 @@ dotnet build --no-restore -v:q
 
 Or with `eng\build.cmd`:
 ```bash
-.\eng\build.cmd -NoRestore -NoBuildDeps -NoBuildRepoTasks -NoBuildNative -NoBuildNodeJS -NoBuildJava -NoBuildInstallers -verbosity:quiet
+.\eng\build.cmd -NoRestore -NoBuildDeps -NoBuildNative -NoBuildNodeJS -NoBuildJava -NoBuildInstallers -verbosity:quiet
 ```
 
 **When you've added/changed project references or package dependencies:**

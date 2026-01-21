@@ -30,12 +30,6 @@ Suppress re-compile projects. (Implies -NoRestore)
 .PARAMETER NoBuildDeps
 Do not build project-to-project references and only build the specified project.
 
-.PARAMETER NoBuildRepoTasks
-Skip building eng/tools/RepoTasks/
-
-.PARAMETER OnlyBuildRepoTasks
-Only build eng/tools/RepoTasks/ and nothing else.
-
 .PARAMETER Pack
 Produce packages.
 
@@ -179,9 +173,6 @@ param(
     [switch]$NoBuildJava,
     [switch]$NoBuildInstallers,
 
-    [switch]$NoBuildRepoTasks,
-    [switch]$OnlyBuildRepoTasks,
-
     # Diagnostics
     [Alias('bl')]
     [switch]$BinaryLog,
@@ -235,7 +226,7 @@ if ($Projects) {
     }
 }
 # When adding new sub-group build flags, add them to this check.
-elseif (-not ($All -or $BuildNative -or $BuildManaged -or $BuildNodeJS -or $BuildInstallers -or $BuildJava -or $OnlyBuildRepoTasks)) {
+elseif (-not ($All -or $BuildNative -or $BuildManaged -or $BuildNodeJS -or $BuildInstallers -or $BuildJava)) {
     Write-Warning "No default group of projects was specified, so building the managed and native projects and their dependencies. Run ``build.cmd -help`` for more details."
 
     # The goal of this is to pick a sensible default for `build.cmd` with zero arguments.
@@ -296,17 +287,12 @@ if (-not $Configuration) {
 }
 $MSBuildArguments += "/p:Configuration=$Configuration"
 
-[string[]]$ToolsetBuildArguments = @()
 if ($RuntimeSourceFeed -or $RuntimeSourceFeedKey) {
     $runtimeFeedArg = "/p:DotNetRuntimeSourceFeed=$RuntimeSourceFeed"
     $runtimeFeedKeyArg = "/p:DotNetRuntimeSourceFeedKey=$RuntimeSourceFeedKey"
     $MSBuildArguments += $runtimeFeedArg
     $MSBuildArguments += $runtimeFeedKeyArg
-    $ToolsetBuildArguments += $runtimeFeedArg
-    $ToolsetBuildArguments += $runtimeFeedKeyArg
 }
-if ($ProductBuild) { $ToolsetBuildArguments += "/p:DotNetBuild=$ProductBuild" }
-if ($fromVMR) { $ToolsetBuildArguments += "/p:DotNetBuildFromVMR=$fromVMR" }
 
 # Split build categories between dotnet msbuild and desktop msbuild. Use desktop msbuild as little as possible.
 [string[]]$dotnetBuildArguments = ''
@@ -439,15 +425,11 @@ if ($BinaryLog) {
         if ($performDesktopBuild -and $performDotnetBuild) {
             $MSBuildOnlyArguments += "/bl:" + (Join-Path $LogDir "Build.native.binlog")
         }
-
-        $ToolsetBuildArguments += "/bl:" + (Join-Path $LogDir "Build.repotasks.binlog")
     } else {
         # Use a different binary log path when running desktop msbuild if doing both builds.
         if ($performDesktopBuild -and $performDotnetBuild) {
             $MSBuildOnlyArguments += "/bl:" + [System.IO.Path]::ChangeExtension($bl, "native.binlog")
         }
-
-        $ToolsetBuildArguments += "/bl:" + [System.IO.Path]::ChangeExtension($bl, "repotasks.binlog")
     }
 } elseif ($CI) {
     # Ensure the artifacts/log directory isn't empty to avoid warnings.
@@ -484,41 +466,25 @@ try {
         $global:VerbosePreference = 'Continue'
     }
 
-    if (-not $NoBuildRepoTasks) {
+    if ($performDesktopBuild) {
         Write-Host
+        Remove-Item variable:global:_BuildTool -ErrorAction Ignore
+        $msbuildEngine = 'vs'
 
-        MSBuild $toolsetBuildProj `
-            /p:RepoRoot=$RepoRoot `
-            /p:Projects=$EngRoot\tools\RepoTasks\RepoTasks.csproj `
-            /p:Configuration=Release `
-            /p:Restore=$RunRestore `
-            /p:Build=true `
-            /clp:NoSummary `
-            @ToolsetBuildArguments `
-            @CommandLineArguments
+        # When running with desktop msbuild only, append the dotnet build specific arguments.
+        if (-not $performDotnetBuild) {
+            $MSBuildOnlyArguments += $dotnetBuildArguments
+        }
+
+        MSBuild $toolsetBuildProj /p:RepoRoot=$RepoRoot @MSBuildArguments @MSBuildOnlyArguments
     }
 
-    if (-not $OnlyBuildRepoTasks) {
-        if ($performDesktopBuild) {
-            Write-Host
-            Remove-Item variable:global:_BuildTool -ErrorAction Ignore
-            $msbuildEngine = 'vs'
+    if ($performDotnetBuild) {
+        Write-Host
+        Remove-Item variable:global:_BuildTool -ErrorAction Ignore
+        $msbuildEngine = 'dotnet'
 
-            # When running with desktop msbuild only, append the dotnet build specific arguments.
-            if (-not $performDotnetBuild) {
-                $MSBuildOnlyArguments += $dotnetBuildArguments
-            }
-
-            MSBuild $toolsetBuildProj /p:RepoRoot=$RepoRoot @MSBuildArguments @MSBuildOnlyArguments
-        }
-
-        if ($performDotnetBuild) {
-            Write-Host
-            Remove-Item variable:global:_BuildTool -ErrorAction Ignore
-            $msbuildEngine = 'dotnet'
-
-            MSBuild $toolsetBuildProj /p:RepoRoot=$RepoRoot @MSBuildArguments @dotnetBuildArguments
-        }
+        MSBuild $toolsetBuildProj /p:RepoRoot=$RepoRoot @MSBuildArguments @dotnetBuildArguments
     }
 }
 catch {
