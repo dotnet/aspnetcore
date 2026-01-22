@@ -41,7 +41,7 @@ public class BlazorServerTest
     {
         Project = await ProjectFactory.CreateProject(Output);
 
-        await Project.RunDotNetNewAsync("razorcomponent --name CodeBehindComponent --UseCodeBehind", isItemTemplate: true);
+        await Project.RunDotNetNewAsync("razorcomponent --name CodeBehindComponent --use-code-behind", isItemTemplate: true);
 
         Project.AssertFileExists("CodeBehindComponent.razor", shouldExist: true);
         Project.AssertFileExists("CodeBehindComponent.razor.cs", shouldExist: true);

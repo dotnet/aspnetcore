@@ -23,7 +23,7 @@
     },
     {
       "path": "Component1.razor.cs",
-      "condition": "(UseCodeBehind)"
+      "condition": "(use-code-behind)"
     }
   ],
   "defaultName": "Component1",
@@ -31,7 +31,7 @@
     {
       "modifiers": [
         {
-          "condition": "(!UseCodeBehind)",
+          "condition": "(!use-code-behind)",
           "exclude": [
             "Component1.razor.cs"
           ]
@@ -45,7 +45,7 @@
       "replaces": "MyApp.Namespace",
       "type": "parameter"
     },
-    "UseCodeBehind": {
+    "use-code-behind": {
       "description": "create component with a code-behind file",
       "displayName": "Use Code-Behind",
       "type": "parameter",
