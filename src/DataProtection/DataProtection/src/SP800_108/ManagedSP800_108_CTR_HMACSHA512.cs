@@ -45,9 +45,6 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
 
     public static void DeriveKeys(ReadOnlySpan<byte> kdk, ReadOnlySpan<byte> label, ReadOnlySpan<byte> contextHeader, ReadOnlySpan<byte> contextData, Span<byte> operationSubkey, Span<byte> validationSubkey)
     {
-        // In FIPS mode, HMACSHA512.TryHashData requires a minimum key length.
-        // Fall back to the instance-based approach for short keys to maintain compatibility.
-        // This particularly affects CreateContextHeader() which uses an empty kdk.
         if (kdk.Length < FipsMinimumKeyLengthInBytes)
         {
             using var prf = new HMACSHA512(kdk.ToArray());
@@ -126,8 +123,6 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
                 prfInput[3] = (byte)(i);
 
 #if NET10_0_OR_GREATER
-                // When prf is provided (e.g., for FIPS mode compatibility with empty keys),
-                // use the instance method instead of the static TryHashData
                 if (prf is not null)
                 {
                     var prfOutputArray = prf.ComputeHash(prfInputArray ?? prfInput.ToArray());
