@@ -426,7 +426,14 @@ internal sealed class TestCertificateManager : CertificateManager
         {
             if (PfxBytes != null)
             {
-                return new X509Certificate2(PfxBytes, (string?)null, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.EphemeralKeySet);
+                try
+                {
+                    return new X509Certificate2(PfxBytes, (string?)null, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.EphemeralKeySet);
+                }
+                catch (PlatformNotSupportedException)
+                {
+                    return new X509Certificate2(PfxBytes, (string?)null, X509KeyStorageFlags.Exportable);
+                }
             }
 
             return new X509Certificate2(CertBytes);
