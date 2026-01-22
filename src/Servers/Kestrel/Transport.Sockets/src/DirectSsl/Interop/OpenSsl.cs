@@ -34,6 +34,16 @@ internal static unsafe partial class OpenSsl
     public const long SSL_MODE_AUTO_RETRY = 0x00000004;
     public const long SSL_MODE_RELEASE_BUFFERS = 0x00000010;
 
+    // SSL_CTX session cache modes (for SSL_CTX_set_session_cache_mode)
+    public const int SSL_SESS_CACHE_OFF = 0x0000;
+    public const int SSL_SESS_CACHE_CLIENT = 0x0001;
+    public const int SSL_SESS_CACHE_SERVER = 0x0002;
+    public const int SSL_SESS_CACHE_BOTH = SSL_SESS_CACHE_CLIENT | SSL_SESS_CACHE_SERVER;
+    public const int SSL_SESS_CACHE_NO_AUTO_CLEAR = 0x0080;
+    public const int SSL_SESS_CACHE_NO_INTERNAL_LOOKUP = 0x0100;
+    public const int SSL_SESS_CACHE_NO_INTERNAL_STORE = 0x0200;
+    public const int SSL_SESS_CACHE_NO_INTERNAL = SSL_SESS_CACHE_NO_INTERNAL_LOOKUP | SSL_SESS_CACHE_NO_INTERNAL_STORE;
+
     #region SSL Context Management
 
     [LibraryImport(LibSsl)]
@@ -65,6 +75,83 @@ internal static unsafe partial class OpenSsl
     [LibraryImport(LibSsl)]
     [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
     public static partial long SSL_CTX_set_mode(IntPtr ctx, long mode);
+
+    #endregion
+
+    #region SSL Session Caching
+
+    // SSL_CTX_ctrl command codes for session caching
+    // These are used because SSL_CTX_set_session_cache_mode and SSL_CTX_sess_set_cache_size
+    // are macros in OpenSSL that call SSL_CTX_ctrl
+    private const int SSL_CTRL_SET_SESS_CACHE_SIZE = 42;
+    private const int SSL_CTRL_SET_SESS_CACHE_MODE = 44;
+    private const int SSL_CTRL_SESS_NUMBER = 20;
+    private const int SSL_CTRL_SESS_HITS = 27;
+    private const int SSL_CTRL_SESS_MISSES = 29;
+
+    /// <summary>
+    /// Generic SSL_CTX control function used by session caching macros.
+    /// </summary>
+    [LibraryImport(LibSsl)]
+    [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    private static partial long SSL_CTX_ctrl(IntPtr ctx, int cmd, long larg, IntPtr parg);
+
+    /// <summary>
+    /// Set the session cache mode for the SSL context.
+    /// For server-side session resumption, use SSL_SESS_CACHE_SERVER.
+    /// This is equivalent to the SSL_CTX_set_session_cache_mode macro.
+    /// </summary>
+    /// <returns>The previous cache mode</returns>
+    public static int SetSessionCacheMode(IntPtr ctx, int mode)
+    {
+        return (int)SSL_CTX_ctrl(ctx, SSL_CTRL_SET_SESS_CACHE_MODE, mode, IntPtr.Zero);
+    }
+
+    /// <summary>
+    /// Set the maximum number of sessions in the cache.
+    /// Default is SSL_SESSION_CACHE_MAX_SIZE_DEFAULT (1024*20).
+    /// This is equivalent to the SSL_CTX_sess_set_cache_size macro.
+    /// </summary>
+    /// <returns>The previous cache size</returns>
+    public static long SetSessionCacheSize(IntPtr ctx, long size)
+    {
+        return SSL_CTX_ctrl(ctx, SSL_CTRL_SET_SESS_CACHE_SIZE, size, IntPtr.Zero);
+    }
+
+    /// <summary>
+    /// Set the timeout for sessions in the cache (in seconds).
+    /// Default is typically 300 seconds (5 minutes).
+    /// This is a real function, not a macro.
+    /// </summary>
+    /// <returns>The previous timeout value</returns>
+    [LibraryImport(LibSsl)]
+    [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    public static partial long SSL_CTX_set_timeout(IntPtr ctx, long t);
+
+    /// <summary>
+    /// Get the current number of sessions in the cache.
+    /// Useful for monitoring cache usage.
+    /// </summary>
+    public static long GetSessionNumber(IntPtr ctx)
+    {
+        return SSL_CTX_ctrl(ctx, SSL_CTRL_SESS_NUMBER, 0, IntPtr.Zero);
+    }
+
+    /// <summary>
+    /// Get the number of successful session resumptions (cache hits).
+    /// </summary>
+    public static long GetSessionHits(IntPtr ctx)
+    {
+        return SSL_CTX_ctrl(ctx, SSL_CTRL_SESS_HITS, 0, IntPtr.Zero);
+    }
+
+    /// <summary>
+    /// Get the number of session cache misses.
+    /// </summary>
+    public static long GetSessionMisses(IntPtr ctx)
+    {
+        return SSL_CTX_ctrl(ctx, SSL_CTRL_SESS_MISSES, 0, IntPtr.Zero);
+    }
 
     #endregion
 

@@ -66,10 +66,41 @@ internal sealed class SslContext : IDisposable
             throw new InvalidOperationException($"Private key does not match certificate: {OpenSsl.GetLastErrorString()}");
         }
 
+        // Enable TLS session resumption for performance
+        // This allows returning clients to skip expensive ECDHE key exchange
+        ConfigureSessionCaching();
+
         // TLS_server_method() in OpenSSL 3.x already supports TLS 1.2 and 1.3 by default
         // No need to explicitly set min/max versions
 
         Console.WriteLine($"[SslContext] Initialized with cert: {certPath}");
+    }
+
+    /// <summary>
+    /// Configure OpenSSL's built-in session caching for TLS session resumption.
+    /// 
+    /// TLS 1.2: Session ID-based resumption or session tickets
+    /// TLS 1.3: Pre-Shared Key (PSK) based resumption with optional 0-RTT
+    /// 
+    /// Benefits:
+    /// - 50-80% latency reduction for resumed sessions
+    /// - Significant CPU reduction (skip ECDHE key exchange)
+    /// - Reduced network round trips
+    /// </summary>
+    private void ConfigureSessionCaching()
+    {
+        // Enable server-side session caching
+        OpenSsl.SetSessionCacheMode(_ctx, OpenSsl.SSL_SESS_CACHE_SERVER);
+
+        // Set session timeout to 1 hour (3600 seconds)
+        // This is a reasonable balance between security and performance
+        OpenSsl.SSL_CTX_set_timeout(_ctx, 3600);
+
+        // Set cache size to 20,000 sessions
+        // This accommodates high-traffic scenarios with many unique clients
+        OpenSsl.SetSessionCacheSize(_ctx, 20000);
+
+        Console.WriteLine("[SslContext] TLS session caching enabled (mode=SERVER, timeout=3600s, cache_size=20000)");
     }
 
     public void Dispose()
