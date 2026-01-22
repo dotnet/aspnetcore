@@ -16,5 +16,5 @@ public sealed class SupplyParameterFromSessionAttribute : CascadingParameterAttr
     public string? Name { get; set; }
 
     /// <inheritdoc />
-    internal override bool SingleDelivery => true;
+    internal override bool SingleDelivery => false;
 }

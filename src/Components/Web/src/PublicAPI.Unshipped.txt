@@ -1,6 +1,7 @@
 #nullable enable
 Microsoft.AspNetCore.Components.ISessionValueMapper
-Microsoft.AspNetCore.Components.ISessionValueMapper.GetValue(string! sessionKey) -> object?
+Microsoft.AspNetCore.Components.ISessionValueMapper.GetValue(string! sessionKey, System.Type! type) -> object?
+Microsoft.AspNetCore.Components.ISessionValueMapper.SetValue(string! sessionKey, object? value) -> void
 Microsoft.AspNetCore.Components.Web.EnvironmentBoundary
 Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.ChildContent.set -> void

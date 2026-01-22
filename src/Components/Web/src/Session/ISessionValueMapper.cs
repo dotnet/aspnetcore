@@ -11,5 +11,10 @@ public interface ISessionValueMapper
     /// <summary>
     /// Returns the session value with the specified name.
     /// </summary>
-    object? GetValue(string sessionKey);
+    object? GetValue(string sessionKey, Type type);
+
+    ///<summary>
+    /// Sets the session value with the specified name.
+    ///</summary>
+    void SetValue(string sessionKey, object? value);
 }
