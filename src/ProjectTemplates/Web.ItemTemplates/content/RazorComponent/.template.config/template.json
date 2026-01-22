@@ -23,7 +23,7 @@
     },
     {
       "path": "Component1.razor.cs",
-      "condition": "(!ExcludeCodeBehind)"
+      "condition": "(UseCodeBehind)"
     }
   ],
   "defaultName": "Component1",
@@ -31,7 +31,7 @@
     {
       "modifiers": [
         {
-          "condition": "(ExcludeCodeBehind)",
+          "condition": "(!UseCodeBehind)",
           "exclude": [
             "Component1.razor.cs"
           ]
@@ -45,12 +45,12 @@
       "replaces": "MyApp.Namespace",
       "type": "parameter"
     },
-    "ExcludeCodeBehind": {
-      "description": "create component without a code-behind file",
-      "displayName": "Exclude Code-Behind",
+    "UseCodeBehind": {
+      "description": "create component with a code-behind file",
+      "displayName": "Use Code-Behind",
       "type": "parameter",
       "datatype": "bool",
-      "defaultValue": "true"
+      "defaultValue": "false"
     },
     "HostIdentifier": {
       "type": "bind",
