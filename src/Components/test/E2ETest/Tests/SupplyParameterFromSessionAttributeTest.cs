@@ -28,4 +28,34 @@ public class SupplyParameterFromSessionAttributeTest : ServerTestBase<BasicTestA
         Browser.Exists(By.Id("set-email")).Click();
         Browser.Equal("email", () => Browser.Exists(By.Id("text-email")).Text);
     }
+
+    [Fact]
+    public void SupplyParameterNullWhenNoKeyInSession()
+    {
+        Navigate($"{ServerPathBase}/supply-parameter-from-session");
+        Browser.Exists(By.Id("input-email")).SendKeys("email");
+        Browser.Exists(By.Id("set-email")).Click();
+        Browser.Equal("email", () => Browser.Exists(By.Id("text-email")).Text);
+        Browser.Equal("", () => Browser.Exists(By.Id("text-null")).Text);
+    }
+
+    [Fact]
+    public void SupplyParameterWorksWhenDifferentName()
+    {
+        Navigate($"{ServerPathBase}/supply-parameter-from-session");
+        Browser.Exists(By.Id("input-another-email")).SendKeys("email");
+        Browser.Exists(By.Id("set-another-email")).Click();
+        Browser.Equal("email", () => Browser.Exists(By.Id("text-another-email")).Text);
+        Browser.Equal("email", () => Browser.Exists(By.Id("text-email")).Text);
+        Browser.Equal("", () => Browser.Exists(By.Id("text-null")).Text);
+    }
+
+    [Fact]
+    public void SupplyParameterWorksWithRedirect()
+    {
+        Navigate($"{ServerPathBase}/supply-parameter-from-session");
+        Browser.Exists(By.Id("input-email-redirect")).SendKeys("email");
+        Browser.Exists(By.Id("set-email-redirect")).Click();
+        Browser.Equal("email", () => Browser.Exists(By.Id("text-email")).Text);
+    }
 }

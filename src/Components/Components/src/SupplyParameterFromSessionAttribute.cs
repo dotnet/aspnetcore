@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
 /// Indicates that the value of the associated property should be supplied from
-/// the session attribute with the specified name.
+/// the session with the specified name.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 public sealed class SupplyParameterFromSessionAttribute : CascadingParameterAttributeBase

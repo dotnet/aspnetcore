@@ -1,10 +1,13 @@
 ﻿@page "/supply-parameter-from-session"
 @using Microsoft.AspNetCore.Components.Forms
 @inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager NavigationManager
 
 <h3>SupplyParameterFromSessionComponent</h3>
 
 <p id="text-email">@Email</p>
+<p id="text-another-email">@AnotherEmail</p>
+<p id="text-null">@NoElement</p>
 
 <form @onsubmit="SetEmail" @formname="set-email" method="post">
     <AntiforgeryToken />
@@ -12,16 +15,47 @@
     <button type="submit" id="set-email">Set Email</button>
 </form>
 
+<form @onsubmit="SetAnotherEmail" @formname="set-another-email" method="post">
+    <AntiforgeryToken />
+    <input id="input-another-email" @bind="EmailInput" name="EmailInput" />
+    <button type="submit" id="set-another-email">Set Email</button>
+</form>
+
+<form @onsubmit="SetEmailWithRedirect" @formname="set-email-redirect" method="post">
+    <AntiforgeryToken />
+    <input id="input-email-redirect" @bind="EmailInput" name="EmailInput" />
+    <button type="submit" id="set-email-redirect">Set Email</button>
+</form>
+
 @code {
     [SupplyParameterFromSession]
     public string? Email { get; set; }
+
+    [SupplyParameterFromSession(Name = "Email")]
+    public string? AnotherEmail { get; set; }
+
+    [SupplyParameterFromSession]
+    public string? NoElement { get; set; }
 
     [SupplyParameterFromForm]
     public string? EmailInput { get; set; }
 
     void SetEmail()
     {
-        HttpContextAccessor.HttpContext?.Session.SetString(nameof(Email), EmailInput);
         Email = EmailInput;
+        EmailInput = string.Empty;
+    }
+
+    void SetAnotherEmail()
+    {
+        AnotherEmail = EmailInput;
+        EmailInput = string.Empty;
+    }
+
+    void SetEmailWithRedirect()
+    {
+        Email = EmailInput;
+        EmailInput = string.Empty;
+        NavigationManager.NavigateTo("/subdir/supply-parameter-from-session/navigation", forceLoad: true);
     }
 }
