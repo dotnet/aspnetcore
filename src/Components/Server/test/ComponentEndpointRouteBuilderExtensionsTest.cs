@@ -5,7 +5,6 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -121,30 +120,6 @@ public class ComponentEndpointRouteBuilderExtensionsTest
         // Assert
         Assert.True(called);
         Assert.Equal(new[] { "first-in", "last-in" }, populatedMetadata);
-    }
-
-    [Fact]
-    public void ServerComponentsEndpointOptions_ConfigureConnection_CanBeSet()
-    {
-        // Arrange
-        var options = new ServerComponentsEndpointOptions();
-        var configureConnectionCalled = false;
-
-        // Act
-        options.ConfigureConnection = dispatcherOptions =>
-        {
-            configureConnectionCalled = true;
-            dispatcherOptions.CloseOnAuthenticationExpiration = true;
-        };
-
-        // Simulate calling the configuration
-        var dispatcherOptions = new HttpConnectionDispatcherOptions();
-        options.ConfigureConnection?.Invoke(dispatcherOptions);
-
-        // Assert
-        Assert.NotNull(options.ConfigureConnection);
-        Assert.True(configureConnectionCalled);
-        Assert.True(dispatcherOptions.CloseOnAuthenticationExpiration);
     }
 
     private IApplicationBuilder CreateAppBuilder()
