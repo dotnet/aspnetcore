@@ -1,0 +1,47 @@
+{
+  "Version": 1,
+  "Endpoints": [
+    {
+      "Route": "styles/site.fingerprint123.css",
+      "AssetFile": "styles/site.css",
+      "Selectors": [],
+      "EndpointProperties": [
+        {
+          "Name": "label",
+          "Value": "styles/site.css"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "ETag",
+          "Value": "\"fingerprint123\""
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "Route": "styles/site.min.fingerprint456.css",
+      "AssetFile": "styles/site.min.css",
+      "Selectors": [],
+      "EndpointProperties": [
+        {
+          "Name": "label",
+          "Value": "styles/site.min.css"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "ETag",
+          "Value": "\"fingerprint456\""
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ]
+    }
+  ]
+}
