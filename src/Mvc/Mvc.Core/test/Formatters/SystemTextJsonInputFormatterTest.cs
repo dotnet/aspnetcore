@@ -197,7 +197,7 @@ public class SystemTextJsonInputFormatterTest : JsonInputFormatterTestBase
 
     internal override string JsonFormatter_EscapedKeys_Bracket_Expected => "$[0]['It[s a key']";
 
-    internal override string JsonFormatter_EscapedKeys_SingleQuote_Expected => "$[0]['It's a key']";
+    internal override string JsonFormatter_EscapedKeys_SingleQuote_Expected => "$[0]['It\\'s a key']";
 
     internal override string ReadAsync_ArrayOfObjects_HasCorrectKey_Expected => "$[2].Age";
 

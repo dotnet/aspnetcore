@@ -93,8 +93,17 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.PersistentStateShouldNotHavePropertyInitializer_Description)));
 
-    public static readonly DiagnosticDescriptor ComponentParametersShouldNotUseRequiredOrInit = new(
+    public static readonly DiagnosticDescriptor UseInvokeVoidAsyncForObjectReturn = new(
         "BL0010",
+        CreateLocalizableResourceString(nameof(Resources.UseInvokeVoidAsyncForObjectReturn_Title)),
+        CreateLocalizableResourceString(nameof(Resources.UseInvokeVoidAsyncForObjectReturn_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.UseInvokeVoidAsyncForObjectReturn_Description)));
+  
+      public static readonly DiagnosticDescriptor ComponentParametersShouldNotUseRequiredOrInit = new(
+        "BL0011",
         CreateLocalizableResourceString(nameof(Resources.ComponentParametersShouldNotUseRequiredOrInit_Title)),
         CreateLocalizableResourceString(nameof(Resources.ComponentParametersShouldNotUseRequiredOrInit_Format)),
         Usage,

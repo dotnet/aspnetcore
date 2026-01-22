@@ -1,0 +1,17 @@
+﻿@page "/not-found-reexecute-streaming"
+@attribute [StreamRendering(true)]
+
+<ReExecutedComponent/>
+
+<p id="reexecute-streaming-status">@_status</p>
+
+@code {
+    private string _status = "Streaming in progress...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Yield();
+        _status = "Streaming completed.";
+        await InvokeAsync(StateHasChanged);
+    }
+}

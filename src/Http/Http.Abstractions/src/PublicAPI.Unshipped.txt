@@ -1,9 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Http.Metadata.IAllowCookieRedirectMetadata
-Microsoft.AspNetCore.Http.Metadata.IDisableCookieRedirectMetadata
-Microsoft.AspNetCore.Http.Metadata.IDisableValidationMetadata
-Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.get -> string?
-Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.set -> void
-Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.Description.get -> string?
-static Microsoft.AspNetCore.Http.HttpMethods.IsQuery(string! method) -> bool
-static readonly Microsoft.AspNetCore.Http.HttpMethods.Query -> string!

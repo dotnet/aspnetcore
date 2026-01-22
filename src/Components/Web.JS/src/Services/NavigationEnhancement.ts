@@ -3,7 +3,7 @@
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
 import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash } from './NavigationUtils';
-import { resetScrollAfterNextBatch, resetScrollIfNeeded } from '../Rendering/Renderer';
+import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -81,7 +81,7 @@ function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, rep
   }
 
   if (!isForSamePath(absoluteInternalHref, originalLocation)) {
-    resetScrollAfterNextBatch();
+    scheduleScrollReset(ScrollResetSchedule.AfterDocumentUpdate);
   }
 
   performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ false);
@@ -108,8 +108,7 @@ function onDocumentClick(event: MouseEvent) {
       let isSelfNavigation = isForSamePath(absoluteInternalHref, originalLocation);
       performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ true);
       if (!isSelfNavigation) {
-        resetScrollAfterNextBatch();
-        resetScrollIfNeeded();
+        scheduleScrollReset(ScrollResetSchedule.AfterDocumentUpdate);
       }
     }
   });

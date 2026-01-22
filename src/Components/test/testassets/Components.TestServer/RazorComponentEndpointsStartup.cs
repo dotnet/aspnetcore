@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
+using Components.TestServer.RazorComponents.Pages.PersistentState;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.Circuits;
@@ -50,6 +51,23 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                     options.DisconnectedCircuitMaxRetained = 0;
                     options.DetailedErrors = true;
                 }
+                if (Configuration.GetValue<bool>("DisableCircuitPersistence"))
+                {
+                    // This disables the circuit persistence.
+                    // In combination with DisableReconnectionCache this means that a disconnected client will always
+                    // be rejected on reconnection/resume attempts.
+                    options.PersistedCircuitInMemoryMaxRetained = 0;
+                    options.DetailedErrors = true;
+                }
+                var retentionPeriod = Configuration.GetValue<int?>("PersistedCircuitRetentionPeriod");
+                if (retentionPeriod.HasValue)
+                {
+                    // This sets both in-memory and distributed persisted circuit retention periods to the specified value in milliseconds.
+                    // This setting can be used to test expiration of persisted circuit state, including client-held state in case of graceful pause.
+                    options.PersistedCircuitInMemoryRetentionPeriod = TimeSpan.FromMilliseconds(retentionPeriod.Value);
+                    options.PersistedCircuitDistributedRetentionPeriod = TimeSpan.FromMilliseconds(retentionPeriod.Value);
+                }
+                options.RootComponents.RegisterForJavaScript<TestContentPackage.PersistentComponents.ComponentWithPersistentState>("dynamic-js-root-counter");
             })
             .AddAuthenticationStateSerialization(options =>
             {
@@ -106,6 +124,13 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForStatusCodePages: true);
                 reexecutionApp.UseRouting();
 
+                reexecutionApp.UseAntiforgery();
+                ConfigureEndpoints(reexecutionApp, env);
+            });
+            app.Map("/interactive-reexecution", reexecutionApp =>
+            {
+                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute-interactive", createScopeForStatusCodePages: true);
+                reexecutionApp.UseRouting();
                 reexecutionApp.UseAntiforgery();
                 ConfigureEndpoints(reexecutionApp, env);
             });
