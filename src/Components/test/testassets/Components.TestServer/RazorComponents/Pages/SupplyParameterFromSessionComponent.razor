@@ -9,7 +9,7 @@
 <form @onsubmit="SetEmail" @formname="set-email" method="post">
     <AntiforgeryToken />
     <input id="input-email" @bind="EmailInput" name="EmailInput"/>
-    <button type="submit">Set Email</button>
+    <button type="submit" id="set-email">Set Email</button>
 </form>
 
 @code {
