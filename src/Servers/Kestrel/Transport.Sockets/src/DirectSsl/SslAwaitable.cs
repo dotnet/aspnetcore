@@ -8,10 +8,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl;
 /// <summary>
 /// A reusable awaitable that avoids allocating TaskCompletionSource for each async operation.
 /// Uses ManualResetValueTaskSourceCore for zero-allocation async patterns.
+/// Thread-safe for concurrent TrySet* calls (first one wins).
 /// </summary>
 internal sealed class SslAwaitable<T> : IValueTaskSource<T>
 {
     private ManualResetValueTaskSourceCore<T> _source;
+    private readonly object _lock = new();
     private bool _isActive;
     private Exception? _exception;
 
@@ -24,70 +26,94 @@ internal sealed class SslAwaitable<T> : IValueTaskSource<T>
     /// <summary>
     /// Returns true if this awaitable is currently waiting for a result.
     /// </summary>
-    public bool IsActive => _isActive;
+    public bool IsActive
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _isActive;
+            }
+        }
+    }
 
     /// <summary>
     /// Prepares the awaitable for a new async wait and returns a ValueTask to await.
     /// </summary>
     public ValueTask<T> Reset()
     {
-        if (_isActive)
+        lock (_lock)
         {
-            throw new InvalidOperationException("SslAwaitable is already active");
-        }
+            if (_isActive)
+            {
+                throw new InvalidOperationException("SslAwaitable is already active");
+            }
 
-        _isActive = true;
-        _exception = null;
-        _source.Reset();
-        return new ValueTask<T>(this, _source.Version);
+            _isActive = true;
+            _exception = null;
+            _source.Reset();
+            return new ValueTask<T>(this, _source.Version);
+        }
     }
 
     /// <summary>
     /// Completes the awaitable with a successful result.
+    /// Thread-safe: first caller wins, subsequent calls return false.
     /// </summary>
     public bool TrySetResult(T result)
     {
-        if (!_isActive)
+        lock (_lock)
         {
-            return false;
-        }
+            if (!_isActive)
+            {
+                return false;
+            }
 
-        _isActive = false;
-        _source.SetResult(result);
-        return true;
+            _isActive = false;
+            _source.SetResult(result);
+            return true;
+        }
     }
 
     /// <summary>
     /// Completes the awaitable with an exception.
+    /// Thread-safe: first caller wins, subsequent calls return false.
     /// </summary>
     public bool TrySetException(Exception exception)
     {
-        if (!_isActive)
+        lock (_lock)
         {
-            return false;
-        }
+            if (!_isActive)
+            {
+                return false;
+            }
 
-        _isActive = false;
-        _exception = exception;
-        _source.SetException(exception);
-        return true;
+            _isActive = false;
+            _exception = exception;
+            _source.SetException(exception);
+            return true;
+        }
     }
 
     /// <summary>
     /// Cancels the awaitable.
+    /// Thread-safe: first caller wins, subsequent calls return false.
     /// </summary>
     public bool TrySetCanceled()
     {
-        if (!_isActive)
+        lock (_lock)
         {
-            return false;
-        }
+            if (!_isActive)
+            {
+                return false;
+            }
 
-        _isActive = false;
-        var ex = new OperationCanceledException();
-        _exception = ex;
-        _source.SetException(ex);
-        return true;
+            _isActive = false;
+            var ex = new OperationCanceledException();
+            _exception = ex;
+            _source.SetException(ex);
+            return true;
+        }
     }
 
     // IValueTaskSource<T> implementation

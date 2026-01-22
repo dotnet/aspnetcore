@@ -18,6 +18,10 @@ internal sealed class DirectSslConnectionContextFactory : IDisposable
     private readonly ILogger _logger;
     private readonly MemoryPool<byte> _memoryPool;
     private readonly SslContext _sslContext;
+    
+    // Cached loggers - reused for all connections to avoid per-connection allocations
+    private readonly ILogger<SslConnectionState> _sslConnectionStateLogger;
+    private readonly ILogger<DirectSslConnection> _directSslConnectionLogger;
 
     public DirectSslConnectionContextFactory(
         ILoggerFactory loggerFactory,
@@ -28,6 +32,10 @@ internal sealed class DirectSslConnectionContextFactory : IDisposable
         _logger = loggerFactory.CreateLogger<DirectSslConnectionContextFactory>();
         _memoryPool = memoryPool;
         _sslContext = sslContext;
+        
+        // Create loggers once and reuse for all connections
+        _sslConnectionStateLogger = loggerFactory.CreateLogger<SslConnectionState>();
+        _directSslConnectionLogger = loggerFactory.CreateLogger<DirectSslConnection>();
     }
 
     public async ValueTask<DirectSslConnection?> CreateAsync(
@@ -56,8 +64,8 @@ internal sealed class DirectSslConnectionContextFactory : IDisposable
         NativeSsl.SSL_set_fd(ssl, fd);
         NativeSsl.SSL_set_accept_state(ssl);
 
-        // 4. Create connection state
-        var connectionState = new SslConnectionState(fd, ssl, _loggerFactory.CreateLogger<SslConnectionState>());
+        // 4. Create connection state (use cached logger)
+        var connectionState = new SslConnectionState(fd, ssl, _sslConnectionStateLogger);
 
         // 5. Get pump for this connection
         var pump = pumpPool.GetNextPump();
@@ -97,7 +105,7 @@ internal sealed class DirectSslConnectionContextFactory : IDisposable
             acceptSocket.LocalEndPoint,
             acceptSocket.RemoteEndPoint,
             _memoryPool,
-            _loggerFactory.CreateLogger<DirectSslConnection>());
+            _directSslConnectionLogger);  // Use cached logger
             
         connection.Start();
         return connection;
