@@ -1,0 +1,33 @@
+﻿@page "/virtualize-interop-null"
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+<PageTitle>Virtualize interop null</PageTitle>
+
+<h1>Virtualize interop null</h1>
+
+<p>
+    <button @onclick="ToggleTable">Toggle table</button>
+</p>
+
+@if (_showTable)
+{
+    <table id="virtualize-null-table" class="table">
+        <tbody>
+            <Virtualize Items="@_items" ItemSize="30" SpacerElement="tr">
+                <tr @key="context">
+                    <td>Item @context</td>
+                </tr>
+            </Virtualize>
+        </tbody>
+    </table>
+}
+
+@code {
+    private readonly List<int> _items = Enumerable.Range(1, 200).ToList();
+    private bool _showTable = true;
+
+    private void ToggleTable()
+    {
+        _showTable = !_showTable;
+    }
+}
