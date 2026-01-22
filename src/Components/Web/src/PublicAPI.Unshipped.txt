@@ -1,6 +1,14 @@
 #nullable enable
 Microsoft.AspNetCore.Components.ISessionValueMapper
 Microsoft.AspNetCore.Components.ISessionValueMapper.GetValue(string! sessionKey) -> object?
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.EnvironmentBoundary() -> void
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.Exclude.get -> string?
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.Exclude.set -> void
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.Include.get -> string?
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.Include.set -> void
 Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.get -> bool
 Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.set -> void
 Microsoft.Extensions.DependencyInjection.SupplyParameterFromSessionServiceCollectionExtensions
