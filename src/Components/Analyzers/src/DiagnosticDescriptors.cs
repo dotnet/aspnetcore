@@ -94,7 +94,7 @@ internal static class DiagnosticDescriptors
         description: CreateLocalizableResourceString(nameof(Resources.PersistentStateShouldNotHavePropertyInitializer_Description)));
 
     public static readonly DiagnosticDescriptor ComponentShouldNotUseRefAndRenderModeOnSameElement = new(
-        "BL0010",
+        "BL0012",
         CreateLocalizableResourceString(nameof(Resources.ComponentShouldNotUseRefAndRenderModeOnSameElement_Title)),
         CreateLocalizableResourceString(nameof(Resources.ComponentShouldNotUseRefAndRenderModeOnSameElement_Format)),
         Usage,
