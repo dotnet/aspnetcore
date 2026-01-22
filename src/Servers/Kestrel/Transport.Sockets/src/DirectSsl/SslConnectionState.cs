@@ -21,17 +21,17 @@ internal sealed class SslConnectionState : IDisposable
     // Callback for fatal errors (e.g., peer disconnect) - allows owner to trigger disposal
     internal Action<Exception>? OnFatalError { get; set; }
 
-    // Handshake
-    private TaskCompletionSource<bool>? _handshakeTcs;
+    // Handshake - reusable awaitable to avoid TCS allocations
+    private readonly SslAwaitable<bool> _handshakeAwaitable = new();
     public bool IsHandshaked { get; private set; }
 
-    // Read
-    private TaskCompletionSource<int>? _readTcs;
+    // Read - reusable awaitable to avoid TCS allocations
+    private readonly SslAwaitable<int> _readAwaitable = new();
     private Memory<byte> _readBuffer;
     private bool _readWantsWrite;  // SSL_read returned WANT_WRITE (renegotiation)
 
-    // Write
-    private TaskCompletionSource<int>? _writeTcs;
+    // Write - reusable awaitable to avoid TCS allocations
+    private readonly SslAwaitable<int> _writeAwaitable = new();
     private ReadOnlyMemory<byte> _writeBuffer;
     private bool _writeWantsRead;  // SSL_write returned WANT_READ (renegotiation)
 
@@ -63,8 +63,9 @@ internal sealed class SslConnectionState : IDisposable
 
         if (error == NativeSsl.SSL_ERROR_WANT_READ || error == NativeSsl.SSL_ERROR_WANT_WRITE)
         {
-            _handshakeTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            return new ValueTask(_handshakeTcs.Task);
+            // Use pooled awaitable instead of allocating new TCS
+            var valueTask = _handshakeAwaitable.Reset();
+            return new ValueTask(valueTask.AsTask());
         }
 
         return ValueTask.FromException(new SslException($"Handshake failed: {error}"));
@@ -72,17 +73,14 @@ internal sealed class SslConnectionState : IDisposable
 
     private void ContinueHandshake()
     {
-        var tcs = _handshakeTcs!;
-
         // Clear any stale errors before handshake continuation
         NativeSsl.ERR_clear_error();
         int n = NativeSsl.SSL_do_handshake(Ssl);
 
         if (n == 1)
         {
-            _handshakeTcs = null;
             IsHandshaked = true;
-            tcs.TrySetResult(true);
+            _handshakeAwaitable.TrySetResult(true);
             return;
         }
 
@@ -94,8 +92,7 @@ internal sealed class SslConnectionState : IDisposable
             return;
         }
 
-        _handshakeTcs = null;
-        tcs.TrySetException(new SslException($"Handshake failed: {error}"));
+        _handshakeAwaitable.TrySetException(new SslException($"Handshake failed: {error}"));
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -109,7 +106,7 @@ internal sealed class SslConnectionState : IDisposable
             throw new InvalidOperationException("Handshake not complete");
         }
 
-        if (_readTcs != null)
+        if (_readAwaitable.IsActive)
         {
             throw new InvalidOperationException("Read already pending");
         }
@@ -132,18 +129,16 @@ internal sealed class SslConnectionState : IDisposable
         {
             case NativeSsl.SSL_ERROR_WANT_READ:
                 _readBuffer = buffer;
-                _readTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _readWantsWrite = false;
-                return new ValueTask<int>(_readTcs.Task);
+                return _readAwaitable.Reset();
 
             case NativeSsl.SSL_ERROR_WANT_WRITE:
                 // SSL_read needs to write (TLS renegotiation or post-handshake auth)
                 // Register for EPOLLOUT - OnWritable will call TryCompleteRead
                 _readBuffer = buffer;
-                _readTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _readWantsWrite = true;
                 Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN | NativeSsl.EPOLLOUT);
-                return new ValueTask<int>(_readTcs.Task);
+                return _readAwaitable.Reset();
             
             case NativeSsl.SSL_ERROR_ZERO_RETURN:
                 // Peer sent close_notify - treat as EOF
@@ -189,9 +184,8 @@ internal sealed class SslConnectionState : IDisposable
                 {
                     // No data available - should wait for epoll
                     _readBuffer = buffer;
-                    _readTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
                     _readWantsWrite = false;
-                    return new ValueTask<int>(_readTcs.Task);
+                    return _readAwaitable.Reset();
                 }
                 // There's an actual error
                 return ValueTask.FromException<int>(new SslException($"SSL_read syscall error: errno={_lastErrno}"));
@@ -206,10 +200,9 @@ internal sealed class SslConnectionState : IDisposable
 
     private void TryCompleteRead()
     {
-        var tcs = _readTcs;
-        if (tcs == null)
+        if (!_readAwaitable.IsActive)
         {
-            _logger?.LogDebug("TryCompleteRead called but no read tcs is pending");
+            _logger?.LogDebug("TryCompleteRead called but no read is pending");
             return; // Race: cancelled or completed between check and call
         }
 
@@ -218,7 +211,6 @@ internal sealed class SslConnectionState : IDisposable
         if (n > 0)
         {
             var wasWaitingForWrite = _readWantsWrite;
-            _readTcs = null;
             _readBuffer = default;
             _readWantsWrite = false;
             
@@ -228,14 +220,13 @@ internal sealed class SslConnectionState : IDisposable
                 Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN);
             }
             
-            tcs.TrySetResult(n);
+            _readAwaitable.TrySetResult(n);
             return;
         }
 
         if (n == 0)
         {
             var wasWaitingForWrite = _readWantsWrite;
-            _readTcs = null;
             _readBuffer = default;
             _readWantsWrite = false;
             
@@ -244,7 +235,7 @@ internal sealed class SslConnectionState : IDisposable
                 Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN);
             }
             
-            tcs.TrySetResult(0);
+            _readAwaitable.TrySetResult(0);
             return;
         }
 
@@ -275,10 +266,9 @@ internal sealed class SslConnectionState : IDisposable
 #if DIRECTSSL_DEBUG_COUNTERS
                 Interlocked.Increment(ref SslEventPump.TotalSslErrorZeroReturn);
 #endif
-                _readTcs = null;
                 _readBuffer = default;
                 _readWantsWrite = false;
-                tcs.TrySetResult(0);
+                _readAwaitable.TrySetResult(0);
                 return;
 
             case NativeSsl.SSL_ERROR_SYSCALL:
@@ -298,10 +288,9 @@ internal sealed class SslConnectionState : IDisposable
                 // Use _lastErrno which was captured immediately after SSL_read
                 if (n == 0 || _lastErrno == 0 || _lastErrno == 104 /* ECONNRESET */)
                 {
-                    _readTcs = null;
                     _readBuffer = default;
                     _readWantsWrite = false;
-                    tcs.TrySetResult(0);  // Treat as EOF
+                    _readAwaitable.TrySetResult(0);  // Treat as EOF
                     return;
                 }
                 if (_lastErrno == 11 /* EAGAIN */ || _lastErrno == 115 /* EINPROGRESS */)
@@ -309,30 +298,27 @@ internal sealed class SslConnectionState : IDisposable
                     // No data available - wait for more (shouldn't happen after epoll wakeup)
                     return;
                 }
-                _readTcs = null;
                 _readBuffer = default;
                 _readWantsWrite = false;
-                tcs.TrySetException(new SslException($"SSL_read syscall error: errno={_lastErrno}"));
+                _readAwaitable.TrySetException(new SslException($"SSL_read syscall error: errno={_lastErrno}"));
                 return;
             
             case NativeSsl.SSL_ERROR_SSL:
 #if DIRECTSSL_DEBUG_COUNTERS
                 Interlocked.Increment(ref SslEventPump.TotalSslErrorSsl);
 #endif
-                _readTcs = null;
                 _readBuffer = default;
                 _readWantsWrite = false;
-                tcs.TrySetException(new SslException($"SSL_read failed: {error}"));
+                _readAwaitable.TrySetException(new SslException($"SSL_read failed: {error}"));
                 return;
 
             default:
 #if DIRECTSSL_DEBUG_COUNTERS
                 Interlocked.Increment(ref SslEventPump.TotalSslErrorOther);
 #endif
-                _readTcs = null;
                 _readBuffer = default;
                 _readWantsWrite = false;
-                tcs.TrySetException(new SslException($"SSL_read failed: {error}"));
+                _readAwaitable.TrySetException(new SslException($"SSL_read failed: {error}"));
                 return;
         }
     }
@@ -348,7 +334,7 @@ internal sealed class SslConnectionState : IDisposable
             throw new InvalidOperationException("Handshake not complete");
         }
 
-        if (_writeTcs != null)
+        if (_writeAwaitable.IsActive)
         {
             throw new InvalidOperationException("Write already pending");
         }
@@ -370,22 +356,20 @@ internal sealed class SslConnectionState : IDisposable
                 Interlocked.Increment(ref SslEventPump.TotalWriteWouldBlock);
 #endif
                 _writeBuffer = buffer;
-                _writeTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _writeWantsRead = false;
                 
                 // Dynamically add EPOLLOUT since the write would block
                 Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN | NativeSsl.EPOLLOUT);
                 
-                return new ValueTask<int>(_writeTcs.Task);
+                return _writeAwaitable.Reset();
 
             case NativeSsl.SSL_ERROR_WANT_READ:
                 // SSL_write needs to read (TLS renegotiation or post-handshake auth)
                 // Stay registered for EPOLLIN - OnReadable will call TryCompleteWrite
                 _writeBuffer = buffer;
-                _writeTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
                 _writeWantsRead = true;
                 // EPOLLIN is already registered, no need to modify
-                return new ValueTask<int>(_writeTcs.Task);
+                return _writeAwaitable.Reset();
 
             case NativeSsl.SSL_ERROR_ZERO_RETURN:
                 // Peer closed connection cleanly - return 0 (EOF)
@@ -407,8 +391,7 @@ internal sealed class SslConnectionState : IDisposable
 
     private void TryCompleteWrite()
     {
-        var tcs = _writeTcs;
-        if (tcs == null)
+        if (!_writeAwaitable.IsActive)
         {
             // Spurious EPOLLOUT - remove it to avoid future wakeups
             Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN);
@@ -419,7 +402,6 @@ internal sealed class SslConnectionState : IDisposable
         if (n > 0)
         {
             var wasWaitingForRead = _writeWantsRead;
-            _writeTcs = null;
             _writeBuffer = default;
             _writeWantsRead = false;
             
@@ -429,7 +411,7 @@ internal sealed class SslConnectionState : IDisposable
                 Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN);
             }
             
-            tcs.TrySetResult(n);
+            _writeAwaitable.TrySetResult(n);
             return;
         }
 
@@ -456,19 +438,17 @@ internal sealed class SslConnectionState : IDisposable
 
             case NativeSsl.SSL_ERROR_ZERO_RETURN:
                 // Peer closed - return 0
-                _writeTcs = null;
                 _writeBuffer = default;
                 _writeWantsRead = false;
                 Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN);
-                tcs.TrySetResult(0);
+                _writeAwaitable.TrySetResult(0);
                 return;
 
             default:
-                _writeTcs = null;
                 _writeBuffer = default;
                 _writeWantsRead = false;
                 Pump?.ModifyEvents(Fd, NativeSsl.EPOLLIN);
-                tcs.TrySetException(new SslException($"SSL_write failed: {error}"));
+                _writeAwaitable.TrySetException(new SslException($"SSL_write failed: {error}"));
                 return;
         }
     }
@@ -479,20 +459,20 @@ internal sealed class SslConnectionState : IDisposable
 
     internal void OnReadable()
     {
-        if (_handshakeTcs != null)
+        if (_handshakeAwaitable.IsActive)
         {
             ContinueHandshake();
             return;
         }
 
         // Check if a pending write was waiting for read (renegotiation)
-        if (_writeWantsRead && _writeTcs != null)
+        if (_writeWantsRead && _writeAwaitable.IsActive)
         {
             TryCompleteWrite();
             return;
         }
 
-        if (_readTcs != null)
+        if (_readAwaitable.IsActive)
         {
             TryCompleteRead();
         }
@@ -500,20 +480,20 @@ internal sealed class SslConnectionState : IDisposable
 
     internal void OnWritable()
     {
-        if (_handshakeTcs != null)
+        if (_handshakeAwaitable.IsActive)
         {
             ContinueHandshake();
             return;
         }
 
         // Check if a pending read was waiting for write (renegotiation)
-        if (_readWantsWrite && _readTcs != null)
+        if (_readWantsWrite && _readAwaitable.IsActive)
         {
             TryCompleteRead();
             return;
         }
 
-        if (_writeTcs != null)
+        if (_writeAwaitable.IsActive)
         {
             TryCompleteWrite();
         }
@@ -521,31 +501,23 @@ internal sealed class SslConnectionState : IDisposable
 
     internal void OnError(Exception ex)
     {
-        _handshakeTcs?.TrySetException(ex);
-        _readTcs?.TrySetException(ex);
-        _writeTcs?.TrySetException(ex);
-
-        _handshakeTcs = null;
-        _readTcs = null;
-        _writeTcs = null;
+        _handshakeAwaitable.TrySetException(ex);
+        _readAwaitable.TrySetException(ex);
+        _writeAwaitable.TrySetException(ex);
         
         // Notify owner about fatal error so it can trigger disposal
         OnFatalError?.Invoke(ex);
     }
 
     /// <summary>
-    /// Cancel any pending async operations (read/write TCS).
+    /// Cancel any pending async operations (read/write awaitables).
     /// Called during connection disposal to unblock waiting tasks.
     /// </summary>
     internal void Cancel()
     {
-        _handshakeTcs?.TrySetCanceled();
-        _readTcs?.TrySetCanceled();
-        _writeTcs?.TrySetCanceled();
-
-        _handshakeTcs = null;
-        _readTcs = null;
-        _writeTcs = null;
+        _handshakeAwaitable.TrySetCanceled();
+        _readAwaitable.TrySetCanceled();
+        _writeAwaitable.TrySetCanceled();
     }
 
     // ═══════════════════════════════════════════════════════════════
