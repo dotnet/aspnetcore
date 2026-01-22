@@ -17,8 +17,7 @@ public class StaticAssetsWithMvcTest : LoggedTest
     protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
         base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
-        Factory = new MvcTestFixture<HtmlGenerationWebSite.StartupWithStaticAssets>(LoggerFactory)
-            .WithWebHostBuilder(builder => builder.UseStartup<HtmlGenerationWebSite.StartupWithStaticAssets>());
+        Factory = new MvcTestFixture<HtmlGenerationWebSite.StartupWithStaticAssets>(LoggerFactory);
         Client = Factory.CreateDefaultClient();
     }
 
@@ -49,10 +48,10 @@ public class StaticAssetsWithMvcTest : LoggedTest
         var cssLink = document.GetElementById("css-link");
         Assert.NotNull(cssLink);
         Assert.Equal("link", cssLink.TagName, ignoreCase: true);
-        
+
         var href = cssLink.GetAttribute("href");
         Assert.NotNull(href);
-        
+
         // The href should contain the fingerprinted version (styles/site.fingerprint123.css)
         // instead of the original (~/styles/site.css)
         Assert.Contains("fingerprint123", href);
