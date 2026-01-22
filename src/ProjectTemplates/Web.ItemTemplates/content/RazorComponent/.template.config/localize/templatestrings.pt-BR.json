@@ -1,6 +1,9 @@
-﻿{
+{
   "author": "Microsoft",
-  "name": "Componente Razor",
-  "description": "Um componente de interface do usuário reutilizável implementado com o Razor",
-  "postActions/openInEditor/description": "Abre Component1.razor no editor"
+  "name": "Razor Component",
+  "description": "A reusable UI component implemented with Razor",
+  "symbols/namespace/description": "namespace for the generated code",
+  "symbols/ExcludeCodeBehind/description": "create component without a code-behind file",
+  "symbols/ExcludeCodeBehind/displayName": "Exclude Code-Behind",
+  "postActions/openInEditor/description": "Opens Component1.razor in the editor"
 }

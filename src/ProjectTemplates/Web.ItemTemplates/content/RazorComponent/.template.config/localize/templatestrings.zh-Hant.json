@@ -1,6 +1,9 @@
-﻿{
+{
   "author": "Microsoft",
-  "name": "Razor 元件",
-  "description": "透過 Razor 實作且可重複使用的 UI 元件",
-  "postActions/openInEditor/description": "在編輯器中開啟 Component1.razor"
+  "name": "Razor Component",
+  "description": "A reusable UI component implemented with Razor",
+  "symbols/namespace/description": "namespace for the generated code",
+  "symbols/ExcludeCodeBehind/description": "create component without a code-behind file",
+  "symbols/ExcludeCodeBehind/displayName": "Exclude Code-Behind",
+  "postActions/openInEditor/description": "Opens Component1.razor in the editor"
 }

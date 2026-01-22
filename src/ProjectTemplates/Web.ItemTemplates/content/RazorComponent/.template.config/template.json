@@ -20,10 +20,38 @@
   "primaryOutputs": [
     {
       "path": "Component1.razor"
+    },
+    {
+      "path": "Component1.razor.cs",
+      "condition": "(!ExcludeCodeBehind)"
     }
   ],
   "defaultName": "Component1",
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "condition": "(ExcludeCodeBehind)",
+          "exclude": [
+            "Component1.razor.cs"
+          ]
+        }
+      ]
+    }
+  ],
   "symbols": {
+    "namespace": {
+      "description": "namespace for the generated code",
+      "replaces": "MyApp.Namespace",
+      "type": "parameter"
+    },
+    "ExcludeCodeBehind": {
+      "description": "create component without a code-behind file",
+      "displayName": "Exclude Code-Behind",
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true"
+    },
     "HostIdentifier": {
       "type": "bind",
       "binding": "HostIdentifier"

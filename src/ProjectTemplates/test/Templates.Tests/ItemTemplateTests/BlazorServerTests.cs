@@ -32,15 +32,16 @@ public class BlazorServerTest
         await Project.RunDotNetNewAsync("razorcomponent --name Different", isItemTemplate: true);
 
         Project.AssertFileExists("Different.razor", shouldExist: true);
+        Project.AssertFileExists("Different.razor.cs", shouldExist: false);
         Assert.Contains("<h3>Different</h3>", Project.ReadFile("Different.razor"));
     }
 
     [Fact]
-    public async Task BlazorServerItemTemplateCodeBehind()
+    public async Task BlazorServerItemTemplateWithCodeBehind()
     {
         Project = await ProjectFactory.CreateProject(Output);
 
-        await Project.RunDotNetNewAsync("razorcomponent-cb --name CodeBehindComponent", isItemTemplate: true);
+        await Project.RunDotNetNewAsync("razorcomponent --name CodeBehindComponent --ExcludeCodeBehind false", isItemTemplate: true);
 
         Project.AssertFileExists("CodeBehindComponent.razor", shouldExist: true);
         Project.AssertFileExists("CodeBehindComponent.razor.cs", shouldExist: true);

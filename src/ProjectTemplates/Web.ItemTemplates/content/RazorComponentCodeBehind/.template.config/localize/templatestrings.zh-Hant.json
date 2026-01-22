@@ -1,7 +1,0 @@
-{
-  "author": "Microsoft",
-  "name": "Razor Component with Code-Behind",
-  "description": "A reusable UI component implemented with Razor and a code-behind file",
-  "symbols/namespace/description": "namespace for the generated code",
-  "postActions/openInEditor/description": "Opens Component1.razor in the editor"
-}
