@@ -49,7 +49,7 @@ internal static class ApiDescriptionExtensions
             return "/";
         }
         var strippedRoute = new StringBuilder();
-        var routePattern = RoutePatternFactory.Parse(apiDescription.RelativePath);
+        var routePattern = apiDescription.RoutePattern ?? RoutePatternFactory.Parse(apiDescription.RelativePath);
         for (var i = 0; i < routePattern.PathSegments.Count; i++)
         {
             strippedRoute.Append('/');

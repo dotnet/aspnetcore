@@ -3,7 +3,6 @@
   "name": "Biblioteca de Classes Razor",
   "description": "Um projeto para criar uma biblioteca de classes Razor voltada para .NET",
   "symbols/Framework/description": "A estrutura de destino do projeto.",
-  "symbols/Framework/choices/net11.0/description": "Net11.0 de destino",
   "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto sendo criado.",
   "symbols/SupportPagesAndViews/displayName": "Páginas e visualizações de suporte",
   "symbols/SupportPagesAndViews/description": "Se é necessário dar suporte à adição de páginas e exibições tradicionais do Razor a esta biblioteca.",
