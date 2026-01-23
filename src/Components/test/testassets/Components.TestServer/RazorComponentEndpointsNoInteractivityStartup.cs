@@ -35,11 +35,15 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
         services.AddHttpContextAccessor();
         services.AddCascadingAuthenticationState();
         services.AddDistributedMemoryCache();
-        services.AddSession(options =>
+
+        if (Configuration.GetValue<bool>("UseSession"))
         {
-            options.Cookie.HttpOnly = true;
-            options.Cookie.IsEssential = true;
-        });
+            services.AddSession(options =>
+            {
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+        }
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -95,7 +99,10 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                 });
             });
 
-            app.UseSession();
+            if (Configuration.GetValue<bool>("UseSession"))
+            {
+                app.UseSession();
+            }
 
             ConfigureSubdirPipeline(app, env);
         });

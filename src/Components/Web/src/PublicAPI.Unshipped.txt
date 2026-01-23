@@ -2,7 +2,6 @@
 Microsoft.AspNetCore.Components.ISessionValueMapper
 Microsoft.AspNetCore.Components.ISessionValueMapper.GetValue(string! sessionKey, System.Type! targetType) -> object?
 Microsoft.AspNetCore.Components.ISessionValueMapper.RegisterValueCallback(string! sessionKey, System.Func<object?>! valueGetter) -> void
-Microsoft.AspNetCore.Components.ISessionValueMapper.SetValue(string! sessionKey, object? value) -> void
 Microsoft.AspNetCore.Components.Web.EnvironmentBoundary
 Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.ChildContent.set -> void

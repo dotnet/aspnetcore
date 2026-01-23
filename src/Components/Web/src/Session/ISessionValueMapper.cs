@@ -17,13 +17,6 @@ public interface ISessionValueMapper
     object? GetValue(string sessionKey, Type targetType);
 
     /// <summary>
-    /// Stores the value in the session with the specified key.
-    /// </summary>
-    /// <param name="sessionKey">The session key.</param>
-    /// <param name="value">The value to store.</param>
-    void SetValue(string sessionKey, object? value);
-
-    /// <summary>
     /// Registers a callback to retrieve the current value of a session property.
     /// The callback will be invoked when the response starts to persist the value.
     /// </summary>

@@ -28,7 +28,7 @@ internal class SupplyParameterFromSessionValueProvider : ICascadingValueSupplier
         }
 
         var attribute = (SupplyParameterFromSessionAttribute)parameterInfo.Attribute;
-        var sessionKey = attribute.Name ?? parameterInfo.PropertyName;
+        var sessionKey = (attribute.Name ?? parameterInfo.PropertyName).ToLowerInvariant();
         return _sessionValueMapper.GetValue(sessionKey, parameterInfo.PropertyType);
     }
 
@@ -39,19 +39,21 @@ internal class SupplyParameterFromSessionValueProvider : ICascadingValueSupplier
     public void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
     {
         var attribute = (SupplyParameterFromSessionAttribute)parameterInfo.Attribute;
-        var sessionKey = attribute.Name ?? parameterInfo.PropertyName;
-
-        // Capture these in the closure
-        var component = subscriber.Component;
+        var sessionKey = (attribute.Name ?? parameterInfo.PropertyName).ToLowerInvariant();
         var propertyName = parameterInfo.PropertyName;
-        var componentType = component.GetType();
-        var propertyInfo = componentType.GetProperty(propertyName);
+        var propertyInfo = subscriber.Component.GetType().GetProperty(propertyName);
 
         if (propertyInfo is null)
         {
             return;
         }
-        _sessionValueMapper.RegisterValueCallback(sessionKey, () => propertyInfo.GetValue(component));
+
+        var component = subscriber.Component;
+        _sessionValueMapper.RegisterValueCallback(sessionKey, () =>
+        {
+            var value = propertyInfo.GetValue(component);
+            return value;
+        });
     }
 
     public void Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)

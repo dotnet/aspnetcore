@@ -3,72 +3,89 @@
 
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal class SessionValueMapper : ISessionValueMapper
+internal partial class SessionValueMapper : ISessionValueMapper
 {
     private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
     private HttpContext? _httpContext;
-    private readonly Dictionary<string, Func<object?>> _valueCallbacks = new();
+    private readonly Dictionary<string, List<Func<object?>>> _valueCallbacks = new();
+    private readonly ILogger<SessionValueMapper> _logger;
+
+    public SessionValueMapper(ILogger<SessionValueMapper> logger)
+    {
+        _logger = logger;
+    }
 
     internal void SetRequestContext(HttpContext httpContext)
     {
         _httpContext = httpContext;
-
-        // Register Response.OnStarting once to persist all values before response starts
         _httpContext.Response.OnStarting(PersistAllValues);
     }
 
     public object? GetValue(string sessionKey, Type type)
     {
-        var session = _httpContext?.Session;
+        var session = _httpContext?.Features.Get<ISessionFeature>()?.Session;
         if (session is null)
         {
             return null;
         }
-        var json = session.GetString(sessionKey);
-        if (string.IsNullOrEmpty(json))
+        try
         {
+            var json = session.GetString(sessionKey);
+            if (string.IsNullOrEmpty(json))
+            {
+                return null;
+            }
+            return JsonSerializer.Deserialize(json, type, _jsonOptions);
+        }
+        catch (JsonException ex)
+        {
+            Log.SessionDeserializeFail(_logger, ex);
             return null;
         }
-        return JsonSerializer.Deserialize(json, type, _jsonOptions);
     }
 
     public void RegisterValueCallback(string sessionKey, Func<object?> valueGetter)
     {
-        _valueCallbacks[sessionKey] = valueGetter;
-    }
-
-    public void SetValue(string sessionKey, object? value)
-    {
-        var session = _httpContext?.Session;
-        if (session is null)
+        if (!_valueCallbacks.TryGetValue(sessionKey, out var callbacks))
         {
-            return;
+            callbacks = new List<Func<object?>>();
+            _valueCallbacks[sessionKey] = callbacks;
         }
-        if (value is null)
-        {
-            session.Remove(sessionKey);
-        }
-        else
-        {
-            var json = JsonSerializer.Serialize(value, value.GetType(), _jsonOptions);
-            session.SetString(sessionKey, json);
-        }
+        callbacks.Add(valueGetter);
     }
 
     private Task PersistAllValues()
     {
-        var session = _httpContext?.Session;
+        var session = _httpContext?.Features.Get<ISessionFeature>()?.Session;
         if (session is null)
         {
             return Task.CompletedTask;
         }
 
-        foreach (var (key, valueGetter) in _valueCallbacks)
+        foreach (var (key, callbacks) in _valueCallbacks)
         {
-            var value = valueGetter();
+            object? value = null;
+            foreach (var valueGetter in callbacks)
+            {
+                try
+                {
+                    var candidateValue = valueGetter();
+                    if (candidateValue is not null)
+                    {
+                        value = candidateValue;
+                        break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.SessionPersistFail(_logger, ex);
+                }
+            }
             if (value is not null)
             {
                 var json = JsonSerializer.Serialize(value, value.GetType(), _jsonOptions);
@@ -79,7 +96,15 @@ internal class SessionValueMapper : ISessionValueMapper
                 session.Remove(key);
             }
         }
-
         return Task.CompletedTask;
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Warning, "Persisting of the element failed.", EventName = "SessionPersistFail")]
+        public static partial void SessionPersistFail(ILogger logger, Exception exception);
+
+        [LoggerMessage(2, LogLevel.Warning, "Deserialization of the element from Session failed.", EventName = "SessionDeserializeFail")]
+        public static partial void SessionDeserializeFail(ILogger logger, JsonException exception);
     }
 }
