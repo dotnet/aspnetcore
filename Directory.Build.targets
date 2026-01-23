@@ -53,8 +53,6 @@
          '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' OR '$(IsMicrobenchmarksProject)' == 'true') ">false</IsPackable>
   </PropertyGroup>
 
-  <Import Project="eng\Baseline.Designer.props" />
-
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(IsServicingBuild)' == 'true' ">
     <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">true</IsPackageInThisPatch>
     <!-- Used to distinguish between packages building -->
@@ -71,24 +69,6 @@
 
   <PropertyGroup>
     <PackageVersionForPackageVersionInfo>$(PackageVersion)</PackageVersionForPackageVersionInfo>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(IsPackageInThisPatch)' != 'true' AND '$(BaselinePackageVersion)' != '' AND '$(IsServicingBuild)' == 'true' ">
-    <!-- This keeps assembly and package versions consistent across patches. If a package is not included in a patch, its version should stay at the baseline. -->
-    <AssemblyVersion Condition="$(BaselinePackageVersion.Contains('-'))">$(BaselinePackageVersion.Substring(0, $(BaselinePackageVersion.IndexOf('-')))).0</AssemblyVersion>
-    <AssemblyVersion Condition="! $(BaselinePackageVersion.Contains('-'))">$(BaselinePackageVersion).0</AssemblyVersion>
-    <!--
-      Ideally, we would also set the project version to match the baseline in case NuGet turns a ProjectReference into a nuspec depenendency, but
-      NuGet does not currently handle conflicts between packages and projects which have the same package id/version.
-      See https://github.com/NuGet/Home/issues/6795.
-
-      Because we still use static analysis to scrape versions, only set this during static analysis, which can be detected by checking for both NoBuild and DesignTimeBuild.
-    -->
-    <Version Condition="'$(NoBuild)' == 'true' AND '$(DesignTimeBuild)' == 'true'">$(BaselinePackageVersion)</Version>
-    <PackageVersion Condition="'$(NoBuild)' == 'true' AND '$(DesignTimeBuild)' == 'true'">$(BaselinePackageVersion)</PackageVersion>
-
-    <!-- For servicing builds, we want to resolve baseline versions of project packages that aren't building, always -->
-    <PackageVersionForPackageVersionInfo>$(BaselinePackageVersion)</PackageVersionForPackageVersionInfo>
   </PropertyGroup>
 
   <PropertyGroup>
