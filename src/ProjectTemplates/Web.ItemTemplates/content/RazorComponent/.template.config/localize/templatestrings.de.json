@@ -4,6 +4,6 @@
   "description": "A reusable UI component implemented with Razor",
   "symbols/namespace/description": "namespace for the generated code",
   "symbols/use-code-behind/description": "create component with a code-behind file",
-  "symbols/use-code-behind/displayName": "Use Code-Behind",
+  "symbols/use-code-behind/displayName": "Use Code Behind",
   "postActions/openInEditor/description": "Opens Component1.razor in the editor"
 }

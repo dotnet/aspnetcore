@@ -47,7 +47,7 @@
     },
     "use-code-behind": {
       "description": "create component with a code-behind file",
-      "displayName": "Use Code-Behind",
+      "displayName": "Use Code Behind",
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false"
