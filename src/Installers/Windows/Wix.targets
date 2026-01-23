@@ -110,6 +110,14 @@
     <Copy SourceFiles="@(_cabs)" DestinationFolder="$(InstallersOutputPath)" />
   </Target>
 
+  <!-- This target can be used to set additional Wix options. -->
+  <Target Name="SetAdditionalWixOptions" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <!-- Use backwards compatible GUID generation. -->
+      <CompilerAdditionalOptions>$(CompilerAdditionalOptions) -bcgg</CompilerAdditionalOptions>
+    </PropertyGroup>
+  </Target>
+
   <Target Name="GenerateWixpackPackage" AfterTargets="CoreCompile">
     <PropertyGroup>
       <WixpackWorkingDir>$(IntermediateOutputPath)wixpack</WixpackWorkingDir>
@@ -117,6 +125,7 @@
     </PropertyGroup>
 
     <CreateWixBuildWixpack
+      AdditionalOptions="$(CompilerAdditionalOptions) $(LinkerAdditionalOptions)"
       BindTrackingFile="$(IntermediateOutputPath)$(BindTrackingFilePrefix)%(CultureGroup.OutputSuffix)$(BindTrackingFileExtension)"
       Cultures="%(CultureGroup.Identity)"
       DefineConstants="$(DefineConstants);$(SolutionDefineConstants);$(ProjectDefineConstants);$(ProjectReferenceDefineConstants)"
@@ -129,6 +138,7 @@
       PdbFile="$(IntermediateOutputPath)%(CultureGroup.OutputFolder)$(TargetPdbFileName)"
       PdbType="$(DebugType)"
       SourceFiles="@(Compile)"
+      SuppressSpecificWarnings="$(SuppressSpecificWarnings)"
       LocalizationFiles="@(_WixLocalizationFile)"
       BindPaths="@(BindPath)"
       WixpackWorkingDir="$(WixpackWorkingDir)">

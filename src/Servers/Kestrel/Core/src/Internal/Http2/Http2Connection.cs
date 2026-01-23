@@ -1158,8 +1158,12 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         {
             if (stream.RstStreamReceived)
             {
-                // Hard abort, do not allow any more frames on this stream.
-                throw CreateReceivedFrameStreamAbortedException(stream);
+                // WINDOW_UPDATE received after we have already processed an inbound RST_STREAM for this stream.
+                // RFC 7540 (Sections 5.1, 6.9) / RFC 9113 do not explicitly define semantics for WINDOW_UPDATE on a
+                // stream in the "closed" state due to a reset by client. We surface it as a stream error (STREAM_CLOSED)
+                // rather than aborting the entire connection to keep behavior deterministic and consistent with other servers.
+                // https://github.com/dotnet/aspnetcore/issues/63726
+                throw new Http2StreamErrorException(_incomingFrame.StreamId, CoreStrings.Http2StreamAborted, Http2ErrorCode.STREAM_CLOSED);
             }
 
             if (!stream.TryUpdateOutputWindow(_incomingFrame.WindowUpdateSizeIncrement))

@@ -93,7 +93,16 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.PersistentStateShouldNotHavePropertyInitializer_Description)));
 
-    public static readonly DiagnosticDescriptor ComponentShouldNotUseRefAndRenderModeOnSameElement = new(
+    public static readonly DiagnosticDescriptor UseInvokeVoidAsyncForObjectReturn = new(
+        "BL0010",
+        CreateLocalizableResourceString(nameof(Resources.UseInvokeVoidAsyncForObjectReturn_Title)),
+        CreateLocalizableResourceString(nameof(Resources.UseInvokeVoidAsyncForObjectReturn_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.UseInvokeVoidAsyncForObjectReturn_Description)));
+
+      public static readonly DiagnosticDescriptor ComponentShouldNotUseRefAndRenderModeOnSameElement = new(
         "BL0012",
         CreateLocalizableResourceString(nameof(Resources.ComponentShouldNotUseRefAndRenderModeOnSameElement_Title)),
         CreateLocalizableResourceString(nameof(Resources.ComponentShouldNotUseRefAndRenderModeOnSameElement_Format)),

@@ -89,6 +89,7 @@ public static class IdentityServiceCollectionExtensions
 
         // Hosting doesn't add IHttpContextAccessor by default
         services.AddHttpContextAccessor();
+        services.AddMetrics();
         // Identity services
         services.TryAddScoped<IUserValidator<TUser>, UserValidator<TUser>>();
         services.TryAddScoped<IPasswordValidator<TUser>, PasswordValidator<TUser>>();

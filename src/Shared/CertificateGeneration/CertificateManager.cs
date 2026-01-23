@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.Linq;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -19,8 +20,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation;
 
 internal abstract class CertificateManager
 {
-    internal const int CurrentAspNetCoreCertificateVersion = 4;
-    internal const int CurrentMinimumAspNetCoreCertificateVersion = 4;
+    internal const int CurrentAspNetCoreCertificateVersion = 6;
+    internal const int CurrentMinimumAspNetCoreCertificateVersion = 6;
 
     // OID used for HTTPS certs
     internal const string AspNetHttpsOid = "1.3.6.1.4.1.311.84.1.1";
@@ -28,7 +29,10 @@ internal abstract class CertificateManager
 
     private const string ServerAuthenticationEnhancedKeyUsageOid = "1.3.6.1.5.5.7.3.1";
     private const string ServerAuthenticationEnhancedKeyUsageOidFriendlyName = "Server Authentication";
-    
+
+    internal const string SubjectKeyIdentifierOid = "2.5.29.14";
+    internal const string AuthorityKeyIdentifierOid = "2.5.29.35";
+
     // dns names of the host from a container
     private const string LocalhostDockerHttpsDnsName = "host.docker.internal";
     private const string ContainersDockerHttpsDnsName = "host.containers.internal";
@@ -694,6 +698,8 @@ internal abstract class CertificateManager
         sanBuilder.AddDnsName(InternalWildcardHttpsDnsName);
         sanBuilder.AddDnsName(LocalhostDockerHttpsDnsName);
         sanBuilder.AddDnsName(ContainersDockerHttpsDnsName);
+        sanBuilder.AddIpAddress(IPAddress.Loopback);
+        sanBuilder.AddIpAddress(IPAddress.IPv6Loopback);
 
         var keyUsage = new X509KeyUsageExtension(X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature, critical: true);
         var enhancedKeyUsage = new X509EnhancedKeyUsageExtension(
@@ -828,6 +834,20 @@ internal abstract class CertificateManager
             request.CertificateExtensions.Add(extension);
         }
 
+        // Only add the SKI and AKI extensions if neither is already present.
+        // OpenSSL needs these to correctly identify the trust chain for a private key. If multiple certificates don't have a subject key identifier and share the same subject,
+        // the wrong certificate can be chosen for the trust chain, leading to validation errors.
+        if (!request.CertificateExtensions.Any(ext => ext.Oid?.Value is SubjectKeyIdentifierOid or AuthorityKeyIdentifierOid))
+        {
+            // RFC 5280 section 4.2.1.2
+            var subjectKeyIdentifier = new X509SubjectKeyIdentifierExtension(request.PublicKey, X509SubjectKeyIdentifierHashAlgorithm.Sha256, critical: false);
+            // RFC 5280 section 4.2.1.1
+            var authorityKeyIdentifier = X509AuthorityKeyIdentifierExtension.CreateFromSubjectKeyIdentifier(subjectKeyIdentifier);
+
+            request.CertificateExtensions.Add(subjectKeyIdentifier);
+            request.CertificateExtensions.Add(authorityKeyIdentifier);
+        }
+
         var result = request.CreateSelfSigned(notBefore, notAfter);
         return result;
 
@@ -946,9 +966,6 @@ internal abstract class CertificateManager
         return foundCertificate is not null;
     }
 
-    /// <remarks>
-    /// Note that dotnet-dev-certs won't display any of these, regardless of level, unless --verbose is passed.
-    /// </remarks>
     [EventSource(Name = "Dotnet-dev-certs")]
     public sealed class CertificateManagerEventSource : EventSource
     {
@@ -1283,7 +1300,7 @@ internal abstract class CertificateManager
         internal void UnixNotOverwritingCertificate(string certPath) => WriteEvent(109, certPath);
 
         [Event(110, Level = EventLevel.LogAlways, Message = "For OpenSSL trust to take effect, '{0}' must be listed in the {2} environment variable. " +
-            "For example, `export SSL_CERT_DIR={0}:{1}`. " +
+            "For example, `export {2}=\"{0}:{1}\"`. " +
             "See https://aka.ms/dev-certs-trust for more information.")]
         internal void UnixSuggestSettingEnvironmentVariable(string certDir, string openSslDir, string envVarName) => WriteEvent(110, certDir, openSslDir, envVarName);
 
@@ -1293,6 +1310,23 @@ internal abstract class CertificateManager
 
         [Event(112, Level = EventLevel.Warning, Message = "Directory '{0}' may be readable by other users.")]
         internal void DirectoryPermissionsNotSecure(string directoryPath) => WriteEvent(112, directoryPath);
+
+        [Event(113, Level = EventLevel.Verbose, Message = "The certificate directory '{0}' is already included in the {1} environment variable.")]
+        internal void UnixOpenSslCertificateDirectoryAlreadyConfigured(string certDir, string envVarName) => WriteEvent(113, certDir, envVarName);
+
+        [Event(114, Level = EventLevel.LogAlways, Message = "For OpenSSL trust to take effect, '{0}' must be listed in the {1} environment variable. " +
+            "For example, `export {1}=\"{0}:${1}\"`. " +
+            "See https://aka.ms/dev-certs-trust for more information.")]
+        internal void UnixSuggestAppendingToEnvironmentVariable(string certDir, string envVarName) => WriteEvent(114, certDir, envVarName);
+
+        [Event(115, Level = EventLevel.Verbose, Message = "Successfully trusted the certificate in the Windows certificate store via WSL.")]
+        internal void WslWindowsTrustSucceeded() => WriteEvent(115);
+
+        [Event(116, Level = EventLevel.Warning, Message = "Failed to trust the certificate in the Windows certificate store via WSL.")]
+        internal void WslWindowsTrustFailed() => WriteEvent(116);
+
+        [Event(117, Level = EventLevel.Warning, Message = "Failed to trust the certificate in the Windows certificate store via WSL: {0}.")]
+        internal void WslWindowsTrustException(string exceptionMessage) => WriteEvent(117, exceptionMessage);
     }
 
     internal sealed class UserCancelledTrustException : Exception

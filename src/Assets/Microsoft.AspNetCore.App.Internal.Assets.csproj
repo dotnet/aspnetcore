@@ -38,7 +38,7 @@
     <None Include="@(_BlazorJSFile)" Pack="true" PackagePath="_framework\%(FileName)%(Extension)" />
   </ItemGroup>
 
-  <Target Name="_CheckBlazorJSPath" AfterTargets="ResolveProjectReferences">
+  <Target Name="_CheckBlazorJSPath" AfterTargets="ResolveProjectReferences" Condition="'$(DotNetBuildPass)' != '2'">
     <ItemGroup>
       <_MissingBlazorJSFile Include="@(_BlazorJSFile)" Condition="!EXISTS('%(_BlazorJSFile.FullPath)')" />
     </ItemGroup>
