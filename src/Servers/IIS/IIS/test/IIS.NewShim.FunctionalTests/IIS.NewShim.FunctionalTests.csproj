@@ -7,6 +7,7 @@
     <SkipTests Condition=" '$(SkipIISNewShimTests)' == 'true' ">true</SkipTests>
     <!-- Skip these in all internal builds to avoid restoring vulnerable packages for CG -->
     <SkipTests Condition="'$(SYSTEM_TEAMPROJECT)' == 'internal' ">true</SkipTests>
+    <ExcludeFromBuild Condition="'$(SYSTEM_TEAMPROJECT)' == 'internal' ">true</ExcludeFromBuild>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
