@@ -33,8 +33,8 @@
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Identity.Stores" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Server.HttpSys" />
-    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Server.IIS" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Server.IISIntegration" />
+    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Server.IIS" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Server.Kestrel" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
@@ -77,8 +77,8 @@
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Mvc.Formatters.Json" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Mvc.Localization" />
-    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Mvc.Razor" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Mvc.RazorPages" />
+    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Mvc.Razor" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Mvc" />
@@ -163,4 +163,3 @@
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.OpenApi" />
   </ItemGroup>
 </Project>
-
