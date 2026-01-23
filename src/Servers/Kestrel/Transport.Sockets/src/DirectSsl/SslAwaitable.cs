@@ -19,7 +19,9 @@ internal sealed class SslAwaitable<T> : IValueTaskSource<T>
 
     public SslAwaitable()
     {
-        // RunContinuationsAsynchronously to avoid stack dives and to match TCS behavior
+        // RunContinuationsAsynchronously to avoid stack dives and deadlocks.
+        // While this adds ThreadPool dispatch overhead, running inline caused crashes
+        // under high concurrency (c=500) and didn't improve performance at c=100.
         _source.RunContinuationsAsynchronously = true;
     }
 

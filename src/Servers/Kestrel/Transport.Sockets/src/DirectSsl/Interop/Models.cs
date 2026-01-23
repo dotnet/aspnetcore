@@ -5,7 +5,9 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Interop;
 
-[StructLayout(LayoutKind.Sequential)]
+// Must use Pack=1 to match the native struct which is __attribute__((packed))
+// Native struct is 12 bytes: 4 bytes events + 8 bytes data (no padding)
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 internal struct EpollEvent
 {
     public uint Events;

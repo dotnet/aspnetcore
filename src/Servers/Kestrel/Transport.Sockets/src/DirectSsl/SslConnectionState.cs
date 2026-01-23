@@ -42,6 +42,14 @@ internal sealed class SslConnectionState : IDisposable
         Fd = fd;
         Ssl = ssl;
     }
+    
+    /// <summary>
+    /// Mark handshake as complete (used when handshake was done externally by pump).
+    /// </summary>
+    internal void SetHandshakeComplete()
+    {
+        IsHandshaked = true;
+    }
 
     // ═══════════════════════════════════════════════════════════════
     // HANDSHAKE

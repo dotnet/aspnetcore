@@ -311,6 +311,24 @@ internal static partial class NativeSsl
     private const string LIBCRYPTO = "libcrypto.so.3";
     [LibraryImport(LIBCRYPTO)] public static partial void ERR_clear_error();
     [LibraryImport(LIBCRYPTO)] public static partial ulong ERR_peek_error();
+    [LibraryImport(LIBCRYPTO)] public static partial ulong ERR_get_error();
+    [LibraryImport(LIBCRYPTO)] public static unsafe partial void ERR_error_string_n(ulong e, byte* buf, nuint len);
+    
+    /// <summary>
+    /// Get the latest OpenSSL error as a string.
+    /// </summary>
+    public static unsafe string GetErrorString()
+    {
+        ulong err = ERR_get_error();
+        if (err == 0)
+        {
+            return "No error";
+        }
+        
+        byte* buf = stackalloc byte[256];
+        ERR_error_string_n(err, buf, 256);
+        return Marshal.PtrToStringUTF8((IntPtr)buf) ?? "Unknown error";
+    }
 
     // SSL error codes
     public const int SSL_ERROR_NONE = 0;
@@ -344,11 +362,53 @@ internal static partial class NativeSsl
     public const uint EPOLLHUP = 0x010;
     public const uint EPOLLET = 0x80000000;
     public const uint EPOLLRDHUP = 0x2000;
+    public const uint EPOLLEXCLUSIVE = 0x10000000;  // Prevents thundering herd - only one worker wakes per event
+
+    // Socket accept
+    public const int SOCK_NONBLOCK = 0x800;  // O_NONBLOCK for socket
+    [LibraryImport(LIBC, SetLastError = true)]
+    public static unsafe partial int accept4(int sockfd, void* addr, void* addrlen, int flags);
+    
+    /// <summary>
+    /// Accept a connection from the listen socket using accept4 with SOCK_NONBLOCK.
+    /// Returns the client fd on success, -1 if EAGAIN (no pending connections), or -2 on error.
+    /// </summary>
+    public static unsafe int AcceptNonBlocking(int listenFd)
+    {
+        int clientFd = accept4(listenFd, null, null, SOCK_NONBLOCK);
+        if (clientFd < 0)
+        {
+            int errno = Marshal.GetLastWin32Error();
+            // EAGAIN (11) or EWOULDBLOCK (same on Linux) - no pending connections
+            if (errno == 11)
+            {
+                return -1;
+            }
+            // Other error
+            return -2;
+        }
+        return clientFd;
+    }
 
     // fcntl
     public const int F_GETFL = 3;
     public const int F_SETFL = 4;
     public const int O_NONBLOCK = 2048;
+    
+    // Socket options
+    public const int SOL_TCP = 6;
+    public const int TCP_NODELAY = 1;
+    [LibraryImport(LIBC, SetLastError = true)]
+    public static unsafe partial int setsockopt(int sockfd, int level, int optname, void* optval, int optlen);
+    
+    /// <summary>
+    /// Set TCP_NODELAY on a socket to disable Nagle's algorithm.
+    /// </summary>
+    public static unsafe void SetTcpNoDelay(int fd)
+    {
+        int optval = 1;
+        setsockopt(fd, SOL_TCP, TCP_NODELAY, &optval, sizeof(int));
+    }
 
     public static void SetNonBlocking(int fd)
     {

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
@@ -11,17 +10,21 @@ using System.Threading.Channels;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Interop;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Ssl;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Connection;
 
+/// <summary>
+/// DirectSsl connection listener that uses EPOLLEXCLUSIVE for worker-based accept.
+/// Each pump thread accepts connections directly in its epoll loop, eliminating
+/// the accept thread bottleneck and cross-thread handoff overhead.
+/// </summary>
 internal sealed class DirectSslConnectionListener : IConnectionListener
 {
-    private readonly ILogger _logger;
+    private readonly ILogger? _logger;
+    private readonly ILoggerFactory _loggerFactory;
     private readonly DirectSslTransportOptions _options;
 
-    private readonly DirectSslConnectionContextFactory _factory;
     private readonly MemoryPool<byte> _memoryPool;
 
     private readonly SslContext _sslContext;
@@ -31,14 +34,6 @@ internal sealed class DirectSslConnectionListener : IConnectionListener
 
     // Channel for connections that have completed handshake and are ready to be returned
     private readonly Channel<DirectSslConnection> _readyConnections;
-
-    // Track pending handshakes so we can cancel them on dispose
-    private readonly ConcurrentDictionary<int, CancellationTokenSource> _pendingHandshakes = new();
-
-    // Ensure only one accept loop runs
-    private Task? _acceptLoopTask;
-    private readonly object _acceptLoopLock = new();
-    private CancellationTokenSource? _acceptLoopCts;
 
     public EndPoint EndPoint { get; private set; }
 
@@ -51,6 +46,7 @@ internal sealed class DirectSslConnectionListener : IConnectionListener
         MemoryPool<byte> memoryPool)
     {
         _logger = loggerFactory.CreateLogger<DirectSslConnectionListener>();
+        _loggerFactory = loggerFactory;
         _options = options;
         _memoryPool = memoryPool;
 
@@ -58,13 +54,11 @@ internal sealed class DirectSslConnectionListener : IConnectionListener
         _sslContext = sslContext;
         EndPoint = endpoint;
 
-        _factory = new(loggerFactory, _sslContext, memoryPool);
-
         // Unbounded channel - handshakes complete asynchronously and we don't want to block them
         _readyConnections = Channel.CreateUnbounded<DirectSslConnection>(new UnboundedChannelOptions
         {
             SingleReader = false,  // Multiple AcceptAsync callers possible
-            SingleWriter = false,  // Multiple handshakes complete concurrently
+            SingleWriter = false,  // Multiple pump threads write concurrently
         });
     }
 
@@ -72,7 +66,7 @@ internal sealed class DirectSslConnectionListener : IConnectionListener
     {
         if (_listenSocket is not null)
         {
-            throw new InvalidOperationException(SocketsStrings.TransportAlreadyBound);
+            throw new InvalidOperationException("Transport already bound");
         }
 
         Socket listenSocket;
@@ -108,14 +102,33 @@ internal sealed class DirectSslConnectionListener : IConnectionListener
         }
 
         listenSocket.Listen(_options.Backlog);
+        
+        // Set listen socket to non-blocking for EPOLLEXCLUSIVE accept pattern
+        // Without this, accept4() blocks instead of returning EAGAIN
+        if (OperatingSystem.IsLinux())
+        {
+            int fd = (int)listenSocket.Handle;
+            NativeSsl.SetNonBlocking(fd);
+            _logger?.LogDebug("Listen socket set to non-blocking mode");
+        }
+        
         _listenSocket = listenSocket;
+        
+        // Start all pump threads with the listen socket (EPOLLEXCLUSIVE)
+        // Each pump will accept connections directly in its epoll loop
+        int listenFd = (int)listenSocket.Handle;
+        _pumpPool.StartWithListenSocket(
+            listenFd, 
+            _sslContext, 
+            _readyConnections.Writer, 
+            _memoryPool,
+            _options.NoDelay);
+            
+        _logger?.LogInformation("DirectSsl listener started with EPOLLEXCLUSIVE worker accept");
     }
 
     public async ValueTask<ConnectionContext?> AcceptAsync(CancellationToken cancellationToken = default)
     {
-        // Start the accept loop if not already running (first caller wins)
-        EnsureAcceptLoopStarted();
-
         try
         {
             // Wait for a connection that has completed handshake
@@ -132,167 +145,29 @@ internal sealed class DirectSslConnectionListener : IConnectionListener
         }
     }
 
-    private void EnsureAcceptLoopStarted()
-    {
-        if (_acceptLoopTask is not null)
-        {
-            return;
-        }
-
-        lock (_acceptLoopLock)
-        {
-            if (_acceptLoopTask is not null)
-            {
-                return;
-            }
-
-            _acceptLoopCts = new CancellationTokenSource();
-            _acceptLoopTask = AcceptLoopAsync(_acceptLoopCts.Token);
-        }
-    }
-
-    private async Task AcceptLoopAsync(CancellationToken cancellationToken)
-    {
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            try
-            {
-                Debug.Assert(_listenSocket is not null, "Bind must be called first.");
-
-                var acceptSocket = await _listenSocket.AcceptAsync(cancellationToken);
-
-                // Only apply no delay to Tcp based endpoints
-                if (acceptSocket.LocalEndPoint is IPEndPoint)
-                {
-                    acceptSocket.NoDelay = _options.NoDelay;
-                }
-
-                // Fire-and-forget the handshake - don't block the accept loop!
-                _ = HandshakeAndEnqueueAsync(acceptSocket);
-            }
-            catch (ObjectDisposedException)
-            {
-                // A call was made to UnbindAsync/DisposeAsync - close the channel and exit
-                _readyConnections.Writer.TryComplete();
-                return;
-            }
-            catch (SocketException e) when (e.SocketErrorCode == SocketError.OperationAborted)
-            {
-                // A call was made to UnbindAsync/DisposeAsync - close the channel and exit
-                _readyConnections.Writer.TryComplete();
-                return;
-            }
-            catch (SocketException)
-            {
-                // The connection got reset while it was in the backlog, so we try again.
-                SocketsLog.ConnectionReset(_logger, connectionId: "(null)");
-            }
-        }
-
-        // Cancellation was requested - complete the channel
-        _readyConnections.Writer.TryComplete();
-    }
-
-    private async Task HandshakeAndEnqueueAsync(Socket acceptSocket)
-    {
-        var fd = (int)acceptSocket.Handle;
-        
-        // Use a separate CTS for the handshake - not linked to the accept loop cancellation.
-        // This allows in-flight handshakes to complete during graceful shutdown.
-        // The handshake CTS is tracked in _pendingHandshakes and cancelled explicitly in Dispose.
-        var cts = new CancellationTokenSource();
-        _pendingHandshakes[fd] = cts;
-
-        try
-        {
-            var connection = await _factory.CreateAsync(_pumpPool, acceptSocket, cts.Token);
-
-            if (connection is not null)
-            {
-                // Handshake succeeded - enqueue for AcceptAsync to return
-                // Use CancellationToken.None since channel completion signals shutdown
-                if (_readyConnections.Writer.TryWrite(connection))
-                {
-                    return;
-                }
-                
-                // Channel is completed (shutting down) - dispose the connection
-                await connection.DisposeAsync();
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            // Handshake was cancelled (shutdown or timeout)
-            acceptSocket.Dispose();
-        }
-        catch (SslException ex)
-        {
-            SocketsLog.SslHandshakeFailed(_logger, connectionId: "(null)", ex);
-            acceptSocket.Dispose();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogDebug(ex, "Handshake failed for fd={Fd}", fd);
-            acceptSocket.Dispose();
-        }
-        finally
-        {
-            _pendingHandshakes.TryRemove(fd, out _);
-            cts.Dispose();
-        }
-    }
-
     public async ValueTask DisposeAsync()
     {
-        _acceptLoopCts?.Cancel();
         _listenSocket?.Dispose();
         _readyConnections.Writer.TryComplete();
 
-        // Cancel all pending handshakes
-        foreach (var cts in _pendingHandshakes.Values)
-        {
-            cts.Cancel();
-        }
-
-        // Wait for the accept loop to finish before disposing the CTS
-        if (_acceptLoopTask is not null)
+        // Drain any remaining connections from the channel
+        while (_readyConnections.Reader.TryRead(out var connection))
         {
             try
             {
-                await _acceptLoopTask;
+                await connection.DisposeAsync();
             }
             catch
             {
-                // Ignore exceptions - we're disposing
+                // Ignore errors during cleanup
             }
         }
-
-        _acceptLoopCts?.Dispose();
     }
 
-    public async ValueTask UnbindAsync(CancellationToken cancellationToken = default)
+    public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
     {
-        _acceptLoopCts?.Cancel();
         _listenSocket?.Dispose();
         _readyConnections.Writer.TryComplete();
-
-        // Cancel all pending handshakes
-        foreach (var cts in _pendingHandshakes.Values)
-        {
-            cts.Cancel();
-        }
-
-        // Wait for the accept loop to finish
-        if (_acceptLoopTask is not null)
-        {
-            try
-            {
-                await _acceptLoopTask;
-            }
-            catch
-            {
-                // Ignore exceptions - we're unbinding
-            }
-        }
+        return ValueTask.CompletedTask;
     }
 }
