@@ -25,7 +25,6 @@ public static class HttpClientSlim
     public static async Task<string> GetStringAsync(string requestUri, bool validateCertificate = true)
         => await GetStringAsync(new Uri(requestUri), validateCertificate).ConfigureAwait(false);
 
-
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static async Task<string> GetStringAsync(Uri requestUri, bool validateCertificate = true)
     {
