@@ -27,6 +27,9 @@
     <Compile Include="$(KestrelSharedSourceRoot)test\StreamExtensions.cs" Link="shared\StreamExtensions.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\*.cs" LinkBase="shared\TransportTestHelpers" />
     <Content Include="$(SharedSourceRoot)TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+    <!-- DirectSsl PEM certificates from shared test certificates -->
+    <Content Include="$(SharedSourceRoot)TestCertificates\directssl-test.crt" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(SharedSourceRoot)TestCertificates\directssl-test.key" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
