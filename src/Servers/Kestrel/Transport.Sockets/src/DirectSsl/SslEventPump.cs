@@ -6,6 +6,7 @@
 
 using System.Buffers;
 using System.Collections.Concurrent;
+using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading.Channels;
@@ -47,6 +48,9 @@ internal sealed class SslEventPump : IDisposable
     private ILogger<SslConnectionState>? _sslConnectionStateLogger;
     private ILogger<DirectSslConnection>? _directSslConnectionLogger;
     
+    // Cached listen endpoint to avoid getsockname syscall per connection
+    private EndPoint? _listenEndPoint;
+    
 #if DIRECTSSL_DEBUG_COUNTERS
     // Instance counters for this pump
     private long _totalRegistered;
@@ -83,13 +87,13 @@ internal sealed class SslEventPump : IDisposable
     /// <summary>
     /// Lightweight struct to track SSL connections during handshake.
     /// Uses less memory than SslConnectionState since we don't need full read/write machinery.
-    /// NOTE: We don't create the Socket wrapper until handshake completes to avoid fd ownership issues.
+    /// NOTE: We don't create the Socket wrapper - use fd directly to avoid syscall overhead.
     /// </summary>
     private struct HandshakingConnection
     {
         public int Fd;
         public IntPtr Ssl;
-        // Socket is created AFTER handshake completes, not during
+        public System.Net.IPEndPoint? RemoteEndPoint;  // Captured from accept4 to avoid getpeername syscall
     }
 
     public SslEventPump(ILogger? sslPumpLogger, int id)
@@ -132,6 +136,13 @@ internal sealed class SslEventPump : IDisposable
         // Cache loggers for connection creation
         _sslConnectionStateLogger = loggerFactory.CreateLogger<SslConnectionState>();
         _directSslConnectionLogger = loggerFactory.CreateLogger<DirectSslConnection>();
+        
+        // Cache listen endpoint once to avoid getsockname syscall per connection
+        // We need a temporary Socket wrapper to get the endpoint (this is a one-time cost)
+        using (var tempSocket = new Socket(new SafeSocketHandle((IntPtr)listenFd, ownsHandle: false)))
+        {
+            _listenEndPoint = tempSocket.LocalEndPoint;
+        }
         
         // Add listen socket with EPOLLEXCLUSIVE - only one worker wakes per connection
         var ev = new EpollEvent
@@ -351,12 +362,14 @@ internal sealed class SslEventPump : IDisposable
     /// <summary>
     /// Accept new connections from the listen socket (nginx pattern).
     /// Loops until EAGAIN (no more pending connections).
+    /// Captures peer address from accept4 to avoid getpeername syscall later.
     /// </summary>
     private void AcceptConnections()
     {
         while (true)
         {
-            int clientFd = NativeSsl.AcceptNonBlocking(_listenFd);
+            // Use accept4 with address capture to avoid separate getpeername syscall
+            var (clientFd, remoteEndPoint) = NativeSsl.AcceptNonBlockingWithPeerAddress(_listenFd);
             
             if (clientFd == -1)
             {
@@ -414,11 +427,12 @@ internal sealed class SslEventPump : IDisposable
                 continue;
             }
             
-            // Track handshaking connection (Socket wrapper created AFTER handshake completes)
+            // Track handshaking connection with captured remote endpoint
             _handshaking[clientFd] = new HandshakingConnection
             {
                 Fd = clientFd,
-                Ssl = ssl
+                Ssl = ssl,
+                RemoteEndPoint = remoteEndPoint
             };
             
             // Try handshake immediately (might complete for resumed sessions)
@@ -444,21 +458,6 @@ internal sealed class SslEventPump : IDisposable
 #endif
             _handshaking.Remove(fd);
             
-            // Create Socket wrapper now that handshake is complete
-            // The fd is valid and we need the Socket for DirectSslConnection
-            Socket? socket = null;
-            try
-            {
-                socket = new Socket(new SafeSocketHandle((IntPtr)fd, ownsHandle: false));
-            }
-            catch (Exception ex)
-            {
-                _logger?.LogError(ex, "Failed to create Socket for fd={Fd}", fd);
-                NativeSsl.SSL_free(conn.Ssl);
-                NativeSsl.close(fd);
-                return;
-            }
-            
             // Create SslConnectionState for the established connection
             var connectionState = new SslConnectionState(fd, conn.Ssl, _sslConnectionStateLogger);
             connectionState.SetHandshakeComplete();
@@ -475,15 +474,16 @@ internal sealed class SslEventPump : IDisposable
             };
             NativeSsl.epoll_ctl(_epollFd, NativeSsl.EPOLL_CTL_MOD, fd, ref ev);
             
-            // Create DirectSslConnection and write to channel
-            if (_readyConnections != null && _memoryPool != null && socket != null)
+            // Create DirectSslConnection using fd directly (no Socket wrapper)
+            // This avoids ~5+ syscalls per connection (fstat, getsockopt, fcntl, etc.)
+            if (_readyConnections != null && _memoryPool != null)
             {
                 var directConnection = new DirectSslConnection(
-                    socket,
+                    fd,                           // Use fd directly - no Socket wrapper
                     connectionState,
                     this,
-                    socket.LocalEndPoint,
-                    socket.RemoteEndPoint,
+                    _listenEndPoint,              // Cached - avoids getsockname syscall
+                    conn.RemoteEndPoint,          // Captured from accept4 - avoids getpeername syscall
                     _memoryPool,
                     _directSslConnectionLogger!);
                     

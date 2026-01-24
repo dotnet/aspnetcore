@@ -7,7 +7,6 @@
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Net;
-using System.Net.Sockets;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
@@ -24,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Connec
 /// </summary>
 internal sealed class DirectSslConnection : TransportConnection
 {
-    private readonly Socket _socket;
+    private readonly int _fd;  // Raw fd - no Socket wrapper to avoid syscall overhead
     private readonly SslConnectionState _connectionState;
     private readonly SslEventPump _pump;
     private readonly ILogger _logger;
@@ -37,7 +36,7 @@ internal sealed class DirectSslConnection : TransportConnection
     private int _disposed; // 0 = not disposed, 1 = disposed (for thread-safe CAS)
 
     public DirectSslConnection(
-        Socket socket,
+        int fd,
         SslConnectionState connectionState,
         SslEventPump pump,
         EndPoint? localEndPoint,
@@ -45,7 +44,7 @@ internal sealed class DirectSslConnection : TransportConnection
         MemoryPool<byte> memoryPool,
         ILogger logger)
     {
-        _socket = socket;
+        _fd = fd;
         _connectionState = connectionState;
         _pump = pump;
         _memoryPool = memoryPool;
@@ -314,17 +313,12 @@ internal sealed class DirectSslConnection : TransportConnection
             _logger.LogDebug(ex, "SSL shutdown failed for fd={Fd}", _connectionState.Fd);
         }
         
-        try
-        {
-            // Shutdown both directions (matching Kestrel's SocketConnection.Shutdown)
-            _socket.Shutdown(SocketShutdown.Both);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogDebug(ex, "Socket shutdown failed for fd={Fd}", _connectionState.Fd);
-        }
+        // Shutdown both directions using P/Invoke (avoids Socket wrapper overhead)
+        // Ignore return value - socket may already be closed by peer
+        NativeSsl.shutdown(_fd, NativeSsl.SHUT_RDWR);
         
-        _socket.Dispose();
+        // Close the fd using P/Invoke
+        NativeSsl.close(_fd);
 
         // 7. Signal connection closed
         _connectionClosedTokenSource.Cancel();

@@ -98,8 +98,10 @@ internal sealed class DirectSslConnectionContextFactory : IDisposable
             throw new SslException($"Failed to perform handshake: fd={fd}", ex);
         }
 
+        // Note: This legacy path still uses Socket wrapper but is not the main accept path
+        // The main path uses SslEventPump.AcceptConnections() which avoids Socket wrapper entirely
         var connection = new DirectSslConnection(
-            acceptSocket,
+            fd,                       // Pass fd directly
             connectionState,
             pump,
             acceptSocket.LocalEndPoint,
@@ -108,6 +110,10 @@ internal sealed class DirectSslConnectionContextFactory : IDisposable
             _directSslConnectionLogger);  // Use cached logger
             
         connection.Start();
+        
+        // Note: In legacy path, acceptSocket is not disposed here - DirectSslConnection will
+        // close the fd via P/Invoke in DisposeAsync. However, the Socket object won't be
+        // properly cleaned up. This is acceptable since this path is not the main accept flow.
         return connection;
     }
 

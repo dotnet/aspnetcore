@@ -369,6 +369,96 @@ internal static partial class NativeSsl
     [LibraryImport(LIBC, SetLastError = true)]
     public static unsafe partial int accept4(int sockfd, void* addr, void* addrlen, int flags);
     
+    // sockaddr structures for accept4 with address capture
+    public const int AF_INET = 2;
+    public const int AF_INET6 = 10;
+    
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SockAddrIn
+    {
+        public ushort sin_family;
+        public ushort sin_port;      // Network byte order (big-endian)
+        public uint sin_addr;        // Network byte order (big-endian)
+        public ulong sin_zero;       // Padding
+    }
+    
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe struct SockAddrIn6
+    {
+        public ushort sin6_family;
+        public ushort sin6_port;     // Network byte order (big-endian)
+        public uint sin6_flowinfo;
+        public fixed byte sin6_addr[16];
+        public uint sin6_scope_id;
+    }
+    
+    // Union-like storage for sockaddr (large enough for IPv6)
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe struct SockAddrStorage
+    {
+        public ushort ss_family;
+        public fixed byte data[126];  // Large enough for any sockaddr
+    }
+    
+    /// <summary>
+    /// Accept a connection from the listen socket using accept4 with SOCK_NONBLOCK.
+    /// Also captures the peer address to avoid a separate getpeername syscall.
+    /// Returns the client fd on success, -1 if EAGAIN (no pending connections), or -2 on error.
+    /// </summary>
+    public static unsafe (int fd, System.Net.IPEndPoint? remoteEndPoint) AcceptNonBlockingWithPeerAddress(int listenFd)
+    {
+        SockAddrStorage addr = default;
+        int addrLen = sizeof(SockAddrStorage);
+        
+        int clientFd = accept4(listenFd, &addr, &addrLen, SOCK_NONBLOCK);
+        if (clientFd < 0)
+        {
+            int errno = Marshal.GetLastWin32Error();
+            // EAGAIN (11) or EWOULDBLOCK (same on Linux) - no pending connections
+            if (errno == 11)
+            {
+                return (-1, null);
+            }
+            // Other error
+            return (-2, null);
+        }
+        
+        // Parse the sockaddr to IPEndPoint
+        System.Net.IPEndPoint? remoteEndPoint = null;
+        try
+        {
+            if (addr.ss_family == AF_INET)
+            {
+                // IPv4
+                var addr4 = *(SockAddrIn*)&addr;
+                // Convert from network byte order to host byte order
+                ushort port = (ushort)System.Net.IPAddress.NetworkToHostOrder((short)addr4.sin_port);
+                var ipBytes = BitConverter.GetBytes(addr4.sin_addr);
+                var ipAddress = new System.Net.IPAddress(ipBytes);
+                remoteEndPoint = new System.Net.IPEndPoint(ipAddress, port);
+            }
+            else if (addr.ss_family == AF_INET6)
+            {
+                // IPv6
+                var addr6 = *(SockAddrIn6*)&addr;
+                ushort port = (ushort)System.Net.IPAddress.NetworkToHostOrder((short)addr6.sin6_port);
+                var ipBytes = new byte[16];
+                for (int i = 0; i < 16; i++)
+                {
+                    ipBytes[i] = addr6.sin6_addr[i];
+                }
+                var ipAddress = new System.Net.IPAddress(ipBytes, addr6.sin6_scope_id);
+                remoteEndPoint = new System.Net.IPEndPoint(ipAddress, port);
+            }
+        }
+        catch
+        {
+            // If we can't parse the address, just return null - connection still works
+        }
+        
+        return (clientFd, remoteEndPoint);
+    }
+    
     /// <summary>
     /// Accept a connection from the listen socket using accept4 with SOCK_NONBLOCK.
     /// Returns the client fd on success, -1 if EAGAIN (no pending connections), or -2 on error.
@@ -400,6 +490,14 @@ internal static partial class NativeSsl
     public const int TCP_NODELAY = 1;
     [LibraryImport(LIBC, SetLastError = true)]
     public static unsafe partial int setsockopt(int sockfd, int level, int optname, void* optval, int optlen);
+    
+    // Socket shutdown constants
+    public const int SHUT_RD = 0;
+    public const int SHUT_WR = 1;
+    public const int SHUT_RDWR = 2;
+    
+    [LibraryImport(LIBC, SetLastError = true)]
+    public static partial int shutdown(int sockfd, int how);
     
     /// <summary>
     /// Set TCP_NODELAY on a socket to disable Nagle's algorithm.
