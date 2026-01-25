@@ -53,7 +53,10 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         await _application.Output.WriteAsync(extendedAsciiEncoding.GetBytes("\r\n\r\n"));
         var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-        var exception = Assert.Throws<InvalidOperationException>(() => TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined));
+#pragma warning disable CS0618 // Type or member is obsolete
+        var exception = Assert.Throws<BadHttpRequestException>(() => TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined));
+#pragma warning restore CS0618 // Type or member is obsolete
+        Assert.Equal(RequestRejectionReason.MalformedRequestInvalidHeaders, exception.Reason);
     }
 
     [Fact]
