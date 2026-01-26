@@ -1,12 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+
+#nullable enable
 
 namespace Microsoft.AspNetCore.Components.Analyzers;
 
@@ -20,21 +23,52 @@ public sealed class ComponentRefAndRenderModeAnalyzer : DiagnosticAnalyzer
     {
         context.EnableConcurrentExecution();
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
-        context.RegisterSyntaxNodeAction(AnalyzeMethodDeclaration, SyntaxKind.MethodDeclaration);
+        context.RegisterCompilationStartAction(context =>
+        {
+            if (!ComponentSymbols.TryCreate(context.Compilation, out var symbols))
+            {
+                // Types we need are not defined.
+                return;
+            }
+
+            context.RegisterSymbolStartAction(context =>
+            {
+                var type = (INamedTypeSymbol)context.Symbol;
+
+                // Only analyze types that are components
+                if (!ComponentFacts.IsComponent(symbols, context.Compilation, type))
+                {
+                    return;
+                }
+
+                context.RegisterSyntaxNodeAction(context =>
+                {
+                    var methodDeclaration = (MethodDeclarationSyntax)context.Node;
+
+                    // For ComponentBase types, we specifically look for BuildRenderTree method
+                    if (symbols.ComponentBaseType != null && 
+                        ComponentFacts.IsComponentBase(symbols, type) &&
+                        methodDeclaration.Identifier.ValueText != "BuildRenderTree")
+                    {
+                        return;
+                    }
+
+                    AnalyzeMethod(context, methodDeclaration);
+                }, SyntaxKind.MethodDeclaration);
+            }, SymbolKind.NamedType);
+        });
     }
 
-    private static void AnalyzeMethodDeclaration(SyntaxNodeAnalysisContext context)
+    private static void AnalyzeMethod(SyntaxNodeAnalysisContext context, MethodDeclarationSyntax methodDeclaration)
     {
-        var methodDeclaration = (MethodDeclarationSyntax)context.Node;
+        // Find all invocation expressions in the method
+        var invocations = methodDeclaration.DescendantNodes().OfType<InvocationExpressionSyntax>().ToList();
 
-        // Only analyze methods that appear to be Blazor component BuildRenderTree methods
-        if (!IsComponentBuildRenderTreeMethod(methodDeclaration))
+        // Quick check: if there are no invocations, nothing to analyze
+        if (invocations.Count == 0)
         {
             return;
         }
-
-        // Find all invocation expressions in the method
-        var invocations = methodDeclaration.DescendantNodes().OfType<InvocationExpressionSyntax>().ToList();
 
         // Group invocations by the component they're operating on by looking at OpenComponent/CloseComponent pairs
         var componentBlocks = AnalyzeComponentBlocks(invocations, context.SemanticModel);
@@ -55,66 +89,43 @@ public sealed class ComponentRefAndRenderModeAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    private static bool IsComponentBuildRenderTreeMethod(MethodDeclarationSyntax method)
-    {
-        // Check if this looks like a BuildRenderTree method or similar component method
-        // These methods typically contain calls to RenderTreeBuilder methods
-        return method.DescendantNodes()
-            .OfType<InvocationExpressionSyntax>()
-            .Any(invocation => 
-            {
-                if (invocation.Expression is MemberAccessExpressionSyntax memberAccess)
-                {
-                    var memberName = memberAccess.Name.Identifier.ValueText;
-                    return memberName is "OpenComponent" or "AddComponentParameter" or "AddComponentRenderMode" or "AddComponentReferenceCapture";
-                }
-                return false;
-            });
-    }
-
-    private static System.Collections.Generic.List<(InvocationExpressionSyntax OpenComponent, System.Collections.Generic.List<InvocationExpressionSyntax> ComponentCalls)> AnalyzeComponentBlocks(
-        System.Collections.Generic.List<InvocationExpressionSyntax> invocations, 
+    private static List<(InvocationExpressionSyntax OpenComponent, List<InvocationExpressionSyntax> ComponentCalls)> AnalyzeComponentBlocks(
+        List<InvocationExpressionSyntax> invocations, 
         SemanticModel semanticModel)
     {
-        var componentBlocks = new System.Collections.Generic.List<(InvocationExpressionSyntax, System.Collections.Generic.List<InvocationExpressionSyntax>)>();
-        InvocationExpressionSyntax? currentOpenComponent = null;
-        var currentComponentCalls = new System.Collections.Generic.List<InvocationExpressionSyntax>();
+        var componentBlocks = new List<(InvocationExpressionSyntax, List<InvocationExpressionSyntax>)>();
+        var componentStack = new Stack<(InvocationExpressionSyntax OpenComponentInvocation, List<InvocationExpressionSyntax> RelatedInvocations)>();
 
         foreach (var invocation in invocations)
         {
             if (IsOpenComponent(invocation, semanticModel))
             {
-                // If we have a previous component block, save it
-                if (currentOpenComponent is not null)
-                {
-                    componentBlocks.Add((currentOpenComponent, currentComponentCalls));
-                }
-
-                // Start a new component block
-                currentOpenComponent = invocation;
-                currentComponentCalls = new System.Collections.Generic.List<InvocationExpressionSyntax>();
+                var newComponentBlock = (invocation, new List<InvocationExpressionSyntax>());
+                componentStack.Push(newComponentBlock);
             }
             else if (IsCloseComponent(invocation, semanticModel))
             {
-                // End the current component block
-                if (currentOpenComponent is not null)
+                if (componentStack.Count > 0)
                 {
-                    componentBlocks.Add((currentOpenComponent, currentComponentCalls));
-                    currentOpenComponent = null;
-                    currentComponentCalls = new System.Collections.Generic.List<InvocationExpressionSyntax>();
+                    var completedComponentBlock = componentStack.Pop();
+                    componentBlocks.Add(completedComponentBlock);
                 }
             }
-            else if (currentOpenComponent is not null && IsComponentRelatedCall(invocation, semanticModel))
+            else if (IsComponentRelatedCall(invocation, semanticModel))
             {
-                // Add to the current component block
-                currentComponentCalls.Add(invocation);
+                if (componentStack.Count > 0)
+                {
+                    var currentComponentBlock = componentStack.Peek();
+                    currentComponentBlock.RelatedInvocations.Add(invocation);
+                }
             }
         }
 
         // Handle case where method ends without CloseComponent
-        if (currentOpenComponent is not null)
+        while (componentStack.Count > 0)
         {
-            componentBlocks.Add((currentOpenComponent, currentComponentCalls));
+            var remainingComponentBlock = componentStack.Pop();
+            componentBlocks.Add(remainingComponentBlock);
         }
 
         return componentBlocks;

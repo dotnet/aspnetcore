@@ -19,13 +19,10 @@ public class ComponentRefAndRenderModeAnalyzerTest : AnalyzerTestBase
     [Fact]
     public async Task ComponentWithBothRefAndRenderMode_ReportsDiagnostic()
     {
-        // Arrange
         var source = Read("ComponentWithBothRefAndRenderMode");
 
-        // Act
         var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
 
-        // Assert
         Assert.Collection(
             diagnostics,
             diagnostic =>
@@ -38,39 +35,30 @@ public class ComponentRefAndRenderModeAnalyzerTest : AnalyzerTestBase
     [Fact]
     public async Task ComponentWithOnlyRef_DoesNotReportDiagnostic()
     {
-        // Arrange
         var source = Read("ComponentWithOnlyRef");
 
-        // Act
         var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
 
-        // Assert
         Assert.Empty(diagnostics);
     }
 
     [Fact]
     public async Task ComponentWithOnlyRenderMode_DoesNotReportDiagnostic()
     {
-        // Arrange
         var source = Read("ComponentWithOnlyRenderMode");
 
-        // Act
         var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
 
-        // Assert
         Assert.Empty(diagnostics);
     }
 
     [Fact]
     public async Task MultipleComponentsWithMixedUsage_ReportsCorrectDiagnostics()
     {
-        // Arrange
         var source = Read("MultipleComponentsWithMixedUsage");
 
-        // Act
         var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
 
-        // Assert
         Assert.Collection(
             diagnostics,
             diagnostic =>
@@ -83,13 +71,26 @@ public class ComponentRefAndRenderModeAnalyzerTest : AnalyzerTestBase
     [Fact]
     public async Task NonComponentMethod_DoesNotReportDiagnostic()
     {
-        // Arrange
         var source = Read("NonComponentMethod");
 
-        // Act
         var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
 
-        // Assert
         Assert.Empty(diagnostics);
+    }
+
+    [Fact]
+    public async Task NestedComponentsWithParentUsingBothRefAndRenderMode_ReportsDiagnostic()
+    {
+        var source = Read("NestedComponentsWithParentUsingBothRefAndRenderMode");
+
+        var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+        Assert.Collection(
+            diagnostics,
+            diagnostic =>
+            {
+                Assert.Same(DiagnosticDescriptors.ComponentShouldNotUseRefAndRenderModeOnSameElement, diagnostic.Descriptor);
+                AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM1"], diagnostic.Location);
+            });
     }
 }
