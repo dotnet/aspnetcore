@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.AspNetCore.Components.Analyzers;
 
@@ -177,5 +178,71 @@ internal static class ComponentFacts
         }
 
         return true;
+    }
+
+    public static bool IsOpenComponentInvocation(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
+    {
+        if (invocation.Expression is not MemberAccessExpressionSyntax memberAccess)
+        {
+            return false;
+        }
+
+        if (memberAccess.Name.Identifier.ValueText != "OpenComponent")
+        {
+            return false;
+        }
+
+        var symbolInfo = semanticModel.GetSymbolInfo(memberAccess);
+        if (symbolInfo.Symbol is IMethodSymbol method)
+        {
+            return method.ContainingType?.Name == "RenderTreeBuilder" &&
+                   method.ContainingNamespace?.ToDisplayString() == "Microsoft.AspNetCore.Components.Rendering";
+        }
+
+        return false;
+    }
+
+    public static bool IsCloseComponentInvocation(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
+    {
+        if (invocation.Expression is not MemberAccessExpressionSyntax memberAccess)
+        {
+            return false;
+        }
+
+        if (memberAccess.Name.Identifier.ValueText != "CloseComponent")
+        {
+            return false;
+        }
+
+        var symbolInfo = semanticModel.GetSymbolInfo(memberAccess);
+        if (symbolInfo.Symbol is IMethodSymbol method)
+        {
+            return method.ContainingType?.Name == "RenderTreeBuilder" &&
+                   method.ContainingNamespace?.ToDisplayString() == "Microsoft.AspNetCore.Components.Rendering";
+        }
+
+        return false;
+    }
+
+    public static bool IsRenderTreeBuilderMethodInvocation(InvocationExpressionSyntax invocation, SemanticModel semanticModel, string methodName)
+    {
+        if (invocation.Expression is not MemberAccessExpressionSyntax memberAccess)
+        {
+            return false;
+        }
+
+        if (memberAccess.Name.Identifier.ValueText != methodName)
+        {
+            return false;
+        }
+
+        var symbolInfo = semanticModel.GetSymbolInfo(memberAccess);
+        if (symbolInfo.Symbol is IMethodSymbol method)
+        {
+            return method.ContainingType?.Name == "RenderTreeBuilder" &&
+                   method.ContainingNamespace?.ToDisplayString() == "Microsoft.AspNetCore.Components.Rendering";
+        }
+
+        return false;
     }
 }

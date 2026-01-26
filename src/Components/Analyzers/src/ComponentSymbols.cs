@@ -52,6 +52,9 @@ internal sealed class ComponentSymbols
         var persistentStateAttribute = compilation.GetTypeByMetadataName(ComponentsApi.PersistentStateAttribute.MetadataName);
         var componentBaseType = compilation.GetTypeByMetadataName(ComponentsApi.ComponentBase.MetadataName);
 
+        // Get RenderTreeBuilder type and its methods for the analyzer
+        var renderTreeBuilderType = compilation.GetTypeByMetadataName(ComponentsApi.RenderTreeBuilder.MetadataName);
+
         symbols = new ComponentSymbols(
             parameterAttribute,
             cascadingParameterAttribute,
@@ -59,7 +62,8 @@ internal sealed class ComponentSymbols
             persistentStateAttribute,
             componentBaseType,
             parameterCaptureUnmatchedValuesRuntimeType,
-            icomponentType);
+            icomponentType,
+            renderTreeBuilderType);
         return true;
     }
 
@@ -70,7 +74,8 @@ internal sealed class ComponentSymbols
         INamedTypeSymbol persistentStateAttribute,
         INamedTypeSymbol componentBaseType,
         INamedTypeSymbol parameterCaptureUnmatchedValuesRuntimeType,
-        INamedTypeSymbol icomponentType)
+        INamedTypeSymbol icomponentType,
+        INamedTypeSymbol renderTreeBuilderType)
     {
         ParameterAttribute = parameterAttribute;
         CascadingParameterAttribute = cascadingParameterAttribute;
@@ -79,6 +84,7 @@ internal sealed class ComponentSymbols
         ComponentBaseType = componentBaseType; // Can be null
         ParameterCaptureUnmatchedValuesRuntimeType = parameterCaptureUnmatchedValuesRuntimeType;
         IComponentType = icomponentType;
+        RenderTreeBuilderType = renderTreeBuilderType; // Can be null
     }
 
     public INamedTypeSymbol ParameterAttribute { get; }
@@ -95,4 +101,6 @@ internal sealed class ComponentSymbols
     public INamedTypeSymbol ComponentBaseType { get; } // Can be null if not available
 
     public INamedTypeSymbol IComponentType { get; }
+
+    public INamedTypeSymbol RenderTreeBuilderType { get; } // Can be null if not available
 }

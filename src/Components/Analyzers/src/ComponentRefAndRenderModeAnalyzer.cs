@@ -16,6 +16,18 @@ namespace Microsoft.AspNetCore.Components.Analyzers;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class ComponentRefAndRenderModeAnalyzer : DiagnosticAnalyzer
 {
+    private readonly struct ComponentBlock
+    {
+        public ComponentBlock(InvocationExpressionSyntax openComponent, List<InvocationExpressionSyntax> componentCalls)
+        {
+            OpenComponent = openComponent;
+            ComponentCalls = componentCalls;
+        }
+
+        public InvocationExpressionSyntax OpenComponent { get; }
+        public List<InvocationExpressionSyntax> ComponentCalls { get; }
+    }
+
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
         DiagnosticDescriptors.ComponentShouldNotUseRefAndRenderModeOnSameElement);
 
@@ -73,37 +85,37 @@ public sealed class ComponentRefAndRenderModeAnalyzer : DiagnosticAnalyzer
         // Group invocations by the component they're operating on by looking at OpenComponent/CloseComponent pairs
         var componentBlocks = AnalyzeComponentBlocks(invocations, context.SemanticModel);
 
-        foreach (var (openComponentCall, componentCalls) in componentBlocks)
+        foreach (var componentBlock in componentBlocks)
         {
-            var hasReferenceCapture = componentCalls.Any(call => IsAddComponentReferenceCapture(call, context.SemanticModel));
-            var hasRenderMode = componentCalls.Any(call => IsAddComponentRenderMode(call, context.SemanticModel));
+            var hasReferenceCapture = componentBlock.ComponentCalls.Any(call => IsAddComponentReferenceCapture(call, context.SemanticModel));
+            var hasRenderMode = componentBlock.ComponentCalls.Any(call => IsAddComponentRenderMode(call, context.SemanticModel));
 
             if (hasReferenceCapture && hasRenderMode)
             {
                 var diagnostic = Diagnostic.Create(
                     DiagnosticDescriptors.ComponentShouldNotUseRefAndRenderModeOnSameElement,
-                    openComponentCall.GetLocation());
+                    componentBlock.OpenComponent.GetLocation());
 
                 context.ReportDiagnostic(diagnostic);
             }
         }
     }
 
-    private static List<(InvocationExpressionSyntax OpenComponent, List<InvocationExpressionSyntax> ComponentCalls)> AnalyzeComponentBlocks(
+    private static List<ComponentBlock> AnalyzeComponentBlocks(
         List<InvocationExpressionSyntax> invocations, 
         SemanticModel semanticModel)
     {
-        var componentBlocks = new List<(InvocationExpressionSyntax, List<InvocationExpressionSyntax>)>();
-        var componentStack = new Stack<(InvocationExpressionSyntax OpenComponentInvocation, List<InvocationExpressionSyntax> RelatedInvocations)>();
+        var componentBlocks = new List<ComponentBlock>();
+        var componentStack = new Stack<ComponentBlock>();
 
         foreach (var invocation in invocations)
         {
-            if (IsOpenComponent(invocation, semanticModel))
+            if (ComponentFacts.IsOpenComponentInvocation(invocation, semanticModel))
             {
-                var newComponentBlock = (invocation, new List<InvocationExpressionSyntax>());
+                var newComponentBlock = new ComponentBlock(invocation, new List<InvocationExpressionSyntax>());
                 componentStack.Push(newComponentBlock);
             }
-            else if (IsCloseComponent(invocation, semanticModel))
+            else if (ComponentFacts.IsCloseComponentInvocation(invocation, semanticModel))
             {
                 if (componentStack.Count > 0)
                 {
@@ -116,7 +128,7 @@ public sealed class ComponentRefAndRenderModeAnalyzer : DiagnosticAnalyzer
                 if (componentStack.Count > 0)
                 {
                     var currentComponentBlock = componentStack.Peek();
-                    currentComponentBlock.RelatedInvocations.Add(invocation);
+                    currentComponentBlock.ComponentCalls.Add(invocation);
                 }
             }
         }
@@ -131,47 +143,20 @@ public sealed class ComponentRefAndRenderModeAnalyzer : DiagnosticAnalyzer
         return componentBlocks;
     }
 
-    private static bool IsOpenComponent(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
-    {
-        return IsMethodCall(invocation, semanticModel, "OpenComponent");
-    }
-
-    private static bool IsCloseComponent(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
-    {
-        return IsMethodCall(invocation, semanticModel, "CloseComponent");
-    }
-
     private static bool IsAddComponentReferenceCapture(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
     {
-        return IsMethodCall(invocation, semanticModel, "AddComponentReferenceCapture");
+        return ComponentFacts.IsRenderTreeBuilderMethodInvocation(invocation, semanticModel, "AddComponentReferenceCapture");
     }
 
     private static bool IsAddComponentRenderMode(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
     {
-        return IsMethodCall(invocation, semanticModel, "AddComponentRenderMode");
+        return ComponentFacts.IsRenderTreeBuilderMethodInvocation(invocation, semanticModel, "AddComponentRenderMode");
     }
 
     private static bool IsComponentRelatedCall(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
     {
-        return IsMethodCall(invocation, semanticModel, "AddComponentParameter") ||
-               IsMethodCall(invocation, semanticModel, "AddComponentReferenceCapture") ||
-               IsMethodCall(invocation, semanticModel, "AddComponentRenderMode");
-    }
-
-    private static bool IsMethodCall(InvocationExpressionSyntax invocation, SemanticModel semanticModel, string methodName)
-    {
-        if (invocation.Expression is MemberAccessExpressionSyntax memberAccess &&
-            memberAccess.Name.Identifier.ValueText == methodName)
-        {
-            // Additional validation: check if this is actually called on RenderTreeBuilder
-            var symbolInfo = semanticModel.GetSymbolInfo(memberAccess);
-            if (symbolInfo.Symbol is IMethodSymbol method)
-            {
-                return method.ContainingType?.Name == "RenderTreeBuilder" &&
-                       method.ContainingNamespace?.ToDisplayString() == "Microsoft.AspNetCore.Components.Rendering";
-            }
-        }
-
-        return false;
+        return ComponentFacts.IsRenderTreeBuilderMethodInvocation(invocation, semanticModel, "AddComponentParameter") ||
+               ComponentFacts.IsRenderTreeBuilderMethodInvocation(invocation, semanticModel, "AddComponentReferenceCapture") ||
+               ComponentFacts.IsRenderTreeBuilderMethodInvocation(invocation, semanticModel, "AddComponentRenderMode");
     }
 }
