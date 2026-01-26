@@ -9,9 +9,14 @@
   <Import Project="Build.props" />
 
   <Target Name="GenerateProjectList">
-    <Message Importance="High" Text="Analyzing @(ProjectToBuild->Count()) projects" />
+    <ItemGroup>
+      <ProjectToBuildForProjectList Include="@(ProjectToBuild)" />
+      <ProjectToBuildForProjectList Remove="@(ProjectToBuildForProjectList->WithMetadataValue('SkipProjectList', 'true'))" />
+    </ItemGroup>
 
-    <MSBuild Projects="@(ProjectToBuild);@(ExplicitRequiresDelay)"
+    <Message Importance="High" Text="Analyzing @(ProjectToBuildForProjectList->Count()) projects" />
+
+    <MSBuild Projects="@(ProjectToBuildForProjectList);@(ExplicitRequiresDelay)"
              Targets="GetReferencesProvided"
              BuildInParallel="true"
              SkipNonexistentTargets="true"
