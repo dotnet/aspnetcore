@@ -58,20 +58,45 @@ public partial class RenderTreeBuilderAnalyzer : DiagnosticAnalyzer
 
             }, OperationKind.Invocation);
 
-            // Register syntax node action to detect local functions
+            // Get ComponentBase type for scoping local function analysis
+            var componentBaseType = compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Components.ComponentBase");
+
+            // Register syntax node action to detect local functions within BuildRenderTree methods
             context.RegisterSyntaxNodeAction(context =>
             {
-                var localFunction = (LocalFunctionStatementSyntax)context.Node;
-                
-                // Check if this local function contains any RenderTreeBuilder method calls
-                if (ContainsRenderTreeBuilderCalls(wellKnownTypes, localFunction, context.SemanticModel))
+                var methodDeclaration = (MethodDeclarationSyntax)context.Node;
+
+                // Only analyze BuildRenderTree methods
+                if (methodDeclaration.Identifier.ValueText != "BuildRenderTree")
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup,
-                        localFunction.Identifier.GetLocation(),
-                        localFunction.Identifier.ValueText));
+                    return;
                 }
-            }, SyntaxKind.LocalFunctionStatement);
+
+                // Check if the containing type extends ComponentBase
+                var methodSymbol = context.SemanticModel.GetDeclaredSymbol(methodDeclaration);
+                if (methodSymbol?.ContainingType == null || componentBaseType == null)
+                {
+                    return;
+                }
+
+                if (!InheritsFromComponentBase(methodSymbol.ContainingType, componentBaseType))
+                {
+                    return;
+                }
+
+                // Now check for local functions within this BuildRenderTree method
+                var localFunctions = methodDeclaration.DescendantNodes().OfType<LocalFunctionStatementSyntax>();
+                foreach (var localFunction in localFunctions)
+                {
+                    if (ContainsRenderTreeBuilderCalls(wellKnownTypes, localFunction, context.SemanticModel))
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup,
+                            localFunction.Identifier.GetLocation(),
+                            localFunction.Identifier.ValueText));
+                    }
+                }
+            }, SyntaxKind.MethodDeclaration);
         });
     }
 
@@ -79,6 +104,20 @@ public partial class RenderTreeBuilderAnalyzer : DiagnosticAnalyzer
         => SymbolEqualityComparer.Default.Equals(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Components_Rendering_RenderTreeBuilder), targetMethod.ContainingType)
         && targetMethod.Parameters.Length > SequenceParameterOrdinal
         && targetMethod.Parameters[SequenceParameterOrdinal].Name == "sequence";
+
+    private static bool InheritsFromComponentBase(INamedTypeSymbol type, INamedTypeSymbol componentBaseType)
+    {
+        var current = type.BaseType;
+        while (current != null)
+        {
+            if (SymbolEqualityComparer.Default.Equals(current, componentBaseType))
+            {
+                return true;
+            }
+            current = current.BaseType;
+        }
+        return false;
+    }
 
     private static bool ContainsRenderTreeBuilderCalls(WellKnownTypes wellKnownTypes, LocalFunctionStatementSyntax localFunction, SemanticModel semanticModel)
     {
