@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using TestHelper;
 
@@ -41,15 +42,115 @@ public class ComponentParametersShouldNotUseRequiredOrInitTest : DiagnosticVerif
         VerifyCSharpDiagnostic(test);
     }
 
-    // Note: The tests for required and init keywords are limited by the test framework's 
-    // C# language version support. The analyzer has been manually verified to work correctly 
-    // with modern C# syntax in real Blazor projects.
-    //
-    // Manual testing confirms:
-    // - BL0011 correctly detects 'required' modifier on [Parameter] properties
-    // - BL0011 correctly detects 'init' modifier on [Parameter] properties
-    // - Analyzer correctly ignores non-parameter properties with these modifiers
-    // - Diagnostic message suggests using [EditorRequired] attribute instead
+    [Fact]
+    public void WarnsForRequiredParameter()
+    {
+        var test = $@"
+    namespace ConsoleApplication1
+    {{
+        using {typeof(ParameterAttribute).Namespace};
+        class TypeName
+        {{
+            [Parameter] public required string RequiredProperty {{ get; set; }}
+        }}
+    }}" + ComponentsTestDeclarations.Source;
+
+        var parseOptions = new CSharpParseOptions(LanguageVersion.CSharp11);
+        VerifyCSharpDiagnostic(test, parseOptions,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ComponentParametersShouldNotUseRequiredOrInit.Id,
+                Message = "Component parameter 'ConsoleApplication1.TypeName.RequiredProperty' should not use 'required' modifier. Consider using [EditorRequired] attribute instead.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
+                {
+                        new DiagnosticResultLocation("Test0.cs", 7, 32)
+                }
+            });
+    }
+
+    [Fact]
+    public void WarnsForInitParameter()
+    {
+        var test = $@"
+    namespace ConsoleApplication1
+    {{
+        using {typeof(ParameterAttribute).Namespace};
+        class TypeName
+        {{
+            [Parameter] public string InitProperty {{ get; init; }}
+        }}
+    }}" + ComponentsTestDeclarations.Source;
+
+        var parseOptions = new CSharpParseOptions(LanguageVersion.CSharp9);
+        VerifyCSharpDiagnostic(test, parseOptions,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ComponentParametersShouldNotUseRequiredOrInit.Id,
+                Message = "Component parameter 'ConsoleApplication1.TypeName.InitProperty' should not use 'init' modifier. Consider using [EditorRequired] attribute instead.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
+                {
+                        new DiagnosticResultLocation("Test0.cs", 7, 59)
+                }
+            });
+    }
+
+    [Fact]
+    public void WarnsForBothRequiredAndInit()
+    {
+        var test = $@"
+    namespace ConsoleApplication1
+    {{
+        using {typeof(ParameterAttribute).Namespace};
+        class TypeName
+        {{
+            [Parameter] public required string RequiredProperty {{ get; set; }}
+            [Parameter] public string InitProperty {{ get; init; }}
+        }}
+    }}" + ComponentsTestDeclarations.Source;
+
+        var parseOptions = new CSharpParseOptions(LanguageVersion.CSharp11);
+        VerifyCSharpDiagnostic(test, parseOptions,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ComponentParametersShouldNotUseRequiredOrInit.Id,
+                Message = "Component parameter 'ConsoleApplication1.TypeName.RequiredProperty' should not use 'required' modifier. Consider using [EditorRequired] attribute instead.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
+                {
+                        new DiagnosticResultLocation("Test0.cs", 7, 32)
+                }
+            },
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ComponentParametersShouldNotUseRequiredOrInit.Id,
+                Message = "Component parameter 'ConsoleApplication1.TypeName.InitProperty' should not use 'init' modifier. Consider using [EditorRequired] attribute instead.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
+                {
+                        new DiagnosticResultLocation("Test0.cs", 8, 59)
+                }
+            });
+    }
+
+    [Fact]
+    public void IgnoresNonParameterPropertiesWithRequiredAndInit()
+    {
+        var test = $@"
+    namespace ConsoleApplication1
+    {{
+        using {typeof(ParameterAttribute).Namespace};
+        class TypeName
+        {{
+            public required string RequiredNonParameter {{ get; set; }}
+            public string InitNonParameter {{ get; init; }}
+        }}
+    }}" + ComponentsTestDeclarations.Source;
+
+        var parseOptions = new CSharpParseOptions(LanguageVersion.CSharp11);
+        VerifyCSharpDiagnostic(test, parseOptions);
+    }
 
     protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new ComponentParameterAnalyzer();
 }

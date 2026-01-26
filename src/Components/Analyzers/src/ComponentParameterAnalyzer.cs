@@ -161,12 +161,12 @@ public sealed class ComponentParameterAnalyzer : DiagnosticAnalyzer
                     }
                 }
 
-                // Check for init modifier in the setter
+                // Check for init accessor
                 if (propertyDeclaration.AccessorList != null)
                 {
                     foreach (var accessor in propertyDeclaration.AccessorList.Accessors)
                     {
-                        // Check if this is an init accessor
+                        // Check if this is an init accessor (init is a keyword that replaces set, not a modifier)
                         if (accessor.Keyword.ValueText == "init")
                         {
                             context.ReportDiagnostic(Diagnostic.Create(
@@ -174,21 +174,6 @@ public sealed class ComponentParameterAnalyzer : DiagnosticAnalyzer
                                 accessor.Keyword.GetLocation(),
                                 propertySymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
                                 "init"));
-                        }
-                        // Also check for init in modifiers (though it might not be there)
-                        else if (accessor.Keyword.ValueText == "set")
-                        {
-                            foreach (var modifier in accessor.Modifiers)
-                            {
-                                if (modifier.ValueText == "init")
-                                {
-                                    context.ReportDiagnostic(Diagnostic.Create(
-                                        DiagnosticDescriptors.ComponentParametersShouldNotUseRequiredOrInit,
-                                        modifier.GetLocation(),
-                                        propertySymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
-                                        "init"));
-                                }
-                            }
                         }
                     }
                 }

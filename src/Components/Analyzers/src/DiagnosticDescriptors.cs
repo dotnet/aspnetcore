@@ -101,8 +101,8 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.UseInvokeVoidAsyncForObjectReturn_Description)));
-  
-      public static readonly DiagnosticDescriptor ComponentParametersShouldNotUseRequiredOrInit = new(
+
+    public static readonly DiagnosticDescriptor ComponentParametersShouldNotUseRequiredOrInit = new(
         "BL0011",
         CreateLocalizableResourceString(nameof(Resources.ComponentParametersShouldNotUseRequiredOrInit_Title)),
         CreateLocalizableResourceString(nameof(Resources.ComponentParametersShouldNotUseRequiredOrInit_Format)),
