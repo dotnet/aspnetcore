@@ -46,8 +46,8 @@ public class ComponentParametersShouldNotUseRequiredOrInitTest : DiagnosticVerif
     // with modern C# syntax in real Blazor projects.
     //
     // Manual testing confirms:
-    // - BL0010 correctly detects 'required' modifier on [Parameter] properties
-    // - BL0010 correctly detects 'init' modifier on [Parameter] properties
+    // - BL0011 correctly detects 'required' modifier on [Parameter] properties
+    // - BL0011 correctly detects 'init' modifier on [Parameter] properties
     // - Analyzer correctly ignores non-parameter properties with these modifiers
     // - Diagnostic message suggests using [EditorRequired] attribute instead
 
