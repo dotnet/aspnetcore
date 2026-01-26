@@ -65,13 +65,13 @@ public sealed class ComponentRefAndRenderModeAnalyzer : DiagnosticAnalyzer
                         return;
                     }
 
-                    AnalyzeMethod(context, methodDeclaration);
+                    AnalyzeMethod(symbols, context, methodDeclaration);
                 }, SyntaxKind.MethodDeclaration);
             }, SymbolKind.NamedType);
         });
     }
 
-    private static void AnalyzeMethod(SyntaxNodeAnalysisContext context, MethodDeclarationSyntax methodDeclaration)
+    private static void AnalyzeMethod(ComponentSymbols symbols, SyntaxNodeAnalysisContext context, MethodDeclarationSyntax methodDeclaration)
     {
         // Find all invocation expressions in the method
         var invocations = methodDeclaration.DescendantNodes().OfType<InvocationExpressionSyntax>().ToList();
@@ -83,12 +83,12 @@ public sealed class ComponentRefAndRenderModeAnalyzer : DiagnosticAnalyzer
         }
 
         // Group invocations by the component they're operating on by looking at OpenComponent/CloseComponent pairs
-        var componentBlocks = AnalyzeComponentBlocks(invocations, context.SemanticModel);
+        var componentBlocks = AnalyzeComponentBlocks(symbols, invocations, context.SemanticModel);
 
         foreach (var componentBlock in componentBlocks)
         {
-            var hasReferenceCapture = componentBlock.ComponentCalls.Any(call => IsAddComponentReferenceCapture(call, context.SemanticModel));
-            var hasRenderMode = componentBlock.ComponentCalls.Any(call => IsAddComponentRenderMode(call, context.SemanticModel));
+            var hasReferenceCapture = componentBlock.ComponentCalls.Any(call => IsAddComponentReferenceCapture(symbols, call, context.SemanticModel));
+            var hasRenderMode = componentBlock.ComponentCalls.Any(call => IsAddComponentRenderMode(symbols, call, context.SemanticModel));
 
             if (hasReferenceCapture && hasRenderMode)
             {
@@ -102,6 +102,7 @@ public sealed class ComponentRefAndRenderModeAnalyzer : DiagnosticAnalyzer
     }
 
     private static List<ComponentBlock> AnalyzeComponentBlocks(
+        ComponentSymbols symbols,
         List<InvocationExpressionSyntax> invocations, 
         SemanticModel semanticModel)
     {
@@ -110,12 +111,12 @@ public sealed class ComponentRefAndRenderModeAnalyzer : DiagnosticAnalyzer
 
         foreach (var invocation in invocations)
         {
-            if (ComponentFacts.IsOpenComponentInvocation(invocation, semanticModel))
+            if (ComponentFacts.IsOpenComponentInvocation(symbols, invocation, semanticModel))
             {
                 var newComponentBlock = new ComponentBlock(invocation, new List<InvocationExpressionSyntax>());
                 componentStack.Push(newComponentBlock);
             }
-            else if (ComponentFacts.IsCloseComponentInvocation(invocation, semanticModel))
+            else if (ComponentFacts.IsCloseComponentInvocation(symbols, invocation, semanticModel))
             {
                 if (componentStack.Count > 0)
                 {
@@ -123,7 +124,7 @@ public sealed class ComponentRefAndRenderModeAnalyzer : DiagnosticAnalyzer
                     componentBlocks.Add(completedComponentBlock);
                 }
             }
-            else if (IsComponentRelatedCall(invocation, semanticModel))
+            else if (IsComponentRelatedCall(symbols, invocation, semanticModel))
             {
                 if (componentStack.Count > 0)
                 {
@@ -143,20 +144,20 @@ public sealed class ComponentRefAndRenderModeAnalyzer : DiagnosticAnalyzer
         return componentBlocks;
     }
 
-    private static bool IsAddComponentReferenceCapture(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
+    private static bool IsAddComponentReferenceCapture(ComponentSymbols symbols, InvocationExpressionSyntax invocation, SemanticModel semanticModel)
     {
-        return ComponentFacts.IsRenderTreeBuilderMethodInvocation(invocation, semanticModel, "AddComponentReferenceCapture");
+        return ComponentFacts.IsRenderTreeBuilderMethodInvocation(invocation, semanticModel, symbols.AddComponentReferenceCaptureMethod);
     }
 
-    private static bool IsAddComponentRenderMode(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
+    private static bool IsAddComponentRenderMode(ComponentSymbols symbols, InvocationExpressionSyntax invocation, SemanticModel semanticModel)
     {
-        return ComponentFacts.IsRenderTreeBuilderMethodInvocation(invocation, semanticModel, "AddComponentRenderMode");
+        return ComponentFacts.IsRenderTreeBuilderMethodInvocation(invocation, semanticModel, symbols.AddComponentRenderModeMethod);
     }
 
-    private static bool IsComponentRelatedCall(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
+    private static bool IsComponentRelatedCall(ComponentSymbols symbols, InvocationExpressionSyntax invocation, SemanticModel semanticModel)
     {
-        return ComponentFacts.IsRenderTreeBuilderMethodInvocation(invocation, semanticModel, "AddComponentParameter") ||
-               ComponentFacts.IsRenderTreeBuilderMethodInvocation(invocation, semanticModel, "AddComponentReferenceCapture") ||
-               ComponentFacts.IsRenderTreeBuilderMethodInvocation(invocation, semanticModel, "AddComponentRenderMode");
+        return ComponentFacts.IsRenderTreeBuilderMethodInvocation(invocation, semanticModel, symbols.AddComponentParameterMethod) ||
+               ComponentFacts.IsRenderTreeBuilderMethodInvocation(invocation, semanticModel, symbols.AddComponentReferenceCaptureMethod) ||
+               ComponentFacts.IsRenderTreeBuilderMethodInvocation(invocation, semanticModel, symbols.AddComponentRenderModeMethod);
     }
 }
