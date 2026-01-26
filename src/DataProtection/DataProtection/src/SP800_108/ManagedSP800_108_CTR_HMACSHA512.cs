@@ -47,6 +47,8 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
     {
         if (kdk.Length < FipsMinimumKeyLengthInBytes)
         {
+            // The HMACSHA512 constructor internally pads short keys to the block size,
+            // which satisfies the FIPS minimum key length requirement.
             using var prf = new HMACSHA512(kdk.ToArray());
             DeriveKeys(kdk, label, contextHeader, contextData, operationSubkey, validationSubkey, prf);
         }
