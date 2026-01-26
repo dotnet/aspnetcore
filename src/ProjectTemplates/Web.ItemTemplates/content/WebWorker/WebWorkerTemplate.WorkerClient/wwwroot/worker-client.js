@@ -14,22 +14,6 @@ let workerReady = false;
 let workerReadyPromise = null;
 let workerReadyResolve = null;
 let workerReadyReject = null;
-let progressCallback = null;
-
-/**
- * Sets the progress callback function that will be called when the worker reports progress.
- * @param {function(string, number, number)} callback - Callback function(message, current, total)
- */
-export function setProgressCallback(callback) {
-    progressCallback = callback;
-}
-
-/**
- * Clears the progress callback function.
- */
-export function clearProgressCallback() {
-    progressCallback = null;
-}
 
 /**
  * Creates and initializes the WebWorker with event handlers.
@@ -78,11 +62,6 @@ export function createWorker() {
             }
             workerReadyResolve = null;
             workerReadyReject = null;
-        } else if (e.data.type === "progress") {
-            // Handle progress updates
-            if (progressCallback) {
-                progressCallback(e.data.message, e.data.current, e.data.total);
-            }
         } else if (e.data.type === "result") {
             const request = pendingRequests[e.data.requestId];
             if (!request) {

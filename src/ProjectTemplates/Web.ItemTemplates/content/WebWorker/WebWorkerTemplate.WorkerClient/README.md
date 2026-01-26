@@ -74,12 +74,6 @@ var result = JsonSerializer.Deserialize<MyResult>(json);
 
 ## `WorkerClient` Static Class
 
-### Properties
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `DefaultTimeout` | `TimeSpan` | 30 seconds | Default timeout for all worker invocations. Set to `Timeout.InfiniteTimeSpan` to disable. |
-
 #### Methods
 
 ##### `InitializeAsync()`
@@ -94,120 +88,43 @@ Initializes the WebWorker client. **Must be called once before any other methods
 
 ---
 
-##### `InvokeStringAsync(method, args)`
-
-```csharp
-public static Task<string> InvokeStringAsync(string method, params object[] args)
-```
-
-Invokes a worker method and returns the JSON string result. Deserialize manually using `JsonSerializer.Deserialize<T>()`.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `method` | `string` | Full method path: `"Namespace.ClassName.MethodName"` |
-| `args` | `object[]` | Arguments passed to the worker method |
-
-**Returns:** JSON string result from the worker method
-
-**Throws:**
-- `InvalidOperationException` - If `InitializeAsync()` was not called
-- `TimeoutException` - If the method exceeds `DefaultTimeout`
-- `JSException` - If the worker method throws an error
-
-**Example:**
-```csharp
-var json = await WorkerClient.InvokeStringAsync(
-    "MyApp.Worker.GitHubWorker.FetchMetrics",
-    "dotnet/aspnetcore",
-    5);
-
-var metrics = JsonSerializer.Deserialize<RepoMetrics>(json);
-```
-
----
-
 ##### `InvokeStringAsync(method, timeout, args)`
 
 ```csharp
 public static Task<string> InvokeStringAsync(string method, TimeSpan timeout, params object[] args)
 ```
 
-Same as above, but with a custom timeout.
+Invokes a worker method and returns the JSON string result. Deserialize manually using `JsonSerializer.Deserialize<T>()`.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `method`  | `string`   | Full method path: `"Namespace.ClassName.MethodName"` |
+| `timeout` | `TimeSpan` | Maximum time to wait. Use `Timeout.InfiniteTimeSpan` to disable. |
+| `args`    | `object[]` | Arguments passed to the worker method |
+
+**Returns:** JSON string result from the worker method
+
+**Throws:**
+- `InvalidOperationException` - If `InitializeAsync()` was not called
+- `TimeoutException` - If the method exceeds the specified timeout
+- `JSException` - If the worker method throws an error
 
 **Example:**
 ```csharp
 // 2 minute timeout for long operations
 var json = await WorkerClient.InvokeStringAsync(
-    "MyApp.Worker.ReportGenerator.Generate",
+    "MyApp.Worker.GitHubWorker.FetchMetrics",
     TimeSpan.FromMinutes(2),
-    reportId);
+    "dotnet/aspnetcore",
+    5);
 
-var result = JsonSerializer.Deserialize<Report>(json);
+var metrics = JsonSerializer.Deserialize<RepoMetrics>(json);
 
 // No timeout
 var json = await WorkerClient.InvokeStringAsync(
     "MyApp.Worker.DataProcessor.Process",
     Timeout.InfiniteTimeSpan,
     data);
-```
-
----
-
-##### `SetProgressCallback(callback)`
-
-```csharp
-public static void SetProgressCallback(Action<string, int, int>? callback)
-```
-
-Sets a callback to receive progress updates from worker operations. Set before each operation and clear when done.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `callback` | `Action<string, int, int>?` | Receives `(message, current, total)`. Pass `null` to clear. |
-
-**Example:**
-```csharp
-private async Task RunLongTaskAsync()
-{
-    try
-    {
-        // Set callback before each operation
-        WorkerClient.SetProgressCallback((message, current, total) =>
-        {
-            _status = $"{message} ({current}/{total})";
-            InvokeAsync(StateHasChanged);
-        });
-
-        var json = await WorkerClient.InvokeStringAsync("MyApp.Worker.LongTask.Run");
-        var result = JsonSerializer.Deserialize<Result>(json);
-    }
-    finally
-    {
-        WorkerClient.SetProgressCallback(null); // Clear when done
-    }
-}
-```
-
-To report progress from your worker, use `[JSImport]`:
-
-```csharp
-[SupportedOSPlatform("browser")]
-public partial class LongTask
-{
-    [JSImport("globalThis.postProgress")]
-    private static partial void ReportProgress(string message, int current, int total);
-
-    [JSExport]
-    public static string Run()
-    {
-        for (int i = 0; i < 100; i++)
-        {
-            ReportProgress("Processing...", i, 100);
-            // ... work ...
-        }
-        return "done";
-    }
-}
 ```
 
 ---

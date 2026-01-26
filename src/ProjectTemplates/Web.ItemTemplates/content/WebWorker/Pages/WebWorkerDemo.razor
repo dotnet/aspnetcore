@@ -19,10 +19,6 @@
         <div class="card h-100">
             <div class="card-body">
                 <h5 class="card-title">Repository</h5>
-                <div class="mb-3">
-                    <label class="form-label small text-muted">GitHub Token (optional - increases rate limit)</label>
-                    <input type="password" class="form-control form-control-sm" @bind="_githubToken" placeholder="ghp_..." />
-                </div>
                 <div class="input-group mb-3">
                     <span class="input-group-text">github.com/</span>
                     <input type="text" class="form-control" @bind="_repository" placeholder="dotnet/aspnetcore" />
@@ -77,16 +73,6 @@
         </div>
     </div>
 </div>
-
-@if (!string.IsNullOrEmpty(_progressMessage))
-{
-    <div class="alert alert-info">
-        <div class="d-flex align-items-center">
-            <div class="spinner-border spinner-border-sm me-3" role="status"></div>
-            <div>@_progressMessage</div>
-        </div>
-    </div>
-}
 
 @if (!string.IsNullOrEmpty(_errorMessage))
 {
@@ -150,7 +136,7 @@
 {
 
     <div class="row">
-        <div class="col-md-6 mb-4">
+        <div class="col-12 mb-4">
             <div class="card h-100">
                 <div class="card-header">Top Labels</div>
                 <div class="card-body" style="max-height: 300px; overflow-y: auto;">
@@ -161,27 +147,6 @@
                                 <tr>
                                     <td><code>@label.Label</code></td>
                                     <td class="text-end">@label.Count</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 mb-4">
-            <div class="card h-100">
-                <div class="card-header">Top Contributors</div>
-                <div class="card-body" style="max-height: 300px; overflow-y: auto;">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr><th>Author</th><th class="text-end">Items</th></tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var author in metrics.TopAuthors)
-                            {
-                                <tr>
-                                    <td><a href="https://github.com/@author.Author" target="_blank">@@@author.Author</a></td>
-                                    <td class="text-end">@author.TotalItems</td>
                                 </tr>
                             }
                         </tbody>

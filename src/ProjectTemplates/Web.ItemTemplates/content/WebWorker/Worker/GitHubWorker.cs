@@ -27,9 +27,6 @@ public static partial class GitHubWorker
         PropertyNameCaseInsensitive = true
     };
 
-    [JSImport("globalThis.postProgress")]
-    private static partial void ReportProgress(string message, int current, int total);
-
     /// <summary>
     /// Fetches issues (including PRs) from a GitHub repository and computes metrics.
     /// Uses the GitHub Issues API which returns both issues and PRs.
@@ -37,14 +34,13 @@ public static partial class GitHubWorker
     /// <param name="owner">Repository owner (e.g., "dotnet")</param>
     /// <param name="repo">Repository name (e.g., "runtime")</param>
     /// <param name="maxPages">Maximum number of pages to fetch (100 items per page). Default 5 = 500 items.</param>
-    /// <param name="token">GitHub Personal Access Token for authentication (optional)</param>
     /// <returns>Serialized GitHubMetrics as JSON string</returns>
     [JSExport]
-    public static async Task<string> FetchAndAnalyzeAsync(string owner, string repo, int maxPages = 5, string token = "")
+    public static async Task<string> FetchAndAnalyzeAsync(string owner, string repo, int maxPages = 5)
     {
         var startTicks = Environment.TickCount64;
 
-        using var httpClient = CreateGitHubClient(token);
+        using var httpClient = CreateGitHubClient();
 
         var allIssues = new List<GitHubIssue>();
         var totalBytes = 0;
@@ -54,8 +50,6 @@ public static partial class GitHubWorker
         // Fetch multiple pages of issues (includes PRs)
         for (int page = 1; page <= maxPages; page++)
         {
-            ReportProgress($"Fetching page {page} of {maxPages}...", page - 1, maxPages + 1);
-            
             var url = $"https://api.github.com/repos/{owner}/{repo}/issues?state=all&per_page=100&page={page}";
             
             var response = await httpClient.GetAsync(url);
@@ -101,7 +95,6 @@ public static partial class GitHubWorker
         }
 
         // Compute metrics
-        ReportProgress("Computing metrics...", maxPages, maxPages + 1);
         var computeStart = Environment.TickCount64;
         var metrics = ComputeMetrics(allIssues, owner, repo);
         var computeElapsedMs = Environment.TickCount64 - computeStart;
@@ -116,7 +109,7 @@ public static partial class GitHubWorker
         return result;
     }
 
-    private static HttpClient CreateGitHubClient(string token = "")
+    private static HttpClient CreateGitHubClient()
     {
         var client = new HttpClient
         {
@@ -131,15 +124,6 @@ public static partial class GitHubWorker
         // Request JSON
         client.DefaultRequestHeaders.Accept.Add(
             new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
-        
-        // Use latest API version
-        client.DefaultRequestHeaders.Add("X-GitHub-Api-Version", "2022-11-28");
-        
-        // Add authentication if token provided
-        if (!string.IsNullOrWhiteSpace(token))
-        {
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        }
         
         return client;
     }
@@ -169,31 +153,6 @@ public static partial class GitHubWorker
             .OrderByDescending(l => l.Count)
             .Take(15)
             .ToList();
-
-        // Top authors
-        metrics.TopAuthors = issues
-            .Where(i => i.User != null)
-            .GroupBy(i => i.User!.Login)
-            .Select(g => new AuthorStats
-            {
-                Author = g.Key,
-                PrCount = g.Count(i => i.IsPullRequest),
-                IssueCount = g.Count(i => !i.IsPullRequest),
-                TotalItems = g.Count()
-            })
-            .OrderByDescending(a => a.TotalItems)
-            .Take(10)
-            .ToList();
-
-        // By milestone
-        metrics.ByMilestone = issues
-            .GroupBy(i => i.Milestone?.Title ?? "No Milestone")
-            .ToDictionary(g => g.Key, g => g.Count());
-
-        // By state
-        metrics.ByState = issues
-            .GroupBy(i => i.State)
-            .ToDictionary(g => g.Key, g => g.Count());
 
         return metrics;
     }
