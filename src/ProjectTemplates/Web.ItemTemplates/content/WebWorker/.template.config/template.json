@@ -12,7 +12,7 @@
   "description": "Adds WebWorker support to a Blazor WebAssembly application, enabling .NET code to run off the main UI thread for responsive user experiences. Run this template from the Blazor WebAssembly project directory (for standalone apps) or from the .Client project directory (for Blazor Web Apps).",
   "tags": {
     "language": "C#",
-    "type": "project"
+    "type": "item"
   },
   "groupIdentity": "Microsoft.AspNetCore.Blazor.WebWorker",
   "precedence": "10000",
