@@ -25,13 +25,10 @@ export function createWorker() {
     workerReady = false;
     
     // Create a promise that resolves when worker is ready
-    workerReadyPromise = new Promise((resolve, reject) => {
-        workerReadyResolve = resolve;
-        workerReadyReject = reject;
-    });
+    ({ promise: workerReadyPromise, resolve: workerReadyResolve, reject: workerReadyReject } = Promise.withResolvers());
 
     // Handle fatal worker errors (script load failure, unhandled exceptions, etc.)
-    worker.addEventListener('error', function (e) {
+    worker.addEventListener('error', (e) => {
         const errorMessage = e.message || 'Worker encountered an unhandled error';
         console.error("Worker error:", errorMessage);
         workerError = errorMessage;
@@ -45,28 +42,23 @@ export function createWorker() {
         
         // Reject all pending requests
         rejectAllPending(`Worker error: ${errorMessage}`);
-    }, false);
+    });
 
-    worker.addEventListener('message', function (e) {
+    worker.addEventListener('message', (e) => {
         if (e.data.type === "ready") {
             if (e.data.error) {
                 workerError = e.data.error;
-                if (workerReadyReject) {
-                    workerReadyReject(new Error(e.data.error));
-                }
+                workerReadyReject?.(new Error(e.data.error));
             } else {
                 workerReady = true;
-                if (workerReadyResolve) {
-                    workerReadyResolve();
-                }
+                workerReadyResolve?.();
             }
             workerReadyResolve = null;
             workerReadyReject = null;
         } else if (e.data.type === "result") {
             const request = pendingRequests[e.data.requestId];
             if (!request) {
-                // Result arrived after timeout/cancellation - ignore
-                return;
+                return; // Result arrived after timeout - ignore
             }
             delete pendingRequests[e.data.requestId];
             
@@ -76,7 +68,7 @@ export function createWorker() {
                 request.resolve(e.data.result);
             }
         }
-    }, false);
+    });
 }
 
 /**
@@ -113,11 +105,7 @@ export async function invoke(method, args) {
         pendingRequests[currentRequestId] = { resolve, reject };
     });
     
-    worker.postMessage({
-        method: method,
-        args: args,
-        requestId: currentRequestId
-    });
+    worker.postMessage({ method, args, requestId: currentRequestId });
     
     return promise;
 }
@@ -130,14 +118,7 @@ export async function invoke(method, args) {
  * @returns {Promise<string>} The string result from the worker
  */
 export function invokeString(method, args) {
-    return invoke(method, args).then(result => {
-        // Ensure we return a string
-        if (typeof result === 'string') {
-            return result;
-        }
-        // If it's not already a string, convert it
-        return String(result);
-    });
+    return invoke(method, args).then(result => String(result));
 }
 
 /**

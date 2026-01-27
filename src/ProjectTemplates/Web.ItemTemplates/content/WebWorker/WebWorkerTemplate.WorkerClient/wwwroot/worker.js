@@ -9,24 +9,6 @@
 import { dotnet } from '../../_framework/dotnet.js'
 
 /**
- * Sends a progress update to the main thread.
- * @param {string} message - Progress message
- * @param {number} current - Current progress value
- * @param {number} total - Total progress value
- */
-export function postProgress(message, current, total) {
-    self.postMessage({
-        type: "progress",
-        message: message,
-        current: current,
-        total: total
-    });
-}
-
-// Make postProgress globally available for .NET JSImport
-globalThis.postProgress = postProgress;
-
-/**
  * Collects ArrayBuffer objects from a value for zero-copy transfer.
  * @param {any} value - Value that may be or contain typed arrays
  * @returns {ArrayBuffer[]} Array of transferable buffers
@@ -65,7 +47,7 @@ try {
 }
 
 // Listen for method invocations from the client
-self.addEventListener('message', async function (e) {
+self.addEventListener('message', async (e) => {
     try {
         if (!workerExports) {
             throw new Error(startupError || "Worker .NET runtime not loaded");
@@ -93,8 +75,7 @@ self.addEventListener('message', async function (e) {
             throw new Error(`Namespace not found: ${namespacePath}. Make sure your worker class is in this namespace.`);
         }
         
-        const workerClass = namespaceObj[className];
-        
+        const workerClass = namespaceObj[className];        
         if (!workerClass) {
             throw new Error(`Class not found: ${className} in namespace ${namespacePath}. Make sure the class has [JSExport] methods.`);
         }
@@ -134,4 +115,4 @@ self.addEventListener('message', async function (e) {
             error: errorMessage,
         });
     }
-}, false);
+});
