@@ -27,6 +27,14 @@ public static partial class WorkerClient
     [JSImport("terminate", nameof(WorkerClient))]
     private static partial void TerminateInternal();
 
+    private static void EnsureInitialized()
+    {
+        if (!_initialized)
+        {
+            throw new InvalidOperationException("WorkerClient is not initialized. Call InitializeAsync first.");
+        }
+    }
+
     /// <summary>
     /// Initializes the worker client. Must be called before invoking any worker methods.
     /// </summary>
@@ -53,11 +61,7 @@ public static partial class WorkerClient
     /// <exception cref="InvalidOperationException">Thrown if InitializeAsync was not called</exception>
     public static async Task WaitForReadyAsync()
     {
-        if (!_initialized)
-        {
-            throw new InvalidOperationException("WorkerClient is not initialized. Call InitializeAsync first.");
-        }
-
+        EnsureInitialized();
         await WaitForReadyInternal();
     }
 
@@ -73,25 +77,11 @@ public static partial class WorkerClient
     /// <exception cref="TimeoutException">Thrown if the worker method exceeds the specified timeout</exception>
     public static async Task<string> InvokeStringAsync(string method, TimeSpan timeout, params object[] args)
     {
-        if (!_initialized)
-        {
-            throw new InvalidOperationException("WorkerClient is not initialized. Call InitializeAsync first.");
-        }
-
-        Task<string> workerTask = InvokeStringInternal(method, args);
-
-        if (timeout == Timeout.InfiniteTimeSpan)
-        {
-            return await workerTask;
-        }
-
-        await Task.WhenAny(workerTask, Task.Delay(timeout));
-        if (!workerTask.IsCompleted)
-        {
-            throw new TimeoutException($"Worker method '{method}' did not complete within {timeout.TotalSeconds:F1} seconds.");
-        }
-
-        return await workerTask;
+        EnsureInitialized();
+        var workerTask = InvokeStringInternal(method, args);
+        return timeout == Timeout.InfiniteTimeSpan
+            ? await workerTask
+            : await workerTask.WaitAsync(timeout);
     }
 
     /// <summary>
@@ -107,11 +97,7 @@ public static partial class WorkerClient
     /// <exception cref="InvalidOperationException">Thrown if InitializeAsync was not called</exception>
     public static void Terminate()
     {
-        if (!_initialized)
-        {
-            throw new InvalidOperationException("WorkerClient is not initialized. Call InitializeAsync first.");
-        }
-
+        EnsureInitialized();
         TerminateInternal();
     }
 }

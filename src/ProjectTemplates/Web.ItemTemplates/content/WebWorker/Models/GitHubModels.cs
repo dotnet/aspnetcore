@@ -30,17 +30,6 @@ public sealed class GitHubIssue
 
     [JsonPropertyName("labels")]
     public List<GitHubLabel> Labels { get; set; } = [];
-
-    [JsonPropertyName("comments")]
-    public int Comments { get; set; }
-
-    /// <summary>
-    /// If this is set, the issue is actually a pull request.
-    /// </summary>
-    [JsonPropertyName("pull_request")]
-    public object? PullRequest { get; set; }
-
-    public bool IsPullRequest => PullRequest != null;
 }
 
 /// <summary>
@@ -49,24 +38,14 @@ public sealed class GitHubIssue
 public class GitHubMetrics
 {
     public string Repository { get; set; } = string.Empty;
-    public DateTime GeneratedAt { get; set; }
-    
-    // Item counts
     public int TotalItems { get; set; }
-    public int TotalPullRequests { get; set; }
-    public int TotalIssues { get; set; }
     public int OpenItems { get; set; }
     public int ClosedItems { get; set; }
-    
-    // Averages
-    public double AverageComments { get; set; }
     
     // Performance
     public double FetchTimeMs { get; set; }
     public double DeserializationTimeMs { get; set; }
     public double ComputationTimeMs { get; set; }
-    public int JsonSizeBytes { get; set; }
-    public int PagesLoaded { get; set; }
     
     // Aggregations
     public List<LabelCount> TopLabels { get; set; } = [];
@@ -80,4 +59,3 @@ public class LabelCount
     public string Label { get; set; } = string.Empty;
     public int Count { get; set; }
 }
-

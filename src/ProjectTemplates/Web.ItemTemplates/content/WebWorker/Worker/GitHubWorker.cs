@@ -43,15 +43,12 @@ public static partial class GitHubWorker
         using var httpClient = CreateGitHubClient();
 
         var allIssues = new List<GitHubIssue>();
-        var totalBytes = 0;
-        var pagesLoaded = 0;
         var deserializationTimeMs = 0.0;
 
         // Fetch multiple pages of issues (includes PRs)
         for (int page = 1; page <= maxPages; page++)
         {
-            var url = $"https://api.github.com/repos/{owner}/{repo}/issues?state=all&per_page=100&page={page}";
-            
+            var url = $"https://api.github.com/repos/{owner}/{repo}/issues?state=all&per_page=100&page={page}";            
             var response = await httpClient.GetAsync(url);
             
             if (response.StatusCode == HttpStatusCode.Forbidden)
@@ -60,10 +57,8 @@ public static partial class GitHubWorker
                 break;
             }
             
-            response.EnsureSuccessStatusCode();
-            
+            response.EnsureSuccessStatusCode();            
             var json = await response.Content.ReadAsStringAsync();
-            totalBytes += json.Length * 2; // UTF-16 in .NET
             
             // Measure deserialization separately
             var deserializeStart = Environment.TickCount64;
@@ -72,14 +67,11 @@ public static partial class GitHubWorker
             
             if (issues == null || issues.Count == 0)
             {
-                // No more data
                 break;
             }
             
             allIssues.AddRange(issues);
-            pagesLoaded++;
             
-            // Check if we've reached the last page
             if (issues.Count < 100)
             {
                 break;
@@ -102,50 +94,30 @@ public static partial class GitHubWorker
         metrics.FetchTimeMs = fetchTimeMs;
         metrics.DeserializationTimeMs = deserializationTimeMs;
         metrics.ComputationTimeMs = computeElapsedMs;
-        metrics.JsonSizeBytes = totalBytes;
-        metrics.PagesLoaded = pagesLoaded;
 
-        var result = JsonSerializer.Serialize(metrics, JsonOptions);
-        return result;
+        return JsonSerializer.Serialize(metrics, JsonOptions);
     }
 
-    private static HttpClient CreateGitHubClient()
+    private static HttpClient CreateGitHubClient() => new()
     {
-        var client = new HttpClient
+        Timeout = TimeSpan.FromSeconds(30),
+        DefaultRequestHeaders =
         {
-            // Set timeout for each individual HTTP request to prevent hanging
-            Timeout = TimeSpan.FromSeconds(30)
-        };
-        
-        // GitHub API requires User-Agent header
-        client.DefaultRequestHeaders.UserAgent.Add(
-            new ProductInfoHeaderValue("BlazorWebWorkerDemo", "1.0"));
-        
-        // Request JSON
-        client.DefaultRequestHeaders.Accept.Add(
-            new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
-        
-        return client;
-    }
+            UserAgent = { new ProductInfoHeaderValue("BlazorWebWorkerDemo", "1.0") },
+            Accept = { new MediaTypeWithQualityHeaderValue("application/vnd.github+json") }
+        }
+    };
 
     private static GitHubMetrics ComputeMetrics(List<GitHubIssue> issues, string owner, string repo)
     {
-        var prs = issues.Where(i => i.IsPullRequest).ToList();
-        var issuesOnly = issues.Where(i => !i.IsPullRequest).ToList();
-
         var metrics = new GitHubMetrics
         {
             Repository = $"{owner}/{repo}",
-            GeneratedAt = DateTime.UtcNow,
             TotalItems = issues.Count,
-            TotalPullRequests = prs.Count,
-            TotalIssues = issuesOnly.Count,
             OpenItems = issues.Count(i => i.State == "open"),
             ClosedItems = issues.Count(i => i.State == "closed"),
-            AverageComments = issues.Count > 0 ? issues.Average(i => i.Comments) : 0
         };
 
-        // Top labels
         metrics.TopLabels = issues
             .SelectMany(i => i.Labels)
             .GroupBy(l => l.Name)
