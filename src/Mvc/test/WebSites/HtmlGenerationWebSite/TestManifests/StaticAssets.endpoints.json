@@ -1,0 +1,26 @@
+{
+  "Version": 1,
+  "Endpoints": [
+    {
+      "Route": "styles/site.fingerprint123.css",
+      "AssetFile": "wwwroot/styles/site.css",
+      "Selectors": [],
+      "EndpointProperties": [
+        {
+          "Name": "label",
+          "Value": "styles/site.css"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "ETag",
+          "Value": "\"fingerprint123\""
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ]
+    }
+  ]
+}

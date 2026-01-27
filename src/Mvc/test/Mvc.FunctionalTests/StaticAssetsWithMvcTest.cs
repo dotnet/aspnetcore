@@ -35,32 +35,69 @@ public class StaticAssetsWithMvcTest : LoggedTest
     public HttpClient Client { get; private set; }
 
     [Fact]
-    public async Task MapControllerRoute_WithStaticAssets_ApplicationStarts()
+    public async Task MapControllerRoute_WithStaticAssets_RendersFingerprintedUrls()
     {
         // This test verifies that calling WithStaticAssets() on the builder returned by
-        // MapControllerRoute() doesn't cause errors during application startup.
+        // MapControllerRoute() properly enables fingerprinted URLs in rendered views.
         // This validates the fix for the issue where MapControllerRoute() returned a builder
         // that didn't have the EndpointRouteBuilderKey set in its Items dictionary.
-        //
-        // Note: The full static assets flow requires a proper manifest file generated at build time.
-        // The unit tests in ControllerActionEndpointConventionBuilderResourceCollectionExtensionsTest
-        // verify that WithStaticAssets() properly adds ResourceAssetCollection metadata to endpoints.
 
-        // Arrange & Act - Make a request to verify the application started successfully
+        // Arrange
+        var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
+
+        // Act - Render a page that references a static asset
+        var response = await Client.GetAsync("HtmlGeneration_Home/StaticAssets");
+
+        // Assert - The request should succeed
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
+
+        // Parse the HTML and find the CSS link
+        var document = await response.GetHtmlDocumentAsync();
+        var cssLink = document.GetElementById("css-link");
+        Assert.NotNull(cssLink);
+
+        // The href should be the fingerprinted URL from the manifest
+        // Original URL: ~/styles/site.css
+        // Fingerprinted URL: styles/site.fingerprint123.css (based on the label mapping in the manifest)
+        var href = cssLink.GetAttribute("href");
+        Assert.NotNull(href);
+        Assert.Contains("fingerprint123", href);
+    }
+
+    [Fact]
+    public async Task MapControllerRoute_WithStaticAssets_AddsResourceCollectionToEndpoints()
+    {
+        // This test verifies that ResourceAssetCollection metadata is properly added to endpoints
+        // when using MapControllerRoute().WithStaticAssets()
+
+        // Arrange & Act - Make a request to trigger endpoint resolution
         var response = await Client.GetAsync("HtmlGeneration_Home/Index");
 
-        // Assert - The request should succeed, proving that WithStaticAssets() didn't throw
+        // Assert - The request should succeed
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
 
-        // Verify we can access endpoints (this would fail if routing setup failed)
+        // Get endpoints and verify ResourceAssetCollection is present
         var allDataSources = Factory.Services.GetServices<EndpointDataSource>().ToList();
         var allEndpoints = allDataSources.SelectMany(ds => ds.Endpoints).ToList();
 
-        // Find the Index endpoint from HtmlGeneration_HomeController
-        var indexEndpoint = allEndpoints.FirstOrDefault(e =>
+        // Find the StaticAssets action endpoint
+        var staticAssetsEndpoint = allEndpoints.FirstOrDefault(e =>
             e.DisplayName?.Contains("HtmlGeneration_HomeController") == true &&
-            e.DisplayName?.Contains("Index") == true);
+            e.DisplayName?.Contains("StaticAssets") == true);
 
-        Assert.NotNull(indexEndpoint);
+        Assert.NotNull(staticAssetsEndpoint);
+
+        // The endpoint should have ResourceAssetCollection metadata
+        var resourceCollection = staticAssetsEndpoint.Metadata.GetMetadata<ResourceAssetCollection>();
+        Assert.NotNull(resourceCollection);
+
+        // The resource collection should contain our fingerprinted asset
+        var assets = resourceCollection.ToList();
+        Assert.NotEmpty(assets);
+
+        // Verify the fingerprinted URL is in the collection
+        var fingerprintedAsset = assets.FirstOrDefault(a => a.Url.Contains("fingerprint123"));
+        Assert.NotNull(fingerprintedAsset);
     }
 }

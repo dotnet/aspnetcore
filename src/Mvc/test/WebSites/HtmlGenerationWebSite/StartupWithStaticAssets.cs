@@ -10,6 +10,9 @@ namespace HtmlGenerationWebSite;
 
 public class StartupWithStaticAssets
 {
+    // Use a relative path that will be resolved consistently by both MapStaticAssets and WithStaticAssets
+    private const string ManifestRelativePath = "TestManifests/StaticAssets.endpoints.json";
+
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddMvc(ConfigureMvcOptions)
@@ -27,28 +30,28 @@ public class StartupWithStaticAssets
         app.UseRouting();
         app.UseEndpoints(endpoints =>
         {
-            // Note: We don't call MapStaticAssets() here because there's no manifest file
-            // in this test project. The important thing is that WithStaticAssets() can be
-            // called on the builder returned by MapControllerRoute() without throwing,
-            // which validates that the EndpointRouteBuilderKey is properly set.
+            // Map static assets with a test manifest that includes fingerprinted URLs
+            // Using relative path - both MapStaticAssets and WithStaticAssets will resolve
+            // it relative to AppContext.BaseDirectory
+            endpoints.MapStaticAssets(ManifestRelativePath);
 
             endpoints.MapControllerRoute(
                 name: "areaRoute",
                 pattern: "{area:exists}/{controller}/{action}/{id?}",
                 defaults: new { action = "Index" })
-                .WithStaticAssets();
+                .WithStaticAssets(ManifestRelativePath);
 
             endpoints.MapControllerRoute(
                 name: "productRoute",
                 pattern: "Product/{action}",
                 defaults: new { controller = "Product" })
-                .WithStaticAssets();
+                .WithStaticAssets(ManifestRelativePath);
 
             endpoints.MapControllerRoute(
                 name: "default",
                 pattern: "{controller}/{action}/{id?}",
                 defaults: new { controller = "HtmlGeneration_Home", action = "Index" })
-                .WithStaticAssets();
+                .WithStaticAssets(ManifestRelativePath);
 
             endpoints.MapRazorPages();
         });
