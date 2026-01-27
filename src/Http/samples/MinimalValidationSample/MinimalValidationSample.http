@@ -109,6 +109,6 @@ POST http://localhost:5021/products?productId=2&name=TestProduct
 Content-Type: application/json
 
 ### Invalid product POST request (validation disabled)
-# This has an odd productId and is missing name, but should still work because validation is disabled
-POST http://localhost:5021/products?productId=3
+# This has an odd productId, but should still work because validation is disabled
+POST http://localhost:5021/products?productId=3&name=TestProduct
 Content-Type: application/json
