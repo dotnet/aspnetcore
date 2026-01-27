@@ -50,14 +50,7 @@ public partial class WebWorkerDemo : ComponentBase
         }
     }
 
-    private void IncrementCounter()
-    {
-        _clickCount++;
-    }
-
-    private Task FetchWithWorkerAsync() => FetchAsync(useWorker: true);
-
-    private Task FetchOnUIThreadAsync() => FetchAsync(useWorker: false);
+    private void IncrementCounter() => _clickCount++;
 
     private async Task FetchAsync(bool useWorker)
     {

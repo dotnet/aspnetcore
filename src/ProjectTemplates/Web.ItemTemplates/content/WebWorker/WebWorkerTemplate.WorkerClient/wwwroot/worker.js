@@ -14,20 +14,13 @@ import { dotnet } from '../../_framework/dotnet.js'
  * @returns {ArrayBuffer[]} Array of transferable buffers
  */
 function collectTransferables(value) {
-    const transferables = [];
-    if (value instanceof Uint8Array || value instanceof Int8Array ||
-        value instanceof Uint16Array || value instanceof Int16Array ||
-        value instanceof Uint32Array || value instanceof Int32Array ||
-        value instanceof Float32Array || value instanceof Float64Array) {
-        transferables.push(value.buffer);
-    } else if (value instanceof ArrayBuffer) {
-        transferables.push(value);
-    }
-    return transferables;
+    if (ArrayBuffer.isView(value)) return [value.buffer];
+    if (value instanceof ArrayBuffer) return [value];
+    return [];
 }
 
 let workerExports = null;
-let startupError = undefined;
+let startupError;
 
 // Initialize .NET runtime in the worker
 try {
@@ -53,47 +46,15 @@ self.addEventListener('message', async (e) => {
             throw new Error(startupError || "Worker .NET runtime not loaded");
         }
 
-        // Parse full path: "Namespace.SubNamespace.ClassName.MethodName"
-        // Last part is method, second-to-last is class, rest is namespace
-        const parts = e.data.method.split('.');
-        if (parts.length < 3) {
-            throw new Error(`Invalid method path: ${e.data.method}. Expected format: Namespace[.SubNamespace].ClassName.MethodName (at least 3 parts)`);
-        }
-        
-        const methodName = parts.pop();
-        const className = parts.pop();
-        const namespacePath = parts.join('.');
-        
-        // Navigate to the namespace (e.g., "MyApp.Worker" -> workerExports.MyApp.Worker)
-        let namespaceObj = workerExports;
-        for (const part of parts) {
-            namespaceObj = namespaceObj?.[part];
-        }
-        
-        if (!namespaceObj) {
-            console.error('[Worker] Available namespaces:', Object.keys(workerExports || {}));
-            throw new Error(`Namespace not found: ${namespacePath}. Make sure your worker class is in this namespace.`);
-        }
-        
-        const workerClass = namespaceObj[className];        
-        if (!workerClass) {
-            throw new Error(`Class not found: ${className} in namespace ${namespacePath}. Make sure the class has [JSExport] methods.`);
-        }
-
-        const method = workerClass[methodName];
-        if (!method) {
-            throw new Error(`Method not found: ${methodName} in class ${namespacePath}.${className}`);
+        // Resolve method from path: "Namespace.ClassName.MethodName"
+        const method = e.data.method.split('.').reduce((obj, part) => obj?.[part], workerExports);
+        if (typeof method !== 'function') {
+            throw new Error(`Method not found: ${e.data.method}`);
         }
 
         // Call the method with provided arguments
         const startTime = performance.now();
-        let result = method(...e.data.args);
-        
-        // If result is a Promise (async method), await it
-        if (result && typeof result.then === 'function') {
-            result = await result;
-        }
-        
+        const result = await method(...e.data.args);
         const workerTime = performance.now() - startTime;
 
         // Collect transferables from result for zero-copy transfer back
@@ -102,12 +63,11 @@ self.addEventListener('message', async (e) => {
         self.postMessage({
             type: "result",
             requestId: e.data.requestId,
-            result: result,
-            workerTime: workerTime,
+            result,
+            workerTime,
         }, transferables);
     } catch (err) {
-        // Handle both Error objects and other thrown values
-        const errorMessage = err instanceof Error ? err.message : String(err);
+        const errorMessage = err?.message ?? String(err);
         console.error('[Worker] Error:', errorMessage);
         self.postMessage({
             type: "result",
