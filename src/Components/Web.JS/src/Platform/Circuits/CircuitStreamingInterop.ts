@@ -31,15 +31,19 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
         // Retry logic for backpressure
         let retryDelay = 100; // Start with 100ms
         const maxRetryDelay = 10000; // Max 10 seconds
-        let status: JSDataStreamStatus;
+        let status: JSDataStreamStatus | boolean;
+        let chunkProcessed = false;
 
-        do {
-          numChunksUntilNextAck--;
+        while (!chunkProcessed) {
           if (numChunksUntilNextAck > 1) {
             // Most of the time just send and buffer within the network layer
+            // Note: We don't detect backpressure on these calls since they're fire-and-forget.
+            // Backpressure will be detected on the next invoke() call.
             await connection.send('ReceiveJSDataChunk', streamId, chunkId, nextChunkData, null);
-            // When using 'send', we assume success (no backpressure detection)
+            // Assume success for send() calls (no response to check)
             status = JSDataStreamStatus.Success;
+            chunkProcessed = true;
+            numChunksUntilNextAck--;
           } else {
             // But regularly, wait for an ACK, so other events can be interleaved
             // The use of "invoke" (not "send") here is what prevents the JS side from queuing up chunks
@@ -57,18 +61,19 @@ export function sendJSDataStream(connection: HubConnection, data: ArrayBufferVie
               await new Promise(resolve => setTimeout(resolve, retryDelay));
               // Exponential backoff with max cap
               retryDelay = Math.min(retryDelay * 2, maxRetryDelay);
-              // Don't decrement numChunksUntilNextAck, we'll retry with invoke
+              // Keep numChunksUntilNextAck at 1 to retry with invoke() (not send())
               numChunksUntilNextAck = 1;
-              continue; // Retry the same chunk
+              // Continue loop to retry
             } else {
               // Success - estimate the number of chunks we should send before the next ack
               const timeNow = new Date().valueOf();
               const msSinceAck = timeNow - lastAckTime;
               lastAckTime = timeNow;
               numChunksUntilNextAck = Math.max(1, Math.round(maxMillisecondsBetweenAcks / Math.max(1, msSinceAck)));
+              chunkProcessed = true;
             }
           }
-        } while (status === JSDataStreamStatus.Backpressure);
+        }
 
         position += nextChunkSize;
         chunkId++;

@@ -108,6 +108,7 @@ internal sealed class RemoteJSDataStream : Stream
                 throw new EndOfStreamException($"Out of sequence chunk received, expected {_expectedChunkId}, but received {chunkId}.");
             }
 
+            // Validate chunk before checking backpressure
             if (chunk.Length == 0)
             {
                 throw new EndOfStreamException("The incoming data chunk cannot be empty.");
@@ -123,19 +124,19 @@ internal sealed class RemoteJSDataStream : Stream
                 throw new EndOfStreamException($"The incoming data stream declared a length {_totalLength}, but {_bytesRead + chunk.Length} bytes were sent.");
             }
 
-            // Check if the pipe is experiencing backpressure before writing.
-            // We check if unflushed bytes would exceed our threshold after this write.
-            // The threshold is set below the PauseWriterThreshold to avoid blocking.
+            // Check for backpressure AFTER basic validations but BEFORE updating state.
+            // This ensures the check is performed before any state modifications, making retries clean.
+            // The backpressure threshold is set below the PauseWriterThreshold to avoid blocking.
             const int backpressureThreshold = 96 * 1024; // 96 KB (below the 128KB pause threshold)
             
             if (_pipe.Writer.UnflushedBytes + chunk.Length > backpressureThreshold)
             {
                 // Pipe would experience backpressure, signal the client to retry
-                // Don't increment expectedChunkId or bytesRead since we didn't process this chunk
+                // Since we haven't modified any state, the retry will be clean
                 return JSDataStreamStatus.Backpressure;
             }
 
-            // All validations passed, now we can update state and write the chunk
+            // All validations passed, now update state and write the chunk
             ++_expectedChunkId;
             _bytesRead += chunk.Length;
 
