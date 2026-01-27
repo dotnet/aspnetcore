@@ -21,13 +21,13 @@ internal sealed class RemoteJSDataStream : Stream
     private DateTimeOffset _lastDataReceivedTime;
     private bool _disposed;
 
-    public static async Task<bool> ReceiveData(RemoteJSRuntime runtime, long streamId, long chunkId, byte[] chunk, string error)
+    public static async Task<JSDataStreamStatus> ReceiveData(RemoteJSRuntime runtime, long streamId, long chunkId, byte[] chunk, string error)
     {
         if (!runtime.RemoteJSDataStreamInstances.TryGetValue(streamId, out var instance))
         {
             // There is no data stream with the given identifier. It may have already been disposed.
             // We notify JS that the stream has been cancelled/disposed.
-            return false;
+            return JSDataStreamStatus.StreamDead;
         }
 
         return await instance.ReceiveData(chunkId, chunk, error);
@@ -75,7 +75,16 @@ internal sealed class RemoteJSDataStream : Stream
 
         _runtime.RemoteJSDataStreamInstances.Add(_streamId, this);
 
-        _pipe = new Pipe();
+        // Configure the pipe with specific thresholds to control backpressure behavior.
+        // PauseWriterThreshold: When unflushed bytes exceed this, FlushAsync will pause.
+        // ResumeWriterThreshold: When unflushed bytes drop below this, FlushAsync resumes.
+        // We set these to reasonable values to avoid blocking the circuit with backpressure.
+        var pipeOptions = new PipeOptions(
+            pauseWriterThreshold: 128 * 1024,  // 128 KB - pause when buffer has this much unflushed data
+            resumeWriterThreshold: 64 * 1024,  // 64 KB - resume when buffer drops to this
+            useSynchronizationContext: false);
+        
+        _pipe = new Pipe(pipeOptions);
         _pipeReaderStream = _pipe.Reader.AsStream();
         PipeReader = _pipe.Reader;
     }
@@ -85,7 +94,7 @@ internal sealed class RemoteJSDataStream : Stream
     /// </summary>
     public PipeReader PipeReader { get; }
 
-    private async Task<bool> ReceiveData(long chunkId, byte[] chunk, string error)
+    private async Task<JSDataStreamStatus> ReceiveData(long chunkId, byte[] chunk, string error)
     {
         try
         {
@@ -99,8 +108,6 @@ internal sealed class RemoteJSDataStream : Stream
                 throw new EndOfStreamException($"Out of sequence chunk received, expected {_expectedChunkId}, but received {chunkId}.");
             }
 
-            ++_expectedChunkId;
-
             if (chunk.Length == 0)
             {
                 throw new EndOfStreamException("The incoming data chunk cannot be empty.");
@@ -111,17 +118,32 @@ internal sealed class RemoteJSDataStream : Stream
                 throw new EndOfStreamException("The incoming data chunk exceeded the permitted length.");
             }
 
-            _bytesRead += chunk.Length;
-
-            if (_bytesRead > _totalLength)
+            if (_bytesRead + chunk.Length > _totalLength)
             {
-                throw new EndOfStreamException($"The incoming data stream declared a length {_totalLength}, but {_bytesRead} bytes were sent.");
+                throw new EndOfStreamException($"The incoming data stream declared a length {_totalLength}, but {_bytesRead + chunk.Length} bytes were sent.");
             }
+
+            // Check if the pipe is experiencing backpressure before writing.
+            // We check if unflushed bytes would exceed our threshold after this write.
+            // The threshold is set below the PauseWriterThreshold to avoid blocking.
+            const int backpressureThreshold = 96 * 1024; // 96 KB (below the 128KB pause threshold)
+            
+            if (_pipe.Writer.UnflushedBytes + chunk.Length > backpressureThreshold)
+            {
+                // Pipe would experience backpressure, signal the client to retry
+                // Don't increment expectedChunkId or bytesRead since we didn't process this chunk
+                return JSDataStreamStatus.Backpressure;
+            }
+
+            // All validations passed, now we can update state and write the chunk
+            ++_expectedChunkId;
+            _bytesRead += chunk.Length;
 
             // Start timeout _after_ performing validations on data.
             _lastDataReceivedTime = DateTimeOffset.UtcNow;
             _ = ThrowOnTimeout();
 
+            // Write the chunk to the pipe
             await _pipe.Writer.WriteAsync(chunk, _streamCancellationToken);
 
             if (_bytesRead == _totalLength)
@@ -129,7 +151,7 @@ internal sealed class RemoteJSDataStream : Stream
                 await CompletePipeAndDisposeStream();
             }
 
-            return true;
+            return JSDataStreamStatus.Success;
         }
         catch (Exception e)
         {
@@ -142,7 +164,7 @@ internal sealed class RemoteJSDataStream : Stream
                 throw;
             }
 
-            return false;
+            return JSDataStreamStatus.StreamDead;
         }
     }
 

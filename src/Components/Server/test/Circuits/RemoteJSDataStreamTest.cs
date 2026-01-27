@@ -35,10 +35,10 @@ public class RemoteJSDataStreamTest
         var unrecognizedGuid = 10;
 
         // Act
-        var success = await RemoteJSDataStream.ReceiveData(_jsRuntime, streamId: unrecognizedGuid, chunkId: 0, chunk, error: null).DefaultTimeout();
+        var status = await RemoteJSDataStream.ReceiveData(_jsRuntime, streamId: unrecognizedGuid, chunkId: 0, chunk, error: null).DefaultTimeout();
 
         // Assert
-        Assert.False(success);
+        Assert.Equal(JSDataStreamStatus.StreamDead, status);
     }
 
     [Fact]
@@ -55,8 +55,8 @@ public class RemoteJSDataStreamTest
         var sendDataTask = Task.Run(async () =>
         {
             // Act 1
-            var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null).DefaultTimeout();
-            return success;
+            var status = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null).DefaultTimeout();
+            return status;
         });
 
         // Act & Assert 2
@@ -65,8 +65,8 @@ public class RemoteJSDataStreamTest
         Assert.Equal(chunk, memoryStream.ToArray());
 
         // Act & Assert 3
-        var sendDataCompleted = await sendDataTask.DefaultTimeout();
-        Assert.True(sendDataCompleted);
+        var sendDataStatus = await sendDataTask.DefaultTimeout();
+        Assert.Equal(JSDataStreamStatus.Success, sendDataStatus);
     }
 
     [Fact]
@@ -83,8 +83,8 @@ public class RemoteJSDataStreamTest
         var sendDataTask = Task.Run(async () =>
         {
             // Act 1
-            var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null).DefaultTimeout();
-            return success;
+            var status = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null).DefaultTimeout();
+            return status;
         });
 
         // Act & Assert 2
@@ -93,8 +93,8 @@ public class RemoteJSDataStreamTest
         Assert.Equal(chunk, memoryStream.ToArray());
 
         // Act & Assert 3
-        var sendDataCompleted = await sendDataTask.DefaultTimeout();
-        Assert.True(sendDataCompleted);
+        var sendDataStatus = await sendDataTask.DefaultTimeout();
+        Assert.Equal(JSDataStreamStatus.Success, sendDataStatus);
     }
 
     [Fact]
@@ -106,8 +106,8 @@ public class RemoteJSDataStreamTest
         var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
 
         // Act & Assert 1
-        var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk: null, error: "some error").DefaultTimeout();
-        Assert.False(success);
+        var status = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk: null, error: "some error").DefaultTimeout();
+        Assert.Equal(JSDataStreamStatus.StreamDead, status);
 
         // Act & Assert 2
         using var mem = new MemoryStream();
@@ -234,8 +234,8 @@ public class RemoteJSDataStreamTest
 
         // Act & Assert 3
         // Ensures stream is disposed after the timeout and any additional chunks aren't accepted
-        var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null).DefaultTimeout();
-        Assert.False(success);
+        var status = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null).DefaultTimeout();
+        Assert.Equal(JSDataStreamStatus.StreamDead, status);
     }
 
     [Fact]
@@ -262,12 +262,12 @@ public class RemoteJSDataStreamTest
         var chunk = new byte[] { 3, 5, 7 };
 
         // Act & Assert 1
-        var success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null).DefaultTimeout();
-        Assert.True(success);
+        var status = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null).DefaultTimeout();
+        Assert.Equal(JSDataStreamStatus.Success, status);
 
         // Act & Assert 2
-        success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 1, chunk, error: null).DefaultTimeout();
-        Assert.True(success);
+        status = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 1, chunk, error: null).DefaultTimeout();
+        Assert.Equal(JSDataStreamStatus.Success, status);
 
         // Act & Assert 3
         // Trigger timeout and ensure unhandled exception raised to crush circuit
@@ -283,8 +283,8 @@ public class RemoteJSDataStreamTest
 
         // Act & Assert 5
         // Ensures stream is disposed after the timeout and any additional chunks aren't accepted
-        success = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 2, chunk, error: null).DefaultTimeout();
-        Assert.False(success);
+        status = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 2, chunk, error: null).DefaultTimeout();
+        Assert.Equal(JSDataStreamStatus.StreamDead, status);
     }
 
     [Theory]
@@ -315,6 +315,45 @@ public class RemoteJSDataStreamTest
 
         Assert.False(linkedCts.HasLinkedCancellationTokenSource);
         Assert.False(linkedCts.Token.IsCancellationRequested);
+    }
+
+    [Fact]
+    public async Task ReceiveData_StatusEnumWorks()
+    {
+        // Arrange
+        var jsRuntime = new TestRemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
+        var jsStreamReference = Mock.Of<IJSStreamReference>();
+        var remoteJSDataStream = await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(
+            jsRuntime,
+            jsStreamReference,
+            totalLength: 100,
+            signalRMaximumIncomingBytes: 10_000,
+            jsInteropDefaultCallTimeout: TimeSpan.FromMinutes(1),
+            cancellationToken: CancellationToken.None);
+        var streamId = GetStreamId(remoteJSDataStream, jsRuntime);
+        var chunk = new byte[100];
+        var random = new Random();
+        random.NextBytes(chunk);
+
+        var sendDataTask = Task.Run(async () =>
+        {
+            // Act - write data and verify we get Success status
+            var status = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId, chunkId: 0, chunk, error: null).DefaultTimeout();
+            return status;
+        });
+
+        // Read the data
+        using var memoryStream = new MemoryStream();
+        await remoteJSDataStream.CopyToAsync(memoryStream).DefaultTimeout();
+        Assert.Equal(chunk, memoryStream.ToArray());
+
+        // Verify we got Success status
+        var result = await sendDataTask.DefaultTimeout();
+        Assert.Equal(JSDataStreamStatus.Success, result);
+
+        // Verify that sending to a non-existent stream returns StreamDead
+        var deadStatus = await RemoteJSDataStream.ReceiveData(jsRuntime, streamId: 9999, chunkId: 0, chunk, error: null).DefaultTimeout();
+        Assert.Equal(JSDataStreamStatus.StreamDead, deadStatus);
     }
 
     [Theory]

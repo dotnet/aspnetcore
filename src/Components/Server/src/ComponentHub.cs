@@ -491,12 +491,12 @@ internal sealed partial class ComponentHub : Hub
         _ = circuitHost.ReceiveByteArray(id, data);
     }
 
-    public async ValueTask<bool> ReceiveJSDataChunk(long streamId, long chunkId, byte[] chunk, string error)
+    public async ValueTask<JSDataStreamStatus> ReceiveJSDataChunk(long streamId, long chunkId, byte[] chunk, string error)
     {
         var circuitHost = await GetActiveCircuitAsync();
         if (circuitHost == null)
         {
-            return false;
+            return JSDataStreamStatus.StreamDead;
         }
 
         // Note: this await will block the circuit. This is intentional.
