@@ -1,11 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Antiforgery.CrossOrigin;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Antiforgery.Internal;
 
-internal sealed class AntiforgeryMiddleware(IAntiforgery antiforgery, RequestDelegate next)
+internal sealed class AntiforgeryMiddleware(ICrossOriginAntiforgery crossOriginAntiforgery, IAntiforgery antiforgery, RequestDelegate next)
 {
     private readonly RequestDelegate _next = next;
     private readonly IAntiforgery _antiforgery = antiforgery;
@@ -30,13 +31,28 @@ internal sealed class AntiforgeryMiddleware(IAntiforgery antiforgery, RequestDel
 
         if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true })
         {
-            return InvokeAwaited(context);
+            var crossOriginResult = crossOriginAntiforgery.Validate(context);
+
+            return crossOriginResult switch
+            {
+                CrossOriginValidationResult.Allowed => _next(context),
+                CrossOriginValidationResult.Denied => HandleDenied(context),
+                CrossOriginValidationResult.Unknown or _ => InvokeTokenValidation(context)
+            };
         }
 
         return _next(context);
     }
 
-    public async Task InvokeAwaited(HttpContext context)
+    private async Task HandleDenied(HttpContext context)
+    {
+        // todo change to null
+        context.Features.Set<IAntiforgeryValidationFeature>(new AntiforgeryValidationFeature(isValid: false, exception: null));
+
+        await _next(context);
+    }
+
+    private async Task InvokeTokenValidation(HttpContext context)
     {
         try
         {
@@ -47,6 +63,7 @@ internal sealed class AntiforgeryMiddleware(IAntiforgery antiforgery, RequestDel
         {
             context.Features.Set<IAntiforgeryValidationFeature>(new AntiforgeryValidationFeature(false, e));
         }
+
         await _next(context);
     }
 }
