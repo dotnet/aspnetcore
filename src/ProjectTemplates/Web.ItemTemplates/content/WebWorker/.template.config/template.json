@@ -83,7 +83,6 @@
           "condition": "(Empty)",
           "exclude": [
             "Worker/**",
-            "Models/**",
             "Pages/**"
           ]
         }
