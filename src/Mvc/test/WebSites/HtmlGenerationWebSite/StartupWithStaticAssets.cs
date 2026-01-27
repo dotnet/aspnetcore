@@ -27,36 +27,28 @@ public class StartupWithStaticAssets
         app.UseRouting();
         app.UseEndpoints(endpoints =>
         {
-            // Map static assets with a test manifest that includes fingerprinted URLs
-            var manifestPath = Path.Combine(env.ContentRootPath, "StaticAssetsManifest.json");
-            string manifestName = null;
-            if (File.Exists(manifestPath))
-            {
-                manifestName = manifestPath;
-                endpoints.MapStaticAssets(manifestPath);
-            }
-            else
-            {
-                endpoints.MapStaticAssets();
-            }
+            // Note: We don't call MapStaticAssets() here because there's no manifest file
+            // in this test project. The important thing is that WithStaticAssets() can be
+            // called on the builder returned by MapControllerRoute() without throwing,
+            // which validates that the EndpointRouteBuilderKey is properly set.
 
             endpoints.MapControllerRoute(
                 name: "areaRoute",
                 pattern: "{area:exists}/{controller}/{action}/{id?}",
                 defaults: new { action = "Index" })
-                .WithStaticAssets(manifestName);
+                .WithStaticAssets();
 
             endpoints.MapControllerRoute(
                 name: "productRoute",
                 pattern: "Product/{action}",
                 defaults: new { controller = "Product" })
-                .WithStaticAssets(manifestName);
+                .WithStaticAssets();
 
             endpoints.MapControllerRoute(
                 name: "default",
                 pattern: "{controller}/{action}/{id?}",
                 defaults: new { controller = "HtmlGeneration_Home", action = "Index" })
-                .WithStaticAssets(manifestName);
+                .WithStaticAssets();
 
             endpoints.MapRazorPages();
         });

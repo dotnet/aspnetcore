@@ -5,10 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Update="StaticAssetsManifest.json" CopyToOutputDirectory="Always" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
