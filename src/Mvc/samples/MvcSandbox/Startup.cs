@@ -26,15 +26,10 @@ public class Startup
         {
             endpoints.MapGet("/MapGet", () => "MapGet");
 
-            // Map static assets to enable fingerprinted URL resolution
-            endpoints.MapStaticAssets();
-
             endpoints.MapControllers();
-            // Use WithStaticAssets() on MapControllerRoute to enable fingerprinted URLs in MVC views
             endpoints.MapControllerRoute(
                 Guid.NewGuid().ToString(),
-                "{controller=Home}/{action=Index}/{id?}")
-                .WithStaticAssets();
+                "{controller=Home}/{action=Index}/{id?}");
 
             endpoints.MapRazorPages();
         }
