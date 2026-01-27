@@ -379,6 +379,7 @@
     <Project Path="src/Http/samples/MinimalSampleFSharp/MinimalSampleFSharp.fsproj" />
     <Project Path="src/Http/samples/MinimalSampleOwin/MinimalSampleOwin.csproj" />
     <Project Path="src/Http/samples/SampleApp/HttpAbstractions.SampleApp.csproj" />
+    <Project Path="src/Http/samples/MinimalValidationSample/MinimalValidationSample.csproj" />
   </Folder>
   <Folder Name="/src/Http/WebUtilities/">
     <Project Path="src/Http/WebUtilities/src/Microsoft.AspNetCore.WebUtilities.csproj" />

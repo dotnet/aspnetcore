@@ -3,10 +3,18 @@
 
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Validation;
+using MinimalValidationSample;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddValidation();
+builder.Services.AddLocalization();
+builder.Services.AddValidation(options =>
+{
+    options.DataAnnotationLocalizerProvider = (type, factory) =>
+    {
+        return MockStringLocalizer.Instance;
+    };
+});
 
 var app = builder.Build();
 

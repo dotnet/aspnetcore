@@ -85,7 +85,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
 
             if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
             {
-                context.AddValidationError(Name, context.CurrentValidationPath, [result.ErrorMessage], value);
+                context.AddValidationError(Name, context.CurrentValidationPath, result.ErrorMessage, value);
                 context.CurrentValidationPath = originalPrefix; // Restore prefix
                 return;
             }
@@ -161,13 +161,13 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                     if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
                     {
                         var key = errorPrefix.TrimStart('.');
-                        context.AddOrExtendValidationErrors(name, key, [result.ErrorMessage], container);
+                        context.AddOrExtendValidationError(name, key, result.ErrorMessage, container);
                     }
                 }
                 catch (Exception ex)
                 {
                     var key = errorPrefix.TrimStart('.');
-                    context.AddOrExtendValidationErrors(name, key, [ex.Message], container);
+                    context.AddOrExtendValidationError(name, key, ex.Message, container);
                 }
             }
         }

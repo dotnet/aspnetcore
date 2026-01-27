@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.Extensions.Validation.ValidateContext.ValidateContext(Microsoft.Extensions.Localization.IStringLocalizerFactory? stringLocalizerFactory = null) -> void
+Microsoft.Extensions.Validation.ValidationOptions.DataAnnotationLocalizerProvider.get -> System.Func<System.Type!, Microsoft.Extensions.Localization.IStringLocalizerFactory!, Microsoft.Extensions.Localization.IStringLocalizer!>?
+Microsoft.Extensions.Validation.ValidationOptions.DataAnnotationLocalizerProvider.set -> void

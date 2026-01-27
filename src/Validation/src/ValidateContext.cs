@@ -3,6 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -12,6 +13,14 @@ namespace Microsoft.Extensions.Validation;
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class ValidateContext
 {
+    private readonly IStringLocalizerFactory? _stringLocalizerFactory;
+
+    /// <param name="stringLocalizerFactory">Optional string localizer factory for localizing validation error messages.</param>
+    public ValidateContext(IStringLocalizerFactory? stringLocalizerFactory = null)
+    {
+        _stringLocalizerFactory = stringLocalizerFactory;
+    }
+
     /// <summary>
     /// Gets or sets the validation context used for validating objects that implement <see cref="IValidatableObject"/> or have <see cref="ValidationAttribute"/>.
     /// This context provides access to service provider and other validation metadata.
@@ -71,41 +80,18 @@ public sealed class ValidateContext
     /// </summary>
     public event Action<ValidationErrorContext>? OnValidationError;
 
-    internal void AddValidationError(string propertyName, string key, string[] error, object? container)
+    internal void AddValidationError(string propertyName, string key, string error, object? container)
     {
         ValidationErrors ??= [];
+        var localizedError = GetLocalizedError(ValidationContext.ObjectType, error);
+        string[] errorsForKey = [localizedError];
 
-        ValidationErrors[key] = error;
+        ValidationErrors[key] = errorsForKey;
         OnValidationError?.Invoke(new ValidationErrorContext
         {
             Name = propertyName,
             Path = key,
-            Errors = error,
-            Container = container
-        });
-    }
-
-    internal void AddOrExtendValidationErrors(string propertyName, string key, string[] errors, object? container)
-    {
-        ValidationErrors ??= [];
-
-        if (ValidationErrors.TryGetValue(key, out var existingErrors))
-        {
-            var newErrors = new string[existingErrors.Length + errors.Length];
-            existingErrors.CopyTo(newErrors, 0);
-            errors.CopyTo(newErrors, existingErrors.Length);
-            ValidationErrors[key] = newErrors;
-        }
-        else
-        {
-            ValidationErrors[key] = errors;
-        }
-
-        OnValidationError?.Invoke(new ValidationErrorContext
-        {
-            Name = propertyName,
-            Path = key,
-            Errors = errors,
+            Errors = errorsForKey,
             Container = container
         });
     }
@@ -113,14 +99,15 @@ public sealed class ValidateContext
     internal void AddOrExtendValidationError(string name, string key, string error, object? container)
     {
         ValidationErrors ??= [];
+        var localizedError = GetLocalizedError(ValidationContext.ObjectType, error);
 
-        if (ValidationErrors.TryGetValue(key, out var existingErrors) && !existingErrors.Contains(error))
+        if (ValidationErrors.TryGetValue(key, out var existingErrors) && !existingErrors.Contains(localizedError))
         {
-            ValidationErrors[key] = [.. existingErrors, error];
+            ValidationErrors[key] = [.. existingErrors, localizedError];
         }
         else
         {
-            ValidationErrors[key] = [error];
+            ValidationErrors[key] = [localizedError];
         }
 
         OnValidationError?.Invoke(new ValidationErrorContext
@@ -130,5 +117,30 @@ public sealed class ValidateContext
             Errors = [error],
             Container = container
         });
+    }
+
+    internal IStringLocalizer? GetStringLocalizer(Type type)
+    {
+        if (_stringLocalizerFactory is null)
+        {
+            return null;
+        }
+
+        if (ValidationOptions.DataAnnotationLocalizerProvider is not null)
+        {
+            return ValidationOptions.DataAnnotationLocalizerProvider(type, _stringLocalizerFactory);
+        }
+
+        return _stringLocalizerFactory.Create(type);
+    }
+
+    internal string GetLocalizedError(Type type, string message)
+    {
+        var localizer = GetStringLocalizer(type);
+        if (localizer is null)
+        {
+            return message;
+        }
+        return localizer[message];
     }
 }

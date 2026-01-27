@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
 
@@ -53,6 +54,7 @@ public static partial class EditContextDataAnnotationsExtensions
         private readonly IValidatableInfo? _validatorTypeInfo;
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         private readonly Dictionary<string, FieldIdentifier> _validationPathToFieldIdentifierMapping = new();
+        private readonly IStringLocalizerFactory? _stringLocalizerFactory;
 
         [UnconditionalSuppressMessage("Trimming", "IL2066", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
         public DataAnnotationsEventSubscriptions(EditContext editContext, IServiceProvider serviceProvider)
@@ -66,6 +68,8 @@ public static partial class EditContextDataAnnotationsExtensions
                 ? typeInfo
                 : null;
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+            _stringLocalizerFactory = _serviceProvider?.GetService<IStringLocalizerFactory>();
+
             _editContext.OnFieldChanged += OnFieldChanged;
             _editContext.OnValidationRequested += OnValidationRequested;
 
@@ -151,7 +155,7 @@ public static partial class EditContextDataAnnotationsExtensions
                 return false;
             }
 
-            var validateContext = new ValidateContext
+            var validateContext = new ValidateContext(_stringLocalizerFactory)
             {
                 ValidationOptions = _validationOptions!,
                 ValidationContext = validationContext,

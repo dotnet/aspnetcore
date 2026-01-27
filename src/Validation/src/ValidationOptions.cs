@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.Extensions.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -32,6 +33,11 @@ public class ValidationOptions
     /// A maximum depth prevents stack overflows from circular references or extremely deep object graphs.
     /// </remarks>
     public int MaxDepth { get; set; } = 32;
+
+    /// <summary>
+    /// The delegate to invoke for creating <see cref="IStringLocalizer"/>.
+    /// </summary>
+    public Func<Type, IStringLocalizerFactory, IStringLocalizer>? DataAnnotationLocalizerProvider { get; set; }
 
     /// <summary>
     /// Attempts to get validation information for the specified type.

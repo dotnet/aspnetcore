@@ -24,7 +24,6 @@ Microsoft.Extensions.Validation.ValidateContext.CurrentDepth.set -> void
 Microsoft.Extensions.Validation.ValidateContext.CurrentValidationPath.get -> string!
 Microsoft.Extensions.Validation.ValidateContext.CurrentValidationPath.set -> void
 Microsoft.Extensions.Validation.ValidateContext.OnValidationError -> System.Action<Microsoft.Extensions.Validation.ValidationErrorContext>?
-Microsoft.Extensions.Validation.ValidateContext.ValidateContext() -> void
 Microsoft.Extensions.Validation.ValidateContext.ValidationContext.get -> System.ComponentModel.DataAnnotations.ValidationContext!
 Microsoft.Extensions.Validation.ValidateContext.ValidationContext.set -> void
 Microsoft.Extensions.Validation.ValidateContext.ValidationErrors.get -> System.Collections.Generic.Dictionary<string!, string![]!>?

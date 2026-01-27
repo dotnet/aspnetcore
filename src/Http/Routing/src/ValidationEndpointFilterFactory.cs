@@ -10,6 +10,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
 
@@ -57,6 +58,8 @@ internal static class ValidationEndpointFilterFactory
             return next;
         }
 
+        var stringLocalizerFactory = context.ApplicationServices.GetService<IStringLocalizerFactory>();
+
         return async (context) =>
         {
             ValidateContext? validateContext = null;
@@ -78,7 +81,7 @@ internal static class ValidationEndpointFilterFactory
 
                 if (validateContext == null)
                 {
-                    validateContext = new ValidateContext
+                    validateContext = new ValidateContext(stringLocalizerFactory)
                     {
                         ValidationOptions = options,
                         ValidationContext = validationContext
