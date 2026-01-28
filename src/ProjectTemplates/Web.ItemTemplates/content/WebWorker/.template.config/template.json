@@ -55,19 +55,9 @@
       "description": "If specified, skips the automatic restore of the project on create.",
       "defaultValue": "false"
     },
-    "Empty": {
-      "type": "parameter",
-      "datatype": "bool",
-      "defaultValue": "false",
-      "description": "If specified, creates only the WorkerClient infrastructure without sample worker code."
-    },
     "UseRenderMode": {
       "type": "computed",
       "value": "(StaticWebAssetProjectMode == \"Default\")"
-    },
-    "IncludeSampleContent": {
-      "type": "computed",
-      "value": "(!Empty)"
     }
   },
   "sources": [
@@ -77,16 +67,6 @@
       "exclude": [
         ".template.config/**",
         "WebWorkerTemplate.WorkerClient/**"
-      ],
-      "modifiers": [
-        {
-          "condition": "(Empty)",
-          "exclude": [
-            "Worker/**",
-            "Models/**",
-            "Pages/**"
-          ]
-        }
       ]
     },
     {

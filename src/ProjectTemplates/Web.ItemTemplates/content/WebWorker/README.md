@@ -4,22 +4,8 @@ This template adds WebWorker support to an existing Blazor WebAssembly project, 
 
 ## Usage
 
-### Full Template (with examples)
-
 ```bash
 dotnet new webworker
 ```
 
-This adds:
-- **WebWorkerTemplate.WorkerClient/** - The infrastructure project containing the WebWorker client
-- **Worker/** - Example [JSExport] worker class (GitHubWorker)  
-- **Models/** - Example model classes for the demo
-- **Pages/** - Example Razor page demonstrating WebWorker usage
-
-### Infrastructure Only
-
-```bash
-dotnet new webworker --empty
-```
-
-This adds only the WorkerClient infrastructure project without any example files.
+This adds the **WorkerClient** project—a reusable library that handles all WebWorker communication.

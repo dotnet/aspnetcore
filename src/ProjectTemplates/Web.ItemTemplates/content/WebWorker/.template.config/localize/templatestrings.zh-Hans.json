@@ -5,7 +5,6 @@
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "symbols/Empty/description": "If specified, creates only the WorkerClient infrastructure without sample worker code.",
   "postActions/restore/description": "Restore NuGet packages required by this project.",
   "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
   "postActions/addToSolution/description": "Add the WorkerClient project to the solution.",
