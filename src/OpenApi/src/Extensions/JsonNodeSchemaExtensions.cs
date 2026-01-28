@@ -507,19 +507,29 @@ internal static class JsonNodeSchemaExtensions
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     internal static void PruneNullTypeForComponentizedTypes(this JsonNode schema)
     {
-        if (schema.WillBeComponentized() &&
-                schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray typeArray)
+        if (schema.WillBeComponentized())
         {
-            for (var i = typeArray.Count - 1; i >= 0; i--)
+            if (schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray typeArray)
             {
-                if (typeArray[i]?.GetValue<string>() == "null")
+                for (var i = typeArray.Count - 1; i >= 0; i--)
                 {
-                    typeArray.RemoveAt(i);
+                    if (typeArray[i]?.GetValue<string>() == "null")
+                    {
+                        typeArray.RemoveAt(i);
+                    }
+                }
+                if (typeArray.Count == 1)
+                {
+                    schema[OpenApiSchemaKeywords.TypeKeyword] = typeArray[0]?.GetValue<string>();
                 }
             }
-            if (typeArray.Count == 1)
+            else if (schema[OpenApiSchemaKeywords.EnumKeyword] is JsonArray enumArray)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = typeArray[0]?.GetValue<string>();
+                var hasRemovedNull = enumArray.Remove(null);
+                if (hasRemovedNull)
+                {
+                    schema[OpenApiConstants.NullableProperty] = true;
+                }
             }
         }
     }
