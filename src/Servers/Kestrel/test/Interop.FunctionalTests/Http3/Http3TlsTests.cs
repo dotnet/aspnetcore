@@ -442,7 +442,7 @@ public class Http3TlsTests : LoggedTest
 
         try
         {
-            var expectedCertificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            using var expectedCertificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
             var bytes = expectedCertificate.Export(X509ContentType.Pkcs12, "1234");
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             File.WriteAllBytes(path, bytes);
