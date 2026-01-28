@@ -10,9 +10,5 @@
   "postActions/addToSolution/description": "Add the WorkerClient project to the solution.",
   "postActions/addToSolution/manualInstructions/default/text": "Add the generated WorkerClient project to your solution: dotnet sln add WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
   "postActions/addReference/description": "Add project reference to WorkerClient.",
-  "postActions/addReference/manualInstructions/default/text": "Add a project reference: dotnet add reference ../WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj",
-  "postActions/addUnsafeBlocksWindows/description": "Add AllowUnsafeBlocks to the project.",
-  "postActions/addUnsafeBlocksWindows/manualInstructions/default/text": "Add <AllowUnsafeBlocks>true</AllowUnsafeBlocks> to your project",
-  "postActions/addUnsafeBlocksUnix/description": "Add AllowUnsafeBlocks to the project.",
-  "postActions/addUnsafeBlocksUnix/manualInstructions/default/text": "Add <AllowUnsafeBlocks>true</AllowUnsafeBlocks> to your project"
+  "postActions/addReference/manualInstructions/default/text": "Add a project reference: dotnet add reference ../WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj"
 }

@@ -4,12 +4,22 @@ A lightweight library for running .NET code in a WebWorker from Blazor WebAssemb
 
 ## Quick Start
 
-### 1. Initialize the Client
+### 1. Register the Service
 
-Call `InitializeAsync()` and `WaitForReadyAsync()` once in `OnAfterRenderAsync` to eagerly load the worker:
+In your `Program.cs`, register the WorkerClient service:
 
 ```csharp
 using WebWorkerTemplate.WorkerClient;
+
+builder.Services.AddWorkerClient();
+```
+
+### 2. Initialize the Client
+
+Inject and initialize in your component:
+
+```csharp
+@inject IWorkerClient Worker
 
 private bool _workerReady;
 
@@ -17,8 +27,8 @@ protected override async Task OnAfterRenderAsync(bool firstRender)
 {
     if (firstRender)
     {
-        await WorkerClient.InitializeAsync();
-        await WorkerClient.WaitForReadyAsync(); // Pre-load .NET runtime in worker
+        await Worker.InitializeAsync();
+        await Worker.WaitForReadyAsync(); // Pre-load .NET runtime in worker
         _workerReady = true;
         StateHasChanged();
     }
@@ -33,7 +43,7 @@ Use `_workerReady` to conditionally enable UI elements that depend on the worker
 </button>
 ```
 
-### 2. Create a Worker Class
+### 3. Create a Worker Class
 
 Create a class with `[JSExport]` static methods in your Blazor app. These methods run in the background WebWorker thread:
 
@@ -56,42 +66,39 @@ public partial class MyWorker
 }
 ```
 
-### 3. Invoke Worker Methods
+### 4. Invoke Worker Methods
 
 ```csharp
 // Call the worker and get JSON string result
-string json = await WorkerClient.InvokeStringAsync(
-    "YourApp.Worker.MyWorker.ComputeHeavyTask", 
+string json = await Worker.InvokeStringAsync(
+    "YourApp.Worker.MyWorker.ComputeHeavyTask",
+    TimeSpan.FromSeconds(30),
     "my input");
 
 // Deserialize the result
 var result = JsonSerializer.Deserialize<MyResult>(json);
 ```
 
-> 💡 **Need a different invocation pattern?** The `WorkerClient.cs` file is part of your project. If `InvokeStringAsync` doesn't fit your needs, open `WorkerClient.cs` and implement your own method using the existing `[JSImport]` bindings as a reference.
-
 ---
 
-## `WorkerClient` Static Class
+## `IWorkerClient` Interface
 
 #### Methods
 
 ##### `InitializeAsync()`
 
 ```csharp
-public static Task InitializeAsync()
+Task InitializeAsync()
 ```
 
 Initializes the WebWorker client. **Must be called once before any other methods.** Safe to call multiple times (subsequent calls are no-ops).
-
-**Throws:** `JSException` if the JavaScript module fails to load
 
 ---
 
 ##### `InvokeStringAsync(method, timeout, args)`
 
 ```csharp
-public static Task<string> InvokeStringAsync(string method, TimeSpan timeout, params object[] args)
+Task<string> InvokeStringAsync(string method, TimeSpan timeout, params object[] args)
 ```
 
 Invokes a worker method and returns the JSON string result. Deserialize manually using `JsonSerializer.Deserialize<T>()`.
@@ -112,7 +119,7 @@ Invokes a worker method and returns the JSON string result. Deserialize manually
 **Example:**
 ```csharp
 // 2 minute timeout for long operations
-var json = await WorkerClient.InvokeStringAsync(
+var json = await Worker.InvokeStringAsync(
     "MyApp.Worker.GitHubWorker.FetchMetrics",
     TimeSpan.FromMinutes(2),
     "dotnet/aspnetcore",
@@ -121,7 +128,7 @@ var json = await WorkerClient.InvokeStringAsync(
 var metrics = JsonSerializer.Deserialize<RepoMetrics>(json);
 
 // No timeout
-var json = await WorkerClient.InvokeStringAsync(
+var json = await Worker.InvokeStringAsync(
     "MyApp.Worker.DataProcessor.Process",
     Timeout.InfiniteTimeSpan,
     data);
@@ -132,21 +139,23 @@ var json = await WorkerClient.InvokeStringAsync(
 ##### `WaitForReadyAsync()`
 
 ```csharp
-public static Task WaitForReadyAsync()
+Task WaitForReadyAsync()
 ```
 
 Waits for the worker to be fully initialized and ready. The worker loads the .NET runtime lazily on first invocation. **Recommended:** Call this in `OnAfterRenderAsync` for eager initialization to avoid delays on first worker call.
 
 **Example:**
 ```csharp
+@inject IWorkerClient Worker
+
 private bool _workerReady;
 
 protected override async Task OnAfterRenderAsync(bool firstRender)
 {
     if (firstRender)
     {
-        await WorkerClient.InitializeAsync();
-        await WorkerClient.WaitForReadyAsync(); // Pre-load .NET runtime
+        await Worker.InitializeAsync();
+        await Worker.WaitForReadyAsync(); // Pre-load .NET runtime
         _workerReady = true;
         StateHasChanged();
     }
@@ -158,7 +167,7 @@ protected override async Task OnAfterRenderAsync(bool firstRender)
 ##### `Terminate()`
 
 ```csharp
-public static void Terminate()
+void Terminate()
 ```
 
 Terminates the current worker and creates a new one. All pending requests will be rejected. Use this to recover from a stuck worker.
