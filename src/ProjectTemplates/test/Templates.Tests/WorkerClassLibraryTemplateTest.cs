@@ -38,7 +38,7 @@ public class WorkerClassLibraryTemplateTest : LoggedTest
     {
         var project = await ProjectFactory.CreateProject(Output);
 
-        await project.RunDotNetNewAsync("workerlib");
+        await project.RunDotNetNewAsync("webworker");
 
         await project.RunDotNetPublishAsync();
 

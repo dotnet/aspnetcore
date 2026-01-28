@@ -25,7 +25,7 @@ namespace Company.WorkerClassLibrary1;
 /// </code>
 /// </para>
 /// <para>
-/// Example usage in a Blazor component:
+/// Example usage:
 /// <code>
 /// @inject IJSRuntime JSRuntime
 ///
@@ -53,7 +53,7 @@ public sealed class WorkerClient(IJSObjectReference worker) : IAsyncDisposable
     /// <summary>
     /// Creates and initializes a new WebWorker instance.
     /// </summary>
-    /// <param name="jsRuntime">The Blazor JS runtime.</param>
+    /// <param name="jsRuntime">The JS runtime instance.</param>
     /// <returns>A ready-to-use WorkerClient instance.</returns>
     /// <exception cref="JSException">Thrown if the worker fails to initialize.</exception>
     public static async Task<WorkerClient> CreateAsync(IJSRuntime jsRuntime)

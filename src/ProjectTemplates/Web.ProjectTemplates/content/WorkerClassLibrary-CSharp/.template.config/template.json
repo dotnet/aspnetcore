@@ -3,18 +3,17 @@
   "author": "Microsoft",
   "classifications": [
     "Web",
-    "Blazor",
     "WebAssembly",
     "Worker",
     "Library"
   ],
-  "name": "Worker Class Library",
+  "name": ".NET Web Worker",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project for creating a class library that runs .NET code in a WebWorker, keeping your Blazor WebAssembly UI responsive during heavy computations.",
+  "description": "A project for creating a class library that runs .NET code in a WebWorker, keeping your WebAssembly UI responsive during heavy computations.",
   "groupIdentity": "Microsoft.Web.Worker",
   "precedence": "10000",
   "identity": "Microsoft.Web.Worker.Library.CSharp.10.0",
-  "shortName": "workerlib",
+  "shortName": "webworker",
   "tags": {
     "language": "C#",
     "type": "project"

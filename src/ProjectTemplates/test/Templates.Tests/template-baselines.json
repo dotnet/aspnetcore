@@ -3721,10 +3721,10 @@
       ]
     }
   },
-  "workerlib": {
+  "webworker": {
     "Default": {
-      "Template": "workerlib",
-      "Arguments": "new workerlib",
+      "Template": "webworker",
+      "Arguments": "new webworker",
       "Files": [
         "WorkerClient.cs",
         "wwwroot/worker.js",

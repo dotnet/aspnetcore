@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
-  "name": "Worker Class Library",
-  "description": "A project for creating a class library that runs .NET code in a WebWorker, keeping your Blazor WebAssembly UI responsive during heavy computations.",
+  "name": ".NET Web Worker",
+  "description": "A project for creating a class library that runs .NET code in a WebWorker, keeping your WebAssembly UI responsive during heavy computations.",
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/choices/net11.0/description": "Target net11.0",
   "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
