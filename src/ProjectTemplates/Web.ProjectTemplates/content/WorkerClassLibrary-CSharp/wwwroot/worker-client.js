@@ -1,154 +1,80 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-/**
- * Worker client for communicating with the WebWorker.
- * This module is imported by the Blazor app to send requests to the worker.
- */
+class WorkerClient {
+    #worker;
+    #pendingRequests = {};
+    #requestId = 0;
 
-const pendingRequests = {};
-let requestId = 0;
-let workerError = null;
-let worker = null;
-let workerReady = false;
-let workerReadyPromise = null;
-let workerReadyResolve = null;
-let workerReadyReject = null;
+    constructor(worker) {
+        this.#worker = worker;
+    }
 
-/**
- * Creates and initializes the WebWorker with event handlers.
- * Must be called once before using invoke methods.
- */
-export function createWorker() {
-    worker = new Worker('_content/Company.WorkerClassLibrary1/worker.js', { type: "module" });
-    workerError = null;
-    workerReady = false;
-    
-    // Create a promise that resolves when worker is ready
-    ({ promise: workerReadyPromise, resolve: workerReadyResolve, reject: workerReadyReject } = Promise.withResolvers());
+    static create() {
+        return new Promise((resolve, reject) => {
+            const worker = new Worker('_content/Company.WorkerClassLibrary1/worker.js', { type: "module" });
 
-    // Handle fatal worker errors (script load failure, unhandled exceptions, etc.)
-    worker.addEventListener('error', (e) => {
-        const errorMessage = e.message || 'Worker encountered an unhandled error';
-        console.error("Worker error:", errorMessage);
-        workerError = errorMessage;
-        
-        // Reject ready promise if not yet resolved
-        if (workerReadyReject) {
-            workerReadyReject(new Error(errorMessage));
-            workerReadyResolve = null;
-            workerReadyReject = null;
+            worker.addEventListener('error', (e) => {
+                reject(new Error(e.message || 'Worker encountered an error'));
+            });
+
+            worker.addEventListener('message', function onMessage(e) {
+                if (e.data.type === "ready") {
+                    worker.removeEventListener('message', onMessage);
+                    if (e.data.error) {
+                        reject(new Error(e.data.error));
+                    } else {
+                        const client = new WorkerClient(worker);
+                        client.#setupMessageHandler();
+                        resolve(client);
+                    }
+                }
+            });
+        });
+    }
+
+    invokeString(method, args) {
+        return new Promise((resolve, reject) => {
+            const id = ++this.#requestId;
+            this.#pendingRequests[id] = { resolve: r => resolve(String(r)), reject };
+            this.#worker.postMessage({ method, args, requestId: id });
+        });
+    }
+
+    terminate() {
+        this.#rejectAllPending("Worker terminated");
+        this.#worker?.terminate();
+        this.#worker = null;
+    }
+
+    #setupMessageHandler() {
+        this.#worker.addEventListener('message', (e) => {
+            if (e.data.type === "result") {
+                const request = this.#pendingRequests[e.data.requestId];
+                if (request) {
+                    delete this.#pendingRequests[e.data.requestId];
+                    if (e.data.error) {
+                        request.reject(new Error(e.data.error));
+                    } else {
+                        request.resolve(e.data.result);
+                    }
+                }
+            }
+        });
+
+        this.#worker.addEventListener('error', (e) => {
+            this.#rejectAllPending(e.message || 'Worker error');
+        });
+    }
+
+    #rejectAllPending(errorMessage) {
+        for (const id in this.#pendingRequests) {
+            this.#pendingRequests[id].reject(new Error(errorMessage));
+            delete this.#pendingRequests[id];
         }
-        
-        // Reject all pending requests
-        rejectAllPending(`Worker error: ${errorMessage}`);
-    });
-
-    worker.addEventListener('message', (e) => {
-        if (e.data.type === "ready") {
-            if (e.data.error) {
-                workerError = e.data.error;
-                workerReadyReject?.(new Error(e.data.error));
-            } else {
-                workerReady = true;
-                workerReadyResolve?.();
-            }
-            workerReadyResolve = null;
-            workerReadyReject = null;
-        } else if (e.data.type === "result") {
-            const request = pendingRequests[e.data.requestId];
-            if (!request) {
-                return; // Result arrived after timeout - ignore
-            }
-            delete pendingRequests[e.data.requestId];
-            
-            if (e.data.error) {
-                request.reject(new Error(e.data.error));
-            } else {
-                request.resolve(e.data.result);
-            }
-        }
-    });
-}
-
-/**
- * Rejects all pending requests with the given error message.
- */
-function rejectAllPending(errorMessage) {
-    for (const id in pendingRequests) {
-        pendingRequests[id].reject(new Error(errorMessage));
-        delete pendingRequests[id];
     }
 }
 
-/**
- * Invoke a method on the worker.
- * @param {string} method - Full method path: "Namespace.ClassName.MethodName"
- * @param {any[]} args - Arguments to pass to the method
- * @returns {Promise<any>} The result from the worker
- */
-export async function invoke(method, args) {
-    // If worker already failed, reject immediately
-    if (workerError) {
-        return Promise.reject(new Error(`Worker failed to initialize: ${workerError}`));
-    }
-    
-    // Wait for worker to be ready before sending message
-    if (!workerReady) {
-        await workerReadyPromise;
-    }
-    
-    requestId++;
-    const currentRequestId = requestId;
-    
-    const promise = new Promise((resolve, reject) => {
-        pendingRequests[currentRequestId] = { resolve, reject };
-    });
-    
-    worker.postMessage({ method, args, requestId: currentRequestId });
-    
-    return promise;
-}
-
-/**
- * Invoke a method on the worker that returns a string.
- * This is a convenience wrapper that ensures the result is returned as a string.
- * @param {string} method - Full method path: "Namespace.ClassName.MethodName"
- * @param {any[]} args - Arguments to pass to the method
- * @returns {Promise<string>} The string result from the worker
- */
-export function invokeString(method, args) {
-    return invoke(method, args).then(result => String(result));
-}
-
-/**
- * Terminates the current worker and creates a new one.
- * All pending requests will be rejected with an error.
- * Use this to recover from a stuck or unresponsive worker.
- */
-export function terminate() {
-    // Reject all pending requests
-    rejectAllPending("Worker was terminated");
-    
-    // Kill the worker
-    if (worker) {
-        worker.terminate();
-    }
-    
-    // Create a fresh worker
-    createWorker();
-}
-
-/**
- * Wait for the worker to be fully initialized and ready.
- * @returns {Promise<void>} Resolves when worker is ready, rejects if initialization failed
- */
-export function waitForReady() {
-    if (workerReady) {
-        return Promise.resolve();
-    }
-    if (workerError) {
-        return Promise.reject(new Error(workerError));
-    }
-    return workerReadyPromise;
+export function create() {
+    return WorkerClient.create();
 }

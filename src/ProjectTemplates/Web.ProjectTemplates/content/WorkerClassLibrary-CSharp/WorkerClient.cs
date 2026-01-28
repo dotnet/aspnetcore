@@ -7,70 +7,93 @@ namespace Company.WorkerClassLibrary1;
 
 /// <summary>
 /// Client for communicating with a WebWorker running .NET code.
-/// Initialize once, then call worker methods dynamically.
 /// </summary>
-public sealed class WorkerClient : IWorkerClient, IAsyncDisposable
+/// <remarks>
+/// <para>
+/// Worker methods must be static methods marked with <c>[JSExport]</c> in a <c>static partial class</c>.
+/// The project containing worker methods requires <c>&lt;AllowUnsafeBlocks&gt;true&lt;/AllowUnsafeBlocks&gt;</c>.
+/// </para>
+/// <para>
+/// Example worker class:
+/// <code>
+/// [SupportedOSPlatform("browser")]
+/// public static partial class MyWorker
+/// {
+///     [JSExport]
+///     public static string Process(string input) => $"Processed: {input}";
+/// }
+/// </code>
+/// </para>
+/// <para>
+/// Example usage in a Blazor component:
+/// <code>
+/// @inject IJSRuntime JSRuntime
+///
+/// private WorkerClient? _worker;
+///
+/// protected override async Task OnAfterRenderAsync(bool firstRender)
+/// {
+///     if (firstRender)
+///     {
+///         _worker = await WorkerClient.CreateAsync(JSRuntime);
+///     }
+/// }
+///
+/// async Task CallWorker()
+/// {
+///     var result = await _worker!.InvokeStringAsync("MyApp.MyWorker.Process", ["Hello"]);
+/// }
+///
+/// public async ValueTask DisposeAsync() => await (_worker?.DisposeAsync() ?? ValueTask.CompletedTask);
+/// </code>
+/// </para>
+/// </remarks>
+public sealed class WorkerClient(IJSObjectReference worker) : IAsyncDisposable
 {
-    private readonly IJSRuntime _jsRuntime;
-    private IJSObjectReference? _module;
-
-    public WorkerClient(IJSRuntime jsRuntime)
+    /// <summary>
+    /// Creates and initializes a new WebWorker instance.
+    /// </summary>
+    /// <param name="jsRuntime">The Blazor JS runtime.</param>
+    /// <returns>A ready-to-use WorkerClient instance.</returns>
+    /// <exception cref="JSException">Thrown if the worker fails to initialize.</exception>
+    public static async Task<WorkerClient> CreateAsync(IJSRuntime jsRuntime)
     {
-        _jsRuntime = jsRuntime;
-    }
-
-    private void EnsureInitialized()
-    {
-        if (_module is null)
-        {
-            throw new InvalidOperationException("WorkerClient is not initialized. Call InitializeAsync first.");
-        }
-    }
-
-    /// <inheritdoc />
-    public async Task InitializeAsync()
-    {
-        if (_module is not null)
-        {
-            return;
-        }
-
-        _module = await _jsRuntime.InvokeAsync<IJSObjectReference>(
+        await using var module = await jsRuntime.InvokeAsync<IJSObjectReference>(
             "import", "./_content/Company.WorkerClassLibrary1/worker-client.js");
 
-        await _module.InvokeVoidAsync("createWorker");
+        var workerRef = await module.InvokeAsync<IJSObjectReference>("create");
+
+        return new WorkerClient(workerRef);
     }
 
-    /// <inheritdoc />
-    public void Terminate()
+    /// <summary>
+    /// Invokes a method on the worker and returns the result as a string.
+    /// </summary>
+    /// <param name="method">Full method path: "Namespace.ClassName.MethodName"</param>
+    /// <param name="args">Arguments to pass to the method.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <returns>The string result from the worker method.</returns>
+    /// <exception cref="OperationCanceledException">Thrown if the operation is canceled.</exception>
+    /// <exception cref="JSException">Thrown if the worker method throws an exception.</exception>
+    public async Task<string> InvokeStringAsync(string method, object[] args, CancellationToken cancellationToken = default)
     {
-        EnsureInitialized();
-        ((IJSInProcessObjectReference)_module!).InvokeVoid("terminate");
+        return await worker.InvokeAsync<string>("invokeString", cancellationToken, [method, args]);
     }
 
-    /// <inheritdoc />
-    public async Task WaitForReadyAsync()
-    {
-        EnsureInitialized();
-        await _module!.InvokeVoidAsync("waitForReady");
-    }
-
-    /// <inheritdoc />
-    public async Task<string> InvokeStringAsync(string method, TimeSpan timeout, params object[] args)
-    {
-        EnsureInitialized();
-        var workerTask = _module!.InvokeAsync<string>("invokeString", method, args).AsTask();
-        return timeout == Timeout.InfiniteTimeSpan
-            ? await workerTask
-            : await workerTask.WaitAsync(timeout);
-    }
-
+    /// <summary>
+    /// Terminates the worker and releases resources.
+    /// </summary>
     public async ValueTask DisposeAsync()
     {
-        if (_module is not null)
+        try
         {
-            await _module.DisposeAsync();
-            _module = null;
+            await worker.InvokeVoidAsync("terminate");
         }
+        catch (JSDisconnectedException)
+        {
+            // Circuit disconnected, worker is already gone
+        }
+
+        await worker.DisposeAsync();
     }
 }
