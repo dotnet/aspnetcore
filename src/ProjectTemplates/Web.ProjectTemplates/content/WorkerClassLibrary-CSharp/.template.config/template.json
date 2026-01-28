@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "Web",
+    "Blazor",
+    "WebAssembly",
+    "Worker",
+    "Library"
+  ],
+  "name": "Worker Class Library",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "A project for creating a class library that runs .NET code in a WebWorker, keeping your Blazor WebAssembly UI responsive during heavy computations.",
+  "groupIdentity": "Microsoft.Web.Worker",
+  "precedence": "10000",
+  "identity": "Microsoft.Web.Worker.Library.CSharp.10.0",
+  "shortName": "workerlib",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "Company.WorkerClassLibrary1",
+  "preferNameDirectory": true,
+  "symbols": {
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "net10.0",
+          "description": "Target net10.0"
+        }
+      ],
+      "defaultValue": "net10.0"
+    },
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "defaultValue": "false"
+    }
+  },
+  "primaryOutputs": [
+    {
+      "path": "Company.WorkerClient1.csproj"
+    }
+  ],
+  "postActions": [
+    {
+      "id": "restore",
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore'"
+        }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    }
+  ]
+}

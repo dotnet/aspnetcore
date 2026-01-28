@@ -5,21 +5,6 @@
     <PackageId>Microsoft.DotNet.Web.ItemTemplates.$(AspNetCoreMajorMinorVersion)</PackageId>
     <Description>Web File Templates for Microsoft Template Engine.</Description>
     <UsingToolTemplateLocalizer>true</UsingToolTemplateLocalizer>
-    <ComponentsWebAssemblyProjectsRoot>$(RepoRoot)src\Components\WebAssembly\</ComponentsWebAssemblyProjectsRoot>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <GeneratedContentProperties>
-      DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
-    </GeneratedContentProperties>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)WebAssembly\src\Microsoft.AspNetCore.Components.WebAssembly.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <GeneratedContent Include="WebWorkerTemplate.WorkerClient.csproj.in" OutputPath="content/WebWorker/WebWorkerTemplate.WorkerClient/WebWorkerTemplate.WorkerClient.csproj" />
-  </ItemGroup>
 
 </Project>

@@ -20,7 +20,7 @@ let workerReadyReject = null;
  * Must be called once before using invoke methods.
  */
 export function createWorker() {
-    worker = new Worker('_content/WebWorkerTemplate.WorkerClient/worker.js', { type: "module" });
+    worker = new Worker('_content/Company.WorkerClassLibrary1/worker.js', { type: "module" });
     workerError = null;
     workerReady = false;
     

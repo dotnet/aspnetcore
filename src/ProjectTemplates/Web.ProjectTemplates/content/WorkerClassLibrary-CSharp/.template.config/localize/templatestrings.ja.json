@@ -1,0 +1,10 @@
+{
+  "author": "Microsoft",
+  "name": "Blazor WebWorker Client",
+  "description": "A library for running .NET code in a WebWorker from Blazor WebAssembly, keeping your UI responsive during heavy computations.",
+  "symbols/Framework/description": "The target framework for the project.",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
+  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
+  "postActions/restore/description": "Restore NuGet packages required by this project.",
+  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+}

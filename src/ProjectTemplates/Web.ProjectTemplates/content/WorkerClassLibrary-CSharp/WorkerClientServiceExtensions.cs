@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace WebWorkerTemplate.WorkerClient;
+namespace Company.WorkerClassLibrary1;
 
 /// <summary>
 /// Extension methods for registering WorkerClient services.
