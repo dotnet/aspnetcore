@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
@@ -85,7 +86,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
         ErrorDescriber = errors;
         Logger = logger;
         ServiceProvider = services;
-        _metrics = services?.GetService<UserManagerMetrics>();
+        // UserManagerMetrics created from constructor because of difficulties registering internal type.        
+        _metrics = services?.GetService<IMeterFactory>() is { } factory ? new UserManagerMetrics(factory) : null;
 
         if (userValidators != null)
         {
@@ -2098,7 +2100,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
             return false;
         }
         var lockoutTime = await store.GetLockoutEndDateAsync(user, CancellationToken).ConfigureAwait(false);
-        return lockoutTime >= DateTimeOffset.UtcNow;
+        return lockoutTime >= UtcNow();
     }
 
     /// <summary>
@@ -2220,7 +2222,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
                 return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.IncrementAccessFailed, startTimestamp).ConfigureAwait(false);
             }
             Logger.LogDebug(LoggerEventIds.UserLockedOut, "User is locked out.");
-            await store.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.Add(Options.Lockout.DefaultLockoutTimeSpan),
+            await store.SetLockoutEndDateAsync(user, UtcNow().Add(Options.Lockout.DefaultLockoutTimeSpan),
                 CancellationToken).ConfigureAwait(false);
             await store.ResetAccessFailedCountAsync(user, CancellationToken).ConfigureAwait(false);
             return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.IncrementAccessFailed, startTimestamp).ConfigureAwait(false);
@@ -2728,6 +2730,19 @@ public class UserManager<TUser> : IDisposable where TUser : class
             _disposed = true;
         }
     }
+
+#if NET8_0_OR_GREATER
+    private DateTimeOffset UtcNow()
+    {
+        var timeProvider = ServiceProvider.GetService<TimeProvider>();
+        return timeProvider?.GetUtcNow() ?? DateTimeOffset.UtcNow;
+    }
+#else
+    private static DateTimeOffset UtcNow()
+    {
+        return DateTimeOffset.UtcNow;
+    }
+#endif
 
     private IUserTwoFactorStore<TUser> GetUserTwoFactorStore()
     {

@@ -30,6 +30,11 @@ public static class DbUtil
                 .UseSqlite(connection);
         });
 
+        services.Configure<IdentityOptions>(options =>
+        {
+            options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+        });
+
         return services;
     }
 

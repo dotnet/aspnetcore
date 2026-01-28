@@ -20,8 +20,9 @@
   <ItemGroup>
     <Reference Include="@(AspNetCoreShippingAssembly)" />
 
-    <!-- This project does not produce a .dll -->
+    <!-- These projects do not produce a .dll -->
     <Reference Remove="Microsoft.Extensions.ApiDescription.Server" />
+    <Reference Remove="Microsoft.AspNetCore.App.Internal.Assets" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

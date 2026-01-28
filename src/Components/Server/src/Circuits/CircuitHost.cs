@@ -33,7 +33,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private bool _onConnectionDownFired;
     private bool _disposed;
     private long _startTime;
-    private PersistedCircuitState _persistedCircuitState;
+    private ResumedPersistedCircuitState _persistedCircuitState;
 
     // This event is fired when there's an unrecoverable exception coming from the circuit, and
     // it need so be torn down. The registry listens to this even so that the circuit can
@@ -927,7 +927,7 @@ internal partial class CircuitHost : IAsyncDisposable
         }
     }
 
-    internal void AttachPersistedState(PersistedCircuitState persistedCircuitState)
+    internal void AttachPersistedState(ResumedPersistedCircuitState persistedCircuitState)
     {
         if (_persistedCircuitState != null)
         {
@@ -937,7 +937,7 @@ internal partial class CircuitHost : IAsyncDisposable
         _persistedCircuitState = persistedCircuitState;
     }
 
-    internal PersistedCircuitState TakePersistedCircuitState()
+    internal ResumedPersistedCircuitState TakePersistedCircuitState()
     {
         var result = _persistedCircuitState;
         _persistedCircuitState = null;

@@ -1,75 +1,78 @@
 ﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
   
-  <String Id="Caption" Value="[WixBundleName] Setup"/>
+  <String Id="Caption" Value="Installation de [WixBundleName]"/>
   
   <String Id="Title" Value="[BUNDLEMONIKER]"/>
   
   
   <String Id="InstallVersion" Value="Version [WixBundleVersion]"/>
-  <String Id="ConfirmCancelMessage" Value="Are you sure you want to cancel?"/>
-  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Previous version"/>
-  <String Id="HelpHeader" Value="Setup Help"/>
+  <String Id="ConfirmCancelMessage" Value="Voulez-vous vraiment annuler ?"/>
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Version précédente"/>
+  <String Id="HelpHeader" Value="Aide sur l’installation"/>
   
-  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - installs, repairs, uninstalls or
-   creates a complete local copy of the bundle in directory. Install is the default.
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] – installe, répare, désinstalle ou
+   crée une copie locale complète du bundle dans le répertoire. L’installation constitue la valeur par défaut.
 
-/passive | /quiet -  displays minimal UI with no prompts or displays no UI and
-   no prompts. By default UI and all prompts are displayed.
+/passive | /quiet – affiche une interface utilisateur minimale sans requêtes ou n’affiche ni interface utilisateur et
+   aucune requête. Par défaut, l’interface utilisateur et toutes les requêtes sont affichées.
 
-/norestart   - suppress any attempts to restart. By default UI will prompt before restart.
-/log log.txt - logs to a specific file. By default a log file is created in %TEMP%."/>
-  <String Id="HelpCloseButton" Value="&amp;Close"/>
-  <String Id="InstallAcceptCheckbox" Value="I &amp;agree to the license terms and conditions"/>
-  <String Id="InstallInstallButton" Value="&amp;Install"/>
-  <String Id="InstallCloseButton" Value="&amp;Close"/>
-  <String Id="ProgressHeader" Value="Setup Progress"/>
-  <String Id="ProgressLabel" Value="Processing:"/>
-  <String Id="OverallProgressPackageText" Value="Initializing..."/>
-  <String Id="ProgressCancelButton" Value="&amp;Cancel"/>
-  <String Id="ModifyHeader" Value="Modify Setup"/>
-  <String Id="ModifyRepairButton" Value="&amp;Repair"/>
-  <String Id="ModifyUninstallButton" Value="&amp;Uninstall"/>
-  <String Id="ModifyCloseButton" Value="&amp;Close"/>
-  <String Id="SuccessCacheHeader" Value="Cache Successfully Completed"/>
-  <String Id="SuccessModifyHeader" Value="Modify Successfully Completed"/>
-  <String Id="SuccessUnsafeUninstallHeader" Value="Uninstall Successfully Completed"/>
-  <String Id="SuccessLayoutHeader" Value="Layout Successfully Completed"/>
-  <String Id="SuccessRepairHeader" Value="Repair Successfully Completed"/>
-  <String Id="SuccessUninstallHeader" Value="Uninstall Successfully Completed"/>
-  <String Id="SuccessInstallHeader" Value="Installation Successfully Completed"/>
-  <String Id="SuccessHeader" Value="Setup Successful"/>
-  <String Id="SuccessLaunchButton" Value="&amp;Launch"/>
-  <String Id="SuccessRestartText" Value="You must restart your computer before you can use the software."/>
-  <String Id="SuccessUninstallRestartText" Value="You must restart your computer to complete the removal of the software."/>
-  <String Id="SuccessRestartButton" Value="&amp;Restart"/>
-  <String Id="SuccessCloseButton" Value="&amp;Close"/>
-  <String Id="FailureHeader" Value="Setup Failed"/>
-  <String Id="FailureCacheHeader" Value="Cache Failed"/>
-  <String Id="FailureLayoutHeader" Value="Layout Failed"/>
-  <String Id="FailureInstallHeader" Value="Setup Failed"/>
-  <String Id="FailureUninstallHeader" Value="Uninstall Failed"/>
-  <String Id="FailureUnsafeUninstallHeader" Value="Uninstall Failed"/>
-  <String Id="FailureRepairHeader" Value="Repair Failed"/>
-  <String Id="FailureModifyHeader" Value="Modify Failed"/>
-  <String Id="FailureHyperlinkLogText" Value="One or more issues caused the setup to fail. Please fix the issues and then retry setup. For more information see the &lt;a href=&quot;#&quot;&gt;log file&lt;/a&gt;."/>
-  <String Id="FailureRestartText" Value="You must restart your computer to complete the rollback of the software."/>
-  <String Id="FailureRestartButton" Value="&amp;Restart"/>
-  <String Id="FailureCloseButton" Value="&amp;Close"/>
-  <String Id="FilesInUseHeader" Value="Files In Use"/>
-  <String Id="FilesInUseLabel" Value="The following applications are using files that need to be updated:"/>
-  <String Id="FilesInUseCloseRadioButton" Value="Close the &amp;applications and attempt to restart them."/>
-  <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Do not close applications. A reboot will be required."/>
-  <String Id="FilesInUseNetfxCloseRadioButton" Value="Close the &amp;applications."/>
+/norestart   – supprime toute tentative de redémarrage. Par défaut, l’interface utilisateur vous invite à redémarrer.
+/log log.txt – enregistre dans un fichier spécifique. Par défaut, un fichier journal est créé dans %TEMP%."/>
+  <String Id="HelpCloseButton" Value="&amp;Fermer"/>
+  <String Id="InstallAcceptCheckbox" Value="J’&amp;accepte les conditions générales de la licence"/>
+  <String Id="InstallInstallButton" Value="&amp;Installer"/>
+  <String Id="InstallCloseButton" Value="&amp;Fermer"/>
+  <String Id="ProgressHeader" Value="Progression de l’opération"/>
+  <String Id="ProgressLabel" Value="Traitement :"/>
+  <String Id="OverallProgressPackageText" Value="Initialisation en cours... Merci de patienter."/>
+  <String Id="ProgressCancelButton" Value="&amp;Annuler"/>
+  <String Id="ModifyHeader" Value="Modifier la configuration"/>
+  <String Id="ModifyRepairButton" Value="&amp;Réparer"/>
+  <String Id="ModifyUninstallButton" Value="&amp;Désinstaller"/>
+  <String Id="ModifyCloseButton" Value="&amp;Fermer"/>
+  <String Id="SuccessCacheHeader" Value="Cache correctement terminé"/>
+  <String Id="SuccessModifyHeader" Value="Modification correctement terminée"/>
+  <String Id="SuccessUnsafeUninstallHeader" Value="Désinstallation correctement terminée"/>
+  <String Id="SuccessLayoutHeader" Value="Mise en page correctement terminée"/>
+  <String Id="SuccessRepairHeader" Value="Réparation correctement terminée"/>
+  <String Id="SuccessUninstallHeader" Value="Désinstallation correctement terminée"/>
+  <String Id="SuccessInstallHeader" Value="Installation correctement terminée"/>
+  <String Id="SuccessHeader" Value="Installation réussie"/>
+  <String Id="SuccessLaunchButton" Value="&amp;Lancement"/>
+  <String Id="SuccessRestartText" Value="Vous devez redémarrer votre ordinateur avant de pouvoir utiliser le logiciel."/>
+  <String Id="SuccessUninstallRestartText" Value="Vous devez redémarrer votre ordinateur pour terminer la suppression du logiciel."/>
+  <String Id="SuccessRestartButton" Value="&amp;Redémarrer"/>
+  <String Id="SuccessCloseButton" Value="&amp;Fermer"/>
+  <String Id="FailureHeader" Value="Nous n’avons pas pu effectuer l’installation"/>
+  <String Id="FailureCacheHeader" Value="Échec du cache"/>
+  <String Id="FailureLayoutHeader" Value="Échec de la mise en page"/>
+  <String Id="FailureInstallHeader" Value="Nous n’avons pas pu effectuer l’installation"/>
+  <String Id="FailureUninstallHeader" Value="Nous n’avons pas pu effectuer la désinstallation"/>
+  <String Id="FailureUnsafeUninstallHeader" Value="Nous n’avons pas pu effectuer la désinstallation"/>
+  <String Id="FailureRepairHeader" Value="Nous n’avons pas pu effectuer la réparation"/>
+  <String Id="FailureModifyHeader" Value="Modification échouée"/>
+  <String Id="FailureHyperlinkLogText" Value="Un ou plusieurs problèmes ont provoqué l’échec de l’installation. Veuillez résoudre les problèmes, puis réessayer la configuration. Pour découvrir plus d’informations, consultez le &lt;a href=&quot;#&quot;&gt;fichier journal&lt;/a&gt;."/>
+  <String Id="FailureRestartText" Value="Vous devez redémarrer votre ordinateur pour terminer l'opération de restauration du logiciel."/>
+  <String Id="FailureRestartButton" Value="&amp;Redémarrer"/>
+  <String Id="FailureCloseButton" Value="&amp;Fermer"/>
+  <String Id="FilesInUseHeader" Value="Fichiers en cours d’utilisation"/>
+  <String Id="FilesInUseLabel" Value="Les applications suivantes utilisent des fichiers qui doivent être mis à jour :"/>
+  <String Id="FilesInUseCloseRadioButton" Value="Fermer les &amp;applications et essayer de les redémarrer."/>
+  <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Ne fermez pas les applications. Un redémarrage sera nécessaire."/>
+  <String Id="FilesInUseNetfxCloseRadioButton" Value="Fermez les &amp;applications."/>
   <String Id="FilesInUseOkButton" Value="&amp;OK"/>
-  <String Id="FilesInUseCancelButton" Value="&amp;Cancel"/>
-  <String Id="FilesInUseRetryButton" Value="&amp;Retry"/>
-  <String Id="FilesInUseIgnoreButton" Value="&amp;Ignore"/>
-  <String Id="FilesInUseExitButton" Value="E&amp;xit"/>
-  <String Id="FilesInUseTitle" Value="Files In Use"/>
-  <String Id="LicenseAssent" Value="By clicking Install, you agree to the following terms:"/>
+  <String Id="FilesInUseCancelButton" Value="&amp;Annuler"/>
+  <String Id="FilesInUseRetryButton" Value="&amp;Recommencer"/>
+  <String Id="FilesInUseIgnoreButton" Value="&amp;Ignorer"/>
+  <String Id="FilesInUseExitButton" Value="Q&amp;uitter"/>
+  <String Id="FilesInUseTitle" Value="Fichiers en cours d’utilisation"/>
+  <String Id="LicenseAssent" Value="En cliquant sur Installer, vous acceptez les conditions suivantes :"/>
   <String Id="WelcomeHeaderMessage">ASP.NET Runtime</String>
   <String Id="WelcomeDescription">The ASP.NET Runtime is used to run ASP.NET applications, on your Windows computer. ASP.NET is open source, cross platform, and supported by Microsoft. We hope you enjoy it!</String>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;Déclaration de confidentialité&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;Informations de licence pour .NET&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Collecte de données de télémétrie et option de refus&lt;/A&gt;"/>
 
   
-  <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;license terms&lt;/a&gt; and &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;privacy statement&lt;/a&gt;."/>
+  <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;conditions de licence&lt;/a&gt; et &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;déclaration de confidentialité&lt;/a&gt;."/>
 </WixLocalization>

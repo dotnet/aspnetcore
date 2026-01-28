@@ -220,6 +220,26 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// Gets the value to be used for the input's "id" attribute.
+    /// </summary>
+    /// <remarks>
+    /// If an explicit "id" is provided via <see cref="AdditionalAttributes"/>, that value takes precedence.
+    /// Otherwise, the id is derived from <see cref="NameAttributeValue"/> with invalid characters sanitized.
+    /// </remarks>
+    protected string IdAttributeValue
+    {
+        get
+        {
+            if (AdditionalAttributes?.TryGetValue("id", out var idAttributeValue) ?? false)
+            {
+                return Convert.ToString(idAttributeValue, CultureInfo.InvariantCulture) ?? string.Empty;
+            }
+
+            return FieldIdGenerator.SanitizeHtmlId(NameAttributeValue);
+        }
+    }
+
     /// <inheritdoc />
     public override Task SetParametersAsync(ParameterView parameters)
     {
@@ -369,10 +389,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     void IDisposable.Dispose()
     {
         // When initialization in the SetParametersAsync method fails, the EditContext property can remain equal to null
-        if (EditContext is not null)
-        {
-            EditContext.OnValidationStateChanged -= _validationStateChangedHandler;
-        }
+        EditContext?.OnValidationStateChanged -= _validationStateChangedHandler;
 
         // Clear parsing validation messages store owned by the input when the input is disposed.
         if (_parsingValidationMessages != null)

@@ -49,7 +49,6 @@
       "src\\JSInterop\\Microsoft.JSInterop\\src\\Microsoft.JSInterop.csproj",
       "src\\Localization\\Abstractions\\src\\Microsoft.Extensions.Localization.Abstractions.csproj",
       "src\\Middleware\\CORS\\src\\Microsoft.AspNetCore.Cors.csproj",
-      "src\\Middleware\\ConcurrencyLimiter\\src\\Microsoft.AspNetCore.ConcurrencyLimiter.csproj",
       "src\\Middleware\\Diagnostics.Abstractions\\src\\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj",
       "src\\Middleware\\Diagnostics.EntityFrameworkCore\\src\\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj",
       "src\\Middleware\\Diagnostics\\src\\Microsoft.AspNetCore.Diagnostics.csproj",

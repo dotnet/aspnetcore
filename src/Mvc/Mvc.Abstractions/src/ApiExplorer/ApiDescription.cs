@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 
@@ -41,6 +42,11 @@ public class ApiDescription
     /// Gets or sets relative url path template (relative to application root) for this api.
     /// </summary>
     public string? RelativePath { get; set; }
+
+    /// <summary>
+    /// Gets or sets the route pattern for this api.
+    /// </summary>
+    public RoutePattern? RoutePattern { get; set; }
 
     /// <summary>
     /// Gets the list of possible formats for a request.

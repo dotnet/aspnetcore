@@ -24,6 +24,7 @@ internal sealed class OutputCacheMiddleware
     private readonly ILogger _logger;
     private readonly IOutputCacheStore _store;
     private readonly IOutputCacheKeyProvider _keyProvider;
+    private readonly IOutputCachePolicyProvider _policyProvider;
     private readonly WorkDispatcher<string, OutputCacheEntry?> _outputCacheEntryDispatcher;
     private readonly WorkDispatcher<string, OutputCacheEntry?> _requestDispatcher;
 
@@ -35,18 +36,21 @@ internal sealed class OutputCacheMiddleware
     /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
     /// <param name="outputCache">The <see cref="IOutputCacheStore"/> store.</param>
     /// <param name="poolProvider">The <see cref="ObjectPoolProvider"/> used for creating <see cref="ObjectPool"/> instances.</param>
+    /// <param name="policyProvider">The <see cref="IOutputCachePolicyProvider"/> used to resolve cache policies.</param>
     public OutputCacheMiddleware(
         RequestDelegate next,
         IOptions<OutputCacheOptions> options,
         ILoggerFactory loggerFactory,
         IOutputCacheStore outputCache,
-        ObjectPoolProvider poolProvider
+        ObjectPoolProvider poolProvider,
+        IOutputCachePolicyProvider policyProvider
         )
         : this(
             next,
             options,
             loggerFactory,
             outputCache,
+            policyProvider,
             new OutputCacheKeyProvider(poolProvider, options))
     { }
 
@@ -56,18 +60,21 @@ internal sealed class OutputCacheMiddleware
         IOptions<OutputCacheOptions> options,
         ILoggerFactory loggerFactory,
         IOutputCacheStore cache,
+        IOutputCachePolicyProvider policyProvider,
         IOutputCacheKeyProvider keyProvider)
     {
         ArgumentNullException.ThrowIfNull(next);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(loggerFactory);
         ArgumentNullException.ThrowIfNull(cache);
+        ArgumentNullException.ThrowIfNull(policyProvider);
         ArgumentNullException.ThrowIfNull(keyProvider);
 
         _next = next;
         _options = options.Value;
         _logger = loggerFactory.CreateLogger<OutputCacheMiddleware>();
         _store = cache;
+        _policyProvider = policyProvider;
         _keyProvider = keyProvider;
         _outputCacheEntryDispatcher = new();
         _requestDispatcher = new();
@@ -217,10 +224,11 @@ internal sealed class OutputCacheMiddleware
         policies = Array.Empty<IOutputCachePolicy>();
         List<IOutputCachePolicy>? result = null;
 
-        if (_options.BasePolicies != null)
+        var basePolicies = _policyProvider.GetBasePolicies();
+        if (basePolicies.Count > 0)
         {
             result = new();
-            result.AddRange(_options.BasePolicies);
+            result.AddRange(basePolicies);
         }
 
         var metadata = httpContext.GetEndpoint()?.Metadata;

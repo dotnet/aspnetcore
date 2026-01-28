@@ -70,6 +70,11 @@
                       Condition=" '$(TargetOsName)' == 'win' and '$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1') " />
   </ItemGroup>
 
+  <!-- Build the RepoTasks before anything else -->
+  <ItemGroup>
+    <ProjectToBuild Include="$(RepoRoot)eng\tools\RepoTasks\RepoTasks.csproj" BuildStep="repotasks" SkipProjectList="true" />
+  </ItemGroup>
+
   <Choose>
     <!-- Project selection can be overridden on the command line by passing in -projects. -->
     <When Condition="'$(ProjectToBuild)' != '' and '$(DotNetBuildPass)' != '2'">
@@ -96,6 +101,14 @@
         </ProjectToBuild>
         <!-- Build SiteExtensions -->
         <ProjectToBuild Include="$(RepoRoot)src\SiteExtensions\LoggingAggregate\src\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj">
+          <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
+        </ProjectToBuild>
+        <!-- Build Grpc Transcoding -->
+        <ProjectToBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\**\*.csproj">
+          <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
+        </ProjectToBuild>
+        <!-- Build DotNetApiDocs.Transport -->
+        <ProjectToBuild Include="$(RepoRoot)src\Framework\Microsoft.Internal.Aspnetcore.DotNetApiDocs.Transport\**\*.csproj">
           <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
         </ProjectToBuild>
       </ItemGroup>
@@ -151,8 +164,8 @@
           the entire pattern will silently fail to evaluate correctly.
         -->
 
-        <!-- 
-          When adding new projects to this file, add them to either ProjectsWithTestsSubset1 or 
+        <!--
+          When adding new projects to this file, add them to either ProjectsWithTestsSubset1 or
           ProjectsWithTestsSubset2 - whichever has fewer entries.
         -->
 

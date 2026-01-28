@@ -63,7 +63,7 @@
   </PropertyGroup>
 
   <!-- blazor.webview.js should exist after eng/Npm.Workspace.nodeproj builds. Warn if not. -->
-  <Target Name="_CheckBlazorWebViewJSPath" AfterTargets="ResolveProjectReferences" Condition=" !EXISTS('$(BlazorWebViewJSFile)') ">
+  <Target Name="_CheckBlazorWebViewJSPath" AfterTargets="ResolveProjectReferences" Condition=" !EXISTS('$(BlazorWebViewJSFile)') AND '$(DotNetBuildPass)' != '2' ">
     <Warning Text="'$(BlazorWebViewJSFile)' does not exist and won't be included in the build." />
   </Target>
 

@@ -286,7 +286,7 @@ public class CircuitPersistenceManagerTest
     {
         var deserializer = SetupMockDeserializer();
 
-        var result = CircuitPersistenceManager.ToRootComponentOperationBatch(deserializer.Object, [.. "{}"u8], "ops");
+        var result = CircuitPersistenceManager.ToRootComponentOperationBatch(deserializer.Object, new Dictionary<int, WebRootComponentDescriptor>(), "ops");
         Assert.NotNull(result);
     }
 
@@ -302,21 +302,12 @@ public class CircuitPersistenceManagerTest
                     false))
             .Returns(false);
 
-        var result = CircuitPersistenceManager.ToRootComponentOperationBatch(deserializer.Object, [.. "{}"u8], "ops");
+        var result = CircuitPersistenceManager.ToRootComponentOperationBatch(deserializer.Object, new Dictionary<int, WebRootComponentDescriptor>(), "ops");
         Assert.Null(result);
     }
 
     [Fact]
-    public void ToRootComponentOperationBatch_Fails_IfDeserializingPersistedRootComponents_Fails()
-    {
-        var deserializer = SetupMockDeserializer();
-
-        var result = CircuitPersistenceManager.ToRootComponentOperationBatch(deserializer.Object, [.. "invalid-json"u8], "ops");
-        Assert.Null(result);
-    }
-
-    [Fact]
-    public void Fails_IfDifferentNumberOfRootComponentsAndOperations()
+    public void ToRootComponentOperationBatch_Fails_IfDifferentNumberOfRootComponentsAndOperations()
     {
         var deserializer = SetupMockDeserializer(
             new RootComponentOperationBatch
@@ -324,12 +315,12 @@ public class CircuitPersistenceManagerTest
                 BatchId = 1,
                 Operations = [new RootComponentOperation { Type = RootComponentOperationType.Add, SsrComponentId = 1 }]
             });
-        var result = CircuitPersistenceManager.ToRootComponentOperationBatch(deserializer.Object, [.. "{}"u8], "ops");
+        var result = CircuitPersistenceManager.ToRootComponentOperationBatch(deserializer.Object, new Dictionary<int, WebRootComponentDescriptor>(), "ops");
         Assert.Null(result);
     }
 
     [Fact]
-    public void Fails_IfMarkerForOperationNotFound()
+    public void ToRootComponentOperationBatch_Fails_IfDescriptorForOperationNotFound()
     {
         var deserializer = SetupMockDeserializer(
             new RootComponentOperationBatch
@@ -337,25 +328,16 @@ public class CircuitPersistenceManagerTest
                 BatchId = 1,
                 Operations = [new RootComponentOperation { Type = RootComponentOperationType.Add, SsrComponentId = 1 }]
             });
-        var result = CircuitPersistenceManager.ToRootComponentOperationBatch(deserializer.Object, [.. """{ "2": {} }"""u8], "ops");
+        var rootComponentDescriptors = new Dictionary<int, WebRootComponentDescriptor>
+        {
+            [2] = new WebRootComponentDescriptor(typeof(RootComponent), new WebRootComponentParameters())
+        };
+        var result = CircuitPersistenceManager.ToRootComponentOperationBatch(deserializer.Object, rootComponentDescriptors, "ops");
         Assert.Null(result);
     }
 
     [Fact]
-    public void Fails_IfUnableToDeserialize_PersistedComponentStateMarker()
-    {
-        var deserializer = SetupMockDeserializer(
-            new RootComponentOperationBatch
-            {
-                BatchId = 1,
-                Operations = [new RootComponentOperation { Type = RootComponentOperationType.Add, SsrComponentId = 1 }]
-            }, fail: false, deserializeMarker: false);
-        var result = CircuitPersistenceManager.ToRootComponentOperationBatch(deserializer.Object, [.. """{ "1": {} }"""u8], "ops");
-        Assert.Null(result);
-    }
-
-    [Fact]
-    public void Fails_WorksWhen_RootComponentsAndOperations_MatchAndCanBeDeserialized()
+    public void ToRootComponentOperationBatch_WorksWhen_RootComponentsAndOperations_MatchAndCanBeDeserialized()
     {
         var deserializer = SetupMockDeserializer(
             new RootComponentOperationBatch
@@ -363,7 +345,11 @@ public class CircuitPersistenceManagerTest
                 BatchId = 1,
                 Operations = [new RootComponentOperation { Type = RootComponentOperationType.Add, SsrComponentId = 1 }]
             }, fail: false, deserializeMarker: true);
-        var result = CircuitPersistenceManager.ToRootComponentOperationBatch(deserializer.Object, [.. """{ "1": {} }"""u8], "ops");
+        var rootComponentDescriptors = new Dictionary<int, WebRootComponentDescriptor>
+        {
+            [1] = new WebRootComponentDescriptor(typeof(RootComponent), new WebRootComponentParameters())
+        };
+        var result = CircuitPersistenceManager.ToRootComponentOperationBatch(deserializer.Object, rootComponentDescriptors, "ops");
         Assert.NotNull(result);
     }
 

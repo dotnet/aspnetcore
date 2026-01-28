@@ -2,7 +2,6 @@
   "solution": {
     "path": "..\\..\\AspNetCore.slnx",
     "projects": [
-      "eng\\tools\\BaselineGenerator\\BaselineGenerator.csproj",
       "eng\\tools\\RepoTasks\\RepoTasks.csproj",
       "eng\\tools\\HelixTestRunner\\HelixTestRunner.csproj"
     ]

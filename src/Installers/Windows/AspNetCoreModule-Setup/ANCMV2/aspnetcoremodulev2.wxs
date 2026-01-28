@@ -260,7 +260,7 @@
                 </RegistryKey>
             </Component>
 
-            <StandardDirectory Id="ProgramFiles6432Folder">
+            <StandardDirectory Id="ProgramFilesFolder">
                  <Directory Id="IISModuleDirectory32" Name="IIS">
                     <Directory Id="INSTALLLOCATION32" ShortName="ANCM" Name="Asp.Net Core Module">
                         <Directory Id="VersionDir32" Name="$(ProductVersionString)" SourceName="WowOnly">
