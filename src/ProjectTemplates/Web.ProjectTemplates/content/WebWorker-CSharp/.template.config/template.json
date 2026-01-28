@@ -9,7 +9,7 @@
   ],
   "name": ".NET Web Worker",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project for creating a class library that runs .NET code in a WebWorker, keeping your WebAssembly UI responsive during heavy computations.",
+  "description": "A project for creating a class library that runs .NET code in a Web Worker.",
   "groupIdentity": "Microsoft.Web.Worker",
   "precedence": "10000",
   "identity": "Microsoft.Web.Worker.Library.CSharp.10.0",
@@ -18,7 +18,7 @@
     "language": "C#",
     "type": "project"
   },
-  "sourceName": "Company.WorkerClassLibrary1",
+  "sourceName": "Company.WebWorker1",
   "preferNameDirectory": true,
   "symbols": {
     "Framework": {
@@ -46,7 +46,7 @@
   },
   "primaryOutputs": [
     {
-      "path": "Company.WorkerClassLibrary1.csproj"
+      "path": "Company.WebWorker1.csproj"
     }
   ],
   "postActions": [

@@ -3,7 +3,7 @@
 
 using Microsoft.JSInterop;
 
-namespace Company.WorkerClassLibrary1;
+namespace Company.WebWorker1;
 
 /// <summary>
 /// Client for communicating with a WebWorker running .NET code.
@@ -59,7 +59,7 @@ public sealed class WorkerClient(IJSObjectReference worker) : IAsyncDisposable
     public static async Task<WorkerClient> CreateAsync(IJSRuntime jsRuntime)
     {
         await using var module = await jsRuntime.InvokeAsync<IJSObjectReference>(
-            "import", "./_content/Company.WorkerClassLibrary1/worker-client.js");
+            "import", "./_content/Company.WebWorker1/worker-client.js");
 
         var workerRef = await module.InvokeAsync<IJSObjectReference>("create");
 

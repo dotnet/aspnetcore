@@ -12,7 +12,7 @@ class WorkerClient {
 
     static create() {
         return new Promise((resolve, reject) => {
-            const worker = new Worker('_content/Company.WorkerClassLibrary1/worker.js', { type: "module" });
+            const worker = new Worker('_content/Company.WebWorker1/dotnet-web-worker.js', { type: "module" });
 
             worker.addEventListener('error', (e) => {
                 reject(new Error(e.message || 'Worker encountered an error'));

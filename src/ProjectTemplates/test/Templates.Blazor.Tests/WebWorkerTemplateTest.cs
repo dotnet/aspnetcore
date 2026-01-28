@@ -12,16 +12,16 @@ namespace BlazorTemplates.Tests;
 #pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
 
 /// <summary>
-/// E2E tests for the Worker Class Library template that verify the worker
+/// E2E tests for the .NET Web Worker template that verify the worker
 /// can be created and invoked from a Blazor WebAssembly application.
 /// </summary>
-public class WorkerClassLibraryTemplateTest(ProjectFactoryFixture projectFactory) : BlazorTemplateTest(projectFactory)
+public class WebWorkerTemplateTest(ProjectFactoryFixture projectFactory) : BlazorTemplateTest(projectFactory)
 {
     public override string ProjectType { get; } = "webworker";
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
-    public async Task WorkerClassLibrary_CanBeUsedFromBlazorWasm(BrowserKind browserKind)
+    public async Task WebWorker_CanBeUsedFromBlazorWasm(BrowserKind browserKind)
     {
         // Skip if browser is not available
         if (!BrowserManager.IsAvailable(browserKind))

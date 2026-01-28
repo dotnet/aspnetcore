@@ -12,9 +12,9 @@ namespace Templates.Test;
 
 #pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
 
-public class WorkerClassLibraryTemplateTest : LoggedTest
+public class WebWorkerTemplateTest : LoggedTest
 {
-    public WorkerClassLibraryTemplateTest(ProjectFactoryFixture projectFactory)
+    public WebWorkerTemplateTest(ProjectFactoryFixture projectFactory)
     {
         ProjectFactory = projectFactory;
     }
@@ -34,7 +34,7 @@ public class WorkerClassLibraryTemplateTest : LoggedTest
     }
 
     [Fact]
-    public async Task WorkerClassLibraryTemplate_CanCreateBuildPublish()
+    public async Task WebWorkerTemplate_CanCreateBuildPublish()
     {
         var project = await ProjectFactory.CreateProject(Output);
 
