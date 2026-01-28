@@ -438,74 +438,85 @@ public class Http3TlsTests : LoggedTest
     [MsQuicSupported]
     public async Task LoadDevelopmentCertificateViaConfiguration()
     {
-        var expectedCertificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
-        var bytes = expectedCertificate.Export(X509ContentType.Pkcs12, "1234");
         var path = GetCertificatePath();
-        Directory.CreateDirectory(Path.GetDirectoryName(path));
-        File.WriteAllBytes(path, bytes);
 
-        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        try
         {
-            new KeyValuePair<string, string>("Certificates:Development:Password", "1234"),
-        }).Build();
+            var expectedCertificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var bytes = expectedCertificate.Export(X509ContentType.Pkcs12, "1234");
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllBytes(path, bytes);
 
-        var ranConfigureKestrelAction = false;
-        var ranUseHttpsAction = false;
-        var hostBuilder = CreateHostBuilder(async context =>
-        {
-            await context.Response.WriteAsync("Hello World");
-        }, configureKestrel: kestrelOptions =>
-        {
-            ranConfigureKestrelAction = true;
-            kestrelOptions.Configure(config);
-
-            kestrelOptions.ListenAnyIP(0, listenOptions =>
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
             {
-                listenOptions.Protocols = HttpProtocols.Http3;
-                listenOptions.UseHttps(_ =>
+                new KeyValuePair<string, string>("Certificates:Development:Password", "1234"),
+            }).Build();
+
+            var ranConfigureKestrelAction = false;
+            var ranUseHttpsAction = false;
+            var hostBuilder = CreateHostBuilder(async context =>
+            {
+                await context.Response.WriteAsync("Hello World");
+            }, configureKestrel: kestrelOptions =>
+            {
+                ranConfigureKestrelAction = true;
+                kestrelOptions.Configure(config);
+
+                kestrelOptions.ListenAnyIP(0, listenOptions =>
                 {
-                    ranUseHttpsAction = true;
+                    listenOptions.Protocols = HttpProtocols.Http3;
+                    listenOptions.UseHttps(_ =>
+                    {
+                        ranUseHttpsAction = true;
+                    });
                 });
             });
-        });
 
-        Assert.False(ranConfigureKestrelAction);
-        Assert.False(ranUseHttpsAction);
+            Assert.False(ranConfigureKestrelAction);
+            Assert.False(ranUseHttpsAction);
 
-        using var host = hostBuilder.Build();
-        await host.StartAsync().DefaultTimeout();
+            using var host = hostBuilder.Build();
+            await host.StartAsync().DefaultTimeout();
 
-        Assert.True(ranConfigureKestrelAction);
-        Assert.True(ranUseHttpsAction);
+            Assert.True(ranConfigureKestrelAction);
+            Assert.True(ranUseHttpsAction);
 
-        var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
-        request.Version = HttpVersion.Version30;
-        request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
-        request.Headers.Host = "testhost";
+            var request = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+            request.Version = HttpVersion.Version30;
+            request.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+            request.Headers.Host = "testhost";
 
-        var ranCertificateValidation = false;
-        var httpHandler = new SocketsHttpHandler();
-        httpHandler.SslOptions = new SslClientAuthenticationOptions
-        {
-            RemoteCertificateValidationCallback = (object _sender, X509Certificate actualCertificate, X509Chain _chain, SslPolicyErrors _sslPolicyErrors) =>
+            var ranCertificateValidation = false;
+            var httpHandler = new SocketsHttpHandler();
+            httpHandler.SslOptions = new SslClientAuthenticationOptions
             {
-                ranCertificateValidation = true;
-                Assert.Equal(expectedCertificate.GetSerialNumberString(), actualCertificate.GetSerialNumberString());
-                return true;
-            },
-            TargetHost = "targethost",
-        };
-        using var client = new HttpMessageInvoker(httpHandler);
+                RemoteCertificateValidationCallback = (object _sender, X509Certificate actualCertificate, X509Chain _chain, SslPolicyErrors _sslPolicyErrors) =>
+                {
+                    ranCertificateValidation = true;
+                    Assert.Equal(expectedCertificate.GetSerialNumberString(), actualCertificate.GetSerialNumberString());
+                    return true;
+                },
+                TargetHost = "targethost",
+            };
+            using var client = new HttpMessageInvoker(httpHandler);
 
-        var response = await client.SendAsync(request, CancellationToken.None).DefaultTimeout();
-        response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadAsStringAsync();
-        Assert.Equal(HttpVersion.Version30, response.Version);
-        Assert.Equal("Hello World", result);
+            var response = await client.SendAsync(request, CancellationToken.None).DefaultTimeout();
+            response.EnsureSuccessStatusCode();
+            var result = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpVersion.Version30, response.Version);
+            Assert.Equal("Hello World", result);
 
-        Assert.True(ranCertificateValidation);
+            Assert.True(ranCertificateValidation);
 
-        await host.StopAsync().DefaultTimeout();
+            await host.StopAsync().DefaultTimeout();
+        }
+        finally
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
     }
 
     ///<remarks>
