@@ -1076,4 +1076,38 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         FirstValue,
         SecondValue
     }
+
+    private async Task HandlesNullableEnumWithOneOf()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/nullableEnum", (NullableEnumDto body) => { });
+
+        await VerifyOpenApiDocument(builder, (document) =>
+        {
+            var enumDtoSchema = document.Components.Schemas["NullableEnumDto"];
+
+            var statusPropertySchema = enumDtoSchema.Properties["status"];
+            Assert.Collection(statusPropertySchema.OneOf,
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Null, item.Type);
+                },
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal("Status", ((OpenApiSchemaReference)item).Reference.Id);
+                });
+
+            var statusEnumSchema = document.Components.Schemas["Status"];
+            Assert.Equal(3, statusEnumSchema.Enum.Count);
+            Assert.DoesNotContain(null, statusEnumSchema.Enum);
+        });
+    }
+
+    internal class NullableEnumDto
+    {
+        public Status? Status { get; set; }
+    }
 }
