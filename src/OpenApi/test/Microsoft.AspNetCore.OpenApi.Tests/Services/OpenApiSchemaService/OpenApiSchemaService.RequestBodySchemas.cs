@@ -1001,7 +1001,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    private async Task HandlesNullableEnumWithOneOf()
+    public async Task HandlesNullableEnumWithOneOf()
     {
         var builder = CreateBuilder();
 
