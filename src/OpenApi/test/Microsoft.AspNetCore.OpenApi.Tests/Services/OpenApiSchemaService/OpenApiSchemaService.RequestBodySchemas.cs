@@ -1077,7 +1077,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         SecondValue
     }
 
-    private async Task HandlesNullableEnumWithOneOf()
+    [Fact]
+    public async Task HandlesNullableEnumWithOneOf()
     {
         var builder = CreateBuilder();
 
