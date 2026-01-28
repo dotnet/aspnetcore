@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-class WorkerClient {
+class DotnetWebWorkerClient {
     #worker;
     #pendingRequests = {};
     #requestId = 0;
@@ -24,7 +24,7 @@ class WorkerClient {
                     if (e.data.error) {
                         reject(new Error(e.data.error));
                     } else {
-                        const client = new WorkerClient(worker);
+                        const client = new DotnetWebWorkerClient(worker);
                         client.#setupMessageHandler();
                         resolve(client);
                     }
@@ -76,5 +76,5 @@ class WorkerClient {
 }
 
 export function create() {
-    return WorkerClient.create();
+    return DotnetWebWorkerClient.create();
 }

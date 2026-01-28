@@ -29,13 +29,13 @@ namespace Company.WebWorker1;
 /// <code>
 /// @inject IJSRuntime JSRuntime
 ///
-/// private WorkerClient? _worker;
+/// private WebWorkerClient? _worker;
 ///
 /// protected override async Task OnAfterRenderAsync(bool firstRender)
 /// {
 ///     if (firstRender)
 ///     {
-///         _worker = await WorkerClient.CreateAsync(JSRuntime);
+///         _worker = await WebWorkerClient.CreateAsync(JSRuntime);
 ///     }
 /// }
 ///
@@ -48,22 +48,22 @@ namespace Company.WebWorker1;
 /// </code>
 /// </para>
 /// </remarks>
-public sealed class WorkerClient(IJSObjectReference worker) : IAsyncDisposable
+public sealed class WebWorkerClient(IJSObjectReference worker) : IAsyncDisposable
 {
     /// <summary>
-    /// Creates and initializes a new WebWorker instance.
+    /// Creates and initializes a new .NET Web Worker client instance.
     /// </summary>
     /// <param name="jsRuntime">The JS runtime instance.</param>
-    /// <returns>A ready-to-use WorkerClient instance.</returns>
+    /// <returns>A ready-to-use WebWorkerClient instance.</returns>
     /// <exception cref="JSException">Thrown if the worker fails to initialize.</exception>
-    public static async Task<WorkerClient> CreateAsync(IJSRuntime jsRuntime)
+    public static async Task<WebWorkerClient> CreateAsync(IJSRuntime jsRuntime)
     {
         await using var module = await jsRuntime.InvokeAsync<IJSObjectReference>(
-            "import", "./_content/Company.WebWorker1/worker-client.js");
+            "import", "./_content/Company.WebWorker1/dotnet-web-worker-client.js");
 
         var workerRef = await module.InvokeAsync<IJSObjectReference>("create");
 
-        return new WorkerClient(workerRef);
+        return new WebWorkerClient(workerRef);
     }
 
     /// <summary>
