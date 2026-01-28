@@ -3720,5 +3720,16 @@
         "wwwroot/css/app.css"
       ]
     }
+  },
+  "workerlib": {
+    "Default": {
+      "Template": "workerlib",
+      "Arguments": "new workerlib",
+      "Files": [
+        "WorkerClient.cs",
+        "wwwroot/worker.js",
+        "wwwroot/worker-client.js"
+      ]
+    }
   }
 }
