@@ -11,8 +11,14 @@ namespace Company.WorkerClassLibrary1;
 public static class WorkerClientServiceExtensions
 {
     /// <summary>
-    /// Adds the WorkerClient service to the service collection.
+    /// Adds the <see cref="IWorkerClient"/> service to the service collection.
     /// </summary>
+    /// <remarks>
+    /// Call this in your Blazor WebAssembly Program.cs:
+    /// <code>
+    /// builder.Services.AddWorkerClient();
+    /// </code>
+    /// </remarks>
     public static IServiceCollection AddWorkerClient(this IServiceCollection services)
     {
         return services.AddScoped<IWorkerClient, WorkerClient>();
