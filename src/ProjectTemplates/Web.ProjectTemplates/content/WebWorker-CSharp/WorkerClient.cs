@@ -6,7 +6,7 @@ using Microsoft.JSInterop;
 namespace Company.WebWorker1;
 
 /// <summary>
-/// Client for communicating with a WebWorker running .NET code.
+/// Client for communicating with a Web Worker running .NET code.
 /// </summary>
 /// <remarks>
 /// <para>
