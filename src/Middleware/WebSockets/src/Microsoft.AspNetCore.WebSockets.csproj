@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ValueStringBuilder\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)Buffers\ArrayPoolExtensions.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

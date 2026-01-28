@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Streams\TaskToApm.cs" />
+    <Compile Include="$(SharedSourceRoot)Buffers\ArrayPoolExtensions.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>
