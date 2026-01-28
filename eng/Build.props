@@ -44,7 +44,6 @@
                       $(RepoRoot)src\submodules\MessagePack-CSharp\**\*.*proj;
                       $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
                       $(RepoRoot)src\Installers\**\*.*proj;
-                      $(RepoRoot)src\ProjectTemplates\Web.ItemTemplates\content\**\*.*proj;
                       $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.*proj;
                       $(RepoRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
                       " />
