@@ -978,7 +978,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    public async Task GetOpenApiParameters_DoesNotGenerateNullComponetizedSchemaAsNullableParametersAreOptional()
+    public async Task GetOpenApiParameters_DoesNotGenerateNullComponentizedSchemaAsNullableParametersAreOptional()
     {
         // Arrange
         var builder1 = CreateBuilder();
@@ -988,10 +988,10 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         builder2.MapGet("/query", (Status? optionalStatus, Status status) => "TEST");
 
         // Assert
-        await VerifyOpenApiDocument(builder1, VerifyNonNullComponetizedSchema);
-        await VerifyOpenApiDocument(builder2, VerifyNonNullComponetizedSchema);
+        await VerifyOpenApiDocument(builder1, VerifyNonNullComponentizedSchema);
+        await VerifyOpenApiDocument(builder2, VerifyNonNullComponentizedSchema);
 
-        static void VerifyNonNullComponetizedSchema(OpenApiDocument doc)
+        static void VerifyNonNullComponentizedSchema(OpenApiDocument doc)
         {
             var schema = doc.Components.Schemas["Status"];
             Assert.DoesNotContain(schema.Enum, node => node is null);
