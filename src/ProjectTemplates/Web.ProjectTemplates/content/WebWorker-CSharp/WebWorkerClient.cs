@@ -10,11 +10,13 @@ namespace Company.WebWorker1;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Worker methods must be static methods marked with <c>[JSExport]</c> in a <c>static partial class</c>.
-/// The project containing worker methods requires <c>&lt;AllowUnsafeBlocks&gt;true&lt;/AllowUnsafeBlocks&gt;</c>.
+/// Worker methods are static methods marked with <c>[JSExport]</c> in a <c>static partial class</c>.
+/// By default, they should be defined in the main application. The assembly name in
+/// <c>dotnet-web-worker.js</c> must match the assembly containing the worker methods.
+/// The project requires <c>&lt;AllowUnsafeBlocks&gt;true&lt;/AllowUnsafeBlocks&gt;</c> in the .csproj file.
 /// </para>
 /// <para>
-/// Example worker class:
+/// Example worker class (add this to your main app):
 /// <code>
 /// [SupportedOSPlatform("browser")]
 /// public static partial class MyWorker
@@ -41,7 +43,7 @@ namespace Company.WebWorker1;
 ///
 /// async Task CallWorker()
 /// {
-///     var result = await _worker!.InvokeStringAsync("MyApp.MyWorker.Process", ["Hello"]);
+///     var result = await _worker!.InvokeAsync&lt;string&gt;("MyApp.MyWorker.Process", ["Hello"]);
 /// }
 ///
 /// public async ValueTask DisposeAsync() => await (_worker?.DisposeAsync() ?? ValueTask.CompletedTask);
@@ -67,17 +69,18 @@ public sealed class WebWorkerClient(IJSObjectReference worker) : IAsyncDisposabl
     }
 
     /// <summary>
-    /// Invokes a method on the worker and returns the result as a string.
+    /// Invokes a method on the worker and returns the result.
     /// </summary>
+    /// <typeparam name="TResult">The type of the result.</typeparam>
     /// <param name="method">Full method path: "Namespace.ClassName.MethodName"</param>
     /// <param name="args">Arguments to pass to the method.</param>
     /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>The string result from the worker method.</returns>
+    /// <returns>The result from the worker method.</returns>
     /// <exception cref="OperationCanceledException">Thrown if the operation is canceled.</exception>
     /// <exception cref="JSException">Thrown if the worker method throws an exception.</exception>
-    public async Task<string> InvokeStringAsync(string method, object[] args, CancellationToken cancellationToken = default)
+    public async Task<TResult> InvokeAsync<TResult>(string method, object[] args, CancellationToken cancellationToken = default)
     {
-        return await worker.InvokeAsync<string>("invokeString", cancellationToken, [method, args]);
+        return await worker.InvokeAsync<TResult>("invoke", cancellationToken, [method, args]);
     }
 
     /// <summary>

@@ -3,12 +3,13 @@
 
 import { dotnet } from '../../_framework/dotnet.js'
 
+const workerAssemblyName = "Company.WebWorker1";
 let workerExports = null;
 let startupError = null;
 
 try {
-    const { getAssemblyExports, getConfig } = await dotnet.create();
-    workerExports = await getAssemblyExports(getConfig().mainAssemblyName);
+    const { getAssemblyExports } = await dotnet.create();
+    workerExports = await getAssemblyExports(workerAssemblyName);
     self.postMessage({ type: "ready" });
 } catch (err) {
     startupError = err.message;

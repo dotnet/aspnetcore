@@ -33,12 +33,19 @@ class DotnetWebWorkerClient {
         });
     }
 
-    invokeString(method, args) {
+    invoke(method, args) {
         return new Promise((resolve, reject) => {
             const id = ++this.#requestId;
-            this.#pendingRequests[id] = { resolve: r => resolve(String(r)), reject };
+            this.#pendingRequests[id] = { resolve: r => resolve(this.#parseIfJson(r)), reject };
             this.#worker.postMessage({ method, args, requestId: id });
         });
+    }
+
+    #parseIfJson(value) {
+        if (typeof value === 'string' && (value[0] === '{' || value[0] === '[')) {
+            try { return JSON.parse(value); } catch { /* not JSON */ }
+        }
+        return value;
     }
 
     terminate() {
