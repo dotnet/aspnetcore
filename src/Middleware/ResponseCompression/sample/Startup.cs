@@ -12,8 +12,10 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
+        services.Configure<ZstdCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
         services.AddResponseCompression(options =>
         {
+            options.Providers.Add<ZstdCompressionProvider>();
             options.Providers.Add<GzipCompressionProvider>();
             options.Providers.Add<CustomCompressionProvider>();
             // .Append(TItem) is only available on Core.

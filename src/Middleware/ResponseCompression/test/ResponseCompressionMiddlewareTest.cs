@@ -32,6 +32,7 @@ public class ResponseCompressionMiddlewareTest
     {
         get
         {
+            yield return new EncodingTestData("zstd", expectedBodyLength: 27);
             yield return new EncodingTestData("gzip", expectedBodyLength: 29);
             yield return new EncodingTestData("br", expectedBodyLength: 21);
         }
@@ -72,10 +73,34 @@ public class ResponseCompressionMiddlewareTest
         AssertCompressedWithLog(logMessages, "br");
     }
 
+    [Fact]
+    public async Task Request_AcceptZstd_CompressedZstd()
+    {
+        var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "zstd" }, responseType: TextPlain);
+
+        await CheckResponseCompressed(response, "zstd");
+        AssertCompressedWithLog(logMessages, "zstd");
+    }
+
+    [Theory]
+    [InlineData("zstd", "gzip")]
+    [InlineData("gzip", "zstd")]
+    [InlineData("zstd", "br")]
+    [InlineData("br", "zstd")]
+    [InlineData("zstd", "gzip", "br")]
+    [InlineData("br", "gzip", "zstd")]
+    public async Task Request_AcceptMixed_CompressedZstd(params string[] encodings)
+    {
+        var (response, logMessages) = await InvokeMiddleware(100, encodings, responseType: TextPlain);
+
+        await CheckResponseCompressed(response, "zstd");
+        AssertCompressedWithLog(logMessages, "zstd");
+    }
+
     [Theory]
     [InlineData("gzip", "br")]
     [InlineData("br", "gzip")]
-    public async Task Request_AcceptMixed_CompressedBrotli(string encoding1, string encoding2)
+    public async Task Request_AcceptMixed_NoBestMatch_CompressedBrotli(string encoding1, string encoding2)
     {
         var (response, logMessages) = await InvokeMiddleware(100, new[] { encoding1, encoding2 }, responseType: TextPlain);
 
@@ -345,8 +370,8 @@ public class ResponseCompressionMiddlewareTest
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "*" }, responseType: TextPlain);
 
-        await CheckResponseCompressed(response, "br");
-        AssertCompressedWithLog(logMessages, "br");
+        await CheckResponseCompressed(response, "zstd");
+        AssertCompressedWithLog(logMessages, "zstd");
     }
 
     [Fact]
@@ -1351,6 +1376,13 @@ public class ResponseCompressionMiddlewareTest
             using var compressedStream = new MemoryStream(compressedBytes);
             using var brotliStream = new BrotliStream(compressedStream, CompressionMode.Decompress);
             using var reader = new StreamReader(brotliStream);
+            decompressedContent = await reader.ReadToEndAsync();
+        }
+        else if (expectedEncoding == "zstd")
+        {
+            using var compressedStream = new MemoryStream(compressedBytes);
+            using var zstdStream = new ZstandardStream(compressedStream, CompressionMode.Decompress);
+            using var reader = new StreamReader(zstdStream);
             decompressedContent = await reader.ReadToEndAsync();
         }
         else
