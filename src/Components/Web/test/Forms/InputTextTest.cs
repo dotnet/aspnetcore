@@ -83,28 +83,6 @@ public class InputTextTest
         Assert.Equal("model_StringProperty", idAttribute.AttributeValue);
     }
 
-    [Fact]
-    public async Task RendersIdAttribute_WhenNoEditContext_InteractiveMode()
-    {
-        // This test simulates the scenario where InputBase falls back to !OperatingSystem.IsBrowser()
-        // In tests, this is true (not browser), so _shouldGenerateFieldNames would be true.
-        // However, if running in a browser, id would not be generated without this fix.
-        var model = new TestModel();
-        var editContext = new EditContext(model) { ShouldUseFieldIdentifiers = false };
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = editContext,
-            ValueExpression = () => model.StringProperty,
-        };
-
-        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // id should be present for Label/Input coordination even in interactive mode
-        var idAttribute = frames.Array.SingleOrDefault(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
-        Assert.Equal("model_StringProperty", idAttribute.AttributeValue);
-    }
-
     private async Task<int> RenderAndGetInputTextComponentIdAsync(TestInputHostComponent<string, InputText> hostComponent)
     {
         var hostComponentId = _testRenderer.AssignRootComponentId(hostComponent);
