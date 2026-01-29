@@ -79,7 +79,7 @@ public class InputTextTest
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
         // id should still be generated for Label/Input association to work in interactive mode
-        var idAttribute = frames.Array.SingleOrDefault(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
+        var idAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
         Assert.Equal("model_StringProperty", idAttribute.AttributeValue);
     }
 
