@@ -42,8 +42,12 @@ class DotnetWebWorkerClient {
     }
 
     #parseIfJson(value) {
-        if (typeof value === 'string' && (value[0] === '{' || value[0] === '[')) {
-            try { return JSON.parse(value); } catch { /* not JSON */ }
+        if (typeof value === 'string') {
+            try {
+                return JSON.parse(value);
+            } catch {
+                // not JSON, return as-is
+            }
         }
         return value;
     }
