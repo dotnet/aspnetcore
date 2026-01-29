@@ -3726,9 +3726,9 @@
       "Template": "webworker",
       "Arguments": "new webworker",
       "Files": [
-        "WorkerClient.cs",
-        "wwwroot/worker.js",
-        "wwwroot/worker-client.js"
+        "WebWorkerClient.cs",
+        "wwwroot/dotnet-web-worker.js",
+        "wwwroot/dotnet-web-worker-client.js"
       ]
     }
   }
