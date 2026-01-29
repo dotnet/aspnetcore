@@ -219,7 +219,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     /// </summary>
     /// <remarks>
     /// If an explicit "id" is provided via <see cref="AdditionalAttributes"/>, that value takes precedence.
-    /// Otherwise, the id is sanitized version of <see cref="NameAttributeValue"/> in SSR mode; generated independently in interactive mode.
+    /// Otherwise, the id is a sanitized version of <see cref="NameAttributeValue"/> in SSR mode; generated independently in interactive mode.
     /// </remarks>
     protected string IdAttributeValue
     {
