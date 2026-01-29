@@ -13,7 +13,7 @@ namespace RepoTasks;
 /// <summary>
 /// Generates the test HTTPs certificate used by the template tests
 /// </summary>
-public class GenerateTestDevCert : Task
+public class GenerateTestDevCert : Microsoft.Build.Utilities.Task
 {
     [Required]
     public string CertificatePath { get; private set; }
