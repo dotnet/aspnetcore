@@ -16,9 +16,8 @@ namespace Company.WebWorker1;
 /// The project requires <c>&lt;AllowUnsafeBlocks&gt;true&lt;/AllowUnsafeBlocks&gt;</c> in the .csproj file.
 /// </para>
 /// <para>
-/// Due to <c>[JSExport]</c> limitations, worker methods can only return primitive types or strings.
-/// For complex return types, serialize to JSON in the worker method. The result will be
-/// automatically deserialized to <typeparamref name="TResult"/> when using <see cref="InvokeAsync{TResult}"/>.
+/// Due to <c>[JSExport]</c> limitations, worker methods can only return primitives or strings.
+/// For complex types, serialize to JSON before returning—it will be automatically deserialized.
 /// </para>
 /// <para>
 /// Example worker class (add this to your main app):
