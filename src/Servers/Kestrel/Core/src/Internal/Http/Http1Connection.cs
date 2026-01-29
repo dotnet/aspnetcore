@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
@@ -961,7 +962,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     /// <summary>
     /// Creates a BadHttpRequestException with error detail extracted from the buffer.
     /// </summary>
-    private static BadHttpRequestException CreateBadRequestException(HttpParseResult parseResult, ReadOnlySequence<byte> buffer)
+    private BadHttpRequestException CreateBadRequestException(HttpParseResult parseResult, ReadOnlySequence<byte> buffer)
     {
         // Some error reasons don't use detail
         if (parseResult.ErrorReason == RequestRejectionReason.InvalidRequestHeadersNoCRLF)
@@ -969,8 +970,11 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             return KestrelBadHttpRequestException.GetException(parseResult.ErrorReason);
         }
 
-        // Extract error detail from buffer if available
-        if (parseResult.ErrorLength > 0 && parseResult.ErrorOffset + parseResult.ErrorLength <= buffer.Length)
+        // Extract error detail from buffer if available, but only when logging is enabled
+        // to avoid leaking internal details in production.
+        if (Log.IsEnabled(LogLevel.Information) &&
+            parseResult.ErrorLength > 0 &&
+            parseResult.ErrorOffset + parseResult.ErrorLength <= buffer.Length)
         {
             var errorSlice = buffer.Slice(parseResult.ErrorOffset, parseResult.ErrorLength);
             var errorBytes = errorSlice.IsSingleSegment ? errorSlice.FirstSpan : errorSlice.ToArray();
