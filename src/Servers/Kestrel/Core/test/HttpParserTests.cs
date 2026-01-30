@@ -915,6 +915,37 @@ public class HttpParserTests : LoggedTest
         });
     }
 
+    [Fact]
+    public void TryParseHeadersWithMultiSpanBuffer_InvalidHeader_ReturnsErrorWithCorrectDetails()
+    {
+        // Test that TryParseHeaders returns an error result with correct offset/length
+        // when an invalid header spans multiple segments (verifies non-throwing path)
+        var parser = (HttpParser<RequestHandler>)CreateParser(CreateEnabledTrace(), false);
+
+        // Create a buffer with an invalid header (missing colon) split across segments
+        var buffer = ReadOnlySequenceFactory.CreateSegments(
+            Encoding.ASCII.GetBytes("Invalid"),
+            Encoding.ASCII.GetBytes("Header"),
+            Encoding.ASCII.GetBytes("NoColon\r\n\r\n"));
+        var requestHandler = new RequestHandler();
+
+        var reader = new SequenceReader<byte>(buffer);
+        var result = parser.TryParseHeaders(requestHandler, ref reader);
+
+        Assert.True(result.HasError);
+        Assert.False(result.IsComplete);
+        Assert.Equal(RequestRejectionReason.InvalidRequestHeader, result.ErrorReason);
+
+        // Verify error offset/length allow extracting the problematic data
+        Assert.Equal(0, result.ErrorOffset);
+        Assert.Equal(22, result.ErrorLength); // "InvalidHeaderNoColon\r\n"
+
+        // Verify we can slice the buffer using error info
+        var errorSlice = buffer.Slice(result.ErrorOffset, result.ErrorLength);
+        var errorText = Encoding.ASCII.GetString(errorSlice.ToArray());
+        Assert.Equal("InvalidHeaderNoColon\r\n", errorText);
+    }
+
     private bool ParseRequestLine(IHttpParser<RequestHandler> parser, RequestHandler requestHandler, ReadOnlySequence<byte> readableBuffer, out SequencePosition consumed, out SequencePosition examined)
     {
         var reader = new SequenceReader<byte>(readableBuffer);

@@ -99,10 +99,14 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         return array;
     }
 
-    // Parse a header that might cross multiple spans, and return the length of the header
-    // or -1 if there was a failure during parsing.
-    private int ParseMultiSpanHeader(TRequestHandler handler, ref SequenceReader<byte> reader)
+    /// <summary>
+    /// Parses a header that might cross multiple spans.
+    /// Returns HttpParseResult and outputs the header length on success.
+    /// </summary>
+    private HttpParseResult TryParseMultiSpanHeader(TRequestHandler handler, ref SequenceReader<byte> reader, out int headerLength)
     {
+        headerLength = 0;
+        var baseOffset = (int)reader.Consumed;
         var currentSlice = reader.UnreadSequence;
 
         SequencePosition position = currentSlice.Start;
@@ -115,50 +119,48 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         if (position.GetObject() == null)
         {
             // Only 1 segment in the reader currently, this is a partial header, wait for more data
-            return -1;
+            return HttpParseResult.Incomplete;
         }
 
         var index = -1;
-        var headerLength = memory.Length;
+        var length = memory.Length;
         while (currentSlice.TryGet(ref position, out memory))
         {
             index = memory.Span.IndexOfAny(ByteCR, ByteLF);
             if (index >= 0)
             {
-                headerLength += index;
+                length += index;
                 break;
             }
             else if (position.GetObject() == null)
             {
-                return -1;
+                return HttpParseResult.Incomplete;
             }
 
-            headerLength += memory.Length;
+            length += memory.Length;
         }
 
         // No CR or LF found in the SequenceReader
         if (index == -1)
         {
-            return -1;
+            return HttpParseResult.Incomplete;
         }
 
         // Is the first EOL char the last of the current slice?
-        if (headerLength == currentSlice.Length - 1)
+        if (length == currentSlice.Length - 1)
         {
             // Check the EOL char
             if (memory.Span[index] == ByteCR)
             {
                 // CR without LF, can't read the header
-                return -1;
+                return HttpParseResult.Incomplete;
             }
             else
             {
                 if (_disableHttp1LineFeedTerminators)
                 {
                     // LF only but disabled
-
-                    // Advance 1 to include LF in result
-                    RejectRequestHeader(currentSlice.Slice(0, headerLength + 1).ToSpan());
+                    return HttpParseResult.Error(RequestRejectionReason.InvalidRequestHeader, baseOffset, length + 1);
                 }
             }
         }
@@ -168,62 +170,66 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         {
             // First EOL char is CR, include the char after CR
             // Advance 2 to include CR and LF
-            headerLength += 2;
-            header = currentSlice.Slice(0, headerLength);
+            length += 2;
+            header = currentSlice.Slice(0, length);
         }
         else if (_disableHttp1LineFeedTerminators)
         {
             // The terminator is an LF and we don't allow it.
-            // Advance 1 to include LF in result
-            RejectRequestHeader(currentSlice.Slice(0, headerLength + 1).ToSpan());
-            return -1;
+            return HttpParseResult.Error(RequestRejectionReason.InvalidRequestHeader, baseOffset, length + 1);
         }
         else
         {
             // First EOL char is LF. only include this one
-            headerLength += 1;
-            header = currentSlice.Slice(0, headerLength);
+            length += 1;
+            header = currentSlice.Slice(0, length);
         }
 
         // 'a:b\n' or 'a:b\r\n'
         var minHeaderSpan = _disableHttp1LineFeedTerminators ? 5 : 4;
-        if (headerLength < minHeaderSpan)
+        if (length < minHeaderSpan)
         {
-            RejectRequestHeader(currentSlice.Slice(0, headerLength).ToSpan());
+            return HttpParseResult.Error(RequestRejectionReason.InvalidRequestHeader, baseOffset, length);
         }
 
         byte[]? array = null;
-        Span<byte> headerSpan = headerLength <= 256 ? stackalloc byte[256] : array = ArrayPool<byte>.Shared.Rent(headerLength);
+        Span<byte> headerSpan = length <= 256 ? stackalloc byte[256] : array = ArrayPool<byte>.Shared.Rent(length);
 
-        header.CopyTo(headerSpan);
-        headerSpan = headerSpan.Slice(0, headerLength);
-
-        var terminatorSize = -1;
-
-        if (headerSpan[^1] == ByteLF)
+        try
         {
-            if (headerSpan[^2] == ByteCR)
+            header.CopyTo(headerSpan);
+            headerSpan = headerSpan.Slice(0, length);
+
+            var terminatorSize = -1;
+
+            if (headerSpan[^1] == ByteLF)
             {
-                terminatorSize = 2;
+                if (headerSpan[^2] == ByteCR)
+                {
+                    terminatorSize = 2;
+                }
+                else if (!_disableHttp1LineFeedTerminators)
+                {
+                    terminatorSize = 1;
+                }
             }
-            else if (!_disableHttp1LineFeedTerminators)
+
+            // Last chance to bail if the terminator size is not valid or the header doesn't parse.
+            if (terminatorSize == -1 || !TryTakeSingleHeader(handler, headerSpan.Slice(0, headerSpan.Length - terminatorSize)))
             {
-                terminatorSize = 1;
+                return HttpParseResult.Error(RequestRejectionReason.InvalidRequestHeader, baseOffset, length);
+            }
+
+            headerLength = length;
+            return HttpParseResult.Complete;
+        }
+        finally
+        {
+            if (array is not null)
+            {
+                ArrayPool<byte>.Shared.Return(array);
             }
         }
-
-        // Last chance to bail if the terminator size is not valid or the header doesn't parse.
-        if (terminatorSize == -1 || !TryTakeSingleHeader(handler, headerSpan.Slice(0, headerSpan.Length - terminatorSize)))
-        {
-            RejectRequestHeader(headerSpan);
-        }
-
-        if (array is not null)
-        {
-            ArrayPool<byte>.Shared.Return(array);
-        }
-
-        return headerLength;
     }
 
     private static bool TryTakeSingleHeader(TRequestHandler handler, ReadOnlySpan<byte> headerLine)
@@ -640,8 +646,12 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
             else
             {
                 // No CR or LF. Is this a multi-span header?
-                int length = ParseMultiSpanHeader(handler, ref reader);
-                if (length < 0)
+                var multiSpanResult = TryParseMultiSpanHeader(handler, ref reader, out var length);
+                if (multiSpanResult.HasError)
+                {
+                    return multiSpanResult;
+                }
+                if (!multiSpanResult.IsComplete)
                 {
                     return HttpParseResult.Incomplete;
                 }
