@@ -37,7 +37,7 @@ public class ValidationOptions
     /// <summary>
     /// The delegate to invoke for creating <see cref="IStringLocalizer"/>.
     /// </summary>
-    public Func<Type, IStringLocalizerFactory, IStringLocalizer>? DataAnnotationLocalizerProvider { get; set; }
+    public Func<Type, IStringLocalizerFactory, IStringLocalizer>? ErrorMessageLocalizerProvider { get; set; }
 
     /// <summary>
     /// Attempts to get validation information for the specified type.
