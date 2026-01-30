@@ -126,9 +126,9 @@ public sealed class ValidateContext
             return null;
         }
 
-        if (ValidationOptions.DataAnnotationLocalizerProvider is not null)
+        if (ValidationOptions.ErrorMessageLocalizerProvider is not null)
         {
-            return ValidationOptions.DataAnnotationLocalizerProvider(type, _stringLocalizerFactory);
+            return ValidationOptions.ErrorMessageLocalizerProvider(type, _stringLocalizerFactory);
         }
 
         return _stringLocalizerFactory.Create(type);
