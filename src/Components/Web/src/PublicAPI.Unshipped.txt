@@ -1,4 +1,14 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.EnvironmentBoundary() -> void
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.Exclude.get -> string?
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.Exclude.set -> void
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.Include.get -> string?
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.Include.set -> void
+Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.get -> bool
+Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.set -> void
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxBufferSize.get -> int
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxBufferSize.set -> void
@@ -70,3 +80,17 @@ Microsoft.AspNetCore.Components.Web.Media.MediaSource.MediaSource(byte[]! data, 
 Microsoft.AspNetCore.Components.Web.Media.MediaSource.MediaSource(System.IO.Stream! stream, string! mimeType, string! cacheKey) -> void
 Microsoft.AspNetCore.Components.Web.Media.MediaSource.MimeType.get -> string!
 Microsoft.AspNetCore.Components.Web.Media.MediaSource.Stream.get -> System.IO.Stream!
+virtual Microsoft.AspNetCore.Components.Forms.InputFile.Dispose(bool disposing) -> void
+Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>
+Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>.DisplayName() -> void
+Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>.For.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>?
+Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>.For.set -> void
+Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.IdAttributeValue.get -> string!
+Microsoft.AspNetCore.Components.Forms.Label<TValue>
+Microsoft.AspNetCore.Components.Forms.Label<TValue>.AdditionalAttributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
+Microsoft.AspNetCore.Components.Forms.Label<TValue>.AdditionalAttributes.set -> void
+Microsoft.AspNetCore.Components.Forms.Label<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.Forms.Label<TValue>.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Forms.Label<TValue>.For.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>?
+Microsoft.AspNetCore.Components.Forms.Label<TValue>.For.set -> void
+Microsoft.AspNetCore.Components.Forms.Label<TValue>.Label() -> void

@@ -14,7 +14,7 @@ jobs:
       issues: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6.0.1
+        uses: actions/checkout@v6.0.2
 
       # copilot can be assigned to the issue
       # https://cli.github.com/manual/gh_issue_create

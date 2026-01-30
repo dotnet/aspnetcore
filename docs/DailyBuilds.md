@@ -46,6 +46,19 @@ If you want to download the latest daily build and use it in a project, then you
   </configuration>
   ```
 
+## .NET 11
+
+  ```xml
+  <?xml version="1.0" encoding="utf-8"?>
+  <configuration>
+      <packageSources>
+          <clear />
+          <add key="dotnet11" value="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet11/nuget/v3/index.json" />
+          <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
+      </packageSources>
+  </configuration>
+  ```
+
   *NOTE: This NuGet.Config should be with your application unless you want nightly packages to potentially start being restored for other apps on the machine.*
 
 Some features, such as new target frameworks, may require prerelease tooling builds for Visual Studio.
