@@ -4,15 +4,17 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Validation;
 using MinimalValidationSample;
+using MinimalValidationSample.Models;
+using MinimalValidationSample.Resources;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddLocalization();
 builder.Services.AddValidation(options =>
 {
-    options.DataAnnotationLocalizerProvider = (type, factory) =>
+    options.ErrorMessageLocalizerProvider = (type, factory) =>
     {
-        return MockStringLocalizer.Instance;
+        return HardcodedStringLocalizer.Instance;
     };
 });
 
@@ -30,6 +32,9 @@ app.MapPost("/products",
     ([EvenNumber(ErrorMessage = "Product ID must be even")] int productId, [Required] string name)
         => TypedResults.Ok(new { productId, name }))
     .DisableValidation();
+
+app.MapPost("/contact", (ContactFormModel model) =>
+    TypedResults.Ok(new { message = "Contact form submitted.", model.Email }));
 
 app.Run();
 
