@@ -21,7 +21,7 @@ public class RequestTests : LoggedTest
     public async Task Request_SimpleGet_ExpectedFieldsSet()
     {
         string root;
-        using (Utilities.CreateHttpServerReturnRoot("/basepath", out root, async httpContext =>
+        using (Utilities.CreateHttpServerReturnRoot("/basepath", out root, httpContext =>
         {
             var requestInfo = httpContext.Features.Get<IHttpRequestFeature>();
 

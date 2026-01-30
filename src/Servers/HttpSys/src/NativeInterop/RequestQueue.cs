@@ -190,8 +190,8 @@ internal sealed partial class RequestQueue
     }
 
     /// <summary>
-    /// Closes the request queue handle to cancel any pending IO operations,
-    /// but does not dispose the BoundHandle. This allows pending operations
+    /// Shuts down the request queue to cancel any pending IO operations,
+    /// but does not close the handle or dispose the BoundHandle. This allows pending operations
     /// to be properly cleaned up before disposing the BoundHandle.
     /// </summary>
     internal void StopProcessingRequests()
