@@ -50,6 +50,8 @@ public class RequestTests : LoggedTest
             Assert.NotNull(requestIdentifierFeature.TraceIdentifier);
 
             // Note: Response keys are validated in the ResponseTests
+            
+            return Task.CompletedTask;
         }, options => { }, LoggerFactory))
         {
             string response = await SendRequestAsync(root + "/basepath/SomePath?SomeQuery");
