@@ -12,6 +12,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <!-- We import D.B.T ourselves in this file -->
     <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
+    <!-- Should mitigate https://github.com/dotnet/dotnet/issues/4558 -->
+    <RestoreDisableParallel>true</RestoreDisableParallel>
 
     <!-- Namespace used to generate stable UUID3 GUIDs for MSI ProductCode, etc. DO NOT CHANGE THIS. -->
     <NamespaceGuid>$(HostingBundleNamespaceGuid)</NamespaceGuid>
