@@ -95,8 +95,47 @@ internal static class ValidationEndpointFilterFactory
             if (validateContext is { ValidationErrors.Count: > 0 })
             {
                 context.HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                var normalizedErrors = new Dictionary<string, string[]>(StringComparer.Ordinal);
+                foreach (var kvp in validateContext.ValidationErrors)
+                {
+                    var key = kvp.Key;
+                    var normalizedKey = key;
 
-                var problemDetails = new HttpValidationProblemDetails(validateContext.ValidationErrors);
+                    if (validatableParameters is not null)
+                    {
+                        foreach (var entry in validatableParameters)
+                        {
+                            var paramInfo = parameters[entry.Index];
+                            var paramName = paramInfo.Name;
+                            if (string.IsNullOrEmpty(paramName))
+                            {
+                                continue;
+                            }
+
+                            if (string.Equals(key, paramName, StringComparison.Ordinal))
+                            {
+                                normalizedKey = string.Empty;
+                                break;
+                            }
+
+                            if (key.StartsWith(paramName + ".", StringComparison.Ordinal))
+                            {
+                                normalizedKey = key.Substring(paramName.Length + 1);
+                                break;
+                            }
+
+                            if (key.StartsWith(paramName + "[", StringComparison.Ordinal))
+                            {
+                                normalizedKey = key.Substring(paramName.Length + 1);
+                                break;
+                            }
+                        }
+                    }
+
+                    normalizedErrors[normalizedKey] = kvp.Value;
+                }
+
+                var problemDetails = new HttpValidationProblemDetails(normalizedErrors);
 
                 var problemDetailsService = context.HttpContext.RequestServices.GetService<IProblemDetailsService>();
                 if (problemDetailsService is not null)
