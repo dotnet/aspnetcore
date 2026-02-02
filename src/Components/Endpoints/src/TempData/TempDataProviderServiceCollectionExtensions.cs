@@ -12,7 +12,6 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal static class TempDataProviderServiceCollectionExtensions
 {
-
     internal static IServiceCollection AddTempData(this IServiceCollection services)
     {
         services.TryAddSingleton<ITempDataSerializer, JsonTempDataSerializer>();

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
+using System.Buffers.Text;
 using System.Collections.ObjectModel;
 using System.Text.Json;
 using Microsoft.AspNetCore.DataProtection;
@@ -17,6 +19,7 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
     public const string CookieName = ".AspNetCore.Components.TempData";
     private const string Purpose = "Microsoft.AspNetCore.Components.CookieTempDataProviderToken";
     private readonly IDataProtector _dataProtector;
+    private readonly ISpanDataProtector? _spanDataProtector;
     private readonly ITempDataSerializer _tempDataSerializer;
     private readonly RazorComponentsServiceOptions _options;
     private readonly ChunkingCookieManager _chunkingCookieManager;
@@ -29,6 +32,7 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
         ILogger<CookieTempDataProvider> logger)
     {
         _dataProtector = dataProtectionProvider.CreateProtector(Purpose);
+        _spanDataProtector = _dataProtector as ISpanDataProtector;
         _tempDataSerializer = tempDataSerializer;
         _options = options.Value;
         _chunkingCookieManager = new ChunkingCookieManager();
@@ -53,18 +57,45 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
                 return ReadOnlyDictionary<string, object?>.Empty;
             }
 
-            var protectedBytes = WebEncoders.Base64UrlDecode(serializedDataFromCookie);
-            var unprotectedBytes = _dataProtector.Unprotect(protectedBytes);
-            var dataFromCookie = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(unprotectedBytes);
+            byte[]? rentedDecodeBuffer = null;
+            var maxDecodedSize = Base64Url.GetMaxDecodedLength(serializedDataFromCookie.Length);
+            var decodeBuffer = maxDecodedSize <= 256
+                ? stackalloc byte[256]
+                : (rentedDecodeBuffer = ArrayPool<byte>.Shared.Rent(maxDecodedSize));
 
-            if (dataFromCookie is null)
+            try
             {
-                return ReadOnlyDictionary<string, object?>.Empty;
-            }
+                var decodeStatus = Base64Url.DecodeFromChars(serializedDataFromCookie, decodeBuffer, out _, out var bytesWritten);
+                var protectedBytes = decodeBuffer[..bytesWritten];
+                Dictionary<string, JsonElement>? dataFromCookie;
 
-            var convertedData = _tempDataSerializer.DeserializeData(dataFromCookie);
-            Log.TempDataCookieLoadSuccess(_logger, cookieName);
-            return convertedData;
+                if (_spanDataProtector is not null)
+                {
+                    var unprotectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[256]);
+                    _spanDataProtector.Unprotect(protectedBytes, ref unprotectBuffer);
+                    dataFromCookie = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(unprotectBuffer.WrittenSpan);
+                }
+                else
+                {
+                    var unprotectedBytes = _dataProtector.Unprotect(protectedBytes.ToArray());
+                    dataFromCookie = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(unprotectedBytes);
+                }
+
+                if (dataFromCookie is null)
+                {
+                    return ReadOnlyDictionary<string, object?>.Empty;
+                }
+                var convertedData = _tempDataSerializer.DeserializeData(dataFromCookie);
+                Log.TempDataCookieLoadSuccess(_logger, cookieName);
+                return convertedData;
+            }
+            finally
+            {
+                if (rentedDecodeBuffer is not null)
+                {
+                    ArrayPool<byte>.Shared.Return(rentedDecodeBuffer);
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -101,7 +132,7 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
 
         var bytes = _tempDataSerializer.SerializeData(values);
         var protectedBytes = _dataProtector.Protect(bytes);
-        var encodedValue = WebEncoders.Base64UrlEncode(protectedBytes);
+        var encodedValue = Base64Url.EncodeToString(protectedBytes);
         _chunkingCookieManager.AppendResponseCookie(context, cookieName, encodedValue, cookieOptions);
         Log.TempDataCookieSaveSuccess(_logger, cookieName);
     }

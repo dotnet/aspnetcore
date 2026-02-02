@@ -84,7 +84,10 @@ public sealed class RazorComponentsServiceOptions
         }
     }
 
-    private CookieBuilder _tempDataCookie = new CookieBuilder
+    /// <summary>
+    /// Determines the settings used to create the TempData cookie.
+    /// </summary>
+    public CookieBuilder TempDataCookie { get; set; } = new()
     {
         Name = CookieTempDataProvider.CookieName,
         HttpOnly = true,
@@ -92,15 +95,6 @@ public sealed class RazorComponentsServiceOptions
         IsEssential = false,
         SecurePolicy = CookieSecurePolicy.SameAsRequest,
     };
-
-    /// <summary>
-    /// Determines the settings used to create the TempData cookie.
-    /// </summary>
-    public CookieBuilder TempDataCookie
-    {
-        get => _tempDataCookie;
-        set => _tempDataCookie = value;
-    }
 
     internal string? JavaScriptInitializers { get; set; }
 

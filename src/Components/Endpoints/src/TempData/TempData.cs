@@ -60,7 +60,6 @@ internal sealed class TempData : ITempData
 
     public void Keep()
     {
-        _retainedKeys.Clear();
         _retainedKeys.UnionWith(_data.Keys);
     }
 
