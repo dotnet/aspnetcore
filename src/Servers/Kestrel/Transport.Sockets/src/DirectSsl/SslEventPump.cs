@@ -301,7 +301,7 @@ internal sealed class SslEventPump : IDisposable
 
                 if ((mask & (NativeSsl.EPOLLERR | NativeSsl.EPOLLHUP)) != 0)
                 {
-                    // Following nginx's approach: when error events occur, add EPOLLIN|EPOLLOUT
+                    // When error events occur, add EPOLLIN|EPOLLOUT
                     // to handle the events in at least one active handler.
                     mask |= NativeSsl.EPOLLIN | NativeSsl.EPOLLOUT;
 #if DIRECTSSL_DEBUG_COUNTERS
@@ -360,7 +360,7 @@ internal sealed class SslEventPump : IDisposable
     }
 
     /// <summary>
-    /// Accept new connections from the listen socket (nginx pattern).
+    /// Accept new connections from the listen socket.
     /// Loops until EAGAIN (no more pending connections).
     /// Captures peer address from accept4 to avoid getpeername syscall later.
     /// </summary>

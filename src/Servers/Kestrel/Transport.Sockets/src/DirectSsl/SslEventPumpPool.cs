@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl;
 /// all SSL I/O for those connections on a dedicated thread.
 /// 
 /// With EPOLLEXCLUSIVE, all pumps can accept connections directly, distributing
-/// the accept and handshake load across all workers (nginx-style architecture).
+/// the accept and handshake load across all workers.
 /// </summary>
 internal sealed class SslEventPumpPool : IDisposable
 {
@@ -26,7 +26,7 @@ internal sealed class SslEventPumpPool : IDisposable
     {
         _loggerFactory = loggerFactory;
         
-        // Default: 1 pump per CPU core, like nginx
+        // Default: 1 pump per CPU core
         pumpCount = pumpCount > 0 ? pumpCount : Environment.ProcessorCount;
 
         _pumps = new SslEventPump[pumpCount];

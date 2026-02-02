@@ -384,7 +384,7 @@ internal sealed class SslConnectionState : IDisposable
                 return new ValueTask<int>(0);
 
             case NativeSsl.SSL_ERROR_SYSCALL:
-                // nginx pattern: check ERR_peek_error() == 0 to detect clean EOF
+                // Check ERR_peek_error() == 0 to detect clean EOF
                 if (NativeSsl.ERR_peek_error() == 0)
                 {
                     return new ValueTask<int>(0);  // Treat as EOF
@@ -569,11 +569,11 @@ internal sealed class SslConnectionState : IDisposable
         // Clear any stale errors before shutdown
         NativeSsl.ERR_clear_error();
         
-        // Use quiet shutdown (nginx's approach) - don't wait for peer's close_notify
+        // Use quiet shutdown - don't wait for peer's close_notify
         // This is appropriate because:
         // 1. The peer may have already closed the connection (SSL_ERROR_SYSCALL with errno=0)
         // 2. Waiting for close_notify can block or fail if connection is broken
-        // 3. nginx sets SSL_set_quiet_shutdown(1) when c->timedout || c->error || c->buffered
+        // 3. Quiet shutdown is set when connection is timed out, errored, or buffered
         NativeSsl.SSL_set_quiet_shutdown(Ssl, 1);
         
         // Single SSL_shutdown call - with quiet shutdown, this just cleans up locally
