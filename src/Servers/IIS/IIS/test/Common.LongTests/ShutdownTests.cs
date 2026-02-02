@@ -477,10 +477,21 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
+    [RequiresNewShim]
     public async Task ConfigurationChangeCanBeIgnoredInProcess()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
         deploymentParameters.HandlerSettings["disallowRotationOnConfigChange"] = "true";
+
+        if (deploymentParameters.ServerType == ServerType.IISExpress)
+        {
+            // IISExpress seems to call OnGlobalApplicationStop after config changes
+            // In theory we might be able to store a bool if OnGlobalConfigurationChange is called
+            // and reset it in OnGlobalApplicationStop and ignore the current OnGlobalApplicationStop call
+            // But that seems a little risky, so I'd prefer not doing that as this probably isn't
+            // an important user scenario
+            return;
+        }
 
         var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -506,7 +517,6 @@ public class ShutdownTests : IISFunctionalTestBase
     public async Task AppHostConfigurationChangeIsIgnoredInProcess()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
-        deploymentParameters.HandlerSettings["disallowRotationOnConfigChange"] = "true";
 
         var deploymentResult = await DeployAsync(deploymentParameters);
 

@@ -70,12 +70,28 @@ public partial class TestServer : IDisposable
     public static async Task<TestServer> Create(Action<IApplicationBuilder> appBuilder, ILoggerFactory loggerFactory, IISServerOptions options, bool isHttps = false)
     {
         await WebCoreLock.WaitAsync();
-        _options = options;
-        var server = new TestServer(appBuilder, loggerFactory, isHttps);
-        server.Start();
-        (await server.HttpClient.GetAsync("/start")).EnsureSuccessStatusCode();
-        await server._startedTaskCompletionSource.Task;
-        return server;
+        TestServer server = null;
+        try
+        {
+            _options = options;
+            server = new TestServer(appBuilder, loggerFactory, isHttps);
+            server.Start();
+            (await server.HttpClient.GetAsync("/start")).EnsureSuccessStatusCode();
+            await server._startedTaskCompletionSource.Task;
+            return server;
+        }
+        catch
+        {
+            if (server is not null)
+            {
+                server?.Dispose();
+            }
+            else
+            {
+                WebCoreLock.Release();
+            }
+            throw;
+        }
     }
 
     public static Task<TestServer> Create(RequestDelegate app, ILoggerFactory loggerFactory)
