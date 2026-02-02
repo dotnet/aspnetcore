@@ -123,7 +123,6 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
                 else
                 {
                     ++itr;
-
                 }
             }
 
@@ -149,8 +148,10 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
             {
                 try
                 {
-                    if (UseLegacyShutdown())
+                    if (m_handlerResolver.GetHostingModel() == APP_HOSTING_MODEL::HOSTING_OUT_PROCESS
+                        || UseLegacyShutdown())
                     {
+                        // Only shutdown the specific application when using OutOfProcess instead of the whole w3wp process
                         application->ShutDownApplication(/* fServerInitiated */ false);
                     }
                     else

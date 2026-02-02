@@ -30,6 +30,7 @@ public class IISDeployer : IISDeployerBase
     private string _debugLogFile;
     private string _appPoolName;
     private bool _disposed;
+    private int _siteId = 5;
 
     public Process HostProcess { get; set; }
 
@@ -305,17 +306,35 @@ public class IISDeployer : IISDeployerBase
 
     private void AddTemporaryAppHostConfig(string contentRoot, int port)
     {
-        _configPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("D"));
-        _applicationHostConfig = Path.Combine(_configPath, "applicationHost.config");
-        Directory.CreateDirectory(_configPath);
-        var config = XDocument.Parse(DeploymentParameters.ServerConfigTemplateContent ?? File.ReadAllText("IIS.config"));
+        var multiSite = true;
+        XDocument config;
+        if (_applicationHostConfig is not null)
+        {
+            //Debugger.Launch();
+            config = XDocument.Parse(File.ReadAllText(_applicationHostConfig));
+        }
+        else
+        {
+            multiSite = false;
+            _configPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("D"));
+            _applicationHostConfig = Path.Combine(_configPath, "applicationHost.config");
+            Directory.CreateDirectory(_configPath);
+            config = XDocument.Parse(DeploymentParameters.ServerConfigTemplateContent ?? File.ReadAllText("IIS.config"));
+        }
 
-        ConfigureAppHostConfig(config.Root, contentRoot, port);
+        ConfigureAppHostConfig(config.Root, contentRoot, port, _siteId);
+        _siteId++;
 
         config.Save(_applicationHostConfig);
 
+        if (multiSite)
+        {
+            return;
+        }
+
         RetryServerManagerAction(serverManager =>
         {
+            //Debugger.Launch();
             var redirectionConfiguration = serverManager.GetRedirectionConfiguration();
             var redirectionSection = redirectionConfiguration.GetSection("configurationRedirection");
 
@@ -342,9 +361,9 @@ public class IISDeployer : IISDeployerBase
         });
     }
 
-    private void ConfigureAppHostConfig(XElement config, string contentRoot, int port)
+    private void ConfigureAppHostConfig(XElement config, string contentRoot, int port, int siteId)
     {
-        ConfigureModuleAndBinding(config, contentRoot, port);
+        ConfigureModuleAndBinding(config, contentRoot, port, siteId);
 
         // In IISExpress system.webServer/modules in under location element
         config
@@ -521,6 +540,7 @@ public class IISDeployer : IISDeployerBase
         var configDump = new StringBuilder();
         using (var serverManager = new ServerManager())
         {
+            //Debugger.Launch();
             foreach (var site in serverManager.Sites)
             {
                 configDump.AppendLine(CultureInfo.InvariantCulture, $"Site Name:{site.Name} Id:{site.Id} State:{site.State}");

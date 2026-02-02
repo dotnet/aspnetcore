@@ -204,6 +204,13 @@ std::chrono::milliseconds HandlerResolver::GetShutdownDelay() const
     return m_shutdownDelay;
 }
 
+bool HandlerResolver::IsSameApplication(PCWSTR application)
+{
+    SRWExclusiveLock lock(m_requestHandlerLoadLock);
+
+    return m_loadedApplicationId == application;
+}
+
 HRESULT
 HandlerResolver::FindNativeAssemblyFromGlobalLocation(
     const ShimOptions& pConfiguration,

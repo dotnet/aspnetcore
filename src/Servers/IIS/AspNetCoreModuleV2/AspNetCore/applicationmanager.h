@@ -57,6 +57,16 @@ public:
         return m_handlerResolver.GetShutdownDelay() == std::chrono::milliseconds::zero();
     }
 
+    APP_HOSTING_MODEL GetAppHostingModel()
+    {
+        return m_handlerResolver.GetHostingModel();
+    }
+
+    bool IsSameApplication(PCWSTR application)
+    {
+        return m_handlerResolver.IsSameApplication(application);
+    }
+
 private:
 
     std::unordered_map<std::wstring, std::shared_ptr<APPLICATION_INFO>>      m_pApplicationInfoHash;

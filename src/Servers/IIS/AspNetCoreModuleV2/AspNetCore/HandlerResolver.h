@@ -20,6 +20,7 @@ public:
     APP_HOSTING_MODEL GetHostingModel();
     bool GetDisallowRotationOnConfigChange();
     std::chrono::milliseconds GetShutdownDelay() const;
+    bool IsSameApplication(PCWSTR application);
 
 private:
     HRESULT LoadRequestHandlerAssembly(const IHttpApplication &pApplication, const std::filesystem::path& shadowCopyPath, const ShimOptions& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory, ErrorContext& errorContext);

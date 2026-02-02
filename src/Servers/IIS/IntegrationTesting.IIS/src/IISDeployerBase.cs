@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 
@@ -136,22 +137,33 @@ public abstract class IISDeployerBase : ApplicationDeployer
         }
     }
 
-    protected void ConfigureModuleAndBinding(XElement config, string contentRoot, int port)
+    protected void ConfigureModuleAndBinding(XElement config, string contentRoot, int port, int siteId)
     {
         var siteElement = config
             .RequiredElement("system.applicationHost")
             .RequiredElement("sites")
             .RequiredElement("site");
 
-        siteElement
-            .RequiredElement("application")
+        var newSiteElement = new XElement(siteElement);
+        newSiteElement.SetAttributeValue("name", $"{siteId}");
+
+        newSiteElement
+            .SetAttributeValue("id", $"{siteId}");
+
+        newSiteElement
+            .Element("application")
             .RequiredElement("virtualDirectory")
             .SetAttributeValue("physicalPath", contentRoot);
 
-        siteElement
-            .RequiredElement("bindings")
-            .RequiredElement("binding")
+        newSiteElement
+            .GetOrAdd("bindings")
+            .GetOrAdd("binding", "protocol", "http")
             .SetAttributeValue("bindingInformation", $":{port}:localhost");
+
+        config
+            .RequiredElement("system.applicationHost")
+            .RequiredElement("sites")
+            .Add(newSiteElement);
 
         config
             .RequiredElement("system.webServer")

@@ -169,7 +169,8 @@ public partial class IISExpressDeployer : IISDeployerBase
 
                 var parameters = string.IsNullOrEmpty(DeploymentParameters.ServerConfigLocation) ?
                                 string.Format(CultureInfo.InvariantCulture, "/port:{0} /path:\"{1}\" /trace:error /systray:false", uri.Port, contentRoot) :
-                                string.Format(CultureInfo.InvariantCulture, "/site:{0} /config:{1} /trace:error /systray:false", DeploymentParameters.SiteName, DeploymentParameters.ServerConfigLocation);
+                                string.Format(CultureInfo.InvariantCulture, "/site:{0} /config:{1} /trace:error /systray:false", "5", DeploymentParameters.ServerConfigLocation);
+                DeploymentParameters.SiteName = "5";
 
                 Logger.LogInformation("Executing command : {iisExpress} {parameters}", iisExpressPath, parameters);
 
@@ -293,7 +294,7 @@ public partial class IISExpressDeployer : IISDeployerBase
             .RequiredElement("modules")
             .GetOrAdd("add", "name", AspNetCoreModuleV2ModuleName);
 
-        ConfigureModuleAndBinding(config.Root, contentRoot, port);
+        ConfigureModuleAndBinding(config.Root, contentRoot, port, 5);
 
         var webConfigPath = Path.Combine(contentRoot, "web.config");
         if (!DeploymentParameters.PublishApplicationBeforeDeployment && !File.Exists(webConfigPath))

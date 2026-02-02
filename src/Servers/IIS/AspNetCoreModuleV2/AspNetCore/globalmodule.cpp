@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #include "globalmodule.h"
+#include <EventLog.h>
 
 extern BOOL         g_fInShutdown;
 
@@ -44,7 +45,9 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop(
 
     // If we're already cleaned up just return.
     // If user has opted out of the new shutdown behavior ignore this call as we never registered for it before
-    if (!m_pApplicationManager || m_pApplicationManager->UseLegacyShutdown())
+    if (!m_pApplicationManager || m_pApplicationManager->UseLegacyShutdown()
+        /*|| m_pApplicationManager->GetAppHostingModel() == APP_HOSTING_MODEL::HOSTING_OUT_PROCESS*/)
+        /*!m_pApplicationManager->IsSameApplication(pProvider->GetApplication()->GetApplicationId()))*/
     {
         return GL_NOTIFICATION_CONTINUE;
     }
