@@ -1,4 +1,9 @@
 #nullable enable
+Microsoft.AspNetCore.Components.ITempDataValueMapper
+Microsoft.AspNetCore.Components.ITempDataValueMapper.GetValue(string! tempDataKey, System.Type! targetType) -> object?
+Microsoft.AspNetCore.Components.ITempDataValueMapper.RegisterValueCallback(string! tempDataKey, System.Func<object?>! valueGetter) -> void
+Microsoft.Extensions.DependencyInjection.SupplyParameterFromTempDataServiceCollectionExtensions
+static Microsoft.Extensions.DependencyInjection.SupplyParameterFromTempDataServiceCollectionExtensions.AddSupplyValueFromTempDataProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxBufferSize.get -> int
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxBufferSize.set -> void

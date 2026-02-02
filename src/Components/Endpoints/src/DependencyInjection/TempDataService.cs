@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -26,10 +27,16 @@ internal sealed partial class TempDataService
 
     public void Save(HttpContext httpContext, TempData tempData)
     {
+        if (httpContext.RequestServices.GetService<ITempDataValueMapper>() is TempDataValueMapper tempDataValueMapper)
+        {
+            tempDataValueMapper.PersistValues(tempData);
+        }
+
         if (!tempData.WasLoaded)
         {
             return;
         }
-        _tempDataProvider.SaveTempData(httpContext, tempData.Save());
+        var dataToSave = tempData.Save();
+        _tempDataProvider.SaveTempData(httpContext, dataToSave);
     }
 }
