@@ -33,18 +33,54 @@ Note: For release/9.0, the Fedora queue variable was updated to `$(HelixQueueFed
 
 Note: For release/8.0, the Fedora queue variable was updated to `$(HelixQueueFedora41)` to match the Fedora version defined in that branch's `Helix.Common.props`.
 
+## Patch Files
+
+For convenience, patch files have been generated in the `backport-patches/` directory:
+- `backport-patches/release-9.0.patch` - Patch for release/9.0
+- `backport-patches/release-8.0.patch` - Patch for release/8.0
+
+These can be applied using:
+```bash
+# Apply to release/9.0
+git checkout release/9.0
+git apply backport-patches/release-9.0.patch
+
+# Apply to release/8.0
+git checkout release/8.0
+git apply backport-patches/release-8.0.patch
+```
+
 ## Next Steps
 
 Due to environment authentication limitations, the backport branches have been created and committed locally but not pushed to the remote repository. To complete the backport:
 
-### Option 1: Push branches manually
+### Option 1: Push existing local branches
+If the local branches still exist:
 ```bash
 # Push the backport branches
 git push origin backport/65295-release-9.0
 git push origin backport/65295-release-8.0
 ```
 
-### Option 2: Create PRs via GitHub CLI
+### Option 2: Apply patches and create branches
+If the local branches are not available:
+```bash
+# For release/9.0
+git checkout -b backport/65295-release-9.0 origin/release/9.0
+git apply backport-patches/release-9.0.patch
+git add .
+git commit -m "Backport PR #65295 to release/9.0: Update to Ubuntu 22.04"
+git push origin backport/65295-release-9.0
+
+# For release/8.0
+git checkout -b backport/65295-release-8.0 origin/release/8.0
+git apply backport-patches/release-8.0.patch
+git add .
+git commit -m "Backport PR #65295 to release/8.0: Update to Ubuntu 22.04"
+git push origin backport/65295-release-8.0
+```
+
+### Option 3: Create PRs via GitHub CLI
 ```bash
 # Create PR for release/9.0
 gh pr create --base release/9.0 --head backport/65295-release-9.0 \
@@ -75,7 +111,7 @@ Changes:
 Original PR: https://github.com/dotnet/aspnetcore/pull/65295"
 ```
 
-### Option 3: Create PRs via GitHub Web UI
+### Option 4: Create PRs via GitHub Web UI
 1. Push both branches to origin
 2. Navigate to https://github.com/dotnet/aspnetcore/pulls
 3. Click "New pull request"

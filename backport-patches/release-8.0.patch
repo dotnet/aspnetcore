@@ -1,0 +1,42 @@
+From f5cc31e94312d98a9777c1554a63afcf13791b4d Mon Sep 17 00:00:00 2001
+From: "copilot-swe-agent[bot]" <198982749+Copilot@users.noreply.github.com>
+Date: Mon, 2 Feb 2026 18:07:00 +0000
+Subject: [PATCH] Backport PR #65295 to release/8.0: Update to Ubuntu 22.04
+
+---
+ eng/targets/Helix.Common.props | 2 +-
+ eng/targets/Helix.targets      | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/eng/targets/Helix.Common.props b/eng/targets/Helix.Common.props
+index 1ba8ba99db..2914a87650 100644
+--- a/eng/targets/Helix.Common.props
++++ b/eng/targets/Helix.Common.props
+@@ -28,7 +28,7 @@
+       <!-- aspnetcore-ci[-official] (ci.yml) -->
+       <!-- aspnetcore-quarantined-pr (quarantined-pr.yml) -->
+       <ItemGroup>
+-        <HelixAvailableTargetQueue Include="Ubuntu.2004.Amd64.Open" Platform="Linux" />
++        <HelixAvailableTargetQueue Include="Ubuntu.2204.Amd64.Open" Platform="Linux" />
+         <HelixAvailableTargetQueue Include="OSX.15.Amd64.Open" Platform="OSX" />
+         <HelixAvailableTargetQueue Include="Windows.11.Amd64.Client.Open" Platform="Windows" />
+         <HelixAvailableTargetQueue Include="Windows.Amd64.VS2022.Pre.Open" Platform="Windows" />
+diff --git a/eng/targets/Helix.targets b/eng/targets/Helix.targets
+index c27380fb6d..c9b574b012 100644
+--- a/eng/targets/Helix.targets
++++ b/eng/targets/Helix.targets
+@@ -19,9 +19,9 @@
+       $(HelixQueueAlmaLinux8);
+       $(HelixQueueAlpine);
+       $(HelixQueueDebian12);
+-      $(HelixQueueFedora40);
++      $(HelixQueueFedora41);
+       $(HelixQueueMariner);
+-      Ubuntu.2004.Amd64.Open;
++      Ubuntu.2204.Amd64.Open;
+     </SkipHelixQueues>
+     <SkipHelixArm>true</SkipHelixArm>
+   </PropertyGroup>
+-- 
+2.52.0
+
