@@ -1,0 +1,46 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "DirectSslTransportApp",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-directssl",
+            "program": "${workspaceFolder}/../../../.dotnet/dotnet",
+            "args": [
+                "run",
+                "--no-build",
+                "--project",
+                "${workspaceFolder}/samples/DirectSslTransportApp/DirectSslTransportApp.csproj"
+            ],
+            "cwd": "${workspaceFolder}/samples/DirectSslTransportApp",
+            "stopAtEntry": false,
+            "console": "integratedTerminal",
+            "env": {
+                "DOTNET_ROOT": "${workspaceFolder}/../../../.dotnet",
+                "PATH": "${workspaceFolder}/../../../.dotnet:${env:PATH}"
+            }
+        },
+        {
+            "name": "DirectSslTransportApp (Standard TLS)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-directssl",
+            "program": "${workspaceFolder}/../../../.dotnet/dotnet",
+            "args": [
+                "run",
+                "--no-build",
+                "--project",
+                "${workspaceFolder}/samples/DirectSslTransportApp/DirectSslTransportApp.csproj"
+            ],
+            "cwd": "${workspaceFolder}/samples/DirectSslTransportApp",
+            "stopAtEntry": false,
+            "console": "integratedTerminal",
+            "env": {
+                "USE_STANDARD_TLS": "1",
+                "DOTNET_ROOT": "${workspaceFolder}/../../../.dotnet",
+                "PATH": "${workspaceFolder}/../../../.dotnet:${env:PATH}"
+            }
+        }
+    ]
+}

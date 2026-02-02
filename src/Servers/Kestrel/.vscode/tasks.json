@@ -1,0 +1,27 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build-directssl",
+            "command": "${workspaceFolder}/../../../.dotnet/dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/samples/DirectSslTransportApp/DirectSslTransportApp.csproj",
+                "/p:Configuration=Debug"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "build-kestrel",
+            "command": "${workspaceFolder}/build.sh",
+            "type": "shell",
+            "problemMatcher": "$msCompile",
+            "group": "build"
+        }
+    ]
+}
