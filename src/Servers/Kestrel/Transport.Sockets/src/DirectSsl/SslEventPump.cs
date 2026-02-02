@@ -26,16 +26,16 @@ internal sealed class SslEventPump : IDisposable
     private readonly int _id;
 
     private readonly int _epollFd;
-    
+
     // Established connections (handshake complete) - use fd as key
     private readonly ConcurrentDictionary<int, SslConnectionState> _connections = new();
-    
+
     // Connections still handshaking - local to pump thread, no sync needed
     private readonly Dictionary<int, HandshakingConnection> _handshaking = new();
-    
+
     private readonly Thread _pumpThread;
     private volatile bool _running = true;
-    
+
     // Listen socket (added with EPOLLEXCLUSIVE)
     private int _listenFd = -1;
     private IntPtr _sslCtx = IntPtr.Zero;
@@ -43,14 +43,14 @@ internal sealed class SslEventPump : IDisposable
     private MemoryPool<byte>? _memoryPool;
     private ILoggerFactory? _loggerFactory;
     private bool _noDelay;
-    
+
     // Cached loggers for connection creation (initialized in StartWithListenSocket)
     private ILogger<SslConnectionState>? _sslConnectionStateLogger;
     private ILogger<DirectSslConnection>? _directSslConnectionLogger;
-    
+
     // Cached listen endpoint to avoid getsockname syscall per connection
     private EndPoint? _listenEndPoint;
-    
+
 #if DIRECTSSL_DEBUG_COUNTERS
     // Instance counters for this pump
     private long _totalRegistered;
@@ -62,7 +62,7 @@ internal sealed class SslEventPump : IDisposable
     private long _totalHandshakeComplete;
     private long _totalHandshakeFailed;
     private DateTime _lastLogTime = DateTime.UtcNow;
-    
+
     // Static counters that can be incremented from connection state
     public static long TotalWriteEof;
     public static long TotalReadEof;
@@ -119,7 +119,7 @@ internal sealed class SslEventPump : IDisposable
     /// so that only one worker wakes per incoming connection (prevents thundering herd).
     /// </summary>
     public void StartWithListenSocket(
-        int listenFd, 
+        int listenFd,
         IntPtr sslCtx,
         ChannelWriter<DirectSslConnection> readyConnections,
         MemoryPool<byte> memoryPool,
@@ -132,40 +132,40 @@ internal sealed class SslEventPump : IDisposable
         _memoryPool = memoryPool;
         _loggerFactory = loggerFactory;
         _noDelay = noDelay;
-        
+
         // Cache loggers for connection creation
         _sslConnectionStateLogger = loggerFactory.CreateLogger<SslConnectionState>();
         _directSslConnectionLogger = loggerFactory.CreateLogger<DirectSslConnection>();
-        
+
         // Cache listen endpoint once to avoid getsockname syscall per connection
         // We need a temporary Socket wrapper to get the endpoint (this is a one-time cost)
         using (var tempSocket = new Socket(new SafeSocketHandle((IntPtr)listenFd, ownsHandle: false)))
         {
             _listenEndPoint = tempSocket.LocalEndPoint;
         }
-        
+
         // Add listen socket with EPOLLEXCLUSIVE - only one worker wakes per connection
         var ev = new EpollEvent
         {
             Events = NativeSsl.EPOLLIN | NativeSsl.EPOLLEXCLUSIVE,
             Data = new EpollData { Fd = listenFd }
         };
-        
+
         int result = NativeSsl.epoll_ctl(_epollFd, NativeSsl.EPOLL_CTL_ADD, listenFd, ref ev);
         if (result < 0)
         {
             int errno = Marshal.GetLastWin32Error();
             throw new InvalidOperationException($"Failed to add listen socket to epoll: errno={errno}");
         }
-        
+
         _logger?.LogDebug("Pump {Id}: Added listen socket fd={Fd} with EPOLLEXCLUSIVE", _id, listenFd);
-        
+
         // Start the pump thread
         _pumpThread.Start();
     }
 
     /// <summary>
-    /// Start the pump without a listen socket (legacy mode for existing connections).
+    /// Start the pump without a listen socket.
     /// </summary>
     public void Start()
     {
@@ -175,7 +175,7 @@ internal sealed class SslEventPump : IDisposable
     public void Register(SslConnectionState conn)
     {
         _logger?.LogDebug("Registering fd={Fd} with epoll", conn.Fd);
-        
+
         conn.Pump = this;
         _connections[conn.Fd] = conn;
 #if DIRECTSSL_DEBUG_COUNTERS
@@ -189,7 +189,7 @@ internal sealed class SslEventPump : IDisposable
             Events = NativeSsl.EPOLLIN | NativeSsl.EPOLLRDHUP,
             Data = new EpollData { Fd = conn.Fd }
         };
-        
+
         int result = NativeSsl.epoll_ctl(_epollFd, NativeSsl.EPOLL_CTL_ADD, conn.Fd, ref ev);
         if (result < 0)
         {
@@ -197,7 +197,7 @@ internal sealed class SslEventPump : IDisposable
             _logger?.LogError("epoll_ctl ADD failed for fd={Fd}: errno={Errno}", conn.Fd, errno);
             throw new InvalidOperationException($"epoll_ctl ADD failed: {errno}");
         }
-        
+
         _logger?.LogDebug("Successfully registered fd={Fd} with epoll", conn.Fd);
     }
 
@@ -245,7 +245,7 @@ internal sealed class SslEventPump : IDisposable
             // Use shorter timeout when there are handshaking connections
             int timeout = _handshaking.Count > 0 ? 10 : 1000;
             int numEvents = NativeSsl.epoll_wait(_epollFd, events, MaxEvents, timeout);
-            
+
 #if DIRECTSSL_DEBUG_COUNTERS
             // Log stats every 5 seconds
             var now = DateTime.UtcNow;
@@ -319,7 +319,7 @@ internal sealed class SslEventPump : IDisposable
                 {
                     conn.OnWritable();
                 }
-                
+
                 // Handle EPOLLRDHUP - peer closed their write side
                 if ((mask & NativeSsl.EPOLLRDHUP) != 0)
                 {
@@ -345,7 +345,7 @@ internal sealed class SslEventPump : IDisposable
                 }
             }
         }
-        
+
         // Cleanup handshaking connections
         foreach (var kvp in _handshaking)
         {
@@ -370,29 +370,29 @@ internal sealed class SslEventPump : IDisposable
         {
             // Use accept4 with address capture to avoid separate getpeername syscall
             var (clientFd, remoteEndPoint) = NativeSsl.AcceptNonBlockingWithPeerAddress(_listenFd);
-            
+
             if (clientFd == -1)
             {
                 // EAGAIN - no more pending connections
                 break;
             }
-            
+
             if (clientFd == -2)
             {
                 // Error - continue trying
                 continue;
             }
-            
+
 #if DIRECTSSL_DEBUG_COUNTERS
             Interlocked.Increment(ref _totalAccepted);
 #endif
-            
+
             // Set TCP_NODELAY for low latency
             if (_noDelay)
             {
                 NativeSsl.SetTcpNoDelay(clientFd);
             }
-            
+
             // Create SSL and bind to socket
             IntPtr ssl = NativeSsl.SSL_new(_sslCtx);
             if (ssl == IntPtr.Zero)
@@ -403,17 +403,17 @@ internal sealed class SslEventPump : IDisposable
                 NativeSsl.close(clientFd);
                 continue;
             }
-            
+
             NativeSsl.SSL_set_fd(ssl, clientFd);
             NativeSsl.SSL_set_accept_state(ssl);
-            
+
             // Register client socket with epoll for handshake events
             var ev = new EpollEvent
             {
                 Events = NativeSsl.EPOLLIN | NativeSsl.EPOLLRDHUP,
                 Data = new EpollData { Fd = clientFd }
             };
-            
+
             int result = NativeSsl.epoll_ctl(_epollFd, NativeSsl.EPOLL_CTL_ADD, clientFd, ref ev);
             if (result < 0)
             {
@@ -426,7 +426,7 @@ internal sealed class SslEventPump : IDisposable
                 NativeSsl.close(clientFd);
                 continue;
             }
-            
+
             // Track handshaking connection with captured remote endpoint
             _handshaking[clientFd] = new HandshakingConnection
             {
@@ -434,7 +434,7 @@ internal sealed class SslEventPump : IDisposable
                 Ssl = ssl,
                 RemoteEndPoint = remoteEndPoint
             };
-            
+
             // Try handshake immediately (might complete for resumed sessions)
             TryAdvanceHandshake(clientFd, _handshaking[clientFd]);
         }
@@ -444,12 +444,12 @@ internal sealed class SslEventPump : IDisposable
     /// Try to advance the TLS handshake for a connection.
     /// </summary>
     private void TryAdvanceHandshake(
-        int fd, 
+        int fd,
         HandshakingConnection conn)
     {
         NativeSsl.ERR_clear_error();
         int n = NativeSsl.SSL_do_handshake(conn.Ssl);
-        
+
         if (n == 1)
         {
             // Handshake complete! Create connection and enqueue to Kestrel
@@ -457,15 +457,15 @@ internal sealed class SslEventPump : IDisposable
             Interlocked.Increment(ref _totalHandshakeComplete);
 #endif
             _handshaking.Remove(fd);
-            
+
             // Create SslConnectionState for the established connection
             var connectionState = new SslConnectionState(fd, conn.Ssl, _sslConnectionStateLogger);
             connectionState.SetHandshakeComplete();
-            
+
             // Register with our connections dictionary and epoll
             connectionState.Pump = this;
             _connections[fd] = connectionState;
-            
+
             // Update epoll to use standard connection events (already registered, just confirm)
             var ev = new EpollEvent
             {
@@ -473,7 +473,7 @@ internal sealed class SslEventPump : IDisposable
                 Data = new EpollData { Fd = fd }
             };
             NativeSsl.epoll_ctl(_epollFd, NativeSsl.EPOLL_CTL_MOD, fd, ref ev);
-            
+
             // Create DirectSslConnection using fd directly (no Socket wrapper)
             // This avoids ~5+ syscalls per connection (fstat, getsockopt, fcntl, etc.)
             if (_readyConnections != null && _memoryPool != null)
@@ -486,9 +486,9 @@ internal sealed class SslEventPump : IDisposable
                     conn.RemoteEndPoint,          // Captured from accept4 - avoids getpeername syscall
                     _memoryPool,
                     _directSslConnectionLogger!);
-                    
+
                 directConnection.Start();
-                
+
                 if (!_readyConnections.TryWrite(directConnection))
                 {
                     // Channel closed (shutting down) - dispose connection
@@ -497,15 +497,15 @@ internal sealed class SslEventPump : IDisposable
             }
             return;
         }
-        
+
         int error = NativeSsl.SSL_get_error(conn.Ssl, n);
-        
+
         if (error == NativeSsl.SSL_ERROR_WANT_READ)
         {
             // Already registered for EPOLLIN, just wait
             return;
         }
-        
+
         if (error == NativeSsl.SSL_ERROR_WANT_WRITE)
         {
             // Need to write - add EPOLLOUT
@@ -517,7 +517,7 @@ internal sealed class SslEventPump : IDisposable
             NativeSsl.epoll_ctl(_epollFd, NativeSsl.EPOLL_CTL_MOD, fd, ref ev);
             return;
         }
-        
+
         // Handshake failed - cleanup
         _logger?.LogDebug("Handshake failed for fd={Fd}: error={Error}", fd, error);
 #if DIRECTSSL_DEBUG_COUNTERS

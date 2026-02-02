@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.DirectSsl.Connec
 
 /// <summary>
 /// Connection context that uses native OpenSSL for TLS.
-/// 
+///
 /// After handshake completes:
 /// - Owns the SslConnectionState (which contains SSL pointer)
 /// - Uses the assigned SslEventPump for all I/O (read/write via epoll)
@@ -33,7 +33,7 @@ internal sealed class DirectSslConnection : TransportConnection
     private Task? _receiveTask;
     private Task? _sendTask;
     private volatile bool _aborted;
-    private int _disposed; // 0 = not disposed, 1 = disposed (for thread-safe CAS)
+    private int _disposed; // 0 = not disposed, 1 = disposed (for thread-safe Compare-And-Swap)
 
     public DirectSslConnection(
         int fd,
@@ -53,7 +53,7 @@ internal sealed class DirectSslConnection : TransportConnection
         LocalEndPoint = localEndPoint;
         RemoteEndPoint = remoteEndPoint;
         ConnectionClosed = _connectionClosedTokenSource.Token;
-        
+
         // Subscribe to fatal errors from the SSL connection state
         // This ensures we get notified even if no read/write is pending when peer disconnects
         _connectionState.OnFatalError = OnSslFatalError;
@@ -227,7 +227,7 @@ internal sealed class DirectSslConnection : TransportConnection
             return;
         }
         _aborted = true;
-        
+
         // CTS may already be disposed if DisposeAsync completed first
         try
         {
@@ -258,7 +258,7 @@ internal sealed class DirectSslConnection : TransportConnection
         try
         {
             _logger.LogDebug(ex, "SSL fatal error for fd={Fd}, aborting connection", _connectionState.Fd);
-            
+
             // Just abort to cancel pending operations - don't trigger disposal here
             // Kestrel will call DisposeAsync when it's done with the connection
             // This prevents premature disposal while SendLoop is still writing
@@ -312,11 +312,11 @@ internal sealed class DirectSslConnection : TransportConnection
         {
             _logger.LogDebug(ex, "SSL shutdown failed for fd={Fd}", _connectionState.Fd);
         }
-        
+
         // Shutdown both directions using P/Invoke (avoids Socket wrapper overhead)
         // Ignore return value - socket may already be closed by peer
         NativeSsl.shutdown(_fd, NativeSsl.SHUT_RDWR);
-        
+
         // Close the fd using P/Invoke
         NativeSsl.close(_fd);
 
