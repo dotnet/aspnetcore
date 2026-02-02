@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -15,10 +16,12 @@ namespace Microsoft.AspNetCore.Hosting;
 public static partial class WebHostBuilderKestrelExtensions
 {
     /// <summary>
-    /// [EXPERIMENTAL] Configures Kestrel to use the DirectSsl transport.
+    /// Configures Kestrel to use the DirectSsl transport with native OpenSSL integration.
+    /// This is an experimental API that bypasses SslStream for improved TLS performance.
     /// </summary>
-    /// <param name="hostBuilder"></param>
-    /// <returns></returns>
+    /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
+    /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+    [Experimental("ASPNETCORE_DIRECTSSL_001")]
     public static IWebHostBuilder UseKestrelDirectSslTransport(this IWebHostBuilder hostBuilder)
     {
         hostBuilder.UseDirectSslSocketTransport();
