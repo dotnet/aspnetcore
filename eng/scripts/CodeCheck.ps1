@@ -206,11 +206,6 @@ try {
         & $PSScriptRoot\GenerateProjectList.ps1 -ci:$ci
     }
 
-    Write-Host "  Re-generating package baselines"
-    Invoke-Block {
-        & dotnet run --project "$repoRoot/eng/tools/BaselineGenerator/"
-    }
-
     Write-Host "Running git diff to check for pending changes"
 
     # Redirect stderr to stdout because PowerShell does not consistently handle output to stderr

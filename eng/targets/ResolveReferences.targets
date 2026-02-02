@@ -10,8 +10,6 @@
 
   Items used by the resolution strategy:
 
-    * BaselinePackageReference = a list of packages that were referenced in the last release of the project currently building
-      - mainly used to ensure references do not change in servicing builds unless $(UseLatestPackageReferences) is not true.
     * LatestPackageReference = a list of the latest versions of packages
     * Reference = a list of the references which are needed for compilation or runtime
     * ProjectReferenceProvider = a list which maps of assembly names to the project file that produces it
@@ -46,7 +44,7 @@
         Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsPackageInThisPatch)' == 'true' ">true</UseLatestPackageReferences>
     <UseLatestPackageReferences Condition=" '$(UseLatestPackageReferences)' == '' ">false</UseLatestPackageReferences>
 
-    <!-- Projects should use project references (instead of baseline packages) in almost all cases. -->
+    <!-- Projects should use project references in almost all cases. -->
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">true</UseProjectReferences>
   </PropertyGroup>
 
@@ -142,18 +140,6 @@
         <IncludeAssets Condition="'%(IsSharedSource)' == 'true'">ContentFiles;Build</IncludeAssets>
         <PrivateAssets Condition="'%(IsSharedSource)' == 'true'">All</PrivateAssets>
       </Reference>
-
-      <!-- Identify if any references were present in the last release of this package, but have been removed. -->
-      <UnusedBaselinePackageReference Include="@(BaselinePackageReference)"
-          Exclude="@(Reference);@(PackageReference);@(ProjectReference->'%(Filename)')" />
-
-      <!-- Handle suppressions needed because above Exclude is not aware of references added in .nuspec files. -->
-      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference->WithMetadataValue('InNuspecFile', 'true'))"
-          Condition=" '$(IsServicingBuild)' == 'true' " />
-
-      <!-- Allow suppressions of any baseline changes in non-servicing builds. -->
-      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)"
-          Condition=" '$(IsServicingBuild)' != 'true' " />
     </ItemGroup>
 
     <JoinItems Left="@(Reference)" Right="@(LatestPackageReference)" LeftMetadata="*" RightMetadata="Version"
@@ -165,18 +151,6 @@
       <PackageReference Include="@(_LatestPackageReferenceWithVersion)" IsImplicitlyDefined="true" />
       <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
       <Reference Remove="@(_LatestPackageReferenceWithVersion)" />
-    </ItemGroup>
-
-    <!-- Resolve references from BaselinePackageReference for servicing builds in corner cases. May be unused. -->
-    <JoinItems Left="@(Reference)" Right="@(BaselinePackageReference)" LeftMetadata="*" RightMetadata="Version"
-        Condition=" '$(IsServicingBuild)' == 'true' OR '$(UseLatestPackageReferences)' != 'true' ">
-      <Output TaskParameter="JoinResult" ItemName="_BaselinePackageReferenceWithVersion" />
-    </JoinItems>
-
-    <ItemGroup>
-      <PackageReference Include="@(_BaselinePackageReferenceWithVersion)" IsImplicitlyDefined="true" />
-      <!-- Remove reference items that have been resolved to a BaselinePackageReference item. -->
-      <Reference Remove="@(_BaselinePackageReferenceWithVersion)" />
     </ItemGroup>
 
     <!-- For PrivateAssets=All references, like .Sources packages, fallback to LatestPackageReferences. -->
@@ -194,7 +168,6 @@
 
       <!-- Free up memory for unnecessary items -->
       <_LatestPackageReferenceWithVersion Remove="@(_LatestPackageReferenceWithVersion)" />
-      <_BaselinePackageReferenceWithVersion Remove="@(_BaselinePackageReferenceWithVersion)" />
       <_PrivatePackageReferenceWithVersion Remove="@(_PrivatePackageReferenceWithVersion)" />
       <_ImplicitPackageReference Remove="@(_ImplicitPackageReference)" />
     </ItemGroup>
@@ -206,11 +179,6 @@
     <ItemGroup>
       <_ExplicitPackageReference Remove="@(_ExplicitPackageReference)" />
     </ItemGroup>
-
-    <Error
-        Condition=" '$(IsServicingBuild)' == 'true' AND '@(UnusedBaselinePackageReference->Count())' != '0' "
-        Code="BUILD002"
-        Text="Package references changed since the last release. This could be a breaking change and is not allowed in a servicing update. References removed:%0A - @(UnusedBaselinePackageReference, '%0A - ')" />
 
     <Error
         Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND '%(Reference.Identity)' != '' AND ! Exists('%(Reference.Identity)') AND '$(DisablePackageReferenceRestrictions)' != 'true'"
