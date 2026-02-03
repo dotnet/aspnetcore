@@ -104,9 +104,9 @@ This file should be imported by eng/Versions.props
     <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>4.13.0-3.24613.7</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
     <MicrosoftCodeAnalysisExternalAccessAspNetCorePackageVersion>4.13.0-3.24613.7</MicrosoftCodeAnalysisExternalAccessAspNetCorePackageVersion>
     <!-- dotnet/extensions dependencies -->
-    <MicrosoftExtensionsCachingHybridPackageVersion>10.3.0-preview.1.26066.2</MicrosoftExtensionsCachingHybridPackageVersion>
-    <MicrosoftExtensionsDiagnosticsTestingPackageVersion>10.3.0-preview.1.26066.2</MicrosoftExtensionsDiagnosticsTestingPackageVersion>
-    <MicrosoftExtensionsTimeProviderTestingPackageVersion>10.3.0-preview.1.26066.2</MicrosoftExtensionsTimeProviderTestingPackageVersion>
+    <MicrosoftExtensionsCachingHybridPackageVersion>10.3.0-preview.1.26080.1</MicrosoftExtensionsCachingHybridPackageVersion>
+    <MicrosoftExtensionsDiagnosticsTestingPackageVersion>10.3.0-preview.1.26080.1</MicrosoftExtensionsDiagnosticsTestingPackageVersion>
+    <MicrosoftExtensionsTimeProviderTestingPackageVersion>10.3.0-preview.1.26080.1</MicrosoftExtensionsTimeProviderTestingPackageVersion>
     <!-- _git/dotnet-optimization dependencies -->
     <optimizationlinuxarm64MIBCRuntimePackageVersion>1.0.0-prerelease.26080.1</optimizationlinuxarm64MIBCRuntimePackageVersion>
     <optimizationlinuxx64MIBCRuntimePackageVersion>1.0.0-prerelease.26080.1</optimizationlinuxx64MIBCRuntimePackageVersion>
