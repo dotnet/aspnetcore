@@ -15,8 +15,6 @@ public static class SupplyParameterFromTempDataServiceCollectionExtensions
     /// <summary>
     /// Enables component parameters to be supplied from the TempData with <see cref="SupplyParameterFromTempDataAttribute"/>.
     /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-    /// <returns>The <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection AddSupplyValueFromTempDataProvider(this IServiceCollection services)
     {
         services.TryAddEnumerable(ServiceDescriptor.Scoped<ICascadingValueSupplier, SupplyParameterFromTempDataValueProvider>());
