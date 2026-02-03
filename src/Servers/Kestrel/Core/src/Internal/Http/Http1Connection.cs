@@ -845,8 +845,37 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     {
         var reader = new SequenceReader<byte>(result.Buffer);
 
-        // Use non-throwing parser path for performance
-        var parseResult = TryParseRequestNoThrow(ref reader);
+        // Use non-throwing parser path for performance.
+        // Note: The parser itself doesn't throw, but handler callbacks (OnStartLine, OnHeader)
+        // can still throw BadHttpRequestException for semantic errors (e.g., invalid request target).
+        // We catch those here to ensure metrics are recorded via OnBadRequest.
+        HttpParseResult parseResult;
+        try
+        {
+            parseResult = TryParseRequestNoThrow(ref reader);
+        }
+#pragma warning disable CS0618 // Type or member is obsolete
+        catch (BadHttpRequestException ex)
+        {
+            OnBadRequest(result.Buffer, ex);
+
+            Input.AdvanceTo(reader.Position, result.Buffer.End);
+
+            SetBadRequestState(ex);
+            endConnection = true;
+            return true;
+        }
+#pragma warning restore CS0618 // Type or member is obsolete
+        catch (Exception)
+        {
+            // Record OtherError for unexpected exceptions that escape the parser
+            KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.OtherError);
+
+            // Must advance buffer before re-throwing (matches original finally block behavior)
+            Input.AdvanceTo(reader.Position, result.Buffer.End);
+            throw;
+        }
+
         var isConsumed = parseResult.IsComplete;
 
         // Handle parse errors without exceptions
