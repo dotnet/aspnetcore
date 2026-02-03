@@ -291,7 +291,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     /// <summary>
     /// Non-throwing version of ParseRequest. Returns HttpParseResult instead of throwing.
     /// </summary>
-    private HttpParseResult TryParseRequestNoThrow(ref SequenceReader<byte> reader)
+    private HttpParseResult TryParseRequestCore(ref SequenceReader<byte> reader)
     {
         switch (_requestProcessingStatus)
         {
@@ -311,7 +311,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                 goto case RequestProcessingStatus.ParsingRequestLine;
 
             case RequestProcessingStatus.ParsingRequestLine:
-                var startLineResult = TryTakeStartLineNoThrow(ref reader);
+                var startLineResult = TryTakeStartLineCore(ref reader);
                 if (startLineResult.HasError)
                 {
                     return startLineResult;
@@ -324,7 +324,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                 return HttpParseResult.Incomplete;
 
             case RequestProcessingStatus.ParsingHeaders:
-                var headersResult = TryTakeMessageHeadersNoThrow(ref reader, trailers: false);
+                var headersResult = TryTakeMessageHeadersCore(ref reader, trailers: false);
                 if (headersResult.HasError)
                 {
                     return headersResult;
@@ -340,16 +340,16 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         return HttpParseResult.Incomplete;
     }
 
-    private HttpParseResult TryTakeStartLineNoThrow(ref SequenceReader<byte> reader)
+    private HttpParseResult TryTakeStartLineCore(ref SequenceReader<byte> reader)
     {
         if (reader.Remaining >= ServerOptions.Limits.MaxRequestLineSize)
         {
-            return TryTrimAndTakeStartLineNoThrow(ref reader);
+            return TryTrimAndTakeStartLineCore(ref reader);
         }
 
         return ((HttpParser<Http1ParsingHandler>)_parser).TryParseRequestLine(new Http1ParsingHandler(this), ref reader);
 
-        HttpParseResult TryTrimAndTakeStartLineNoThrow(ref SequenceReader<byte> reader)
+        HttpParseResult TryTrimAndTakeStartLineCore(ref SequenceReader<byte> reader)
         {
             var trimmedBuffer = reader.Sequence.Slice(reader.Position, ServerOptions.Limits.MaxRequestLineSize);
             var trimmedReader = new SequenceReader<byte>(trimmedBuffer);
@@ -369,11 +369,11 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         }
     }
 
-    private HttpParseResult TryTakeMessageHeadersNoThrow(ref SequenceReader<byte> reader, bool trailers)
+    private HttpParseResult TryTakeMessageHeadersCore(ref SequenceReader<byte> reader, bool trailers)
     {
         if (reader.Remaining > _remainingRequestHeadersBytesAllowed)
         {
-            return TryTrimAndTakeMessageHeadersNoThrow(ref reader, trailers);
+            return TryTrimAndTakeMessageHeadersCore(ref reader, trailers);
         }
 
         var alreadyConsumed = reader.Consumed;
@@ -387,7 +387,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 
         return result;
 
-        HttpParseResult TryTrimAndTakeMessageHeadersNoThrow(ref SequenceReader<byte> reader, bool trailers)
+        HttpParseResult TryTrimAndTakeMessageHeadersCore(ref SequenceReader<byte> reader, bool trailers)
         {
             var trimmedBuffer = reader.Sequence.Slice(reader.Position, _remainingRequestHeadersBytesAllowed);
             var trimmedReader = new SequenceReader<byte>(trimmedBuffer);
@@ -853,7 +853,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         HttpParseResult parseResult;
         try
         {
-            parseResult = TryParseRequestNoThrow(ref reader);
+            parseResult = TryParseRequestCore(ref reader);
 
             // Handle parse errors without exceptions
             if (parseResult.HasError)
