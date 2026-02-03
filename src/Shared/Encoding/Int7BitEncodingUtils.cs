@@ -2,10 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Shared;
 
@@ -48,5 +45,113 @@ internal static class Int7BitEncodingUtils
 
         target[index++] = (byte)uValue;
         return index;
+    }
+
+    /// <summary>
+    /// Reads a 7-bit encoded unsigned integer from the source span.
+    /// </summary>
+    /// <param name="source">The source span to read from.</param>
+    /// <param name="value">The decoded value.</param>
+    /// <returns>The number of bytes consumed from the source span.</returns>
+    /// <exception cref="FormatException">Thrown when the encoded value is malformed or exceeds 32 bits.</exception>
+    public static int Read7BitEncodedInt(this ReadOnlySpan<byte> source, out int value)
+    {
+        // Read out an int 7 bits at a time. The high bit of the byte,
+        // when on, indicates more bytes to read.
+        // A 32-bit unsigned integer can be encoded in at most 5 bytes.
+
+        value = 0;
+        var shift = 0;
+        var index = 0;
+
+        byte b;
+        do
+        {
+            // Check if we've exceeded the maximum number of bytes for a 32-bit integer
+            // or if we've run out of data.
+            if (shift == 35 || index >= source.Length)
+            {
+                throw new FormatException("Bad 7-bit encoded integer.");
+            }
+
+            b = source[index++];
+            value |= (b & 0x7F) << shift;
+            shift += 7;
+        }
+        while ((b & 0x80) != 0);
+
+        return index;
+    }
+
+    /// <summary>
+    /// Writes a 7-bit length-prefixed UTF-8 encoded string to the target span.
+    /// </summary>
+    /// <param name="target">The target span to write to.</param>
+    /// <param name="value">The string to encode.</param>
+    /// <returns>The number of bytes written to the target span.</returns>
+    internal static int Write7BitEncodedString(this Span<byte> target, string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            target[0] = 0;
+            return 1;
+        }
+
+        var stringByteCount = Encoding.UTF8.GetByteCount(value);
+        var lengthPrefixSize = target.Write7BitEncodedInt(stringByteCount);
+#if NETCOREAPP
+        Encoding.UTF8.GetBytes(value.AsSpan(), target[lengthPrefixSize..]);
+#else
+        var stringBytes = Encoding.UTF8.GetBytes(value);
+        stringBytes.CopyTo(target.Slice(lengthPrefixSize));
+#endif
+
+        return lengthPrefixSize + stringByteCount;
+    }
+
+    /// <summary>
+    /// Calculates the number of bytes required to write a 7-bit length-prefixed UTF-8 encoded string.
+    /// </summary>
+    /// <param name="value">The string to measure.</param>
+    /// <returns>The number of bytes required.</returns>
+    internal static int Measure7BitEncodedStringLength(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return 1;
+        }
+
+        var stringByteCount = Encoding.UTF8.GetByteCount(value);
+        return stringByteCount.Measure7BitEncodedUIntLength() + stringByteCount;
+    }
+
+    /// <summary>
+    /// Reads a 7-bit length-prefixed UTF-8 encoded string from the specified byte span and returns the number of bytes consumed.
+    /// </summary>
+    /// <param name="bytes">The span of bytes containing the 7-bit encoded length and UTF-8 encoded string data.</param>
+    /// <param name="value">When this method returns, contains the decoded string value, or <see cref="string.Empty"/> if the length is zero.</param>
+    /// <returns>The total number of bytes consumed from <paramref name="bytes"/> to read the string.</returns>
+    /// <exception cref="FormatException">Thrown if the encoded length is greater than the available bytes in <paramref name="bytes"/>.</exception>
+    internal static int Read7BitEncodedString(this ReadOnlySpan<byte> bytes, out string value)
+    {
+        value = string.Empty;
+        var consumed = Read7BitEncodedInt(bytes, out var length);
+        if (length == 0)
+        {
+            return consumed;
+        }
+
+        if (bytes.Length < consumed + length)
+        {
+            throw new FormatException("Bad 7-bit encoded string.");
+        }
+
+#if NETCOREAPP
+        value = Encoding.UTF8.GetString(bytes.Slice(consumed, length));
+#else
+        value = Encoding.UTF8.GetString(bytes.Slice(consumed, length).ToArray());
+#endif
+        consumed += length;
+        return consumed;
     }
 }

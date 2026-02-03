@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Shared;
 
@@ -56,7 +57,7 @@ internal sealed class HostingMetrics : IDisposable
         {
             if (HostingTelemetryHelpers.TryGetHttpVersion(protocol, out var httpVersion))
             {
-                tags.Add("network.protocol.version", httpVersion);
+                tags.Add(HostingTelemetryHelpers.AttributeNetworkProtocolVersion, httpVersion);
             }
             if (unhandledRequest)
             {
@@ -64,10 +65,10 @@ internal sealed class HostingMetrics : IDisposable
             }
 
             // Add information gathered during request.
-            tags.Add("http.response.status_code", HostingTelemetryHelpers.GetBoxedStatusCode(statusCode));
+            tags.Add(HostingTelemetryHelpers.AttributeHttpResponseStatusCode, HostingTelemetryHelpers.GetBoxedStatusCode(statusCode));
             if (route != null)
             {
-                tags.Add("http.route", RouteDiagnosticsHelpers.ResolveHttpRoute(route));
+                tags.Add(HostingTelemetryHelpers.AttributeHttpRoute, RouteDiagnosticsHelpers.ResolveHttpRoute(route));
             }
 
             // Add before some built in tags so custom tags are prioritized when dealing with duplicates.
@@ -85,7 +86,12 @@ internal sealed class HostingMetrics : IDisposable
             {
                 // Exception tag could have been added by middleware. If an exception is later thrown in request pipeline
                 // then we don't want to add a duplicate tag here because that breaks some metrics systems.
-                tags.TryAddTag("error.type", exception.GetType().FullName);
+                tags.TryAddTag(HostingTelemetryHelpers.AttributeErrorType, exception.GetType().FullName);
+            }
+            else if (HostingTelemetryHelpers.IsErrorStatusCode(statusCode))
+            {
+                // Add error.type for 5xx status codes when there's no exception.
+                tags.TryAddTag(HostingTelemetryHelpers.AttributeErrorType, statusCode.ToString(CultureInfo.InvariantCulture));
             }
 
             var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
@@ -102,7 +108,7 @@ internal sealed class HostingMetrics : IDisposable
 
     private static void InitializeRequestTags(ref TagList tags, string scheme, string method)
     {
-        tags.Add("url.scheme", scheme);
-        tags.Add("http.request.method", HostingTelemetryHelpers.GetNormalizedHttpMethod(method));
+        tags.Add(HostingTelemetryHelpers.AttributeUrlScheme, scheme);
+        tags.Add(HostingTelemetryHelpers.AttributeHttpRequestMethod, HostingTelemetryHelpers.GetNormalizedHttpMethod(method));
     }
 }

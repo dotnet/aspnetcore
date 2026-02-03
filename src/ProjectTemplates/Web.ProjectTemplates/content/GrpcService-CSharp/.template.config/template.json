@@ -95,7 +95,12 @@
         "sourceVariableName": "kestrelHttpPort",
         "fallbackVariableName": "kestrelHttpPortGenerated"
       },
-      "replaces": "5000"
+      "replaces": "5000",
+      "onlyIf": [
+        {
+          "after": "localhost:"
+        }
+      ]
     },
     "kestrelHttpsPort": {
       "type": "parameter",
@@ -117,7 +122,12 @@
         "sourceVariableName": "kestrelHttpsPort",
         "fallbackVariableName": "kestrelHttpsPortGenerated"
       },
-      "replaces": "5001"
+      "replaces": "5001",
+      "onlyIf": [
+        {
+          "after": "localhost:"
+        }
+      ]
     },
     "UseProgramMain": {
       "type": "parameter",
@@ -126,7 +136,7 @@
       "displayName": "Do not use _top-level statements",
       "description": "Whether to generate an explicit Program class and Main method instead of top-level statements."
     },
-    "NativeAot" : {
+    "NativeAot": {
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
