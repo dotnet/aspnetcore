@@ -1,3 +1,15 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Endpoints.BasePath
 Microsoft.AspNetCore.Components.Endpoints.BasePath.BasePath() -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataCookie.get -> Microsoft.AspNetCore.Http.CookieBuilder!
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataCookie.set -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataProviderType.get -> Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataProviderType.set -> void
+Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType
+Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType.Cookie = 0 -> Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType
+Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType.SessionStorage = 1 -> Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType
+Microsoft.AspNetCore.Components.ITempData
+Microsoft.AspNetCore.Components.ITempData.Get(string! key) -> object?
+Microsoft.AspNetCore.Components.ITempData.Keep() -> void
+Microsoft.AspNetCore.Components.ITempData.Keep(string! key) -> void
+Microsoft.AspNetCore.Components.ITempData.Peek(string! key) -> object?
