@@ -844,6 +844,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     protected override bool TryParseRequest(ReadResult result, out bool endConnection)
     {
         var reader = new SequenceReader<byte>(result.Buffer);
+        var isConsumed = false;
 
         // Use non-throwing parser path for performance.
         // Note: The parser itself doesn't throw, but handler callbacks (OnStartLine, OnHeader)
@@ -853,13 +854,27 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         try
         {
             parseResult = TryParseRequestNoThrow(ref reader);
+
+            // Handle parse errors without exceptions
+            if (parseResult.HasError)
+            {
+                // Create exception and call OnBadRequest BEFORE finally runs AdvanceTo,
+                // as that may invalidate the buffer
+                var ex = CreateBadRequestException(parseResult, result.Buffer);
+                OnBadRequest(result.Buffer, ex);
+
+                SetBadRequestState(ex);
+                endConnection = true;
+                return true;
+            }
+
+            isConsumed = parseResult.IsComplete;
         }
 #pragma warning disable CS0618 // Type or member is obsolete
         catch (BadHttpRequestException ex)
         {
+            // OnBadRequest must be called before finally runs AdvanceTo
             OnBadRequest(result.Buffer, ex);
-
-            Input.AdvanceTo(reader.Position, result.Buffer.End);
 
             SetBadRequestState(ex);
             endConnection = true;
@@ -870,29 +885,12 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         {
             // Record OtherError for unexpected exceptions that escape the parser
             KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.OtherError);
-
-            // Must advance buffer before re-throwing (matches original finally block behavior)
-            Input.AdvanceTo(reader.Position, result.Buffer.End);
             throw;
         }
-
-        var isConsumed = parseResult.IsComplete;
-
-        // Handle parse errors without exceptions
-        if (parseResult.HasError)
+        finally
         {
-            // Create exception and call OnBadRequest BEFORE AdvanceTo, as that may invalidate the buffer
-            var ex = CreateBadRequestException(parseResult, result.Buffer);
-            OnBadRequest(result.Buffer, ex);
-
-            Input.AdvanceTo(reader.Position, result.Buffer.End);
-
-            SetBadRequestState(ex);
-            endConnection = true;
-            return true;
+            Input.AdvanceTo(reader.Position, isConsumed ? reader.Position : result.Buffer.End);
         }
-
-        Input.AdvanceTo(reader.Position, isConsumed ? reader.Position : result.Buffer.End);
 
         if (result.IsCompleted)
         {
