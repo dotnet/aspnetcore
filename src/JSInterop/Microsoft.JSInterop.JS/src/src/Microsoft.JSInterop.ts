@@ -9,6 +9,7 @@ export module DotNet {
 
   const jsObjectIdKey = "__jsObjectId";
   const dotNetObjectRefKey = "__dotNetObject";
+  const dotNetElementRefKey = "__internalId";
   const byteArrayRefKey = "__byte[]";
   const dotNetStreamRefKey = "__dotNetStream";
   const jsStreamReferenceLengthKey = "__jsStreamReferenceLength";
@@ -155,6 +156,12 @@ export module DotNet {
    * @throws Error if the given value is not an Object.
    */
   export function createJSObjectReference(jsObject: any): any {
+      if (jsObject === null || jsObject === undefined) {
+          return {
+              [jsObjectIdKey]: -1
+          };
+      }
+
       if (jsObject && (typeof jsObject === "object" || jsObject instanceof Function)) {
           cachedJSObjectsById[nextJsObjectId] = new JSObject(jsObject);
 
@@ -220,7 +227,7 @@ export module DotNet {
   export function disposeJSObjectReference(jsObjectReference: any): void {
       const id = jsObjectReference && jsObjectReference[jsObjectIdKey];
 
-      if (typeof id === "number") {
+      if (typeof id === "number" && id !== -1) {
           disposeJSObjectReferenceById(id);
       }
   }
@@ -801,7 +808,20 @@ export module DotNet {
       return result;
   }
 
+  function getCaptureIdFromElement(element: Element): string | null {
+    for (let i = 0; i < element.attributes.length; i++) {
+      const attr = element.attributes[i];
+      if (attr.name.startsWith('_bl_')) {
+        return attr.name.substring(4);
+      }
+    }
+    return null;
+}
+
   function argReplacer(key: string, value: any) {
+      if (value instanceof Element) {
+          return { [dotNetElementRefKey]: getCaptureIdFromElement(value) };
+      }
       if (value instanceof DotNetObject) {
           return value.serializeAsArg();
       } else if (value instanceof Uint8Array) {

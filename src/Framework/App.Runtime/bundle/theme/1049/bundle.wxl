@@ -1,55 +1,78 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-  <String Id="Caption">Установка [BundleNameFull]</String>
-  <String Id="Title">[BundleNameShort]</String>
-  <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallVersion">Версия [WixBundleVersion]</String>
-  <String Id="ConfirmCancelMessage">Отменить?</String>
-  <String Id="ExecuteUpgradeRelatedBundleMessage">Предыдущая версия</String>
-  <String Id="HelpHeader">Справка по установке</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]каталог[\]] — установка, восстановление, удаление или
- создание полной локальной копии пакета в каталоге. По умолчанию — установка.
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  
+  <String Id="Caption" Value="Установка [WixBundleName]"/>
+  
+  <String Id="Title" Value="[BUNDLEMONIKER]"/>
+  
+  
+  <String Id="InstallVersion" Value="Версия [WixBundleVersion]"/>
+  <String Id="ConfirmCancelMessage" Value="Вы действительно хотите отменить?"/>
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Предыдущая версия"/>
+  <String Id="HelpHeader" Value="Справка по установке"/>
+  
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] — устанавливает, исправляет, удаляет или
+   создает полную локальную копию пакета в каталоге. По умолчанию выполняется установка.
 
-/passive | /quiet — отображение минимального пользовательского интерфейса без запросов или работа без пользовательского интерфейса и
- без запросов. По умолчанию отображаются пользовательский интерфейс и все запросы.
+/passive | /quiet — показывает минимальный пользовательский интерфейс без запросов или вообще не показывает пользовательский интерфейс и
+   запросы. По умолчанию отображаются пользовательский интерфейс и все запросы.
 
-/norestart — отключение всех попыток перезагрузки. По умолчанию в пользовательском интерфейсе перед перезагрузкой отображается запрос.
-/log log.txt — запись журнала в указанный файл. По умолчанию файл журнала создается в папке %TEMP%.</String>
-  <String Id="HelpCloseButton">&amp;Закрыть</String>
-  <String Id="InstallAcceptCheckbox">Я &amp;принимаю условия лицензии</String>
-  <String Id="InstallInstallButton">&amp;Установить</String>
-  <String Id="InstallCloseButton">&amp;Закрыть</String>
-  <String Id="ProgressHeader">Ход установки</String>
-  <String Id="ProgressLabel">Обработка:</String>
-  <String Id="OverallProgressPackageText">Инициализация...</String>
-  <String Id="ProgressCancelButton">Отм&amp;ена</String>
-  <String Id="ModifyHeader">Изменение установки</String>
-  <String Id="ModifyRepairButton">&amp;Исправить</String>
-  <String Id="ModifyUninstallButton">&amp;Удалить</String>
-  <String Id="ModifyCloseButton">&amp;Закрыть</String>
-  <String Id="SuccessRepairHeader">Восстановление успешно завершено</String>
-  <String Id="SuccessUninstallHeader">Удаление успешно завершено</String>
-  <String Id="SuccessInstallHeader">Установка успешно завершена</String>
-  <String Id="SuccessHeader">Установка успешно завершена</String>
-  <String Id="SuccessLaunchButton">&amp;Запустить</String>
-  <String Id="SuccessRestartText">Перед использованием программного обеспечения необходимо перезапустить компьютер.</String>
-  <String Id="SuccessRestartButton">&amp;Перезапустить</String>
-  <String Id="SuccessCloseButton">&amp;Закрыть</String>
-  <String Id="FailureHeader">Сбой установки</String>
-  <String Id="FailureInstallHeader">Сбой установки</String>
-  <String Id="FailureUninstallHeader">Сбой удаления</String>
-  <String Id="FailureRepairHeader">Сбой восстановления</String>
-  <String Id="FailureHyperlinkLogText">Одна или несколько проблем вызывали сбой программы установки. Исправьте эти проблемы и попробуйте повторить установку. Дополнительные сведения см. в &lt;a href="#"&gt;файле журнала&lt;/a&gt;.</String>
-  <String Id="FailureRestartText">Необходимо перезагрузить компьютер, чтобы завершить откат программного обеспечения.</String>
-  <String Id="FailureRestartButton">&amp;Перезапустить</String>
-  <String Id="FailureCloseButton">З&amp;акрыть</String>
-  <String Id="FilesInUseHeader">Используемые файлы</String>
-  <String Id="FilesInUseLabel">Следующие приложения используют файлы, которые нуждаются в обновлении:</String>
-  <String Id="FilesInUseCloseRadioButton">Закройте &amp;приложения и попробуйте перезапустить их.</String>
-  <String Id="FilesInUseDontCloseRadioButton">&amp;Не закрывайте приложения. Потребуется перезагрузка компьютера.</String>
-  <String Id="FilesInUseOkButton">О&amp;К</String>
-  <String Id="FilesInUseCancelButton">&amp;Отменить</String>
+/norestart — подавлять все попытки перезапуска. По умолчанию пользовательский интерфейс запрашивает подтверждение перед перезапуском.
+/log log.txt — журналы в определенном файле. По умолчанию файл журнала создается в папке %TEMP%."/>
+  <String Id="HelpCloseButton" Value="&amp;Закрыть"/>
+  <String Id="InstallAcceptCheckbox" Value="Я &amp;принимаю условия лицензии"/>
+  <String Id="InstallInstallButton" Value="&amp;Установить"/>
+  <String Id="InstallCloseButton" Value="&amp;Закрыть"/>
+  <String Id="ProgressHeader" Value="Ход установки"/>
+  <String Id="ProgressLabel" Value="Выполняется обработка:"/>
+  <String Id="OverallProgressPackageText" Value="Выполняется инициализация…"/>
+  <String Id="ProgressCancelButton" Value="&amp;Отмена"/>
+  <String Id="ModifyHeader" Value="Изменение установки"/>
+  <String Id="ModifyRepairButton" Value="&amp;Исправить"/>
+  <String Id="ModifyUninstallButton" Value="&amp;Удалить"/>
+  <String Id="ModifyCloseButton" Value="&amp;Закрыть"/>
+  <String Id="SuccessCacheHeader" Value="Кэширование успешно завершено"/>
+  <String Id="SuccessModifyHeader" Value="Изменение успешно завершено"/>
+  <String Id="SuccessUnsafeUninstallHeader" Value="Удаление успешно завершено"/>
+  <String Id="SuccessLayoutHeader" Value="Компоновка успешно завершена"/>
+  <String Id="SuccessRepairHeader" Value="Исправление успешно завершено"/>
+  <String Id="SuccessUninstallHeader" Value="Удаление успешно завершено"/>
+  <String Id="SuccessInstallHeader" Value="Установка успешно завершена"/>
+  <String Id="SuccessHeader" Value="Настройка успешно завершена"/>
+  <String Id="SuccessLaunchButton" Value="&amp;Запустить"/>
+  <String Id="SuccessRestartText" Value="Перед использованием программного обеспечения необходимо перезапустить компьютер."/>
+  <String Id="SuccessUninstallRestartText" Value="Чтобы завершить удаление программного обеспечения, перезагрузите компьютер."/>
+  <String Id="SuccessRestartButton" Value="&amp;Перезагрузить"/>
+  <String Id="SuccessCloseButton" Value="&amp;Закрыть"/>
+  <String Id="FailureHeader" Value="Не удалось выполнить установку"/>
+  <String Id="FailureCacheHeader" Value="Сбой кэша"/>
+  <String Id="FailureLayoutHeader" Value="Сбой макета"/>
+  <String Id="FailureInstallHeader" Value="Не удалось выполнить установку"/>
+  <String Id="FailureUninstallHeader" Value="Не удалось выполнить удаление"/>
+  <String Id="FailureUnsafeUninstallHeader" Value="Не удалось выполнить удаление"/>
+  <String Id="FailureRepairHeader" Value="Не удалось выполнить исправление"/>
+  <String Id="FailureModifyHeader" Value="Сбой изменения"/>
+  <String Id="FailureHyperlinkLogText" Value="Возникли ошибки, вызвавшие сбой настройки. Устраните проблемы и повторите попытку настройки. Дополнительные сведения см. в &lt;a href=&quot;#&quot;&gt;файле журнала&lt;/a&gt;."/>
+  <String Id="FailureRestartText" Value="Необходимо перезагрузить компьютер перед тем, как выполнять откат программного обеспечения."/>
+  <String Id="FailureRestartButton" Value="&amp;Перезагрузить"/>
+  <String Id="FailureCloseButton" Value="&amp;Закрыть"/>
+  <String Id="FilesInUseHeader" Value="Используемые файлы"/>
+  <String Id="FilesInUseLabel" Value="Следующие приложения используют файлы, которые следует обновить:"/>
+  <String Id="FilesInUseCloseRadioButton" Value="&amp;Закрыть приложения и попробовать перезапустить их."/>
+  <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Не закрывать приложения. Потребуется перезагрузка."/>
+  <String Id="FilesInUseNetfxCloseRadioButton" Value="&amp;Закрыть приложения."/>
+  <String Id="FilesInUseOkButton" Value="&amp;ОК"/>
+  <String Id="FilesInUseCancelButton" Value="&amp;Отмена"/>
+  <String Id="FilesInUseRetryButton" Value="&amp;Повторить"/>
+  <String Id="FilesInUseIgnoreButton" Value="&amp;Пропустить"/>
+  <String Id="FilesInUseExitButton" Value="Вы&amp;ход"/>
+  <String Id="FilesInUseTitle" Value="Используемые файлы"/>
+  <String Id="LicenseAssent" Value="Нажимая кнопку &quot;Установить&quot;, вы принимаете следующие условия."/>
+  <String Id="WelcomeHeaderMessage">ASP.NET Runtime</String>
+  <String Id="WelcomeDescription">The ASP.NET Runtime is used to run ASP.NET applications, on your Windows computer. ASP.NET is open source, cross platform, and supported by Microsoft. We hope you enjoy it!</String>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;Заявление о конфиденциальности&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;Сведения о лицензировании для .NET&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Сбор данных телеметрии и возможность отказа&lt;/A&gt;"/>
 
-  <String Id="Welcome">Вас приветствует мастер установки [WixBundleName].</String>
-  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;условия лицензии&lt;/a&gt; и &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;заявление о конфиденциальности&lt;/a&gt;.</String>
+  
+  <String Id="EulaPrivacy" Value="&lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;Условия лицензии&lt;/a&gt; и &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;заявление о конфиденциальности&lt;/a&gt; [WixBundleName]."/>
 </WixLocalization>

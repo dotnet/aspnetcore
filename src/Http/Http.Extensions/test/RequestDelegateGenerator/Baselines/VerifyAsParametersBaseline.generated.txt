@@ -446,6 +446,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
                 options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));
+                options.EndpointBuilder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
                 options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("HttpContext", new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithImplicitFromBody)!.GetProperty("HttpContext")!, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithImplicitFromBody).GetConstructor(new[] { typeof(Microsoft.AspNetCore.Http.HttpContext), typeof(Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct) })?.GetParameters()[0]), hasTryParse: false, hasBindAsync: false, isOptional: false));
                 options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("Todo", new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithImplicitFromBody)!.GetProperty("Todo")!, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithImplicitFromBody).GetConstructor(new[] { typeof(Microsoft.AspNetCore.Http.HttpContext), typeof(Microsoft.AspNetCore.Http.Generators.Tests.TodoStruct) })?.GetParameters()[1]), hasTryParse: false, hasBindAsync: false, isOptional: false));
                 options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(string), contentTypes: GeneratedMetadataConstants.PlaintextContentType));
@@ -567,6 +568,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
                 options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));
+                options.EndpointBuilder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
                 options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("HttpContext", new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType)!.GetProperty("HttpContext")!, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType).GetConstructor(new[] { typeof(Microsoft.AspNetCore.Http.HttpContext), typeof(Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty) })?.GetParameters()[0]), hasTryParse: false, hasBindAsync: false, isOptional: false));
                 options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("Value", new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType)!.GetProperty("Value")!, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParametersListWithMetadataType).GetConstructor(new[] { typeof(Microsoft.AspNetCore.Http.HttpContext), typeof(Microsoft.AspNetCore.Http.Generators.Tests.AddsCustomParameterMetadataAsProperty) })?.GetParameters()[1]), hasTryParse: false, hasBindAsync: false, isOptional: false));
                 var parameterInfos = methodInfo.GetParameters();
@@ -683,6 +685,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 Debug.Assert(options.EndpointBuilder != null, "EndpointBuilder not found.");
                 options.EndpointBuilder.Metadata.Add(new System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.RequestDelegateGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42"));
                 options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));
+                options.EndpointBuilder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
                 options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("Todo", new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParameterRecordStructWithJsonBodyOrService)!.GetProperty("Todo")!), hasTryParse: false, hasBindAsync: false, isOptional: false));
                 options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("Service", new PropertyAsParameterInfo(false, typeof(Microsoft.AspNetCore.Http.Generators.Tests.ParameterRecordStructWithJsonBodyOrService)!.GetProperty("Service")!), hasTryParse: false, hasBindAsync: false, isOptional: false));
                 options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(string), contentTypes: GeneratedMetadataConstants.PlaintextContentType));
@@ -966,6 +969,22 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     }
 
+    file sealed class DisableCookieRedirectMetadata : IDisableCookieRedirectMetadata
+    {
+        public static readonly DisableCookieRedirectMetadata Instance = new();
+
+        private DisableCookieRedirectMetadata()
+        {
+        }
+
+        public static void AddMetadataIfMissing(EndpointBuilder builder)
+        {
+            if (!builder.Metadata.Any(m => m is IDisableCookieRedirectMetadata))
+            {
+                builder.Metadata.Add(Instance);
+            }
+        }
+    }
     %GENERATEDCODEATTRIBUTE%
     file static class GeneratedMetadataConstants
     {

@@ -76,7 +76,7 @@
     private async Task Rename()
     {
         passkey!.Name = Input.Name;
-        var result = await UserManager.SetPasskeyAsync(user!, passkey);
+        var result = await UserManager.AddOrUpdatePasskeyAsync(user!, passkey);
         if (!result.Succeeded)
         {
             RedirectManager.RedirectToWithStatus("Account/Manage/Passkeys", "Error: The passkey could not be updated.", HttpContext);
@@ -89,6 +89,7 @@
     private sealed class InputModel
     {
         [Required]
+        [StringLength(200, ErrorMessage = "Passkey names must be no longer than {1} characters.")]
         public string Name { get; set; } = "";
     }
 }

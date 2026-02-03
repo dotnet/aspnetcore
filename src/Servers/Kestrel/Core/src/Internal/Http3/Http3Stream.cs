@@ -66,6 +66,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private bool IsAbortedRead => (_completionState & StreamCompletionFlags.AbortedRead) == StreamCompletionFlags.AbortedRead;
     public bool IsCompleted => (_completionState & StreamCompletionFlags.Completed) == StreamCompletionFlags.Completed;
 
+    public bool CanReuse => !_connectionAborted && HasResponseCompleted;
+
     public bool ReceivedEmptyRequestBody
     {
         get
@@ -957,7 +959,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     protected override void OnReset()
     {
         _keepAlive = true;
-        _connectionAborted = false;
         _userTrailers = null;
         _isWebTransportSessionAccepted = false;
         _isMethodConnect = false;

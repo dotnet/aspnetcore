@@ -22,7 +22,7 @@ public interface IUserPasskeyStore<TUser> : IUserStore<TUser> where TUser : clas
     /// <param name="passkey">The passkey to add.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-    Task SetPasskeyAsync(TUser user, UserPasskeyInfo passkey, CancellationToken cancellationToken);
+    Task AddOrUpdatePasskeyAsync(TUser user, UserPasskeyInfo passkey, CancellationToken cancellationToken);
 
     /// <summary>
     /// Gets the passkey credentials for the specified <paramref name="user"/>.

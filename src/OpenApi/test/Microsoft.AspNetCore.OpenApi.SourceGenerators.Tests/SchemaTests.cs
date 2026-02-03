@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
@@ -175,6 +175,7 @@ internal class User : IUser
     /// <inheritdoc/>
     public string Name { get; set; }
 }
+
 """;
         var generator = new XmlCommentGenerator();
         await SnapshotTestHelper.Verify(source, generator, out var compilation);
@@ -205,9 +206,13 @@ internal class User : IUser
 
             path = document.Paths["/todo-with-description"].Operations[HttpMethod.Post];
             todo = path.RequestBody.Content["application/json"].Schema;
+            // Test different XML comment scenarios for properties:
+            // Id: only <summary> tag -> uses summary directly
             Assert.Equal("The identifier of the todo.", todo.Properties["id"].Description);
+            // Name: only <value> tag -> uses value directly
             Assert.Equal("The name of the todo.", todo.Properties["name"].Description);
-            Assert.Equal("Another description of the todo.", todo.Properties["description"].Description);
+            // Description: both <summary> and <value> tags -> combines with newline separator
+            Assert.Equal($"A description of the the todo.\nAnother description of the todo.", todo.Properties["description"].Description);
 
             path = document.Paths["/type-with-examples"].Operations[HttpMethod.Post];
             var typeWithExamples = path.RequestBody.Content["application/json"].Schema;
@@ -258,6 +263,163 @@ internal class User : IUser
             var user = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("The unique identifier for the user.", user.Properties["id"].Description);
             Assert.Equal("The user's display name.", user.Properties["name"].Description);
+        });
+    }
+
+    [Fact]
+    public async Task XmlCommentsOnPropertiesShouldApplyToSchemaReferences()
+    {
+        var source = """
+using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddOpenApi(options => {
+    var prevCreateSchemaReferenceId = options.CreateSchemaReferenceId;
+    options.CreateSchemaReferenceId = (x) => x.Type == typeof(ModelInline) ? null : prevCreateSchemaReferenceId(x);
+});
+
+var app = builder.Build();
+
+app.MapPost("/example", (RootModel model) => { });
+
+app.Run();
+
+/// <summary>
+/// Comment on class ModelWithSummary.
+/// </summary>
+/// <example>
+/// { "street": "ModelWithSummaryClass" }
+/// </example>
+public class ModelWithSummary
+{
+    public string Street { get; set; }
+}
+
+public class ModelWithoutSummary
+{
+    public string Street { get; set; }
+}
+
+/// <summary>
+/// Comment on class ModelInline.
+/// </summary>
+/// <example>
+/// { "street": "ModelInlineClass" }
+/// </example>
+public class ModelInline
+{
+    public string Street { get; set; }
+}
+
+/// <summary>
+/// Comment on class RootModel.
+/// </summary>
+/// <example>
+/// { }
+/// </example>
+public class RootModel
+{
+    public ModelWithSummary NoPropertyComment { get; set; }
+
+    /// <summary>
+    /// Comment on property ModelWithSummary1.
+    /// </summary>
+    /// <example>
+    /// { "street": "ModelWithSummary1Prop" }
+    /// </example>
+    public ModelWithSummary ModelWithSummary1 { get; set; }
+
+    /// <summary>
+    /// Comment on property ModelWithSummary2.
+    /// </summary>
+    /// <example>
+    /// { "street": "ModelWithSummary2Prop" }
+    /// </example>
+    public ModelWithSummary ModelWithSummary2 { get; set; }
+
+    /// <summary>
+    /// Comment on property ModelWithoutSummary1.
+    /// </summary>
+    /// <example>
+    /// { "street": "ModelWithoutSummary1Prop" }
+    /// </example>
+    public ModelWithoutSummary ModelWithoutSummary1 { get; set; }
+
+    /// <summary>
+    /// Comment on property ModelWithoutSummary2.
+    /// </summary>
+    /// <example>
+    /// { "street": "ModelWithoutSummary2Prop" }
+    /// </example>
+    public ModelWithoutSummary ModelWithoutSummary2 { get; set; }
+
+    /// <summary>
+    /// Comment on property ModelInline1.
+    /// </summary>
+    /// <example>
+    /// { "street": "ModelInline1Prop" }
+    /// </example>
+    public ModelInline ModelInline1 { get; set; }
+
+    /// <summary>
+    /// Comment on property ModelInline2.
+    /// </summary>
+    /// <example>
+    /// { "street": "ModelInline2Prop" }
+    /// </example>
+    public ModelInline ModelInline2 { get; set; }
+}
+""";
+        var generator = new XmlCommentGenerator();
+        await SnapshotTestHelper.Verify(source, generator, out var compilation);
+        await SnapshotTestHelper.VerifyOpenApi(compilation, document =>
+        {
+            var path = document.Paths["/example"].Operations[HttpMethod.Post];
+            var exampleOperationBodySchema = path.RequestBody.Content["application/json"].Schema;
+            Assert.Equal("Comment on class RootModel.", exampleOperationBodySchema.Description);
+
+            var rootModelSchema = document.Components.Schemas["RootModel"];
+            Assert.Equal("Comment on class RootModel.", rootModelSchema.Description);
+
+            var modelWithSummary = document.Components.Schemas["ModelWithSummary"];
+            Assert.Equal("Comment on class ModelWithSummary.", modelWithSummary.Description);
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithSummaryClass" }"""), modelWithSummary.Example));
+
+            var modelWithoutSummary = document.Components.Schemas["ModelWithoutSummary"];
+            Assert.Null(modelWithoutSummary.Description);
+
+            Assert.DoesNotContain("ModelInline", document.Components.Schemas.Keys);
+
+            // Check RootModel properties
+            var noPropertyCommentProp = Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["noPropertyComment"]);
+            Assert.Null(noPropertyCommentProp.Reference.Description);
+
+            var modelWithSummary1Prop = Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["modelWithSummary1"]);
+            Assert.Equal("Comment on property ModelWithSummary1.", modelWithSummary1Prop.Description);
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithSummary1Prop" }"""), modelWithSummary1Prop.Examples[0]));
+
+            var modelWithSummary2Prop = Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["modelWithSummary2"]);
+            Assert.Equal("Comment on property ModelWithSummary2.", modelWithSummary2Prop.Description);
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithSummary2Prop" }"""), modelWithSummary2Prop.Examples[0]));
+
+            var modelWithoutSummary1Prop = Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["modelWithoutSummary1"]);
+            Assert.Equal("Comment on property ModelWithoutSummary1.", modelWithoutSummary1Prop.Description);
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithoutSummary1Prop" }"""), modelWithoutSummary1Prop.Examples[0]));
+
+            var modelWithoutSummary2Prop = Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["modelWithoutSummary2"]);
+            Assert.Equal("Comment on property ModelWithoutSummary2.", modelWithoutSummary2Prop.Description);
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithoutSummary2Prop" }"""), modelWithoutSummary2Prop.Examples[0]));
+
+            var modelInline1Prop = Assert.IsType<OpenApiSchema>(rootModelSchema.Properties["modelInline1"]);
+            Assert.Equal("Comment on property ModelInline1.", modelInline1Prop.Description);
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelInline1Prop" }"""), modelInline1Prop.Example));
+
+            var modelInline2Prop = Assert.IsType<OpenApiSchema>(rootModelSchema.Properties["modelInline2"]);
+            Assert.Equal("Comment on property ModelInline2.", modelInline2Prop.Description);
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelInline2Prop" }"""), modelInline2Prop.Example));
         });
     }
 }

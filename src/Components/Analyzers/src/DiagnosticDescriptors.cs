@@ -73,5 +73,33 @@ internal static class DiagnosticDescriptors
         CreateLocalizableResourceString(nameof(Resources.ComponentParametersShouldBeAutoProperties_Message)),
         Usage,
         DiagnosticSeverity.Warning,
-        isEnabledByDefault: true);
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.ComponentParametersShouldBeAutoProperties_Description)));
+
+    public static readonly DiagnosticDescriptor SupplyParameterFromFormShouldNotHavePropertyInitializer = new(
+        "BL0008",
+        CreateLocalizableResourceString(nameof(Resources.SupplyParameterFromFormShouldNotHavePropertyInitializer_Title)),
+        CreateLocalizableResourceString(nameof(Resources.SupplyParameterFromFormShouldNotHavePropertyInitializer_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.SupplyParameterFromFormShouldNotHavePropertyInitializer_Description)));
+
+    public static readonly DiagnosticDescriptor PersistentStateShouldNotHavePropertyInitializer = new(
+        "BL0009",
+        CreateLocalizableResourceString(nameof(Resources.PersistentStateShouldNotHavePropertyInitializer_Title)),
+        CreateLocalizableResourceString(nameof(Resources.PersistentStateShouldNotHavePropertyInitializer_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.PersistentStateShouldNotHavePropertyInitializer_Description)));
+
+    public static readonly DiagnosticDescriptor UseInvokeVoidAsyncForObjectReturn = new(
+        "BL0010",
+        CreateLocalizableResourceString(nameof(Resources.UseInvokeVoidAsyncForObjectReturn_Title)),
+        CreateLocalizableResourceString(nameof(Resources.UseInvokeVoidAsyncForObjectReturn_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.UseInvokeVoidAsyncForObjectReturn_Description)));
 }

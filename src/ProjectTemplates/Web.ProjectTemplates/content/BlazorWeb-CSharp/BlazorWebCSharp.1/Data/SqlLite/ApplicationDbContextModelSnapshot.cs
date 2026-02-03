@@ -184,43 +184,41 @@ namespace BlazorWebCSharp._1.Migrations
                         .HasMaxLength(1024)
                         .HasColumnType("BLOB");
 
-                    b.Property<byte[]>("AttestationObject")
-                        .IsRequired()
-                        .HasColumnType("BLOB");
-
-                    b.Property<byte[]>("ClientDataJson")
-                        .IsRequired()
-                        .HasColumnType("BLOB");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsBackedUp")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsBackupEligible")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsUserVerified")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("TEXT");
-
-                    b.Property<byte[]>("PublicKey")
-                        .IsRequired()
-                        .HasMaxLength(1024)
-                        .HasColumnType("BLOB");
-
-                    b.Property<uint>("SignCount")
-                        .HasColumnType("INTEGER");
-
-                    b.PrimitiveCollection<string>("Transports")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "Data", "Microsoft.AspNetCore.Identity.IdentityUserPasskey<string>.Data#IdentityPasskeyData", b1 =>
+                        {
+                            b1.IsRequired();
+
+                            b1.Property<byte[]>("AttestationObject")
+                                .IsRequired();
+
+                            b1.Property<byte[]>("ClientDataJson")
+                                .IsRequired();
+
+                            b1.Property<DateTimeOffset>("CreatedAt");
+
+                            b1.Property<bool>("IsBackedUp");
+
+                            b1.Property<bool>("IsBackupEligible");
+
+                            b1.Property<bool>("IsUserVerified");
+
+                            b1.Property<string>("Name");
+
+                            b1.Property<byte[]>("PublicKey")
+                                .IsRequired();
+
+                            b1.Property<uint>("SignCount");
+
+                            b1.PrimitiveCollection<string>("Transports");
+
+                            b1
+                                .ToJson("Data")
+                                .HasColumnType("TEXT");
+                        });
 
                     b.HasKey("CredentialId");
 

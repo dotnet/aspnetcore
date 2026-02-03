@@ -6,12 +6,12 @@ using System;
 namespace Microsoft.Extensions.Logging.AzureAppServices;
 
 /// <summary>
-/// The context containing details for formatting the file name for the azure blob logger.
+/// Represents the context containing details for formatting the file name for the Azure blob logger.
 /// </summary>
 public readonly struct AzureBlobLoggerContext
 {
     /// <summary>
-    /// Create a new <see cref="AzureBlobLoggerContext"/>.
+    /// Creates a new <see cref="AzureBlobLoggerContext"/>.
     /// </summary>
     /// <param name="appName">The app name.</param>
     /// <param name="identifier">The file identifier.</param>
@@ -24,17 +24,17 @@ public readonly struct AzureBlobLoggerContext
     }
 
     /// <summary>
-    /// The name of the application.
+    /// Gets the name of the application.
     /// </summary>
     public string AppName { get; }
 
     /// <summary>
-    /// The identifier for the log. This value is set to "<see cref="AzureBlobLoggerOptions.ApplicationInstanceId"/>_<see cref="AzureBlobLoggerOptions.BlobName"/>".
+    /// Gets the identifier for the log. This value is set to "<see cref="AzureBlobLoggerOptions.ApplicationInstanceId"/>_<see cref="AzureBlobLoggerOptions.BlobName"/>".
     /// </summary>
     public string Identifier { get; }
 
     /// <summary>
-    /// The timestamp representing when the log was created.
+    /// Gets the timestamp representing when the log was created.
     /// </summary>
     public DateTimeOffset Timestamp { get; }
 }

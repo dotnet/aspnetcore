@@ -33,8 +33,10 @@ public class PersistentServicesRegistryTest
 
         var registry = persistenceManager.ServicesRegistry;
 
+        await persistenceManager.RestoreStateAsync(new TestStore(new Dictionary<string, byte[]>()), RestoreContext.InitialValue);
+
         await persistenceManager.PersistStateAsync(testStore, new TestRenderer());
-        var componentState = new PersistentComponentState(testStore.State, []);
+        var componentState = new PersistentComponentState(testStore.State, [], []);
 
         var secondScope = serviceProvider.CreateAsyncScope().ServiceProvider;
         var secondManager = new ComponentStatePersistenceManager(
@@ -73,6 +75,8 @@ public class PersistentServicesRegistryTest
             scope);
         persistenceManagerOne.SetPlatformRenderMode(componentRenderMode);
         var testStore = new TestStore(new Dictionary<string, byte[]>());
+
+        await persistenceManagerOne.RestoreStateAsync(new TestStore(new Dictionary<string, byte[]>()), RestoreContext.InitialValue);
 
         await persistenceManagerOne.PersistStateAsync(testStore, new TestRenderer());
 
@@ -140,6 +144,7 @@ public class PersistentServicesRegistryTest
             scope);
         persistenceManager.SetPlatformRenderMode(componentRenderMode);
         var testStore = new TestStore(new Dictionary<string, byte[]>());
+        await persistenceManager.RestoreStateAsync(new TestStore(new Dictionary<string, byte[]>()), RestoreContext.InitialValue);
 
         // Act
         await persistenceManager.PersistStateAsync(testStore, new TestRenderer());
@@ -210,6 +215,8 @@ public class PersistentServicesRegistryTest
         persistenceManagerOne.SetPlatformRenderMode(componentRenderMode);
         var testStore = new TestStore(new Dictionary<string, byte[]>());
 
+        await persistenceManagerOne.RestoreStateAsync(new TestStore(new Dictionary<string, byte[]>()), RestoreContext.InitialValue);
+
         await persistenceManagerOne.PersistStateAsync(testStore, new TestRenderer());
 
         var scopeTwo = serviceProviderTwo.CreateAsyncScope().ServiceProvider;
@@ -217,7 +224,7 @@ public class PersistentServicesRegistryTest
             NullLogger<ComponentStatePersistenceManager>.Instance,
             scopeTwo);
 
-        await persistenceManagerTwo.RestoreStateAsync(new TestStore(testStore.State));
+        await persistenceManagerTwo.RestoreStateAsync(new TestStore(testStore.State), RestoreContext.InitialValue);
 
         // Assert
         var derivedTwo = scopeTwo.GetRequiredService<BaseService>() as DerivedTwo;
@@ -324,6 +331,8 @@ public class PersistentServicesRegistryTest
         persistenceManager.SetPlatformRenderMode(componentRenderMode);
         var testStore = new TestStore(new Dictionary<string, byte[]>());
 
+        await persistenceManager.RestoreStateAsync(new TestStore(new Dictionary<string, byte[]>()), RestoreContext.InitialValue);
+
         await persistenceManager.PersistStateAsync(testStore, new TestRenderer());
 
         var secondScope = serviceProvider.CreateAsyncScope().ServiceProvider;
@@ -368,6 +377,7 @@ public class PersistentServicesRegistryTest
             scope);
         persistenceManager.SetPlatformRenderMode(componentRenderMode);
         var testStore = new TestStore(new Dictionary<string, byte[]>());
+        await persistenceManager.RestoreStateAsync(new TestStore(new Dictionary<string, byte[]>()), RestoreContext.InitialValue);
 
         await persistenceManager.PersistStateAsync(testStore, new TestRenderer());
 
@@ -387,6 +397,149 @@ public class PersistentServicesRegistryTest
             Assert.Equal(customer.Addresses[i].Street, restoredCustomerService.Customer.Addresses[i].Street);
             Assert.Equal(customer.Addresses[i].ZipCode, restoredCustomerService.Customer.Addresses[i].ZipCode);
         }
+    }
+
+    [Fact]
+    public async Task PersistStateAsync_RespectsSkipInitialValueBehavior()
+    {
+        // Arrange
+        var componentRenderMode = new TestRenderMode();
+        var serviceProvider = new ServiceCollection()
+            .AddScoped<ServiceWithSkipInitialValue>()
+            .AddPersistentService<ServiceWithSkipInitialValue>(componentRenderMode)
+            .BuildServiceProvider();
+
+        var scope = serviceProvider.CreateAsyncScope().ServiceProvider;
+        var service = scope.GetRequiredService<ServiceWithSkipInitialValue>();
+        service.SkipInitialValueProperty = "TestValue";
+
+        var persistenceManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            scope);
+        persistenceManager.SetPlatformRenderMode(componentRenderMode);
+        var testStore = new TestStore(new Dictionary<string, byte[]>());
+
+        await persistenceManager.RestoreStateAsync(new TestStore(new Dictionary<string, byte[]>()), RestoreContext.InitialValue);
+        await persistenceManager.PersistStateAsync(testStore, new TestRenderer());
+
+        // Act - Restore with InitialValue context
+        var initialValueScope = serviceProvider.CreateAsyncScope().ServiceProvider;
+        var initialValueManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            initialValueScope);
+
+        await initialValueManager.RestoreStateAsync(new TestStore(testStore.State), RestoreContext.InitialValue);
+        var restoredService = initialValueScope.GetRequiredService<ServiceWithSkipInitialValue>();
+
+        // Assert - Property should be null because it was skipped during InitialValue restore
+        Assert.Null(restoredService.SkipInitialValueProperty);
+    }
+
+    [Fact]
+    public async Task PersistStateAsync_RespectsSkipLastSnapshotBehavior()
+    {
+        // Arrange
+        var componentRenderMode = new TestRenderMode();
+        var serviceProvider = new ServiceCollection()
+            .AddScoped<ServiceWithSkipLastSnapshot>()
+            .AddPersistentService<ServiceWithSkipLastSnapshot>(componentRenderMode)
+            .BuildServiceProvider();
+
+        var scope = serviceProvider.CreateAsyncScope().ServiceProvider;
+        var service = scope.GetRequiredService<ServiceWithSkipLastSnapshot>();
+        service.SkipLastSnapshotProperty = "TestValue";
+
+        var persistenceManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            scope);
+        persistenceManager.SetPlatformRenderMode(componentRenderMode);
+        var testStore = new TestStore(new Dictionary<string, byte[]>());
+
+        await persistenceManager.RestoreStateAsync(new TestStore(new Dictionary<string, byte[]>()), RestoreContext.InitialValue);
+        await persistenceManager.PersistStateAsync(testStore, new TestRenderer());
+
+        // Act - Restore with LastSnapshot context
+        var lastSnapshotScope = serviceProvider.CreateAsyncScope().ServiceProvider;
+        var lastSnapshotManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            lastSnapshotScope);
+
+        await lastSnapshotManager.RestoreStateAsync(new TestStore(testStore.State), RestoreContext.LastSnapshot);
+        var restoredService = lastSnapshotScope.GetRequiredService<ServiceWithSkipLastSnapshot>();
+
+        // Assert - Property should be null because it was skipped during LastSnapshot restore
+        Assert.Null(restoredService.SkipLastSnapshotProperty);
+    }
+
+    [Fact]
+    public async Task PersistStateAsync_RespectsAllowUpdatesBehavior()
+    {
+        // Arrange
+        var componentRenderMode = new TestRenderMode();
+        var serviceProvider = new ServiceCollection()
+            .AddScoped<ServiceWithAllowUpdates>()
+            .AddPersistentService<ServiceWithAllowUpdates>(componentRenderMode)
+            .BuildServiceProvider();
+
+        var scope = serviceProvider.CreateAsyncScope().ServiceProvider;
+        var service = scope.GetRequiredService<ServiceWithAllowUpdates>();
+        service.AllowUpdatesProperty = "InitialValue";
+
+        var persistenceManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            scope);
+        persistenceManager.SetPlatformRenderMode(componentRenderMode);
+        var initialStore = new TestStore(new Dictionary<string, byte[]>());
+
+        await persistenceManager.RestoreStateAsync(new TestStore(new Dictionary<string, byte[]>()), RestoreContext.InitialValue);
+        await persistenceManager.PersistStateAsync(initialStore, new TestRenderer());
+
+        // Create updated state
+        var updatedScope = serviceProvider.CreateAsyncScope().ServiceProvider;
+        var updatedService = updatedScope.GetRequiredService<ServiceWithAllowUpdates>();
+        updatedService.AllowUpdatesProperty = "UpdatedValue";
+
+        var updatedManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            updatedScope);
+        var updatedStore = new TestStore(new Dictionary<string, byte[]>());
+
+        await updatedManager.RestoreStateAsync(new TestStore(new Dictionary<string, byte[]>()), RestoreContext.InitialValue);
+        await updatedManager.PersistStateAsync(updatedStore, new TestRenderer());
+
+        // Act - First restore with InitialValue, then update with ValueUpdate context
+        var targetScope = serviceProvider.CreateAsyncScope().ServiceProvider;
+        var targetManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            targetScope);
+
+        await targetManager.RestoreStateAsync(new TestStore(initialStore.State), RestoreContext.InitialValue);
+        var restoredService = targetScope.GetRequiredService<ServiceWithAllowUpdates>();
+        Assert.Equal("InitialValue", restoredService.AllowUpdatesProperty);
+
+        // Update with ValueUpdate context
+        await targetManager.RestoreStateAsync(new TestStore(updatedStore.State), RestoreContext.ValueUpdate);
+
+        // Assert - Property should be updated because AllowUpdates is true
+        Assert.Equal("UpdatedValue", restoredService.AllowUpdatesProperty);
+    }
+
+    private class ServiceWithSkipInitialValue
+    {
+        [PersistentState(RestoreBehavior = RestoreBehavior.SkipInitialValue)]
+        public string SkipInitialValueProperty { get; set; }
+    }
+
+    private class ServiceWithSkipLastSnapshot
+    {
+        [PersistentState(RestoreBehavior = RestoreBehavior.SkipLastSnapshot)]
+        public string SkipLastSnapshotProperty { get; set; }
+    }
+
+    private class ServiceWithAllowUpdates
+    {
+        [PersistentState(AllowUpdates = true)]
+        public string AllowUpdatesProperty { get; set; }
     }
 
     private class AnotherTestService

@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
-
-<!--
+﻿<!--
     AspNetCoreModule setup. v1 for initial release.
 -->
 
@@ -8,373 +6,298 @@
 <?include ..\IIS-Setup\include.wxi ?>
 
 <?define ProductCode = "*" ?>
-<?if $(var.IsWin64)=no ?>
-  <?define ANCMUpgradeCode = "d7168f76-9dd0-407d-bf22-0b450139e6a7" ?>
-  <?define ANCMDepProviderKey = "IIS_AspNetCore_Module_V2,x86" ?>
-<?else?>
+<?if $(InstallerPlatform)=x64?>
   <?define ANCMUpgradeCode = "8d50fde7-0b84-4900-b60d-bd952979ba0b" ?>
-  <?define ANCMDepProviderKey = "IIS_AspNetCore_Module_V2,x64" ?>
+<?else?>
+  <?define ANCMUpgradeCode = "d7168f76-9dd0-407d-bf22-0b450139e6a7" ?>
 <?endif?>
 <?define ProductShortName="IIS AspNetCore Module V2" ?>
 <?define ProductNameShort="IIS_ANCM_V2" ?>
 <?define ProductVersionString = "V2"?>
 
-<?if $(var.PlatformValue)="Intel" ?>
+<?if $(PlatformValue)="Intel" ?>
 <?undef PlatformValue ?>
 <?define PlatformValue = "x86" ?>
 <?endif?>
 
-<?if $(var.Platform) = "x86" ?>
-    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\Win32\$(var.Configuration)\aspnetcorev2.dll" ?>
-    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\Win32\$(var.Configuration)\aspnetcorev2_outofprocess.dll" ?>
-<?else ?>
-    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\$(var.Platform)\$(var.Configuration)\aspnetcorev2.dll" ?>
-    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\$(var.Platform)\$(var.Configuration)\aspnetcorev2_outofprocess.dll" ?>
-<?endif ?>
+<?if $(InstallerPlatform) = "x86" ?>
+    <?define AspNetCoreV2ProgramFilesTargetPath = "$(ArtifactsDir)\bin\AspNetCoreModuleShim\Win32\$(Configuration)\aspnetcorev2.dll" ?>
+    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(ArtifactsDir)\bin\OutOfProcessRequestHandler\Win32\$(Configuration)\aspnetcorev2_outofprocess.dll" ?>
+<?else?>
+    <?define AspNetCoreV2ProgramFilesTargetPath = "$(ArtifactsDir)\bin\AspNetCoreModuleShim\$(InstallerPlatform)\$(Configuration)\aspnetcorev2.dll" ?>
+    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(ArtifactsDir)\bin\OutOfProcessRequestHandler\$(InstallerPlatform)\$(Configuration)\aspnetcorev2_outofprocess.dll" ?>
+<?endif?>
 
-<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
-    <Product Id="$(var.ProductCode)"
-          Name="!(loc.AspNetCoreModuleProductNameV2)"
-          Manufacturer="!(loc.Manufacturer)"
-          Version="$(var.ANCMMsiVersion)"
-          Language="!(loc.Language)"
-          Codepage="$(var.Codepage)"
-          UpgradeCode="$(var.ANCMUpgradeCode)" >
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:dep="http://wixtoolset.org/schemas/v4/wxs/dependency" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+    <Package Name="!(loc.AspNetCoreModuleProductNameV2)" Manufacturer="!(loc.Manufacturer)" Version="$(ANCMMsiVersion)" Language="!(loc.Language)" Codepage="$(Codepage)" UpgradeCode="$(ANCMUpgradeCode)" InstallerVersion="$(ANCMInstallerVersion)" ProductCode="$(ProductCode)" Scope="perMachine">
+        <SummaryInformation Description="!(loc.AspNetCoreModuleProductNameV2)" Manufacturer="!(loc.Manufacturer)" />
 
-        <Package Id="*"
-                 Description="!(loc.AspNetCoreModuleProductNameV2)"
-                 Manufacturer="!(loc.Manufacturer)"
-                 Compressed="yes"
-                 InstallPrivileges="elevated"
-                 InstallerVersion="$(var.ANCMInstallerVersion)"
-                 Platform="$(var.PlatformValue)" />
-
-        <Media Id="1" Cabinet="aspnetcoremodule.cab" EmbedCab="yes" CompressionLevel="high"/>
+        <Media Id="1" Cabinet="aspnetcoremodule.cab" EmbedCab="yes" CompressionLevel="high" />
 
         <!-- include the standard app searches -->
-        <?include  ..\IIS-Setup\appsearch\appsearch.wxi ?>
+        <?include ..\IIS-Setup\appsearch\appsearch.wxi ?>
 
         <!-- make patching UI go from welcome to ready to repair -->
-        <?include  ..\IIS-Setup\iisca\wix3\FixPatchingBehavior.wxi ?>
+        <?include ..\IIS-Setup\iisca\wix5\FixPatchingBehavior.wxi ?>
 
-        <Property Id="ARPCONTACT">Microsoft Corporation</Property>
+        <Property Id="ARPCONTACT" Value="Microsoft Corporation" />
         <Property Id="ARPPRODUCTICON" Value="AspNetCoreModule.ico" />
-        <Property Id="OPT_NO_SHARED_CONFIG_CHECK"  Value="0"/>
+        <Property Id="OPT_NO_SHARED_CONFIG_CHECK" Value="0" />
         <Icon Id="AspNetCoreModule.ico" SourceFile="..\Bitmaps\AspNetCoreModule.ico" />
         <!-- <Property Id="REINSTALLMODE" Value="emus"/> -->
 
         <WixVariable Id="WixUILicenseRtf" Value="..\license\license.rtf" />
 
-        <Upgrade Id="$(var.ANCMUpgradeCode)">
-            <UpgradeVersion OnlyDetect="no" Property="OLDERVERSIONFOUND" Maximum="$(var.ANCMMsiVersion)" IncludeMaximum="no" MigrateFeatures="yes" />
-            <UpgradeVersion OnlyDetect="yes" Property="DUPLICATEVERSIONFOUND" Minimum="$(var.ANCMMsiVersion)" Maximum="$(var.ANCMMsiVersion)" IncludeMinimum="yes" IncludeMaximum="yes" />
-            <UpgradeVersion OnlyDetect="yes" Property="NEWERVERSIONFOUND" Minimum="$(var.ANCMMsiVersion)" IncludeMinimum="no" />
+        <Upgrade Id="$(ANCMUpgradeCode)">
+            <UpgradeVersion OnlyDetect="no" Property="OLDERVERSIONFOUND" Maximum="$(ANCMMsiVersion)" IncludeMaximum="no" MigrateFeatures="yes" />
+            <UpgradeVersion OnlyDetect="yes" Property="DUPLICATEVERSIONFOUND" Minimum="$(ANCMMsiVersion)" Maximum="$(ANCMMsiVersion)" IncludeMinimum="yes" IncludeMaximum="yes" />
+            <UpgradeVersion OnlyDetect="yes" Property="NEWERVERSIONFOUND" Minimum="$(ANCMMsiVersion)" IncludeMinimum="no" />
         </Upgrade>
 
-        <Condition Message="!(loc.NewerVersionFound)">(NOT NEWERVERSIONFOUND)  OR Installed</Condition>
+        <Launch Condition="(NOT NEWERVERSIONFOUND) OR Installed" Message="!(loc.NewerVersionFound)" />
         <!--<Condition Message="$(loc.DuplicateVersionFound)">(NOT DUPLICATEVERSIONFOUND) OR Installed</Condition>-->
 
         <!-- Require the user be an admin to install -->
-        <Condition Message="!(loc.AdminRequired)">Privileged</Condition>
+        <Launch Condition="Privileged" Message="!(loc.AdminRequired)" />
 
         <!-- prevent install of 32 bit product on 64 bit machine -->
-        <?if $(var.Platform) = "x86" ?>
-        <Condition Message="!(loc.LaunchCondition_64BIT)">
-            <![CDATA[Installed Or NOT VersionNT64]]>
-        </Condition>
-        <?endif ?>
+        <?if $(InstallerPlatform) = "x86" ?>
+        <Launch Condition="Installed Or NOT VersionNT64" Message="!(loc.LaunchCondition_64BIT)" />
+        <?endif?>
 
         <!-- also prevent install of 64-bit product on 32-bit machine -->
-        <?if $(var.Platform) != "x86"?>
-        <Condition Message="!(loc.LaunchCondition_32BIT)">
-            <![CDATA[(Installed And NOT PATCH) Or VersionNT64]]>
-        </Condition>
-        <?endif ?>
-
-        <Property Id="ALLUSERS">1</Property>
+        <?if $(InstallerPlatform) != "x86"?>
+        <Launch Condition="(Installed And NOT PATCH) Or VersionNT64" Message="!(loc.LaunchCondition_32BIT)" />
+        <?endif?>
 
         <!-- Detect IIS version and require 7.5 -->
-        <Condition Message="!(loc.IIS75OrGreater)">
-            <![CDATA[Installed OR (VersionNT >= 601)]]>
-        </Condition>
+        <Launch Condition="Installed OR (VersionNT &gt;= 601)" Message="!(loc.IIS75OrGreater)" />
 
         <!-- Detect and require core web server and w3svc -->
-        <Condition Message="!(loc.CoreWebW3SVC)">
-            ((IISCOREWEBENGINEINSTALLED = "#1") AND (IISW3SVCINSTALLED = "#1")) OR (Installed)
-        </Condition>
+        <Launch Condition="((IISCOREWEBENGINEINSTALLED = &quot;#1&quot;) AND (IISW3SVCINSTALLED = &quot;#1&quot;)) OR (Installed)" Message="!(loc.CoreWebW3SVC)" />
 
         <!-- Windows Update sevice is require to be enabled to install the patches -->
-        <Condition Message="!(loc.WindowsUpdateEnabled)">
-            NOT ( (VersionNT = 600) AND (ServicePackLevel = 1) AND (WINDOWSUPDATE_START_TYPE = "#4") )
-        </Condition>
+        <Launch Condition="NOT ( (VersionNT = 600) AND (ServicePackLevel = 1) AND (WINDOWSUPDATE_START_TYPE = &quot;#4&quot;) )" Message="!(loc.WindowsUpdateEnabled)" />
 
         <!-- Directory Structure and Component Definitions -->
-        <Directory Id="TARGETDIR" Name="SourceDir">
 
-            <!-- Discoverability-->
-            <Component Id="C_DiscoverabilityKey" Guid="94efd0a4-ea3d-40c6-98d0-3138b5cc6813" Win64="$(var.IsWin64)">
-                <RegistryKey Root="HKLM" Key="$(var.DiscoverabilityKeyRoot)">
-                    <RegistryKey Key="$(var.ProductShortName)">
-                        <RegistryValue Type="integer" Name="Install" Value="1" />
-                        <RegistryValue Type="string" Name="Version" Value="$(var.ANCMMsiVersion)" />
-                    </RegistryKey>
-                </RegistryKey>
-            </Component>
-
-            <!-- Schema always to platform config directory -->
-            <Directory Id="$(var.SystemFolder)">
-                <Directory Id="IISInstallDir" Name="inetsrv">
-                    <Directory Id="IISConfigDir" Name="config">
-                        <Directory Id="IISSchemaDir" Name="schema">
-                            <Component Id="AspNetCoreSchemaV2" Guid="9e5b7b62-6f9c-4595-b75c-a7cf77e98141" Win64="$(var.IsWin64)" >
-                                <File Id="AspNetCoreSchemaV2File"
-                                      Name="aspnetcore_schema_v2.xml"
-                                      Source="$(var.AspNetCoreSchemaPath)"
-                                      DiskId="1"
-                                      Vital="yes"/>
-                                <RemoveFile Id="AspNetCoreSchemaV2File_Remove" Name="aspnetcore_schema_v2.xml" On="install" />
-                           </Component>
-                       </Directory>
-                   </Directory>
-               </Directory>
-           </Directory>
-
-           <!-- Platform specific core module -->
-           <Directory Id="$(var.ProgramFilesFolder)">
-               <Directory Id="IISModuleDirectory" Name="IIS">
-                   <Directory Id="INSTALLLOCATION" ShortName="ANCM" Name="Asp.Net Core Module">
-                       <Directory Id="VersionDir" Name="$(var.ProductVersionString)">
-                           <Component Id="AspNetCoreModuleV2" Guid="3a692941-59be-43cf-98a8-6ed01b12a519" Win64="$(var.IsWin64)">
-                             <?if $(var.Platform) = "arm64" ?>
-                             <File Id="AspNetCoreModuleV2Dll"
-                                    Name="aspnetcorev2.dll"
-                                    Source="$(var.ArtifactsDir)\bin\AspNetCoreModuleForwarders\aspnetcorev2.dll"
-                                    DiskId="1"
-                                    Vital="yes"/>
-                             <?else ?>
-                             <File Id="AspNetCoreModuleV2Dll"
-                               Name="aspnetcorev2.dll"
-                               Source="$(var.AspNetCoreV2ProgramFilesTargetPath)"
-                               DiskId="1"
-                               Vital="yes"/>
-                             <?endif ?>
-                             <RemoveFile Id="AspNetCoreModuleV2Dll_Remove" Name="aspnetcorev2.dll" On="install" />
-                             <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(var.ProductShortName)">
-                               <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleV2Dll]"/>
-                               <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
-                             </RegistryKey>
-                           </Component>
-                           <Directory Id="HandlerVersionDir" Name="$(var.ANCMFolderVersion)" >
-                             <Component Id="AspNetCoreModuleHandler" Guid="4b62060a-deb8-4de3-9557-9c0be21dc844" Win64="$(var.IsWin64)">
-                               <?if $(var.Platform) = "arm64" ?>
-                               <File Id="AspNetCoreModuleHandlerDll"
-                                        Name="aspnetcorev2_outofprocess.dll"
-                                        Source="$(var.ArtifactsDir)\bin\AspNetCoreModuleForwarders\aspnetcorev2_outofprocess.dll"
-                                        DiskId="1"
-                                        Vital="yes"/>
-                               <?else ?>
-                               <File Id="AspNetCoreModuleHandlerDll"
-                                 Name="aspnetcorev2_outofprocess.dll"
-                                 Source="$(var.AspNetCoreV2HandlerProgramFilesTargetPath)"
-                                 DiskId="1"
-                                 Vital="yes"/>
-                               <?endif ?>
-                             </Component>
-                             <?if $(var.Platform) = "arm64" ?>
-                             <Component Id="AspNetCoreModuleHandler.x64" Guid="d9b0b5c9-8bbe-46f2-97d5-ba23d1a1ffed" Win64="$(var.IsWin64)">
-                                    <File Id="AspNetCoreModuleHandlerDll.x64"
-                                        Name="aspnetcorev2_outofprocess_x64.dll"
-                                        Source="$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\x64\$(var.Configuration)\aspnetcorev2_outofprocess.dll"
-                                        DiskId="1"
-                                        Vital="yes">
-                                    </File>
-                             </Component>
-                             <Component Id="AspNetCoreModuleHandler.arm64" Guid="ab249ab5-9203-4fd5-87b6-8acc3e1a0702" Win64="$(var.IsWin64)">
-                                    <File Id="AspNetCoreModuleHandlerDll.arm64"
-                                        Name="aspnetcorev2_outofprocess_arm64.dll"
-                                        Source="$(var.AspNetCoreV2HandlerProgramFilesTargetPath)"
-                                        DiskId="1"
-                                        Vital="yes">
-                                    </File>
-                             </Component>
-                             <?endif ?>
-                           </Directory>
-                           <?if $(var.Platform) = "arm64" ?>
-                           <Component Id="AspNetCoreModuleV2.x64" Guid="325cf239-162d-4de8-97e7-642e6c66181c" Win64="$(var.IsWin64)">
-                                <File Id="AspNetCoreModuleV2Dll.x64"
-                                    Name="aspnetcorev2_x64.dll"
-                                    Source="$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\x64\$(var.Configuration)\aspnetcorev2.dll"
-                                    DiskId="1"
-                                    Vital="yes">
-                                </File>
-                               <RemoveFile Id="AspNetCoreModuleV2Dll_Remove.x64" Name="aspnetcorev2_x64.dll" On="install" />
-                               <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(var.ProductShortName)">
-                                   <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleV2Dll.x64]"/>
-                                   <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
-                               </RegistryKey>
-                           </Component>
-                           <Component Id="AspNetCoreModuleV2.arm64" Guid="923f1be7-5a83-46b3-8be7-cd3eeb2d1c48" Win64="$(var.IsWin64)">
-                                <File Id="AspNetCoreModuleV2Dll.arm64"
-                                    Name="aspnetcorev2_arm64.dll"
-                                    Source="$(var.AspNetCoreV2ProgramFilesTargetPath)"
-                                    DiskId="1"
-                                    Vital="yes">
-                                </File>
-                               <RemoveFile Id="AspNetCoreModuleV2Dll_Remove.arm64" Name="aspnetcorev2_arm64.dll" On="install" />
-                               <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(var.ProductShortName)">
-                                   <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleV2Dll.arm64]"/>
-                                   <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
-                               </RegistryKey>
-                           </Component>
-                           <?endif ?>
-                       </Directory>
-                   </Directory>
-               </Directory>
-           </Directory>
-
-           <!-- WOW64 Support -->
-           <?if $(var.Platform) != "x86" ?>
-           <Component Id="C_DiscoverabilityKeyWow" Guid="2eeb90e8-28d0-4543-9c2f-843b03bd6d05" Win64="no">
-               <RegistryKey Root="HKLM" Key="$(var.DiscoverabilityKeyRoot)">
-                    <RegistryKey Key="$(var.ProductShortName)">
-                        <RegistryValue Type="integer" Name="Install" Value="1" />
-                        <RegistryValue Type="string" Name="Version" Value="$(var.ANCMMsiVersion)" />
-                    </RegistryKey>
-                </RegistryKey>
-            </Component>
-
-            <Directory Id="$(var.ProgramFilesFolder32)">
-                 <Directory Id="IISModuleDirectory32" Name="IIS">
-                    <Directory Id="INSTALLLOCATION32" ShortName="ANCM" Name="Asp.Net Core Module">
-                        <Directory Id="VersionDir32" Name="$(var.ProductVersionString)" SourceName="WowOnly" >
-                            <Component Id="AspNetCoreModuleV2.wow" Guid="1b8ecba0-c002-442a-92c0-0fa9c0f21df4" Win64="no">
-                                <File Id="AspNetCoreModuleV2Dll.wow"
-                                    Name="aspnetcorev2.dll"
-                                    Source="$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\Win32\$(var.Configuration)\aspnetcorev2.dll"
-                                    DiskId="1"
-                                    Vital="yes">
-                                </File>
-                                <RemoveFile Id="AspNetCoreModuleV2Dll.wow_Remove" Name="aspnetcorev2.dll" On="install" />
-                                <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(var.ProductShortName)">
-                                    <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleV2Dll.wow]"/>
-                                    <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
-                                </RegistryKey>
-                            </Component>
-                            <Directory Id="HandlerVersionDir32" Name="$(var.ANCMFolderVersion)" SourceName="WowOnly">
-                                <Component Id="AspNetCoreModuleHandler.wow" Guid="d927e5d3-c8b2-400c-b85c-ae5c2772d6c3" Win64="no">
-                                    <File Id="AspNetCoreModuleHandlerDll.wow"
-                                          Name="aspnetcorev2_outofprocess.dll"
-                                          Source="$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\Win32\$(var.Configuration)\aspnetcorev2_outofprocess.dll"
-                                          DiskId="1"
-                                          Vital="yes">
-                                    </File>
-                                </Component>
-                            </Directory>
-                        </Directory>
-                    </Directory>
-                </Directory>
-            </Directory>
-            <?endif ?>
-        </Directory>
 
         <!-- Feature Definition -->
         <Feature Id="AspNetCoreModuleFeature" Title="!(loc.AspNetCoreModuleProductTitle)" Description="!(loc.AspNetCoreModuleProductDescription)" Level="1">
-            <ComponentRef Id="C_DiscoverabilityKey"/>
-            <ComponentRef Id="AspNetCoreSchemaV2"/>
+            <ComponentRef Id="C_DiscoverabilityKey" />
+            <ComponentRef Id="AspNetCoreSchemaV2" />
             <ComponentRef Id="AspNetCoreModuleV2" />
             <ComponentRef Id="AspNetCoreModuleHandler" />
-            <?if $(var.Platform) = "arm64"?>
-            <ComponentRef Id="AspNetCoreModuleV2.x64"/>
-            <ComponentRef Id="AspNetCoreModuleHandler.x64"/>
-            <ComponentRef Id="AspNetCoreModuleV2.arm64"/>
-            <ComponentRef Id="AspNetCoreModuleHandler.arm64"/>
-            <?endif ?>
-            <?if $(var.Platform) != "x86" ?>
-            <ComponentRef Id="C_DiscoverabilityKeyWow"/>
-            <ComponentRef Id="AspNetCoreModuleV2.wow"/>
-            <ComponentRef Id="AspNetCoreModuleHandler.wow"/>
-            <?endif ?>
+            <?if $(InstallerPlatform) = "arm64"?>
+            <ComponentRef Id="AspNetCoreModuleV2.x64" />
+            <ComponentRef Id="AspNetCoreModuleHandler.x64" />
+            <ComponentRef Id="AspNetCoreModuleV2.arm64" />
+            <ComponentRef Id="AspNetCoreModuleHandler.arm64" />
+            <?endif?>
+            <?if $(InstallerPlatform) != "x86" ?>
+            <ComponentRef Id="C_DiscoverabilityKeyWow" />
+            <ComponentRef Id="AspNetCoreModuleV2.wow" />
+            <ComponentRef Id="AspNetCoreModuleHandler.wow" />
+            <?endif?>
         </Feature>
 
         <!-- User Interface -->
-        <UIRef Id="WixUI_Minimal"/>
-        <UIRef Id="WixUI_ErrorProgressText"/>
+        <ui:WixUI Id="WixUI_Minimal" />
+        <UIRef Id="WixUI_ErrorProgressText" />
 
         <UI>
-            <DialogRef Id="WelcomeEulaDlg"/>
+            <DialogRef Id="WelcomeEulaDlg" />
 
             <!--CUSTOM errors specific to OOB setup-->
-            <Error Id="30001">!(loc.Error30001)</Error>
-            <Error Id="30002">!(loc.Error30002)</Error>
+            <Error Id="30001" Message="!(loc.Error30001)" />
+            <Error Id="30002" Message="!(loc.Error30002)" />
             <!-- Require WAS and WMSVC be stopped to avoid restarts -->
-            <Error Id="30003">!(loc.WebServicesRunning)</Error>
+            <Error Id="30003" Message="!(loc.WebServicesRunning)" />
         </UI>
 
         <!-- Standard IIS Custom Actions -->
-        <CustomTable Id="IISGlobalModule">
+        <CustomTableRef Id="IISGlobalModule">
             <Row>
-                <Data Column="Name">AspNetCoreModuleV2</Data>
-                <Data Column="File_">AspNetCoreModuleV2Dll</Data>
+                <Data Column="Name" Value="AspNetCoreModuleV2" />
+                <Data Column="File_" Value="AspNetCoreModuleV2Dll" />
             </Row>
-        </CustomTable>
+        </CustomTableRef>
 
-        <CustomTable Id="IISConfigSections">
+        <CustomTableRef Id="IISConfigSections">
             <Row>
-                <Data Column="Name">system.webServer/aspNetCore</Data>
-                <Data Column="File_">AspNetCoreSchemaV2File</Data>
-                <Data Column="OverrideModeDefault">Allow</Data>
+                <Data Column="Name" Value="system.webServer/aspNetCore" />
+                <Data Column="File_" Value="AspNetCoreSchemaV2File" />
+                <Data Column="OverrideModeDefault" Value="Allow" />
             </Row>
-        </CustomTable>
+        </CustomTableRef>
 
-        <!-- <?if $(var.Platform) = "x86" OR $(var.Platform) = "x64" ?> -->
-        <CustomTable Id="IISTraceArea">
+        <!-- <?if $(InstallerPlatform) = "x86" OR $(InstallerPlatform) = "x64" ?> -->
+        <CustomTableRef Id="IISTraceArea">
           <Row>
-            <Data Column="ProviderName">WWW Server</Data>
-            <Data Column="ProviderGuid">{3a2a4e84-4c21-4981-ae10-3fda0d9b0f83}</Data>
-            <Data Column="AreaName">ANCM</Data>
-            <Data Column="AreaValue">65536</Data>
-            <Data Column="BinaryName_">AncmMofFile</Data>
-            <Data Column="Component_">AspNetCoreModuleV2</Data>
+            <Data Column="ProviderName" Value="WWW Server" />
+            <Data Column="ProviderGuid" Value="{3a2a4e84-4c21-4981-ae10-3fda0d9b0f83}" />
+            <Data Column="AreaName" Value="ANCM" />
+            <Data Column="AreaValue" Value="65536" />
+            <Data Column="BinaryName_" Value="AncmMofFile" />
+            <Data Column="Component_" Value="AspNetCoreModuleV2" />
           </Row>
-        </CustomTable>
+        </CustomTableRef>
         <!-- <?endif ?> -->
 
         <!--   All this magic just to set the handlers section OverrideModeDefault=allow -->
-        <CustomAction Id="CA_UNLOCk_HANDLER_PROPERTY"
-                          Property="CA_UNLOCk_HANDLER"
-                          Value="&quot;[IISInstallDir]appcmd.exe&quot; unlock config /section:system.webserver/handlers" />
-        <CustomAction Id="CA_UNLOCk_HANDLER" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
-        <CustomAction Id="UpdateDynamicCompression" BinaryKey="IISCustomActionDll" DllEntry ="RegisterANCMCompressionCA" Execute ="deferred" Return ="ignore" Impersonate ="no" />
-        <CustomAction BinaryKey="IISCustomActionDll" Id="CheckForSharedConfiguration" DllEntry="CheckForSharedConfigurationCA" Execute="deferred" Return="check" Impersonate="no"/>
+        <CustomAction Id="CA_UNLOCk_HANDLER_PROPERTY" Property="CA_UNLOCk_HANDLER" Value="&quot;[IISInstallDir]appcmd.exe&quot; unlock config /section:system.webserver/handlers" />
+        <CustomAction Id="CA_UNLOCk_HANDLER" DllEntry="WixQuietExec" Execute="deferred" Return="ignore" Impersonate="no" BinaryRef="Wix4UtilCA_X86" />
+        <CustomAction Id="UpdateDynamicCompression" DllEntry="RegisterANCMCompressionCA" Execute="deferred" Return="ignore" Impersonate="no" BinaryRef="IISCustomActionDll" />
+        <CustomAction Id="CheckForSharedConfiguration" DllEntry="CheckForSharedConfigurationCA" Execute="deferred" Return="check" Impersonate="no" BinaryRef="IISCustomActionDll" />
 
         <InstallExecuteSequence>
             <AppSearch Before="LaunchConditions" />
             <LaunchConditions After="FindRelatedProducts" />
             <MigrateFeatureStates />
             <!-- OPT_NO_SHARED_CONFIG_CHECK could be numeric 0, string 0, or empty - all of which correspond to "false" -->
-            <Custom Action="CheckForSharedConfiguration" After="InstallInitialize">(NOT OPT_NO_SHARED_CONFIG_CHECK OR OPT_NO_SHARED_CONFIG_CHECK="" OR OPT_NO_SHARED_CONFIG_CHECK="0") AND NOT Installed AND NOT REMOVE="ALL"</Custom>
-            <Custom Action="CA_UNLOCk_HANDLER_PROPERTY" After="InstallFiles"><![CDATA[(NOT PATCH)]]></Custom>
-            <Custom Action="CA_UNLOCk_HANDLER" After="CA_UNLOCk_HANDLER_PROPERTY"><![CDATA[(NOT PATCH)]]></Custom>
-            <Custom Action="UpdateDynamicCompression" After="InstallFiles"><![CDATA[(NOT PATCH)]]></Custom>
-            <RemoveExistingProducts After="InstallFinalize"/>
+            <Custom Action="CheckForSharedConfiguration" After="InstallInitialize" Condition="(NOT OPT_NO_SHARED_CONFIG_CHECK OR OPT_NO_SHARED_CONFIG_CHECK=&quot;&quot; OR OPT_NO_SHARED_CONFIG_CHECK=&quot;0&quot;) AND NOT Installed AND NOT REMOVE=&quot;ALL&quot;" />
+            <Custom Action="CA_UNLOCk_HANDLER_PROPERTY" After="InstallFiles" Condition="(NOT PATCH)" />
+            <Custom Action="CA_UNLOCk_HANDLER" After="CA_UNLOCk_HANDLER_PROPERTY" Condition="(NOT PATCH)" />
+            <Custom Action="UpdateDynamicCompression" After="InstallFiles" Condition="(NOT PATCH)" />
+            <RemoveExistingProducts After="InstallFinalize" />
         </InstallExecuteSequence>
-        <FeatureRef Id="FT_DepProvider_$(var.ProductNameShort)" />
-    </Product>
+        <FeatureRef Id="FT_DepProvider_$(ProductNameShort)" />
+
+
+            <!-- Discoverability-->
+            <Component Id="C_DiscoverabilityKey" Guid="94efd0a4-ea3d-40c6-98d0-3138b5cc6813" Directory="TARGETDIR" Bitness="$(Bitness)">
+                <RegistryKey Root="HKLM" Key="$(DiscoverabilityKeyRoot)">
+                    <RegistryKey Key="$(ProductShortName)">
+                        <RegistryValue Type="integer" Name="Install" Value="1" />
+                        <RegistryValue Type="string" Name="Version" Value="$(ANCMMsiVersion)" />
+                    </RegistryKey>
+                </RegistryKey>
+            </Component>
+
+            <!-- Schema always to platform config directory -->
+            <StandardDirectory Id="System6432Folder">
+                <Directory Id="IISInstallDir" Name="inetsrv">
+                    <Directory Id="IISConfigDir" Name="config">
+                        <Directory Id="IISSchemaDir" Name="schema">
+                            <Component Id="AspNetCoreSchemaV2" Guid="9e5b7b62-6f9c-4595-b75c-a7cf77e98141" Bitness="$(Bitness)">
+                                <File Id="AspNetCoreSchemaV2File" Name="aspnetcore_schema_v2.xml" Source="$(AspNetCoreSchemaPath)" DiskId="1" Vital="yes" />
+                                <RemoveFile Id="AspNetCoreSchemaV2File_Remove" Name="aspnetcore_schema_v2.xml" On="install" />
+                           </Component>
+                       </Directory>
+                   </Directory>
+               </Directory>
+           </StandardDirectory>
+
+           <!-- Platform specific core module -->
+           <StandardDirectory Id="ProgramFiles6432Folder">
+               <Directory Id="IISModuleDirectory" Name="IIS">
+                   <Directory Id="INSTALLLOCATION" ShortName="ANCM" Name="Asp.Net Core Module">
+                       <Directory Id="VersionDir" Name="$(ProductVersionString)">
+                           <Component Id="AspNetCoreModuleV2" Guid="3a692941-59be-43cf-98a8-6ed01b12a519" Bitness="$(Bitness)">
+                             <?if $(InstallerPlatform) = "arm64" ?>
+                             <File Id="AspNetCoreModuleV2Dll" Name="aspnetcorev2.dll" Source="$(ArtifactsDir)\bin\AspNetCoreModuleForwarders\aspnetcorev2.dll" DiskId="1" Vital="yes" KeyPath="yes"/>
+                             <?else?>
+                             <File Id="AspNetCoreModuleV2Dll" Name="aspnetcorev2.dll" Source="$(AspNetCoreV2ProgramFilesTargetPath)" DiskId="1" Vital="yes" KeyPath="yes"/>
+                             <?endif?>
+                             <RemoveFile Id="AspNetCoreModuleV2Dll_Remove" Name="aspnetcorev2.dll" On="install" />
+                             <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(ProductShortName)">
+                               <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleV2Dll]" />
+                               <RegistryValue Name="TypesSupported" Type="integer" Value="7" />
+                             </RegistryKey>
+                           </Component>
+                           <Directory Id="HandlerVersionDir" Name="$(ANCMFolderVersion)">
+                             <Component Id="AspNetCoreModuleHandler" Guid="4b62060a-deb8-4de3-9557-9c0be21dc844" Bitness="$(Bitness)">
+                               <?if $(InstallerPlatform) = "arm64" ?>
+                               <File Id="AspNetCoreModuleHandlerDll" Name="aspnetcorev2_outofprocess.dll" Source="$(ArtifactsDir)\bin\AspNetCoreModuleForwarders\aspnetcorev2_outofprocess.dll" DiskId="1" Vital="yes" />
+                               <?else?>
+                               <File Id="AspNetCoreModuleHandlerDll" Name="aspnetcorev2_outofprocess.dll" Source="$(AspNetCoreV2HandlerProgramFilesTargetPath)" DiskId="1" Vital="yes" />
+                               <?endif?>
+                             </Component>
+                             <?if $(InstallerPlatform) = "arm64" ?>
+                             <Component Id="AspNetCoreModuleHandler.x64" Guid="d9b0b5c9-8bbe-46f2-97d5-ba23d1a1ffed" Bitness="$(Bitness)">
+                                    <File Id="AspNetCoreModuleHandlerDll.x64" Name="aspnetcorev2_outofprocess_x64.dll" Source="$(ArtifactsDir)\bin\OutOfProcessRequestHandler\x64\$(Configuration)\aspnetcorev2_outofprocess.dll" DiskId="1" Vital="yes">
+                                    </File>
+                             </Component>
+                             <Component Id="AspNetCoreModuleHandler.arm64" Guid="ab249ab5-9203-4fd5-87b6-8acc3e1a0702" Bitness="$(Bitness)">
+                                    <File Id="AspNetCoreModuleHandlerDll.arm64" Name="aspnetcorev2_outofprocess_arm64.dll" Source="$(AspNetCoreV2HandlerProgramFilesTargetPath)" DiskId="1" Vital="yes">
+                                    </File>
+                             </Component>
+                             <?endif?>
+                           </Directory>
+                           <?if $(InstallerPlatform) = "arm64" ?>
+                           <Component Id="AspNetCoreModuleV2.x64" Guid="325cf239-162d-4de8-97e7-642e6c66181c" Bitness="$(Bitness)">
+                                <File Id="AspNetCoreModuleV2Dll.x64" Name="aspnetcorev2_x64.dll" Source="$(ArtifactsDir)\bin\AspNetCoreModuleShim\x64\$(Configuration)\aspnetcorev2.dll" DiskId="1" Vital="yes" KeyPath="yes">
+                                </File>
+                               <RemoveFile Id="AspNetCoreModuleV2Dll_Remove.x64" Name="aspnetcorev2_x64.dll" On="install" />
+                               <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(ProductShortName)">
+                                   <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleV2Dll.x64]" />
+                                   <RegistryValue Name="TypesSupported" Type="integer" Value="7" />
+                               </RegistryKey>
+                           </Component>
+                           <Component Id="AspNetCoreModuleV2.arm64" Guid="923f1be7-5a83-46b3-8be7-cd3eeb2d1c48" Bitness="$(Bitness)">
+                                <File Id="AspNetCoreModuleV2Dll.arm64" Name="aspnetcorev2_arm64.dll" Source="$(AspNetCoreV2ProgramFilesTargetPath)" DiskId="1" Vital="yes" KeyPath="yes">
+                                </File>
+                               <RemoveFile Id="AspNetCoreModuleV2Dll_Remove.arm64" Name="aspnetcorev2_arm64.dll" On="install" />
+                               <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(ProductShortName)">
+                                   <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleV2Dll.arm64]" />
+                                   <RegistryValue Name="TypesSupported" Type="integer" Value="7" />
+                               </RegistryKey>
+                           </Component>
+                           <?endif?>
+                       </Directory>
+                   </Directory>
+               </Directory>
+           </StandardDirectory>
+
+           <!-- WOW64 Support -->
+           <?if $(InstallerPlatform) != "x86" ?>
+           <Component Id="C_DiscoverabilityKeyWow" Guid="2eeb90e8-28d0-4543-9c2f-843b03bd6d05" Directory="TARGETDIR" Bitness="always32">
+               <RegistryKey Root="HKLM" Key="$(DiscoverabilityKeyRoot)">
+                    <RegistryKey Key="$(ProductShortName)">
+                        <RegistryValue Type="integer" Name="Install" Value="1" />
+                        <RegistryValue Type="string" Name="Version" Value="$(ANCMMsiVersion)" />
+                    </RegistryKey>
+                </RegistryKey>
+            </Component>
+
+            <StandardDirectory Id="ProgramFilesFolder">
+                 <Directory Id="IISModuleDirectory32" Name="IIS">
+                    <Directory Id="INSTALLLOCATION32" ShortName="ANCM" Name="Asp.Net Core Module">
+                        <Directory Id="VersionDir32" Name="$(ProductVersionString)" SourceName="WowOnly">
+                            <Component Id="AspNetCoreModuleV2.wow" Guid="1b8ecba0-c002-442a-92c0-0fa9c0f21df4" Bitness="always32">
+                                <File Id="AspNetCoreModuleV2Dll.wow" Name="aspnetcorev2.dll" Source="$(ArtifactsDir)\bin\AspNetCoreModuleShim\Win32\$(Configuration)\aspnetcorev2.dll" DiskId="1" Vital="yes">
+                                </File>
+                                <RemoveFile Id="AspNetCoreModuleV2Dll.wow_Remove" Name="aspnetcorev2.dll" On="install" />
+                                <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(ProductShortName)">
+                                    <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleV2Dll.wow]" />
+                                    <RegistryValue Name="TypesSupported" Type="integer" Value="7" />
+                                </RegistryKey>
+                            </Component>
+                            <Directory Id="HandlerVersionDir32" Name="$(ANCMFolderVersion)" SourceName="WowOnly">
+                                <Component Id="AspNetCoreModuleHandler.wow" Guid="d927e5d3-c8b2-400c-b85c-ae5c2772d6c3" Bitness="always32">
+                                    <File Id="AspNetCoreModuleHandlerDll.wow" Name="aspnetcorev2_outofprocess.dll" Source="$(ArtifactsDir)\bin\OutOfProcessRequestHandler\Win32\$(Configuration)\aspnetcorev2_outofprocess.dll" DiskId="1" Vital="yes">
+                                    </File>
+                                </Component>
+                            </Directory>
+                        </Directory>
+                    </Directory>
+                </Directory>
+            </StandardDirectory>
+            <?endif?>
+        </Package>
 
     <Fragment>
-        <Feature Id="FT_DepProvider_$(var.ProductNameShort)" Absent="disallow" AllowAdvertise="no" Description="Used for Ref Counting" Display="hidden" InstallDefault="local" Level="1" Title="RefCounting" TypicalDefault="install">
-            <ComponentRef Id="C_DepProvider_$(var.ProductNameShort)" />
+        <Feature Id="FT_DepProvider_$(ProductNameShort)" AllowAdvertise="no" Description="Used for Ref Counting" Display="hidden" InstallDefault="local" Level="1" Title="RefCounting" TypicalDefault="install" AllowAbsent="no">
+            <ComponentRef Id="C_DepProvider_$(ProductNameShort)" />
         </Feature>
 
-        <DirectoryRef Id="TARGETDIR">
-            <Component Id="C_DepProvider_$(var.ProductNameShort)" Win64="no">
-                <dep:Provides Key="$(var.ANCMDepProviderKey)" />
-            </Component>
-        </DirectoryRef>
+        <Component Id="C_DepProvider_$(ProductNameShort)" Directory="TARGETDIR" Bitness="always32" Guid="$(DepProviderGuid)">
+            <Provides Key="$(ANCMDepProviderKey)" dep:Check="yes" />
+        </Component>
     </Fragment>
 
     <Fragment>
-        <Binary Id="IISCustomActionDll" SourceFile="$(var.aspnetcoreCA.TargetPath)"/>
-        <Binary Id="AncmMofFile" SourceFile="$(var.AspNetCoreMofPath)"/>
+        <Binary Id="IISCustomActionDll" SourceFile="$(aspnetcoreCA.TargetPath)" />
+        <Binary Id="AncmMofFile" SourceFile="$(AspNetCoreMofPath)" />
     </Fragment>
 </Wix>

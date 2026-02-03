@@ -13,7 +13,7 @@
     <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
 
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    
+
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TestTrimmedOrMultithreadingApps)' == 'true'">

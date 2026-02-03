@@ -63,6 +63,32 @@ internal static class IncrementalValuesProviderExtensions
             });
     }
 
+    public static IncrementalValuesProvider<T> Concat<T>(
+        this IncrementalValuesProvider<ImmutableArray<T>> first,
+        IncrementalValuesProvider<T> second)
+    {
+        return first.Collect()
+            .Combine(second.Collect())
+            .SelectMany((tuple, _) =>
+            {
+                if (tuple.Left.IsEmpty)
+                {
+                    return tuple.Right;
+                }
+
+                var results = ImmutableArray.CreateBuilder<T>(tuple.Left.Length + tuple.Right.Length);
+                for (var i = 0; i < tuple.Left.Length; i++)
+                {
+                    results.AddRange(tuple.Left[i]);
+                }
+                for (var i = 0; i < tuple.Right.Length; i++)
+                {
+                    results.AddRange(tuple.Right[i]);
+                }
+                return results.DrainToImmutable();
+            });
+    }
+
     private sealed class ImmutableArrayEqualityComparer<T> : IEqualityComparer<ImmutableArray<T>>
     {
         public static readonly ImmutableArrayEqualityComparer<T> Instance = new();

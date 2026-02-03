@@ -311,6 +311,7 @@ internal partial class CircuitRegistry
     {
         await _circuitPersistenceManager.PauseCircuitAsync(circuitHost, saveStateToClient);
         circuitHost.UnhandledException -= CircuitHost_UnhandledException;
+        circuitHost.Client.SetDisconnected();
         await circuitHost.DisposeAsync();
     }
 

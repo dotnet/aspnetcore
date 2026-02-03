@@ -8,14 +8,13 @@ namespace Microsoft.AspNetCore.Identity;
 /// <summary>
 /// Provides information for a user's passkey credential.
 /// </summary>
-public class UserPasskeyInfo
+public sealed class UserPasskeyInfo
 {
     /// <summary>
     /// Initializes a new instance of <see cref="UserPasskeyInfo"/>.
     /// </summary>
     /// <param name="credentialId">The credential ID for the passkey.</param>
     /// <param name="publicKey">The public key for the passkey.</param>
-    /// <param name="name">The friendly name for the passkey.</param>
     /// <param name="createdAt">The time when the passkey was created.</param>
     /// <param name="signCount">The signature counter for the passkey.</param>
     /// <param name="attestationObject">The passkey's attestation object.</param>
@@ -27,7 +26,6 @@ public class UserPasskeyInfo
     public UserPasskeyInfo(
         byte[] credentialId,
         byte[] publicKey,
-        string? name,
         DateTimeOffset createdAt,
         uint signCount,
         string[]? transports,
@@ -39,7 +37,6 @@ public class UserPasskeyInfo
     {
         CredentialId = credentialId;
         PublicKey = publicKey;
-        Name = name;
         CreatedAt = createdAt;
         SignCount = signCount;
         Transports = transports;

@@ -8,6 +8,8 @@ using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TestServer;
@@ -24,7 +26,7 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddRazorComponents(options =>
+        var builder = services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;
             options.MaxFormMappingRecursionDepth = 5;
@@ -32,6 +34,20 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
         });
         services.AddHttpContextAccessor();
         services.AddCascadingAuthenticationState();
+
+        if (Configuration.GetValue<bool>("UseSessionStorageTempDataProvider"))
+        {
+            services.AddDistributedMemoryCache();
+            services.AddSession(options =>
+            {
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+            services.Configure<RazorComponentsServiceOptions>(options =>
+            {
+                options.TempDataProviderType = TempDataProviderType.SessionStorage;
+            });
+        }
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -59,12 +75,17 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                     });
                 });
 
+                if (Configuration.GetValue<bool>("UseSessionStorageTempDataProvider"))
+                {
+                    app.UseSession();
+                }
+
                 if (!env.IsDevelopment())
                 {
                     app.UseExceptionHandler("/Error", createScopeForErrors: true);
                 }
 
-                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForErrors: true);
+                ConfigureReexecutionPipeline(reexecutionApp, "/not-found-reexecute");
                 reexecutionApp.UseStaticFiles();
                 reexecutionApp.UseRouting();
                 RazorComponentEndpointsStartup<TRootComponent>.UseFakeAuthState(reexecutionApp);
@@ -75,8 +96,34 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                         .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"));
                 });
             });
+            app.Map("/streaming-reexecution", reexecutionApp =>
+            {
+                ConfigureReexecutionPipeline(reexecutionApp, "/not-found-reexecute-streaming");
+                reexecutionApp.UseRouting();
+                reexecutionApp.UseAntiforgery();
+                reexecutionApp.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapRazorComponents<TRootComponent>()
+                        .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"));
+                });
+            });
 
             ConfigureSubdirPipeline(app, env);
+        });
+    }
+
+    private void ConfigureReexecutionPipeline(IApplicationBuilder pipeline, string pathFormat)
+    {
+        pipeline.UseStatusCodePagesWithReExecute(pathFormat, createScopeForStatusCodePages: true);
+        pipeline.Use(async (context, next) =>
+        {
+            var reexecute = context.Features.Get<IStatusCodeReExecuteFeature>();
+            if (reexecute is not null && !string.IsNullOrEmpty(reexecute.OriginalQueryString))
+            {
+                context.Request.QueryString = new QueryString(reexecute.OriginalQueryString);
+            }
+
+            await next();
         });
     }
 

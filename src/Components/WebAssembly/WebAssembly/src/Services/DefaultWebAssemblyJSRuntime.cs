@@ -24,13 +24,14 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 
     public ElementReferenceContext ElementReferenceContext { get; }
 
-    public event Action<RootComponentOperationBatch>? OnUpdateRootComponents;
+    public event Action<RootComponentOperationBatch, string>? OnUpdateRootComponents;
 
     [DynamicDependency(nameof(InvokeDotNet))]
     [DynamicDependency(nameof(EndInvokeJS))]
     [DynamicDependency(nameof(BeginInvokeDotNet))]
     [DynamicDependency(nameof(ReceiveByteArrayFromJS))]
     [DynamicDependency(nameof(UpdateRootComponentsCore))]
+    [DynamicDependency(JsonSerialized, typeof(KeyValuePair<,>))]
     private DefaultWebAssemblyJSRuntime()
     {
         ElementReferenceContext = new WebElementReferenceContext(this);
@@ -94,12 +95,12 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 
     [SupportedOSPlatform("browser")]
     [JSExport]
-    public static void UpdateRootComponentsCore(string operationsJson)
+    public static void UpdateRootComponentsCore(string operationsJson, string appState)
     {
         try
         {
             var operations = DeserializeOperations(operationsJson);
-            Instance.OnUpdateRootComponents?.Invoke(operations);
+            Instance.OnUpdateRootComponents?.Invoke(operations, appState);
         }
         catch (Exception ex)
         {

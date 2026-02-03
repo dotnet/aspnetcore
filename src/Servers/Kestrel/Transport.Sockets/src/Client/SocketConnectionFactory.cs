@@ -27,7 +27,7 @@ internal sealed class SocketConnectionFactory : IConnectionFactory, IAsyncDispos
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         _options = options.Value;
-        _memoryPool = options.Value.MemoryPoolFactory.Create();
+        _memoryPool = options.Value.MemoryPoolFactory.Create(SocketConnectionFactoryOptions.MemoryPoolOptions);
         _trace = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Client");
 
         var maxReadBufferSize = _options.MaxReadBufferSize ?? 0;

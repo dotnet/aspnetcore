@@ -3,7 +3,6 @@
   "name": "Aplicativo Web Blazor",
   "description": "Um modelo de projeto para criar um aplicativo Web Blazor que dá suporte à renderização do lado do servidor e à interatividade do cliente. Este modelo pode ser usado para aplicativos da Web com interfaces de usuário (UIs) dinâmicas avançadas.",
   "symbols/Framework/description": "A estrutura de destino do projeto.",
-  "symbols/Framework/choices/net10.0/description": "Net10.0 de destino",
   "symbols/UserSecretsId/description": "O ID a ser usado para segredos (usado com autenticação individual).",
   "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto sendo criado.",
   "symbols/ExcludeLaunchSettings/description": "Se deve excluir launchSettings.json do modelo gerado.",
@@ -39,8 +38,8 @@
   "symbols/NoHttps/description": "Se deve desligar o HTTPS. Essa opção só se aplica se Individual não for usado para --auth.",
   "symbols/UseProgramMain/displayName": "Não use ins_truções de nível superior",
   "symbols/UseProgramMain/description": "Se deve gerar uma classe de Programa explícita e um método principal em vez de instruções de nível superior.",
-  "symbols/LocalhostTld/displayName": "Use the .dev.localhost TLD in the aplication URL",
-  "symbols/LocalhostTld/description": "Whether to combine the project name with the .dev.localhost TLD in the application URL for local development, e.g. https://myapp.dev.localhost:12345.",
+  "symbols/LocalhostTld/displayName": "Usar o TLD .dev.localhost na URL do aplicativo",
+  "symbols/LocalhostTld/description": "Se deseja combinar o nome do projeto com o TLD .dev.localhost na URL do aplicativo para desenvolvimento local, por exemplo, https://myapp.dev.localhost:12345.",
   "postActions/restore/description": "Restaure os pacotes NuGet exigidos por este projeto.",
   "postActions/restore/manualInstructions/default/text": "Executa 'dotnet restore'"
 }

@@ -115,9 +115,6 @@ function InitializeDotNetCli {
 
   local install=$1
 
-  # Don't resolve runtime, shared framework, or SDK from other locations to ensure build determinism
-  export DOTNET_MULTILEVEL_LOOKUP=0
-
   # Disable first run since we want to control all package sources
   export DOTNET_NOLOGO=1
 
@@ -166,7 +163,6 @@ function InitializeDotNetCli {
   # build steps from using anything other than what we've downloaded.
   Write-PipelinePrependPath -path "$dotnet_root"
 
-  Write-PipelineSetVariable -name "DOTNET_MULTILEVEL_LOOKUP" -value "0"
   Write-PipelineSetVariable -name "DOTNET_NOLOGO" -value "1"
 
   # return value
@@ -300,8 +296,29 @@ function GetDotNetInstallScript {
   local root=$1
   local install_script="$root/dotnet-install.sh"
   local install_script_url="https://builds.dotnet.microsoft.com/dotnet/scripts/$dotnetInstallScriptVersion/dotnet-install.sh"
+  local timestamp_file="$root/.dotnet-install.timestamp"
+  local should_download=false
 
   if [[ ! -a "$install_script" ]]; then
+    should_download=true
+  elif [[ -f "$timestamp_file" ]]; then
+    # Check if the script is older than 30 days using timestamp file
+    local download_time=$(cat "$timestamp_file" 2>/dev/null || echo "0")
+    local current_time=$(date +%s)
+    local age_seconds=$((current_time - download_time))
+    
+    # 30 days = 30 * 24 * 60 * 60 = 2592000 seconds
+    if [[ $age_seconds -gt 2592000 ]]; then
+      echo "Existing install script is too old, re-downloading..."
+      should_download=true
+    fi
+  else
+    # No timestamp file exists, assume script is old and re-download
+    echo "No timestamp found for existing install script, re-downloading..."
+    should_download=true
+  fi
+
+  if [[ "$should_download" == true ]]; then
     mkdir -p "$root"
 
     echo "Downloading '$install_script_url'"
@@ -328,6 +345,9 @@ function GetDotNetInstallScript {
         ExitWithExitCode $exit_code
       }
     fi
+    
+    # Create timestamp file to track download time in seconds from epoch
+    date +%s > "$timestamp_file"
   fi
   # return value
   _GetDotNetInstallScript="$install_script"

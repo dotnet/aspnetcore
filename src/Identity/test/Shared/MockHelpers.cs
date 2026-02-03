@@ -14,13 +14,19 @@ public static class MockHelpers
 {
     public static StringBuilder LogMessage = new StringBuilder();
 
-    public static Mock<UserManager<TUser>> MockUserManager<TUser>(IMeterFactory meterFactory = null) where TUser : class
+    public static Mock<UserManager<TUser>> MockUserManager<TUser>(
+        IMeterFactory meterFactory = null,
+        IPasskeyHandler<TUser> passkeyHandler = null)
+        where TUser : class
     {
         var services = new ServiceCollection();
         if (meterFactory != null)
         {
-            services.AddSingleton<SignInManagerMetrics>();
             services.AddSingleton(meterFactory);
+        }
+        if (passkeyHandler != null)
+        {
+            services.AddSingleton(passkeyHandler);
         }
 
         var store = new Mock<IUserStore<TUser>>();
@@ -54,8 +60,6 @@ public static class MockHelpers
         var services = new ServiceCollection();
         if (meterFactory != null)
         {
-            services.AddSingleton<UserManagerMetrics>();
-            services.AddSingleton<SignInManagerMetrics>();
             services.AddSingleton(meterFactory);
         }
         var userManager = new UserManager<TUser>(store, options.Object, new PasswordHasher<TUser>(),

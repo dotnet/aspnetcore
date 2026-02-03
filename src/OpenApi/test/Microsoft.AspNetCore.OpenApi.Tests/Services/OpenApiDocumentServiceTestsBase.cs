@@ -229,7 +229,7 @@ public abstract class OpenApiDocumentServiceTestBase
 
         action.AttributeRouteInfo = new()
         {
-            Template = action.MethodInfo.GetCustomAttribute<RouteAttribute>()?.Template,
+            Template = action.MethodInfo.GetCustomAttribute<RouteAttribute>()?.Template ?? string.Empty,
             Name = action.MethodInfo.GetCustomAttribute<RouteAttribute>()?.Name,
             Order = action.MethodInfo.GetCustomAttribute<RouteAttribute>()?.Order ?? 0,
         };

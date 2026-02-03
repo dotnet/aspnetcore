@@ -39,7 +39,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var navigationCounter = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.navigation");
+            ComponentsMetrics.MeterName, "aspnetcore.components.navigate");
 
         // Act
         componentsMetrics.Navigation("TestComponent", "/test-route");
@@ -61,7 +61,7 @@ public class ComponentsMetricsTest
 
         // Create a collector to ensure the meter is enabled
         using var navigationCounter = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.navigation");
+            ComponentsMetrics.MeterName, "aspnetcore.components.navigate");
 
         // Act & Assert
         Assert.True(componentsMetrics.IsNavigationEnabled);
@@ -73,7 +73,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var eventDurationHistogram = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.event_handler");
+            ComponentsMetrics.MeterName, "aspnetcore.components.handle_event.duration");
 
         // Act
         var startTimestamp = Stopwatch.GetTimestamp();
@@ -87,7 +87,7 @@ public class ComponentsMetricsTest
         Assert.Single(measurements);
         Assert.True(measurements[0].Value > 0);
         Assert.Equal("TestComponent", Assert.Contains("aspnetcore.components.type", measurements[0].Tags));
-        Assert.Equal("OnClick", Assert.Contains("aspnetcore.components.method", measurements[0].Tags));
+        Assert.Equal("OnClick", Assert.Contains("code.function.name", measurements[0].Tags));
         Assert.Equal("onclick", Assert.Contains("aspnetcore.components.attribute.name", measurements[0].Tags));
         Assert.DoesNotContain("error.type", measurements[0].Tags);
     }
@@ -98,7 +98,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var eventDurationHistogram = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.event_handler");
+            ComponentsMetrics.MeterName, "aspnetcore.components.handle_event.duration");
 
         // Act
         var startTimestamp = Stopwatch.GetTimestamp();
@@ -112,7 +112,7 @@ public class ComponentsMetricsTest
         Assert.Single(measurements);
         Assert.True(measurements[0].Value > 0);
         Assert.Equal("TestComponent", Assert.Contains("aspnetcore.components.type", measurements[0].Tags));
-        Assert.Equal("OnClick", Assert.Contains("aspnetcore.components.method", measurements[0].Tags));
+        Assert.Equal("OnClick", Assert.Contains("code.function.name", measurements[0].Tags));
         Assert.Equal("onclick", Assert.Contains("aspnetcore.components.attribute.name", measurements[0].Tags));
         Assert.Equal("System.InvalidOperationException", Assert.Contains("error.type", measurements[0].Tags));
     }
@@ -123,7 +123,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var eventDurationHistogram = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.event_handler");
+            ComponentsMetrics.MeterName, "aspnetcore.components.handle_event.duration");
         var exception = new InvalidOperationException();
 
         // Act
@@ -137,7 +137,7 @@ public class ComponentsMetricsTest
         Assert.Single(measurements);
         Assert.True(measurements[0].Value > 0);
         Assert.Equal("TestComponent", Assert.Contains("aspnetcore.components.type", measurements[0].Tags));
-        Assert.Equal("OnClick", Assert.Contains("aspnetcore.components.method", measurements[0].Tags));
+        Assert.Equal("OnClick", Assert.Contains("code.function.name", measurements[0].Tags));
         Assert.Equal("onclick", Assert.Contains("aspnetcore.components.attribute.name", measurements[0].Tags));
         Assert.Equal("System.InvalidOperationException", Assert.Contains("error.type", measurements[0].Tags));
     }
@@ -150,7 +150,7 @@ public class ComponentsMetricsTest
 
         // Create a collector to ensure the meter is enabled
         using var eventDurationHistogram = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.event_handler");
+            ComponentsMetrics.MeterName, "aspnetcore.components.handle_event.duration");
 
         // Act & Assert
         Assert.True(componentsMetrics.IsEventEnabled);
@@ -162,7 +162,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var parametersDurationHistogram = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters.duration");
 
         // Act
         var startTimestamp = Stopwatch.GetTimestamp();
@@ -184,7 +184,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var parametersDurationHistogram = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters.duration");
 
         // Act
         var startTimestamp = Stopwatch.GetTimestamp();
@@ -207,7 +207,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var parametersDurationHistogram = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters.duration");
         var exception = new InvalidOperationException();
 
         // Act
@@ -231,7 +231,7 @@ public class ComponentsMetricsTest
 
         // Create a collector to ensure the meter is enabled
         using var parametersDurationHistogram = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters.duration");
 
         // Act & Assert
         Assert.True(componentsMetrics.IsParametersEnabled);
@@ -243,7 +243,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var batchDurationHistogram = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.render_diff");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.render_diff.duration");
 
         // Act
         var startTimestamp = Stopwatch.GetTimestamp();
@@ -255,7 +255,6 @@ public class ComponentsMetricsTest
 
         Assert.Single(measurements);
         Assert.True(measurements[0].Value > 0);
-        Assert.Equal(50, Assert.Contains("aspnetcore.components.diff.length", measurements[0].Tags));
         Assert.DoesNotContain("error.type", measurements[0].Tags);
     }
 
@@ -265,7 +264,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var batchDurationHistogram = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.render_diff");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.render_diff.duration");
 
         // Act
         var startTimestamp = Stopwatch.GetTimestamp();
@@ -278,7 +277,6 @@ public class ComponentsMetricsTest
 
         Assert.Single(measurements);
         Assert.True(measurements[0].Value > 0);
-        Assert.Equal(50, Assert.Contains("aspnetcore.components.diff.length", measurements[0].Tags));
         Assert.Equal("System.InvalidOperationException", Assert.Contains("error.type", measurements[0].Tags));
     }
 
@@ -288,7 +286,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var batchDurationHistogram = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.render_diff");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.render_diff.duration");
         var exception = new InvalidOperationException();
 
         // Act
@@ -300,7 +298,6 @@ public class ComponentsMetricsTest
 
         Assert.Single(measurements);
         Assert.True(measurements[0].Value > 0);
-        Assert.Equal(0, Assert.Contains("aspnetcore.components.diff.length", measurements[0].Tags));
         Assert.Equal("System.InvalidOperationException", Assert.Contains("error.type", measurements[0].Tags));
     }
 
@@ -312,7 +309,7 @@ public class ComponentsMetricsTest
 
         // Create a collector to ensure the meter is enabled
         using var batchDurationHistogram = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.render_diff");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.render_diff.duration");
 
         // Act & Assert
         Assert.True(componentsMetrics.IsBatchEnabled);
@@ -324,13 +321,15 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var navigationCounter = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.navigation");
+            ComponentsMetrics.MeterName, "aspnetcore.components.navigate");
         using var eventDurationHistogram = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.event_handler");
+            ComponentsMetrics.MeterName, "aspnetcore.components.handle_event.duration");
         using var parametersDurationHistogram = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters.duration");
         using var batchDurationHistogram = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.render_diff");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.render_diff.duration");
+        using var batchSizeHistogram = new MetricCollector<int>(_meterFactory,
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.render_diff.size");
 
         // Act - Simulate a component lifecycle
         // 1. Navigation
@@ -357,11 +356,13 @@ public class ComponentsMetricsTest
         var eventMeasurements = eventDurationHistogram.GetMeasurementSnapshot();
         var parametersMeasurements = parametersDurationHistogram.GetMeasurementSnapshot();
         var batchMeasurements = batchDurationHistogram.GetMeasurementSnapshot();
+        var batchSizeMeasurements = batchSizeHistogram.GetMeasurementSnapshot();
 
         Assert.Single(navigationMeasurements);
         Assert.Single(eventMeasurements);
         Assert.Single(parametersMeasurements);
         Assert.Single(batchMeasurements);
+        Assert.Single(batchSizeMeasurements);
 
         // Check navigation
         Assert.Equal(1, navigationMeasurements[0].Value);
@@ -371,7 +372,7 @@ public class ComponentsMetricsTest
         // Check event duration
         Assert.True(eventMeasurements[0].Value > 0);
         Assert.Equal("TestComponent", Assert.Contains("aspnetcore.components.type", eventMeasurements[0].Tags));
-        Assert.Equal("OnClick", Assert.Contains("aspnetcore.components.method", eventMeasurements[0].Tags));
+        Assert.Equal("OnClick", Assert.Contains("code.function.name", eventMeasurements[0].Tags));
         Assert.Equal("onclick", Assert.Contains("aspnetcore.components.attribute.name", eventMeasurements[0].Tags));
 
         // Check parameters duration
@@ -380,7 +381,7 @@ public class ComponentsMetricsTest
 
         // Check batch duration
         Assert.True(batchMeasurements[0].Value > 0);
-        Assert.Equal(20, Assert.Contains("aspnetcore.components.diff.length", batchMeasurements[0].Tags));
+        Assert.True(batchSizeMeasurements[0].Value > 0);
     }
 
     [Fact]
@@ -398,5 +399,135 @@ public class ComponentsMetricsTest
 
         // Assert - MeterFactory.Create was called twice in constructor
         Assert.Equal(2, _meterFactory.Meters.Count);
+    }
+
+    [Fact]
+    public void Navigation_WithNullValues_OmitsTags()
+    {
+        // Arrange
+        var componentsMetrics = new ComponentsMetrics(_meterFactory);
+        using var navigationCounter = new MetricCollector<long>(_meterFactory,
+            ComponentsMetrics.MeterName, "aspnetcore.components.navigate");
+
+        // Act
+        componentsMetrics.Navigation(null, null);
+
+        // Assert
+        var measurements = navigationCounter.GetMeasurementSnapshot();
+
+        Assert.Single(measurements);
+        Assert.Equal(1, measurements[0].Value);
+        Assert.DoesNotContain("aspnetcore.components.type", measurements[0].Tags);
+        Assert.DoesNotContain("aspnetcore.components.route", measurements[0].Tags);
+    }
+
+    [Fact]
+    public async Task CaptureEventDuration_WithNullValues_OmitsTags()
+    {
+        // Arrange
+        var componentsMetrics = new ComponentsMetrics(_meterFactory);
+        using var eventDurationHistogram = new MetricCollector<double>(_meterFactory,
+            ComponentsMetrics.MeterName, "aspnetcore.components.handle_event.duration");
+
+        // Act
+        var startTimestamp = Stopwatch.GetTimestamp();
+        await componentsMetrics.CaptureEventDuration(Task.CompletedTask, startTimestamp, null, null, null);
+
+        // Assert
+        var measurements = eventDurationHistogram.GetMeasurementSnapshot();
+
+        Assert.Single(measurements);
+        Assert.True(measurements[0].Value >= 0);
+        Assert.DoesNotContain("aspnetcore.components.type", measurements[0].Tags);
+        Assert.DoesNotContain("code.function.name", measurements[0].Tags);
+        Assert.DoesNotContain("aspnetcore.components.attribute.name", measurements[0].Tags);
+        Assert.DoesNotContain("error.type", measurements[0].Tags);
+    }
+
+    [Fact]
+    public void FailEventSync_WithNullValues_OmitsTags()
+    {
+        // Arrange
+        var componentsMetrics = new ComponentsMetrics(_meterFactory);
+        using var eventDurationHistogram = new MetricCollector<double>(_meterFactory,
+            ComponentsMetrics.MeterName, "aspnetcore.components.handle_event.duration");
+        var exception = new InvalidOperationException();
+
+        // Act
+        var startTimestamp = Stopwatch.GetTimestamp();
+        componentsMetrics.FailEventSync(exception, startTimestamp, null, null, null);
+
+        // Assert
+        var measurements = eventDurationHistogram.GetMeasurementSnapshot();
+
+        Assert.Single(measurements);
+        Assert.True(measurements[0].Value >= 0);
+        Assert.DoesNotContain("aspnetcore.components.type", measurements[0].Tags);
+        Assert.DoesNotContain("code.function.name", measurements[0].Tags);
+        Assert.DoesNotContain("aspnetcore.components.attribute.name", measurements[0].Tags);
+        Assert.Equal("System.InvalidOperationException", Assert.Contains("error.type", measurements[0].Tags));
+    }
+
+    [Fact]
+    public async Task CaptureParametersDuration_WithNullValues_OmitsTags()
+    {
+        // Arrange
+        var componentsMetrics = new ComponentsMetrics(_meterFactory);
+        using var parametersDurationHistogram = new MetricCollector<double>(_meterFactory,
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters.duration");
+
+        // Act
+        var startTimestamp = Stopwatch.GetTimestamp();
+        await componentsMetrics.CaptureParametersDuration(Task.CompletedTask, startTimestamp, null);
+
+        // Assert
+        var measurements = parametersDurationHistogram.GetMeasurementSnapshot();
+
+        Assert.Single(measurements);
+        Assert.True(measurements[0].Value >= 0);
+        Assert.DoesNotContain("aspnetcore.components.type", measurements[0].Tags);
+        Assert.DoesNotContain("error.type", measurements[0].Tags);
+    }
+
+    [Fact]
+    public void FailParametersSync_WithNullValues_OmitsTags()
+    {
+        // Arrange
+        var componentsMetrics = new ComponentsMetrics(_meterFactory);
+        using var parametersDurationHistogram = new MetricCollector<double>(_meterFactory,
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters.duration");
+        var exception = new InvalidOperationException();
+
+        // Act
+        var startTimestamp = Stopwatch.GetTimestamp();
+        componentsMetrics.FailParametersSync(exception, startTimestamp, null);
+
+        // Assert
+        var measurements = parametersDurationHistogram.GetMeasurementSnapshot();
+
+        Assert.Single(measurements);
+        Assert.True(measurements[0].Value >= 0);
+        Assert.DoesNotContain("aspnetcore.components.type", measurements[0].Tags);
+        Assert.Equal("System.InvalidOperationException", Assert.Contains("error.type", measurements[0].Tags));
+    }
+
+    [Fact]
+    public async Task CaptureBatchDuration_WithoutException_OmitsErrorTag()
+    {
+        // Arrange
+        var componentsMetrics = new ComponentsMetrics(_meterFactory);
+        using var batchDurationHistogram = new MetricCollector<double>(_meterFactory,
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.render_diff.duration");
+
+        // Act
+        var startTimestamp = Stopwatch.GetTimestamp();
+        await componentsMetrics.CaptureBatchDuration(Task.CompletedTask, startTimestamp, 25);
+
+        // Assert
+        var measurements = batchDurationHistogram.GetMeasurementSnapshot();
+
+        Assert.Single(measurements);
+        Assert.True(measurements[0].Value >= 0);
+        Assert.DoesNotContain("error.type", measurements[0].Tags);
     }
 }

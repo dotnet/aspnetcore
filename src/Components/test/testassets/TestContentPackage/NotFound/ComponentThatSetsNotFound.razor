@@ -10,14 +10,14 @@
 
 @code{
     [Parameter]
-    public bool StartStreaming { get; set; } = false;
+    public bool PerformAsyncOperationBeforeSettingNotFound { get; set; } = false;
 
     [Parameter]
     public bool WaitForInteractivity { get; set; } = false;
 
     protected async override Task OnInitializedAsync()
     {
-        if (StartStreaming)
+        if (PerformAsyncOperationBeforeSettingNotFound)
         {
             await Task.Yield();
         }

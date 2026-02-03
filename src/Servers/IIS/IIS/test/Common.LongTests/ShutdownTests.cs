@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 // Contains all tests related to shutdown, including app_offline, abort, and app recycle
 [Collection(PublishedSitesCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class ShutdownTests : IISFunctionalTestBase
 {
     public ShutdownTests(PublishedSitesFixture fixture) : base(fixture)
@@ -390,7 +389,6 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
     [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
     public async Task AppOfflineAddedAndRemovedStress_InProcess()
     {
@@ -560,7 +558,6 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
     public async Task ConfigurationTouchedStress_InProcess()
     {
         await ConfigurationTouchedStress(HostingModel.InProcess);

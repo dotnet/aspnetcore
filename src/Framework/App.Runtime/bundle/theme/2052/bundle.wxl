@@ -1,55 +1,78 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-  <String Id="Caption">[BundleNameFull] 安装</String>
-  <String Id="Title">[BundleNameShort]</String>
-  <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallVersion">版本 [WixBundleVersion]</String>
-  <String Id="ConfirmCancelMessage">是否确实要取消?</String>
-  <String Id="ExecuteUpgradeRelatedBundleMessage">上一版本</String>
-  <String Id="HelpHeader">安装程序帮助</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]目录[\]] - 安装、修复、卸载
-   目录中的捆绑包或创建其完整本地副本。Install 为默认选择。
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  
+  <String Id="Caption" Value="[WixBundleName] 安装"/>
+  
+  <String Id="Title" Value="[BUNDLEMONIKER]"/>
+  
+  
+  <String Id="InstallVersion" Value="版本 [WixBundleVersion]"/>
+  <String Id="ConfirmCancelMessage" Value="是否确实要取消?"/>
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="上一个版本"/>
+  <String Id="HelpHeader" Value="安装帮助"/>
+  
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - 安装、修复、卸载或
+   在目录中创建捆绑包的完整本地副本。Install 为默认值。
 
-/passive | /quiet -  显示最少的 UI 且无提示，或不显示 UI 且
-   无提示。默认情况下，显示 UI 及全部提示。
+/passive | /quiet - 显示最小 UI 且无提示，或不显示 UI 和
+   提示。默认情况下，将显示 UI 和所有提示。
 
-/norestart   - 禁止任何重启尝试。默认情况下将在重启前显示提示 UI。
-/log log.txt - 向特定文件写入日志。默认情况下在 %TEMP% 中创建日志文件。</String>
-  <String Id="HelpCloseButton">关闭(&amp;C)</String>
-  <String Id="InstallAcceptCheckbox">我同意许可条款和条件(&amp;A)</String>
-  <String Id="InstallInstallButton">安装(&amp;I)</String>
-  <String Id="InstallCloseButton">关闭(&amp;C)</String>
-  <String Id="ProgressHeader">安装进度</String>
-  <String Id="ProgressLabel">正在处理:</String>
-  <String Id="OverallProgressPackageText">正在初始化...</String>
-  <String Id="ProgressCancelButton">取消(&amp;C)</String>
-  <String Id="ModifyHeader">修改安装程序</String>
-  <String Id="ModifyRepairButton">修复(&amp;R)</String>
-  <String Id="ModifyUninstallButton">卸载(&amp;U)</String>
-  <String Id="ModifyCloseButton">关闭(&amp;C)</String>
-  <String Id="SuccessRepairHeader">已成功完成修复</String>
-  <String Id="SuccessUninstallHeader">已成功完成卸载</String>
-  <String Id="SuccessInstallHeader">已成功完成安装</String>
-  <String Id="SuccessHeader">设置成功</String>
-  <String Id="SuccessLaunchButton">启动(&amp;L)</String>
-  <String Id="SuccessRestartText">您必须先重新启动计算机，然后才能使用该软件。</String>
-  <String Id="SuccessRestartButton">重新启动(&amp;R)</String>
-  <String Id="SuccessCloseButton">关闭(&amp;C)</String>
-  <String Id="FailureHeader">安装失败</String>
-  <String Id="FailureInstallHeader">安装失败</String>
-  <String Id="FailureUninstallHeader">卸载失败</String>
-  <String Id="FailureRepairHeader">修复失败</String>
-  <String Id="FailureHyperlinkLogText">一个或多个问题导致了安装失败。请修复这些问题，然后重试安装。有关详细信息，请参阅&lt;a href="#"&gt;日志文件&lt;/a&gt;。</String>
-  <String Id="FailureRestartText">必须重新启动计算机才能完成软件回退。</String>
-  <String Id="FailureRestartButton">重新启动(&amp;R)</String>
-  <String Id="FailureCloseButton">关闭(&amp;C)</String>
-  <String Id="FilesInUseHeader">文件正在使用</String>
-  <String Id="FilesInUseLabel">以下应用程序正在使用的文件需要更新:</String>
-  <String Id="FilesInUseCloseRadioButton">关闭应用程序并尝试重启(&amp;A)。</String>
-  <String Id="FilesInUseDontCloseRadioButton">不关闭应用程序(&amp;D)。需要重启。</String>
-  <String Id="FilesInUseOkButton">确定(&amp;O)</String>
-  <String Id="FilesInUseCancelButton">取消(&amp;C)</String>
+/norestart - 禁止任何重启尝试。默认情况下，UI 将在重启前提示。
+/log log.txt - 记录到特定文件。默认在 %TEMP% 中创建日志文件。"/>
+  <String Id="HelpCloseButton" Value="关闭(&amp;C)"/>
+  <String Id="InstallAcceptCheckbox" Value="我同意(&amp;A)许可条款和条件"/>
+  <String Id="InstallInstallButton" Value="安装(&amp;I)"/>
+  <String Id="InstallCloseButton" Value="关闭(&amp;C)"/>
+  <String Id="ProgressHeader" Value="安装进度"/>
+  <String Id="ProgressLabel" Value="正在处理:"/>
+  <String Id="OverallProgressPackageText" Value="正在初始化..."/>
+  <String Id="ProgressCancelButton" Value="取消(&amp;C)"/>
+  <String Id="ModifyHeader" Value="修改安装"/>
+  <String Id="ModifyRepairButton" Value="修复(&amp;R)"/>
+  <String Id="ModifyUninstallButton" Value="卸载(&amp;U)"/>
+  <String Id="ModifyCloseButton" Value="关闭(&amp;C)"/>
+  <String Id="SuccessCacheHeader" Value="已成功完成缓存"/>
+  <String Id="SuccessModifyHeader" Value="已成功完成修改"/>
+  <String Id="SuccessUnsafeUninstallHeader" Value="已成功完成卸载"/>
+  <String Id="SuccessLayoutHeader" Value="已成功完成布局"/>
+  <String Id="SuccessRepairHeader" Value="已成功完成修复"/>
+  <String Id="SuccessUninstallHeader" Value="已成功完成卸载"/>
+  <String Id="SuccessInstallHeader" Value="已成功完成安装"/>
+  <String Id="SuccessHeader" Value="安装成功"/>
+  <String Id="SuccessLaunchButton" Value="启动(&amp;L)"/>
+  <String Id="SuccessRestartText" Value="在使用此软件之前，您必须重新启动计算机。"/>
+  <String Id="SuccessUninstallRestartText" Value="必须重启计算机才能完成软件移除。"/>
+  <String Id="SuccessRestartButton" Value="重启(&amp;R)"/>
+  <String Id="SuccessCloseButton" Value="关闭(&amp;C)"/>
+  <String Id="FailureHeader" Value="安装失败"/>
+  <String Id="FailureCacheHeader" Value="缓存失败"/>
+  <String Id="FailureLayoutHeader" Value="布局失败"/>
+  <String Id="FailureInstallHeader" Value="安装失败"/>
+  <String Id="FailureUninstallHeader" Value="卸载失败"/>
+  <String Id="FailureUnsafeUninstallHeader" Value="卸载失败"/>
+  <String Id="FailureRepairHeader" Value="修复失败"/>
+  <String Id="FailureModifyHeader" Value="修改失败"/>
+  <String Id="FailureHyperlinkLogText" Value="一个或多个问题导致了安装失败。请修复问题，然后重试安装。有关详细信息，请参阅&lt;a href=&quot;#&quot;&gt;日志文件&lt;/a&gt;。"/>
+  <String Id="FailureRestartText" Value="必须重新启动计算机才能完成软件回退。"/>
+  <String Id="FailureRestartButton" Value="重启(&amp;R)"/>
+  <String Id="FailureCloseButton" Value="关闭(&amp;C)"/>
+  <String Id="FilesInUseHeader" Value="文件正在使用"/>
+  <String Id="FilesInUseLabel" Value="以下应用程序正在使用的文件需要更新:"/>
+  <String Id="FilesInUseCloseRadioButton" Value="关闭应用程序，并尝试重启它们(&amp;A)。"/>
+  <String Id="FilesInUseDontCloseRadioButton" Value="不关闭应用程序(&amp;D)。需要重新启动。"/>
+  <String Id="FilesInUseNetfxCloseRadioButton" Value="关闭应用程序(&amp;A)。"/>
+  <String Id="FilesInUseOkButton" Value="确定(&amp;O)"/>
+  <String Id="FilesInUseCancelButton" Value="取消(&amp;C)"/>
+  <String Id="FilesInUseRetryButton" Value="重试(&amp;R)"/>
+  <String Id="FilesInUseIgnoreButton" Value="忽略(&amp;I)"/>
+  <String Id="FilesInUseExitButton" Value="退出(&amp;X)"/>
+  <String Id="FilesInUseTitle" Value="文件正在使用"/>
+  <String Id="LicenseAssent" Value="单击“安装”即表示你同意以下条款:"/>
+  <String Id="WelcomeHeaderMessage">ASP.NET Runtime</String>
+  <String Id="WelcomeDescription">The ASP.NET Runtime is used to run ASP.NET applications, on your Windows computer. ASP.NET is open source, cross platform, and supported by Microsoft. We hope you enjoy it!</String>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;隐私声明&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;.NET 的许可信息&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;遥测收集和选择退出&lt;/A&gt;"/>
 
-  <String Id="Welcome">欢迎使用 [WixBundleName] 安装程序。</String>
-  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;许可条款&lt;/a&gt;和&lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;隐私声明&lt;/a&gt;。</String>
+  
+  <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;许可条款&lt;/a&gt;和&lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;隐私声明&lt;/a&gt;。"/>
 </WixLocalization>

@@ -25,4 +25,7 @@ internal sealed class HotReloadManager
     /// MetadataUpdateHandler event. This is invoked by the hot reload host via reflection.
     /// </summary>
     public static void UpdateApplication(Type[]? _) => Default.OnDeltaApplied?.Invoke();
+
+    // For testing purposes only
+    internal void TriggerOnDeltaApplied() => OnDeltaApplied?.Invoke();
 }

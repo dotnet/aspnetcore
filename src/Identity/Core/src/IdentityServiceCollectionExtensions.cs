@@ -89,6 +89,7 @@ public static class IdentityServiceCollectionExtensions
 
         // Hosting doesn't add IHttpContextAccessor by default
         services.AddHttpContextAccessor();
+        services.AddMetrics();
         // Identity services
         services.TryAddScoped<IUserValidator<TUser>, UserValidator<TUser>>();
         services.TryAddScoped<IPasswordValidator<TUser>, PasswordValidator<TUser>>();
@@ -102,7 +103,7 @@ public static class IdentityServiceCollectionExtensions
         services.TryAddScoped<ITwoFactorSecurityStampValidator, TwoFactorSecurityStampValidator<TUser>>();
         services.TryAddScoped<IUserClaimsPrincipalFactory<TUser>, UserClaimsPrincipalFactory<TUser, TRole>>();
         services.TryAddScoped<IUserConfirmation<TUser>, DefaultUserConfirmation<TUser>>();
-        services.TryAddScoped<IPasskeyHandler<TUser>, DefaultPasskeyHandler<TUser>>();
+        services.TryAddScoped<IPasskeyHandler<TUser>, PasskeyHandler<TUser>>();
         services.TryAddScoped<UserManager<TUser>>();
         services.TryAddScoped<SignInManager<TUser>>();
         services.TryAddScoped<RoleManager<TRole>>();

@@ -56,8 +56,8 @@ public class DefaultAuthorizationService : IAuthorizationService
     /// <param name="resource">The resource to evaluate the requirements against.</param>
     /// <param name="requirements">The requirements to evaluate.</param>
     /// <returns>
-    /// A flag indicating whether authorization has succeeded.
-    /// This value is <c>true</c> when the user fulfills the policy, otherwise <c>false</c>.
+    /// A <see cref="Task{TResult}"/> that contains an <see cref="AuthorizationResult"/> indicating whether authorization has succeeded.
+    /// The result's <see cref="AuthorizationResult.Succeeded"/> property is <c>true</c> when the user fulfills the policy; otherwise <c>false</c>.
     /// </returns>
     public virtual async Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object? resource, IEnumerable<IAuthorizationRequirement> requirements)
     {
@@ -93,8 +93,8 @@ public class DefaultAuthorizationService : IAuthorizationService
     /// <param name="resource">The resource the policy should be checked with.</param>
     /// <param name="policyName">The name of the policy to check against a specific context.</param>
     /// <returns>
-    /// A flag indicating whether authorization has succeeded.
-    /// This value is <c>true</c> when the user fulfills the policy otherwise <c>false</c>.
+    /// A <see cref="Task{TResult}"/> that contains an <see cref="AuthorizationResult"/> indicating whether authorization has succeeded.
+    /// The result's <see cref="AuthorizationResult.Succeeded"/> property is <c>true</c> when the user fulfills the policy; otherwise <c>false</c>.
     /// </returns>
     public virtual async Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object? resource, string policyName)
     {

@@ -445,7 +445,8 @@ public class HubConnection implements AutoCloseable {
         CompletableSubject subject = CompletableSubject.create();
         startTask.onErrorComplete().subscribe(() ->
         {
-            Completable stop = connectionState.transport.stop();
+            Transport transport = connectionState.transport;
+            Completable stop = (transport != null) ? transport.stop() : Completable.complete();
             stop.subscribe(() -> subject.onComplete(), e -> subject.onError(e));
         });
 

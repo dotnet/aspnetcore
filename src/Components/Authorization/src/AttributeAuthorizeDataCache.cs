@@ -3,12 +3,23 @@
 
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.HotReload;
 
 namespace Microsoft.AspNetCore.Components.Authorization;
 
 internal static class AttributeAuthorizeDataCache
 {
+    static AttributeAuthorizeDataCache()
+    {
+        if (HotReloadManager.Default.MetadataUpdateSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += ClearCache;
+        }
+    }
+
     private static readonly ConcurrentDictionary<Type, IAuthorizeData[]?> _cache = new();
+
+    private static void ClearCache() => _cache.Clear();
 
     public static IAuthorizeData[]? GetAuthorizeDataForType(Type type)
     {

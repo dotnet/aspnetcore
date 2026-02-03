@@ -3,7 +3,6 @@
   "name": "Blazor Web 应用",
   "description": "用于创建支持服务器端呈现和客户端交互的 Blazor Web 应用的项目模板。此模板可用于具有丰富动态用户界面 (UI) 的 Web 应用。",
   "symbols/Framework/description": "项目的目标框架。",
-  "symbols/Framework/choices/net10.0/description": "目标 net10.0",
   "symbols/UserSecretsId/description": "用于机密的 ID (与个人身份验证一起使用)。",
   "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",
   "symbols/ExcludeLaunchSettings/description": "是否从生成的模板中排除 launchSettings.json。",
@@ -39,8 +38,8 @@
   "symbols/NoHttps/description": "是否关闭 HTTPS。仅当 Individual 不用于 --auth 时，此选项才适用。",
   "symbols/UseProgramMain/displayName": "不使用顶级语句(_T)",
   "symbols/UseProgramMain/description": "是否生成显式程序类和主方法，而不是顶级语句。",
-  "symbols/LocalhostTld/displayName": "Use the .dev.localhost TLD in the aplication URL",
-  "symbols/LocalhostTld/description": "Whether to combine the project name with the .dev.localhost TLD in the application URL for local development, e.g. https://myapp.dev.localhost:12345.",
+  "symbols/LocalhostTld/displayName": "在应用程序 URL 中使用 .dev.localhost TLD",
+  "symbols/LocalhostTld/description": "是否在应用程序 URL 中将项目名称与 .dev.localhost TLD 合并以用于本地开发，例如 https://myapp.dev.localhost:12345。",
   "postActions/restore/description": "还原此项目所需的 NuGet 包。",
   "postActions/restore/manualInstructions/default/text": "运行 \"dotnet restore\""
 }

@@ -56,7 +56,7 @@ internal sealed class PublicKeyCredentialCreationOptions
     /// <summary>
     /// Gets or sets the attestation conveyance preference for the relying party.
     /// </summary>
-    public string Attestation { get; init; } = "none";
+    public string? Attestation { get; init; }
 
     /// <summary>
     /// Gets or sets the attestation statement format preferences of the relying party, ordered from most preferred to least preferred.

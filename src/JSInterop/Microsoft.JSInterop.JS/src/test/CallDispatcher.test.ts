@@ -395,4 +395,55 @@ describe("CallDispatcher", () => {
 
         expect(result2).toBe("30");
     });
+
+    test("createJSObjectReference: Handles null values without throwing", () => {
+        const nullRef = DotNet.createJSObjectReference(null);
+        expect(nullRef).toEqual({ [jsObjectId]: -1 });
+    });
+
+    test("createJSObjectReference: Handles undefined values without throwing", () => {
+        const undefinedRef = DotNet.createJSObjectReference(undefined);
+        expect(undefinedRef).toEqual({ [jsObjectId]: -1 });
+    });
+
+    test("disposeJSObjectReference: Safely handles null reference disposal", () => {
+        const nullRef = DotNet.createJSObjectReference(null);
+        expect(() => DotNet.disposeJSObjectReference(nullRef)).not.toThrow();
+    });
+
+    test("createJSObjectReference: Still throws for invalid types", () => {
+        expect(() => DotNet.createJSObjectReference("string")).toThrow();
+        expect(() => DotNet.createJSObjectReference(123)).toThrow();
+        expect(() => DotNet.createJSObjectReference(true)).toThrow();
+    });
+
+    test("GetValue: Returns JSObjectReference with sentinel value for null property", () => {
+        const testObject = { nullProp: null };
+        const objectId = getObjectReferenceId(testObject);
+
+        const result = dispatcher.invokeJSFromDotNet(
+            "nullProp",
+            "[]",
+            DotNet.JSCallResultType.JSObjectReference,
+            objectId,
+            DotNet.JSCallType.GetValue
+        );
+
+        expect(result).toBe('{"__jsObjectId":-1}');
+    });
+
+    test("GetValue: Returns JSObjectReference with sentinel value for undefined property", () => {
+        const testObject = { undefinedProp: undefined };
+        const objectId = getObjectReferenceId(testObject);
+
+        const result = dispatcher.invokeJSFromDotNet(
+            "undefinedProp",
+            "[]",
+            DotNet.JSCallResultType.JSObjectReference,
+            objectId,
+            DotNet.JSCallType.GetValue
+        );
+
+        expect(result).toBe('{"__jsObjectId":-1}');
+    });
 });

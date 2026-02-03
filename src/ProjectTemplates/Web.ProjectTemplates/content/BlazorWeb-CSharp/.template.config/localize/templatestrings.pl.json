@@ -3,7 +3,6 @@
   "name": "Aplikacja internetowa Blazor",
   "description": "Szablon projektu służący do tworzenia aplikacji internetowej platformy Blazor, która obsługuje renderowanie po stronie serwera i interakcyjność klienta. Ten szablon może być używany dla aplikacji internetowych z zaawansowanymi dynamicznymi interfejsami użytkownika.",
   "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
-  "symbols/Framework/choices/net10.0/description": "Docelowa platforma net10.0",
   "symbols/UserSecretsId/description": "Identyfikator do użycia dla wpisów tajnych (używany z indywidualnym uwierzytelnianym).",
   "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.",
   "symbols/ExcludeLaunchSettings/description": "Określa, czy wykluczyć plik launchSettings.json z wygenerowanego szablonu.",
@@ -39,8 +38,8 @@
   "symbols/NoHttps/description": "Określa, czy wyłączyć protokół HTTPS. Ta opcja ma zastosowanie tylko wtedy, gdy opcja Individual nie została użyta dla opcji --auth.",
   "symbols/UseProgramMain/displayName": "Nie używaj ins_trukcji najwyższego poziomu",
   "symbols/UseProgramMain/description": "Określa, czy wygenerować jawną klasę Program i metodę Main zamiast instrukcji najwyższego poziomu.",
-  "symbols/LocalhostTld/displayName": "Use the .dev.localhost TLD in the aplication URL",
-  "symbols/LocalhostTld/description": "Whether to combine the project name with the .dev.localhost TLD in the application URL for local development, e.g. https://myapp.dev.localhost:12345.",
+  "symbols/LocalhostTld/displayName": "Użyj pliku .dev.localhost TLD w adresie URL aplikacji",
+  "symbols/LocalhostTld/description": "Określa, czy połączyć nazwę projektu z domeną najwyższego poziomu .dev.localhost w adresie URL aplikacji na potrzeby programowania lokalnego, np. https://myapp.dev.localhost:12345.",
   "postActions/restore/description": "Przywróć pakiety NuGet wymagane przez ten projekt.",
   "postActions/restore/manualInstructions/default/text": "Uruchom polecenie \"dotnet restore\""
 }

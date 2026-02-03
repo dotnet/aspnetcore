@@ -118,16 +118,7 @@ namespace BlazorWebCSharp._1.Migrations
                 {
                     CredentialId = table.Column<byte[]>(type: "varbinary(1024)", maxLength: 1024, nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    PublicKey = table.Column<byte[]>(type: "varbinary(1024)", maxLength: 1024, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    SignCount = table.Column<long>(type: "bigint", nullable: false),
-                    Transports = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsUserVerified = table.Column<bool>(type: "bit", nullable: false),
-                    IsBackupEligible = table.Column<bool>(type: "bit", nullable: false),
-                    IsBackedUp = table.Column<bool>(type: "bit", nullable: false),
-                    AttestationObject = table.Column<byte[]>(type: "varbinary(max)", nullable: false),
-                    ClientDataJson = table.Column<byte[]>(type: "varbinary(max)", nullable: false)
+                    Data = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -240,6 +231,9 @@ namespace BlazorWebCSharp._1.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserLogins");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserPasskeys");
 
             migrationBuilder.DropTable(
                 name: "AspNetUserRoles");

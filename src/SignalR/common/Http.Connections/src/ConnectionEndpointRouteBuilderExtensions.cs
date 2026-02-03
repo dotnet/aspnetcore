@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Internal;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -125,6 +126,9 @@ public static class ConnectionEndpointRouteBuilderExtensions
             {
                 e.Metadata.Add(data);
             }
+
+            // Add IDisableCookieRedirectMetadata to indicate this is a non-browser endpoint (SignalR)
+            e.Metadata.Add(DisableCookieRedirectMetadata.Instance);
         });
 
         return new ConnectionEndpointRouteBuilder(compositeConventionBuilder);
@@ -154,5 +158,10 @@ public static class ConnectionEndpointRouteBuilderExtensions
                 endpointConventionBuilder.Finally(finalConvention);
             }
         }
+    }
+
+    private sealed class DisableCookieRedirectMetadata : IDisableCookieRedirectMetadata
+    {
+        public static DisableCookieRedirectMetadata Instance { get; } = new();
     }
 }

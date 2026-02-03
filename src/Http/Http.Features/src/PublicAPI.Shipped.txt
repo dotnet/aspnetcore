@@ -47,8 +47,8 @@ Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.FeatureReferences()
 Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.FeatureReferences(Microsoft.AspNetCore.Http.Features.IFeatureCollection! collection) -> void (forwarded, contained in Microsoft.Extensions.Features)
 Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Fetch<TFeature, TState>(ref TFeature? cached, TState state, System.Func<TState, TFeature?>! factory) -> TFeature? (forwarded, contained in Microsoft.Extensions.Features)
 Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Fetch<TFeature>(ref TFeature? cached, System.Func<Microsoft.AspNetCore.Http.Features.IFeatureCollection!, TFeature?>! factory) -> TFeature? (forwarded, contained in Microsoft.Extensions.Features)
-Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Initalize(Microsoft.AspNetCore.Http.Features.IFeatureCollection! collection) -> void (forwarded, contained in Microsoft.Extensions.Features)
 Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Initalize(Microsoft.AspNetCore.Http.Features.IFeatureCollection! collection, int revision) -> void (forwarded, contained in Microsoft.Extensions.Features)
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Initalize(Microsoft.AspNetCore.Http.Features.IFeatureCollection! collection) -> void (forwarded, contained in Microsoft.Extensions.Features)
 Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Revision.get -> int (forwarded, contained in Microsoft.Extensions.Features)
 Microsoft.AspNetCore.Http.Features.HttpsCompressionMode
 Microsoft.AspNetCore.Http.Features.HttpsCompressionMode.Compress = 2 -> Microsoft.AspNetCore.Http.Features.HttpsCompressionMode
@@ -420,11 +420,11 @@ Microsoft.AspNetCore.Http.IRequestCookieCollection.Keys.get -> System.Collection
 Microsoft.AspNetCore.Http.IRequestCookieCollection.this[string! key].get -> string?
 Microsoft.AspNetCore.Http.IRequestCookieCollection.TryGetValue(string! key, out string? value) -> bool
 Microsoft.AspNetCore.Http.IResponseCookies
-Microsoft.AspNetCore.Http.IResponseCookies.Append(string! key, string! value) -> void
 Microsoft.AspNetCore.Http.IResponseCookies.Append(string! key, string! value, Microsoft.AspNetCore.Http.CookieOptions! options) -> void
+Microsoft.AspNetCore.Http.IResponseCookies.Append(string! key, string! value) -> void
 Microsoft.AspNetCore.Http.IResponseCookies.Append(System.ReadOnlySpan<System.Collections.Generic.KeyValuePair<string!, string!>> keyValuePairs, Microsoft.AspNetCore.Http.CookieOptions! options) -> void
-Microsoft.AspNetCore.Http.IResponseCookies.Delete(string! key) -> void
 Microsoft.AspNetCore.Http.IResponseCookies.Delete(string! key, Microsoft.AspNetCore.Http.CookieOptions! options) -> void
+Microsoft.AspNetCore.Http.IResponseCookies.Delete(string! key) -> void
 Microsoft.AspNetCore.Http.ISession
 Microsoft.AspNetCore.Http.ISession.Clear() -> void
 Microsoft.AspNetCore.Http.ISession.CommitAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!

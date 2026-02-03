@@ -2,4 +2,9 @@
 @page "/reexecution/redirection-not-found-ssr"
 @attribute [StreamRendering(false)]
 
-<Components.WasmMinimal.Pages.NotFound.RedirectionNotFoundComponent />
+<Components.WasmMinimal.Pages.NotFound.RedirectionNotFoundComponent DoAsyncOperationBeforeRedirection="@DoAsync" />
+
+@code{
+    [SupplyParameterFromQuery(Name = "doAsync")]
+    public bool DoAsync { get; set; } = false;
+}

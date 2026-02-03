@@ -61,7 +61,7 @@ public class StatusCodePagesOptions
     /// replace it on <see cref="HttpContext.RequestServices"/> when re-executing the request.
     /// </summary>
     /// <remarks>The default value is <see langword="false"/>.</remarks>
-    public bool CreateScopeForErrors { get; set; }
+    public bool CreateScopeForStatusCodePages { get; set; }
 
     internal string? PathFormat { get; set; }
 }

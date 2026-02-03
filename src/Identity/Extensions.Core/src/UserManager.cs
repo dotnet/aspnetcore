@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
@@ -84,7 +86,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
         ErrorDescriber = errors;
         Logger = logger;
         ServiceProvider = services;
-        _metrics = services?.GetService<UserManagerMetrics>();
+        // UserManagerMetrics created from constructor because of difficulties registering internal type.        
+        _metrics = services?.GetService<IMeterFactory>() is { } factory ? new UserManagerMetrics(factory) : null;
 
         if (userValidators != null)
         {
@@ -481,15 +484,17 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> CreateAsync(TUser user)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
+
         try
         {
             var result = await CreateCoreAsync(user).ConfigureAwait(false);
-            _metrics?.CreateUser(typeof(TUser).FullName!, result);
+            _metrics?.CreateUser(typeof(TUser).FullName!, result, startTimeStamp);
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.CreateUser(typeof(TUser).FullName!, result: null, ex);
+            _metrics?.CreateUser(typeof(TUser).FullName!, result: null, startTimeStamp, ex);
             throw;
         }
     }
@@ -523,16 +528,18 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> UpdateAsync(TUser user)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
+
         try
         {
             ThrowIfDisposed();
             ArgumentNullThrowHelper.ThrowIfNull(user);
 
-            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.Update).ConfigureAwait(false);
+            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.Update, startTimeStamp).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.Update, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.Update, startTimeStamp, ex);
             throw;
         }
     }
@@ -547,19 +554,21 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> DeleteAsync(TUser user)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
+
         try
         {
             ThrowIfDisposed();
             ArgumentNullThrowHelper.ThrowIfNull(user);
 
             var result = await Store.DeleteAsync(user, CancellationToken).ConfigureAwait(false);
-            _metrics?.DeleteUser(typeof(TUser).FullName!, result);
+            _metrics?.DeleteUser(typeof(TUser).FullName!, result, startTimeStamp);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.DeleteUser(typeof(TUser).FullName!, result: null, ex);
+            _metrics?.DeleteUser(typeof(TUser).FullName!, result: null, startTimeStamp, ex);
             throw;
         }
     }
@@ -625,6 +634,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> CreateAsync(TUser user, string password)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
+
         try
         {
             ThrowIfDisposed();
@@ -634,13 +645,13 @@ public class UserManager<TUser> : IDisposable where TUser : class
             var result = await UpdatePasswordHash(passwordStore, user, password).ConfigureAwait(false);
             if (!result.Succeeded)
             {
-                _metrics?.CreateUser(typeof(TUser).FullName!, result);
+                _metrics?.CreateUser(typeof(TUser).FullName!, result, startTimeStamp);
                 return result;
             }
         }
         catch (Exception ex)
         {
-            _metrics?.CreateUser(typeof(TUser).FullName!, result: null, ex);
+            _metrics?.CreateUser(typeof(TUser).FullName!, result: null, startTimeStamp, ex);
             throw;
         }
 
@@ -710,6 +721,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
     public virtual async Task<IdentityResult> SetUserNameAsync(TUser user, string? userName)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
         try
         {
             ThrowIfDisposed();
@@ -717,11 +729,11 @@ public class UserManager<TUser> : IDisposable where TUser : class
 
             await Store.SetUserNameAsync(user, userName, CancellationToken).ConfigureAwait(false);
             await UpdateSecurityStampInternal(user).ConfigureAwait(false);
-            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.UserName).ConfigureAwait(false);
+            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.SetUserName, startTimeStamp).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.UserName, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.SetUserName, startTimeStamp, ex);
             throw;
         }
     }
@@ -781,8 +793,9 @@ public class UserManager<TUser> : IDisposable where TUser : class
 
         if (result == PasswordVerificationResult.SuccessRehashNeeded)
         {
+            var startTimeStamp = Stopwatch.GetTimestamp();
             await UpdatePasswordHash(passwordStore, user, password, validatePassword: false).ConfigureAwait(false);
-            await UpdateUserAndRecordMetricAsync(user, UserUpdateType.PasswordRehash).ConfigureAwait(false);
+            await UpdateUserAndRecordMetricAsync(user, UserUpdateType.PasswordRehash, startTimeStamp).ConfigureAwait(false);
         }
 
         return (result, false);
@@ -817,15 +830,16 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> AddPasswordAsync(TUser user, string password)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await AddPasswordCoreAsync(user, password).ConfigureAwait(false);
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.AddPassword);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.AddPassword, startTimeStamp);
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.AddPassword, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.AddPassword, startTimeStamp, ex);
             throw;
         }
     }
@@ -863,15 +877,16 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> ChangePasswordAsync(TUser user, string currentPassword, string newPassword)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await ChangePasswordCoreAsync(user, currentPassword, newPassword).ConfigureAwait(false);
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.ChangePassword);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.ChangePassword, startTimeStamp);
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.ChangePassword, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.ChangePassword, startTimeStamp, ex);
             throw;
         }
     }
@@ -905,6 +920,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> RemovePasswordAsync(TUser user)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
         try
         {
             ThrowIfDisposed();
@@ -912,11 +928,11 @@ public class UserManager<TUser> : IDisposable where TUser : class
             ArgumentNullThrowHelper.ThrowIfNull(user);
 
             await UpdatePasswordHash(passwordStore, user, null, validatePassword: false).ConfigureAwait(false);
-            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.RemovePassword).ConfigureAwait(false);
+            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.RemovePassword, startTimeStamp).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.RemovePassword, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.RemovePassword, startTimeStamp, ex);
             throw;
         }
     }
@@ -975,6 +991,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </remarks>
     public virtual async Task<IdentityResult> UpdateSecurityStampAsync(TUser user)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
         try
         {
             ThrowIfDisposed();
@@ -982,11 +999,11 @@ public class UserManager<TUser> : IDisposable where TUser : class
             ArgumentNullThrowHelper.ThrowIfNull(user);
 
             await UpdateSecurityStampInternal(user).ConfigureAwait(false);
-            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.SecurityStamp).ConfigureAwait(false);
+            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.UpdateSecurityStamp, startTimeStamp).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.SecurityStamp, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.UpdateSecurityStamp, startTimeStamp, ex);
             throw;
         }
     }
@@ -1017,6 +1034,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> ResetPasswordAsync(TUser user, string token, string newPassword)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
+
         ThrowIfDisposed();
         ArgumentNullThrowHelper.ThrowIfNull(user);
 
@@ -1024,17 +1043,17 @@ public class UserManager<TUser> : IDisposable where TUser : class
         if (!await VerifyUserTokenAsync(user, Options.Tokens.PasswordResetTokenProvider, ResetPasswordTokenPurpose, token).ConfigureAwait(false))
         {
             var failureResult = IdentityResult.Failed(ErrorDescriber.InvalidToken());
-            _metrics?.UpdateUser(typeof(TUser).FullName!, failureResult, UserUpdateType.ResetPassword);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, failureResult, UserUpdateType.ResetPassword, startTimeStamp);
 
             return failureResult;
         }
         var result = await UpdatePasswordHash(user, newPassword, validatePassword: true).ConfigureAwait(false);
         if (!result.Succeeded)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.ResetPassword);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.ResetPassword, startTimeStamp);
             return result;
         }
-        return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.ResetPassword).ConfigureAwait(false);
+        return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.ResetPassword, startTimeStamp).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1067,6 +1086,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> RemoveLoginAsync(TUser user, string loginProvider, string providerKey)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
         try
         {
             ThrowIfDisposed();
@@ -1077,11 +1097,11 @@ public class UserManager<TUser> : IDisposable where TUser : class
 
             await loginStore.RemoveLoginAsync(user, loginProvider, providerKey, CancellationToken).ConfigureAwait(false);
             await UpdateSecurityStampInternal(user).ConfigureAwait(false);
-            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.RemoveLogin).ConfigureAwait(false);
+            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.RemoveLogin, startTimeStamp).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.RemoveLogin, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.RemoveLogin, startTimeStamp, ex);
             throw;
         }
     }
@@ -1097,15 +1117,16 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> AddLoginAsync(TUser user, UserLoginInfo login)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await AddLoginCoreAsync(user, login).ConfigureAwait(false);
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.AddLogin);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.AddLogin, startTimeStamp);
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.AddLogin, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.AddLogin, startTimeStamp, ex);
             throw;
         }
     }
@@ -1167,6 +1188,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> AddClaimsAsync(TUser user, IEnumerable<Claim> claims)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
         try
         {
             ThrowIfDisposed();
@@ -1175,11 +1197,11 @@ public class UserManager<TUser> : IDisposable where TUser : class
             ArgumentNullThrowHelper.ThrowIfNull(claims);
 
             await claimStore.AddClaimsAsync(user, claims, CancellationToken).ConfigureAwait(false);
-            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.AddClaims).ConfigureAwait(false);
+            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.AddClaims, startTimeStamp).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.AddClaims, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.AddClaims, startTimeStamp, ex);
             throw;
         }
     }
@@ -1196,6 +1218,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> ReplaceClaimAsync(TUser user, Claim claim, Claim newClaim)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
         try
         {
             ThrowIfDisposed();
@@ -1205,11 +1228,11 @@ public class UserManager<TUser> : IDisposable where TUser : class
             ArgumentNullThrowHelper.ThrowIfNull(newClaim);
 
             await claimStore.ReplaceClaimAsync(user, claim, newClaim, CancellationToken).ConfigureAwait(false);
-            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.ReplaceClaim).ConfigureAwait(false);
+            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.ReplaceClaim, startTimeStamp).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.ReplaceClaim, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.ReplaceClaim, startTimeStamp, ex);
             throw;
         }
     }
@@ -1239,6 +1262,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> RemoveClaimsAsync(TUser user, IEnumerable<Claim> claims)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
         try
         {
             ThrowIfDisposed();
@@ -1247,11 +1271,11 @@ public class UserManager<TUser> : IDisposable where TUser : class
             ArgumentNullThrowHelper.ThrowIfNull(claims);
 
             await claimStore.RemoveClaimsAsync(user, claims, CancellationToken).ConfigureAwait(false);
-            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.RemoveClaims).ConfigureAwait(false);
+            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.RemoveClaims, startTimeStamp).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.RemoveClaims, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.RemoveClaims, startTimeStamp, ex);
             throw;
         }
     }
@@ -1282,15 +1306,16 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> AddToRoleAsync(TUser user, string role)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await AddToRoleCoreAsync(user, role).ConfigureAwait(false);
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.AddToRoles);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.AddToRoles, startTimeStamp);
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.AddToRoles, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.AddToRoles, startTimeStamp, ex);
             throw;
         }
     }
@@ -1321,15 +1346,16 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> AddToRolesAsync(TUser user, IEnumerable<string> roles)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await AddToRolesCoreAsync(user, roles).ConfigureAwait(false);
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.AddToRoles);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.AddToRoles, startTimeStamp);
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.AddToRoles, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.AddToRoles, startTimeStamp, ex);
             throw;
         }
     }
@@ -1364,6 +1390,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> RemoveFromRoleAsync(TUser user, string role)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
+
         ThrowIfDisposed();
         var userRoleStore = GetUserRoleStore();
         ArgumentNullThrowHelper.ThrowIfNull(user);
@@ -1372,12 +1400,12 @@ public class UserManager<TUser> : IDisposable where TUser : class
         if (!await userRoleStore.IsInRoleAsync(user, normalizedRole, CancellationToken).ConfigureAwait(false))
         {
             var failureResult = UserNotInRoleError(role);
-            _metrics?.UpdateUser(typeof(TUser).FullName!, failureResult, UserUpdateType.RemoveFromRoles);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, failureResult, UserUpdateType.RemoveFromRoles, startTimeStamp);
 
             return failureResult;
         }
         await userRoleStore.RemoveFromRoleAsync(user, normalizedRole, CancellationToken).ConfigureAwait(false);
-        return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.RemoveFromRoles).ConfigureAwait(false);
+        return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.RemoveFromRoles, startTimeStamp).ConfigureAwait(false);
     }
 
     private IdentityResult UserAlreadyInRoleError(string role)
@@ -1409,15 +1437,16 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> RemoveFromRolesAsync(TUser user, IEnumerable<string> roles)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await RemoveFromRolesCoreAsync(user, roles).ConfigureAwait(false);
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.RemoveFromRoles);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.RemoveFromRoles, startTimeStamp);
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.RemoveFromRoles, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.RemoveFromRoles, startTimeStamp, ex);
             throw;
         }
     }
@@ -1495,6 +1524,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> SetEmailAsync(TUser user, string? email)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
         try
         {
             ThrowIfDisposed();
@@ -1504,11 +1534,11 @@ public class UserManager<TUser> : IDisposable where TUser : class
             await store.SetEmailAsync(user, email, CancellationToken).ConfigureAwait(false);
             await store.SetEmailConfirmedAsync(user, false, CancellationToken).ConfigureAwait(false);
             await UpdateSecurityStampInternal(user).ConfigureAwait(false);
-            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.SetEmail).ConfigureAwait(false);
+            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.SetEmail, startTimeStamp).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.SetEmail, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.SetEmail, startTimeStamp, ex);
             throw;
         }
     }
@@ -1591,15 +1621,16 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> ConfirmEmailAsync(TUser user, string token)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await ConfirmEmailCoreAsync(user, token).ConfigureAwait(false);
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.ConfirmEmail);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.ConfirmEmail, startTimeStamp);
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.ConfirmEmail, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.ConfirmEmail, startTimeStamp, ex);
             throw;
         }
     }
@@ -1661,20 +1692,19 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> ChangeEmailAsync(TUser user, string newEmail, string token)
     {
+        var startTimeStamp = Stopwatch.GetTimestamp();
         try
         {
-            var result = await ChangeEmailCoreAsync(user, newEmail, token).ConfigureAwait(false);
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.ChangeEmail);
-            return result;
+            return await ChangeEmailCoreAsync(user, newEmail, token, startTimeStamp).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.ChangeEmail, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.ChangeEmail, startTimeStamp, ex);
             throw;
         }
     }
 
-    private async Task<IdentityResult> ChangeEmailCoreAsync(TUser user, string newEmail, string token)
+    private async Task<IdentityResult> ChangeEmailCoreAsync(TUser user, string newEmail, string token, long startTimestamp)
     {
         ThrowIfDisposed();
         ArgumentNullThrowHelper.ThrowIfNull(user);
@@ -1688,7 +1718,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         await store.SetEmailAsync(user, newEmail, CancellationToken).ConfigureAwait(false);
         await store.SetEmailConfirmedAsync(user, true, CancellationToken).ConfigureAwait(false);
         await UpdateSecurityStampInternal(user).ConfigureAwait(false);
-        return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.ChangeEmail).ConfigureAwait(false);
+        return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.ChangeEmail, startTimestamp).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -1715,6 +1745,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> SetPhoneNumberAsync(TUser user, string? phoneNumber)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             ThrowIfDisposed();
@@ -1724,11 +1755,11 @@ public class UserManager<TUser> : IDisposable where TUser : class
             await store.SetPhoneNumberAsync(user, phoneNumber, CancellationToken).ConfigureAwait(false);
             await store.SetPhoneNumberConfirmedAsync(user, false, CancellationToken).ConfigureAwait(false);
             await UpdateSecurityStampInternal(user).ConfigureAwait(false);
-            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.SetPhoneNumber).ConfigureAwait(false);
+            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.SetPhoneNumber, startTimestamp).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.SetPhoneNumber, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.SetPhoneNumber, startTimestamp, ex);
             throw;
         }
     }
@@ -1746,15 +1777,16 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> ChangePhoneNumberAsync(TUser user, string phoneNumber, string token)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await ChangePhoneNumberCoreAsync(user, phoneNumber, token).ConfigureAwait(false);
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.ChangePhoneNumber);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.ChangePhoneNumber, startTimestamp);
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.ChangePhoneNumber, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.ChangePhoneNumber, startTimestamp, ex);
             throw;
         }
     }
@@ -2031,6 +2063,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> SetTwoFactorEnabledAsync(TUser user, bool enabled)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             ThrowIfDisposed();
@@ -2039,11 +2072,11 @@ public class UserManager<TUser> : IDisposable where TUser : class
 
             await store.SetTwoFactorEnabledAsync(user, enabled, CancellationToken).ConfigureAwait(false);
             await UpdateSecurityStampInternal(user).ConfigureAwait(false);
-            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.SetTwoFactorEnabled).ConfigureAwait(false);
+            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.SetTwoFactorEnabled, startTimestamp).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.SetTwoFactorEnabled, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.SetTwoFactorEnabled, startTimestamp, ex);
             throw;
         }
     }
@@ -2067,7 +2100,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
             return false;
         }
         var lockoutTime = await store.GetLockoutEndDateAsync(user, CancellationToken).ConfigureAwait(false);
-        return lockoutTime >= DateTimeOffset.UtcNow;
+        return lockoutTime >= UtcNow();
     }
 
     /// <summary>
@@ -2081,6 +2114,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> SetLockoutEnabledAsync(TUser user, bool enabled)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             ThrowIfDisposed();
@@ -2088,11 +2122,11 @@ public class UserManager<TUser> : IDisposable where TUser : class
             ArgumentNullThrowHelper.ThrowIfNull(user);
 
             await store.SetLockoutEnabledAsync(user, enabled, CancellationToken).ConfigureAwait(false);
-            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.SetLockoutEnabled).ConfigureAwait(false);
+            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.SetLockoutEnabled, startTimestamp).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.SetLockoutEnabled, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.SetLockoutEnabled, startTimestamp, ex);
             throw;
         }
     }
@@ -2136,15 +2170,16 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the operation.</returns>
     public virtual async Task<IdentityResult> SetLockoutEndDateAsync(TUser user, DateTimeOffset? lockoutEnd)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await SetLockoutEndDateCoreAsync(user, lockoutEnd).ConfigureAwait(false);
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.SetLockoutEndDate);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.SetLockoutEndDate, startTimestamp);
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.SetLockoutEndDate, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.SetLockoutEndDate, startTimestamp, ex);
             throw;
         }
     }
@@ -2173,6 +2208,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the operation.</returns>
     public virtual async Task<IdentityResult> AccessFailedAsync(TUser user)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             ThrowIfDisposed();
@@ -2183,17 +2219,17 @@ public class UserManager<TUser> : IDisposable where TUser : class
             var count = await store.IncrementAccessFailedCountAsync(user, CancellationToken).ConfigureAwait(false);
             if (count < Options.Lockout.MaxFailedAccessAttempts)
             {
-                return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.AccessFailed).ConfigureAwait(false);
+                return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.IncrementAccessFailed, startTimestamp).ConfigureAwait(false);
             }
             Logger.LogDebug(LoggerEventIds.UserLockedOut, "User is locked out.");
-            await store.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.Add(Options.Lockout.DefaultLockoutTimeSpan),
+            await store.SetLockoutEndDateAsync(user, UtcNow().Add(Options.Lockout.DefaultLockoutTimeSpan),
                 CancellationToken).ConfigureAwait(false);
             await store.ResetAccessFailedCountAsync(user, CancellationToken).ConfigureAwait(false);
-            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.AccessFailed).ConfigureAwait(false);
+            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.IncrementAccessFailed, startTimestamp).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.AccessFailed, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.IncrementAccessFailed, startTimestamp, ex);
             throw;
         }
     }
@@ -2205,15 +2241,16 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the operation.</returns>
     public virtual async Task<IdentityResult> ResetAccessFailedCountAsync(TUser user)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await ResetAccessFailedCountCoreAsync(user).ConfigureAwait(false);
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.ResetAccessFailedCount);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.ResetAccessFailedCount, startTimestamp);
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.ResetAccessFailedCount, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.ResetAccessFailedCount, startTimestamp, ex);
             throw;
         }
     }
@@ -2307,6 +2344,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <returns>Whether the user was successfully updated.</returns>
     public virtual async Task<IdentityResult> SetAuthenticationTokenAsync(TUser user, string loginProvider, string tokenName, string? tokenValue)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             ThrowIfDisposed();
@@ -2317,11 +2355,11 @@ public class UserManager<TUser> : IDisposable where TUser : class
 
             // REVIEW: should updating any tokens affect the security stamp?
             await store.SetTokenAsync(user, loginProvider, tokenName, tokenValue, CancellationToken).ConfigureAwait(false);
-            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.SetAuthenticationToken).ConfigureAwait(false);
+            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.SetAuthenticationToken, startTimestamp).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.SetAuthenticationToken, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.SetAuthenticationToken, startTimestamp, ex);
             throw;
         }
     }
@@ -2335,6 +2373,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <returns>Whether a token was removed.</returns>
     public virtual async Task<IdentityResult> RemoveAuthenticationTokenAsync(TUser user, string loginProvider, string tokenName)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             ThrowIfDisposed();
@@ -2344,11 +2383,11 @@ public class UserManager<TUser> : IDisposable where TUser : class
             ArgumentNullThrowHelper.ThrowIfNull(tokenName);
 
             await store.RemoveTokenAsync(user, loginProvider, tokenName, CancellationToken).ConfigureAwait(false);
-            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.RemoveAuthenticationToken).ConfigureAwait(false);
+            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.RemoveAuthenticationToken, startTimestamp).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.RemoveAuthenticationToken, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.RemoveAuthenticationToken, startTimestamp, ex);
             throw;
         }
     }
@@ -2373,12 +2412,21 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <returns>Whether the user was successfully updated.</returns>
     public virtual async Task<IdentityResult> ResetAuthenticatorKeyAsync(TUser user)
     {
-        ThrowIfDisposed();
-        var store = GetAuthenticatorKeyStore();
-        ArgumentNullThrowHelper.ThrowIfNull(user);
-        await store.SetAuthenticatorKeyAsync(user, GenerateNewAuthenticatorKey(), CancellationToken).ConfigureAwait(false);
-        await UpdateSecurityStampInternal(user).ConfigureAwait(false);
-        return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.ResetAuthenticatorKey).ConfigureAwait(false);
+        var startTimestamp = Stopwatch.GetTimestamp();
+        try
+        {
+            ThrowIfDisposed();
+            var store = GetAuthenticatorKeyStore();
+            ArgumentNullThrowHelper.ThrowIfNull(user);
+            await store.SetAuthenticatorKeyAsync(user, GenerateNewAuthenticatorKey(), CancellationToken).ConfigureAwait(false);
+            await UpdateSecurityStampInternal(user).ConfigureAwait(false);
+            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.ResetAuthenticatorKey, startTimestamp).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.ResetAuthenticatorKey, startTimestamp, ex);
+            throw;
+        }
     }
 
     /// <summary>
@@ -2396,6 +2444,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <returns>The new recovery codes for the user.  Note: there may be less than number returned, as duplicates will be removed.</returns>
     public virtual async Task<IEnumerable<string>?> GenerateNewTwoFactorRecoveryCodesAsync(TUser user, int number)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             ThrowIfDisposed();
@@ -2409,7 +2458,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
             }
 
             await store.ReplaceCodesAsync(user, newCodes.Distinct(), CancellationToken).ConfigureAwait(false);
-            var update = await UpdateUserAndRecordMetricAsync(user, UserUpdateType.GenerateNewTwoFactorRecoveryCodes).ConfigureAwait(false);
+            var update = await UpdateUserAndRecordMetricAsync(user, UserUpdateType.GenerateNewTwoFactorRecoveryCodes, startTimestamp).ConfigureAwait(false);
             if (update.Succeeded)
             {
                 return newCodes;
@@ -2418,7 +2467,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.GenerateNewTwoFactorRecoveryCodes, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.GenerateNewTwoFactorRecoveryCodes, startTimestamp, ex);
             throw;
         }
     }
@@ -2508,15 +2557,16 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <returns>True if the recovery code was found for the user.</returns>
     public virtual async Task<IdentityResult> RedeemTwoFactorRecoveryCodeAsync(TUser user, string code)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await RedeemTwoFactorRecoveryCodeCoreAsync(user, code).ConfigureAwait(false);
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.RedeemTwoFactorRecoveryCode);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.RedeemTwoFactorRecoveryCode, startTimestamp);
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.RedeemTwoFactorRecoveryCode, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.RedeemTwoFactorRecoveryCode, startTimestamp, ex);
             throw;
         }
     }
@@ -2555,29 +2605,30 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <param name="user">The user for whom the passkey should be added or updated.</param>
     /// <param name="passkey">The passkey to add or update.</param>
     /// <returns>Whether the passkey was successfully set.</returns>
-    public virtual async Task<IdentityResult> SetPasskeyAsync(TUser user, UserPasskeyInfo passkey)
+    public virtual async Task<IdentityResult> AddOrUpdatePasskeyAsync(TUser user, UserPasskeyInfo passkey)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
-            var result = await SetPasskeyCoreAsync(user, passkey).ConfigureAwait(false);
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.SetPasskey);
+            var result = await AddOrUpdatePasskeyCoreAsync(user, passkey).ConfigureAwait(false);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.AddOrUpdatePasskey, startTimestamp);
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.SetPasskey, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.AddOrUpdatePasskey, startTimestamp, ex);
             throw;
         }
     }
 
-    private async Task<IdentityResult> SetPasskeyCoreAsync(TUser user, UserPasskeyInfo passkey)
+    private async Task<IdentityResult> AddOrUpdatePasskeyCoreAsync(TUser user, UserPasskeyInfo passkey)
     {
         ThrowIfDisposed();
         var passkeyStore = GetUserPasskeyStore();
         ArgumentNullThrowHelper.ThrowIfNull(user);
         ArgumentNullThrowHelper.ThrowIfNull(passkey);
 
-        await passkeyStore.SetPasskeyAsync(user, passkey, CancellationToken).ConfigureAwait(false);
+        await passkeyStore.AddOrUpdatePasskeyAsync(user, passkey, CancellationToken).ConfigureAwait(false);
         return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 
@@ -2642,15 +2693,16 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// </returns>
     public virtual async Task<IdentityResult> RemovePasskeyAsync(TUser user, byte[] credentialId)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await RemovePasskeyCoreAsync(user, credentialId).ConfigureAwait(false);
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.RemovePasskey);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.RemovePasskey, startTimestamp);
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.RemovePasskey, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.RemovePasskey, startTimestamp, ex);
             throw;
         }
     }
@@ -2678,6 +2730,19 @@ public class UserManager<TUser> : IDisposable where TUser : class
             _disposed = true;
         }
     }
+
+#if NET8_0_OR_GREATER
+    private DateTimeOffset UtcNow()
+    {
+        var timeProvider = ServiceProvider.GetService<TimeProvider>();
+        return timeProvider?.GetUtcNow() ?? DateTimeOffset.UtcNow;
+    }
+#else
+    private static DateTimeOffset UtcNow()
+    {
+        return DateTimeOffset.UtcNow;
+    }
+#endif
 
     private IUserTwoFactorStore<TUser> GetUserTwoFactorStore()
     {
@@ -2922,10 +2987,10 @@ public class UserManager<TUser> : IDisposable where TUser : class
         return await Store.UpdateAsync(user, CancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<IdentityResult> UpdateUserAndRecordMetricAsync(TUser user, UserUpdateType updateType)
+    private async Task<IdentityResult> UpdateUserAndRecordMetricAsync(TUser user, UserUpdateType updateType, long startTimestamp)
     {
         var result = await UpdateUserAsync(user).ConfigureAwait(false);
-        _metrics?.UpdateUser(typeof(TUser).FullName!, result, updateType);
+        _metrics?.UpdateUser(typeof(TUser).FullName!, result, updateType, startTimestamp);
 
         return result;
     }

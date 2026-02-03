@@ -69,4 +69,5 @@ public class SocketConnectionFactoryOptions
     public bool UnsafePreferInlineScheduling { get; set; }
 
     internal IMemoryPoolFactory<byte> MemoryPoolFactory { get; set; } = DefaultSimpleMemoryPoolFactory.Instance;
+    internal static readonly MemoryPoolOptions MemoryPoolOptions = new MemoryPoolOptions { Owner = "kestrel" };
 }

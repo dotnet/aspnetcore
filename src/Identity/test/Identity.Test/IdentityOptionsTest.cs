@@ -32,12 +32,6 @@ public class IdentityOptionsTest
         Assert.Equal(ClaimTypes.Name, options.ClaimsIdentity.UserNameClaimType);
         Assert.Equal(ClaimTypes.NameIdentifier, options.ClaimsIdentity.UserIdClaimType);
         Assert.Equal("AspNet.Identity.SecurityStamp", options.ClaimsIdentity.SecurityStampClaimType);
-
-        Assert.Equal(TimeSpan.FromMinutes(1), options.Passkey.Timeout);
-        Assert.Equal(16, options.Passkey.ChallengeSize);
-        Assert.True(options.Passkey.AllowCurrentOrigin);
-        Assert.Equal(PasskeyOptions.CredentialBackupPolicy.Allowed, options.Passkey.BackupEligibleCredentialPolicy);
-        Assert.Equal(PasskeyOptions.CredentialBackupPolicy.Allowed, options.Passkey.BackedUpCredentialPolicy);
     }
 
     [Fact]

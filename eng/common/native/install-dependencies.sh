@@ -27,9 +27,11 @@ case "$os" in
                 libssl-dev libkrb5-dev pigz cpio
 
             localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
-        elif [ "$ID" = "fedora" ] || [ "$ID" = "rhel" ] || [ "$ID" = "azurelinux" ]; then
+        elif [ "$ID" = "fedora" ] || [ "$ID" = "rhel" ] || [ "$ID" = "azurelinux" ] || [ "$ID" = "centos" ]; then
             pkg_mgr="$(command -v tdnf 2>/dev/null || command -v dnf)"
             $pkg_mgr install -y cmake llvm lld lldb clang python curl libicu-devel openssl-devel krb5-devel lttng-ust-devel pigz cpio
+        elif [ "$ID" = "amzn" ]; then
+            dnf install -y cmake llvm lld lldb clang python libicu-devel openssl-devel krb5-devel lttng-ust-devel pigz cpio
         elif [ "$ID" = "alpine" ]; then
             apk add build-base cmake bash curl clang llvm-dev lld lldb krb5-dev lttng-ust-dev icu-dev openssl-dev pigz cpio
         else

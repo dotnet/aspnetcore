@@ -48,10 +48,20 @@ else
 
 <form @formname="add-passkey" @onsubmit="AddPasskey" method="post">
     <AntiforgeryToken />
-    <PasskeySubmit Operation="PasskeyOperation.Create" Name="Input" class="btn btn-primary">Add a new passkey</PasskeySubmit>
+    @if (currentPasskeys is { Count: >= MaxPasskeyCount })
+    {
+        <p class="text-danger">You have reached the maximum number of allowed passkeys. Please delete one before adding a new one.</p>
+    }
+    else
+    {
+        <PasskeySubmit Operation="PasskeyOperation.Create" Name="Input" class="btn btn-primary">Add a new passkey</PasskeySubmit>
+    }
+
 </form>
 
 @code {
+    private const int MaxPasskeyCount = 100;
+
     private ApplicationUser? user;
     private IList<UserPasskeyInfo>? currentPasskeys;
 
@@ -100,22 +110,21 @@ else
             return;
         }
 
-        var options = await SignInManager.RetrievePasskeyCreationOptionsAsync();
-        if (options is null)
+        if (currentPasskeys!.Count >= MaxPasskeyCount)
         {
-            RedirectManager.RedirectToCurrentPageWithStatus("Error: Could not retrieve passkey creation options.", HttpContext);
+            RedirectManager.RedirectToCurrentPageWithStatus($"Error: You have reached the maximum number of allowed passkeys.", HttpContext);
             return;
         }
 
-        var attestationResult = await SignInManager.PerformPasskeyAttestationAsync(Input.CredentialJson, options);
+        var attestationResult = await SignInManager.PerformPasskeyAttestationAsync(Input.CredentialJson);
         if (!attestationResult.Succeeded)
         {
             RedirectManager.RedirectToCurrentPageWithStatus($"Error: Could not add the passkey: {attestationResult.Failure.Message}", HttpContext);
             return;
         }
 
-        var setPasskeyResult = await UserManager.SetPasskeyAsync(user, attestationResult.Passkey);
-        if (!setPasskeyResult.Succeeded)
+        var addPasskeyResult = await UserManager.AddOrUpdatePasskeyAsync(user, attestationResult.Passkey);
+        if (!addPasskeyResult.Succeeded)
         {
             RedirectManager.RedirectToCurrentPageWithStatus("Error: The passkey could not be added to your account.", HttpContext);
             return;

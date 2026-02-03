@@ -63,6 +63,7 @@ public class Program
     {
         // In the absence of a specified value, we want the culture to be en-US so that the tests for bind can work consistently.
         var culture = new CultureInfo("en-US");
+        var cultureUI = new CultureInfo("en-US");
 
         Uri uri = null;
         try
@@ -77,12 +78,18 @@ public class Program
         if (uri != null && HttpUtility.ParseQueryString(uri.Query)["culture"] is string cultureName)
         {
             culture = new CultureInfo(cultureName);
+            cultureUI = culture; // Default to the same culture for UI if not specified
+        }
+
+        if (uri != null && HttpUtility.ParseQueryString(uri.Query)["cultureUI"] is string cultureUIName)
+        {
+            cultureUI = new CultureInfo(cultureUIName);
         }
 
         // CultureInfo.CurrentCulture is async-scoped and will not affect the culture in sibling scopes.
         // Use CultureInfo.DefaultThreadCurrentCulture instead to modify the application's default scope.
         CultureInfo.DefaultThreadCurrentCulture = culture;
-        CultureInfo.DefaultThreadCurrentUICulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = cultureUI;
     }
 
     // Supports E2E tests in StartupErrorNotificationTest

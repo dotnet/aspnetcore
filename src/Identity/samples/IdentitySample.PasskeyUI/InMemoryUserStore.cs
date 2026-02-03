@@ -70,7 +70,7 @@ public sealed class InMemoryUserStore<TUser> :
         return Task.FromResult(IdentityResult.Success);
     }
 
-    public Task SetPasskeyAsync(TUser user, UserPasskeyInfo passkey, CancellationToken cancellationToken)
+    public Task AddOrUpdatePasskeyAsync(TUser user, UserPasskeyInfo passkey, CancellationToken cancellationToken)
     {
         var passkeyEntity = user.Passkeys.FirstOrDefault(p => p.CredentialId.SequenceEqual(passkey.CredentialId));
         if (passkeyEntity is null)
@@ -106,7 +106,6 @@ public sealed class InMemoryUserStore<TUser> :
         => p is null ? null : new(
             p.CredentialId,
             p.PublicKey,
-            p.Name,
             p.CreatedAt,
             p.SignCount,
             p.Transports,
@@ -114,7 +113,10 @@ public sealed class InMemoryUserStore<TUser> :
             p.IsBackupEligible,
             p.IsBackedUp,
             p.AttestationObject,
-            p.ClientDataJson);
+            p.ClientDataJson)
+        {
+            Name = p.Name,
+        };
 
     [return: NotNullIfNotNull(nameof(p))]
     private static PocoUserPasskey<string>? ToPocoUserPasskey(TUser user, UserPasskeyInfo? p)

@@ -6,6 +6,8 @@
     <!-- We aren't producing a NuGet package here, so disable package validation -->
     <EnablePackageValidation>false</EnablePackageValidation>
     <IsPackable>false</IsPackable>
+    <!-- Bundles should always be built for x86 -->
+    <InstallerPlatform>x86</InstallerPlatform>
     <BundleInstallerUpgradeCodeSeed>ASP.NET Core Shared Framework Bundle Installer</BundleInstallerUpgradeCodeSeed>
     <BundleThemeDirectory>$(MSBuildProjectDirectory)</BundleThemeDirectory>
     <InstallerName>aspnetcore-runtime</InstallerName>
@@ -19,11 +21,19 @@
     <PatchVersion>$(AspNetCorePatchVersion)</PatchVersion>
 
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
-    <WixBootstrapperFlavor>HyperlinkLicense</WixBootstrapperFlavor>
+    <UseWix5>true</UseWix5>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersVersion)" />
+    <!-- Microsoft.Wix is a dotnet tool package, so exlude its assets. -->
+    <PackageReference Include="Microsoft.Wix" Version="$(MicrosoftWixToolsetSdkVersion)" ExcludeAssets="all" />
+    <!-- Installers needs the $(PkgMicrosoftWixToolsetUIwixext) property to locate the extension. -->
+    <PackageReference Include="Microsoft.WixToolset.UI.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.WixToolset.Dependency.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.WixToolset.Util.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.WixToolset.Bal.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.WixToolset.Heat" Version="$(MicrosoftWixToolsetSdkVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,18 +41,4 @@
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.Build.NoTargets" />
-
-  <PropertyGroup>
-    <BundleNameShort>Microsoft ASP.NET Core $(PackageBrandingVersion)</BundleNameShort>
-    <BundleNameSub>Shared Framework</BundleNameSub>
-    <BundleName>$(BundleNameShort) - $(BundleNameSub) ($(TargetArchitecture))</BundleName>
-    <BundleNameFull>$(BundleName)</BundleNameFull>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <WixThemeVariable Include="BundleNameShort" Value="$(BundleNameShort)" />
-    <WixThemeVariable Include="BundleNameSub" Value="$(BundleNameSub)" />
-    <WixThemeVariable Include="BundleName" Value="$(BundleName)" />
-    <WixThemeVariable Include="BundleNameFull" Value="$(BundleNameFull)" />
-  </ItemGroup>
 </Project>

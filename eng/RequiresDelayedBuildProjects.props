@@ -28,5 +28,7 @@
     <RequiresDelayedBuild Include="$(RepoRoot)src\ProjectTemplates\test\Templates.Tests\Templates.Tests.csproj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src\SignalR\server\SignalR\test\Microsoft.AspNetCore.SignalR.TrimmingTests\Microsoft.AspNetCore.SignalR.TrimmingTests.proj" />
     <RequiresDelayedBuild Include="$(RepoRoot)eng\Npm.Workspace.FunctionalTests.nodeproj" />
+    <RequiresDelayedBuild Include="$(RepoRoot)src\Validation\test\Microsoft.Extensions.Validation.NativeAotTests\Microsoft.Extensions.Validation.NativeAotTests.proj" />
+    <RequiresDelayedBuild Include="$(RepoRoot)src\Validation\test\Microsoft.Extensions.Validation.TrimmingTests\Microsoft.Extensions.Validation.TrimmingTests.proj" />
   </ItemGroup>
 </Project>

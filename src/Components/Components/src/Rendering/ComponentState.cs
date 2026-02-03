@@ -93,7 +93,12 @@ public class ComponentState : IAsyncDisposable
 
     internal RenderTreeBuilder CurrentRenderTree { get; set; }
 
-    internal Renderer Renderer => _renderer;
+    /// <summary>
+    /// Gets the <see cref="Renderer"/> instance used to render the output.
+    /// </summary>
+    /// <remarks>The <see cref="Renderer"/> instance is accessible to derived classes and classes within the
+    /// same assembly. It provides rendering functionality that may be used for custom rendering logic.</remarks>
+    protected internal Renderer Renderer => _renderer;
 
     internal void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment, out Exception? renderFragmentException)
     {
@@ -356,6 +361,9 @@ public class ComponentState : IAsyncDisposable
         for (var i = 0; i < frames.Count; i++)
         {
             ref var currentFrame = ref frames.Array[i];
+
+            Debug.Assert(currentFrame.FrameType != RenderTreeFrameType.Component || currentFrame.Component != null, "GetComponentKey is being invoked too soon, ComponentState is not fully constructed.");
+
             if (currentFrame.FrameType != RenderTreeFrameType.Component ||
                 !ReferenceEquals(Component, currentFrame.Component))
             {

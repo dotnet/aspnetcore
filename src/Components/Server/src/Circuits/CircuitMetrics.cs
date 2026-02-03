@@ -70,11 +70,6 @@ internal sealed class CircuitMetrics : IDisposable
             _circuitActiveCounter.Add(-1);
         }
 
-        if (_circuitConnectedCounter.Enabled)
-        {
-            _circuitConnectedCounter.Add(-1);
-        }
-
         if (_circuitDuration.Enabled)
         {
             var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);

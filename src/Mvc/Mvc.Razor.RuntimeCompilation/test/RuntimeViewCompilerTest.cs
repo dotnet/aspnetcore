@@ -824,10 +824,12 @@ this should fail";
         CSharpCompiler csharpCompiler = null)
     {
         fileProvider = fileProvider ?? new TestFileProvider();
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
         var options = Options.Create(new MvcRazorRuntimeCompilationOptions
         {
             FileProviders = { fileProvider }
         });
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
         var compilationFileProvider = new RuntimeCompilationFileProvider(options);
 
         referenceManager = referenceManager ?? CreateReferenceManager();
@@ -855,7 +857,9 @@ this should fail";
         var assembly = typeof(RuntimeViewCompilerTest).Assembly;
         applicationPartManager.ApplicationParts.Add(new AssemblyPart(assembly));
 
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
         return new RazorReferenceManager(applicationPartManager, Options.Create(new MvcRazorRuntimeCompilationOptions()));
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
     }
 
     private class TestRazorViewCompiler : RuntimeViewCompiler

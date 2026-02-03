@@ -32,7 +32,7 @@ public class AuthorizationMetricsTest
         Assert.Equal(1, measurement.Value);
         Assert.Equal("Basic", (string)measurement.Tags["aspnetcore.authorization.policy"]);
         Assert.Equal("success", (string)measurement.Tags["aspnetcore.authorization.result"]);
-        Assert.True((bool)measurement.Tags["user.is_authenticated"]);
+        Assert.True((bool)measurement.Tags["aspnetcore.user.is_authenticated"]);
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public class AuthorizationMetricsTest
         Assert.Equal(1, measurement.Value);
         Assert.Equal("Basic", (string)measurement.Tags["aspnetcore.authorization.policy"]);
         Assert.Equal("failure", (string)measurement.Tags["aspnetcore.authorization.result"]);
-        Assert.False((bool)measurement.Tags["user.is_authenticated"]);
+        Assert.False((bool)measurement.Tags["aspnetcore.user.is_authenticated"]);
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class AuthorizationMetricsTest
         Assert.Equal(1, measurement.Value);
         Assert.Equal("UnknownPolicy", (string)measurement.Tags["aspnetcore.authorization.policy"]);
         Assert.Equal("System.InvalidOperationException", (string)measurement.Tags["error.type"]);
-        Assert.False((bool)measurement.Tags["user.is_authenticated"]);
+        Assert.False((bool)measurement.Tags["aspnetcore.user.is_authenticated"]);
         Assert.False(measurement.Tags.ContainsKey("aspnetcore.authorization.result"));
     }
 
@@ -110,7 +110,7 @@ public class AuthorizationMetricsTest
         var measurement = Assert.Single(authorizedRequestsCollector.GetMeasurementSnapshot());
         Assert.Equal(1, measurement.Value);
         Assert.Equal("success", (string)measurement.Tags["aspnetcore.authorization.result"]);
-        Assert.False((bool)measurement.Tags["user.is_authenticated"]);
+        Assert.False((bool)measurement.Tags["aspnetcore.user.is_authenticated"]);
         Assert.False(measurement.Tags.ContainsKey("aspnetcore.authorization.policy"));
     }
 
@@ -135,7 +135,7 @@ public class AuthorizationMetricsTest
         var measurement = Assert.Single(authorizedRequestsCollector.GetMeasurementSnapshot());
         Assert.Equal(1, measurement.Value);
         Assert.Equal("failure", (string)measurement.Tags["aspnetcore.authorization.result"]);
-        Assert.False((bool)measurement.Tags["user.is_authenticated"]);
+        Assert.False((bool)measurement.Tags["aspnetcore.user.is_authenticated"]);
         Assert.False(measurement.Tags.ContainsKey("aspnetcore.authorization.policy"));
     }
 
@@ -164,7 +164,7 @@ public class AuthorizationMetricsTest
         var measurement = Assert.Single(authorizedRequestsCollector.GetMeasurementSnapshot());
         Assert.Equal(1, measurement.Value);
         Assert.Equal("System.InvalidOperationException", (string)measurement.Tags["error.type"]);
-        Assert.False((bool)measurement.Tags["user.is_authenticated"]);
+        Assert.False((bool)measurement.Tags["aspnetcore.user.is_authenticated"]);
         Assert.False(measurement.Tags.ContainsKey("aspnetcore.authorization.policy"));
         Assert.False(measurement.Tags.ContainsKey("aspnetcore.authorization.result"));
     }

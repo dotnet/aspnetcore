@@ -1,11 +1,11 @@
 # Policybot docs live at https://eng.ms/docs/more/github-inside-microsoft/policies/resource-management
-id: 
+id:
 name: GitOps.PullRequestIssueManagement
 description: GitOps.PullRequestIssueManagement primitive
-owner: 
+owner:
 resource: repository
 disabled: false
-where: 
+where:
 configuration:
   resourceManagementConfiguration:
     scheduledSearches:
@@ -347,13 +347,12 @@ configuration:
       - payloadType: Pull_Request
       - isAction:
           action: Opened
-      - or:
-        - includesModifiedFiles:
-            files:
-            - src/Shared/Runtime
+      - includesModifiedFiles:
+          files:
+          - src/Shared/Runtime
       then:
       - addReply:
-          reply: Greetings human! You've submitted a PR that modifies code that is shared with https://github.com/dotnet/runtime . Please make sure you synchronize this code with the changes in that repo!
+          reply: Greetings! You've submitted a PR that modifies code that is shared with https://github.com/dotnet/runtime . Please make sure you synchronize this code with the changes in that repo!
       - addLabel:
           label: 'Attention: Shared Code Modified'
       description: '[Shared Code PRs] Flag PRs that affect shared code src/Shared/Runtime'
@@ -441,19 +440,8 @@ configuration:
           branch: main
       then:
       - addMilestone:
-          milestone: 10.0-preview7
+          milestone: 11.0-preview1
       description: '[Milestone Assignments] Assign Milestone to PRs merged to the `main` branch'
-    - if:
-      - payloadType: Pull_Request
-      - isAction:
-          action: Closed
-      - targetsBranch:
-          branch: release/10.0-preview6
-      then:
-      - removeMilestone
-      - addMilestone:
-          milestone: 10.0-preview6
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/10.0-preview1 branch'
     - if:
       - payloadType: Issues
       - isAction:
@@ -568,6 +556,25 @@ configuration:
       description: Add release/2.3 targeting PRs to the servicing project
     - if:
       - payloadType: Pull_Request
+      - isAction:
+          action: Opened
+      - targetsBranch:
+          branch: release/10.0
+      - activitySenderHasPermission:
+          permission: Read
+      - not:
+          isActivitySender:
+            user: dotnet-maestro
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: dotnet-maestro-bot
+            issueAuthor: False
+      then:
+      - addLabel:
+          label: servicing-consider
+    - if:
+      - payloadType: Pull_Request
       - labelAdded:
           label: area-infrastructure
       - isAction:
@@ -610,11 +617,22 @@ configuration:
       - isAction:
           action: Closed
       - targetsBranch:
+          branch: release/10.0
+      then:
+      - removeMilestone
+      - addMilestone:
+          milestone: 10.0.4
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/10.0 branch'
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Closed
+      - targetsBranch:
           branch: release/9.0
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 9.0.7
+          milestone: 9.0.14
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0 branch'
     - if:
       - payloadType: Pull_Request
@@ -625,7 +643,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 8.0.18
+          milestone: 8.0.25
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/8.0 branch'
     - if:
       - payloadType: Issues
@@ -686,16 +704,6 @@ configuration:
           label: NativeAOT
       description: Label AOT related issues appropriately
     - if:
-      - payloadType: Issues
-      - labelAdded:
-          label: help wanted
-      - isAction:
-          action: Labeled
-      then:
-      - addReply:
-          reply: Looks like this issue has been identified as a candidate for community contribution. If you're considering sending a PR for this issue, look for the `Summary Comment` link in the issue description. That comment has been left by an engineer on our team to help you get started with handling this issue. You can learn more about our Help Wanted process [here](https://aka.ms/aspnet/processes/help-wanted)
-      description: Drop a comment when a help candidate issue is identified
-    - if:
       - payloadType: Pull_Request
       - isAction:
           action: Opened
@@ -740,5 +748,15 @@ configuration:
       - enableAutoMerge:
           mergeMethod: "squash"
       description: '[Infrastructure PRs] Add area-infrastructure label to dependabot update Pull Requests & enable auto-merge'
-onFailure: 
-onSuccess: 
+onFailure:
+onSuccess:
+
+
+
+
+
+
+
+
+
+

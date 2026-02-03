@@ -124,6 +124,11 @@ internal class SSRRenderModeBoundary : IComponent
 
     private void PreloadWebAssemblyAssets()
     {
+        if (EndpointHtmlRenderer.IsProgressivelyEnhancedNavigation(_httpContext.Request))
+        {
+            return;
+        }
+
         var preloads = _httpContext.GetEndpoint()?.Metadata.GetMetadata<ResourcePreloadCollection>();
         if (preloads != null && preloads.TryGetAssets("webassembly", out var preloadAssets))
         {
@@ -212,7 +217,12 @@ internal class SSRRenderModeBoundary : IComponent
         var sequenceString = sequence.ToString(CultureInfo.InvariantCulture);
 
         var locationHash = $"{componentTypeNameHash}:{sequenceString}";
-        var formattedComponentKey = (componentKey as IFormattable)?.ToString(null, CultureInfo.InvariantCulture) ?? string.Empty;
+        var formattedComponentKey = componentKey switch
+        {
+            string str => str,
+            IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
+            _ => string.Empty
+        };
 
         return new()
         {

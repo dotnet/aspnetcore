@@ -3,6 +3,7 @@
 
 using System.Net.Http;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Routing.Patterns;
 
 public class ApiDescriptionExtensionsTests
 {
@@ -22,6 +23,30 @@ public class ApiDescriptionExtensionsTests
         var apiDescription = new ApiDescription
         {
             RelativePath = relativePath
+        };
+
+        // Act
+        var itemPath = apiDescription.MapRelativePathToItemPath();
+
+        // Assert
+        Assert.Equal(expectedItemPath, itemPath);
+    }
+
+    [Theory]
+    [InlineData("/~health", "~health", "/~health")]
+    [InlineData("/~api/todos", "~api/todos", "/~api/todos")]
+    [InlineData("/~api/todos/{id}", "~api/todos/{id}", "/~api/todos/{id}")]
+    [InlineData("~/health", "health", "/health")]
+    [InlineData("~/api/todos", "api/todos", "/api/todos")]
+    [InlineData("~/api/todos/{id}", "api/todos/{id}", "/api/todos/{id}")]
+    public void MapRelativePathToItemPath_WithRoutePattern_HandlesRoutesThatStartWithTilde(string rawPattern, string relativePath, string expectedItemPath)
+    {
+        // Arrange
+        var routePattern = RoutePatternFactory.Parse(rawPattern);
+        var apiDescription = new ApiDescription
+        {
+            RelativePath = relativePath,
+            RoutePattern = routePattern
         };
 
         // Act
@@ -62,21 +87,5 @@ public class ApiDescriptionExtensionsTests
 
         // Assert
         Assert.Equal(expectedHttpMethod, result);
-    }
-
-    [Theory]
-    [InlineData("UNKNOWN")]
-    [InlineData("unknown")]
-    public void GetHttpMethod_ThrowsForUnknownHttpMethod(string methodName)
-    {
-        // Arrange
-        var apiDescription = new ApiDescription
-        {
-            HttpMethod = methodName
-        };
-
-        // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() => apiDescription.GetHttpMethod());
-        Assert.Equal($"Unsupported HTTP method: {methodName}", exception.Message);
     }
 }

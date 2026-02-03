@@ -40,6 +40,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // Wait until items have been rendered.
         Browser.True(() => (initialItemCount = GetItemCount()) > 0);
         Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
+        Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
 
         // Scroll halfway.
         Browser.ExecuteJavaScript("const container = document.getElementById('sync-container');container.scrollTop = container.scrollHeight * 0.5;");
@@ -47,6 +48,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // Validate that we get the same item count after scrolling halfway.
         Browser.Equal(initialItemCount, GetItemCount);
         Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
+        Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
 
         // Scroll to the bottom.
         Browser.ExecuteJavaScript("const container = document.getElementById('sync-container');container.scrollTop = container.scrollHeight;");
@@ -54,6 +56,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // Validate that we get the same item count after scrolling to the bottom.
         Browser.Equal(initialItemCount, GetItemCount);
         Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
+        Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
 
         int GetItemCount() => Browser.FindElements(By.Id("sync-item")).Count;
     }
@@ -233,6 +236,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Validate that the top spacer has a height of zero.
         Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
+        Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
 
         Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
 
@@ -242,6 +246,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Validate that the top spacer has expanded.
         Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
+        Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
     }
 
     [Fact]
@@ -254,6 +259,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // Wait until items have been rendered.
         Browser.True(() => GetItemCount() > 0);
         Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
+        Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
 
         // Scroll slowly, in increments of 50px at a time. At one point this would trigger a bug
         // due to the incorrect item size, whereby it would not realise it's necessary to show more
@@ -267,6 +273,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Validate that the top spacer did change
         Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
+        Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
 
         int GetItemCount() => Browser.FindElements(By.ClassName("incorrect-size-item")).Count;
     }
@@ -283,6 +290,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Assert.Equal("tr", topSpacer.TagName.ToLowerInvariant());
         Assert.Equal("tr", bottomSpacer.TagName.ToLowerInvariant());
         Assert.Contains(expectedInitialSpacerStyle, topSpacer.GetDomAttribute("style"));
+        Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
+        Assert.Contains("true", bottomSpacer.GetDomAttribute("aria-hidden"));
 
         // Check scrolling document element works
         Browser.DoesNotExist(By.Id("row-999"));
@@ -315,14 +324,14 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // we only render 10 items due to the MaxItemCount setting
         var scrollArea = Browser.Exists(By.Id("virtualize-scroll-area"));
         var getItems = () => scrollArea.FindElements(By.ClassName("my-item"));
-        Browser.Equal(10, () => getItems().Count);
+        Browser.Equal(16, () => getItems().Count);
         Browser.Equal("Id: 0; Name: Thing 0", () => getItems().First().Text);
 
         // Scrolling still works and loads new data, though there's no guarantee about
         // exactly how many items will show up at any one time
         Browser.ExecuteJavaScript("document.getElementById('virtualize-scroll-area').scrollTop = 300;");
         Browser.NotEqual("Id: 0; Name: Thing 0", () => getItems().First().Text);
-        Browser.True(() => getItems().Count > 3 && getItems().Count <= 10);
+        Browser.True(() => getItems().Count > 3 && getItems().Count <= 16);
     }
 
     [Fact]
@@ -595,6 +604,101 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         int GetItemCount() => Browser.FindElements(By.Id("async-item")).Count;
         int GetPlaceholderCount() => Browser.FindElements(By.Id("async-placeholder")).Count;
+    }
+
+    [Fact]
+    public void CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax()
+    {
+        Browser.MountTestComponent<VirtualizationLargeOverscan>();
+        var container = Browser.Exists(By.Id("virtualize-large-overscan"));
+        // Ensure we have an initial contiguous batch and the elevated effective max has kicked in (>= OverscanCount)
+        var indices = GetVisibleItemIndices();
+        Browser.True(() => indices.Count >= 200);
+
+        // Give focus so PageDown works
+        container.Click();
+
+        var js = (IJavaScriptExecutor)Browser;
+        var lastMaxIndex = -1;
+        var lastScrollTop = -1L;
+
+        // Check if we've reached (or effectively reached) the bottom
+        var scrollHeight = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+        var clientHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+        var scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        while (scrollTop + clientHeight < scrollHeight)
+        {
+            // Validate contiguity on the current page
+            Browser.True(() => IsCurrentViewContiguous(indices));
+
+            // Track progress in indices
+            var currentMax = indices.Max();
+            Assert.True(currentMax >= lastMaxIndex, $"Unexpected backward movement: previous max {lastMaxIndex}, current max {currentMax}.");
+            lastMaxIndex = currentMax;
+
+            // Send PageDown
+            container.SendKeys(Keys.PageDown);
+
+            // Wait for scrollTop to change (progress) to avoid infinite loop
+            var prevScrollTop = scrollTop;
+            Browser.True(() =>
+            {
+                var st = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+                if (st > prevScrollTop)
+                {
+                    lastScrollTop = st;
+                    return true;
+                }
+                return false;
+            });
+            scrollHeight = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+            clientHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+            scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        }
+
+        // Final contiguous assertion at bottom
+        Browser.True(() => IsCurrentViewContiguous());
+
+        // Helper: check visible items contiguous with no holes
+        bool IsCurrentViewContiguous(List<int> existingIndices = null)
+        {
+            var indices = existingIndices ?? GetVisibleItemIndices();
+            if (indices.Count == 0)
+            {
+                return false;
+            }
+
+            if (indices[^1] - indices[0] != indices.Count - 1)
+            {
+                return false;
+            }
+            for (var i = 1; i < indices.Count; i++)
+            {
+                if (indices[i] - indices[i - 1] != 1)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        List<int> GetVisibleItemIndices()
+        {
+            var elements = container.FindElements(By.CssSelector(".large-overscan-item"));
+            var list = new List<int>(elements.Count);
+            foreach (var el in elements)
+            {
+                var text = el.Text;
+                if (text.StartsWith("Item ", StringComparison.Ordinal))
+                {
+                    if (int.TryParse(text.AsSpan(5), NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+                    {
+                        list.Add(value);
+                    }
+                }
+            }
+            return list;
+        }
     }
 
     private string[] GetPeopleNames(IWebElement container)

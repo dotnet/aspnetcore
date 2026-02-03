@@ -23,8 +23,6 @@ run_tests=false
 run_sign=false
 build_all=false
 build_deps=true
-only_build_repo_tasks=false
-build_repo_tasks=true
 build_managed=''
 build_native=''
 build_nodejs=''
@@ -75,8 +73,6 @@ Options:
     --projects                        A list of projects to build. (Must be an absolute path.)
                                       Globbing patterns are supported, such as \"$(pwd)/**/*.csproj\".
     --no-build-deps                   Do not build project-to-project references and only build the specified project.
-    --no-build-repo-tasks             Suppress building RepoTasks.
-    --only-build-repo-tasks           Only build RepoTasks.
 
     --all                             Build all project types.
     --[no-]build-native               Build native projects (C, C++). Ignored in most cases i.e. with `dotnet msbuild`.
@@ -222,12 +218,6 @@ while [[ $# -gt 0 ]]; do
         -no-build-installers|-nobuildinstallers)
             build_installers=false
             ;;
-        -no-build-repo-tasks|-nobuildrepotasks)
-            build_repo_tasks=false
-            ;;
-        -only-build-repo-tasks|-onlybuildrepotasks)
-            only_build_repo_tasks=true
-            ;;
         -arch)
             shift
             target_arch="${1:-}"
@@ -359,18 +349,12 @@ fi
 msbuild_args[${#msbuild_args[*]}]="-p:Configuration=$configuration"
 
 # Set up additional runtime args
-toolset_build_args=()
 if [ ! -z "$runtime_source_feed$runtime_source_feed_key" ]; then
     runtimeFeedArg="-p:DotNetRuntimeSourceFeed=$runtime_source_feed"
     runtimeFeedKeyArg="-p:DotNetRuntimeSourceFeedKey=$runtime_source_feed_key"
     msbuild_args[${#msbuild_args[*]}]=$runtimeFeedArg
     msbuild_args[${#msbuild_args[*]}]=$runtimeFeedKeyArg
-    toolset_build_args[${#toolset_build_args[*]}]=$runtimeFeedArg
-    toolset_build_args[${#toolset_build_args[*]}]=$runtimeFeedKeyArg
 fi
-[ ! -z "$product_build" ] && toolset_build_args[${#toolset_build_args[*]}]="-p:DotNetBuild=$product_build"
-[ ! -z "$source_build" ] && toolset_build_args[${#toolset_build_args[*]}]="-p:DotNetBuildSourceOnly=$source_build"
-[ ! -z "$from_vmr" ] && toolset_build_args[${#toolset_build_args[*]}]="-p:DotNetBuildFromVMR=$from_vmr"
 
 # Initialize global variables need to be set before the import of Arcade is imported
 restore=$run_restore
@@ -407,7 +391,6 @@ if [[ "$binary_log" == true ]]; then
     if [[ "$found" == false ]]; then
         msbuild_args[${#msbuild_args[*]}]="/bl:$log_dir/Build.binlog"
     fi
-    toolset_build_args[${#toolset_build_args[*]}]="/bl:$log_dir/Build.repotasks.binlog"
 elif [[ "$ci" == true ]]; then
     # Ensure the artifacts/log directory isn't empty to avoid warnings.
     touch "$log_dir/empty.log"
@@ -426,25 +409,5 @@ InitializeToolset
 
 restore=$_tmp_restore=
 
-if [ ${#commandline_args[@]} -gt 0 ]; then
-  toolset_build_args+=("${commandline_args[@]}")
-fi
-
-if [ "$build_repo_tasks" = true ]; then
-    MSBuild $_InitializeToolset \
-        -p:RepoRoot="$repo_root" \
-        -p:Projects="$DIR/tools/RepoTasks/RepoTasks.csproj" \
-        -p:Configuration=Release \
-        -p:Restore=$run_restore \
-        -p:Build=true \
-        -clp:NoSummary \
-        ${toolset_build_args[@]+"${toolset_build_args[@]}"}
-fi
-
-if [ "$only_build_repo_tasks" != true ]; then
-    # This incantation avoids unbound variable issues if msbuild_args is empty
-    # https://stackoverflow.com/questions/7577052/bash-empty-array-expansion-with-set-u
-    MSBuild $_InitializeToolset -p:RepoRoot="$repo_root" ${msbuild_args[@]+"${msbuild_args[@]}"}
-fi
-
+MSBuild $_InitializeToolset -p:RepoRoot="$repo_root" ${msbuild_args[@]+"${msbuild_args[@]}"}
 ExitWithExitCode 0

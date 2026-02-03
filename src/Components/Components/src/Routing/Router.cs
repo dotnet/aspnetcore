@@ -29,6 +29,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     string _locationAbsolute;
     bool _navigationInterceptionEnabled;
     ILogger<Router> _logger;
+    string _notFoundPageRoute;
 
     private string _updateScrollPositionForHashLastLocation;
     private bool _updateScrollPositionForHash;
@@ -70,6 +71,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     /// Gets or sets the content to display when no match is found for the requested route.
     /// </summary>
     [Parameter]
+    [Obsolete("NotFound is deprecated. Use NotFoundPage instead.")]
     public RenderFragment NotFound { get; set; }
 
     /// <summary>
@@ -77,7 +79,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     /// </summary>
     [Parameter]
     [DynamicallyAccessedMembers(LinkerFlags.Component)]
-    public Type NotFoundPage { get; set; } = default!;
+    public Type? NotFoundPage { get; set; }
 
     /// <summary>
     /// Gets or sets the content to display when a match is found for the requested route.
@@ -95,14 +97,6 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     /// Gets or sets a handler that should be called before navigating to a new page.
     /// </summary>
     [Parameter] public EventCallback<NavigationContext> OnNavigateAsync { get; set; }
-
-    /// <summary>
-    /// Gets or sets a flag to indicate whether route matching should prefer exact matches
-    /// over wildcards.
-    /// <para>This property is obsolete and configuring it does nothing.</para>
-    /// </summary>
-    [Obsolete("This property is obsolete and configuring it has no effect.")]
-    [Parameter] public bool PreferExactMatches { get; set; }
 
     private RouteTable Routes { get; set; }
 
@@ -143,6 +137,12 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
         if (NotFoundPage != null)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
+            if (NotFound != null)
+            {
+                throw new InvalidOperationException($"Setting {nameof(NotFound)} and {nameof(NotFoundPage)} properties simultaneously is not supported. Use either {nameof(NotFound)} or {nameof(NotFoundPage)}.");
+            }
+#pragma warning restore CS0618 // Type or member is obsolete
             if (!typeof(IComponent).IsAssignableFrom(NotFoundPage))
             {
                 throw new InvalidOperationException($"The type {NotFoundPage.FullName} " +
@@ -159,7 +159,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             var routeAttribute = (RouteAttribute)routeAttributes[0];
             if (routeAttribute.Template != null)
             {
-                NavigationManager.NotFoundPageRoute = routeAttribute.Template;
+                _notFoundPageRoute = routeAttribute.Template;
             }
         }
 
@@ -246,7 +246,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             endpointRouteData = RouteTable.ProcessParameters(endpointRouteData);
             _renderHandle.Render(Found(endpointRouteData));
 
-            _renderHandle.ComponentActivitySource?.StopRouteActivity(activityHandle, null);
+            _renderHandle.ComponentActivitySource?.StopNavigateActivity(activityHandle, null);
             return;
         }
 
@@ -301,7 +301,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 NavigationManager.NavigateTo(_locationAbsolute, forceLoad: true);
             }
         }
-        _renderHandle.ComponentActivitySource?.StopRouteActivity(activityHandle, null);
+        _renderHandle.ComponentActivitySource?.StopNavigateActivity(activityHandle, null);
     }
 
     private ComponentsActivityHandle RecordDiagnostics(string componentType, string template)
@@ -309,7 +309,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         ComponentsActivityHandle activityHandle = default;
         if (_renderHandle.ComponentActivitySource != null)
         {
-            activityHandle = _renderHandle.ComponentActivitySource.StartRouteActivity(componentType, template);
+            activityHandle = _renderHandle.ComponentActivitySource.StartNavigateActivity(componentType, template);
         }
 
         if (_renderHandle.ComponentMetrics != null && _renderHandle.ComponentMetrics.IsNavigationEnabled)
@@ -381,13 +381,57 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         }
     }
 
-    private void OnNotFound(object sender, EventArgs args)
+    private void OnNotFound(object sender, NotFoundEventArgs args)
     {
-        if (_renderHandle.IsInitialized)
+        bool renderContentIsProvided = NotFoundPage != null || args.Path != null;
+        if (_renderHandle.IsInitialized && renderContentIsProvided)
         {
-            Log.DisplayingNotFound(_logger);
-            RenderNotFound();
+            if (!string.IsNullOrEmpty(args.Path))
+            {
+                // The path can be set by a subscriber not defined in blazor framework.
+                _renderHandle.Render(builder => RenderComponentByRoute(builder, args.Path));
+            }
+            else
+            {
+                // Having the path set signals to the endpoint renderer that router handled rendering.
+                args.Path = _notFoundPageRoute;
+                RenderNotFound();
+            }
+            Log.DisplayingNotFound(_logger, args.Path);
         }
+    }
+
+    internal void RenderComponentByRoute(RenderTreeBuilder builder, string route)
+    {
+        var componentType = FindComponentTypeByRoute(route);
+
+        if (componentType is null)
+        {
+            throw new InvalidOperationException($"No component found for route '{route}'. " +
+                $"Ensure the route matches a component with a [Route] attribute.");
+        }
+
+        builder.OpenComponent<RouteView>(0);
+        builder.AddAttribute(1, nameof(RouteView.RouteData),
+            new RouteData(componentType, new Dictionary<string, object>()));
+        builder.CloseComponent();
+    }
+
+    [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+    internal Type? FindComponentTypeByRoute(string route)
+    {
+        RefreshRouteTable();
+        var normalizedRoute = route.StartsWith('/') ? route : $"/{route}";
+
+        var context = new RouteContext(normalizedRoute);
+        Routes.Route(context);
+
+        if (context.Handler is not null && typeof(IComponent).IsAssignableFrom(context.Handler))
+        {
+            return context.Handler;
+        }
+
+        return null;
     }
 
     private void RenderNotFound()
@@ -401,10 +445,12 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                     new RouteData(NotFoundPage, _emptyParametersDictionary));
                 builder.CloseComponent();
             }
+#pragma warning disable CS0618 // Type or member is obsolete
             else if (NotFound != null)
             {
                 NotFound(builder);
             }
+#pragma warning restore CS0618 // Type or member is obsolete
             else
             {
                 DefaultNotFoundContent(builder);
@@ -429,6 +475,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     private static partial class Log
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         [LoggerMessage(1, LogLevel.Debug, $"Displaying {nameof(NotFound)} because path '{{Path}}' with base URI '{{BaseUri}}' does not match any component route", EventName = "DisplayingNotFound")]
         internal static partial void DisplayingNotFound(ILogger logger, string path, string baseUri);
 
@@ -438,7 +485,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         [LoggerMessage(3, LogLevel.Debug, "Navigating to non-component URI '{ExternalUri}' in response to path '{Path}' with base URI '{BaseUri}'", EventName = "NavigatingToExternalUri")]
         internal static partial void NavigatingToExternalUri(ILogger logger, string externalUri, string path, string baseUri);
 
-        [LoggerMessage(4, LogLevel.Debug, $"Displaying {nameof(NotFound)} on request", EventName = "DisplayingNotFoundOnRequest")]
-        internal static partial void DisplayingNotFound(ILogger logger);
+        [LoggerMessage(4, LogLevel.Debug, $"Displaying contents of {{displayedContentPath}} on request", EventName = "DisplayingNotFoundOnRequest")]
+        internal static partial void DisplayingNotFound(ILogger logger, string displayedContentPath);
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }

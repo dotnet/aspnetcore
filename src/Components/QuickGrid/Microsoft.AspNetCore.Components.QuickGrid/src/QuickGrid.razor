@@ -66,7 +66,15 @@
     private void RenderRow(RenderTreeBuilder __builder, int rowIndex, TGridItem item)
     {
         var rowClass = RowClass?.Invoke(item);
-        <tr @key="@(ItemKey(item))" aria-rowindex="@rowIndex" class="@rowClass">
+        var combinedClass = OnRowClick.HasDelegate
+            ? string.IsNullOrEmpty(rowClass) ? "row-clickable" : $"row-clickable {rowClass}"
+            : rowClass;
+        var rowClick = OnRowClick.HasDelegate ? EventCallback.Factory.Create<MouseEventArgs>(this, () => OnRowClick.InvokeAsync(item)) : default;
+
+        <tr @key="@(ItemKey(item))"
+            aria-rowindex="@rowIndex"
+            class="@combinedClass"
+            @onclick="@rowClick">
             @foreach (var col in _columns)
             {
                 <td class="@ColumnClass(col)" @key="@col">@{ col.CellContent(__builder, item); }</td>
