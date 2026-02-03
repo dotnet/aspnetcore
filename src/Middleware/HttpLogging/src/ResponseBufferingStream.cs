@@ -18,7 +18,7 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
 
     private HttpLoggingInterceptorContext _logContext = null!;
     private HttpLoggingOptions _options = null!;
-    private IHttpLoggingInterceptor[] _interceptors = Array.Empty<IHttpLoggingInterceptor>();
+    private IHttpLoggingInterceptor[] _interceptors = [];
     private bool _logBody;
     private bool _hasLogged;
     private Encoding? _encoding;
@@ -70,7 +70,7 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
         _logger = NullLogger.Instance;
         _logContext = null!;
         _options = null!;
-        _interceptors = Array.Empty<IHttpLoggingInterceptor>();
+        _interceptors = [];
         _pipeAdapter = null;
         _encoding = null;
         _bodyBeforeClose = null;

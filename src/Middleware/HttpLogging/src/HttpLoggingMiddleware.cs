@@ -193,7 +193,7 @@ internal sealed class HttpLoggingMiddleware
             {
                 originalUpgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
 
-                if (originalUpgradeFeature != null && originalUpgradeFeature.IsUpgradableRequest)
+                if (originalUpgradeFeature is not null && originalUpgradeFeature.IsUpgradableRequest)
                 {
                     loggableUpgradeFeature = new UpgradeFeatureLoggingDecorator(originalUpgradeFeature,
                         logContext, options, _interceptors, _logger);
@@ -268,24 +268,24 @@ internal sealed class HttpLoggingMiddleware
         }
         finally
         {
-            if (responseBufferingStream != null)
+            if (responseBufferingStream is not null)
             {
                 _responseBufferingStreamPool.Return(responseBufferingStream);
             }
 
-            if (originalBodyFeature != null)
+            if (originalBodyFeature is not null)
             {
                 context.Features.Set(originalBodyFeature);
             }
 
             requestBufferingStream?.Dispose();
 
-            if (originalBody != null)
+            if (originalBody is not null)
             {
                 context.Request.Body = originalBody;
             }
 
-            if (loggableUpgradeFeature != null)
+            if (loggableUpgradeFeature is not null)
             {
                 context.Features.Set(originalUpgradeFeature);
             }
@@ -302,12 +302,12 @@ internal sealed class HttpLoggingMiddleware
 
     private static bool BodyNotYetWritten(ResponseBufferingStream? responseBufferingStream)
     {
-        return responseBufferingStream == null || responseBufferingStream.HeadersWritten == false;
+        return responseBufferingStream is null || responseBufferingStream.HeadersWritten == false;
     }
 
     private static bool NotUpgradeableRequestOrRequestNotUpgraded(UpgradeFeatureLoggingDecorator? upgradeFeatureLogging)
     {
-        return upgradeFeatureLogging == null || !upgradeFeatureLogging.IsUpgraded;
+        return upgradeFeatureLogging is null || !upgradeFeatureLogging.IsUpgraded;
     }
 
     // Called from the response body stream sync Write and Flush APIs. These are disabled by the server by default, so we're not as worried about the sync-over-async code needed here.
