@@ -36,7 +36,6 @@ internal sealed partial class TempDataService
         {
             return;
         }
-        var dataToSave = tempData.Save();
-        _tempDataProvider.SaveTempData(httpContext, dataToSave);
+        _tempDataProvider.SaveTempData(httpContext, tempData.Save());
     }
 }

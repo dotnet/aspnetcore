@@ -10,8 +10,8 @@
     "type": "item"
   },
   "groupIdentity": "Microsoft.AspNetCore.Mvc.RazorPage",
-  "precedence": "10000",
-  "identity": "Microsoft.AspNetCore.Mvc.RazorPage.10.0",
+  "precedence": "11000",
+  "identity": "Microsoft.AspNetCore.Mvc.RazorPage.11.0",
   "shortName": "page",
   "sourceName": "Index",
   "primaryOutputs": [
