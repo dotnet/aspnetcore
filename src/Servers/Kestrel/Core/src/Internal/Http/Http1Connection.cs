@@ -735,7 +735,12 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         catch (BadHttpRequestException ex)
         {
             OnBadRequest(result.Buffer, ex);
-            throw;
+
+            // Avoid re-throwing - handle the bad request state directly here
+            // to eliminate exception propagation overhead through async state machines
+            SetBadRequestState(ex);
+            endConnection = true;
+            return true;
         }
 #pragma warning restore CS0618 // Type or member is obsolete
         catch (Exception)

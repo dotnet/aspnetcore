@@ -182,7 +182,7 @@ public static class RoutingEndpointConventionBuilderExtensions
     /// on the target <see cref="IEndpointConventionBuilder"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
-    /// <param name="maxCollectionSize">The maximum number of elements allowed in a form collection. Defaults to <see cref="FormReader.DefaultValueCountLimit"/>>.</param>
+    /// <param name="maxCollectionSize">The maximum number of elements allowed in a form collection. Defaults to <see cref="FormReader.DefaultValueCountLimit"/>.</param>
     /// <param name="maxRecursionDepth">The maximum depth allowed when recursively mapping form data. Defaults to 64.</param>
     /// <param name="maxKeySize">The maximum size of the buffer used to read form data keys. Defaults to <see cref="FormReader.DefaultKeyLengthLimit"/></param>
     /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>

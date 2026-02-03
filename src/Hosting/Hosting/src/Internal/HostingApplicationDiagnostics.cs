@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Hosting;
 
@@ -57,10 +58,10 @@ internal sealed class HostingApplicationDiagnostics
 
     private static bool GetSuppressActivityOpenTelemetryData()
     {
-        // Default to true if the switch isn't set.
+        // Default to false if the switch isn't set.
         if (!AppContext.TryGetSwitch("Microsoft.AspNetCore.Hosting.SuppressActivityOpenTelemetryData", out var enabled))
         {
-            return true;
+            return false;
         }
 
         return enabled;
@@ -233,7 +234,7 @@ internal sealed class HostingApplicationDiagnostics
         // can capture the activity as a metric exemplar.
         if (activity is not null)
         {
-            StopActivity(httpContext, activity, context.HasDiagnosticListener);
+            StopActivity(httpContext, activity, exception, context.HasDiagnosticListener);
         }
 
         if (context.EventLogEnabled)
@@ -434,6 +435,13 @@ internal sealed class HostingApplicationDiagnostics
             return null;
         }
 
+        if (!SuppressActivityOpenTelemetryData)
+        {
+            // Set the initial display name to just the HTTP method.
+            // It will be updated to include the route if one is matched.
+            activity.DisplayName = HostingTelemetryHelpers.GetActivityDisplayName(httpContext.Request.Method);
+        }
+
         _diagnosticListener.OnActivityImport(activity, httpContext);
 
         if (_diagnosticListener.IsEnabled(ActivityStartKey))
@@ -457,6 +465,8 @@ internal sealed class HostingApplicationDiagnostics
         // Missing values recommended by the spec are:
         // - url.query (need configuration around redaction to do properly)
         // - http.request.header.<key>
+        //
+        // Note that these tags are added even if Activity.IsAllDataRequested is false, as they may be used in sampling decisions.
 
         var request = httpContext.Request;
         var creationTags = new TagList();
@@ -473,7 +483,7 @@ internal sealed class HostingApplicationDiagnostics
 
         HostingTelemetryHelpers.SetActivityHttpMethodTags(ref creationTags, request.Method);
 
-        if (request.Headers.TryGetValue("User-Agent", out var values))
+        if (request.Headers.TryGetValue(HeaderNames.UserAgent, out var values))
         {
             var userAgent = values.Count > 0 ? values[0] : null;
             if (!string.IsNullOrEmpty(userAgent))
@@ -491,8 +501,13 @@ internal sealed class HostingApplicationDiagnostics
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void StopActivity(HttpContext httpContext, Activity activity, bool hasDiagnosticListener)
+    private void StopActivity(HttpContext httpContext, Activity activity, Exception? exception, bool hasDiagnosticListener)
     {
+        if (!SuppressActivityOpenTelemetryData && activity.IsAllDataRequested)
+        {
+            SetActivityEndTags(httpContext, activity, exception);
+        }
+
         if (hasDiagnosticListener)
         {
             StopActivity(activity, httpContext);
@@ -500,6 +515,38 @@ internal sealed class HostingApplicationDiagnostics
         else
         {
             activity.Stop();
+        }
+    }
+
+    private static void SetActivityEndTags(HttpContext httpContext, Activity activity, Exception? exception)
+    {
+        var response = httpContext.Response;
+
+        activity.SetTag(HostingTelemetryHelpers.AttributeHttpResponseStatusCode, HostingTelemetryHelpers.GetBoxedStatusCode(response.StatusCode));
+
+        if (HostingTelemetryHelpers.TryGetHttpVersion(httpContext.Request.Protocol, out var httpVersion))
+        {
+            activity.SetTag(HostingTelemetryHelpers.AttributeNetworkProtocolVersion, httpVersion);
+        }
+
+        var endpoint = HttpExtensions.GetOriginalEndpoint(httpContext);
+        var route = endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
+        if (route is not null)
+        {
+            var resolvedRoute = RouteDiagnosticsHelpers.ResolveHttpRoute(route);
+            activity.SetTag(HostingTelemetryHelpers.AttributeHttpRoute, resolvedRoute);
+            activity.DisplayName = HostingTelemetryHelpers.GetActivityDisplayName(httpContext.Request.Method, resolvedRoute);
+        }
+
+        if (exception != null)
+        {
+            activity.SetTag(HostingTelemetryHelpers.AttributeErrorType, exception.GetType().FullName);
+            activity.SetStatus(ActivityStatusCode.Error, exception.Message);
+        }
+        else if (HostingTelemetryHelpers.IsErrorStatusCode(response.StatusCode))
+        {
+            activity.SetTag(HostingTelemetryHelpers.AttributeErrorType, response.StatusCode.ToString(CultureInfo.InvariantCulture));
+            activity.SetStatus(ActivityStatusCode.Error);
         }
     }
 

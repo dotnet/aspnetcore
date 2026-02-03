@@ -287,7 +287,7 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
             b.HasKey(p => p.CredentialId);
             b.ToTable("AspNetUserPasskeys");
             b.Property(p => p.CredentialId).HasMaxLength(1024); // Defined in WebAuthn spec to be no longer than 1023 bytes
-            b.OwnsOne(p => p.Data).ToJson();
+            b.ComplexProperty(p => p.Data).ToJson();
         });
     }
 
