@@ -234,11 +234,6 @@
     <CustomBeforeMicrosoftCommonCrossTargetingTargets>$(MSBuildThisFileDirectory)Directory.Build.BeforeCommonTargets.targets</CustomBeforeMicrosoftCommonCrossTargetingTargets>
   </PropertyGroup>
 
-  <!-- TODO: Re-enable NuGet Audit and fix alerts: https://github.com/dotnet/aspnetcore/issues/64177 -->
-  <PropertyGroup>
-    <NuGetAudit>false</NuGetAudit>
-  </PropertyGroup>
-
   <Import Project="eng\Workarounds.props" />
   <Import Project="artifacts\bin\GenerateFiles\Directory.Build.props" Condition=" '$(MSBuildProjectName)' != 'GenerateFiles' " />
   <Import Project="eng\Dependencies.props" />
