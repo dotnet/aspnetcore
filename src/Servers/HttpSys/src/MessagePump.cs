@@ -157,9 +157,17 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
 
         // Only signal after accept loops have completed to prevent early signaling
         // while new requests can still be accepted.
-        if (count == 0 && _acceptLoopsCompleted.Task.IsCompleted)
+        // Take the lock to ensure proper memory visibility of _acceptLoopsCompleted state
+        // and prevent race conditions where we might miss signaling _requestsDrained.
+        if (count == 0)
         {
-            _requestsDrained.TrySetResult();
+            lock (_shutdownLock)
+            {
+                if (_acceptLoopsCompleted.Task.IsCompleted)
+                {
+                    _requestsDrained.TrySetResult();
+                }
+            }
         }
 
         return count;
