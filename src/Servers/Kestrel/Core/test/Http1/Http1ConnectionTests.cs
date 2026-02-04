@@ -446,17 +446,6 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     }
 
     [Fact]
-    public async Task ParseRequestStartsRequestHeadersTimeoutOnFirstByteAvailable()
-    {
-        await _application.Output.WriteAsync(Encoding.ASCII.GetBytes("G"));
-
-        ParseRequest((await _transport.Input.ReadAsync()).Buffer, out _consumed, out _examined);
-        _transport.Input.AdvanceTo(_consumed, _examined);
-
-        _timeoutControl.Verify(cc => cc.ResetTimeout(_serviceContext.ServerOptions.Limits.RequestHeadersTimeout, TimeoutReason.RequestHeaders));
-    }
-
-    [Fact]
     public async Task TakeStartLineThrowsWhenTooLong()
     {
         _serviceContext.ServerOptions.Limits.MaxRequestLineSize = "GET / HTTP/1.1\r\n".Length;
@@ -1061,23 +1050,6 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     {
         var reader = new SequenceReader<byte>(readableBuffer);
         if (_http1Connection.TakeStartLine(ref reader))
-        {
-            consumed = reader.Position;
-            examined = reader.Position;
-            return true;
-        }
-        else
-        {
-            consumed = reader.Position;
-            examined = readableBuffer.End;
-            return false;
-        }
-    }
-
-    private bool ParseRequest(ReadOnlySequence<byte> readableBuffer, out SequencePosition consumed, out SequencePosition examined)
-    {
-        var reader = new SequenceReader<byte>(readableBuffer);
-        if (_http1Connection.ParseRequest(ref reader))
         {
             consumed = reader.Position;
             examined = reader.Position;

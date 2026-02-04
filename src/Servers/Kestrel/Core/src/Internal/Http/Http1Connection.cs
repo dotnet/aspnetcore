@@ -165,51 +165,6 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         SendTimeoutResponse();
     }
 
-    public bool ParseRequest(ref SequenceReader<byte> reader)
-    {
-        switch (_requestProcessingStatus)
-        {
-            case RequestProcessingStatus.RequestPending:
-                // Skip any empty lines (\r or \n) between requests.
-                // Peek first as a minor performance optimization; it's a quick inlined check.
-                if (reader.TryPeek(out byte b) && (b == ByteCR || b == ByteLF))
-                {
-                    reader.AdvancePastAny(ByteCR, ByteLF);
-                }
-
-                if (reader.End)
-                {
-                    break;
-                }
-
-                TimeoutControl.ResetTimeout(ServerOptions.Limits.RequestHeadersTimeout, TimeoutReason.RequestHeaders);
-
-                _requestProcessingStatus = RequestProcessingStatus.ParsingRequestLine;
-                goto case RequestProcessingStatus.ParsingRequestLine;
-            case RequestProcessingStatus.ParsingRequestLine:
-                if (TakeStartLine(ref reader))
-                {
-                    _requestProcessingStatus = RequestProcessingStatus.ParsingHeaders;
-                    goto case RequestProcessingStatus.ParsingHeaders;
-                }
-                else
-                {
-                    break;
-                }
-            case RequestProcessingStatus.ParsingHeaders:
-                if (TakeMessageHeaders(ref reader, trailers: false))
-                {
-                    _requestProcessingStatus = RequestProcessingStatus.AppStarted;
-                    // Consumed preamble
-                    return true;
-                }
-                break;
-        }
-
-        // Haven't completed consuming preamble
-        return false;
-    }
-
     public bool TakeStartLine(ref SequenceReader<byte> reader)
     {
         // Make sure the buffer is limited
