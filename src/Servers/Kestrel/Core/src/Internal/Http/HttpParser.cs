@@ -361,8 +361,9 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
             KestrelBadHttpRequestException.Throw(result.ErrorReason);
         }
 
-        // Extract error detail from buffer if available
-        if (result.ErrorLength > 0 && result.ErrorOffset + result.ErrorLength <= buffer.Length)
+        // Extract error detail from buffer if available, but only when _showErrorDetails is enabled
+        // to avoid leaking internal details in production.
+        if (_showErrorDetails && result.ErrorLength > 0 && result.ErrorOffset + result.ErrorLength <= buffer.Length)
         {
             var errorSlice = buffer.Slice(result.ErrorOffset, result.ErrorLength);
             var errorBytes = errorSlice.IsSingleSegment ? errorSlice.FirstSpan : errorSlice.ToArray().AsSpan();
