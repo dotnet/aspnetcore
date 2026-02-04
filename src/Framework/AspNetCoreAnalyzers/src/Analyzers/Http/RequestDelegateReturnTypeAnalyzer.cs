@@ -55,6 +55,12 @@ public partial class RequestDelegateReturnTypeAnalyzer : DiagnosticAnalyzer
                         if (item is IReturnOperation returnOperation &&
                             returnOperation.ReturnedValue is { } returnedValue)
                         {
+                            // Skip return operations that belong to nested anonymous functions
+                            if (IsReturnFromNestedAnonymousFunction(returnOperation, anonymousFunction))
+                            {
+                                continue;
+                            }
+
                             var resolvedOperation = WalkDownConversion(returnedValue);
                             var returnType = resolvedOperation.Type;
 
@@ -79,6 +85,32 @@ public partial class RequestDelegateReturnTypeAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.DoNotReturnValueFromRequestDelegate,
             location,
             ((INamedTypeSymbol)returnType).TypeArguments[0].ToString()));
+    }
+
+    private static bool IsReturnFromNestedAnonymousFunction(IReturnOperation returnOperation, IAnonymousFunctionOperation targetAnonymousFunction)
+    {
+        // Walk up the parent chain from the return operation to see if we encounter
+        // a nested anonymous function before reaching the target anonymous function
+        var current = returnOperation.Parent;
+        while (current != null)
+        {
+            if (ReferenceEquals(current, targetAnonymousFunction))
+            {
+                // We reached the target anonymous function without finding a nested one
+                return false;
+            }
+
+            if (current is IAnonymousFunctionOperation)
+            {
+                // We found a nested anonymous function before reaching the target
+                return true;
+            }
+
+            current = current.Parent;
+        }
+
+        // This shouldn't happen in valid code, but return true to be safe
+        return true;
     }
 
     private static IOperation WalkDownConversion(IOperation operation)
