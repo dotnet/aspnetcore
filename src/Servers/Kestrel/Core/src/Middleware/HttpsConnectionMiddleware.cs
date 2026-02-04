@@ -140,6 +140,37 @@ internal sealed class HttpsConnectionMiddleware
         _sslStreamFactory = s => new SslStream(s);
     }
 
+    internal HttpsConnectionMiddleware(
+        ConnectionDelegate next,
+        HttpsConnectionAdapterOptions options,
+        TlsHandshakeCallbackOptions tlsCallbackOptions,
+        ILoggerFactory loggerFactory,
+        KestrelMetrics metrics)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(tlsCallbackOptions);
+
+        _next = next;
+        _handshakeTimeout = tlsCallbackOptions.HandshakeTimeout;
+        _logger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
+        _metrics = metrics;
+
+        _options = options;
+        _tlsCallbackOptions = tlsCallbackOptions.OnConnection;
+        _tlsCallbackOptionsState = tlsCallbackOptions.OnConnectionState;
+        _httpProtocols = ValidateAndNormalizeHttpProtocols(tlsCallbackOptions.HttpProtocols, _logger);
+
+        var remoteCertificateValidationCallback = _options.ClientCertificateMode == ClientCertificateMode.NoCertificate ?
+            (RemoteCertificateValidationCallback?)null : RemoteCertificateValidationCallback;
+
+        _sslStreamFactory = s => new SslStream(s, leaveInnerStreamOpen: false, userCertificateValidationCallback: remoteCertificateValidationCallback);
+
+        if (options.TlsClientHelloBytesCallback is not null)
+        {
+            _tlsListener = new TlsListener(options.TlsClientHelloBytesCallback);
+        }
+    }
+
     public async Task OnConnectionAsync(ConnectionContext context)
     {
         if (context.Features.Get<ITlsConnectionFeature>() != null)
