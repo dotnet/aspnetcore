@@ -196,7 +196,7 @@ public static class HeaderUtilities
         // Find the next delimiter
         current = headerValue.IndexOf(',', current);
 
-        if (current == -1)
+        if (current < 0)
         {
             // If no delimiter found, skip to the end
             return headerValue.Length;

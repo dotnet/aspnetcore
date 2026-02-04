@@ -134,7 +134,7 @@ internal class FileNameRouteConstraint : IRouteConstraint
         }
 
         var dotIndex = value.IndexOf('.');
-        if (dotIndex == -1)
+        if (dotIndex < 0)
         {
             // No dot.
             return false;

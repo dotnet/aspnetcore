@@ -58,7 +58,7 @@ public class PrefixContainer
             return true; // Empty prefix matches all elements.
         }
 
-        return BinarySearch(prefix) > -1;
+        return BinarySearch(prefix) >= 0;
     }
 
     /// <summary>
@@ -110,7 +110,7 @@ public class PrefixContainer
         {
             // Handle an entry such as "[key]".
             var bracketPosition = entry.IndexOf(']', 1);
-            if (bracketPosition == -1)
+            if (bracketPosition < 0)
             {
                 // Malformed for dictionary.
                 return;
@@ -122,7 +122,7 @@ public class PrefixContainer
         else
         {
             // Handle an entry such as "key", "key.property" and "key[index]".
-            key = delimiterPosition == -1 ? entry : entry.Substring(0, delimiterPosition);
+            key = delimiterPosition < 0 ? entry : entry.Substring(0, delimiterPosition);
             fullName = key;
         }
 
@@ -159,7 +159,7 @@ public class PrefixContainer
             case '[':
                 // Handle an entry such as "prefix[key]".
                 var bracketPosition = entry.IndexOf(']', keyPosition);
-                if (bracketPosition == -1)
+                if (bracketPosition < 0)
                 {
                     // Malformed for dictionary
                     return;

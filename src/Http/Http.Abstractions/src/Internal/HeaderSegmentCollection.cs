@@ -141,7 +141,7 @@ internal readonly struct HeaderSegmentCollection : IEnumerable<HeaderSegment>, I
                     _trailingStart = -1;
 
                     if (_offset == _headerLength &&
-                        _leadingStart != -1 &&
+                        _leadingStart >= 0 &&
                         _leadingStart != _offset)
                     {
                         // Also produce trailing whitespace
@@ -186,9 +186,9 @@ internal readonly struct HeaderSegmentCollection : IEnumerable<HeaderSegment>, I
                             switch (attr)
                             {
                                 case Attr.Delimiter:
-                                    _valueStart = _valueStart == -1 ? _offset : _valueStart;
-                                    _valueEnd = _valueEnd == -1 ? _offset : _valueEnd;
-                                    _trailingStart = _trailingStart == -1 ? _offset : _trailingStart;
+                                    _valueStart = _valueStart < 0 ? _offset : _valueStart;
+                                    _valueEnd = _valueEnd < 0 ? _offset : _valueEnd;
+                                    _trailingStart = _trailingStart < 0 ? _offset : _trailingStart;
                                     _leadingEnd = _offset;
                                     _mode = Mode.Produce;
                                     break;

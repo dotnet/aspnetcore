@@ -65,7 +65,7 @@ internal sealed class RedirectRule : IRule
                     schemeSplit += Uri.SchemeDelimiter.Length;
                     var pathSplit = newPath.IndexOf('/', schemeSplit);
 
-                    if (pathSplit == -1)
+                    if (pathSplit < 0)
                     {
                         host = new HostString(newPath.Substring(schemeSplit));
                         newPath = "/";

@@ -38,7 +38,7 @@ internal class BoundedCacheWithFactory<TKey, TValue>
                 if (!weakReferencedEntry.TryGetTarget(out var cachedEntry) ||
                     cachedEntry == null)
                 {
-                    if (indexToSetTarget == -1)
+                    if (indexToSetTarget < 0)
                     {
                         indexToSetTarget = i;
                     }
@@ -56,7 +56,7 @@ internal class BoundedCacheWithFactory<TKey, TValue>
                 }
             }
 
-            if (indexToSetTarget == -1)
+            if (indexToSetTarget < 0)
             {
                 indexToSetTarget = 0;
             }

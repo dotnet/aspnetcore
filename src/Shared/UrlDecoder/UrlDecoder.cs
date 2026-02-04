@@ -98,7 +98,7 @@ internal sealed class UrlDecoder
         // preserves the original head. if the percent-encodings cannot be interpreted as sequence of UTF-8 octets,
         // bytes from this till the last scanned one will be copied to the memory pointed by writer.
         var byte1 = UnescapePercentEncoding(ref sourceIndex, buffer, isFormEncoding);
-        if (byte1 == -1)
+        if (byte1 < 0)
         {
             return false;
         }
@@ -159,7 +159,7 @@ internal sealed class UrlDecoder
 
             var nextSourceIndex = sourceIndex;
             var nextByte = UnescapePercentEncoding(ref nextSourceIndex, buffer, isFormEncoding);
-            if (nextByte == -1)
+            if (nextByte < 0)
             {
                 return false;
             }
@@ -269,13 +269,13 @@ internal sealed class UrlDecoder
         var probe = scan;
 
         var value1 = ReadHex(ref probe, buffer);
-        if (value1 == -1)
+        if (value1 < 0)
         {
             return -1;
         }
 
         var value2 = ReadHex(ref probe, buffer);
-        if (value2 == -1)
+        if (value2 < 0)
         {
             return -1;
         }
@@ -380,7 +380,7 @@ internal sealed class UrlDecoder
         // by using the first occurrence of % as the starting position both
         // for the source and the destination index.
         int position = buffer.IndexOf('%');
-        if (position == -1)
+        if (position < 0)
         {
             return buffer.Length;
         }
@@ -436,7 +436,7 @@ internal sealed class UrlDecoder
         // preserves the original head. if the percent-encodings cannot be interpreted as sequence of UTF-8 octets,
         // chars from this till the last scanned one will be copied to the memory pointed by writer.
         var codeUnit1 = UnescapePercentEncoding(ref sourceIndex, buffer);
-        if (codeUnit1 == -1)
+        if (codeUnit1 < 0)
         {
             return false;
         }
@@ -495,7 +495,7 @@ internal sealed class UrlDecoder
 
             var nextSourceIndex = sourceIndex;
             var nextCodeUnit = UnescapePercentEncoding(ref nextSourceIndex, buffer);
-            if (nextCodeUnit == -1)
+            if (nextCodeUnit < 0)
             {
                 return false;
             }

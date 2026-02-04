@@ -63,13 +63,13 @@ internal sealed class EmbeddedFilesManifest
     private static StringSegment RemoveLeadingAndTrailingDirectorySeparators(string path)
     {
         Debug.Assert(path.Length > 0);
-        var start = Array.IndexOf(_separators, path[0]) == -1 ? 0 : 1;
+        var start = Array.IndexOf(_separators, path[0]) < 0 ? 0 : 1;
         if (start == path.Length)
         {
             return StringSegment.Empty;
         }
 
-        var end = Array.IndexOf(_separators, path[path.Length - 1]) == -1 ? path.Length : path.Length - 1;
+        var end = Array.IndexOf(_separators, path[path.Length - 1]) < 0 ? path.Length : path.Length - 1;
         var trimmed = new StringSegment(path, start, end - start);
         return trimmed;
     }
@@ -84,5 +84,5 @@ internal sealed class EmbeddedFilesManifest
         throw new InvalidOperationException($"Invalid path: '{path}'");
     }
 
-    private static bool HasInvalidPathChars(string path) => path.IndexOfAny(_invalidFileNameChars) != -1;
+    private static bool HasInvalidPathChars(string path) => path.IndexOfAny(_invalidFileNameChars) >= 0;
 }

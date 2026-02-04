@@ -180,7 +180,7 @@ public readonly struct PathString : IEquatable<PathString>
     public static PathString FromUriComponent(string uriComponent)
     {
         int position = uriComponent.IndexOf('%');
-        if (position == -1)
+        if (position < 0)
         {
             return new PathString(uriComponent);
         }

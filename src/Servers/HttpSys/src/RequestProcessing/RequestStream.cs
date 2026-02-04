@@ -113,12 +113,12 @@ internal sealed partial class RequestStream : Stream
 
         uint dataRead = 0;
 
-        if (_dataChunkIndex != -1)
+        if (_dataChunkIndex >= 0)
         {
             dataRead = _requestContext.Request.GetChunks(ref _dataChunkIndex, ref _dataChunkOffset, buffer, offset, size);
         }
 
-        if (_dataChunkIndex == -1 && dataRead == 0)
+        if (_dataChunkIndex < 0 && dataRead == 0)
         {
             uint statusCode = 0;
             uint extraDataRead = 0;
@@ -204,7 +204,7 @@ internal sealed partial class RequestStream : Stream
         RequestStreamAsyncResult? asyncResult = null;
 
         uint dataRead = 0;
-        if (_dataChunkIndex != -1)
+        if (_dataChunkIndex >= 0)
         {
             dataRead = _requestContext.Request.GetChunks(ref _dataChunkIndex, ref _dataChunkOffset, buffer, offset, size);
             if (dataRead > 0)
