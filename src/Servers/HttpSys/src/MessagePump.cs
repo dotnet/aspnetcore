@@ -155,11 +155,17 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
     {
         var count = Interlocked.Decrement(ref _outstandingRequests);
 
-        // Only signal after accept loops have completed to prevent early signaling
-        // while new requests can still be accepted.
-        if (count == 0 && _acceptLoopsCompleted.Task.IsCompleted)
+        if (count == 0)
         {
-            _requestsDrained.TrySetResult();
+            lock (_shutdownLock)
+            {
+                // Only signal after accept loops have completed to prevent early signaling
+                // while new requests can still be accepted.
+                if (_acceptLoopCount == 0)
+                {
+                    _requestsDrained.TrySetResult();
+                }
+            }
         }
 
         return count;
@@ -235,7 +241,7 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
         // This prevents a race where the BoundHandle is disposed while
         // AsyncAcceptContext is still trying to use it for cleanup.
         // After this completes, DecrementOutstandingRequest can signal _requestsDrained
-        // (it checks _acceptLoopsTcs.Task.IsCompleted).
+        // (it checks _acceptLoopCount).
         await _acceptLoopsCompleted.Task.ConfigureAwait(false);
 
         // Signal request drain completion if no requests are outstanding,
