@@ -410,6 +410,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // Use average measured height for calculations if we have measurements, otherwise use _itemSize
         var effectiveItemSize = _measuredItemCount > 0 ? _totalMeasuredHeight / _measuredItemCount : _itemSize;
 
+        // Guard against division by zero or very small values that could cause overflow
+        if (effectiveItemSize <= 0)
+        {
+            effectiveItemSize = ItemSize;
+        }
+
         itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / effectiveItemSize) - OverscanCount);
         visibleItemCapacity = (int)Math.Ceiling(containerSize / effectiveItemSize) + 2 * OverscanCount;
         unusedItemCapacity = Math.Max(0, visibleItemCapacity - maxItemCount);
