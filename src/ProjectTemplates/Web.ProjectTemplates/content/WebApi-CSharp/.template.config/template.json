@@ -430,8 +430,8 @@
             "else": ["#else"],
             "elseif": ["#elseif", "#elif"],
             "endif": ["#endif"],
-            "trim": "true",
-            "wholeLine": "true"
+            "trim": true,
+            "wholeLine": true
           }
         }
       ]
