@@ -244,19 +244,11 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
         // (it checks _acceptLoopCount).
         await _acceptLoopsCompleted.Task.ConfigureAwait(false);
 
-        // Signal request drain completion if no requests are outstanding,
-        // otherwise the last request to complete will signal it.
-        // Important to do this after accept loops complete to avoid hanging until cancellation
-        if (Interlocked.CompareExchange(ref _outstandingRequests, 0, 0) == 0)
-        {
-            _requestsDrained.TrySetResult();
-        }
-        else
+        if (Interlocked.CompareExchange(ref _outstandingRequests, 0, 0) != 0)
         {
             Log.WaitingForRequestsToDrain(_logger, _outstandingRequests);
+            await _requestsDrained.Task.ConfigureAwait(false);
         }
-
-        await _requestsDrained.Task.ConfigureAwait(false);
 
         Listener.Dispose();
     }
