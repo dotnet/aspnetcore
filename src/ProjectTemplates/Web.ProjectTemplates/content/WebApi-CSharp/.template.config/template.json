@@ -420,6 +420,23 @@
       "value": "(!UsingControllers)"
     }
   },
+  "SpecialCustomOperations": {
+    "**/*.http": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": ["#if"],
+            "else": ["#else"],
+            "elseif": ["#elseif", "#elif"],
+            "endif": ["#endif"],
+            "trim": "true",
+            "wholeLine": "true"
+          }
+        }
+      ]
+    }
+  },
   "primaryOutputs": [
     {
       "path": "Company.WebApplication1.csproj"
