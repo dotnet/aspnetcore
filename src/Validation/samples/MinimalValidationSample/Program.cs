@@ -5,7 +5,6 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Validation;
 using MinimalValidationSample;
 using MinimalValidationSample.Models;
-using MinimalValidationSample.Resources;
 
 var builder = WebApplication.CreateBuilder(args);
 
