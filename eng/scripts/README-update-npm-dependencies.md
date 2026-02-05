@@ -60,7 +60,6 @@ To see what the script would do without making any changes:
 
 - `-WhatIf`: Performs a dry run without making any changes
 - `-SkipPullRequestCreation`: Skips automatic PR creation, allowing you to create the PR manually
-- `-SkipClearCache`: (Advanced) Skips clearing the npm cache
 
 ## Authentication
 
