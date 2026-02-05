@@ -150,6 +150,9 @@
   <data name="BadRequest_InvalidRequestHeadersNoCRLF" xml:space="preserve">
     <value>Invalid request headers: missing final CRLF in header fields.</value>
   </data>
+  <data name="BadRequest_InvalidRequestHeader" xml:space="preserve">
+    <value>Invalid request header.</value>
+  </data>
   <data name="BadRequest_InvalidRequestHeader_Detail" xml:space="preserve">
     <value>Invalid request header: '{detail}'</value>
   </data>
@@ -193,6 +196,9 @@
     <value>Unexpected end of request content.</value>
   </data>
   <data name="BadRequest_UnrecognizedHTTPVersion" xml:space="preserve">
+    <value>Unrecognized HTTP version.</value>
+  </data>
+  <data name="BadRequest_UnrecognizedHTTPVersion_Detail" xml:space="preserve">
     <value>Unrecognized HTTP version: '{detail}'</value>
   </data>
   <data name="FallbackToIPv4Any" xml:space="preserve">

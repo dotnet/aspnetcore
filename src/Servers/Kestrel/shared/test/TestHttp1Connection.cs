@@ -4,7 +4,6 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.InternalTesting;
 
@@ -32,19 +31,6 @@ internal class TestHttp1Connection : Http1Connection
     public Task ProduceEndAsync()
     {
         return ProduceEnd();
-    }
-
-    /// <summary>
-    /// Simulates the beginning of request parsing to test timeout behavior.
-    /// This triggers the same timeout logic as the real parsing path without the full parsing overhead.
-    /// </summary>
-    public void SimulateReadRequestStart()
-    {
-        if (_requestProcessingStatus == RequestProcessingStatus.RequestPending)
-        {
-            TimeoutControl.ResetTimeout(ServerOptions.Limits.RequestHeadersTimeout, TimeoutReason.RequestHeaders);
-            _requestProcessingStatus = RequestProcessingStatus.ParsingRequestLine;
-        }
     }
 
     protected override MessageBody CreateMessageBody()

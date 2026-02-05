@@ -168,7 +168,7 @@ public class HttpParserTests : LoggedTest
 #pragma warning restore CS0618 // Type or member is obsolete
             ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined));
 
-        Assert.Equal(CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion(httpVersion), exception.Message);
+        Assert.Equal(CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion_Detail(httpVersion), exception.Message);
         Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, exception.StatusCode);
     }
 
@@ -529,7 +529,7 @@ public class HttpParserTests : LoggedTest
 #pragma warning restore CS0618 // Type or member is obsolete
             ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined));
 
-        Assert.Equal("Invalid request line: ''", exception.Message);
+        Assert.Equal(CoreStrings.BadRequest_InvalidRequestLine, exception.Message);
         Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
 
         // Unrecognized HTTP version
@@ -540,7 +540,7 @@ public class HttpParserTests : LoggedTest
 #pragma warning restore CS0618 // Type or member is obsolete
             ParseRequestLine(parser, requestHandler, buffer, out var consumed, out var examined));
 
-        Assert.Equal(CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion(string.Empty), exception.Message);
+        Assert.Equal(CoreStrings.BadRequest_UnrecognizedHTTPVersion, exception.Message);
         Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, exception.StatusCode);
 
         // Invalid request header
@@ -554,7 +554,7 @@ public class HttpParserTests : LoggedTest
             parser.ParseHeaders(requestHandler, ref reader);
         });
 
-        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestHeader_Detail(string.Empty), exception.Message);
+        Assert.Equal(CoreStrings.BadRequest_InvalidRequestHeader, exception.Message);
         Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
     }
 
