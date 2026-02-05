@@ -1,3 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Components.QuickGrid.Paginator.Id.get -> string!
+Microsoft.AspNetCore.Components.QuickGrid.Paginator.Id.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnRowClick.get -> Microsoft.AspNetCore.Components.EventCallback<TGridItem>
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnRowClick.set -> void

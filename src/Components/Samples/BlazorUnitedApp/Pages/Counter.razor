@@ -10,8 +10,17 @@
     <Paginator State="pagination" />
 </div>
 
+<div style="max-width: 200px;">
+    <QuickGrid Items="items" Pagination="pagination2">
+        <PropertyColumn Property="@(p => p)" Sortable="true" Title="Number" />
+    </QuickGrid>
+    <Paginator State="pagination2" Id="Pag2" />
+</div>
+
 @code {
     PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
+
+    PaginationState pagination2 = new PaginationState { ItemsPerPage = 5 };
 
     private IQueryable<int> items = Enumerable.Range(1, 100).AsQueryable();
 }
