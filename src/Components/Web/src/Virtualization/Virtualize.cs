@@ -164,7 +164,19 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 $"{GetType()} requires a positive value for parameter '{nameof(ItemSize)}'.");
         }
 
-        if (_itemSize <= 0)
+        // If ItemSize parameter changed, reset internal state to use the new size
+        var itemSizeChanged = _itemSize > 0 && Math.Abs(_itemSize - ItemSize) > float.Epsilon;
+        if (itemSizeChanged)
+        {
+            var itemSizeRatio = _itemSize / ItemSize;
+            var scaledCapacity = (int)Math.Ceiling(_visibleItemCapacity * itemSizeRatio);
+            
+            _visibleItemCapacity = Math.Max(scaledCapacity, OverscanCount * 2 + 1);
+            _itemSize = ItemSize;
+            _totalMeasuredHeight = 0;
+            _measuredItemCount = 0;
+        }
+        else if (_itemSize <= 0)
         {
             _itemSize = ItemSize;
         }
@@ -202,6 +214,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         _itemTemplate = ItemContent ?? ChildContent;
         _placeholder = Placeholder ?? DefaultPlaceholder;
         _emptyContent = EmptyContent;
+
+        if (itemSizeChanged && _itemsProvider != null && _itemsProvider != DefaultItemsProvider)
+        {
+            var refreshTask = RefreshDataCoreAsync(renderOnSuccess: true);
+            _ = refreshTask.ConfigureAwait(false);
+        }
     }
 
     /// <inheritdoc />
