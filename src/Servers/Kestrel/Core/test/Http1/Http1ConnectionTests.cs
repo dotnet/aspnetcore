@@ -446,6 +446,15 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     }
 
     [Fact]
+    public void TryParseRequestStartsRequestHeadersTimeoutOnFirstByteAvailable()
+    {
+        // Simulate the first byte being available and the connection starting to parse
+        _http1Connection.SimulateReadRequestStart();
+
+        _timeoutControl.Verify(cc => cc.ResetTimeout(_serviceContext.ServerOptions.Limits.RequestHeadersTimeout, TimeoutReason.RequestHeaders));
+    }
+
+    [Fact]
     public async Task TakeStartLineThrowsWhenTooLong()
     {
         _serviceContext.ServerOptions.Limits.MaxRequestLineSize = "GET / HTTP/1.1\r\n".Length;

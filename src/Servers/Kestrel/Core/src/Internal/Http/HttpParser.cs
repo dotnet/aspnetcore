@@ -84,6 +84,13 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         return result.IsComplete;
     }
 
+    // Explicit interface implementations for the Try* methods
+    HttpParseResult IHttpParser<TRequestHandler>.TryParseRequestLine(TRequestHandler handler, ref SequenceReader<byte> reader)
+        => TryParseRequestLine(handler, ref reader);
+
+    HttpParseResult IHttpParser<TRequestHandler>.TryParseHeaders(TRequestHandler handler, ref SequenceReader<byte> reader)
+        => TryParseHeaders(handler, ref reader);
+
     private static byte[] AppendEndOfLine(ReadOnlySpan<byte> span, bool lineFeedOnly)
     {
         var array = new byte[span.Length + (lineFeedOnly ? 1 : 2)];
@@ -363,7 +370,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
 
         // Extract error detail from buffer if available, but only when _showErrorDetails is enabled
         // to avoid leaking internal details in production.
-        if (_showErrorDetails && result.ErrorLength > 0 && result.ErrorOffset + result.ErrorLength <= buffer.Length)
+        if (result.ErrorLength > 0 && result.ErrorOffset + result.ErrorLength <= buffer.Length)
         {
             var errorSlice = buffer.Slice(result.ErrorOffset, result.ErrorLength);
             var errorBytes = errorSlice.IsSingleSegment ? errorSlice.FirstSpan : errorSlice.ToArray().AsSpan();
@@ -397,7 +404,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         // If null character found, or request line is empty
         if (next == 0 || requestLine.Length == 0)
         {
-            return GetRequestLineError(requestLine, reader, baseOffset);
+            return GetRequestLineError(requestLine, ref reader, baseOffset);
         }
 
         // Get Method and set the offset
@@ -537,7 +544,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         return HttpParseResult.Error(reason, baseOffset, requestLine.Length);
     }
 
-    private static HttpParseResult GetRequestLineError(ReadOnlySpan<byte> requestLine, SequenceReader<byte> reader, int baseOffset)
+    private static HttpParseResult GetRequestLineError(ReadOnlySpan<byte> requestLine, ref SequenceReader<byte> reader, int baseOffset)
     {
         // Rewind to include the data for error detection
         reader.Rewind(requestLine.Length + 1);
@@ -566,6 +573,9 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                 handler.OnHeadersComplete(endStream: false);
                 return HttpParseResult.Complete;
             }
+
+            // Capture the starting position for error reporting
+            var headerLineStart = (int)reader.Consumed;
 
             var lfOrCrIndex = span.IndexOfAny(ByteCR, ByteLF);
             // Track terminator size for error reporting: 2 for CRLF, 1 for LF-only
@@ -603,14 +613,12 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                         else if (crIndex == 0)
                         {
                             // CR followed by something other than LF
-                            Debug.Assert(reader.Consumed >= crIndex + 1, "Reader consumed less than expected for error offset calculation");
-                            return HttpParseResult.Error(RequestRejectionReason.InvalidRequestHeadersNoCRLF, (int)reader.Consumed - crIndex - 1, crIndex + 2);
+                            return HttpParseResult.Error(RequestRejectionReason.InvalidRequestHeadersNoCRLF, headerLineStart, crIndex + 2);
                         }
                         else
                         {
                             // Include the thing after the CR in the rejection exception.
-                            Debug.Assert(reader.Consumed >= crIndex + 1, "Reader consumed less than expected for error offset calculation");
-                            return HttpParseResult.Error(RequestRejectionReason.InvalidRequestHeader, (int)reader.Consumed - crIndex - 1, crIndex + 2);
+                            return HttpParseResult.Error(RequestRejectionReason.InvalidRequestHeader, headerLineStart, crIndex + 2);
                         }
                     }
 
@@ -631,7 +639,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                     var lfIndex = lfOrCrIndex;
                     if (_disableHttp1LineFeedTerminators)
                     {
-                        return HttpParseResult.Error(RequestRejectionReason.InvalidRequestHeader, (int)reader.Consumed, lfIndex + 1);
+                        return HttpParseResult.Error(RequestRejectionReason.InvalidRequestHeader, headerLineStart, lfIndex + 1);
                     }
 
                     reader.Advance(lfIndex + 1);
@@ -671,11 +679,8 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                 {
                     // Sequence needs to be CRLF and not contain an inner CR not part of terminator.
                     // Not parsable as a valid name:value header pair.
-                    // Include the line terminator in the error detail for parity with throwing path
-                    Debug.Assert(reader.Consumed >= span.Length + terminatorSize, "Reader consumed less than expected for error offset calculation");
-                    var errorOffset = (int)reader.Consumed - span.Length - terminatorSize;
-                    var errorLength = span.Length + terminatorSize;
-                    return HttpParseResult.Error(RequestRejectionReason.InvalidRequestHeader, errorOffset, errorLength);
+                    var headerLineLength = span.Length + terminatorSize;
+                    return HttpParseResult.Error(RequestRejectionReason.InvalidRequestHeader, headerLineStart, headerLineLength);
                 }
             }
             catch (InvalidOperationException)

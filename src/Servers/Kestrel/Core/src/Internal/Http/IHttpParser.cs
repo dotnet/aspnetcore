@@ -58,4 +58,8 @@ internal interface IHttpParser<TRequestHandler> where TRequestHandler : IHttpHea
     bool ParseRequestLine(TRequestHandler handler, ref SequenceReader<byte> reader);
 
     bool ParseHeaders(TRequestHandler handler, ref SequenceReader<byte> reader);
+
+    HttpParseResult TryParseRequestLine(TRequestHandler handler, ref SequenceReader<byte> reader);
+
+    HttpParseResult TryParseHeaders(TRequestHandler handler, ref SequenceReader<byte> reader);
 }
