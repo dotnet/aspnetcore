@@ -57,6 +57,7 @@ HttpSendResponseEntityBody
 HttpSetRequestQueueProperty
 HttpSetUrlGroupProperty
 HttpSetUrlGroupProperty
+HttpShutdownRequestQueue
 SetFileCompletionNotificationModes
 SOCKADDR_IN
 SOCKADDR_IN6
