@@ -88,6 +88,12 @@ internal static class KestrelBadHttpRequestException
             case RequestRejectionReason.InvalidHostHeader:
                 ex = new BadHttpRequestException(CoreStrings.BadRequest_InvalidHostHeader, StatusCodes.Status400BadRequest, reason);
                 break;
+            case RequestRejectionReason.UnrecognizedHTTPVersion:
+                ex = new BadHttpRequestException(CoreStrings.BadRequest_UnrecognizedHTTPVersion, StatusCodes.Status505HttpVersionNotsupported, reason);
+                break;
+            case RequestRejectionReason.InvalidRequestHeader:
+                ex = new BadHttpRequestException(CoreStrings.BadRequest_InvalidRequestHeader, StatusCodes.Status400BadRequest, reason);
+                break;
             default:
                 ex = new BadHttpRequestException(CoreStrings.BadRequest, StatusCodes.Status400BadRequest, reason);
                 break;
@@ -131,7 +137,7 @@ internal static class KestrelBadHttpRequestException
                 ex = new BadHttpRequestException(CoreStrings.FormatBadRequest_InvalidContentLength_Detail(detail), StatusCodes.Status400BadRequest, reason);
                 break;
             case RequestRejectionReason.UnrecognizedHTTPVersion:
-                ex = new BadHttpRequestException(CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion(detail), StatusCodes.Status505HttpVersionNotsupported, reason);
+                ex = new BadHttpRequestException(CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion_Detail(detail), StatusCodes.Status505HttpVersionNotsupported, reason);
                 break;
             case RequestRejectionReason.FinalTransferCodingNotChunked:
                 ex = new BadHttpRequestException(CoreStrings.FormatBadRequest_FinalTransferCodingNotChunked(detail), StatusCodes.Status400BadRequest, reason);

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
@@ -27,6 +28,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     private readonly HttpConnectionContext _context;
     private readonly IHttpParser<Http1ParsingHandler> _parser;
     private readonly Http1OutputProducer _http1Output;
+    private readonly bool _showErrorDetails;
 
     private volatile bool _requestTimedOut;
     private uint _requestCount;
@@ -52,6 +54,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 
         _context = context;
         _parser = ServiceContext.HttpParser;
+        _showErrorDetails = Log.IsEnabled(LogLevel.Information);
 
         _http1Output = new Http1OutputProducer(
             _context.Transport.Output,
@@ -164,51 +167,6 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         SendTimeoutResponse();
     }
 
-    public bool ParseRequest(ref SequenceReader<byte> reader)
-    {
-        switch (_requestProcessingStatus)
-        {
-            case RequestProcessingStatus.RequestPending:
-                // Skip any empty lines (\r or \n) between requests.
-                // Peek first as a minor performance optimization; it's a quick inlined check.
-                if (reader.TryPeek(out byte b) && (b == ByteCR || b == ByteLF))
-                {
-                    reader.AdvancePastAny(ByteCR, ByteLF);
-                }
-
-                if (reader.End)
-                {
-                    break;
-                }
-
-                TimeoutControl.ResetTimeout(ServerOptions.Limits.RequestHeadersTimeout, TimeoutReason.RequestHeaders);
-
-                _requestProcessingStatus = RequestProcessingStatus.ParsingRequestLine;
-                goto case RequestProcessingStatus.ParsingRequestLine;
-            case RequestProcessingStatus.ParsingRequestLine:
-                if (TakeStartLine(ref reader))
-                {
-                    _requestProcessingStatus = RequestProcessingStatus.ParsingHeaders;
-                    goto case RequestProcessingStatus.ParsingHeaders;
-                }
-                else
-                {
-                    break;
-                }
-            case RequestProcessingStatus.ParsingHeaders:
-                if (TakeMessageHeaders(ref reader, trailers: false))
-                {
-                    _requestProcessingStatus = RequestProcessingStatus.AppStarted;
-                    // Consumed preamble
-                    return true;
-                }
-                break;
-        }
-
-        // Haven't completed consuming preamble
-        return false;
-    }
-
     public bool TakeStartLine(ref SequenceReader<byte> reader)
     {
         // Make sure the buffer is limited
@@ -284,6 +242,130 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             {
                 _remainingRequestHeadersBytesAllowed -= trimmedReader.Consumed;
             }
+        }
+    }
+
+    /// <summary>
+    /// Non-throwing version of ParseRequest. Returns HttpParseResult instead of throwing.
+    /// </summary>
+    private HttpParseResult TryParseRequestCore(ref SequenceReader<byte> reader)
+    {
+        switch (_requestProcessingStatus)
+        {
+            case RequestProcessingStatus.RequestPending:
+                // Skip any empty lines (\r or \n) between requests.
+                // Peek first as a minor performance optimization; it's a quick inlined check.
+                if (reader.TryPeek(out byte b) && (b == ByteCR || b == ByteLF))
+                {
+                    reader.AdvancePastAny(ByteCR, ByteLF);
+                }
+
+                if (reader.End)
+                {
+                    return HttpParseResult.Incomplete;
+                }
+
+                TimeoutControl.ResetTimeout(ServerOptions.Limits.RequestHeadersTimeout, TimeoutReason.RequestHeaders);
+                _requestProcessingStatus = RequestProcessingStatus.ParsingRequestLine;
+                goto case RequestProcessingStatus.ParsingRequestLine;
+
+            case RequestProcessingStatus.ParsingRequestLine:
+                var startLineResult = TryTakeStartLineCore(ref reader);
+                if (startLineResult.HasError)
+                {
+                    return startLineResult;
+                }
+                if (startLineResult.IsComplete)
+                {
+                    _requestProcessingStatus = RequestProcessingStatus.ParsingHeaders;
+                    goto case RequestProcessingStatus.ParsingHeaders;
+                }
+                return HttpParseResult.Incomplete;
+
+            case RequestProcessingStatus.ParsingHeaders:
+                var headersResult = TryTakeMessageHeadersCore(ref reader, trailers: false);
+                if (headersResult.HasError)
+                {
+                    return headersResult;
+                }
+                if (headersResult.IsComplete)
+                {
+                    _requestProcessingStatus = RequestProcessingStatus.AppStarted;
+                    return HttpParseResult.Complete;
+                }
+                return HttpParseResult.Incomplete;
+        }
+
+        return HttpParseResult.Incomplete;
+    }
+
+    private HttpParseResult TryTakeStartLineCore(ref SequenceReader<byte> reader)
+    {
+        if (reader.Remaining >= ServerOptions.Limits.MaxRequestLineSize)
+        {
+            return TryTrimAndTakeStartLineCore(ref reader);
+        }
+
+        return _parser.TryParseRequestLine(new Http1ParsingHandler(this), ref reader);
+
+        HttpParseResult TryTrimAndTakeStartLineCore(ref SequenceReader<byte> reader)
+        {
+            var trimmedBuffer = reader.Sequence.Slice(reader.Position, ServerOptions.Limits.MaxRequestLineSize);
+            var trimmedReader = new SequenceReader<byte>(trimmedBuffer);
+
+            var result = _parser.TryParseRequestLine(new Http1ParsingHandler(this), ref trimmedReader);
+            if (result.HasError)
+            {
+                return result;
+            }
+            if (!result.IsComplete)
+            {
+                return HttpParseResult.Error(RequestRejectionReason.RequestLineTooLong);
+            }
+
+            reader.Advance(trimmedReader.Consumed);
+            return HttpParseResult.Complete;
+        }
+    }
+
+    private HttpParseResult TryTakeMessageHeadersCore(ref SequenceReader<byte> reader, bool trailers)
+    {
+        if (reader.Remaining > _remainingRequestHeadersBytesAllowed)
+        {
+            return TryTrimAndTakeMessageHeadersCore(ref reader, trailers);
+        }
+
+        var alreadyConsumed = reader.Consumed;
+        var result = _parser.TryParseHeaders(new Http1ParsingHandler(this, trailers), ref reader);
+        _remainingRequestHeadersBytesAllowed -= reader.Consumed - alreadyConsumed;
+
+        if (result.IsComplete)
+        {
+            TimeoutControl.CancelTimeout();
+        }
+
+        return result;
+
+        HttpParseResult TryTrimAndTakeMessageHeadersCore(ref SequenceReader<byte> reader, bool trailers)
+        {
+            var trimmedBuffer = reader.Sequence.Slice(reader.Position, _remainingRequestHeadersBytesAllowed);
+            var trimmedReader = new SequenceReader<byte>(trimmedBuffer);
+
+            var result = _parser.TryParseHeaders(new Http1ParsingHandler(this, trailers), ref trimmedReader);
+            _remainingRequestHeadersBytesAllowed -= trimmedReader.Consumed;
+
+            if (result.HasError)
+            {
+                return result;
+            }
+            if (!result.IsComplete)
+            {
+                return HttpParseResult.Error(RequestRejectionReason.HeadersExceedMaxTotalSize);
+            }
+
+            TimeoutControl.CancelTimeout();
+            reader.Advance(trimmedReader.Consumed);
+            return HttpParseResult.Complete;
         }
     }
 
@@ -722,29 +804,40 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     {
         var reader = new SequenceReader<byte>(result.Buffer);
         var isConsumed = false;
+
+        // The parser itself doesn't throw, but handler callbacks (OnStartLine, OnHeader)
+        // can still throw BadHttpRequestException for semantic errors (e.g., invalid request target).
+        // We catch those here to ensure metrics are recorded via OnBadRequest.
+        HttpParseResult parseResult;
         try
         {
-            isConsumed = ParseRequest(ref reader);
-        }
-        catch (InvalidOperationException) when (_requestProcessingStatus == RequestProcessingStatus.ParsingHeaders)
-        {
-            KestrelBadHttpRequestException.Throw(RequestRejectionReason.MalformedRequestInvalidHeaders);
-            throw;
+            parseResult = TryParseRequestCore(ref reader);
+
+            // Handle parse errors without exceptions
+            if (parseResult.HasError)
+            {
+                // Create exception and call HandleBadRequest BEFORE finally runs AdvanceTo,
+                // as that may invalidate the buffer
+                var ex = CreateBadRequestException(parseResult, result.Buffer);
+                HandleBadRequest(result.Buffer, ex);
+                endConnection = true;
+                return true;
+            }
+
+            isConsumed = parseResult.IsComplete;
         }
 #pragma warning disable CS0618 // Type or member is obsolete
         catch (BadHttpRequestException ex)
         {
-            OnBadRequest(result.Buffer, ex);
-
-            // Avoid re-throwing - handle the bad request state directly here
-            // to eliminate exception propagation overhead through async state machines
-            SetBadRequestState(ex);
+            // HandleBadRequest must be called before finally runs AdvanceTo
+            HandleBadRequest(result.Buffer, ex);
             endConnection = true;
             return true;
         }
 #pragma warning restore CS0618 // Type or member is obsolete
         catch (Exception)
         {
+            // Record OtherError for unexpected exceptions that escape the parser
             KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.OtherError);
             throw;
         }
@@ -761,11 +854,13 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                     endConnection = true;
                     return true;
                 case RequestProcessingStatus.ParsingRequestLine:
-                    KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidRequestLine);
-                    break;
+                    HandleBadRequest(result.Buffer, RequestRejectionReason.InvalidRequestLine);
+                    endConnection = true;
+                    return true;
                 case RequestProcessingStatus.ParsingHeaders:
-                    KestrelBadHttpRequestException.Throw(RequestRejectionReason.MalformedRequestInvalidHeaders);
-                    break;
+                    HandleBadRequest(result.Buffer, RequestRejectionReason.MalformedRequestInvalidHeaders);
+                    endConnection = true;
+                    return true;
             }
         }
         else if (!_keepAlive && _requestProcessingStatus == RequestProcessingStatus.RequestPending)
@@ -779,7 +874,9 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         {
             // In this case, there is an ongoing request but the start line/header parsing has timed out, so send
             // a 408 response.
-            KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestHeadersTimeout);
+            HandleBadRequest(result.Buffer, RequestRejectionReason.RequestHeadersTimeout);
+            endConnection = true;
+            return true;
         }
 
         endConnection = false;
@@ -835,6 +932,54 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
                 return ConnectionEndReason.OtherError;
         }
     }
+
+#pragma warning disable CS0618 // Type or member is obsolete
+    /// <summary>
+    /// Helper method to handle bad request: records metrics, sets bad request state, and ends the connection.
+    /// </summary>
+    private void HandleBadRequest(ReadOnlySequence<byte> requestData, BadHttpRequestException ex)
+    {
+        OnBadRequest(requestData, ex);
+        SetBadRequestState(ex);
+    }
+
+    /// <summary>
+    /// Helper method to handle bad request by rejection reason: creates exception, records metrics, sets bad request state.
+    /// </summary>
+    private void HandleBadRequest(ReadOnlySequence<byte> requestData, RequestRejectionReason reason)
+    {
+        var ex = KestrelBadHttpRequestException.GetException(reason);
+        HandleBadRequest(requestData, ex);
+    }
+#pragma warning restore CS0618 // Type or member is obsolete
+
+#pragma warning disable CS0618 // Type or member is obsolete
+    /// <summary>
+    /// Creates a BadHttpRequestException with error detail extracted from the buffer.
+    /// </summary>
+    private BadHttpRequestException CreateBadRequestException(HttpParseResult parseResult, ReadOnlySequence<byte> buffer)
+    {
+        // Some error reasons don't use detail
+        if (parseResult.ErrorReason == RequestRejectionReason.InvalidRequestHeadersNoCRLF)
+        {
+            return KestrelBadHttpRequestException.GetException(parseResult.ErrorReason);
+        }
+
+        // Extract error detail from buffer if available, but only when _showErrorDetails is enabled
+        // to avoid leaking internal details in production.
+        if (_showErrorDetails &&
+            parseResult.ErrorLength > 0 &&
+            parseResult.ErrorOffset + parseResult.ErrorLength <= buffer.Length)
+        {
+            var errorSlice = buffer.Slice(parseResult.ErrorOffset, parseResult.ErrorLength);
+            var errorBytes = errorSlice.IsSingleSegment ? errorSlice.FirstSpan : errorSlice.ToArray();
+            var detail = errorBytes.GetAsciiStringEscaped(Constants.MaxExceptionDetailSize);
+            return KestrelBadHttpRequestException.GetException(parseResult.ErrorReason, detail);
+        }
+
+        return KestrelBadHttpRequestException.GetException(parseResult.ErrorReason);
+    }
+#pragma warning restore CS0618 // Type or member is obsolete
 
 #pragma warning disable CS0618 // Type or member is obsolete
     private void OnBadRequest(ReadOnlySequence<byte> requestData, BadHttpRequestException ex)
