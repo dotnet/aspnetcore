@@ -28,6 +28,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     private readonly HttpConnectionContext _context;
     private readonly IHttpParser<Http1ParsingHandler> _parser;
     private readonly Http1OutputProducer _http1Output;
+    private readonly bool _showErrorDetails;
 
     private volatile bool _requestTimedOut;
     private uint _requestCount;
@@ -53,6 +54,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 
         _context = context;
         _parser = ServiceContext.HttpParser;
+        _showErrorDetails = Log.IsEnabled(LogLevel.Information);
 
         _http1Output = new Http1OutputProducer(
             _context.Transport.Output,
@@ -963,9 +965,9 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             return KestrelBadHttpRequestException.GetException(parseResult.ErrorReason);
         }
 
-        // Extract error detail from buffer if available, but only when logging is enabled
+        // Extract error detail from buffer if available, but only when _showErrorDetails is enabled
         // to avoid leaking internal details in production.
-        if (Log.IsEnabled(LogLevel.Information) &&
+        if (_showErrorDetails &&
             parseResult.ErrorLength > 0 &&
             parseResult.ErrorOffset + parseResult.ErrorLength <= buffer.Length)
         {
