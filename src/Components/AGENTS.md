@@ -30,7 +30,6 @@ The workflow for implementing new features in the Components area follows these 
 
 The `src/Components/Samples` folder contains several sample projects you can use for developing and testing features:
 
-- **BlazorServerApp** - A Blazor Server application for testing server-side scenarios
 - **BlazorUnitedApp** - A Blazor Web App (united/hybrid mode) for testing combined server and WebAssembly scenarios
 - **BlazorUnitedApp.Client** - The client-side portion of the BlazorUnitedApp
 
