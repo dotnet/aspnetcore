@@ -27,7 +27,11 @@
     "got": "^11.8.2",
     "http-cache-semantics": "^4.1.1",
     "semver-regex": "^3.1.3",
-    "saucelabs": ">=7.2.0"
+    "saucelabs": ">=7.2.0",
+    "lodash": "^4.17.23",
+    "diff": "^4.0.4",
+    "compressing": "^1.10.4",
+    "tar": "^7.5.7"
   },
   "engines": {
     "node": ">=20.9.0",
