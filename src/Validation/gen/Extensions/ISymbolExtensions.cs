@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Validation;
 
 internal static class ISymbolExtensions
 {
-    public static string GetDisplayName(this ISymbol property, INamedTypeSymbol displayAttribute)
+    public static string? GetDisplayName(this ISymbol property, INamedTypeSymbol displayAttribute)
     {
         var displayNameAttribute = property.GetAttributes()
             .FirstOrDefault(attribute =>
@@ -25,13 +25,38 @@ internal static class ISymbolExtensions
                 {
                     if (string.Equals(namedArgument.Key, "Name", StringComparison.Ordinal))
                     {
-                        return namedArgument.Value.Value?.ToString() ?? property.Name;
+                        if (namedArgument.Value.Value?.ToString() is { } name)
+                        {
+                            return name;
+                        }
                     }
                 }
             }
         }
 
-        return property.Name;
+        return null;
+    }
+
+    public static string? GetJsonPropertyName(this ISymbol property, INamedTypeSymbol nameAttribute)
+    {
+        var jsonPropertyNameAttribute = property.GetAttributes()
+            .FirstOrDefault(attribute =>
+                attribute.AttributeClass is { } attributeClass &&
+                SymbolEqualityComparer.Default.Equals(attributeClass, nameAttribute));
+
+        if (jsonPropertyNameAttribute is not null)
+        {
+            if (jsonPropertyNameAttribute.ConstructorArguments.Length is 1)
+            {
+                var arg = jsonPropertyNameAttribute.ConstructorArguments[0];
+                if (arg.Kind == TypedConstantKind.Primitive && arg.Value is string name)
+                {
+                    return name;
+                }
+            }
+        }
+
+        return null;
     }
 
     public static bool IsEqualityContract(this IPropertySymbol prop, WellKnownTypes wellKnownTypes) =>

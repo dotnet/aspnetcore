@@ -101,6 +101,33 @@ namespace Microsoft.Extensions.Validation.Generated
                 );
                 return true;
             }
+            if (type == typeof(global::ComplexTypeWithJsonPropertyName))
+            {
+                validatableInfo = new GeneratedValidatableTypeInfo(
+                    type: typeof(global::ComplexTypeWithJsonPropertyName),
+                    members: [
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ComplexTypeWithJsonPropertyName),
+                            propertyType: typeof(int),
+                            name: "DefaultPropertyName",
+                            displayName: "DefaultPropertyName"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ComplexTypeWithJsonPropertyName),
+                            propertyType: typeof(int),
+                            name: "CustomJsonPropertyName",
+                            displayName: "custom-property-name"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ComplexTypeWithJsonPropertyName),
+                            propertyType: typeof(int),
+                            name: "CustomJsonPropertyNameWithDisplayName",
+                            displayName: "display-name"
+                        ),
+                    ]
+                );
+                return true;
+            }
 
             return false;
         }
