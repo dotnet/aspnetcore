@@ -14,6 +14,7 @@ internal static class IdentityUserPasskeyExtensions
             passkey.Data.SignCount = passkeyInfo.SignCount;
             passkey.Data.IsBackedUp = passkeyInfo.IsBackedUp;
             passkey.Data.IsUserVerified = passkeyInfo.IsUserVerified;
+            passkey.Data.Aaguid = passkeyInfo.Aaguid;
         }
 
         public UserPasskeyInfo ToUserPasskeyInfo()
@@ -29,7 +30,8 @@ internal static class IdentityUserPasskeyExtensions
                 passkey.Data.AttestationObject,
                 passkey.Data.ClientDataJson)
             {
-                Name = passkey.Data.Name
+                Name = passkey.Data.Name,
+                Aaguid = passkey.Data.Aaguid,
             };
     }
 }
