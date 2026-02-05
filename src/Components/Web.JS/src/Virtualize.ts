@@ -154,7 +154,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       rangeBetweenSpacers.setStartAfter(spacerBefore);
       rangeBetweenSpacers.setEndBefore(spacerAfter);
       const spacerSeparation = rangeBetweenSpacers.getBoundingClientRect().height;
-      const containerSize = entry.rootBounds?.height;
+      const containerSize = entry.rootBounds?.height ?? 0;
 
       if (entry.target === spacerBefore) {
         dotNetHelper.invokeMethodAsync('OnSpacerBeforeVisible', entry.intersectionRect.top - entry.boundingClientRect.top, spacerSeparation, containerSize, measurements);
