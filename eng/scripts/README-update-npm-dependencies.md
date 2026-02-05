@@ -63,7 +63,7 @@ To see what the script would do without making any changes:
 
 ## Authentication
 
-The script will prompt you to authenticate with Azure DevOps when running `vsts-npm-auth`. This provisions a temporary (15-minute) PAT token for accessing the internal NPM registry.
+The script will prompt you to authenticate with Azure DevOps when running `vsts-npm-auth`. This provisions a temporary PAT token for accessing the internal NPM registry.
 
 ## What the Script Does
 
@@ -83,7 +83,7 @@ The script will prompt you to authenticate with Azure DevOps when running `vsts-
 If you encounter authentication errors with `vsts-npm-auth`:
 - Ensure you're on Windows
 - Ensure you're logged into Azure DevOps
-- Try running `vsts-npm-auth -E 15 -F` manually to test authentication
+- Try running `vsts-npm-auth -F` manually to test authentication
 
 ### The script cleaned my repository
 
