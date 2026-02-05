@@ -379,7 +379,6 @@
     <Project Path="src/Http/samples/MinimalSampleFSharp/MinimalSampleFSharp.fsproj" />
     <Project Path="src/Http/samples/MinimalSampleOwin/MinimalSampleOwin.csproj" />
     <Project Path="src/Http/samples/SampleApp/HttpAbstractions.SampleApp.csproj" />
-    <Project Path="src/Http/samples/MinimalValidationSample/MinimalValidationSample.csproj" />
   </Folder>
   <Folder Name="/src/Http/WebUtilities/">
     <Project Path="src/Http/WebUtilities/src/Microsoft.AspNetCore.WebUtilities.csproj" />
@@ -1188,6 +1187,9 @@
   <Folder Name="/src/Validation/test/">
     <Project Path="src/Validation/test/Microsoft.Extensions.Validation.GeneratorTests/Microsoft.Extensions.Validation.GeneratorTests.csproj" />
     <Project Path="src/Validation/test/Microsoft.Extensions.Validation.Tests/Microsoft.Extensions.Validation.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Validation/samples/">
+    <Project Path="src/Validation/samples/MinimalValidationSample/MinimalValidationSample.csproj" />
   </Folder>
   <Folder Name="/src/WebEncoders/">
     <Project Path="src/WebEncoders/src/Microsoft.Extensions.WebEncoders.csproj" />
