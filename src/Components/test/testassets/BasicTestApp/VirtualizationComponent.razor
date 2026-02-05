@@ -57,13 +57,6 @@
     </div>
 </p>
 
-<p id="viewport-as-root">
-    Viewport as root:<br />
-    <Virtualize Items="@fixedItems" ItemSize="itemSize" OverscanCount="3">
-        <div @key="context" id="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
-    </Virtualize>
-</p>
-
 <p>
     Variable Height Items:<br />
     <div id="variable-height-container" style="background-color: #eee; height: 500px; overflow-y: auto">
@@ -77,6 +70,13 @@
             </div>
         </Virtualize>
     </div>
+</p>
+
+<p id="viewport-as-root">
+    Viewport as root:<br />
+    <Virtualize Items="@fixedItems" ItemSize="itemSize" OverscanCount="3">
+        <div @key="context" id="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
+    </Virtualize>
 </p>
 
 @code {
