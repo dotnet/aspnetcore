@@ -24,7 +24,7 @@
                 <tr>
                     <td>
                         <div>@PasskeyAuthenticators.GetDisplayName(passkey)</div>
-                        <small class="text-muted">Created @passkey.CreatedAt.LocalDateTime.ToString("MMM d, yyyy")</small>
+                        <small class="text-muted">Created @passkey.CreatedAt.UtcDateTime.ToString("MMM d, yyyy") (UTC)</small>
                     </td>
                     <td>
                         @{
