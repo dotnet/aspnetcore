@@ -135,7 +135,13 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             routingStateProvider.RouteData = new RouteData(componentType, httpContext.GetRouteData().Values);
             if (httpContext.GetEndpoint() is RouteEndpoint routeEndpoint)
             {
-                routingStateProvider.RouteData.Template = routeEndpoint.RoutePattern.RawText;
+                // Verify that the endpoint route pattern matches the current component's route attributes
+                // to prevent stale route data during hot reload scenarios
+                if (IsValidRouteTemplateForComponent(componentType, routeEndpoint.RoutePattern.RawText))
+                {
+                    routingStateProvider.RouteData.Template = routeEndpoint.RoutePattern.RawText;
+                }
+                // If template doesn't match, leave Template as null to force normal routing
             }
         }
     }
@@ -246,6 +252,29 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         // PathBase may be "/" or "/some/thing", but to be a well-formed base URI
         // it has to end with a trailing slash
         return result.EndsWith('/') ? result : result += "/";
+    }
+
+    private static bool IsValidRouteTemplateForComponent(Type componentType, string? routeTemplate)
+    {
+        // If route template is null or empty, it's not valid
+        if (string.IsNullOrEmpty(routeTemplate))
+        {
+            return false;
+        }
+        
+        // Get the current route attributes from the component type
+        var routeAttributes = componentType.GetCustomAttributes(typeof(RouteAttribute), inherit: false);
+        
+        // Check if the endpoint's route template matches any of the component's current route attributes
+        foreach (RouteAttribute attribute in routeAttributes)
+        {
+            if (string.Equals(attribute.Template, routeTemplate, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     private sealed class FormCollectionReadOnlyDictionary : IReadOnlyDictionary<string, StringValues>
