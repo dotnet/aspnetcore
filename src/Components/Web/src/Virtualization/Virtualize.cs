@@ -59,8 +59,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private bool _loading;
 
-    // Variable-height virtualization support
     private float _totalMeasuredHeight;
+
     private int _measuredItemCount;
 
     [Inject]
@@ -308,36 +308,23 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         => $"height: {(itemsInSpacer * GetItemHeight()).ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0;";
 
     private float GetItemHeight()
-    {
-        // Use running average of measured heights, or ItemSize if no measurements yet
-        return _measuredItemCount > 0 ? (_totalMeasuredHeight / _measuredItemCount) : _itemSize;
-    }
+        => _measuredItemCount > 0 ? _totalMeasuredHeight / _measuredItemCount : _itemSize;
 
-    private void RecordMeasurement(float height)
+    private void ProcessMeasurements(float[]? itemHeights)
     {
-        // Update running average with new measurement
-        // We use a simple cumulative average that weights all measurements equally
-        _totalMeasuredHeight += height;
-        _measuredItemCount++;
-    }
-
-    private void ProcessMeasurements(ItemMeasurement[]? measurements)
-    {
-        if (measurements == null || measurements.Length == 0)
+        if (itemHeights is not { Length: > 0 })
         {
             return;
         }
 
-        foreach (var measurement in measurements)
-        {
-            RecordMeasurement(measurement.Height);
-        }
+        _totalMeasuredHeight += itemHeights.Sum();
+        _measuredItemCount += itemHeights.Length;
     }
 
-    void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, ItemMeasurement[]? measurements)
+    void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, float[]? itemHeights)
     {
         // Process any item measurements from JavaScript
-        ProcessMeasurements(measurements);
+        ProcessMeasurements(itemHeights);
 
         CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
 
@@ -353,10 +340,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
     }
 
-    void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, ItemMeasurement[]? measurements)
+    void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, float[]? itemHeights)
     {
         // Process any item measurements from JavaScript
-        ProcessMeasurements(measurements);
+        ProcessMeasurements(itemHeights);
 
         CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
 

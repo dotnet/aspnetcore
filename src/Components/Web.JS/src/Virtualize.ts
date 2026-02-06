@@ -8,10 +8,6 @@ export const Virtualize = {
   dispose,
 };
 
-interface ItemMeasurement {
-  height: number;
-}
-
 const dispatcherObserversByDotNetIdPropname = Symbol();
 const THROTTLE_MS = 50;
 
@@ -53,21 +49,19 @@ function getCumulativeScaleFactor(element: HTMLElement | null): number {
 function measureRenderedItems(
   spacerBefore: HTMLElement,
   spacerAfter: HTMLElement
-): ItemMeasurement[] {
-  const measurements: ItemMeasurement[] = [];
+): number[] {
+  const heights: number[] = [];
   const scaleFactor = getCumulativeScaleFactor(spacerBefore);
 
   let current = spacerBefore.nextElementSibling;
 
   while (current && current !== spacerAfter) {
     const rect = current.getBoundingClientRect();
-    measurements.push({
-      height: rect.height / scaleFactor
-    });
+    heights.push(rect.height / scaleFactor);
     current = current.nextElementSibling;
   }
 
-  return measurements;
+  return heights;
 }
 
 function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spacerAfter: HTMLElement, rootMargin = 50): void {
@@ -126,21 +120,22 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   let pendingCallbacks: Map<Element, IntersectionObserverEntry> = new Map();
   let callbackTimeout: ReturnType<typeof setTimeout> | null = null;
 
+  function flushPendingCallbacks(): void {
+    if (pendingCallbacks.size === 0) return;
+    const entries = Array.from(pendingCallbacks.values());
+    pendingCallbacks.clear();
+    processIntersectionEntries(entries);
+  }
+
   function intersectionCallback(entries: IntersectionObserverEntry[]): void {
     entries.forEach(entry => pendingCallbacks.set(entry.target, entry));
     
     if (!callbackTimeout) {
-      const entriesToProcess = Array.from(pendingCallbacks.values());
-      pendingCallbacks.clear();
-      processIntersectionEntries(entriesToProcess);
+      flushPendingCallbacks();
       
       callbackTimeout = setTimeout(() => {
         callbackTimeout = null;
-        if (pendingCallbacks.size > 0) {
-          const pending = Array.from(pendingCallbacks.values());
-          pendingCallbacks.clear();
-          processIntersectionEntries(pending);
-        }
+        flushPendingCallbacks();
       }, THROTTLE_MS);
     }
   }
@@ -166,6 +161,9 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       if (entry.target === spacerBefore) {
         dotNetHelper.invokeMethodAsync('OnSpacerBeforeVisible', entry.intersectionRect.top - entry.boundingClientRect.top, spacerSeparation, containerSize, measurements);
       } else if (entry.target === spacerAfter && spacerAfter.offsetHeight > 0) {
+        // When we first start up, both the "before" and "after" spacers will be visible, but it's only relevant to raise a
+        // single event to load the initial data. To avoid raising two events, skip the one for the "after" spacer if we know
+        // it's meaningless to talk about any overlap into it.
         dotNetHelper.invokeMethodAsync('OnSpacerAfterVisible', entry.boundingClientRect.bottom - entry.intersectionRect.bottom, spacerSeparation, containerSize, measurements);
       }
     });

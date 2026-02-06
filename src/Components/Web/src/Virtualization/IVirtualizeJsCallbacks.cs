@@ -3,19 +3,8 @@
 
 namespace Microsoft.AspNetCore.Components.Web.Virtualization;
 
-/// <summary>
-/// Represents a measurement of a rendered item's height.
-/// </summary>
-internal readonly struct ItemMeasurement
-{
-    /// <summary>
-    /// The measured height in pixels.
-    /// </summary>
-    public float Height { get; init; }
-}
-
 internal interface IVirtualizeJsCallbacks
 {
-    void OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, ItemMeasurement[]? measurements);
-    void OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, ItemMeasurement[]? measurements);
+    void OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, float[]? itemHeights);
+    void OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, float[]? itemHeights);
 }
