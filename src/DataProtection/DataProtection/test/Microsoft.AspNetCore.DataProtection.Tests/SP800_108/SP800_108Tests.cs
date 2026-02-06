@@ -12,6 +12,33 @@ public unsafe class SP800_108Tests
 {
     private delegate ISP800_108_CTR_HMACSHA512Provider ProviderFactory(byte* pbKdk, uint cbKdk);
 
+    // This scenario fails in FIPS mode when using HMACSHA512.TryHashData static method
+    // because FIPS requires minimum key lengths for HMAC operations.
+    [Theory]
+    [InlineData(64, "fHGMWaDLmoncLsEKuKbZo8T+73paNohDeb5O7BSxbC8Gus8d/mUpa/9w2ss65OHlmFw1VZhIXzr5swMYVRndRw==")]  // AES-256 key + HMACSHA256 key
+    [InlineData(96, "iXd0KuWopclbxtWf9dO8fnerBqLJvndOUs74pTcj7Ck8Ctsvz4QttXkCY1DPd4aDbOE/CCU8/bIQtzoU1Xu3ZQ1pV0qEZmzFll+Vpf+q7av7AGEqwh56a+NPt6gxC5CP")]  // AES-256 key + HMACSHA512 key
+    public void DeriveKeys_EmptyKdk_Managed_ShouldSucceed(int numDerivedBytes, string expectedDerivedSubkeyAsBase64)
+    {
+        // Arrange - this mimics CreateContextHeader() behavior
+        byte[] kdk = Array.Empty<byte>();
+        byte[] label = Array.Empty<byte>();
+        byte[] contextHeader = Array.Empty<byte>();
+        byte[] context = Array.Empty<byte>();
+
+        // Act
+        var derivedSubkey = new byte[numDerivedBytes];
+        ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
+            kdk: kdk,
+            label: label,
+            contextHeader: contextHeader,
+            contextData: context,
+            operationSubkey: derivedSubkey.AsSpan(0, numDerivedBytes / 2),
+            validationSubkey: derivedSubkey.AsSpan(numDerivedBytes / 2));
+
+        // Assert
+        Assert.Equal(expectedDerivedSubkeyAsBase64, Convert.ToBase64String(derivedSubkey));
+    }
+
     // The 'numBytesRequested' parameters below are chosen to exercise code paths where
     // this value straddles the digest length of the PRF (which is hardcoded to HMACSHA512).
     [Theory]
