@@ -46,4 +46,10 @@ internal static class ComponentsApi
         public const string FullTypeName = "Microsoft.AspNetCore.Components.IComponent";
         public const string MetadataName = FullTypeName;
     }
+
+    public static class RenderTreeBuilder
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
+        public const string MetadataName = FullTypeName;
+    }
 }
