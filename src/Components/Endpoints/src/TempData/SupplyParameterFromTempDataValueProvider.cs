@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Microsoft.AspNetCore.Components.Web;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal class SupplyParameterFromTempDataValueProvider : ICascadingValueSupplier
 {

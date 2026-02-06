@@ -166,7 +166,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         => new EndpointComponentState(this, componentId, component, parentComponentState);
 
     /// <inheritdoc/>
-    protected override ResourceAssetCollection Assets =>
+    protected internal override ResourceAssetCollection Assets =>
         _resourceCollection ??= GetResourceCollection(_httpContext) ?? base.Assets;
 
     private static ResourceAssetCollection? GetResourceCollection(HttpContext httpContext) => httpContext.GetEndpoint()?.Metadata.GetMetadata<ResourceAssetCollection>();
