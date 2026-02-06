@@ -3735,5 +3735,14 @@
         "wwwroot/css/app.css"
       ]
     }
+  },
+  "blazor-wasm-servicedefaults": {
+    "Default": {
+      "Template": "blazor-wasm-servicedefaults",
+      "Arguments": "new blazor-wasm-servicedefaults",
+      "Files": [
+        "Extensions.cs"
+      ]
+    }
   }
 }
