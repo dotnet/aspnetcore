@@ -159,4 +159,14 @@ public class TempDataSessionStorageTest : ServerTestBase<BasicTestAppServerSiteF
         Browser.Equal("a,b,c", () => Browser.FindElement(By.Id("string-array")).Text);
         Browser.Equal("1,2,3", () => Browser.FindElement(By.Id("int-array")).Text);
     }
+
+    [Fact]
+    public void SupplyParameterFromTempDataReadsAndSavesValues()
+    {
+        Navigate($"{ServerPathBase}/tempdata");
+        Browser.Equal("", () => Browser.FindElement(By.Id("supply-parameter-from-tempdata")).Text);
+        Browser.FindElement(By.Id("set-supply=from-tempdata")).Click();
+        Browser.Equal("Supplied from TempData", () => Browser.FindElement(By.Id("supply-parameter-from-tempdata")).Text);
+
+    }
 }
