@@ -3735,5 +3735,16 @@
         "wwwroot/css/app.css"
       ]
     }
+  },
+  "webworker": {
+    "Default": {
+      "Template": "webworker",
+      "Arguments": "new webworker",
+      "Files": [
+        "WebWorkerClient.cs",
+        "wwwroot/dotnet-web-worker.js",
+        "wwwroot/dotnet-web-worker-client.js"
+      ]
+    }
   }
 }
