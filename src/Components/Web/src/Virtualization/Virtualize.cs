@@ -339,7 +339,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // Process any item measurements from JavaScript
         ProcessMeasurements(measurements);
 
-        CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
+        CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
 
         // Since we know the before spacer is now visible, we absolutely have to slide the window up
         // by at least one element. If we're not doing that, the previous item size info we had must
@@ -358,7 +358,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // Process any item measurements from JavaScript
         ProcessMeasurements(measurements);
 
-        CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
+        CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
 
         var itemsBefore = Math.Max(0, _itemCount - itemsAfter - visibleItemCapacity);
 
@@ -374,7 +374,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
     }
 
-    private void CalcualteItemDistribution(
+    private void CalculateItemDistribution(
         float spacerSize,
         float spacerSeparation,
         float containerSize,
@@ -407,14 +407,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // the user has set a very low MaxItemCount and we end up in an infinite loading loop.
         maxItemCount += OverscanCount * 2;
 
-        // Use average measured height for calculations if we have measurements, otherwise use _itemSize
-        var effectiveItemSize = _measuredItemCount > 0 ? _totalMeasuredHeight / _measuredItemCount : _itemSize;
-
-        // Guard against division by zero or very small values that could cause overflow
-        if (effectiveItemSize <= 0)
-        {
-            effectiveItemSize = ItemSize;
-        }
+        // Use average measured height for calculations
+        var effectiveItemSize = GetItemHeight();
 
         itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / effectiveItemSize) - OverscanCount);
         visibleItemCapacity = (int)Math.Ceiling(containerSize / effectiveItemSize) + 2 * OverscanCount;
@@ -429,14 +423,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         if (itemsBefore + visibleItemCapacity > _itemCount)
         {
             itemsBefore = Math.Max(0, _itemCount - visibleItemCapacity);
-        }
-
-        // Prevent flickering: only reduce visibleItemCapacity if the reduction is significant (more than 1 item).
-        // This prevents oscillation caused by small changes in average item height calculations.
-        // Always allow increases to ensure we render enough items.
-        if (visibleItemCapacity < _visibleItemCapacity && _visibleItemCapacity - visibleItemCapacity <= 1)
-        {
-            visibleItemCapacity = _visibleItemCapacity;
         }
 
         // If anything about the offset changed, re-render

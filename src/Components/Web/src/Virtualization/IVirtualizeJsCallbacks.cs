@@ -9,11 +9,6 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization;
 internal readonly struct ItemMeasurement
 {
     /// <summary>
-    /// The index of the measured item.
-    /// </summary>
-    public int Index { get; init; }
-
-    /// <summary>
     /// The measured height in pixels.
     /// </summary>
     public float Height { get; init; }

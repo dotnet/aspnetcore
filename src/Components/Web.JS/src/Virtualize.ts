@@ -9,11 +9,11 @@ export const Virtualize = {
 };
 
 interface ItemMeasurement {
-  index: number;
   height: number;
 }
 
 const dispatcherObserversByDotNetIdPropname = Symbol();
+const THROTTLE_MS = 50;
 
 function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | null {
   // If we recurse up as far as body or the document root, return null so that the
@@ -58,13 +58,10 @@ function measureRenderedItems(
   const scaleFactor = getCumulativeScaleFactor(spacerBefore);
 
   let current = spacerBefore.nextElementSibling;
-  const startIndexAttr = spacerBefore.getAttribute('data-virtualize-start');
-  let index = startIndexAttr ? parseInt(startIndexAttr, 10) : 0;
 
   while (current && current !== spacerAfter) {
     const rect = current.getBoundingClientRect();
     measurements.push({
-      index: index++,
       height: rect.height / scaleFactor
     });
     current = current.nextElementSibling;
@@ -128,7 +125,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   let pendingCallbacks: Map<Element, IntersectionObserverEntry> = new Map();
   let callbackTimeout: ReturnType<typeof setTimeout> | null = null;
-  const throttleMs = 50;
 
   function intersectionCallback(entries: IntersectionObserverEntry[]): void {
     entries.forEach(entry => pendingCallbacks.set(entry.target, entry));
@@ -145,7 +141,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
           pendingCallbacks.clear();
           processIntersectionEntries(pending);
         }
-      }, throttleMs);
+      }, THROTTLE_MS);
     }
   }
 
@@ -157,6 +153,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
       const measurements = measureRenderedItems(spacerBefore, spacerAfter);
 
+      // To compute the ItemSize, work out the separation between the two spacers. We can't just measure an individual element
+      // because each conceptual item could be made from multiple elements. Using getBoundingClientRect allows for the size to be
+      // a fractional value. It's important not to add or subtract any such fractional values (e.g., to subtract the 'top' of
+      // one item from the 'bottom' of another to get the distance between them) because floating point errors would cause
+      // scrolling glitches.
       rangeBetweenSpacers.setStartAfter(spacerBefore);
       rangeBetweenSpacers.setEndBefore(spacerAfter);
       const spacerSeparation = rangeBetweenSpacers.getBoundingClientRect().height;
