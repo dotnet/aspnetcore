@@ -126,6 +126,12 @@ else
             return;
         }
 
+        // If the authenticator is known, assign the inferred name
+        if (PasskeyAuthenticators.TryGetDefaultDisplayName(attestationResult.Passkey, out var defaultName))
+        {
+            attestationResult.Passkey.Name = defaultName;
+        }
+
         var addPasskeyResult = await UserManager.AddOrUpdatePasskeyAsync(user, attestationResult.Passkey);
         if (!addPasskeyResult.Succeeded)
         {
@@ -133,11 +139,9 @@ else
             return;
         }
 
-        // If the authenticator is known, assign the inferred name and go back to the passkeys list
-        if (PasskeyAuthenticators.TryGetDefaultDisplayName(attestationResult.Passkey, out var defaultName))
+        // If a name was inferred, go back to the passkeys list
+        if (!string.IsNullOrEmpty(attestationResult.Passkey.Name))
         {
-            attestationResult.Passkey.Name = defaultName;
-            await UserManager.AddOrUpdatePasskeyAsync(user, attestationResult.Passkey);
             RedirectManager.RedirectToCurrentPageWithStatus("Your passkey was added successfully.", HttpContext);
             return;
         }
