@@ -126,21 +126,27 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     return mutationObserver;
   }
 
-  let pendingCallbacks: IntersectionObserverEntry[] = [];
+  let pendingCallbacks: Map<Element, IntersectionObserverEntry> = new Map();
   let callbackTimeout: ReturnType<typeof setTimeout> | null = null;
   const throttleMs = 50;
 
   function intersectionCallback(entries: IntersectionObserverEntry[]): void {
-    pendingCallbacks = entries;
+    entries.forEach(entry => pendingCallbacks.set(entry.target, entry));
     
-    if (callbackTimeout) {
-      return;
+    if (!callbackTimeout) {
+      const entriesToProcess = Array.from(pendingCallbacks.values());
+      pendingCallbacks.clear();
+      processIntersectionEntries(entriesToProcess);
+      
+      callbackTimeout = setTimeout(() => {
+        callbackTimeout = null;
+        if (pendingCallbacks.size > 0) {
+          const pending = Array.from(pendingCallbacks.values());
+          pendingCallbacks.clear();
+          processIntersectionEntries(pending);
+        }
+      }, throttleMs);
     }
-
-    callbackTimeout = setTimeout(() => {
-      callbackTimeout = null;
-      processIntersectionEntries(pendingCallbacks);
-    }, throttleMs);
   }
 
   function processIntersectionEntries(entries: IntersectionObserverEntry[]): void {
@@ -154,7 +160,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       rangeBetweenSpacers.setStartAfter(spacerBefore);
       rangeBetweenSpacers.setEndBefore(spacerAfter);
       const spacerSeparation = rangeBetweenSpacers.getBoundingClientRect().height;
-      const containerSize = entry.rootBounds?.height ?? 0;
+      const containerSize = entry.rootBounds?.height;
 
       if (entry.target === spacerBefore) {
         dotNetHelper.invokeMethodAsync('OnSpacerBeforeVisible', entry.intersectionRect.top - entry.boundingClientRect.top, spacerSeparation, containerSize, measurements);
