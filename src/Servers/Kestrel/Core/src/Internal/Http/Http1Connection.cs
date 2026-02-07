@@ -11,12 +11,31 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpOutputAborter
 {
     internal static ReadOnlySpan<byte> Http2GoAwayHttp11RequiredBytes => [0, 0, 8, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13];
+
+    // Pre-allocated static error response fragments for fast-path bad request handling.
+    // Split into prefix (status + Content-Length + Connection) and suffix (final CRLF)
+    // so we can insert the cached Date header value between them without allocating.
+    // Header order matches the normal response path: Content-Length, Connection, Date.
+    private static ReadOnlySpan<byte> BadRequestResponsePrefix =>
+        "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\nConnection: close"u8;
+    private static ReadOnlySpan<byte> HttpVersionNotSupportedResponsePrefix =>
+        "HTTP/1.1 505 HTTP Version Not Supported\r\nContent-Length: 0\r\nConnection: close"u8;
+    private static ReadOnlySpan<byte> RequestTimeoutResponsePrefix =>
+        "HTTP/1.1 408 Request Timeout\r\nContent-Length: 0\r\nConnection: close"u8;
+    private static ReadOnlySpan<byte> HeadersTooLargeResponsePrefix =>
+        "HTTP/1.1 431 Request Header Fields Too Large\r\nContent-Length: 0\r\nConnection: close"u8;
+    private static ReadOnlySpan<byte> RequestLineTooLongResponsePrefix =>
+        "HTTP/1.1 414 URI Too Long\r\nContent-Length: 0\r\nConnection: close"u8;
+    // Suffix is just the final CRLF to end headers. Date header is written between prefix and suffix.
+    private static ReadOnlySpan<byte> ErrorResponseSuffix => "\r\n\r\n"u8;
+    private static ReadOnlySpan<byte> ServerHeaderBytes => "\r\nServer: Kestrel"u8;
 
     private const byte ByteCR = (byte)'\r';
     private const byte ByteLF = (byte)'\n';
@@ -1031,7 +1050,48 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             return _context.Transport.Output.FlushAsync().GetAsTask();
         }
 
+        // Fast path: if the app hasn't started processing yet, use static pre-allocated response
+        // fragments to avoid the overhead of normal response machinery (header formatting, etc.)
+        // Skip fast path for responses that need custom headers (e.g., 405 with Allow header).
+#pragma warning disable CS0618 // Type or member is obsolete
+        if (_requestProcessingStatus < RequestProcessingStatus.AppStarted && !_connectionAborted
+            && (_requestRejectedException is not BadHttpRequestException kestrelEx
+                || StringValues.IsNullOrEmpty(kestrelEx.AllowedHeader)))
+#pragma warning restore CS0618 // Type or member is obsolete
+        {
+            var output = _context.Transport.Output;
+            output.Write(GetStaticErrorResponsePrefix());
+            output.Write(ServiceContext.DateHeaderValueManager.GetDateHeaderValues().Bytes);
+            if (ServerOptions.AddServerHeader)
+            {
+                output.Write(ServerHeaderBytes);
+            }
+            output.Write(ErrorResponseSuffix);
+            return output.FlushAsync().GetAsTask();
+        }
+
         return base.TryProduceInvalidRequestResponse();
+    }
+
+    /// <summary>
+    /// Gets the appropriate static error response prefix (status line) based on the rejection exception.
+    /// </summary>
+    private ReadOnlySpan<byte> GetStaticErrorResponsePrefix()
+    {
+#pragma warning disable CS0618 // Type or member is obsolete
+        var reason = (_requestRejectedException as BadHttpRequestException)?.Reason;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        return reason switch
+        {
+            RequestRejectionReason.UnrecognizedHTTPVersion => HttpVersionNotSupportedResponsePrefix,
+            RequestRejectionReason.RequestHeadersTimeout => RequestTimeoutResponsePrefix,
+            RequestRejectionReason.RequestBodyTimeout => RequestTimeoutResponsePrefix,
+            RequestRejectionReason.HeadersExceedMaxTotalSize => HeadersTooLargeResponsePrefix,
+            RequestRejectionReason.TooManyHeaders => HeadersTooLargeResponsePrefix,
+            RequestRejectionReason.RequestLineTooLong => RequestLineTooLongResponsePrefix,
+            _ => BadRequestResponsePrefix
+        };
     }
 
     void IRequestProcessor.Tick(long timestamp) { }
