@@ -422,6 +422,8 @@ public class Http2ConnectionTests : Http2TestBase
         var stream = _connection._streams[1];
         serverTcs.SetResult();
 
+        await WaitForAllStreamsAsync().DefaultTimeout();
+
         // TriggerTick will trigger the stream to be returned to the pool so we can assert it
         TriggerTick();
 
@@ -524,6 +526,8 @@ public class Http2ConnectionTests : Http2TestBase
 
         appDelegateTcs.TrySetResult();
 
+        await WaitForAllStreamsAsync().DefaultTimeout();
+
         // TriggerTick will trigger the stream to be returned to the pool so we can assert it
         TriggerTick();
 
@@ -550,6 +554,8 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.Equal(0, _connection.StreamPool.Count);
 
         appDelegateTcs.TrySetResult();
+
+        await WaitForAllStreamsAsync().DefaultTimeout();
 
         // TriggerTick will trigger the stream to be returned to the pool so we can assert it
         TriggerTick();
@@ -688,6 +694,8 @@ public class Http2ConnectionTests : Http2TestBase
             withLength: 36,
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
+
+        await WaitForAllStreamsAsync().DefaultTimeout();
 
         // TriggerTick will trigger the stream to be returned to the pool so we can assert it
         TriggerTick();
