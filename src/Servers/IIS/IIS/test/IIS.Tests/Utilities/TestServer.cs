@@ -84,7 +84,7 @@ public partial class TestServer : IDisposable
         {
             if (server is not null)
             {
-                server?.Dispose();
+                server.Dispose();
             }
             else
             {

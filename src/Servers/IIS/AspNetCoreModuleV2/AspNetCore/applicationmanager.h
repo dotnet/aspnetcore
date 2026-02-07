@@ -6,6 +6,7 @@
 #include "applicationinfo.h"
 #include "exceptions.h"
 #include <unordered_map>
+#include <atomic>
 
 //
 // This class will manage the lifecycle of all Asp.Net Core application
@@ -75,5 +76,5 @@ private:
     BOOL                        m_fDebugInitialize;
     IHttpServer                &m_pHttpServer;
     HandlerResolver             m_handlerResolver;
-    bool                        m_hasStarted;
+    std::atomic<bool>           m_hasStarted;
 };
