@@ -59,6 +59,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private bool _loading;
 
+    private float _totalMeasuredHeight;
+
+    private int _measuredItemCount;
+
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -112,7 +116,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// in the page.
     /// </summary>
     [Parameter]
-    public int OverscanCount { get; set; } = 3;
+    public int OverscanCount { get; set; } = 15;
 
     /// <summary>
     /// Gets or sets the tag name of the HTML element that will be used as the virtualization spacer.
@@ -224,7 +228,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         builder.OpenElement(0, SpacerElement);
         builder.AddAttribute(1, "style", GetSpacerStyle(_itemsBefore));
         builder.AddAttribute(2, "aria-hidden", "true");
-        builder.AddElementReferenceCapture(3, elementReference => _spacerBefore = elementReference);
+        builder.AddAttribute(3, "data-virtualize-start", _itemsBefore.ToString(CultureInfo.InvariantCulture));
+        builder.AddElementReferenceCapture(4, elementReference => _spacerBefore = elementReference);
         builder.CloseElement();
 
         var lastItemIndex = Math.Min(_itemsBefore + _visibleItemCapacity, _itemCount);
@@ -292,16 +297,36 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     }
 
     private string GetSpacerStyle(int itemsInSpacer, int numItemsGapAbove)
-        => numItemsGapAbove == 0
-        ? GetSpacerStyle(itemsInSpacer)
-        : $"height: {(itemsInSpacer * _itemSize).ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0; transform: translateY({(numItemsGapAbove * _itemSize).ToString(CultureInfo.InvariantCulture)}px);";
+    {
+        var avgHeight = GetItemHeight();
+        return numItemsGapAbove == 0
+            ? GetSpacerStyle(itemsInSpacer)
+            : $"height: {(itemsInSpacer * avgHeight).ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0; transform: translateY({(numItemsGapAbove * avgHeight).ToString(CultureInfo.InvariantCulture)}px);";
+    }
 
     private string GetSpacerStyle(int itemsInSpacer)
-        => $"height: {(itemsInSpacer * _itemSize).ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0;";
+        => $"height: {(itemsInSpacer * GetItemHeight()).ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0;";
 
-    void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
+    private float GetItemHeight()
+        => _measuredItemCount > 0 ? _totalMeasuredHeight / _measuredItemCount : _itemSize;
+
+    private void ProcessMeasurements(float[]? itemHeights)
     {
-        CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
+        if (itemHeights is not { Length: > 0 })
+        {
+            return;
+        }
+
+        _totalMeasuredHeight += itemHeights.Sum();
+        _measuredItemCount += itemHeights.Length;
+    }
+
+    void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, float[]? itemHeights)
+    {
+        // Process any item measurements from JavaScript
+        ProcessMeasurements(itemHeights);
+
+        CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
 
         // Since we know the before spacer is now visible, we absolutely have to slide the window up
         // by at least one element. If we're not doing that, the previous item size info we had must
@@ -315,9 +340,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
     }
 
-    void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
+    void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, float[]? itemHeights)
     {
-        CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
+        // Process any item measurements from JavaScript
+        ProcessMeasurements(itemHeights);
+
+        CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
 
         var itemsBefore = Math.Max(0, _itemCount - itemsAfter - visibleItemCapacity);
 
@@ -333,7 +361,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
     }
 
-    private void CalcualteItemDistribution(
+    private void CalculateItemDistribution(
         float spacerSize,
         float spacerSeparation,
         float containerSize,
@@ -366,8 +394,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // the user has set a very low MaxItemCount and we end up in an infinite loading loop.
         maxItemCount += OverscanCount * 2;
 
-        itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / _itemSize) - OverscanCount);
-        visibleItemCapacity = (int)Math.Ceiling(containerSize / _itemSize) + 2 * OverscanCount;
+        // Use average measured height for calculations
+        var effectiveItemSize = GetItemHeight();
+
+        itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / effectiveItemSize) - OverscanCount);
+        visibleItemCapacity = (int)Math.Ceiling(containerSize / effectiveItemSize) + 2 * OverscanCount;
         unusedItemCapacity = Math.Max(0, visibleItemCapacity - maxItemCount);
         visibleItemCapacity -= unusedItemCapacity;
     }

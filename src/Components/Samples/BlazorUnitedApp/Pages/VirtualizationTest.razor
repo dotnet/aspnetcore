@@ -1,0 +1,123 @@
+@page "/virtualization"
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+<PageTitle>Variable Height Virtualization Test</PageTitle>
+
+<h1>Variable Height Virtualization Test</h1>
+
+<p>This component tests the Virtualize component with items of varying heights.</p>
+<p>Items are generated with random line counts (1-6 lines) to simulate real-world content like chat messages or social media feeds.</p>
+
+<div class="controls mb-3">
+    <button class="btn btn-primary me-2" @onclick="RegenerateItems">Regenerate Items</button>
+    <span>Total items: @_items.Count</span>
+</div>
+
+<div class="virtualized-container" style="height: 500px; overflow-y: auto; border: 1px solid #ccc;">
+    <Virtualize Items="@_items" Context="item" ItemSize="80">
+        <div class="virtualized-item" style="@GetItemStyle(item)">
+            <div class="item-header">
+                <strong>Item @item.Index</strong>
+                <span class="badge bg-secondary ms-2">@item.LineCount lines</span>
+            </div>
+            <div class="item-content">
+                @foreach (var line in item.Lines)
+                {
+                    <p class="mb-1">@line</p>
+                }
+            </div>
+        </div>
+    </Virtualize>
+</div>
+
+<style>
+    .virtualized-item {
+        padding: 12px;
+        margin: 4px 8px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+
+    .virtualized-item:hover {
+        background-color: #e9e9e9;
+    }
+
+    .item-header {
+        margin-bottom: 8px;
+        padding-bottom: 4px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .item-content p {
+        font-size: 14px;
+        color: #666;
+    }
+</style>
+
+@code {
+    private List<VirtualItem> _items = new();
+    private Random _random = new Random(42); // Fixed seed for reproducibility
+
+    protected override void OnInitialized()
+    {
+        GenerateItems();
+    }
+
+    private void GenerateItems()
+    {
+        _items.Clear();
+        for (int i = 0; i < 1000; i++)
+        {
+            var lineCount = _random.Next(1, 7); // 1 to 6 lines
+            var lines = new List<string>();
+
+            for (int j = 0; j < lineCount; j++)
+            {
+                lines.Add(GenerateRandomLine(j, i));
+            }
+
+            _items.Add(new VirtualItem
+            {
+                Index = i,
+                LineCount = lineCount,
+                Lines = lines
+            });
+        }
+    }
+
+    private void RegenerateItems()
+    {
+        _random = new Random(DateTime.Now.Millisecond);
+        GenerateItems();
+    }
+
+    private string GenerateRandomLine(int lineIndex, int itemIndex)
+    {
+        var templates = new[]
+        {
+            $"This is line {lineIndex + 1} of item {itemIndex}.",
+            $"Lorem ipsum dolor sit amet, consectetur adipiscing elit for item {itemIndex}.",
+            $"Quick brown fox jumps over the lazy dog - line {lineIndex + 1}.",
+            $"The quick pangram contains every letter of the alphabet.",
+            $"Variable height content demonstrates real-world usage patterns.",
+            $"This line is slightly longer to test how word wrapping affects the height of items."
+        };
+
+        return templates[_random.Next(templates.Length)];
+    }
+
+    private string GetItemStyle(VirtualItem item)
+    {
+        // Add subtle color variations based on line count
+        var hue = 200 + (item.LineCount * 10);
+        return $"border-left: 4px solid hsl({hue}, 60%, 70%);";
+    }
+
+    private class VirtualItem
+    {
+        public int Index { get; set; }
+        public int LineCount { get; set; }
+        public List<string> Lines { get; set; } = new();
+    }
+}

@@ -92,11 +92,57 @@ public class VirtualizeTest
         Assert.NotNull(renderedVirtualize);
 
         // Simulate a JS spacer callback.
-        ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(10f, 50f, 100f);
+        ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(10f, 50f, 100f, null);
 
         // Validate that the exception is dispatched through the renderer.
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await testRenderer.RenderRootComponentAsync(componentId));
         Assert.Equal("Thrown from items provider.", ex.Message);
+    }
+
+    [Fact]
+    public async Task Virtualize_AcceptsItemMeasurementsFromSpacerCallback()
+    {
+        Virtualize<int> renderedVirtualize = null;
+        var itemsProviderCallCount = 0;
+
+        ValueTask<ItemsProviderResult<int>> countingItemsProvider(ItemsProviderRequest request)
+        {
+            itemsProviderCallCount++;
+            return ValueTask.FromResult(new ItemsProviderResult<int>(
+                Enumerable.Range(request.StartIndex, Math.Min(request.Count, 100 - request.StartIndex)),
+                100));
+        }
+
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualize(50f, countingItemsProvider, null, virtualize => renderedVirtualize = virtualize)
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+
+        await testRenderer.RenderRootComponentAsync(componentId);
+        Assert.NotNull(renderedVirtualize);
+
+        var initialCallCount = itemsProviderCallCount;
+
+        // Simulate JS callback with measurements (variable-height items)
+        var measurements = new ItemMeasurement[]
+        {
+            new() { Index = 0, Height = 30f },
+            new() { Index = 1, Height = 70f },
+            new() { Index = 2, Height = 50f }
+        };
+
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(0f, 150f, 500f, measurements));
+
+        Assert.True(itemsProviderCallCount > initialCallCount,
+            "ItemsProvider should be called after spacer callback with measurements");
     }
 
     private ValueTask<ItemsProviderResult<TItem>> EmptyItemsProvider<TItem>(ItemsProviderRequest request)
