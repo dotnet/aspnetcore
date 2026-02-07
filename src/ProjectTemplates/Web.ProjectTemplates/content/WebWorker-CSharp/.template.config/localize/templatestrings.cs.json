@@ -1,10 +1,10 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": ".NET Web Worker",
-  "description": "A library for running .NET code in a WebWorker, keeping your UI responsive during heavy computations.",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net11.0/description": "Target net11.0",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+  "name": "Webový pracovní proces .NET",
+  "description": "Projekt pro vytvoření knihovny tříd, která spouští kód .NET ve webovém pracovním procesu",
+  "symbols/Framework/description": "Cílová architektura pro projekt.",
+  "symbols/Framework/choices/net11.0/description": "Cílový net11.0",
+  "symbols/skipRestore/description": "Je-li zadáno, při vytvoření přeskočí automatické obnovení projektu.",
+  "postActions/restore/description": "Obnovte balíčky NuGet vyžadované tímto projektem.",
+  "postActions/restore/manualInstructions/default/text": "Spustit „dotnet restore“"
 }

@@ -1,10 +1,10 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": ".NET Web Worker",
-  "description": "A library for running .NET code in a WebWorker, keeping your UI responsive during heavy computations.",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net11.0/description": "Target net11.0",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+  "name": ".NET 背景工作角色",
+  "description": "用於建立類別庫的專案，可在背景工作角色中執行 .NET 程式碼。",
+  "symbols/Framework/description": "專案的目標架構。",
+  "symbols/Framework/choices/net11.0/description": "目標 net11.0",
+  "symbols/skipRestore/description": "如果指定，則會在建立時跳過專案的自動還原。",
+  "postActions/restore/description": "還原此專案所需的 NuGet 套件。",
+  "postActions/restore/manualInstructions/default/text": "執行 'dotnet restore'"
 }
