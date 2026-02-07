@@ -1,10 +1,10 @@
 ﻿{
   "author": "Microsoft",
-  "name": ".NET Web Worker",
-  "description": "A project for creating a class library that runs .NET code in a Web Worker.",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net11.0/description": "Target net11.0",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+  "name": ".NET 辅助角色",
+  "description": "用于创建在辅助角色中运行 .NET 代码的类库的项目。",
+  "symbols/Framework/description": "项目的目标框架。",
+  "symbols/Framework/choices/net11.0/description": "目标 net11.0",
+  "symbols/skipRestore/description": "如果已指定，则在创建时跳过项目的自动还原。",
+  "postActions/restore/description": "还原此项目所需的 NuGet 包。",
+  "postActions/restore/manualInstructions/default/text": "运行 \"dotnet restore\""
 }
