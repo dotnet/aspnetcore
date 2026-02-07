@@ -20,7 +20,7 @@ export interface Platform {
   readInt32Field(baseAddress: Pointer, fieldOffset?: number): number;
   readUint64Field(baseAddress: Pointer, fieldOffset?: number): number;
   readObjectField<T extends System_Object>(baseAddress: Pointer, fieldOffset?: number): T;
-  readStringField(baseAddress: Pointer, fieldOffset?: number, readBoolValueAsString?: boolean): string | null;
+  readStringField(baseAddress: Pointer, fieldOffset?: number): string | null;
   readStructField<T extends Pointer>(baseAddress: Pointer, fieldOffset?: number): T;
 
   beginHeapLock(): HeapLock;
