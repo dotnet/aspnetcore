@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
-  "name": ".NET Web Worker",
-  "description": "A project for creating a class library that runs .NET code in a Web Worker.",
+  "name": "Trabalho .NET",
+  "description": "Um projeto para criar uma biblioteca de classes que executa código .NET em um Trabalho.",
   "symbols/Framework/description": "A estrutura de destino para o projeto.",
   "symbols/Framework/choices/net11.0/description": "Net11.0 de destino",
   "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto que está sendo criado.",
