@@ -90,6 +90,7 @@ public class HttpConnectionFactory : IConnectionFactory
             ApplicationMaxBufferSize = options.ApplicationMaxBufferSize,
             TransportMaxBufferSize = options.TransportMaxBufferSize,
             UseStatefulReconnect = options.UseStatefulReconnect,
+            WebSocketFactory = options.WebSocketFactory,
         };
 
         if (!OperatingSystem.IsBrowser())
@@ -100,7 +101,6 @@ public class HttpConnectionFactory : IConnectionFactory
             newOptions.Proxy = options.Proxy;
             newOptions.UseDefaultCredentials = options.UseDefaultCredentials;
             newOptions.WebSocketConfiguration = options.WebSocketConfiguration;
-            newOptions.WebSocketFactory = options.WebSocketFactory;
         }
 
         return newOptions;
