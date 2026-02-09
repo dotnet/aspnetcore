@@ -87,6 +87,11 @@
      <DisableLogTaskParameterItemMetadata_Csc_References>$(TrimTaskParameters)</DisableLogTaskParameterItemMetadata_Csc_References>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(IsTrimmingTestProject)' == 'true'">
+    <!-- Should mitigate https://github.com/dotnet/aspnetcore/issues/61178 -->
+    <RestoreDisableParallel>true</RestoreDisableParallel>
+  </PropertyGroup
+
   <Import Project="eng\QuarantinedTests.BeforeArcade.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Project="eng\QuarantinedTests.AfterArcade.props" />
