@@ -185,4 +185,23 @@ public class TempDataValueMapperTest
 
         Assert.True(tempData.ContainsKey("mykey"));
     }
+
+    [Fact]
+    public void DeleteCallbacks_RemovesCallbacksForKey()
+    {
+        var callbackInvoked = false;
+        _mapper.RegisterValueCallback("key", () =>
+        {
+            callbackInvoked = true;
+            return "value";
+        });
+
+        _mapper.DeleteValueCallback("key");
+
+        var tempData = new TempData(() => new Dictionary<string, object>());
+        _mapper.PersistValues(tempData);
+
+        Assert.False(callbackInvoked);
+        Assert.Null(tempData.Peek("key"));
+    }
 }

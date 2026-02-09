@@ -30,7 +30,7 @@ internal class SupplyParameterFromTempDataValueProvider : ICascadingValueSupplie
         }
 
         var attribute = (SupplyParameterFromTempDataAttribute)parameterInfo.Attribute;
-        var tempDataKey = (attribute.Name ?? parameterInfo.PropertyName).ToLowerInvariant();
+        var tempDataKey = (attribute.Name ?? parameterInfo.PropertyName) ?? "";
         return _tempDataValueMapper.GetValue(tempDataKey, parameterInfo.PropertyType);
     }
 
@@ -41,7 +41,7 @@ internal class SupplyParameterFromTempDataValueProvider : ICascadingValueSupplie
     public void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
     {
         var attribute = (SupplyParameterFromTempDataAttribute)parameterInfo.Attribute;
-        var tempDataKey = (attribute.Name ?? parameterInfo.PropertyName).ToLowerInvariant();
+        var tempDataKey = (attribute.Name ?? parameterInfo.PropertyName) ?? "";
         var propertyName = parameterInfo.PropertyName;
         var componentType = subscriber.Component.GetType();
         var propertyInfo = componentType.GetProperty(
@@ -60,5 +60,8 @@ internal class SupplyParameterFromTempDataValueProvider : ICascadingValueSupplie
 
     public void Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
     {
+        var attribute = (SupplyParameterFromTempDataAttribute)parameterInfo.Attribute;
+        var tempDataKey = (attribute.Name ?? parameterInfo.PropertyName) ?? "";
+        _tempDataValueMapper.DeleteValueCallback(tempDataKey);
     }
 }

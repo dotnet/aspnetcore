@@ -76,8 +76,6 @@ internal partial class TempDataValueMapper : ITempDataValueMapper
 
     internal void PersistValues(ITempData tempData)
     {
-
-        // Callbacks are not working.
         foreach (var (key, callbacks) in _valueCallbacks)
         {
             object? value = null;
@@ -99,6 +97,11 @@ internal partial class TempDataValueMapper : ITempDataValueMapper
             }
             tempData[key] = value;
         }
+    }
+
+    public void DeleteValueCallback(string tempDataKey)
+    {
+        _valueCallbacks.Remove(tempDataKey);
     }
 
     private static partial class Log

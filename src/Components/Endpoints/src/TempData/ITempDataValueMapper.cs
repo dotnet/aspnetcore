@@ -19,4 +19,9 @@ public interface ITempDataValueMapper
     /// The callback will be invoked when the response starts to persist the value.
     /// </summary>
     void RegisterValueCallback(string tempDataKey, Func<object?> valueGetter);
+
+    /// <summary>
+    /// Deletes the registered callback for the specified TempData key. This should be called when the component is disposed to avoid memory leaks.
+    /// </summary>
+    void DeleteValueCallback(string tempDataKey);
 }
