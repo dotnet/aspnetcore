@@ -26,7 +26,7 @@
   -->
   <PropertyGroup>
     <!-- Use the BrowserDebugHost as a sentinel for the nonshipping version for .NETCoreApp -->
-    <DotNetRuntimeArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppRefVersion)-$(TargetRuntimeIdentifier).$(ArchiveFormat)</DotNetRuntimeArchiveFileName>
+    <DotNetRuntimeArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppRefVersion)-$(TargetRuntimeIdentifier).tar.gz</DotNetRuntimeArchiveFileName>
     <DotNetRuntimeDownloadPath>Runtime/$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadPath>
     <DotNetRuntimeArchive>$(BaseIntermediateOutputPath)$(DotNetRuntimeArchiveFileName)</DotNetRuntimeArchive>
   </PropertyGroup>
@@ -50,13 +50,7 @@
     <MakeDir Directories="$(OutputPath)" />
 
     <!-- Extract the dotnet-runtime archive -->
-    <Exec Condition="'$(ArchiveFormat)' == 'tar.gz'"
-      Command="tar -xzf $(DotNetRuntimeArchive) -C $(OutputPath)" />
-
-    <Unzip Condition="'$(ArchiveFormat)' == 'zip'"
-      SourceFiles="$(DotNetRuntimeArchive)"
-      DestinationFolder="$(OutputPath)"
-      OverwriteReadOnlyFiles="true" />
+    <Exec Command="tar -xzf $(DotNetRuntimeArchive) -C $(OutputPath)" />
 
     <MSBuild Projects="@(ProjectReference)"
               Targets="PublishToDisk"
