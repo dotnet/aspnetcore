@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -42,7 +43,8 @@ internal class SupplyParameterFromTempDataValueProvider : ICascadingValueSupplie
         var attribute = (SupplyParameterFromTempDataAttribute)parameterInfo.Attribute;
         var tempDataKey = (attribute.Name ?? parameterInfo.PropertyName).ToLowerInvariant();
         var propertyName = parameterInfo.PropertyName;
-        var propertyInfo = subscriber.Component.GetType().GetProperty(
+        var componentType = subscriber.Component.GetType();
+        var propertyInfo = componentType.GetProperty(
             propertyName,
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
@@ -52,11 +54,8 @@ internal class SupplyParameterFromTempDataValueProvider : ICascadingValueSupplie
         }
 
         var component = subscriber.Component;
-        _tempDataValueMapper.RegisterValueCallback(tempDataKey, () =>
-        {
-            var value = propertyInfo.GetValue(component);
-            return value;
-        });
+        var getter = new PropertyGetter(componentType, propertyInfo);
+        _tempDataValueMapper.RegisterValueCallback(tempDataKey, () => getter.GetValue(component));
     }
 
     public void Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
