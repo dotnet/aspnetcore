@@ -104,7 +104,7 @@
     <MSBuild Projects="@(TestConsoleApps)"
              Targets="Restore"
              Condition="'$(SkipTrimmingProjectsRestore)' != 'true'"
-             Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid());Configuration=$(Configuration)" />
+             Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid());Configuration=$(Configuration);RestoreDisableParallel=true" />
 
     <MSBuild Projects="@(TestConsoleApps)"
              Targets="Publish"
