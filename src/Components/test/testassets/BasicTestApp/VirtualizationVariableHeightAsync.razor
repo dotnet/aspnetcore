@@ -71,7 +71,7 @@
 
     protected override void OnInitialized()
     {
-        // Generate 30 items with deterministic variable heights (25-55px range)
+        // Generate totalItemCount items (default 100) with deterministic variable heights (25-55px range)
         allItems = Enumerable.Range(0, totalItemCount).Select(i => new VariableHeightItem
         {
             Id = nextId++,
