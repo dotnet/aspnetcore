@@ -236,9 +236,6 @@
     <SharedFrameworkLayoutRoot>$(ArtifactsObjDir)SharedFx.Layout\$(Configuration)\$(TargetRuntimeIdentifier)\</SharedFrameworkLayoutRoot>
     <!-- This property points to a folder which includes both Microsoft.NETCore.App and AspNetCore.App. -->
     <RedistSharedFrameworkLayoutRoot>$(ArtifactsObjDir)RedistSharedFx.Layout\$(Configuration)\$(TargetRuntimeIdentifier)\</RedistSharedFrameworkLayoutRoot>
-
-    <ArchiveExtension>.tar.gz</ArchiveExtension>
-    <ArchiveExtension Condition="'$(TargetOsName)' == 'win'">.zip</ArchiveExtension>
   </PropertyGroup>
 
   <PropertyGroup>
