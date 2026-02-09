@@ -165,7 +165,7 @@ public class TempDataSessionStorageTest : ServerTestBase<BasicTestAppServerSiteF
     {
         Navigate($"{ServerPathBase}/tempdata");
         Browser.Equal("", () => Browser.FindElement(By.Id("supply-parameter-from-tempdata")).Text);
-        Browser.FindElement(By.Id("set-supply=from-tempdata")).Click();
+        Browser.FindElement(By.Id("set-supply-from-tempdata")).Click();
         Browser.Equal("Supplied from TempData", () => Browser.FindElement(By.Id("supply-parameter-from-tempdata")).Text);
     }
 }
