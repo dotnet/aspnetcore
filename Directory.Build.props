@@ -90,7 +90,7 @@
   <PropertyGroup Condition="'$(IsTrimmingTestProject)' == 'true'">
     <!-- Should mitigate https://github.com/dotnet/aspnetcore/issues/61178 -->
     <RestoreDisableParallel>true</RestoreDisableParallel>
-  </PropertyGroup
+  </PropertyGroup>
 
   <Import Project="eng\QuarantinedTests.BeforeArcade.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
