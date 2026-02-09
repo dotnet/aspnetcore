@@ -20,7 +20,7 @@ public sealed class UrlQueryRedactionOptions
     /// Parameter name matching is case-insensitive.
     /// </summary>
     /// <remarks>
-    /// Default sensitive parameters include: password, token, api_key, apikey, secret,
+    /// Default sensitive parameters include: password, pwd, token, api_key, apikey, secret,
     /// access_token, refresh_token, credential, key, sig, signature.
     /// </remarks>
     public HashSet<string> SensitiveQueryParameters { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
