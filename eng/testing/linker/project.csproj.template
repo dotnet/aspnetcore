@@ -16,7 +16,7 @@
     <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.AspNetCore.Http.Generated</InterceptorsPreviewNamespaces>
     <!-- Ensure individual warnings are shown when publishing -->
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
-    <!-- Should mitigate https://github.com/dotnet/dotnet/issues/4558 -->
+    <!-- Should mitigate https://github.com/dotnet/aspnetcore/issues/61178 -->
     <RestoreDisableParallel>true</RestoreDisableParallel>
     {AdditionalProperties}
   </PropertyGroup>
