@@ -9,9 +9,9 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 public interface ITempDataValueMapper
 {
     /// <summary>
-    /// Returns the TempData value with the specified key, deserialized to the specified type.
+    /// Returns the TempData value with the specified key.
     /// </summary>
-    /// <returns>The deserialized value, or null if not found.</returns>
+    /// <returns>The value, or null if not found.</returns>
     object? GetValue(string tempDataKey, Type targetType);
 
     /// <summary>
