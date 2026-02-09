@@ -102,6 +102,7 @@
           DependsOnTargets="GenerateProjects">
 
     <MSBuild Projects="@(TestConsoleApps)"
+             BuildInParallel="false"
              Targets="Restore"
              Condition="'$(SkipTrimmingProjectsRestore)' != 'true'"
              Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid());Configuration=$(Configuration);RestoreDisableParallel=true" />
