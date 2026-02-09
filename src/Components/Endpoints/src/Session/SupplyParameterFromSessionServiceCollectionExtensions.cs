@@ -1,11 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
 /// <summary>
 /// Enables component parameters to be supplied from the session with <see cref="SupplyParameterFromSessionAttribute"/>.

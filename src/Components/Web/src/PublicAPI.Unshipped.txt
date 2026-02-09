@@ -1,7 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Components.ISessionValueMapper
-Microsoft.AspNetCore.Components.ISessionValueMapper.GetValue(string! sessionKey, System.Type! targetType) -> object?
-Microsoft.AspNetCore.Components.ISessionValueMapper.RegisterValueCallback(string! sessionKey, System.Func<object?>! valueGetter) -> void
 Microsoft.AspNetCore.Components.Web.EnvironmentBoundary
 Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.ChildContent.set -> void
@@ -12,8 +9,6 @@ Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.Include.get -> string?
 Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.Include.set -> void
 Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.get -> bool
 Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.set -> void
-Microsoft.Extensions.DependencyInjection.SupplyParameterFromSessionServiceCollectionExtensions
-static Microsoft.Extensions.DependencyInjection.SupplyParameterFromSessionServiceCollectionExtensions.AddSupplyValueFromSessionProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxBufferSize.get -> int
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxBufferSize.set -> void

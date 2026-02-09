@@ -18,7 +18,7 @@ internal partial class EndpointHtmlRenderer
 {
     private static readonly object ComponentSequenceKey = new object();
 
-    protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
+    protected internal override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
     {
         if (_isHandlingErrors)
         {
@@ -42,7 +42,7 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    protected override IComponentRenderMode? GetComponentRenderMode(IComponent component)
+    protected internal override IComponentRenderMode? GetComponentRenderMode(IComponent component)
     {
         var componentState = GetComponentState(component);
         var ssrRenderBoundary = GetClosestRenderModeBoundary(componentState);

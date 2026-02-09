@@ -2,9 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Microsoft.AspNetCore.Components.Web;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal class SupplyParameterFromSessionValueProvider : ICascadingValueSupplier
 {
@@ -28,7 +29,7 @@ internal class SupplyParameterFromSessionValueProvider : ICascadingValueSupplier
         }
 
         var attribute = (SupplyParameterFromSessionAttribute)parameterInfo.Attribute;
-        var sessionKey = (attribute.Name ?? parameterInfo.PropertyName).ToLowerInvariant();
+        var sessionKey = (attribute.Name ?? parameterInfo.PropertyName) ?? "";
         return _sessionValueMapper.GetValue(sessionKey, parameterInfo.PropertyType);
     }
 
@@ -39,9 +40,10 @@ internal class SupplyParameterFromSessionValueProvider : ICascadingValueSupplier
     public void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
     {
         var attribute = (SupplyParameterFromSessionAttribute)parameterInfo.Attribute;
-        var sessionKey = (attribute.Name ?? parameterInfo.PropertyName).ToLowerInvariant();
+        var sessionKey = (attribute.Name ?? parameterInfo.PropertyName) ?? "";
         var propertyName = parameterInfo.PropertyName;
-        var propertyInfo = subscriber.Component.GetType().GetProperty(propertyName);
+        var componentType = subscriber.Component.GetType();
+        var propertyInfo = componentType.GetProperty(propertyName);
 
         if (propertyInfo is null)
         {
@@ -49,14 +51,14 @@ internal class SupplyParameterFromSessionValueProvider : ICascadingValueSupplier
         }
 
         var component = subscriber.Component;
-        _sessionValueMapper.RegisterValueCallback(sessionKey, () =>
-        {
-            var value = propertyInfo.GetValue(component);
-            return value;
-        });
+        var getter = new PropertyGetter(componentType, propertyInfo);
+        _sessionValueMapper.RegisterValueCallback(sessionKey, () => getter.GetValue(component));
     }
 
     public void Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
     {
+        var attribute = (SupplyParameterFromSessionAttribute)parameterInfo.Attribute;
+        var sessionKey = (attribute.Name ?? parameterInfo.PropertyName) ?? "";
+        _sessionValueMapper.DeleteValueCallback(sessionKey);
     }
 }

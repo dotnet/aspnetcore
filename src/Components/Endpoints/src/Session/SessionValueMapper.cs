@@ -59,6 +59,11 @@ internal partial class SessionValueMapper : ISessionValueMapper
         callbacks.Add(valueGetter);
     }
 
+    public void DeleteValueCallback(string sessionKey)
+    {
+        _valueCallbacks.Remove(sessionKey);
+    }
+
     private Task PersistAllValues()
     {
         var session = _httpContext?.Features.Get<ISessionFeature>()?.Session;
