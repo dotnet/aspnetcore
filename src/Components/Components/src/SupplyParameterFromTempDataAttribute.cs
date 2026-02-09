@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components;
 public sealed class SupplyParameterFromTempDataAttribute : CascadingParameterAttributeBase
 {
     /// <summary>
-    /// Gets or sets the name of the TempData attribute. If not specified, the property name will be used.
+    /// Gets or sets the TempData key. If not specified, the property name will be used.
     /// </summary>
     public string? Name { get; set; }
 
