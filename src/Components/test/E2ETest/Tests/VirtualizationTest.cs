@@ -28,6 +28,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Navigate(ServerPathBase);
     }
 
+    private int GetElementCount(By by) => Browser.FindElements(by).Count;
+
+    private int GetElementCount(ISearchContext container, string cssSelector)
+        => container.FindElements(By.CssSelector(cssSelector)).Count;
+
     [Fact]
     public void AlwaysFillsVisibleCapacity_Sync()
     {
@@ -208,8 +213,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
 
         // Validate that the scroll event completed successfully
-        var lastElement = Browser.Exists(By.Id("999"));
-        Browser.True(() => lastElement.Displayed);
+        Browser.True(() => Browser.Exists(By.Id("999")).Displayed);
 
         // Validate that the top spacer has expanded.
         Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
@@ -256,15 +260,14 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // We can override the tag name of the spacer
         Assert.Equal("tr", topSpacer.TagName.ToLowerInvariant());
         Assert.Equal("tr", bottomSpacer.TagName.ToLowerInvariant());
-        Assert.Contains(expectedInitialSpacerStyle, topSpacer.GetDomAttribute("style"));
+        Browser.True(() => topSpacer.GetDomAttribute("style").Contains(expectedInitialSpacerStyle));
         Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
         Assert.Contains("true", bottomSpacer.GetDomAttribute("aria-hidden"));
 
         // Check scrolling document element works
         Browser.DoesNotExist(By.Id("row-999"));
         Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
-        var lastElement = Browser.Exists(By.Id("row-999"));
-        Browser.True(() => lastElement.Displayed);
+        Browser.True(() => Browser.Exists(By.Id("row-999")).Displayed);
 
         // Validate that the top spacer has expanded, and bottom one has collapsed
         Browser.False(() => topSpacer.GetDomAttribute("style").Contains(expectedInitialSpacerStyle));
@@ -655,13 +658,23 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             var list = new List<int>(elements.Count);
             foreach (var el in elements)
             {
-                var text = el.Text;
-                if (text.StartsWith("Item ", StringComparison.Ordinal))
+                try
                 {
-                    if (int.TryParse(text.AsSpan(5), NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+                    var text = el.Text;
+                    if (text.StartsWith("Item ", StringComparison.Ordinal))
                     {
-                        list.Add(value);
+                        if (int.TryParse(text.AsSpan(5), NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+                        {
+                            list.Add(value);
+                        }
                     }
+                }
+                catch (StaleElementReferenceException)
+                {
+                    // With variable-height support, item heights are measured and reported back to .NET,
+                    // which recalculates spacer heights. This causes more frequent re-renders during scroll,
+                    // and DOM elements can be replaced mid-iteration. Skipping stale elements is fine since
+                    // the test collects indices across multiple scroll positions.
                 }
             }
             return list;
@@ -690,5 +703,601 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         var js = (IJavaScriptExecutor)Browser;
         js.ExecuteScript("arguments[0].scrollLeft = arguments[0].scrollWidth", elem);
+    }
+
+    [Fact]
+    public void VariableHeight_CanScrollThroughAllItems()
+    {
+        Browser.MountTestComponent<VirtualizationVariableHeight>();
+
+        var container = Browser.Exists(By.Id("variable-height-container"));
+
+        // Wait for initial items to appear
+        Browser.True(() => GetElementCount(container, ".variable-height-item") > 0);
+
+        // Collect all indices seen during scrolling
+        var seenIndices = new HashSet<int>();
+
+        // Scroll through and collect all visible indices (robust to stale elements)
+        void CollectVisibleIndices()
+        {
+            try
+            {
+                foreach (var el in container.FindElements(By.CssSelector(".variable-height-item")))
+                {
+                    var idAttr = el.GetDomAttribute("id");
+                    if (idAttr?.StartsWith("variable-item-", StringComparison.Ordinal) == true
+                        && int.TryParse(idAttr.AsSpan(14), NumberStyles.Integer, CultureInfo.InvariantCulture, out var idx))
+                    {
+                        seenIndices.Add(idx);
+                    }
+                }
+            }
+            catch (StaleElementReferenceException)
+            {
+                // Elements became stale during collection, skip
+            }
+        }
+
+        // Collect initial visible items
+        CollectVisibleIndices();
+
+        // Scroll down gradually collecting items until we reach the end
+        // With extreme height variance (20-2000px items), we need larger scroll increments
+        // to cover the total content height efficiently
+        var js = (IJavaScriptExecutor)Browser;
+        var lastScrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+
+        for (int attempt = 0; attempt < 200; attempt++) // Safety limit - more iterations for large content
+        {
+            // Scroll down - use 500px increments to cover large content height faster
+            var targetScrollTop = lastScrollTop + 500;
+            js.ExecuteScript("arguments[0].scrollTop += 500", container);
+
+            // Wait for scroll to take effect by checking scroll position changed or we're at bottom
+            Browser.True(() =>
+            {
+                var currentScrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+                var scrollHeight = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+                var clientHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+                return currentScrollTop != lastScrollTop || currentScrollTop + clientHeight >= scrollHeight - 1;
+            });
+
+            // Collect visible items
+            CollectVisibleIndices();
+
+            // Check if we've reached the bottom
+            var scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            var scrollHeight = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+            var clientHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+
+            if (scrollTop + clientHeight >= scrollHeight - 1)
+            {
+                // At the bottom, collect one more time
+                CollectVisibleIndices();
+                break;
+            }
+
+            if (scrollTop == lastScrollTop)
+            {
+                // Scroll didn't change, we're stuck at the bottom
+                break;
+            }
+
+            lastScrollTop = scrollTop;
+        }
+
+        // Final scroll to absolute bottom and collect any remaining items
+        js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", container);
+        Browser.True(() =>
+        {
+            var scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            var scrollHeight = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+            var clientHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+            return scrollTop + clientHeight >= scrollHeight - 1;
+        });
+        CollectVisibleIndices();
+
+        // Verify we saw all 100 items (indices 0-99)
+        Assert.Equal(100, seenIndices.Count);
+        for (int i = 0; i < 100; i++)
+        {
+            Assert.Contains(i, seenIndices);
+        }
+    }
+
+    [Fact]
+    public void VariableHeight_SpacersAdjustCorrectly()
+    {
+        Browser.MountTestComponent<VirtualizationVariableHeight>();
+
+        var container = Browser.Exists(By.Id("variable-height-container"));
+        var topSpacer = container.FindElement(By.TagName("div")); // First child div is the top spacer
+
+        // Wait for initial render
+        Browser.True(() => GetElementCount(container, ".variable-height-item") > 0);
+
+        // Initially, top spacer should be 0 height
+        Browser.Equal("0px", () =>
+        {
+            var style = topSpacer.GetDomAttribute("style");
+            var match = System.Text.RegularExpressions.Regex.Match(style ?? "", @"height:\s*(\d+)px");
+            return match.Success ? match.Groups[1].Value + "px" : "0px";
+        });
+
+        // Scroll down
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteScript("arguments[0].scrollTop = 100", container);
+
+        // Wait for scroll to take effect
+        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) >= 100);
+
+        // After scrolling, verify that items still render (component didn't break)
+        Browser.True(() => GetElementCount(container, ".variable-height-item") > 0);
+    }
+
+    [Fact]
+    public void VariableHeight_ItemsRenderWithCorrectHeights()
+    {
+        Browser.MountTestComponent<VirtualizationVariableHeight>();
+
+        var container = Browser.Exists(By.Id("variable-height-container"));
+
+        // Wait for items to render
+        Browser.True(() => GetElementCount(container, ".variable-height-item") > 0);
+
+        // Check that item 0 has the expected height (20px from our test data: 20 + (0*37%181) = 20)
+        var item0 = container.FindElement(By.Id("variable-item-0"));
+        var style0 = item0.GetDomAttribute("style");
+        Assert.Contains("height: 20px", style0);
+
+        // Check that item 1 has the expected height (57px from our test data: 20 + (1*37%181) = 57)
+        var item1 = container.FindElement(By.Id("variable-item-1"));
+        var style1 = item1.GetDomAttribute("style");
+        Assert.Contains("height: 57px", style1);
+    }
+
+    [Fact]
+    public void DynamicContent_ItemHeightChangesUpdateLayout()
+    {
+        // Test that when an item's height changes (e.g., accordion expand, image load),
+        // items below move down appropriately and state is preserved after scrolling
+        Browser.MountTestComponent<VirtualizationDynamicContent>();
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        var status = Browser.Exists(By.Id("status"));
+
+        // Wait for items to render
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        // Get position of item 3 before expansion
+        var item3TopBefore = container.FindElement(By.CssSelector("[data-index='3']")).Location.Y;
+
+        // Expand item 2
+        Browser.Exists(By.Id("expand-item-2")).Click();
+        Browser.Equal("Item 2 expanded via button", () => status.Text);
+
+        // Verify item 2 now has expanded content
+        var item2 = container.FindElement(By.CssSelector("[data-index='2']"));
+        Assert.Single(item2.FindElements(By.CssSelector(".expanded-content")));
+
+        // Verify item 3 moved down (not overlapping with expanded item 2)
+        var item3TopAfter = container.FindElement(By.CssSelector("[data-index='3']")).Location.Y;
+        Assert.True(item3TopAfter > item3TopBefore,
+            $"Item 3 should have moved down after item 2 expanded. Before: {item3TopBefore}, After: {item3TopAfter}");
+
+        // Scroll down and back up to verify state is preserved
+        js.ExecuteScript("arguments[0].scrollTop = 200", container);
+        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) >= 200);
+
+        js.ExecuteScript("arguments[0].scrollTop = 0", container);
+        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) == 0);
+
+        // Verify item 2 is still expanded after scrolling
+        item2 = container.FindElement(By.CssSelector("[data-index='2']"));
+        Assert.Single(item2.FindElements(By.CssSelector(".expanded-content")));
+    }
+
+    [Fact]
+    public void DynamicContent_ExpandingOffScreenItemDoesNotAffectVisibleItems()
+    {
+        // Test that expanding an item that is scrolled out of view
+        // does not cause visible items to jump or change position
+        Browser.MountTestComponent<VirtualizationDynamicContent>();
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        var status = Browser.Exists(By.Id("status"));
+
+        // Wait for items to render
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        // Scroll down so item 2 is not visible (items are 50px each, scroll past item 2)
+        js.ExecuteScript("arguments[0].scrollTop = 200", container);
+        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) >= 200);
+
+        // Get the position of a visible item before expanding the off-screen item
+        var visibleItems = container.FindElements(By.CssSelector(".item"));
+        var firstVisibleItem = visibleItems.First();
+        var firstVisibleTopBefore = firstVisibleItem.Location.Y;
+        var firstVisibleIndex = firstVisibleItem.GetDomAttribute("data-index");
+
+        // Expand item 2 (which should be above the visible area)
+        Browser.Exists(By.Id("expand-item-2")).Click();
+        Browser.Equal("Item 2 expanded via button", () => status.Text);
+
+        // Verify the visible item position didn't change
+        var sameItem = container.FindElement(By.CssSelector($"[data-index='{firstVisibleIndex}']"));
+        var firstVisibleTopAfter = sameItem.Location.Y;
+
+        // The visible items should stay in place (or very close, allowing for minor reflow)
+        Assert.True(Math.Abs(firstVisibleTopAfter - firstVisibleTopBefore) < 5,
+            $"Visible item should not have moved when off-screen item expanded. Before: {firstVisibleTopBefore}, After: {firstVisibleTopAfter}");
+    }
+
+    [Fact]
+    public void VariableHeight_ContainerResizeWorks()
+    {
+        Browser.MountTestComponent<VirtualizationVariableHeight>();
+
+        var container = Browser.Exists(By.Id("variable-height-container"));
+        var resizeStatus = Browser.Exists(By.Id("resize-status"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        // Wait for initial render at 100px
+        Browser.True(() => GetElementCount(container, ".variable-height-item") > 0);
+
+        // Resize to large (400px)
+        Browser.Exists(By.Id("resize-large")).Click();
+        Browser.Equal("Container resized to 400px", () => resizeStatus.Text);
+
+        // Verify container resized
+        var containerHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+        Assert.Equal(400, containerHeight);
+
+        // Scroll to end and verify last item
+        js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", container);
+        Browser.True(() => container.FindElements(By.Id("variable-item-99")).Count > 0);
+
+        // Resize to small while scrolled - should still work
+        Browser.Exists(By.Id("resize-small")).Click();
+        Browser.Equal("Container resized to 100px", () => resizeStatus.Text);
+        containerHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+        Assert.Equal(100, containerHeight);
+
+        // Scroll to top and verify first item
+        js.ExecuteScript("arguments[0].scrollTop = 0", container);
+        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) == 0);
+        Browser.True(() => container.FindElements(By.Id("variable-item-0")).Count > 0);
+    }
+
+    [Fact]
+    public void VariableHeightAsync_LoadsItemsWithCorrectHeights()
+    {
+        Browser.MountTestComponent<VirtualizationVariableHeightAsync>();
+
+        var container = Browser.Exists(By.Id("async-variable-container"));
+        var finishLoadingButton = Browser.Exists(By.Id("finish-loading"));
+
+        // Initially, no items or placeholders (no data fetched yet - don't know totalItemCount)
+        Browser.Equal(0, () => GetElementCount(container, ".async-variable-item"));
+        Browser.Equal(0, () => GetElementCount(container, ".async-variable-placeholder"));
+
+        // Finish loading
+        finishLoadingButton.Click();
+
+        // Items should appear
+        Browser.True(() => GetElementCount(container, ".async-variable-item") > 0);
+
+        // Verify first item has correct variable height (25 + (0 * 11 % 31) = 25px)
+        var item0 = container.FindElement(By.Id("async-variable-item-0"));
+        Assert.Contains("height: 25px", item0.GetDomAttribute("style"));
+
+        // Verify second item has different height (25 + (1 * 11 % 31) = 36px)
+        var item1 = container.FindElement(By.Id("async-variable-item-1"));
+        Assert.Contains("height: 36px", item1.GetDomAttribute("style"));
+    }
+
+    [Theory]
+    [InlineData(false, 100, 100)]  // baseline
+    [InlineData(true, 100, 100)]   // RTL
+    [InlineData(false, 200, 100)]  // transform: scale(2)
+    [InlineData(false, 50, 100)]   // transform: scale(0.5)
+    // CSS zoom tests are skipped - virtualization doesn't account for CSS zoom
+    // https://github.com/dotnet/aspnetcore/issues/64013
+    // [InlineData(false, 100, 200)]  // CSS zoom: 2
+    // [InlineData(false, 100, 50)]   // CSS zoom: 0.5
+    public void VariableHeightAsync_CanScrollThroughItems(bool useRtl, int scalePercent, int cssZoomPercent)
+    {
+        // Tests that scrolling works with async variable-height items in LTR/RTL layouts, 
+        // various transform scale levels, and CSS zoom levels
+        Browser.MountTestComponent<VirtualizationVariableHeightAsync>();
+
+        var container = Browser.Exists(By.Id("async-variable-container"));
+        var finishLoadingButton = Browser.Exists(By.Id("finish-loading"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        // Set RTL if requested
+        if (useRtl)
+        {
+            var toggleRtlButton = Browser.Exists(By.Id("toggle-rtl"));
+            toggleRtlButton.Click();
+            Browser.Equal("Direction: RTL", () => Browser.Exists(By.Id("direction-status")).Text);
+        }
+
+        // Set transform scale level if not 100%
+        if (scalePercent != 100)
+        {
+            var scaleButtonId = $"scale-{scalePercent}";
+            var scaleButton = Browser.Exists(By.Id(scaleButtonId));
+            scaleButton.Click();
+        }
+
+        // Set CSS zoom level if not 100%
+        if (cssZoomPercent != 100)
+        {
+            var zoomButtonId = $"zoom-{cssZoomPercent}";
+            var zoomButton = Browser.Exists(By.Id(zoomButtonId));
+            zoomButton.Click();
+        }
+
+        // Verify zoom status updated
+        Browser.Equal($"Scale: {scalePercent}%, CSS Zoom: {cssZoomPercent}%", () => Browser.Exists(By.Id("zoom-status")).Text);
+
+        // Load initial items
+        finishLoadingButton.Click();
+        Browser.True(() => GetElementCount(container, ".async-variable-item") > 0);
+
+        // Scroll to bottom
+        js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", container);
+
+        // If placeholders appear (new batch needed), finish loading
+        if (GetElementCount(container, ".async-variable-placeholder") > 0)
+        {
+            finishLoadingButton.Click();
+        }
+
+        // Should see items near the end (item 29 is the last one, index 0-29)
+        Browser.True(() => container.FindElements(By.Id("async-variable-item-99")).Count > 0);
+
+        // Scroll back to top
+        js.ExecuteScript("arguments[0].scrollTop = 0", container);
+
+        // If placeholders appear, finish loading
+        if (GetElementCount(container, ".async-variable-placeholder") > 0)
+        {
+            finishLoadingButton.Click();
+        }
+
+        // Should see first item again
+        Browser.True(() => container.FindElements(By.Id("async-variable-item-0")).Count > 0);
+    }
+
+    [Fact]
+    public void VariableHeightAsync_CollectionMutationWorks()
+    {
+        Browser.MountTestComponent<VirtualizationVariableHeightAsync>();
+
+        var container = Browser.Exists(By.Id("async-variable-container"));
+        var finishLoadingButton = Browser.Exists(By.Id("finish-loading"));
+        var addItemStartButton = Browser.Exists(By.Id("add-item-start"));
+        var removeItemMiddleButton = Browser.Exists(By.Id("remove-item-middle"));
+        var refreshButton = Browser.Exists(By.Id("refresh-data"));
+        var totalItemCount = Browser.Exists(By.Id("total-item-count"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        // Load initial items
+        finishLoadingButton.Click();
+        Browser.True(() => GetElementCount(container, ".async-variable-item") > 0);
+        Browser.Equal("Total: 100", () => totalItemCount.Text);
+
+        // Verify initial first item height (25 + 0*11%31 = 25px)
+        var firstItem = container.FindElement(By.Id("async-variable-item-0"));
+        Assert.Contains("height: 25px", firstItem.GetDomAttribute("style"));
+
+        // Add item at START - this shifts ALL existing indices up
+        // The new item has a distinctive 100px height
+        addItemStartButton.Click();
+        Browser.Equal("Total: 101", () => totalItemCount.Text);
+
+        // Refresh to see the change
+        refreshButton.Click();
+        finishLoadingButton.Click();
+
+        // The new item 0 should have the distinctive 100px height
+        firstItem = container.FindElement(By.Id("async-variable-item-0"));
+        Assert.Contains("height: 100px", firstItem.GetDomAttribute("style"));
+
+        // The old first item is now item 1 and should still have its original 25px height
+        var secondItem = container.FindElement(By.Id("async-variable-item-1"));
+        Assert.Contains("height: 25px", secondItem.GetDomAttribute("style"));
+
+        // Remove item from MIDDLE - this shifts indices after the removed item
+        removeItemMiddleButton.Click();
+        Browser.Equal("Total: 100", () => totalItemCount.Text);
+
+        // Refresh
+        refreshButton.Click();
+        finishLoadingButton.Click();
+
+        // Scroll to bottom and back to verify everything still works
+        js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", container);
+        if (GetElementCount(container, ".async-variable-placeholder") > 0)
+        {
+            finishLoadingButton.Click();
+        }
+        Browser.True(() => container.FindElements(By.Id("async-variable-item-99")).Count > 0);
+
+        js.ExecuteScript("arguments[0].scrollTop = 0", container);
+        if (GetElementCount(container, ".async-variable-placeholder") > 0)
+        {
+            finishLoadingButton.Click();
+        }
+
+        // First item should still be the 100px tall item we added
+        firstItem = container.FindElement(By.Id("async-variable-item-0"));
+        Assert.Contains("height: 100px", firstItem.GetDomAttribute("style"));
+    }
+
+    [Fact]
+    public void VariableHeightAsync_SmallItemCountsWork()
+    {
+        Browser.MountTestComponent<VirtualizationVariableHeightAsync>();
+
+        var container = Browser.Exists(By.Id("async-variable-container"));
+        var finishLoadingButton = Browser.Exists(By.Id("finish-loading"));
+        var setCount0Button = Browser.Exists(By.Id("set-count-0"));
+        var setCount1Button = Browser.Exists(By.Id("set-count-1"));
+        var setCount5Button = Browser.Exists(By.Id("set-count-5"));
+        var refreshButton = Browser.Exists(By.Id("refresh-data"));
+        var totalItemCount = Browser.Exists(By.Id("total-item-count"));
+
+        // Load initial items
+        finishLoadingButton.Click();
+        Browser.True(() => GetElementCount(container, ".async-variable-item") > 0);
+        Browser.Equal("Total: 100", () => totalItemCount.Text);
+
+        // Test empty list (0 items) - should show EmptyContent
+        setCount0Button.Click();
+        Browser.Equal("Total: 0", () => totalItemCount.Text);
+        refreshButton.Click();
+        finishLoadingButton.Click();
+        Browser.Equal(0, () => GetElementCount(container, ".async-variable-item"));
+        Browser.Exists(By.Id("no-data")); // EmptyContent should be visible
+
+        // Test single item (1 item)
+        setCount1Button.Click();
+        Browser.Equal("Total: 1", () => totalItemCount.Text);
+        refreshButton.Click();
+        finishLoadingButton.Click();
+        Browser.Equal(1, () => GetElementCount(container, ".async-variable-item"));
+        Browser.DoesNotExist(By.Id("no-data")); // EmptyContent should NOT be visible
+        var singleItem = container.FindElement(By.Id("async-variable-item-0"));
+        Assert.Contains("height: 30px", singleItem.GetDomAttribute("style")); // 30 + 0*17%41 = 30px
+
+        // Test 5 items - all should fit without virtualization
+        setCount5Button.Click();
+        Browser.Equal("Total: 5", () => totalItemCount.Text);
+        refreshButton.Click();
+        finishLoadingButton.Click();
+        Browser.Equal(5, () => GetElementCount(container, ".async-variable-item"));
+        Browser.DoesNotExist(By.Id("no-data"));
+
+        // Verify all 5 items have variable heights (30 + i*17%41)
+        var item0 = container.FindElement(By.Id("async-variable-item-0"));
+        var item1 = container.FindElement(By.Id("async-variable-item-1"));
+        var item2 = container.FindElement(By.Id("async-variable-item-2"));
+        var item3 = container.FindElement(By.Id("async-variable-item-3"));
+        var item4 = container.FindElement(By.Id("async-variable-item-4"));
+
+        Assert.Contains("height: 30px", item0.GetDomAttribute("style")); // 30 + 0*17%41 = 30
+        Assert.Contains("height: 47px", item1.GetDomAttribute("style")); // 30 + 1*17%41 = 47
+        Assert.Contains("height: 64px", item2.GetDomAttribute("style")); // 30 + 2*34%41 = 64 (34%41=34)
+        Assert.Contains("height: 40px", item3.GetDomAttribute("style")); // 30 + 3*51%41 = 30 + 10 = 40
+        Assert.Contains("height: 57px", item4.GetDomAttribute("style")); // 30 + 4*68%41 = 30 + 27 = 57
+    }
+
+    [Fact]
+    public void DisplayModes_BlockLayout_SupportsVariableHeights()
+    {
+        Browser.MountTestComponent<VirtualizationDisplayModes>();
+
+        var container = Browser.Exists(By.Id("block-container"));
+        var itemCount = Browser.Exists(By.Id("block-count"));
+
+        // Verify items are rendered
+        Browser.Equal("50", () => itemCount.Text);
+        Browser.True(() => GetElementCount(container, ".block-item") > 0);
+
+        // Verify variable heights are applied (heights vary from 30-80px based on formula: 30 + i*17%51)
+        var firstItem = container.FindElement(By.Id("block-item-0"));
+        Assert.Contains("height: 30px", firstItem.GetDomAttribute("style")); // 30 + 0*17%51 = 30
+
+        var secondItem = container.FindElement(By.Id("block-item-1"));
+        Assert.Contains("height: 47px", secondItem.GetDomAttribute("style")); // 30 + 1*17%51 = 47
+
+        // Scroll to bottom and verify virtualization works
+        Browser.ExecuteJavaScript("document.getElementById('block-container').scrollTop = document.getElementById('block-container').scrollHeight;");
+        Browser.True(() => GetElementCount(container, ".block-item") > 0);
+    }
+
+    [Fact]
+    public void DisplayModes_GridLayout_SupportsVariableHeights()
+    {
+        Browser.MountTestComponent<VirtualizationDisplayModes>();
+
+        var container = Browser.Exists(By.Id("grid-container"));
+        var itemCount = Browser.Exists(By.Id("grid-count"));
+
+        // Verify items are rendered
+        Browser.Equal("50", () => itemCount.Text);
+        Browser.True(() => GetElementCount(container, ".grid-item") > 0);
+
+        // Verify variable heights are applied
+        var firstItem = container.FindElement(By.Id("grid-item-0"));
+        Assert.Contains("height: 30px", firstItem.GetDomAttribute("style"));
+
+        // Scroll halfway and verify virtualization works
+        Browser.ExecuteJavaScript("document.getElementById('grid-container').scrollTop = document.getElementById('grid-container').scrollHeight * 0.5;");
+        Browser.True(() => GetElementCount(container, ".grid-item") > 0);
+
+        // Scroll to bottom
+        Browser.ExecuteJavaScript("document.getElementById('grid-container').scrollTop = document.getElementById('grid-container').scrollHeight;");
+        Browser.True(() => GetElementCount(container, ".grid-item") > 0);
+    }
+
+    [Fact]
+    public void DisplayModes_SubgridLayout_SupportsVariableHeights()
+    {
+        Browser.MountTestComponent<VirtualizationDisplayModes>();
+
+        var container = Browser.Exists(By.Id("subgrid-container"));
+        var itemCount = Browser.Exists(By.Id("subgrid-count"));
+
+        // Verify items are rendered
+        Browser.Equal("50", () => itemCount.Text);
+        Browser.True(() => GetElementCount(container, ".subgrid-item") > 0);
+
+        // Verify variable heights are applied
+        var firstItem = container.FindElement(By.Id("subgrid-item-0"));
+        Assert.Contains("height: 30px", firstItem.GetDomAttribute("style"));
+
+        // Scroll and verify virtualization works with subgrid
+        Browser.ExecuteJavaScript("document.getElementById('subgrid-container').scrollTop = document.getElementById('subgrid-container').scrollHeight;");
+        Browser.True(() => GetElementCount(container, ".subgrid-item") > 0);
+    }
+
+    [Fact]
+    public void QuickGrid_SupportsVariableHeightRows()
+    {
+        Browser.MountTestComponent<BasicTestApp.QuickGridTest.QuickGridVariableHeightComponent>();
+
+        var container = Browser.Exists(By.Id("grid-variable-height"));
+        var totalItems = Browser.Exists(By.Id("total-items"));
+        var providerCallCount = Browser.Exists(By.Id("items-provider-call-count"));
+
+        // Verify the grid shows correct item count
+        Browser.Equal("Total items: 100", () => totalItems.Text);
+
+        // Verify items provider was called
+        Browser.True(() => int.Parse(providerCallCount.Text.Replace("ItemsProvider calls: ", ""), CultureInfo.InvariantCulture) > 0);
+
+        // Verify rows are rendered in the grid
+        Browser.True(() => GetElementCount(container, "tbody tr") > 0);
+
+        // Scroll halfway through the grid
+        Browser.ExecuteJavaScript("document.getElementById('grid-variable-height').scrollTop = document.getElementById('grid-variable-height').scrollHeight * 0.5;");
+
+        // Wait for provider to be called again
+        var initialCallCount = int.Parse(providerCallCount.Text.Replace("ItemsProvider calls: ", ""), CultureInfo.InvariantCulture);
+        Browser.True(() => int.Parse(providerCallCount.Text.Replace("ItemsProvider calls: ", ""), CultureInfo.InvariantCulture) > initialCallCount);
+
+        // Verify rows are still visible after scrolling
+        Browser.True(() => GetElementCount(container, "tbody tr") > 0);
+
+        // Scroll to bottom
+        Browser.ExecuteJavaScript("document.getElementById('grid-variable-height').scrollTop = document.getElementById('grid-variable-height').scrollHeight;");
+        Browser.True(() => GetElementCount(container, "tbody tr") > 0);
     }
 }

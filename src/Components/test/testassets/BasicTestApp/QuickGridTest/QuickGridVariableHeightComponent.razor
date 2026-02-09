@@ -1,0 +1,69 @@
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using System.Linq
+
+<h3>QuickGrid with Variable Height Rows</h3>
+
+<p>
+    <strong>Test:</strong> Verify that QuickGrid works correctly with rows of varying heights 
+    now that Virtualize supports variable-height items.
+</p>
+
+<p id="items-provider-call-count">ItemsProvider calls: @ItemsProviderCallCount</p>
+<p id="total-items">Total items: 100</p>
+
+<div id="grid-variable-height" style="height: 300px; overflow: auto; border: 1px solid #ccc;">
+    <QuickGrid ItemsProvider="@variableHeightProvider" Virtualize="true" ItemSize="50">
+        <PropertyColumn Property="@(p => p.Id)" Title="ID" />
+        <PropertyColumn Property="@(p => p.Name)" Title="Name" />
+        <TemplateColumn Title="Description">
+            <div style="padding: 4px;">
+                @context.Description
+            </div>
+        </TemplateColumn>
+    </QuickGrid>
+</div>
+
+@code {
+    internal class VariableHeightItem
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+    }
+
+    private GridItemsProvider<VariableHeightItem> variableHeightProvider = default!;
+
+    int ItemsProviderCallCount = 0;
+
+    protected override void OnInitialized()
+    {
+        variableHeightProvider = async request =>
+        {
+            await Task.Yield();
+            Interlocked.Increment(ref ItemsProviderCallCount);
+            StateHasChanged();
+            
+            var items = Enumerable.Range(request.StartIndex, request.Count ?? 100)
+                .Where(i => i < 100)
+                .Select(i => new VariableHeightItem 
+                { 
+                    Id = i + 1, 
+                    Name = $"Person {i + 1}",
+                    Description = GenerateDescription(i)
+                })
+                .ToList();
+            
+            return GridItemsProviderResult.From(items: items, totalItemCount: 100);
+        };
+    }
+
+    private string GenerateDescription(int index)
+    {
+        // Create varying content lengths to produce different row heights (1-5 lines)
+        var lineCount = 1 + (index % 5);
+        var lines = Enumerable.Range(0, lineCount)
+            .Select(l => $"Line {l + 1}: Item {index + 1} description text.")
+            .ToArray();
+        return string.Join("\n", lines);
+    }
+}

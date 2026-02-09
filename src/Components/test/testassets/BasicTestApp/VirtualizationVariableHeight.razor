@@ -1,0 +1,54 @@
+<p>
+    Variable Height Items (small container):<br />
+    <div id="variable-height-container" style="background-color: #eee; height: @(containerHeight)px; overflow-y: auto">
+        <Virtualize Items="@variableHeightItems" ItemSize="30">
+            <div @key="context.Index" id="variable-item-@context.Index" class="variable-height-item" 
+                 style="height: @(context.Height)px; background-color: hsl(@(context.Hue), 70%, 80%); padding: 4px; box-sizing: border-box;">
+                <span class="item-index">@context.Index</span>
+            </div>
+        </Virtualize>
+    </div>
+</p>
+
+<p>
+    <span id="total-item-count">Total items: @variableHeightItems.Count</span>
+</p>
+
+<p>
+    Container height: <span id="container-height">@containerHeight</span>px
+    <button id="resize-small" @onclick="() => ResizeContainer(100)">Small (100px)</button>
+    <button id="resize-medium" @onclick="() => ResizeContainer(200)">Medium (200px)</button>
+    <button id="resize-large" @onclick="() => ResizeContainer(400)">Large (400px)</button>
+</p>
+
+<p id="resize-status">@resizeStatus</p>
+
+@code {
+    ICollection<VariableHeightItem> variableHeightItems;
+    int containerHeight = 100;
+    string resizeStatus = "Ready";
+
+    void ResizeContainer(int newHeight)
+    {
+        containerHeight = newHeight;
+        resizeStatus = $"Container resized to {newHeight}px";
+    }
+
+    protected override void OnInitialized()
+    {
+        // Generate 100 items with extreme height variance (20-2000px range = 100x variance)
+        variableHeightItems = Enumerable.Range(0, 100).Select(i => new VariableHeightItem
+        {
+            Index = i,
+            Height = 20 + (i * 37 % 1981), // Heights vary from 20-2000px (100x extreme variance!)
+            Hue = i * 7 % 360 // Evenly distributed hues for visual distinction
+        }).ToList();
+    }
+
+    class VariableHeightItem
+    {
+        public int Index { get; set; }
+        public int Height { get; set; }
+        public int Hue { get; set; }
+    }
+}
