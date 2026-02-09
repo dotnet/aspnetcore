@@ -846,12 +846,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // Wait for items to render
         Browser.True(() => GetElementCount(container, ".variable-height-item") > 0);
 
-        // Check that item 0 has the expected height (20px from our test data: 20 + (0*37%181) = 20)
+        // Check that item 0 has the expected height (20px from our test data: 20 + (0*37%1981) = 20)
         var item0 = container.FindElement(By.Id("variable-item-0"));
         var style0 = item0.GetDomAttribute("style");
         Assert.Contains("height: 20px", style0);
 
-        // Check that item 1 has the expected height (57px from our test data: 20 + (1*37%181) = 57)
+        // Check that item 1 has the expected height (57px from our test data: 20 + (1*37%1981) = 57)
         var item1 = container.FindElement(By.Id("variable-item-1"));
         var style1 = item1.GetDomAttribute("style");
         Assert.Contains("height: 57px", style1);
