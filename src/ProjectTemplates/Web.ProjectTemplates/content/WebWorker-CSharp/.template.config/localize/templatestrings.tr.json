@@ -1,10 +1,10 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": ".NET Web Worker",
-  "description": "A library for running .NET code in a WebWorker, keeping your UI responsive during heavy computations.",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net11.0/description": "Target net11.0",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+  "name": ".NET Web Çalışanı",
+  "description": "Web Çalışanı içinde .NET kodunu çalıştıran bir sınıf kitaplığı oluşturma projesi.",
+  "symbols/Framework/description": "Projenin hedef çerçevesi.",
+  "symbols/Framework/choices/net11.0/description": "Hedef net11.0",
+  "symbols/skipRestore/description": "Belirtilmişse oluştururken projenin otomatik geri yüklenmesini atlar.",
+  "postActions/restore/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
+  "postActions/restore/manualInstructions/default/text": "\"dotnet restore\" komutunu çalıştır"
 }
