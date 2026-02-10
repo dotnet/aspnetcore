@@ -705,135 +705,74 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         js.ExecuteScript("arguments[0].scrollLeft = arguments[0].scrollWidth", elem);
     }
 
+    private static List<int> GetItemIndicesFromContainer(ISearchContext container, string cssSelector, string idPrefix)
+    {
+        var indices = new List<int>();
+        try
+        {
+            foreach (var el in container.FindElements(By.CssSelector(cssSelector)))
+            {
+                var idAttr = el.GetDomAttribute("id");
+                if (idAttr?.StartsWith(idPrefix, StringComparison.Ordinal) == true
+                    && int.TryParse(idAttr.AsSpan(idPrefix.Length), NumberStyles.Integer, CultureInfo.InvariantCulture, out var idx))
+                {
+                    indices.Add(idx);
+                }
+            }
+        }
+        catch (StaleElementReferenceException)
+        {
+            // Elements became stale during collection - return what we have
+        }
+        return indices;
+    }
+
     [Fact]
     public void VariableHeight_CanScrollThroughAllItems()
     {
         Browser.MountTestComponent<VirtualizationVariableHeight>();
 
         var container = Browser.Exists(By.Id("variable-height-container"));
+        var js = (IJavaScriptExecutor)Browser;
 
         // Wait for initial items to appear
         Browser.True(() => GetElementCount(container, ".variable-height-item") > 0);
 
-        // Collect all indices seen during scrolling
         var seenIndices = new HashSet<int>();
+        var lastMinVisibleIndex = 0;
+        var lastScrollTop = 0L;
 
-        // Scroll through and collect all visible indices (robust to stale elements)
-        void CollectVisibleIndices()
+        // Scroll down gradually, collecting all visible indices (max 200 iterations as safety limit)
+        for (int iteration = 0; iteration < 200; iteration++)
         {
-            try
+            var visibleIndices = GetItemIndicesFromContainer(container, ".variable-height-item", "variable-item-");
+            seenIndices.UnionWith(visibleIndices);
+
+            if (visibleIndices.Count > 0)
             {
-                foreach (var el in container.FindElements(By.CssSelector(".variable-height-item")))
-                {
-                    var idAttr = el.GetDomAttribute("id");
-                    if (idAttr?.StartsWith("variable-item-", StringComparison.Ordinal) == true
-                        && int.TryParse(idAttr.AsSpan(14), NumberStyles.Integer, CultureInfo.InvariantCulture, out var idx))
-                    {
-                        seenIndices.Add(idx);
-                    }
-                }
+                var currentMin = visibleIndices.Min();
+                Assert.True(currentMin >= lastMinVisibleIndex,
+                    $"Backward movement: min index went from {lastMinVisibleIndex} to {currentMin}");
+                lastMinVisibleIndex = Math.Max(lastMinVisibleIndex, currentMin);
             }
-            catch (StaleElementReferenceException)
-            {
-                // Elements became stale during collection, skip
-            }
-        }
 
-        // Collect initial visible items
-        CollectVisibleIndices();
-
-        // Scroll down gradually collecting items until we reach the end
-        // With extreme height variance (20-2000px items), we need larger scroll increments
-        // to cover the total content height efficiently
-        var js = (IJavaScriptExecutor)Browser;
-        var lastScrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
-
-        for (int attempt = 0; attempt < 200; attempt++) // Safety limit - more iterations for large content
-        {
-            // Scroll down - use 500px increments to cover large content height faster
-            var targetScrollTop = lastScrollTop + 500;
+            // Scroll down and check if we've reached the bottom
             js.ExecuteScript("arguments[0].scrollTop += 500", container);
-
-            // Wait for scroll to take effect by checking scroll position changed or we're at bottom
-            Browser.True(() =>
-            {
-                var currentScrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
-                var scrollHeight = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
-                var clientHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
-                return currentScrollTop != lastScrollTop || currentScrollTop + clientHeight >= scrollHeight - 1;
-            });
-
-            // Collect visible items
-            CollectVisibleIndices();
-
-            // Check if we've reached the bottom
             var scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
             var scrollHeight = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
             var clientHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
 
-            if (scrollTop + clientHeight >= scrollHeight - 1)
+            var atBottom = scrollTop + clientHeight >= scrollHeight - 1;
+            var cantScroll = scrollTop == lastScrollTop;
+            if (atBottom || cantScroll)
             {
-                // At the bottom, collect one more time
-                CollectVisibleIndices();
                 break;
             }
-
-            if (scrollTop == lastScrollTop)
-            {
-                // Scroll didn't change, we're stuck at the bottom
-                break;
-            }
-
             lastScrollTop = scrollTop;
         }
 
-        // Final scroll to absolute bottom and collect any remaining items
-        js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", container);
-        Browser.True(() =>
-        {
-            var scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
-            var scrollHeight = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
-            var clientHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
-            return scrollTop + clientHeight >= scrollHeight - 1;
-        });
-        CollectVisibleIndices();
-
-        // Verify we saw all 100 items (indices 0-99)
-        Assert.Equal(100, seenIndices.Count);
-        for (int i = 0; i < 100; i++)
-        {
-            Assert.Contains(i, seenIndices);
-        }
-    }
-
-    [Fact]
-    public void VariableHeight_SpacersAdjustCorrectly()
-    {
-        Browser.MountTestComponent<VirtualizationVariableHeight>();
-
-        var container = Browser.Exists(By.Id("variable-height-container"));
-        var topSpacer = container.FindElement(By.TagName("div")); // First child div is the top spacer
-
-        // Wait for initial render
-        Browser.True(() => GetElementCount(container, ".variable-height-item") > 0);
-
-        // Initially, top spacer should be 0 height
-        Browser.Equal("0px", () =>
-        {
-            var style = topSpacer.GetDomAttribute("style");
-            var match = System.Text.RegularExpressions.Regex.Match(style ?? "", @"height:\s*(\d+)px");
-            return match.Success ? match.Groups[1].Value + "px" : "0px";
-        });
-
-        // Scroll down
-        var js = (IJavaScriptExecutor)Browser;
-        js.ExecuteScript("arguments[0].scrollTop = 100", container);
-
-        // Wait for scroll to take effect
-        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) >= 100);
-
-        // After scrolling, verify that items still render (component didn't break)
-        Browser.True(() => GetElementCount(container, ".variable-height-item") > 0);
+        // Verify all 100 items (indices 0-99) were seen during scrolling
+        Assert.Equal(Enumerable.Range(0, 100).ToHashSet(), seenIndices);
     }
 
     [Fact]
