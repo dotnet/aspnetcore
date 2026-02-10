@@ -1058,7 +1058,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             finishLoadingButton.Click();
         }
 
-        // Should see items near the end (item 29 is the last one, index 0-29)
+        // Should see items near the end (item 99 is the last one, index 0-99)
         Browser.True(() => container.FindElements(By.Id("async-variable-item-99")).Count > 0);
 
         // Scroll back to top
