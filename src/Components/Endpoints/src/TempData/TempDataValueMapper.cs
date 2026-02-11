@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal partial class TempDataValueMapper : ITempDataValueMapper
 {
     private HttpContext? _httpContext;
-    private readonly Dictionary<string, List<Func<object?>>> _valueCallbacks = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, Func<object?>> _valueCallbacks = new(StringComparer.OrdinalIgnoreCase);
     private readonly ILogger<TempDataValueMapper> _logger;
 
     public TempDataValueMapper(ILogger<TempDataValueMapper> logger)
@@ -49,13 +49,10 @@ internal partial class TempDataValueMapper : ITempDataValueMapper
 
     public void RegisterValueCallback(string tempDataKey, Func<object?> valueGetter)
     {
-        if (!_valueCallbacks.TryGetValue(tempDataKey, out var callbacks))
+        if (!_valueCallbacks.TryAdd(tempDataKey, valueGetter))
         {
-            callbacks = new List<Func<object?>>();
-            _valueCallbacks[tempDataKey] = callbacks;
+            throw new InvalidOperationException($"A callback is already registered for the TempData key '{tempDataKey}'. Multiple components cannot use the same TempData key.");
         }
-
-        callbacks.Add(valueGetter);
     }
 
     private ITempData? GetTempData()
@@ -76,24 +73,16 @@ internal partial class TempDataValueMapper : ITempDataValueMapper
 
     internal void PersistValues(ITempData tempData)
     {
-        foreach (var (key, callbacks) in _valueCallbacks)
+        foreach (var (key, valueGetter) in _valueCallbacks)
         {
             object? value = null;
-            foreach (var valueGetter in callbacks)
+            try
             {
-                try
-                {
-                    var candidateValue = valueGetter();
-                    if (candidateValue is not null)
-                    {
-                        value = candidateValue;
-                        break;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.TempDataPersistFail(_logger, ex);
-                }
+                value = valueGetter();
+            }
+            catch (Exception ex)
+            {
+                Log.TempDataPersistFail(_logger, ex);
             }
             tempData[key] = value;
         }

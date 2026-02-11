@@ -86,28 +86,14 @@ public class TempDataValueMapperTest
     }
 
     [Fact]
-    public void RegisterValueCallback_AllowsMultipleCallbacksForSameKey()
+    public void RegisterValueCallback_ThrowsForDuplicateKey()
     {
-        var callback1Invoked = false;
-        var callback2Invoked = false;
+        _mapper.RegisterValueCallback("key", () => "value1");
 
-        _mapper.RegisterValueCallback("key", () =>
-        {
-            callback1Invoked = true;
-            return null;
-        });
-        _mapper.RegisterValueCallback("key", () =>
-        {
-            callback2Invoked = true;
-            return "value2";
-        });
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            _mapper.RegisterValueCallback("key", () => "value2"));
 
-        var tempData = new TempData(() => new Dictionary<string, object>());
-        _mapper.PersistValues(tempData);
-
-        Assert.True(callback1Invoked);
-        Assert.True(callback2Invoked);
-        Assert.Equal("value2", tempData.Peek("key"));
+        Assert.Contains("key", ex.Message);
     }
 
     [Fact]
@@ -134,19 +120,6 @@ public class TempDataValueMapperTest
     }
 
     [Fact]
-    public void PersistValues_UsesFirstNonNullValue()
-    {
-        _mapper.RegisterValueCallback("key", () => null);
-        _mapper.RegisterValueCallback("key", () => "first non-null");
-        _mapper.RegisterValueCallback("key", () => "second non-null");
-
-        var tempData = new TempData(() => new Dictionary<string, object>());
-        _mapper.PersistValues(tempData);
-
-        Assert.Equal("first non-null", tempData.Peek("key"));
-    }
-
-    [Fact]
     public void PersistValues_HandlesMultipleKeys()
     {
         _mapper.RegisterValueCallback("key1", () => "value1");
@@ -165,7 +138,6 @@ public class TempDataValueMapperTest
     public void PersistValues_ContinuesOnCallbackException()
     {
         _mapper.RegisterValueCallback("key1", () => throw new InvalidOperationException("Test exception"));
-        _mapper.RegisterValueCallback("key2", () => throw new InvalidOperationException("Test exception"));
         _mapper.RegisterValueCallback("key2", () => "value2");
 
         var tempData = new TempData(() => new Dictionary<string, object>());
