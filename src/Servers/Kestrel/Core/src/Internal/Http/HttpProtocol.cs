@@ -60,7 +60,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     private bool _hasAdvanced;
     private bool _isLeasedMemoryInvalid = true;
     protected Exception? _applicationException;
-    private BadHttpRequestException? _requestRejectedException;
+    protected BadHttpRequestException? _requestRejectedException;
 
     protected HttpVersion _httpVersion;
     // This should only be used by the application, not the server. This is settable on HttpRequest but we don't want that to affect
