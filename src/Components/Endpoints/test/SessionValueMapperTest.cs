@@ -79,37 +79,27 @@ public class SessionValueMapperTest
     }
 
     [Fact]
-    public async Task RegisterValueCallback_AllowsMultipleCallbacksForSameKey()
+    public void RegisterValueCallback_ThrowsForDuplicateKey()
     {
         // Arrange
         var mapper = GetSessionValueMapper();
-        var httpContext = CreateHttpContextWithSession(out var responseFeature);
-        mapper.SetRequestContext(httpContext);
+        mapper.RegisterValueCallback("key", () => "value1");
 
-        var callOrder = new List<int>();
-        mapper.RegisterValueCallback("key", () => { callOrder.Add(1); return null; });
-        mapper.RegisterValueCallback("key", () => { callOrder.Add(2); return "value2"; });
-        mapper.RegisterValueCallback("key", () => { callOrder.Add(3); return "value3"; });
-
-        // Act
-        await responseFeature.FireOnStartingAsync();
-
-        // Assert
-        Assert.Equal(new[] { 1, 2 }, callOrder);
-        Assert.Equal("\"value2\"", httpContext.Session.GetString("key"));
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            mapper.RegisterValueCallback("key", () => "value2"));
+        Assert.Contains("key", ex.Message);
     }
 
     [Fact]
-    public async Task PersistAllValues_PersistsFirstNonNullValue()
+    public async Task PersistAllValues_PersistsValue()
     {
         // Arrange
         var mapper = GetSessionValueMapper();
         var httpContext = CreateHttpContextWithSession(out var responseFeature);
         mapper.SetRequestContext(httpContext);
 
-        mapper.RegisterValueCallback("email", () => null);
         mapper.RegisterValueCallback("email", () => "test@example.com");
-        mapper.RegisterValueCallback("email", () => "other@example.com");
 
         // Act
         await responseFeature.FireOnStartingAsync();
@@ -119,7 +109,7 @@ public class SessionValueMapperTest
     }
 
     [Fact]
-    public async Task PersistAllValues_RemovesKey_WhenAllCallbacksReturnNull()
+    public async Task PersistAllValues_RemovesKey_WhenCallbackReturnsNull()
     {
         // Arrange
         var mapper = GetSessionValueMapper();
@@ -127,7 +117,6 @@ public class SessionValueMapperTest
         httpContext.Session.SetString("email", "\"existing@example.com\"");
         mapper.SetRequestContext(httpContext);
 
-        mapper.RegisterValueCallback("email", () => null);
         mapper.RegisterValueCallback("email", () => null);
 
         // Act
