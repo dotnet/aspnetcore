@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
+using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Components.QuickGrid;
 
@@ -11,29 +13,26 @@ namespace Microsoft.AspNetCore.Components.QuickGrid;
 public partial class Paginator : IDisposable
 {
     private readonly EventCallbackSubscriber<PaginationState> _totalItemCountChanged;
+    private bool _hasReadQueryString;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
-
-    [CascadingParameter]
-    private ITempData? TempData { get; set; }
-
-    private string TempDataKey => $"Paginator_CurrentPageIndex_{Id}";
-    private string FormNameFirst => $"Paginator_{Id}_GoFirst";
-    private string FormNamePrevious => $"Paginator_{Id}_GoPrevious";
-    private string FormNameNext => $"Paginator_{Id}_GoNext";
-    private string FormNameLast => $"Paginator_{Id}_GoLast";
-
-    /// <summary>
-    /// Gets or sets a unique identifier for this paginator.
-    /// Required when using static server-side rendering (SSR) to ensure form names are stable across requests.
-    /// </summary>
-    [Parameter] public string Id { get; set; } = "Default";
+    private string FormNameFirst => $"Paginator_{QueryName}_GoFirst";
+    private string FormNamePrevious => $"Paginator_{QueryName}_GoPrevious";
+    private string FormNameNext => $"Paginator_{QueryName}_GoNext";
+    private string FormNameLast => $"Paginator_{QueryName}_GoLast";
 
     /// <summary>
     /// Specifies the associated <see cref="PaginationState"/>. This parameter is required.
     /// </summary>
     [Parameter, EditorRequired] public PaginationState State { get; set; } = default!;
+
+    /// <summary>
+    /// Gets or sets the name of the query string parameter used to persist the current page index in the URL.
+    /// Defaults to <c>"page"</c>. When set, the paginator reads the current page from this query parameter on
+    /// initialization and updates the URL when navigating to a different page.
+    /// </summary>
+    [Parameter, DisallowNull] public string QueryName { get; set; } = "page";
 
     /// <summary>
     /// Optionally supplies a template for rendering the page count summary.
@@ -59,23 +58,52 @@ public partial class Paginator : IDisposable
 
     private async Task GoToPageAsync(int pageIndex)
     {
-        TempData?[TempDataKey] = pageIndex;
+        var newUri = NavigationManager.GetUriWithQueryParameter(QueryName, pageIndex + 1);
         await State.SetCurrentPageIndexAsync(pageIndex);
-        if (!RendererInfo.IsInteractive)
-        {
-            // To prevent F5 from resubmitting the form in SSR mode
-            NavigationManager.Refresh();
-        }
+        NavigationManager.NavigateTo(newUri);
     }
 
     /// <inheritdoc />
-    protected override void OnParametersSet()
+    protected override Task OnParametersSetAsync()
     {
         _totalItemCountChanged.SubscribeOrMove(State.TotalItemCountChangedSubscribable);
-        if (TempData?.Get(TempDataKey) is int savedPageIndex)
+
+        if (!_hasReadQueryString)
         {
-            State.SetCurrentPageIndexAsync(savedPageIndex);
+            _hasReadQueryString = true;
+            var pageFromQuery = ReadPageIndexFromQueryString() ?? 0;
+            if (pageFromQuery != State.CurrentPageIndex)
+            {
+                return State.SetCurrentPageIndexAsync(pageFromQuery);
+            }
         }
+
+        return Task.CompletedTask;
+    }
+
+    private int? ReadPageIndexFromQueryString()
+    {
+        var uri = NavigationManager.Uri;
+        var queryStart = uri.IndexOf('?');
+        if (queryStart < 0 || QueryName is null)
+        {
+            return null;
+        }
+
+        var queryEnd = uri.IndexOf('#', queryStart);
+        var query = uri.AsMemory(queryStart..((queryEnd < 0) ? uri.Length : queryEnd));
+        var enumerable = new QueryStringEnumerable(query);
+
+        foreach (var pair in enumerable)
+        {
+            if (pair.DecodeName().Span.Equals(QueryName, StringComparison.OrdinalIgnoreCase)
+                && int.TryParse(pair.DecodeValue().Span, out var page)
+                && page > 0)
+            {
+                return page - 1;
+            }
+        }
+        return null;
     }
 
     /// <inheritdoc />

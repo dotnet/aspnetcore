@@ -140,7 +140,6 @@ Microsoft.AspNetCore.Components.QuickGrid.TemplateColumn<TGridItem>.ChildContent
 Microsoft.AspNetCore.Components.QuickGrid.TemplateColumn<TGridItem>.ChildContent.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.TemplateColumn<TGridItem>.TemplateColumn() -> void
 override Microsoft.AspNetCore.Components.QuickGrid.PaginationState.GetHashCode() -> int
-override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnParametersSet() -> void
 override Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn<TGridItem, TProp>.CellContent(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder, TGridItem item) -> void
 override Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn<TGridItem, TProp>.OnParametersSet() -> void
 override Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn<TGridItem, TProp>.SortBy.get -> Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>?
