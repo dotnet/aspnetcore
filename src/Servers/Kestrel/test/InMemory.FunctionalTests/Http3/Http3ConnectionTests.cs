@@ -898,6 +898,60 @@ public class Http3ConnectionTests : Http3TestBase
         return streamContext;
     }
 
+    [Fact]
+    public async Task ConnectionResetWithNoActiveRequests_ReportsTransportCompleted()
+    {
+        // When a ConnectionResetException occurs with no active requests (e.g., the client
+        // disconnects after all requests have completed), the connection end reason should be
+        // TransportCompleted, not Unset.
+
+        var abortTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // skipCount: 0 means the first AcceptAsync throws ConnectionResetException immediately.
+        // The outbound control stream is created via ConnectAsync (not AcceptAsync) so it still succeeds.
+        Http3Api.MultiplexedConnectionContext = new ConnectionResetMultiplexedConnectionContext(Http3Api, skipCount: 0, abortTcs);
+        await Http3Api.InitializeConnectionAsync(_noopApplication);
+
+        // Wait for the connection to be aborted (ProcessRequestsAsync calls Abort which sets metrics
+        // before calling _multiplexedContext.Abort, which signals abortTcs).
+        await abortTcs.Task.DefaultTimeout();
+
+        MetricsAssert.NoError(Http3Api.ConnectionTags);
+    }
+
+    private sealed class ConnectionResetMultiplexedConnectionContext : TestMultiplexedConnectionContext
+    {
+        private int _skipCount;
+        private readonly TaskCompletionSource _abortTcs;
+
+        /// <summary>
+        /// After <paramref name="skipCount"/> calls to <see cref="AcceptAsync"/>, the next call will throw a <see cref="ConnectionResetException"/>.
+        ///
+        /// <paramref name="abortTcs"/> lets this type signal that <see cref="Abort(ConnectionAbortedException)"/> has been called.
+        /// </summary>
+        public ConnectionResetMultiplexedConnectionContext(Http3InMemory testBase, int skipCount, TaskCompletionSource abortTcs)
+            : base(testBase)
+        {
+            _skipCount = skipCount;
+            _abortTcs = abortTcs;
+        }
+
+        public override async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
+        {
+            if (_skipCount-- <= 0)
+            {
+                throw new ConnectionResetException("Connection reset by peer.");
+            }
+            return await base.AcceptAsync(cancellationToken);
+        }
+
+        public override void Abort(ConnectionAbortedException abortReason)
+        {
+            _abortTcs.TrySetResult();
+            base.Abort(abortReason);
+        }
+    }
+
     private class ResponseTrailersWrapper : IHeaderDictionary
     {
         readonly IHeaderDictionary _innerHeaders;
