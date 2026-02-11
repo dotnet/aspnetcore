@@ -22,6 +22,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     // Pre-allocated static error response fragments for fast-path bad request handling.
     // Split into prefix (status + Content-Length + Connection) and suffix (final CRLF)
     // so we can insert the cached Date header value between them without allocating.
+    // Keep in sync with KestrelBadHttpRequestException.GetException().
     // Header order matches the normal response path: Content-Length, Connection, Date.
     private static ReadOnlySpan<byte> BadRequestResponsePrefix =>
         "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\nConnection: close"u8;
@@ -1052,7 +1053,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 
         // Fast path: if the app hasn't started processing yet, use static pre-allocated response
         // fragments to avoid the overhead of normal response machinery (header formatting, etc.)
-        // Skip fast path for responses that need custom headers (e.g., 405 with Allow header).
+        // Skip fast path for responses that need custom headers (e.g., 405 with AllowedHeader set).
 #pragma warning disable CS0618 // Type or member is obsolete
         if (_requestProcessingStatus < RequestProcessingStatus.AppStarted && !_connectionAborted
             && (_requestRejectedException is not BadHttpRequestException kestrelEx
