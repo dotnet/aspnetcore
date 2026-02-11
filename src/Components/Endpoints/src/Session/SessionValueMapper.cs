@@ -12,7 +12,7 @@ internal partial class SessionValueMapper : ISessionValueMapper
 {
     private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
     private HttpContext? _httpContext;
-    private readonly Dictionary<string, List<Func<object?>>> _valueCallbacks = new();
+    private readonly Dictionary<string, Func<object?>> _valueCallbacks = new(StringComparer.OrdinalIgnoreCase);
     private readonly ILogger<SessionValueMapper> _logger;
 
     public SessionValueMapper(ILogger<SessionValueMapper> logger)
@@ -35,7 +35,7 @@ internal partial class SessionValueMapper : ISessionValueMapper
         }
         try
         {
-            var json = session.GetString(sessionKey);
+            var json = session.GetString(sessionKey.ToLowerInvariant());
             if (string.IsNullOrEmpty(json))
             {
                 return null;
@@ -51,12 +51,10 @@ internal partial class SessionValueMapper : ISessionValueMapper
 
     public void RegisterValueCallback(string sessionKey, Func<object?> valueGetter)
     {
-        if (!_valueCallbacks.TryGetValue(sessionKey, out var callbacks))
+        if (!_valueCallbacks.TryAdd(sessionKey, valueGetter))
         {
-            callbacks = new List<Func<object?>>();
-            _valueCallbacks[sessionKey] = callbacks;
+            throw new InvalidOperationException($"A callback is already registered for the session key '{sessionKey}'. Multiple components cannot use the same session key.");
         }
-        callbacks.Add(valueGetter);
     }
 
     public void DeleteValueCallback(string sessionKey)
@@ -72,33 +70,25 @@ internal partial class SessionValueMapper : ISessionValueMapper
             return Task.CompletedTask;
         }
 
-        foreach (var (key, callbacks) in _valueCallbacks)
+        foreach (var (key, valueGetter) in _valueCallbacks)
         {
             object? value = null;
-            foreach (var valueGetter in callbacks)
+            try
             {
-                try
-                {
-                    var candidateValue = valueGetter();
-                    if (candidateValue is not null)
-                    {
-                        value = candidateValue;
-                        break;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.SessionPersistFail(_logger, ex);
-                }
+                value = valueGetter();
+            }
+            catch (Exception ex)
+            {
+                Log.SessionPersistFail(_logger, ex);
             }
             if (value is not null)
             {
                 var json = JsonSerializer.Serialize(value, value.GetType(), _jsonOptions);
-                session.SetString(key, json);
+                session.SetString(key.ToLowerInvariant(), json);
             }
             else
             {
-                session.Remove(key);
+                session.Remove(key.ToLowerInvariant());
             }
         }
         return Task.CompletedTask;

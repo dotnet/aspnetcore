@@ -36,7 +36,7 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
         services.AddHttpContextAccessor();
         services.AddCascadingAuthenticationState();
 
-        if (Configuration.GetValue<bool>("UseSession") || Configuration.GetValue<bool>("UseSessionStorageTempDataProvider"))
+        if (Configuration.GetValue<bool>("UseSession"))
         {
             services.AddDistributedMemoryCache();
             services.AddSession(options =>
@@ -44,7 +44,7 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
-            
+
             if (Configuration.GetValue<bool>("UseSessionStorageTempDataProvider"))
             {
                 services.Configure<RazorComponentsServiceOptions>(options =>

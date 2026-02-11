@@ -23,11 +23,6 @@ internal class SupplyParameterFromSessionValueProvider : ICascadingValueSupplier
 
     public object? GetCurrentValue(object? key, in CascadingParameterInfo parameterInfo)
     {
-        if (_sessionValueMapper is null)
-        {
-            return null;
-        }
-
         var attribute = (SupplyParameterFromSessionAttribute)parameterInfo.Attribute;
         var sessionKey = (attribute.Name ?? parameterInfo.PropertyName) ?? "";
         return _sessionValueMapper.GetValue(sessionKey, parameterInfo.PropertyType);

@@ -46,17 +46,6 @@ public class SupplyParameterFromSessionAttributeTest : ServerTestBase<BasicTestA
     }
 
     [Fact]
-    public void SupplyParameterWorksWhenDifferentName()
-    {
-        Navigate($"{ServerPathBase}/supply-parameter-from-session");
-        Browser.Exists(By.Id("input-another-email")).SendKeys("email");
-        Browser.Exists(By.Id("set-another-email")).Click();
-        Browser.Equal("email", () => Browser.Exists(By.Id("text-another-email")).Text);
-        Browser.Equal("email", () => Browser.Exists(By.Id("text-email")).Text);
-        Browser.Equal("", () => Browser.Exists(By.Id("text-null")).Text);
-    }
-
-    [Fact]
     public void SupplyParameterWorksWithRedirect()
     {
         Navigate($"{ServerPathBase}/supply-parameter-from-session");
