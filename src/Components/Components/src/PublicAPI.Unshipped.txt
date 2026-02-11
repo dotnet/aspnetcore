@@ -4,10 +4,6 @@ Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.get -> bo
 Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.init -> void
 Microsoft.AspNetCore.Components.IComponentPropertyActivator
 Microsoft.AspNetCore.Components.IComponentPropertyActivator.GetActivator(System.Type! componentType) -> System.Action<System.IServiceProvider!, Microsoft.AspNetCore.Components.IComponent!>!
-Microsoft.AspNetCore.Components.SupplyParameterFromTempDataAttribute
-Microsoft.AspNetCore.Components.SupplyParameterFromTempDataAttribute.Name.get -> string?
-Microsoft.AspNetCore.Components.SupplyParameterFromTempDataAttribute.Name.set -> void
-Microsoft.AspNetCore.Components.SupplyParameterFromTempDataAttribute.SupplyParameterFromTempDataAttribute() -> void
 *REMOVED*Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void
 *REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
 *REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void

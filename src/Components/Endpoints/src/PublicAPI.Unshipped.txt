@@ -9,6 +9,10 @@ Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempData
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataCookie.set -> void
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataProviderType.get -> Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataProviderType.set -> void
+Microsoft.AspNetCore.Components.Endpoints.SupplyParameterFromTempDataAttribute
+Microsoft.AspNetCore.Components.Endpoints.SupplyParameterFromTempDataAttribute.Name.get -> string?
+Microsoft.AspNetCore.Components.Endpoints.SupplyParameterFromTempDataAttribute.Name.set -> void
+Microsoft.AspNetCore.Components.Endpoints.SupplyParameterFromTempDataAttribute.SupplyParameterFromTempDataAttribute() -> void
 Microsoft.AspNetCore.Components.Endpoints.SupplyParameterFromTempDataServiceCollectionExtensions
 Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType
 Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType.Cookie = 0 -> Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType

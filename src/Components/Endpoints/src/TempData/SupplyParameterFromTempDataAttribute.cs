@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
 /// <summary>
 /// Indicates that the value of the associated property should be supplied from
