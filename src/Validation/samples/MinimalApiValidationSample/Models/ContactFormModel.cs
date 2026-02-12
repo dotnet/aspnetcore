@@ -3,7 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace MinimalValidationSample.Models;
+namespace MinimalApiValidationSample.Models;
 
 public class ContactFormModel
 {

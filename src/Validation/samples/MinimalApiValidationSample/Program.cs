@@ -3,8 +3,8 @@
 
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Validation;
-using MinimalValidationSample;
-using MinimalValidationSample.Models;
+using MinimalApiValidationSample;
+using MinimalApiValidationSample.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 

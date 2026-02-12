@@ -4,7 +4,7 @@
 using System.Globalization;
 using Microsoft.Extensions.Localization;
 
-namespace MinimalValidationSample;
+namespace MinimalApiValidationSample;
 
 public class HardcodedStringLocalizer : IStringLocalizer
 {

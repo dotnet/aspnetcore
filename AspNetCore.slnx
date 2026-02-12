@@ -1189,7 +1189,8 @@
     <Project Path="src/Validation/test/Microsoft.Extensions.Validation.Tests/Microsoft.Extensions.Validation.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Validation/samples/">
-    <Project Path="src/Validation/samples/MinimalValidationSample/MinimalValidationSample.csproj" />
+    <Project Path="src/Validation/samples/ConsoleValidationSample/ConsoleValidationSample.csproj" />
+    <Project Path="src/Validation/samples/MinimalApiValidationSample/MinimalApiValidationSample.csproj" />
   </Folder>
   <Folder Name="/src/WebEncoders/">
     <Project Path="src/WebEncoders/src/Microsoft.Extensions.WebEncoders.csproj" />
