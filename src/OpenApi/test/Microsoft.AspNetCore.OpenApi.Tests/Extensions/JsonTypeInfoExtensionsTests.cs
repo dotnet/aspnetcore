@@ -63,6 +63,7 @@ public class JsonTypeInfoExtensionsTests
         [typeof(JsonPatchDocument<Todo>), "JsonPatchDocument"],
         [typeof(Stream), "Stream"],
         [typeof(PipeReader), "PipeReader"],
+        [typeof(FileContentResult), "FileContentResult"],
         [typeof(Results<Ok<TodoWithDueDate>, Ok<Todo>>), "ResultsOfOkOfTodoWithDueDateAndOkOfTodo"],
         [typeof(Ok<Todo>), "OkOfTodo"],
         [typeof(NotFound<TodoWithDueDate>), "NotFoundOfTodoWithDueDate"],

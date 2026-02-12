@@ -141,11 +141,53 @@ internal static class SymbolExtensions
         return false;
     }
 
+    public static bool HasAttributeInheritingFrom(this ISymbol symbol, INamedTypeSymbol baseType)
+    {
+        return symbol.TryGetAttributeInheritingFrom(baseType, out var _);
+    }
+
+    public static bool TryGetAttributeInheritingFrom(this ISymbol symbol, INamedTypeSymbol baseType, [NotNullWhen(true)] out AttributeData? matchedAttribute)
+    {
+        return symbol.GetAttributes().TryGetAttributeInheritingFrom(baseType, out matchedAttribute);
+    }
+
+    public static bool HasAttributeInheritingFrom(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol baseType)
+    {
+        return attributes.TryGetAttributeInheritingFrom(baseType, out var _);
+    }
+
+    public static bool TryGetAttributeInheritingFrom(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol baseType, [NotNullWhen(true)] out AttributeData? matchedAttribute)
+    {
+        foreach (var attributeData in attributes)
+        {
+            if (attributeData.AttributeClass is not null && attributeData.AttributeClass.InheritsFrom(baseType))
+            {
+                matchedAttribute = attributeData;
+                return true;
+            }
+        }
+
+        matchedAttribute = null;
+        return false;
+    }
+
     public static bool Implements(this ITypeSymbol type, ITypeSymbol interfaceType)
     {
         foreach (var t in type.AllInterfaces)
         {
             if (SymbolEqualityComparer.Default.Equals(t, interfaceType))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static bool InheritsFrom(this ITypeSymbol type, ITypeSymbol baseType)
+    {
+        foreach (var t in type.GetThisAndBaseTypes())
+        {
+            if (SymbolEqualityComparer.Default.Equals(t, baseType))
             {
                 return true;
             }
@@ -231,7 +273,7 @@ internal static class SymbolExtensions
             double d when d is double.PositiveInfinity => "double.PositiveInfinity",
             double d when d is double.NaN => "double.NaN",
             decimal d => $"{SymbolDisplay.FormatPrimitive(d, false, false)}M",
-            _ => SymbolDisplay.FormatPrimitive(defaultValue, false, false),
+            _ => SymbolDisplay.FormatPrimitive(defaultValue, false, false)!,
         };
     }
 

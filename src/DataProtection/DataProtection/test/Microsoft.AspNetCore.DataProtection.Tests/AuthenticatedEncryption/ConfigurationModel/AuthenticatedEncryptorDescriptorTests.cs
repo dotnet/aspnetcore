@@ -39,13 +39,13 @@ public class AuthenticatedEncryptorDescriptorTests
             symmetricAlgorithmHandle: CachedAlgorithmHandles.AES_CBC,
             symmetricAlgorithmKeySizeInBytes: (uint)(keyLengthInBits / 8),
             hmacAlgorithmHandle: BCryptAlgorithmHandle.OpenAlgorithmHandle(hashAlgorithm, hmac: true));
-        var test = CreateEncryptorInstanceFromDescriptor(CreateDescriptor(encryptionAlgorithm, validationAlgorithm, masterKey));
+        var encryptor = CreateEncryptorInstanceFromDescriptor(CreateDescriptor(encryptionAlgorithm, validationAlgorithm, masterKey));
 
         // Act & assert - data round trips properly from control to test
         byte[] plaintext = new byte[] { 1, 2, 3, 4, 5 };
         byte[] aad = new byte[] { 2, 4, 6, 8, 0 };
         byte[] ciphertext = control.Encrypt(new ArraySegment<byte>(plaintext), new ArraySegment<byte>(aad));
-        byte[] roundTripPlaintext = test.Decrypt(new ArraySegment<byte>(ciphertext), new ArraySegment<byte>(aad));
+        byte[] roundTripPlaintext = encryptor.Decrypt(new ArraySegment<byte>(ciphertext), new ArraySegment<byte>(aad));
         Assert.Equal(plaintext, roundTripPlaintext);
     }
 

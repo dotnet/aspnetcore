@@ -3,11 +3,11 @@
   "name": "Libreria di classi Razor",
   "description": "Progetto per la creazione di una libreria di classi Razor destinata a .NET",
   "symbols/Framework/description": "Il framework di destinazione per il progetto.",
-  "symbols/Framework/choices/net10.0/description": "Destinazione net10.0",
   "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",
   "symbols/SupportPagesAndViews/displayName": "Supporta pagine e visualizzazioni",
   "symbols/SupportPagesAndViews/description": "Indica se supportare l'aggiunta di pagine e visualizzazioni Razor tradizionali a questa libreria.",
   "postActions/restore/description": "Ripristina i pacchetti NuGet richiesti da questo progetto.",
   "postActions/restore/manualInstructions/default/text": "Esegui 'dotnet restore'",
-  "postActions/openInEditor/description": "Apre Areas/MyFeature/Pages/Page1.cshtml nell'editor"
+  "postActions/openPageInEditor/description": "Apre Areas/MyFeature/Pages/Page1.cshtml nell'editor",
+  "postActions/openComponentInEditor/description": "Apre Component1.razor nell'editor"
 }

@@ -108,6 +108,12 @@ internal static class JsonTypeInfoExtensions
             return $"{typeName}Of{propertyNames}";
         }
 
+        // Special handling for nullable value types
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+        {
+            return type.GetGenericArguments()[0].GetSchemaReferenceId(options);
+        }
+
         // Special handling for generic types that are collections
         // Generic types become a concatenation of the generic type name and the type arguments
         if (type.IsGenericType)

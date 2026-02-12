@@ -38,6 +38,7 @@
     <Compile Include="$(SharedSourceRoot)AntiforgeryMetadata.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)HttpExtensions.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ContentTypeConstants.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Diagnostics\RouteDiagnosticsHelpers.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

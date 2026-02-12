@@ -1,0 +1,51 @@
+﻿<WixLocalization Culture="en-us" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+
+  <String Id="Language" Value="1033"/>
+
+  <!-- Strings for AspNetCore Module -->
+  <String Id="AspNetCoreModuleProductName" Value="Microsoft ASP.NET Core Modülü"/>
+  <String Id="AspNetCoreModuleProductNameV2" Value="Microsoft ASP.NET Core Modülü V2"/>
+  <String Id="AspNetCoreModuleProductTitle" Value="ASP.NET Core IIS Çalışma Zamanı"/>
+  <String Id="AspNetCoreModuleProductDescription" Value="IIS'ye asp.net core uygulaması desteği ekler."/>
+  <String Id="AspNetCoreIISExpressModuleProductName" Value="IIS Express için Microsoft ASP.NET Core Modülü"/>
+  <String Id="AspNetCoreIISExpressModuleProductNameV2" Value="IIS Express için Microsoft ASP.NET Core Modülü V2"/>
+  <String Id="AspNetCoreModuleIISExpressPrereq" Value="IIS Express 8.0 veya üzeri yüklü değil."/>
+
+  <!--Custom errors for OOB Projects -->
+
+  <String Id="Manufacturer" Overridable="yes" Value="Microsoft Corporation"/>
+  <String Id="ConflictingProduct" Overridable="yes" Value="Bu bilgisayarda uyumsuz bir ürün olan [CONFLICTING_PRODUCT_NAME] bulunuyor. [ProductName] kurulumu devam edemiyor. Bu ürünü yüklemek için, Denetim Masası'ndaki Program Ekle/Kaldır'ı kullanarak [CONFLICTING_PRODUCT_NAME ]'i kaldırın."/>
+  <String Id="AdminRequired" Overridable="yes" Value="[ProductName] yüklemek için yönetici ayrıcalığı gereklidir."/>
+  <String Id="IIS7Only" Overridable="yes" Value="[ProductName] kullanmak için IIS Sürüm 7.0 gereklidir."/>
+  <String Id="IIS7OrGreater" Overridable="yes" Value="[ProductName] yüklemek için IIS Sürüm 7.0 veya üzeri gereklidir."/>
+  <String Id="IIS75OrGreater" Overridable="yes" Value="[ProductName] yüklemek için IIS Sürüm 7.5 veya üzeri gereklidir."/>
+  <String Id="IIS7Or75Only" Overridable="yes" Value="[ProductName] yüklemek için IIS Sürüm 7 veya 7.5 gereklidir."/>
+  <String Id="IIS8OrGreater" Overridable="yes" Value="[ProductName] yüklemek için IIS Sürüm 8.0 veya üzeri gereklidir."/>
+  <String Id="BetaVersionFound" Overridable="yes" Value="Bu makinede [ProductName] beta sürümü bulundu."/>
+  <String Id="NewerVersionFound" Overridable="yes" Value="Bu makinede [ProductName]’in daha yeni bir sürümü bulundu."/>
+  <String Id="DuplicateVersionFound" Overridable="yes" Value="Bu bilgisayarda başka bir [ProductName] örneği zaten yüklü olduğu için kurulum devam edemiyor. Lütfen önce onu kaldırın ve ardından bu yüklemeyi yeniden başlatın."/>
+  <String Id="CoreWebW3SVC" Overridable="yes" Value="[ProductName] kullanmak için IIS 7.0 CoreWebEngine ve W3SVC özellikleri yüklü olmalıdır."/>
+  <String Id="IISManagementConsole" Overridable="yes" Value="[ProductName] kullanmak için IIS Yönetim Konsolu yüklü olmalıdır."/>
+  <String Id="WebServicesRunning" Overridable="yes" Value="[ProductName] yüklemeden önce Windows İşlem Etkinleştirme Hizmeti (WAS) ve Web Yönetimi Hizmeti (WMSvc) hizmetlerini durdurun. [ProductName] yüklemesinden sonra bu hizmetleri başlatmanız gerekecek."/>
+  <String Id="MetabaseRequired" Overridable="yes" Value="[ProductName] yüklemek için IIS Metatabanı gereklidir."/>
+  <String Id="LaunchCondition_32BIT" Value="[ProductName]'in 64 bit sürümü, 32 bit Microsoft Windows sürümüne yüklenemez."/>
+  <String Id="LaunchCondition_64BIT" Value="[ProductName]'in 32 bit sürümü, 64 bit Microsoft Windows sürümüne yüklenemez."/>
+  <String Id="NetFX2OrGreaterRequired" Value="[ProductName] yüklemek için Microsoft .NET Framework Sürüm 2.0 veya üzeri gereklidir."/>
+  <String Id="NetFX35OrGreaterRequired" Value="[ProductName] yüklemek için Microsoft .NET Framework Sürüm 3.5 veya üzeri gereklidir. Microsoft .NET Sürüm 3.5'i yüklemek için Sunucu Yöneticisi altındaki 'Özellik Ekle' seçeneğini kullanın."/>
+  <String Id="NetFX4OrGreaterRequired" Value="[ProductName] yüklemek için Microsoft .NET Framework Sürüm 4.0 veya üzeri gereklidir."/>
+  <String Id="NetFX20SP1IsRequired" Value="[ProductName] yüklemeden önce lütfen Microsoft .NET Framework Sürüm 2.0 Hizmet Paketi 1 (veya daha yeni bir hizmet paketi) yükleyin."/>
+  <String Id="WindowsUpdateEnabled" Value="Windows Update (wuauserv) hizmeti devre dışı bırakılamaz, [ProductName] yüklemek için gereklidir."/>
+  <String Id="GetFromOSforWin7" Value="PowerShell ek bileşeni Windows İşletim Sistemi'nin bir parçasıdır. Lütfen 'Programlar ve Özellikler' veya 'Sunucu Yöneticisi' üzerinden yükleyin."/>
+  <String Id="WebPI3OrGreaterRequired" Value="[ProductName] yüklemek için Microsoft Web Platformu Yükleyicisi Sürüm 3.0 veya üzeri gereklidir."/>
+
+  <String Id="Error30001" Overridable="yes" Value="Kurulum paylaşılan yapılandırmayı algılayamadı."/>
+  <String Id="Error30002" Overridable="yes" Value="IIS için paylaşılan yapılandırma etkin. Paylaşılan yapılandırma kullanılırken [ProductName] yüklenemez. Bu özelliği yüklemeden önce paylaşılan yapılandırmayı devre dışı bırakın."/>
+
+  <String Id="W3SVCRunning" Overridable="yes" Value="[ProductName] yüklemeden önce lütfen World Wide Web Yayımlama Hizmeti’ni (W3SVC) durdurun. Yüklemeden sonra hizmeti başlatmanız gerekir."/>
+  <String Id="IISPowershellConsole" Value="IIS PowerShell Yönetim Konsolu"/>
+  <String Id="IISPowershellSnapin" Value="IIS PowerShell ek bileşeni"/>
+  <String Id="PowerShellRequired" Value="IIS PowerShell ek bileşeni için PowerShell v1.0 veya v2.0 yüklü olmalıdır"/>
+  <String Id="WasAndConfigRequired" Value="IIS PowerShell ek bileşeni için WAS ve yapılandırma yüklü olmalıdır"/>
+  <String Id="TestBogusString" Overridable="yes" Value="Bu sahte bir dizedir."/>
+
+</WixLocalization>

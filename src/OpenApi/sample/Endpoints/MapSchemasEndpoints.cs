@@ -46,6 +46,32 @@ public static class SchemasEndpointsExtensions
         schemas.MapPost("/config-with-generic-lists", (Config config) => Results.Ok(config));
         schemas.MapPost("/project-response", (ProjectResponse project) => Results.Ok(project));
         schemas.MapPost("/subscription", (Subscription subscription) => Results.Ok(subscription));
+
+        // Tests for oneOf nullable behavior on responses and request bodies
+        schemas.MapGet("/nullable-response", () => TypedResults.Ok(new NullableResponseModel
+        {
+            RequiredProperty = "required",
+            NullableProperty = null,
+            NullableComplexProperty = null
+        }));
+        schemas.MapGet("/nullable-return-type", NullableResponseModel? () => new NullableResponseModel
+        {
+            RequiredProperty = "required",
+            NullableProperty = null,
+            NullableComplexProperty = null
+        });
+        schemas.MapPost("/nullable-request", (NullableRequestModel? request) => Results.Ok(request));
+        schemas.MapPost("/complex-nullable-hierarchy", (ComplexHierarchyModel model) => Results.Ok(model));
+
+        // Additional edge cases for nullable testing
+        schemas.MapPost("/nullable-array-elements", (NullableArrayModel model) => Results.Ok(model));
+        schemas.MapGet("/optional-with-default", () => TypedResults.Ok(new ModelWithDefaults()));
+        schemas.MapGet("/nullable-enum-response", () => TypedResults.Ok(new EnumNullableModel
+        {
+            RequiredEnum = TestEnum.Value1,
+            NullableEnum = null
+        }));
+
         return endpointRouteBuilder;
     }
 
@@ -172,5 +198,74 @@ public static class SchemasEndpointsExtensions
     {
         public string Name { get; set; } = "";
         public string Email { get; set; } = "";
+    }
+
+    // Models for testing oneOf nullable behavior
+    public sealed class NullableResponseModel
+    {
+        public required string RequiredProperty { get; set; }
+        public string? NullableProperty { get; set; }
+        public ComplexType? NullableComplexProperty { get; set; }
+    }
+
+    public sealed class NullableRequestModel
+    {
+        public required string RequiredField { get; set; }
+        public string? OptionalField { get; set; }
+        public List<string>? NullableList { get; set; }
+        public Dictionary<string, string?>? NullableDictionary { get; set; }
+    }
+
+    // Complex hierarchy model for testing nested nullable properties
+    public sealed class ComplexHierarchyModel
+    {
+        public required string Id { get; set; }
+        public NestedModel? OptionalNested { get; set; }
+        public required NestedModel RequiredNested { get; set; }
+        public List<NestedModel?>? NullableListWithNullableItems { get; set; }
+    }
+
+    public sealed class NestedModel
+    {
+        public required string Name { get; set; }
+        public int? OptionalValue { get; set; }
+        public ComplexType? DeepNested { get; set; }
+    }
+
+    public sealed class ComplexType
+    {
+        public string? Description { get; set; }
+        public DateTime? Timestamp { get; set; }
+    }
+
+    // Additional models for edge case testing
+    public sealed class NullableArrayModel
+    {
+        public string[]? NullableArray { get; set; }
+        public List<string?> ListWithNullableElements { get; set; } = [];
+        public Dictionary<string, string?>? NullableDictionaryWithNullableValues { get; set; }
+    }
+
+    public sealed class ModelWithDefaults
+    {
+        public string PropertyWithDefault { get; set; } = "default";
+        public string? NullableWithNull { get; set; }
+        public int NumberWithDefault { get; set; } = 42;
+        public bool BoolWithDefault { get; set; } = true;
+    }
+
+    // Enum testing with nullable
+    public enum TestEnum
+    {
+        Value1,
+        Value2,
+        Value3
+    }
+
+    public sealed class EnumNullableModel
+    {
+        public required TestEnum RequiredEnum { get; set; }
+        public TestEnum? NullableEnum { get; set; }
+        public List<TestEnum?> ListOfNullableEnums { get; set; } = [];
     }
 }

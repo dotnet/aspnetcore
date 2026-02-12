@@ -180,10 +180,23 @@ internal sealed partial class RequestQueue
 
         _disposed = true;
 
+        // Close the request queue handle first to cancel any pending IO operations.
+        // This must happen before disposing BoundHandle, as pending operations need
+        // to be cancelled and cleaned up using the BoundHandle.
         PInvoke.HttpCloseRequestQueue(Handle);
 
         BoundHandle.Dispose();
-        Handle.Dispose();
+        Handle.SetHandleAsInvalid();
+    }
+
+    /// <summary>
+    /// Shuts down the request queue to cancel any pending IO operations,
+    /// but does not close the handle or dispose the BoundHandle. This allows pending operations
+    /// to be properly cleaned up before disposing the BoundHandle.
+    /// </summary>
+    internal void StopProcessingRequests()
+    {
+        PInvoke.HttpShutdownRequestQueue(Handle);
     }
 
     private void CheckDisposed()

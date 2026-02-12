@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.Metrics;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Routing;
@@ -309,5 +310,75 @@ public class WebAssemblyHostBuilderTest
     private class CircularServiceB
     {
         public CircularServiceB(CircularServiceA serviceA) { }
+    }
+
+    [Fact]
+    public void Configuration_IncludesEnvironmentVariables_WhenAddedExplicitly()
+    {
+        // Arrange
+        var testEnvVarKey = $"TEST_WASM_CONFIG_{Guid.NewGuid():N}";
+        var testEnvVarValue = "test-value-12345";
+
+        try
+        {
+            // Set an environment variable before creating the builder
+            Environment.SetEnvironmentVariable(testEnvVarKey, testEnvVarValue);
+
+            var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+
+            // This mimics what CreateDefault now does
+            builder.Configuration.AddEnvironmentVariables();
+
+            // Act
+            var host = builder.Build();
+
+            // Assert
+            var configuration = host.Services.GetRequiredService<IConfiguration>();
+            Assert.Equal(testEnvVarValue, configuration[testEnvVarKey]);
+        }
+        finally
+        {
+            // Clean up the environment variable
+            Environment.SetEnvironmentVariable(testEnvVarKey, null);
+        }
+    }
+
+    [Fact]
+    public void Constructor_DoesNotRegisterMetricsAndTracingByDefault()
+    {
+        // Arrange & Act
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+        var host = builder.Build();
+
+        // Assert - Verify that IMeterFactory is NOT registered when the feature switch is not enabled
+        // (telemetry is opt-in)
+        var meterFactory = host.Services.GetService<IMeterFactory>();
+        Assert.Null(meterFactory);
+    }
+
+    [Fact]
+    public void Constructor_RegistersMetricsAndTracingWhenEnabled()
+    {
+        // Arrange
+        AppContext.SetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", true);
+        try
+        {
+            // Act
+            var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+            var host = builder.Build();
+
+            // Assert - Verify that IMeterFactory is registered when the feature switch is enabled
+            var meterFactory = host.Services.GetService<IMeterFactory>();
+            Assert.NotNull(meterFactory);
+            
+            // Note: ComponentsActivitySource is scoped and internal, so we can't directly
+            // test for it here, but both AddComponentsMetrics and AddComponentsTracing
+            // are called together when the switch is enabled.
+        }
+        finally
+        {
+            // Clean up the AppContext switch
+            AppContext.SetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", false);
+        }
     }
 }

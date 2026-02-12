@@ -51,6 +51,9 @@
     <h2>@nameof(JSObjectReferenceInvokeNonFunctionException)</h2>
     <p id="@nameof(JSObjectReferenceInvokeNonFunctionException)">@JSObjectReferenceInvokeNonFunctionException?.Message</p>
 </div>
+
+<p @ref="element">Element reference.</p>
+
 @if (DoneWithInterop)
 {
     <p id="done-with-interop">Done with interop.</p>
@@ -69,6 +72,8 @@
     public IDictionary<string, object> ReceiveDotNetObjectByRefAsyncResult { get; set; } = new Dictionary<string, object>();
 
     public bool DoneWithInterop { get; set; }
+
+    public ElementReference element;
 
     public async Task InvokeInteropAsync()
     {
@@ -167,6 +172,15 @@
             ReturnValues["invokeAsyncThrowsSerializingCircularStructure"] = $"Failure: {ex.Message}";
         }
 
+        try
+        {
+            var elementReference = await JSRuntime.InvokeAsync<ElementReference>("returnElementReference", element);
+            ReturnValues["elementReference"] = "Success";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["elementReference"] = $"Failure: {ex.Message}";
+        }
 
         var jsObjectReference = await JSRuntime.InvokeAsync<IJSObjectReference>("returnJSObjectReference");
         ReturnValues["jsObjectReference.identity"] = await jsObjectReference.InvokeAsync<string>("identity", "Invoked from JSObjectReference");

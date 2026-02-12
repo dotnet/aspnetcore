@@ -79,7 +79,10 @@ public class Program
         var timeForEachRun = TimeSpan.FromMinutes(3);
 
         var launchUrl = $"{testAppUrl}?resultsUrl={UrlEncoder.Default.Encode(receiverUrl)}#automated";
-        var page = await browser.NewPageAsync();
+        var page = await browser.NewPageAsync(new()
+        {
+            Locale = "en-US",
+        });
         await page.GotoAsync(launchUrl);
         page.Console += WriteBrowserConsoleMessage;
 

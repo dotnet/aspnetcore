@@ -333,6 +333,11 @@ internal sealed partial class OpenApiJsonSchema
                 schema.Metadata ??= new Dictionary<string, object>();
                 schema.Metadata.Add(OpenApiConstants.SchemaId, reader.GetString() ?? string.Empty);
                 break;
+            case OpenApiConstants.NullableProperty:
+                reader.Read();
+                schema.Metadata ??= new Dictionary<string, object>();
+                schema.Metadata.Add(OpenApiConstants.NullableProperty, reader.GetBoolean());
+                break;
             // OpenAPI does not support the `const` keyword in its schema implementation, so
             // we map it to its closest approximation, an enum with a single value, here.
             case OpenApiSchemaKeywords.ConstKeyword:
@@ -340,17 +345,16 @@ internal sealed partial class OpenApiJsonSchema
                 schema.Enum = ReadJsonNode(ref reader, out var constType) is { } jsonNode ? [jsonNode] : [];
                 schema.Type = constType;
                 break;
-            case OpenApiSchemaKeywords.RefKeyword:
-                reader.Read();
-                schema.Metadata ??= new Dictionary<string, object>();
-                schema.Metadata[OpenApiConstants.RefId] = reader.GetString() ?? string.Empty;
-                break;
             case OpenApiConstants.RefDescriptionAnnotation:
                 reader.Read();
                 schema.Metadata ??= new Dictionary<string, object>();
                 schema.Metadata[OpenApiConstants.RefDescriptionAnnotation] = reader.GetString() ?? string.Empty;
                 break;
-
+            case OpenApiConstants.RefDefaultAnnotation:
+                reader.Read();
+                schema.Metadata ??= new Dictionary<string, object>();
+                schema.Metadata[OpenApiConstants.RefDefaultAnnotation] = ReadJsonNode(ref reader)!;
+                break;
             default:
                 reader.Skip();
                 break;

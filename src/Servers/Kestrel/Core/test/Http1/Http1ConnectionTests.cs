@@ -53,7 +53,10 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         await _application.Output.WriteAsync(extendedAsciiEncoding.GetBytes("\r\n\r\n"));
         var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-        var exception = Assert.Throws<InvalidOperationException>(() => TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined));
+#pragma warning disable CS0618 // Type or member is obsolete
+        var exception = Assert.Throws<BadHttpRequestException>(() => TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined));
+#pragma warning restore CS0618 // Type or member is obsolete
+        Assert.Equal(RequestRejectionReason.MalformedRequestInvalidHeaders, exception.Reason);
     }
 
     [Fact]
@@ -440,17 +443,6 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Equal(expectedRawTarget, _http1Connection.RawTarget);
         Assert.Equal(expectedDecodedPath, _http1Connection.Path);
         Assert.Equal(expectedQueryString, _http1Connection.QueryString);
-    }
-
-    [Fact]
-    public async Task ParseRequestStartsRequestHeadersTimeoutOnFirstByteAvailable()
-    {
-        await _application.Output.WriteAsync(Encoding.ASCII.GetBytes("G"));
-
-        ParseRequest((await _transport.Input.ReadAsync()).Buffer, out _consumed, out _examined);
-        _transport.Input.AdvanceTo(_consumed, _examined);
-
-        _timeoutControl.Verify(cc => cc.ResetTimeout(_serviceContext.ServerOptions.Limits.RequestHeadersTimeout, TimeoutReason.RequestHeaders));
     }
 
     [Fact]
@@ -1058,23 +1050,6 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     {
         var reader = new SequenceReader<byte>(readableBuffer);
         if (_http1Connection.TakeStartLine(ref reader))
-        {
-            consumed = reader.Position;
-            examined = reader.Position;
-            return true;
-        }
-        else
-        {
-            consumed = reader.Position;
-            examined = readableBuffer.End;
-            return false;
-        }
-    }
-
-    private bool ParseRequest(ReadOnlySequence<byte> readableBuffer, out SequencePosition consumed, out SequencePosition examined)
-    {
-        var reader = new SequenceReader<byte>(readableBuffer);
-        if (_http1Connection.ParseRequest(ref reader))
         {
             consumed = reader.Position;
             examined = reader.Position;

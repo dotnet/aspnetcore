@@ -49,8 +49,10 @@ internal sealed class StartupHook
             var iisConfigData = NativeMethods.HttpGetApplicationProperties();
             var contentRoot = iisConfigData.pwzFullApplicationPath.TrimEnd(Path.DirectorySeparatorChar);
 
+            using var fileProvider = new PhysicalFileProvider(contentRoot);
+
             var model = ErrorPageModelBuilder.CreateErrorPageModel(
-                new PhysicalFileProvider(contentRoot),
+                fileProvider,
                 logger: null,
                 showDetailedErrors: true,
                 exception);

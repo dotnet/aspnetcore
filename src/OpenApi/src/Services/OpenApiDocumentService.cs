@@ -209,6 +209,12 @@ internal sealed class OpenApiDocumentService(
         if (httpRequest is not null)
         {
             var serverUrl = UriHelper.BuildAbsolute(httpRequest.Scheme, httpRequest.Host, httpRequest.PathBase);
+            // Remove trailing slash when pathBase is empty to align with OpenAPI specification.
+            // Keep the trailing slash if pathBase explicitly contains "/" to preserve intentional path structure.
+            if (serverUrl.EndsWith('/') && !httpRequest.PathBase.HasValue)
+            {
+                serverUrl = serverUrl.TrimEnd('/');
+            }
             return [new OpenApiServer { Url = serverUrl }];
         }
         else
@@ -423,8 +429,15 @@ internal sealed class OpenApiDocumentService(
             .Select(responseFormat => responseFormat.MediaType);
         foreach (var contentType in apiResponseFormatContentTypes)
         {
-            var schema = apiResponseType.Type is { } type ? await _componentService.GetOrCreateSchemaAsync(document, type, scopedServiceProvider, schemaTransformers, null, cancellationToken) : new OpenApiSchema();
-            response.Content[contentType] = new OpenApiMediaType { Schema = schema };
+            IOpenApiSchema? schema = null;
+            if (apiResponseType.Type is { } responseType)
+            {
+                schema = await _componentService.GetOrCreateSchemaAsync(document, responseType, scopedServiceProvider, schemaTransformers, null, cancellationToken);
+                schema = apiResponseType.ShouldApplyNullableResponseSchema(apiDescription)
+                    ? schema.CreateOneOfNullableWrapper()
+                    : schema;
+            }
+            response.Content[contentType] = new OpenApiMediaType { Schema = schema ?? new OpenApiSchema() };
         }
 
         // MVC's `ProducesAttribute` doesn't implement the produces metadata that the ApiExplorer
@@ -744,7 +757,11 @@ internal sealed class OpenApiDocumentService(
         foreach (var requestFormat in supportedRequestFormats)
         {
             var contentType = requestFormat.MediaType;
-            requestBody.Content[contentType] = new OpenApiMediaType { Schema = await _componentService.GetOrCreateSchemaAsync(document, bodyParameter.Type, scopedServiceProvider, schemaTransformers, bodyParameter, cancellationToken: cancellationToken) };
+            var schema = await _componentService.GetOrCreateSchemaAsync(document, bodyParameter.Type, scopedServiceProvider, schemaTransformers, bodyParameter, cancellationToken: cancellationToken);
+            schema = bodyParameter.ShouldApplyNullableRequestSchema()
+                ? schema.CreateOneOfNullableWrapper()
+                : schema;
+            requestBody.Content[contentType] = new OpenApiMediaType { Schema = schema };
         }
 
         return requestBody;

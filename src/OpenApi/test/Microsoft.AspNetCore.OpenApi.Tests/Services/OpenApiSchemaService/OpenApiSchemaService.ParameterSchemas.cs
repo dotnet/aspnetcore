@@ -451,18 +451,25 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
     }
 
+#nullable enable
     public static object[][] ArrayBasedQueryParameters =>
     [
         [(int[] id) => { }, JsonSchemaType.Integer, false],
         [(int?[] id) => { }, JsonSchemaType.Integer, true],
         [(Guid[] id) => { }, JsonSchemaType.String, false],
         [(Guid?[] id) => { }, JsonSchemaType.String, true],
+        [(string[] id) => { }, JsonSchemaType.String, false],
+        // Due to runtime restrictions, we can't resolve nullability
+        // info for reference types as element types so this will still
+        // encode as non-nullable.
+        [(string?[] id) => { }, JsonSchemaType.String, false],
         [(DateTime[] id) => { }, JsonSchemaType.String, false],
         [(DateTime?[] id) => { }, JsonSchemaType.String, true],
         [(DateTimeOffset[] id) => { }, JsonSchemaType.String, false],
         [(DateTimeOffset?[] id) => { }, JsonSchemaType.String, true],
         [(Uri[] id) => { }, JsonSchemaType.String, false],
     ];
+#nullable restore
 
     [Theory]
     [MemberData(nameof(ArrayBasedQueryParameters))]
@@ -890,6 +897,86 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         }
     }
 
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesNullableComplexTypesWithNullInType()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+#nullable enable
+        builder.MapPost("/api/nullable-todo", (Todo? todo) => { });
+        builder.MapPost("/api/nullable-account", (Account? account) => { });
+#nullable restore
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            // Verify nullable Todo parameter uses null in type directly
+            var todoOperation = document.Paths["/api/nullable-todo"].Operations[HttpMethod.Post];
+            var todoRequestBody = todoOperation.RequestBody;
+            var todoContent = Assert.Single(todoRequestBody.Content);
+            Assert.Equal("application/json", todoContent.Key);
+            var todoSchema = todoContent.Value.Schema;
+
+            // For complex types, check if it has both null and the reference type
+            if (todoSchema.OneOf != null)
+            {
+                // If it now uses oneOf, verify the structure
+                Assert.Equal(2, todoSchema.OneOf.Count);
+                Assert.Collection(todoSchema.OneOf,
+                    item =>
+                    {
+                        Assert.NotNull(item);
+                        Assert.Equal(JsonSchemaType.Null, item.Type);
+                    },
+                    item =>
+                    {
+                        Assert.NotNull(item);
+                        Assert.Equal("Todo", ((OpenApiSchemaReference)item).Reference.Id);
+                    });
+            }
+            else
+            {
+                // If it uses direct type, verify null is included
+                Assert.True(todoSchema.Type?.HasFlag(JsonSchemaType.Null));
+            }
+
+            // Verify nullable Account parameter
+            var accountOperation = document.Paths["/api/nullable-account"].Operations[HttpMethod.Post];
+            var accountRequestBody = accountOperation.RequestBody;
+            var accountContent = Assert.Single(accountRequestBody.Content);
+            Assert.Equal("application/json", accountContent.Key);
+            var accountSchema = accountContent.Value.Schema;
+
+            if (accountSchema.OneOf != null)
+            {
+                // If it now uses oneOf, verify the structure
+                Assert.Equal(2, accountSchema.OneOf.Count);
+                Assert.Collection(accountSchema.OneOf,
+                    item =>
+                    {
+                        Assert.NotNull(item);
+                        Assert.Equal(JsonSchemaType.Null, item.Type);
+                    },
+                    item =>
+                    {
+                        Assert.NotNull(item);
+                        Assert.Equal("Account", ((OpenApiSchemaReference)item).Reference.Id);
+                    });
+            }
+            else
+            {
+                // If it uses direct type, verify null is included
+                Assert.True(accountSchema.Type?.HasFlag(JsonSchemaType.Null));
+            }
+
+            // Verify component schemas are created for Todo and Account
+            Assert.Contains("Todo", document.Components.Schemas.Keys);
+            Assert.Contains("Account", document.Components.Schemas.Keys);
+        });
+    }
+
     [ApiController]
     [Route("[controller]/[action]")]
     private class TestFromQueryController : ControllerBase
@@ -913,4 +1000,15 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [DefaultValue(20)]
         public int Limit { get; set; }
     }
+
+#nullable enable
+    private record NullableParamsModel
+    {
+        [FromQuery(Name = "name")]
+        public string? Name { get; set; }
+
+        [FromQuery(Name = "id")]
+        public int? Id { get; set; }
+    }
+#nullable restore
 }

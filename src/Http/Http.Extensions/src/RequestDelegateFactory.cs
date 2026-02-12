@@ -129,6 +129,7 @@ public static partial class RequestDelegateFactory
     private static readonly string[] FormFileContentType = new[] { "multipart/form-data" };
     private static readonly string[] FormContentType = new[] { "multipart/form-data", "application/x-www-form-urlencoded" };
     private static readonly string[] PlaintextContentType = new[] { "text/plain" };
+    private static readonly Type[] StringTypes = new[] {typeof(string), typeof(StringValues), typeof(StringValues?) };
 
     /// <summary>
     /// Returns metadata inferred automatically for the <see cref="RequestDelegate"/> created by <see cref="Create(Delegate, RequestDelegateFactoryOptions?, RequestDelegateMetadataResult?)"/>.
@@ -791,11 +792,11 @@ public static partial class RequestDelegateFactory
             // For complex types, leverage the shared form binding infrastructure. For example,
             // shared form binding does not currently only supports types that implement IParsable
             // while RDF's binding implementation supports all TryParse implementations.
-            var useSimpleBinding = parameter.ParameterType == typeof(string) ||
-                parameter.ParameterType == typeof(StringValues) ||
-                parameter.ParameterType == typeof(StringValues?) ||
+            var useSimpleBinding = StringTypes.Contains(parameter.ParameterType) ||
                 ParameterBindingMethodCache.Instance.HasTryParseMethod(parameter.ParameterType) ||
-                (parameter.ParameterType.IsArray && ParameterBindingMethodCache.Instance.HasTryParseMethod(parameter.ParameterType.GetElementType()!));
+                (parameter.ParameterType.IsArray &&
+                (StringTypes.Contains(parameter.ParameterType.GetElementType()) ||
+                ParameterBindingMethodCache.Instance.HasTryParseMethod(parameter.ParameterType.GetElementType()!)));
             hasTryParse = useSimpleBinding;
             return useSimpleBinding
                 ? BindParameterFromFormItem(parameter, formAttribute.Name ?? parameter.Name, factoryContext)
@@ -803,7 +804,7 @@ public static partial class RequestDelegateFactory
         }
         else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
         {
-            if (parameterCustomAttributes.OfType<FromKeyedServicesAttribute>().FirstOrDefault() is not null)
+            if (parameterCustomAttributes.FirstOrDefault(a => typeof(FromKeyedServicesAttribute).IsAssignableFrom(a.GetType())) is not null)
             {
                 throw new NotSupportedException(
                     $"The {nameof(FromKeyedServicesAttribute)} is not supported on parameters that are also annotated with {nameof(IFromServiceMetadata)}.");
@@ -811,7 +812,7 @@ public static partial class RequestDelegateFactory
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.ServiceAttribute);
             return BindParameterFromService(parameter, factoryContext);
         }
-        else if (parameterCustomAttributes.OfType<FromKeyedServicesAttribute>().FirstOrDefault() is { } keyedServicesAttribute)
+        else if (parameterCustomAttributes.FirstOrDefault(a => typeof(FromKeyedServicesAttribute).IsAssignableFrom(a.GetType())) is FromKeyedServicesAttribute keyedServicesAttribute)
         {
             if (factoryContext.ServiceProviderIsService is not IServiceProviderIsKeyedService)
             {
