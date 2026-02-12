@@ -8,42 +8,55 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Playwright;
 using Templates.Test.Helpers;
+using Microsoft.AspNetCore.InternalTesting;
+using Xunit.Abstractions;
 
 namespace BlazorTemplates.Tests;
 
 #pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
 
-public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : BlazorTemplateTest(projectFactory), IAsyncLifetime
+public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : BlazorTemplateTest(projectFactory)
 {
     public override string ProjectType => "blazorwasm";
 
     private static readonly string TestAssetsPath = Path.Combine(
-        Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!,
+        Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
         "TestAssets",
         "WebWorker");
 
-    private Project? _hostProject;
+    private static Project _sharedHostProject;
+    private static bool _hostInitialized;
+    private static readonly object _initLock = new();
 
-    public override async Task InitializeAsync()
+    protected override async Task InitializeCoreAsync(TestContext context)
     {
-        await base.InitializeAsync();
-        _hostProject = await CreateBuildPublishAsync(onlyCreate: true);
-        CopyTestAssets(_hostProject);
-        AddHostProjectSettings(_hostProject);
-    }
+        await base.InitializeCoreAsync(context);
 
-    public override Task DisposeAsync() => base.DisposeAsync();
+        if (!_hostInitialized)
+        {
+            lock (_initLock)
+            {
+                if (!_hostInitialized)
+                {
+                    _sharedHostProject = CreateBuildPublishAsync(onlyCreate: true).GetAwaiter().GetResult();
+                    CopyTestAssets(_sharedHostProject);
+                    AddHostProjectSettings(_sharedHostProject);
+                    _hostInitialized = true;
+                }
+            }
+        }
+    }
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
     public async Task WebWorkerTemplate_CanInvokeMethods(BrowserKind browserKind)
     {
-        await using var testRun = await SetupAndBuildWithWorkerLib();
+        await using var testRun = await SetupWorkerLibAndBuild(_sharedHostProject);
 
-        using var aspNetProcess = _hostProject!.StartBuiltProjectAsync();
+        using var aspNetProcess = _sharedHostProject.StartBuiltProjectAsync();
         Assert.False(
             aspNetProcess.Process.HasExited,
-            ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", _hostProject, aspNetProcess.Process));
+            ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", _sharedHostProject, aspNetProcess.Process));
 
         await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
         await TestWebWorkerInteraction(browserKind, aspNetProcess.ListeningUri.AbsoluteUri + "webworker-test");
@@ -53,12 +66,12 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
     [InlineData(BrowserKind.Chromium)]
     public async Task WebWorkerTemplate_HandlesErrors(BrowserKind browserKind)
     {
-        await using var testRun = await SetupAndBuildWithWorkerLib();
+        await using var testRun = await SetupWorkerLibAndBuild(_sharedHostProject);
 
-        using var aspNetProcess = _hostProject!.StartBuiltProjectAsync();
+        using var aspNetProcess = _sharedHostProject.StartBuiltProjectAsync();
         Assert.False(
             aspNetProcess.Process.HasExited,
-            ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", _hostProject, aspNetProcess.Process));
+            ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", _sharedHostProject, aspNetProcess.Process));
 
         await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
         await TestWebWorkerErrorHandling(browserKind, aspNetProcess.ListeningUri.AbsoluteUri + "webworker-test");
@@ -68,20 +81,20 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
     [InlineData(BrowserKind.Chromium)]
     public async Task WebWorkerTemplate_CanDisposeWorker(BrowserKind browserKind)
     {
-        await using var testRun = await SetupAndBuildWithWorkerLib();
+        await using var testRun = await SetupWorkerLibAndBuild(_sharedHostProject);
 
-        using var aspNetProcess = _hostProject!.StartBuiltProjectAsync();
+        using var aspNetProcess = _sharedHostProject.StartBuiltProjectAsync();
         Assert.False(
             aspNetProcess.Process.HasExited,
-            ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", _hostProject, aspNetProcess.Process));
+            ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", _sharedHostProject, aspNetProcess.Process));
 
         await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
         await TestWebWorkerDisposal(browserKind, aspNetProcess.ListeningUri.AbsoluteUri + "webworker-test");
     }
 
-    private async Task<WorkerLibTestRun> SetupAndBuildWithWorkerLib()
+    private async Task<WorkerLibTestRun> SetupWorkerLibAndBuild(Project hostProject)
     {
-        var parentDir = Path.GetDirectoryName(_hostProject!.TemplateOutputDir)!;
+        var parentDir = Path.GetDirectoryName(hostProject.TemplateOutputDir);
         var workerLibDir = Path.Combine(parentDir, "WorkerLib");
 
         if (Directory.Exists(workerLibDir))
@@ -91,28 +104,28 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         Directory.CreateDirectory(workerLibDir);
 
         await CreateWebWorkerLibrary(workerLibDir);
-        await AddWorkerLibReferenceAsync(_hostProject);
-        await _hostProject.RunDotNetBuildAsync();
+        await AddWorkerLibReferenceAsync(hostProject);
+        await hostProject.RunDotNetBuildAsync();
 
-        return new WorkerLibTestRun(workerLibDir, _hostProject, Output);
+        return new WorkerLibTestRun(workerLibDir, hostProject, Output);
     }
 
     private sealed class WorkerLibTestRun(string workerLibDir, Project hostProject, ITestOutputHelper output) : IAsyncDisposable
     {
         public async ValueTask DisposeAsync()
         {
-            if (Directory.Exists(workerLibDir))
-            {
-                try { Directory.Delete(workerLibDir, recursive: true); }
-                catch { /* Best effort cleanup */ }
-            }
-
             using var result = ProcessEx.Run(
                 output,
                 hostProject.TemplateOutputDir,
                 DotNetMuxer.MuxerPathOrDefault(),
                 "remove reference ../WorkerLib/WorkerLib.csproj");
             await result.Exited;
+
+            if (Directory.Exists(workerLibDir))
+            {
+                try { Directory.Delete(workerLibDir, recursive: true); }
+                catch { /* Best effort cleanup */ }
+            }
         }
     }
 
@@ -161,6 +174,7 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         var settings = @"
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
   </PropertyGroup>
 ";
         content = content.Replace("</Project>", settings + "</Project>");
@@ -178,7 +192,7 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         Assert.True(result.ExitCode == 0, $"Failed to add WorkerLib reference: {result.Output}\n{result.Error}");
     }
 
-    private static void CopyTestAssets(Project hostProject)
+    private void CopyTestAssets(Project hostProject)
     {
         var testComponentSource = Path.Combine(TestAssetsPath, "WebWorkerTest.razor");
         var testComponentContent = File.ReadAllText(testComponentSource)
@@ -187,7 +201,6 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         var pagesDir = Path.Combine(hostProject.TemplateOutputDir, "Components", "Pages");
         if (!Directory.Exists(pagesDir))
         {
-            // For older templates that use Pages directly
             pagesDir = Path.Combine(hostProject.TemplateOutputDir, "Pages");
         }
         File.WriteAllText(
