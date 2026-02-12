@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Localization;
 
-namespace MinimalValidationSample;
+namespace MinimalApiValidationSample;
 
 public class MockStringLocalizer : IStringLocalizer
 {
