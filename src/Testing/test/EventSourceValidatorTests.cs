@@ -40,7 +40,7 @@ public class EventSourceValidatorTests
     public void ValidateEventSourceIds_FailsForNonEventSourceType()
     {
         var ex = Assert.ThrowsAny<Exception>(
-            () => EventSourceValidator.ValidateEventSourceIds<string>());
+            () => EventSourceValidator.ValidateEventSourceIds(typeof(string)));
 
         Assert.Contains("does not derive from EventSource", ex.Message);
     }
