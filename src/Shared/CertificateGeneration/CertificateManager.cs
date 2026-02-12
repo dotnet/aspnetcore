@@ -234,22 +234,23 @@ internal abstract class CertificateManager
     {
         var result = EnsureCertificateResult.Succeeded;
 
-        var currentUserCertificates = ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, requireExportable: true);
-        var localMachineCertificates = ListCertificates(StoreName.My, StoreLocation.LocalMachine, isValid: true, requireExportable: true);
-        var allCertificates = currentUserCertificates.Concat(localMachineCertificates).ToList();
+        var allCurrentUserCertificates = ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, requireExportable: true);
+        var allLocalMachineCertificates = ListCertificates(StoreName.My, StoreLocation.LocalMachine, isValid: true, requireExportable: true);
 
-        var filteredCertificates = allCertificates.Where(c => c.Subject == Subject).ToList();
+        var currentUserCertificates = allCurrentUserCertificates.Where(c => c.Subject == Subject).ToList();
+        var localMachineCertificates = allLocalMachineCertificates.Where(c => c.Subject == Subject).ToList();
+        var filteredCertificates = currentUserCertificates.Concat(localMachineCertificates).ToList();
 
         if (Log.IsEnabled())
         {
-            var excludedCertificates = allCertificates.Except(filteredCertificates);
+            var excludedCertificates = allCurrentUserCertificates.Concat(allLocalMachineCertificates).Except(filteredCertificates);
             Log.FilteredCertificates(ToCertificateDescription(filteredCertificates));
             Log.ExcludedCertificates(ToCertificateDescription(excludedCertificates));
         }
 
         // Dispose certificates we're not going to use
-        var certificatesToDispose = allCertificates.Except(filteredCertificates);
-        DisposeCertificates(certificatesToDispose);
+        DisposeCertificates(allCurrentUserCertificates.Except(currentUserCertificates));
+        DisposeCertificates(allLocalMachineCertificates.Except(localMachineCertificates));
 
         var certificates = filteredCertificates;
 
