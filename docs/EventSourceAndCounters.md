@@ -169,7 +169,34 @@ namespace Microsoft.AspNetCore.Authentication.Internal
 
 ## Automated Testing of EventSources
 
-EventSources can be tested using the `EventSourceTestBase` base class in `Microsoft.AspNetCore.InternalTesting`. An example test is below:
+### Validating Event ID Consistency
+
+All `EventSource` subclasses should have a test that validates the `[Event(N)]` attribute IDs match the `WriteEvent(N, ...)` call arguments. This catches drift caused by bad merge resolution or missed updates that would otherwise surface only as runtime errors.
+
+Use the `EventSourceValidator` utility in `Microsoft.AspNetCore.InternalTesting.Tracing`:
+
+```csharp
+using Microsoft.AspNetCore.InternalTesting.Tracing;
+
+public class MyEventSourceTests
+{
+    [Fact]
+    public void EventIdsAreConsistent()
+    {
+        EventSourceValidator.ValidateEventSourceIds(typeof(MyEventSource));
+    }
+}
+```
+
+The validator:
+- Uses `EventSource.GenerateManifest` with `EventManifestOptions.Strict` to perform IL-level validation that each `WriteEvent(id, ...)` call argument matches the `[Event(id)]` attribute — the same validation the .NET runtime uses internally
+- Checks for duplicate event IDs across methods
+
+> **Important:** Every new `EventSource` class should include this one-line validation test.
+
+### Functional Testing with EventSourceTestBase
+
+EventSources can also be functionally tested using the `EventSourceTestBase` base class in `Microsoft.AspNetCore.InternalTesting`. An example test is below:
 
 ```csharp
 // The base class MUST be used for EventSource testing because EventSources are global and parallel tests can cause issues.
