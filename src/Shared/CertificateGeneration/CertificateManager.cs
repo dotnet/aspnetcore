@@ -1398,10 +1398,10 @@ internal abstract class CertificateManager
         internal void UnixSuggestAppendingToEnvironmentVariable(string certDir, string envVarName) => WriteEvent(114, certDir, envVarName);
 
         [Event(115, Level = EventLevel.Verbose, Message = "Successfully trusted the certificate in the Windows certificate store via WSL.")]
-        internal void WslWindowsTrustSucceeded() => WriteEvent(113);
+        internal void WslWindowsTrustSucceeded() => WriteEvent(115);
 
         [Event(116, Level = EventLevel.Warning, Message = "Failed to trust the certificate in the Windows certificate store via WSL.")]
-        internal void WslWindowsTrustFailed() => WriteEvent(114);
+        internal void WslWindowsTrustFailed() => WriteEvent(116);
 
         [Event(117, Level = EventLevel.Warning, Message = "Failed to trust the certificate in the Windows certificate store via WSL: {0}.")]
         internal void WslWindowsTrustException(string exceptionMessage) => WriteEvent(117, exceptionMessage);
