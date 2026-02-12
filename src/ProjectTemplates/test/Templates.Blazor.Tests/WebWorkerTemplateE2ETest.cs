@@ -24,14 +24,15 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
     private Project? _hostProject;
 
-    public async Task InitializeAsync()
+    public override async Task InitializeAsync()
     {
+        await base.InitializeAsync();
         _hostProject = await CreateBuildPublishAsync(onlyCreate: true);
         CopyTestAssets(_hostProject);
         AddHostProjectSettings(_hostProject);
     }
 
-    public Task DisposeAsync() => Task.CompletedTask;
+    public override Task DisposeAsync() => base.DisposeAsync();
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
