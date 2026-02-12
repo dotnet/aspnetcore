@@ -51,7 +51,6 @@
     <Content Include="TestAssets\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <!-- Exclude test asset files from compilation -->
     <Compile Remove="TestAssets\**\*.cs" />
   </ItemGroup>
 

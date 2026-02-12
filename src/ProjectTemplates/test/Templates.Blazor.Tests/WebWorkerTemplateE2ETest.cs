@@ -96,7 +96,6 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
                 catch { /* Best effort cleanup */ }
             }
 
-            // Remove worker lib reference
             using var result = ProcessEx.Run(
                 output,
                 hostProject.TemplateOutputDir,
@@ -117,7 +116,6 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
         ModifyWorkerLibProjectFile(workerLibDir);
 
-        // Copy TestWorkerMethods.cs to WorkerLib (JSExport methods must be in loaded assembly)
         var workerMethodsSource = Path.Combine(TestAssetsPath, "TestWorkerMethods.cs");
         var workerMethodsContent = File.ReadAllText(workerMethodsSource)
             .Replace("$NAMESPACE$", "WorkerLib");
@@ -125,7 +123,6 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
             Path.Combine(workerLibDir, "TestWorkerMethods.cs"),
             workerMethodsContent);
 
-        // Restore the worker library
         using var restoreResult = ProcessEx.Run(Output, workerLibDir, DotNetMuxer.MuxerPathOrDefault(), "restore");
         await restoreResult.Exited;
         Assert.True(restoreResult.ExitCode == 0, $"Failed to restore webworker library: {restoreResult.Output}\n{restoreResult.Error}");
@@ -136,7 +133,6 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         var csprojPath = Path.Combine(workerLibDir, "WorkerLib.csproj");
         var content = File.ReadAllText(csprojPath);
 
-        // Add AllowUnsafeBlocks required for JSExport attributes
         if (!content.Contains("AllowUnsafeBlocks"))
         {
             content = content.Replace(
@@ -151,7 +147,6 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         var csprojPath = Path.Combine(hostProject.TemplateOutputDir, $"{hostProject.ProjectName}.csproj");
         var content = File.ReadAllText(csprojPath);
 
-        // AllowUnsafeBlocks is required for JSExport in referenced WorkerLib
         var settings = @"
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -203,19 +198,15 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await page.GotoAsync(baseUri);
         await page.WaitForSelectorAsync("#webworker-test", new() { Timeout = 30000 });
 
-        // Initialize worker
         await page.ClickAsync("#btn-init");
         await WaitForElementText(page, "#init-status", "Ready", timeout: 60000);
 
-        // Test Add
         await page.ClickAsync("#btn-add");
         await WaitForElementText(page, "#add-result", "5");
 
-        // Test Echo
         await page.ClickAsync("#btn-echo");
         await WaitForElementText(page, "#echo-result", "Hello Worker");
 
-        // Test JSON
         await page.ClickAsync("#btn-json");
         await WaitForElementText(page, "#json-result", "Alice,30");
 
@@ -236,11 +227,9 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await page.GotoAsync(baseUri);
         await page.WaitForSelectorAsync("#webworker-test", new() { Timeout = 30000 });
 
-        // Initialize worker
         await page.ClickAsync("#btn-init");
         await WaitForElementText(page, "#init-status", "Ready", timeout: 60000);
 
-        // Test error handling
         await page.ClickAsync("#btn-error");
         await WaitForElementText(page, "#error-result", "Caught expected error");
 
@@ -261,15 +250,12 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await page.GotoAsync(baseUri);
         await page.WaitForSelectorAsync("#webworker-test", new() { Timeout = 30000 });
 
-        // Initialize worker
         await page.ClickAsync("#btn-init");
         await WaitForElementText(page, "#init-status", "Ready", timeout: 60000);
 
-        // Verify it works before dispose
         await page.ClickAsync("#btn-add");
         await WaitForElementText(page, "#add-result", "5");
 
-        // Dispose
         await page.ClickAsync("#btn-dispose");
         await WaitForElementText(page, "#dispose-status", "Disposed");
 
