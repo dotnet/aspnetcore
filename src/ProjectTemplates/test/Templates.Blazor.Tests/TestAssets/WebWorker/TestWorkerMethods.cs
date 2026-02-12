@@ -18,16 +18,7 @@ public static partial class TestWorkerMethods
     public static int Add(int a, int b) => a + b;
 
     [JSExport]
-    public static bool IsEven(int n) => n % 2 == 0;
-
-    [JSExport]
-    public static double Divide(double a, double b) => a / b;
-
-    [JSExport]
     public static string Echo(string input) => input;
-
-    [JSExport]
-    public static string Concat(string a, string b) => a + b;
 
     [JSExport]
     public static string GetPersonJson()

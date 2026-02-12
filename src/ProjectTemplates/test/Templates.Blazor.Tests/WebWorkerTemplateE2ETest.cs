@@ -55,6 +55,11 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await using var testRun = await SetupAndBuildWithWorkerLib();
 
         using var aspNetProcess = _hostProject!.StartBuiltProjectAsync();
+        Assert.False(
+            aspNetProcess.Process.HasExited,
+            ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", _hostProject, aspNetProcess.Process));
+
+        await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
         await TestWebWorkerErrorHandling(browserKind, aspNetProcess.ListeningUri.AbsoluteUri + "webworker-test");
     }
 
@@ -65,6 +70,11 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await using var testRun = await SetupAndBuildWithWorkerLib();
 
         using var aspNetProcess = _hostProject!.StartBuiltProjectAsync();
+        Assert.False(
+            aspNetProcess.Process.HasExited,
+            ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", _hostProject, aspNetProcess.Process));
+
+        await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
         await TestWebWorkerDisposal(browserKind, aspNetProcess.ListeningUri.AbsoluteUri + "webworker-test");
     }
 
