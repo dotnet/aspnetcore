@@ -183,7 +183,7 @@ public class MyEventSourceTests
     [Fact]
     public void EventIdsAreConsistent()
     {
-        EventSourceValidator.ValidateEventSourceIds(typeof(MyEventSource));
+        EventSourceValidator.ValidateEventSourceIds<MyEventSource>();
     }
 }
 ```
