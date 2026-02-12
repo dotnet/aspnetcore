@@ -13,14 +13,14 @@ public class EventSourceValidatorTests
     [Fact]
     public void ValidateEventSourceIds_PassesForCorrectEventSource()
     {
-        EventSourceValidator.ValidateEventSourceIds(typeof(CorrectEventSource));
+        EventSourceValidator.ValidateEventSourceIds<CorrectEventSource>();
     }
 
     [Fact]
     public void ValidateEventSourceIds_FailsForMismatchedWriteEventId()
     {
         var ex = Assert.ThrowsAny<Exception>(
-            () => EventSourceValidator.ValidateEventSourceIds(typeof(MismatchedIdEventSource)));
+            () => EventSourceValidator.ValidateEventSourceIds<MismatchedIdEventSource>());
 
         Assert.Contains("was assigned event ID 1 but 99 was passed to WriteEvent", ex.Message);
     }
@@ -29,7 +29,7 @@ public class EventSourceValidatorTests
     public void ValidateEventSourceIds_FailsForDuplicateEventIds()
     {
         var ex = Assert.ThrowsAny<Exception>(
-            () => EventSourceValidator.ValidateEventSourceIds(typeof(DuplicateIdEventSource)));
+            () => EventSourceValidator.ValidateEventSourceIds<DuplicateIdEventSource>());
 
         Assert.Contains("Duplicate EventId 1", ex.Message);
         Assert.Contains("EventAlpha", ex.Message);
@@ -40,7 +40,7 @@ public class EventSourceValidatorTests
     public void ValidateEventSourceIds_FailsForNonEventSourceType()
     {
         var ex = Assert.ThrowsAny<Exception>(
-            () => EventSourceValidator.ValidateEventSourceIds(typeof(string)));
+            () => EventSourceValidator.ValidateEventSourceIds<string>());
 
         Assert.Contains("does not derive from EventSource", ex.Message);
     }
@@ -48,13 +48,13 @@ public class EventSourceValidatorTests
     [Fact]
     public void ValidateEventSourceIds_PassesForEventSourceWithNoEvents()
     {
-        EventSourceValidator.ValidateEventSourceIds(typeof(EmptyEventSource));
+        EventSourceValidator.ValidateEventSourceIds<EmptyEventSource>();
     }
 
     [Fact]
     public void ValidateEventSourceIds_PassesForEventSourceWithMultipleParameterTypes()
     {
-        EventSourceValidator.ValidateEventSourceIds(typeof(MultiParamEventSource));
+        EventSourceValidator.ValidateEventSourceIds<MultiParamEventSource>();
     }
 
     // -- Test-only EventSource implementations --

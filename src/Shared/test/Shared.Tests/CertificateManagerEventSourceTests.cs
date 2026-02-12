@@ -11,6 +11,6 @@ public class CertificateManagerEventSourceTests
     [Fact]
     public void EventIdsAreConsistent()
     {
-        EventSourceValidator.ValidateEventSourceIds(typeof(CertificateManager.CertificateManagerEventSource));
+        EventSourceValidator.ValidateEventSourceIds<CertificateManager.CertificateManagerEventSource>();
     }
 }

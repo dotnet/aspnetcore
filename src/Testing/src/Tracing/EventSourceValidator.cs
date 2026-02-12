@@ -18,6 +18,13 @@ namespace Microsoft.AspNetCore.InternalTesting.Tracing;
 public static class EventSourceValidator
 {
     /// <summary>
+    /// Validates all <c>[Event]</c>-attributed methods on <typeparamref name="T"/>.
+    /// </summary>
+    /// <typeparam name="T">A type that derives from <see cref="EventSource"/>.</typeparam>
+    public static void ValidateEventSourceIds<T>() where T : EventSource
+        => ValidateEventSourceIds(typeof(T));
+
+    /// <summary>
     /// Validates all <c>[Event]</c>-attributed methods on the given <see cref="EventSource"/>-derived type.
     /// <para>
     /// Uses <see cref="EventSource.GenerateManifest(Type, string, EventManifestOptions)"/> with
@@ -32,6 +39,8 @@ public static class EventSourceValidator
     /// <param name="eventSourceType">A type that derives from <see cref="EventSource"/>.</param>
     public static void ValidateEventSourceIds(Type eventSourceType)
     {
+        ArgumentNullException.ThrowIfNull(eventSourceType);
+
         Assert.True(
             typeof(EventSource).IsAssignableFrom(eventSourceType),
             $"Type '{eventSourceType.FullName}' does not derive from EventSource.");

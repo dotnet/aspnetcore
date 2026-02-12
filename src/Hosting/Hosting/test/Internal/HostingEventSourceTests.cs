@@ -16,7 +16,7 @@ public class HostingEventSourceTests : LoggedTest
     [Fact]
     public void EventIdsAreConsistent()
     {
-        EventSourceValidator.ValidateEventSourceIds(typeof(HostingEventSource));
+        EventSourceValidator.ValidateEventSourceIds<HostingEventSourceTests>();
     }
 
     [Fact]
