@@ -2686,6 +2686,59 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    public async Task HEADERS_Received_WithPaddingAndPriority_PaddingExceedsAvailablePayload_ConnectionError()
+    {
+        await InitializeConnectionAsync(_noopApplication);
+
+        /*
+         Frame header (bytes 0-8):
+         ----------------------------------------------------------------------------
+         00 00 06  → Length = 6
+         01        → Type = HEADERS (0x01)
+         2D        → Flags = 0x2D = 0b00101101
+                     = END_STREAM (0x01) | END_HEADERS (0x04) | PADDED (0x08) | PRIORITY (0x20)
+         00 00 00 01 → StreamId = 1
+
+         Payload (9-14):
+         ----------------------------------------------------------------------------
+         01        → HeadersPadLength = 1     ← parsed because PADDED flag is set
+         00 00 00 00 → StreamDependency = 0  ← parsed because PRIORITY flag is set
+         10        → Weight = 16             ← parsed because PRIORITY flag is set
+         (nothing) → 0 bytes of HPACK data
+         (nothing) → 0 bytes of padding (but PadLength says 1!)
+        */
+
+        // Send a HEADERS frame with both PADDED and PRIORITY flags.
+        // PayloadLength=6 means all bytes are consumed by metadata (1 pad length + 4 stream dependency + 1 weight).
+        // PadLength=1 claims 1 byte of padding, but there are 0 bytes left for HPACK data + padding.
+        // This should be rejected as a PROTOCOL_ERROR because the padding exceeds available space.
+        var outputWriter = _pair.Application.Output;
+        var frame = new Http2Frame();
+
+        var payloadLength = 6;
+
+        frame.PrepareHeaders(Http2HeadersFrameFlags.END_STREAM | Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.PADDED | Http2HeadersFrameFlags.PRIORITY, 1 /* streamId */);
+        frame.PayloadLength = payloadLength;
+        var payload = new byte[payloadLength];
+
+        // Pad Length (1 byte) + Stream Dependency (4 bytes) + Weight (1 byte) = 6 bytes minimum
+        payload[0] = 1 /* PadLength */;
+        Bitshifter.WriteUInt31BigEndian(payload.AsSpan(1), (uint)0 /* zeros as streamDependency */);
+        payload[5] = 16 /* Priority */;
+
+        Http2FrameWriter.WriteHeader(frame, outputWriter);
+        await SendAsync(payload);
+
+        await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+            ignoreNonGoAwayFrames: true,
+            expectedLastStreamId: 0,
+            expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
+            expectedErrorMessage: CoreStrings.FormatHttp2ErrorPaddingTooLong(Http2FrameType.HEADERS));
+
+        AssertConnectionEndReason(ConnectionEndReason.InvalidDataPadding);
+    }
+
+    [Fact]
     public async Task HEADERS_Received_InterleavedWithHeaders_ConnectionError()
     {
         await InitializeConnectionAsync(_noopApplication);
