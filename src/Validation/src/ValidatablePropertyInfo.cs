@@ -3,6 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -60,11 +61,14 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
-        var property = DeclaringType.GetProperty(Name) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
-        var propertyValue = property.GetValue(value);
-        var validationAttributes = GetValidationAttributes();
+        var displayNameProvider = context.DisplayNameProvider ?? context.ValidationOptions.DisplayNameProvider;
+        var displayName = LocalizationHelper.ResolveDisplayName(displayNameProvider, DeclaringType, DisplayName);
+
+        context.ValidationContext.DisplayName = displayName;
+        context.ValidationContext.MemberName = Name;
 
         // Calculate and save the current path
+        // TODO: Support property key customization (e.g. using JsonPropertyName)
         var originalPrefix = context.CurrentValidationPath;
         if (string.IsNullOrEmpty(originalPrefix))
         {
@@ -75,17 +79,26 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             context.CurrentValidationPath = $"{originalPrefix}.{Name}";
         }
 
-        context.ValidationContext.DisplayName = DisplayName;
-        context.ValidationContext.MemberName = Name;
+        var errorMessageProvider = context.ErrorMessageProvider ?? context.ValidationOptions.ErrorMessageProvider;
+        var property = DeclaringType.GetProperty(Name) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
+        var propertyValue = property.GetValue(value);
+        var validationAttributes = GetValidationAttributes();
 
         // Check required attribute first
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
         {
             var result = _requiredAttribute.GetValidationResult(propertyValue, context.ValidationContext);
 
-            if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
+            if (result is not null && result != ValidationResult.Success)
             {
-                context.AddValidationError(Name, context.CurrentValidationPath, [result.ErrorMessage], value);
+                var customMessage = LocalizationHelper.TryResolveErrorMessage(errorMessageProvider, _requiredAttribute, displayName, DeclaringType);
+                var errorMessage = customMessage ?? result.ErrorMessage;
+
+                if (errorMessage is not null)
+                {
+                    context.AddValidationError(Name, context.CurrentValidationPath, [errorMessage], value);
+                }
+
                 context.CurrentValidationPath = originalPrefix; // Restore prefix
                 return;
             }
@@ -158,10 +171,16 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                 try
                 {
                     var result = attribute.GetValidationResult(val, context.ValidationContext);
-                    if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
+                    if (result is not null && result != ValidationResult.Success)
                     {
-                        var key = errorPrefix.TrimStart('.');
-                        context.AddOrExtendValidationErrors(name, key, [result.ErrorMessage], container);
+                        var customMessage = LocalizationHelper.TryResolveErrorMessage(errorMessageProvider, attribute, displayName, DeclaringType);
+                        var errorMessage = customMessage ?? result.ErrorMessage;
+
+                        if (errorMessage is not null)
+                        {
+                            var key = errorPrefix.TrimStart('.');
+                            context.AddOrExtendValidationErrors(name, key, [errorMessage], container);
+                        }
                     }
                 }
                 catch (Exception ex)
