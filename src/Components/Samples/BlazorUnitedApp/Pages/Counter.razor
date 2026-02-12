@@ -1,26 +1,18 @@
 ﻿@page "/counter"
-@* @rendermode InteractiveServer *@
-@using Microsoft.AspNetCore.Components.QuickGrid
+@rendermode InteractiveServer
 <PageTitle>Counter</PageTitle>
 
-<div style="max-width: 200px;">
-    <QuickGrid Items="items" Pagination="pagination">
-        <PropertyColumn Property="@(p => p)" Sortable="true" Title="Number" />
-    </QuickGrid>
-    <Paginator State="pagination" />
-</div>
+<h1>Counter</h1>
 
-<div style="max-width: 200px;">
-    <QuickGrid Items="items" Pagination="pagination2">
-        <PropertyColumn Property="@(p => p)" Sortable="true" Title="Number" />
-    </QuickGrid>
-    <Paginator State="pagination2" QueryName="page2" />
-</div>
+<p role="status">Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
 @code {
-    PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
+    private int currentCount = 0;
 
-    PaginationState pagination2 = new PaginationState { ItemsPerPage = 5 };
-
-    private IQueryable<int> items = Enumerable.Range(1, 100).AsQueryable();
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
 }

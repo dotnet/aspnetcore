@@ -29,11 +29,11 @@
             }
             else
             {
-                <form data-enhance method="post" @formname="@FormNameFirst" @onsubmit="() => GoFirstAsync()">
+                <form data-enhance method="post" @formname="@FormNameFirst" @onsubmit="GoFirstAsync">
                     <AntiforgeryToken />
                     <button class="go-first" type="submit" disabled="@(!CanGoBack)" title="Go to first page" aria-label="Go to first page"></button>
                 </form>
-                <form data-enhance method="post" @formname="@FormNamePrevious" @onsubmit="() => GoPreviousAsync()">
+                <form data-enhance method="post" @formname="@FormNamePrevious" @onsubmit="GoPreviousAsync">
                     <AntiforgeryToken />
                     <button class="go-previous" type="submit" disabled="@(!CanGoBack)" title="Go to previous page" aria-label="Go to previous page"></button>
                 </form>
@@ -41,11 +41,11 @@
                     Page <strong>@(State.CurrentPageIndex + 1)</strong>
                     of <strong>@(State.LastPageIndex + 1)</strong>
                 </div>
-                <form data-enhance method="post" @formname="@FormNameNext" @onsubmit="() => GoNextAsync()">
+                <form data-enhance method="post" @formname="@FormNameNext" @onsubmit="GoNextAsync">
                     <AntiforgeryToken />
                     <button class="go-next" type="submit" disabled="@(!CanGoForwards)" title="Go to next page" aria-label="Go to next page"></button>
                 </form>
-                <form data-enhance method="post" @formname="@FormNameLast" @onsubmit="() => GoLastAsync()">
+                <form data-enhance method="post" @formname="@FormNameLast" @onsubmit="GoLastAsync">
                     <AntiforgeryToken />
                     <button class="go-last" type="submit" disabled="@(!CanGoForwards)" title="Go to last page" aria-label="Go to last page"></button>
                 </form>

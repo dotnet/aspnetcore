@@ -11,9 +11,9 @@ using TestServer;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
-public class QuickGridSsrPaginatorTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>>>
+public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>>>
 {
-    public QuickGridSsrPaginatorTest(
+    public QuickGridNoInteractivityTest(
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>> serverFixture,
         ITestOutputHelper output)
@@ -26,7 +26,7 @@ public class QuickGridSsrPaginatorTest : ServerTestBase<BasicTestAppServerSiteFi
     [Fact]
     public void PaginatorDisplaysCorrectItemCount()
     {
-        Navigate($"{ServerPathBase}/quickgrid-paginator");
+        Navigate($"{ServerPathBase}/quickgrid");
 
         var paginator = Browser.FindElement(By.CssSelector(".first-paginator .paginator"));
 
@@ -42,11 +42,12 @@ public class QuickGridSsrPaginatorTest : ServerTestBase<BasicTestAppServerSiteFi
     [Fact]
     public void PaginatorGoNextShowsNextPage()
     {
-        Navigate($"{ServerPathBase}/quickgrid-paginator");
+        Navigate($"{ServerPathBase}/quickgrid");
 
         Browser.FindElement(By.CssSelector(".first-paginator .go-next")).Click();
 
         Browser.Equal("2", () => Browser.FindElement(By.CssSelector(".first-paginator .paginator nav > div > strong:nth-child(1)")).Text);
+        Assert.Contains("page=2", Browser.Url);
 
         var grid = Browser.FindElement(By.ClassName("quickgrid"));
         var rowCount = grid.FindElements(By.CssSelector("tbody > tr")).Count;
@@ -54,9 +55,17 @@ public class QuickGridSsrPaginatorTest : ServerTestBase<BasicTestAppServerSiteFi
     }
 
     [Fact]
+    public void PaginatorLinkLoadsCorrectPage()
+    {
+        Navigate($"{ServerPathBase}/quickgrid?page=3");
+
+        Browser.Equal("3", () => Browser.FindElement(By.CssSelector(".first-paginator .paginator nav > div > strong:nth-child(1)")).Text);
+    }
+
+    [Fact]
     public void PaginatorGoPreviousFromSecondPage()
     {
-        Navigate($"{ServerPathBase}/quickgrid-paginator");
+        Navigate($"{ServerPathBase}/quickgrid");
 
         Browser.FindElement(By.CssSelector(".first-paginator .go-next")).Click();
         Browser.Equal("2", () => Browser.FindElement(By.CssSelector(".first-paginator .paginator nav > div > strong:nth-child(1)")).Text);
@@ -68,7 +77,7 @@ public class QuickGridSsrPaginatorTest : ServerTestBase<BasicTestAppServerSiteFi
     [Fact]
     public void PaginatorNavigationButtonsDisabledCorrectly()
     {
-        Navigate($"{ServerPathBase}/quickgrid-paginator");
+        Navigate($"{ServerPathBase}/quickgrid");
 
         Assert.Equal("true", Browser.FindElement(By.CssSelector(".first-paginator .go-first")).GetDomAttribute("disabled"));
         Assert.Equal("true", Browser.FindElement(By.CssSelector(".first-paginator .go-previous")).GetDomAttribute("disabled"));
@@ -87,7 +96,7 @@ public class QuickGridSsrPaginatorTest : ServerTestBase<BasicTestAppServerSiteFi
     [Fact]
     public void MultiplePaginatorsWorkIndependently()
     {
-        Navigate($"{ServerPathBase}/quickgrid-paginator");
+        Navigate($"{ServerPathBase}/quickgrid");
         Browser.FindElement(By.CssSelector(".second-paginator .go-next")).Click();
 
         Browser.Equal("1", () => Browser.FindElement(By.CssSelector(".first-paginator .paginator nav > div > strong:nth-child(1)")).Text);
@@ -97,5 +106,21 @@ public class QuickGridSsrPaginatorTest : ServerTestBase<BasicTestAppServerSiteFi
         Assert.Equal(10, grid1.FindElements(By.CssSelector("tbody > tr")).Count);
         var grid2 = Browser.FindElement(By.CssSelector("#grid2 .quickgrid"));
         Assert.Equal(5, grid2.FindElements(By.CssSelector("tbody > tr")).Count);
+    }
+
+    [Fact]
+    public void PaginatorOutOfRangePageClampsToLastPage()
+    {
+        Navigate($"{ServerPathBase}/quickgrid?page=999");
+
+        Browser.Equal("5", () => Browser.FindElement(By.CssSelector(".first-paginator .paginator nav > div > strong:nth-child(1)")).Text);
+    }
+
+    [Fact]
+    public void PaginatorInvalidPageValueDefaultsToFirstPage()
+    {
+        Navigate($"{ServerPathBase}/quickgrid?page=abc");
+
+        Browser.Equal("1", () => Browser.FindElement(By.CssSelector(".first-paginator .paginator nav > div > strong:nth-child(1)")).Text);
     }
 }

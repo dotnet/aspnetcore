@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Components.QuickGrid;
@@ -14,6 +14,7 @@ public partial class Paginator : IDisposable
 {
     private readonly EventCallbackSubscriber<PaginationState> _totalItemCountChanged;
     private bool _hasReadQueryString;
+    private bool _isNavigating;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
@@ -28,11 +29,11 @@ public partial class Paginator : IDisposable
     [Parameter, EditorRequired] public PaginationState State { get; set; } = default!;
 
     /// <summary>
-    /// Gets or sets the name of the query string parameter used to persist the current page index in the URL.
+    /// Name of the query string parameter used to persist the current page index in the URL.
     /// Defaults to <c>"page"</c>. When set, the paginator reads the current page from this query parameter on
     /// initialization and updates the URL when navigating to a different page.
     /// </summary>
-    [Parameter, DisallowNull] public string QueryName { get; set; } = "page";
+    [Parameter] public string QueryName { get; set; } = "page";
 
     /// <summary>
     /// Optionally supplies a template for rendering the page count summary.
@@ -58,16 +59,23 @@ public partial class Paginator : IDisposable
 
     private async Task GoToPageAsync(int pageIndex)
     {
-        var newUri = NavigationManager.GetUriWithQueryParameter(QueryName, pageIndex + 1);
+        int? pageValue = pageIndex == 0 ? null : pageIndex + 1;
+        var newUri = NavigationManager.GetUriWithQueryParameter(QueryName, pageValue);
         await State.SetCurrentPageIndexAsync(pageIndex);
-        NavigationManager.NavigateTo(newUri);
+        _isNavigating = true;
+        NavigationManager.NavigateTo(newUri, replace: true);
+    }
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += OnLocationChanged;
     }
 
     /// <inheritdoc />
     protected override Task OnParametersSetAsync()
     {
         _totalItemCountChanged.SubscribeOrMove(State.TotalItemCountChangedSubscribable);
-
         if (!_hasReadQueryString)
         {
             _hasReadQueryString = true;
@@ -77,15 +85,32 @@ public partial class Paginator : IDisposable
                 return State.SetCurrentPageIndexAsync(pageFromQuery);
             }
         }
-
         return Task.CompletedTask;
+    }
+
+    private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (_isNavigating)
+        {
+            _isNavigating = false;
+            return;
+        }
+        var pageFromQuery = ReadPageIndexFromQueryString() ?? 0;
+        if (pageFromQuery != State.CurrentPageIndex)
+        {
+            await InvokeAsync(async () =>
+            {
+                await State.SetCurrentPageIndexAsync(pageFromQuery);
+                StateHasChanged();
+            });
+        }
     }
 
     private int? ReadPageIndexFromQueryString()
     {
         var uri = NavigationManager.Uri;
         var queryStart = uri.IndexOf('?');
-        if (queryStart < 0 || QueryName is null)
+        if (queryStart < 0)
         {
             return null;
         }
@@ -108,5 +133,8 @@ public partial class Paginator : IDisposable
 
     /// <inheritdoc />
     public void Dispose()
-        => _totalItemCountChanged.Dispose();
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        _totalItemCountChanged.Dispose();
+    }
 }
