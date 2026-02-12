@@ -17,7 +17,7 @@ public class HttpConnectionsEventSourceTests
     [Fact]
     public void EventIdsAreConsistent()
     {
-        EventSourceValidator.ValidateEventSourceIds<HttpConnectionsEventSource>();
+        EventSourceValidator.ValidateEventSourceIds(typeof(HttpConnectionsEventSource));
     }
 
     [Fact]
