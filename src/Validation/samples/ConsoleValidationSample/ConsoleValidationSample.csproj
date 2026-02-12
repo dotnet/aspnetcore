@@ -18,4 +18,9 @@
     <ProjectReference Include="$(RepoRoot)/src/Validation/gen/Microsoft.Extensions.Validation.ValidationsGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\ValidationMessages.resx" GenerateSource="false" />
+    <EmbeddedResource Update="Resources\ValidationMessages.*.resx" GenerateSource="false" />
+  </ItemGroup>
+  
 </Project>

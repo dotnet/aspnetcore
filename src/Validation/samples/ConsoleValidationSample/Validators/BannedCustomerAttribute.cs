@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using ConsoleValidationSample.Models;
 using ConsoleValidationSample.Resources;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,23 +10,18 @@ using Microsoft.Extensions.Localization;
 
 namespace ConsoleValidationSample.Validators;
 
-[AttributeUsage(AttributeTargets.Class)]
-public class BannedCustomerAttribute(string bannedName) : ValidationAttribute
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+public class BannedCustomerAttribute : ValidationAttribute
 {
-    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+    public string BannedName { get; }
+
+    public BannedCustomerAttribute(string bannedName)
     {
-        if (validationContext.ObjectInstance is Customer customer)
-        {
-            if (customer.Name == bannedName)
-            {
-                var localizerFactory = validationContext.GetRequiredService<IStringLocalizerFactory>();
-                var localizer = localizerFactory.Create(typeof(ValidationMessages));
-                var errorMessage = localizer["The customer {0} is banned", bannedName];
-
-                return new ValidationResult(errorMessage, [nameof(Customer.Name)]);
-            }
-        }
-
-        return ValidationResult.Success;
+        BannedName = bannedName;
+        ErrorMessage ??= "The customer {1} is banned";
     }
+
+    public override string FormatErrorMessage(string name) => string.Format(CultureInfo.CurrentCulture, ErrorMessageString, name, BannedName);
+
+    public override bool IsValid(object? value) => value is not Customer customer || customer.Name != BannedName;
 }
