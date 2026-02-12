@@ -39,7 +39,10 @@ public static class EventSourceValidator
     /// <param name="eventSourceType">A type that derives from <see cref="EventSource"/>.</param>
     public static void ValidateEventSourceIds(Type eventSourceType)
     {
-        ArgumentNullException.ThrowIfNull(eventSourceType);
+        if (eventSourceType is null)
+        {
+            throw new ArgumentNullException(nameof(eventSourceType));
+        }
 
         Assert.True(
             typeof(EventSource).IsAssignableFrom(eventSourceType),
