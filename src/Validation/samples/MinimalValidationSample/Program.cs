@@ -9,13 +9,7 @@ using MinimalValidationSample.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddLocalization();
-builder.Services.AddValidation(options =>
-{
-    options.ErrorMessageLocalizerProvider = (type, factory) =>
-    {
-        return HardcodedStringLocalizer.Instance;
-    };
-});
+builder.Services.AddValidation();
 
 var app = builder.Build();
 
