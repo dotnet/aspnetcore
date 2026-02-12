@@ -4,6 +4,7 @@
 #pragma warning disable ASP0029
 
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using ConsoleValidationSample.Models;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -16,30 +17,39 @@ internal class DemoService(IOptions<ValidationOptions> options, ILogger<DemoServ
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        var validationOptions = options.Value;
-
-        await ValidateAndPrint(new Customer
-        {
-            Id = 0
-        });
-
-        await ValidateAndPrint(new Customer
-        {
-            Id = 1,
-            Name = "Bob"
-        });
-
-        await ValidateAndPrint(new InventoryItem
-        {
-            Id = 1,
-            IsPremium = true
-        });
+        await RunValidations(CultureInfo.GetCultureInfo("en-US"));
+        await RunValidations(CultureInfo.GetCultureInfo("es-MX"));
 
         lifetime.StopApplication();
 
+        async Task RunValidations(CultureInfo culture)
+        {
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.CurrentUICulture = culture;
+
+            Console.WriteLine($"\nRunning validations with culture: {culture.Name}");
+
+            await ValidateAndPrint(new Customer
+            {
+                Id = 0
+            });
+
+            await ValidateAndPrint(new Customer
+            {
+                Id = 1,
+                Name = "Bob"
+            });
+
+            await ValidateAndPrint(new InventoryItem
+            {
+                Id = 1,
+                IsPremium = true
+            });
+        }
+
         async Task ValidateAndPrint<T>(T instance)
         {
-            var resultContext = await Validate(instance, validationOptions, cancellationToken);
+            var resultContext = await Validate(instance, options.Value, cancellationToken);
             PrintErrorMessages(resultContext);
         }
     }
@@ -77,12 +87,18 @@ internal class DemoService(IOptions<ValidationOptions> options, ILogger<DemoServ
         }
         else
         {
-            Console.WriteLine("Validation errors:");
             foreach (var (key, messages) in errors)
             {
                 foreach (var message in messages)
                 {
-                    Console.WriteLine($"'{key}': '{message}'");
+                    if (string.IsNullOrEmpty(key))
+                    {
+                        Console.WriteLine(message);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{key}: {message}");
+                    }
                 }
             }
         }
