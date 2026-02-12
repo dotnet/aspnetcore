@@ -34,6 +34,20 @@
     </ItemGroup>
   </Target>
 
+  <!--
+    Workaround https://github.com/dotnet/aspnetcore/issues/4257.
+    The static FrameworkReference removal above handles the implicit reference added by the Web SDK.
+    This target handles transitive framework references that may be re-added after ResolvePackageAssets,
+    which would otherwise cause a FrameworkReference to Microsoft.AspNetCore.App to appear in NuGet packages.
+  -->
+  <Target Name="_RemoveTransitiveAspNetCoreAppFrameworkReference"
+          AfterTargets="ResolvePackageAssets"
+          Condition="'$(DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp)' != 'true'">
+    <ItemGroup>
+      <TransitiveFrameworkReference Remove="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+  </Target>
+
   <!-- Work around https://github.com/dotnet/aspnetcore/issues/18393 -->
   <Target Name="_UpdateRazorGenerateAssemblyReferences"
           AfterTargets="ResolveAssemblyReferenceRazorGenerateInputs"
