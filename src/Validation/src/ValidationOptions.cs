@@ -1,8 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -32,6 +34,34 @@ public class ValidationOptions
     /// A maximum depth prevents stack overflows from circular references or extremely deep object graphs.
     /// </remarks>
     public int MaxDepth { get; set; } = 32;
+
+    /// <summary>
+    /// Gets or sets the delegate that resolves display names for properties and parameters.
+    /// If the delegate returns a non-null string, that string is used as the display name
+    /// (the <c>{0}</c> placeholder in error message templates). If it returns <see langword="null"/>,
+    /// the default display name (from <see cref="DisplayAttribute"/> or the CLR name) is used.
+    /// </summary>
+    public Func<DisplayNameContext, string?>? DisplayNameProvider { get; set; }
+
+    /// <summary>
+    /// Gets or sets the delegate that resolves error messages for validation attributes.
+    /// When set, this delegate is called for every validation attribute that produces an error,
+    /// <b>unless</b> the attribute has <see cref="ValidationAttribute.ErrorMessageResourceType"/>
+    /// set (which indicates the attribute handles its own resource-based localization).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// If the delegate returns a non-null string, that string is used as the final error message.
+    /// The delegate is responsible for formatting the message with any necessary arguments
+    /// (display name, attribute-specific parameters, etc.) using the information available on
+    /// <see cref="ErrorMessageContext"/>.
+    /// </para>
+    /// <para>
+    /// If the delegate returns <see langword="null"/>, the attribute's default error message
+    /// (from <see cref="ValidationAttribute.GetValidationResult"/>) is used instead.
+    /// </para>
+    /// </remarks>
+    public Func<ErrorMessageContext, string?>? ErrorMessageProvider { get; set; }
 
     /// <summary>
     /// Attempts to get validation information for the specified type.

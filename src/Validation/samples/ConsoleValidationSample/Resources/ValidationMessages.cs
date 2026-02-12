@@ -3,6 +3,6 @@
 
 namespace ConsoleValidationSample.Resources;
 
-public class ValidationMessages
+internal class ValidationMessages
 {
 }

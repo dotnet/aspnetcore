@@ -3,6 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -70,6 +71,18 @@ public sealed class ValidateContext
     /// Optional event raised when a validation error is reported.
     /// </summary>
     public event Action<ValidationErrorContext>? OnValidationError;
+
+    /// <summary>
+    /// Gets or sets the display name provider for this validation invocation,
+    /// overriding <see cref="ValidationOptions.DisplayNameProvider"/> when set.
+    /// </summary>
+    public Func<DisplayNameContext, string?>? DisplayNameProvider { get; set; }
+
+    /// <summary>
+    /// Gets or sets the error message provider for this validation invocation,
+    /// overriding <see cref="ValidationOptions.ErrorMessageProvider"/> when set.
+    /// </summary>
+    public Func<ErrorMessageContext, string?>? ErrorMessageProvider { get; set; }
 
     internal void AddValidationError(string propertyName, string key, string[] error, object? container)
     {

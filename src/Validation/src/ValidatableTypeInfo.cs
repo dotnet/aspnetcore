@@ -4,6 +4,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -86,8 +87,14 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 return;
             }
 
+            var displayNameProvider = context.DisplayNameProvider ?? context.ValidationOptions.DisplayNameProvider;
+            var displayName = LocalizationHelper.ResolveDisplayName(displayNameProvider, declaringType: null, Type.Name);
+
+            context.ValidationContext.DisplayName = displayName;
+            context.ValidationContext.MemberName = null;
+
             // Validate type-level attributes
-            ValidateTypeAttributes(value, context);
+            ValidateTypeAttributes(value, context, displayName);
 
             // If any type-level attribute errors were found, return early
             if (context.ValidationErrors is not null && context.ValidationErrors.Count > originalErrorCount)
@@ -122,28 +129,37 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         }
     }
 
-    private void ValidateTypeAttributes(object? value, ValidateContext context)
+    private void ValidateTypeAttributes(object? value, ValidateContext context, string displayName)
     {
         var validationAttributes = GetValidationAttributes();
         var errorPrefix = context.CurrentValidationPath;
+        var errorMessageProvider = context.ErrorMessageProvider ?? context.ValidationOptions.ErrorMessageProvider;
 
         for (var i = 0; i < validationAttributes.Length; i++)
         {
             var attribute = validationAttributes[i];
             var result = attribute.GetValidationResult(value, context.ValidationContext);
-            if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
+            if (result is not null && result != ValidationResult.Success)
             {
-                // Create a validation error for each member name that is provided
-                foreach (var memberName in result.MemberNames)
-                {
-                    var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
-                    context.AddOrExtendValidationError(memberName, key, result.ErrorMessage, value);
-                }
+                // For type-level attributes, the "display name" is the type name
+                // and the "member name" is empty (it's a type-level validation).
+                var customMessage = LocalizationHelper.TryResolveErrorMessage(errorMessageProvider, attribute, displayName, declaringType: Type);
+                var errorMessage = customMessage ?? result.ErrorMessage;
 
-                if (!result.MemberNames.Any())
+                if (errorMessage is not null)
                 {
-                    // If no member names are specified, then treat this as a top-level error
-                    context.AddOrExtendValidationError(string.Empty, errorPrefix, result.ErrorMessage, value);
+                    // Create a validation error for each member name that is provided
+                    foreach (var memberName in result.MemberNames)
+                    {
+                        var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
+                        context.AddOrExtendValidationError(memberName, key, errorMessage, value);
+                    }
+
+                    if (!result.MemberNames.Any())
+                    {
+                        // If no member names are specified, then treat this as a top-level error
+                        context.AddOrExtendValidationError(string.Empty, errorPrefix, errorMessage, value);
+                    }
                 }
             }
         }
@@ -153,16 +169,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     {
         if (Type.ImplementsInterface(typeof(IValidatableObject)) && value is IValidatableObject validatable)
         {
-            // Important: Set the DisplayName to the type name for top-level validations
-            // and restore the original validation context properties
-            var originalDisplayName = context.ValidationContext.DisplayName;
-            var originalMemberName = context.ValidationContext.MemberName;
             var errorPrefix = context.CurrentValidationPath;
-
-            // Set the display name to the class name for IValidatableObject validation
-            context.ValidationContext.DisplayName = Type.Name;
-            context.ValidationContext.MemberName = null;
-
             var validationResults = validatable.Validate(context.ValidationContext);
             foreach (var validationResult in validationResults)
             {
@@ -182,10 +189,6 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                     }
                 }
             }
-
-            // Restore the original validation context properties
-            context.ValidationContext.DisplayName = originalDisplayName;
-            context.ValidationContext.MemberName = originalMemberName;
         }
     }
 

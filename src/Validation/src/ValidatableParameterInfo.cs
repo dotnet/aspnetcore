@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Xml.Linq;
+using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -65,19 +68,30 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             return;
         }
 
-        context.ValidationContext.DisplayName = DisplayName;
+        var displayNameProvider = context.DisplayNameProvider ?? context.ValidationOptions.DisplayNameProvider;
+        var displayName = LocalizationHelper.ResolveDisplayName(displayNameProvider, declaringType: null, DisplayName);
+
+        context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
 
+        var errorMessageProvider = context.ErrorMessageProvider ?? context.ValidationOptions.ErrorMessageProvider;
         var validationAttributes = GetValidationAttributes();
 
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
         {
             var result = _requiredAttribute.GetValidationResult(value, context.ValidationContext);
 
-            if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
+            if (result is not null && result != ValidationResult.Success)
             {
-                var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-                context.AddValidationError(Name, key, [result.ErrorMessage], null);
+                var customMessage = LocalizationHelper.TryResolveErrorMessage(errorMessageProvider, _requiredAttribute, displayName, declaringType: null);
+                var errorMessage = customMessage ?? result.ErrorMessage;
+
+                if (errorMessage is not null)
+                {
+                    var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
+                    context.AddValidationError(Name, key, [errorMessage], null);
+                }
+
                 return;
             }
         }
@@ -89,10 +103,16 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             try
             {
                 var result = attribute.GetValidationResult(value, context.ValidationContext);
-                if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
+                if (result is not null && result != ValidationResult.Success)
                 {
-                    var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-                    context.AddOrExtendValidationErrors(Name, key, [result.ErrorMessage], null);
+                    var customMessage = LocalizationHelper.TryResolveErrorMessage(errorMessageProvider, attribute, displayName, declaringType: null);
+                    var errorMessage = customMessage ?? result.ErrorMessage;
+
+                    if (errorMessage is not null)
+                    {
+                        var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
+                        context.AddOrExtendValidationErrors(Name, key, [errorMessage], null);
+                    }
                 }
             }
             catch (Exception ex)
