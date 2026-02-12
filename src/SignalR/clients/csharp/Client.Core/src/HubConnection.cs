@@ -718,12 +718,16 @@ public partial class HubConnection : IAsyncDisposable
             var irq = InvocationRequest.Stream(cancellationToken, returnType, connectionState.GetNextId(), _loggerFactory, this, activity, out channel);
             await InvokeStreamCore(connectionState, methodName, irq, args, streamIds?.ToArray(), cancellationToken).ConfigureAwait(false);
 
+            var streamTasks = LaunchStreams(connectionState, readers, cancellationToken);
+
             if (cancellationToken.CanBeCanceled)
             {
-                cancellationToken.Register(state => _ = CancelInvocationAsync((InvocationRequest)state!), irq);
+                cancellationToken.Register(state =>
+                {
+                    var (irqLocal, tasks) = ((InvocationRequest, Task[]?))state!;
+                    _ = CancelInvocationAsync(irqLocal, tasks);
+                }, (irq, streamTasks));
             }
-
-            LaunchStreams(connectionState, readers, cancellationToken);
         }
         finally
         {
@@ -790,18 +794,20 @@ public partial class HubConnection : IAsyncDisposable
         return readers;
     }
 
-    private void LaunchStreams(ConnectionState connectionState, Dictionary<string, object>? readers, CancellationToken cancellationToken)
+    private Task[]? LaunchStreams(ConnectionState connectionState, Dictionary<string, object>? readers, CancellationToken cancellationToken)
     {
-        if (readers == null)
+        if (readers is null)
         {
             // if there were no streaming parameters then readers is never initialized
-            return;
+            return null;
         }
 
         _state.AssertInConnectionLock();
         // It's safe to access connectionState.UploadStreamToken as we still have the connection lock
         var cts = CancellationTokenSource.CreateLinkedTokenSource(connectionState.UploadStreamToken, cancellationToken);
 
+        var streamTasks = new Task[readers.Count];
+        var index = 0;
         foreach (var kvp in readers)
         {
             var reader = kvp.Value;
@@ -811,7 +817,7 @@ public partial class HubConnection : IAsyncDisposable
             // A single background thread here quickly gets messy.
             if (ReflectionHelper.GetIAsyncEnumerableInterface(reader.GetType()) is { } asyncEnumerableType)
             {
-                InvokeStreamMethod(
+                streamTasks[index++] = InvokeStreamMethod(
                     _sendIAsyncStreamItemsMethod,
                     asyncEnumerableType.GetGenericArguments(),
                     connectionState,
@@ -823,7 +829,7 @@ public partial class HubConnection : IAsyncDisposable
 
             if (ReflectionHelper.TryGetStreamType(reader.GetType(), out var channelGenericType))
             {
-                InvokeStreamMethod(
+                streamTasks[index++] = InvokeStreamMethod(
                     _sendStreamItemsMethod,
                     [channelGenericType],
                     connectionState,
@@ -836,27 +842,26 @@ public partial class HubConnection : IAsyncDisposable
             // Should never get here, we should have already verified the stream types when the user initially calls send/invoke
             throw new InvalidOperationException($"{reader.GetType()} is not a {typeof(ChannelReader<>).Name}.");
         }
+
+        return streamTasks;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2060:MakeGenericMethod",
         Justification = "The methods passed into here (SendStreamItems and SendIAsyncEnumerableStreamItems) don't have trimming annotations.")]
     [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
         Justification = "ValueTypes are handled without using MakeGenericMethod.")]
-    private void InvokeStreamMethod(MethodInfo methodInfo, Type[] genericTypes, ConnectionState connectionState, string streamId, object reader, CancellationTokenSource tokenSource)
+    private Task InvokeStreamMethod(MethodInfo methodInfo, Type[] genericTypes, ConnectionState connectionState, string streamId, object reader, CancellationTokenSource tokenSource)
     {
         Debug.Assert(genericTypes.Length == 1);
 #if NET6_0_OR_GREATER
         if (!RuntimeFeature.IsDynamicCodeSupported && genericTypes[0].IsValueType)
         {
-            _ = ReflectionSendStreamItems(methodInfo, connectionState, streamId, reader, tokenSource);
+            return ReflectionSendStreamItems(methodInfo, connectionState, streamId, reader, tokenSource);
         }
-        else
 #endif
-        {
-            _ = methodInfo
-                .MakeGenericMethod(genericTypes)
-                .Invoke(this, [connectionState, streamId, reader, tokenSource]);
-        }
+        return (Task)methodInfo
+            .MakeGenericMethod(genericTypes)
+            .Invoke(this, [connectionState, streamId, reader, tokenSource])!;
     }
 
 #if NET6_0_OR_GREATER
@@ -1063,12 +1068,16 @@ public partial class HubConnection : IAsyncDisposable
             var irq = InvocationRequest.Invoke(cancellationToken, returnType, connectionState.GetNextId(), _loggerFactory, this, activity, out invocationTask);
             await InvokeCore(connectionState, methodName, irq, args, streamIds?.ToArray(), cancellationToken).ConfigureAwait(false);
 
+            var streamTasks = LaunchStreams(connectionState, readers, cancellationToken);
+
             if (cancellationToken.CanBeCanceled)
             {
-                cancellationToken.Register(state => _ = CancelInvocationAsync((InvocationRequest)state!), irq);
+                cancellationToken.Register(state =>
+                {
+                    var (irqLocal, tasks) = ((InvocationRequest, Task[]?))state!;
+                    _ = CancelInvocationAsync(irqLocal, tasks);
+                }, (irq, streamTasks));
             }
-
-            LaunchStreams(connectionState, readers, cancellationToken);
         }
         finally
         {
@@ -1106,8 +1115,14 @@ public partial class HubConnection : IAsyncDisposable
         return activity;
     }
 
-    private async Task CancelInvocationAsync(InvocationRequest irq)
+    private async Task CancelInvocationAsync(InvocationRequest irq, Task[]? streamTasks = null)
     {
+        // Wait for stream completions to be sent before sending CancelInvocationMessage
+        if (streamTasks is not null)
+        {
+            await Task.WhenAll(streamTasks).ConfigureAwait(false);
+        }
+
         // We need to take the connection lock in order to ensure we a) have a connection and b) are the only one accessing the write end of the pipe.
         await _state.WaitConnectionLockAsync(token: default).ConfigureAwait(false);
         try

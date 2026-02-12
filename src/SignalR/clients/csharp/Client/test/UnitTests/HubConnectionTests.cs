@@ -594,10 +594,14 @@ public partial class HubConnectionTests : VerifiableLoggedTest
                 await channel.Writer.WriteAsync(number);
             }
 
-            // the next sent message should be a completion message
+            // the next sent message should be a stream completion message
             var complete = await connection.ReadSentJsonAsync().DefaultTimeout();
             Assert.Equal(HubProtocolConstants.CompletionMessageType, complete["type"]);
             Assert.EndsWith("canceled by client.", ((string)complete["error"]));
+
+            // after stream completion, a cancel invocation message should be sent
+            var cancel = await connection.ReadSentJsonAsync().DefaultTimeout();
+            Assert.Equal(HubProtocolConstants.CancelInvocationMessageType, cancel["type"]);
         }
     }
 
