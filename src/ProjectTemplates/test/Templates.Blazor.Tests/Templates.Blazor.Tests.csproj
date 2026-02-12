@@ -48,6 +48,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="TestAssets\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <!-- Exclude test asset files from compilation -->
+    <Compile Remove="TestAssets\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.Extensions.Configuration" />

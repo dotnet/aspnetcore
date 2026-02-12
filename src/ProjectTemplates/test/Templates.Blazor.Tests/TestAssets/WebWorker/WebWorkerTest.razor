@@ -1,0 +1,150 @@
+@* Licensed to the .NET Foundation under one or more agreements. *@
+@* The .NET Foundation licenses this file to you under the MIT license. *@
+
+@page "/webworker-test"
+
+@using System.Text.Json
+@using $NAMESPACE$
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<PageTitle>WebWorker Test</PageTitle>
+
+<div id="webworker-test">
+    <h3>WebWorker E2E Test</h3>
+
+    <div>
+        <button id="btn-init" @onclick="InitWorker">Initialize Worker</button>
+        <span id="init-status">@InitStatus</span>
+    </div>
+
+    <hr />
+
+    <div>
+        <button id="btn-add" @onclick="TestAdd" disabled="@(!IsReady)">Test Add(2,3)</button>
+        <span id="add-result">@AddResult</span>
+    </div>
+
+    <div>
+        <button id="btn-echo" @onclick="TestEcho" disabled="@(!IsReady)">Test Echo</button>
+        <span id="echo-result">@EchoResult</span>
+    </div>
+
+    <div>
+        <button id="btn-json" @onclick="TestJson" disabled="@(!IsReady)">Test JSON</button>
+        <span id="json-result">@JsonResult</span>
+    </div>
+
+    <div>
+        <button id="btn-error" @onclick="TestError" disabled="@(!IsReady)">Test Error</button>
+        <span id="error-result">@ErrorResult</span>
+    </div>
+
+    <div>
+        <button id="btn-dispose" @onclick="DisposeWorker" disabled="@(!IsReady)">Dispose Worker</button>
+        <span id="dispose-status">@DisposeStatus</span>
+    </div>
+</div>
+
+@code {
+    private WebWorkerClient? Worker;
+    private string InitStatus = "Not initialized";
+    private string AddResult = "";
+    private string EchoResult = "";
+    private string JsonResult = "";
+    private string ErrorResult = "";
+    private string DisposeStatus = "";
+
+    private bool IsReady => Worker != null && DisposeStatus != "Disposed";
+
+    private async Task InitWorker()
+    {
+        try
+        {
+            Worker = await WebWorkerClient.CreateAsync(JSRuntime);
+            InitStatus = "Ready";
+        }
+        catch (Exception ex)
+        {
+            InitStatus = $"Error: {ex.Message}";
+        }
+    }
+
+    private async Task TestAdd()
+    {
+        try
+        {
+            var result = await Worker!.InvokeAsync<int>(
+                "$NAMESPACE$.TestWorkerMethods.Add", [2, 3]);
+            AddResult = result.ToString();
+        }
+        catch (Exception ex)
+        {
+            AddResult = $"Error: {ex.Message}";
+        }
+    }
+
+    private async Task TestEcho()
+    {
+        try
+        {
+            var result = await Worker!.InvokeAsync<string>(
+                "$NAMESPACE$.TestWorkerMethods.Echo", ["Hello Worker"]);
+            EchoResult = result;
+        }
+        catch (Exception ex)
+        {
+            EchoResult = $"Error: {ex.Message}";
+        }
+    }
+
+    private async Task TestJson()
+    {
+        try
+        {
+            var result = await Worker!.InvokeAsync<JsonDocument>(
+                "$NAMESPACE$.TestWorkerMethods.GetPersonJson", []);
+            var name = result.RootElement.GetProperty("Name").GetString();
+            var age = result.RootElement.GetProperty("Age").GetInt32();
+            JsonResult = $"{name},{age}";
+        }
+        catch (Exception ex)
+        {
+            JsonResult = $"Error: {ex.Message}";
+        }
+    }
+
+    private async Task TestError()
+    {
+        try
+        {
+            await Worker!.InvokeAsync<string>(
+                "$NAMESPACE$.TestWorkerMethods.ThrowError", []);
+            ErrorResult = "Unexpected success";
+        }
+        catch (Exception ex)
+        {
+            ErrorResult = ex.Message.Contains("Test exception") 
+                ? "Caught expected error" 
+                : $"Wrong error: {ex.Message}";
+        }
+    }
+
+    private async Task DisposeWorker()
+    {
+        if (Worker != null)
+        {
+            await Worker.DisposeAsync();
+            Worker = null;
+            DisposeStatus = "Disposed";
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (Worker != null)
+        {
+            await Worker.DisposeAsync();
+        }
+    }
+}
