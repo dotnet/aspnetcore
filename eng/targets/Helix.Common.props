@@ -31,7 +31,7 @@
       <ItemGroup>
         <HelixAvailableTargetQueue Include="Ubuntu.2204.Amd64.Open" Platform="Linux" />
         <HelixAvailableTargetQueue Include="OSX.15.Amd64.Open" Platform="OSX" />
-        <HelixAvailableTargetQueue Include="Windows.Amd64.VS2022.Pre.Open" Platform="Windows" />
+        <HelixAvailableTargetQueue Include="Windows.Amd64.VS2026.Pre.Scout.Open" Platform="Windows" />
       </ItemGroup>
     </When>
     <Otherwise>
