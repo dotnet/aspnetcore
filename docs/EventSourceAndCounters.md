@@ -189,8 +189,8 @@ public class MyEventSourceTests
 ```
 
 The validator:
-- Uses `EventSource.GenerateManifest` with `EventManifestOptions.Strict` to perform IL-level validation that each `WriteEvent(id, ...)` call argument matches the `[Event(id)]` attribute — the same validation the .NET runtime uses internally
-- Checks for duplicate event IDs across methods
+* Uses `EventSource.GenerateManifest` with `EventManifestOptions.Strict` to perform IL-level validation that each `WriteEvent(id, ...)` call argument matches the `[Event(id)]` attribute — the same validation the .NET runtime uses internally
+* Checks for duplicate event IDs across methods
 
 > **Important:** Every new `EventSource` class should include this one-line validation test.
 
