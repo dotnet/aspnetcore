@@ -120,8 +120,8 @@
   <data name="CustomerName" xml:space="preserve">
     <value>Nombre del cliente</value>
   </data>
-  <data name="Id" xml:space="preserve">
-    <value>Identidad</value>
+  <data name="Price" xml:space="preserve">
+    <value>You should not see this</value>
   </data>
   <data name="Premium items must have price set to at least {0}" xml:space="preserve">
     <value>Los artículos premium deben tener un precio de al menos {0}</value>

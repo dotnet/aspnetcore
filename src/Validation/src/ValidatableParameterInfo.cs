@@ -2,10 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using System.Xml.Linq;
 using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
@@ -17,6 +15,7 @@ namespace Microsoft.Extensions.Validation;
 public abstract class ValidatableParameterInfo : IValidatableInfo
 {
     private RequiredAttribute? _requiredAttribute;
+    private DisplayAttribute? _displayAttribute;
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableParameterInfo"/>.
@@ -26,12 +25,10 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// <param name="displayName">The display name for the parameter.</param>
     protected ValidatableParameterInfo(
         Type parameterType,
-        string name,
-        string displayName)
+        string name)
     {
         ParameterType = parameterType;
         Name = name;
-        DisplayName = displayName;
     }
 
     /// <summary>
@@ -43,11 +40,6 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// Gets the parameter name.
     /// </summary>
     internal string Name { get; }
-
-    /// <summary>
-    /// Gets the display name for the parameter.
-    /// </summary>
-    internal string DisplayName { get; }
 
     /// <summary>
     /// Gets the validation attributes for this parameter.
@@ -68,14 +60,17 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             return;
         }
 
-        var displayNameProvider = context.DisplayNameProvider ?? context.ValidationOptions.DisplayNameProvider;
-        var displayName = LocalizationHelper.ResolveDisplayName(displayNameProvider, declaringType: null, DisplayName);
+        var displayName = Name;
+        if (_displayAttribute is not null || ParameterType.TryGetDisplayAttribute(out _displayAttribute))
+        {
+            displayName = LocalizationHelper.ResolveDisplayName(_displayAttribute, declaringType: null, Name, context);
+        }
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
 
-        var errorMessageProvider = context.ErrorMessageProvider ?? context.ValidationOptions.ErrorMessageProvider;
         var validationAttributes = GetValidationAttributes();
+        var errorMessageProvider = context.ErrorMessageProvider ?? context.ValidationOptions.ErrorMessageProvider;
 
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
         {
