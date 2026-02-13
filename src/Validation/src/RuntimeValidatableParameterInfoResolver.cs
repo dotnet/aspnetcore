@@ -51,29 +51,16 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
         validatableInfo = new RuntimeValidatableParameterInfo(
             parameterType: parameterInfo.ParameterType,
             name: parameterInfo.Name,
-            displayName: GetDisplayName(parameterInfo),
             validationAttributes: validationAttributes
         );
         return true;
     }
 
-    private static string GetDisplayName(ParameterInfo parameterInfo)
-    {
-        var displayAttribute = parameterInfo.GetCustomAttribute<DisplayAttribute>();
-        if (displayAttribute != null)
-        {
-            return displayAttribute.Name ?? parameterInfo.Name!;
-        }
-
-        return parameterInfo.Name!;
-    }
-
     internal sealed class RuntimeValidatableParameterInfo(
         Type parameterType,
         string name,
-        string displayName,
         ValidationAttribute[] validationAttributes) :
-            ValidatableParameterInfo(parameterType, name, displayName)
+            ValidatableParameterInfo(parameterType, name)
     {
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
 

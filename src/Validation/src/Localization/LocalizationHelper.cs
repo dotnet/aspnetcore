@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
+using System.Xml.Linq;
 
 namespace Microsoft.Extensions.Validation.Localization;
 
@@ -62,6 +63,27 @@ internal static class LocalizationHelper
             "The {0} field equals one of the values specified in DeniedValuesAttribute.",
     };
 
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    internal static string ResolveDisplayName(DisplayAttribute? displayAttribute, Type? declaringType, string defaultName, ValidateContext context)
+#pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    {
+        if (displayAttribute is DisplayAttribute display && display.GetName() is string displayNameValue)
+        {
+            if (display.ResourceType is not null)
+            {
+                return displayNameValue;
+            }
+            else
+            {
+                var displayNameProvider = context.DisplayNameProvider ?? context.ValidationOptions.DisplayNameProvider;
+                var localizedDisplayName = LocalizeDisplayName(displayNameProvider, declaringType, displayNameValue);
+                return localizedDisplayName;
+            }
+        }
+
+        return defaultName;
+    }
+
     /// <summary>
     /// Resolves the display name for a member, using the DisplayNameResolver if configured.
     /// </summary>
@@ -69,7 +91,7 @@ internal static class LocalizationHelper
     /// <param name="declaringType">The type that declares the member, or null for parameters.</param>
     /// <param name="defaultDisplayName">The default display name from DisplayAttribute or CLR name.</param>
     /// <returns>The resolved display name.</returns>
-    internal static string ResolveDisplayName(
+    private static string LocalizeDisplayName(
         Func<DisplayNameContext, string?>? provider,
         Type? declaringType,
         //string memberName,
