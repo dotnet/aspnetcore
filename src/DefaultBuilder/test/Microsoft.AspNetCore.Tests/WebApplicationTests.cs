@@ -2840,6 +2840,80 @@ public class WebApplicationTests
             ep => Assert.Equal("/hello", ep.Metadata.GetRequiredMetadata<IRouteDiagnosticsMetadata>().Route));
     }
 
+#if !DEBUG
+    [ConditionalFact]
+    [NoDebuggerCondition]
+    public async Task HostingListener_DoesNotLeakMemory()
+    {
+        ////////////////////////////////////////////////////////////////////////////////////////
+        // WARNING: This test will fail under a debugger because debugging infrastructure    //
+        //          may keep references alive.                                               //
+        ////////////////////////////////////////////////////////////////////////////////////////
+
+        var listenerFinalized = false;
+        var finalizationSemaphore = new SemaphoreSlim(0);
+
+        void CreateAndDisposeListener()
+        {
+            var listener = new HostingListenerWrapper(() =>
+            {
+                listenerFinalized = true;
+                finalizationSemaphore.Release();
+            });
+
+            // Simulate what the tests do with HostingListener
+            var builder = WebApplication.CreateBuilder();
+            var app = builder.Build();
+            app.DisposeAsync().AsTask().Wait();
+
+            // Dispose the listener
+            listener.Dispose();
+        }
+
+        CreateAndDisposeListener();
+
+        // Force garbage collection to trigger finalization
+        var attempts = 0;
+        for (; !await finalizationSemaphore.WaitAsync(TimeSpan.FromSeconds(1)) && attempts < 30; attempts++)
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+        }
+
+        Assert.True(listenerFinalized, "HostingListener was not finalized, indicating a memory leak.");
+        Assert.True(attempts < 10, $"Took too many GC attempts ({attempts}) to finalize HostingListener.");
+    }
+
+    private class NoDebuggerConditionAttribute : Attribute, ITestCondition
+    {
+        public bool IsMet => !Debugger.IsAttached;
+        public string SkipReason => "A debugger is attached.";
+    }
+
+    private sealed class HostingListenerWrapper : IDisposable
+    {
+        private readonly HostingListener _listener;
+        private readonly Action _onFinalize;
+
+        public HostingListenerWrapper(Action onFinalize)
+        {
+            _onFinalize = onFinalize;
+            _listener = new HostingListener(null);
+        }
+
+        public void Dispose()
+        {
+            _listener.Dispose();
+        }
+
+        ~HostingListenerWrapper()
+        {
+            _onFinalize?.Invoke();
+        }
+    }
+#endif
+
     private class MiddlewareWithInterface : IMiddleware
     {
         public Task InvokeAsync(HttpContext context, RequestDelegate next)
@@ -2971,7 +3045,7 @@ public class WebApplicationTests
     private sealed class HostingListener : IObserver<DiagnosticListener>, IObserver<KeyValuePair<string, object>>, IDisposable
     {
         private readonly Action<IHostBuilder> _configure;
-        private static readonly AsyncLocal<HostingListener> _currentListener = new();
+        private readonly AsyncLocal<HostingListener> _currentListener = new();
         private readonly IDisposable _subscription0;
         private IDisposable _subscription1;
 
