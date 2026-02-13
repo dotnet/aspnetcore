@@ -55,11 +55,17 @@ public class HelixTestRunnerOptions
             new Option(
                 aliases: new string[] { "--source" },
                 description: "The restore sources to use during testing")
-            { Argument = new Argument<string>() { Arity = ArgumentArity.ZeroOrMore }, Required = true }
+            { Argument = new Argument<string>() { Arity = ArgumentArity.ZeroOrMore }, Required = true },
+
+            new Option(
+                aliases: new string[] { "--dotnetEf" },
+                description: "The version of the dotnet-ef tool being installed and used")
+            { Argument = new Argument<string>(), Required = true }
         };
 
         var parseResult = command.Parse(args);
         var sharedFxVersion = parseResult.ValueForOption<string>("--runtime");
+        var dotnetEfVersion = parseResult.ValueForOption<string>("--dotnetEf");
         var options = new HelixTestRunnerOptions
         {
             Architecture = parseResult.ValueForOption<string>("--arch"),
@@ -67,6 +73,7 @@ public class HelixTestRunnerOptions
             InstallPlaywright = parseResult.ValueForOption<bool>("--playwright"),
             Quarantined = parseResult.ValueForOption<bool>("--quarantined"),
             RuntimeVersion = sharedFxVersion,
+            DotnetEfVersion = dotnetEfVersion,
             Target = parseResult.ValueForOption<string>("--target"),
             Timeout = TimeSpan.Parse(parseResult.ValueForOption<string>("--helixTimeout"), CultureInfo.InvariantCulture),
 
@@ -87,6 +94,7 @@ public class HelixTestRunnerOptions
     public bool InstallPlaywright { get; private set; }
     public bool Quarantined { get; private set; }
     public string RuntimeVersion { get; private set; }
+    public string DotnetEfVersion { get; private set; }
     public string Target { get; private set; }
     public TimeSpan Timeout { get; private set; }
 
