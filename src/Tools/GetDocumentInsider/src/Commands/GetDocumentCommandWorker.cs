@@ -347,7 +347,7 @@ internal sealed class GetDocumentCommandWorker
                     {
                         _reporter.WriteWarning(Resources.FormatInvalidOpenApiVersion(_context.OpenApiVersion));
                     }
-                    arguments = [documentName, writer, OpenApiSpecVersion.OpenApi3_2];
+                    arguments = [documentName, writer, OpenApiSpecVersion.OpenApi3_1];
                 }
             }
             using var resultTask = (Task)InvokeMethod(targetMethod, service, arguments);
