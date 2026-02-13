@@ -395,7 +395,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                                     {
                                         continue;
                                     }
-                                    foreach (var mediaType in content)
+                                    foreach (var mediaType in content.OfType<OpenApiMediaType>())
                                     {
                                         mediaType.Example = jsonString.Parse();
                                     }
@@ -457,7 +457,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                                         continue;
                                     }
                                     var parsedExample = jsonString.Parse();
-                                    foreach (var mediaType in content)
+                                    foreach (var mediaType in content.OfType<OpenApiMediaType>())
                                     {
                                         mediaType.Example = parsedExample;
                                     }
@@ -613,7 +613,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 options.AddOperationTransformer(new XmlCommentOperationTransformer());
             });
         }
-        
+
         [InterceptsLocation]
         public static IServiceCollection AddOpenApi(this IServiceCollection services, Action<OpenApiOptions> configureOptions)
         {
