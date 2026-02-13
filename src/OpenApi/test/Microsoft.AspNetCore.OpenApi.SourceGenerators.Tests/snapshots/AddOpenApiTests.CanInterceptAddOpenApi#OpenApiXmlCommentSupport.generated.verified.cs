@@ -613,7 +613,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 options.AddOperationTransformer(new XmlCommentOperationTransformer());
             });
         }
-
+        
         [InterceptsLocation]
         public static IServiceCollection AddOpenApi(this IServiceCollection services, Action<OpenApiOptions> configureOptions)
         {
