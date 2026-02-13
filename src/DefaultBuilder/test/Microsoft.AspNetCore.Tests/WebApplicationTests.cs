@@ -2874,7 +2874,7 @@ public class WebApplicationTests
 
         // Force garbage collection to trigger finalization
         var attempts = 0;
-        for (; !await finalizationSemaphore.WaitAsync(TimeSpan.FromSeconds(1)) && attempts < 30; attempts++)
+        for (; !await finalizationSemaphore.WaitAsync(TimeSpan.FromSeconds(1)) && attempts < 10; attempts++)
         {
             GC.Collect();
             GC.WaitForPendingFinalizers();
@@ -2899,6 +2899,8 @@ public class WebApplicationTests
         public HostingListenerWrapper(Action onFinalize)
         {
             _onFinalize = onFinalize;
+            // Passing null is safe because HostingListener only invokes the configure action
+            // in OnNext when "HostBuilding" event is received, and we don't trigger that event in this test.
             _listener = new HostingListener(null);
         }
 
