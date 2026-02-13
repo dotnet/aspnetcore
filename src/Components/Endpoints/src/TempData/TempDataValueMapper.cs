@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -23,7 +22,7 @@ internal partial class TempDataValueMapper : ITempDataValueMapper
         _httpContext = httpContext;
     }
 
-    public object? GetValue(string tempDataKey, Type type)
+    public object? GetValue(string tempDataKey, Type targetType)
     {
         var tempData = GetTempData();
         if (tempData is null)
@@ -38,9 +37,21 @@ internal partial class TempDataValueMapper : ITempDataValueMapper
             {
                 return null;
             }
+
+            var underlyingType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+            if (underlyingType.IsEnum && value is int intValue)
+            {
+                return Enum.ToObject(underlyingType, intValue);
+            }
+
+            if (!underlyingType.IsAssignableFrom(value.GetType()))
+            {
+                return null;
+            }
+
             return value;
         }
-        catch (JsonException ex)
+        catch (Exception ex)
         {
             Log.TempDataDeserializeFail(_logger, ex);
             return null;
@@ -99,6 +110,6 @@ internal partial class TempDataValueMapper : ITempDataValueMapper
         public static partial void TempDataPersistFail(ILogger logger, Exception exception);
 
         [LoggerMessage(2, LogLevel.Warning, "Deserialization of the element from TempData failed.", EventName = "TempDataDeserializeFail")]
-        public static partial void TempDataDeserializeFail(ILogger logger, JsonException exception);
+        public static partial void TempDataDeserializeFail(ILogger logger, Exception exception);
     }
 }
