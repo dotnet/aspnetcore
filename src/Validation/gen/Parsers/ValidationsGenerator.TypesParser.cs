@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 using Microsoft.CodeAnalysis;
@@ -199,8 +198,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                             ContainingType: correspondingProperty.ContainingType,
                             Type: correspondingProperty.Type,
                             Name: correspondingProperty.Name,
-                            DisplayName: parameter.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute)) ??
-                                        correspondingProperty.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute)),
                             Attributes: []));
                     }
                 }
@@ -261,7 +258,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 ContainingType: member.ContainingType,
                 Type: member.Type,
                 Name: member.Name,
-                DisplayName: member.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute)),
                 Attributes: attributes));
         }
 

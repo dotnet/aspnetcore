@@ -16,6 +16,7 @@ namespace ConsoleValidationSample.Models;
 public class Customer
 {
     [Range(1, int.MaxValue)]
+    [Display(Name = "Id")]
     public int Id { get; set; }
 
     [Display(Name = "CustomerName")]

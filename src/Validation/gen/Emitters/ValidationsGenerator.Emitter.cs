@@ -60,8 +60,7 @@ namespace Microsoft.Extensions.Validation.Generated
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
             global::System.Type containingType,
             global::System.Type propertyType,
-            string name,
-            string displayName) : base(containingType, propertyType, name, displayName)
+            string name) : base(containingType, propertyType, name)
         {
             ContainingType = containingType;
             Name = name;
@@ -243,8 +242,7 @@ namespace Microsoft.Extensions.Validation.Generated
         cw.Indent++;
         cw.WriteLine($"containingType: typeof({member.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}),");
         cw.WriteLine($"propertyType: typeof({member.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}),");
-        cw.WriteLine($"name: \"{member.Name}\",");
-        cw.WriteLine($"displayName: \"{member.DisplayName}\"");
+        cw.WriteLine($"name: \"{member.Name}\"");
         cw.Indent--;
         cw.WriteLine("),");
     }
