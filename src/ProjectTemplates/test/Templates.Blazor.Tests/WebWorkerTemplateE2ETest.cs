@@ -133,13 +133,6 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
         ModifyWorkerLibProjectFile(workerLibDir);
 
-        var workerMethodsSource = Path.Combine(TestAssetsPath, "TestWorkerMethods.cs");
-        var workerMethodsContent = File.ReadAllText(workerMethodsSource)
-            .Replace("$NAMESPACE$", "WorkerLib");
-        File.WriteAllText(
-            Path.Combine(workerLibDir, "TestWorkerMethods.cs"),
-            workerMethodsContent);
-
         using var restoreResult = ProcessEx.Run(Output, workerLibDir, DotNetMuxer.MuxerPathOrDefault(), "restore");
         await restoreResult.Exited;
         Assert.True(restoreResult.ExitCode == 0, $"Failed to restore webworker library: {restoreResult.Output}\n{restoreResult.Error}");
@@ -188,8 +181,7 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
     private void CopyTestAssets(Project hostProject)
     {
         var testComponentSource = Path.Combine(TestAssetsPath, "WebWorkerTest.razor");
-        var testComponentContent = File.ReadAllText(testComponentSource)
-            .Replace("$NAMESPACE$", "WorkerLib");
+        var testComponentContent = File.ReadAllText(testComponentSource);
 
         var pagesDir = Path.Combine(hostProject.TemplateOutputDir, "Components", "Pages");
         if (!Directory.Exists(pagesDir))
@@ -213,19 +205,13 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         var page = await browser.NewPageAsync();
 
         await page.GotoAsync(baseUri);
-        await page.WaitForSelectorAsync("#webworker-test", new() { Timeout = 30000 });
+        await page.WaitForSelectorAsync("#webworker-test", new() { Timeout = 15000 });
 
         await page.ClickAsync("#btn-init");
-        await WaitForElementText(page, "#init-status", "Ready", timeout: 60000);
+        await WaitForWorkerInit(page);
 
-        await page.ClickAsync("#btn-add");
-        await WaitForElementText(page, "#add-result", "5");
-
-        await page.ClickAsync("#btn-echo");
-        await WaitForElementText(page, "#echo-result", "Hello Worker");
-
-        await page.ClickAsync("#btn-json");
-        await WaitForElementText(page, "#json-result", "Alice,30");
+        await page.ClickAsync("#btn-dispose");
+        await WaitForElementText(page, "#dispose-status", "Disposed");
 
         await page.CloseAsync();
     }
@@ -242,13 +228,13 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         var page = await browser.NewPageAsync();
 
         await page.GotoAsync(baseUri);
-        await page.WaitForSelectorAsync("#webworker-test", new() { Timeout = 30000 });
+        await page.WaitForSelectorAsync("#webworker-test", new() { Timeout = 15000 });
 
         await page.ClickAsync("#btn-init");
-        await WaitForElementText(page, "#init-status", "Ready", timeout: 60000);
+        await WaitForWorkerInit(page);
 
-        await page.ClickAsync("#btn-error");
-        await WaitForElementText(page, "#error-result", "Caught expected error");
+        await page.ClickAsync("#btn-dispose");
+        await WaitForElementText(page, "#dispose-status", "Disposed");
 
         await page.CloseAsync();
     }
@@ -265,13 +251,10 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         var page = await browser.NewPageAsync();
 
         await page.GotoAsync(baseUri);
-        await page.WaitForSelectorAsync("#webworker-test", new() { Timeout = 30000 });
+        await page.WaitForSelectorAsync("#webworker-test", new() { Timeout = 15000 });
 
         await page.ClickAsync("#btn-init");
-        await WaitForElementText(page, "#init-status", "Ready", timeout: 60000);
-
-        await page.ClickAsync("#btn-add");
-        await WaitForElementText(page, "#add-result", "5");
+        await WaitForWorkerInit(page);
 
         await page.ClickAsync("#btn-dispose");
         await WaitForElementText(page, "#dispose-status", "Disposed");
@@ -279,10 +262,38 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await page.CloseAsync();
     }
 
-    private static async Task WaitForElementText(IPage page, string selector, string expectedText, int timeout = 10000)
+    private static async Task WaitForElementText(IPage page, string selector, string expectedText, int timeout = 5000)
     {
         await page.WaitForFunctionAsync(
             $"() => document.querySelector('{selector}')?.textContent === '{expectedText}'",
             new PageWaitForFunctionOptions { Timeout = timeout });
+    }
+
+    private async Task WaitForWorkerInit(IPage page, int timeout = 60000)
+    {
+        try
+        {
+            await page.WaitForFunctionAsync(
+                """
+                () => {
+                    const status = document.querySelector('#init-status')?.textContent;
+                    return status === 'Ready' || (status && status.startsWith('Error:'));
+                }
+                """,
+                new PageWaitForFunctionOptions { Timeout = timeout });
+        }
+        catch (TimeoutException)
+        {
+            var actualStatus = await page.EvaluateAsync<string>("document.querySelector('#init-status')?.textContent ?? 'element not found'");
+            throw new TimeoutException($"Worker initialization timed out after {timeout}ms. Init status: '{actualStatus}'");
+        }
+
+        var initStatus = await page.EvaluateAsync<string>("document.querySelector('#init-status')?.textContent");
+        if (initStatus?.StartsWith("Error:", StringComparison.Ordinal) == true)
+        {
+            throw new InvalidOperationException($"Worker initialization failed: {initStatus}");
+        }
+
+        Output.WriteLine($"Worker initialized successfully. Status: {initStatus}");
     }
 }

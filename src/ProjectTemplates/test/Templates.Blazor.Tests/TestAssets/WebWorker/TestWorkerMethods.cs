@@ -5,12 +5,7 @@ using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 using System.Text.Json;
 
-namespace $NAMESPACE$;
-
-/// <summary>
-/// Test worker methods for E2E testing of WebWorkerClient.
-/// These methods are called from the Web Worker thread.
-/// </summary>
+// Using global namespace for simpler export access
 [SupportedOSPlatform("browser")]
 public static partial class TestWorkerMethods
 {

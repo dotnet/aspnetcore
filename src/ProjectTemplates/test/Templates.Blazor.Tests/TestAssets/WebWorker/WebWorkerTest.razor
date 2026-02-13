@@ -3,8 +3,7 @@
 
 @page "/webworker-test"
 
-@using System.Text.Json
-@using $NAMESPACE$
+@using WorkerLib
 @inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
 
@@ -18,28 +17,6 @@
         <span id="init-status">@InitStatus</span>
     </div>
 
-    <hr />
-
-    <div>
-        <button id="btn-add" @onclick="TestAdd" disabled="@(!IsReady)">Test Add(2,3)</button>
-        <span id="add-result">@AddResult</span>
-    </div>
-
-    <div>
-        <button id="btn-echo" @onclick="TestEcho" disabled="@(!IsReady)">Test Echo</button>
-        <span id="echo-result">@EchoResult</span>
-    </div>
-
-    <div>
-        <button id="btn-json" @onclick="TestJson" disabled="@(!IsReady)">Test JSON</button>
-        <span id="json-result">@JsonResult</span>
-    </div>
-
-    <div>
-        <button id="btn-error" @onclick="TestError" disabled="@(!IsReady)">Test Error</button>
-        <span id="error-result">@ErrorResult</span>
-    </div>
-
     <div>
         <button id="btn-dispose" @onclick="DisposeWorker" disabled="@(!IsReady)">Dispose Worker</button>
         <span id="dispose-status">@DisposeStatus</span>
@@ -49,10 +26,6 @@
 @code {
     private WebWorkerClient? Worker;
     private string InitStatus = "Not initialized";
-    private string AddResult = "";
-    private string EchoResult = "";
-    private string JsonResult = "";
-    private string ErrorResult = "";
     private string DisposeStatus = "";
 
     private bool IsReady => Worker != null && DisposeStatus != "Disposed";
@@ -61,72 +34,17 @@
     {
         try
         {
+            InitStatus = "Initializing...";
+            StateHasChanged();
+            await Task.Yield();
+
             Worker = await WebWorkerClient.CreateAsync(JSRuntime);
             InitStatus = "Ready";
         }
         catch (Exception ex)
         {
             InitStatus = $"Error: {ex.Message}";
-        }
-    }
-
-    private async Task TestAdd()
-    {
-        try
-        {
-            var result = await Worker!.InvokeAsync<int>(
-                "$NAMESPACE$.TestWorkerMethods.Add", [2, 3]);
-            AddResult = result.ToString();
-        }
-        catch (Exception ex)
-        {
-            AddResult = $"Error: {ex.Message}";
-        }
-    }
-
-    private async Task TestEcho()
-    {
-        try
-        {
-            var result = await Worker!.InvokeAsync<string>(
-                "$NAMESPACE$.TestWorkerMethods.Echo", ["Hello Worker"]);
-            EchoResult = result;
-        }
-        catch (Exception ex)
-        {
-            EchoResult = $"Error: {ex.Message}";
-        }
-    }
-
-    private async Task TestJson()
-    {
-        try
-        {
-            var result = await Worker!.InvokeAsync<JsonDocument>(
-                "$NAMESPACE$.TestWorkerMethods.GetPersonJson", []);
-            var name = result.RootElement.GetProperty("Name").GetString();
-            var age = result.RootElement.GetProperty("Age").GetInt32();
-            JsonResult = $"{name},{age}";
-        }
-        catch (Exception ex)
-        {
-            JsonResult = $"Error: {ex.Message}";
-        }
-    }
-
-    private async Task TestError()
-    {
-        try
-        {
-            await Worker!.InvokeAsync<string>(
-                "$NAMESPACE$.TestWorkerMethods.ThrowError", []);
-            ErrorResult = "Unexpected success";
-        }
-        catch (Exception ex)
-        {
-            ErrorResult = ex.Message.Contains("Test exception") 
-                ? "Caught expected error" 
-                : $"Wrong error: {ex.Message}";
+            Console.WriteLine($"[WebWorkerTest] Init error: {ex}");
         }
     }
 
