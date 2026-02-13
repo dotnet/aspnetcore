@@ -18,6 +18,21 @@
     </div>
 
     <div>
+        <button id="btn-add" @onclick="TestAdd" disabled="@(!IsReady)">Test Add</button>
+        <span id="add-result">@AddResult</span>
+    </div>
+
+    <div>
+        <button id="btn-echo" @onclick="TestEcho" disabled="@(!IsReady)">Test Echo</button>
+        <span id="echo-result">@EchoResult</span>
+    </div>
+
+    <div>
+        <button id="btn-error" @onclick="TestError" disabled="@(!IsReady)">Test Error</button>
+        <span id="error-result">@ErrorResult</span>
+    </div>
+
+    <div>
         <button id="btn-dispose" @onclick="DisposeWorker" disabled="@(!IsReady)">Dispose Worker</button>
         <span id="dispose-status">@DisposeStatus</span>
     </div>
@@ -26,6 +41,9 @@
 @code {
     private WebWorkerClient? Worker;
     private string InitStatus = "Not initialized";
+    private string AddResult = "";
+    private string EchoResult = "";
+    private string ErrorResult = "";
     private string DisposeStatus = "";
 
     private bool IsReady => Worker != null && DisposeStatus != "Disposed";
@@ -45,6 +63,45 @@
         {
             InitStatus = $"Error: {ex.Message}";
             Console.WriteLine($"[WebWorkerTest] Init error: {ex}");
+        }
+    }
+
+    private async Task TestAdd()
+    {
+        try
+        {
+            var result = await Worker!.InvokeAsync<int>("TestWorkerExports.TestWorkerMethods.Add", [5, 3]);
+            AddResult = result == 8 ? "8" : $"Unexpected: {result}";
+        }
+        catch (Exception ex)
+        {
+            AddResult = $"Error: {ex.Message}";
+        }
+    }
+
+    private async Task TestEcho()
+    {
+        try
+        {
+            var result = await Worker!.InvokeAsync<string>("TestWorkerExports.TestWorkerMethods.Echo", ["Hello Worker"]);
+            EchoResult = result == "Hello Worker" ? "Hello Worker" : $"Unexpected: {result}";
+        }
+        catch (Exception ex)
+        {
+            EchoResult = $"Error: {ex.Message}";
+        }
+    }
+
+    private async Task TestError()
+    {
+        try
+        {
+            await Worker!.InvokeAsync<string>("TestWorkerExports.TestWorkerMethods.ThrowError", []);
+            ErrorResult = "No error thrown";
+        }
+        catch (Exception ex)
+        {
+            ErrorResult = ex.Message.Contains("Test exception") ? "Caught expected error" : $"Wrong error: {ex.Message}";
         }
     }
 

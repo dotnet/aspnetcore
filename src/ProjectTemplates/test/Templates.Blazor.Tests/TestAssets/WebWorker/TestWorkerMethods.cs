@@ -5,7 +5,8 @@ using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 using System.Text.Json;
 
-// Using global namespace for simpler export access
+namespace TestWorkerExports;
+
 [SupportedOSPlatform("browser")]
 public static partial class TestWorkerMethods
 {

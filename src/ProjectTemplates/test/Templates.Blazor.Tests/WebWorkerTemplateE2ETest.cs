@@ -162,6 +162,10 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
   </PropertyGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include=""browser"" />
+  </ItemGroup>
 ";
         content = content.Replace("</Project>", settings + "</Project>");
         File.WriteAllText(csprojPath, content);
@@ -191,6 +195,9 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         File.WriteAllText(
             Path.Combine(pagesDir, "WebWorkerTest.razor"),
             testComponentContent);
+
+        var workerMethodsSource = Path.Combine(TestAssetsPath, "TestWorkerMethods.cs");
+        File.Copy(workerMethodsSource, Path.Combine(hostProject.TemplateOutputDir, "TestWorkerMethods.cs"), overwrite: true);
     }
 
     private async Task TestWebWorkerInteraction(BrowserKind browserKind, string baseUri)
@@ -209,6 +216,12 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
         await page.ClickAsync("#btn-init");
         await WaitForWorkerInit(page);
+
+        await page.ClickAsync("#btn-add");
+        await WaitForElementText(page, "#add-result", "8", timeout: 30000);
+
+        await page.ClickAsync("#btn-echo");
+        await WaitForElementText(page, "#echo-result", "Hello Worker", timeout: 30000);
 
         await page.ClickAsync("#btn-dispose");
         await WaitForElementText(page, "#dispose-status", "Disposed");
@@ -232,6 +245,9 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
         await page.ClickAsync("#btn-init");
         await WaitForWorkerInit(page);
+
+        await page.ClickAsync("#btn-error");
+        await WaitForElementText(page, "#error-result", "Caught expected error", timeout: 30000);
 
         await page.ClickAsync("#btn-dispose");
         await WaitForElementText(page, "#dispose-status", "Disposed");
@@ -262,11 +278,19 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await page.CloseAsync();
     }
 
-    private static async Task WaitForElementText(IPage page, string selector, string expectedText, int timeout = 5000)
+    private async Task WaitForElementText(IPage page, string selector, string expectedText, int timeout = 5000)
     {
-        await page.WaitForFunctionAsync(
-            $"() => document.querySelector('{selector}')?.textContent === '{expectedText}'",
-            new PageWaitForFunctionOptions { Timeout = timeout });
+        try
+        {
+            await page.WaitForFunctionAsync(
+                $"() => document.querySelector('{selector}')?.textContent === '{expectedText}'",
+                new PageWaitForFunctionOptions { Timeout = timeout });
+        }
+        catch (TimeoutException)
+        {
+            var actualText = await page.EvaluateAsync<string>($"document.querySelector('{selector}')?.textContent ?? 'element not found'");
+            throw new TimeoutException($"Timeout waiting for '{selector}' to have text '{expectedText}'. Actual text: '{actualText}'");
+        }
     }
 
     private async Task WaitForWorkerInit(IPage page, int timeout = 60000)
