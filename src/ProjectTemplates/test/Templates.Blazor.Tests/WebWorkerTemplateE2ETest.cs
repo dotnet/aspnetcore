@@ -26,7 +26,6 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
     private static Project _sharedHostProject;
     private static bool _hostInitialized;
-    private static readonly object _initLock = new();
 
     protected override async Task InitializeCoreAsync(TestContext context)
     {
@@ -34,16 +33,10 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
         if (!_hostInitialized)
         {
-            lock (_initLock)
-            {
-                if (!_hostInitialized)
-                {
-                    _sharedHostProject = CreateBuildPublishAsync(onlyCreate: true).GetAwaiter().GetResult();
-                    CopyTestAssets(_sharedHostProject);
-                    AddHostProjectSettings(_sharedHostProject);
-                    _hostInitialized = true;
-                }
-            }
+            _sharedHostProject = await CreateBuildPublishAsync(onlyCreate: true);
+            CopyTestAssets(_sharedHostProject);
+            AddHostProjectSettings(_sharedHostProject);
+            _hostInitialized = true;
         }
     }
 
