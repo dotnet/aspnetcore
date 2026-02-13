@@ -4,7 +4,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.AspNetCore.Components.Endpoints;
+namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
 /// Enables component parameters to be supplied from the TempData with <see cref="SupplyParameterFromTempDataAttribute"/>.

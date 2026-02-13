@@ -6,7 +6,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Microsoft.AspNetCore.Components.Endpoints;
+namespace Microsoft.AspNetCore.Components;
 
 internal class SupplyParameterFromTempDataValueProvider : ICascadingValueSupplier
 {
