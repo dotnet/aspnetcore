@@ -40,7 +40,7 @@ public class GetDocumentTests(ITestOutputHelper output)
         var result = OpenApiDocument.Load(stream, "json");
         // TODO: Needs https://github.com/microsoft/OpenAPI.NET/issues/2055 to be fixed
         // Assert.Empty(result.Diagnostic.Errors);
-        Assert.Equal(OpenApiSpecVersion.OpenApi3_2, result.Diagnostic.SpecificationVersion);
+        Assert.Equal(OpenApiSpecVersion.OpenApi3_1, result.Diagnostic.SpecificationVersion);
         Assert.Equal("GetDocumentSample | v1", result.Document.Info.Title);
     }
 
@@ -89,11 +89,11 @@ public class GetDocumentTests(ITestOutputHelper output)
         ], new GetDocumentCommand(_console), throwOnUnexpectedArg: false);
 
         // Assert that error was produced and files were generated with v3.
-        Assert.Contains("Invalid OpenAPI spec version 'OpenApi4_0' provided. Falling back to default: v3.2.", _console.GetOutput());
+        Assert.Contains("Invalid OpenAPI spec version 'OpenApi4_0' provided. Falling back to default: v3.1.", _console.GetOutput());
         using var stream = new MemoryStream(File.ReadAllBytes(Path.Combine(outputPath.FullName, "Sample.json")));
         var result = OpenApiDocument.Load(stream, "json");
         Assert.Empty(result.Diagnostic.Errors);
-        Assert.Equal(OpenApiSpecVersion.OpenApi3_2, result.Diagnostic.SpecificationVersion);
+        Assert.Equal(OpenApiSpecVersion.OpenApi3_1, result.Diagnostic.SpecificationVersion);
         Assert.Equal("GetDocumentSample | v1", result.Document.Info.Title);
     }
 
@@ -126,7 +126,7 @@ public class GetDocumentTests(ITestOutputHelper output)
         using var stream = new MemoryStream(File.ReadAllBytes(Path.Combine(outputPath.FullName, "Sample_internal.json")));
         var result = OpenApiDocument.Load(stream, "json");
         Assert.Empty(result.Diagnostic.Errors);
-        Assert.Equal(OpenApiSpecVersion.OpenApi3_2, result.Diagnostic.SpecificationVersion);
+        Assert.Equal(OpenApiSpecVersion.OpenApi3_1, result.Diagnostic.SpecificationVersion);
         // Document name in the title gives us a clue that the correct document was actually resolved
         Assert.Equal("GetDocumentSample | internal", result.Document.Info.Title);
     }
