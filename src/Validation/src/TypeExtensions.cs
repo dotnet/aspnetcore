@@ -4,6 +4,7 @@
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -82,6 +83,12 @@ internal static class TypeExtensions
 
         requiredAttribute = null;
         return false;
+    }
+
+    public static bool TryGetDisplayAttribute(this MemberInfo memberInfo, [NotNullWhen(true)] out DisplayAttribute? displayAttribute)
+    {
+        displayAttribute = Attribute.GetCustomAttribute(memberInfo, typeof(DisplayAttribute)) as DisplayAttribute;
+        return displayAttribute is not null;
     }
 
     /// <summary>

@@ -10,6 +10,5 @@ internal sealed record class ValidatableProperty(
     ITypeSymbol ContainingType,
     ITypeSymbol Type,
     string Name,
-    string DisplayName,
     ImmutableArray<ValidationAttribute> Attributes
 );

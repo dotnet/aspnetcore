@@ -4,6 +4,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Xml.Linq;
 using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
@@ -16,6 +17,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
 {
     private readonly int _membersCount;
     private readonly List<Type> _superTypes;
+    private DisplayAttribute? _displayAttribute;
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableTypeInfo"/>.
@@ -87,8 +89,11 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 return;
             }
 
-            var displayNameProvider = context.DisplayNameProvider ?? context.ValidationOptions.DisplayNameProvider;
-            var displayName = LocalizationHelper.ResolveDisplayName(displayNameProvider, declaringType: null, Type.Name);
+            var displayName = Type.Name;
+            if (_displayAttribute is not null || Type.TryGetDisplayAttribute(out _displayAttribute))
+            {
+                displayName = LocalizationHelper.ResolveDisplayName(_displayAttribute, declaringType: null, Type.Name, context);
+            }
 
             context.ValidationContext.DisplayName = displayName;
             context.ValidationContext.MemberName = null;

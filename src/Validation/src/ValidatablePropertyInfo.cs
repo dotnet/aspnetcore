@@ -14,6 +14,7 @@ namespace Microsoft.Extensions.Validation;
 public abstract class ValidatablePropertyInfo : IValidatableInfo
 {
     private RequiredAttribute? _requiredAttribute;
+    private DisplayAttribute? _displayAttribute;
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidatablePropertyInfo"/>.
@@ -22,13 +23,11 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         [param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
         Type declaringType,
         Type propertyType,
-        string name,
-        string displayName)
+        string name)
     {
         DeclaringType = declaringType;
         PropertyType = propertyType;
         Name = name;
-        DisplayName = displayName;
     }
 
     /// <summary>
@@ -48,11 +47,6 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     internal string Name { get; }
 
     /// <summary>
-    /// Gets the display name for the member as designated by the <see cref="DisplayAttribute"/>.
-    /// </summary>
-    internal string DisplayName { get; }
-
-    /// <summary>
     /// Gets the validation attributes for this member.
     /// </summary>
     /// <returns>An array of validation attributes to apply to this member.</returns>
@@ -61,8 +55,11 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
-        var displayNameProvider = context.DisplayNameProvider ?? context.ValidationOptions.DisplayNameProvider;
-        var displayName = LocalizationHelper.ResolveDisplayName(displayNameProvider, DeclaringType, DisplayName);
+        var displayName = Name;
+        if (_displayAttribute is not null || (DeclaringType.GetProperty(Name, PropertyType)?.TryGetDisplayAttribute(out _displayAttribute) ?? false))
+        {
+            displayName = LocalizationHelper.ResolveDisplayName(_displayAttribute, DeclaringType, Name, context);
+        }
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;

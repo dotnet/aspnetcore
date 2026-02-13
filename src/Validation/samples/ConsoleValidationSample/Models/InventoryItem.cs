@@ -4,6 +4,7 @@
 #pragma warning disable ASP0029
 
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using ConsoleValidationSample.Resources;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
@@ -22,6 +23,7 @@ public class InventoryItem : IValidatableObject
     public bool IsPremium { get; set; }
 
     [Range(0, int.MaxValue)]
+    [Display(ResourceType = typeof(InventoryItemLabels), Name = "Price")]
     public int Price { get; set; }
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -37,4 +39,13 @@ public class InventoryItem : IValidatableObject
 
         return [new ValidationResult(errorMessage, [nameof(IsPremium), nameof(Price)])];
     }
+}
+
+internal static class InventoryItemLabels
+{
+    public static string Price => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName switch
+    {
+        "es" => "precio",
+        _ => "price"
+    };
 }
