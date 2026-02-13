@@ -1,5 +1,5 @@
 ﻿{
-  "openapi": "3.1.2",
+  "openapi": "3.2.0",
   "info": {
     "title": "Sample | localized",
     "description": "This is a localized OpenAPI document for français (France).",
