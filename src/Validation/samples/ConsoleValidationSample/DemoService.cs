@@ -45,6 +45,13 @@ internal class DemoService(IOptions<ValidationOptions> options, ILogger<DemoServ
                 Id = 1,
                 IsPremium = true
             });
+
+            await ValidateAndPrint(new InventoryItem
+            {
+                Id = 1,
+                Price = -100,
+                IsPremium = true
+            });
         }
 
         async Task ValidateAndPrint<T>(T instance)
