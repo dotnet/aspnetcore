@@ -51,7 +51,14 @@ public class PaginationState
     /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
     public Task SetCurrentPageIndexAsync(int pageIndex)
     {
-        CurrentPageIndex = pageIndex;
+        if (pageIndex < 0 || (LastPageIndex.HasValue && pageIndex > LastPageIndex.Value))
+        {
+            CurrentPageIndex = 0;
+        }
+        else
+        {
+            CurrentPageIndex = pageIndex;
+        }
         return CurrentPageItemsChanged.InvokeCallbacksAsync(this);
     }
 
