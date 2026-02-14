@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Microsoft.AspNetCore.Components.Analyzers;
 
@@ -177,5 +178,53 @@ internal static class ComponentFacts
         }
 
         return true;
+    }
+
+    public static bool IsOpenComponentInvocation(ComponentSymbols symbols, InvocationExpressionSyntax invocation, SemanticModel semanticModel)
+    {
+        if (symbols.OpenComponentMethod == null)
+        {
+            return false;
+        }
+
+        var symbolInfo = semanticModel.GetSymbolInfo(invocation);
+        if (symbolInfo.Symbol is IMethodSymbol method)
+        {
+            return SymbolEqualityComparer.Default.Equals(method.OriginalDefinition, symbols.OpenComponentMethod);
+        }
+
+        return false;
+    }
+
+    public static bool IsCloseComponentInvocation(ComponentSymbols symbols, InvocationExpressionSyntax invocation, SemanticModel semanticModel)
+    {
+        if (symbols.CloseComponentMethod == null)
+        {
+            return false;
+        }
+
+        var symbolInfo = semanticModel.GetSymbolInfo(invocation);
+        if (symbolInfo.Symbol is IMethodSymbol method)
+        {
+            return SymbolEqualityComparer.Default.Equals(method.OriginalDefinition, symbols.CloseComponentMethod);
+        }
+
+        return false;
+    }
+
+    public static bool IsRenderTreeBuilderMethodInvocation(InvocationExpressionSyntax invocation, SemanticModel semanticModel, IMethodSymbol? wellKnownMethod)
+    {
+        if (wellKnownMethod == null)
+        {
+            return false;
+        }
+
+        var symbolInfo = semanticModel.GetSymbolInfo(invocation);
+        if (symbolInfo.Symbol is IMethodSymbol method)
+        {
+            return SymbolEqualityComparer.Default.Equals(method.OriginalDefinition, wellKnownMethod);
+        }
+
+        return false;
     }
 }

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Components.Analyzers;
@@ -52,6 +53,25 @@ internal sealed class ComponentSymbols
         var persistentStateAttribute = compilation.GetTypeByMetadataName(ComponentsApi.PersistentStateAttribute.MetadataName);
         var componentBaseType = compilation.GetTypeByMetadataName(ComponentsApi.ComponentBase.MetadataName);
 
+        // Get RenderTreeBuilder type and its methods for the analyzer
+        var renderTreeBuilderType = compilation.GetTypeByMetadataName(ComponentsApi.RenderTreeBuilder.MetadataName);
+        
+        // Get well-known RenderTreeBuilder method symbols
+        IMethodSymbol? openComponentMethod = null;
+        IMethodSymbol? closeComponentMethod = null;
+        IMethodSymbol? addComponentParameterMethod = null;
+        IMethodSymbol? addComponentReferenceCaptureMethod = null;
+        IMethodSymbol? addComponentRenderModeMethod = null;
+        
+        if (renderTreeBuilderType != null)
+        {
+            openComponentMethod = renderTreeBuilderType.GetMembers("OpenComponent").OfType<IMethodSymbol>().FirstOrDefault();
+            closeComponentMethod = renderTreeBuilderType.GetMembers("CloseComponent").OfType<IMethodSymbol>().FirstOrDefault();
+            addComponentParameterMethod = renderTreeBuilderType.GetMembers("AddComponentParameter").OfType<IMethodSymbol>().FirstOrDefault();
+            addComponentReferenceCaptureMethod = renderTreeBuilderType.GetMembers("AddComponentReferenceCapture").OfType<IMethodSymbol>().FirstOrDefault();
+            addComponentRenderModeMethod = renderTreeBuilderType.GetMembers("AddComponentRenderMode").OfType<IMethodSymbol>().FirstOrDefault();
+        }
+
         symbols = new ComponentSymbols(
             parameterAttribute,
             cascadingParameterAttribute,
@@ -59,7 +79,13 @@ internal sealed class ComponentSymbols
             persistentStateAttribute,
             componentBaseType,
             parameterCaptureUnmatchedValuesRuntimeType,
-            icomponentType);
+            icomponentType,
+            renderTreeBuilderType,
+            openComponentMethod,
+            closeComponentMethod,
+            addComponentParameterMethod,
+            addComponentReferenceCaptureMethod,
+            addComponentRenderModeMethod);
         return true;
     }
 
@@ -70,7 +96,13 @@ internal sealed class ComponentSymbols
         INamedTypeSymbol persistentStateAttribute,
         INamedTypeSymbol componentBaseType,
         INamedTypeSymbol parameterCaptureUnmatchedValuesRuntimeType,
-        INamedTypeSymbol icomponentType)
+        INamedTypeSymbol icomponentType,
+        INamedTypeSymbol renderTreeBuilderType,
+        IMethodSymbol openComponentMethod,
+        IMethodSymbol closeComponentMethod,
+        IMethodSymbol addComponentParameterMethod,
+        IMethodSymbol addComponentReferenceCaptureMethod,
+        IMethodSymbol addComponentRenderModeMethod)
     {
         ParameterAttribute = parameterAttribute;
         CascadingParameterAttribute = cascadingParameterAttribute;
@@ -79,6 +111,12 @@ internal sealed class ComponentSymbols
         ComponentBaseType = componentBaseType; // Can be null
         ParameterCaptureUnmatchedValuesRuntimeType = parameterCaptureUnmatchedValuesRuntimeType;
         IComponentType = icomponentType;
+        RenderTreeBuilderType = renderTreeBuilderType; // Can be null
+        OpenComponentMethod = openComponentMethod; // Can be null
+        CloseComponentMethod = closeComponentMethod; // Can be null
+        AddComponentParameterMethod = addComponentParameterMethod; // Can be null
+        AddComponentReferenceCaptureMethod = addComponentReferenceCaptureMethod; // Can be null
+        AddComponentRenderModeMethod = addComponentRenderModeMethod; // Can be null
     }
 
     public INamedTypeSymbol ParameterAttribute { get; }
@@ -95,4 +133,16 @@ internal sealed class ComponentSymbols
     public INamedTypeSymbol ComponentBaseType { get; } // Can be null if not available
 
     public INamedTypeSymbol IComponentType { get; }
+
+    public INamedTypeSymbol RenderTreeBuilderType { get; } // Can be null if not available
+    
+    public IMethodSymbol OpenComponentMethod { get; } // Can be null if not available
+    
+    public IMethodSymbol CloseComponentMethod { get; } // Can be null if not available
+    
+    public IMethodSymbol AddComponentParameterMethod { get; } // Can be null if not available
+    
+    public IMethodSymbol AddComponentReferenceCaptureMethod { get; } // Can be null if not available
+    
+    public IMethodSymbol AddComponentRenderModeMethod { get; } // Can be null if not available
 }
