@@ -179,6 +179,9 @@ function parseChangeEvent(event: Event): ChangeEventArgs {
       .filter(option => option.selected)
       .map(option => option.value);
     return { value: selectedValues };
+  } else if (isContentEditableElement(element)) {
+    // For contenteditable elements, use textContent as the value
+    return { value: (element as HTMLElement).textContent || '' };
   } else {
     const targetIsCheckbox = isCheckbox(element);
     const newValue = targetIsCheckbox ? !!element['checked'] : element['value'];
@@ -326,6 +329,10 @@ function parseMouseEvent(event: MouseEvent): MouseEventArgs {
 
 function isCheckbox(element: Element | null): boolean {
   return !!element && element.tagName === 'INPUT' && element.getAttribute('type') === 'checkbox';
+}
+
+function isContentEditableElement(element: Element | null): element is HTMLElement {
+  return !!element && element instanceof HTMLElement && element.isContentEditable;
 }
 
 const timeBasedInputs = [
