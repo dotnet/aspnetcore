@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": "ASP.NET Core Web API",
-  "description": "A project template for creating a RESTful Web API using ASP.NET Core controllers or minimal APIs, with optional support for OpenAPI and authentication.",
+  "description": "A Web API that apps and websites can use to send and receive data.",
   "symbols/auth/choices/None/description": "No authentication",
   "symbols/auth/choices/IndividualB2C/description": "Individual authentication with Azure AD B2C",
   "symbols/auth/choices/SingleOrg/description": "Organizational authentication for a single tenant",
