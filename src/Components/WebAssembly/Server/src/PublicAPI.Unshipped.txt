@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.Extensions.DependencyInjection.WebAssemblyRazorComponentsBuilderExtensions.AddInteractiveWebAssemblyComponents(this Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder! builder, bool persistCultureFromServer) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!
