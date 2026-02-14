@@ -9,6 +9,7 @@ export const Virtualize = {
 };
 
 const dispatcherObserversByDotNetIdPropname = Symbol();
+const THROTTLE_MS = 50;
 
 function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | null {
   // If we recurse up as far as body or the document root, return null so that the
@@ -26,6 +27,41 @@ function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | 
   }
 
   return findClosestScrollContainer(element.parentElement);
+}
+
+function getCumulativeScaleFactor(element: HTMLElement | null): number {
+  let scale = 1;
+  while (element && element !== document.body && element !== document.documentElement) {
+    const style = getComputedStyle(element);
+    const transform = style.transform;
+    if (transform && transform !== 'none') {
+      // Parse the scale from the transform matrix
+      const match = transform.match(/matrix\(([^,]+)/);
+      if (match) {
+        scale *= parseFloat(match[1]);
+      }
+    }
+    element = element.parentElement;
+  }
+  return scale;
+}
+
+function measureRenderedItems(
+  spacerBefore: HTMLElement,
+  spacerAfter: HTMLElement
+): number[] {
+  const heights: number[] = [];
+  const scaleFactor = getCumulativeScaleFactor(spacerBefore);
+
+  let current = spacerBefore.nextElementSibling;
+
+  while (current && current !== spacerAfter) {
+    const rect = current.getBoundingClientRect();
+    heights.push(rect.height / scaleFactor);
+    current = current.nextElementSibling;
+  }
+
+  return heights;
 }
 
 function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spacerAfter: HTMLElement, rootMargin = 50): void {
@@ -53,11 +89,21 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   const mutationObserverBefore = createSpacerMutationObserver(spacerBefore);
   const mutationObserverAfter = createSpacerMutationObserver(spacerAfter);
 
+  let pendingCallbacks: Map<Element, IntersectionObserverEntry> = new Map();
+  let callbackTimeout: ReturnType<typeof setTimeout> | null = null;
+
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   observersByDotNetObjectId[id] = {
     intersectionObserver,
     mutationObserverBefore,
     mutationObserverAfter,
+    onDispose: () => {
+      if (callbackTimeout) {
+        clearTimeout(callbackTimeout);
+        callbackTimeout = null;
+      }
+      pendingCallbacks.clear();
+    },
   };
 
   function createSpacerMutationObserver(spacer: HTMLElement): MutationObserver {
@@ -81,11 +127,33 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     return mutationObserver;
   }
 
+  function flushPendingCallbacks(): void {
+    if (pendingCallbacks.size === 0) return;
+    const entries = Array.from(pendingCallbacks.values());
+    pendingCallbacks.clear();
+    processIntersectionEntries(entries);
+  }
+
   function intersectionCallback(entries: IntersectionObserverEntry[]): void {
+    entries.forEach(entry => pendingCallbacks.set(entry.target, entry));
+    
+    if (!callbackTimeout) {
+      flushPendingCallbacks();
+      
+      callbackTimeout = setTimeout(() => {
+        callbackTimeout = null;
+        flushPendingCallbacks();
+      }, THROTTLE_MS);
+    }
+  }
+
+  function processIntersectionEntries(entries: IntersectionObserverEntry[]): void {
     entries.forEach((entry): void => {
       if (!entry.isIntersecting) {
         return;
       }
+
+      const measurements = measureRenderedItems(spacerBefore, spacerAfter);
 
       // To compute the ItemSize, work out the separation between the two spacers. We can't just measure an individual element
       // because each conceptual item could be made from multiple elements. Using getBoundingClientRect allows for the size to be
@@ -98,12 +166,12 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       const containerSize = entry.rootBounds?.height;
 
       if (entry.target === spacerBefore) {
-        dotNetHelper.invokeMethodAsync('OnSpacerBeforeVisible', entry.intersectionRect.top - entry.boundingClientRect.top, spacerSeparation, containerSize);
+        dotNetHelper.invokeMethodAsync('OnSpacerBeforeVisible', entry.intersectionRect.top - entry.boundingClientRect.top, spacerSeparation, containerSize, measurements);
       } else if (entry.target === spacerAfter && spacerAfter.offsetHeight > 0) {
         // When we first start up, both the "before" and "after" spacers will be visible, but it's only relevant to raise a
         // single event to load the initial data. To avoid raising two events, skip the one for the "after" spacer if we know
         // it's meaningless to talk about any overlap into it.
-        dotNetHelper.invokeMethodAsync('OnSpacerAfterVisible', entry.boundingClientRect.bottom - entry.intersectionRect.bottom, spacerSeparation, containerSize);
+        dotNetHelper.invokeMethodAsync('OnSpacerAfterVisible', entry.boundingClientRect.bottom - entry.intersectionRect.bottom, spacerSeparation, containerSize, measurements);
       }
     });
   }
@@ -137,6 +205,7 @@ function dispose(dotNetHelper: DotNet.DotNetObject): void {
     observers.intersectionObserver.disconnect();
     observers.mutationObserverBefore.disconnect();
     observers.mutationObserverAfter.disconnect();
+    observers.onDispose?.();
 
     dotNetHelper.dispose();
 
