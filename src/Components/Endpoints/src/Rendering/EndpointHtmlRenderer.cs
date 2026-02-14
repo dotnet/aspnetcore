@@ -122,6 +122,11 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             antiforgery.SetRequestContext(httpContext);
         }
 
+        if (httpContext.RequestServices.GetService<ISessionValueMapper>() is SessionValueMapper sessionValueMapper)
+        {
+            sessionValueMapper.SetRequestContext(httpContext);
+        }
+
         // It's important that this is initialized since a component might try to restore state during prerendering
         // (which will obviously not work, but should not fail)
         var componentApplicationLifetime = httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
@@ -161,7 +166,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         => new EndpointComponentState(this, componentId, component, parentComponentState);
 
     /// <inheritdoc/>
-    protected override ResourceAssetCollection Assets =>
+    protected internal override ResourceAssetCollection Assets =>
         _resourceCollection ??= GetResourceCollection(_httpContext) ?? base.Assets;
 
     private static ResourceAssetCollection? GetResourceCollection(HttpContext httpContext) => httpContext.GetEndpoint()?.Metadata.GetMetadata<ResourceAssetCollection>();

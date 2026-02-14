@@ -47,7 +47,7 @@ internal sealed class EndpointComponentState : ComponentState
 
     public bool StreamRendering { get; }
 
-    protected override object? GetComponentKey()
+    protected internal override object? GetComponentKey()
     {
         if (ParentComponentState != null && ParentComponentState.Component is SSRRenderModeBoundary boundary)
         {
