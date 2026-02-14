@@ -1,5 +1,5 @@
 ﻿{
-  "openapi": "3.1.2",
+  "openapi": "3.2.0",
   "info": {
     "title": "Sample | schemas-by-ref",
     "version": "1.0.0"
