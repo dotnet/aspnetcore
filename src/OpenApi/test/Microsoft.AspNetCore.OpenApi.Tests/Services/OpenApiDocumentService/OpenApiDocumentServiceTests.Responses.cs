@@ -439,4 +439,31 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                 });
         });
     }
+
+    [Fact]
+    public async Task GetOpenApiResponse_WithMetadata_UsesCustomDescriptionFromProducesResponseTypeMetadata()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        const string customDescription = "Custom description";
+
+        // Act
+        builder.MapGet("/api/todos", () => "Hello World")
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, null, new[] { "text/html" })
+            {
+                Description = customDescription
+            });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            Assert.Equal(customDescription, response.Value.Description);
+            var content = Assert.Single(response.Value.Content);
+            Assert.Equal("text/html", content.Key);
+        });
+    }
 }
