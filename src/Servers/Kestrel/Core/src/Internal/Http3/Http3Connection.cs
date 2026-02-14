@@ -468,6 +468,10 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     Log.RequestProcessingError(_context.ConnectionId, ex);
                     reason = ConnectionEndReason.ConnectionReset;
                 }
+                else
+                {
+                    reason = ConnectionEndReason.TransportCompleted;
+                }
             }
             error = ex;
             clientAbort = true;
