@@ -46,12 +46,15 @@ public class ResponseCompressionMiddlewareTest
     }
 
     [Fact]
-    public async Task Request_NoAcceptEncoding_Uncompressed()
+    public async Task Request_NoAcceptEncoding_Uncompressed_WithVaryHeader()
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: null, responseType: TextPlain);
 
-        CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: false);
-        AssertLog(logMessages.Single(), LogLevel.Debug, "No response compression available, the Accept-Encoding header is missing or invalid.");
+        CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: true);
+        Assert.Equal(3, logMessages.Count);
+        AssertLog(logMessages.First(), LogLevel.Trace, "This request accepts compression.");
+        AssertLog(logMessages.Skip(1).First(), LogLevel.Trace, "Response compression is available for this Content-Type.");
+        AssertLog(logMessages.Skip(2).First(), LogLevel.Debug, "No response compression available, the Accept-Encoding header is missing or invalid.");
     }
 
     [Fact]
@@ -113,12 +116,15 @@ public class ResponseCompressionMiddlewareTest
     }
 
     [Fact]
-    public async Task RequestHead_NoAcceptEncoding_Uncompressed()
+    public async Task RequestHead_NoAcceptEncoding_Uncompressed_WithVaryHeader()
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: null, responseType: TextPlain, httpMethod: HttpMethods.Head);
 
-        CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: false);
-        AssertLog(logMessages.Single(), LogLevel.Debug, "No response compression available, the Accept-Encoding header is missing or invalid.");
+        CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: true);
+        Assert.Equal(3, logMessages.Count);
+        AssertLog(logMessages.First(), LogLevel.Trace, "This request accepts compression.");
+        AssertLog(logMessages.Skip(1).First(), LogLevel.Trace, "Response compression is available for this Content-Type.");
+        AssertLog(logMessages.Skip(2).First(), LogLevel.Debug, "No response compression available, the Accept-Encoding header is missing or invalid.");
     }
 
     [Fact]
