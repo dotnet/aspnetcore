@@ -195,6 +195,56 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
     }
 
     [Fact]
+    public void CanBindDetailsElement_InitiallyClosed()
+    {
+        var target = Browser.Exists(By.Id("details-initially-closed"));
+        var boundValue = Browser.Exists(By.Id("details-initially-closed-value"));
+        var toggleButton = Browser.Exists(By.Id("details-initially-closed-toggle"));
+        Assert.Null(target.GetDomAttribute("open"));
+        Assert.Equal("False", boundValue.Text);
+
+        // Click to expand; verify value is updated
+        target.FindElement(By.TagName("summary")).Click();
+        Browser.NotEqual(null, () => target.GetDomAttribute("open"));
+        Browser.Equal("True", () => boundValue.Text);
+
+        // Click to collapse; verify value is updated
+        target.FindElement(By.TagName("summary")).Click();
+        Browser.Equal(null, () => target.GetDomAttribute("open"));
+        Browser.Equal("False", () => boundValue.Text);
+
+        // Modify data programmatically; verify details is updated
+        toggleButton.Click();
+        Browser.NotEqual(null, () => target.GetDomAttribute("open"));
+        Browser.Equal("True", () => boundValue.Text);
+    }
+
+    [Fact]
+    public void CanBindDetailsElement_InitiallyOpen()
+    {
+        var target = Browser.Exists(By.Id("details-initially-open"));
+        var boundValue = Browser.Exists(By.Id("details-initially-open-value"));
+        var toggleButton = Browser.Exists(By.Id("details-initially-open-toggle"));
+        Assert.NotNull(target.GetDomAttribute("open"));
+        Assert.Equal("True", boundValue.Text);
+
+        // Click to collapse; verify value is updated
+        target.FindElement(By.TagName("summary")).Click();
+        Browser.Equal(null, () => target.GetDomAttribute("open"));
+        Browser.Equal("False", () => boundValue.Text);
+
+        // Click to expand; verify value is updated
+        target.FindElement(By.TagName("summary")).Click();
+        Browser.NotEqual(null, () => target.GetDomAttribute("open"));
+        Browser.Equal("True", () => boundValue.Text);
+
+        // Modify data programmatically; verify details is updated
+        toggleButton.Click();
+        Browser.Equal(null, () => target.GetDomAttribute("open"));
+        Browser.Equal("False", () => boundValue.Text);
+    }
+
+    [Fact]
     public void CanBindSelect()
     {
         var target = new SelectElement(Browser.Exists(By.Id("select-box")));
