@@ -65,15 +65,17 @@ internal sealed class ValidationLocalizationConfigureOptions(
             }
 
             // Look up translation
-            var localized = localizer[lookupKey];
-            if (localized.ResourceNotFound)
+            var localizedTemplate = localizer[lookupKey];
+            if (localizedTemplate.ResourceNotFound)
             {
                 return null; // no translation → fall through to default
             }
 
+            var displayName = context.DisplayName ?? context.MemberName;`
+
             // Format the localized template with attribute-specific arguments
-            var args = attributeArgumentProvider?.GetFormatArgs(context.Attribute, context.DisplayName) ?? [context.DisplayName];
-            return string.Format(CultureInfo.CurrentCulture, localized.Value, args);
+            var args = attributeArgumentProvider?.GetFormatArgs(context.Attribute, displayName) ?? [displayName];
+            return string.Format(CultureInfo.CurrentCulture, localizedTemplate.Value, args);
         }
     }
 }
