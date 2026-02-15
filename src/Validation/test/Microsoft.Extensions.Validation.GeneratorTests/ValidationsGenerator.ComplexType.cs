@@ -623,4 +623,76 @@ public class AccessibilityTestType
             }
         });
     }
+
+    [Fact]
+    public async Task SkipsIndexerPropertiesOnTypes()
+    {
+        var source = """
+using System;
+using System.Text.Json;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/json-element", ([FromBody] JsonElement request) => Results.Ok("Passed"));
+app.MapPost("/type-with-json-element", ([FromBody] TypeWithJsonElement request) => Results.Ok("Passed"));
+
+app.Run();
+
+public class TypeWithJsonElement
+{
+    [Required]
+    public string Name { get; set; } = "";
+    public JsonElement Extra { get; set; }
+}
+""";
+        await Verify(source, out var compilation);
+
+        // Verify that JsonElement parameter doesn't crash validation
+        await VerifyEndpoint(compilation, "/json-element", async (endpoint, serviceProvider) =>
+        {
+            var payload = """{"foo": "bar"}""";
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        });
+
+        // Verify that a type containing a JsonElement property still validates its other properties
+        await VerifyEndpoint(compilation, "/type-with-json-element", async (endpoint, serviceProvider) =>
+        {
+            // Empty Name should fail validation since it has [Required]
+            var payload = """{"Name": "", "Extra": {"a": 1}}""";
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            var problemDetails = await AssertBadRequest(context);
+            Assert.Collection(problemDetails.Errors, kvp =>
+            {
+                Assert.Equal("Name", kvp.Key);
+            });
+        });
+
+        // Verify valid input passes
+        await VerifyEndpoint(compilation, "/type-with-json-element", async (endpoint, serviceProvider) =>
+        {
+            var payload = """{"Name": "test", "Extra": {"a": 1}}""";
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        });
+    }
 }
