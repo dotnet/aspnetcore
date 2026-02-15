@@ -58,7 +58,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         var displayName = Name;
         if (_displayAttribute is not null || (DeclaringType.GetProperty(Name, PropertyType)?.TryGetDisplayAttribute(out _displayAttribute) ?? false))
         {
-            displayName = LocalizationHelper.ResolveDisplayName(_displayAttribute, DeclaringType, Name, context);
+            displayName = LocalizationHelper.ResolveDisplayAttribute(_displayAttribute, DeclaringType, Name, context);
         }
 
         context.ValidationContext.DisplayName = displayName;
