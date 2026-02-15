@@ -4,7 +4,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Xml.Linq;
 using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
@@ -92,7 +91,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             var displayName = Type.Name;
             if (_displayAttribute is not null || Type.TryGetDisplayAttribute(out _displayAttribute))
             {
-                displayName = LocalizationHelper.ResolveDisplayName(_displayAttribute, declaringType: null, Type.Name, context);
+                displayName = LocalizationHelper.ResolveDisplayAttribute(_displayAttribute, declaringType: null, Type.Name, context);
             }
 
             context.ValidationContext.DisplayName = displayName;
