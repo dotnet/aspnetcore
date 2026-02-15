@@ -64,7 +64,7 @@ internal static class LocalizationHelper
     };
 
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-    internal static string ResolveDisplayAttribute(DisplayAttribute? displayAttribute, Type? declaringType, string defaultName, ValidateContext context)
+    internal static string ResolveDisplayName(DisplayAttribute? displayAttribute, Type? declaringType, string defaultName, ValidateContext context)
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     {
         if (displayAttribute is DisplayAttribute display && display.GetName() is string displayNameValue)
@@ -78,7 +78,7 @@ internal static class LocalizationHelper
             {
                 // Name is localized via key.
                 var displayNameProvider = context.DisplayNameProvider ?? context.ValidationOptions.DisplayNameProvider;
-                var localizedDisplayName = GetDisplayName(displayNameProvider, declaringType, displayNameValue);
+                var localizedDisplayName = GetDisplayName(declaringType, displayNameValue, displayNameProvider);
                 return localizedDisplayName;
             }
         }
@@ -89,30 +89,27 @@ internal static class LocalizationHelper
     /// <summary>
     /// Resolves the display name for a member, using the DisplayNameResolver if configured.
     /// </summary>
-    /// <param name="provider">The delegate that resolves display names for properties and parameters..</param>
     /// <param name="declaringType">The type that declares the member, or null for parameters.</param>
-    /// <param name="defaultDisplayName">The default display name from DisplayAttribute or CLR name.</param>
+    /// <param name="nameValue">The value specified in the Name property of the DisplayAttribute.</param>
+    /// <param name="provider">The delegate that resolves display names for properties and parameters.</param>
     /// <returns>The resolved display name.</returns>
     private static string GetDisplayName(
-        Func<DisplayNameContext, string?>? provider,
         Type? declaringType,
-        //string memberName,
-        string defaultDisplayName)
+        string nameValue,
+        Func<DisplayNameContext, string?>? provider)
     {
         if (provider is null)
         {
-            return defaultDisplayName;
+            return nameValue;
         }
 
         var displayNameContext = new DisplayNameContext
         {
             DeclaringType = declaringType,
-            DefaultDisplayName = defaultDisplayName,
-            //MemberName = memberName,
-            //Services = context.ValidationContext
+            NameValue = nameValue,
         };
 
-        return provider(displayNameContext) ?? defaultDisplayName;
+        return provider(displayNameContext) ?? nameValue;
     }
 
     /// <summary>
@@ -120,17 +117,16 @@ internal static class LocalizationHelper
     /// Returns null if no provider is configured, the attribute uses its own resource-based
     /// localization, or the provider returns null (indicating fallback to default behavior).
     /// </summary>
-    /// <param name="provider">The delegate that resolves error messages for validation attributes.</param>
     /// <param name="attribute">The validation attribute that produced the error.</param>
-    /// <param name="displayName">The (possibly localized) display name of the member.</param>
     /// <param name="declaringType">The declaring type, or null for parameters.</param>
+    /// <param name="displayName">The (possibly localized) display name of the member.</param>
+    /// <param name="provider">The delegate that resolves error messages for validation attributes.</param>
     /// <returns>The resolved error message, or null to fall through to default behavior.</returns>
     internal static string? TryResolveErrorMessage(
-        Func<ErrorMessageContext, string?>? provider,
         ValidationAttribute attribute,
+        Type? declaringType,
         string displayName,
-        //string memberName,
-        Type? declaringType)
+        Func<ErrorMessageContext, string?>? provider)
     {
         // If the attribute uses its own resource-based localization
         // (ErrorMessageResourceType is set), skip external localization
@@ -157,9 +153,7 @@ internal static class LocalizationHelper
             ErrorMessage = template,
             IsCustomErrorMessage = isCustom,
             DisplayName = displayName,
-            //MemberName = memberName,
             DeclaringType = declaringType,
-            //Services = context.ValidationContext,
         };
 
         return provider(errorMessageContext);

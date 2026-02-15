@@ -27,9 +27,7 @@ public class DefaultAttributeArgumentProvider : IAttributeArgumentProvider
                 [displayName, fe.Extensions],
             LengthAttribute la =>
                 [displayName, la.MinimumLength, la.MaximumLength],
-            // For most attributes (Required, EmailAddress, Phone, CreditCard, Url,
-            // Base64String, AllowedValues, DeniedValues, etc.),
-            // only the display name is used.
+            // Other built-in attributes only use the display name.
             _ => [displayName],
         };
     }

@@ -26,7 +26,7 @@ public readonly struct DisplayNameContext
     /// Gets the default display name, from <see cref="DisplayAttribute.Name"/>
     /// or the CLR member name.
     /// </summary>
-    public required string DefaultDisplayName { get; init; }
+    public required string NameValue { get; init; }
 
     /// <summary>
     /// Gets the service provider for resolving localization services.

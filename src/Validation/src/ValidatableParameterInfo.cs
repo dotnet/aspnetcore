@@ -61,7 +61,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             return;
         }
 
-        var displayName = LocalizationHelper.ResolveDisplayAttribute(GetDisplayAttribute(), declaringType: null, Name, context);
+        var displayName = LocalizationHelper.ResolveDisplayName(GetDisplayAttribute(), declaringType: null, defaultName: Name, context);
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
@@ -75,7 +75,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
 
             if (result is not null && result != ValidationResult.Success)
             {
-                var customMessage = LocalizationHelper.TryResolveErrorMessage(errorMessageProvider, _requiredAttribute, displayName, declaringType: null);
+                var customMessage = LocalizationHelper.TryResolveErrorMessage(_requiredAttribute, declaringType: null, displayName: displayName, provider: errorMessageProvider);
                 var errorMessage = customMessage ?? result.ErrorMessage;
 
                 if (errorMessage is not null)
@@ -97,7 +97,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
                 var result = attribute.GetValidationResult(value, context.ValidationContext);
                 if (result is not null && result != ValidationResult.Success)
                 {
-                    var customMessage = LocalizationHelper.TryResolveErrorMessage(errorMessageProvider, attribute, displayName, declaringType: null);
+                    var customMessage = LocalizationHelper.TryResolveErrorMessage(attribute, declaringType: null, displayName: displayName, provider: errorMessageProvider);
                     var errorMessage = customMessage ?? result.ErrorMessage;
 
                     if (errorMessage is not null)
