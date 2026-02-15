@@ -15,7 +15,6 @@ namespace Microsoft.Extensions.Validation;
 public abstract class ValidatableParameterInfo : IValidatableInfo
 {
     private RequiredAttribute? _requiredAttribute;
-    private DisplayAttribute? _displayAttribute;
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableParameterInfo"/>.
@@ -47,6 +46,8 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// <returns>An array of validation attributes to apply to this parameter.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
+    protected abstract DisplayAttribute? GetDisplayAttribute();
+
     /// <inheritdoc />
     /// <remarks>
     /// If the parameter is a collection, each item in the collection will be validated.
@@ -60,11 +61,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             return;
         }
 
-        var displayName = Name;
-        if (_displayAttribute is not null || ParameterType.TryGetDisplayAttribute(out _displayAttribute))
-        {
-            displayName = LocalizationHelper.ResolveDisplayName(_displayAttribute, declaringType: null, Name, context);
-        }
+        var displayName = LocalizationHelper.ResolveDisplayAttribute(GetDisplayAttribute(), declaringType: null, Name, context);
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;

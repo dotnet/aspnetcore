@@ -138,7 +138,6 @@ public class ValidatableParameterInfoTests
                     typeof(Person),
                     typeof(string),
                     "Name",
-                    "Name",
                     [new RequiredAttribute()])
             ]);
 
@@ -177,7 +176,6 @@ public class ValidatableParameterInfoTests
                 new TestValidatablePropertyInfo(
                     typeof(Person),
                     typeof(string),
-                    "Name",
                     "Name",
                     [new RequiredAttribute()])
             ]);
@@ -290,13 +288,14 @@ public class ValidatableParameterInfoTests
     private TestValidatableParameterInfo CreateTestParameterInfo(
         Type parameterType,
         string name,
-        string displayName,
+        string? displayName,
         ValidationAttribute[] validationAttributes)
     {
+        var displayAttribute = displayName is not null ? new DisplayAttribute { Name = displayName } : null;
         return new TestValidatableParameterInfo(
             parameterType,
             name,
-            displayName,
+            displayAttribute,
             validationAttributes);
     }
 
@@ -315,17 +314,21 @@ public class ValidatableParameterInfoTests
 
     private class TestValidatableParameterInfo : ValidatableParameterInfo
     {
+        private readonly DisplayAttribute? _displayAttribute;
         private readonly ValidationAttribute[] _validationAttributes;
 
         public TestValidatableParameterInfo(
             Type parameterType,
             string name,
-            string displayName,
+            DisplayAttribute? displayAttribute,
             ValidationAttribute[] validationAttributes)
-            : base(parameterType, name, displayName)
+            : base(parameterType, name)
         {
+            _displayAttribute = displayAttribute;
             _validationAttributes = validationAttributes;
         }
+
+        protected override DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
 
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
     }
@@ -338,9 +341,8 @@ public class ValidatableParameterInfoTests
             Type containingType,
             Type propertyType,
             string name,
-            string displayName,
             ValidationAttribute[] validationAttributes)
-            : base(containingType, propertyType, name, displayName)
+            : base(containingType, propertyType, name)
         {
             _validationAttributes = validationAttributes;
         }
