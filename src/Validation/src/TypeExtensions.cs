@@ -85,12 +85,6 @@ internal static class TypeExtensions
         return false;
     }
 
-    public static bool TryGetDisplayAttribute(this MemberInfo memberInfo, [NotNullWhen(true)] out DisplayAttribute? displayAttribute)
-    {
-        displayAttribute = Attribute.GetCustomAttribute(memberInfo, typeof(DisplayAttribute)) as DisplayAttribute;
-        return displayAttribute is not null;
-    }
-
     /// <summary>
     /// Gets all types that the specified type implements or inherits from.
     /// </summary>

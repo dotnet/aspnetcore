@@ -3,6 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
@@ -13,8 +14,9 @@ namespace Microsoft.Extensions.Validation;
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public abstract class ValidatablePropertyInfo : IValidatableInfo
 {
+    private readonly PropertyInfo _propertyInfo;
+    private readonly DisplayAttribute? _displayAttribute;
     private RequiredAttribute? _requiredAttribute;
-    private DisplayAttribute? _displayAttribute;
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidatablePropertyInfo"/>.
@@ -28,6 +30,10 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         DeclaringType = declaringType;
         PropertyType = propertyType;
         Name = name;
+
+        _propertyInfo = DeclaringType.GetProperty(Name, PropertyType)
+            ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
+        _displayAttribute = _propertyInfo.GetCustomAttribute<DisplayAttribute>(inherit: true);
     }
 
     /// <summary>
@@ -55,11 +61,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
-        var displayName = Name;
-        if (_displayAttribute is not null || (DeclaringType.GetProperty(Name, PropertyType)?.TryGetDisplayAttribute(out _displayAttribute) ?? false))
-        {
-            displayName = LocalizationHelper.ResolveDisplayAttribute(_displayAttribute, DeclaringType, Name, context);
-        }
+        var displayName = LocalizationHelper.ResolveDisplayName(_displayAttribute, declaringType: DeclaringType, defaultName: Name, context);
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
@@ -77,8 +79,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         }
 
         var errorMessageProvider = context.ErrorMessageProvider ?? context.ValidationOptions.ErrorMessageProvider;
-        var property = DeclaringType.GetProperty(Name) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
-        var propertyValue = property.GetValue(value);
+        var propertyValue = _propertyInfo.GetValue(value);
         var validationAttributes = GetValidationAttributes();
 
         // Check required attribute first
@@ -88,7 +89,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
 
             if (result is not null && result != ValidationResult.Success)
             {
-                var customMessage = LocalizationHelper.TryResolveErrorMessage(errorMessageProvider, _requiredAttribute, displayName, DeclaringType);
+                var customMessage = LocalizationHelper.TryResolveErrorMessage(_requiredAttribute, DeclaringType, displayName, errorMessageProvider);
                 var errorMessage = customMessage ?? result.ErrorMessage;
 
                 if (errorMessage is not null)
@@ -170,7 +171,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                     var result = attribute.GetValidationResult(val, context.ValidationContext);
                     if (result is not null && result != ValidationResult.Success)
                     {
-                        var customMessage = LocalizationHelper.TryResolveErrorMessage(errorMessageProvider, attribute, displayName, DeclaringType);
+                        var customMessage = LocalizationHelper.TryResolveErrorMessage(attribute, DeclaringType, displayName, errorMessageProvider);
                         var errorMessage = customMessage ?? result.ErrorMessage;
 
                         if (errorMessage is not null)

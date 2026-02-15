@@ -4,6 +4,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
+using System.Xml.Linq;
 using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
@@ -16,7 +18,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
 {
     private readonly int _membersCount;
     private readonly List<Type> _superTypes;
-    private DisplayAttribute? _displayAttribute;
+    private readonly DisplayAttribute? _displayAttribute;
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableTypeInfo"/>.
@@ -31,6 +33,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         Members = members;
         _membersCount = members.Count;
         _superTypes = type.GetAllImplementedTypes();
+        _displayAttribute = Type.GetCustomAttribute<DisplayAttribute>(inherit: true);
     }
 
     /// <summary>
@@ -88,11 +91,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 return;
             }
 
-            var displayName = Type.Name;
-            if (_displayAttribute is not null || Type.TryGetDisplayAttribute(out _displayAttribute))
-            {
-                displayName = LocalizationHelper.ResolveDisplayAttribute(_displayAttribute, declaringType: null, Type.Name, context);
-            }
+            var displayName = LocalizationHelper.ResolveDisplayName(_displayAttribute, declaringType: Type, defaultName: Type.Name, context);
 
             context.ValidationContext.DisplayName = displayName;
             context.ValidationContext.MemberName = null;
@@ -147,7 +146,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             {
                 // For type-level attributes, the "display name" is the type name
                 // and the "member name" is empty (it's a type-level validation).
-                var customMessage = LocalizationHelper.TryResolveErrorMessage(errorMessageProvider, attribute, displayName, declaringType: Type);
+                var customMessage = LocalizationHelper.TryResolveErrorMessage(attribute, declaringType: Type, displayName: displayName, provider: errorMessageProvider);
                 var errorMessage = customMessage ?? result.ErrorMessage;
 
                 if (errorMessage is not null)
