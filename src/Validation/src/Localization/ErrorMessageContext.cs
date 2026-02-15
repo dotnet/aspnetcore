@@ -38,7 +38,7 @@ public readonly struct ErrorMessageContext
     /// This value is already localized if <see cref="ValidationOptions.DisplayNameProvider"/>
     /// was configured and returned a non-null value.
     /// </summary>
-    public required string DisplayName { get; init; }
+    public required string? DisplayName { get; init; }
 
     /// <summary>
     /// Gets the CLR name of the member or parameter being validated.
