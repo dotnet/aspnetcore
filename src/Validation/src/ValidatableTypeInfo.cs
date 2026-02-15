@@ -146,7 +146,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             {
                 // For type-level attributes, the "display name" is the type name
                 // and the "member name" is empty (it's a type-level validation).
-                var customMessage = LocalizationHelper.TryResolveErrorMessage(attribute, declaringType: Type, displayName: displayName, provider: errorMessageProvider);
+                var customMessage = LocalizationHelper.TryResolveErrorMessage(attribute, declaringType: Type, displayName, Type.Name, errorMessageProvider);
                 var errorMessage = customMessage ?? result.ErrorMessage;
 
                 if (errorMessage is not null)

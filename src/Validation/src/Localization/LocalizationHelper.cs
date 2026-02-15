@@ -120,12 +120,14 @@ internal static class LocalizationHelper
     /// <param name="attribute">The validation attribute that produced the error.</param>
     /// <param name="declaringType">The declaring type, or null for parameters.</param>
     /// <param name="displayName">The (possibly localized) display name of the member.</param>
+    /// <param name="memberName">The CLR member name.</param>
     /// <param name="provider">The delegate that resolves error messages for validation attributes.</param>
     /// <returns>The resolved error message, or null to fall through to default behavior.</returns>
     internal static string? TryResolveErrorMessage(
         ValidationAttribute attribute,
         Type? declaringType,
-        string displayName,
+        string? displayName,
+        string memberName,
         Func<ErrorMessageContext, string?>? provider)
     {
         // If the attribute uses its own resource-based localization
@@ -153,6 +155,7 @@ internal static class LocalizationHelper
             ErrorMessage = template,
             IsCustomErrorMessage = isCustom,
             DisplayName = displayName,
+            MemberName = memberName,
             DeclaringType = declaringType,
         };
 

@@ -89,7 +89,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
 
             if (result is not null && result != ValidationResult.Success)
             {
-                var customMessage = LocalizationHelper.TryResolveErrorMessage(_requiredAttribute, DeclaringType, displayName, errorMessageProvider);
+                var customMessage = LocalizationHelper.TryResolveErrorMessage(_requiredAttribute, DeclaringType, displayName, Name, errorMessageProvider);
                 var errorMessage = customMessage ?? result.ErrorMessage;
 
                 if (errorMessage is not null)
@@ -171,7 +171,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                     var result = attribute.GetValidationResult(val, context.ValidationContext);
                     if (result is not null && result != ValidationResult.Success)
                     {
-                        var customMessage = LocalizationHelper.TryResolveErrorMessage(attribute, DeclaringType, displayName, errorMessageProvider);
+                        var customMessage = LocalizationHelper.TryResolveErrorMessage(attribute, DeclaringType, displayName, Name, errorMessageProvider);
                         var errorMessage = customMessage ?? result.ErrorMessage;
 
                         if (errorMessage is not null)

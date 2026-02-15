@@ -80,4 +80,33 @@ public static class ValidationServiceCollectionExtensions
 
         return services;
     }
+
+    /// <summary>
+    /// Adds localization support for validation error messages using a shared resource type.
+    /// All validation messages are looked up in the resource files associated with
+    /// <typeparamref name="TResource"/>, regardless of the declaring type.
+    /// </summary>
+    /// <typeparam name="TResource">
+    /// A marker type whose name and namespace determine the resource file location.
+    /// For example, <c>SharedValidationMessages</c> resolves to
+    /// <c>Resources/SharedValidationMessages.{culture}.resx</c>.
+    /// </typeparam>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
+    /// <returns>The <see cref="IServiceCollection"/> for chaining.</returns>
+    /// <example>
+    /// <code>
+    /// builder.Services.AddValidation();
+    /// builder.Services.AddValidationLocalization&lt;SharedValidationMessages&gt;();
+    /// </code>
+    /// </example>
+    public static IServiceCollection AddValidationLocalization<TResource>(
+        this IServiceCollection services, Action<ValidationLocalizationOptions>? configureOptions = null)
+    {
+        return services.AddValidationLocalization(options =>
+        {
+            options.LocalizerProvider = (_, factory) => factory.Create(typeof(TResource));
+
+            configureOptions?.Invoke(options);
+        });
+    }
 }

@@ -14,7 +14,7 @@ public sealed class ValidationLocalizationOptions
     /// <summary>
     /// Gets or sets the delegate that creates an <see cref="IStringLocalizer"/>
     /// for a given declaring type. The declaring type is the type that contains
-    /// the property or parameter being validated.
+    /// the property being validated, or the type itself in case of type-level validation attributes.
     /// </summary>
     /// <remarks>
     /// <para>

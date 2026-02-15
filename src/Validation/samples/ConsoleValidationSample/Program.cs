@@ -17,10 +17,7 @@ internal class Program
         builder.Services.AddOptions();
         builder.Services.AddLogging();
 
-        builder.Services.AddValidationLocalization(options =>
-        {
-            options.LocalizerProvider = (_, factory) => factory.Create(typeof(ValidationMessages));
-        });
+        builder.Services.AddValidationLocalization<ValidationMessages>();
         builder.Services.AddValidation();
         builder.Services.AddSingleton<IAttributeArgumentProvider, CustomAttributeArgumentProvider>();
 
