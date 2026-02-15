@@ -48,10 +48,14 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
             validatableInfo = null;
             return false;
         }
+
+        var displayAttribute = parameterInfo.GetCustomAttribute<DisplayAttribute>();
+
         validatableInfo = new RuntimeValidatableParameterInfo(
             parameterType: parameterInfo.ParameterType,
             name: parameterInfo.Name,
-            validationAttributes: validationAttributes
+            validationAttributes: validationAttributes,
+            displayAttribute: displayAttribute
         );
         return true;
     }
@@ -59,12 +63,15 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
     internal sealed class RuntimeValidatableParameterInfo(
         Type parameterType,
         string name,
-        ValidationAttribute[] validationAttributes) :
+        ValidationAttribute[] validationAttributes,
+        DisplayAttribute? displayAttribute) :
             ValidatableParameterInfo(parameterType, name)
     {
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+        protected override DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
 
         private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
+        private readonly DisplayAttribute? _displayAttribute = displayAttribute;
     }
 
     private static bool IsComplexType(Type type)

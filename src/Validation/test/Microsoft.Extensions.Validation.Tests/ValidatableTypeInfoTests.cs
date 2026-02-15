@@ -20,20 +20,20 @@ public class ValidatableTypeInfoTests
         var personType = new TestValidatableTypeInfo(
             typeof(Person),
             [
-                CreatePropertyInfo(typeof(Person), typeof(string), "Name", "Name",
+                CreatePropertyInfo(typeof(Person), typeof(string), "Name",
                     [new RequiredAttribute()]),
-                CreatePropertyInfo(typeof(Person), typeof(int), "Age", "Age",
+                CreatePropertyInfo(typeof(Person), typeof(int), "Age",
                     [new RangeAttribute(0, 120)]),
-                CreatePropertyInfo(typeof(Person), typeof(Address), "Address", "Address",
+                CreatePropertyInfo(typeof(Person), typeof(Address), "Address",
                     [])
             ]);
 
         var addressType = new TestValidatableTypeInfo(
             typeof(Address),
             [
-                CreatePropertyInfo(typeof(Address), typeof(string), "Street", "Street",
+                CreatePropertyInfo(typeof(Address), typeof(string), "Street",
                     [new RequiredAttribute()]),
-                CreatePropertyInfo(typeof(Address), typeof(string), "City", "City",
+                CreatePropertyInfo(typeof(Address), typeof(string), "City",
                     [new RequiredAttribute()])
             ]);
 
@@ -122,11 +122,11 @@ public class ValidatableTypeInfoTests
         var employeeType = new TestValidatableTypeInfo(
             typeof(Employee),
             [
-                CreatePropertyInfo(typeof(Employee), typeof(string), "Name", "Name",
+                CreatePropertyInfo(typeof(Employee), typeof(string), "Name",
                     [new RequiredAttribute()]),
-                CreatePropertyInfo(typeof(Employee), typeof(string), "Department", "Department",
+                CreatePropertyInfo(typeof(Employee), typeof(string), "Department",
                     []),
-                CreatePropertyInfo(typeof(Employee), typeof(decimal), "Salary", "Salary",
+                CreatePropertyInfo(typeof(Employee), typeof(decimal), "Salary",
                     [])
             ]);
 
@@ -170,16 +170,16 @@ public class ValidatableTypeInfoTests
         var baseType = new TestValidatableTypeInfo(
             typeof(Vehicle),
             [
-                CreatePropertyInfo(typeof(Vehicle), typeof(string), "Make", "Make",
+                CreatePropertyInfo(typeof(Vehicle), typeof(string), "Make",
                     [new RequiredAttribute()]),
-                CreatePropertyInfo(typeof(Vehicle), typeof(string), "Model", "Model",
+                CreatePropertyInfo(typeof(Vehicle), typeof(string), "Model",
                     [new RequiredAttribute()])
             ]);
 
         var derivedType = new TestValidatableTypeInfo(
             typeof(Car),
             [
-                CreatePropertyInfo(typeof(Car), typeof(int), "Doors", "Doors",
+                CreatePropertyInfo(typeof(Car), typeof(int), "Doors",
                     [new RangeAttribute(2, 5)])
             ]);
 
@@ -228,18 +228,18 @@ public class ValidatableTypeInfoTests
         var itemType = new TestValidatableTypeInfo(
             typeof(OrderItem),
             [
-                CreatePropertyInfo(typeof(OrderItem), typeof(string), "ProductName", "ProductName",
+                CreatePropertyInfo(typeof(OrderItem), typeof(string), "ProductName",
                     [new RequiredAttribute()]),
-                CreatePropertyInfo(typeof(OrderItem), typeof(int), "Quantity", "Quantity",
+                CreatePropertyInfo(typeof(OrderItem), typeof(int), "Quantity",
                     [new RangeAttribute(1, 100)])
             ]);
 
         var orderType = new TestValidatableTypeInfo(
             typeof(Order),
             [
-                CreatePropertyInfo(typeof(Order), typeof(string), "OrderNumber", "OrderNumber",
+                CreatePropertyInfo(typeof(Order), typeof(string), "OrderNumber",
                     [new RequiredAttribute()]),
-                CreatePropertyInfo(typeof(Order), typeof(List<OrderItem>), "Items", "Items",
+                CreatePropertyInfo(typeof(Order), typeof(List<OrderItem>), "Items",
                     [])
             ]);
 
@@ -293,9 +293,9 @@ public class ValidatableTypeInfoTests
         var personType = new TestValidatableTypeInfo(
             typeof(Person),
             [
-                CreatePropertyInfo(typeof(Person), typeof(string), "Name", "Name",
+                CreatePropertyInfo(typeof(Person), typeof(string), "Name",
                     []),
-                CreatePropertyInfo(typeof(Person), typeof(Address), "Address", "Address",
+                CreatePropertyInfo(typeof(Person), typeof(Address), "Address",
                     [])
             ]);
 
@@ -328,11 +328,11 @@ public class ValidatableTypeInfoTests
         var nodeType = new TestValidatableTypeInfo(
             typeof(TreeNode),
             [
-                CreatePropertyInfo(typeof(TreeNode), typeof(string), "Name", "Name",
+                CreatePropertyInfo(typeof(TreeNode), typeof(string), "Name",
                     [new RequiredAttribute()]),
-                CreatePropertyInfo(typeof(TreeNode), typeof(TreeNode), "Parent", "Parent",
+                CreatePropertyInfo(typeof(TreeNode), typeof(TreeNode), "Parent",
                     []),
-                CreatePropertyInfo(typeof(TreeNode), typeof(List<TreeNode>), "Children", "Children",
+                CreatePropertyInfo(typeof(TreeNode), typeof(List<TreeNode>), "Children",
                     [])
             ]);
 
@@ -383,7 +383,7 @@ public class ValidatableTypeInfoTests
         var productType = new TestValidatableTypeInfo(
             typeof(Product),
             [
-                CreatePropertyInfo(typeof(Product), typeof(string), "SKU", "SKU", [new RequiredAttribute(), new CustomSkuValidationAttribute()]),
+                CreatePropertyInfo(typeof(Product), typeof(string), "SKU", [new RequiredAttribute(), new CustomSkuValidationAttribute()]),
             ]);
 
         var product = new Product { SKU = "INVALID-SKU" };
@@ -413,7 +413,7 @@ public class ValidatableTypeInfoTests
         var userType = new TestValidatableTypeInfo(
             typeof(User),
             [
-                CreatePropertyInfo(typeof(User), typeof(string), "Password", "Password",
+                CreatePropertyInfo(typeof(User), typeof(string), "Password",
                     [
                         new RequiredAttribute(),
                         new MinLengthAttribute(8) { ErrorMessage = "Password must be at least 8 characters." },
@@ -449,19 +449,19 @@ public class ValidatableTypeInfoTests
         var baseType = new TestValidatableTypeInfo(
             typeof(BaseEntity),
             [
-                CreatePropertyInfo(typeof(BaseEntity), typeof(Guid), "Id", "Id", [])
+                CreatePropertyInfo(typeof(BaseEntity), typeof(Guid), "Id", [])
             ]);
 
         var intermediateType = new TestValidatableTypeInfo(
             typeof(IntermediateEntity),
             [
-                CreatePropertyInfo(typeof(IntermediateEntity), typeof(DateTime), "CreatedAt", "CreatedAt", [new PastDateAttribute()])
+                CreatePropertyInfo(typeof(IntermediateEntity), typeof(DateTime), "CreatedAt", [new PastDateAttribute()])
             ]);
 
         var derivedType = new TestValidatableTypeInfo(
             typeof(DerivedEntity),
             [
-                CreatePropertyInfo(typeof(DerivedEntity), typeof(string), "Name", "Name", [new RequiredAttribute()])
+                CreatePropertyInfo(typeof(DerivedEntity), typeof(string), "Name", [new RequiredAttribute()])
             ]);
 
         var entity = new DerivedEntity
@@ -505,7 +505,7 @@ public class ValidatableTypeInfoTests
         var userType = new TestValidatableTypeInfo(
             typeof(User),
             [
-                CreatePropertyInfo(typeof(User), typeof(string), "Password", "Password",
+                CreatePropertyInfo(typeof(User), typeof(string), "Password",
                     [new RequiredAttribute(), new PasswordComplexityAttribute()])
             ]);
 
@@ -557,8 +557,8 @@ public class ValidatableTypeInfoTests
         var multiType = new TestValidatableTypeInfo(
             typeof(MultiMemberErrorObject),
             [
-                CreatePropertyInfo(typeof(MultiMemberErrorObject), typeof(string), "FirstName", "FirstName", []),
-                CreatePropertyInfo(typeof(MultiMemberErrorObject), typeof(string), "LastName",  "LastName",  [])
+                CreatePropertyInfo(typeof(MultiMemberErrorObject), typeof(string), "FirstName", []),
+                CreatePropertyInfo(typeof(MultiMemberErrorObject), typeof(string), "LastName",  [])
             ]);
 
         context.ValidationErrors = [];
@@ -597,7 +597,7 @@ public class ValidatableTypeInfoTests
         var testTypeInfo = new TestValidatableTypeInfo(
             typeof(PropertyAndTypeLevelErrorObject),
             [
-                CreatePropertyInfo(typeof(PropertyAndTypeLevelErrorObject), typeof(int), "Value", "Value",
+                CreatePropertyInfo(typeof(PropertyAndTypeLevelErrorObject), typeof(int), "Value",
                     [new RangeAttribute(0, int.MaxValue) {  ErrorMessage = "Property attribute error" }])
             ],
             [
@@ -714,14 +714,12 @@ public class ValidatableTypeInfoTests
         Type containingType,
         Type propertyType,
         string name,
-        string displayName,
         ValidationAttribute[] validationAttributes)
     {
         return new TestValidatablePropertyInfo(
             containingType,
             propertyType,
             name,
-            displayName,
             validationAttributes);
     }
 
@@ -863,9 +861,8 @@ public class ValidatableTypeInfoTests
             Type containingType,
             Type propertyType,
             string name,
-            string displayName,
             ValidationAttribute[] validationAttributes)
-            : base(containingType, propertyType, name, displayName)
+            : base(containingType, propertyType, name)
         {
             _validationAttributes = validationAttributes;
         }

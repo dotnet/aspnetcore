@@ -86,7 +86,6 @@ public class ValidatableInfoResolverTests
 
         var mockParamInfo = new Mock<ValidatableParameterInfo>(
             typeof(string),
-            "model",
             "model").Object;
 
         var resolver = new Mock<IValidatableInfoResolver>();
@@ -188,9 +187,8 @@ public class ValidatableInfoResolverTests
             Type containingType,
             Type propertyType,
             string name,
-            string displayName,
             ValidationAttribute[] validationAttributes)
-            : base(containingType, propertyType, name, displayName)
+            : base(containingType, propertyType, name)
         {
             _validationAttributes = validationAttributes;
         }
@@ -200,17 +198,21 @@ public class ValidatableInfoResolverTests
 
     private class TestValidatableParameterInfo : ValidatableParameterInfo
     {
+        private readonly DisplayAttribute? _displayAttribute;
         private readonly ValidationAttribute[] _validationAttributes;
 
         public TestValidatableParameterInfo(
             Type parameterType,
             string name,
-            string displayName,
+            DisplayAttribute? displayAttribute,
             ValidationAttribute[] validationAttributes)
-            : base(parameterType, name, displayName)
+            : base(parameterType, name)
         {
+            _displayAttribute = displayAttribute;
             _validationAttributes = validationAttributes;
         }
+
+        protected override DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
 
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
     }
