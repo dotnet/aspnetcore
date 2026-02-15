@@ -210,9 +210,10 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         // Handle properties for classes and any properties not handled by the constructor
         foreach (var member in typeSymbol.GetMembers().OfType<IPropertySymbol>())
         {
-            // Skip compiler generated properties and properties already processed via
+            // Skip compiler generated properties, indexers, and properties already processed via
             // the record processing logic above.
             if (member.IsImplicitlyDeclared
+                || member.IsIndexer
                 || member.IsEqualityContract(wellKnownTypes)
                 || resolvedRecordProperty.Contains(member, SymbolEqualityComparer.Default))
             {
