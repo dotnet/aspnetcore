@@ -23,7 +23,7 @@ public readonly struct ErrorMessageContext
     /// (e.g., <c>"The {0} field is required."</c> for <see cref="RequiredAttribute"/>).
     /// This value can be used as a localization lookup key.
     /// </summary>
-     public required string ErrorMessage { get; init; }
+    public required string ErrorMessage { get; init; }
 
     /// <summary>
     /// Gets a value indicating whether <see cref="ValidationAttribute.ErrorMessage"/> was explicitly
@@ -31,7 +31,7 @@ public readonly struct ErrorMessageContext
     /// When <see langword="false"/>, <see cref="ErrorMessage"/> contains the attribute's
     /// built-in default message template.
     /// </summary>
-     public required bool IsCustomErrorMessage { get; init; }
+    public required bool IsCustomErrorMessage { get; init; }
 
     /// <summary>
     /// Gets the resolved display name for the member being validated.
@@ -43,17 +43,11 @@ public readonly struct ErrorMessageContext
     /// <summary>
     /// Gets the CLR name of the member or parameter being validated.
     /// </summary>
-    // public required string MemberName { get; init; }
+    public required string MemberName { get; init; }
 
     /// <summary>
     /// Gets the type that declares the member being validated.
     /// <see langword="null"/> for top-level parameter validation.
     /// </summary>
     public Type? DeclaringType { get; init; }
-
-    /// <summary>
-    /// Gets the service provider for resolving localization or other services.
-    /// Obtained from <see cref="ValidationContext"/> on the current <see cref="ValidateContext"/>.
-    /// </summary>
-    // public required IServiceProvider Services { get; init; }
 }
