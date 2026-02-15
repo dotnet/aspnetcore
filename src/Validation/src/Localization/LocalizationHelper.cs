@@ -64,19 +64,21 @@ internal static class LocalizationHelper
     };
 
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-    internal static string ResolveDisplayName(DisplayAttribute? displayAttribute, Type? declaringType, string defaultName, ValidateContext context)
+    internal static string ResolveDisplayAttribute(DisplayAttribute? displayAttribute, Type? declaringType, string defaultName, ValidateContext context)
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     {
         if (displayAttribute is DisplayAttribute display && display.GetName() is string displayNameValue)
         {
             if (display.ResourceType is not null)
             {
+                // Name is loaded from a resource file.
                 return displayNameValue;
             }
             else
             {
+                // Name is localized via key.
                 var displayNameProvider = context.DisplayNameProvider ?? context.ValidationOptions.DisplayNameProvider;
-                var localizedDisplayName = LocalizeDisplayName(displayNameProvider, declaringType, displayNameValue);
+                var localizedDisplayName = GetDisplayName(displayNameProvider, declaringType, displayNameValue);
                 return localizedDisplayName;
             }
         }
@@ -91,7 +93,7 @@ internal static class LocalizationHelper
     /// <param name="declaringType">The type that declares the member, or null for parameters.</param>
     /// <param name="defaultDisplayName">The default display name from DisplayAttribute or CLR name.</param>
     /// <returns>The resolved display name.</returns>
-    private static string LocalizeDisplayName(
+    private static string GetDisplayName(
         Func<DisplayNameContext, string?>? provider,
         Type? declaringType,
         //string memberName,

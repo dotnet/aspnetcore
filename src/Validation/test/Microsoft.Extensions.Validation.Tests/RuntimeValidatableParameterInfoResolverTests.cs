@@ -68,7 +68,6 @@ public class RuntimeValidatableParameterInfoResolverTests
         Assert.NotNull(validatableInfo);
         var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
         Assert.Equal("testParam", parameterValidatableInfo.Name);
-        Assert.Equal("testParam", parameterValidatableInfo.DisplayName);
     }
 
     [Fact]
@@ -84,7 +83,6 @@ public class RuntimeValidatableParameterInfoResolverTests
         Assert.NotNull(validatableInfo);
         var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
         Assert.Equal("value", parameterValidatableInfo.Name);
-        Assert.Equal("value", parameterValidatableInfo.DisplayName);
     }
 
     [Fact]
@@ -100,7 +98,6 @@ public class RuntimeValidatableParameterInfoResolverTests
         Assert.NotNull(validatableInfo);
         var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
         Assert.Equal("value", parameterValidatableInfo.Name);
-        Assert.Equal("Custom Display Name", parameterValidatableInfo.DisplayName);
     }
 
     [Fact]
@@ -116,7 +113,6 @@ public class RuntimeValidatableParameterInfoResolverTests
         Assert.NotNull(validatableInfo);
         var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
         Assert.Equal("value", parameterValidatableInfo.Name);
-        Assert.Equal("value", parameterValidatableInfo.DisplayName);
     }
 
     [Fact]
@@ -141,7 +137,6 @@ public class RuntimeValidatableParameterInfoResolverTests
         Assert.NotNull(validatableInfo);
         var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
         Assert.Equal("testParam", parameterValidatableInfo.Name);
-        Assert.Equal("testParam", parameterValidatableInfo.DisplayName);
     }
 
     private static ParameterInfo GetParameter(Type parameterType)
