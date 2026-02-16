@@ -18,15 +18,10 @@ public readonly struct DisplayNameContext
     public Type? DeclaringType { get; init; }
 
     /// <summary>
-    /// Gets the CLR name of the member or parameter.
-    /// </summary>
-    //public required string MemberName { get; init; }
-
-    /// <summary>
     /// Gets the default display name, from <see cref="DisplayAttribute.Name"/>
     /// or the CLR member name.
     /// </summary>
-    public required string NameValue { get; init; }
+    public required string Name { get; init; }
 
     /// <summary>
     /// Gets the service provider for resolving localization services.
