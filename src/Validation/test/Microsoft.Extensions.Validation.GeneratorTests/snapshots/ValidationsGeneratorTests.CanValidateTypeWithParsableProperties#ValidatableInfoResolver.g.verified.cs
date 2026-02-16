@@ -28,15 +28,22 @@ namespace Microsoft.Extensions.Validation.Generated
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file sealed class GeneratedValidatablePropertyInfo : global::Microsoft.Extensions.Validation.ValidatablePropertyInfo
     {
+        private global::System.ComponentModel.DataAnnotations.DisplayAttribute? _displayAttribute;
+
         public GeneratedValidatablePropertyInfo(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
             global::System.Type containingType,
             global::System.Type propertyType,
-            string name,
-            string displayName) : base(containingType, propertyType, name, displayName)
+            string name) : base(containingType, propertyType, name)
         {
             ContainingType = containingType;
             Name = name;
+            var property = ContainingType.GetProperty(Name);
+            if (property is not null)
+            {
+                _displayAttribute = global::System.Reflection.CustomAttributeExtensions
+                    .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(property, inherit: true);
+            }
         }
 
         [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
@@ -45,17 +52,23 @@ namespace Microsoft.Extensions.Validation.Generated
 
         protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes()
             => ValidationAttributeCache.GetPropertyValidationAttributes(ContainingType, Name);
+
+        protected override global::System.ComponentModel.DataAnnotations.DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
     }
 
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file sealed class GeneratedValidatableTypeInfo : global::Microsoft.Extensions.Validation.ValidatableTypeInfo
     {
+        private global::System.ComponentModel.DataAnnotations.DisplayAttribute? _displayAttribute;
+
         public GeneratedValidatableTypeInfo(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
             global::System.Type type,
             ValidatablePropertyInfo[] members) : base(type, members)
         {
             Type = type;
+            _displayAttribute = global::System.Reflection.CustomAttributeExtensions
+                .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(Type, inherit: true);
         }
 
         [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
@@ -63,6 +76,8 @@ namespace Microsoft.Extensions.Validation.Generated
 
         protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes()
             => ValidationAttributeCache.GetTypeValidationAttributes(Type);
+
+        protected override global::System.ComponentModel.DataAnnotations.DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
     }
 
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
@@ -79,56 +94,47 @@ namespace Microsoft.Extensions.Validation.Generated
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(global::System.Guid?),
-                            name: "GuidWithRegularExpression",
-                            displayName: "GuidWithRegularExpression"
+                            name: "GuidWithRegularExpression"
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(global::System.TimeOnly?),
-                            name: "TimeOnlyWithRequiredValue",
-                            displayName: "TimeOnlyWithRequiredValue"
+                            name: "TimeOnlyWithRequiredValue"
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(string),
-                            name: "Url",
-                            displayName: "Url"
+                            name: "Url"
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(global::System.DateOnly?),
-                            name: "DateOnlyWithRange",
-                            displayName: "DateOnlyWithRange"
+                            name: "DateOnlyWithRange"
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(global::System.DateTime?),
-                            name: "DateTimeWithRange",
-                            displayName: "DateTimeWithRange"
+                            name: "DateTimeWithRange"
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(decimal?),
-                            name: "DecimalWithRange",
-                            displayName: "DecimalWithRange"
+                            name: "DecimalWithRange"
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(global::System.TimeSpan?),
-                            name: "TimeSpanWithHourRange",
-                            displayName: "TimeSpanWithHourRange"
+                            name: "TimeSpanWithHourRange"
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(bool),
-                            name: "BooleanWithRange",
-                            displayName: "BooleanWithRange"
+                            name: "BooleanWithRange"
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(global::System.Version),
-                            name: "VersionWithRegex",
-                            displayName: "VersionWithRegex"
+                            name: "VersionWithRegex"
                         ),
                     ]
                 );
