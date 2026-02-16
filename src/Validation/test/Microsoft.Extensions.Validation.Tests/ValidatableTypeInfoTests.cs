@@ -853,21 +853,18 @@ public class ValidatableTypeInfoTests
     }
 
     // Test implementations
-    private class TestValidatablePropertyInfo : ValidatablePropertyInfo
+    private class TestValidatablePropertyInfo(
+        Type containingType,
+        Type propertyType,
+        string name,
+        ValidationAttribute[] validationAttributes,
+        DisplayAttribute? displayAttribute = null) : ValidatablePropertyInfo(containingType, propertyType, name)
     {
-        private readonly ValidationAttribute[] _validationAttributes;
-
-        public TestValidatablePropertyInfo(
-            Type containingType,
-            Type propertyType,
-            string name,
-            ValidationAttribute[] validationAttributes)
-            : base(containingType, propertyType, name)
-        {
-            _validationAttributes = validationAttributes;
-        }
-
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+        protected override DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
+
+        private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
+        private readonly DisplayAttribute? _displayAttribute = displayAttribute;
     }
 
     private class TestValidationOptions : ValidationOptions

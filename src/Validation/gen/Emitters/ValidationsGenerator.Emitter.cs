@@ -56,6 +56,8 @@ namespace Microsoft.Extensions.Validation.Generated
     {{GeneratedCodeAttribute}}
     file sealed class GeneratedValidatablePropertyInfo : global::Microsoft.Extensions.Validation.ValidatablePropertyInfo
     {
+        private global::System.ComponentModel.DataAnnotations.DisplayAttribute? _displayAttribute;
+
         public GeneratedValidatablePropertyInfo(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
             global::System.Type containingType,
@@ -64,6 +66,12 @@ namespace Microsoft.Extensions.Validation.Generated
         {
             ContainingType = containingType;
             Name = name;
+            var property = ContainingType.GetProperty(Name);
+            if (property is not null)
+            {
+                _displayAttribute = global::System.Reflection.CustomAttributeExtensions
+                    .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(property, inherit: true);
+            }
         }
 
         [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
@@ -72,17 +80,23 @@ namespace Microsoft.Extensions.Validation.Generated
 
         protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes()
             => ValidationAttributeCache.GetPropertyValidationAttributes(ContainingType, Name);
+
+        protected override global::System.ComponentModel.DataAnnotations.DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
     }
 
     {{GeneratedCodeAttribute}}
     file sealed class GeneratedValidatableTypeInfo : global::Microsoft.Extensions.Validation.ValidatableTypeInfo
     {
+        private global::System.ComponentModel.DataAnnotations.DisplayAttribute? _displayAttribute;
+
         public GeneratedValidatableTypeInfo(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
             global::System.Type type,
             ValidatablePropertyInfo[] members) : base(type, members)
         {
             Type = type;
+            _displayAttribute = global::System.Reflection.CustomAttributeExtensions
+                .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(Type, inherit: true);
         }
 
         [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
@@ -90,6 +104,8 @@ namespace Microsoft.Extensions.Validation.Generated
 
         protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes()
             => ValidationAttributeCache.GetTypeValidationAttributes(Type);
+
+        protected override global::System.ComponentModel.DataAnnotations.DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
     }
 
     {{GeneratedCodeAttribute}}
