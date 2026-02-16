@@ -15,7 +15,6 @@ namespace Microsoft.Extensions.Validation;
 public abstract class ValidatablePropertyInfo : IValidatableInfo
 {
     private readonly PropertyInfo _propertyInfo;
-    private readonly DisplayAttribute? _displayAttribute;
     private RequiredAttribute? _requiredAttribute;
 
     /// <summary>
@@ -33,7 +32,6 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
 
         _propertyInfo = DeclaringType.GetProperty(Name, PropertyType)
             ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
-        _displayAttribute = _propertyInfo.GetCustomAttribute<DisplayAttribute>(inherit: true);
     }
 
     /// <summary>
@@ -58,10 +56,16 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     /// <returns>An array of validation attributes to apply to this member.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
+    /// <summary>
+    /// Gets the <see cref="DisplayAttribute"/> for this member, if one exists.
+    /// </summary>
+    /// <returns>The <see cref="DisplayAttribute"/> applied to this member, or <see langword="null"/>.</returns>
+    protected abstract DisplayAttribute? GetDisplayAttribute();
+
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
-        var displayName = LocalizationHelper.ResolveDisplayName(_displayAttribute, declaringType: DeclaringType, defaultName: Name, context);
+        var displayName = LocalizationHelper.ResolveDisplayName(GetDisplayAttribute(), declaringType: DeclaringType, defaultName: Name, context);
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;

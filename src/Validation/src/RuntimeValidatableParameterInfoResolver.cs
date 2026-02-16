@@ -64,8 +64,7 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
         Type parameterType,
         string name,
         ValidationAttribute[] validationAttributes,
-        DisplayAttribute? displayAttribute) :
-            ValidatableParameterInfo(parameterType, name)
+        DisplayAttribute? displayAttribute) : ValidatableParameterInfo(parameterType, name)
     {
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
         protected override DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
