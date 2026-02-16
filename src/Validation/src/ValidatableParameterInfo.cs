@@ -45,6 +45,10 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// <returns>An array of validation attributes to apply to this parameter.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
+    /// <summary>
+    /// Gets the <see cref="DisplayAttribute"/> for this parameter, if one exists.
+    /// </summary>
+    /// <returns>The <see cref="DisplayAttribute"/> applied to this parameter, or <see langword="null"/>.</returns>
     protected abstract DisplayAttribute? GetDisplayAttribute();
 
     /// <inheritdoc />
