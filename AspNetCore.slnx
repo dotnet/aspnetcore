@@ -1187,10 +1187,12 @@
   <Folder Name="/src/Validation/test/">
     <Project Path="src/Validation/test/Microsoft.Extensions.Validation.GeneratorTests/Microsoft.Extensions.Validation.GeneratorTests.csproj" />
     <Project Path="src/Validation/test/Microsoft.Extensions.Validation.Tests/Microsoft.Extensions.Validation.Tests.csproj" />
+    <Project Path="src/Validation/test/Microsoft.Extensions.Validation.LocalizationTests/Microsoft.Extensions.Validation.LocalizationTests.csproj" />
   </Folder>
   <Folder Name="/src/Validation/samples/">
     <Project Path="src/Validation/samples/ConsoleValidationSample/ConsoleValidationSample.csproj" />
     <Project Path="src/Validation/samples/MinimalApiValidationSample/MinimalApiValidationSample.csproj" />
+    <Project Path="src/Validation/samples/BlazorValidationSample/BlazorValidationSample.csproj" />
   </Folder>
   <Folder Name="/src/WebEncoders/">
     <Project Path="src/WebEncoders/src/Microsoft.Extensions.WebEncoders.csproj" />

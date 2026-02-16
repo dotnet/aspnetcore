@@ -35,7 +35,6 @@ public static class ValidationServiceCollectionExtensions
         return services;
     }
 
-
     /// <summary>
     /// Adds localization support for validation error messages.
     /// Registers <see cref="T:Microsoft.Extensions.Localization.IStringLocalizerFactory"/> (via <see cref="LocalizationServiceCollectionExtensions.AddLocalization(IServiceCollection)"/>)
