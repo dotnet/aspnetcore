@@ -389,7 +389,8 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
             // reasons, include X-Content-Length so that the original Content-Length is still available.
             if (RequestHeaders.ContentLength.HasValue)
             {
-                RequestHeaders.Add("X-Content-Length", RequestHeaders[HeaderNames.ContentLength]);
+                // if user already passed X-Content-Length, we won't overwrite it
+                _ = RequestHeaders.TryAdd("X-Content-Length", RequestHeaders[HeaderNames.ContentLength]);
                 RequestHeaders.ContentLength = null;
             }
             return true;

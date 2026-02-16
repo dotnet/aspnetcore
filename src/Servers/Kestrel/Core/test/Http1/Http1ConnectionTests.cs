@@ -1029,6 +1029,27 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.False(_http1Connection.RequestHeaders.ContainsKey(HeaderNames.ContentLength));
     }
 
+    [Fact]
+    public void ContentLengthShouldBeRemovedWhenBothTransferEncodingAndContentLengthAndXContentLengthRequestHeadersExist()
+    {
+        // Arrange
+        string contentLength = "1024";
+        string userXContentLength = "123";
+        _http1Connection.RequestHeaders.Add(HeaderNames.ContentLength, contentLength);
+        _http1Connection.RequestHeaders.Add(HeaderNames.TransferEncoding, "chunked");
+        _http1Connection.RequestHeaders.Add("X-Content-Length", userXContentLength); // user passed this explicitly
+
+        // Act
+        Http1MessageBody.For(Kestrel.Core.Internal.Http.HttpVersion.Http11, (HttpRequestHeaders)_http1Connection.RequestHeaders, _http1Connection);
+
+        // Assert
+        Assert.True(_http1Connection.RequestHeaders.ContainsKey("X-Content-Length"));
+        Assert.Equal(userXContentLength, _http1Connection.RequestHeaders["X-Content-Length"]);
+        Assert.True(_http1Connection.RequestHeaders.ContainsKey(HeaderNames.TransferEncoding));
+        Assert.Equal("chunked", _http1Connection.RequestHeaders[HeaderNames.TransferEncoding]);
+        Assert.False(_http1Connection.RequestHeaders.ContainsKey(HeaderNames.ContentLength));
+    }
+
     private bool TakeMessageHeaders(ReadOnlySequence<byte> readableBuffer, bool trailers, out SequencePosition consumed, out SequencePosition examined)
     {
         var reader = new SequenceReader<byte>(readableBuffer);
