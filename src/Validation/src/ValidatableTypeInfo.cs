@@ -4,8 +4,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
-using System.Xml.Linq;
 using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
@@ -18,7 +16,6 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
 {
     private readonly int _membersCount;
     private readonly List<Type> _superTypes;
-    private readonly DisplayAttribute? _displayAttribute;
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableTypeInfo"/>.
@@ -33,7 +30,6 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         Members = members;
         _membersCount = members.Count;
         _superTypes = type.GetAllImplementedTypes();
-        _displayAttribute = Type.GetCustomAttribute<DisplayAttribute>(inherit: true);
     }
 
     /// <summary>
@@ -41,6 +37,12 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     /// </summary>
     /// <returns>An array of validation attributes to apply to this member.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
+
+    /// <summary>
+    /// Gets the <see cref="DisplayAttribute"/> for this type, if one exists.
+    /// </summary>
+    /// <returns>The <see cref="DisplayAttribute"/> applied to this type, or <see langword="null"/>.</returns>
+    protected abstract DisplayAttribute? GetDisplayAttribute();
 
     /// <summary>
     /// The type being validated.
@@ -91,7 +93,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 return;
             }
 
-            var displayName = LocalizationHelper.ResolveDisplayName(_displayAttribute, declaringType: Type, defaultName: Type.Name, context);
+            var displayName = LocalizationHelper.ResolveDisplayName(GetDisplayAttribute(), declaringType: Type, defaultName: Type.Name, context);
 
             context.ValidationContext.DisplayName = displayName;
             context.ValidationContext.MemberName = null;

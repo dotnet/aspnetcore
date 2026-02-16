@@ -295,8 +295,8 @@ public class ValidatableParameterInfoTests
         return new TestValidatableParameterInfo(
             parameterType,
             name,
-            displayAttribute,
-            validationAttributes);
+            validationAttributes,
+            displayAttribute);
     }
 
     private ValidateContext CreateValidatableContext(
@@ -312,42 +312,31 @@ public class ValidatableParameterInfoTests
         };
     }
 
-    private class TestValidatableParameterInfo : ValidatableParameterInfo
+    private class TestValidatableParameterInfo(
+        Type parameterType,
+        string name,
+        ValidationAttribute[] validationAttributes,
+        DisplayAttribute? displayAttribute = null) : ValidatableParameterInfo(parameterType, name)
     {
-        private readonly DisplayAttribute? _displayAttribute;
-        private readonly ValidationAttribute[] _validationAttributes;
-
-        public TestValidatableParameterInfo(
-            Type parameterType,
-            string name,
-            DisplayAttribute? displayAttribute,
-            ValidationAttribute[] validationAttributes)
-            : base(parameterType, name)
-        {
-            _displayAttribute = displayAttribute;
-            _validationAttributes = validationAttributes;
-        }
-
+        protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
         protected override DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
 
-        protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+        private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
+        private readonly DisplayAttribute? _displayAttribute = displayAttribute;
     }
 
-    private class TestValidatablePropertyInfo : ValidatablePropertyInfo
+    private class TestValidatablePropertyInfo(
+        Type containingType,
+        Type propertyType,
+        string name,
+        ValidationAttribute[] validationAttributes,
+        DisplayAttribute? displayAttribute = null) : ValidatablePropertyInfo(containingType, propertyType, name)
     {
-        private readonly ValidationAttribute[] _validationAttributes;
-
-        public TestValidatablePropertyInfo(
-            Type containingType,
-            Type propertyType,
-            string name,
-            ValidationAttribute[] validationAttributes)
-            : base(containingType, propertyType, name)
-        {
-            _validationAttributes = validationAttributes;
-        }
-
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+        protected override DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
+
+        private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
+        private readonly DisplayAttribute? _displayAttribute = displayAttribute;
     }
 
     private class TestValidationOptions : ValidationOptions
