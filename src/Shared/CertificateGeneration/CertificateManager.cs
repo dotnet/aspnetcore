@@ -286,11 +286,13 @@ internal abstract class CertificateManager
     {
         var result = EnsureCertificateResult.Succeeded;
 
-        var currentUserCertificates = ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, requireExportable: true);
-        var localMachineCertificates = ListCertificates(StoreName.My, StoreLocation.LocalMachine, isValid: true, requireExportable: true);
-        var certificates = currentUserCertificates.Concat(localMachineCertificates);
+        var allCurrentUserCertificates = ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, requireExportable: true);
+        var allLocalMachineCertificates = ListCertificates(StoreName.My, StoreLocation.LocalMachine, isValid: true, requireExportable: true);
 
-        var filteredCertificates = certificates.Where(c => c.Subject == Subject);
+        var currentUserCertificates = allCurrentUserCertificates.Where(c => c.Subject == Subject).ToList();
+        var localMachineCertificates = allLocalMachineCertificates.Where(c => c.Subject == Subject).ToList();
+        var filteredCertificates = currentUserCertificates.Concat(localMachineCertificates).ToList();
+      
         if (isInteractive)
         {
             // For purposes of updating the dev cert, only consider certificates with the current version or higher as valid
@@ -298,17 +300,22 @@ internal abstract class CertificateManager
             // For non-interactive scenarios (e.g. first run experience), we want to accept older versions of the certificate as long as they meet the minimum version requirement
             // This will allow us to respond to scenarios where we need to invalidate older certificates due to security issues, etc. but not leave users
             // with a partially valid certificate after their first run experience.
-            filteredCertificates = filteredCertificates.Where(c => GetCertificateVersion(c) >= AspNetHttpsCertificateVersion);
+            filteredCertificates = filteredCertificates.Where(c => GetCertificateVersion(c) >=
+  AspNetHttpsCertificateVersion).ToList();
         }
 
         if (Log.IsEnabled())
         {
-            var excludedCertificates = certificates.Except(filteredCertificates);
+            var excludedCertificates = allCurrentUserCertificates.Concat(allLocalMachineCertificates).Except(filteredCertificates);
             Log.FilteredCertificates(ToCertificateDescription(filteredCertificates));
             Log.ExcludedCertificates(ToCertificateDescription(excludedCertificates));
         }
 
-        certificates = filteredCertificates;
+        // Dispose certificates we're not going to use
+        DisposeCertificates(allCurrentUserCertificates.Except(currentUserCertificates));
+        DisposeCertificates(allLocalMachineCertificates.Except(localMachineCertificates));
+
+        var certificates = filteredCertificates;
 
         X509Certificate2? certificate = null;
         var isNewCertificate = false;
@@ -380,6 +387,7 @@ internal abstract class CertificateManager
                     Log.CreateDevelopmentCertificateError(e.ToString());
                 }
                 result = EnsureCertificateResult.ErrorCreatingTheCertificate;
+                DisposeCertificates(certificates);
                 return result;
             }
             Log.CreateDevelopmentCertificateEnd();
@@ -391,6 +399,11 @@ internal abstract class CertificateManager
             catch (Exception e)
             {
                 Log.SaveCertificateInStoreError(e.ToString());
+                if (isNewCertificate)
+                {
+                    certificate?.Dispose();
+                }
+                DisposeCertificates(certificates);
                 result = EnsureCertificateResult.ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore;
                 return result;
             }
@@ -448,6 +461,11 @@ internal abstract class CertificateManager
                     result :
                     EnsureCertificateResult.ErrorExportingTheCertificate;
 
+                if (isNewCertificate)
+                {
+                    certificate?.Dispose();
+                }
+                DisposeCertificates(certificates);
                 return result;
             }
         }
@@ -464,21 +482,41 @@ internal abstract class CertificateManager
                         break;
                     case TrustLevel.Partial:
                         result = EnsureCertificateResult.PartiallyFailedToTrustTheCertificate;
+                        if (isNewCertificate)
+                        {
+                            certificate?.Dispose();
+                        }
+                        DisposeCertificates(certificates);
                         return result;
                     case TrustLevel.None:
                     default: // Treat unknown status (should be impossible) as failure
                         result = EnsureCertificateResult.FailedToTrustTheCertificate;
+                        if (isNewCertificate)
+                        {
+                            certificate?.Dispose();
+                        }
+                        DisposeCertificates(certificates);
                         return result;
                 }
             }
             catch (UserCancelledTrustException)
             {
                 result = EnsureCertificateResult.UserCancelledTrustStep;
+                if (isNewCertificate)
+                {
+                    certificate?.Dispose();
+                }
+                DisposeCertificates(certificates);
                 return result;
             }
             catch
             {
                 result = EnsureCertificateResult.FailedToTrustTheCertificate;
+                if (isNewCertificate)
+                {
+                    certificate?.Dispose();
+                }
+                DisposeCertificates(certificates);
                 return result;
             }
 
@@ -515,51 +553,58 @@ internal abstract class CertificateManager
             return ImportCertificateResult.ExistingCertificatesPresent;
         }
 
-        X509Certificate2 certificate;
+        X509Certificate2? certificate = null;
         try
         {
-            Log.LoadCertificateStart(certificatePath);
-            certificate = new X509Certificate2(certificatePath, password, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.EphemeralKeySet);
-            if (Log.IsEnabled())
+            try
             {
-                Log.LoadCertificateEnd(GetDescription(certificate));
+                Log.LoadCertificateStart(certificatePath);
+                certificate = new X509Certificate2(certificatePath, password, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.EphemeralKeySet);
+                if (Log.IsEnabled())
+                {
+                    Log.LoadCertificateEnd(GetDescription(certificate));
+                }
             }
-        }
-        catch (Exception e)
-        {
-            if (Log.IsEnabled())
+            catch (Exception e)
             {
-                Log.LoadCertificateError(e.ToString());
+                if (Log.IsEnabled())
+                {
+                    Log.LoadCertificateError(e.ToString());
+                }
+                return ImportCertificateResult.InvalidCertificate;
             }
-            return ImportCertificateResult.InvalidCertificate;
-        }
 
-        // Note that we're checking Subject, rather than LocalhostHttpsDistinguishedName,
-        // because the tests use a different subject.
-        if (!string.Equals(certificate.Subject, Subject, StringComparison.Ordinal) || // Kestrel requires this
-            !IsHttpsDevelopmentCertificate(certificate))
-        {
-            if (Log.IsEnabled())
+            // Note that we're checking Subject, rather than LocalhostHttpsDistinguishedName,
+            // because the tests use a different subject.
+            if (!string.Equals(certificate.Subject, Subject, StringComparison.Ordinal) || // Kestrel requires this
+                !IsHttpsDevelopmentCertificate(certificate))
             {
-                Log.NoHttpsDevelopmentCertificate(GetDescription(certificate));
+                if (Log.IsEnabled())
+                {
+                    Log.NoHttpsDevelopmentCertificate(GetDescription(certificate));
+                }
+                return ImportCertificateResult.NoDevelopmentHttpsCertificate;
             }
-            return ImportCertificateResult.NoDevelopmentHttpsCertificate;
-        }
 
-        try
-        {
-            SaveCertificate(certificate);
-        }
-        catch (Exception e)
-        {
-            if (Log.IsEnabled())
+            try
             {
-                Log.SaveCertificateInStoreError(e.ToString());
+                certificate = SaveCertificate(certificate);
             }
-            return ImportCertificateResult.ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore;
-        }
+            catch (Exception e)
+            {
+                if (Log.IsEnabled())
+                {
+                    Log.SaveCertificateInStoreError(e.ToString());
+                }
+                return ImportCertificateResult.ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore;
+            }
 
-        return ImportCertificateResult.Succeeded;
+            return ImportCertificateResult.Succeeded;
+        }
+        finally
+        {
+            certificate?.Dispose();
+        }
     }
 
     public void CleanupHttpsCertificates()
