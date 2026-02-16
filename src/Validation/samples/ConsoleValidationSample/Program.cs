@@ -17,9 +17,10 @@ internal class Program
         builder.Services.AddOptions();
         builder.Services.AddLogging();
 
-        builder.Services.AddValidationLocalization<ValidationMessages>();
-        builder.Services.AddValidation();
+        builder.Services.AddLocalization();
         builder.Services.AddSingleton<IAttributeArgumentProvider, CustomAttributeArgumentProvider>();
+        builder.Services.AddValidation();
+        builder.Services.AddValidationLocalization<ValidationMessages>();
 
         builder.Services.AddHostedService<DemoService>();
 
