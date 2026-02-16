@@ -135,4 +135,7 @@
   <data name="The field {0} must be between {1} and {2}." xml:space="preserve">
     <value>El valor de {0} debe estar entre {1} y {2}.</value>
   </data>
+  <data name="IntWithDisplayName" xml:space="preserve">
+    <value>Dabra</value>
+  </data>
 </root>
