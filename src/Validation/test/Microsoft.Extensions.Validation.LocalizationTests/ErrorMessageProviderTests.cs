@@ -327,6 +327,64 @@ public class ErrorMessageProviderTests
         Assert.False(captured.Value.IsCustomErrorMessage);
     }
 
+    [Fact]
+    public async Task ErrorMessageProvider_StringLengthWithMinimum_UsesAlternateTemplate()
+    {
+        ErrorMessageContext? captured = null;
+        var model = new SimpleModel { Name = "ab" };
+        var stringLengthAttr = new StringLengthAttribute(100) { MinimumLength = 3 };
+        var propInfo = new TestValidatablePropertyInfo(
+            typeof(SimpleModel), typeof(string), "Name",
+            [stringLengthAttr]);
+        var typeInfo = new TestValidatableTypeInfo(typeof(SimpleModel), [propInfo]);
+
+        var options = new ValidationOptions
+        {
+            ErrorMessageProvider = ctx =>
+            {
+                captured = ctx;
+                return null;
+            }
+        };
+        var context = CreateContext(model, options);
+        await typeInfo.ValidateAsync(model, context, default);
+
+        Assert.NotNull(captured);
+        Assert.Equal(
+            "The field {0} must be a string with a minimum length of {2} and a maximum length of {1}.",
+            captured.Value.ErrorMessage);
+        Assert.False(captured.Value.IsCustomErrorMessage);
+    }
+
+    [Fact]
+    public async Task ErrorMessageProvider_StringLengthWithoutMinimum_UsesStandardTemplate()
+    {
+        ErrorMessageContext? captured = null;
+        var model = new LongNameModel { Name = new string('a', 101) };
+        var stringLengthAttr = new StringLengthAttribute(100);
+        var propInfo = new TestValidatablePropertyInfo(
+            typeof(LongNameModel), typeof(string), "Name",
+            [stringLengthAttr]);
+        var typeInfo = new TestValidatableTypeInfo(typeof(LongNameModel), [propInfo]);
+
+        var options = new ValidationOptions
+        {
+            ErrorMessageProvider = ctx =>
+            {
+                captured = ctx;
+                return null;
+            }
+        };
+        var context = CreateContext(model, options);
+        await typeInfo.ValidateAsync(model, context, default);
+
+        Assert.NotNull(captured);
+        Assert.Equal(
+            "The field {0} must be a string with a maximum length of {1}.",
+            captured.Value.ErrorMessage);
+        Assert.False(captured.Value.IsCustomErrorMessage);
+    }
+
     private static TestValidatableTypeInfo CreateCustomerTypeInfo()
     {
         return new TestValidatableTypeInfo(
@@ -360,6 +418,11 @@ public class ErrorMessageProviderTests
     }
 
     private class SimpleModel
+    {
+        public string? Name { get; set; }
+    }
+
+    private class LongNameModel
     {
         public string? Name { get; set; }
     }
