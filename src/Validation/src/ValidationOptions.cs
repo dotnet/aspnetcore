@@ -51,15 +51,30 @@ public class ValidationOptions
     /// </summary>
     /// <remarks>
     /// <para>
-    /// If the delegate returns a non-null string, that string is used as the final error message.
-    /// The delegate is responsible for formatting the message with any necessary arguments
-    /// (display name, attribute-specific parameters, etc.) using the information available on
-    /// <see cref="ErrorMessageContext"/>.
+    /// If the delegate returns a non-null string, that string is used as the <b>final, formatted</b>
+    /// error message and is displayed directly to the user. The delegate is responsible for
+    /// performing any necessary formatting — for example, replacing <c>{0}</c> with the display name
+    /// and any attribute-specific parameters. It must <b>not</b> return a raw template such as
+    /// <c>"The {0} field is required."</c>; instead, it should return the fully resolved message
+    /// such as <c>"The Name field is required."</c>.
     /// </para>
     /// <para>
     /// If the delegate returns <see langword="null"/>, the attribute's default error message
     /// (from <see cref="ValidationAttribute.GetValidationResult"/>) is used instead.
     /// </para>
+    /// <example>
+    /// <code>
+    /// options.ErrorMessageProvider = context =>
+    /// {
+    ///     var displayName = context.DisplayName ?? context.MemberName;
+    ///     return context.Attribute switch
+    ///     {
+    ///         RequiredAttribute => $"{displayName} is mandatory.",
+    ///         _ => null // fall back to default
+    ///     };
+    /// };
+    /// </code>
+    /// </example>
     /// </remarks>
     public Func<ErrorMessageContext, string?>? ErrorMessageProvider { get; set; }
 
