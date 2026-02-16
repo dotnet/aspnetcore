@@ -52,6 +52,8 @@ internal class DemoService(IOptions<ValidationOptions> options, ILogger<DemoServ
                 Price = -100,
                 IsPremium = true
             });
+
+            await ValidateAndPrint(new ValidatableRecordStruct(50, 5, new SubRecordStruct("test", "test")));
         }
 
         async Task ValidateAndPrint<T>(T instance)
