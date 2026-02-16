@@ -42,7 +42,7 @@ internal sealed class ValidationLocalizationConfigureOptions(
                 ? localizerProvider(declaringType, stringLocalizerFactory)
                 : stringLocalizerFactory.Create(declaringType);
 
-            var localized = localizer[context.NameValue];
+            var localized = localizer[context.Name];
             return localized.ResourceNotFound ? null : localized.Value;
         }
 

@@ -38,7 +38,7 @@ public static class ValidationServiceCollectionExtensions
 
     /// <summary>
     /// Adds localization support for validation error messages.
-    /// Registers <see cref="IStringLocalizerFactory"/> (via <see cref="LocalizationServiceCollectionExtensions.AddLocalization(IServiceCollection)"/>)
+    /// Registers <see cref="T:Microsoft.Extensions.Localization.IStringLocalizerFactory"/> (via <see cref="LocalizationServiceCollectionExtensions.AddLocalization(IServiceCollection)"/>)
     /// and configures <see cref="ValidationOptions.ErrorMessageProvider"/> to use it for
     /// resolving localized error messages.
     /// </summary>
@@ -92,6 +92,11 @@ public static class ValidationServiceCollectionExtensions
     /// <c>Resources/SharedValidationMessages.{culture}.resx</c>.
     /// </typeparam>
     /// <param name="services">The <see cref="IServiceCollection"/> to add services to.</param>
+    /// <param name="configureOptions">
+    /// An optional action to configure <see cref="ValidationLocalizationOptions"/>.
+    /// When <see langword="null"/>, default settings are used, routing all messages
+    /// through the shared resource specified by <typeparamref name="TResource"/>.
+    /// </param>
     /// <returns>The <see cref="IServiceCollection"/> for chaining.</returns>
     /// <example>
     /// <code>

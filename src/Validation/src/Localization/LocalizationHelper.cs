@@ -107,7 +107,7 @@ internal static class LocalizationHelper
         var displayNameContext = new DisplayNameContext
         {
             DeclaringType = declaringType,
-            NameValue = nameValue,
+            Name = nameValue,
             Services = services
         };
 
