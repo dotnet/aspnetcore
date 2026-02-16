@@ -8,6 +8,8 @@ Microsoft.Extensions.Validation.Localization.DisplayNameContext
 Microsoft.Extensions.Validation.Localization.DisplayNameContext.DeclaringType.get -> System.Type?
 Microsoft.Extensions.Validation.Localization.DisplayNameContext.DeclaringType.init -> void
 Microsoft.Extensions.Validation.Localization.DisplayNameContext.DisplayNameContext() -> void
+Microsoft.Extensions.Validation.Localization.DisplayNameContext.MemberName.get -> string!
+Microsoft.Extensions.Validation.Localization.DisplayNameContext.MemberName.init -> void
 Microsoft.Extensions.Validation.Localization.DisplayNameContext.Name.get -> string!
 Microsoft.Extensions.Validation.Localization.DisplayNameContext.Name.init -> void
 Microsoft.Extensions.Validation.Localization.DisplayNameContext.Services.get -> System.IServiceProvider!

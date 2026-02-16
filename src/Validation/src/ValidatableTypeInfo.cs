@@ -93,7 +93,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 return;
             }
 
-            var displayName = LocalizationHelper.ResolveDisplayName(GetDisplayAttribute(), declaringType: Type, defaultName: Type.Name, context);
+            var displayName = LocalizationHelper.ResolveDisplayName(GetDisplayAttribute(), declaringType: Type, memberName: Type.Name, context);
 
             context.ValidationContext.DisplayName = displayName;
             context.ValidationContext.MemberName = null;

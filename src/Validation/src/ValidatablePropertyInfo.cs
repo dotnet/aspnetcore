@@ -65,7 +65,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
-        var displayName = LocalizationHelper.ResolveDisplayName(GetDisplayAttribute(), declaringType: DeclaringType, defaultName: Name, context);
+        var displayName = LocalizationHelper.ResolveDisplayName(GetDisplayAttribute(), declaringType: DeclaringType, memberName: Name, context);
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
