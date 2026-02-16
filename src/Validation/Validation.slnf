@@ -7,7 +7,9 @@
       "src\\Validation\\gen\\Microsoft.Extensions.Validation.ValidationsGenerator.csproj",
       "src\\Validation\\test\\Microsoft.Extensions.Validation.GeneratorTests\\Microsoft.Extensions.Validation.GeneratorTests.csproj",
       "src\\Validation\\samples\\ConsoleValidationSample\\ConsoleValidationSample.csproj",
-      "src\\Validation\\samples\\MinimalApiValidationSample\\MinimalApiValidationSample.csproj"
+      "src\\Validation\\samples\\MinimalApiValidationSample\\MinimalApiValidationSample.csproj",
+      "src\\Validation\\samples\\BlazorValidationSample\\BlazorValidationSample.csproj",
+      "src\\Validation\\test\\Microsoft.Extensions.Validation.LocalizationTests\\Microsoft.Extensions.Validation.LocalizationTests.csproj"
     ]
   }
 }

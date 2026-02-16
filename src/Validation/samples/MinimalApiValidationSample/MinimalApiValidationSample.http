@@ -106,12 +106,10 @@ Content-Type: application/json
 ### Valid product POST request (validation disabled)
 # This endpoint has DisableValidation() applied, so even invalid data should be accepted
 POST http://localhost:5021/products?productId=2&name=TestProduct
-Content-Type: application/json
 
 ### Invalid product POST request (validation disabled)
 # This has an odd productId, but should still work because validation is disabled
 POST http://localhost:5021/products?productId=3&name=TestProduct
-Content-Type: application/json
 
 ### Valid contact form POST request
 POST http://localhost:5021/contact
@@ -128,6 +126,28 @@ Content-Type: application/json
 ### Invalid contact form POST request (missing required fields)
 POST http://localhost:5021/contact
 Content-Type: application/json
+
+{
+  "email": "not-an-email"
+}
+
+### Localized contact form validation (Spanish)
+# Set Accept-Language to "es" to receive Spanish validation messages.
+# The HardcodedStringLocalizer resolves ErrorMessage keys like "RequiredError"
+# into Spanish: "El campo {0} es obligatorio."
+POST http://localhost:5021/contact
+Content-Type: application/json
+Accept-Language: es
+
+{
+  "email": "not-an-email"
+}
+
+### Localized contact form validation (French)
+# Set Accept-Language to "fr" to receive French validation messages.
+POST http://localhost:5021/contact
+Content-Type: application/json
+Accept-Language: fr
 
 {
   "email": "not-an-email"

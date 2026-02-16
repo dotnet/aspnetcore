@@ -8,21 +8,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Validation.Localization;
 
-internal class Program
-{
-    private static async Task Main(string[] args)
-    {
-        var builder = Host.CreateApplicationBuilder();
+var builder = Host.CreateApplicationBuilder();
 
-        builder.Services.AddOptions();
-        builder.Services.AddLogging();
+builder.Services.AddOptions();
+builder.Services.AddLogging();
 
-        builder.Services.AddValidation();
-        builder.Services.AddValidationLocalization<ValidationMessages>();
-        builder.Services.AddSingleton<IAttributeArgumentProvider, CustomAttributeArgumentProvider>();
+builder.Services.AddValidation();
+builder.Services.AddValidationLocalization<ValidationMessages>();
+builder.Services.AddSingleton<IAttributeArgumentProvider, CustomAttributeArgumentProvider>();
 
-        builder.Services.AddHostedService<DemoService>();
+builder.Services.AddHostedService<DemoService>();
 
-        await builder.Build().RunAsync();
-    }
-}
+await builder.Build().RunAsync();

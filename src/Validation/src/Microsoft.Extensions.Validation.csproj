@@ -33,6 +33,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.Extensions.Validation.Tests" />
+    <InternalsVisibleTo Include="Microsoft.Extensions.Validation.LocalizationTests" />
   </ItemGroup>
 
 </Project>

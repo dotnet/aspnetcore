@@ -12,6 +12,10 @@ using Microsoft.Extensions.Validation;
 
 namespace ConsoleValidationSample.Models;
 
+/// <summary>
+/// Represents an inventory item demonstrating <see cref="IValidatableObject"/> validation,
+/// <see cref="Display"/> with <see cref="Display.ResourceType"/>, and localized error messages.
+/// </summary>
 [ValidatableType]
 public class InventoryItem : IValidatableObject
 {
@@ -27,6 +31,7 @@ public class InventoryItem : IValidatableObject
     [Display(ResourceType = typeof(InventoryItemLabels), Name = "Price")]
     public int Price { get; set; }
 
+    /// <inheritdoc />
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (!IsPremium || Price >= MinPremiumPrice)
@@ -44,11 +49,15 @@ public class InventoryItem : IValidatableObject
     }
 }
 
+/// <summary>
+/// Provides localized display labels for <see cref="InventoryItem"/> properties
+/// via <see cref="Display.ResourceType"/>.
+/// </summary>
 internal static class InventoryItemLabels
 {
     public static string Price => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName switch
     {
-        "es" => "precio",
-        _ => "price"
+        "es" => "Precio",
+        _ => "Price"
     };
 }

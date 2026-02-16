@@ -13,6 +13,10 @@ using Microsoft.Extensions.Validation;
 
 namespace ConsoleValidationSample;
 
+/// <summary>
+/// Hosted service that demonstrates validation scenarios for each model type
+/// in both English and Spanish cultures.
+/// </summary>
 internal class DemoService(IOptions<ValidationOptions> options, ILogger<DemoService> logger, IHostApplicationLifetime lifetime, IServiceProvider serviceProvider) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -29,23 +33,27 @@ internal class DemoService(IOptions<ValidationOptions> options, ILogger<DemoServ
 
             Console.WriteLine($"\nRunning validations with culture: {culture.Name}");
 
+            // Customer with invalid Id (Range) and missing Name (Required)
             await ValidateAndPrint(new Customer
             {
                 Id = 0
             });
 
+            // Customer with a banned name (custom ValidationAttribute)
             await ValidateAndPrint(new Customer
             {
                 Id = 1,
                 Name = "Bob"
             });
 
+            // InventoryItem with IValidatableObject: premium without price
             await ValidateAndPrint(new InventoryItem
             {
                 Id = 1,
                 IsPremium = true
             });
 
+            // InventoryItem with negative price and premium flag
             await ValidateAndPrint(new InventoryItem
             {
                 Id = 1,
@@ -53,7 +61,8 @@ internal class DemoService(IOptions<ValidationOptions> options, ILogger<DemoServ
                 IsPremium = true
             });
 
-            await ValidateAndPrint(new ValidatableRecordStruct(50, 5, new SubRecordStruct("test", "test")));
+            // ProductReview record with Range violation on RecommendationScore and nested ReviewerInfo
+            await ValidateAndPrint(new ProductReview(50, 5, new ReviewerInfo("test", "test")));
         }
 
         async Task ValidateAndPrint<T>(T instance)
@@ -63,6 +72,7 @@ internal class DemoService(IOptions<ValidationOptions> options, ILogger<DemoServ
         }
     }
 
+    /// <inheritdoc />
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
     private async Task<ValidateContext> Validate<T>(T instance, ValidationOptions validationOptions, CancellationToken cancellationToken)
@@ -78,7 +88,7 @@ internal class DemoService(IOptions<ValidationOptions> options, ILogger<DemoServ
 
         if (!validationOptions.TryGetValidatableTypeInfo(typeof(T), out var typeInfo))
         {
-            logger.LogError("Cannot resolve validatable type info ");
+            logger.LogError("Cannot resolve validatable type info.");
         }
 
         await typeInfo!.ValidateAsync(instance, validateContext, cancellationToken);

@@ -4,12 +4,16 @@
 #pragma warning disable ASP0029
 
 using System.ComponentModel.DataAnnotations;
-using ConsoleValidationSample.Resources;
 using ConsoleValidationSample.Validators;
 using Microsoft.Extensions.Validation;
 
 namespace ConsoleValidationSample.Models;
 
+/// <summary>
+/// Represents a customer demonstrating validation with <see cref="Range"/>,
+/// <see cref="Required"/>, <see cref="Display"/> attributes, and the custom
+/// <see cref="BannedCustomerAttribute"/>.
+/// </summary>
 [ValidatableType]
 [BannedCustomer("Bob")]
 [BannedCustomer("Ted")]
