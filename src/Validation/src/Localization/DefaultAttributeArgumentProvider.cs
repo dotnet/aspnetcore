@@ -5,8 +5,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Microsoft.Extensions.Validation.Localization;
 
+/// <summary>
+/// Default implementation of <see cref="IAttributeArgumentProvider"/> that provides
+/// format arguments for built-in <see cref="ValidationAttribute"/> types.
+/// </summary>
 public class DefaultAttributeArgumentProvider : IAttributeArgumentProvider
 {
+    /// <inheritdoc />
     public virtual object?[] GetFormatArgs(ValidationAttribute attribute, string displayName)
     {
         return attribute switch
