@@ -44,6 +44,26 @@ namespace Microsoft.Extensions.Validation.Generated
                 _displayAttribute = global::System.Reflection.CustomAttributeExtensions
                     .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(property, inherit: true);
             }
+
+            // Check constructors for parameters that match the property name
+            // to handle record scenarios where attributes are on the constructor parameter
+            if (_displayAttribute is null)
+            {
+                foreach (var constructor in ContainingType.GetConstructors())
+                {
+                    var parameter = global::System.Linq.Enumerable.FirstOrDefault(
+                        constructor.GetParameters(),
+                        p => string.Equals(p.Name, Name, global::System.StringComparison.Ordinal));
+
+                    if (parameter is not null)
+                    {
+                        _displayAttribute = global::System.Reflection.CustomAttributeExtensions
+                            .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(parameter, inherit: true);
+
+                        break;
+                    }
+                }
+            }
         }
 
         [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
@@ -171,10 +191,10 @@ namespace Microsoft.Extensions.Validation.Generated
                 // to handle record scenarios
                 foreach (var constructor in k.ContainingType.GetConstructors())
                 {
-                    // Look for parameter with matching name (case insensitive)
+                    // Look for parameter with matching name
                     var parameter = global::System.Linq.Enumerable.FirstOrDefault(
                         constructor.GetParameters(),
-                        p => string.Equals(p.Name, k.PropertyName, global::System.StringComparison.OrdinalIgnoreCase));
+                        p => string.Equals(p.Name, k.PropertyName, global::System.StringComparison.Ordinal));
 
                     if (parameter != null)
                     {
