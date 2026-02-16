@@ -76,7 +76,7 @@ public static class ValidationServiceCollectionExtensions
         }
 
         // Register the bridge that reads ValidationLocalizationOptions and wires up ValidationOptions.ErrorMessageProvider (and optionally DisplayNameResolver).
-        services.TryAddTransient<IConfigureOptions<ValidationOptions>, ValidationLocalizationConfigureOptions>();
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<ValidationOptions>, ValidationLocalizationConfigureOptions>());
 
         return services;
     }
