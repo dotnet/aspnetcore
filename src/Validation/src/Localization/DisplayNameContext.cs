@@ -31,5 +31,5 @@ public readonly struct DisplayNameContext
     /// <summary>
     /// Gets the service provider for resolving localization services.
     /// </summary>
-    //public required IServiceProvider Services { get; init; }
+    public required IServiceProvider Services { get; init; }
 }
