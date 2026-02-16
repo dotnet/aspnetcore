@@ -50,4 +50,9 @@ public readonly struct ErrorMessageContext
     /// <see langword="null"/> for top-level parameter validation.
     /// </summary>
     public Type? DeclaringType { get; init; }
+
+    /// <summary>
+    /// Gets the service provider for resolving localization or other services.
+    /// </summary>
+    public required IServiceProvider Services { get; init; }
 }
