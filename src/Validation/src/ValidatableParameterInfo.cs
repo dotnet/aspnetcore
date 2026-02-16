@@ -21,7 +21,6 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// </summary>
     /// <param name="parameterType">The <see cref="Type"/> associated with the parameter.</param>
     /// <param name="name">The parameter name.</param>
-    /// <param name="displayName">The display name for the parameter.</param>
     protected ValidatableParameterInfo(
         Type parameterType,
         string name)
@@ -75,7 +74,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
 
             if (result is not null && result != ValidationResult.Success)
             {
-                var customMessage = LocalizationHelper.TryResolveErrorMessage(_requiredAttribute, declaringType: null, displayName, Name, errorMessageProvider);
+                var customMessage = LocalizationHelper.TryResolveErrorMessage(_requiredAttribute, declaringType: null, displayName, Name, errorMessageProvider, context.ValidationContext);
                 var errorMessage = customMessage ?? result.ErrorMessage;
 
                 if (errorMessage is not null)
@@ -97,7 +96,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
                 var result = attribute.GetValidationResult(value, context.ValidationContext);
                 if (result is not null && result != ValidationResult.Success)
                 {
-                    var customMessage = LocalizationHelper.TryResolveErrorMessage(attribute, declaringType: null, displayName, Name, errorMessageProvider);
+                    var customMessage = LocalizationHelper.TryResolveErrorMessage(attribute, declaringType: null, displayName, Name, errorMessageProvider, context.ValidationContext);
                     var errorMessage = customMessage ?? result.ErrorMessage;
 
                     if (errorMessage is not null)

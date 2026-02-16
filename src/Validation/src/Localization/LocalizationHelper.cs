@@ -4,7 +4,6 @@
 using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
-using System.Xml.Linq;
 
 namespace Microsoft.Extensions.Validation.Localization;
 
@@ -78,7 +77,7 @@ internal static class LocalizationHelper
             {
                 // Name is localized via key.
                 var displayNameProvider = context.DisplayNameProvider ?? context.ValidationOptions.DisplayNameProvider;
-                var localizedDisplayName = GetDisplayName(declaringType, displayNameValue, displayNameProvider);
+                var localizedDisplayName = GetDisplayName(declaringType, displayNameValue, displayNameProvider, context.ValidationContext);
                 return localizedDisplayName;
             }
         }
@@ -92,11 +91,13 @@ internal static class LocalizationHelper
     /// <param name="declaringType">The type that declares the member, or null for parameters.</param>
     /// <param name="nameValue">The value specified in the Name property of the DisplayAttribute.</param>
     /// <param name="provider">The delegate that resolves display names for properties and parameters.</param>
+    /// <param name="services">The service provider for resolving localization services.</param>
     /// <returns>The resolved display name.</returns>
     private static string GetDisplayName(
         Type? declaringType,
         string nameValue,
-        Func<DisplayNameContext, string?>? provider)
+        Func<DisplayNameContext, string?>? provider,
+        IServiceProvider services)
     {
         if (provider is null)
         {
@@ -107,6 +108,7 @@ internal static class LocalizationHelper
         {
             DeclaringType = declaringType,
             NameValue = nameValue,
+            Services = services
         };
 
         return provider(displayNameContext) ?? nameValue;
@@ -122,13 +124,15 @@ internal static class LocalizationHelper
     /// <param name="displayName">The (possibly localized) display name of the member.</param>
     /// <param name="memberName">The CLR member name.</param>
     /// <param name="provider">The delegate that resolves error messages for validation attributes.</param>
+    /// <param name="services">The service provider for resolving localization services.</param>
     /// <returns>The resolved error message, or null to fall through to default behavior.</returns>
     internal static string? TryResolveErrorMessage(
         ValidationAttribute attribute,
         Type? declaringType,
         string? displayName,
         string memberName,
-        Func<ErrorMessageContext, string?>? provider)
+        Func<ErrorMessageContext, string?>? provider,
+        IServiceProvider services)
     {
         // If the attribute uses its own resource-based localization
         // (ErrorMessageResourceType is set), skip external localization
@@ -157,6 +161,7 @@ internal static class LocalizationHelper
             DisplayName = displayName,
             MemberName = memberName,
             DeclaringType = declaringType,
+            Services = services
         };
 
         return provider(errorMessageContext);

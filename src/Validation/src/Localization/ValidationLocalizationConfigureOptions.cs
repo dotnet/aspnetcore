@@ -71,7 +71,7 @@ internal sealed class ValidationLocalizationConfigureOptions(
                 return null; // no translation → fall through to default
             }
 
-            var displayName = context.DisplayName ?? context.MemberName;`
+            var displayName = context.DisplayName ?? context.MemberName;
 
             // Format the localized template with attribute-specific arguments
             var args = attributeArgumentProvider?.GetFormatArgs(context.Attribute, displayName) ?? [displayName];
