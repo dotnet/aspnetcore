@@ -26,7 +26,7 @@ internal partial class SessionValueMapper : ISessionValueMapper
         _httpContext.Response.OnStarting(PersistAllValues);
     }
 
-    public object? GetValue(string sessionKey, Type type)
+    public object? GetValue(string sessionKey, Type targetType)
     {
         var session = _httpContext?.Features.Get<ISessionFeature>()?.Session;
         if (session is null)
@@ -40,7 +40,7 @@ internal partial class SessionValueMapper : ISessionValueMapper
             {
                 return null;
             }
-            return JsonSerializer.Deserialize(json, type, _jsonOptions);
+            return JsonSerializer.Deserialize(json, targetType, _jsonOptions);
         }
         catch (JsonException ex)
         {
