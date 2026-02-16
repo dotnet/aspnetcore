@@ -120,11 +120,11 @@
   <data name="CustomerName" xml:space="preserve">
     <value>Nombre del cliente</value>
   </data>
-  <data name="Price" xml:space="preserve">
-    <value>You should not see this</value>
-  </data>
   <data name="Premium items must have price set to at least {0}" xml:space="preserve">
     <value>Los artículos premium deben tener un precio de al menos {0}</value>
+  </data>
+  <data name="RecommendationScore" xml:space="preserve">
+    <value>Puntuación de recomendación</value>
   </data>
   <data name="RequiredError" xml:space="preserve">
     <value>{0} es obligatorio</value>
@@ -134,8 +134,5 @@
   </data>
   <data name="The field {0} must be between {1} and {2}." xml:space="preserve">
     <value>El valor de {0} debe estar entre {1} y {2}.</value>
-  </data>
-  <data name="IntWithDisplayName" xml:space="preserve">
-    <value>Dabra</value>
   </data>
 </root>
