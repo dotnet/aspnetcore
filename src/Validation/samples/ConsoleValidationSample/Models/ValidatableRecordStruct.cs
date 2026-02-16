@@ -13,7 +13,7 @@ public record ValidatableRecordStruct(
     [Range(10, 100)]
     int IntegerWithRange,
 
-    [Range(10, 100), Display(Name = "Custom Name")]
+    [Range(10, 100), Display(Name = "IntWithDisplayName")]
     int IntegerWithRangeAndDisplayName,
 
     SubRecordStruct SubProperty

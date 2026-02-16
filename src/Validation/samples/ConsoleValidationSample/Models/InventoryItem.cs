@@ -16,6 +16,7 @@ namespace ConsoleValidationSample.Models;
 public class InventoryItem : IValidatableObject
 {
     private const int MinPremiumPrice = 100;
+    private const string ErrorTemplate = "Premium items must have price set to at least {0}";
 
     [Range(1, int.MaxValue)]
     public int Id { get; set; }
@@ -33,9 +34,11 @@ public class InventoryItem : IValidatableObject
             return [];
         }
 
-        var localizerFactory = validationContext.GetRequiredService<IStringLocalizerFactory>();
-        var localizer = localizerFactory.Create(typeof(ValidationMessages));
-        var errorMessage = localizer["Premium items must have price set to at least {0}", MinPremiumPrice];
+        var localizerFactory = validationContext.GetService<IStringLocalizerFactory>();
+        var localizer = localizerFactory?.Create(typeof(ValidationMessages));
+        var errorMessage = localizer is not null
+            ? localizer[ErrorTemplate, MinPremiumPrice]
+            : string.Format(CultureInfo.InvariantCulture, ErrorTemplate, MinPremiumPrice);
 
         return [new ValidationResult(errorMessage, [nameof(IsPremium), nameof(Price)])];
     }
