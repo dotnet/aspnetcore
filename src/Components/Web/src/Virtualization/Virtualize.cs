@@ -130,6 +130,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     [Parameter]
     public string SpacerElement { get; set; } = "div";
 
+    // The wrapper element used around each item for measurement purposes.
+    // Uses the same element as SpacerElement to maintain valid HTML structure (e.g., "tr" in tables).
+    private string ItemWrapperElement => SpacerElement;
+
     /// <summary>
     /// Gets or sets the maximum number of items that will be rendered, even if the client reports
     /// that its viewport is large enough to show more. The default value is 100.
@@ -261,10 +265,14 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
             builder.OpenRegion(5);
 
-            // Render the loaded items.
+            // Render the loaded items, each wrapped in an element for JS measurement.
             foreach (var item in itemsToShow)
             {
+                builder.OpenElement(_lastRenderedItemCount, ItemWrapperElement);
+                builder.AddAttribute(1, "data-virtualize-item", true);
+                builder.SetKey(item);
                 _itemTemplate(item)(builder);
+                builder.CloseElement();
                 _lastRenderedItemCount++;
             }
 
@@ -393,8 +401,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // the user has set a very low MaxItemCount and we end up in an infinite loading loop.
         maxItemCount += OverscanCount * 2;
 
-        // Use average measured height for calculations
+        // Use average measured height for calculations, falling back to _itemSize to avoid division by zero
         var effectiveItemSize = GetItemHeight();
+        if (effectiveItemSize <= 0 || float.IsNaN(effectiveItemSize) || float.IsInfinity(effectiveItemSize))
+        {
+            effectiveItemSize = _itemSize;
+        }
 
         itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / effectiveItemSize) - OverscanCount);
         visibleItemCapacity = (int)Math.Ceiling(containerSize / effectiveItemSize) + 2 * OverscanCount;

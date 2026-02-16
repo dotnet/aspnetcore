@@ -53,13 +53,16 @@ function measureRenderedItems(
   const heights: number[] = [];
   const scaleFactor = getCumulativeScaleFactor(spacerBefore);
 
-  let current = spacerBefore.nextElementSibling;
-
-  while (current && current !== spacerAfter) {
-    const rect = current.getBoundingClientRect();
-    heights.push(rect.height / scaleFactor);
-    current = current.nextElementSibling;
+  const container = spacerBefore.parentElement;
+  if (!container) {
+    return heights;
   }
+
+  const items = container.querySelectorAll('[data-virtualize-item]');
+  items.forEach(item => {
+    const rect = item.getBoundingClientRect();
+    heights.push(rect.height / scaleFactor);
+  });
 
   return heights;
 }
