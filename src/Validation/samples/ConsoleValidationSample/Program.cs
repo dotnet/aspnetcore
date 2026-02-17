@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.ComponentModel.DataAnnotations;
 using ConsoleValidationSample;
 using ConsoleValidationSample.Resources;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,11 +11,15 @@ var builder = Host.CreateApplicationBuilder();
 builder.Services.AddOptions();
 builder.Services.AddLogging();
 
+// Use the StandardAttributeLocalization library to automatically localize
+// all standard DataAnnotations validation error messages without needing
+// to specify ErrorMessage keys on each attribute instance.
 builder.Services.AddValidation();
 builder.Services.AddValidationLocalization<ValidationMessages>(options =>
 {
-    options.ErrorMessageKeySelector = (context) => $"{context.Attribute.GetType().Name}_Error";
+    options.ErrorMessageKeySelector = (context) => $"{context.Attribute.GetType().Name}_ValidationError";
 });
+builder.Services.AddStandardAttributeLocalization();
 
 builder.Services.AddHostedService<DemoService>();
 

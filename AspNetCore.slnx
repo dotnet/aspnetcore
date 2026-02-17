@@ -1193,6 +1193,7 @@
     <Project Path="src/Validation/samples/ConsoleValidationSample/ConsoleValidationSample.csproj" />
     <Project Path="src/Validation/samples/MinimalApiValidationSample/MinimalApiValidationSample.csproj" />
     <Project Path="src/Validation/samples/BlazorValidationSample/BlazorValidationSample.csproj" />
+    <Project Path="src/Validation/samples/StandardAttributeLocalization/StandardAttributeLocalization.csproj" />
   </Folder>
   <Folder Name="/src/WebEncoders/">
     <Project Path="src/WebEncoders/src/Microsoft.Extensions.WebEncoders.csproj" />
