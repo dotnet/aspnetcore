@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
 using Microsoft.Extensions.Validation.Localization;
+using Microsoft.Extensions.Validation.Localization.Attributes;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -67,7 +68,7 @@ public static class ValidationServiceCollectionExtensions
     public static IServiceCollection AddValidationLocalization(this IServiceCollection services, Action<ValidationLocalizationOptions>? configureOptions = null)
     {
         services.AddLocalization();
-        services.TryAddSingleton<IAttributeArgumentProvider, DefaultAttributeArgumentProvider>();
+        services.TryAddSingleton<IValidationAttributeFormatterProvider, ValidationAttributeFormatterProvider>();
 
         if (configureOptions is not null)
         {
@@ -75,7 +76,7 @@ public static class ValidationServiceCollectionExtensions
         }
 
         // Register the bridge that reads ValidationLocalizationOptions and wires up ValidationOptions.ErrorMessageProvider (and optionally DisplayNameResolver).
-        services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<ValidationOptions>, ValidationLocalizationConfigureOptions>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<ValidationOptions>, StringLocalizerConfiguration>());
 
         return services;
     }
