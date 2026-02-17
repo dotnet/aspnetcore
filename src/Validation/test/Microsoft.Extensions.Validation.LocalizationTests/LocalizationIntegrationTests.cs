@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation.Localization;
+using Microsoft.Extensions.Validation.Localization.Attributes;
 using Microsoft.Extensions.Validation.LocalizationTests.Helpers;
 
 namespace Microsoft.Extensions.Validation.LocalizationTests;
@@ -21,13 +22,13 @@ public class LocalizationIntegrationTests
     {
         var translations = new Dictionary<string, string>
         {
-            ["The {0} field is required."] = "Le champ {0} est obligatoire."
+            ["RequiredError"] = "Le champ {0} est obligatoire."
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var argProvider = new DefaultAttributeArgumentProvider();
+        var formatterProvider = new ValidationAttributeFormatterProvider();
 
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationConfigureOptions(locOptions, factory, argProvider);
+        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -52,13 +53,13 @@ public class LocalizationIntegrationTests
         var translations = new Dictionary<string, string>
         {
             ["Customer Age"] = "Âge du client",
-            ["The field {0} must be between {1} and {2}."] = "Le champ {0} doit être entre {1} et {2}."
+            ["RangeError"] = "Le champ {0} doit être entre {1} et {2}."
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var argProvider = new DefaultAttributeArgumentProvider();
+        var formatterProvider = new ValidationAttributeFormatterProvider();
 
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationConfigureOptions(locOptions, factory, argProvider);
+        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -82,13 +83,13 @@ public class LocalizationIntegrationTests
     {
         var translations = new Dictionary<string, string>
         {
-            ["The field {0} must be between {1} and {2}."] = "{0}: valeur entre {1} et {2} attendue."
+            ["RangeError"] = "{0}: valeur entre {1} et {2} attendue."
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var argProvider = new DefaultAttributeArgumentProvider();
+        var formatterProvider = new ValidationAttributeFormatterProvider();
 
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationConfigureOptions(locOptions, factory, argProvider);
+        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -108,14 +109,14 @@ public class LocalizationIntegrationTests
     }
 
     [Fact]
-    public async Task Localization_FallsBackToDefault_WhenTranslationNotFound()
+    public async Task Localization_FallsBackToExplicitMessage_WhenTranslationNotFound()
     {
         var translations = new Dictionary<string, string>();
         var factory = new TestStringLocalizerFactory(translations);
-        var argProvider = new DefaultAttributeArgumentProvider();
+        var formatterProvider = new ValidationAttributeFormatterProvider();
 
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationConfigureOptions(locOptions, factory, argProvider);
+        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -131,21 +132,17 @@ public class LocalizationIntegrationTests
         await typeInfo.ValidateAsync(model, context, default);
 
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("The Name field is required.", context.ValidationErrors["Name"].First());
+        Assert.Equal("RequiredError", context.ValidationErrors["Name"].First());
     }
 
     [Fact]
-    public async Task Localization_SkipsLocalization_WhenResourceTypeIsSet()
+    public async Task Localization_UsesResourceProperty_WhenResourceTypeIsSet()
     {
-        var translations = new Dictionary<string, string>
-        {
-            ["The {0} field is required."] = "Should not be used"
-        };
-        var factory = new TestStringLocalizerFactory(translations);
-        var argProvider = new DefaultAttributeArgumentProvider();
+        var factory = new TestStringLocalizerFactory([]);
+        var formatterProvider = new ValidationAttributeFormatterProvider();
 
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationConfigureOptions(locOptions, factory, argProvider);
+        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -170,7 +167,8 @@ public class LocalizationIntegrationTests
         await typeInfo.ValidateAsync(model, context, default);
 
         Assert.NotNull(context.ValidationErrors);
-        Assert.DoesNotContain("Should not be used", context.ValidationErrors.Values.SelectMany(v => v));
+        Assert.Equal(IntegrationResources.RequiredError, context.ValidationErrors["Value"].First());
+
     }
 
     [Fact]
@@ -181,10 +179,10 @@ public class LocalizationIntegrationTests
             ["Only letters are allowed."] = "Seules les lettres sont autorisées."
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var argProvider = new DefaultAttributeArgumentProvider();
+        var formatterProvider = new ValidationAttributeFormatterProvider();
 
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationConfigureOptions(locOptions, factory, argProvider);
+        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -215,10 +213,10 @@ public class LocalizationIntegrationTests
             ["Start must be less than End."] = "Le début doit être inférieur à la fin."
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var argProvider = new DefaultAttributeArgumentProvider();
+        var formatterProvider = new ValidationAttributeFormatterProvider();
 
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationConfigureOptions(locOptions, factory, argProvider);
+        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -254,10 +252,10 @@ public class LocalizationIntegrationTests
             ["Custom IValidatableObject error"] = "Should not translate this"
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var argProvider = new DefaultAttributeArgumentProvider();
+        var formatterProvider = new ValidationAttributeFormatterProvider();
 
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationConfigureOptions(locOptions, factory, argProvider);
+        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -290,10 +288,10 @@ public class LocalizationIntegrationTests
             ["The {0} field is required."] = "Options: {0} required"
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var argProvider = new DefaultAttributeArgumentProvider();
+        var formatterProvider = new ValidationAttributeFormatterProvider();
 
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationConfigureOptions(locOptions, factory, argProvider);
+        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -322,9 +320,9 @@ public class LocalizationIntegrationTests
             typeof(IntegrationCustomer),
             [
                 new TestValidatablePropertyInfo(typeof(IntegrationCustomer), typeof(string), "Name",
-                    [new RequiredAttribute(), new StringLengthAttribute(100)]),
+                    [new RequiredAttribute() { ErrorMessage = "RequiredError" }, new StringLengthAttribute(100)]),
                 new TestValidatablePropertyInfo(typeof(IntegrationCustomer), typeof(int), "Age",
-                    [new RangeAttribute(18, 120)],
+                    [new RangeAttribute(18, 120) { ErrorMessage = "RangeError" } ],
                     new DisplayAttribute { Name = "Customer Age" }),
                 new TestValidatablePropertyInfo(typeof(IntegrationCustomer), typeof(string), "Email",
                     [new EmailAddressAttribute()])

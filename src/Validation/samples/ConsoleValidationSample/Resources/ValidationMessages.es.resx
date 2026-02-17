@@ -126,13 +126,13 @@
   <data name="RecommendationScore" xml:space="preserve">
     <value>Puntuación de recomendación</value>
   </data>
-  <data name="RequiredError" xml:space="preserve">
+  <data name="RequiredAttribute_Error" xml:space="preserve">
     <value>{0} es obligatorio</value>
   </data>
-  <data name="The customer {1} is banned" xml:space="preserve">
+  <data name="BannedCustomerAttribute_Error" xml:space="preserve">
     <value>El cliente {1} está baneado</value>
   </data>
-  <data name="The field {0} must be between {1} and {2}." xml:space="preserve">
+  <data name="RangeAttribute_Error" xml:space="preserve">
     <value>El valor de {0} debe estar entre {1} y {2}.</value>
   </data>
 </root>

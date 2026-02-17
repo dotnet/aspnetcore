@@ -8,6 +8,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation.Localization;
+using Microsoft.Extensions.Validation.Localization.Attributes;
 using Microsoft.Extensions.Validation.LocalizationTests.Helpers;
 
 namespace Microsoft.Extensions.Validation.LocalizationTests;
@@ -74,8 +75,6 @@ public class AddValidationLocalizationTests
         options.ErrorMessageProvider!(new ErrorMessageContext
         {
             Attribute = new System.ComponentModel.DataAnnotations.RequiredAttribute(),
-            ErrorMessage = "The {0} field is required.",
-            IsCustomErrorMessage = false,
             DisplayName = "Test",
             MemberName = "Test",
             Services = provider
@@ -106,8 +105,6 @@ public class AddValidationLocalizationTests
         options.ErrorMessageProvider!(new ErrorMessageContext
         {
             Attribute = new System.ComponentModel.DataAnnotations.RequiredAttribute(),
-            ErrorMessage = "The {0} field is required.",
-            IsCustomErrorMessage = false,
             DisplayName = "Test",
             MemberName = "Test",
             DeclaringType = typeof(string),
@@ -136,8 +133,6 @@ public class AddValidationLocalizationTests
         var key = locOptions.ErrorMessageKeySelector(new ErrorMessageContext
         {
             Attribute = new System.ComponentModel.DataAnnotations.RequiredAttribute(),
-            ErrorMessage = "The {0} field is required.",
-            IsCustomErrorMessage = false,
             DisplayName = "Test",
             MemberName = "Test",
             Services = provider
@@ -165,8 +160,6 @@ public class AddValidationLocalizationTests
         var errorResult = options.ErrorMessageProvider!(new ErrorMessageContext
         {
             Attribute = new System.ComponentModel.DataAnnotations.RequiredAttribute(),
-            ErrorMessage = "The {0} field is required.",
-            IsCustomErrorMessage = false,
             DisplayName = "Test",
             MemberName = "Test",
             Services = provider
@@ -190,10 +183,10 @@ public class AddValidationLocalizationTests
         services.AddValidationLocalization();
 
         var provider = services.BuildServiceProvider();
-        var argProvider = provider.GetService<IAttributeArgumentProvider>();
+        var argProvider = provider.GetService<IValidationAttributeFormatterProvider>();
 
         Assert.NotNull(argProvider);
-        Assert.IsType<DefaultAttributeArgumentProvider>(argProvider);
+        Assert.IsType<ValidationAttributeFormatterProvider>(argProvider);
     }
 
     private class SharedResource { }

@@ -3,18 +3,17 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Microsoft.Extensions.Validation.Localization;
+namespace Microsoft.Extensions.Validation.Localization.Attributes;
 
 /// <summary>
 /// Provides the format arguments used when formatting localized validation error messages.
 /// </summary>
-public interface IAttributeArgumentProvider
+public interface IValidationAttributeFormatterProvider
 {
     /// <summary>
     /// Returns the format arguments for the specified <paramref name="attribute"/>.
     /// </summary>
     /// <param name="attribute">The validation attribute whose error message is being formatted.</param>
-    /// <param name="displayName">The resolved display name of the member being validated.</param>
     /// <returns>An array of arguments to pass to <see cref="string.Format(string, object?[])"/>.</returns>
-    public object?[] GetFormatArgs(ValidationAttribute attribute, string displayName);
+    public IValidationAttributeFormatter GetFormatter(ValidationAttribute attribute);
 }

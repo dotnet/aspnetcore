@@ -4,6 +4,7 @@
 using System.Globalization;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Validation.Localization.Attributes;
 
 namespace Microsoft.Extensions.Validation.Localization;
 
@@ -12,17 +13,14 @@ namespace Microsoft.Extensions.Validation.Localization;
 /// <see cref="ValidationLocalizationOptions"/> and the registered
 /// <see cref="IStringLocalizerFactory"/>.
 /// </summary>
-internal sealed class ValidationLocalizationConfigureOptions(
+internal sealed class StringLocalizerConfiguration(
     IOptions<ValidationLocalizationOptions> localizationOptions,
     IStringLocalizerFactory? stringLocalizerFactory = null,
-    IAttributeArgumentProvider? attributeArgumentProvider = null)
+    IValidationAttributeFormatterProvider? attributeFormatterProvider = null)
     : IConfigureOptions<ValidationOptions>
 {
     public void Configure(ValidationOptions options)
     {
-        // If no IStringLocalizerFactory is registered, we can't do localization.
-        // This shouldn't happen if AddValidationLocalization() was called (which
-        // calls AddLocalization()), but we handle it gracefully.
         if (stringLocalizerFactory is null)
         {
             return;
@@ -48,16 +46,16 @@ internal sealed class ValidationLocalizationConfigureOptions(
 
         string? GetErrorMessage(ErrorMessageContext context)
         {
-            // Create localizer: per-type or shared, depending on config
+            // Create localizer: per-type or shared, depending on config.
+            // Caching of IStringLocalizer instances is the responsibility of the IStringLocalizerFactory.
             var declaringType = context.DeclaringType ?? typeof(object);
             var localizer = localizerProvider is not null
                 ? localizerProvider(declaringType, stringLocalizerFactory)
                 : stringLocalizerFactory.Create(declaringType);
 
-            // Determine the lookup key
-            var lookupKey = keySelector is not null
-                ? keySelector(context)
-                : context.ErrorMessage;
+            var lookupKey = !string.IsNullOrEmpty(context.Attribute.ErrorMessage)
+                ? context.Attribute.ErrorMessage
+                : keySelector?.Invoke(context);
 
             if (lookupKey is null)
             {
@@ -74,8 +72,12 @@ internal sealed class ValidationLocalizationConfigureOptions(
             var displayName = context.DisplayName ?? context.MemberName;
 
             // Format the localized template with attribute-specific arguments
-            var args = attributeArgumentProvider?.GetFormatArgs(context.Attribute, displayName) ?? [displayName];
-            return string.Format(CultureInfo.CurrentCulture, localizedTemplate.Value, args);
+            var attributeFormatter = context.Attribute is IValidationAttributeFormatter formatter
+                ? formatter
+                : attributeFormatterProvider?.GetFormatter(context.Attribute);
+
+            return attributeFormatter?.FormatErrorMessage(CultureInfo.CurrentCulture, localizedTemplate, displayName)
+                ?? string.Format(CultureInfo.CurrentCulture, localizedTemplate, displayName);
         }
     }
 }

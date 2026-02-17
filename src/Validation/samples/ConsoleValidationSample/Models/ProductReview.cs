@@ -14,7 +14,7 @@ namespace ConsoleValidationSample.Models;
 /// </summary>
 [ValidatableType]
 public record ProductReview(
-    [Range(10, 100)]
+    [Range(10, 100, ErrorMessage = "Custom message")]
     int Rating,
 
     [Range(10, 100), Display(Name = "RecommendationScore")]
