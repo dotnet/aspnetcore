@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation.Localization;
+using Microsoft.Extensions.Validation.Localization.Attributes;
 using Microsoft.Extensions.Validation.LocalizationTests.Helpers;
 
 namespace Microsoft.Extensions.Validation.LocalizationTests;
@@ -19,7 +20,7 @@ public class ValidationLocalizationConfigureOptionsTests
     public void Configure_WithNoStringLocalizerFactory_DoesNotSetProviders()
     {
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationConfigureOptions(locOptions, stringLocalizerFactory: null);
+        var configureOptions = new StringLocalizerConfiguration(locOptions, stringLocalizerFactory: null);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -34,7 +35,7 @@ public class ValidationLocalizationConfigureOptionsTests
         var translations = new Dictionary<string, string> { ["Customer Age"] = "Âge du client" };
         var factory = new TestStringLocalizerFactory(translations);
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationConfigureOptions(locOptions, factory);
+        var configureOptions = new StringLocalizerConfiguration(locOptions, factory);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -57,7 +58,7 @@ public class ValidationLocalizationConfigureOptionsTests
         var translations = new Dictionary<string, string>();
         var factory = new TestStringLocalizerFactory(translations);
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationConfigureOptions(locOptions, factory);
+        var configureOptions = new StringLocalizerConfiguration(locOptions, factory);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -77,12 +78,12 @@ public class ValidationLocalizationConfigureOptionsTests
     {
         var translations = new Dictionary<string, string>
         {
-            ["The {0} field is required."] = "Le champ {0} est obligatoire."
+            ["RequiredError"] = "Le champ {0} est obligatoire."
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var argProvider = new DefaultAttributeArgumentProvider();
+        var formatterProvider = new ValidationAttributeFormatterProvider();
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationConfigureOptions(locOptions, factory, argProvider);
+        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -91,9 +92,7 @@ public class ValidationLocalizationConfigureOptionsTests
 
         var result = validationOptions.ErrorMessageProvider(new ErrorMessageContext
         {
-            Attribute = new RequiredAttribute(),
-            ErrorMessage = "The {0} field is required.",
-            IsCustomErrorMessage = false,
+            Attribute = new RequiredAttribute { ErrorMessage = "RequiredError" },
             DisplayName = "Name",
             MemberName = "Name",
             DeclaringType = typeof(object),
@@ -109,7 +108,7 @@ public class ValidationLocalizationConfigureOptionsTests
         var translations = new Dictionary<string, string>();
         var factory = new TestStringLocalizerFactory(translations);
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationConfigureOptions(locOptions, factory);
+        var configureOptions = new StringLocalizerConfiguration(locOptions, factory);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -117,8 +116,6 @@ public class ValidationLocalizationConfigureOptionsTests
         var result = validationOptions.ErrorMessageProvider!(new ErrorMessageContext
         {
             Attribute = new RequiredAttribute(),
-            ErrorMessage = "The {0} field is required.",
-            IsCustomErrorMessage = false,
             DisplayName = "Name",
             MemberName = "Name",
             DeclaringType = typeof(object),
@@ -129,40 +126,6 @@ public class ValidationLocalizationConfigureOptionsTests
     }
 
     [Fact]
-    public void Configure_WithCustomLocalizerProvider_UsesIt()
-    {
-        var sharedTranslations = new Dictionary<string, string>
-        {
-            ["The {0} field is required."] = "Shared: {0} required"
-        };
-        var sharedLocalizer = new TestStringLocalizer(sharedTranslations);
-        var factory = new TestStringLocalizerFactory(new Dictionary<string, string>());
-
-        var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions
-        {
-            LocalizerProvider = (_, _) => sharedLocalizer
-        });
-        var argProvider = new DefaultAttributeArgumentProvider();
-        var configureOptions = new ValidationLocalizationConfigureOptions(locOptions, factory, argProvider);
-
-        var validationOptions = new ValidationOptions();
-        configureOptions.Configure(validationOptions);
-
-        var result = validationOptions.ErrorMessageProvider!(new ErrorMessageContext
-        {
-            Attribute = new RequiredAttribute(),
-            ErrorMessage = "The {0} field is required.",
-            IsCustomErrorMessage = false,
-            DisplayName = "Field",
-            MemberName = "Field",
-            DeclaringType = typeof(object),
-            Services = new ServiceCollection().BuildServiceProvider()
-        });
-
-        Assert.Equal("Shared: Field required", result);
-    }
-
-    [Fact]
     public void Configure_WithErrorMessageKeySelector_UsesIt()
     {
         var translations = new Dictionary<string, string>
@@ -170,12 +133,12 @@ public class ValidationLocalizationConfigureOptionsTests
             ["RequiredAttribute_Error"] = "Custom key: {0} needed"
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var argProvider = new DefaultAttributeArgumentProvider();
+        var formatterProvider = new ValidationAttributeFormatterProvider();
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions
         {
             ErrorMessageKeySelector = ctx => $"{ctx.Attribute.GetType().Name}_Error"
         });
-        var configureOptions = new ValidationLocalizationConfigureOptions(locOptions, factory, argProvider);
+        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -183,8 +146,6 @@ public class ValidationLocalizationConfigureOptionsTests
         var result = validationOptions.ErrorMessageProvider!(new ErrorMessageContext
         {
             Attribute = new RequiredAttribute(),
-            ErrorMessage = "The {0} field is required.",
-            IsCustomErrorMessage = false,
             DisplayName = "Name",
             MemberName = "Name",
             DeclaringType = typeof(object),
@@ -203,7 +164,7 @@ public class ValidationLocalizationConfigureOptionsTests
         };
         var factory = new TestStringLocalizerFactory(translations);
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationConfigureOptions(locOptions, factory);
+        var configureOptions = new StringLocalizerConfiguration(locOptions, factory);
 
         var validationOptions = new ValidationOptions
         {
@@ -215,8 +176,6 @@ public class ValidationLocalizationConfigureOptionsTests
         var errorResult = validationOptions.ErrorMessageProvider(new ErrorMessageContext
         {
             Attribute = new RequiredAttribute(),
-            ErrorMessage = "The {0} field is required.",
-            IsCustomErrorMessage = false,
             DisplayName = "Name",
             MemberName = "Name",
             Services = new ServiceCollection().BuildServiceProvider()
@@ -236,21 +195,19 @@ public class ValidationLocalizationConfigureOptionsTests
     {
         var translations = new Dictionary<string, string>
         {
-            ["The field {0} must be between {1} and {2}."] = "{0} doit être entre {1} et {2}."
+            ["RangeError"] = "{0} doit être entre {1} et {2}."
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var argProvider = new DefaultAttributeArgumentProvider();
+        var formatterProvider = new ValidationAttributeFormatterProvider();
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationConfigureOptions(locOptions, factory, argProvider);
+        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
 
         var result = validationOptions.ErrorMessageProvider!(new ErrorMessageContext
         {
-            Attribute = new RangeAttribute(1, 100),
-            ErrorMessage = "The field {0} must be between {1} and {2}.",
-            IsCustomErrorMessage = false,
+            Attribute = new RangeAttribute(1, 100) { ErrorMessage = "RangeError" },
             DisplayName = "Age",
             MemberName = "Age",
             DeclaringType = typeof(object),
@@ -272,7 +229,7 @@ public class ValidationLocalizationConfigureOptionsTests
         {
             ErrorMessageKeySelector = _ => null
         });
-        var configureOptions = new ValidationLocalizationConfigureOptions(locOptions, factory);
+        var configureOptions = new StringLocalizerConfiguration(locOptions, factory);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -280,8 +237,6 @@ public class ValidationLocalizationConfigureOptionsTests
         var result = validationOptions.ErrorMessageProvider!(new ErrorMessageContext
         {
             Attribute = new RequiredAttribute(),
-            ErrorMessage = "The {0} field is required.",
-            IsCustomErrorMessage = false,
             DisplayName = "Name",
             MemberName = "Name",
             Services = new ServiceCollection().BuildServiceProvider()

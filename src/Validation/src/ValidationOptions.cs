@@ -36,16 +36,15 @@ public class ValidationOptions
     public int MaxDepth { get; set; } = 32;
 
     /// <summary>
-    /// Gets or sets the delegate that resolves display names for properties and parameters.
-    /// If the delegate returns a non-null string, that string is used as the display name
-    /// (the <c>{0}</c> placeholder in error message templates). If it returns <see langword="null"/>,
-    /// the default display name (from <see cref="DisplayAttribute"/> or the CLR name) is used.
+    /// Gets or sets the delegate that resolves display names for types, properties and parameters.
+    /// If the delegate returns a non-null string, that string is used as the display name.
+    /// If it returns <see langword="null"/>, the value of <see cref="DisplayAttribute.Name"/> or the member name is used.
     /// </summary>
     public Func<DisplayNameContext, string?>? DisplayNameProvider { get; set; }
 
     /// <summary>
     /// Gets or sets the delegate that resolves error messages for validation attributes.
-    /// When set, this delegate is called for every validation attribute that produces an error,
+    /// When set, this delegate is called for every validation attribute that produces an erro r,
     /// <b>unless</b> the attribute has <see cref="ValidationAttribute.ErrorMessageResourceType"/>
     /// set (which indicates the attribute handles its own resource-based localization).
     /// </summary>
