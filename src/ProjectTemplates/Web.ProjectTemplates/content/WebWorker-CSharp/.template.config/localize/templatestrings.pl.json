@@ -1,0 +1,10 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Internetowy proces roboczy środowiska .NET",
+  "description": "Projekt służący do tworzenia biblioteki klas, która uruchamia kod środowiska .NET w internetowym procesie roboczym.",
+  "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
+  "symbols/Framework/choices/net11.0/description": "Docelowa platforma net11.0",
+  "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.",
+  "postActions/restore/description": "Przywróć pakiety NuGet wymagane przez ten projekt.",
+  "postActions/restore/manualInstructions/default/text": "Uruchom polecenie „dotnet restore”"
+}

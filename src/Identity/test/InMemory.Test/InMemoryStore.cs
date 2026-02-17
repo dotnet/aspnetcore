@@ -215,7 +215,8 @@ public class InMemoryStore<TUser, TRole> :
             p.AttestationObject,
             p.ClientDataJson)
         {
-            Name = p.Name
+            Name = p.Name,
+            Aaguid = p.Aaguid
         };
 
     private static PocoUserPasskey<string> ToPocoUserPasskey(TUser user, UserPasskeyInfo p)
@@ -233,6 +234,7 @@ public class InMemoryStore<TUser, TRole> :
             IsBackedUp = p.IsBackedUp,
             AttestationObject = p.AttestationObject,
             ClientDataJson = p.ClientDataJson,
+            Aaguid = p.Aaguid,
         };
 
     public IQueryable<TRole> Roles

@@ -10,6 +10,8 @@ internal static class IdentityUserPasskeyExtensions
     {
         public void UpdateFromUserPasskeyInfo(UserPasskeyInfo passkeyInfo)
         {
+            // We only mutate properties that can be updated after passkey creation.
+            // See https://www.w3.org/TR/webauthn-3/#authn-ceremony-update-credential-record
             passkey.Data.Name = passkeyInfo.Name;
             passkey.Data.SignCount = passkeyInfo.SignCount;
             passkey.Data.IsBackedUp = passkeyInfo.IsBackedUp;
@@ -29,7 +31,8 @@ internal static class IdentityUserPasskeyExtensions
                 passkey.Data.AttestationObject,
                 passkey.Data.ClientDataJson)
             {
-                Name = passkey.Data.Name
+                Name = passkey.Data.Name,
+                Aaguid = passkey.Data.Aaguid,
             };
     }
 }

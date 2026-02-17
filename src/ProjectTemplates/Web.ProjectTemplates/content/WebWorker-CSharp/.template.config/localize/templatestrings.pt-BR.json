@@ -1,0 +1,10 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Trabalho .NET",
+  "description": "Um projeto para criar uma biblioteca de classes que executa código .NET em um Trabalho.",
+  "symbols/Framework/description": "A estrutura de destino para o projeto.",
+  "symbols/Framework/choices/net11.0/description": "Net11.0 de destino",
+  "symbols/skipRestore/description": "Se especificado, ignora a restauração automática do projeto que está sendo criado.",
+  "postActions/restore/description": "Restaurar os pacotes NuGet exigidos por esse projeto.",
+  "postActions/restore/manualInstructions/default/text": "Execute 'dotnet restore'"
+}
