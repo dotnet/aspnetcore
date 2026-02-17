@@ -1,5 +1,5 @@
 ﻿{
-  "openapi": "3.2.0",
+  "openapi": "3.1.2",
   "info": {
     "title": "Sample | localized",
     "description": "This is a localized OpenAPI document for français (France).",
@@ -1830,7 +1830,7 @@
                 "path": {
                   "type": "string"
                 },
-                "value": { }
+                "value": {}
               },
               "additionalProperties": false
             },
