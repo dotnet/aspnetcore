@@ -38,6 +38,7 @@ public class PaginationState
 
     internal EventCallbackSubscribable<PaginationState> CurrentPageItemsChanged { get; } = new();
     internal EventCallbackSubscribable<PaginationState> TotalItemCountChangedSubscribable { get; } = new();
+    internal string QueryName { get; set; } = "QuickGrid";
 
     /// <inheritdoc />
     public override int GetHashCode()
@@ -51,7 +52,18 @@ public class PaginationState
     /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
     public Task SetCurrentPageIndexAsync(int pageIndex)
     {
-        CurrentPageIndex = pageIndex;
+        if (pageIndex < 0)
+        {
+            CurrentPageIndex = 0;
+        }
+        else if (LastPageIndex.HasValue && pageIndex > LastPageIndex.Value)
+        {
+            CurrentPageIndex = LastPageIndex.Value;
+        }
+        else
+        {
+            CurrentPageIndex = pageIndex;
+        }
         return CurrentPageItemsChanged.InvokeCallbacksAsync(this);
     }
 

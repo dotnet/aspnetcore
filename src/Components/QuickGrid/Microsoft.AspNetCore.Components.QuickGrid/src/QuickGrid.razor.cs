@@ -3,7 +3,9 @@
 
 using System.Linq;
 using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.JSInterop;
 using Microsoft.AspNetCore.Components.Forms;
 
@@ -14,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.QuickGrid;
 /// </summary>
 /// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
 [CascadingTypeParameter(nameof(TGridItem))]
-public partial class QuickGrid<TGridItem> : IAsyncDisposable
+public partial class QuickGrid<TGridItem> : IAsyncDisposable, IDisposable
 {
     /// <summary>
     /// A queryable source of data for the grid.
@@ -114,8 +116,17 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// </summary>
     [Parameter] public EventCallback<TGridItem> OnRowClick { get; set; }
 
+    /// <summary>
+    /// Name of the query string parameter used to persist the current page index and sort order in the URL.
+    /// Defaults to <c>"QuickGrid"</c>. The sort parameter is derived by appending <c>"_sort"</c> to this value.
+    /// When set, this value is propagated to the associated <see cref="PaginationState"/>
+    /// so that connected components such as <see cref="Paginator"/> use the same query parameter name.
+    /// </summary>
+    [Parameter] public string QueryName { get; set; } = "QuickGrid";
+
     [Inject] private IServiceProvider Services { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
     private ElementReference _tableReference;
     private Virtualize<(int, TGridItem)>? _virtualizeComponent;
@@ -162,6 +173,12 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
 
     private bool _firstRefreshDataAsync = true;
 
+    private bool _hasReadSortFromQueryString;
+    private bool _suppressNextLocationChange;
+    private (int ColumnIndex, bool Ascending)? _cachedSortFromQuery;
+
+    private string SortQueryParameterName => $"{QueryName}_sort";
+
     /// <summary>
     /// Constructs an instance of <see cref="QuickGrid{TGridItem}"/>.
     /// </summary>
@@ -182,10 +199,21 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     }
 
     /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    /// <inheritdoc />
     protected override Task OnParametersSetAsync()
     {
         // The associated pagination state may have been added/removed/replaced
         _currentPageItemsChanged.SubscribeOrMove(Pagination?.CurrentPageItemsChanged);
+
+        if (Pagination is { } pagination)
+        {
+            pagination.QueryName = QueryName;
+        }
 
         if (Items is not null && ItemsProvider is not null)
         {
@@ -233,24 +261,37 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     }
 
     // Invoked by descendant columns at a special time during rendering
-    internal void AddColumn(ColumnBase<TGridItem> column, SortDirection? initialSortDirection, bool isDefaultSortColumn)
+    internal int AddColumn(ColumnBase<TGridItem> column, SortDirection? initialSortDirection, bool isDefaultSortColumn)
     {
         if (_collectingColumns)
         {
             _columns.Add(column);
+            var columnIndex = _columns.Count - 1;
 
             if (isDefaultSortColumn && _sortByColumn is null && initialSortDirection.HasValue)
             {
                 _sortByColumn = column;
                 _sortByAscending = initialSortDirection.Value != SortDirection.Descending;
             }
+
+            if (!_hasReadSortFromQueryString
+                && _cachedSortFromQuery is { } sortFromQuery
+                && sortFromQuery.ColumnIndex == columnIndex)
+            {
+                _sortByColumn = column;
+                _sortByAscending = sortFromQuery.Ascending;
+                _hasReadSortFromQueryString = true;
+            }
+            return columnIndex;
         }
+        return -1;
     }
 
     private void StartCollectingColumns()
     {
         _columns.Clear();
         _collectingColumns = true;
+        _cachedSortFromQuery = !_hasReadSortFromQueryString ? ReadSortFromQueryString() : null;
     }
 
     private void FinishCollectingColumns()
@@ -276,8 +317,95 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
 
         _sortByColumn = column;
 
+        UpdateSortQueryString();
+
         StateHasChanged(); // We want to see the updated sort order in the header, even before the data query is completed
         return RefreshDataAsync();
+    }
+
+    private void UpdateSortQueryString()
+    {
+        string? sortValue = _sortByColumn is not null
+            ? $"{_columns.IndexOf(_sortByColumn)}_{(_sortByAscending ? "asc" : "desc")}"
+            : null;
+        var newUri = NavigationManager.GetUriWithQueryParameter(SortQueryParameterName, sortValue);
+        _suppressNextLocationChange = true;
+        NavigationManager.NavigateTo(newUri);
+    }
+
+    private (int ColumnIndex, bool Ascending)? ReadSortFromQueryString()
+    {
+        var uri = NavigationManager.Uri;
+        var queryStart = uri.IndexOf('?');
+        if (queryStart < 0)
+        {
+            return null;
+        }
+
+        var queryEnd = uri.IndexOf('#', queryStart);
+        var query = uri.AsMemory(queryStart..((queryEnd < 0) ? uri.Length : queryEnd));
+        var enumerable = new QueryStringEnumerable(query);
+        var paramName = SortQueryParameterName;
+
+        foreach (var pair in enumerable)
+        {
+            if (pair.DecodeName().Span.Equals(paramName, StringComparison.OrdinalIgnoreCase))
+            {
+                var value = pair.DecodeValue().Span;
+                var lastUnderscore = value.LastIndexOf('_');
+                if (lastUnderscore > 0 && lastUnderscore < value.Length - 1)
+                {
+                    var indexSpan = value[..lastUnderscore];
+                    var direction = value[(lastUnderscore + 1)..];
+                    if (int.TryParse(indexSpan, out var columnIndex) && columnIndex >= 0)
+                    {
+                        if (direction.Equals("asc", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return (columnIndex, true);
+                        }
+                        else if (direction.Equals("desc", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return (columnIndex, false);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (_suppressNextLocationChange)
+        {
+            _suppressNextLocationChange = false;
+            return;
+        }
+
+        var sortFromQuery = ReadSortFromQueryString();
+        var currentColumnIndex = _sortByColumn is not null ? _columns.IndexOf(_sortByColumn) : -1;
+        var currentAscending = _sortByAscending;
+
+        if (sortFromQuery is null && _sortByColumn is not null
+            || sortFromQuery is not null && (sortFromQuery.Value.ColumnIndex != currentColumnIndex
+                || sortFromQuery.Value.Ascending != currentAscending))
+        {
+            await InvokeAsync(async () =>
+            {
+                if (sortFromQuery is null)
+                {
+                    _sortByColumn = null;
+                }
+                else if (sortFromQuery.Value.ColumnIndex >= 0 && sortFromQuery.Value.ColumnIndex < _columns.Count)
+                {
+                    _sortByColumn = _columns[sortFromQuery.Value.ColumnIndex];
+                    _sortByAscending = sortFromQuery.Value.Ascending;
+                }
+
+                await RefreshDataCoreAsync();
+                StateHasChanged();
+            });
+        }
     }
 
     /// <summary>
@@ -455,8 +583,15 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     };
 
     /// <inheritdoc />
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+
+    /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        Dispose();
         _wasDisposed = true;
         _currentPageItemsChanged.Dispose();
 

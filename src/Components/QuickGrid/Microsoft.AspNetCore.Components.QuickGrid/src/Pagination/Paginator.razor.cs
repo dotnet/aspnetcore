@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
+using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Components.QuickGrid;
 
@@ -11,6 +13,16 @@ namespace Microsoft.AspNetCore.Components.QuickGrid;
 public partial class Paginator : IDisposable
 {
     private readonly EventCallbackSubscriber<PaginationState> _totalItemCountChanged;
+    private bool _hasReadQueryString;
+    private bool _suppressNextLocationChange;
+
+    [Inject]
+    private NavigationManager NavigationManager { get; set; } = default!;
+    private string QueryName => State.QueryName;
+    private string FormNameFirst => $"Paginator_{QueryName}_GoFirst";
+    private string FormNamePrevious => $"Paginator_{QueryName}_GoPrevious";
+    private string FormNameNext => $"Paginator_{QueryName}_GoNext";
+    private string FormNameLast => $"Paginator_{QueryName}_GoLast";
 
     /// <summary>
     /// Specifies the associated <see cref="PaginationState"/>. This parameter is required.
@@ -39,14 +51,84 @@ public partial class Paginator : IDisposable
     private bool CanGoBack => State.CurrentPageIndex > 0;
     private bool CanGoForwards => State.CurrentPageIndex < State.LastPageIndex;
 
-    private Task GoToPageAsync(int pageIndex)
-        => State.SetCurrentPageIndexAsync(pageIndex);
+    private async Task GoToPageAsync(int pageIndex)
+    {
+        int? pageValue = pageIndex == 0 ? null : pageIndex + 1;
+        var newUri = NavigationManager.GetUriWithQueryParameter(QueryName, pageValue);
+        await State.SetCurrentPageIndexAsync(pageIndex);
+        _suppressNextLocationChange = true;
+        NavigationManager.NavigateTo(newUri);
+    }
 
     /// <inheritdoc />
-    protected override void OnParametersSet()
-        => _totalItemCountChanged.SubscribeOrMove(State.TotalItemCountChangedSubscribable);
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    /// <inheritdoc />
+    protected override Task OnParametersSetAsync()
+    {
+        _totalItemCountChanged.SubscribeOrMove(State.TotalItemCountChangedSubscribable);
+        if (!_hasReadQueryString)
+        {
+            _hasReadQueryString = true;
+            var pageFromQuery = ReadPageIndexFromQueryString() ?? 0;
+            if (pageFromQuery != State.CurrentPageIndex)
+            {
+                return State.SetCurrentPageIndexAsync(pageFromQuery);
+            }
+        }
+        return Task.CompletedTask;
+    }
+
+    private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        if (_suppressNextLocationChange)
+        {
+            _suppressNextLocationChange = false;
+            return;
+        }
+        var pageFromQuery = ReadPageIndexFromQueryString() ?? 0;
+        if (pageFromQuery != State.CurrentPageIndex)
+        {
+            await InvokeAsync(async () =>
+            {
+                await State.SetCurrentPageIndexAsync(pageFromQuery);
+                StateHasChanged();
+            });
+        }
+    }
+
+    private int? ReadPageIndexFromQueryString()
+    {
+        var uri = NavigationManager.Uri;
+        var queryStart = uri.IndexOf('?');
+        if (queryStart < 0)
+        {
+            return null;
+        }
+
+        var queryEnd = uri.IndexOf('#', queryStart);
+        var query = uri.AsMemory(queryStart..((queryEnd < 0) ? uri.Length : queryEnd));
+        var enumerable = new QueryStringEnumerable(query);
+
+        foreach (var pair in enumerable)
+        {
+            if (pair.DecodeName().Span.Equals(QueryName, StringComparison.OrdinalIgnoreCase)
+                && int.TryParse(pair.DecodeValue().Span, out var page)
+                && page > 0)
+            {
+                return page - 1;
+            }
+        }
+        return null;
+    }
 
     /// <inheritdoc />
     public void Dispose()
-        => _totalItemCountChanged.Dispose();
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        _totalItemCountChanged.Dispose();
+    }
 }
