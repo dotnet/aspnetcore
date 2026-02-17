@@ -156,7 +156,7 @@ public class ErrorMessageProviderTests
         await typeInfo.ValidateAsync(customer, context, default);
 
         Assert.NotNull(captured);
-        Assert.Equal("The {0} field is required.", captured.Value.ErrorMessage);
+        Assert.Equal("The Name field is required.", context.ValidationErrors!["Name"][0]);
     }
 
     [Fact]
@@ -182,7 +182,7 @@ public class ErrorMessageProviderTests
         await typeInfo.ValidateAsync(model, context, default);
 
         Assert.NotNull(captured);
-        Assert.Equal("Please fill in {0}", captured.Value.ErrorMessage);
+        Assert.Equal("Please fill in Name", context.ValidationErrors!["Name"][0]);
     }
 
     [Fact]
@@ -280,54 +280,6 @@ public class ErrorMessageProviderTests
     }
 
     [Fact]
-    public async Task ErrorMessageProvider_IsCustomErrorMessage_TrueWhenExplicitlySet()
-    {
-        ErrorMessageContext? captured = null;
-        var model = new SimpleModel { Name = null };
-        var requiredAttr = new RequiredAttribute { ErrorMessage = "Custom message" };
-        var propInfo = new TestValidatablePropertyInfo(
-            typeof(SimpleModel), typeof(string), "Name",
-            [requiredAttr]);
-        var typeInfo = new TestValidatableTypeInfo(typeof(SimpleModel), [propInfo]);
-
-        var options = new ValidationOptions
-        {
-            ErrorMessageProvider = ctx =>
-            {
-                captured = ctx;
-                return null;
-            }
-        };
-        var context = CreateContext(model, options);
-        await typeInfo.ValidateAsync(model, context, default);
-
-        Assert.NotNull(captured);
-        Assert.True(captured.Value.IsCustomErrorMessage);
-    }
-
-    [Fact]
-    public async Task ErrorMessageProvider_IsCustomErrorMessage_FalseForDefaults()
-    {
-        ErrorMessageContext? captured = null;
-        var customer = new TestCustomer { Name = null, Age = 25 };
-        var options = new ValidationOptions
-        {
-            ErrorMessageProvider = ctx =>
-            {
-                captured = ctx;
-                return null;
-            }
-        };
-        var context = CreateContext(customer, options);
-
-        var typeInfo = CreateCustomerTypeInfo();
-        await typeInfo.ValidateAsync(customer, context, default);
-
-        Assert.NotNull(captured);
-        Assert.False(captured.Value.IsCustomErrorMessage);
-    }
-
-    [Fact]
     public async Task ErrorMessageProvider_StringLengthWithMinimum_UsesAlternateTemplate()
     {
         ErrorMessageContext? captured = null;
@@ -351,9 +303,8 @@ public class ErrorMessageProviderTests
 
         Assert.NotNull(captured);
         Assert.Equal(
-            "The field {0} must be a string with a minimum length of {2} and a maximum length of {1}.",
-            captured.Value.ErrorMessage);
-        Assert.False(captured.Value.IsCustomErrorMessage);
+            "The field Name must be a string with a minimum length of 3 and a maximum length of 100.",
+            context.ValidationErrors!["Name"][0]);
     }
 
     [Fact]
@@ -380,9 +331,8 @@ public class ErrorMessageProviderTests
 
         Assert.NotNull(captured);
         Assert.Equal(
-            "The field {0} must be a string with a maximum length of {1}.",
-            captured.Value.ErrorMessage);
-        Assert.False(captured.Value.IsCustomErrorMessage);
+            "The field Name must be a string with a maximum length of 100.",
+            context.ValidationErrors!["Name"][0]);
     }
 
     private static TestValidatableTypeInfo CreateCustomerTypeInfo()
