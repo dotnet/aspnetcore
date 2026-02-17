@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AllowedValuesAttribute_ValidationError" xml:space="preserve">
+    <value>{0} alanı AllowedValuesAttribute'ta belirtilen değerlerden hiçbirine eşit değil.</value>
+  </data>
+  <data name="Base64StringAttribute_ValidationError" xml:space="preserve">
+    <value>{0} alanı geçerli bir Base64 kodlaması değil.</value>
+  </data>
+  <data name="CompareAttribute_ValidationError" xml:space="preserve">
+    <value>'{0}' ve '{1}' eşleşmiyor.</value>
+  </data>
+  <data name="CreditCardAttribute_ValidationError" xml:space="preserve">
+    <value>{0} alanı geçerli bir kredi kartı numarası değil.</value>
+  </data>
+  <data name="CustomValidationAttribute_ValidationError" xml:space="preserve">
+    <value>{0} geçerli değil.</value>
+  </data>
+  <data name="DeniedValuesAttribute_ValidationError" xml:space="preserve">
+    <value>{0} alanı DeniedValuesAttribute'ta belirtilen değerlerden birine eşit.</value>
+  </data>
+  <data name="EmailAddressAttribute_ValidationError" xml:space="preserve">
+    <value>{0} alanı geçerli bir e-posta adresi değil.</value>
+  </data>
+  <data name="FileExtensionsAttribute_ValidationError" xml:space="preserve">
+    <value>{0} alanı yalnızca şu uzantılara sahip dosyaları kabul eder: {1}</value>
+  </data>
+  <data name="LengthAttribute_ValidationError" xml:space="preserve">
+    <value>{0} alanı en az '{1}' ve en fazla '{2}' uzunluğunda bir dize veya koleksiyon olmalıdır.</value>
+  </data>
+  <data name="MaxLengthAttribute_ValidationError" xml:space="preserve">
+    <value>{0} alanı en fazla '{1}' uzunluğunda bir dize veya dizi olmalıdır.</value>
+  </data>
+  <data name="MinLengthAttribute_ValidationError" xml:space="preserve">
+    <value>{0} alanı en az '{1}' uzunluğunda bir dize veya dizi olmalıdır.</value>
+  </data>
+  <data name="PhoneAttribute_ValidationError" xml:space="preserve">
+    <value>{0} alanı geçerli bir telefon numarası değil.</value>
+  </data>
+  <data name="RangeAttribute_ValidationError" xml:space="preserve">
+    <value>{0} alanı {1} ile {2} arasında olmalıdır.</value>
+  </data>
+  <data name="RegularExpressionAttribute_ValidationError" xml:space="preserve">
+    <value>{0} alanı '{1}' düzenli ifadesiyle eşleşmelidir.</value>
+  </data>
+  <data name="RequiredAttribute_ValidationError" xml:space="preserve">
+    <value>{0} alanı zorunludur.</value>
+  </data>
+  <data name="StringLengthAttribute_ValidationError" xml:space="preserve">
+    <value>{0} alanı en fazla {1} uzunluğunda bir dize olmalıdır.</value>
+  </data>
+  <data name="UrlAttribute_ValidationError" xml:space="preserve">
+    <value>{0} alanı geçerli bir tam http, https veya ftp URL'si değil.</value>
+  </data>
+  <data name="ValidationAttribute_ValidationError" xml:space="preserve">
+    <value>{0} alanı geçerli değil.</value>
+  </data>
+</root>

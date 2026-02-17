@@ -123,16 +123,7 @@
   <data name="Premium items must have price set to at least {0}" xml:space="preserve">
     <value>Premium items must have price set to at least {0}</value>
   </data>
-  <data name="RecommendationScore" xml:space="preserve">
-    <value>Recommendation score</value>
-  </data>
-  <data name="RequiredAttribute_Error" xml:space="preserve">
-    <value>{0} is required</value>
-  </data>
-  <data name="BannedCustomerAttribute_Error" xml:space="preserve">
+  <data name="BannedCustomerAttribute_ValidationError" xml:space="preserve">
     <value>The customer {1} is banned</value>
-  </data>
-  <data name="RangeAttribute_Error" xml:space="preserve">
-    <value>The value of {0} must be between {1} and {2}.</value>
   </data>
 </root>
