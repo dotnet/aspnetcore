@@ -12,6 +12,7 @@
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.Localization" />
     <Reference Include="Microsoft.Extensions.Validation" />
+    <ProjectReference Include="..\StandardAttributeLocalization\StandardAttributeLocalization.csproj" />
   </ItemGroup>
 
   <ItemGroup>

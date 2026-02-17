@@ -123,16 +123,7 @@
   <data name="Premium items must have price set to at least {0}" xml:space="preserve">
     <value>Los artículos premium deben tener un precio de al menos {0}</value>
   </data>
-  <data name="RecommendationScore" xml:space="preserve">
-    <value>Puntuación de recomendación</value>
-  </data>
-  <data name="RequiredAttribute_Error" xml:space="preserve">
-    <value>{0} es obligatorio</value>
-  </data>
-  <data name="BannedCustomerAttribute_Error" xml:space="preserve">
+  <data name="BannedCustomerAttribute_ValidationError" xml:space="preserve">
     <value>El cliente {1} está baneado</value>
-  </data>
-  <data name="RangeAttribute_Error" xml:space="preserve">
-    <value>El valor de {0} debe estar entre {1} y {2}.</value>
   </data>
 </root>

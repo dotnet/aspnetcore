@@ -9,7 +9,8 @@
       "src\\Validation\\samples\\ConsoleValidationSample\\ConsoleValidationSample.csproj",
       "src\\Validation\\samples\\MinimalApiValidationSample\\MinimalApiValidationSample.csproj",
       "src\\Validation\\samples\\BlazorValidationSample\\BlazorValidationSample.csproj",
-      "src\\Validation\\test\\Microsoft.Extensions.Validation.LocalizationTests\\Microsoft.Extensions.Validation.LocalizationTests.csproj"
+      "src\\Validation\\test\\Microsoft.Extensions.Validation.LocalizationTests\\Microsoft.Extensions.Validation.LocalizationTests.csproj",
+      "src\\Validation\\samples\\StandardAttributeLocalization\\StandardAttributeLocalization.csproj"
     ]
   }
 }
