@@ -17,23 +17,6 @@ public readonly struct ErrorMessageContext
     public required ValidationAttribute Attribute { get; init; }
 
     /// <summary>
-    /// Gets the current error message template on the attribute.
-    /// This is the value of <see cref="ValidationAttribute.ErrorMessage"/> if explicitly set,
-    /// or the attribute's built-in default English template if not set
-    /// (e.g., <c>"The {0} field is required."</c> for <see cref="RequiredAttribute"/>).
-    /// This value can be used as a localization lookup key.
-    /// </summary>
-    public required string ErrorMessage { get; init; }
-
-    /// <summary>
-    /// Gets a value indicating whether <see cref="ValidationAttribute.ErrorMessage"/> was explicitly
-    /// set on the attribute instance (i.e., the user wrote <c>[Required(ErrorMessage = "...")]</c>).
-    /// When <see langword="false"/>, <see cref="ErrorMessage"/> contains the attribute's
-    /// built-in default message template.
-    /// </summary>
-    public required bool IsCustomErrorMessage { get; init; }
-
-    /// <summary>
     /// Gets the resolved display name for the member being validated.
     /// This value is already localized if <see cref="ValidationOptions.DisplayNameProvider"/>
     /// was configured and returned a non-null value.

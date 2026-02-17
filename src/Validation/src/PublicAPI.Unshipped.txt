@@ -2,6 +2,12 @@
 abstract Microsoft.Extensions.Validation.ValidatableParameterInfo.GetDisplayAttribute() -> System.ComponentModel.DataAnnotations.DisplayAttribute?
 abstract Microsoft.Extensions.Validation.ValidatablePropertyInfo.GetDisplayAttribute() -> System.ComponentModel.DataAnnotations.DisplayAttribute?
 abstract Microsoft.Extensions.Validation.ValidatableTypeInfo.GetDisplayAttribute() -> System.ComponentModel.DataAnnotations.DisplayAttribute?
+Microsoft.Extensions.Validation.Localization.Attributes.IValidationAttributeFormatter
+Microsoft.Extensions.Validation.Localization.Attributes.IValidationAttributeFormatter.FormatErrorMessage(System.Globalization.CultureInfo! culture, string! messageTemplate, string! displayName) -> string!
+Microsoft.Extensions.Validation.Localization.Attributes.IValidationAttributeFormatterProvider
+Microsoft.Extensions.Validation.Localization.Attributes.IValidationAttributeFormatterProvider.GetFormatter(System.ComponentModel.DataAnnotations.ValidationAttribute! attribute) -> Microsoft.Extensions.Validation.Localization.Attributes.IValidationAttributeFormatter!
+Microsoft.Extensions.Validation.Localization.Attributes.ValidationAttributeFormatterProvider
+Microsoft.Extensions.Validation.Localization.Attributes.ValidationAttributeFormatterProvider.ValidationAttributeFormatterProvider() -> void
 Microsoft.Extensions.Validation.Localization.DefaultAttributeArgumentProvider
 Microsoft.Extensions.Validation.Localization.DefaultAttributeArgumentProvider.DefaultAttributeArgumentProvider() -> void
 Microsoft.Extensions.Validation.Localization.DisplayNameContext
@@ -21,11 +27,9 @@ Microsoft.Extensions.Validation.Localization.ErrorMessageContext.DeclaringType.g
 Microsoft.Extensions.Validation.Localization.ErrorMessageContext.DeclaringType.init -> void
 Microsoft.Extensions.Validation.Localization.ErrorMessageContext.DisplayName.get -> string?
 Microsoft.Extensions.Validation.Localization.ErrorMessageContext.DisplayName.init -> void
-Microsoft.Extensions.Validation.Localization.ErrorMessageContext.ErrorMessage.get -> string!
+Microsoft.Extensions.Validation.Localization.ErrorMessageContext.ErrorMessage.get -> string?
 Microsoft.Extensions.Validation.Localization.ErrorMessageContext.ErrorMessage.init -> void
 Microsoft.Extensions.Validation.Localization.ErrorMessageContext.ErrorMessageContext() -> void
-Microsoft.Extensions.Validation.Localization.ErrorMessageContext.IsCustomErrorMessage.get -> bool
-Microsoft.Extensions.Validation.Localization.ErrorMessageContext.IsCustomErrorMessage.init -> void
 Microsoft.Extensions.Validation.Localization.ErrorMessageContext.MemberName.get -> string!
 Microsoft.Extensions.Validation.Localization.ErrorMessageContext.MemberName.init -> void
 Microsoft.Extensions.Validation.Localization.ErrorMessageContext.Services.get -> System.IServiceProvider!
@@ -50,4 +54,5 @@ Microsoft.Extensions.Validation.ValidationOptions.ErrorMessageProvider.get -> Sy
 Microsoft.Extensions.Validation.ValidationOptions.ErrorMessageProvider.set -> void
 static Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions.AddValidationLocalization(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Validation.ValidationLocalizationOptions!>? configureOptions = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions.AddValidationLocalization<TResource>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Validation.ValidationLocalizationOptions!>? configureOptions = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+virtual Microsoft.Extensions.Validation.Localization.Attributes.ValidationAttributeFormatterProvider.GetFormatter(System.ComponentModel.DataAnnotations.ValidationAttribute! attribute) -> Microsoft.Extensions.Validation.Localization.Attributes.IValidationAttributeFormatter!
 virtual Microsoft.Extensions.Validation.Localization.DefaultAttributeArgumentProvider.GetFormatArgs(System.ComponentModel.DataAnnotations.ValidationAttribute! attribute, string! displayName) -> object?[]!
