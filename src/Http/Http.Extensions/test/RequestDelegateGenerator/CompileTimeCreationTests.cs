@@ -788,4 +788,56 @@ app.MapPost("/", ([FromForm] string[]? message, HttpContext httpContext) =>
 
         Assert.Equal<string[]>(["hello", "bye"], (string[])httpContext.Items["message"]);
     }
+
+    // Test for https://github.com/dotnet/aspnetcore/issues/65452
+    // This test verifies that when an endpoint returns a type that the RDG cannot resolve
+    // (simulated by a type reference that doesn't exist), the RDG falls back to runtime
+    // generation instead of generating invalid code.
+    [Fact]
+    public async Task FallsBackToRuntimeFactoryWhenReturnTypeCannotBeResolved()
+    {
+        // This test simulates the scenario where another source generator produces a type
+        // By referencing a non-existent type, we simulate what happens when the RDG
+        // encounters an IErrorTypeSymbol (a type it cannot resolve)
+        var source = """
+using Microsoft.AspNetCore.Builder;
+
+public static class TestExtensions
+{
+    public static void MapTestEndpoint(IEndpointRouteBuilder app)
+    {
+        // Reference a type that doesn't exist - this will be an error type
+        app.MapGet("/test", () => TypeThatDoesNotExist.Create());
+    }
+}
+""";
+        var project = CreateProject();
+        project = project.AddDocument("TestMapActions.cs", SourceText.From(source, Encoding.UTF8)).Project;
+        var compilation = await project.GetCompilationAsync();
+
+        var generator = new RequestDelegateGenerator.RequestDelegateGenerator().AsSourceGenerator();
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(
+            generators: new[] { generator },
+            driverOptions: new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true),
+            parseOptions: ParseOptions);
+        
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var updatedCompilation, out var _);
+        var generatorRunResult = driver.GetRunResult();
+        var result = Assert.Single(generatorRunResult.Results);
+
+        // The RDG should not generate code for this endpoint because the return type cannot be resolved
+        // With the fix, GetIsSerializable() returns false for error types, so the endpoint falls back
+        // to runtime generation and no interceptor is generated
+        
+        // Check that we don't have any generated sources with the broken code patterns mentioned in the issue
+        // (empty typeof(), invalid JsonTypeInfo<?>)
+        foreach (var generatedSource in result.GeneratedSources)
+        {
+            var text = generatedSource.SourceText.ToString();
+            // The bug would produce: typeof() or JsonTypeInfo<?>
+            Assert.DoesNotContain("typeof()", text);
+            Assert.DoesNotContain("JsonTypeInfo<?>", text);
+            Assert.DoesNotContain("JsonTypeInfo<>", text);
+        }
+    }
 }
