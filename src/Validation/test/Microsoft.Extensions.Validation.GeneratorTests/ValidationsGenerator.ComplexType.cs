@@ -695,4 +695,77 @@ public class TypeWithJsonElement
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
         });
     }
+
+    [Fact]
+    public async Task SkipsNonReadableAndStaticProperties()
+    {
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/order", ([FromBody] Order request) => Results.Ok("Passed"));
+
+app.Run();
+
+public class Address
+{
+    [Required]
+    public string Street { get; set; } = "";
+}
+
+public class Order
+{
+    [Required]
+    public string CustomerName { get; set; } = "";
+
+    [Required]
+    public Address ShippingAddress { get; set; }
+
+    // Static property with a validatable type — should not be emitted
+    public static Address DefaultAddress { get; set; } = new();
+
+    // Write-only property with a validatable type — should not be emitted
+    public Address InternalAddress { set { } }
+
+    // Property with non-public getter — should not be emitted
+    public Address CachedAddress { internal get; set; }
+}
+""";
+        await Verify(source, out var compilation);
+
+        // Only CustomerName and ShippingAddress should be validated
+        await VerifyEndpoint(compilation, "/order", async (endpoint, serviceProvider) =>
+        {
+            var payload = """{"CustomerName": "", "ShippingAddress": {"Street": ""}}""";
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            var problemDetails = await AssertBadRequest(context);
+            Assert.Equal(2, problemDetails.Errors.Count);
+            Assert.Contains(problemDetails.Errors, kvp => kvp.Key == "CustomerName");
+            Assert.Contains(problemDetails.Errors, kvp => kvp.Key == "ShippingAddress.Street");
+        });
+
+        await VerifyEndpoint(compilation, "/order", async (endpoint, serviceProvider) =>
+        {
+            var payload = """{"CustomerName": "Alice", "ShippingAddress": {"Street": "123 Main St"}}""";
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        });
+    }
 }
