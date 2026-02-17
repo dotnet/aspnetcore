@@ -8,18 +8,27 @@
     <button id="set-count-1" @onclick="() => SetItemCount(1)">Set 1 item</button>
     <button id="set-count-5" @onclick="() => SetItemCount(5)">Set 5 items</button>
     <button id="toggle-rtl" @onclick="ToggleRtl">Toggle RTL</button>
-    <button id="scale-200" @onclick="() => SetScale(2.0)">Scale 200%</button>
-    <button id="scale-100" @onclick="() => SetScale(1.0)">Scale 100%</button>
-    <button id="scale-50" @onclick="() => SetScale(0.5)">Scale 50%</button>
+    <button id="scale-200" @onclick="() => SetTransformScale(2.0)">Transform Scale 200%</button>
+    <button id="scale-150" @onclick="() => SetTransformScale(1.5)">Transform Scale 150%</button>
+    <button id="scale-100" @onclick="() => SetTransformScale(1.0)">Transform Scale 100%</button>
+    <button id="scale-75" @onclick="() => SetTransformScale(0.75)">Transform Scale 75%</button>
+    <button id="scale-50" @onclick="() => SetTransformScale(0.5)">Transform Scale 50%</button>
     <button id="zoom-200" @onclick="() => SetCssZoom(2.0)">CSS Zoom 200%</button>
+    <button id="zoom-150" @onclick="() => SetCssZoom(1.5)">CSS Zoom 150%</button>
     <button id="zoom-100" @onclick="() => SetCssZoom(1.0)">CSS Zoom 100%</button>
+    <button id="zoom-75" @onclick="() => SetCssZoom(0.75)">CSS Zoom 75%</button>
     <button id="zoom-50" @onclick="() => SetCssZoom(0.5)">CSS Zoom 50%</button>
+    <button id="cssscale-200" @onclick="() => SetCssScale(2.0)">CSS Scale 200%</button>
+    <button id="cssscale-150" @onclick="() => SetCssScale(1.5)">CSS Scale 150%</button>
+    <button id="cssscale-100" @onclick="() => SetCssScale(1.0)">CSS Scale 100%</button>
+    <button id="cssscale-75" @onclick="() => SetCssScale(0.75)">CSS Scale 75%</button>
+    <button id="cssscale-50" @onclick="() => SetCssScale(0.5)">CSS Scale 50%</button>
     <span id="direction-status">Direction: @(isRtl ? "RTL" : "LTR")</span>
-    <span id="zoom-status">Scale: @(scaleLevel * 100)%, CSS Zoom: @(cssZoomLevel * 100)%</span>
+    <span id="zoom-status">Transform Scale: @(transformScaleLevel * 100)%, CSS Zoom: @(cssZoomLevel * 100)%, CSS Scale: @(cssScaleLevel * 100)%</span>
     <span id="load-count">Loads: @loadCount</span>
     <span id="cancellation-count">Cancellations: @cancellationCount</span>
     <span id="total-item-count">Total: @totalItemCount</span>
-    <div id="async-variable-container" style="background-color: #eee; height: 200px; overflow-y: auto; direction: @(isRtl ? "rtl" : "ltr"); transform: scale(@scaleLevel.ToString(System.Globalization.CultureInfo.InvariantCulture)); transform-origin: top left; zoom: @cssZoomLevel.ToString(System.Globalization.CultureInfo.InvariantCulture);">
+    <div id="async-variable-container" style="background-color: #eee; height: 200px; overflow-y: auto; direction: @(isRtl ? "rtl" : "ltr"); transform: scale(@transformScaleLevel.ToString(System.Globalization.CultureInfo.InvariantCulture)); transform-origin: top left; zoom: @cssZoomLevel.ToString(System.Globalization.CultureInfo.InvariantCulture); scale: @cssScaleLevel.ToString(System.Globalization.CultureInfo.InvariantCulture);">
         <Virtualize @ref="virtualizeRef" ItemsProvider="GetItemsAsync" ItemSize="35">
             <ItemContent>
                 <div @key="context.Id" id="async-variable-item-@context.Index" class="async-variable-item" 
@@ -47,8 +56,9 @@
     int loadCount = 0;
     int cancellationCount = 0;
     bool isRtl = false;
-    double scaleLevel = 1.0;
+    double transformScaleLevel = 1.0;
     double cssZoomLevel = 1.0;
+    double cssScaleLevel = 1.0;
 
     // Pre-generate all items for consistency
     List<VariableHeightItem> allItems;
@@ -59,14 +69,19 @@
         isRtl = !isRtl;
     }
 
-    void SetScale(double scale)
+    void SetTransformScale(double scale)
     {
-        scaleLevel = scale;
+        transformScaleLevel = scale;
     }
 
     void SetCssZoom(double zoom)
     {
         cssZoomLevel = zoom;
+    }
+
+    void SetCssScale(double scale)
+    {
+        cssScaleLevel = scale;
     }
 
     protected override void OnInitialized()

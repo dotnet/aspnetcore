@@ -10,6 +10,7 @@
 
 <p id="items-provider-call-count">ItemsProvider calls: @ItemsProviderCallCount</p>
 <p id="total-items">Total items: 100</p>
+<p id="data-loaded">Data loaded: @_dataLoaded</p>
 
 <div id="grid-variable-height" style="height: 300px; overflow: auto; border: 1px solid #ccc;">
     <QuickGrid ItemsProvider="@variableHeightProvider" Virtualize="true" ItemSize="50">
@@ -32,6 +33,7 @@
     }
 
     private GridItemsProvider<VariableHeightItem> variableHeightProvider = default!;
+    private bool _dataLoaded;
 
     int ItemsProviderCallCount = 0;
 
@@ -41,7 +43,6 @@
         {
             await Task.Yield();
             Interlocked.Increment(ref ItemsProviderCallCount);
-            StateHasChanged();
             
             var items = Enumerable.Range(request.StartIndex, request.Count ?? 100)
                 .Where(i => i < 100)
@@ -53,6 +54,13 @@
                 })
                 .ToList();
             
+            // Mark data as loaded when we get items starting from index 0
+            if (request.StartIndex == 0 && items.Count > 0)
+            {
+                _dataLoaded = true;
+            }
+            
+            StateHasChanged();
             return GridItemsProviderResult.From(items: items, totalItemCount: 100);
         };
     }

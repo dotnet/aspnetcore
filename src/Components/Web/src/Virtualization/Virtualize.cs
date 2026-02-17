@@ -339,7 +339,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // by at least one element. If we're not doing that, the previous item size info we had must
         // have been wrong, so just move along by one in that case to trigger an update and apply the
         // new size info.
-        if (itemsBefore == _itemsBefore && itemsBefore > 0)
+        if (_lastRenderedItemCount > 0 && itemsBefore == _itemsBefore && itemsBefore > 0)
         {
             itemsBefore--;
         }
@@ -360,7 +360,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // by at least one element. If we're not doing that, the previous item size info we had must
         // have been wrong, so just move along by one in that case to trigger an update and apply the
         // new size info.
-        if (itemsBefore == _itemsBefore && itemsBefore < _itemCount - visibleItemCapacity)
+        if (_lastRenderedItemCount > 0 && itemsBefore == _itemsBefore && itemsBefore < _itemCount - visibleItemCapacity)
         {
             itemsBefore++;
         }

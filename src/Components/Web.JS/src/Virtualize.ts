@@ -29,42 +29,50 @@ function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | 
   return findClosestScrollContainer(element.parentElement);
 }
 
-function getCumulativeScaleFactor(element: HTMLElement | null): number {
-  let scale = 1;
-  while (element && element !== document.body && element !== document.documentElement) {
-    const style = getComputedStyle(element);
-    const transform = style.transform;
-    if (transform && transform !== 'none') {
-      // Parse the scale from the transform matrix
-      const match = transform.match(/matrix\(([^,]+)/);
-      if (match) {
-        scale *= parseFloat(match[1]);
-      }
-    }
-    element = element.parentElement;
+function getScaleFactor(element: HTMLElement): number {
+  // Use the ratio of getBoundingClientRect().height to offsetHeight to detect
+  // cumulative CSS scaling (transform, zoom, scale) from all ancestors.
+  // This is O(1) and handles all scaling types automatically.
+  // Note: Both values exclude margin, so this ratio is margin-safe.
+  if (element.offsetHeight === 0) {
+    return 1;
+  }
+  const scale = element.getBoundingClientRect().height / element.offsetHeight;
+  if (!Number.isFinite(scale) || scale <= 0) {
+    return 1;
   }
   return scale;
+}
+
+interface MeasurementResult {
+  heights: number[];
+  scaleFactor: number;
 }
 
 function measureRenderedItems(
   spacerBefore: HTMLElement,
   spacerAfter: HTMLElement
-): number[] {
-  const heights: number[] = [];
-  const scaleFactor = getCumulativeScaleFactor(spacerBefore);
-
+): MeasurementResult {
   const container = spacerBefore.parentElement;
   if (!container) {
-    return heights;
+    return { heights: [], scaleFactor: getScaleFactor(spacerBefore) };
   }
 
-  const items = container.querySelectorAll('[data-virtualize-item]');
+  const items = container.querySelectorAll<HTMLElement>('[data-virtualize-item]');
+  if (items.length === 0) {
+    return { heights: [], scaleFactor: getScaleFactor(spacerBefore) };
+  }
+
+  // Get scale factor from the first item (all items share the same ancestors)
+  const scaleFactor = getScaleFactor(items[0]);
+  const heights: number[] = [];
+
   items.forEach(item => {
     const rect = item.getBoundingClientRect();
     heights.push(rect.height / scaleFactor);
   });
 
-  return heights;
+  return { heights, scaleFactor };
 }
 
 function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spacerAfter: HTMLElement, rootMargin = 50): void {
@@ -156,7 +164,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         return;
       }
 
-      const measurements = measureRenderedItems(spacerBefore, spacerAfter);
+      const { heights: measurements, scaleFactor } = measureRenderedItems(spacerBefore, spacerAfter);
 
       // To compute the ItemSize, work out the separation between the two spacers. We can't just measure an individual element
       // because each conceptual item could be made from multiple elements. Using getBoundingClientRect allows for the size to be
@@ -165,16 +173,18 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       // scrolling glitches.
       rangeBetweenSpacers.setStartAfter(spacerBefore);
       rangeBetweenSpacers.setEndBefore(spacerAfter);
-      const spacerSeparation = rangeBetweenSpacers.getBoundingClientRect().height;
-      const containerSize = entry.rootBounds?.height;
+      const spacerSeparation = rangeBetweenSpacers.getBoundingClientRect().height / scaleFactor;
+      const containerSize = (entry.rootBounds?.height ?? 0) / scaleFactor;
 
       if (entry.target === spacerBefore) {
-        dotNetHelper.invokeMethodAsync('OnSpacerBeforeVisible', entry.intersectionRect.top - entry.boundingClientRect.top, spacerSeparation, containerSize, measurements);
+        const spacerSize = (entry.intersectionRect.top - entry.boundingClientRect.top) / scaleFactor;
+        dotNetHelper.invokeMethodAsync('OnSpacerBeforeVisible', spacerSize, spacerSeparation, containerSize, measurements);
       } else if (entry.target === spacerAfter && spacerAfter.offsetHeight > 0) {
         // When we first start up, both the "before" and "after" spacers will be visible, but it's only relevant to raise a
         // single event to load the initial data. To avoid raising two events, skip the one for the "after" spacer if we know
         // it's meaningless to talk about any overlap into it.
-        dotNetHelper.invokeMethodAsync('OnSpacerAfterVisible', entry.boundingClientRect.bottom - entry.intersectionRect.bottom, spacerSeparation, containerSize, measurements);
+        const spacerSize = (entry.boundingClientRect.bottom - entry.intersectionRect.bottom) / scaleFactor;
+        dotNetHelper.invokeMethodAsync('OnSpacerAfterVisible', spacerSize, spacerSeparation, containerSize, measurements);
       }
     });
   }
