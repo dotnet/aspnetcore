@@ -28,15 +28,42 @@ namespace Microsoft.Extensions.Validation.Generated
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file sealed class GeneratedValidatablePropertyInfo : global::Microsoft.Extensions.Validation.ValidatablePropertyInfo
     {
+        private global::System.ComponentModel.DataAnnotations.DisplayAttribute? _displayAttribute;
+
         public GeneratedValidatablePropertyInfo(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
             global::System.Type containingType,
             global::System.Type propertyType,
-            string name,
-            string displayName) : base(containingType, propertyType, name, displayName)
+            string name) : base(containingType, propertyType, name)
         {
             ContainingType = containingType;
             Name = name;
+            var property = ContainingType.GetProperty(Name);
+            if (property is not null)
+            {
+                _displayAttribute = global::System.Reflection.CustomAttributeExtensions
+                    .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(property, inherit: true);
+            }
+
+            // Check constructors for parameters that match the property name
+            // to handle record scenarios where attributes are on the constructor parameter
+            if (_displayAttribute is null)
+            {
+                foreach (var constructor in ContainingType.GetConstructors())
+                {
+                    var parameter = global::System.Linq.Enumerable.FirstOrDefault(
+                        constructor.GetParameters(),
+                        p => string.Equals(p.Name, Name, global::System.StringComparison.Ordinal));
+
+                    if (parameter is not null)
+                    {
+                        _displayAttribute = global::System.Reflection.CustomAttributeExtensions
+                            .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(parameter, inherit: true);
+
+                        break;
+                    }
+                }
+            }
         }
 
         [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
@@ -45,17 +72,23 @@ namespace Microsoft.Extensions.Validation.Generated
 
         protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes()
             => ValidationAttributeCache.GetPropertyValidationAttributes(ContainingType, Name);
+
+        protected override global::System.ComponentModel.DataAnnotations.DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
     }
 
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file sealed class GeneratedValidatableTypeInfo : global::Microsoft.Extensions.Validation.ValidatableTypeInfo
     {
+        private global::System.ComponentModel.DataAnnotations.DisplayAttribute? _displayAttribute;
+
         public GeneratedValidatableTypeInfo(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
             global::System.Type type,
             ValidatablePropertyInfo[] members) : base(type, members)
         {
             Type = type;
+            _displayAttribute = global::System.Reflection.CustomAttributeExtensions
+                .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(Type, inherit: true);
         }
 
         [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
@@ -63,6 +96,8 @@ namespace Microsoft.Extensions.Validation.Generated
 
         protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes()
             => ValidationAttributeCache.GetTypeValidationAttributes(Type);
+
+        protected override global::System.ComponentModel.DataAnnotations.DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
     }
 
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
@@ -79,8 +114,7 @@ namespace Microsoft.Extensions.Validation.Generated
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::Address),
                             propertyType: typeof(string),
-                            name: "Street",
-                            displayName: "Street"
+                            name: "Street"
                         ),
                     ]
                 );
@@ -94,14 +128,12 @@ namespace Microsoft.Extensions.Validation.Generated
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::Order),
                             propertyType: typeof(string),
-                            name: "CustomerName",
-                            displayName: "CustomerName"
+                            name: "CustomerName"
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::Order),
                             propertyType: typeof(global::Address),
-                            name: "ShippingAddress",
-                            displayName: "ShippingAddress"
+                            name: "ShippingAddress"
                         ),
                     ]
                 );
@@ -173,10 +205,10 @@ namespace Microsoft.Extensions.Validation.Generated
                 // to handle record scenarios
                 foreach (var constructor in k.ContainingType.GetConstructors())
                 {
-                    // Look for parameter with matching name (case insensitive)
+                    // Look for parameter with matching name
                     var parameter = global::System.Linq.Enumerable.FirstOrDefault(
                         constructor.GetParameters(),
-                        p => string.Equals(p.Name, k.PropertyName, global::System.StringComparison.OrdinalIgnoreCase));
+                        p => string.Equals(p.Name, k.PropertyName, global::System.StringComparison.Ordinal));
 
                     if (parameter != null)
                     {
