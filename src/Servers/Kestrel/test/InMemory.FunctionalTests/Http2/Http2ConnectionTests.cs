@@ -5835,7 +5835,7 @@ public class Http2ConnectionTests : Http2TestBase
         switch (finalFrameType)
         {
             case Http2FrameType.DATA:
-                AssertConnectionEndReason(ConnectionEndReason.UnknownStream);
+                AssertConnectionEndReason(ConnectionEndReason.FrameAfterStreamClose);
                 break;
 
             case Http2FrameType.HEADERS:
