@@ -36,8 +36,8 @@
 
     protected override void OnInitialized()
     {
-        // Generate 100 items with extreme height variance (20-2000px range = 100x variance)
-        variableHeightItems = Enumerable.Range(0, 100).Select(i => new VariableHeightItem
+        // Generate 1000 items with extreme height variance (20-2000px range = 100x variance)
+        variableHeightItems = Enumerable.Range(0, 1000).Select(i => new VariableHeightItem
         {
             Index = i,
             Height = 20 + (i * 37 % 1981), // Heights vary from 20-2000px (100x extreme variance!)

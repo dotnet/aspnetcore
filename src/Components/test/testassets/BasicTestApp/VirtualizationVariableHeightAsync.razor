@@ -1,12 +1,14 @@
 <p>
     Variable Height Items with Async ItemsProvider:<br />
-    <button id="finish-loading" @onclick="FinishLoading">Finish loading</button>
+    <label><input id="toggle-autoload" type="checkbox" checked="@autoLoad" @onchange="ToggleAutoLoad" /> Auto-load items</label>
+    <button id="finish-loading" @onclick="FinishLoading" disabled="@autoLoad">Finish loading</button>
     <button id="refresh-data" @onclick="() => virtualizeRef.RefreshDataAsync()">Refresh data</button>
     <button id="add-item-start" @onclick="AddItemAtStart">Add at start</button>
     <button id="remove-item-middle" @onclick="RemoveItemFromMiddle">Remove from middle</button>
     <button id="set-count-0" @onclick="() => SetItemCount(0)">Set 0 items</button>
     <button id="set-count-1" @onclick="() => SetItemCount(1)">Set 1 item</button>
     <button id="set-count-5" @onclick="() => SetItemCount(5)">Set 5 items</button>
+    <button id="set-count-200" @onclick="() => SetItemCount(200)">Set 200 items</button>
     <button id="toggle-rtl" @onclick="ToggleRtl">Toggle RTL</button>
     <button id="scale-200" @onclick="() => SetTransformScale(2.0)">Transform Scale 200%</button>
     <button id="scale-150" @onclick="() => SetTransformScale(1.5)">Transform Scale 150%</button>
@@ -52,9 +54,10 @@
 @code {
     Virtualize<VariableHeightItem> virtualizeRef;
     TaskCompletionSource loadingTcs = new TaskCompletionSource();
-    int totalItemCount = 100;
+    int totalItemCount = 1000;
     int loadCount = 0;
     int cancellationCount = 0;
+    bool autoLoad = false;
     bool isRtl = false;
     double transformScaleLevel = 1.0;
     double cssZoomLevel = 1.0;
@@ -63,6 +66,11 @@
     // Pre-generate all items for consistency
     List<VariableHeightItem> allItems;
     int nextId = 0;
+
+    void ToggleAutoLoad(ChangeEventArgs e)
+    {
+        autoLoad = (bool)e.Value;
+    }
 
     void ToggleRtl()
     {
@@ -98,25 +106,29 @@
 
     async ValueTask<ItemsProviderResult<VariableHeightItem>> GetItemsAsync(ItemsProviderRequest request)
     {
-        var registration = request.CancellationToken.Register(() =>
+        if (!autoLoad)
         {
-            loadingTcs.TrySetCanceled(request.CancellationToken);
-            loadingTcs = new TaskCompletionSource();
-            cancellationCount++;
-            InvokeAsync(StateHasChanged);
-        });
+            var registration = request.CancellationToken.Register(() =>
+            {
+                loadingTcs.TrySetCanceled(request.CancellationToken);
+                loadingTcs = new TaskCompletionSource();
+                cancellationCount++;
+                InvokeAsync(StateHasChanged);
+            });
 
-        try
-        {
-            await loadingTcs.Task;
-        }
-        catch (OperationCanceledException)
-        {
+            try
+            {
+                await loadingTcs.Task;
+            }
+            catch (OperationCanceledException)
+            {
+                registration.Dispose();
+                throw;
+            }
+
             registration.Dispose();
-            throw;
         }
 
-        registration.Dispose();
         loadCount++;
 
         var items = allItems

@@ -9,7 +9,7 @@
 </p>
 
 <p id="items-provider-call-count">ItemsProvider calls: @ItemsProviderCallCount</p>
-<p id="total-items">Total items: 100</p>
+<p id="total-items">Total items: 1000</p>
 <p id="data-loaded">Data loaded: @_dataLoaded</p>
 
 <div id="grid-variable-height" style="height: 300px; overflow: auto; border: 1px solid #ccc;">
@@ -44,8 +44,8 @@
             await Task.Yield();
             Interlocked.Increment(ref ItemsProviderCallCount);
             
-            var items = Enumerable.Range(request.StartIndex, request.Count ?? 100)
-                .Where(i => i < 100)
+            var items = Enumerable.Range(request.StartIndex, request.Count ?? 1000)
+                .Where(i => i < 1000)
                 .Select(i => new VariableHeightItem 
                 { 
                     Id = i + 1, 
@@ -61,7 +61,7 @@
             }
             
             StateHasChanged();
-            return GridItemsProviderResult.From(items: items, totalItemCount: 100);
+            return GridItemsProviderResult.From(items: items, totalItemCount: 1000);
         };
     }
 

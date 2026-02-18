@@ -801,7 +801,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             itemClass = ".async-variable-item";
             placeholderClass = ".async-variable-placeholder";
             firstItemId = "async-variable-item-0";
-            lastItemId = "async-variable-item-99";
+            lastItemId = "async-variable-item-999";
 
             // Load initial items
             finishLoadingButton.Click();
@@ -813,7 +813,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             itemClass = ".variable-height-item";
             placeholderClass = null; // sync mode has no placeholders
             firstItemId = "variable-item-0";
-            lastItemId = "variable-item-99";
+            lastItemId = "variable-item-999";
         }
 
         // Wait for initial items to appear
@@ -960,9 +960,9 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var containerHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
         Assert.Equal(400, containerHeight);
 
-        // Scroll to end and verify last item
-        js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", container);
-        Browser.True(() => container.FindElements(By.Id("variable-item-99")).Count > 0);
+        // Scroll to end and verify last item - use stabilization for large item counts
+        JumpToEndWithStabilization(container, hasPlaceholders: null, loadData: null);
+        Browser.True(() => container.FindElements(By.Id("variable-item-999")).Count > 0);
 
         // Resize to small while scrolled - should still work
         Browser.Exists(By.Id("resize-small")).Click();
@@ -970,9 +970,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         containerHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
         Assert.Equal(100, containerHeight);
 
-        // Scroll to top and verify first item
-        js.ExecuteScript("arguments[0].scrollTop = 0", container);
-        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) == 0);
+        // Scroll to top and verify first item - use stabilization
+        JumpToStartWithStabilization(
+            container,
+            hasPlaceholders: null,
+            loadData: null,
+            () => container.FindElements(By.Id("variable-item-0")).Count > 0);
         Browser.True(() => container.FindElements(By.Id("variable-item-0")).Count > 0);
     }
 
@@ -1020,20 +1023,19 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         finishLoadingButton.Click();
         Browser.True(() => GetElementCount(container, ".async-variable-item") > 0);
 
-        // Jump to end
-        js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", container);
-        if (GetElementCount(container, ".async-variable-placeholder") > 0)
-        {
-            finishLoadingButton.Click();
-        }
-        Browser.True(() => container.FindElements(By.Id("async-variable-item-99")).Count > 0);
+        // Jump to end using stabilization helper (needed for large item counts with async loading)
+        JumpToEndWithStabilization(
+            container,
+            () => GetElementCount(container, ".async-variable-placeholder") > 0,
+            () => finishLoadingButton.Click());
+        Browser.True(() => container.FindElements(By.Id("async-variable-item-999")).Count > 0);
 
-        // Jump back to start
-        js.ExecuteScript("arguments[0].scrollTop = 0", container);
-        if (GetElementCount(container, ".async-variable-placeholder") > 0)
-        {
-            finishLoadingButton.Click();
-        }
+        // Jump back to start using stabilization helper
+        JumpToStartWithStabilization(
+            container,
+            () => GetElementCount(container, ".async-variable-placeholder") > 0,
+            () => finishLoadingButton.Click(),
+            () => container.FindElements(By.Id("async-variable-item-0")).Count > 0);
         Browser.True(() => container.FindElements(By.Id("async-variable-item-0")).Count > 0);
     }
 
@@ -1053,7 +1055,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // Load initial items
         finishLoadingButton.Click();
         Browser.True(() => GetElementCount(container, ".async-variable-item") > 0);
-        Browser.Equal("Total: 100", () => totalItemCount.Text);
+        Browser.Equal("Total: 1000", () => totalItemCount.Text);
 
         // Verify initial first item height (25 + 0*11%31 = 25px)
         var firstItem = container.FindElement(By.Id("async-variable-item-0"));
@@ -1062,7 +1064,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // Add item at START - this shifts ALL existing indices up
         // The new item has a distinctive 100px height
         addItemStartButton.Click();
-        Browser.Equal("Total: 101", () => totalItemCount.Text);
+        Browser.Equal("Total: 1001", () => totalItemCount.Text);
 
         // Refresh to see the change
         refreshButton.Click();
@@ -1078,25 +1080,24 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Remove item from MIDDLE - this shifts indices after the removed item
         removeItemMiddleButton.Click();
-        Browser.Equal("Total: 100", () => totalItemCount.Text);
+        Browser.Equal("Total: 1000", () => totalItemCount.Text);
 
         // Refresh
         refreshButton.Click();
         finishLoadingButton.Click();
 
         // Scroll to bottom and back to verify everything still works
-        js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", container);
-        if (GetElementCount(container, ".async-variable-placeholder") > 0)
-        {
-            finishLoadingButton.Click();
-        }
-        Browser.True(() => container.FindElements(By.Id("async-variable-item-99")).Count > 0);
+        JumpToEndWithStabilization(
+            container,
+            () => GetElementCount(container, ".async-variable-placeholder") > 0,
+            () => finishLoadingButton.Click());
+        Browser.True(() => container.FindElements(By.Id("async-variable-item-999")).Count > 0);
 
-        js.ExecuteScript("arguments[0].scrollTop = 0", container);
-        if (GetElementCount(container, ".async-variable-placeholder") > 0)
-        {
-            finishLoadingButton.Click();
-        }
+        JumpToStartWithStabilization(
+            container,
+            () => GetElementCount(container, ".async-variable-placeholder") > 0,
+            () => finishLoadingButton.Click(),
+            () => container.FindElements(By.Id("async-variable-item-0")).Count > 0);
 
         // First item should still be the 100px tall item we added
         firstItem = container.FindElement(By.Id("async-variable-item-0"));
@@ -1119,7 +1120,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // Load initial items
         finishLoadingButton.Click();
         Browser.True(() => GetElementCount(container, ".async-variable-item") > 0);
-        Browser.Equal("Total: 100", () => totalItemCount.Text);
+        Browser.Equal("Total: 1000", () => totalItemCount.Text);
 
         // Test empty list (0 items) - should show EmptyContent
         setCount0Button.Click();
@@ -1201,6 +1202,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Equal($"Transform Scale: {transformScalePercent}%, CSS Zoom: {cssZoomPercent}%, CSS Scale: {cssScalePercent}%",
             () => Browser.Exists(By.Id("zoom-status")).Text);
 
+        // Use 200 items for this test to keep test time reasonable across 9 scale combinations
+        var setCount200Button = Browser.Exists(By.Id("set-count-200"));
+        setCount200Button.Click();
+        Browser.Exists(By.Id("refresh-data")).Click();
+
         // Load initial items
         finishLoadingButton.Click();
         Browser.True(() => GetElementCount(container, ".async-variable-item") > 0);
@@ -1209,7 +1215,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         int previousMinIndex = -1;
         int maxIndexSeen = -1;
         const int scrollIncrement = 100;
-        const int maxIterations = 150;
+        const int maxIterations = 300;
 
         // JS to get min visible item index (avoids stale element issues)
         const string getMinIndexScript = @"
@@ -1279,7 +1285,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Verify we scrolled through items and reached near the end
         Assert.True(previousMinIndex > 0, "Should have scrolled past the first item");
-        Assert.True(maxIndexSeen >= 90, $"Should have seen items near the end (saw up to index {maxIndexSeen})");
+        Assert.True(maxIndexSeen >= 199, $"Should have scrolled to the last item (saw up to index {maxIndexSeen})");
     }
 
     [Fact]
@@ -1363,7 +1369,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var dataLoaded = Browser.Exists(By.Id("data-loaded"));
 
         // QuickGrid-specific setup verification
-        Browser.Equal("Total items: 100", () => totalItems.Text);
+        Browser.Equal("Total items: 1000", () => totalItems.Text);
         Browser.Equal("Data loaded: True", () => dataLoaded.Text);
         Browser.True(() => int.Parse(providerCallCount.Text.Replace("ItemsProvider calls: ", ""), CultureInfo.InvariantCulture) > 0);
 
@@ -1407,7 +1413,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 return false;
             }
             var firstDataCell = rows[0].FindElements(By.CssSelector("td:not(.grid-cell-placeholder)")).FirstOrDefault();
-            return firstDataCell != null && int.TryParse(firstDataCell.Text, out var id) && id > 80;
+            return firstDataCell != null && int.TryParse(firstDataCell.Text, out var id) && id > 800;
         });
 
         // Jump back to start using shared helper
