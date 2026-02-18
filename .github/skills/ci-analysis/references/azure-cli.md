@@ -79,9 +79,9 @@ All dotnet repos that use arcade put their pipeline definitions under `eng/pipel
 # Find the YAML path for a pipeline
 az pipelines show --id 1330 --org $org -p $project --query "{yamlPath:process.yamlFilename, repo:repository.name}" -o table
 
-# Fetch the YAML from the repo (example: dotnet/runtime's runtime-official pipeline)
+# Fetch the YAML from the repo (example: dotnet/aspnetcore's ci-public pipeline)
 #   Read the pipeline YAML from the repo to understand build stages and conditions
-#   e.g., eng/pipelines/runtime-official.yml in dotnet/runtime
+#   e.g., .azure/pipelines/ci-public.yml in dotnet/aspnetcore
 
 # For VMR unified builds, the YAML is in dotnet/dotnet:
 #   eng/pipelines/unified-build.yml

@@ -252,7 +252,7 @@ Before stating a failure's cause, verify your claim:
 ## Tips
 
 1. Check if same test fails on the target branch before assuming transient
-2. Look for `[ActiveIssue]` attributes for known skipped tests
+2. Look for `[SkipOnHelix]` and `[QuarantinedTest]` attributes for known skipped or quarantined tests
 3. Use `-SearchMihuBot` for semantic search of related issues
 4. Use binlog analysis tools to search binlogs for Helix job IDs, build errors, and properties
 5. `gh pr checks --json` valid fields: `bucket`, `completedAt`, `description`, `event`, `link`, `name`, `startedAt`, `state`, `workflow` — no `conclusion` field, `state` has `SUCCESS`/`FAILURE` directly
