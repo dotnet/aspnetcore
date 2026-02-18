@@ -28,7 +28,7 @@ public class LocalizationIntegrationTests
         var formatterProvider = new ValidationAttributeFormatterProvider();
 
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -59,7 +59,7 @@ public class LocalizationIntegrationTests
         var formatterProvider = new ValidationAttributeFormatterProvider();
 
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -89,7 +89,7 @@ public class LocalizationIntegrationTests
         var formatterProvider = new ValidationAttributeFormatterProvider();
 
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -116,7 +116,7 @@ public class LocalizationIntegrationTests
         var formatterProvider = new ValidationAttributeFormatterProvider();
 
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -142,7 +142,7 @@ public class LocalizationIntegrationTests
         var formatterProvider = new ValidationAttributeFormatterProvider();
 
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -182,7 +182,7 @@ public class LocalizationIntegrationTests
         var formatterProvider = new ValidationAttributeFormatterProvider();
 
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -216,7 +216,7 @@ public class LocalizationIntegrationTests
         var formatterProvider = new ValidationAttributeFormatterProvider();
 
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -255,7 +255,7 @@ public class LocalizationIntegrationTests
         var formatterProvider = new ValidationAttributeFormatterProvider();
 
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -291,7 +291,7 @@ public class LocalizationIntegrationTests
         var formatterProvider = new ValidationAttributeFormatterProvider();
 
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);

@@ -6,6 +6,9 @@ using System.Globalization;
 
 namespace Microsoft.Extensions.Validation.Localization.Attributes;
 
+/// <summary>
+/// Formats error messages for <see cref="MaxLengthAttribute"/> using the maximum length.
+/// </summary>
 internal class MaxLengthAttributeFormatter(MaxLengthAttribute attribute) : IValidationAttributeFormatter
 {
     public string FormatErrorMessage(CultureInfo culture, string messageTemplate, string displayName)

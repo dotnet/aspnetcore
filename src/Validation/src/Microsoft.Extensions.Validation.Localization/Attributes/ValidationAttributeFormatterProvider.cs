@@ -5,8 +5,22 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Microsoft.Extensions.Validation.Localization.Attributes;
 
+/// <summary>
+/// Default implementation of <see cref="IValidationAttributeFormatterProvider"/> that returns
+/// <see cref="IValidationAttributeFormatter"/> instances for built-in <see cref="ValidationAttribute"/> types.
+/// Derive from this class and override <see cref="GetFormatter"/> to add support for custom attributes.
+/// See <see cref="IValidationAttributeFormatter"/> for detailed guidance and examples.
+/// </summary>
 public class ValidationAttributeFormatterProvider : IValidationAttributeFormatterProvider
 {
+    /// <summary>
+    /// Returns an <see cref="IValidationAttributeFormatter"/> for the specified <paramref name="attribute"/>.
+    /// If the attribute implements <see cref="IValidationAttributeFormatter"/> itself, it is returned directly.
+    /// Otherwise, a built-in formatter is returned for known attribute types, or
+    /// <see cref="DefaultAttributeFormatter.Instance"/> for attributes that only use the display name.
+    /// </summary>
+    /// <param name="attribute">The validation attribute to get a formatter for.</param>
+    /// <returns>An <see cref="IValidationAttributeFormatter"/> capable of formatting the attribute's error message.</returns>
     public virtual IValidationAttributeFormatter GetFormatter(ValidationAttribute attribute)
     {
         if (attribute is IValidationAttributeFormatter selfFormatter)

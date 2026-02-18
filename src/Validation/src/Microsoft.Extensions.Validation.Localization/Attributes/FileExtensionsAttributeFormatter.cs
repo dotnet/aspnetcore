@@ -6,6 +6,9 @@ using System.Globalization;
 
 namespace Microsoft.Extensions.Validation.Localization.Attributes;
 
+/// <summary>
+/// Formats error messages for <see cref="FileExtensionsAttribute"/> using the allowed file extensions.
+/// </summary>
 internal class FileExtensionsAttributeFormatter(FileExtensionsAttribute attribute) : IValidationAttributeFormatter
 {
     public string FormatErrorMessage(CultureInfo culture, string messageTemplate, string displayName)

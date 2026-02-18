@@ -45,16 +45,17 @@ public static class ValidationLocalizationServiceCollectionExtensions
     /// </example>
     public static IServiceCollection AddValidationLocalization(this IServiceCollection services, Action<ValidationLocalizationOptions>? configureOptions = null)
     {
-        services.AddLocalization();
-        services.TryAddSingleton<IValidationAttributeFormatterProvider, ValidationAttributeFormatterProvider>();
-
         if (configureOptions is not null)
         {
             services.Configure(configureOptions);
         }
 
-        // Register the bridge that reads ValidationLocalizationOptions and wires up ValidationOptions.ErrorMessageProvider (and optionally DisplayNameResolver).
-        services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<ValidationOptions>, StringLocalizerConfiguration>());
+        services.AddLocalization();
+        services.TryAddSingleton<IValidationAttributeFormatterProvider, ValidationAttributeFormatterProvider>();
+
+        // Register the bridge that reads ValidationLocalizationOptions and sets up IStringLocalizer-based implementations
+        // of ErrorMessageProvider and DisplayNameResolver in ValidationOptions.
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<ValidationOptions>, ValidationLocalizationSetup>());
 
         return services;
     }
