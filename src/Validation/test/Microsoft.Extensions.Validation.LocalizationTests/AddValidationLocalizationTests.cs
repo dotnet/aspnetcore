@@ -72,7 +72,7 @@ public class AddValidationLocalizationTests
 
         Assert.NotNull(options.ErrorMessageProvider);
 
-        options.ErrorMessageProvider!(new ErrorMessageContext
+        options.ErrorMessageProvider!(new ErrorMessageLocalizationContext
         {
             Attribute = new System.ComponentModel.DataAnnotations.RequiredAttribute(),
             DisplayName = "Test",
@@ -102,7 +102,7 @@ public class AddValidationLocalizationTests
         var provider = services.BuildServiceProvider();
         var options = provider.GetRequiredService<IOptions<ValidationOptions>>().Value;
 
-        options.ErrorMessageProvider!(new ErrorMessageContext
+        options.ErrorMessageProvider!(new ErrorMessageLocalizationContext
         {
             Attribute = new System.ComponentModel.DataAnnotations.RequiredAttribute(),
             DisplayName = "Test",
@@ -130,7 +130,7 @@ public class AddValidationLocalizationTests
 
         Assert.NotNull(locOptions.ErrorMessageKeySelector);
 
-        var key = locOptions.ErrorMessageKeySelector(new ErrorMessageContext
+        var key = locOptions.ErrorMessageKeySelector(new ErrorMessageLocalizationContext
         {
             Attribute = new System.ComponentModel.DataAnnotations.RequiredAttribute(),
             DisplayName = "Test",
@@ -157,7 +157,7 @@ public class AddValidationLocalizationTests
         var provider = services.BuildServiceProvider();
         var options = provider.GetRequiredService<IOptions<ValidationOptions>>().Value;
 
-        var errorResult = options.ErrorMessageProvider!(new ErrorMessageContext
+        var errorResult = options.ErrorMessageProvider!(new ErrorMessageLocalizationContext
         {
             Attribute = new System.ComponentModel.DataAnnotations.RequiredAttribute(),
             DisplayName = "Test",
@@ -166,7 +166,7 @@ public class AddValidationLocalizationTests
         });
         Assert.Equal("Pre-existing", errorResult);
 
-        var displayResult = options.DisplayNameProvider!(new DisplayNameContext
+        var displayResult = options.DisplayNameProvider!(new DisplayNameLocalizationContext
         {
             Name = "Test",
             Services = provider

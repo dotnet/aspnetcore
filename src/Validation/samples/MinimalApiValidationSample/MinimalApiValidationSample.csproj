@@ -37,6 +37,8 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.Localization" />
+    <Reference Include="Microsoft.Extensions.Validation" />
+    <Reference Include="Microsoft.Extensions.Validation.Localization" />
   </ItemGroup>
 
   <ItemGroup>
