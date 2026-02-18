@@ -22,7 +22,9 @@ Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.Mem
 Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.MemberName.init -> void
 Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.Services.get -> System.IServiceProvider!
 Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.Services.init -> void
+*REMOVED*Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, string! displayName) -> void
 Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name) -> void
+*REMOVED*Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, string! displayName) -> void
 Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name) -> void
 Microsoft.Extensions.Validation.ValidateContext.DisplayNameProvider.get -> System.Func<Microsoft.Extensions.Validation.Localization.DisplayNameLocalizationContext, string?>?
 Microsoft.Extensions.Validation.ValidateContext.DisplayNameProvider.set -> void

@@ -6,6 +6,9 @@ using System.Globalization;
 
 namespace Microsoft.Extensions.Validation.Localization.Attributes;
 
+/// <summary>
+/// Formats error messages for <see cref="RegularExpressionAttribute"/> using the regex pattern.
+/// </summary>
 internal class RegularExpressionAttributeFormatter(RegularExpressionAttribute attribute) : IValidationAttributeFormatter
 {
     public string FormatErrorMessage(CultureInfo culture, string messageTemplate, string displayName)
