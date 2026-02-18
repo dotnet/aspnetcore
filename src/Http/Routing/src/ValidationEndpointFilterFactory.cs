@@ -78,7 +78,7 @@ internal static class ValidationEndpointFilterFactory
 
                 if (validateContext == null)
                 {
-                    validateContext = new ValidateContext()
+                    validateContext = new ValidateContext
                     {
                         ValidationOptions = options,
                         ValidationContext = validationContext
