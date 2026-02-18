@@ -190,7 +190,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                     if (!validationResult.MemberNames.Any())
                     {
                         // If no member names are specified, then treat this as a top-level error
-                        context.AddOrExtendValidationError(string.Empty, string.Empty, validationResult.ErrorMessage, value);
+                        context.AddOrExtendValidationError(string.Empty, errorPrefix, validationResult.ErrorMessage, value);
                     }
                 }
             }
