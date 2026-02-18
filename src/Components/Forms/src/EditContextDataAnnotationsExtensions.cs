@@ -66,7 +66,6 @@ public static partial class EditContextDataAnnotationsExtensions
                 ? typeInfo
                 : null;
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
             _editContext.OnFieldChanged += OnFieldChanged;
             _editContext.OnValidationRequested += OnValidationRequested;
 
@@ -152,7 +151,7 @@ public static partial class EditContextDataAnnotationsExtensions
                 return false;
             }
 
-            var validateContext = new ValidateContext()
+            var validateContext = new ValidateContext
             {
                 ValidationOptions = _validationOptions!,
                 ValidationContext = validationContext,
