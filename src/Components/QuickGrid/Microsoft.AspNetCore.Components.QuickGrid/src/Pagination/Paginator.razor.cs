@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Components.QuickGrid;
 
@@ -102,26 +101,12 @@ public partial class Paginator : IDisposable
 
     private int? ReadPageIndexFromQueryString()
     {
-        var uri = NavigationManager.Uri;
-        var queryStart = uri.IndexOf('?');
-        if (queryStart < 0)
+        var value = QueryStringHelper.ReadQueryStringValue(NavigationManager.Uri, QueryName);
+        if (value is not null && int.TryParse(value, out var page) && page > 0)
         {
-            return null;
+            return page - 1;
         }
 
-        var queryEnd = uri.IndexOf('#', queryStart);
-        var query = uri.AsMemory(queryStart..((queryEnd < 0) ? uri.Length : queryEnd));
-        var enumerable = new QueryStringEnumerable(query);
-
-        foreach (var pair in enumerable)
-        {
-            if (pair.DecodeName().Span.Equals(QueryName, StringComparison.OrdinalIgnoreCase)
-                && int.TryParse(pair.DecodeValue().Span, out var page)
-                && page > 0)
-            {
-                return page - 1;
-            }
-        }
         return null;
     }
 

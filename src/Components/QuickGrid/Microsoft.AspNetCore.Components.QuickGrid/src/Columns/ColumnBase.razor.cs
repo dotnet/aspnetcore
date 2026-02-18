@@ -107,7 +107,7 @@ public abstract partial class ColumnBase<TGridItem>
 
     internal int ColumnIndex { get; set; }
 
-    private string FormName => $"{Grid.QueryName}_col{ColumnIndex}_sort_form";
+    private string FormName => $"{Grid.QueryName}_{ColumnIndex}";
 
     /// <summary>
     /// Constructs an instance of <see cref="ColumnBase{TGridItem}" />.

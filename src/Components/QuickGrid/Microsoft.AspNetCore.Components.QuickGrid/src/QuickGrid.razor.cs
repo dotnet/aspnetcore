@@ -5,7 +5,6 @@ using System.Linq;
 using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.JSInterop;
 using Microsoft.AspNetCore.Components.Forms;
 
@@ -177,7 +176,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable, IDisposable
     private bool _suppressNextLocationChange;
     private (int ColumnIndex, bool Ascending)? _cachedSortFromQuery;
 
-    private string SortQueryParameterName => $"{QueryName}_sort";
+    private string SortQueryParameterName => $"{QueryName}_s";
 
     /// <summary>
     /// Constructs an instance of <see cref="QuickGrid{TGridItem}"/>.
@@ -335,41 +334,23 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable, IDisposable
 
     private (int ColumnIndex, bool Ascending)? ReadSortFromQueryString()
     {
-        var uri = NavigationManager.Uri;
-        var queryStart = uri.IndexOf('?');
-        if (queryStart < 0)
+        var value = QueryStringHelper.ReadQueryStringValue(NavigationManager.Uri, SortQueryParameterName);
+        if (value is null)
         {
             return null;
         }
 
-        var queryEnd = uri.IndexOf('#', queryStart);
-        var query = uri.AsMemory(queryStart..((queryEnd < 0) ? uri.Length : queryEnd));
-        var enumerable = new QueryStringEnumerable(query);
-        var paramName = SortQueryParameterName;
-
-        foreach (var pair in enumerable)
+        var lastUnderscore = value.LastIndexOf('_');
+        if (lastUnderscore > 0 && lastUnderscore < value.Length - 1
+            && int.TryParse(value.AsSpan(0, lastUnderscore), out var columnIndex)
+            && columnIndex >= 0)
         {
-            if (pair.DecodeName().Span.Equals(paramName, StringComparison.OrdinalIgnoreCase))
+            return value.AsSpan(lastUnderscore + 1) switch
             {
-                var value = pair.DecodeValue().Span;
-                var lastUnderscore = value.LastIndexOf('_');
-                if (lastUnderscore > 0 && lastUnderscore < value.Length - 1)
-                {
-                    var indexSpan = value[..lastUnderscore];
-                    var direction = value[(lastUnderscore + 1)..];
-                    if (int.TryParse(indexSpan, out var columnIndex) && columnIndex >= 0)
-                    {
-                        if (direction.Equals("asc", StringComparison.OrdinalIgnoreCase))
-                        {
-                            return (columnIndex, true);
-                        }
-                        else if (direction.Equals("desc", StringComparison.OrdinalIgnoreCase))
-                        {
-                            return (columnIndex, false);
-                        }
-                    }
-                }
-            }
+                var d when d.Equals("asc", StringComparison.OrdinalIgnoreCase) => (columnIndex, true),
+                var d when d.Equals("desc", StringComparison.OrdinalIgnoreCase) => (columnIndex, false),
+                _ => null,
+            };
         }
         return null;
     }
@@ -383,23 +364,20 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable, IDisposable
         }
 
         var sortFromQuery = ReadSortFromQueryString();
-        var currentColumnIndex = _sortByColumn is not null ? _columns.IndexOf(_sortByColumn) : -1;
-        var currentAscending = _sortByAscending;
+        var currentSort = _sortByColumn is not null ? (_columns.IndexOf(_sortByColumn), _sortByAscending) : ((int ColumnIndex, bool Ascending)?)null;
 
-        if (sortFromQuery is null && _sortByColumn is not null
-            || sortFromQuery is not null && (sortFromQuery.Value.ColumnIndex != currentColumnIndex
-                || sortFromQuery.Value.Ascending != currentAscending))
+        if (sortFromQuery != currentSort)
         {
             await InvokeAsync(async () =>
             {
-                if (sortFromQuery is null)
+                if (sortFromQuery is { } sort && sort.ColumnIndex >= 0 && sort.ColumnIndex < _columns.Count)
+                {
+                    _sortByColumn = _columns[sort.ColumnIndex];
+                    _sortByAscending = sort.Ascending;
+                }
+                else
                 {
                     _sortByColumn = null;
-                }
-                else if (sortFromQuery.Value.ColumnIndex >= 0 && sortFromQuery.Value.ColumnIndex < _columns.Count)
-                {
-                    _sortByColumn = _columns[sortFromQuery.Value.ColumnIndex];
-                    _sortByAscending = sortFromQuery.Value.Ascending;
                 }
 
                 await RefreshDataCoreAsync();
