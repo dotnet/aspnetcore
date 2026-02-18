@@ -63,15 +63,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private int _measuredItemCount;
 
-    // Accumulated scroll position compensation for measurement-induced height estimate changes.
-    // When ProcessMeasurements updates the running average height, spacer heights shift but scrollTop
-    // doesn't adjust (overflow-anchor is disabled). This delta is applied after the DOM renders to
-    // keep the user's view position stable.
+    // Scroll compensation applied after DOM render when measurements correct height estimates.
     private float _pendingScrollDelta;
 
-    // When the user is at the very end of the list and measurements change the height estimate,
-    // the total content height shifts. Simple delta compensation doesn't suffice because the
-    // rendered content also changes. Re-scrolling to the bottom ensures convergence.
+    // Re-scroll to bottom after measurements correct height estimates.
     private bool _pendingScrollToBottom;
 
     [Inject]
@@ -368,30 +363,19 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, float[]? itemHeights)
     {
-        // Track the height estimate before processing new measurements so we can compute
-        // scroll compensation for any measurement-induced shift in spacer heights.
         var oldAvgHeight = GetItemHeight();
-
-        // Process any item measurements from JavaScript
         ProcessMeasurements(itemHeights);
 
         var newAvgHeight = GetItemHeight();
 
         CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
 
-        // Since we know the before spacer is now visible, we absolutely have to slide the window up
-        // by at least one element. If we're not doing that, the previous item size info we had must
-        // have been wrong, so just move along by one in that case to trigger an update and apply the
-        // new size info.
+        // Slide window up by at least one if spacer is visible but position unchanged.
         if (_lastRenderedItemCount > 0 && itemsBefore == _itemsBefore && itemsBefore > 0)
         {
             itemsBefore--;
         }
 
-        // Accumulate scroll compensation for the measurement-induced height change.
-        // Only compensate for the per-item height estimate changing, not for _itemsBefore changing
-        // (which is a normal scroll-driven window shift). This keeps CanExpandDataSetAndRetainScrollPosition
-        // working: dataset count changes don't go through ProcessMeasurements.
         AccumulateScrollCompensation(oldAvgHeight, newAvgHeight, itemsBefore);
 
         UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
@@ -399,11 +383,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, float[]? itemHeights)
     {
-        // Track the height estimate before processing new measurements so we can compute
-        // scroll compensation for any measurement-induced shift in spacer heights.
         var oldAvgHeight = GetItemHeight();
-
-        // Process any item measurements from JavaScript
         var hadNewMeasurements = ProcessMeasurements(itemHeights);
 
         var newAvgHeight = GetItemHeight();
@@ -412,24 +392,14 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         var itemsBefore = Math.Max(0, _itemCount - itemsAfter - visibleItemCapacity);
 
-        // Since we know the after spacer is now visible, we absolutely have to slide the window down
-        // by at least one element. If we're not doing that, the previous item size info we had must
-        // have been wrong, so just move along by one in that case to trigger an update and apply the
-        // new size info.
+        // Slide window down by at least one if spacer is visible but position unchanged.
         if (_lastRenderedItemCount > 0 && itemsBefore == _itemsBefore && itemsBefore < _itemCount - visibleItemCapacity)
         {
             itemsBefore++;
         }
 
-        // When the user is at the very end of the list (no items remain after the viewport) and
-        // new items were measured, re-scroll to the actual bottom after the DOM renders.
-        // This ensures pressing End converges to item N-1 in a single key press, even
-        // when the initial ItemSize estimate is far from the true average. We check for any
-        // new measurements (not just threshold-exceeding avg changes) because even tiny avg
-        // shifts at the boundary prevent convergence to the true bottom.
-        // For mid-list scrolling, use delta compensation instead (keeps position stable without
-        // jumping to the bottom). Neither case fires for dataset-count changes
-        // (CanExpandDataSetAndRetainScrollPosition) because those don't go through ProcessMeasurements.
+        // At list end with new measurements: re-scroll to bottom for convergence.
+        // Mid-list: use delta compensation to keep position stable.
         if (itemsAfter == 0 && hadNewMeasurements)
         {
             _pendingScrollToBottom = true;
