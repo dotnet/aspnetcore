@@ -1830,7 +1830,7 @@
                 "path": {
                   "type": "string"
                 },
-                "value": {}
+                "value": { }
               },
               "additionalProperties": false
             },
