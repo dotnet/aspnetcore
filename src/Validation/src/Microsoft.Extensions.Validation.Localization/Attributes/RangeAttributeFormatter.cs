@@ -6,6 +6,9 @@ using System.Globalization;
 
 namespace Microsoft.Extensions.Validation.Localization.Attributes;
 
+/// <summary>
+/// Formats error messages for <see cref="RangeAttribute"/> using the minimum and maximum values.
+/// </summary>
 internal class RangeAttributeFormatter(RangeAttribute attribute) : IValidationAttributeFormatter
 {
     public string FormatErrorMessage(CultureInfo culture, string messageTemplate, string displayName)
