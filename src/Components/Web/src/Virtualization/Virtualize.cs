@@ -130,8 +130,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     [Parameter]
     public string SpacerElement { get; set; } = "div";
 
-    // The wrapper element used around each item for measurement purposes.
-    // Uses the same element as SpacerElement to maintain valid HTML structure (e.g., "tr" in tables).
+    // Matches SpacerElement to maintain valid HTML in tables.
     private string ItemWrapperElement => SpacerElement;
 
     /// <summary>
