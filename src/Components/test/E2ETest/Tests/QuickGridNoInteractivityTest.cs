@@ -175,7 +175,7 @@ public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSit
 
         // Sort second grid by Name ascending
         Browser.FindElement(By.CssSelector("#grid2 table thead > tr > th:nth-child(2) button.col-title")).Click();
-        Browser.Equal("Beijing", () => Browser.FindElement(By.CssSelector("#grid2 table tbody > tr:nth-child(1) > td:nth-child(2)")).Text);
+        Browser.Equal("Bangalore", () => Browser.FindElement(By.CssSelector("#grid2 table tbody > tr:nth-child(1) > td:nth-child(2)")).Text);
         Assert.Equal("10895", Browser.FindElement(By.CssSelector("#grid table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
 
         Assert.Contains("QuickGrid_s=0_asc", Browser.Url);

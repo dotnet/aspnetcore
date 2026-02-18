@@ -18,7 +18,7 @@
 <h3>Second QuickGrid</h3>
 
 <div id="grid2">
-    <QuickGrid Items="@cities" Pagination="@pagination2" QueryName="QuickGrid2">
+    <QuickGrid ItemsProvider="@cityProvider" Pagination="@pagination2" QueryName="QuickGrid2">
         <PropertyColumn Property="@(c => c.CityId)" />
         <PropertyColumn Property="@(c => c.Name)" Sortable="true" />
         <PropertyColumn Property="@(c => c.Country)" Sortable="true" />
@@ -35,7 +35,9 @@
     PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
     PaginationState pagination2 = new PaginationState { ItemsPerPage = 5 };
 
-    IQueryable<City> cities = new[]
+    GridItemsProvider<City> cityProvider;
+
+    static readonly City[] allCities = new[]
     {
         new City(1, "Tokyo", "Japan"),
         new City(2, "Delhi", "India"),
@@ -50,7 +52,36 @@
         new City(11, "New York", "USA"),
         new City(12, "Karachi", "Pakistan"),
         new City(13, "Buenos Aires", "Argentina"),
-    }.AsQueryable();
+        new City(14, "Istanbul", "Turkey"),
+        new City(15, "Chongqing", "China"),
+        new City(16, "Lagos", "Nigeria"),
+        new City(17, "Kolkata", "India"),
+        new City(18, "Manila", "Philippines"),
+        new City(19, "Guangzhou", "China"),
+        new City(20, "Tianjin", "China"),
+        new City(21, "Lahore", "Pakistan"),
+        new City(22, "Bangalore", "India"),
+        new City(23, "Paris", "France"),
+        new City(24, "Bogotá", "Colombia"),
+        new City(25, "Jakarta", "Indonesia"),
+        new City(26, "Lima", "Peru"),
+        new City(27, "Bangkok", "Thailand"),
+        new City(28, "Hyderabad", "India"),
+        new City(29, "Seoul", "South Korea"),
+        new City(30, "London", "United Kingdom"),
+    };
+
+    protected override void OnInitialized()
+    {
+        cityProvider = async req =>
+        {
+            var query = allCities.AsQueryable();
+            query = req.ApplySorting(query);
+            var totalCount = query.Count();
+            var items = query.Skip(req.StartIndex).Take(req.Count ?? totalCount).ToList();
+            return GridItemsProviderResult.From(items, totalCount);
+        };
+    }
 
     IQueryable<Person> people = new[]
     {
