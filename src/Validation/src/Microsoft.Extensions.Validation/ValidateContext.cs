@@ -76,13 +76,13 @@ public sealed class ValidateContext
     /// Gets or sets the display name provider for this validation invocation,
     /// overriding <see cref="ValidationOptions.DisplayNameProvider"/> when set.
     /// </summary>
-    public Func<DisplayNameContext, string?>? DisplayNameProvider { get; set; }
+    public Func<DisplayNameLocalizationContext, string?>? DisplayNameProvider { get; set; }
 
     /// <summary>
     /// Gets or sets the error message provider for this validation invocation,
     /// overriding <see cref="ValidationOptions.ErrorMessageProvider"/> when set.
     /// </summary>
-    public Func<ErrorMessageContext, string?>? ErrorMessageProvider { get; set; }
+    public Func<ErrorMessageLocalizationContext, string?>? ErrorMessageProvider { get; set; }
 
     internal void AddValidationError(string propertyName, string key, string[] error, object? container)
     {

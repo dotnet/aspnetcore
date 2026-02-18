@@ -115,7 +115,7 @@ public class ErrorMessageProviderTests
     [Fact]
     public async Task ErrorMessageProvider_ReceivesCorrectErrorMessageContext()
     {
-        ErrorMessageContext? captured = null;
+        ErrorMessageLocalizationContext? captured = null;
         var customer = new TestCustomer { Name = null, Age = 25 };
         var options = new ValidationOptions
         {
@@ -140,7 +140,7 @@ public class ErrorMessageProviderTests
     [Fact]
     public async Task ErrorMessageProvider_ReceivesDefaultTemplateWhenErrorMessageNotSet()
     {
-        ErrorMessageContext? captured = null;
+        ErrorMessageLocalizationContext? captured = null;
         var customer = new TestCustomer { Name = null, Age = 25 };
         var options = new ValidationOptions
         {
@@ -162,7 +162,7 @@ public class ErrorMessageProviderTests
     [Fact]
     public async Task ErrorMessageProvider_ReceivesCustomErrorMessageWhenSet()
     {
-        ErrorMessageContext? captured = null;
+        ErrorMessageLocalizationContext? captured = null;
         var model = new SimpleModel { Name = null };
         var requiredAttr = new RequiredAttribute { ErrorMessage = "Please fill in {0}" };
         var propInfo = new TestValidatablePropertyInfo(
@@ -282,7 +282,7 @@ public class ErrorMessageProviderTests
     [Fact]
     public async Task ErrorMessageProvider_StringLengthWithMinimum_UsesAlternateTemplate()
     {
-        ErrorMessageContext? captured = null;
+        ErrorMessageLocalizationContext? captured = null;
         var model = new SimpleModel { Name = "ab" };
         var stringLengthAttr = new StringLengthAttribute(100) { MinimumLength = 3 };
         var propInfo = new TestValidatablePropertyInfo(
@@ -310,7 +310,7 @@ public class ErrorMessageProviderTests
     [Fact]
     public async Task ErrorMessageProvider_StringLengthWithoutMinimum_UsesStandardTemplate()
     {
-        ErrorMessageContext? captured = null;
+        ErrorMessageLocalizationContext? captured = null;
         var model = new LongNameModel { Name = new string('a', 101) };
         var stringLengthAttr = new StringLengthAttribute(100);
         var propInfo = new TestValidatablePropertyInfo(

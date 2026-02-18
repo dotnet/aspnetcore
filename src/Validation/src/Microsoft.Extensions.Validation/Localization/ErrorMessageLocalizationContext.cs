@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Validation.Localization;
 /// Provides context to the <see cref="ValidationOptions.ErrorMessageProvider"/> delegate
 /// for resolving localized or customized error messages for validation attributes.
 /// </summary>
-public readonly struct ErrorMessageContext
+public readonly struct ErrorMessageLocalizationContext
 {
     /// <summary>
     /// Gets the validation attribute that produced the error.

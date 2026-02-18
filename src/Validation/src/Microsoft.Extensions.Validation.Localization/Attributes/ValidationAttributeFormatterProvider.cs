@@ -9,6 +9,11 @@ public class ValidationAttributeFormatterProvider : IValidationAttributeFormatte
 {
     public virtual IValidationAttributeFormatter GetFormatter(ValidationAttribute attribute)
     {
+        if (attribute is IValidationAttributeFormatter selfFormatter)
+        {
+            return selfFormatter;
+        }
+
         return attribute switch
         {
             RangeAttribute range => new RangeAttributeFormatter(range),

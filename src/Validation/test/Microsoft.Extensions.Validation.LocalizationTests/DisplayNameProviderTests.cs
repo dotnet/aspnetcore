@@ -79,7 +79,7 @@ public class DisplayNameProviderTests
     [Fact]
     public async Task DisplayNameProvider_WithDisplayAttribute_PassesDisplayName()
     {
-        DisplayNameContext? captured = null;
+        DisplayNameLocalizationContext? captured = null;
         var model = new CustomerModel { Name = "Test", Age = 200 };
         var options = new ValidationOptions
         {

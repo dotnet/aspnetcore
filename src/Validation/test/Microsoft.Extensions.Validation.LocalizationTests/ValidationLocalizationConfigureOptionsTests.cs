@@ -42,7 +42,7 @@ public class ValidationLocalizationConfigureOptionsTests
 
         Assert.NotNull(validationOptions.DisplayNameProvider);
 
-        var result = validationOptions.DisplayNameProvider(new DisplayNameContext
+        var result = validationOptions.DisplayNameProvider(new DisplayNameLocalizationContext
         {
             DeclaringType = typeof(object),
             Name = "Customer Age",
@@ -63,7 +63,7 @@ public class ValidationLocalizationConfigureOptionsTests
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
 
-        var result = validationOptions.DisplayNameProvider!(new DisplayNameContext
+        var result = validationOptions.DisplayNameProvider!(new DisplayNameLocalizationContext
         {
             DeclaringType = typeof(object),
             Name = "NotTranslated",
@@ -90,7 +90,7 @@ public class ValidationLocalizationConfigureOptionsTests
 
         Assert.NotNull(validationOptions.ErrorMessageProvider);
 
-        var result = validationOptions.ErrorMessageProvider(new ErrorMessageContext
+        var result = validationOptions.ErrorMessageProvider(new ErrorMessageLocalizationContext
         {
             Attribute = new RequiredAttribute { ErrorMessage = "RequiredError" },
             DisplayName = "Name",
@@ -113,7 +113,7 @@ public class ValidationLocalizationConfigureOptionsTests
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
 
-        var result = validationOptions.ErrorMessageProvider!(new ErrorMessageContext
+        var result = validationOptions.ErrorMessageProvider!(new ErrorMessageLocalizationContext
         {
             Attribute = new RequiredAttribute(),
             DisplayName = "Name",
@@ -143,7 +143,7 @@ public class ValidationLocalizationConfigureOptionsTests
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
 
-        var result = validationOptions.ErrorMessageProvider!(new ErrorMessageContext
+        var result = validationOptions.ErrorMessageProvider!(new ErrorMessageLocalizationContext
         {
             Attribute = new RequiredAttribute(),
             DisplayName = "Name",
@@ -173,7 +173,7 @@ public class ValidationLocalizationConfigureOptionsTests
         };
         configureOptions.Configure(validationOptions);
 
-        var errorResult = validationOptions.ErrorMessageProvider(new ErrorMessageContext
+        var errorResult = validationOptions.ErrorMessageProvider(new ErrorMessageLocalizationContext
         {
             Attribute = new RequiredAttribute(),
             DisplayName = "Name",
@@ -182,7 +182,7 @@ public class ValidationLocalizationConfigureOptionsTests
         });
         Assert.Equal("Pre-existing error", errorResult);
 
-        var displayResult = validationOptions.DisplayNameProvider(new DisplayNameContext
+        var displayResult = validationOptions.DisplayNameProvider(new DisplayNameLocalizationContext
         {
             Name = "Test",
             Services = new ServiceCollection().BuildServiceProvider()
@@ -205,7 +205,7 @@ public class ValidationLocalizationConfigureOptionsTests
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
 
-        var result = validationOptions.ErrorMessageProvider!(new ErrorMessageContext
+        var result = validationOptions.ErrorMessageProvider!(new ErrorMessageLocalizationContext
         {
             Attribute = new RangeAttribute(1, 100) { ErrorMessage = "RangeError" },
             DisplayName = "Age",
@@ -234,7 +234,7 @@ public class ValidationLocalizationConfigureOptionsTests
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
 
-        var result = validationOptions.ErrorMessageProvider!(new ErrorMessageContext
+        var result = validationOptions.ErrorMessageProvider!(new ErrorMessageLocalizationContext
         {
             Attribute = new RequiredAttribute(),
             DisplayName = "Name",

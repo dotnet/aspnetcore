@@ -1,11 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
-using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
-using Microsoft.Extensions.Validation.Localization.Attributes;
-using StandardAttributeLocalization.Resources;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -48,44 +46,7 @@ public static class StandardAttributeLocalizationExtensions
     /// </example>
     public static IServiceCollection AddStandardAttributeLocalization(this IServiceCollection services)
     {
-        services.PostConfigure<ValidationOptions>(options =>
-        {
-            var originalMessageProvider = options.ErrorMessageProvider;
-
-            options.ErrorMessageProvider = (context) =>
-            {
-                if (context.Attribute.ErrorMessageResourceType is not null || !string.IsNullOrEmpty(context.Attribute.ErrorMessage))
-                {
-                    return originalMessageProvider?.Invoke(context);
-                }
-
-                var localizer = context.Services?.GetService<IStringLocalizerFactory>()?.Create(typeof(StandardValidationMessages));
-
-                if (localizer is null)
-                {
-                    return originalMessageProvider?.Invoke(context);
-                }
-
-                var lookupKey = $"{context.Attribute.GetType().Name}_ValidationError";
-                var localizedTemplate = localizer[lookupKey];
-
-                if (localizedTemplate.ResourceNotFound)
-                {
-                    return originalMessageProvider?.Invoke(context);
-                }
-
-                var displayName = context.DisplayName ?? context.MemberName;
-                var attributeFormatterProvider = context.Services?.GetService<IValidationAttributeFormatterProvider>();
-
-                // Format the localized template with attribute-specific arguments
-                var attributeFormatter = context.Attribute is IValidationAttributeFormatter formatter
-                    ? formatter
-                    : attributeFormatterProvider?.GetFormatter(context.Attribute);
-
-                return attributeFormatter?.FormatErrorMessage(CultureInfo.CurrentCulture, localizedTemplate, displayName)
-                    ?? string.Format(CultureInfo.CurrentCulture, localizedTemplate, displayName);
-            };
-        });
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<ValidationOptions>, StandardAttributeLocalizationConfiguration>());
 
         return services;
     }

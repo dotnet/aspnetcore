@@ -1182,7 +1182,8 @@
     <Project Path="src/Validation/gen/Microsoft.Extensions.Validation.ValidationsGenerator.csproj" />
   </Folder>
   <Folder Name="/src/Validation/src/">
-    <Project Path="src/Validation/src/Microsoft.Extensions.Validation.csproj" />
+    <Project Path="src/Validation/src/Microsoft.Extensions.Validation/Microsoft.Extensions.Validation.csproj" />
+    <Project Path="src/Validation/src/Microsoft.Extensions.Validation.Localization/Microsoft.Extensions.Validation.Localization.csproj" />
   </Folder>
   <Folder Name="/src/Validation/test/">
     <Project Path="src/Validation/test/Microsoft.Extensions.Validation.GeneratorTests/Microsoft.Extensions.Validation.GeneratorTests.csproj" />
