@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Localization support for .NET validation infrastructure.</Description>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>validation;localization</PackageTags>
+    <IsPackable>true</IsPackable>
+    <IsTrimmable>true</IsTrimmable>
+    <EnableDefaultItems>true</EnableDefaultItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Localization" />
+    <Reference Include="Microsoft.Extensions.Localization.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="Microsoft.Extensions.Validation" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.Validation.LocalizationTests" />
+  </ItemGroup>
+
+</Project>
