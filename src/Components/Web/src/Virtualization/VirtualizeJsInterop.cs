@@ -42,6 +42,16 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
         _owner.OnAfterSpacerVisible(spacerSize, spacerSeparation, containerSize, itemHeights);
     }
 
+    public ValueTask AdjustScrollPositionAsync(float delta)
+    {
+        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.adjustScrollPosition", _selfReference, delta);
+    }
+
+    public ValueTask ScrollToBottomAsync()
+    {
+        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.scrollToBottom", _selfReference);
+    }
+
     public async ValueTask DisposeAsync()
     {
         if (_selfReference != null)

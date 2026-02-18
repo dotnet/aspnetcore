@@ -706,82 +706,95 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     /// <summary>
-    /// Jumps to end using End key with scroll position stabilization, handling async placeholder loading if needed.
+    /// Jumps to end using a single End key press, then waits for scroll position to stabilize.
+    /// With the measurement-based scroll compensation in Virtualize, a single End press converges
+    /// to the true bottom automatically. For async mode, handles loading data when placeholders appear.
     /// </summary>
     private void JumpToEndWithStabilization(
         IWebElement container,
         Func<bool> hasPlaceholders,
         Action loadData,
-        int maxAttempts = 10)
+        int maxLoadRounds = 10)
     {
         var js = (IJavaScriptExecutor)Browser;
-        
+
         // Ensure container has focus for keyboard input
         container.Click();
-        
-        double lastScrollTop = -1;
-        for (int attempt = 0; attempt < maxAttempts; attempt++)
-        {
-            container.SendKeys(Keys.End);
-            var currentScrollTop = Convert.ToDouble(js.ExecuteScript("return arguments[0].scrollTop;", container), CultureInfo.InvariantCulture);
-            if (Math.Abs(currentScrollTop - lastScrollTop) < 1 && currentScrollTop > 0)
-            {
-                break; // Scroll position stabilized
-            }
-            lastScrollTop = currentScrollTop;
 
-            // Handle async loading if placeholders are present
-            if (hasPlaceholders != null && hasPlaceholders())
-            {
-                loadData?.Invoke();
-            }
-        }
+        // Single End key press — the scroll compensation in Virtualize should converge to the bottom
+        container.SendKeys(Keys.End);
 
-        // Final check for remaining placeholders
-        if (hasPlaceholders != null && hasPlaceholders())
+        // Handle async loading rounds: each time new items load, the scroll compensation may
+        // trigger another data request. We only need to click "load" — not re-press End.
+        for (int round = 0; round < maxLoadRounds; round++)
         {
+            if (hasPlaceholders == null || !hasPlaceholders())
+            {
+                break;
+            }
+
             loadData?.Invoke();
         }
+
+        // Wait for scroll position to stabilize (compensation convergence)
+        WaitForScrollStabilization(container);
     }
 
     /// <summary>
-    /// Jumps to start using Home key and verifies first item is visible, handling async placeholder loading if needed.
+    /// Jumps to start using a single Home key press, then waits for scroll to reach the top.
+    /// For async mode, handles loading data when placeholders appear.
     /// </summary>
     private void JumpToStartWithStabilization(
         IWebElement container,
         Func<bool> hasPlaceholders,
         Action loadData,
         Func<bool> isFirstItemVisible,
-        int maxAttempts = 5)
+        int maxLoadRounds = 10)
     {
         var js = (IJavaScriptExecutor)Browser;
-        
+
         // Ensure container has focus for keyboard input
         container.Click();
-        
-        for (int attempt = 0; attempt < maxAttempts; attempt++)
+
+        // Single Home key press
+        container.SendKeys(Keys.Home);
+
+        // Wait for scroll to reach the top
+        Browser.True(() => Convert.ToDouble(js.ExecuteScript("return arguments[0].scrollTop;", container), CultureInfo.InvariantCulture) < 10);
+
+        // Handle async loading rounds
+        for (int round = 0; round < maxLoadRounds; round++)
         {
-            container.SendKeys(Keys.Home);
-            Browser.True(() => Convert.ToDouble(js.ExecuteScript("return arguments[0].scrollTop;", container), CultureInfo.InvariantCulture) < 10);
-
-            // Handle async loading if placeholders are present
-            if (hasPlaceholders != null && hasPlaceholders())
+            if (hasPlaceholders == null || !hasPlaceholders())
             {
-                loadData?.Invoke();
+                break;
             }
 
-            try
-            {
-                if (isFirstItemVisible())
-                {
-                    return;
-                }
-            }
-            catch (StaleElementReferenceException)
-            {
-                // Element became stale due to re-render, retry
-            }
+            loadData?.Invoke();
         }
+
+        // Wait for scroll position to stabilize
+        WaitForScrollStabilization(container);
+    }
+
+    /// <summary>
+    /// Waits for the scroll position to stop changing (stabilize within 1px across consecutive checks).
+    /// </summary>
+    private void WaitForScrollStabilization(IWebElement container)
+    {
+        var js = (IJavaScriptExecutor)Browser;
+        double lastScrollTop = -1;
+        Browser.True(() =>
+        {
+            var current = Convert.ToDouble(js.ExecuteScript("return arguments[0].scrollTop;", container), CultureInfo.InvariantCulture);
+            if (Math.Abs(current - lastScrollTop) < 1 && lastScrollTop >= 0)
+            {
+                return true;
+            }
+
+            lastScrollTop = current;
+            return false;
+        });
     }
 
     [Theory]

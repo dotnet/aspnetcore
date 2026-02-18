@@ -6,6 +6,8 @@ import { DotNet } from '@microsoft/dotnet-js-interop';
 export const Virtualize = {
   init,
   dispose,
+  adjustScrollPosition,
+  scrollToBottom,
 };
 
 const dispatcherObserversByDotNetIdPropname = Symbol();
@@ -105,6 +107,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     intersectionObserver,
     mutationObserverBefore,
     mutationObserverAfter,
+    scrollContainer,
     onDispose: () => {
       if (callbackTimeout) {
         clearTimeout(callbackTimeout);
@@ -195,6 +198,24 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
     return ((element instanceof HTMLTableElement && element.style.display === '') || element.style.display === 'table')
       || ((element instanceof HTMLTableSectionElement && element.style.display === '') || element.style.display === 'table-row-group');
+  }
+}
+
+function adjustScrollPosition(dotNetHelper: DotNet.DotNetObject, delta: number): void {
+  const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
+  const entry = observersByDotNetObjectId[id];
+  if (entry) {
+    const el = entry.scrollContainer || document.documentElement;
+    el.scrollTop += delta;
+  }
+}
+
+function scrollToBottom(dotNetHelper: DotNet.DotNetObject): void {
+  const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
+  const entry = observersByDotNetObjectId[id];
+  if (entry) {
+    const el = entry.scrollContainer || document.documentElement;
+    el.scrollTop = el.scrollHeight;
   }
 }
 
