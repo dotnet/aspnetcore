@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -81,10 +80,7 @@ public class TestServerTests : VerifiableLoggedTest
     [Fact]
     public async Task LongPollingWorks()
     {
-        // Long polling DELETE fire-and-forgets the server-side connection disposal,
-        // so OnDisconnectedAsync can race with host shutdown and hit a disposed IServiceProvider.
-        // This produces up to two error logs from the same root cause.
-        using (StartVerifiableLog(expectedErrorsFilter: static w => w.Exception is ObjectDisposedException))
+        using (StartVerifiableLog())
         {
             using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
