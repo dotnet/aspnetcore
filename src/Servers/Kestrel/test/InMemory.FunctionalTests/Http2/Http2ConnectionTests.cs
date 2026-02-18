@@ -1639,7 +1639,7 @@ public class Http2ConnectionTests : Http2TestBase
                     CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.DATA, streamId: 1),
                     CoreStrings.FormatHttp2ErrorStreamHalfClosedRemote(Http2FrameType.DATA, streamId: 1)
             });
-        AssertConnectionEndReason(ConnectionEndReason.UnknownStream);
+        AssertConnectionEndReason(ConnectionEndReason.FrameAfterStreamClose);
     }
 
     [Fact]
@@ -1853,7 +1853,7 @@ public class Http2ConnectionTests : Http2TestBase
             expectedErrorCode: Http2ErrorCode.STREAM_CLOSED,
             expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.DATA, streamId: 1));
 
-        AssertConnectionEndReason(ConnectionEndReason.UnknownStream);
+        AssertConnectionEndReason(ConnectionEndReason.FrameAfterStreamClose);
     }
 
     [Fact]
@@ -5744,7 +5744,7 @@ public class Http2ConnectionTests : Http2TestBase
                             CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.DATA, streamId: 1),
                             CoreStrings.FormatHttp2ErrorStreamHalfClosedRemote(Http2FrameType.DATA, streamId: 1)
                     });
-                AssertConnectionEndReason(ConnectionEndReason.UnknownStream);
+                AssertConnectionEndReason(ConnectionEndReason.FrameAfterStreamClose);
                 break;
 
             case Http2FrameType.HEADERS:
