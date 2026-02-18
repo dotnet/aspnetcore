@@ -478,6 +478,48 @@ internal sealed class Http2FrameWriter
         AbortConnectionFlowControl();
     }
 
+    /// <summary>
+    /// Atomically writes a GOAWAY frame and aborts the connection under a single lock acquisition.
+    /// This prevents a race where <see cref="Complete"/> (called from ProcessRequestsAsync's cleanup)
+    /// sets <c>_completed = true</c> between the GOAWAY write and the abort, causing the GOAWAY to be lost.
+    /// </summary>
+    public void AbortWithGoAway(int lastStreamId, Http2ErrorCode errorCode, ConnectionAbortedException error)
+    {
+        lock (_writeLock)
+        {
+            if (_aborted)
+            {
+                return;
+            }
+
+            if (!_completed)
+            {
+                _outgoingFrame.PrepareGoAway(lastStreamId, errorCode);
+                WriteHeaderUnsynchronized();
+
+                var buffer = _outputWriter.GetSpan(8);
+                Bitshifter.WriteUInt31BigEndian(buffer, (uint)lastStreamId, preserveHighestBit: false);
+                buffer = buffer.Slice(4);
+                BinaryPrimitives.WriteUInt32BigEndian(buffer, (uint)errorCode);
+                _outputWriter.Advance(8);
+
+                _ = TimeFlushUnsynchronizedAsync().Preserve();
+            }
+
+            _aborted = true;
+            _connectionContext.Abort(error);
+
+            if (CompleteUnsynchronized())
+            {
+                return;
+            }
+        }
+
+        // Call outside of _writeLock as this can call Http2OutputProducer.Stop which can acquire Http2OutputProducer._dataWriterLock
+        // which is not the desired lock order
+        AbortConnectionFlowControl();
+    }
+
     private ValueTask<FlushResult> FlushEndOfStreamHeadersAsync(Http2Stream stream)
     {
         lock (_writeLock)
