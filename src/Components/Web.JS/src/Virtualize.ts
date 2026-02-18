@@ -32,7 +32,6 @@ function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | 
 function getScaleFactor(element: HTMLElement): number {
   // Use the ratio of getBoundingClientRect().height to offsetHeight to detect
   // cumulative CSS scaling (transform, zoom, scale) from all ancestors.
-  // This is O(1) and handles all scaling types automatically.
   // Note: Both values exclude margin, so this ratio is margin-safe.
   if (element.offsetHeight === 0) {
     return 1;
@@ -49,22 +48,20 @@ interface MeasurementResult {
   scaleFactor: number;
 }
 
-function measureRenderedItems(
-  spacerBefore: HTMLElement,
-  spacerAfter: HTMLElement
-): MeasurementResult {
-  const container = spacerBefore.parentElement;
+function measureRenderedItems(spacer: HTMLElement): MeasurementResult {
+  // All siblings (spacers and items) share the same ancestors
+  const scaleFactor = getScaleFactor(spacer);
+
+  const container = spacer.parentElement;
   if (!container) {
-    return { heights: [], scaleFactor: getScaleFactor(spacerBefore) };
+    return { heights: [], scaleFactor };
   }
 
   const items = container.querySelectorAll<HTMLElement>('[data-virtualize-item]');
   if (items.length === 0) {
-    return { heights: [], scaleFactor: getScaleFactor(spacerBefore) };
+    return { heights: [], scaleFactor };
   }
 
-  // Get scale factor from the first item (all items share the same ancestors)
-  const scaleFactor = getScaleFactor(items[0]);
   const heights: number[] = [];
 
   items.forEach(item => {
@@ -159,21 +156,23 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   }
 
   function processIntersectionEntries(entries: IntersectionObserverEntry[]): void {
-    entries.forEach((entry): void => {
-      if (!entry.isIntersecting) {
-        return;
-      }
+    const intersectingEntries = entries.filter(e => e.isIntersecting);
+    if (intersectingEntries.length === 0) {
+      return;
+    }
 
-      const { heights: measurements, scaleFactor } = measureRenderedItems(spacerBefore, spacerAfter);
+    const { heights: measurements, scaleFactor } = measureRenderedItems(spacerBefore);
 
-      // To compute the ItemSize, work out the separation between the two spacers. We can't just measure an individual element
-      // because each conceptual item could be made from multiple elements. Using getBoundingClientRect allows for the size to be
-      // a fractional value. It's important not to add or subtract any such fractional values (e.g., to subtract the 'top' of
-      // one item from the 'bottom' of another to get the distance between them) because floating point errors would cause
-      // scrolling glitches.
-      rangeBetweenSpacers.setStartAfter(spacerBefore);
-      rangeBetweenSpacers.setEndBefore(spacerAfter);
-      const spacerSeparation = rangeBetweenSpacers.getBoundingClientRect().height / scaleFactor;
+    // To compute the ItemSize, work out the separation between the two spacers. We can't just measure an individual element
+    // because each conceptual item could be made from multiple elements. Using getBoundingClientRect allows for the size to be
+    // a fractional value. It's important not to add or subtract any such fractional values (e.g., to subtract the 'top' of
+    // one item from the 'bottom' of another to get the distance between them) because floating point errors would cause
+    // scrolling glitches.
+    rangeBetweenSpacers.setStartAfter(spacerBefore);
+    rangeBetweenSpacers.setEndBefore(spacerAfter);
+    const spacerSeparation = rangeBetweenSpacers.getBoundingClientRect().height / scaleFactor;
+
+    intersectingEntries.forEach((entry): void => {
       const containerSize = (entry.rootBounds?.height ?? 0) / scaleFactor;
 
       if (entry.target === spacerBefore) {
