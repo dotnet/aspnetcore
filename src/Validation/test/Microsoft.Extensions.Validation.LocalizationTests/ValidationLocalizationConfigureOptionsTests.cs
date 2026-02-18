@@ -4,7 +4,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
@@ -17,25 +16,13 @@ namespace Microsoft.Extensions.Validation.LocalizationTests;
 public class ValidationLocalizationConfigureOptionsTests
 {
     [Fact]
-    public void Configure_WithNoStringLocalizerFactory_DoesNotSetProviders()
-    {
-        var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new StringLocalizerConfiguration(locOptions, stringLocalizerFactory: null);
-
-        var validationOptions = new ValidationOptions();
-        configureOptions.Configure(validationOptions);
-
-        Assert.Null(validationOptions.ErrorMessageProvider);
-        Assert.Null(validationOptions.DisplayNameProvider);
-    }
-
-    [Fact]
     public void Configure_SetsDisplayNameProvider()
     {
         var translations = new Dictionary<string, string> { ["Customer Age"] = "Âge du client" };
         var factory = new TestStringLocalizerFactory(translations);
+        var formatterProvider = new ValidationAttributeFormatterProvider();
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new StringLocalizerConfiguration(locOptions, factory);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -55,10 +42,10 @@ public class ValidationLocalizationConfigureOptionsTests
     [Fact]
     public void Configure_DisplayNameProvider_ReturnsNullWhenNotFound()
     {
-        var translations = new Dictionary<string, string>();
-        var factory = new TestStringLocalizerFactory(translations);
+        var factory = new TestStringLocalizerFactory([]);
+        var formatterProvider = new ValidationAttributeFormatterProvider();
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new StringLocalizerConfiguration(locOptions, factory);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -83,7 +70,7 @@ public class ValidationLocalizationConfigureOptionsTests
         var factory = new TestStringLocalizerFactory(translations);
         var formatterProvider = new ValidationAttributeFormatterProvider();
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -105,10 +92,10 @@ public class ValidationLocalizationConfigureOptionsTests
     [Fact]
     public void Configure_ErrorMessageProvider_ReturnsNullWhenNotFound()
     {
-        var translations = new Dictionary<string, string>();
-        var factory = new TestStringLocalizerFactory(translations);
+        var factory = new TestStringLocalizerFactory([]);
+        var formatterProvider = new ValidationAttributeFormatterProvider();
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new StringLocalizerConfiguration(locOptions, factory);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -138,7 +125,7 @@ public class ValidationLocalizationConfigureOptionsTests
         {
             ErrorMessageKeySelector = ctx => $"{ctx.Attribute.GetType().Name}_Error"
         });
-        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -163,8 +150,9 @@ public class ValidationLocalizationConfigureOptionsTests
             ["The {0} field is required."] = "Translated: {0} required"
         };
         var factory = new TestStringLocalizerFactory(translations);
+        var formatterProvider = new ValidationAttributeFormatterProvider();
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new StringLocalizerConfiguration(locOptions, factory);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions
         {
@@ -200,7 +188,7 @@ public class ValidationLocalizationConfigureOptionsTests
         var factory = new TestStringLocalizerFactory(translations);
         var formatterProvider = new ValidationAttributeFormatterProvider();
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new StringLocalizerConfiguration(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -225,11 +213,12 @@ public class ValidationLocalizationConfigureOptionsTests
             ["The {0} field is required."] = "Should not appear"
         };
         var factory = new TestStringLocalizerFactory(translations);
+        var formatterProvider = new ValidationAttributeFormatterProvider();
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions
         {
             ErrorMessageKeySelector = _ => null
         });
-        var configureOptions = new StringLocalizerConfiguration(locOptions, factory);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -245,12 +234,9 @@ public class ValidationLocalizationConfigureOptionsTests
         Assert.Null(result);
     }
 
-    private class TestStringLocalizerFactory : IStringLocalizerFactory
+    private class TestStringLocalizerFactory(Dictionary<string, string> translations) : IStringLocalizerFactory
     {
-        private readonly Dictionary<string, string> _translations;
-
-        public TestStringLocalizerFactory(Dictionary<string, string> translations)
-            => _translations = translations;
+        private readonly Dictionary<string, string> _translations = translations;
 
         public IStringLocalizer Create(Type resourceSource)
             => new TestStringLocalizer(_translations);

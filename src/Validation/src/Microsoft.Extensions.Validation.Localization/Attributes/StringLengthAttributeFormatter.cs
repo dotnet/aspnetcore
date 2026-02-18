@@ -6,6 +6,9 @@ using System.Globalization;
 
 namespace Microsoft.Extensions.Validation.Localization.Attributes;
 
+/// <summary>
+/// Formats error messages for <see cref="StringLengthAttribute"/> using the maximum and minimum length.
+/// </summary>
 internal class StringLengthAttributeFormatter(StringLengthAttribute attribute) : IValidationAttributeFormatter
 {
     public string FormatErrorMessage(CultureInfo culture, string messageTemplate, string displayName)

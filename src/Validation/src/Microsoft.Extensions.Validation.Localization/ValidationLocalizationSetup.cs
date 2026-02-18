@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Validation.Localization;
 /// <see cref="ValidationLocalizationOptions"/> and the registered
 /// <see cref="IStringLocalizerFactory"/>.
 /// </summary>
-internal sealed class StringLocalizerConfiguration(
+internal sealed class ValidationLocalizationSetup(
     IOptions<ValidationLocalizationOptions> localizationOptions,
     IStringLocalizerFactory stringLocalizerFactory,
     IValidationAttributeFormatterProvider attributeFormatterProvider)
