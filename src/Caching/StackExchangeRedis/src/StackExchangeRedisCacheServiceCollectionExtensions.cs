@@ -33,4 +33,23 @@ public static class StackExchangeRedisCacheServiceCollectionExtensions
 
         return services;
     }
+
+    /// <summary>
+    /// Adds Redis distributed caching services to the specified <see cref="IServiceCollection" />.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+    /// <param name="setupAction">An <see cref="Action{RedisCacheOptions}"/> to configure the provided
+    /// <see cref="RedisCacheOptions"/>.</param>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    public static IServiceCollection AddStackExchangeRedisCache<TDependency>(this IServiceCollection services, Action<RedisCacheOptions, TDependency> setupAction) where TDependency : class
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(services);
+        ArgumentNullThrowHelper.ThrowIfNull(setupAction);
+
+        services.AddOptions<RedisCacheOptions>().Configure(setupAction);
+
+        services.Add(ServiceDescriptor.Singleton<IDistributedCache, RedisCacheImpl>());
+
+        return services;
+    }
 }
