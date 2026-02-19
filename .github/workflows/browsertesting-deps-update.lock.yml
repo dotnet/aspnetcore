@@ -23,7 +23,7 @@
 #
 # Monthly workflow that checks for newer Selenium and Playwright versions and opens a PR to update them in the repository.
 #
-# frontmatter-hash: 00da0e40b96869b10582d903a1e487657c61e9df83b158229c8ffdc57663a21a
+# frontmatter-hash: be9ac86e836e6f3feb10ede624cc6f9a17a586252bf7438643547e85ae63a3ca
 
 name: "Update Browser-Testing Dependencies (Selenium & Playwright)"
 "on":
@@ -561,9 +561,108 @@ jobs:
           
           bash /opt/gh-aw/actions/start_safe_outputs_server.sh
           
+      - name: Setup Safe Inputs Config
+        run: |
+          mkdir -p /opt/gh-aw/safe-inputs/logs
+          cat > /opt/gh-aw/safe-inputs/tools.json << 'GH_AW_SAFE_INPUTS_TOOLS_EOF'
+          {
+            "serverName": "safeinputs",
+            "version": "1.0.0",
+            "logDir": "/opt/gh-aw/safe-inputs/logs",
+            "tools": [
+              {
+                "name": "get-nuget-version",
+                "description": "Get the latest stable version of a NuGet package from api.nuget.org",
+                "inputSchema": {
+                  "properties": {
+                    "package_id": {
+                      "description": "The NuGet package ID (e.g. Selenium.WebDriver)",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "package_id"
+                  ],
+                  "type": "object"
+                },
+                "handler": "get-nuget-version.sh",
+                "timeout": 60
+              }
+            ]
+          }
+          GH_AW_SAFE_INPUTS_TOOLS_EOF
+          cat > /opt/gh-aw/safe-inputs/mcp-server.cjs << 'GH_AW_SAFE_INPUTS_SERVER_EOF'
+            const path = require("path");
+            const { startHttpServer } = require("./safe_inputs_mcp_server_http.cjs");
+            const configPath = path.join(__dirname, "tools.json");
+            const port = parseInt(process.env.GH_AW_SAFE_INPUTS_PORT || "3000", 10);
+            const apiKey = process.env.GH_AW_SAFE_INPUTS_API_KEY || "";
+            startHttpServer(configPath, {
+              port: port,
+              stateless: true,
+              logDir: "/opt/gh-aw/safe-inputs/logs"
+            }).catch(error => {
+              console.error("Failed to start safe-inputs HTTP server:", error);
+              process.exit(1);
+            });
+          GH_AW_SAFE_INPUTS_SERVER_EOF
+          chmod +x /opt/gh-aw/safe-inputs/mcp-server.cjs
+          
+      - name: Setup Safe Inputs Tool Files
+        run: |
+          cat > /opt/gh-aw/safe-inputs/get-nuget-version.sh << 'GH_AW_SAFE_INPUTS_SH_GET-NUGET-VERSION_EOF'
+          #!/bin/bash
+          # Auto-generated safe-input tool: get-nuget-version
+          # Get the latest stable version of a NuGet package from api.nuget.org
+          
+          set -euo pipefail
+          
+          PACKAGE_ID_LOWER=$(echo "$INPUT_PACKAGE_ID" | tr '[:upper:]' '[:lower:]')
+          VERSIONS=$(curl -s "https://api.nuget.org/v3-flatcontainer/${PACKAGE_ID_LOWER}/index.json")
+          LATEST=$(echo "$VERSIONS" | jq -r '.versions[]' | grep -v '-' | tail -1)
+          echo "{\"package\": \"$INPUT_PACKAGE_ID\", \"latest_version\": \"$LATEST\"}"
+          
+          
+          GH_AW_SAFE_INPUTS_SH_GET-NUGET-VERSION_EOF
+          chmod +x /opt/gh-aw/safe-inputs/get-nuget-version.sh
+          
+      - name: Generate Safe Inputs MCP Server Config
+        id: safe-inputs-config
+        run: |
+          # Generate a secure random API key (360 bits of entropy, 40+ chars)
+          # Mask immediately to prevent timing vulnerabilities
+          API_KEY=$(openssl rand -base64 45 | tr -d '/+=')
+          echo "::add-mask::${API_KEY}"
+          
+          PORT=3000
+          
+          # Set outputs for next steps
+          {
+            echo "safe_inputs_api_key=${API_KEY}"
+            echo "safe_inputs_port=${PORT}"
+          } >> "$GITHUB_OUTPUT"
+          
+          echo "Safe Inputs MCP server will run on port ${PORT}"
+          
+      - name: Start Safe Inputs MCP HTTP Server
+        id: safe-inputs-start
+        env:
+          DEBUG: '*'
+          GH_AW_SAFE_INPUTS_PORT: ${{ steps.safe-inputs-config.outputs.safe_inputs_port }}
+          GH_AW_SAFE_INPUTS_API_KEY: ${{ steps.safe-inputs-config.outputs.safe_inputs_api_key }}
+        run: |
+          # Environment variables are set above to prevent template injection
+          export DEBUG
+          export GH_AW_SAFE_INPUTS_PORT
+          export GH_AW_SAFE_INPUTS_API_KEY
+          
+          bash /opt/gh-aw/actions/start_safe_inputs_server.sh
+          
       - name: Start MCP Gateway
         id: start-mcp-gateway
         env:
+          GH_AW_SAFE_INPUTS_API_KEY: ${{ steps.safe-inputs-start.outputs.api_key }}
+          GH_AW_SAFE_INPUTS_PORT: ${{ steps.safe-inputs-start.outputs.port }}
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_SAFE_OUTPUTS_API_KEY: ${{ steps.safe-outputs-start.outputs.api_key }}
           GH_AW_SAFE_OUTPUTS_PORT: ${{ steps.safe-outputs-start.outputs.port }}
@@ -584,7 +683,7 @@ jobs:
           export DEBUG="*"
           
           export GH_AW_ENGINE="copilot"
-          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_LOCKDOWN -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.1.4'
+          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_LOCKDOWN -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_INPUTS_PORT -e GH_AW_SAFE_INPUTS_API_KEY -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.1.4'
           
           mkdir -p /home/runner/.copilot
           cat << GH_AW_MCP_CONFIG_EOF | bash /opt/gh-aw/actions/start_mcp_gateway.sh
@@ -598,6 +697,13 @@ jobs:
                   "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_MCP_SERVER_TOKEN}",
                   "GITHUB_READ_ONLY": "1",
                   "GITHUB_TOOLSETS": "context,repos,issues,pull_requests"
+                }
+              },
+              "safeinputs": {
+                "type": "http",
+                "url": "http://host.docker.internal:$GH_AW_SAFE_INPUTS_PORT",
+                "headers": {
+                  "Authorization": "\${GH_AW_SAFE_INPUTS_API_KEY}"
                 }
               },
               "safeoutputs": {
@@ -633,9 +739,9 @@ jobs:
         id: agentic_execution
         # Copilot CLI tool arguments (sorted):
         # --allow-tool github
+        # --allow-tool safeinputs
         # --allow-tool safeoutputs
         # --allow-tool shell(cat)
-        # --allow-tool shell(curl)
         # --allow-tool shell(date)
         # --allow-tool shell(echo)
         # --allow-tool shell(git add:*)
@@ -658,13 +764,12 @@ jobs:
         # --allow-tool shell(uniq)
         # --allow-tool shell(wc)
         # --allow-tool shell(yq)
-        # --allow-tool web_fetch
         # --allow-tool write
         timeout-minutes: 20
         run: |
           set -o pipefail
           sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains '*.docker.com,*.docker.io,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.nuget.org,api.snapcraft.io,archive.ubuntu.com,auth.docker.io,azure.archive.ubuntu.com,azuresearch-usnc.nuget.org,azuresearch-ussc.nuget.org,builds.dotnet.microsoft.com,ci.dot.net,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,dc.services.visualstudio.com,dist.nuget.org,dl.k8s.io,dot.net,dotnet.microsoft.com,dotnetcli.blob.core.windows.net,gcr.io,ghcr.io,github.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,mcr.microsoft.com,nuget.org,nuget.pkg.github.com,nugetregistryv2prod.blob.core.windows.net,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,oneocsp.microsoft.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,pkgs.dev.azure.com,pkgs.k8s.io,ppa.launchpad.net,production.cloudflare.docker.com,quay.io,raw.githubusercontent.com,registry.hub.docker.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.microsoft.com' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.19.1 --skip-pull \
-            -- /bin/bash -c '/usr/local/bin/copilot --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --add-dir "${GITHUB_WORKSPACE}" --disable-builtin-mcps --allow-tool github --allow-tool safeoutputs --allow-tool '\''shell(cat)'\'' --allow-tool '\''shell(curl)'\'' --allow-tool '\''shell(date)'\'' --allow-tool '\''shell(echo)'\'' --allow-tool '\''shell(git add:*)'\'' --allow-tool '\''shell(git branch:*)'\'' --allow-tool '\''shell(git checkout:*)'\'' --allow-tool '\''shell(git commit:*)'\'' --allow-tool '\''shell(git merge:*)'\'' --allow-tool '\''shell(git rm:*)'\'' --allow-tool '\''shell(git status)'\'' --allow-tool '\''shell(git switch:*)'\'' --allow-tool '\''shell(git)'\'' --allow-tool '\''shell(grep)'\'' --allow-tool '\''shell(head)'\'' --allow-tool '\''shell(jq)'\'' --allow-tool '\''shell(ls)'\'' --allow-tool '\''shell(pwd)'\'' --allow-tool '\''shell(sed)'\'' --allow-tool '\''shell(sort)'\'' --allow-tool '\''shell(tail)'\'' --allow-tool '\''shell(uniq)'\'' --allow-tool '\''shell(wc)'\'' --allow-tool '\''shell(yq)'\'' --allow-tool web_fetch --allow-tool write --allow-all-paths --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"${GH_AW_MODEL_AGENT_COPILOT:+ --model "$GH_AW_MODEL_AGENT_COPILOT"}' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
+            -- /bin/bash -c '/usr/local/bin/copilot --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --add-dir "${GITHUB_WORKSPACE}" --disable-builtin-mcps --allow-tool github --allow-tool safeinputs --allow-tool safeoutputs --allow-tool '\''shell(cat)'\'' --allow-tool '\''shell(date)'\'' --allow-tool '\''shell(echo)'\'' --allow-tool '\''shell(git add:*)'\'' --allow-tool '\''shell(git branch:*)'\'' --allow-tool '\''shell(git checkout:*)'\'' --allow-tool '\''shell(git commit:*)'\'' --allow-tool '\''shell(git merge:*)'\'' --allow-tool '\''shell(git rm:*)'\'' --allow-tool '\''shell(git status)'\'' --allow-tool '\''shell(git switch:*)'\'' --allow-tool '\''shell(git)'\'' --allow-tool '\''shell(grep)'\'' --allow-tool '\''shell(head)'\'' --allow-tool '\''shell(jq)'\'' --allow-tool '\''shell(ls)'\'' --allow-tool '\''shell(pwd)'\'' --allow-tool '\''shell(sed)'\'' --allow-tool '\''shell(sort)'\'' --allow-tool '\''shell(tail)'\'' --allow-tool '\''shell(uniq)'\'' --allow-tool '\''shell(wc)'\'' --allow-tool '\''shell(yq)'\'' --allow-tool write --allow-all-paths --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"${GH_AW_MODEL_AGENT_COPILOT:+ --model "$GH_AW_MODEL_AGENT_COPILOT"}' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
@@ -777,6 +882,15 @@ jobs:
             setupGlobals(core, github, context, exec, io);
             const { main } = require('/opt/gh-aw/actions/parse_copilot_log.cjs');
             await main();
+      - name: Parse safe-inputs logs for step summary
+        if: always()
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io);
+            const { main } = require('/opt/gh-aw/actions/parse_safe_inputs_logs.cjs');
+            await main();
       - name: Parse MCP Gateway logs for step summary
         if: always()
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
@@ -811,6 +925,7 @@ jobs:
             /tmp/gh-aw/aw-prompts/prompt.txt
             /tmp/gh-aw/aw_info.json
             /tmp/gh-aw/mcp-logs/
+            /tmp/gh-aw/safe-inputs/logs/
             /tmp/gh-aw/sandbox/firewall/logs/
             /tmp/gh-aw/agent-stdio.log
             /tmp/gh-aw/agent/

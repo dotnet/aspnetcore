@@ -21,8 +21,21 @@ network:
 tools:
   github:
   edit:
-  bash: ["curl", "grep", "sed", "jq", "git"]
-  web-fetch:
+  bash: ["grep", "sed", "jq", "git"]
+
+safe-inputs:
+  get-nuget-version:
+    description: "Get the latest stable version of a NuGet package from api.nuget.org"
+    inputs:
+      package_id:
+        type: string
+        required: true
+        description: "The NuGet package ID (e.g. Selenium.WebDriver)"
+    run: |
+      PACKAGE_ID_LOWER=$(echo "$INPUT_PACKAGE_ID" | tr '[:upper:]' '[:lower:]')
+      VERSIONS=$(curl -s "https://api.nuget.org/v3-flatcontainer/${PACKAGE_ID_LOWER}/index.json")
+      LATEST=$(echo "$VERSIONS" | jq -r '.versions[]' | grep -v '-' | tail -1)
+      echo "{\"package\": \"$INPUT_PACKAGE_ID\", \"latest_version\": \"$LATEST\"}"
 
 safe-outputs:
   create-pull-request:
@@ -66,13 +79,13 @@ Then update:
 
 ### How to look up latest NuGet versions
 
-Use the NuGet API to find the latest stable version:
+Use the `get-nuget-version` tool to fetch the latest stable version of a NuGet package. Call it once for each package:
 
-```
-curl -s "https://api.nuget.org/v3-flatcontainer/{package-id-lowercase}/index.json"
-```
+- `get-nuget-version` with `package_id: "Selenium.WebDriver"`
+- `get-nuget-version` with `package_id: "Selenium.Support"`
+- `get-nuget-version` with `package_id: "Microsoft.Playwright"`
 
-The response contains a `versions` array. Pick the latest version that does NOT contain a prerelease suffix (no `-alpha`, `-beta`, `-preview`, `-rc`).
+The tool returns the latest stable (non-prerelease) version.
 
 ## Guidelines
 
