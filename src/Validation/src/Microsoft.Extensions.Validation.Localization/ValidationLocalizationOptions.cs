@@ -2,9 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Validation.Localization;
 
-namespace Microsoft.Extensions.Validation;
+namespace Microsoft.Extensions.Validation.Localization;
 
 /// <summary>
 /// Options for configuring validation error message and display name localization.
@@ -59,5 +58,5 @@ public sealed class ValidationLocalizationOptions
     /// for the particular attribute.
     /// </para>
     /// </remarks>
-    public Func<ErrorMessageProviderContext, string?>? ErrorMessageKeySelector { get; set; }
+    public ErrorMessageKeyProvider? ErrorMessageKeyProvider { get; set; }
 }
