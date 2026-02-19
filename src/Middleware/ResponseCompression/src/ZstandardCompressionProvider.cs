@@ -33,6 +33,6 @@ public class ZstandardCompressionProvider : ICompressionProvider
     /// <inheritdoc />
     public Stream CreateStream(Stream outputStream)
     {
-        return new ZstandardStream(outputStream, Options.Level, leaveOpen: true);
+        return new ZstandardStream(outputStream, Options.CompressionOptions, leaveOpen: true);
     }
 }

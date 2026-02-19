@@ -12,7 +12,10 @@ public class Startup
     public void ConfigureServices(IServiceCollection services)
     {
         services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
-        services.Configure<ZstandardCompressionProviderOptions>(options => options.Level = CompressionLevel.Fastest);
+        services.Configure<ZstandardCompressionProviderOptions>(options =>
+        {
+            options.CompressionOptions = new ZstandardCompressionOptions { Quality = 1 };
+        });
         services.AddResponseCompression(options =>
         {
             options.Providers.Add<ZstandardCompressionProvider>();

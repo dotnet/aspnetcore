@@ -5,6 +5,6 @@ Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProvider.EncodingNa
 Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProvider.SupportsFlush.get -> bool
 Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProvider.ZstandardCompressionProvider(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProviderOptions!>! options) -> void
 Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProviderOptions
-Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProviderOptions.Level.get -> System.IO.Compression.CompressionLevel
-Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProviderOptions.Level.set -> void
+Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProviderOptions.CompressionOptions.get -> System.IO.Compression.ZstandardCompressionOptions!
+Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProviderOptions.CompressionOptions.set -> void
 Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProviderOptions.ZstandardCompressionProviderOptions() -> void
