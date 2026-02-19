@@ -123,6 +123,10 @@
       <PrivateAssets Condition="'%(PrivateAssets)' == ''">all</PrivateAssets>
       <Private Condition="'%(Private)' == ''">false</Private>
     </ProjectReference>
+
+    <FrameworkReference Include="Microsoft.AspNetCore.App"
+                        Condition="@(_FrameworkProjectReference->Count()) != 0 AND 
+                                  '$(IsPackable)' == 'true' AND '$(IsAspNetCoreApp)' != 'true'" />
   </ItemGroup>
 
   <!--
