@@ -4,8 +4,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using Microsoft.Extensions.Validation.Localization;
 using Microsoft.Extensions.Validation.LocalizationTests.Helpers;
 
@@ -33,7 +31,7 @@ public class ErrorMessageProviderTests
         var customer = new TestCustomer { Name = null, Age = 25 };
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = _ => null
+            ErrorMessageProvider = (in _) => null
         };
         var context = CreateContext(customer, options);
 
@@ -51,7 +49,7 @@ public class ErrorMessageProviderTests
         var customer = new TestCustomer { Name = null, Age = 25 };
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = ctx => $"Custom: {ctx.MemberName} is invalid"
+            ErrorMessageProvider = (in ctx) => $"Custom: {ctx.MemberName} is invalid"
         };
         var context = CreateContext(customer, options);
 
@@ -69,10 +67,10 @@ public class ErrorMessageProviderTests
         var customer = new TestCustomer { Name = null, Age = 25 };
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = _ => "Options-level message"
+            ErrorMessageProvider = (in _) => "Options-level message"
         };
         var context = CreateContext(customer, options);
-        context.ErrorMessageProvider = _ => "Context-level message";
+        context.ErrorMessageProvider = (in _) => "Context-level message";
 
         var typeInfo = CreateCustomerTypeInfo();
         await typeInfo.ValidateAsync(customer, context, default);
@@ -87,7 +85,7 @@ public class ErrorMessageProviderTests
         var providerCalled = false;
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = _ =>
+            ErrorMessageProvider = (in _) =>
             {
                 providerCalled = true;
                 return "Should not be used";
@@ -115,11 +113,11 @@ public class ErrorMessageProviderTests
     [Fact]
     public async Task ErrorMessageProvider_ReceivesCorrectErrorMessageContext()
     {
-        ErrorMessageLocalizationContext? captured = null;
+        ErrorMessageProviderContext? captured = null;
         var customer = new TestCustomer { Name = null, Age = 25 };
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = ctx =>
+            ErrorMessageProvider = (in ctx) =>
             {
                 captured = ctx;
                 return null;
@@ -140,11 +138,11 @@ public class ErrorMessageProviderTests
     [Fact]
     public async Task ErrorMessageProvider_ReceivesDefaultTemplateWhenErrorMessageNotSet()
     {
-        ErrorMessageLocalizationContext? captured = null;
+        ErrorMessageProviderContext? captured = null;
         var customer = new TestCustomer { Name = null, Age = 25 };
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = ctx =>
+            ErrorMessageProvider = (in ctx) =>
             {
                 captured = ctx;
                 return null;
@@ -162,7 +160,7 @@ public class ErrorMessageProviderTests
     [Fact]
     public async Task ErrorMessageProvider_ReceivesCustomErrorMessageWhenSet()
     {
-        ErrorMessageLocalizationContext? captured = null;
+        ErrorMessageProviderContext? captured = null;
         var model = new SimpleModel { Name = null };
         var requiredAttr = new RequiredAttribute { ErrorMessage = "Please fill in {0}" };
         var propInfo = new TestValidatablePropertyInfo(
@@ -172,7 +170,7 @@ public class ErrorMessageProviderTests
 
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = ctx =>
+            ErrorMessageProvider = (in ctx) =>
             {
                 captured = ctx;
                 return null;
@@ -191,7 +189,7 @@ public class ErrorMessageProviderTests
         var customer = new TestCustomer { Name = null, Age = 25 };
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = ctx =>
+            ErrorMessageProvider = (in ctx) =>
             {
                 if (ctx.Attribute is RequiredAttribute)
                 {
@@ -215,7 +213,7 @@ public class ErrorMessageProviderTests
         var customer = new TestCustomer { Name = "Test", Age = 200 };
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = ctx =>
+            ErrorMessageProvider = (in ctx) =>
             {
                 if (ctx.Attribute is RangeAttribute range)
                 {
@@ -245,7 +243,7 @@ public class ErrorMessageProviderTests
 
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = ctx => $"Localized: {ctx.MemberName} format error"
+            ErrorMessageProvider = (in ctx) => $"Localized: {ctx.MemberName} format error"
         };
         var context = CreateContext(model, options);
         await typeInfo.ValidateAsync(model, context, default);
@@ -269,7 +267,7 @@ public class ErrorMessageProviderTests
 
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = ctx => $"Localized type error: {ctx.MemberName}"
+            ErrorMessageProvider = (in ctx) => $"Localized type error: {ctx.MemberName}"
         };
         var context = CreateContext(model, options);
         await typeInfo.ValidateAsync(model, context, default);
@@ -282,7 +280,7 @@ public class ErrorMessageProviderTests
     [Fact]
     public async Task ErrorMessageProvider_StringLengthWithMinimum_UsesAlternateTemplate()
     {
-        ErrorMessageLocalizationContext? captured = null;
+        ErrorMessageProviderContext? captured = null;
         var model = new SimpleModel { Name = "ab" };
         var stringLengthAttr = new StringLengthAttribute(100) { MinimumLength = 3 };
         var propInfo = new TestValidatablePropertyInfo(
@@ -292,7 +290,7 @@ public class ErrorMessageProviderTests
 
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = ctx =>
+            ErrorMessageProvider = (in ctx) =>
             {
                 captured = ctx;
                 return null;
@@ -310,7 +308,7 @@ public class ErrorMessageProviderTests
     [Fact]
     public async Task ErrorMessageProvider_StringLengthWithoutMinimum_UsesStandardTemplate()
     {
-        ErrorMessageLocalizationContext? captured = null;
+        ErrorMessageProviderContext? captured = null;
         var model = new LongNameModel { Name = new string('a', 101) };
         var stringLengthAttr = new StringLengthAttribute(100);
         var propInfo = new TestValidatablePropertyInfo(
@@ -320,7 +318,7 @@ public class ErrorMessageProviderTests
 
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = ctx =>
+            ErrorMessageProvider = (in ctx) =>
             {
                 captured = ctx;
                 return null;

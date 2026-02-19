@@ -28,7 +28,7 @@ internal static class LocalizationHelper
                     return displayName;
                 }
 
-                var displayNameContext = new DisplayNameLocalizationContext
+                var displayNameContext = new DisplayNameProviderContext
                 {
                     DeclaringType = declaringType,
                     Name = displayName,
@@ -59,7 +59,7 @@ internal static class LocalizationHelper
         Type? declaringType,
         string? displayName,
         string memberName,
-        Func<ErrorMessageLocalizationContext, string?>? provider,
+        ErrorMessageProvider? provider,
         IServiceProvider services)
     {
         // If the attribute uses its own resource-based localization
@@ -75,7 +75,7 @@ internal static class LocalizationHelper
             return null;
         }
 
-        var errorMessageContext = new ErrorMessageLocalizationContext
+        var errorMessageContext = new ErrorMessageProviderContext
         {
             Attribute = attribute,
             DisplayName = displayName,
