@@ -837,6 +837,17 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => GetElementCount(container, itemClass) > 0);
         Browser.True(() => container.FindElements(By.Id(lastItemId)).Count > 0);
 
+        // Verify we're pinned to the very bottom (no extra scroll room)
+        var jsExec = (IJavaScriptExecutor)Browser;
+        Browser.True(() =>
+        {
+            var scrollTop = Convert.ToDouble(jsExec.ExecuteScript("return arguments[0].scrollTop;", container), CultureInfo.InvariantCulture);
+            var clientHeight = Convert.ToDouble(jsExec.ExecuteScript("return arguments[0].clientHeight;", container), CultureInfo.InvariantCulture);
+            var scrollHeight = Convert.ToDouble(jsExec.ExecuteScript("return arguments[0].scrollHeight;", container), CultureInfo.InvariantCulture);
+            var remaining = scrollHeight - scrollTop - clientHeight;
+            return remaining < 1;
+        });
+
         // Jump back to start using shared helper
         JumpToStartWithStabilization(
             container,
@@ -1166,16 +1177,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.True(() => GetElementCount(container, ".async-variable-item") > 0);
 
-        // Check that top visible item index never goes backward, which would indicate visible "flashing".
-        // Uses IntersectionObserver as a deterministic frame-boundary signal (fires after layout, before paint)
-        // instead of arbitrary setTimeout delays. Uses getBoundingClientRect with a tolerance to avoid
-        // sub-pixel boundary flicker where items barely peeking into the viewport toggle visibility.
         const string detectFlashingScript = @"
             var done = arguments[0];
             (async () => {
                 const SCROLL_INCREMENT = 100;
                 const MAX_ITERATIONS = 300;
-                const VISIBILITY_TOLERANCE = 2; // px - ignore sub-pixel slivers at container edge
+                const VISIBILITY_TOLERANCE = 2;
                 const container = document.querySelector('#async-variable-container');
                 
                 if (!container) {
@@ -1183,14 +1190,10 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                     return;
                 }
                 
-                // Get VISUALLY top item using getBoundingClientRect (accounts for CSS transforms).
-                // Requires the item to overlap the viewport by at least VISIBILITY_TOLERANCE px,
-                // so sub-pixel edge slivers don't cause false backward-jump detection.
                 const getTopVisibleItemIndex = () => {
                     const items = container.querySelectorAll('.async-variable-item');
                     if (items.length === 0) return null;
                     const containerRect = container.getBoundingClientRect();
-                    
                     for (const item of items) {
                         const itemRect = item.getBoundingClientRect();
                         if (itemRect.bottom > containerRect.top + VISIBILITY_TOLERANCE &&
@@ -1211,13 +1214,17 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                     }
                     return maxIdx;
                 };
+
+                const getMinIndex = () => {
+                    const items = container.querySelectorAll('.async-variable-item');
+                    let minIdx = Infinity;
+                    for (const item of items) {
+                        const match = item.id.match(/async-variable-item-(\d+)/);
+                        if (match) minIdx = Math.min(minIdx, parseInt(match[1], 10));
+                    }
+                    return minIdx === Infinity ? -1 : minIdx;
+                };
                 
-                // Wait for the rendering pipeline to settle after a scroll.
-                // Pipeline: scroll → rAF → style/layout → ResizeObserver → IntersectionObserver → paint.
-                // IO fires AFTER all layout work completes but BEFORE paint, so getBoundingClientRect
-                // called in the IO callback reflects exactly what the user will see.
-                // IO always delivers an initial entry for newly observed elements, guaranteeing
-                // the callback fires even if no intersection changed.
                 const waitForSettledFrame = () => {
                     return new Promise(resolve => {
                         requestAnimationFrame(() => {
@@ -1230,11 +1237,32 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                         });
                     });
                 };
+
+                const getSnapshot = () => {
+                    const spacerBefore = container.querySelector('[aria-hidden=""true""]:first-child');
+                    const spacerAfter = container.querySelector('[aria-hidden=""true""]:last-child');
+                    return {
+                        st: container.scrollTop,
+                        sh: container.scrollHeight,
+                        min: getMinIndex(),
+                        max: getMaxIndex(),
+                        cnt: container.querySelectorAll('.async-variable-item').length,
+                        sbH: spacerBefore ? spacerBefore.style.height : '?',
+                        saH: spacerAfter ? spacerAfter.style.height : '?',
+                    };
+                };
                 
                 let previousTopItemIndex = null;
                 let maxIndexSeen = -1;
+                // Keep last N snapshots as ring buffer for context
+                const history = [];
+                const HISTORY_SIZE = 10;
                 
-                for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
+                for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {                    
+                    const beforeScroll = getSnapshot();
+                    beforeScroll.phase = 'pre';
+                    beforeScroll.iter = iteration;
+                    
                     const previousScrollTop = container.scrollTop;
                     container.scrollTop += SCROLL_INCREMENT;
                     
@@ -1242,16 +1270,34 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                         break;
                     }
                     
-                    // Wait for: rAF → style/layout → RO loops → IO (just before paint)
+                    const afterAssign = { st: container.scrollTop, phase: 'post-assign', iter: iteration };
+                    
                     await waitForSettledFrame();
                     
-                    const currentTopItemIndex = getTopVisibleItemIndex();
+                    const afterSettle = getSnapshot();
+                    afterSettle.phase = 'settled';
+                    afterSettle.iter = iteration;
                     
-                    // Check for backward movement (flashing) - visually top item index should never decrease
+                    const currentTopItemIndex = getTopVisibleItemIndex();
+                    afterSettle.topIdx = currentTopItemIndex;
+                    
+                    history.push({ beforeScroll, afterAssign, afterSettle });
+                    if (history.length > HISTORY_SIZE) history.shift();
+                    
                     if (previousTopItemIndex !== null && currentTopItemIndex !== null && currentTopItemIndex < previousTopItemIndex) {
+                        // Format history as compact string
+                        const histStr = history.map(h => {
+                            const b = h.beforeScroll;
+                            const a = h.afterSettle;
+                            return `i${b.iter}:[st:${b.st}->${h.afterAssign.st}->${a.st}, items:${b.min}..${b.max}(${b.cnt})->${a.min}..${a.max}(${a.cnt}), sb:${b.sbH}->${a.sbH}, sa:${b.saH}->${a.saH}, top:${a.topIdx}]`;
+                        }).join(' | ');
+                        
+                        const scale = container.offsetHeight === 0 ? 1 : 
+                            Math.round(container.getBoundingClientRect().height / container.offsetHeight * 1000) / 1000;
+                        
                         done({
                             success: false,
-                            error: `Flashing detected at iteration ${iteration}: top visible item went from ${previousTopItemIndex} to ${currentTopItemIndex}`
+                            error: `Flashing at iter ${iteration}: ${previousTopItemIndex}->${currentTopItemIndex}. scale=${scale}, offsetH=${container.offsetHeight}. HISTORY: ${histStr}`
                         });
                         return;
                     }

@@ -6,7 +6,6 @@ import { DotNet } from '@microsoft/dotnet-js-interop';
 export const Virtualize = {
   init,
   dispose,
-  adjustScrollPosition,
   scrollToBottom,
 };
 
@@ -31,18 +30,19 @@ function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | 
   return findClosestScrollContainer(element.parentElement);
 }
 
-function getScaleFactor(element: HTMLElement): number {
+function getScaleFactor(spacerBefore: HTMLElement, spacerAfter: HTMLElement): number {
   // Use the ratio of getBoundingClientRect().height to offsetHeight to detect
   // cumulative CSS scaling (transform, zoom, scale) from all ancestors.
-  // Note: Both values exclude margin, so this ratio is margin-safe.
-  if (element.offsetHeight === 0) {
+  // Both values exclude margin, so this ratio is margin-safe.
+  // Use whichever spacer has height; if both are zero, no scrolling is possible.
+  const el = spacerBefore.offsetHeight > 0 ? spacerBefore
+    : spacerAfter.offsetHeight > 0 ? spacerAfter
+    : null;
+  if (!el) {
     return 1;
   }
-  const scale = element.getBoundingClientRect().height / element.offsetHeight;
-  if (!Number.isFinite(scale) || scale <= 0) {
-    return 1;
-  }
-  return scale;
+  const scale = el.getBoundingClientRect().height / el.offsetHeight;
+  return (Number.isFinite(scale) && scale > 0) ? scale : 1;
 }
 
 interface MeasurementResult {
@@ -50,11 +50,14 @@ interface MeasurementResult {
   scaleFactor: number;
 }
 
-function measureRenderedItems(spacer: HTMLElement): MeasurementResult {
-  // All siblings (spacers and items) share the same ancestors
-  const scaleFactor = getScaleFactor(spacer);
+function measureRenderedItems(spacerBefore: HTMLElement, spacerAfter: HTMLElement): MeasurementResult {
+  // Compute scale from whichever spacer has non-zero offsetHeight, since a spacer
+  // with height: 0px cannot produce a meaningful getBoundingClientRect/offsetHeight ratio.
+  // At the start of the list spacerBefore is 0px but spacerAfter is not, and vice versa
+  // at the end. Both are siblings sharing the same CSS transform chain.
+  const scaleFactor = getScaleFactor(spacerBefore, spacerAfter);
 
-  const container = spacer.parentElement;
+  const container = spacerBefore.parentElement;
   if (!container) {
     return { heights: [], scaleFactor };
   }
@@ -96,8 +99,26 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   intersectionObserver.observe(spacerBefore);
   intersectionObserver.observe(spacerAfter);
 
+  let snapToBottom = false;
+
   const mutationObserverBefore = createSpacerMutationObserver(spacerBefore);
   const mutationObserverAfter = createSpacerMutationObserver(spacerAfter);
+
+  // Observe the entire container for any DOM changes (child additions, attribute changes on items, etc.)
+  // so that when snapToBottom is set, we re-snap after every Blazor render cycle, not just spacer changes.
+  const containerObserver = new MutationObserver((): void => {
+    if (snapToBottom) {
+      const el = scrollContainer || document.documentElement;
+      if (spacerAfter.offsetHeight === 0) {
+        el.scrollTop = el.scrollHeight;
+      } else {
+        snapToBottom = false;
+      }
+    }
+  });
+  if (spacerBefore.parentElement) {
+    containerObserver.observe(spacerBefore.parentElement, { childList: true, subtree: true, attributes: true });
+  }
 
   let pendingCallbacks: Map<Element, IntersectionObserverEntry> = new Map();
   let callbackTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -107,8 +128,12 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     intersectionObserver,
     mutationObserverBefore,
     mutationObserverAfter,
+    containerObserver,
     scrollContainer,
+    setSnapToBottom(value: boolean) { snapToBottom = value; },
     onDispose: () => {
+      snapToBottom = false;
+      containerObserver.disconnect();
       if (callbackTimeout) {
         clearTimeout(callbackTimeout);
         callbackTimeout = null;
@@ -164,7 +189,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       return;
     }
 
-    const { heights: measurements, scaleFactor } = measureRenderedItems(spacerBefore);
+    const { heights: measurements, scaleFactor } = measureRenderedItems(spacerBefore, spacerAfter);
 
     // To compute the ItemSize, work out the separation between the two spacers. We can't just measure an individual element
     // because each conceptual item could be made from multiple elements. Using getBoundingClientRect allows for the size to be
@@ -201,21 +226,13 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   }
 }
 
-function adjustScrollPosition(dotNetHelper: DotNet.DotNetObject, delta: number): void {
-  const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
-  const entry = observersByDotNetObjectId[id];
-  if (entry) {
-    const el = entry.scrollContainer || document.documentElement;
-    el.scrollTop += delta;
-  }
-}
-
 function scrollToBottom(dotNetHelper: DotNet.DotNetObject): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   const entry = observersByDotNetObjectId[id];
   if (entry) {
     const el = entry.scrollContainer || document.documentElement;
     el.scrollTop = el.scrollHeight;
+    entry.setSnapToBottom?.(true);
   }
 }
 

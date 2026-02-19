@@ -63,10 +63,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private int _measuredItemCount;
 
-    // Scroll compensation applied after DOM render when measurements correct height estimates.
-    private float _pendingScrollDelta;
-
-    // Re-scroll to bottom after measurements correct height estimates.
     private bool _pendingScrollToBottom;
 
     [Inject]
@@ -222,22 +218,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             await _jsInterop.InitializeAsync(_spacerBefore, _spacerAfter);
         }
 
-        // Apply any pending scroll compensation from measurement-induced height changes.
-        // This must happen after the DOM renders so the spacer heights are up to date.
-        if (_jsInterop != null)
+        if (_pendingScrollToBottom && _jsInterop is not null)
         {
-            if (_pendingScrollToBottom)
-            {
-                _pendingScrollToBottom = false;
-                _pendingScrollDelta = 0;
-                await _jsInterop.ScrollToBottomAsync();
-            }
-            else if (MathF.Abs(_pendingScrollDelta) > 0.5f)
-            {
-                var delta = _pendingScrollDelta;
-                _pendingScrollDelta = 0;
-                await _jsInterop.AdjustScrollPositionAsync(delta);
-            }
+            _pendingScrollToBottom = false;
+            await _jsInterop.ScrollToBottomAsync();
         }
     }
 
@@ -352,21 +336,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         return true;
     }
 
-    private void AccumulateScrollCompensation(float oldAvgHeight, float newAvgHeight, int itemsBefore)
-    {
-        var heightDelta = newAvgHeight - oldAvgHeight;
-        if (MathF.Abs(heightDelta) > 0.001f && itemsBefore > 0)
-        {
-            _pendingScrollDelta += itemsBefore * heightDelta;
-        }
-    }
-
     void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, float[]? itemHeights)
     {
-        var oldAvgHeight = GetItemHeight();
         ProcessMeasurements(itemHeights);
-
-        var newAvgHeight = GetItemHeight();
 
         CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
 
@@ -376,17 +348,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             itemsBefore--;
         }
 
-        AccumulateScrollCompensation(oldAvgHeight, newAvgHeight, itemsBefore);
-
         UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
     }
 
     void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, float[]? itemHeights)
     {
-        var oldAvgHeight = GetItemHeight();
         var hadNewMeasurements = ProcessMeasurements(itemHeights);
-
-        var newAvgHeight = GetItemHeight();
 
         CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
 
@@ -398,15 +365,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             itemsBefore++;
         }
 
-        // At list end with new measurements: re-scroll to bottom for convergence.
-        // Mid-list: use delta compensation to keep position stable.
+        // When we're at the very bottom and new measurements arrived,
+        // scroll to bottom so the viewport stays pinned while items converge.
         if (itemsAfter == 0 && hadNewMeasurements)
         {
             _pendingScrollToBottom = true;
-        }
-        else if (MathF.Abs(newAvgHeight - oldAvgHeight) > 0.001f)
-        {
-            AccumulateScrollCompensation(oldAvgHeight, newAvgHeight, itemsBefore);
         }
 
         UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
