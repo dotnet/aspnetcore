@@ -23,6 +23,7 @@ internal class DemoService(IOptions<ValidationOptions> options, ILogger<DemoServ
     {
         await RunValidations(CultureInfo.GetCultureInfo("en-US"));
         await RunValidations(CultureInfo.GetCultureInfo("es-MX"));
+        await RunValidations(CultureInfo.GetCultureInfo("cs-CZ"));
 
         lifetime.StopApplication();
 

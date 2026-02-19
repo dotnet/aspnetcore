@@ -5,7 +5,6 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation.Localization;
 using Microsoft.Extensions.Validation.Localization.Attributes;
@@ -72,11 +71,12 @@ public class AddValidationLocalizationTests
 
         Assert.NotNull(options.ErrorMessageProvider);
 
-        options.ErrorMessageProvider!(new ErrorMessageLocalizationContext
+        options.ErrorMessageProvider!(new ErrorMessageProviderContext
         {
             Attribute = new System.ComponentModel.DataAnnotations.RequiredAttribute(),
             DisplayName = "Test",
             MemberName = "Test",
+            DeclaringType = null,
             Services = provider
         });
 
@@ -102,7 +102,7 @@ public class AddValidationLocalizationTests
         var provider = services.BuildServiceProvider();
         var options = provider.GetRequiredService<IOptions<ValidationOptions>>().Value;
 
-        options.ErrorMessageProvider!(new ErrorMessageLocalizationContext
+        options.ErrorMessageProvider!(new ErrorMessageProviderContext
         {
             Attribute = new System.ComponentModel.DataAnnotations.RequiredAttribute(),
             DisplayName = "Test",
@@ -130,11 +130,12 @@ public class AddValidationLocalizationTests
 
         Assert.NotNull(locOptions.ErrorMessageKeySelector);
 
-        var key = locOptions.ErrorMessageKeySelector(new ErrorMessageLocalizationContext
+        var key = locOptions.ErrorMessageKeySelector(new ErrorMessageProviderContext
         {
             Attribute = new System.ComponentModel.DataAnnotations.RequiredAttribute(),
             DisplayName = "Test",
             MemberName = "Test",
+            DeclaringType = null,
             Services = provider
         });
 
@@ -149,24 +150,25 @@ public class AddValidationLocalizationTests
         services.AddValidation();
         services.Configure<ValidationOptions>(options =>
         {
-            options.ErrorMessageProvider = _ => "Pre-existing";
-            options.DisplayNameProvider = _ => "Pre-existing display";
+            options.ErrorMessageProvider = (in _) => "Pre-existing";
+            options.DisplayNameProvider = (in _) => "Pre-existing display";
         });
         services.AddValidationLocalization();
 
         var provider = services.BuildServiceProvider();
         var options = provider.GetRequiredService<IOptions<ValidationOptions>>().Value;
 
-        var errorResult = options.ErrorMessageProvider!(new ErrorMessageLocalizationContext
+        var errorResult = options.ErrorMessageProvider!(new ErrorMessageProviderContext
         {
             Attribute = new System.ComponentModel.DataAnnotations.RequiredAttribute(),
             DisplayName = "Test",
             MemberName = "Test",
+            DeclaringType = null,
             Services = provider
         });
         Assert.Equal("Pre-existing", errorResult);
 
-        var displayResult = options.DisplayNameProvider!(new DisplayNameLocalizationContext
+        var displayResult = options.DisplayNameProvider!(new DisplayNameProviderContext
         {
             Name = "Test",
             Services = provider
@@ -191,19 +193,17 @@ public class AddValidationLocalizationTests
 
     private class SharedResource { }
 
-    private class TrackingLocalizerFactory : IStringLocalizerFactory
+    private class TrackingLocalizerFactory(Action<Type> onCreateByType) : IStringLocalizerFactory
     {
-        private readonly Action<Type> _onCreateByType;
-
-        public TrackingLocalizerFactory(Action<Type> onCreateByType) => _onCreateByType = onCreateByType;
+        private readonly Action<Type> _onCreateByType = onCreateByType;
 
         public IStringLocalizer Create(Type resourceSource)
         {
             _onCreateByType(resourceSource);
-            return new TestStringLocalizer(new Dictionary<string, string>());
+            return new TestStringLocalizer([]);
         }
 
         public IStringLocalizer Create(string baseName, string location)
-            => new TestStringLocalizer(new Dictionary<string, string>());
+            => new TestStringLocalizer([]);
     }
 }
