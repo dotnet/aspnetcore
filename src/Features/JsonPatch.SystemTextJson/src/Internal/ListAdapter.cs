@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Helpers;
 using Microsoft.Extensions.Internal;
 
@@ -147,32 +148,51 @@ internal class ListAdapter : IAdapter
 
     public virtual bool TryTraverse(object target, string segment, JsonSerializerOptions serializerOptions, out object value, out string errorMessage)
     {
-        throw new NotImplementedException();
-        var list = target as IList;
-        if (list == null)
+        if (target is IList list)
         {
-            value = null;
+            if (!int.TryParse(segment, out var index))
+            {
+                value = null;
+                errorMessage = Resources.FormatInvalidIndexValue(segment);
+                return false;
+            }
+
+            if (index < 0 || index >= list.Count)
+            {
+                value = null;
+                errorMessage = Resources.FormatIndexOutOfBounds(segment);
+                return false;
+            }
+
+            value = list[index];
             errorMessage = null;
-            return false;
+            return true;
         }
 
-        if (!int.TryParse(segment, out var index))
+        if (target is IList<JsonNode> jsonList)
         {
-            value = null;
-            errorMessage = Resources.FormatInvalidIndexValue(segment);
-            return false;
+            if (!int.TryParse(segment, out var index))
+            {
+                value = null;
+                errorMessage = Resources.FormatInvalidIndexValue(segment);
+                return false;
+            }
+
+            if (index < 0 || index >= jsonList.Count)
+            {
+                value = null;
+                errorMessage = Resources.FormatIndexOutOfBounds(segment);
+                return false;
+            }
+
+            value = jsonList[index];
+            errorMessage = null;
+            return true;
         }
 
-        if (index < 0 || index >= list.Count)
-        {
-            value = null;
-            errorMessage = Resources.FormatIndexOutOfBounds(segment);
-            return false;
-        }
-
-        value = list[index];
+        value = null;
         errorMessage = null;
-        return true;
+        return false;
     }
 
     protected virtual bool TryConvertValue(object originalValue, Type listTypeArgument, string segment, out object convertedValue, out string errorMessage)
