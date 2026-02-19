@@ -23,41 +23,34 @@ internal sealed class ValidationLocalizationSetup(
     {
         var locOptions = localizationOptions.Value;
         var localizerProvider = locOptions.LocalizerProvider;
-        var keySelector = locOptions.ErrorMessageKeySelector;
+        var keyProvider = locOptions.ErrorMessageKeyProvider;
 
         options.DisplayNameProvider ??= GetDisplayName;
         options.ErrorMessageProvider ??= GetErrorMessage;
 
         string? GetDisplayName(in DisplayNameProviderContext context)
         {
-            var declaringType = context.DeclaringType ?? typeof(object);
-            var localizer = localizerProvider is not null
-                ? localizerProvider(declaringType, stringLocalizerFactory)
-                : stringLocalizerFactory.Create(declaringType);
-
+            var localizer = GetLocalizer(context.DeclaringType);
             var localized = localizer[context.Name];
             return localized.ResourceNotFound ? null : localized.Value;
         }
 
         string? GetErrorMessage(in ErrorMessageProviderContext context)
         {
-            // Create localizer: per-type or shared, depending on config.
-            // IStringLocalizerFactory is responsible for caching IStringLocalizer instances if needed.
-            var declaringType = context.DeclaringType ?? typeof(object);
-            var localizer = localizerProvider is not null
-                ? localizerProvider(declaringType, stringLocalizerFactory)
-                : stringLocalizerFactory.Create(declaringType);
-
             var lookupKey = !string.IsNullOrEmpty(context.Attribute.ErrorMessage)
                 ? context.Attribute.ErrorMessage
-                : keySelector?.Invoke(context);
+                : keyProvider?.Invoke(context);
 
             if (lookupKey is null)
             {
                 return null;
             }
 
+            // Create localizer: per-type or shared, depending on config.
+            // IStringLocalizerFactory is responsible for caching IStringLocalizer instances if needed.
+            var localizer = GetLocalizer(context.DeclaringType);
             var localizedTemplate = localizer[lookupKey];
+
             if (localizedTemplate.ResourceNotFound)
             {
                 return null;
@@ -70,6 +63,14 @@ internal sealed class ValidationLocalizationSetup(
 
             return attributeFormatter?.FormatErrorMessage(CultureInfo.CurrentCulture, localizedTemplate, displayName)
                 ?? string.Format(CultureInfo.CurrentCulture, localizedTemplate, displayName);
+        }
+
+        IStringLocalizer GetLocalizer(Type? type)
+        {
+            var resourceSource = type ?? typeof(object);
+            return localizerProvider is not null
+                ? localizerProvider(resourceSource, stringLocalizerFactory)
+                : stringLocalizerFactory.Create(resourceSource);
         }
     }
 }
