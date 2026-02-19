@@ -30,7 +30,8 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         PropertyType = propertyType;
         Name = name;
 
-        _propertyInfo = DeclaringType.GetProperty(Name, PropertyType)
+        // TODO: Replace this with inheritance chain walk to avoid AmbigousMatchReflection exception in ceratin cases (property hiding)
+        _propertyInfo = DeclaringType.GetProperty(Name)
             ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
     }
 

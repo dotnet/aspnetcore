@@ -11,33 +11,27 @@ namespace Microsoft.Extensions.Validation;
 /// <summary>
 /// Contains validation information for a parameter.
 /// </summary>
+/// <remarks>
+/// Creates a new instance of <see cref="ValidatableParameterInfo"/>.
+/// </remarks>
+/// <param name="parameterType">The <see cref="Type"/> associated with the parameter.</param>
+/// <param name="name">The parameter name.</param>
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class ValidatableParameterInfo : IValidatableInfo
+public abstract class ValidatableParameterInfo(
+    Type parameterType,
+    string name) : IValidatableInfo
 {
     private RequiredAttribute? _requiredAttribute;
 
     /// <summary>
-    /// Creates a new instance of <see cref="ValidatableParameterInfo"/>.
-    /// </summary>
-    /// <param name="parameterType">The <see cref="Type"/> associated with the parameter.</param>
-    /// <param name="name">The parameter name.</param>
-    protected ValidatableParameterInfo(
-        Type parameterType,
-        string name)
-    {
-        ParameterType = parameterType;
-        Name = name;
-    }
-
-    /// <summary>
     /// Gets the parameter type.
     /// </summary>
-    internal Type ParameterType { get; }
+    internal Type ParameterType { get; } = parameterType;
 
     /// <summary>
     /// Gets the parameter name.
     /// </summary>
-    internal string Name { get; }
+    internal string Name { get; } = name;
 
     /// <summary>
     /// Gets the validation attributes for this parameter.
