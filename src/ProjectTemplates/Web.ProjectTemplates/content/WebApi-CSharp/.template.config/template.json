@@ -93,6 +93,21 @@
             "Program.MinimalAPIs.WindowsOrNoAuth.cs",
             "Program.MinimalAPIs.OrgOrIndividualB2CAuth.cs"
           ]
+        },
+        {
+          "condition": "(!EnableOpenAPI)",
+          "exclude": [
+            "Company.WebApplication1.http"
+          ],
+          "rename": {
+            "Company.WebApplication1.NoOpenAPI.http": "Company.WebApplication1.http"
+          }
+        },
+        {
+          "condition": "(EnableOpenAPI)",
+          "exclude": [
+            "Company.WebApplication1.NoOpenAPI.http"
+          ]
         }
       ]
     }
@@ -418,23 +433,6 @@
     "UsingMinimalAPIs": {
       "type": "computed",
       "value": "(!UsingControllers)"
-    }
-  },
-  "SpecialCustomOperations": {
-    "**/*.http": {
-      "operations": [
-        {
-          "type": "conditional",
-          "configuration": {
-            "if": ["#if"],
-            "else": ["#else"],
-            "elseif": ["#elseif", "#elif"],
-            "endif": ["#endif"],
-            "trim": true,
-            "wholeLine": true
-          }
-        }
-      ]
     }
   },
   "primaryOutputs": [
