@@ -2,35 +2,37 @@
 abstract Microsoft.Extensions.Validation.ValidatableParameterInfo.GetDisplayAttribute() -> System.ComponentModel.DataAnnotations.DisplayAttribute?
 abstract Microsoft.Extensions.Validation.ValidatablePropertyInfo.GetDisplayAttribute() -> System.ComponentModel.DataAnnotations.DisplayAttribute?
 abstract Microsoft.Extensions.Validation.ValidatableTypeInfo.GetDisplayAttribute() -> System.ComponentModel.DataAnnotations.DisplayAttribute?
-Microsoft.Extensions.Validation.Localization.DisplayNameLocalizationContext
-Microsoft.Extensions.Validation.Localization.DisplayNameLocalizationContext.DeclaringType.get -> System.Type?
-Microsoft.Extensions.Validation.Localization.DisplayNameLocalizationContext.DeclaringType.init -> void
-Microsoft.Extensions.Validation.Localization.DisplayNameLocalizationContext.DisplayNameLocalizationContext() -> void
-Microsoft.Extensions.Validation.Localization.DisplayNameLocalizationContext.Name.get -> string!
-Microsoft.Extensions.Validation.Localization.DisplayNameLocalizationContext.Name.init -> void
-Microsoft.Extensions.Validation.Localization.DisplayNameLocalizationContext.Services.get -> System.IServiceProvider!
-Microsoft.Extensions.Validation.Localization.DisplayNameLocalizationContext.Services.init -> void
-Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext
-Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.Attribute.get -> System.ComponentModel.DataAnnotations.ValidationAttribute!
-Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.Attribute.init -> void
-Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.DeclaringType.get -> System.Type?
-Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.DeclaringType.init -> void
-Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.DisplayName.get -> string?
-Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.DisplayName.init -> void
-Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.ErrorMessageLocalizationContext() -> void
-Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.MemberName.get -> string!
-Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.MemberName.init -> void
-Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.Services.get -> System.IServiceProvider!
-Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.Services.init -> void
+Microsoft.Extensions.Validation.Localization.DisplayNameProvider
+Microsoft.Extensions.Validation.Localization.DisplayNameProviderContext
+Microsoft.Extensions.Validation.Localization.DisplayNameProviderContext.DeclaringType.get -> System.Type?
+Microsoft.Extensions.Validation.Localization.DisplayNameProviderContext.DeclaringType.init -> void
+Microsoft.Extensions.Validation.Localization.DisplayNameProviderContext.DisplayNameProviderContext() -> void
+Microsoft.Extensions.Validation.Localization.DisplayNameProviderContext.Name.get -> string!
+Microsoft.Extensions.Validation.Localization.DisplayNameProviderContext.Name.init -> void
+Microsoft.Extensions.Validation.Localization.DisplayNameProviderContext.Services.get -> System.IServiceProvider!
+Microsoft.Extensions.Validation.Localization.DisplayNameProviderContext.Services.init -> void
 *REMOVED*Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, string! displayName) -> void
+Microsoft.Extensions.Validation.Localization.ErrorMessageProvider
+Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext
+Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.Attribute.get -> System.ComponentModel.DataAnnotations.ValidationAttribute!
+Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.Attribute.init -> void
+Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.DeclaringType.get -> System.Type?
+Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.DeclaringType.init -> void
+Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.DisplayName.get -> string?
+Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.DisplayName.init -> void
+Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.ErrorMessageProviderContext() -> void
+Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.MemberName.get -> string!
+Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.MemberName.init -> void
+Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.Services.get -> System.IServiceProvider!
+Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.Services.init -> void
 Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name) -> void
 *REMOVED*Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, string! displayName) -> void
 Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name) -> void
-Microsoft.Extensions.Validation.ValidateContext.DisplayNameProvider.get -> System.Func<Microsoft.Extensions.Validation.Localization.DisplayNameLocalizationContext, string?>?
+Microsoft.Extensions.Validation.ValidateContext.DisplayNameProvider.get -> Microsoft.Extensions.Validation.Localization.DisplayNameProvider?
 Microsoft.Extensions.Validation.ValidateContext.DisplayNameProvider.set -> void
-Microsoft.Extensions.Validation.ValidateContext.ErrorMessageProvider.get -> System.Func<Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext, string?>?
+Microsoft.Extensions.Validation.ValidateContext.ErrorMessageProvider.get -> Microsoft.Extensions.Validation.Localization.ErrorMessageProvider?
 Microsoft.Extensions.Validation.ValidateContext.ErrorMessageProvider.set -> void
-Microsoft.Extensions.Validation.ValidationOptions.DisplayNameProvider.get -> System.Func<Microsoft.Extensions.Validation.Localization.DisplayNameLocalizationContext, string?>?
+Microsoft.Extensions.Validation.ValidationOptions.DisplayNameProvider.get -> Microsoft.Extensions.Validation.Localization.DisplayNameProvider?
 Microsoft.Extensions.Validation.ValidationOptions.DisplayNameProvider.set -> void
-Microsoft.Extensions.Validation.ValidationOptions.ErrorMessageProvider.get -> System.Func<Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext, string?>?
+Microsoft.Extensions.Validation.ValidationOptions.ErrorMessageProvider.get -> Microsoft.Extensions.Validation.Localization.ErrorMessageProvider?
 Microsoft.Extensions.Validation.ValidationOptions.ErrorMessageProvider.set -> void

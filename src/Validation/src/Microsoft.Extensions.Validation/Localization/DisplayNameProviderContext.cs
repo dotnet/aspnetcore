@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Validation.Localization;
 /// Provides context to the <see cref="ValidationOptions.DisplayNameProvider"/> delegate
 /// for resolving localized display names for properties and parameters.
 /// </summary>
-public readonly struct DisplayNameLocalizationContext
+public readonly struct DisplayNameProviderContext
 {
     /// <summary>
     /// Gets the type that declares the member being validated.

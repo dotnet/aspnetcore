@@ -40,11 +40,11 @@ public class ValidationOptions
     /// If the delegate returns a non-null string, that string is used as the display name.
     /// If it returns <see langword="null"/>, the value of <see cref="DisplayAttribute.Name"/> or the member name is used.
     /// </summary>
-    public Func<DisplayNameLocalizationContext, string?>? DisplayNameProvider { get; set; }
+    public DisplayNameProvider? DisplayNameProvider { get; set; }
 
     /// <summary>
     /// Gets or sets the delegate that resolves error messages for validation attributes.
-    /// When set, this delegate is called for every validation attribute that produces an erro r,
+    /// When set, this delegate is called for every validation attribute that produces an error,
     /// <b>unless</b> the attribute has <see cref="ValidationAttribute.ErrorMessageResourceType"/>
     /// set (which indicates the attribute handles its own resource-based localization).
     /// </summary>
@@ -75,7 +75,7 @@ public class ValidationOptions
     /// </code>
     /// </example>
     /// </remarks>
-    public Func<ErrorMessageLocalizationContext, string?>? ErrorMessageProvider { get; set; }
+    public ErrorMessageProvider? ErrorMessageProvider { get; set; }
 
     /// <summary>
     /// Attempts to get validation information for the specified type.

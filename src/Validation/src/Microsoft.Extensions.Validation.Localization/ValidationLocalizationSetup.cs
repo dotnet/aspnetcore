@@ -28,7 +28,7 @@ internal sealed class ValidationLocalizationSetup(
         options.DisplayNameProvider ??= GetDisplayName;
         options.ErrorMessageProvider ??= GetErrorMessage;
 
-        string? GetDisplayName(DisplayNameLocalizationContext context)
+        string? GetDisplayName(in DisplayNameProviderContext context)
         {
             var declaringType = context.DeclaringType ?? typeof(object);
             var localizer = localizerProvider is not null
@@ -39,10 +39,10 @@ internal sealed class ValidationLocalizationSetup(
             return localized.ResourceNotFound ? null : localized.Value;
         }
 
-        string? GetErrorMessage(ErrorMessageLocalizationContext context)
+        string? GetErrorMessage(in ErrorMessageProviderContext context)
         {
             // Create localizer: per-type or shared, depending on config.
-            // Caching of IStringLocalizer instances is the responsibility of the IStringLocalizerFactory.
+            // IStringLocalizerFactory is responsible for caching IStringLocalizer instances if needed.
             var declaringType = context.DeclaringType ?? typeof(object);
             var localizer = localizerProvider is not null
                 ? localizerProvider(declaringType, stringLocalizerFactory)
@@ -57,11 +57,10 @@ internal sealed class ValidationLocalizationSetup(
                 return null;
             }
 
-            // Look up translation
             var localizedTemplate = localizer[lookupKey];
             if (localizedTemplate.ResourceNotFound)
             {
-                return null; // no translation → fall through to default
+                return null;
             }
 
             var displayName = context.DisplayName ?? context.MemberName;

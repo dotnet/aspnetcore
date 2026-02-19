@@ -53,11 +53,11 @@ public sealed class ValidationLocalizationOptions
     /// </code>
     /// </example>
     /// <para>
-    /// The delegate receives an <see cref="ErrorMessageLocalizationContext"/> which contains the
+    /// The delegate receives an <see cref="ErrorMessageProviderContext"/> which contains the
     /// attribute instance, the default error message template, the display name, and
     /// other contextual information. Return <see langword="null"/> to skip localization
     /// for the particular attribute.
     /// </para>
     /// </remarks>
-    public Func<ErrorMessageLocalizationContext, string?>? ErrorMessageKeySelector { get; set; }
+    public Func<ErrorMessageProviderContext, string?>? ErrorMessageKeySelector { get; set; }
 }

@@ -11,26 +11,18 @@ namespace Microsoft.Extensions.Validation;
 /// <summary>
 /// Contains validation information for a type.
 /// </summary>
+/// <remarks>
+/// Creates a new instance of <see cref="ValidatableTypeInfo"/>.
+/// </remarks>
+/// <param name="type">The type being validated.</param>
+/// <param name="members">The members that can be validated.</param>
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class ValidatableTypeInfo : IValidatableInfo
+public abstract class ValidatableTypeInfo(
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type,
+    IReadOnlyList<ValidatablePropertyInfo> members) : IValidatableInfo
 {
-    private readonly int _membersCount;
-    private readonly List<Type> _superTypes;
-
-    /// <summary>
-    /// Creates a new instance of <see cref="ValidatableTypeInfo"/>.
-    /// </summary>
-    /// <param name="type">The type being validated.</param>
-    /// <param name="members">The members that can be validated.</param>
-    protected ValidatableTypeInfo(
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type,
-        IReadOnlyList<ValidatablePropertyInfo> members)
-    {
-        Type = type;
-        Members = members;
-        _membersCount = members.Count;
-        _superTypes = type.GetAllImplementedTypes();
-    }
+    private readonly int _membersCount = members.Count;
+    private readonly List<Type> _superTypes = type.GetAllImplementedTypes();
 
     /// <summary>
     /// Gets the validation attributes for this member.
@@ -47,12 +39,12 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     /// <summary>
     /// The type being validated.
     /// </summary>
-    internal Type Type { get; }
+    internal Type Type { get; } = type;
 
     /// <summary>
     /// The members that can be validated.
     /// </summary>
-    internal IReadOnlyList<ValidatablePropertyInfo> Members { get; }
+    internal IReadOnlyList<ValidatablePropertyInfo> Members { get; } = members;
 
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
