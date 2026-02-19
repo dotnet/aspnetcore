@@ -147,6 +147,7 @@ internal class ListAdapter : IAdapter
 
     public virtual bool TryTraverse(object target, string segment, JsonSerializerOptions serializerOptions, out object value, out string errorMessage)
     {
+        throw new NotImplementedException();
         var list = target as IList;
         if (list == null)
         {
