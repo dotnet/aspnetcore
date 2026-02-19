@@ -1137,13 +1137,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData(100, 100, 200)]  // CSS scale: 2
     [InlineData(75, 75, 75)]     // combined downscale: 0.75^3 ≈ 0.42x
     [InlineData(150, 150, 150)]  // combined upscale: 1.5^3 = 3.375x
-    public void VariableHeightAsync_CanScrollWithoutFlashing(int transformScalePercent, int cssZoomPercent, int cssScalePercent)
+    public virtual void VariableHeightAsync_CanScrollWithoutFlashing(int transformScalePercent, int cssZoomPercent, int cssScalePercent)
     {
         Browser.MountTestComponent<VirtualizationVariableHeightAsync>();
 
         var container = Browser.Exists(By.Id("async-variable-container"));
-        var finishLoadingButton = Browser.Exists(By.Id("finish-loading"));
         var js = (IJavaScriptExecutor)Browser;
+        Browser.Exists(By.Id("toggle-autoload")).Click();
 
         if (transformScalePercent != 100)
         {
@@ -1164,73 +1164,114 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         setCount200Button.Click();
         Browser.Exists(By.Id("refresh-data")).Click();
 
-        finishLoadingButton.Click();
         Browser.True(() => GetElementCount(container, ".async-variable-item") > 0);
-        int previousMinIndex = -1;
-        int maxIndexSeen = -1;
-        const int scrollIncrement = 100;
-        const int maxIterations = 300;
 
-        // JS to get min visible item index (avoids stale element issues)
-        const string getMinIndexScript = @"
-            const items = arguments[0].querySelectorAll('.async-variable-item');
-            if (items.length === 0) return -1;
-            let minIndex = Infinity;
-            for (const item of items) {
-                const match = item.id.match(/async-variable-item-(\d+)/);
-                if (match) minIndex = Math.min(minIndex, parseInt(match[1], 10));
-            }
-            return minIndex === Infinity ? -1 : minIndex;";
+        // Check that top visible item index never goes backward, which would indicate visible "flashing".
+        // Uses IntersectionObserver as a deterministic frame-boundary signal (fires after layout, before paint)
+        // instead of arbitrary setTimeout delays. Uses getBoundingClientRect with a tolerance to avoid
+        // sub-pixel boundary flicker where items barely peeking into the viewport toggle visibility.
+        const string detectFlashingScript = @"
+            var done = arguments[0];
+            (async () => {
+                const SCROLL_INCREMENT = 100;
+                const MAX_ITERATIONS = 300;
+                const VISIBILITY_TOLERANCE = 2; // px - ignore sub-pixel slivers at container edge
+                const container = document.querySelector('#async-variable-container');
+                
+                if (!container) {
+                    done({ success: false, error: 'Container not found' });
+                    return;
+                }
+                
+                // Get VISUALLY top item using getBoundingClientRect (accounts for CSS transforms).
+                // Requires the item to overlap the viewport by at least VISIBILITY_TOLERANCE px,
+                // so sub-pixel edge slivers don't cause false backward-jump detection.
+                const getTopVisibleItemIndex = () => {
+                    const items = container.querySelectorAll('.async-variable-item');
+                    if (items.length === 0) return null;
+                    const containerRect = container.getBoundingClientRect();
+                    
+                    for (const item of items) {
+                        const itemRect = item.getBoundingClientRect();
+                        if (itemRect.bottom > containerRect.top + VISIBILITY_TOLERANCE &&
+                            itemRect.top < containerRect.bottom - VISIBILITY_TOLERANCE) {
+                            const match = item.id.match(/async-variable-item-(\d+)/);
+                            return match ? parseInt(match[1], 10) : null;
+                        }
+                    }
+                    return null;
+                };
+                
+                const getMaxIndex = () => {
+                    const items = container.querySelectorAll('.async-variable-item');
+                    let maxIdx = -1;
+                    for (const item of items) {
+                        const match = item.id.match(/async-variable-item-(\d+)/);
+                        if (match) maxIdx = Math.max(maxIdx, parseInt(match[1], 10));
+                    }
+                    return maxIdx;
+                };
+                
+                // Wait for the rendering pipeline to settle after a scroll.
+                // Pipeline: scroll → rAF → style/layout → ResizeObserver → IntersectionObserver → paint.
+                // IO fires AFTER all layout work completes but BEFORE paint, so getBoundingClientRect
+                // called in the IO callback reflects exactly what the user will see.
+                // IO always delivers an initial entry for newly observed elements, guaranteeing
+                // the callback fires even if no intersection changed.
+                const waitForSettledFrame = () => {
+                    return new Promise(resolve => {
+                        requestAnimationFrame(() => {
+                            const target = container.querySelector('.async-variable-item') || container;
+                            const io = new IntersectionObserver(() => {
+                                io.disconnect();
+                                resolve();
+                            }, { root: container, threshold: [0, 1] });
+                            io.observe(target);
+                        });
+                    });
+                };
+                
+                let previousTopItemIndex = null;
+                let maxIndexSeen = -1;
+                
+                for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
+                    const previousScrollTop = container.scrollTop;
+                    container.scrollTop += SCROLL_INCREMENT;
+                    
+                    if (container.scrollTop === previousScrollTop) {
+                        break;
+                    }
+                    
+                    // Wait for: rAF → style/layout → RO loops → IO (just before paint)
+                    await waitForSettledFrame();
+                    
+                    const currentTopItemIndex = getTopVisibleItemIndex();
+                    
+                    // Check for backward movement (flashing) - visually top item index should never decrease
+                    if (previousTopItemIndex !== null && currentTopItemIndex !== null && currentTopItemIndex < previousTopItemIndex) {
+                        done({
+                            success: false,
+                            error: `Flashing detected at iteration ${iteration}: top visible item went from ${previousTopItemIndex} to ${currentTopItemIndex}`
+                        });
+                        return;
+                    }
+                    
+                    if (currentTopItemIndex !== null) {
+                        previousTopItemIndex = currentTopItemIndex;
+                    }
+                    maxIndexSeen = Math.max(maxIndexSeen, getMaxIndex());
+                }
+                
+                done({ success: true, maxIndexSeen });
+            })();";
 
-        const string getMaxIndexScript = @"
-            const items = arguments[0].querySelectorAll('.async-variable-item');
-            if (items.length === 0) return -1;
-            let maxIndex = -1;
-            for (const item of items) {
-                const match = item.id.match(/async-variable-item-(\d+)/);
-                if (match) maxIndex = Math.max(maxIndex, parseInt(match[1], 10));
-            }
-            return maxIndex;";
-
-        const string hasPlaceholdersScript = "return arguments[0].querySelectorAll('.async-variable-placeholder').length > 0;";
-
-        for (int iteration = 0; iteration < maxIterations; iteration++)
+        var result = (Dictionary<string, object>)js.ExecuteAsyncScript(detectFlashingScript);
+        var success = (bool)result["success"];
+        if (!success)
         {
-            var scrollTopBefore = Convert.ToDouble(js.ExecuteScript("return arguments[0].scrollTop;", container), CultureInfo.InvariantCulture);
-            js.ExecuteScript($"arguments[0].scrollTop += {scrollIncrement};", container);
-            Browser.True(() => Math.Abs(Convert.ToDouble(js.ExecuteScript("return arguments[0].scrollTop;", container), CultureInfo.InvariantCulture) - scrollTopBefore) > 0.5
-                || Convert.ToDouble(js.ExecuteScript("return arguments[0].scrollTop;", container), CultureInfo.InvariantCulture) >= Convert.ToDouble(js.ExecuteScript("return arguments[0].scrollHeight - arguments[0].clientHeight;", container), CultureInfo.InvariantCulture) - 1);
-            if ((bool)js.ExecuteScript(hasPlaceholdersScript, container))
-            {
-                finishLoadingButton.Click();
-                Browser.True(() => Convert.ToInt32(js.ExecuteScript(getMinIndexScript, container), CultureInfo.InvariantCulture) >= 0);
-            }
-
-            var scrollTopAfter = Convert.ToDouble(js.ExecuteScript("return arguments[0].scrollTop;", container), CultureInfo.InvariantCulture);
-            if (Math.Abs(scrollTopAfter - scrollTopBefore) < 1)
-            {
-                break;
-            }
-
-            var currentMinIndex = Convert.ToInt32(js.ExecuteScript(getMinIndexScript, container), CultureInfo.InvariantCulture);
-            var currentMaxIndex = Convert.ToInt32(js.ExecuteScript(getMaxIndexScript, container), CultureInfo.InvariantCulture);
-
-            if (currentMinIndex < 0)
-            {
-                continue;
-            }
-
-            if (previousMinIndex != -1 && currentMinIndex < previousMinIndex)
-            {
-                Assert.Fail($"Flashing detected at iteration {iteration}: min index went from {previousMinIndex} to {currentMinIndex}");
-            }
-
-            previousMinIndex = currentMinIndex;
-            maxIndexSeen = Math.Max(maxIndexSeen, currentMaxIndex);
+            Assert.Fail((string)result["error"]);
         }
-
-        // Verify we scrolled through items and reached near the end
-        Assert.True(previousMinIndex > 0, "Should have scrolled past the first item");
+        var maxIndexSeen = Convert.ToInt32(result["maxIndexSeen"], CultureInfo.InvariantCulture);
         Assert.True(maxIndexSeen >= 199, $"Should have scrolled to the last item (saw up to index {maxIndexSeen})");
     }
 
