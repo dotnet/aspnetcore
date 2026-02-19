@@ -95,4 +95,5 @@ The tool returns the latest stable (non-prerelease) version.
 - Only update to **stable** releases — skip prerelease versions.
 - Keep Selenium.WebDriver and Selenium.Support on the same major version if possible.
 - Make sure the Playwright Docker image tag in the dockerfile is consistent with the `PlaywrightVersion` in `eng/Versions.props`.
-- Mention in discussion or ideally assign PR to `@dotnet/aspnet-build` for review.
+- Use the `edit` tool to modify files directly. Do NOT use `git commit`, `git push`, or `git config` commands — the `create-pull-request` safe output handles committing and pushing automatically.
+- When all edits are done, use the `create-pull-request` safe output to open the PR. Include a summary of what was updated in the PR body.
