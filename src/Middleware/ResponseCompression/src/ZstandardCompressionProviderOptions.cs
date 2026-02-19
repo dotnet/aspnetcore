@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.ResponseCompression;
 /// </summary>
 public class ZstandardCompressionProviderOptions : IOptions<ZstandardCompressionProviderOptions>
 {
-    private static readonly ZstandardCompressionOptions defaultZstandardCompressionOptions = new()
+    private static readonly ZstandardCompressionOptions DefaultZstandardCompressionOptions = new()
     {
         Quality = 1 // Fastest compression level
     };
@@ -19,7 +19,7 @@ public class ZstandardCompressionProviderOptions : IOptions<ZstandardCompression
     /// <summary>
     /// The compression options to use for the stream. Default quality is 1 (fastest compression level).
     /// </summary>
-    public ZstandardCompressionOptions CompressionOptions { get; set; } = defaultZstandardCompressionOptions;
+    public ZstandardCompressionOptions CompressionOptions { get; set; } = DefaultZstandardCompressionOptions;
 
     /// <inheritdoc />
     ZstandardCompressionProviderOptions IOptions<ZstandardCompressionProviderOptions>.Value => this;
