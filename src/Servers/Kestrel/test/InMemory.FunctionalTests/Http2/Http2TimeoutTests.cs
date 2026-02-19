@@ -304,7 +304,7 @@ public class Http2TimeoutTests : Http2TestBase
         switch (finalFrameType)
         {
             case Http2FrameType.DATA:
-                AssertConnectionEndReason(ConnectionEndReason.UnknownStream);
+                AssertConnectionEndReason(ConnectionEndReason.FrameAfterStreamClose);
                 break;
 
             case Http2FrameType.CONTINUATION:
