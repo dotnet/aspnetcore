@@ -7,7 +7,9 @@ using Microsoft.Extensions.Validation;
 using Microsoft.Extensions.Validation.Localization;
 using Microsoft.Extensions.Validation.Localization.Attributes;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.Extensions.DependencyInjection;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Extension methods for adding validation localization services.

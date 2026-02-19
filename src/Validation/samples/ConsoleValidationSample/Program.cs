@@ -17,7 +17,7 @@ builder.Services.AddLogging();
 builder.Services.AddValidation();
 builder.Services.AddValidationLocalization<ValidationMessages>(options =>
 {
-    options.ErrorMessageKeySelector = (context) => $"{context.Attribute.GetType().Name}_ValidationError";
+    options.ErrorMessageKeyProvider = (in context) => $"{context.Attribute.GetType().Name}_ValidationError";
 });
 builder.Services.AddStandardAttributeLocalization();
 

@@ -123,7 +123,7 @@ public class ValidationLocalizationConfigureOptionsTests
         var formatterProvider = new ValidationAttributeFormatterProvider();
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions
         {
-            ErrorMessageKeySelector = ctx => $"{ctx.Attribute.GetType().Name}_Error"
+            ErrorMessageKeyProvider = (in ctx) => $"{ctx.Attribute.GetType().Name}_Error"
         });
         var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
 
@@ -217,7 +217,7 @@ public class ValidationLocalizationConfigureOptionsTests
         var formatterProvider = new ValidationAttributeFormatterProvider();
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions
         {
-            ErrorMessageKeySelector = _ => null
+            ErrorMessageKeyProvider = (in _) => null
         });
         var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
 
