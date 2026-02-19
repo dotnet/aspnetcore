@@ -122,15 +122,15 @@ public class AddValidationLocalizationTests
         services.AddValidation();
         services.AddValidationLocalization(options =>
         {
-            options.ErrorMessageKeySelector = ctx => $"{ctx.Attribute.GetType().Name}_Key";
+            options.ErrorMessageKeyProvider = (in ctx) => $"{ctx.Attribute.GetType().Name}_Key";
         });
 
         var provider = services.BuildServiceProvider();
         var locOptions = provider.GetRequiredService<IOptions<ValidationLocalizationOptions>>().Value;
 
-        Assert.NotNull(locOptions.ErrorMessageKeySelector);
+        Assert.NotNull(locOptions.ErrorMessageKeyProvider);
 
-        var key = locOptions.ErrorMessageKeySelector(new ErrorMessageProviderContext
+        var key = locOptions.ErrorMessageKeyProvider(new ErrorMessageProviderContext
         {
             Attribute = new System.ComponentModel.DataAnnotations.RequiredAttribute(),
             DisplayName = "Test",
