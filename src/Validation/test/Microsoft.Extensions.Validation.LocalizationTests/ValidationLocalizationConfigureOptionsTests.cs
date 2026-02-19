@@ -29,7 +29,7 @@ public class ValidationLocalizationConfigureOptionsTests
 
         Assert.NotNull(validationOptions.DisplayNameProvider);
 
-        var result = validationOptions.DisplayNameProvider(new DisplayNameLocalizationContext
+        var result = validationOptions.DisplayNameProvider(new DisplayNameProviderContext
         {
             DeclaringType = typeof(object),
             Name = "Customer Age",
@@ -50,7 +50,7 @@ public class ValidationLocalizationConfigureOptionsTests
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
 
-        var result = validationOptions.DisplayNameProvider!(new DisplayNameLocalizationContext
+        var result = validationOptions.DisplayNameProvider!(new DisplayNameProviderContext
         {
             DeclaringType = typeof(object),
             Name = "NotTranslated",
@@ -77,7 +77,7 @@ public class ValidationLocalizationConfigureOptionsTests
 
         Assert.NotNull(validationOptions.ErrorMessageProvider);
 
-        var result = validationOptions.ErrorMessageProvider(new ErrorMessageLocalizationContext
+        var result = validationOptions.ErrorMessageProvider(new ErrorMessageProviderContext
         {
             Attribute = new RequiredAttribute { ErrorMessage = "RequiredError" },
             DisplayName = "Name",
@@ -100,7 +100,7 @@ public class ValidationLocalizationConfigureOptionsTests
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
 
-        var result = validationOptions.ErrorMessageProvider!(new ErrorMessageLocalizationContext
+        var result = validationOptions.ErrorMessageProvider!(new ErrorMessageProviderContext
         {
             Attribute = new RequiredAttribute(),
             DisplayName = "Name",
@@ -130,7 +130,7 @@ public class ValidationLocalizationConfigureOptionsTests
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
 
-        var result = validationOptions.ErrorMessageProvider!(new ErrorMessageLocalizationContext
+        var result = validationOptions.ErrorMessageProvider!(new ErrorMessageProviderContext
         {
             Attribute = new RequiredAttribute(),
             DisplayName = "Name",
@@ -156,21 +156,22 @@ public class ValidationLocalizationConfigureOptionsTests
 
         var validationOptions = new ValidationOptions
         {
-            ErrorMessageProvider = _ => "Pre-existing error",
-            DisplayNameProvider = _ => "Pre-existing name"
+            ErrorMessageProvider = (in _) => "Pre-existing error",
+            DisplayNameProvider = (in _) => "Pre-existing name"
         };
         configureOptions.Configure(validationOptions);
 
-        var errorResult = validationOptions.ErrorMessageProvider(new ErrorMessageLocalizationContext
+        var errorResult = validationOptions.ErrorMessageProvider(new ErrorMessageProviderContext
         {
             Attribute = new RequiredAttribute(),
             DisplayName = "Name",
             MemberName = "Name",
+            DeclaringType = null,
             Services = new ServiceCollection().BuildServiceProvider()
         });
         Assert.Equal("Pre-existing error", errorResult);
 
-        var displayResult = validationOptions.DisplayNameProvider(new DisplayNameLocalizationContext
+        var displayResult = validationOptions.DisplayNameProvider(new DisplayNameProviderContext
         {
             Name = "Test",
             Services = new ServiceCollection().BuildServiceProvider()
@@ -193,7 +194,7 @@ public class ValidationLocalizationConfigureOptionsTests
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
 
-        var result = validationOptions.ErrorMessageProvider!(new ErrorMessageLocalizationContext
+        var result = validationOptions.ErrorMessageProvider!(new ErrorMessageProviderContext
         {
             Attribute = new RangeAttribute(1, 100) { ErrorMessage = "RangeError" },
             DisplayName = "Age",
@@ -223,11 +224,12 @@ public class ValidationLocalizationConfigureOptionsTests
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
 
-        var result = validationOptions.ErrorMessageProvider!(new ErrorMessageLocalizationContext
+        var result = validationOptions.ErrorMessageProvider!(new ErrorMessageProviderContext
         {
             Attribute = new RequiredAttribute(),
             DisplayName = "Name",
             MemberName = "Name",
+            DeclaringType = null,
             Services = new ServiceCollection().BuildServiceProvider()
         });
 

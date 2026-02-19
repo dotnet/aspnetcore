@@ -30,7 +30,7 @@ public class DisplayNameProviderTests
         var model = new CustomerModel { Name = null, Age = 25 };
         var options = new ValidationOptions
         {
-            DisplayNameProvider = _ => null
+            DisplayNameProvider = (in _) => null
         };
         var context = CreateContext(model, options);
 
@@ -47,7 +47,7 @@ public class DisplayNameProviderTests
         var model = new CustomerModel { Name = "Test", Age = 200 };
         var options = new ValidationOptions
         {
-            DisplayNameProvider = ctx => ctx.Name == "Customer Age" ? "Âge du client" : null
+            DisplayNameProvider = (in ctx) => ctx.Name == "Customer Age" ? "Âge du client" : null
         };
         var context = CreateContext(model, options);
 
@@ -64,10 +64,10 @@ public class DisplayNameProviderTests
         var model = new CustomerModel { Name = null, Age = 25 };
         var options = new ValidationOptions
         {
-            DisplayNameProvider = ctx => ctx.Name == "Customer Age" ? "Options Age" : null
+            DisplayNameProvider = (in ctx) => ctx.Name == "Customer Age" ? "Options Age" : null
         };
         var context = CreateContext(model, options);
-        context.DisplayNameProvider = ctx => ctx.Name == "Customer Age" ? "Context Age" : null;
+        context.DisplayNameProvider = (in ctx) => ctx.Name == "Customer Age" ? "Context Age" : null;
 
         var typeInfo = CreateCustomerTypeInfo();
         await typeInfo.ValidateAsync(model, context, default);
@@ -79,11 +79,11 @@ public class DisplayNameProviderTests
     [Fact]
     public async Task DisplayNameProvider_WithDisplayAttribute_PassesDisplayName()
     {
-        DisplayNameLocalizationContext? captured = null;
+        DisplayNameProviderContext? captured = null;
         var model = new CustomerModel { Name = "Test", Age = 200 };
         var options = new ValidationOptions
         {
-            DisplayNameProvider = ctx =>
+            DisplayNameProvider = (in ctx) =>
             {
                 captured = ctx;
                 return null;
@@ -117,7 +117,7 @@ public class DisplayNameProviderTests
 
         var options = new ValidationOptions
         {
-            DisplayNameProvider = _ =>
+            DisplayNameProvider = (in _) =>
             {
                 providerCalled = true;
                 return "Should not be used";
@@ -135,7 +135,7 @@ public class DisplayNameProviderTests
         var model = new CustomerModel { Name = null, Age = 25 };
         var options = new ValidationOptions
         {
-            DisplayNameProvider = ctx => ctx.Name switch
+            DisplayNameProvider = (in ctx) => ctx.Name switch
             {
                 "Name" => "Nom",
                 "Customer Age" => "Âge",

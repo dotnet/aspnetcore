@@ -4,9 +4,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation.Localization;
@@ -305,7 +302,7 @@ public class LocalizationIntegrationTests
         {
             ValidationOptions = validationOptions,
             ValidationContext = new ValidationContext(model),
-            ErrorMessageProvider = ctx => $"Override: {ctx.MemberName} needed"
+            ErrorMessageProvider = (in ctx) => $"Override: {ctx.MemberName} needed"
         };
 
         await typeInfo.ValidateAsync(model, context, default);
@@ -398,12 +395,9 @@ public class LocalizationIntegrationTests
         }
     }
 
-    private class TestStringLocalizerFactory : IStringLocalizerFactory
+    private class TestStringLocalizerFactory(Dictionary<string, string> translations) : IStringLocalizerFactory
     {
-        private readonly Dictionary<string, string> _translations;
-
-        public TestStringLocalizerFactory(Dictionary<string, string> translations)
-            => _translations = translations;
+        private readonly Dictionary<string, string> _translations = translations;
 
         public IStringLocalizer Create(Type resourceSource)
             => new TestStringLocalizer(_translations);
