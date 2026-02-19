@@ -21,7 +21,9 @@ network:
 tools:
   github:
   edit:
-  bash: ["grep", "sed", "jq", "git"]
+  bash: ["curl", "grep", "sed", "jq", "git"]
+  web-fetch:
+  web-search:
 
 safe-inputs:
   get-nuget-version:
