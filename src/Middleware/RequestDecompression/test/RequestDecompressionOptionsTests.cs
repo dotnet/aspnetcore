@@ -19,7 +19,7 @@ public class RequestDecompressionOptionsTests
         Assert.Equal(defaultProviderCount, providers.Count);
 
         var zstdProvider = Assert.Contains("zstd", providers);
-        Assert.IsType<ZstdDecompressionProvider>(zstdProvider);
+        Assert.IsType<ZstandardDecompressionProvider>(zstdProvider);
 
         var brotliProvider = Assert.Contains("br", providers);
         Assert.IsType<BrotliDecompressionProvider>(brotliProvider);

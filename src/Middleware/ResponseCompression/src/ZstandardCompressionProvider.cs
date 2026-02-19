@@ -9,20 +9,20 @@ namespace Microsoft.AspNetCore.ResponseCompression;
 /// <summary>
 /// Zstandard compression provider.
 /// </summary>
-public class ZstdCompressionProvider : ICompressionProvider
+public class ZstandardCompressionProvider : ICompressionProvider
 {
     /// <summary>
-    /// Creates a new instance of <see cref="ZstdCompressionProvider"/> with options.
+    /// Creates a new instance of <see cref="ZstandardCompressionProvider"/> with options.
     /// </summary>
     /// <param name="options">The options for this instance.</param>
-    public ZstdCompressionProvider(IOptions<ZstdCompressionProviderOptions> options)
+    public ZstandardCompressionProvider(IOptions<ZstandardCompressionProviderOptions> options)
     {
         ArgumentNullException.ThrowIfNull(options);
 
         Options = options.Value;
     }
 
-    private ZstdCompressionProviderOptions Options { get; }
+    private ZstandardCompressionProviderOptions Options { get; }
 
     /// <inheritdoc />
     public string EncodingName { get; } = "zstd";

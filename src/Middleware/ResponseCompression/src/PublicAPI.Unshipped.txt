@@ -1,10 +1,10 @@
 #nullable enable
-Microsoft.AspNetCore.ResponseCompression.ZstdCompressionProvider
-Microsoft.AspNetCore.ResponseCompression.ZstdCompressionProvider.CreateStream(System.IO.Stream! outputStream) -> System.IO.Stream!
-Microsoft.AspNetCore.ResponseCompression.ZstdCompressionProvider.EncodingName.get -> string!
-Microsoft.AspNetCore.ResponseCompression.ZstdCompressionProvider.SupportsFlush.get -> bool
-Microsoft.AspNetCore.ResponseCompression.ZstdCompressionProvider.ZstdCompressionProvider(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.ResponseCompression.ZstdCompressionProviderOptions!>! options) -> void
-Microsoft.AspNetCore.ResponseCompression.ZstdCompressionProviderOptions
-Microsoft.AspNetCore.ResponseCompression.ZstdCompressionProviderOptions.Level.get -> System.IO.Compression.CompressionLevel
-Microsoft.AspNetCore.ResponseCompression.ZstdCompressionProviderOptions.Level.set -> void
-Microsoft.AspNetCore.ResponseCompression.ZstdCompressionProviderOptions.ZstdCompressionProviderOptions() -> void
+Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProvider
+Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProvider.CreateStream(System.IO.Stream! outputStream) -> System.IO.Stream!
+Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProvider.EncodingName.get -> string!
+Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProvider.SupportsFlush.get -> bool
+Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProvider.ZstandardCompressionProvider(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProviderOptions!>! options) -> void
+Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProviderOptions
+Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProviderOptions.Level.get -> System.IO.Compression.CompressionLevel
+Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProviderOptions.Level.set -> void
+Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProviderOptions.ZstandardCompressionProviderOptions() -> void

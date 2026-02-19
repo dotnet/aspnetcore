@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.RequestDecompression;
 /// <summary>
 /// Zstandard decompression provider.
 /// </summary>
-internal sealed class ZstdDecompressionProvider : IDecompressionProvider
+internal sealed class ZstandardDecompressionProvider : IDecompressionProvider
 {
     /// <inheritdoc />
     public Stream GetDecompressionStream(Stream stream)

@@ -7,9 +7,9 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.ResponseCompression;
 
 /// <summary>
-/// Options for the <see cref="ZstdCompressionProvider"/>
+/// Options for the <see cref="ZstandardCompressionProvider"/>
 /// </summary>
-public class ZstdCompressionProviderOptions : IOptions<ZstdCompressionProviderOptions>
+public class ZstandardCompressionProviderOptions : IOptions<ZstandardCompressionProviderOptions>
 {
     /// <summary>
     /// What level of compression to use for the stream. The default is <see cref="CompressionLevel.Fastest"/>.
@@ -17,5 +17,5 @@ public class ZstdCompressionProviderOptions : IOptions<ZstdCompressionProviderOp
     public CompressionLevel Level { get; set; } = CompressionLevel.Fastest;
 
     /// <inheritdoc />
-    ZstdCompressionProviderOptions IOptions<ZstdCompressionProviderOptions>.Value => this;
+    ZstandardCompressionProviderOptions IOptions<ZstandardCompressionProviderOptions>.Value => this;
 }
