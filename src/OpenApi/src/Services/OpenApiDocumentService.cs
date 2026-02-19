@@ -415,9 +415,24 @@ internal sealed class OpenApiDocumentService(
         IOpenApiSchemaTransformer[] schemaTransformers,
         CancellationToken cancellationToken)
     {
+        // Check for custom description from ProducesResponseTypeMetadata if ApiResponseType.Description is null
+        var description = apiResponseType.Description;
+        if (string.IsNullOrEmpty(description))
+        {
+            // Look for custom description in endpoint metadata
+            var customDescription = apiDescription.ActionDescriptor.EndpointMetadata?
+                .OfType<IProducesResponseTypeMetadata>()
+                .Where(m => m.StatusCode == statusCode)
+                .LastOrDefault()?.Description;
+            
+            description = !string.IsNullOrEmpty(customDescription) 
+                ? customDescription 
+                : ReasonPhrases.GetReasonPhrase(statusCode);
+        }
+
         var response = new OpenApiResponse
         {
-            Description = apiResponseType.Description ?? ReasonPhrases.GetReasonPhrase(statusCode),
+            Description = description,
             Content = new Dictionary<string, OpenApiMediaType>()
         };
 
@@ -443,9 +458,9 @@ internal sealed class OpenApiDocumentService(
         // MVC's `ProducesAttribute` doesn't implement the produces metadata that the ApiExplorer
         // looks for when generating ApiResponseFormats above so we need to pull the content
         // types defined there separately.
-        var explicitContentTypes = apiDescription.ActionDescriptor.EndpointMetadata
+        var explicitContentTypes = apiDescription.ActionDescriptor.EndpointMetadata?
             .OfType<ProducesAttribute>()
-            .SelectMany(attr => attr.ContentTypes);
+            .SelectMany(attr => attr.ContentTypes) ?? Enumerable.Empty<string>();
         foreach (var contentType in explicitContentTypes)
         {
             response.Content.TryAdd(contentType, new OpenApiMediaType());

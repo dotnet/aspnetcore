@@ -1022,6 +1022,114 @@ public class OpenApiOperationGeneratorTests
         Assert.Null(operation.RequestBody);
     }
 
+    [Fact]
+    public void MixedCustomAndDefaultResponseDescriptionsAreAppliedCorrectly()
+    {
+        const string customOkDescription = "Custom success response";
+
+        var operation = GetOpenApiOperation(() => "", additionalMetadata: new[]
+        {
+            new ProducesResponseTypeMetadata(StatusCodes.Status200OK, null, new[] { "application/json" })
+            {
+                Description = customOkDescription
+            },
+            new ProducesResponseTypeMetadata(StatusCodes.Status400BadRequest, null, new[] { "application/json" }) // No custom description - should use default
+        });
+
+        Assert.Equal(2, operation.Responses.Count);
+
+        var okResponse = operation.Responses["200"];
+        Assert.Equal(customOkDescription, okResponse.Description);
+
+        var badRequestResponse = operation.Responses["400"];
+        Assert.Equal("Bad Request", badRequestResponse.Description); // Default reason phrase
+    }
+
+    [Fact]
+    public void EmptyCustomDescriptionFallsBackToDefault()
+    {
+        var operation = GetOpenApiOperation(() => "", additionalMetadata: new[]
+        {
+            new ProducesResponseTypeMetadata(StatusCodes.Status200OK, null, new[] { "application/json" })
+            {
+                Description = "" // Empty string should fall back to default
+            }
+        });
+
+        var response = Assert.Single(operation.Responses);
+        Assert.Equal("200", response.Key);
+        Assert.Equal("OK", response.Value.Description); // Should use default, not empty string
+    }
+
+    [Fact]
+    public void NullCustomDescriptionFallsBackToDefault()
+    {
+        var operation = GetOpenApiOperation(() => "", additionalMetadata: new[]
+        {
+            new ProducesResponseTypeMetadata(StatusCodes.Status200OK, null, new[] { "application/json" })
+            {
+                Description = null // Explicit null should fall back to default
+            }
+        });
+
+        var response = Assert.Single(operation.Responses);
+        Assert.Equal("200", response.Key);
+        Assert.Equal("OK", response.Value.Description); // Should use default
+    }
+
+    [Fact]
+    public void MultipleMetadataWithSameStatusCodePreservesLastDescription()
+    {
+        const string firstDescription = "First description";
+        const string secondDescription = "Second description";
+
+        var operation = GetOpenApiOperation(() => "", additionalMetadata: new[]
+        {
+            new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(string), new[] { "text/plain" })
+            {
+                Description = firstDescription
+            },
+            new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(InferredJsonClass), new[] { "application/json" })
+            {
+                Description = secondDescription
+            }
+        });
+
+        var response = Assert.Single(operation.Responses);
+        Assert.Equal("200", response.Key);
+        Assert.Equal(secondDescription, response.Value.Description); // Should use the last one
+    }
+
+    [Fact]
+    public void CustomDescriptionWorksWithVariousStatusCodes()
+    {
+        const string createdDescription = "Resource was created successfully";
+        const string notFoundDescription = "The requested resource was not found";
+        const string serverErrorDescription = "An internal server error occurred";
+
+        var operation = GetOpenApiOperation(() => "", additionalMetadata: new[]
+        {
+            new ProducesResponseTypeMetadata(StatusCodes.Status201Created, null, new[] { "application/json" })
+            {
+                Description = createdDescription
+            },
+            new ProducesResponseTypeMetadata(StatusCodes.Status404NotFound, null, new[] { "application/json" })
+            {
+                Description = notFoundDescription
+            },
+            new ProducesResponseTypeMetadata(StatusCodes.Status500InternalServerError, null, new[] { "application/json" })
+            {
+                Description = serverErrorDescription
+            }
+        });
+
+        Assert.Equal(3, operation.Responses.Count);
+
+        Assert.Equal(createdDescription, operation.Responses["201"].Description);
+        Assert.Equal(notFoundDescription, operation.Responses["404"].Description);
+        Assert.Equal(serverErrorDescription, operation.Responses["500"].Description);
+    }
+
     private static OpenApiOperation GetOpenApiOperation(
         Delegate action,
         string pattern = null,
