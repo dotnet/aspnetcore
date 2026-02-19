@@ -86,21 +86,6 @@ namespace Microsoft.Extensions.Validation.Generated
                 );
                 return true;
             }
-            if (type == typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>))
-            {
-                validatableInfo = new GeneratedValidatableTypeInfo(
-                    type: typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>),
-                    members: [
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>),
-                            propertyType: typeof(global::TestService),
-                            name: "this[]",
-                            displayName: "this[]"
-                        ),
-                    ]
-                );
-                return true;
-            }
 
             return false;
         }

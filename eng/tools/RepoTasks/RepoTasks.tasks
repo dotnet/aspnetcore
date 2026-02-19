@@ -1,14 +1,15 @@
 <Project>
   <PropertyGroup>
-    <_RepoTaskAssemblyFolder Condition="'$(MSBuildRuntimeType)' == 'core'">$(DefaultNetCoreTargetFramework)</_RepoTaskAssemblyFolder>
+    <_RepoTaskAssemblyFolder Condition="'$(MSBuildRuntimeType)' == 'core'">net11.0</_RepoTaskAssemblyFolder>
     <_RepoTaskAssemblyFolder Condition="'$(MSBuildRuntimeType)' != 'core'">net472</_RepoTaskAssemblyFolder>
-    <_RepoTaskAssembly>$(ArtifactsBinDir)RepoTasks\Release\$(_RepoTaskAssemblyFolder)\RepoTasks.dll</_RepoTaskAssembly>
+    <_RepoTaskAssembly>$(ArtifactsBinDir)RepoTasks\$(Configuration)\$(_RepoTaskAssemblyFolder)\RepoTasks.dll</_RepoTaskAssembly>
   </PropertyGroup>
 
-  <UsingTask TaskName="RepoTasks.GenerateGuid" AssemblyFile="$(_RepoTaskAssembly)" Condition="'$(MSBuildRuntimeType)' != 'core'" />
-  <UsingTask TaskName="RepoTasks.GetMsiProperty" AssemblyFile="$(_RepoTaskAssembly)" Condition="'$(MSBuildRuntimeType)' != 'core'" />
-  <UsingTask TaskName="RepoTasks.GenerateSharedFrameworkDepsFile" AssemblyFile="$(_RepoTaskAssembly)" />
-  <UsingTask TaskName="RepoTasks.CreateFrameworkListFile" AssemblyFile="$(_RepoTaskAssembly)" />
-  <UsingTask TaskName="RepoTasks.GenerateTestDevCert" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.GenerateGuid" AssemblyFile="$(_RepoTaskAssembly)" TaskFactory="TaskHostFactory" Condition="'$(MSBuildRuntimeType)' != 'core'" />
+  <UsingTask TaskName="RepoTasks.GetMsiProperty" AssemblyFile="$(_RepoTaskAssembly)" TaskFactory="TaskHostFactory" Condition="'$(MSBuildRuntimeType)' != 'core'" />
+  <UsingTask TaskName="RepoTasks.GenerateSharedFrameworkDepsFile" AssemblyFile="$(_RepoTaskAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="RepoTasks.CreateFrameworkListFile" AssemblyFile="$(_RepoTaskAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="RepoTasks.GenerateTestDevCert" AssemblyFile="$(_RepoTaskAssembly)" TaskFactory="TaskHostFactory" />
+
   <UsingTask TaskName="DownloadFile" AssemblyFile="$(ArcadeSdkBuildTasksAssembly)" />
 </Project>

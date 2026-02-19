@@ -59,6 +59,14 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                     options.PersistedCircuitInMemoryMaxRetained = 0;
                     options.DetailedErrors = true;
                 }
+                var retentionPeriod = Configuration.GetValue<int?>("PersistedCircuitRetentionPeriod");
+                if (retentionPeriod.HasValue)
+                {
+                    // This sets both in-memory and distributed persisted circuit retention periods to the specified value in milliseconds.
+                    // This setting can be used to test expiration of persisted circuit state, including client-held state in case of graceful pause.
+                    options.PersistedCircuitInMemoryRetentionPeriod = TimeSpan.FromMilliseconds(retentionPeriod.Value);
+                    options.PersistedCircuitDistributedRetentionPeriod = TimeSpan.FromMilliseconds(retentionPeriod.Value);
+                }
                 options.RootComponents.RegisterForJavaScript<TestContentPackage.PersistentComponents.ComponentWithPersistentState>("dynamic-js-root-counter");
             })
             .AddAuthenticationStateSerialization(options =>

@@ -8,6 +8,7 @@ using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,7 +26,7 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddRazorComponents(options =>
+        var builder = services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;
             options.MaxFormMappingRecursionDepth = 5;
@@ -33,6 +34,20 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
         });
         services.AddHttpContextAccessor();
         services.AddCascadingAuthenticationState();
+
+        if (Configuration.GetValue<bool>("UseSessionStorageTempDataProvider"))
+        {
+            services.AddDistributedMemoryCache();
+            services.AddSession(options =>
+            {
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+            services.Configure<RazorComponentsServiceOptions>(options =>
+            {
+                options.TempDataProviderType = TempDataProviderType.SessionStorage;
+            });
+        }
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -59,6 +74,11 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                         await context.Response.WriteAsync("Triggered a 404 status code.");
                     });
                 });
+
+                if (Configuration.GetValue<bool>("UseSessionStorageTempDataProvider"))
+                {
+                    app.UseSession();
+                }
 
                 if (!env.IsDevelopment())
                 {

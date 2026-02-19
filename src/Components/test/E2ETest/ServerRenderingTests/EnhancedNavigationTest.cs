@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
-using OpenQA.Selenium.BiDi.Communication;
+using OpenQA.Selenium.BiDi;
 using OpenQA.Selenium.DevTools;
 using OpenQA.Selenium.Support.Extensions;
 using TestServer;
@@ -497,6 +497,39 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         AssertEnhancedUpdateCountEquals(1);
 
         Browser.Equal("", () => Browser.Exists(By.Id("non-preserved-content")).Text);
+    }
+
+    [Fact]
+    public void ElementsWithDataPermanentAttribute_HavePreservedAttributes()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Preserve content")).Click();
+        Browser.Equal("Page that preserves content", () => Browser.Exists(By.TagName("h1")).Text);
+
+        // Required until https://github.com/dotnet/aspnetcore/issues/50424 is fixed
+        Browser.Navigate().Refresh();
+
+        Browser.Exists(By.Id("refresh-with-refresh"));
+
+        Browser.Click(By.Id("start-listening"));
+
+        // Verify the dynamically added class exists before enhanced nav
+        var preservedAttributesElement = Browser.Exists(By.Id("preserved-attributes"));
+        Browser.True(() => preservedAttributesElement.GetAttribute("class")?.Contains("dynamically-added-class") == true);
+
+        Browser.Click(By.Id("refresh-with-refresh"));
+        AssertEnhancedUpdateCountEquals(1);
+
+        // Verify the dynamically added class is preserved after enhanced nav
+        Browser.True(() => preservedAttributesElement.GetAttribute("class")?.Contains("dynamically-added-class") == true);
+
+        Browser.Click(By.Id("refresh-with-refresh"));
+        AssertEnhancedUpdateCountEquals(2);
+
+        // Verify the dynamically added class is still preserved after another enhanced nav
+        Browser.True(() => preservedAttributesElement.GetAttribute("class")?.Contains("dynamically-added-class") == true);
     }
 
     [Fact]

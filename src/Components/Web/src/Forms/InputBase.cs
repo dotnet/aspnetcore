@@ -207,18 +207,42 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
 
             if (_shouldGenerateFieldNames)
             {
-                if (_formattedValueExpression is null && ValueExpression is not null)
-                {
-                    _formattedValueExpression = FieldPrefix != null ? FieldPrefix.GetFieldName(ValueExpression) :
-                        ExpressionFormatter.FormatLambda(ValueExpression);
-                }
-
-                return _formattedValueExpression ?? string.Empty;
+                return GetFieldName();
             }
 
             return string.Empty;
         }
     }
+
+    /// <summary>
+    /// Gets the value to be used for the input's "id" attribute.
+    /// </summary>
+    /// <remarks>
+    /// If an explicit "id" is provided via <see cref="AdditionalAttributes"/>, that value takes precedence.
+    /// Otherwise, the id is a sanitized version of <see cref="NameAttributeValue"/> in SSR mode; generated independently in interactive mode.
+    /// </remarks>
+    protected string IdAttributeValue
+    {
+        get
+        {
+            if (AdditionalAttributes?.TryGetValue("id", out var idAttributeValue) ?? false)
+            {
+                return Convert.ToString(idAttributeValue, CultureInfo.InvariantCulture) ?? string.Empty;
+            }
+
+            var fieldName = NameAttributeValue;
+            if (string.IsNullOrEmpty(fieldName))
+            {
+                fieldName = GetFieldName();
+            }
+
+            return FieldIdGenerator.SanitizeHtmlId(fieldName);
+        }
+    }
+
+    private string GetFieldName()
+        => _formattedValueExpression ??= FieldPrefix?.GetFieldName(ValueExpression!)
+            ?? ExpressionFormatter.FormatLambda(ValueExpression!);
 
     /// <inheritdoc />
     public override Task SetParametersAsync(ParameterView parameters)

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Globalization;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.InternalTesting.Tracing;
 using Microsoft.Extensions.Internal;
 using Xunit;
 
@@ -13,6 +14,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal;
 
 public class HttpConnectionsEventSourceTests
 {
+    [Fact]
+    public void EventIdsAreConsistent()
+    {
+        EventSourceValidator.ValidateEventSourceIds(typeof(HttpConnectionsEventSource));
+    }
+
     [Fact]
     public void MatchesNameAndGuid()
     {
