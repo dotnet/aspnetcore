@@ -281,7 +281,7 @@ public class WebApiTemplateTest : LoggedTest
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public async Task WebApiTemplate_HttpFileIncludesOpenApiEndpoint()
+    public async Task WebApiTemplateCSharp_HttpFileIncludesOpenApiEndpoint()
     {
         var project = await FactoryFixture.CreateProject(Output);
 
@@ -301,7 +301,7 @@ public class WebApiTemplateTest : LoggedTest
 
     [ConditionalFact]
     [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
-    public async Task WebApiTemplate_HttpFileExcludesOpenApiEndpointWhenDisabled()
+    public async Task WebApiTemplateCSharp_HttpFileExcludesOpenApiEndpointWhenDisabled()
     {
         var project = await FactoryFixture.CreateProject(Output);
 
