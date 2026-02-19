@@ -128,7 +128,6 @@
     <UpdateAspNetCoreKnownFramework>false</UpdateAspNetCoreKnownFramework>
     <UpdateAspNetCoreKnownFramework Condition=" '$(UseAspNetCoreSharedRuntime)' == 'true' AND
       '$(DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp)' != 'true' ">true</UpdateAspNetCoreKnownFramework>
-    <DisableImplicitFrameworkReferences Condition=" '$(UseAspNetCoreSharedRuntime)' != 'true'">true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
 
   <ItemGroup>
