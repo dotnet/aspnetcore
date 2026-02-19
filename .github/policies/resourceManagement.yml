@@ -440,8 +440,19 @@ configuration:
           branch: main
       then:
       - addMilestone:
-          milestone: 11.0-preview1
+          milestone: 11.0-preview2
       description: '[Milestone Assignments] Assign Milestone to PRs merged to the `main` branch'
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Closed
+      - targetsBranch:
+          branch: release/11.0-preview1
+      then:
+      - removeMilestone
+      - addMilestone:
+          milestone: 11.0-preview1
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/11.0-preview1 branch'
     - if:
       - payloadType: Issues
       - isAction:
@@ -621,7 +632,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 10.0.2
+          milestone: 10.0.4
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/10.0 branch'
     - if:
       - payloadType: Pull_Request
@@ -632,7 +643,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 9.0.12
+          milestone: 9.0.14
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0 branch'
     - if:
       - payloadType: Pull_Request
@@ -643,7 +654,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 8.0.23
+          milestone: 8.0.25
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/8.0 branch'
     - if:
       - payloadType: Issues
@@ -704,16 +715,6 @@ configuration:
           label: NativeAOT
       description: Label AOT related issues appropriately
     - if:
-      - payloadType: Issues
-      - labelAdded:
-          label: help wanted
-      - isAction:
-          action: Labeled
-      then:
-      - addReply:
-          reply: Looks like this issue has been identified as a candidate for community contribution. If you're considering sending a PR for this issue, look for the `Summary Comment` link in the issue description. That comment has been left by an engineer on our team to help you get started with handling this issue. You can learn more about our Help Wanted process [here](https://aka.ms/aspnet/processes/help-wanted)
-      description: Drop a comment when a help candidate issue is identified
-    - if:
       - payloadType: Pull_Request
       - isAction:
           action: Opened
@@ -760,6 +761,9 @@ configuration:
       description: '[Infrastructure PRs] Add area-infrastructure label to dependabot update Pull Requests & enable auto-merge'
 onFailure:
 onSuccess:
+
+
+
 
 
 

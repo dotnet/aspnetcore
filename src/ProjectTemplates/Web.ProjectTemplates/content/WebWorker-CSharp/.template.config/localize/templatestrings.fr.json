@@ -1,0 +1,10 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Worker .NET",
+  "description": "Un projet de création d’une bibliothèque de classes qui exécute du code .NET dans un Web Worker.",
+  "symbols/Framework/description": "Infrastructure cible du projet.",
+  "symbols/Framework/choices/net11.0/description": "Net11.0 cible",
+  "symbols/skipRestore/description": "Si spécifié, ignore la restauration automatique du projet lors de la création.",
+  "postActions/restore/description": "Restaurer les packages NuGet requis par ce projet.",
+  "postActions/restore/manualInstructions/default/text": "Exécuter 'dotnet restore'"
+}

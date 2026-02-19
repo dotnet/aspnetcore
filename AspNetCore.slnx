@@ -16,6 +16,7 @@
     <Project Path="src/Analyzers/Analyzers/test/Microsoft.AspNetCore.Analyzers.Test.csproj" />
   </Folder>
   <Folder Name="/src/Antiforgery/">
+    <Project Path="src/Antiforgery/benchmarks/Microsoft.AspNetCore.Antiforgery.Microbenchmarks/Microsoft.AspNetCore.Antiforgery.Microbenchmarks.csproj" />
     <Project Path="src/Antiforgery/src/Microsoft.AspNetCore.Antiforgery.csproj" />
     <Project Path="src/Antiforgery/test/Microsoft.AspNetCore.Antiforgery.Test.csproj" />
   </Folder>
@@ -74,7 +75,6 @@
     <Project Path="src/Components/Forms/test/Microsoft.AspNetCore.Components.Forms.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Components/Samples/">
-    <Project Path="src/Components/Samples/BlazorServerApp/BlazorServerApp.csproj" />
     <Project Path="src/Components/Samples/BlazorUnitedApp.Client/BlazorUnitedApp.Client.csproj" />
     <Project Path="src/Components/Samples/BlazorUnitedApp/BlazorUnitedApp.csproj" />
   </Folder>

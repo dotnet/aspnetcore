@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Buffers;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.ObjectPool;
 using Moq;
@@ -9,31 +11,57 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal;
 
 public class DefaultAntiforgeryTokenSerializerTest
 {
-    private static readonly Mock<IDataProtectionProvider> _dataProtector = GetDataProtector();
-    private static readonly BinaryBlob _claimUid = new BinaryBlob(256, new byte[] { 0x6F, 0x16, 0x48, 0xE9, 0x72, 0x49, 0xAA, 0x58, 0x75, 0x40, 0x36, 0xA6, 0x7E, 0x24, 0x8C, 0xF0, 0x44, 0xF0, 0x7E, 0xCF, 0xB0, 0xED, 0x38, 0x75, 0x56, 0xCE, 0x02, 0x9A, 0x4F, 0x9A, 0x40, 0xE0 });
-    private static readonly BinaryBlob _securityToken = new BinaryBlob(128, new byte[] { 0x70, 0x5E, 0xED, 0xCC, 0x7D, 0x42, 0xF1, 0xD6, 0xB3, 0xB9, 0x8A, 0x59, 0x36, 0x25, 0xBB, 0x4C });
-    private static readonly ObjectPool<AntiforgerySerializationContext> _pool =
-        new DefaultObjectPoolProvider().Create(new AntiforgerySerializationContextPooledObjectPolicy());
+    private static readonly BinaryBlob _claimUid = new BinaryBlob(256, [0x6F, 0x16, 0x48, 0xE9, 0x72, 0x49, 0xAA, 0x58, 0x75, 0x40, 0x36, 0xA6, 0x7E, 0x24, 0x8C, 0xF0, 0x44, 0xF0, 0x7E, 0xCF, 0xB0, 0xED, 0x38, 0x75, 0x56, 0xCE, 0x02, 0x9A, 0x4F, 0x9A, 0x40, 0xE0]);
+    private static readonly BinaryBlob _securityToken = new BinaryBlob(128, [0x70, 0x5E, 0xED, 0xCC, 0x7D, 0x42, 0xF1, 0xD6, 0xB3, 0xB9, 0x8A, 0x59, 0x36, 0x25, 0xBB, 0x4C]);
     private const byte _salt = 0x05;
 
+    public enum DataProtectorType
+    {
+        /// <summary>
+        /// Uses <see cref="ISpanDataProtector"/> - the optimized path.
+        /// </summary>
+        SpanDataProtector,
+
+        /// <summary>
+        /// Uses plain <see cref="IDataProtector"/> - the fallback path.
+        /// </summary>
+        DefaultDataProtector
+    }
+
     [Theory]
-    [InlineData(
+    [InlineData(DataProtectorType.SpanDataProtector,
         "01" // Version
         + "705EEDCC7D42F1D6B3B9" // SecurityToken
                                  // (WRONG!) Stream ends too early
         )]
-    [InlineData(
+    [InlineData(DataProtectorType.DefaultDataProtector,
+        "01" // Version
+        + "705EEDCC7D42F1D6B3B9" // SecurityToken
+                                 // (WRONG!) Stream ends too early
+        )]
+    [InlineData(DataProtectorType.SpanDataProtector,
         "01" // Version
         + "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken
         + "01" // IsCookieToken
         + "00" // (WRONG!) Too much data in stream
         )]
-    [InlineData(
+    [InlineData(DataProtectorType.DefaultDataProtector,
+        "01" // Version
+        + "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken
+        + "01" // IsCookieToken
+        + "00" // (WRONG!) Too much data in stream
+        )]
+    [InlineData(DataProtectorType.SpanDataProtector,
         "02" // (WRONG! - must be 0x01) Version
         + "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken
         + "01" // IsCookieToken
         )]
-    [InlineData(
+    [InlineData(DataProtectorType.DefaultDataProtector,
+        "02" // (WRONG! - must be 0x01) Version
+        + "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken
+        + "01" // IsCookieToken
+        )]
+    [InlineData(DataProtectorType.SpanDataProtector,
         "01" // Version
         + "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken
         + "00" // IsCookieToken
@@ -41,21 +69,33 @@ public class DefaultAntiforgeryTokenSerializerTest
         + "05" // Username length header
         + "0000" // (WRONG!) Too little data in stream
         )]
-    public void Deserialize_BadToken_Throws(string serializedToken)
+    [InlineData(DataProtectorType.DefaultDataProtector,
+        "01" // Version
+        + "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken
+        + "00" // IsCookieToken
+        + "00" // IsClaimsBased
+        + "05" // Username length header
+        + "0000" // (WRONG!) Too little data in stream
+        )]
+    public void Deserialize_BadToken_Throws(DataProtectorType protectorType, string serializedToken)
     {
         // Arrange
-        var testSerializer = new DefaultAntiforgeryTokenSerializer(_dataProtector.Object, _pool);
+        var dataProtector = CreateDataProtector(protectorType);
+        var testSerializer = new DefaultAntiforgeryTokenSerializer(dataProtector.Object);
 
         // Act & assert
         var ex = Assert.Throws<AntiforgeryValidationException>(() => testSerializer.Deserialize(serializedToken));
         Assert.Equal(@"The antiforgery token could not be decrypted.", ex.Message);
     }
 
-    [Fact]
-    public void Serialize_FieldToken_WithClaimUid_TokenRoundTripSuccessful()
+    [Theory]
+    [InlineData(DataProtectorType.SpanDataProtector)]
+    [InlineData(DataProtectorType.DefaultDataProtector)]
+    public void Serialize_FieldToken_WithClaimUid_TokenRoundTripSuccessful(DataProtectorType protectorType)
     {
         // Arrange
-        var testSerializer = new DefaultAntiforgeryTokenSerializer(_dataProtector.Object, _pool);
+        var dataProtector = CreateDataProtector(protectorType);
+        var testSerializer = new DefaultAntiforgeryTokenSerializer(dataProtector.Object);
 
         //"01" // Version
         //+ "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken
@@ -78,14 +118,17 @@ public class DefaultAntiforgeryTokenSerializerTest
 
         // Assert
         AssertTokensEqual(token, deserializedToken);
-        _dataProtector.Verify();
+        dataProtector.Verify();
     }
 
-    [Fact]
-    public void Serialize_FieldToken_WithUsername_TokenRoundTripSuccessful()
+    [Theory]
+    [InlineData(DataProtectorType.SpanDataProtector)]
+    [InlineData(DataProtectorType.DefaultDataProtector)]
+    public void Serialize_FieldToken_WithUsername_TokenRoundTripSuccessful(DataProtectorType protectorType)
     {
         // Arrange
-        var testSerializer = new DefaultAntiforgeryTokenSerializer(_dataProtector.Object, _pool);
+        var dataProtector = CreateDataProtector(protectorType);
+        var testSerializer = new DefaultAntiforgeryTokenSerializer(dataProtector.Object);
 
         //"01" // Version
         //+ "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken
@@ -109,14 +152,17 @@ public class DefaultAntiforgeryTokenSerializerTest
 
         // Assert
         AssertTokensEqual(token, deserializedToken);
-        _dataProtector.Verify();
+        dataProtector.Verify();
     }
 
-    [Fact]
-    public void Serialize_CookieToken_TokenRoundTripSuccessful()
+    [Theory]
+    [InlineData(DataProtectorType.SpanDataProtector)]
+    [InlineData(DataProtectorType.DefaultDataProtector)]
+    public void Serialize_CookieToken_TokenRoundTripSuccessful(DataProtectorType protectorType)
     {
         // Arrange
-        var testSerializer = new DefaultAntiforgeryTokenSerializer(_dataProtector.Object, _pool);
+        var dataProtector = CreateDataProtector(protectorType);
+        var testSerializer = new DefaultAntiforgeryTokenSerializer(dataProtector.Object);
 
         //"01" // Version
         //+ "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken
@@ -128,47 +174,28 @@ public class DefaultAntiforgeryTokenSerializerTest
         };
 
         // Act
-        string actualSerializedData = testSerializer.Serialize(token);
+        var actualSerializedData = testSerializer.Serialize(token);
         var deserializedToken = testSerializer.Deserialize(actualSerializedData);
 
         // Assert
         AssertTokensEqual(token, deserializedToken);
-        _dataProtector.Verify();
+        dataProtector.Verify();
     }
 
-    private static Mock<IDataProtectionProvider> GetDataProtector()
+    private static Mock<IDataProtectionProvider> CreateDataProtector(DataProtectorType protectorType)
     {
-        var mockCryptoSystem = new Mock<IDataProtector>();
-        mockCryptoSystem.Setup(o => o.Protect(It.IsAny<byte[]>()))
-                        .Returns<byte[]>(Protect)
-                        .Verifiable();
-        mockCryptoSystem.Setup(o => o.Unprotect(It.IsAny<byte[]>()))
-                        .Returns<byte[]>(UnProtect)
-                        .Verifiable();
+        IDataProtector dataProtector = protectorType switch
+        {
+            DataProtectorType.SpanDataProtector => new TestSpanDataProtector(),
+            DataProtectorType.DefaultDataProtector => new TestDataProtector(),
+            _ => throw new ArgumentOutOfRangeException(nameof(protectorType))
+        };
 
         var provider = new Mock<IDataProtectionProvider>();
         provider
             .Setup(p => p.CreateProtector(It.IsAny<string>()))
-            .Returns(mockCryptoSystem.Object);
+            .Returns(dataProtector);
         return provider;
-    }
-
-    private static byte[] Protect(byte[] data)
-    {
-        var input = new List<byte>(data);
-        input.Add(_salt);
-        return input.ToArray();
-    }
-
-    private static byte[] UnProtect(byte[] data)
-    {
-        var salt = data[data.Length - 1];
-        if (salt != _salt)
-        {
-            throw new ArgumentException("Invalid salt value in data");
-        }
-
-        return data.Take(data.Length - 1).ToArray();
     }
 
     private static void AssertTokensEqual(AntiforgeryToken expected, AntiforgeryToken actual)
@@ -180,5 +207,78 @@ public class DefaultAntiforgeryTokenSerializerTest
         Assert.Equal(expected.IsCookieToken, actual.IsCookieToken);
         Assert.Equal(expected.SecurityToken, actual.SecurityToken);
         Assert.Equal(expected.Username, actual.Username);
+    }
+
+    /// <summary>
+    /// A test data protector that implements <see cref="ISpanDataProtector"/>
+    /// to exercise the optimized code path.
+    /// </summary>
+    private sealed class TestSpanDataProtector : ISpanDataProtector
+    {
+        public IDataProtector CreateProtector(string purpose) => this;
+
+        public void Protect<TWriter>(ReadOnlySpan<byte> plaintext, ref TWriter destination) where TWriter : IBufferWriter<byte>, allows ref struct
+        {
+            var result = ProtectImpl(plaintext.ToArray());
+            var destinationSpan = destination.GetSpan(result.Length);
+            result.CopyTo(destinationSpan);
+            destination.Advance(result.Length);
+        }
+
+        public void Unprotect<TWriter>(ReadOnlySpan<byte> protectedData, ref TWriter destination)
+            where TWriter : IBufferWriter<byte>, allows ref struct
+        {
+            var result = UnprotectImpl(protectedData.ToArray());
+            var destinationSpan = destination.GetSpan(result.Length);
+            result.CopyTo(destinationSpan);
+            destination.Advance(result.Length);
+        }
+
+        public byte[] Protect(byte[] plaintext) => ProtectImpl(plaintext);
+
+        public byte[] Unprotect(byte[] protectedData) => UnprotectImpl(protectedData);
+
+        private static byte[] ProtectImpl(byte[] data)
+        {
+            var input = new List<byte>(data);
+            input.Add(_salt);
+            return input.ToArray();
+        }
+
+        private static byte[] UnprotectImpl(byte[] data)
+        {
+            var salt = data[data.Length - 1];
+            if (salt != _salt)
+            {
+                throw new ArgumentException("Invalid salt value in data");
+            }
+            return data.Take(data.Length - 1).ToArray();
+        }
+    }
+
+    /// <summary>
+    /// A test data protector that only implements <see cref="IDataProtector"/>
+    /// (not <see cref="ISpanDataProtector"/>) to exercise the fallback code path.
+    /// </summary>
+    private sealed class TestDataProtector : IDataProtector
+    {
+        public IDataProtector CreateProtector(string purpose) => this;
+
+        public byte[] Protect(byte[] plaintext)
+        {
+            var input = new List<byte>(plaintext);
+            input.Add(_salt);
+            return input.ToArray();
+        }
+
+        public byte[] Unprotect(byte[] protectedData)
+        {
+            var salt = protectedData[protectedData.Length - 1];
+            if (salt != _salt)
+            {
+                throw new ArgumentException("Invalid salt value in data");
+            }
+            return protectedData.Take(protectedData.Length - 1).ToArray();
+        }
     }
 }

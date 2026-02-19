@@ -30,7 +30,6 @@ The workflow for implementing new features in the Components area follows these 
 
 The `src/Components/Samples` folder contains several sample projects you can use for developing and testing features:
 
-- **BlazorServerApp** - A Blazor Server application for testing server-side scenarios
 - **BlazorUnitedApp** - A Blazor Web App (united/hybrid mode) for testing combined server and WebAssembly scenarios
 - **BlazorUnitedApp.Client** - The client-side portion of the BlazorUnitedApp
 
@@ -83,7 +82,7 @@ dotnet build --no-restore -v:q
 
 Or with `eng\build.cmd`:
 ```bash
-.\eng\build.cmd -NoRestore -NoBuildDeps -NoBuildRepoTasks -NoBuildNative -NoBuildNodeJS -NoBuildJava -NoBuildInstallers -verbosity:quiet
+.\eng\build.cmd -NoRestore -NoBuildDeps -NoBuildNative -NoBuildNodeJS -NoBuildJava -NoBuildInstallers -verbosity:quiet
 ```
 
 **When you've added/changed project references or package dependencies:**

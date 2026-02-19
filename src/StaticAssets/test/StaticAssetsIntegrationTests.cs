@@ -394,6 +394,129 @@ public class StaticAssetsIntegrationTests
     }
 
     [Fact]
+    public async Task RangeRequestReturnsCorrectContentLengthForModifiedAssets()
+    {
+        // Arrange
+        var appName = nameof(RangeRequestReturnsCorrectContentLengthForModifiedAssets);
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+
+        CreateTestManifest(
+            appName,
+            webRoot,
+            [
+                new TestResource("sample.txt", "Hello, World!", false),
+            ]);
+
+        var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
+        {
+            ApplicationName = appName,
+            ContentRootPath = contentRoot,
+            EnvironmentName = "Development",
+            WebRootPath = webRoot
+        });
+        builder.WebHost.UseSetting(StaticAssetDevelopmentRuntimeHandler.ReloadStaticAssetsAtRuntimeKey, "true");
+        builder.WebHost.ConfigureServices(services =>
+        {
+            services.AddRouting();
+        });
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapStaticAssets();
+        });
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+
+        File.WriteAllText(Path.Combine(webRoot, "sample.txt"), "Hello, World! Modified");
+
+        // Act - Request first 5 bytes (Range: bytes=0-4)
+        var message = new HttpRequestMessage(HttpMethod.Get, "/sample.txt");
+        message.Headers.Range = new RangeHeaderValue(0, 4);
+        var response = await client.SendAsync(message);
+
+        // Assert - Should return 206 Partial Content with correct Content-Length of 5 bytes
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.PartialContent, response.StatusCode);
+        Assert.Equal(5, response.Content.Headers.ContentLength);
+        Assert.Equal("Hello", await response.Content.ReadAsStringAsync());
+
+        // Act - Request bytes 7-11 (Range: bytes=7-11)
+        var message2 = new HttpRequestMessage(HttpMethod.Get, "/sample.txt");
+        message2.Headers.Range = new RangeHeaderValue(7, 11);
+        var response2 = await client.SendAsync(message2);
+
+        // Assert - Should return 206 Partial Content with correct Content-Length of 5 bytes
+        Assert.NotNull(response2);
+        Assert.Equal(HttpStatusCode.PartialContent, response2.StatusCode);
+        Assert.Equal(5, response2.Content.Headers.ContentLength);
+        Assert.Equal("World", await response2.Content.ReadAsStringAsync());
+
+        Directory.Delete(webRoot, true);
+    }
+
+    [Fact]
+    public async Task RangeRequestReturns416WhenFileShrinksAndRangeIsUnsatisfiable()
+    {
+        // Arrange - Start with a larger file, then shrink it
+        var appName = nameof(RangeRequestReturns416WhenFileShrinksAndRangeIsUnsatisfiable);
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+
+        CreateTestManifest(
+            appName,
+            webRoot,
+            [
+                new TestResource("sample.txt", "Hello, World! This is a longer file for testing.", false),
+            ]);
+
+        var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
+        {
+            ApplicationName = appName,
+            ContentRootPath = contentRoot,
+            EnvironmentName = "Development",
+            WebRootPath = webRoot
+        });
+        builder.WebHost.UseSetting(StaticAssetDevelopmentRuntimeHandler.ReloadStaticAssetsAtRuntimeKey, "true");
+        builder.WebHost.ConfigureServices(services =>
+        {
+            services.AddRouting();
+        });
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapStaticAssets();
+        });
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+
+        // Shrink the file
+        File.WriteAllText(Path.Combine(webRoot, "sample.txt"), "Short");
+
+        // Act - Request a range that was valid for the original file but not for the shrunken file
+        var message = new HttpRequestMessage(HttpMethod.Get, "/sample.txt");
+        message.Headers.Range = new RangeHeaderValue(10, 20); // bytes 10-20, but file is now only 5 bytes
+        var response = await client.SendAsync(message);
+
+        // Assert - Should return 416 Range Not Satisfiable
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
+        var contentRange = await response.Content.ReadAsStringAsync();
+        Assert.True(response.Content.Headers.TryGetValues("Content-Range", out var values));
+        Assert.Contains("bytes */5", values);
+
+        Directory.Delete(webRoot, true);
+    }
+
+    [Fact]
     public async Task CanModifyAssetsWithCompressedVersionsOnTheFlyInDevelopment()
     {
         // Arrange
