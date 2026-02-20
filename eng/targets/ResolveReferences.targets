@@ -153,34 +153,29 @@
     NuGet pack reads framework references from restore assets. For affected SDK-pack projects, trigger a dedicated
     restore just before GenerateNuspec and include a temporary framework reference only in that restore.
   -->
-  <Target Name="_RestoreWithAspNetCoreAppFrameworkReferenceForNuspec"
-      BeforeTargets="GenerateNuspec"
-      Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' AND
-                 '$(IsImplementationProject)' == 'true' AND
+
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' AND
                  '$(IsPackable)' == 'true' AND
                  '$(IsAspNetCoreApp)' != 'true' AND
-                 '$(NuspecFile)' == '' AND
                  '@(_FrameworkProjectReference)' != '' AND
-                 '$(IncludeAspNetCoreAppFrameworkReferenceForNuspec)' != 'true'">
-    <MSBuild
-        Projects="$(MSBuildProjectFullPath)"
-        Targets="Restore"
-        Properties="IncludeAspNetCoreAppFrameworkReferenceForNuspec=true;
-                    BuildProjectReferences=false;RestoreForceEvaluate=true;NoWarn=$(NoWarn);NU1511;NU1510"
-        RemoveProperties="TargetFramework;TargetFrameworkIdentifier;TargetFrameworkVersion;TargetFrameworkMoniker" />
-  </Target>
-
-  <ItemGroup Condition="'$(IncludeAspNetCoreAppFrameworkReferenceForNuspec)' == 'true' AND
-                        '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' AND
-                        '$(IsImplementationProject)' == 'true' AND
-                        '$(IsPackable)' == 'true' AND
-                        '$(IsAspNetCoreApp)' != 'true' AND
-                        '$(NuspecFile)' == '' AND
-                        '@(_FrameworkProjectReference)' != '' AND
-                        '@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->Count())' == '0'">
+                 '@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->Count())' == '0'">
     <KnownFrameworkReference Include="@(_RemovedAspNetKnownFrameworkReference)" />
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <!-- Mark as IsTransitiveFrameworkReference to exclude the pruning data -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" IsTransitiveFrameworkReference="true" />
   </ItemGroup>
+
+  <!-- Remove the referenced AspNetCore framework before it's resolved in ResolveFrameworkReferences.  This lets us use our own references. -->
+  <Target Name="_RemoveAspNetCoreFrameworkReference" 
+          BeforeTargets="ResolveFrameworkReferences"
+          Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' AND
+                     '$(IsPackable)' == 'true' AND
+                     '$(IsAspNetCoreApp)' != 'true' AND
+                     '@(_FrameworkProjectReference)' != '' AND
+                     '@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->Count())' != '0'" >
+    <ItemGroup>
+      <FrameworkReference Remove="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+  </Target>
 
   <!--
     This target resolves remaining Reference items to Packages, if possible. If not, they are left as Reference
