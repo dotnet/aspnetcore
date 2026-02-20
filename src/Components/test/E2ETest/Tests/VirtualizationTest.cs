@@ -724,23 +724,41 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // Single End key press — the scroll compensation in Virtualize should converge to the bottom
         container.SendKeys(Keys.End);
 
-        Browser.True(() =>
+        var endPollCount = 0;
+        var endDiagnostics = new System.Text.StringBuilder();
+        try
         {
-            if (hasPlaceholders?.Invoke() == true)
+            Browser.True(() =>
             {
-                loadData?.Invoke();
-                return false;
-            }
+                endPollCount++;
+                if (hasPlaceholders?.Invoke() == true)
+                {
+                    endDiagnostics.AppendLine(CultureInfo.InvariantCulture, $"  poll #{endPollCount}: placeholders visible, loading data...");
+                    loadData?.Invoke();
+                    return false;
+                }
 
-            // Check if spacerAfter has essentially zero height (truly at the end).
-            var spacerAfterHeight = Convert.ToDouble(
-                js.ExecuteScript(
+                // Check if spacerAfter has essentially zero height (truly at the end).
+                var metrics = (IReadOnlyDictionary<string, object>)js.ExecuteScript(
                     "var c = arguments[0]; var spacers = c.querySelectorAll('[aria-hidden]');" +
-                    "return spacers.length >= 2 ? spacers[spacers.length - 1].offsetHeight : 999;",
-                    container), CultureInfo.InvariantCulture);
+                    "return { spacerAfterHeight: spacers.length >= 2 ? spacers[spacers.length - 1].offsetHeight : 999," +
+                    "  scrollTop: c.scrollTop, scrollHeight: c.scrollHeight, clientHeight: c.clientHeight };",
+                    container);
+                var spacerAfterHeight = Convert.ToDouble(metrics["spacerAfterHeight"], CultureInfo.InvariantCulture);
+                var scrollTop = Convert.ToDouble(metrics["scrollTop"], CultureInfo.InvariantCulture);
+                var scrollHeight = Convert.ToDouble(metrics["scrollHeight"], CultureInfo.InvariantCulture);
+                var clientHeight = Convert.ToDouble(metrics["clientHeight"], CultureInfo.InvariantCulture);
+                var remaining = scrollHeight - scrollTop - clientHeight;
+                endDiagnostics.AppendLine(CultureInfo.InvariantCulture, $"  poll #{endPollCount}: spacerAfter={spacerAfterHeight:F1}, scrollTop={scrollTop:F1}, scrollHeight={scrollHeight:F1}, clientHeight={clientHeight:F1}, remaining={remaining:F1}");
 
-            return spacerAfterHeight < 1;
-        });
+                return spacerAfterHeight < 1;
+            });
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(
+                $"JumpToEnd convergence failed after {endPollCount} polls.\n{endDiagnostics}", ex);
+        }
 
         // Wait for scroll position to stabilize (compensation convergence)
         WaitForScrollStabilization(container);
@@ -766,24 +784,41 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         container.SendKeys(Keys.Home);
 
         // Wait until we truly reach the start of the list
-        Browser.True(() =>
+        var startPollCount = 0;
+        var startDiagnostics = new System.Text.StringBuilder();
+        try
         {
-            // Handle async loading: if placeholders are visible, load data
-            if (hasPlaceholders?.Invoke() == true)
+            Browser.True(() =>
             {
-                loadData?.Invoke();
-                return false;
-            }
+                startPollCount++;
+                // Handle async loading: if placeholders are visible, load data
+                if (hasPlaceholders?.Invoke() == true)
+                {
+                    startDiagnostics.AppendLine(CultureInfo.InvariantCulture, $"  poll #{startPollCount}: placeholders visible, loading data...");
+                    loadData?.Invoke();
+                    return false;
+                }
 
-            // Check if spacerBefore has essentially zero height (truly at the start).
-            var spacerBeforeHeight = Convert.ToDouble(
-                js.ExecuteScript(
+                // Check if spacerBefore has essentially zero height (truly at the start).
+                var metrics = (IReadOnlyDictionary<string, object>)js.ExecuteScript(
                     "var c = arguments[0]; var spacers = c.querySelectorAll('[aria-hidden]');" +
-                    "return spacers.length >= 1 ? spacers[0].offsetHeight : 999;",
-                    container), CultureInfo.InvariantCulture);
+                    "return { spacerBeforeHeight: spacers.length >= 1 ? spacers[0].offsetHeight : 999," +
+                    "  scrollTop: c.scrollTop, scrollHeight: c.scrollHeight, clientHeight: c.clientHeight };",
+                    container);
+                var spacerBeforeHeight = Convert.ToDouble(metrics["spacerBeforeHeight"], CultureInfo.InvariantCulture);
+                var scrollTop = Convert.ToDouble(metrics["scrollTop"], CultureInfo.InvariantCulture);
+                var scrollHeight = Convert.ToDouble(metrics["scrollHeight"], CultureInfo.InvariantCulture);
+                var clientHeight = Convert.ToDouble(metrics["clientHeight"], CultureInfo.InvariantCulture);
+                startDiagnostics.AppendLine(CultureInfo.InvariantCulture, $"  poll #{startPollCount}: spacerBefore={spacerBeforeHeight:F1}, scrollTop={scrollTop:F1}, scrollHeight={scrollHeight:F1}, clientHeight={clientHeight:F1}");
 
-            return spacerBeforeHeight < 1;
-        });
+                return spacerBeforeHeight < 1;
+            });
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(
+                $"JumpToStart convergence failed after {startPollCount} polls.\n{startDiagnostics}", ex);
+        }
 
         // Wait for scroll position to stabilize
         WaitForScrollStabilization(container);
