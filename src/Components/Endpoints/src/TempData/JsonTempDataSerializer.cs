@@ -1,195 +1,152 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections;
 using System.Globalization;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal class JsonTempDataSerializer : ITempDataSerializer
 {
-    public IDictionary<string, object?> DeserializeData(IDictionary<string, JsonElement> data)
+    private static readonly HashSet<Type> _supportedTypes = [typeof(int), typeof(bool), typeof(string), typeof(Guid), typeof(DateTime)];
+
+    private static readonly Dictionary<string, Type> _nameToType = BuildNameToType();
+
+    private static Dictionary<string, Type> BuildNameToType()
     {
-        var dataDict = new Dictionary<string, object?>(data.Count);
-        foreach (var kvp in data)
+        var map = new Dictionary<string, Type>();
+        foreach (var type in _supportedTypes)
         {
-            dataDict[kvp.Key] = DeserializeElement(kvp.Value);
+            map[type.FullName!] = type;
+            map[type.MakeArrayType().FullName!] = type.MakeArrayType();
+            var dictType = typeof(Dictionary<,>).MakeGenericType(typeof(string), type);
+            map[dictType.FullName!] = dictType;
         }
-        return dataDict;
+        return map;
     }
 
-    private static object? DeserializeElement(JsonElement element)
+    public IDictionary<string, (object? Value, Type? Type)> DeserializeData(IDictionary<string, JsonElement> data)
     {
-        return element.ValueKind switch
-        {
-            JsonValueKind.Null => null,
-            JsonValueKind.True => true,
-            JsonValueKind.False => false,
-            JsonValueKind.Number => element.GetInt32(),
-            JsonValueKind.String => DeserializeString(element),
-            JsonValueKind.Array => DeserializeArray(element),
-            JsonValueKind.Object => DeserializeObject(element),
-            _ => throw new NotSupportedException($"Unsupported JSON value kind: {element.ValueKind}")
-        };
-    }
+        var result = new Dictionary<string, (object? Value, Type? Type)>(data.Count);
 
-    private static object? DeserializeString(JsonElement element)
-    {
-        var type = GetStringType(element);
-        return type switch
+        foreach (var (key, element) in data)
         {
-            Type t when t == typeof(Guid) => element.GetGuid(),
-            Type t when t == typeof(DateTime) => element.GetDateTime(),
-            _ => element.GetString(),
-        };
-    }
+            if (element.ValueKind is JsonValueKind.Null)
+            {
+                result[key] = (null, null);
+                continue;
+            }
 
-    private static object? DeserializeArray(JsonElement element)
-    {
-        var length = element.GetArrayLength();
-        if (length == 0)
-        {
-            return Array.Empty<object?>();
+            var typeName = element.GetProperty("type").GetString()!;
+            var valueElement = element.GetProperty("value");
+
+            if (!_nameToType.TryGetValue(typeName, out var type))
+            {
+                throw new InvalidOperationException($"Cannot deserialize type '{typeName}'.");
+            }
+
+            var value = JsonSerializer.Deserialize(valueElement, type);
+            result[key] = (value, type);
         }
-
-        var array = Array.CreateInstance(GetArrayTypeInfo(element[0]), length);
-        var index = 0;
-        foreach (var item in element.EnumerateArray())
-        {
-            array.SetValue(DeserializeElement(item), index++);
-        }
-        return array;
-    }
-
-    private static Dictionary<string, object?> DeserializeObject(JsonElement element)
-    {
-        var dictionary = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
-        foreach (var property in element.EnumerateObject())
-        {
-            dictionary[property.Name] = DeserializeElement(property.Value);
-        }
-        return dictionary;
-    }
-
-    private static Type GetArrayTypeInfo(JsonElement element)
-    {
-        return element.ValueKind switch
-        {
-            JsonValueKind.True => typeof(bool),
-            JsonValueKind.False => typeof(bool),
-            JsonValueKind.Number => typeof(int),
-            JsonValueKind.String => GetStringType(element),
-            _ => typeof(object)
-        };
-    }
-
-    private static Type GetStringType(JsonElement element)
-    {
-        if (element.TryGetGuid(out _))
-        {
-            return typeof(Guid);
-        }
-        if (element.TryGetDateTime(out _))
-        {
-            return typeof(DateTime);
-        }
-        return typeof(string);
+        return result;
     }
 
     public bool CanSerialize(Type type)
     {
-        if (type == typeof(object) || type == typeof(object[]))
-        {
-            return false;
-        }
-
-        if (type.IsEnum)
+        if (_supportedTypes.Contains(type) || type.IsEnum)
         {
             return true;
         }
 
-        if (JsonTempDataSerializerContext.Default.GetTypeInfo(type) is not null)
+        if (type.IsArray && (_supportedTypes.Contains(type.GetElementType()!) || type.GetElementType()!.IsEnum))
         {
             return true;
         }
 
-        var dictionaryInterface = type.GetInterface(typeof(IDictionary<,>).Name);
-        if (dictionaryInterface is not null)
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>) && type.GetGenericArguments()[0] == typeof(string) && _supportedTypes.Contains(type.GetGenericArguments()[1]))
         {
-            var args = dictionaryInterface.GetGenericArguments();
-            if (args[0] == typeof(string) && CanSerialize(args[1]))
-            {
-                return true;
-            }
-            return false;
+            return true;
         }
 
-        var collectionInterface = type.GetInterface(typeof(ICollection<>).Name);
-        if (collectionInterface is not null)
+        var collectionElementType = GetCollectionElementType(type);
+        if (collectionElementType is not null)
         {
-            var elementType = collectionInterface.GetGenericArguments()[0];
-            if (CanSerialize(elementType))
-            {
-                return true;
-            }
-            return false;
+            return _supportedTypes.Contains(collectionElementType) || collectionElementType.IsEnum;
         }
 
         return false;
     }
 
-    public byte[] SerializeData(IDictionary<string, object?> data)
+    public byte[] SerializeData(IDictionary<string, (object? Value, Type? Type)> data)
     {
-        var normalizedData = new Dictionary<string, object?>(data.Count);
-        foreach (var kvp in data)
-        {
-            normalizedData[kvp.Key] = kvp.Value is Enum enumValue
-                ? Convert.ToInt32(enumValue, CultureInfo.InvariantCulture)
-                : kvp.Value;
-        }
-        return JsonSerializer.SerializeToUtf8Bytes<IDictionary<string, object?>>(normalizedData, JsonTempDataSerializerContext.Default.Options);
-    }
-}
+        using var buffer = new MemoryStream();
+        using var writer = new Utf8JsonWriter(buffer);
 
-// Simple types (non-nullable)
-[JsonSerializable(typeof(int))]
-[JsonSerializable(typeof(bool))]
-[JsonSerializable(typeof(string))]
-[JsonSerializable(typeof(Guid))]
-[JsonSerializable(typeof(DateTime))]
-// Simple types (nullable)
-[JsonSerializable(typeof(int?))]
-[JsonSerializable(typeof(bool?))]
-[JsonSerializable(typeof(Guid?))]
-[JsonSerializable(typeof(DateTime?))]
-// Collections of simple types (non-nullable)
-[JsonSerializable(typeof(ICollection<int>))]
-[JsonSerializable(typeof(ICollection<bool>))]
-[JsonSerializable(typeof(ICollection<string>))]
-[JsonSerializable(typeof(ICollection<Guid>))]
-[JsonSerializable(typeof(ICollection<DateTime>))]
-// Collections of simple types (nullable)
-[JsonSerializable(typeof(ICollection<int?>))]
-[JsonSerializable(typeof(ICollection<bool?>))]
-[JsonSerializable(typeof(ICollection<Guid?>))]
-[JsonSerializable(typeof(ICollection<DateTime?>))]
-// Dictionaries of simple types (non-nullable)
-[JsonSerializable(typeof(IDictionary<string, int>))]
-[JsonSerializable(typeof(IDictionary<string, bool>))]
-[JsonSerializable(typeof(IDictionary<string, string>))]
-[JsonSerializable(typeof(IDictionary<string, Guid>))]
-[JsonSerializable(typeof(IDictionary<string, DateTime>))]
-// Dictionaries of simple types (nullable)
-[JsonSerializable(typeof(IDictionary<string, int?>))]
-[JsonSerializable(typeof(IDictionary<string, bool?>))]
-[JsonSerializable(typeof(IDictionary<string, Guid?>))]
-[JsonSerializable(typeof(IDictionary<string, DateTime?>))]
-// Object arrays for nested/empty arrays
-[JsonSerializable(typeof(object[]))]
-[JsonSerializable(typeof(ICollection<object>))]
-// Serialization of the TempData dictionary
-[JsonSerializable(typeof(IDictionary<string, object?>))]
-internal sealed partial class JsonTempDataSerializerContext : JsonSerializerContext
-{
+        writer.WriteStartObject();
+
+        foreach (var (key, (value, type)) in data)
+        {
+            writer.WritePropertyName(key);
+
+            if (value is null)
+            {
+                writer.WriteNullValue();
+                continue;
+            }
+
+            if (type is null || !CanSerialize(type))
+            {
+                throw new InvalidOperationException($"Cannot serialize type '{type}'.");
+            }
+
+            var collectionElementType = GetCollectionElementType(type);
+
+            object writeValue = type.IsEnum ? Convert.ToInt32(value, CultureInfo.InvariantCulture)
+                : collectionElementType is not null && collectionElementType.IsEnum ? ConvertEnumsToInts((IEnumerable)value)
+                : value;
+
+            var writeType = type.IsEnum ? typeof(int)
+                : collectionElementType?.IsEnum == true ? typeof(int[])
+                : collectionElementType is not null && !type.IsArray ? collectionElementType.MakeArrayType()
+                : type;
+
+            writer.WriteStartObject();
+            writer.WriteString("type", writeType.FullName);
+            writer.WritePropertyName("value");
+            JsonSerializer.Serialize(writer, writeValue, writeValue.GetType());
+            writer.WriteEndObject();
+        }
+
+        writer.WriteEndObject();
+        writer.Flush();
+
+        return buffer.ToArray();
+    }
+
+    private static Type? GetCollectionElementType(Type type)
+    {
+        if (type.IsArray)
+        {
+            return type.GetElementType();
+        }
+
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+        {
+            return null;
+        }
+
+        var collectionInterface = type.GetInterface(typeof(ICollection<>).Name);
+        return collectionInterface?.GetGenericArguments()[0];
+    }
+
+    private static List<int> ConvertEnumsToInts(IEnumerable values)
+    {
+        var result = new List<int>();
+        foreach (var item in values)
+        {
+            result.Add(Convert.ToInt32(item, CultureInfo.InvariantCulture));
+        }
+        return result;
+    }
 }

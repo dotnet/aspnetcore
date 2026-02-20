@@ -13,10 +13,10 @@ internal interface ITempDataProvider
     /// <summary>
     /// Loads temporary data from the given <see cref="HttpContext"/>.
     /// </summary>
-    IDictionary<string, object?> LoadTempData(HttpContext context);
+    IDictionary<string, (object? Value, Type? Type)> LoadTempData(HttpContext context);
 
     /// <summary>
     /// Saves temporary data to the given <see cref="HttpContext"/>.
     /// </summary>
-    void SaveTempData(HttpContext context, IDictionary<string, object?> values);
+    void SaveTempData(HttpContext context, IDictionary<string, (object? Value, Type? Type)> values);
 }
