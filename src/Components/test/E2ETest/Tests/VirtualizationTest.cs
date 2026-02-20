@@ -724,17 +724,23 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // Single End key press — the scroll compensation in Virtualize should converge to the bottom
         container.SendKeys(Keys.End);
 
-        // Handle async loading rounds: each time new items load, the scroll compensation may
-        // trigger another data request. We only need to click "load" — not re-press End.
-        for (int round = 0; round < maxLoadRounds; round++)
+        Browser.True(() =>
         {
-            if (hasPlaceholders == null || !hasPlaceholders())
+            if (hasPlaceholders?.Invoke() == true)
             {
-                break;
+                loadData?.Invoke();
+                return false;
             }
 
-            loadData?.Invoke();
-        }
+            // Check if spacerAfter has essentially zero height (truly at the end).
+            var spacerAfterHeight = Convert.ToDouble(
+                js.ExecuteScript(
+                    "var c = arguments[0]; var spacers = c.querySelectorAll('[aria-hidden]');" +
+                    "return spacers.length >= 2 ? spacers[spacers.length - 1].offsetHeight : 999;",
+                    container), CultureInfo.InvariantCulture);
+
+            return spacerAfterHeight < 1;
+        });
 
         // Wait for scroll position to stabilize (compensation convergence)
         WaitForScrollStabilization(container);
@@ -759,19 +765,25 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // Single Home key press
         container.SendKeys(Keys.Home);
 
-        // Wait for scroll to reach the top
-        Browser.True(() => Convert.ToDouble(js.ExecuteScript("return arguments[0].scrollTop;", container), CultureInfo.InvariantCulture) < 10);
-
-        // Handle async loading rounds
-        for (int round = 0; round < maxLoadRounds; round++)
+        // Wait until we truly reach the start of the list
+        Browser.True(() =>
         {
-            if (hasPlaceholders == null || !hasPlaceholders())
+            // Handle async loading: if placeholders are visible, load data
+            if (hasPlaceholders?.Invoke() == true)
             {
-                break;
+                loadData?.Invoke();
+                return false;
             }
 
-            loadData?.Invoke();
-        }
+            // Check if spacerBefore has essentially zero height (truly at the start).
+            var spacerBeforeHeight = Convert.ToDouble(
+                js.ExecuteScript(
+                    "var c = arguments[0]; var spacers = c.querySelectorAll('[aria-hidden]');" +
+                    "return spacers.length >= 1 ? spacers[0].offsetHeight : 999;",
+                    container), CultureInfo.InvariantCulture);
+
+            return spacerBeforeHeight < 1;
+        });
 
         // Wait for scroll position to stabilize
         WaitForScrollStabilization(container);
@@ -836,17 +848,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         JumpToEndWithStabilization(container, hasPlaceholders, loadData);
         Browser.True(() => GetElementCount(container, itemClass) > 0);
         Browser.True(() => container.FindElements(By.Id(lastItemId)).Count > 0);
-
-        // Verify we're pinned to the very bottom (no extra scroll room)
-        var jsExec = (IJavaScriptExecutor)Browser;
-        Browser.True(() =>
-        {
-            var scrollTop = Convert.ToDouble(jsExec.ExecuteScript("return arguments[0].scrollTop;", container), CultureInfo.InvariantCulture);
-            var clientHeight = Convert.ToDouble(jsExec.ExecuteScript("return arguments[0].clientHeight;", container), CultureInfo.InvariantCulture);
-            var scrollHeight = Convert.ToDouble(jsExec.ExecuteScript("return arguments[0].scrollHeight;", container), CultureInfo.InvariantCulture);
-            var remaining = scrollHeight - scrollTop - clientHeight;
-            return remaining < 1;
-        });
 
         // Jump back to start using shared helper
         JumpToStartWithStabilization(
@@ -1395,16 +1396,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => int.Parse(providerCallCount.Text.Replace("ItemsProvider calls: ", ""), CultureInfo.InvariantCulture) > 0);
 
         WaitForQuickGridDataRows(container);
-        Func<bool> isFirstRowId1 = () =>
-        {
-            var rows = container.FindElements(By.CssSelector("tbody tr:not([aria-hidden])"));
-            if (rows.Count == 0)
-            {
-                return false;
-            }
-            var firstCell = rows[0].FindElements(By.CssSelector("td:not(.grid-cell-placeholder)")).FirstOrDefault();
-            return firstCell != null && firstCell.Text == "1";
-        };
+        Func<bool> isFirstRowId1 = () => CheckQuickGridFirstRow(container, text => text == "1");
 
         JumpToStartWithStabilization(
             container,
@@ -1416,27 +1408,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         JumpToEndWithStabilization(container, hasPlaceholders: null, loadData: null);
         WaitForQuickGridDataRows(container);
 
-        // Verify we're pinned to the very bottom (no extra scroll room)
-        var jsExec = (IJavaScriptExecutor)Browser;
-        Browser.True(() =>
-        {
-            var scrollTop = Convert.ToDouble(jsExec.ExecuteScript("return arguments[0].scrollTop;", container), CultureInfo.InvariantCulture);
-            var clientHeight = Convert.ToDouble(jsExec.ExecuteScript("return arguments[0].clientHeight;", container), CultureInfo.InvariantCulture);
-            var scrollHeight = Convert.ToDouble(jsExec.ExecuteScript("return arguments[0].scrollHeight;", container), CultureInfo.InvariantCulture);
-            var remaining = scrollHeight - scrollTop - clientHeight;
-            return remaining < 1;
-        });
-
-        Browser.True(() =>
-        {
-            var rows = container.FindElements(By.CssSelector("tbody tr:not([aria-hidden])"));
-            if (rows.Count == 0)
-            {
-                return false;
-            }
-            var firstDataCell = rows[0].FindElements(By.CssSelector("td:not(.grid-cell-placeholder)")).FirstOrDefault();
-            return firstDataCell != null && int.TryParse(firstDataCell.Text, out var id) && id > 800;
-        });
+        Browser.True(() => CheckQuickGridFirstRow(container, text => int.TryParse(text, out var id) && id > 950));
 
         JumpToStartWithStabilization(
             container,
@@ -1446,12 +1418,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(isFirstRowId1);
     }
 
-    /// <summary>
-    /// Waits for QuickGrid data rows to appear (not placeholders).
-    /// </summary>
     private void WaitForQuickGridDataRows(IWebElement container)
+        => Browser.True(() => CheckQuickGridFirstRow(container, text => int.TryParse(text, out _)));
+
+    private static bool CheckQuickGridFirstRow(IWebElement container, Func<string, bool> predicate)
     {
-        Browser.True(() =>
+        try
         {
             var rows = container.FindElements(By.CssSelector("tbody tr:not([aria-hidden])"));
             if (rows.Count == 0)
@@ -1459,7 +1431,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 return false;
             }
             var firstCell = rows[0].FindElements(By.CssSelector("td:not(.grid-cell-placeholder)")).FirstOrDefault();
-            return firstCell != null && int.TryParse(firstCell.Text, out _);
-        });
+            return firstCell != null && predicate(firstCell.Text);
+        }
+        catch (StaleElementReferenceException)
+        {
+            return false;
+        }
     }
 }
