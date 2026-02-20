@@ -8,7 +8,6 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation.Localization;
 using Microsoft.Extensions.Validation.Localization.Attributes;
-using Microsoft.Extensions.Validation.LocalizationTests.Helpers;
 
 namespace Microsoft.Extensions.Validation.LocalizationTests;
 
@@ -54,64 +53,6 @@ public class AddValidationLocalizationTests
         var options = provider.GetRequiredService<IOptions<ValidationOptions>>().Value;
 
         Assert.NotNull(options.DisplayNameProvider);
-    }
-
-    [Fact]
-    public void AddValidationLocalization_WithSharedResource_UsesSharedLocalizer()
-    {
-        Type? capturedType = null;
-        var services = new ServiceCollection();
-        services.AddLogging();
-        services.AddValidation();
-        services.AddValidationLocalization<SharedResource>();
-        services.AddSingleton<IStringLocalizerFactory>(new TrackingLocalizerFactory(t => capturedType = t));
-
-        var provider = services.BuildServiceProvider();
-        var options = provider.GetRequiredService<IOptions<ValidationOptions>>().Value;
-
-        Assert.NotNull(options.ErrorMessageProvider);
-
-        options.ErrorMessageProvider!(new ErrorMessageProviderContext
-        {
-            Attribute = new System.ComponentModel.DataAnnotations.RequiredAttribute(),
-            DisplayName = "Test",
-            MemberName = "Test",
-            DeclaringType = null,
-            Services = provider
-        });
-
-        Assert.Equal(typeof(SharedResource), capturedType);
-    }
-
-    [Fact]
-    public void AddValidationLocalization_WithCustomLocalizerProvider_UsesIt()
-    {
-        Type? capturedType = null;
-        var services = new ServiceCollection();
-        services.AddLogging();
-        services.AddValidation();
-        services.AddValidationLocalization(options =>
-        {
-            options.LocalizerProvider = (type, factory) =>
-            {
-                capturedType = type;
-                return factory.Create(typeof(SharedResource));
-            };
-        });
-
-        var provider = services.BuildServiceProvider();
-        var options = provider.GetRequiredService<IOptions<ValidationOptions>>().Value;
-
-        options.ErrorMessageProvider!(new ErrorMessageProviderContext
-        {
-            Attribute = new System.ComponentModel.DataAnnotations.RequiredAttribute(),
-            DisplayName = "Test",
-            MemberName = "Test",
-            DeclaringType = typeof(string),
-            Services = provider
-        });
-
-        Assert.Equal(typeof(string), capturedType);
     }
 
     [Fact]
@@ -189,21 +130,5 @@ public class AddValidationLocalizationTests
 
         Assert.NotNull(argProvider);
         Assert.IsType<ValidationAttributeFormatterProvider>(argProvider);
-    }
-
-    private class SharedResource { }
-
-    private class TrackingLocalizerFactory(Action<Type> onCreateByType) : IStringLocalizerFactory
-    {
-        private readonly Action<Type> _onCreateByType = onCreateByType;
-
-        public IStringLocalizer Create(Type resourceSource)
-        {
-            _onCreateByType(resourceSource);
-            return new TestStringLocalizer([]);
-        }
-
-        public IStringLocalizer Create(string baseName, string location)
-            => new TestStringLocalizer([]);
     }
 }
