@@ -293,6 +293,85 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("'id' is not a route parameter.", ex.Message);
     }
 
+    [Fact]
+    public async Task FromRouteWithUrlDecodeTrueDecodesPercentEncodedValues()
+    {
+        var httpContext = CreateHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        // %2F is preserved by the server's path decoder, so route values contain literal "%2F"
+        httpContext.Request.RouteValues["userId"] = "domain%2Fuser";
+
+        var factoryResult = RequestDelegateFactory.Create(
+            ([FromRoute(UrlDecode = true)] string userId) => userId,
+            new() { RouteParameterNames = new[] { "userId" } });
+
+        await factoryResult.RequestDelegate(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        var body = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal("domain/user", body);
+    }
+
+    [Fact]
+    public async Task FromRouteWithUrlDecodeDefaultPreservesEncodedValues()
+    {
+        var httpContext = CreateHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        httpContext.Request.RouteValues["userId"] = "domain%2Fuser";
+
+        var factoryResult = RequestDelegateFactory.Create(
+            ([FromRoute] string userId) => userId,
+            new() { RouteParameterNames = new[] { "userId" } });
+
+        await factoryResult.RequestDelegate(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        var body = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        // Default behavior: %2F is NOT decoded
+        Assert.Equal("domain%2Fuser", body);
+    }
+
+    [Fact]
+    public async Task FromRouteWithUrlDecodeHandlesNullValues()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Response.Body = new MemoryStream();
+
+        // Route value not set — null case
+        var factoryResult = RequestDelegateFactory.Create(
+            ([FromRoute(UrlDecode = true)] string? userId) => userId ?? string.Empty,
+            new() { RouteParameterNames = new[] { "userId" } });
+
+        await factoryResult.RequestDelegate(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task FromRouteWithUrlDecodeDecodesMultipleEncodedCharacters()
+    {
+        var httpContext = CreateHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        // Multiple encoded characters: %2F (/) and %2B (+) and %20 (space)
+        httpContext.Request.RouteValues["value"] = "a%2Fb%2Bc%20d";
+
+        var factoryResult = RequestDelegateFactory.Create(
+            ([FromRoute(UrlDecode = true)] string value) => value,
+            new() { RouteParameterNames = new[] { "value" } });
+
+        await factoryResult.RequestDelegate(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        var body = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal("a/b+c d", body);
+    }
+
     public static object?[][] TryParsableArrayParameters
     {
         get
@@ -3633,6 +3712,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     private class FromRouteAttribute : Attribute, IFromRouteMetadata
     {
         public string? Name { get; set; }
+        public bool UrlDecode { get; set; }
     }
 
     private class FromQueryAttribute : Attribute, IFromQueryMetadata

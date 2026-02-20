@@ -5,6 +5,7 @@
 
 using System.ComponentModel;
 using System.Runtime.ExceptionServices;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
@@ -56,6 +57,12 @@ public class SimpleTypeModelBinder : IModelBinder
                 ? valueProviderResult.Values.ToString()
                 : valueProviderResult.FirstValue;
 
+            // Apply URL decoding when FromRoute(UrlDecode = true) is specified
+            if (value is not null && ShouldUrlDecodeRouteValue(bindingContext))
+            {
+                value = Uri.UnescapeDataString(value);
+            }
+
             object? model;
             if (bindingContext.ModelType == typeof(string))
             {
@@ -102,6 +109,37 @@ public class SimpleTypeModelBinder : IModelBinder
 
         _logger.DoneAttemptingToBindModel(bindingContext);
         return Task.CompletedTask;
+    }
+
+    // Checks if the current binding context targets a route parameter with UrlDecode = true
+    private static bool ShouldUrlDecodeRouteValue(ModelBindingContext bindingContext)
+    {
+        if (bindingContext.BindingSource != BindingSource.Path)
+        {
+            return false;
+        }
+
+        if (bindingContext.ModelMetadata is not Metadata.DefaultModelMetadata defaultMetadata)
+        {
+            return false;
+        }
+
+        var attributes = defaultMetadata.Attributes.ParameterAttributes
+            ?? defaultMetadata.Attributes.PropertyAttributes;
+        if (attributes is null)
+        {
+            return false;
+        }
+
+        foreach (var attribute in attributes)
+        {
+            if (attribute is IFromRouteMetadata { UrlDecode: true })
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>

@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.FromRouteAttribute.UrlDecode.get -> bool
+Microsoft.AspNetCore.Mvc.FromRouteAttribute.UrlDecode.set -> void

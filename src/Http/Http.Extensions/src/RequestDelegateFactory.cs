@@ -60,6 +60,7 @@ public static partial class RequestDelegateFactory
     private static readonly MethodInfo ResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteResultWriteResponse), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo StringResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteWriteStringResponseAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo StringIsNullOrEmptyMethod = typeof(string).GetMethod(nameof(string.IsNullOrEmpty), BindingFlags.Static | BindingFlags.Public)!;
+    private static readonly MethodInfo UriUnescapeDataStringMethod = typeof(Uri).GetMethod(nameof(Uri.UnescapeDataString), BindingFlags.Static | BindingFlags.Public, new[] { typeof(string) })!;
     private static readonly MethodInfo WrapObjectAsValueTaskMethod = typeof(RequestDelegateFactory).GetMethod(nameof(WrapObjectAsValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo TaskOfTToValueTaskOfObjectMethod = typeof(RequestDelegateFactory).GetMethod(nameof(TaskOfTToValueTaskOfObject), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ValueTaskOfTToValueTaskOfObjectMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ValueTaskOfTToValueTaskOfObject), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -734,7 +735,7 @@ public static partial class RequestDelegateFactory
                 throw new InvalidOperationException($"'{routeName}' is not a route parameter.");
             }
 
-            return BindParameterFromProperty(parameter, RouteValuesExpr, RouteValuesIndexerProperty, routeName, factoryContext, "route");
+            return BindParameterFromProperty(parameter, RouteValuesExpr, RouteValuesIndexerProperty, routeName, factoryContext, "route", urlDecode: routeAttribute.UrlDecode);
         }
         else if (parameterCustomAttributes.OfType<IFromQueryMetadata>().FirstOrDefault() is { } queryAttribute)
         {
@@ -1568,6 +1569,20 @@ public static partial class RequestDelegateFactory
         return Expression.Convert(indexExpression, returnType ?? typeof(string));
     }
 
+    // Wraps a string expression with null-safe Uri.UnescapeDataString: value is null ? null : Uri.UnescapeDataString(value)
+    private static Expression ApplyUrlDecode(Expression valueExpression)
+    {
+        var tempVar = Expression.Variable(typeof(string), "routeValue");
+        return Expression.Block(
+            typeof(string),
+            new[] { tempVar },
+            Expression.Assign(tempVar, valueExpression),
+            Expression.Condition(
+                Expression.Equal(tempVar, Expression.Constant(null, typeof(string))),
+                Expression.Constant(null, typeof(string)),
+                Expression.Call(UriUnescapeDataStringMethod, tempVar)));
+    }
+
     private static Expression BindParameterFromProperties(ParameterInfo parameter, RequestDelegateFactoryContext factoryContext)
     {
         var parameterType = parameter.ParameterType;
@@ -1967,11 +1982,17 @@ public static partial class RequestDelegateFactory
                 Expression.Convert(CreateDefaultValueExpression(parameter.DefaultValue, parameter.ParameterType), parameter.ParameterType)));
     }
 
-    private static Expression BindParameterFromProperty(ParameterInfo parameter, MemberExpression property, PropertyInfo itemProperty, string key, RequestDelegateFactoryContext factoryContext, string source)
+    private static Expression BindParameterFromProperty(ParameterInfo parameter, MemberExpression property, PropertyInfo itemProperty, string key, RequestDelegateFactoryContext factoryContext, string source, bool urlDecode = false)
     {
         var valueExpression = (source == "header" && parameter.ParameterType.IsArray)
             ? Expression.Call(GetHeaderSplitMethod, property, Expression.Constant(key))
             : GetValueFromProperty(property, itemProperty, key, GetExpressionType(parameter.ParameterType));
+
+        // Apply Uri.UnescapeDataString to fully decode percent-encoded route values (e.g. %2F → /)
+        if (urlDecode)
+        {
+            valueExpression = ApplyUrlDecode(valueExpression);
+        }
 
         return BindParameterFromValue(parameter, valueExpression, factoryContext, source);
     }
