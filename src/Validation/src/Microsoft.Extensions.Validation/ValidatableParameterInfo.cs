@@ -58,13 +58,18 @@ public abstract class ValidatableParameterInfo(
             return;
         }
 
-        var displayName = LocalizationHelper.ResolveDisplayName(GetDisplayAttribute(), declaringType: null, memberName: Name, context);
+        var displayName = LocalizationHelper.ResolveDisplayName(
+            GetDisplayAttribute(),
+            declaringType: null,
+            memberName: Name,
+            context.DisplayNameProvider,
+            context.ValidationContext);
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
 
         var validationAttributes = GetValidationAttributes();
-        var errorMessageProvider = context.ErrorMessageProvider ?? context.ValidationOptions.ErrorMessageProvider;
+        var errorMessageProvider = context.ErrorMessageProvider;
 
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
         {
@@ -72,7 +77,14 @@ public abstract class ValidatableParameterInfo(
 
             if (result is not null && result != ValidationResult.Success)
             {
-                var customMessage = LocalizationHelper.TryResolveErrorMessage(_requiredAttribute, declaringType: null, displayName, Name, errorMessageProvider, context.ValidationContext);
+                var customMessage = LocalizationHelper.TryResolveErrorMessage(
+                    _requiredAttribute,
+                    declaringType: null,
+                    displayName,
+                    memberName: Name,
+                    errorMessageProvider,
+                    context.ValidationContext);
+
                 var errorMessage = customMessage ?? result.ErrorMessage;
 
                 if (errorMessage is not null)
@@ -94,7 +106,14 @@ public abstract class ValidatableParameterInfo(
                 var result = attribute.GetValidationResult(value, context.ValidationContext);
                 if (result is not null && result != ValidationResult.Success)
                 {
-                    var customMessage = LocalizationHelper.TryResolveErrorMessage(attribute, declaringType: null, displayName, Name, errorMessageProvider, context.ValidationContext);
+                    var customMessage = LocalizationHelper.TryResolveErrorMessage(
+                        attribute,
+                        declaringType: null,
+                        displayName,
+                        memberName: Name,
+                        errorMessageProvider,
+                        context.ValidationContext);
+
                     var errorMessage = customMessage ?? result.ErrorMessage;
 
                     if (errorMessage is not null)

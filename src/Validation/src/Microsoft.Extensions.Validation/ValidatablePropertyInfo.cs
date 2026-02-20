@@ -66,7 +66,12 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
-        var displayName = LocalizationHelper.ResolveDisplayName(GetDisplayAttribute(), declaringType: DeclaringType, memberName: Name, context);
+        var displayName = LocalizationHelper.ResolveDisplayName(
+            GetDisplayAttribute(),
+            declaringType: DeclaringType,
+            memberName: Name,
+            context.DisplayNameProvider,
+            context.ValidationContext);
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
@@ -83,7 +88,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             context.CurrentValidationPath = $"{originalPrefix}.{Name}";
         }
 
-        var errorMessageProvider = context.ErrorMessageProvider ?? context.ValidationOptions.ErrorMessageProvider;
+        var errorMessageProvider = context.ErrorMessageProvider;
         var propertyValue = _propertyInfo.GetValue(value);
         var validationAttributes = GetValidationAttributes();
 
@@ -94,7 +99,14 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
 
             if (result is not null && result != ValidationResult.Success)
             {
-                var customMessage = LocalizationHelper.TryResolveErrorMessage(_requiredAttribute, DeclaringType, displayName, Name, errorMessageProvider, context.ValidationContext);
+                var customMessage = LocalizationHelper.TryResolveErrorMessage(
+                    _requiredAttribute,
+                    DeclaringType,
+                    displayName,
+                    memberName: Name,
+                    errorMessageProvider,
+                    context.ValidationContext);
+
                 var errorMessage = customMessage ?? result.ErrorMessage;
 
                 if (errorMessage is not null)
@@ -176,7 +188,14 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                     var result = attribute.GetValidationResult(val, context.ValidationContext);
                     if (result is not null && result != ValidationResult.Success)
                     {
-                        var customMessage = LocalizationHelper.TryResolveErrorMessage(attribute, DeclaringType, displayName, Name, errorMessageProvider, context.ValidationContext);
+                        var customMessage = LocalizationHelper.TryResolveErrorMessage(
+                            attribute,
+                            DeclaringType,
+                            displayName,
+                            memberName: Name,
+                            errorMessageProvider,
+                            context.ValidationContext);
+
                         var errorMessage = customMessage ?? result.ErrorMessage;
 
                         if (errorMessage is not null)
