@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Globalization;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
@@ -9,9 +10,8 @@ using Microsoft.Extensions.Validation.Localization.Attributes;
 namespace Microsoft.Extensions.Validation.Localization;
 
 /// <summary>
-/// Configures <see cref="ValidationOptions"/> based on
-/// <see cref="ValidationLocalizationOptions"/> and the registered
-/// <see cref="IStringLocalizerFactory"/>.
+/// Configures <see cref="ValidationOptions"/> based on <see cref="ValidationLocalizationOptions"/>
+/// and the registered <see cref="IStringLocalizerFactory"/>.
 /// </summary>
 internal sealed class ValidationLocalizationSetup(
     IOptions<ValidationLocalizationOptions> localizationOptions,
@@ -19,6 +19,8 @@ internal sealed class ValidationLocalizationSetup(
     IValidationAttributeFormatterProvider attributeFormatterProvider)
     : IConfigureOptions<ValidationOptions>
 {
+    private readonly ConcurrentDictionary<Type, IStringLocalizer> _localizerCache = new();
+
     public void Configure(ValidationOptions options)
     {
         var locOptions = localizationOptions.Value;
@@ -31,8 +33,8 @@ internal sealed class ValidationLocalizationSetup(
         string? GetDisplayName(in DisplayNameProviderContext context)
         {
             var localizer = GetLocalizer(context.DeclaringType);
-            var localized = localizer[context.Name];
-            return localized.ResourceNotFound ? null : localized.Value;
+            var localizedName = localizer[context.Name];
+            return localizedName.ResourceNotFound ? null : localizedName.Value;
         }
 
         string? GetErrorMessage(in ErrorMessageProviderContext context)
@@ -46,8 +48,6 @@ internal sealed class ValidationLocalizationSetup(
                 return null;
             }
 
-            // Create localizer: per-type or shared, depending on config.
-            // IStringLocalizerFactory is responsible for caching IStringLocalizer instances if needed.
             var localizer = GetLocalizer(context.DeclaringType);
             var localizedTemplate = localizer[lookupKey];
 
@@ -68,9 +68,9 @@ internal sealed class ValidationLocalizationSetup(
         IStringLocalizer GetLocalizer(Type? type)
         {
             var resourceSource = type ?? typeof(object);
-            return localizerProvider is not null
-                ? localizerProvider(resourceSource, stringLocalizerFactory)
-                : stringLocalizerFactory.Create(resourceSource);
+            return _localizerCache.GetOrAdd(resourceSource, localizerProvider is not null
+                ? t => localizerProvider(t, stringLocalizerFactory)
+                : stringLocalizerFactory.Create);
         }
     }
 }
