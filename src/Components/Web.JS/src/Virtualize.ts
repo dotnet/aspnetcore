@@ -31,10 +31,6 @@ function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | 
 }
 
 function getScaleFactor(spacerBefore: HTMLElement, spacerAfter: HTMLElement): number {
-  // Use the ratio of getBoundingClientRect().height to offsetHeight to detect
-  // cumulative CSS scaling (transform, zoom, scale) from all ancestors.
-  // Both values exclude margin, so this ratio is margin-safe.
-  // Use whichever spacer has height; if both are zero, no scrolling is possible.
   const el = spacerBefore.offsetHeight > 0 ? spacerBefore
     : spacerAfter.offsetHeight > 0 ? spacerAfter
     : null;
@@ -51,29 +47,18 @@ interface MeasurementResult {
 }
 
 function measureRenderedItems(spacerBefore: HTMLElement, spacerAfter: HTMLElement): MeasurementResult {
-  // Compute scale from whichever spacer has non-zero offsetHeight, since a spacer
-  // with height: 0px cannot produce a meaningful getBoundingClientRect/offsetHeight ratio.
-  // At the start of the list spacerBefore is 0px but spacerAfter is not, and vice versa
-  // at the end. Both are siblings sharing the same CSS transform chain.
   const scaleFactor = getScaleFactor(spacerBefore, spacerAfter);
+  const items = spacerBefore.parentElement
+    ?.querySelectorAll<HTMLElement>('[data-virtualize-item]');
 
-  const container = spacerBefore.parentElement;
-  if (!container) {
+  if (!items || items.length === 0) {
     return { heights: [], scaleFactor };
   }
 
-  const items = container.querySelectorAll<HTMLElement>('[data-virtualize-item]');
-  if (items.length === 0) {
-    return { heights: [], scaleFactor };
-  }
-
-  const heights: number[] = [];
-
-  items.forEach(item => {
-    const rect = item.getBoundingClientRect();
-    heights.push(rect.height / scaleFactor);
-  });
-
+  const heights = Array.from(
+    items,
+    item => item.getBoundingClientRect().height / scaleFactor,
+  );
   return { heights, scaleFactor };
 }
 
@@ -82,7 +67,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   // would update the scroll position to compensate. Then the spacer would remain visible and we'd keep on
   // trying to resize it.
   const scrollContainer = findClosestScrollContainer(spacerBefore);
-  (scrollContainer || document.documentElement).style.overflowAnchor = 'none';
+  const scrollElement = scrollContainer || document.documentElement;
+  scrollElement.style.overflowAnchor = 'none';
 
   const rangeBetweenSpacers = document.createRange();
 
@@ -104,20 +90,25 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   const mutationObserverBefore = createSpacerMutationObserver(spacerBefore);
   const mutationObserverAfter = createSpacerMutationObserver(spacerAfter);
 
-  // Observe the entire container for any DOM changes (child additions, attribute changes on items, etc.)
-  // so that when snapToBottom is set, we re-snap after every Blazor render cycle, not just spacer changes.
+  // keeps scroll pinned to bottom after DOM changes if spacerAfter is collapsed
   const containerObserver = new MutationObserver((): void => {
-    if (snapToBottom) {
-      const el = scrollContainer || document.documentElement;
-      if (spacerAfter.offsetHeight === 0) {
-        el.scrollTop = el.scrollHeight;
-      } else {
-        snapToBottom = false;
-      }
+    if (spacerAfter.offsetHeight === 0) {
+      scrollElement.scrollTop = scrollElement.scrollHeight;
+    } else {
+      setSnapToBottom(false);
     }
   });
-  if (spacerBefore.parentElement) {
-    containerObserver.observe(spacerBefore.parentElement, { childList: true, subtree: true, attributes: true });
+
+  function setSnapToBottom(value: boolean): void {
+    if (value === snapToBottom) {
+      return;
+    }
+    snapToBottom = value;
+    if (value && spacerBefore.parentElement) {
+      containerObserver.observe(spacerBefore.parentElement, { childList: true, subtree: true, attributes: true });
+    } else if (!value) {
+      containerObserver.disconnect();
+    }
   }
 
   let pendingCallbacks: Map<Element, IntersectionObserverEntry> = new Map();
@@ -129,11 +120,10 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     mutationObserverBefore,
     mutationObserverAfter,
     containerObserver,
-    scrollContainer,
-    setSnapToBottom(value: boolean) { snapToBottom = value; },
+    scrollElement,
+    setSnapToBottom,
     onDispose: () => {
-      snapToBottom = false;
-      containerObserver.disconnect();
+      setSnapToBottom(false);
       if (callbackTimeout) {
         clearTimeout(callbackTimeout);
         callbackTimeout = null;
@@ -230,8 +220,7 @@ function scrollToBottom(dotNetHelper: DotNet.DotNetObject): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   const entry = observersByDotNetObjectId[id];
   if (entry) {
-    const el = entry.scrollContainer || document.documentElement;
-    el.scrollTop = el.scrollHeight;
+    entry.scrollElement.scrollTop = entry.scrollElement.scrollHeight;
     entry.setSnapToBottom?.(true);
   }
 }
