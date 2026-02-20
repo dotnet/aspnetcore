@@ -28,6 +28,7 @@ public static class HttpClientSlim
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static async Task<string> GetStringAsync(Uri requestUri, bool validateCertificate = true)
     {
+        ArgumentNullException.ThrowIfNull(requestUri);
         return await RetryRequest(async () =>
         {
             using (var stream = await GetStream(requestUri, validateCertificate).ConfigureAwait(false))
@@ -71,6 +72,7 @@ public static class HttpClientSlim
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static async Task<string> PostAsync(Uri requestUri, HttpContent content, bool validateCertificate = true)
     {
+        ArgumentNullException.ThrowIfNull(requestUri);
         return await RetryRequest(async () =>
         {
             using (var stream = await GetStream(requestUri, validateCertificate).ConfigureAwait(false))
@@ -149,6 +151,8 @@ public static class HttpClientSlim
 
     private static async Task<Stream> GetStream(Uri requestUri, bool validateCertificate)
     {
+        ArgumentNullException.ThrowIfNull(requestUri);
+
         var socket = await GetSocket(requestUri).ConfigureAwait(false);
         var stream = new NetworkStream(socket, ownsSocket: true);
 
@@ -170,6 +174,7 @@ public static class HttpClientSlim
 
     public static async Task<Socket> GetSocket(Uri requestUri)
     {
+        ArgumentNullException.ThrowIfNull(requestUri);
         var tcs = new TaskCompletionSource<Socket>();
 
         var socketArgs = new SocketAsyncEventArgs();
