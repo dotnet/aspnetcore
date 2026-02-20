@@ -101,20 +101,12 @@ internal class JsonTempDataSerializer : ITempDataSerializer
             }
 
             var collectionElementType = GetCollectionElementType(type);
-
-            object writeValue = type.IsEnum ? Convert.ToInt32(value, CultureInfo.InvariantCulture)
-                : collectionElementType is not null && collectionElementType.IsEnum ? ConvertEnumsToInts((IEnumerable)value)
-                : value;
-
-            var writeType = type.IsEnum ? typeof(int)
-                : collectionElementType?.IsEnum == true ? typeof(int[])
-                : collectionElementType is not null && !type.IsArray ? collectionElementType.MakeArrayType()
-                : type;
+            var (writeValue, writeType) = NormalizeValue(value, type, collectionElementType);
 
             writer.WriteStartObject();
             writer.WriteString("type", writeType.FullName);
             writer.WritePropertyName("value");
-            JsonSerializer.Serialize(writer, writeValue, writeValue.GetType());
+            JsonSerializer.Serialize(writer, writeValue, writeType);
             writer.WriteEndObject();
         }
 
@@ -122,6 +114,26 @@ internal class JsonTempDataSerializer : ITempDataSerializer
         writer.Flush();
 
         return buffer.ToArray();
+    }
+
+    private static (object Value, Type Type) NormalizeValue(object value, Type type, Type? collectionElementType)
+    {
+        if (type.IsEnum)
+        {
+            return (Convert.ToInt32(value, CultureInfo.InvariantCulture), typeof(int));
+        }
+
+        if (collectionElementType?.IsEnum == true)
+        {
+            return (ConvertEnumsToInts((IEnumerable)value), typeof(int[]));
+        }
+
+        if (collectionElementType is not null && !type.IsArray)
+        {
+            return (ConvertToArray((IEnumerable)value, collectionElementType), collectionElementType.MakeArrayType());
+        }
+
+        return (value, type);
     }
 
     private static Type? GetCollectionElementType(Type type)
@@ -140,13 +152,23 @@ internal class JsonTempDataSerializer : ITempDataSerializer
         return collectionInterface?.GetGenericArguments()[0];
     }
 
-    private static List<int> ConvertEnumsToInts(IEnumerable values)
+    private static int[] ConvertEnumsToInts(IEnumerable values)
     {
         var result = new List<int>();
         foreach (var item in values)
         {
             result.Add(Convert.ToInt32(item, CultureInfo.InvariantCulture));
         }
-        return result;
+        return result.ToArray();
+    }
+
+    private static Array ConvertToArray(IEnumerable values, Type elementType)
+    {
+        var list = new ArrayList();
+        foreach (var item in values)
+        {
+            list.Add(item);
+        }
+        return list.ToArray(elementType);
     }
 }
