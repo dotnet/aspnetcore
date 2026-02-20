@@ -1415,6 +1415,18 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         JumpToEndWithStabilization(container, hasPlaceholders: null, loadData: null);
         WaitForQuickGridDataRows(container);
+
+        // Verify we're pinned to the very bottom (no extra scroll room)
+        var jsExec = (IJavaScriptExecutor)Browser;
+        Browser.True(() =>
+        {
+            var scrollTop = Convert.ToDouble(jsExec.ExecuteScript("return arguments[0].scrollTop;", container), CultureInfo.InvariantCulture);
+            var clientHeight = Convert.ToDouble(jsExec.ExecuteScript("return arguments[0].clientHeight;", container), CultureInfo.InvariantCulture);
+            var scrollHeight = Convert.ToDouble(jsExec.ExecuteScript("return arguments[0].scrollHeight;", container), CultureInfo.InvariantCulture);
+            var remaining = scrollHeight - scrollTop - clientHeight;
+            return remaining < 1;
+        });
+
         Browser.True(() =>
         {
             var rows = container.FindElements(By.CssSelector("tbody tr:not([aria-hidden])"));
