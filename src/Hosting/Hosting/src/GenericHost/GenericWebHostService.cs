@@ -27,7 +27,8 @@ internal sealed partial class GenericWebHostService : IHostedService
                                  IEnumerable<IStartupFilter> startupFilters,
                                  IConfiguration configuration,
                                  IWebHostEnvironment hostingEnvironment,
-                                 HostingMetrics hostingMetrics)
+                                 HostingMetrics hostingMetrics,
+                                 IOptions<UrlQueryRedactionOptions>? urlQueryRedactionOptions)
     {
         Options = options.Value;
         Server = server;
@@ -42,6 +43,7 @@ internal sealed partial class GenericWebHostService : IHostedService
         Configuration = configuration;
         HostingEnvironment = hostingEnvironment;
         HostingMetrics = hostingMetrics;
+        UrlQueryRedactionOptions = urlQueryRedactionOptions?.Value;
     }
 
     public GenericWebHostServiceOptions Options { get; }
@@ -58,6 +60,7 @@ internal sealed partial class GenericWebHostService : IHostedService
     public IConfiguration Configuration { get; }
     public IWebHostEnvironment HostingEnvironment { get; }
     public HostingMetrics HostingMetrics { get; }
+    public UrlQueryRedactionOptions? UrlQueryRedactionOptions { get; }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -156,7 +159,7 @@ internal sealed partial class GenericWebHostService : IHostedService
             application = ErrorPageBuilder.BuildErrorPageApplication(HostingEnvironment.ContentRootFileProvider, Logger, showDetailedErrors, ex);
         }
 
-        var httpApplication = new HostingApplication(application, Logger, DiagnosticListener, ActivitySource, Propagator, HttpContextFactory, HostingEventSource.Log, HostingMetrics);
+        var httpApplication = new HostingApplication(application, Logger, DiagnosticListener, ActivitySource, Propagator, HttpContextFactory, HostingEventSource.Log, HostingMetrics, UrlQueryRedactionOptions);
 
         await Server.StartAsync(httpApplication, cancellationToken);
         HostingEventSource.Log.ServerReady();

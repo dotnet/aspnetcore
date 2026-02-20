@@ -1,1 +1,6 @@
 #nullable enable
+Microsoft.AspNetCore.Hosting.UrlQueryRedactionOptions
+Microsoft.AspNetCore.Hosting.UrlQueryRedactionOptions.UrlQueryRedactionOptions() -> void
+Microsoft.AspNetCore.Hosting.UrlQueryRedactionOptions.SensitiveQueryParameters.get -> System.Collections.Generic.HashSet<string!>!
+Microsoft.AspNetCore.Hosting.UrlQueryRedactionOptions.RedactedPlaceholder.get -> string!
+Microsoft.AspNetCore.Hosting.UrlQueryRedactionOptions.RedactedPlaceholder.set -> void
