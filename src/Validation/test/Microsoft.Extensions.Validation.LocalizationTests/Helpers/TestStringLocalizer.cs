@@ -6,11 +6,9 @@ using Microsoft.Extensions.Localization;
 
 namespace Microsoft.Extensions.Validation.LocalizationTests.Helpers;
 
-internal class TestStringLocalizer : IStringLocalizer
+internal class TestStringLocalizer(Dictionary<string, string> translations) : IStringLocalizer
 {
-    private readonly Dictionary<string, string> _translations;
-
-    public TestStringLocalizer(Dictionary<string, string> translations) => _translations = translations;
+    private readonly Dictionary<string, string> _translations = translations;
 
     public LocalizedString this[string name] => _translations.TryGetValue(name, out var value)
         ? new LocalizedString(name, value, resourceNotFound: false)

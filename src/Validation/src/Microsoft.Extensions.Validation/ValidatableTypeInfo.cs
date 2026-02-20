@@ -85,7 +85,12 @@ public abstract class ValidatableTypeInfo(
                 return;
             }
 
-            var displayName = LocalizationHelper.ResolveDisplayName(GetDisplayAttribute(), declaringType: Type, memberName: Type.Name, context);
+            var displayName = LocalizationHelper.ResolveDisplayName(
+                GetDisplayAttribute(),
+                declaringType: Type,
+                memberName: Type.Name,
+                context.DisplayNameProvider,
+                context.ValidationContext);
 
             context.ValidationContext.DisplayName = displayName;
             context.ValidationContext.MemberName = null;
@@ -130,7 +135,7 @@ public abstract class ValidatableTypeInfo(
     {
         var validationAttributes = GetValidationAttributes();
         var errorPrefix = context.CurrentValidationPath;
-        var errorMessageProvider = context.ErrorMessageProvider ?? context.ValidationOptions.ErrorMessageProvider;
+        var errorMessageProvider = context.ErrorMessageProvider;
 
         for (var i = 0; i < validationAttributes.Length; i++)
         {
@@ -138,9 +143,14 @@ public abstract class ValidatableTypeInfo(
             var result = attribute.GetValidationResult(value, context.ValidationContext);
             if (result is not null && result != ValidationResult.Success)
             {
-                // For type-level attributes, the "display name" is the type name
-                // and the "member name" is empty (it's a type-level validation).
-                var customMessage = LocalizationHelper.TryResolveErrorMessage(attribute, declaringType: Type, displayName, Type.Name, errorMessageProvider, context.ValidationContext);
+                var customMessage = LocalizationHelper.TryResolveErrorMessage(
+                    attribute,
+                    declaringType: Type,
+                    displayName,
+                    memberName: Type.Name,
+                    errorMessageProvider,
+                    context.ValidationContext);
+
                 var errorMessage = customMessage ?? result.ErrorMessage;
 
                 if (errorMessage is not null)
