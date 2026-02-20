@@ -13,6 +13,9 @@ namespace Microsoft.Extensions.Validation;
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class ValidateContext
 {
+    private DisplayNameProvider? _displayNameProvider;
+    private ErrorMessageProvider? _errorMessageProvider;
+
     /// <summary>
     /// Gets or sets the validation context used for validating objects that implement <see cref="IValidatableObject"/> or have <see cref="ValidationAttribute"/>.
     /// This context provides access to service provider and other validation metadata.
@@ -76,13 +79,21 @@ public sealed class ValidateContext
     /// Gets or sets the display name provider for this validation invocation,
     /// overriding <see cref="ValidationOptions.DisplayNameProvider"/> when set.
     /// </summary>
-    public DisplayNameProvider? DisplayNameProvider { get; set; }
+    public DisplayNameProvider? DisplayNameProvider
+    {
+        get => _displayNameProvider ?? ValidationOptions.DisplayNameProvider;
+        set => _displayNameProvider = value;
+    }
 
     /// <summary>
     /// Gets or sets the error message provider for this validation invocation,
     /// overriding <see cref="ValidationOptions.ErrorMessageProvider"/> when set.
     /// </summary>
-    public ErrorMessageProvider? ErrorMessageProvider { get; set; }
+    public ErrorMessageProvider? ErrorMessageProvider
+    {
+        get => _errorMessageProvider ?? ValidationOptions.ErrorMessageProvider;
+        set => _errorMessageProvider = value;
+    }
 
     internal void AddValidationError(string propertyName, string key, string[] error, object? container)
     {
