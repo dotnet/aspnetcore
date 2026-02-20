@@ -588,6 +588,11 @@ function LocateVisualStudio([object]$vsRequirements = $null){
     return $null
   }
 
+  if ($null -eq $vsInfo -or $vsInfo.Count -eq 0) {
+    throw "No instance of Visual Studio meeting the requirements specified was found. Requirements: $($args -join ' ')"
+    return $null
+  }
+
   # use first matching instance
   return $vsInfo[0]
 }
