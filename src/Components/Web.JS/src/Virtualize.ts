@@ -111,6 +111,9 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
   }
 
+  let lastSpacerAfterScrollTop: number | null = null;
+  let lastSpacerBeforeScrollTop: number | null = null;
+
   let pendingCallbacks: Map<Element, IntersectionObserverEntry> = new Map();
   let callbackTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -174,7 +177,33 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   }
 
   function processIntersectionEntries(entries: IntersectionObserverEntry[]): void {
-    const intersectingEntries = entries.filter(e => e.isIntersecting);
+    const intersectingEntries: IntersectionObserverEntry[] = [];
+
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        intersectingEntries.push(entry);
+        if (entry.target === spacerAfter && spacerAfter.offsetHeight > 0) {
+          lastSpacerAfterScrollTop = scrollElement.scrollTop;
+        } else if (entry.target === spacerBefore && spacerBefore.offsetHeight > 0) {
+          lastSpacerBeforeScrollTop = scrollElement.scrollTop;
+        }
+      } else if (entry.target === spacerAfter) {
+        if (lastSpacerAfterScrollTop !== null
+            && Math.abs(scrollElement.scrollTop - lastSpacerAfterScrollTop) < 1
+            && spacerAfter.offsetHeight > 0) {
+          scrollElement.scrollTop = scrollElement.scrollHeight;
+        }
+        lastSpacerAfterScrollTop = null;
+      } else if (entry.target === spacerBefore) {
+        if (lastSpacerBeforeScrollTop !== null
+            && Math.abs(scrollElement.scrollTop - lastSpacerBeforeScrollTop) < 1
+            && spacerBefore.offsetHeight > 0) {
+          scrollElement.scrollTop = 0;
+        }
+        lastSpacerBeforeScrollTop = null;
+      }
+    }
+
     if (intersectingEntries.length === 0) {
       return;
     }
