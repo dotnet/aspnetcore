@@ -255,4 +255,26 @@ public class JsonPatchDocumentTest
 
         return JsonSerializer.Serialize<JsonPatchDocument<SimpleObject>>(document, jsonSerializerOptions);
     }
+
+     [Fact]
+    public void Serialization_ShouldExcludeFrom_WhenNullAndNotMoveOrCopy()
+    {
+        // Arrange
+        JsonPatchDocument patchDocument = new();
+        patchDocument.Add("/a/b/c", "foo");
+        patchDocument.Remove("/x/y/z");
+        patchDocument.Replace("/d/e", "bar");
+        patchDocument.Test("/f/e", "t1");
+
+        var json = JsonSerializer.Serialize(patchDocument);
+
+        // Assert
+        var expectedJson = """
+        [{"value":"foo","path":"/a/b/c","op":"add"},{"value":null,"path":"/x/y/z","op":"remove"},
+        { "value":"bar","path":"/d/e","op":"replace"},{ "value":"t1","path":"/f/e","op":"test"}]
+        """;
+
+        // Act
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(expectedJson), JsonNode.Parse(json)));
+    }
 }
