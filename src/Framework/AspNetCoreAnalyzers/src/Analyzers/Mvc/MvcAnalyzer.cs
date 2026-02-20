@@ -21,10 +21,10 @@ using WellKnownType = WellKnownTypeData.WellKnownType;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public partial class MvcAnalyzer : DiagnosticAnalyzer
 {
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = [
         DiagnosticDescriptors.AmbiguousActionRoute,
-        DiagnosticDescriptors.OverriddenAuthorizeAttribute
-    );
+        DiagnosticDescriptors.OverriddenAuthorizeAttribute,
+        DiagnosticDescriptors.AttributeRoutingUsedForNonActionMethod];
 
     public override void Initialize(AnalysisContext context)
     {
@@ -59,11 +59,20 @@ public partial class MvcAnalyzer : DiagnosticAnalyzer
                     // Visit Actions
                     foreach (var member in namedTypeSymbol.GetMembers())
                     {
-                        if (member is IMethodSymbol methodSymbol && MvcDetector.IsAction(methodSymbol, wellKnownTypes))
+                        if (member is not IMethodSymbol methodSymbol)
+                        {
+                            continue;
+                        }
+
+                        if (MvcDetector.IsAction(methodSymbol, wellKnownTypes))
                         {
                             PopulateActionRoutes(context, wellKnownTypes, routeUsageCache, pooledItems.ActionRoutes, methodSymbol);
                             DetectOverriddenAuthorizeAttributeOnAction(context, wellKnownTypes, methodSymbol, pooledItems.AuthorizeAttributes, allowAnonClass);
                             pooledItems.AuthorizeAttributes.Clear();
+                        }
+                        else
+                        {
+                            AnalyzeNonActionMethod(methodSymbol, wellKnownTypes, context);
                         }
                     }
 
@@ -86,6 +95,17 @@ public partial class MvcAnalyzer : DiagnosticAnalyzer
                 }
             }, SymbolKind.NamedType);
         });
+    }
+
+    private static void AnalyzeNonActionMethod(IMethodSymbol method, WellKnownTypes wellKnownTypes, SymbolAnalysisContext context)
+    {
+        var routeTemplateProviderType = wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Mvc_Routing_IRouteTemplateProvider);
+
+        if (method.TryGetAttributeImplementingInterface(routeTemplateProviderType, out var attribute))
+        {
+            var syntax = attribute.ApplicationSyntaxReference!.GetSyntax(context.CancellationToken);
+            context.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.AttributeRoutingUsedForNonActionMethod, syntax.GetLocation(), method.Name));
+        }
     }
 
     private static void PopulateActionRoutes(SymbolAnalysisContext context, WellKnownTypes wellKnownTypes, RouteUsageCache routeUsageCache, List<ActionRoute> actionRoutes, IMethodSymbol methodSymbol)
