@@ -7,36 +7,36 @@ namespace Microsoft.Extensions.Validation.Localization;
 
 internal static class LocalizationHelper
 {
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-    internal static string ResolveDisplayName(DisplayAttribute? displayAttribute, Type? declaringType, string memberName, ValidateContext context)
-#pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    internal static string ResolveDisplayName(
+        DisplayAttribute? displayAttribute,
+        Type? declaringType,
+        string memberName,
+        DisplayNameProvider? provider,
+        IServiceProvider services)
     {
         if (displayAttribute is DisplayAttribute display && display.GetName() is string displayName)
         {
             if (display.ResourceType is not null)
             {
-                // Name is localized via static property (typically generated from a resource file).
+                // Display name is localized via a static property (typically generated from a resource file).
                 return displayName;
             }
-            else
+
+            if (provider is null)
             {
-                // Name is (optionally) localized using the Name value as a key.
-                var displayNameProvider = context.DisplayNameProvider ?? context.ValidationOptions.DisplayNameProvider;
-
-                if (displayNameProvider is null)
-                {
-                    return displayName;
-                }
-
-                var displayNameContext = new DisplayNameProviderContext
-                {
-                    DeclaringType = declaringType,
-                    Name = displayName,
-                    Services = context.ValidationContext
-                };
-
-                return displayNameProvider(displayNameContext) ?? displayName;
+                // Run-time localization is not set up. The Name value is used directly. 
+                return displayName;
             }
+
+            // Display name is localized using run-time localization.
+            var displayNameContext = new DisplayNameProviderContext
+            {
+                DeclaringType = declaringType,
+                Name = displayName,
+                Services = services
+            };
+
+            return provider(displayNameContext) ?? displayName;
         }
 
         return memberName;
@@ -62,19 +62,21 @@ internal static class LocalizationHelper
         ErrorMessageProvider? provider,
         IServiceProvider services)
     {
-        // If the attribute uses its own resource-based localization
-        // (ErrorMessageResourceType is set), skip external localization
-        // to avoid double-localization.
         if (attribute.ErrorMessageResourceType is not null)
         {
+            // Error message is localized via a static property (typically generated from a resource file).
+            // Error message is retrieved from the ValidationResult directly.
             return null;
         }
 
         if (provider is null)
         {
+            // Run-time localization is not set up.
+            // Error message is retrieved from the ValidationResult directly.
             return null;
         }
 
+        // Error message is localized using run-time localization.
         var errorMessageContext = new ErrorMessageProviderContext
         {
             Attribute = attribute,
