@@ -48,6 +48,7 @@
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryStateProvider.cs" LinkBase="Forms" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ResourceCollectionProvider.cs" Link="Shared\ResourceCollectionProvider.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\CultureStateProvider.cs" Link="Shared\CultureStateProvider.cs" />
   </ItemGroup>
 
   <ItemGroup>
