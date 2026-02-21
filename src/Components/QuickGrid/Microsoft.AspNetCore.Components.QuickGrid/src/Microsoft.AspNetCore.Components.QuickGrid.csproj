@@ -17,6 +17,7 @@
     <_CurrentProjectDiscoveredScopedCssFiles Include="@(ThemeCssFiles)" RelativePath="%(Identity)" BasePath="_content/$(AssemblyName)" />
 
     <Compile Include="$(ComponentsSharedSourceRoot)src\AttributeUtilities.cs" LinkBase="Infrastructure" />
+    <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" LinkBase="Infrastructure" />
   </ItemGroup>
 
   <ItemGroup>

@@ -105,6 +105,10 @@ public abstract partial class ColumnBase<TGridItem>
     /// <returns>True if the column should be sortable by default, otherwise false.</returns>
     protected virtual bool IsSortableByDefault() => false;
 
+    internal int ColumnIndex { get; set; }
+
+    private string FormName => $"{Grid.QueryName}_{ColumnIndex}";
+
     /// <summary>
     /// Constructs an instance of <see cref="ColumnBase{TGridItem}" />.
     /// </summary>
