@@ -138,7 +138,6 @@ public class ValidatableParameterInfoTests
                     typeof(Person),
                     typeof(string),
                     "Name",
-                    "Name",
                     [new RequiredAttribute()])
             ]);
 
@@ -177,7 +176,6 @@ public class ValidatableParameterInfoTests
                 new TestValidatablePropertyInfo(
                     typeof(Person),
                     typeof(string),
-                    "Name",
                     "Name",
                     [new RequiredAttribute()])
             ]);
@@ -290,14 +288,15 @@ public class ValidatableParameterInfoTests
     private TestValidatableParameterInfo CreateTestParameterInfo(
         Type parameterType,
         string name,
-        string displayName,
+        string? displayName,
         ValidationAttribute[] validationAttributes)
     {
+        var displayAttribute = displayName is not null ? new DisplayAttribute { Name = displayName } : null;
         return new TestValidatableParameterInfo(
             parameterType,
             name,
-            displayName,
-            validationAttributes);
+            validationAttributes,
+            displayAttribute);
     }
 
     private ValidateContext CreateValidatableContext(
@@ -313,39 +312,31 @@ public class ValidatableParameterInfoTests
         };
     }
 
-    private class TestValidatableParameterInfo : ValidatableParameterInfo
+    private class TestValidatableParameterInfo(
+        Type parameterType,
+        string name,
+        ValidationAttribute[] validationAttributes,
+        DisplayAttribute? displayAttribute = null) : ValidatableParameterInfo(parameterType, name)
     {
-        private readonly ValidationAttribute[] _validationAttributes;
-
-        public TestValidatableParameterInfo(
-            Type parameterType,
-            string name,
-            string displayName,
-            ValidationAttribute[] validationAttributes)
-            : base(parameterType, name, displayName)
-        {
-            _validationAttributes = validationAttributes;
-        }
-
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+        protected override DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
+
+        private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
+        private readonly DisplayAttribute? _displayAttribute = displayAttribute;
     }
 
-    private class TestValidatablePropertyInfo : ValidatablePropertyInfo
+    private class TestValidatablePropertyInfo(
+        Type containingType,
+        Type propertyType,
+        string name,
+        ValidationAttribute[] validationAttributes,
+        DisplayAttribute? displayAttribute = null) : ValidatablePropertyInfo(containingType, propertyType, name)
     {
-        private readonly ValidationAttribute[] _validationAttributes;
-
-        public TestValidatablePropertyInfo(
-            Type containingType,
-            Type propertyType,
-            string name,
-            string displayName,
-            ValidationAttribute[] validationAttributes)
-            : base(containingType, propertyType, name, displayName)
-        {
-            _validationAttributes = validationAttributes;
-        }
-
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+        protected override DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
+
+        private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
+        private readonly DisplayAttribute? _displayAttribute = displayAttribute;
     }
 
     private class TestValidationOptions : ValidationOptions
