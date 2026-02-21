@@ -13,7 +13,7 @@ public class SessionStorageTempDataProviderTest
 
     internal TempData CreateTempData()
     {
-        return new TempData(() => new Dictionary<string, object>());
+        return new TempData(() => new Dictionary<string, (object Value, Type Type)>());
     }
 
     public SessionStorageTempDataProviderTest()
@@ -103,8 +103,8 @@ public class SessionStorageTempDataProviderTest
         _sessionStateTempDataProvider.SaveTempData(httpContext, tempData.Save());
         var loadedTempData = _sessionStateTempDataProvider.LoadTempData(httpContext);
 
-        Assert.Equal("StringValue", loadedTempData["StringKey"]);
-        Assert.Equal(42, loadedTempData["IntKey"]);
+        Assert.Equal("StringValue", loadedTempData["StringKey"].Value);
+        Assert.Equal(42, loadedTempData["IntKey"].Value);
     }
 
     private static DefaultHttpContext CreateHttpContext(bool throwOnSessionAccess = false)

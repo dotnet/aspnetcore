@@ -19,7 +19,7 @@ internal sealed partial class TempDataService
         return new TempData(() => Load(httpContext));
     }
 
-    public IDictionary<string, object?> Load(HttpContext httpContext)
+    public IDictionary<string, (object? Value, Type? Type)> Load(HttpContext httpContext)
     {
         return _tempDataProvider.LoadTempData(httpContext);
     }
