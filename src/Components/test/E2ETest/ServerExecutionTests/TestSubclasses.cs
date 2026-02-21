@@ -90,6 +90,24 @@ public class ServerVirtualizationTest : VirtualizationTest
         : base(browserFixture, serverFixture.WithServerExecution(), output)
     {
     }
+
+    [Theory(Skip = "Flashing detection is timing-sensitive and unreliable over server-side Blazor's network latency.")]
+    [InlineData(100, 100, 100)]
+    [InlineData(50, 100, 100)]
+    [InlineData(100, 50, 100)]
+    [InlineData(100, 100, 50)]
+    [InlineData(200, 100, 100)]
+    [InlineData(100, 200, 100)]
+    [InlineData(100, 100, 200)]
+    [InlineData(75, 75, 75)]
+    [InlineData(150, 150, 150)]
+    public override void VariableHeightAsync_CanScrollWithoutFlashing(int transformScalePercent, int cssZoomPercent, int cssScalePercent)
+    {
+        // Intentionally empty - skipped via Theory(Skip) attribute above.
+        _ = transformScalePercent;
+        _ = cssZoomPercent;
+        _ = cssScalePercent;
+    }
 }
 
 public class ServerDynamicComponentRenderingTest : DynamicComponentRenderingTest

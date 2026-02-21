@@ -28,6 +28,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Navigate(ServerPathBase);
     }
 
+    private int GetElementCount(By by) => Browser.FindElements(by).Count;
+
+    private int GetElementCount(ISearchContext container, string cssSelector)
+        => container.FindElements(By.CssSelector(cssSelector)).Count;
+
     [Fact]
     public void AlwaysFillsVisibleCapacity_Sync()
     {
@@ -208,8 +213,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
 
         // Validate that the scroll event completed successfully
-        var lastElement = Browser.Exists(By.Id("999"));
-        Browser.True(() => lastElement.Displayed);
+        Browser.True(() => Browser.Exists(By.Id("999")).Displayed);
 
         // Validate that the top spacer has expanded.
         Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
@@ -256,15 +260,14 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // We can override the tag name of the spacer
         Assert.Equal("tr", topSpacer.TagName.ToLowerInvariant());
         Assert.Equal("tr", bottomSpacer.TagName.ToLowerInvariant());
-        Assert.Contains(expectedInitialSpacerStyle, topSpacer.GetDomAttribute("style"));
+        Browser.True(() => topSpacer.GetDomAttribute("style").Contains(expectedInitialSpacerStyle));
         Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
         Assert.Contains("true", bottomSpacer.GetDomAttribute("aria-hidden"));
 
         // Check scrolling document element works
         Browser.DoesNotExist(By.Id("row-999"));
         Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
-        var lastElement = Browser.Exists(By.Id("row-999"));
-        Browser.True(() => lastElement.Displayed);
+        Browser.True(() => Browser.Exists(By.Id("row-999")).Displayed);
 
         // Validate that the top spacer has expanded, and bottom one has collapsed
         Browser.False(() => topSpacer.GetDomAttribute("style").Contains(expectedInitialSpacerStyle));
@@ -655,13 +658,23 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             var list = new List<int>(elements.Count);
             foreach (var el in elements)
             {
-                var text = el.Text;
-                if (text.StartsWith("Item ", StringComparison.Ordinal))
+                try
                 {
-                    if (int.TryParse(text.AsSpan(5), NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+                    var text = el.Text;
+                    if (text.StartsWith("Item ", StringComparison.Ordinal))
                     {
-                        list.Add(value);
+                        if (int.TryParse(text.AsSpan(5), NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+                        {
+                            list.Add(value);
+                        }
                     }
+                }
+                catch (StaleElementReferenceException)
+                {
+                    // With variable-height support, item heights are measured and reported back to .NET,
+                    // which recalculates spacer heights. This causes more frequent re-renders during scroll,
+                    // and DOM elements can be replaced mid-iteration. Skipping stale elements is fine since
+                    // the test collects indices across multiple scroll positions.
                 }
             }
             return list;
@@ -690,5 +703,774 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         var js = (IJavaScriptExecutor)Browser;
         js.ExecuteScript("arguments[0].scrollLeft = arguments[0].scrollWidth", elem);
+    }
+
+    /// <summary>
+    /// Jumps to end using a single End key press, then waits for scroll position to stabilize.
+    /// With the measurement-based scroll compensation in Virtualize, a single End press converges
+    /// to the true bottom automatically. For async mode, handles loading data when placeholders appear.
+    /// </summary>
+    private void JumpToEndWithStabilization(
+        IWebElement container,
+        Func<bool> hasPlaceholders,
+        Action loadData,
+        int maxLoadRounds = 10)
+    {
+        var js = (IJavaScriptExecutor)Browser;
+
+        // Ensure container has focus for keyboard input
+        container.Click();
+
+        // Single End key press — the scroll compensation in Virtualize should converge to the bottom
+        container.SendKeys(Keys.End);
+
+        var endPollCount = 0;
+        var endDiagnostics = new System.Text.StringBuilder();
+        try
+        {
+            Browser.True(() =>
+            {
+                endPollCount++;
+                if (hasPlaceholders?.Invoke() == true)
+                {
+                    endDiagnostics.AppendLine(CultureInfo.InvariantCulture, $"  poll #{endPollCount}: placeholders visible, loading data...");
+                    loadData?.Invoke();
+                    return false;
+                }
+
+                // Check if spacerAfter has essentially zero height (truly at the end).
+                var metrics = (IReadOnlyDictionary<string, object>)js.ExecuteScript(
+                    "var c = arguments[0]; var spacers = c.querySelectorAll('[aria-hidden]');" +
+                    "return { spacerAfterHeight: spacers.length >= 2 ? spacers[spacers.length - 1].offsetHeight : 999," +
+                    "  scrollTop: c.scrollTop, scrollHeight: c.scrollHeight, clientHeight: c.clientHeight };",
+                    container);
+                var spacerAfterHeight = Convert.ToDouble(metrics["spacerAfterHeight"], CultureInfo.InvariantCulture);
+                var scrollTop = Convert.ToDouble(metrics["scrollTop"], CultureInfo.InvariantCulture);
+                var scrollHeight = Convert.ToDouble(metrics["scrollHeight"], CultureInfo.InvariantCulture);
+                var clientHeight = Convert.ToDouble(metrics["clientHeight"], CultureInfo.InvariantCulture);
+                var remaining = scrollHeight - scrollTop - clientHeight;
+                endDiagnostics.AppendLine(CultureInfo.InvariantCulture, $"  poll #{endPollCount}: spacerAfter={spacerAfterHeight:F1}, scrollTop={scrollTop:F1}, scrollHeight={scrollHeight:F1}, clientHeight={clientHeight:F1}, remaining={remaining:F1}");
+
+                return spacerAfterHeight < 1;
+            });
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(
+                $"JumpToEnd convergence failed after {endPollCount} polls.\n{endDiagnostics}", ex);
+        }
+
+        // Wait for scroll position to stabilize (compensation convergence)
+        WaitForScrollStabilization(container);
+    }
+
+    /// <summary>
+    /// Jumps to start using a single Home key press, then waits for scroll to reach the top.
+    /// For async mode, handles loading data when placeholders appear.
+    /// </summary>
+    private void JumpToStartWithStabilization(
+        IWebElement container,
+        Func<bool> hasPlaceholders,
+        Action loadData,
+        Func<bool> isFirstItemVisible,
+        int maxLoadRounds = 10)
+    {
+        var js = (IJavaScriptExecutor)Browser;
+
+        // Ensure container has focus for keyboard input
+        container.Click();
+
+        // Single Home key press
+        container.SendKeys(Keys.Home);
+
+        // Wait until we truly reach the start of the list
+        var startPollCount = 0;
+        var startDiagnostics = new System.Text.StringBuilder();
+        try
+        {
+            Browser.True(() =>
+            {
+                startPollCount++;
+                // Handle async loading: if placeholders are visible, load data
+                if (hasPlaceholders?.Invoke() == true)
+                {
+                    startDiagnostics.AppendLine(CultureInfo.InvariantCulture, $"  poll #{startPollCount}: placeholders visible, loading data...");
+                    loadData?.Invoke();
+                    return false;
+                }
+
+                // Check if spacerBefore has essentially zero height (truly at the start).
+                var metrics = (IReadOnlyDictionary<string, object>)js.ExecuteScript(
+                    "var c = arguments[0]; var spacers = c.querySelectorAll('[aria-hidden]');" +
+                    "return { spacerBeforeHeight: spacers.length >= 1 ? spacers[0].offsetHeight : 999," +
+                    "  scrollTop: c.scrollTop, scrollHeight: c.scrollHeight, clientHeight: c.clientHeight };",
+                    container);
+                var spacerBeforeHeight = Convert.ToDouble(metrics["spacerBeforeHeight"], CultureInfo.InvariantCulture);
+                var scrollTop = Convert.ToDouble(metrics["scrollTop"], CultureInfo.InvariantCulture);
+                var scrollHeight = Convert.ToDouble(metrics["scrollHeight"], CultureInfo.InvariantCulture);
+                var clientHeight = Convert.ToDouble(metrics["clientHeight"], CultureInfo.InvariantCulture);
+                startDiagnostics.AppendLine(CultureInfo.InvariantCulture, $"  poll #{startPollCount}: spacerBefore={spacerBeforeHeight:F1}, scrollTop={scrollTop:F1}, scrollHeight={scrollHeight:F1}, clientHeight={clientHeight:F1}");
+
+                return spacerBeforeHeight < 1;
+            });
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(
+                $"JumpToStart convergence failed after {startPollCount} polls.\n{startDiagnostics}", ex);
+        }
+
+        // Wait for scroll position to stabilize
+        WaitForScrollStabilization(container);
+    }
+
+    /// <summary>
+    /// Waits for the scroll position to stop changing (stabilize within 1px across consecutive checks).
+    /// </summary>
+    private void WaitForScrollStabilization(IWebElement container)
+    {
+        var js = (IJavaScriptExecutor)Browser;
+        double lastScrollTop = -1;
+        Browser.True(() =>
+        {
+            var current = Convert.ToDouble(js.ExecuteScript("return arguments[0].scrollTop;", container), CultureInfo.InvariantCulture);
+            if (Math.Abs(current - lastScrollTop) < 1 && lastScrollTop >= 0)
+            {
+                return true;
+            }
+
+            lastScrollTop = current;
+            return false;
+        });
+    }
+
+    [Theory]
+    [InlineData(false)]  // sync
+    [InlineData(true)]   // async
+    public void VariableHeight_CanJumpToEndAndStart(bool useAsync)
+    {
+        IWebElement container;
+        IWebElement finishLoadingButton = null;
+        string itemClass, placeholderClass, firstItemId, lastItemId;
+
+        if (useAsync)
+        {
+            Browser.MountTestComponent<VirtualizationVariableHeightAsync>();
+            container = Browser.Exists(By.Id("async-variable-container"));
+            finishLoadingButton = Browser.Exists(By.Id("finish-loading"));
+            itemClass = ".async-variable-item";
+            placeholderClass = ".async-variable-placeholder";
+            firstItemId = "async-variable-item-0";
+            lastItemId = "async-variable-item-999";
+
+            finishLoadingButton.Click();
+        }
+        else
+        {
+            Browser.MountTestComponent<VirtualizationVariableHeight>();
+            container = Browser.Exists(By.Id("variable-height-container"));
+            itemClass = ".variable-height-item";
+            placeholderClass = null;
+            firstItemId = "variable-item-0";
+            lastItemId = "variable-item-999";
+        }
+
+        Browser.True(() => GetElementCount(container, itemClass) > 0);
+
+        // Jump to end
+        var hasPlaceholders = useAsync ? () => GetElementCount(container, placeholderClass) > 0 : (Func<bool>)null;
+        var loadData = useAsync ? () => finishLoadingButton.Click() : (Action)null;
+        JumpToEndWithStabilization(container, hasPlaceholders, loadData);
+        Browser.True(() => GetElementCount(container, itemClass) > 0);
+        Browser.True(() => container.FindElements(By.Id(lastItemId)).Count > 0);
+
+        // Jump back to start using shared helper
+        JumpToStartWithStabilization(
+            container,
+            hasPlaceholders,
+            loadData,
+            () => container.FindElements(By.Id(firstItemId)).Count > 0);
+        Browser.True(() => GetElementCount(container, itemClass) > 0);
+        Browser.True(() => container.FindElements(By.Id(firstItemId)).Count > 0);
+    }
+
+    [Fact]
+    public void VariableHeight_ItemsRenderWithCorrectHeights()
+    {
+        Browser.MountTestComponent<VirtualizationVariableHeight>();
+
+        var container = Browser.Exists(By.Id("variable-height-container"));
+        Browser.True(() => GetElementCount(container, ".variable-height-item") > 0);
+
+        // Check that item 0 has the expected height (20px from our test data: 20 + (0*37%1981) = 20)
+        var item0 = container.FindElement(By.Id("variable-item-0"));
+        var style0 = item0.GetDomAttribute("style");
+        Assert.Contains("height: 20px", style0);
+
+        // Check that item 1 has the expected height (57px from our test data: 20 + (1*37%1981) = 57)
+        var item1 = container.FindElement(By.Id("variable-item-1"));
+        var style1 = item1.GetDomAttribute("style");
+        Assert.Contains("height: 57px", style1);
+    }
+
+    [Fact]
+    public void DynamicContent_ItemHeightChangesUpdateLayout()
+    {
+        Browser.MountTestComponent<VirtualizationDynamicContent>();
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        var status = Browser.Exists(By.Id("status"));
+
+        // Wait for items to render
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        // Get position of item 3 before expansion
+        var item3TopBefore = container.FindElement(By.CssSelector("[data-index='3']")).Location.Y;
+
+        // Expand item 2
+        Browser.Exists(By.Id("expand-item-2")).Click();
+        Browser.Equal("Item 2 expanded via button", () => status.Text);
+
+        // Verify item 2 now has expanded content
+        var item2 = container.FindElement(By.CssSelector("[data-index='2']"));
+        Assert.Single(item2.FindElements(By.CssSelector(".expanded-content")));
+
+        // Verify item 3 moved down (not overlapping with expanded item 2)
+        var item3TopAfter = container.FindElement(By.CssSelector("[data-index='3']")).Location.Y;
+        Assert.True(item3TopAfter > item3TopBefore,
+            $"Item 3 should have moved down after item 2 expanded. Before: {item3TopBefore}, After: {item3TopAfter}");
+
+        js.ExecuteScript("arguments[0].scrollTop = 200", container);
+        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) >= 200);
+        js.ExecuteScript("arguments[0].scrollTop = 0", container);
+        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) == 0);
+
+        // Item 2 should still be expanded after scrolling
+        item2 = container.FindElement(By.CssSelector("[data-index='2']"));
+        Assert.Single(item2.FindElements(By.CssSelector(".expanded-content")));
+    }
+
+    [Fact]
+    public void DynamicContent_ExpandingOffScreenItemDoesNotAffectVisibleItems()
+    {
+        Browser.MountTestComponent<VirtualizationDynamicContent>();
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        var status = Browser.Exists(By.Id("status"));
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        // Scroll down so item 2 is not visible
+        js.ExecuteScript("arguments[0].scrollTop = 200", container);
+        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) >= 200);
+
+        // Get the position of a visible item before expanding the off-screen item
+        var visibleItems = container.FindElements(By.CssSelector(".item"));
+        var firstVisibleItem = visibleItems.First();
+        var firstVisibleTopBefore = firstVisibleItem.Location.Y;
+        var firstVisibleIndex = firstVisibleItem.GetDomAttribute("data-index");
+
+        // Expand item 2 (which should be above the visible area)
+        Browser.Exists(By.Id("expand-item-2")).Click();
+        Browser.Equal("Item 2 expanded via button", () => status.Text);
+
+        // Verify the visible item position didn't change
+        var sameItem = container.FindElement(By.CssSelector($"[data-index='{firstVisibleIndex}']"));
+        var firstVisibleTopAfter = sameItem.Location.Y;
+
+        // The visible items should stay in place (or very close, allowing for minor reflow)
+        Assert.True(Math.Abs(firstVisibleTopAfter - firstVisibleTopBefore) < 5,
+            $"Visible item should not have moved when off-screen item expanded. Before: {firstVisibleTopBefore}, After: {firstVisibleTopAfter}");
+    }
+
+    [Fact]
+    public void VariableHeight_ContainerResizeWorks()
+    {
+        Browser.MountTestComponent<VirtualizationVariableHeight>();
+
+        var container = Browser.Exists(By.Id("variable-height-container"));
+        var resizeStatus = Browser.Exists(By.Id("resize-status"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => GetElementCount(container, ".variable-height-item") > 0);
+
+        Browser.Exists(By.Id("resize-large")).Click();
+        Browser.Equal("Container resized to 400px", () => resizeStatus.Text);
+        var containerHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+        Assert.Equal(400, containerHeight);
+
+        // Scroll to end and verify last item
+        JumpToEndWithStabilization(container, hasPlaceholders: null, loadData: null);
+        Browser.True(() => container.FindElements(By.Id("variable-item-999")).Count > 0);
+
+        Browser.Exists(By.Id("resize-small")).Click();
+        Browser.Equal("Container resized to 100px", () => resizeStatus.Text);
+        containerHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+        Assert.Equal(100, containerHeight);
+
+        JumpToStartWithStabilization(
+            container,
+            hasPlaceholders: null,
+            loadData: null,
+            () => container.FindElements(By.Id("variable-item-0")).Count > 0);
+        Browser.True(() => container.FindElements(By.Id("variable-item-0")).Count > 0);
+    }
+
+    [Fact]
+    public void VariableHeightAsync_LoadsItemsWithCorrectHeights()
+    {
+        Browser.MountTestComponent<VirtualizationVariableHeightAsync>();
+
+        var container = Browser.Exists(By.Id("async-variable-container"));
+        var finishLoadingButton = Browser.Exists(By.Id("finish-loading"));
+
+        Browser.Equal(0, () => GetElementCount(container, ".async-variable-item"));
+        Browser.Equal(0, () => GetElementCount(container, ".async-variable-placeholder"));
+
+        finishLoadingButton.Click();
+        Browser.True(() => GetElementCount(container, ".async-variable-item") > 0);
+
+        // Verify first item has correct variable height (25 + (0 * 11 % 31) = 25px)
+        var item0 = container.FindElement(By.Id("async-variable-item-0"));
+        Assert.Contains("height: 25px", item0.GetDomAttribute("style"));
+
+        // Verify second item has different height (25 + (1 * 11 % 31) = 36px)
+        var item1 = container.FindElement(By.Id("async-variable-item-1"));
+        Assert.Contains("height: 36px", item1.GetDomAttribute("style"));
+    }
+
+    [Fact]
+    public void VariableHeightAsync_RtlLayoutWorks()
+    {
+        Browser.MountTestComponent<VirtualizationVariableHeightAsync>();
+
+        var container = Browser.Exists(By.Id("async-variable-container"));
+        var finishLoadingButton = Browser.Exists(By.Id("finish-loading"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        Browser.Exists(By.Id("toggle-rtl")).Click();
+        Browser.Equal("Direction: RTL", () => Browser.Exists(By.Id("direction-status")).Text);
+
+        finishLoadingButton.Click();
+        Browser.True(() => GetElementCount(container, ".async-variable-item") > 0);
+        JumpToEndWithStabilization(
+            container,
+            () => GetElementCount(container, ".async-variable-placeholder") > 0,
+            () => finishLoadingButton.Click());
+        Browser.True(() => container.FindElements(By.Id("async-variable-item-999")).Count > 0);
+        JumpToStartWithStabilization(
+            container,
+            () => GetElementCount(container, ".async-variable-placeholder") > 0,
+            () => finishLoadingButton.Click(),
+            () => container.FindElements(By.Id("async-variable-item-0")).Count > 0);
+        Browser.True(() => container.FindElements(By.Id("async-variable-item-0")).Count > 0);
+    }
+
+    [Fact]
+    public void VariableHeightAsync_CollectionMutationWorks()
+    {
+        Browser.MountTestComponent<VirtualizationVariableHeightAsync>();
+
+        var container = Browser.Exists(By.Id("async-variable-container"));
+        var finishLoadingButton = Browser.Exists(By.Id("finish-loading"));
+        var addItemStartButton = Browser.Exists(By.Id("add-item-start"));
+        var removeItemMiddleButton = Browser.Exists(By.Id("remove-item-middle"));
+        var refreshButton = Browser.Exists(By.Id("refresh-data"));
+        var totalItemCount = Browser.Exists(By.Id("total-item-count"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        finishLoadingButton.Click();
+        Browser.True(() => GetElementCount(container, ".async-variable-item") > 0);
+        Browser.Equal("Total: 1000", () => totalItemCount.Text);
+        var firstItem = container.FindElement(By.Id("async-variable-item-0"));
+        Assert.Contains("height: 25px", firstItem.GetDomAttribute("style")); // 25 + 0*11%31 = 25px
+
+        // Add item at START with distinctive 100px height
+        addItemStartButton.Click();
+        Browser.Equal("Total: 1001", () => totalItemCount.Text);
+
+        refreshButton.Click();
+        finishLoadingButton.Click();
+
+        firstItem = container.FindElement(By.Id("async-variable-item-0"));
+        Assert.Contains("height: 100px", firstItem.GetDomAttribute("style"));
+        var secondItem = container.FindElement(By.Id("async-variable-item-1"));
+        Assert.Contains("height: 25px", secondItem.GetDomAttribute("style"));
+
+        removeItemMiddleButton.Click();
+        Browser.Equal("Total: 1000", () => totalItemCount.Text);
+
+        refreshButton.Click();
+        finishLoadingButton.Click();
+        JumpToEndWithStabilization(
+            container,
+            () => GetElementCount(container, ".async-variable-placeholder") > 0,
+            () => finishLoadingButton.Click());
+        Browser.True(() => container.FindElements(By.Id("async-variable-item-999")).Count > 0);
+
+        JumpToStartWithStabilization(
+            container,
+            () => GetElementCount(container, ".async-variable-placeholder") > 0,
+            () => finishLoadingButton.Click(),
+            () => container.FindElements(By.Id("async-variable-item-0")).Count > 0);
+
+        firstItem = container.FindElement(By.Id("async-variable-item-0"));
+        Assert.Contains("height: 100px", firstItem.GetDomAttribute("style"));
+    }
+
+    [Fact]
+    public void VariableHeightAsync_SmallItemCountsWork()
+    {
+        Browser.MountTestComponent<VirtualizationVariableHeightAsync>();
+
+        var container = Browser.Exists(By.Id("async-variable-container"));
+        var finishLoadingButton = Browser.Exists(By.Id("finish-loading"));
+        var setCount0Button = Browser.Exists(By.Id("set-count-0"));
+        var setCount1Button = Browser.Exists(By.Id("set-count-1"));
+        var setCount5Button = Browser.Exists(By.Id("set-count-5"));
+        var refreshButton = Browser.Exists(By.Id("refresh-data"));
+        var totalItemCount = Browser.Exists(By.Id("total-item-count"));
+
+        finishLoadingButton.Click();
+        Browser.True(() => GetElementCount(container, ".async-variable-item") > 0);
+        Browser.Equal("Total: 1000", () => totalItemCount.Text);
+
+        // Empty list (0 items) - should show EmptyContent
+        setCount0Button.Click();
+        Browser.Equal("Total: 0", () => totalItemCount.Text);
+        refreshButton.Click();
+        finishLoadingButton.Click();
+        Browser.Equal(0, () => GetElementCount(container, ".async-variable-item"));
+        Browser.Exists(By.Id("no-data"));
+
+        // Single item
+        setCount1Button.Click();
+        Browser.Equal("Total: 1", () => totalItemCount.Text);
+        refreshButton.Click();
+        finishLoadingButton.Click();
+        Browser.Equal(1, () => GetElementCount(container, ".async-variable-item"));
+        Browser.DoesNotExist(By.Id("no-data"));
+        var singleItem = container.FindElement(By.Id("async-variable-item-0"));
+        Assert.Contains("height: 30px", singleItem.GetDomAttribute("style")); // 30 + 0*17%41 = 30px
+
+        // 5 items
+        setCount5Button.Click();
+        Browser.Equal("Total: 5", () => totalItemCount.Text);
+        refreshButton.Click();
+        finishLoadingButton.Click();
+        Browser.Equal(5, () => GetElementCount(container, ".async-variable-item"));
+        Browser.DoesNotExist(By.Id("no-data"));
+
+        var item0 = container.FindElement(By.Id("async-variable-item-0"));
+        var item1 = container.FindElement(By.Id("async-variable-item-1"));
+        var item2 = container.FindElement(By.Id("async-variable-item-2"));
+        var item3 = container.FindElement(By.Id("async-variable-item-3"));
+        var item4 = container.FindElement(By.Id("async-variable-item-4"));
+
+        Assert.Contains("height: 30px", item0.GetDomAttribute("style")); // 30 + 0*17%41 = 30
+        Assert.Contains("height: 47px", item1.GetDomAttribute("style")); // 30 + 1*17%41 = 47
+        Assert.Contains("height: 64px", item2.GetDomAttribute("style")); // 30 + 2*34%41 = 64 (34%41=34)
+        Assert.Contains("height: 40px", item3.GetDomAttribute("style")); // 30 + 3*51%41 = 30 + 10 = 40
+        Assert.Contains("height: 57px", item4.GetDomAttribute("style")); // 30 + 4*68%41 = 30 + 27 = 57
+    }
+
+    [Theory]
+    [InlineData(100, 100, 100)]  // baseline - no scaling
+    [InlineData(50, 100, 100)]   // transform: scale(0.5)
+    [InlineData(100, 50, 100)]   // CSS zoom: 0.5
+    [InlineData(100, 100, 50)]   // CSS scale: 0.5
+    [InlineData(200, 100, 100)]  // transform: scale(2)
+    [InlineData(100, 200, 100)]  // CSS zoom: 2
+    [InlineData(100, 100, 200)]  // CSS scale: 2
+    [InlineData(75, 75, 75)]     // combined downscale: 0.75^3 ≈ 0.42x
+    [InlineData(150, 150, 150)]  // combined upscale: 1.5^3 = 3.375x
+    public virtual void VariableHeightAsync_CanScrollWithoutFlashing(int transformScalePercent, int cssZoomPercent, int cssScalePercent)
+    {
+        Browser.MountTestComponent<VirtualizationVariableHeightAsync>();
+
+        var container = Browser.Exists(By.Id("async-variable-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.Exists(By.Id("toggle-autoload")).Click();
+
+        if (transformScalePercent != 100)
+        {
+            Browser.Exists(By.Id($"scale-{transformScalePercent}")).Click();
+        }
+        if (cssZoomPercent != 100)
+        {
+            Browser.Exists(By.Id($"zoom-{cssZoomPercent}")).Click();
+        }
+        if (cssScalePercent != 100)
+        {
+            Browser.Exists(By.Id($"cssscale-{cssScalePercent}")).Click();
+        }
+        Browser.Equal($"Transform Scale: {transformScalePercent}%, CSS Zoom: {cssZoomPercent}%, CSS Scale: {cssScalePercent}%",
+            () => Browser.Exists(By.Id("zoom-status")).Text);
+
+        var setCount200Button = Browser.Exists(By.Id("set-count-200"));
+        setCount200Button.Click();
+        Browser.Exists(By.Id("refresh-data")).Click();
+
+        Browser.True(() => GetElementCount(container, ".async-variable-item") > 0);
+
+        const string detectFlashingScript = @"
+            var done = arguments[0];
+            (async () => {
+                const SCROLL_INCREMENT = 100;
+                const MAX_ITERATIONS = 300;
+                const VISIBILITY_TOLERANCE = 2;
+                const container = document.querySelector('#async-variable-container');
+                
+                if (!container) {
+                    done({ success: false, error: 'Container not found' });
+                    return;
+                }
+                
+                const getTopVisibleItemIndex = () => {
+                    const items = container.querySelectorAll('.async-variable-item');
+                    if (items.length === 0) return null;
+                    const containerRect = container.getBoundingClientRect();
+                    for (const item of items) {
+                        const itemRect = item.getBoundingClientRect();
+                        if (itemRect.bottom > containerRect.top + VISIBILITY_TOLERANCE &&
+                            itemRect.top < containerRect.bottom - VISIBILITY_TOLERANCE) {
+                            const match = item.id.match(/async-variable-item-(\d+)/);
+                            return match ? parseInt(match[1], 10) : null;
+                        }
+                    }
+                    return null;
+                };
+                
+                const getMaxIndex = () => {
+                    const items = container.querySelectorAll('.async-variable-item');
+                    let maxIdx = -1;
+                    for (const item of items) {
+                        const match = item.id.match(/async-variable-item-(\d+)/);
+                        if (match) maxIdx = Math.max(maxIdx, parseInt(match[1], 10));
+                    }
+                    return maxIdx;
+                };
+
+                const getMinIndex = () => {
+                    const items = container.querySelectorAll('.async-variable-item');
+                    let minIdx = Infinity;
+                    for (const item of items) {
+                        const match = item.id.match(/async-variable-item-(\d+)/);
+                        if (match) minIdx = Math.min(minIdx, parseInt(match[1], 10));
+                    }
+                    return minIdx === Infinity ? -1 : minIdx;
+                };
+                
+                const waitForSettledFrame = () => {
+                    return new Promise(resolve => {
+                        requestAnimationFrame(() => {
+                            const target = container.querySelector('.async-variable-item') || container;
+                            const io = new IntersectionObserver(() => {
+                                io.disconnect();
+                                resolve();
+                            }, { root: container, threshold: [0, 1] });
+                            io.observe(target);
+                        });
+                    });
+                };
+
+                const getSnapshot = () => {
+                    const spacerBefore = container.querySelector('[aria-hidden=""true""]:first-child');
+                    const spacerAfter = container.querySelector('[aria-hidden=""true""]:last-child');
+                    return {
+                        st: container.scrollTop,
+                        sh: container.scrollHeight,
+                        min: getMinIndex(),
+                        max: getMaxIndex(),
+                        cnt: container.querySelectorAll('.async-variable-item').length,
+                        sbH: spacerBefore ? spacerBefore.style.height : '?',
+                        saH: spacerAfter ? spacerAfter.style.height : '?',
+                    };
+                };
+                
+                let previousTopItemIndex = null;
+                let maxIndexSeen = -1;
+                // Keep last N snapshots as ring buffer for context
+                const history = [];
+                const HISTORY_SIZE = 10;
+                
+                for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {                    
+                    const beforeScroll = getSnapshot();
+                    beforeScroll.phase = 'pre';
+                    beforeScroll.iter = iteration;
+                    
+                    const previousScrollTop = container.scrollTop;
+                    container.scrollTop += SCROLL_INCREMENT;
+                    
+                    if (container.scrollTop === previousScrollTop) {
+                        break;
+                    }
+                    
+                    const afterAssign = { st: container.scrollTop, phase: 'post-assign', iter: iteration };
+                    
+                    await waitForSettledFrame();
+                    
+                    const afterSettle = getSnapshot();
+                    afterSettle.phase = 'settled';
+                    afterSettle.iter = iteration;
+                    
+                    const currentTopItemIndex = getTopVisibleItemIndex();
+                    afterSettle.topIdx = currentTopItemIndex;
+                    
+                    history.push({ beforeScroll, afterAssign, afterSettle });
+                    if (history.length > HISTORY_SIZE) history.shift();
+                    
+                    if (previousTopItemIndex !== null && currentTopItemIndex !== null && currentTopItemIndex < previousTopItemIndex) {
+                        // Format history as compact string
+                        const histStr = history.map(h => {
+                            const b = h.beforeScroll;
+                            const a = h.afterSettle;
+                            return `i${b.iter}:[st:${b.st}->${h.afterAssign.st}->${a.st}, items:${b.min}..${b.max}(${b.cnt})->${a.min}..${a.max}(${a.cnt}), sb:${b.sbH}->${a.sbH}, sa:${b.saH}->${a.saH}, top:${a.topIdx}]`;
+                        }).join(' | ');
+                        
+                        const scale = container.offsetHeight === 0 ? 1 : 
+                            Math.round(container.getBoundingClientRect().height / container.offsetHeight * 1000) / 1000;
+                        
+                        done({
+                            success: false,
+                            error: `Flashing at iter ${iteration}: ${previousTopItemIndex}->${currentTopItemIndex}. scale=${scale}, offsetH=${container.offsetHeight}. HISTORY: ${histStr}`
+                        });
+                        return;
+                    }
+                    
+                    if (currentTopItemIndex !== null) {
+                        previousTopItemIndex = currentTopItemIndex;
+                    }
+                    maxIndexSeen = Math.max(maxIndexSeen, getMaxIndex());
+                }
+                
+                done({ success: true, maxIndexSeen });
+            })();";
+
+        var result = (Dictionary<string, object>)js.ExecuteAsyncScript(detectFlashingScript);
+        var success = (bool)result["success"];
+        if (!success)
+        {
+            Assert.Fail((string)result["error"]);
+        }
+        var maxIndexSeen = Convert.ToInt32(result["maxIndexSeen"], CultureInfo.InvariantCulture);
+        Assert.True(maxIndexSeen >= 199, $"Should have scrolled to the last item (saw up to index {maxIndexSeen})");
+    }
+
+    [Fact]
+    public void DisplayModes_BlockLayout_SupportsVariableHeights()
+    {
+        Browser.MountTestComponent<VirtualizationDisplayModes>();
+
+        var container = Browser.Exists(By.Id("block-container"));
+        var itemCount = Browser.Exists(By.Id("block-count"));
+
+        Browser.Equal("50", () => itemCount.Text);
+        Browser.True(() => GetElementCount(container, ".block-item") > 0);
+        var firstItem = container.FindElement(By.Id("block-item-0"));
+        Assert.Contains("height: 30px", firstItem.GetDomAttribute("style")); // 30 + 0*17%51 = 30
+
+        var secondItem = container.FindElement(By.Id("block-item-1"));
+        Assert.Contains("height: 47px", secondItem.GetDomAttribute("style")); // 30 + 1*17%51 = 47
+
+        Browser.ExecuteJavaScript("document.getElementById('block-container').scrollTop = document.getElementById('block-container').scrollHeight;");
+        Browser.True(() => GetElementCount(container, ".block-item") > 0);
+    }
+
+    [Fact]
+    public void DisplayModes_GridLayout_SupportsVariableHeights()
+    {
+        Browser.MountTestComponent<VirtualizationDisplayModes>();
+
+        var container = Browser.Exists(By.Id("grid-container"));
+        var itemCount = Browser.Exists(By.Id("grid-count"));
+
+        Browser.Equal("50", () => itemCount.Text);
+        Browser.True(() => GetElementCount(container, ".grid-item") > 0);
+
+        var firstItem = container.FindElement(By.Id("grid-item-0"));
+        Assert.Contains("height: 30px", firstItem.GetDomAttribute("style"));
+
+        Browser.ExecuteJavaScript("document.getElementById('grid-container').scrollTop = document.getElementById('grid-container').scrollHeight * 0.5;");
+        Browser.True(() => GetElementCount(container, ".grid-item") > 0);
+
+        Browser.ExecuteJavaScript("document.getElementById('grid-container').scrollTop = document.getElementById('grid-container').scrollHeight;");
+        Browser.True(() => GetElementCount(container, ".grid-item") > 0);
+    }
+
+    [Fact]
+    public void DisplayModes_SubgridLayout_SupportsVariableHeights()
+    {
+        Browser.MountTestComponent<VirtualizationDisplayModes>();
+
+        var container = Browser.Exists(By.Id("subgrid-container"));
+        var itemCount = Browser.Exists(By.Id("subgrid-count"));
+
+        Browser.Equal("50", () => itemCount.Text);
+        Browser.True(() => GetElementCount(container, ".subgrid-item") > 0);
+
+        var firstItem = container.FindElement(By.Id("subgrid-item-0"));
+        Assert.Contains("height: 30px", firstItem.GetDomAttribute("style"));
+
+        Browser.ExecuteJavaScript("document.getElementById('subgrid-container').scrollTop = document.getElementById('subgrid-container').scrollHeight;");
+        Browser.True(() => GetElementCount(container, ".subgrid-item") > 0);
+    }
+
+    [Fact]
+    public void QuickGrid_CanJumpToEndAndStart()
+    {
+        Browser.MountTestComponent<BasicTestApp.QuickGridTest.QuickGridVariableHeightComponent>();
+
+        var container = Browser.Exists(By.Id("grid-variable-height"));
+        var totalItems = Browser.Exists(By.Id("total-items"));
+        var providerCallCount = Browser.Exists(By.Id("items-provider-call-count"));
+        var dataLoaded = Browser.Exists(By.Id("data-loaded"));
+
+        Browser.Equal("Total items: 1000", () => totalItems.Text);
+        Browser.Equal("Data loaded: True", () => dataLoaded.Text);
+        Browser.True(() => int.Parse(providerCallCount.Text.Replace("ItemsProvider calls: ", ""), CultureInfo.InvariantCulture) > 0);
+
+        WaitForQuickGridDataRows(container);
+        Func<bool> isFirstRowId1 = () => CheckQuickGridFirstRow(container, text => text == "1");
+
+        JumpToStartWithStabilization(
+            container,
+            hasPlaceholders: null,  // QuickGrid handles its own async loading
+            loadData: null,
+            isFirstItemVisible: isFirstRowId1);
+        Browser.True(isFirstRowId1);
+
+        JumpToEndWithStabilization(container, hasPlaceholders: null, loadData: null);
+        WaitForQuickGridDataRows(container);
+
+        Browser.True(() => CheckQuickGridFirstRow(container, text => int.TryParse(text, out var id) && id > 950));
+
+        JumpToStartWithStabilization(
+            container,
+            hasPlaceholders: null,
+            loadData: null,
+            isFirstItemVisible: isFirstRowId1);
+        Browser.True(isFirstRowId1);
+    }
+
+    private void WaitForQuickGridDataRows(IWebElement container)
+        => Browser.True(() => CheckQuickGridFirstRow(container, text => int.TryParse(text, out _)));
+
+    private static bool CheckQuickGridFirstRow(IWebElement container, Func<string, bool> predicate)
+    {
+        try
+        {
+            var rows = container.FindElements(By.CssSelector("tbody tr:not([aria-hidden])"));
+            if (rows.Count == 0)
+            {
+                return false;
+            }
+            var firstCell = rows[0].FindElements(By.CssSelector("td:not(.grid-cell-placeholder)")).FirstOrDefault();
+            return firstCell != null && predicate(firstCell.Text);
+        }
+        catch (StaleElementReferenceException)
+        {
+            return false;
+        }
     }
 }
