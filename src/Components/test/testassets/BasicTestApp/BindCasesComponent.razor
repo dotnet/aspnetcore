@@ -302,6 +302,26 @@
     <button id="checkbox-initially-checked-invert" @onclick="@(() => { checkboxInitiallyCheckedValue = !checkboxInitiallyCheckedValue; })">Invert</button>
 </p>
 
+<h2>Details element</h2>
+<p>
+    Initially closed:
+    <details id="details-initially-closed" @bind-open="detailsInitiallyClosedValue">
+        <summary>Click to expand</summary>
+        <p>Details content</p>
+    </details>
+    <span id="details-initially-closed-value">@detailsInitiallyClosedValue</span>
+    <button id="details-initially-closed-toggle" @onclick="@(() => { detailsInitiallyClosedValue = !detailsInitiallyClosedValue; })">Toggle</button>
+</p>
+<p>
+    Initially open:
+    <details id="details-initially-open" @bind-open="detailsInitiallyOpenValue">
+        <summary>Click to collapse</summary>
+        <p>Details content</p>
+    </details>
+    <span id="details-initially-open-value">@detailsInitiallyOpenValue</span>
+    <button id="details-initially-open-toggle" @onclick="@(() => { detailsInitiallyOpenValue = !detailsInitiallyOpenValue; })">Toggle</button>
+</p>
+
 <h2>Select</h2>
 <p>
     <select id="select-box" @bind="selectValue">
@@ -482,6 +502,9 @@
     bool? checkboxInitiallyNullValue = null;
     bool checkboxInitiallyUncheckedValue = false;
     bool checkboxInitiallyCheckedValue = true;
+
+    bool detailsInitiallyClosedValue = false;
+    bool detailsInitiallyOpenValue = true;
 
     int textboxIntValue = -42;
     int? textboxNullableIntValue = null;
