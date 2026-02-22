@@ -495,4 +495,121 @@ public class ListAdapterTest
         Assert.False(testStatus);
         Assert.Equal(expectedErrorMessage, errorMessage);
     }
+
+    [Theory]
+    [InlineData(new int[] { }, "0")]
+    [InlineData(new int[] { 10, 20 }, "-1")]
+    [InlineData(new int[] { 10, 20 }, "2")]
+    public void TryTraverse_IndexOutOfBounds_ReturnsFalse(int[] input, string segment)
+    {
+        // Arrange
+        var serializerOptions = JsonSerializerOptions.Default;
+        var targetObject = new List<int>(input);
+        var listAdapter = new ListAdapter();
+
+        // Act
+        var success = listAdapter.TryTraverse(targetObject, segment, serializerOptions, out var value, out var message);
+
+        // Assert
+        Assert.False(success);
+        Assert.Null(value);
+        Assert.Equal($"The index value provided by path segment '{segment}' is out of bounds of the array size.", message);
+    }
+
+    [Theory]
+    [InlineData(new int[] { 10, 20, 30 }, "0", 10)]
+    [InlineData(new int[] { 42 }, "0", 42)]
+    public void TryTraverse_ValidNumericIndex_ReturnsElement(int[] input, string segment, int expectedValue)
+    {
+        // Arrange
+        var serializerOptions = JsonSerializerOptions.Default;
+        var targetObject = new List<int>(input);
+        var listAdapter = new ListAdapter();
+
+        // Act
+        var success = listAdapter.TryTraverse(
+            targetObject,
+            segment,
+            serializerOptions,
+            out var value,
+            out var message);
+
+        // Assert
+        Assert.True(success);
+        Assert.Equal(expectedValue, value);
+        Assert.Null(message);
+        Assert.Equal(input, targetObject);
+    }
+
+    [Theory]
+    [InlineData("-")]
+    [InlineData("abc")]
+    [InlineData("3.14")]
+    [InlineData("")]
+    public void TryTraverse_InvalidSegmentFormat_ReturnsFalse(string segment)
+    {
+        // Arrange
+        var serializerOptions = JsonSerializerOptions.Default;
+        var targetObject = new List<string> { "a", "b", "c" };
+        var listAdapter = new ListAdapter();
+
+        // Act
+        var success = listAdapter.TryTraverse(targetObject, segment, serializerOptions, out var value, out var message);
+
+        // Assert
+        Assert.False(success);
+        Assert.Null(value);
+        Assert.Equal($"The path segment '{segment}' is invalid for an array index.", message);
+    }
+
+    [Fact]
+    public void TryTraverse_OnEmptyList_WithValidIndex_ReturnsFalse()
+    {
+        // Arrange
+        var serializerOptions = JsonSerializerOptions.Default;
+        var targetObject = new List<string>();
+        var listAdapter = new ListAdapter();
+        var segment = "0";
+        // Act
+        var success = listAdapter.TryTraverse( targetObject, segment, serializerOptions, out var value, out var message);
+
+        // Assert
+        Assert.False(success);
+        Assert.Null(value);
+        Assert.Equal($"The index value provided by path segment '{segment}' is out of bounds of the array size.", message);
+    }
+
+    [Fact]
+    public void TryTraverse_NonGenericList_Fails()
+    {
+        // Arrange
+        var serializerOptions = JsonSerializerOptions.Default;
+        var targetObject = new ArrayList { 10, 20, 30 };
+        var listAdapter = new ListAdapter();
+
+        // Act
+        var success = listAdapter.TryTraverse(targetObject, "1", serializerOptions, out var value, out var message);
+
+        // Assert
+        Assert.False(success);
+        Assert.Null(value);
+        Assert.Equal($"The type '{targetObject.GetType().FullName}' which is a non generic list is not supported for json patch operations. Only generic list types are supported.", message);
+    }
+
+    [Fact]
+    public void TryTraverse_Array_Fails()
+    {
+        // Arrange
+        var serializerOptions = JsonSerializerOptions.Default;
+        var targetObject = new[] { 100, 200, 300 };
+        var listAdapter = new ListAdapter();
+
+        // Act
+        var success = listAdapter.TryTraverse(targetObject, "0", serializerOptions, out var value, out var message);
+
+        // Assert
+        Assert.False(success);
+        Assert.Null(value);
+        Assert.Equal($"The type '{targetObject.GetType().FullName}' which is an array is not supported for json patch operations as it has a fixed size.", message);
+    }
 }
