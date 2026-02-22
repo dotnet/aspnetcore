@@ -154,15 +154,21 @@ internal class ListAdapter : IAdapter
 
         var count = GenericListOrJsonArrayUtilities.GetCount(target);
 
-        if (!TryGetPositionInfo(count, segment, OperationType.Get, out var positionInfo, out errorMessage))
+        if (!int.TryParse(segment, out var index))
         {
             value = null;
+            errorMessage = Resources.FormatInvalidIndexValue(segment);
             return false;
         }
 
-        var index = positionInfo.Type == PositionType.EndOfList ? count - 1 : positionInfo.Index;
-        value = GenericListOrJsonArrayUtilities.GetElementAt(target, index);
+        if (index < 0 || index >= count)
+        {
+            value = null;
+            errorMessage = Resources.FormatIndexOutOfBounds(segment);
+            return false;
+        }
 
+        value = GenericListOrJsonArrayUtilities.GetElementAt(target, index);
         errorMessage = null;
         return true;
     }
