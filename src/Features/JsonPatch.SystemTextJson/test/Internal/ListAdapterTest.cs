@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Xunit;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
@@ -484,7 +485,7 @@ public class ListAdapterTest
     {
         // Arrange
         var serializerOptions = JsonSerializerOptions.Default;
-        var targetObject = new List<int>() { 10, 20 };
+        var targetObject = new JsonArray { 10, 20 };
         var listAdapter = new ListAdapter();
         var expectedErrorMessage = "The index value provided by path segment '2' is out of bounds of the array size.";
 
@@ -516,29 +517,24 @@ public class ListAdapterTest
         Assert.Equal($"The index value provided by path segment '{segment}' is out of bounds of the array size.", message);
     }
 
-    [Theory]
-    [InlineData(new int[] { 10, 20, 30 }, "0", 10)]
-    [InlineData(new int[] { 42 }, "0", 42)]
-    public void TryTraverse_ValidNumericIndex_ReturnsElement(int[] input, string segment, int expectedValue)
+    [Fact]
+    public void TryTraverse_JsonArray_ValidNumericIndex_ReturnsElement()
     {
         // Arrange
         var serializerOptions = JsonSerializerOptions.Default;
-        var targetObject = new List<int>(input);
+        var targetObject = new JsonArray() {10, 20, 30};
+        var expectedValue = 20;
+        var segment = "1";
         var listAdapter = new ListAdapter();
 
         // Act
-        var success = listAdapter.TryTraverse(
-            targetObject,
-            segment,
-            serializerOptions,
-            out var value,
-            out var message);
+        var success = listAdapter.TryTraverse(targetObject, segment, serializerOptions, out var value, out var message);
 
         // Assert
         Assert.True(success);
-        Assert.Equal(expectedValue, value);
-        Assert.Null(message);
-        Assert.Equal(input, targetObject);
+        var jsonValue = Assert.IsAssignableFrom<JsonValue>(value);
+        Assert.Equal(expectedValue, jsonValue.GetValue<int>());
+        Assert.Null(message);;
     }
 
     [Theory]
@@ -563,11 +559,11 @@ public class ListAdapterTest
     }
 
     [Fact]
-    public void TryTraverse_OnEmptyList_WithValidIndex_ReturnsFalse()
+    public void TryTraverse_JsonArray_OnEmptyList_WithValidIndex_ReturnsFalse()
     {
         // Arrange
         var serializerOptions = JsonSerializerOptions.Default;
-        var targetObject = new List<string>();
+        var targetObject = new JsonArray();
         var listAdapter = new ListAdapter();
         var segment = "0";
         // Act
