@@ -148,51 +148,25 @@ internal class ListAdapter : IAdapter
 
     public virtual bool TryTraverse(object target, string segment, JsonSerializerOptions serializerOptions, out object value, out string errorMessage)
     {
-        if (target is IList list)
+        if(!TryGetListTypeArgument(target, out _, out errorMessage))
         {
-            if (!int.TryParse(segment, out var index))
-            {
-                value = null;
-                errorMessage = Resources.FormatInvalidIndexValue(segment);
-                return false;
-            }
-
-            if (index < 0 || index >= list.Count)
-            {
-                value = null;
-                errorMessage = Resources.FormatIndexOutOfBounds(segment);
-                return false;
-            }
-
-            value = list[index];
-            errorMessage = null;
-            return true;
+            value = null;
+            return false;
         }
 
-        if (target is IList<JsonNode> jsonList)
+        var count = GenericListOrJsonArrayUtilities.GetCount(target);
+
+        if (!TryGetPositionInfo(count, segment, OperationType.Get, out var positionInfo, out errorMessage))
         {
-            if (!int.TryParse(segment, out var index))
-            {
-                value = null;
-                errorMessage = Resources.FormatInvalidIndexValue(segment);
-                return false;
-            }
-
-            if (index < 0 || index >= jsonList.Count)
-            {
-                value = null;
-                errorMessage = Resources.FormatIndexOutOfBounds(segment);
-                return false;
-            }
-
-            value = jsonList[index];
-            errorMessage = null;
-            return true;
+            value = null;
+            return false;
         }
 
-        value = null;
+        var index = positionInfo.Type == PositionType.EndOfList ? count - 1 : positionInfo.Index;
+        value = GenericListOrJsonArrayUtilities.GetElementAt(target, index);
+
         errorMessage = null;
-        return false;
+        return true;
     }
 
     protected virtual bool TryConvertValue(object originalValue, Type listTypeArgument, string segment, out object convertedValue, out string errorMessage)
