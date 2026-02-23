@@ -245,7 +245,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
 
         Browser.Equal("2", () => app.FindElement(By.Id("items-provider-calls")).Text);
     }
-    
+
     [Fact]
     public void OnRowClickTriggersCallback()
     {
@@ -283,5 +283,19 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
             const row = document.querySelector('#grid > table > tbody > tr:nth-child(1)');
             return row ? getComputedStyle(row).cursor : null;");
         Assert.Equal("pointer", cursorStyle);
+    }
+
+    [Fact]
+    public void DualPaginatorsNavigatesAndBothUpdate()
+    {
+        app = Browser.MountTestComponent<QuickGridDualPaginatorComponent>();
+
+        Browser.Equal("1", () => app.FindElement(By.CssSelector(".top-paginator .paginator nav > div > strong:nth-child(1)")).Text);
+        Browser.Equal("1", () => app.FindElement(By.CssSelector(".bottom-paginator .paginator nav > div > strong:nth-child(1)")).Text);
+
+        app.FindElement(By.CssSelector(".top-paginator .go-next")).Click();
+
+        Browser.Equal("2", () => app.FindElement(By.CssSelector(".top-paginator .paginator nav > div > strong:nth-child(1)")).Text);
+        Browser.Equal("2", () => app.FindElement(By.CssSelector(".bottom-paginator .paginator nav > div > strong:nth-child(1)")).Text);
     }
 }

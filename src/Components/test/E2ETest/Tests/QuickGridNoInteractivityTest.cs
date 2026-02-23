@@ -190,4 +190,18 @@ public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSit
         Assert.Contains("QuickGrid_s=0_asc", Browser.Url);
         Assert.Contains("QuickGrid2_s=1_desc", Browser.Url);
     }
+
+    [Fact]
+    public void DualPaginatorsNavigatesAndBothUpdate()
+    {
+        Navigate($"{ServerPathBase}/quickgrid");
+
+        Browser.Equal("1", () => Browser.FindElement(By.CssSelector(".third-top-paginator .paginator nav > div > strong:nth-child(1)")).Text);
+        Browser.Equal("1", () => Browser.FindElement(By.CssSelector(".third-bottom-paginator .paginator nav > div > strong:nth-child(1)")).Text);
+
+        Browser.FindElement(By.CssSelector(".third-top-paginator .go-next")).Click();
+
+        Browser.Equal("2", () => Browser.FindElement(By.CssSelector(".third-top-paginator .paginator nav > div > strong:nth-child(1)")).Text);
+        Browser.Equal("2", () => Browser.FindElement(By.CssSelector(".third-bottom-paginator .paginator nav > div > strong:nth-child(1)")).Text);
+    }
 }

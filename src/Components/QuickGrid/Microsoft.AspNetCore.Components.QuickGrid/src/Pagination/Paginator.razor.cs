@@ -14,6 +14,7 @@ public partial class Paginator : IDisposable
     private readonly EventCallbackSubscriber<PaginationState> _totalItemCountChanged;
     private bool _hasReadQueryString;
     private bool _suppressNextLocationChange;
+    private int _lastRenderedPageIndex;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
@@ -55,6 +56,7 @@ public partial class Paginator : IDisposable
         int? pageValue = pageIndex == 0 ? null : pageIndex + 1;
         var newUri = NavigationManager.GetUriWithQueryParameter(QueryName, pageValue);
         await State.SetCurrentPageIndexAsync(pageIndex);
+        _lastRenderedPageIndex = State.CurrentPageIndex;
         _suppressNextLocationChange = true;
         NavigationManager.NavigateTo(newUri);
     }
@@ -73,6 +75,7 @@ public partial class Paginator : IDisposable
         {
             _hasReadQueryString = true;
             var pageFromQuery = ReadPageIndexFromQueryString() ?? 0;
+            _lastRenderedPageIndex = pageFromQuery;
             if (pageFromQuery != State.CurrentPageIndex)
             {
                 return State.SetCurrentPageIndexAsync(pageFromQuery);
@@ -89,11 +92,15 @@ public partial class Paginator : IDisposable
             return;
         }
         var pageFromQuery = ReadPageIndexFromQueryString() ?? 0;
-        if (pageFromQuery != State.CurrentPageIndex)
+        if (pageFromQuery != _lastRenderedPageIndex)
         {
+            _lastRenderedPageIndex = pageFromQuery;
             await InvokeAsync(async () =>
             {
-                await State.SetCurrentPageIndexAsync(pageFromQuery);
+                if (pageFromQuery != State.CurrentPageIndex)
+                {
+                    await State.SetCurrentPageIndexAsync(pageFromQuery);
+                }
                 StateHasChanged();
             });
         }

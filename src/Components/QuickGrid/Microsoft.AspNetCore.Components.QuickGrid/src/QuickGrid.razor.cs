@@ -117,7 +117,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable, IDisposable
 
     /// <summary>
     /// Name of the query string parameter used to persist the current page index and sort order in the URL.
-    /// Defaults to <c>"QuickGrid"</c>. The sort parameter is derived by appending <c>"_sort"</c> to this value.
+    /// Defaults to <c>"QuickGrid"</c>. The sort parameter is derived by appending <c>"_s"</c> to this value.
     /// When set, this value is propagated to the associated <see cref="PaginationState"/>
     /// so that connected components such as <see cref="Paginator"/> use the same query parameter name.
     /// </summary>

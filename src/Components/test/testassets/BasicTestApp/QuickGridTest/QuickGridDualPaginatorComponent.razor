@@ -1,7 +1,10 @@
-﻿@page "/quickgrid"
-@using Microsoft.AspNetCore.Components.QuickGrid
-@using Microsoft.AspNetCore.Components.Forms
+﻿@using Microsoft.AspNetCore.Components.QuickGrid
 
+<h3>QuickGrid Dual Paginator Component</h3>
+
+<div class="top-paginator">
+    <Paginator State="@pagination" />
+</div>
 <div id="grid">
     <QuickGrid Items="@people" Pagination="@pagination">
         <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" />
@@ -10,95 +13,13 @@
         <PropertyColumn Property="@(p => p.BirthDate)" Format="yyyy-MM-dd" Sortable="true" />
     </QuickGrid>
 </div>
-<div class="first-paginator">
+<div class="bottom-paginator">
     <Paginator State="@pagination" />
 </div>
 
-<div id="grid2">
-    <QuickGrid ItemsProvider="@cityProvider" Pagination="@pagination2" QueryName="QuickGrid2">
-        <PropertyColumn Property="@(c => c.CityId)" />
-        <PropertyColumn Property="@(c => c.Name)" Sortable="true" />
-        <PropertyColumn Property="@(c => c.Country)" Sortable="true" />
-    </QuickGrid>
-</div>
-<div class="second-paginator">
-    <Paginator State="@pagination2" />
-</div>
-
-<FormMappingScope Name="paginator-top">
-    <div class="third-top-paginator">
-        <Paginator State="@pagination3" />
-    </div>
-</FormMappingScope>
-<div id="grid3">
-    <QuickGrid Items="@people" Pagination="@pagination3" QueryName="QuickGrid3">
-        <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.FirstName)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.LastName)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.BirthDate)" Format="yyyy-MM-dd" Sortable="true" />
-    </QuickGrid>
-</div>
-<FormMappingScope Name="paginator-bottom">
-    <div class="third-bottom-paginator">
-        <Paginator State="@pagination3" />
-    </div>
-</FormMappingScope>
-
 @code {
     record Person(int PersonId, string FirstName, string LastName, DateOnly BirthDate);
-    record City(int CityId, string Name, string Country);
-
-    PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
-    PaginationState pagination2 = new PaginationState { ItemsPerPage = 5 };
-    PaginationState pagination3 = new PaginationState { ItemsPerPage = 5 };
-
-    GridItemsProvider<City> cityProvider;
-
-    static readonly City[] allCities = new[]
-    {
-        new City(1, "Tokyo", "Japan"),
-        new City(2, "Delhi", "India"),
-        new City(3, "Shanghai", "China"),
-        new City(4, "São Paulo", "Brazil"),
-        new City(5, "Mexico City", "Mexico"),
-        new City(6, "Cairo", "Egypt"),
-        new City(7, "Mumbai", "India"),
-        new City(8, "Beijing", "China"),
-        new City(9, "Dhaka", "Bangladesh"),
-        new City(10, "Osaka", "Japan"),
-        new City(11, "New York", "USA"),
-        new City(12, "Karachi", "Pakistan"),
-        new City(13, "Buenos Aires", "Argentina"),
-        new City(14, "Istanbul", "Turkey"),
-        new City(15, "Chongqing", "China"),
-        new City(16, "Lagos", "Nigeria"),
-        new City(17, "Kolkata", "India"),
-        new City(18, "Manila", "Philippines"),
-        new City(19, "Guangzhou", "China"),
-        new City(20, "Tianjin", "China"),
-        new City(21, "Lahore", "Pakistan"),
-        new City(22, "Bangalore", "India"),
-        new City(23, "Paris", "France"),
-        new City(24, "Bogotá", "Colombia"),
-        new City(25, "Jakarta", "Indonesia"),
-        new City(26, "Lima", "Peru"),
-        new City(27, "Bangkok", "Thailand"),
-        new City(28, "Hyderabad", "India"),
-        new City(29, "Seoul", "South Korea"),
-        new City(30, "London", "United Kingdom"),
-    };
-
-    protected override void OnInitialized()
-    {
-        cityProvider = async req =>
-        {
-            var query = allCities.AsQueryable();
-            query = req.ApplySorting(query);
-            var totalCount = query.Count();
-            var items = query.Skip(req.StartIndex).Take(req.Count ?? totalCount).ToList();
-            return GridItemsProviderResult.From(items, totalCount);
-        };
-    }
+    PaginationState pagination = new PaginationState { ItemsPerPage = 5 };
 
     IQueryable<Person> people = new[]
     {
