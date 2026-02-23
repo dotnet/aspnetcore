@@ -344,7 +344,6 @@ internal sealed partial class HttpSysListener : IDisposable
 
         httpResponse.Base.StatusCode = checked((ushort)httpStatusCode);
         var statusDescription = ReasonPhrases.GetReasonPhrase(httpStatusCode);
-        uint dataWritten = 0;
         uint statusCode;
 
         bytes = allocator.GetHeaderEncodedBytes(statusDescription, out bytesLength);
@@ -367,7 +366,7 @@ internal sealed partial class HttpSysListener : IDisposable
             0,
             httpResponse,
             null,
-            &dataWritten,
+            out var dataWritten,
             null,
             null);
         if (statusCode != ErrorCodes.ERROR_SUCCESS)

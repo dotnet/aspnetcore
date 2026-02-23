@@ -151,14 +151,7 @@ internal sealed partial class ResponseBody : Stream
             }
             else
             {
-                statusCode = PInvoke.HttpSendResponseEntityBody(
-                    RequestQueueHandle,
-                    RequestId,
-                    flags,
-                    dataChunks,
-                    null,
-                    null,
-                    null);
+                statusCode = PInvoke.HttpSendResponseEntityBody(RequestQueueHandle, RequestId, flags, dataChunks);
             }
         }
         finally

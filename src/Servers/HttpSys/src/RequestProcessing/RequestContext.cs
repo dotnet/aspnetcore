@@ -202,8 +202,11 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
                 return;
             }
 
-            var statusCode = PInvoke.HttpCancelHttpRequest(Server.RequestQueue.Handle,
-                _requestId.Value, default);
+            uint statusCode;
+            unsafe
+            {
+                statusCode = PInvoke.HttpCancelHttpRequest(Server.RequestQueue.Handle, _requestId.Value, default);
+            }
 
             // Either the connection has already dropped, or the last write is in progress.
             // The requestId becomes invalid as soon as the last Content-Length write starts.

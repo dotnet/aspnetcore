@@ -120,8 +120,7 @@ internal sealed partial class RequestStream : Stream
 
         if (_dataChunkIndex == -1 && dataRead == 0)
         {
-            uint statusCode = 0;
-            uint extraDataRead = 0;
+            uint statusCode;
 
             // the http.sys team recommends that we limit the size to 128kb
             if (size > MaxReadSize)
@@ -129,7 +128,7 @@ internal sealed partial class RequestStream : Stream
                 size = MaxReadSize;
             }
 
-            fixed (byte* pBuffer = buffer)
+            unsafe
             {
                 // issue unmanaged blocking call
 
@@ -139,10 +138,8 @@ internal sealed partial class RequestStream : Stream
                     RequestQueueHandle,
                     RequestId,
                     flags,
-                    (pBuffer + offset),
-                    (uint)size,
-                    &extraDataRead,
-                    default);
+                    buffer.AsSpan(offset, size),
+                    out var extraDataRead);
 
                 dataRead += extraDataRead;
             }
