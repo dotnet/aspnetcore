@@ -199,14 +199,14 @@ internal partial class ResourceCollectionUrlEndpoint
         private readonly byte[] _content;
         private readonly string _contentETag;
         private readonly byte[] _gzipContent;
-        private readonly string[] _gzipContentETags;
+        private readonly string _gzipContentETag;
 
         public ResourceCollectionEndpointsBuilder(byte[] content, byte[] gzipContent)
         {
             _content = content;
             _contentETag = ComputeETagTag(content);
             _gzipContent = gzipContent;
-            _gzipContentETags = [$"W/ {_contentETag}", ComputeETagTag(gzipContent)];
+            _gzipContentETag = ComputeETagTag(gzipContent);
         }
 
         private string ComputeETagTag(byte[] content)
@@ -249,7 +249,7 @@ internal partial class ResourceCollectionUrlEndpoint
         private void WriteEncodingHeaders(HttpContext context)
         {
             context.Response.Headers[HeaderNames.ContentEncoding] = "gzip";
-            context.Response.Headers.ETag = new StringValues(_gzipContentETags);
+            context.Response.Headers.ETag = _gzipContentETag;
         }
 
         private void WriteNoEncodingHeaders(HttpContext context)
