@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)src\Validation\gen\Microsoft.Extensions.Validation.ValidationsGenerator.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Validation\Validation\gen\Microsoft.Extensions.Validation.ValidationsGenerator.csproj" />
   </ItemGroup>
 
   <ItemGroup>
