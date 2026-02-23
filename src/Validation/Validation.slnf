@@ -2,15 +2,15 @@
   "solution": {
     "path": "..\\..\\AspNetCore.slnx",
     "projects": [
-      "src\\Validation\\src\\Microsoft.Extensions.Validation\\Microsoft.Extensions.Validation.csproj",
-      "src\\Validation\\src\\Microsoft.Extensions.Validation.Localization\\Microsoft.Extensions.Validation.Localization.csproj",
-      "src\\Validation\\test\\Microsoft.Extensions.Validation.Tests\\Microsoft.Extensions.Validation.Tests.csproj",
-      "src\\Validation\\gen\\Microsoft.Extensions.Validation.ValidationsGenerator.csproj",
-      "src\\Validation\\test\\Microsoft.Extensions.Validation.GeneratorTests\\Microsoft.Extensions.Validation.GeneratorTests.csproj",
+      "src\\Validation\\Validation\\src\\Microsoft.Extensions.Validation.csproj",
+      "src\\Validation\\Validation\\gen\\Microsoft.Extensions.Validation.ValidationsGenerator.csproj",
+      "src\\Validation\\Validation\\test\\Microsoft.Extensions.Validation.Tests\\Microsoft.Extensions.Validation.Tests.csproj",
+      "src\\Validation\\Validation\\test\\Microsoft.Extensions.Validation.GeneratorTests\\Microsoft.Extensions.Validation.GeneratorTests.csproj",
+      "src\\Validation\\Localization\\src\\Microsoft.Extensions.Validation.Localization.csproj",
+      "src\\Validation\\Localization\\test\\Microsoft.Extensions.Validation.LocalizationTests\\Microsoft.Extensions.Validation.LocalizationTests.csproj",
       "src\\Validation\\samples\\ConsoleValidationSample\\ConsoleValidationSample.csproj",
       "src\\Validation\\samples\\MinimalApiValidationSample\\MinimalApiValidationSample.csproj",
       "src\\Validation\\samples\\BlazorValidationSample\\BlazorValidationSample.csproj",
-      "src\\Validation\\test\\Microsoft.Extensions.Validation.LocalizationTests\\Microsoft.Extensions.Validation.LocalizationTests.csproj",
       "src\\Validation\\samples\\StandardAttributeLocalization\\StandardAttributeLocalization.csproj"
     ]
   }

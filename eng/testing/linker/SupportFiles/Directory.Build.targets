@@ -104,8 +104,8 @@
     <ProjectReference Include="$(RepoRoot)src\SignalR\server\Core\src\Microsoft.AspNetCore.SignalR.Core.csproj" />
     <ProjectReference Include="$(RepoRoot)src\SignalR\server\SignalR\src\Microsoft.AspNetCore.SignalR.csproj" />
     <ProjectReference Include="$(RepoRoot)src\OpenApi\src\Microsoft.AspNetCore.OpenApi.csproj" />
-    <ProjectReference Include="$(RepoRoot)src\Validation\src\Microsoft.Extensions.Validation.csproj" />
-    <ProjectReference Include="$(RepoRoot)src\Validation\gen\Microsoft.Extensions.Validation.ValidationsGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(RepoRoot)src\Validation\Validation\src\Microsoft.Extensions.Validation.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Validation\Validation\gen\Microsoft.Extensions.Validation.ValidationsGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="$(RepoRoot)src\Http\Http.Extensions\gen\Microsoft.AspNetCore.Http.RequestDelegateGenerator\Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
