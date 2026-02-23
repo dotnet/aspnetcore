@@ -5,7 +5,12 @@
 @namespace Microsoft.AspNetCore.Components.QuickGrid
 @typeparam TGridItem
 @{
-    ColumnIndex = InternalGridContext.Grid.AddColumn(this, InitialSortDirection, IsDefaultSortColumn);
+    var columnIndex = InternalGridContext.Grid.AddColumn(this, InitialSortDirection, IsDefaultSortColumn);
+
+    if (columnIndex >= 0)
+    {
+        ColumnIndex = columnIndex;
+    }
 }
 
 @code

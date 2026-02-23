@@ -301,6 +301,11 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable, IDisposable
     private void FinishCollectingColumns()
     {
         _collectingColumns = false;
+
+        if (_sortByColumn is not null && !_columns.Contains(_sortByColumn))
+        {
+            _sortByColumn = null;
+        }
     }
 
     /// <summary>
