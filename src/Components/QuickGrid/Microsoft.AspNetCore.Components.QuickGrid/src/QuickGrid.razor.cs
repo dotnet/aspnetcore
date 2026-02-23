@@ -121,6 +121,11 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable, IDisposable
     /// When set, this value is propagated to the associated <see cref="PaginationState"/>
     /// so that connected components such as <see cref="Paginator"/> use the same query parameter name.
     /// </summary>
+    /// <remarks>
+    /// When rendering multiple <see cref="QuickGrid{TGridItem}"/> instances on the same page, assign a unique
+    /// <see cref="QueryName"/> value to each instance. Reusing the default value causes the grids to share
+    /// query-string keys and can make their paging and sorting state interfere with each other.
+    /// </remarks>
     [Parameter] public string QueryName { get; set; } = "QuickGrid";
 
     [Inject] private IServiceProvider Services { get; set; } = default!;

@@ -90,13 +90,13 @@
 
     protected override void OnInitialized()
     {
-        cityProvider = async req =>
+        cityProvider = req =>
         {
             var query = allCities.AsQueryable();
             query = req.ApplySorting(query);
             var totalCount = query.Count();
             var items = query.Skip(req.StartIndex).Take(req.Count ?? totalCount).ToList();
-            return GridItemsProviderResult.From(items, totalCount);
+            return ValueTask.FromResult(GridItemsProviderResult.From(items, totalCount));
         };
     }
 
