@@ -146,13 +146,11 @@ internal class ListAdapter : IAdapter
 
     public virtual bool TryTraverse(object target, string segment, JsonSerializerOptions serializerOptions, out object value, out string errorMessage)
     {
-        if(!TryGetListTypeArgument(target, out _, out errorMessage))
+        if (!TryGetListTypeArgument(target, out _, out errorMessage))
         {
             value = null;
             return false;
         }
-
-        var count = GenericListOrJsonArrayUtilities.GetCount(target);
 
         if (!int.TryParse(segment, out var index))
         {
@@ -160,6 +158,8 @@ internal class ListAdapter : IAdapter
             errorMessage = Resources.FormatInvalidIndexValue(segment);
             return false;
         }
+
+        var count = GenericListOrJsonArrayUtilities.GetCount(target);
 
         if (index < 0 || index >= count)
         {
