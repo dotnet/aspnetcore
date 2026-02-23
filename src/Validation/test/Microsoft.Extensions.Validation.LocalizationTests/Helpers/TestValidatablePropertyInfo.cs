@@ -12,11 +12,10 @@ internal class TestValidatablePropertyInfo(
     Type propertyType,
     string name,
     ValidationAttribute[] validationAttributes,
-    DisplayAttribute? displayAttribute = null) : ValidatablePropertyInfo(declaringType, propertyType, name)
+    string? displayName = null,
+    Func<string>? displayNameAccessor = null) : ValidatablePropertyInfo(declaringType, propertyType, name, displayName, displayNameAccessor)
 {
     protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
-    protected override DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
 
     private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
-    private readonly DisplayAttribute? _displayAttribute = displayAttribute;
 }

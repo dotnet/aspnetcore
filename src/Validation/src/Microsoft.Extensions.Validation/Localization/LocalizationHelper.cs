@@ -8,26 +8,21 @@ namespace Microsoft.Extensions.Validation.Localization;
 internal static class LocalizationHelper
 {
     internal static string ResolveDisplayName(
-        DisplayAttribute? displayAttribute,
-        Type? declaringType,
         string memberName,
+        string? displayName,
+        Func<string>? displayNameAccessor,
+        Type? declaringType,
         DisplayNameProvider? provider,
         IServiceProvider services)
     {
-        if (displayAttribute is DisplayAttribute display && display.GetName() is string displayName)
+        if (displayNameAccessor?.Invoke() is string resourceDisplayName)
         {
-            if (display.ResourceType is not null)
-            {
-                // Display name is localized via a static property (typically generated from a resource file).
-                return displayName;
-            }
+            // Display name is localized via a static property (typically generated from a resource file).
+            return resourceDisplayName;
+        }
 
-            if (provider is null)
-            {
-                // Run-time localization is not set up. The Name value is used directly. 
-                return displayName;
-            }
-
+        if (displayName is not null && provider is not null)
+        {
             // Display name is localized using run-time localization.
             var displayNameContext = new DisplayNameProviderContext
             {
@@ -39,7 +34,8 @@ internal static class LocalizationHelper
             return provider(displayNameContext) ?? displayName;
         }
 
-        return memberName;
+        // Run-time localization is not set up.
+        return displayName ?? memberName;
     }
 
     /// <summary>

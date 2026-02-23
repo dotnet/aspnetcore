@@ -291,12 +291,11 @@ public class ValidatableParameterInfoTests
         string? displayName,
         ValidationAttribute[] validationAttributes)
     {
-        var displayAttribute = displayName is not null ? new DisplayAttribute { Name = displayName } : null;
         return new TestValidatableParameterInfo(
             parameterType,
             name,
             validationAttributes,
-            displayAttribute);
+            displayName: displayName);
     }
 
     private ValidateContext CreateValidatableContext(
@@ -316,13 +315,11 @@ public class ValidatableParameterInfoTests
         Type parameterType,
         string name,
         ValidationAttribute[] validationAttributes,
-        DisplayAttribute? displayAttribute = null) : ValidatableParameterInfo(parameterType, name)
+        string? displayName = null) : ValidatableParameterInfo(parameterType, name, displayName, displayNameAccessor: null)
     {
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
-        protected override DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
 
         private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
-        private readonly DisplayAttribute? _displayAttribute = displayAttribute;
     }
 
     private class TestValidatablePropertyInfo(
@@ -330,13 +327,11 @@ public class ValidatableParameterInfoTests
         Type propertyType,
         string name,
         ValidationAttribute[] validationAttributes,
-        DisplayAttribute? displayAttribute = null) : ValidatablePropertyInfo(containingType, propertyType, name)
+        string? displayName = null) : ValidatablePropertyInfo(containingType, propertyType, name, displayName, displayNameAccessor: null)
     {
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
-        protected override DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
 
         private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
-        private readonly DisplayAttribute? _displayAttribute = displayAttribute;
     }
 
     private class TestValidationOptions : ValidationOptions

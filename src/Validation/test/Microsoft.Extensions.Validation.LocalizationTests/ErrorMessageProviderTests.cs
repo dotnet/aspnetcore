@@ -342,7 +342,7 @@ public class ErrorMessageProviderTests
                     [new RequiredAttribute(), new StringLengthAttribute(100)]),
                 new TestValidatablePropertyInfo(typeof(TestCustomer), typeof(int), "Age",
                     [new RangeAttribute(18, 120)],
-                    new DisplayAttribute { Name = "Customer Age" }),
+                    displayName: "Customer Age"),
                 new TestValidatablePropertyInfo(typeof(TestCustomer), typeof(string), "Email",
                     [new EmailAddressAttribute()])
             ]);

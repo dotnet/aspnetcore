@@ -104,15 +104,15 @@ public class DisplayNameProviderTests
     {
         var providerCalled = false;
         var model = new ResourceDisplayModel { Value = null };
-        var displayAttr = new DisplayAttribute
-        {
-            Name = nameof(DisplayResources.ValueLabel),
-            ResourceType = typeof(DisplayResources)
-        };
         var propInfo = new TestValidatablePropertyInfo(
             typeof(ResourceDisplayModel), typeof(string), "Value",
             [new RequiredAttribute()],
-            displayAttr);
+            displayName: nameof(DisplayResources.ValueLabel),
+            displayNameAccessor: () => new DisplayAttribute
+            {
+                Name = nameof(DisplayResources.ValueLabel),
+                ResourceType = typeof(DisplayResources)
+            }.GetName()!);
         var typeInfo = new TestValidatableTypeInfo(typeof(ResourceDisplayModel), [propInfo]);
 
         var options = new ValidationOptions
@@ -160,7 +160,7 @@ public class DisplayNameProviderTests
                     [new RequiredAttribute(), new StringLengthAttribute(100)]),
                 new TestValidatablePropertyInfo(typeof(CustomerModel), typeof(int), "Age",
                     [new RangeAttribute(18, 120)],
-                    new DisplayAttribute { Name = "Customer Age" }),
+                    displayName: "Customer Age"),
                 new TestValidatablePropertyInfo(typeof(CustomerModel), typeof(string), "Email",
                     [new EmailAddressAttribute()])
             ]);
@@ -173,10 +173,10 @@ public class DisplayNameProviderTests
             [
                 new TestValidatablePropertyInfo(typeof(CustomerModel), typeof(string), "Name",
                     [new RequiredAttribute(), new StringLengthAttribute(100)],
-                    new DisplayAttribute { Name = "Name" }),
+                    displayName: "Name"),
                 new TestValidatablePropertyInfo(typeof(CustomerModel), typeof(int), "Age",
                     [new RangeAttribute(18, 120)],
-                    new DisplayAttribute { Name = "Customer Age" }),
+                    displayName: "Customer Age"),
                 new TestValidatablePropertyInfo(typeof(CustomerModel), typeof(string), "Email",
                     [new EmailAddressAttribute()])
             ]);

@@ -38,6 +38,8 @@ public class ValidatableInfoResolverTests
         // Arrange
         var mockTypeInfo = new Mock<ValidatableTypeInfo>(
             typeof(ValidatableType),
+            null,
+            null,
             Array.Empty<ValidatablePropertyInfo>()).Object;
 
         var resolver = new Mock<IValidatableInfoResolver>();
@@ -86,7 +88,9 @@ public class ValidatableInfoResolverTests
 
         var mockParamInfo = new Mock<ValidatableParameterInfo>(
             typeof(string),
-            "model").Object;
+            "model",
+            null,
+            null).Object;
 
         var resolver = new Mock<IValidatableInfoResolver>();
 
@@ -118,7 +122,7 @@ public class ValidatableInfoResolverTests
         var resolver3 = new Mock<IValidatableInfoResolver>();
 
         // Create the object that will be returned by resolver2
-        var mockTypeInfo = new Mock<ValidatableTypeInfo>(typeof(ValidatableType), Array.Empty<ValidatablePropertyInfo>()).Object;
+        var mockTypeInfo = new Mock<ValidatableTypeInfo>(typeof(ValidatableType), null, null, Array.Empty<ValidatablePropertyInfo>()).Object;
 
         // Setup resolver1 to return false (doesn't handle this type)
         resolver1
@@ -184,25 +188,21 @@ public class ValidatableInfoResolverTests
         Type propertyType,
         string name,
         ValidationAttribute[] validationAttributes,
-        DisplayAttribute? displayAttribute = null) : ValidatablePropertyInfo(containingType, propertyType, name)
+        string? displayName = null) : ValidatablePropertyInfo(containingType, propertyType, name, displayName, displayNameAccessor: null)
     {
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
-        protected override DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
 
         private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
-        private readonly DisplayAttribute? _displayAttribute = displayAttribute;
     }
 
     private class TestValidatableParameterInfo(
         Type parameterType,
         string name,
         ValidationAttribute[] validationAttributes,
-        DisplayAttribute? displayAttribute = null) : ValidatableParameterInfo(parameterType, name)
+        string? displayName = null) : ValidatableParameterInfo(parameterType, name, displayName, displayNameAccessor: null)
     {
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
-        protected override DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
 
         private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
-        private readonly DisplayAttribute? _displayAttribute = displayAttribute;
     }
 }

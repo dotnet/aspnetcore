@@ -320,7 +320,7 @@ public class LocalizationIntegrationTests
                     [new RequiredAttribute() { ErrorMessage = "RequiredError" }, new StringLengthAttribute(100)]),
                 new TestValidatablePropertyInfo(typeof(IntegrationCustomer), typeof(int), "Age",
                     [new RangeAttribute(18, 120) { ErrorMessage = "RangeError" } ],
-                    new DisplayAttribute { Name = "Customer Age" }),
+                    displayName: "Customer Age"),
                 new TestValidatablePropertyInfo(typeof(IntegrationCustomer), typeof(string), "Email",
                     [new EmailAddressAttribute()])
             ]);

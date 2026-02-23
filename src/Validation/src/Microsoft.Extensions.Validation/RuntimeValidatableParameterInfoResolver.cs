@@ -50,12 +50,17 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
         }
 
         var displayAttribute = parameterInfo.GetCustomAttribute<DisplayAttribute>();
+        var displayName = displayAttribute?.Name;
+        Func<string>? displayNameAccessor = displayAttribute?.ResourceType is not null && displayAttribute?.Name is not null
+            ? () => displayAttribute!.GetName()!
+            : null;
 
         validatableInfo = new RuntimeValidatableParameterInfo(
             parameterType: parameterInfo.ParameterType,
             name: parameterInfo.Name,
-            validationAttributes: validationAttributes,
-            displayAttribute: displayAttribute
+            displayName: displayName,
+            displayNameAccessor: displayNameAccessor,
+            validationAttributes: validationAttributes
         );
         return true;
     }
@@ -63,14 +68,13 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
     internal sealed class RuntimeValidatableParameterInfo(
         Type parameterType,
         string name,
-        ValidationAttribute[] validationAttributes,
-        DisplayAttribute? displayAttribute) : ValidatableParameterInfo(parameterType, name)
+        string? displayName,
+        Func<string>? displayNameAccessor,
+        ValidationAttribute[] validationAttributes) : ValidatableParameterInfo(parameterType, name, displayName, displayNameAccessor)
     {
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
-        protected override DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
 
         private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
-        private readonly DisplayAttribute? _displayAttribute = displayAttribute;
     }
 
     private static bool IsComplexType(Type type)
