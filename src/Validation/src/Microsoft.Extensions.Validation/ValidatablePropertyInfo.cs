@@ -24,11 +24,15 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         [param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
         Type declaringType,
         Type propertyType,
-        string name)
+        string name,
+        string? displayName,
+        Func<string>? displayNameAccessor)
     {
         DeclaringType = declaringType;
         PropertyType = propertyType;
         Name = name;
+        DisplayName = displayName;
+        DisplayNameAccessor = displayNameAccessor;
 
         // TODO: Replace this with inheritance chain walk to avoid AmbigousMatchReflection exception in ceratin cases (property hiding)
         _propertyInfo = DeclaringType.GetProperty(Name)
@@ -52,24 +56,30 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     internal string Name { get; }
 
     /// <summary>
+    /// Gets the display name for the member as designated by the <see cref="DisplayAttribute.Name"/>.
+    /// </summary>
+    internal string? DisplayName { get; }
+
+    /// <summary>
+    /// Gets the display name for the member as designated by the <see cref="DisplayAttribute.ResourceType"/>
+    /// and <see cref="DisplayAttribute.Name"/>.
+    /// </summary>
+    internal Func<string>? DisplayNameAccessor { get; }
+
+    /// <summary>
     /// Gets the validation attributes for this member.
     /// </summary>
     /// <returns>An array of validation attributes to apply to this member.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
-    /// <summary>
-    /// Gets the <see cref="DisplayAttribute"/> for this member, if one exists.
-    /// </summary>
-    /// <returns>The <see cref="DisplayAttribute"/> applied to this member, or <see langword="null"/>.</returns>
-    protected abstract DisplayAttribute? GetDisplayAttribute();
-
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
         var displayName = LocalizationHelper.ResolveDisplayName(
-            GetDisplayAttribute(),
-            declaringType: DeclaringType,
             memberName: Name,
+            DisplayName,
+            DisplayNameAccessor,
+            declaringType: DeclaringType,
             context.DisplayNameProvider,
             context.ValidationContext);
 

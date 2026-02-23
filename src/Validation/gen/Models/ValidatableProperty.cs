@@ -10,5 +10,7 @@ internal sealed record class ValidatableProperty(
     ITypeSymbol ContainingType,
     ITypeSymbol Type,
     string Name,
+    string? DisplayName,
+    INamedTypeSymbol? DisplayResourceType,
     ImmutableArray<ValidationAttribute> Attributes
 );
