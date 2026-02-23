@@ -300,7 +300,7 @@ app.MapGet(""/hello/{Age?}"", ([FromRoute] int? age) => $""Age: {age}"");
 using Microsoft.AspNetCore.Builder;
 
 var app = WebApplication.Create();
-app.MapGet(""/hello/{age:regex(^\\d{{3}}-\\d{{2}}-\\d{{4}}$)?}"", ({|#0:int age|}) => $""Age: {age}"");
+app.MapGet(""/hello/{age:regex(^\\d{{3}}-\\d{{2}}-\\d{{4}}$)?}"", ({|#0:string age|}) => $""Age: {age}"");
 ";
 
         var fixedSource = @"
@@ -308,7 +308,7 @@ app.MapGet(""/hello/{age:regex(^\\d{{3}}-\\d{{2}}-\\d{{4}}$)?}"", ({|#0:int age|
 using Microsoft.AspNetCore.Builder;
 
 var app = WebApplication.Create();
-app.MapGet(""/hello/{age:regex(^\\d{{3}}-\\d{{2}}-\\d{{4}}$)?}"", (int? age) => $""Age: {age}"");
+app.MapGet(""/hello/{age:regex(^\\d{{3}}-\\d{{2}}-\\d{{4}}$)?}"", (string? age) => $""Age: {age}"");
 ";
         var expectedDiagnostic = new DiagnosticResult(DiagnosticDescriptors.DetectMismatchedParameterOptionality).WithArguments("age").WithLocation(0);
 

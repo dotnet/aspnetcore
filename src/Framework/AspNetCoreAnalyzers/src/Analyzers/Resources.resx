@@ -333,4 +333,10 @@
   <data name="Analyzer_KestrelShouldListenOnIPv6AnyInsteadOfIpAny_Message" xml:space="preserve">
     <value>If the server does not specifically reject IPv6, IPAddress.IPv6Any is preferred over IPAddress.Any usage for safety and performance reasons. See https://aka.ms/aspnetcore-warnings/ASP0028 for more details.</value>
   </data>
+  <data name="Analyzer_InvalidRouteConstraintForParameterType_Title" xml:space="preserve">
+    <value>Invalid constraint for parameter type</value>
+  </data>
+  <data name="Analyzer_InvalidRouteConstraintForParameterType_Message" xml:space="preserve">
+    <value>The constraint '{0}' on parameter '{1}' can't be used with type '{2}'</value>
+  </data>
 </root>
