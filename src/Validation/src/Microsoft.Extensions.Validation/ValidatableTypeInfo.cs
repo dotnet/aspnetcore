@@ -15,10 +15,14 @@ namespace Microsoft.Extensions.Validation;
 /// Creates a new instance of <see cref="ValidatableTypeInfo"/>.
 /// </remarks>
 /// <param name="type">The type being validated.</param>
+/// <param name="displayName">The display name for the type as designated by <see cref="DisplayAttribute.Name"/>.</param>
+/// <param name="displayNameAccessor">A function that resolves the display name using <see cref="DisplayAttribute.ResourceType"/> and <see cref="DisplayAttribute.Name"/>.</param>
 /// <param name="members">The members that can be validated.</param>
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public abstract class ValidatableTypeInfo(
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type,
+    string? displayName,
+    Func<string>? displayNameAccessor,
     IReadOnlyList<ValidatablePropertyInfo> members) : IValidatableInfo
 {
     private readonly int _membersCount = members.Count;
@@ -31,15 +35,20 @@ public abstract class ValidatableTypeInfo(
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
     /// <summary>
-    /// Gets the <see cref="DisplayAttribute"/> for this type, if one exists.
-    /// </summary>
-    /// <returns>The <see cref="DisplayAttribute"/> applied to this type, or <see langword="null"/>.</returns>
-    protected abstract DisplayAttribute? GetDisplayAttribute();
-
-    /// <summary>
     /// The type being validated.
     /// </summary>
     internal Type Type { get; } = type;
+
+    /// <summary>
+    /// Gets the display name for the member as designated by the <see cref="DisplayAttribute.Name"/>.
+    /// </summary>
+    internal string? DisplayName { get; } = displayName;
+
+    /// <summary>
+    /// Gets the display name for the member as designated by the <see cref="DisplayAttribute.ResourceType"/>
+    /// and <see cref="DisplayAttribute.Name"/>.
+    /// </summary>
+    internal Func<string>? DisplayNameAccessor { get; } = displayNameAccessor;
 
     /// <summary>
     /// The members that can be validated.
@@ -86,9 +95,10 @@ public abstract class ValidatableTypeInfo(
             }
 
             var displayName = LocalizationHelper.ResolveDisplayName(
-                GetDisplayAttribute(),
-                declaringType: Type,
                 memberName: Type.Name,
+                DisplayName,
+                DisplayNameAccessor,
+                declaringType: Type,
                 context.DisplayNameProvider,
                 context.ValidationContext);
 

@@ -858,13 +858,11 @@ public class ValidatableTypeInfoTests
         Type propertyType,
         string name,
         ValidationAttribute[] validationAttributes,
-        DisplayAttribute? displayAttribute = null) : ValidatablePropertyInfo(containingType, propertyType, name)
+        string? displayName = null) : ValidatablePropertyInfo(containingType, propertyType, name, displayName, displayNameAccessor: null)
     {
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
-        protected override DisplayAttribute? GetDisplayAttribute() => _displayAttribute;
 
         private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
-        private readonly DisplayAttribute? _displayAttribute = displayAttribute;
     }
 
     private class TestValidationOptions : ValidationOptions
