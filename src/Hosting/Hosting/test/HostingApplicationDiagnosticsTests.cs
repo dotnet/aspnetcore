@@ -1186,7 +1186,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     public void ActivityListeners_QueryStringRedacted_WhenOptionsConfigured()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
-        var redactionOptions = new UrlQueryRedactionOptions();
+        var redactionOptions = new UrlQueryRedactionOptions { IsEnabled = true };
         var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, urlQueryRedactionOptions: redactionOptions);
         var tags = new Dictionary<string, object>();
         using var listener = new ActivityListener
@@ -1224,10 +1224,11 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     }
 
     [Fact]
-    public void ActivityListeners_QueryStringNotIncluded_WhenOptionsNotConfigured()
+    public void ActivityListeners_QueryStringNotIncluded_WhenOptionsNotEnabled()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
-        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, urlQueryRedactionOptions: null);
+        // IsEnabled defaults to false
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false);
         var tags = new Dictionary<string, object>();
         using var listener = new ActivityListener
         {
@@ -1264,6 +1265,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         var testSource = new ActivitySource(Path.GetRandomFileName());
         var redactionOptions = new UrlQueryRedactionOptions
         {
+            IsEnabled = true,
             RedactedPlaceholder = "***"
         };
         var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, urlQueryRedactionOptions: redactionOptions);
@@ -1304,7 +1306,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     public void ActivityListeners_QueryStringWithCustomSensitiveParameters()
     {
         var testSource = new ActivitySource(Path.GetRandomFileName());
-        var redactionOptions = new UrlQueryRedactionOptions();
+        var redactionOptions = new UrlQueryRedactionOptions { IsEnabled = true };
         redactionOptions.SensitiveQueryParameters.Clear();
         redactionOptions.SensitiveQueryParameters.Add("credit_card");
         redactionOptions.SensitiveQueryParameters.Add("ssn");
@@ -1805,6 +1807,8 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         Action<DefaultHttpContext> configure = null, HostingEventSource eventSource = null, IMeterFactory meterFactory = null,
         bool? suppressActivityOpenTelemetryData = null, UrlQueryRedactionOptions urlQueryRedactionOptions = null)
     {
+        urlQueryRedactionOptions ??= new UrlQueryRedactionOptions();
+
         var httpContextFactory = new Mock<IHttpContextFactory>();
 
         features = new FeatureCollection();

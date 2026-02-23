@@ -16,6 +16,12 @@ public sealed class UrlQueryRedactionOptions
     }
 
     /// <summary>
+    /// Gets or sets a value indicating whether URL query string redaction is enabled.
+    /// </summary>
+    /// <value>Defaults to <c>false</c>. Set to <c>true</c> to enable query string redaction.</value>
+    public bool IsEnabled { get; set; }
+
+    /// <summary>
     /// Gets the set of query parameter names whose values should be redacted.
     /// Parameter name matching is case-insensitive.
     /// </summary>

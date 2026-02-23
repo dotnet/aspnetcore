@@ -144,7 +144,7 @@ internal sealed partial class WebHost : IWebHost, IAsyncDisposable
         var propagator = _applicationServices.GetRequiredService<DistributedContextPropagator>();
         var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
         var hostingMetrics = _applicationServices.GetRequiredService<HostingMetrics>();
-        var urlQueryRedactionOptions = _applicationServices.GetService<IOptions<UrlQueryRedactionOptions>>()?.Value;
+        var urlQueryRedactionOptions = _applicationServices.GetRequiredService<IOptions<UrlQueryRedactionOptions>>().Value;
         var hostingApp = new HostingApplication(application, _logger, diagnosticSource, activitySource, propagator, httpContextFactory, HostingEventSource.Log, hostingMetrics, urlQueryRedactionOptions);
         await Server.StartAsync(hostingApp, cancellationToken).ConfigureAwait(false);
         _startedServer = true;

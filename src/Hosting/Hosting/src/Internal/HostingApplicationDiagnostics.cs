@@ -34,7 +34,7 @@ internal sealed class HostingApplicationDiagnostics
     private readonly HostingEventSource _eventSource;
     private readonly HostingMetrics _metrics;
     private readonly ILogger _logger;
-    private readonly UrlQueryRedactionOptions? _urlQueryRedactionOptions;
+    private readonly UrlQueryRedactionOptions _urlQueryRedactionOptions;
 
     // Internal for testing purposes only
     internal bool SuppressActivityOpenTelemetryData { get; set; }
@@ -46,7 +46,7 @@ internal sealed class HostingApplicationDiagnostics
         DistributedContextPropagator propagator,
         HostingEventSource eventSource,
         HostingMetrics metrics,
-        UrlQueryRedactionOptions? urlQueryRedactionOptions)
+        UrlQueryRedactionOptions urlQueryRedactionOptions)
     {
         _logger = logger;
         _diagnosticListener = diagnosticListener;
@@ -460,7 +460,7 @@ internal sealed class HostingApplicationDiagnostics
         return activity;
     }
 
-    private static TagList CreateInitializeActivityTags(HttpContext httpContext, UrlQueryRedactionOptions? urlQueryRedactionOptions)
+    private static TagList CreateInitializeActivityTags(HttpContext httpContext, UrlQueryRedactionOptions urlQueryRedactionOptions)
     {
         // The tags here are set when the activity is created. They can be used in sampling decisions.
         // Most values in semantic conventions that are present at creation are specified:
@@ -499,7 +499,7 @@ internal sealed class HostingApplicationDiagnostics
         var path = (request.PathBase.HasValue || request.Path.HasValue) ? (request.PathBase + request.Path).ToString() : "/";
         creationTags.Add(HostingTelemetryHelpers.AttributeUrlPath, path);
 
-        if (urlQueryRedactionOptions != null && request.QueryString.HasValue)
+        if (urlQueryRedactionOptions.IsEnabled && request.QueryString.HasValue)
         {
             var redactedQuery = HostingTelemetryHelpers.GetRedactedQueryString(request.QueryString, urlQueryRedactionOptions);
             if (redactedQuery != null)

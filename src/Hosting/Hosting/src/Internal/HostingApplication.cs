@@ -33,7 +33,7 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
         IHttpContextFactory httpContextFactory,
         HostingEventSource eventSource,
         HostingMetrics metrics,
-        UrlQueryRedactionOptions? urlQueryRedactionOptions = null)
+        UrlQueryRedactionOptions urlQueryRedactionOptions)
     {
         _application = application;
         _diagnostics = new HostingApplicationDiagnostics(logger, diagnosticSource, activitySource, propagator, eventSource, metrics, urlQueryRedactionOptions);

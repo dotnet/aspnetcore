@@ -28,7 +28,7 @@ internal sealed partial class GenericWebHostService : IHostedService
                                  IConfiguration configuration,
                                  IWebHostEnvironment hostingEnvironment,
                                  HostingMetrics hostingMetrics,
-                                 IOptions<UrlQueryRedactionOptions>? urlQueryRedactionOptions)
+                                 IOptions<UrlQueryRedactionOptions> urlQueryRedactionOptions)
     {
         Options = options.Value;
         Server = server;
@@ -43,7 +43,7 @@ internal sealed partial class GenericWebHostService : IHostedService
         Configuration = configuration;
         HostingEnvironment = hostingEnvironment;
         HostingMetrics = hostingMetrics;
-        UrlQueryRedactionOptions = urlQueryRedactionOptions?.Value;
+        UrlQueryRedactionOptions = urlQueryRedactionOptions.Value;
     }
 
     public GenericWebHostServiceOptions Options { get; }
@@ -60,7 +60,7 @@ internal sealed partial class GenericWebHostService : IHostedService
     public IConfiguration Configuration { get; }
     public IWebHostEnvironment HostingEnvironment { get; }
     public HostingMetrics HostingMetrics { get; }
-    public UrlQueryRedactionOptions? UrlQueryRedactionOptions { get; }
+    public UrlQueryRedactionOptions UrlQueryRedactionOptions { get; }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {

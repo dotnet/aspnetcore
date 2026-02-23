@@ -155,7 +155,7 @@ internal static class HostingTelemetryHelpers
     /// <param name="queryString">The query string to redact.</param>
     /// <param name="options">The redaction options containing sensitive parameter names and placeholder.</param>
     /// <returns>The redacted query string, or null if the query string is empty.</returns>
-   public static string? GetRedactedQueryString(QueryString queryString, UrlQueryRedactionOptions options)
+    public static string? GetRedactedQueryString(QueryString queryString, UrlQueryRedactionOptions options)
     {
         if (!queryString.HasValue)
         {
@@ -170,7 +170,8 @@ internal static class HostingTelemetryHelpers
 
         var body = query.AsSpan().TrimStart('?');
 
-        if (body.IsEmpty) {
+        if (body.IsEmpty)
+        {
             return query;
         }
 
@@ -184,7 +185,10 @@ internal static class HostingTelemetryHelpers
         {
             var pair = body[segment];
 
-            if (!isFirstSegment) { sb.Append('&'); }
+            if (!isFirstSegment)
+            {
+                sb.Append('&');
+            }
             isFirstSegment = false;
 
             var rawKey = GetKey(pair);
