@@ -22,21 +22,15 @@ public class ResponseCompressionMiddlewareTest
 {
     private const string TextPlain = "text/plain";
 
+    private static readonly string[] _supportedEncodings =
+        [
+            "gzip",
+            "br",
+            "zstd"
+        ];
+
     public static IEnumerable<object[]> SupportedEncodings =>
-        TestData.Select(x => new object[] { x.EncodingName });
-
-    public static IEnumerable<object[]> SupportedEncodingsWithBodyLength =>
-        TestData.Select(x => new object[] { x.EncodingName, x.ExpectedBodyLength });
-
-    private static IEnumerable<EncodingTestData> TestData
-    {
-        get
-        {
-            yield return new EncodingTestData("zstd", expectedBodyLength: 27);
-            yield return new EncodingTestData("gzip", expectedBodyLength: 29);
-            yield return new EncodingTestData("br", expectedBodyLength: 21);
-        }
-    }
+        _supportedEncodings.Select(encoding => new[] { encoding });
 
     [Fact]
     public void Options_HttpsDisabledByDefault()
@@ -1467,19 +1461,6 @@ public class ResponseCompressionMiddlewareTest
         }
 
         public Task StartAsync(CancellationToken token = default) => InnerFeature.StartAsync(token);
-    }
-
-    private readonly struct EncodingTestData
-    {
-        public EncodingTestData(string encodingName, int expectedBodyLength)
-        {
-            EncodingName = encodingName;
-            ExpectedBodyLength = expectedBodyLength;
-        }
-
-        public string EncodingName { get; }
-
-        public int ExpectedBodyLength { get; }
     }
 
     private class NoSyncWrapperStream : Stream
