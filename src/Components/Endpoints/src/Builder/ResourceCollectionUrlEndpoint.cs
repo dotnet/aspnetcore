@@ -249,7 +249,6 @@ internal partial class ResourceCollectionUrlEndpoint
         private void WriteEncodingHeaders(HttpContext context)
         {
             context.Response.Headers[HeaderNames.ContentEncoding] = "gzip";
-            context.Response.Headers[HeaderNames.Vary] = HeaderNames.AcceptEncoding;
             context.Response.Headers.ETag = new StringValues(_gzipContentETags);
         }
 
@@ -260,18 +259,19 @@ internal partial class ResourceCollectionUrlEndpoint
 
         private static void WriteFingerprintHeaders(HttpContext context)
         {
-            context.Response.Headers[HeaderNames.CacheControl] = "max-age=31536000, immutable";
+            context.Response.Headers[HeaderNames.CacheControl] = "max-age=31536000, immutable, no-transform";
         }
 
         private static void WriteNonFingerprintedHeaders(HttpContext context)
         {
-            context.Response.Headers[HeaderNames.CacheControl] = "no-cache, must-revalidate";
+            context.Response.Headers[HeaderNames.CacheControl] = "no-cache, must-revalidate, no-transform";
         }
 
         private static void WriteCommonHeaders(HttpContext context, byte[] contents)
         {
             context.Response.ContentType = "application/javascript";
             context.Response.ContentLength = contents.Length;
+            context.Response.Headers[HeaderNames.Vary] = HeaderNames.AcceptEncoding;
         }
 
         internal IEnumerable<RouteEndpointBuilder> CreateEndpoints(
