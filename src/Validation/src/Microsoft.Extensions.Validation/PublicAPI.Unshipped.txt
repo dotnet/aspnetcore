@@ -1,7 +1,7 @@
 #nullable enable
-abstract Microsoft.Extensions.Validation.ValidatableParameterInfo.GetDisplayAttribute() -> System.ComponentModel.DataAnnotations.DisplayAttribute?
-abstract Microsoft.Extensions.Validation.ValidatablePropertyInfo.GetDisplayAttribute() -> System.ComponentModel.DataAnnotations.DisplayAttribute?
-abstract Microsoft.Extensions.Validation.ValidatableTypeInfo.GetDisplayAttribute() -> System.ComponentModel.DataAnnotations.DisplayAttribute?
+*REMOVED*Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, string! displayName) -> void
+*REMOVED*Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name) -> void
+Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, string? displayName, System.Func<string!>? displayNameAccessor) -> void
 Microsoft.Extensions.Validation.Localization.DisplayNameProvider
 Microsoft.Extensions.Validation.Localization.DisplayNameProviderContext
 Microsoft.Extensions.Validation.Localization.DisplayNameProviderContext.DeclaringType.get -> System.Type?
@@ -11,7 +11,6 @@ Microsoft.Extensions.Validation.Localization.DisplayNameProviderContext.Name.get
 Microsoft.Extensions.Validation.Localization.DisplayNameProviderContext.Name.init -> void
 Microsoft.Extensions.Validation.Localization.DisplayNameProviderContext.Services.get -> System.IServiceProvider!
 Microsoft.Extensions.Validation.Localization.DisplayNameProviderContext.Services.init -> void
-*REMOVED*Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, string! displayName) -> void
 Microsoft.Extensions.Validation.Localization.ErrorMessageProvider
 Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext
 Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.Attribute.get -> System.ComponentModel.DataAnnotations.ValidationAttribute!
@@ -25,9 +24,10 @@ Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.MemberN
 Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.MemberName.init -> void
 Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.Services.get -> System.IServiceProvider!
 Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.Services.init -> void
-Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name) -> void
 *REMOVED*Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, string! displayName) -> void
-Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name) -> void
+Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, string? displayName, System.Func<string!>? displayNameAccessor) -> void
+*REMOVED*Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.Type! type, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Validation.ValidatablePropertyInfo!>! members) -> void
+Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.Type! type, string? displayName, System.Func<string!>? displayNameAccessor, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Validation.ValidatablePropertyInfo!>! members) -> void
 Microsoft.Extensions.Validation.ValidateContext.DisplayNameProvider.get -> Microsoft.Extensions.Validation.Localization.DisplayNameProvider?
 Microsoft.Extensions.Validation.ValidateContext.DisplayNameProvider.set -> void
 Microsoft.Extensions.Validation.ValidateContext.ErrorMessageProvider.get -> Microsoft.Extensions.Validation.Localization.ErrorMessageProvider?

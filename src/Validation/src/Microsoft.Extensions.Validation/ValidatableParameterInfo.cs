@@ -16,10 +16,14 @@ namespace Microsoft.Extensions.Validation;
 /// </remarks>
 /// <param name="parameterType">The <see cref="Type"/> associated with the parameter.</param>
 /// <param name="name">The parameter name.</param>
+/// <param name="displayName">The display name for the parameter as designated by <see cref="DisplayAttribute.Name"/>.</param>
+/// <param name="displayNameAccessor">A function that resolves the display name using <see cref="DisplayAttribute.ResourceType"/> and <see cref="DisplayAttribute.Name"/>.</param>
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public abstract class ValidatableParameterInfo(
     Type parameterType,
-    string name) : IValidatableInfo
+    string name,
+    string? displayName,
+    Func<string>? displayNameAccessor) : IValidatableInfo
 {
     private RequiredAttribute? _requiredAttribute;
 
@@ -34,16 +38,21 @@ public abstract class ValidatableParameterInfo(
     internal string Name { get; } = name;
 
     /// <summary>
+    /// Gets the display name for the parameter as designated by the <see cref="DisplayAttribute.Name"/>.
+    /// </summary>
+    internal string? DisplayName { get; } = displayName;
+
+    /// <summary>
+    /// Gets the display name for the parameter as designated by the <see cref="DisplayAttribute.ResourceType"/>
+    /// and <see cref="DisplayAttribute.Name"/>.
+    /// </summary>
+    internal Func<string>? DisplayNameAccessor { get; } = displayNameAccessor;
+
+    /// <summary>
     /// Gets the validation attributes for this parameter.
     /// </summary>
     /// <returns>An array of validation attributes to apply to this parameter.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
-
-    /// <summary>
-    /// Gets the <see cref="DisplayAttribute"/> for this parameter, if one exists.
-    /// </summary>
-    /// <returns>The <see cref="DisplayAttribute"/> applied to this parameter, or <see langword="null"/>.</returns>
-    protected abstract DisplayAttribute? GetDisplayAttribute();
 
     /// <inheritdoc />
     /// <remarks>
@@ -59,9 +68,10 @@ public abstract class ValidatableParameterInfo(
         }
 
         var displayName = LocalizationHelper.ResolveDisplayName(
-            GetDisplayAttribute(),
-            declaringType: null,
             memberName: Name,
+            DisplayName,
+            DisplayNameAccessor,
+            declaringType: null,
             context.DisplayNameProvider,
             context.ValidationContext);
 
