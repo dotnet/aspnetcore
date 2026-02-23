@@ -366,7 +366,7 @@ internal sealed partial class HttpSysListener : IDisposable
             0,
             httpResponse,
             null,
-            out var dataWritten,
+            out _,
             null,
             null);
         if (statusCode != ErrorCodes.ERROR_SUCCESS)

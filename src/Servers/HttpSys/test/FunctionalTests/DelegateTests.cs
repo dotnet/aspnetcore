@@ -320,6 +320,7 @@ public class DelegateTests : LoggedTest
                 out _,
                 out _,
                 out var pSecurityDescriptor);
+            Assert.Equal(WIN32_ERROR.ERROR_SUCCESS, result);
 
             var length = (int)PInvoke.GetSecurityDescriptorLength(pSecurityDescriptor);
 
