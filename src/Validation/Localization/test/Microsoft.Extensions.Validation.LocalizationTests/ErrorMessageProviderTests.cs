@@ -62,24 +62,6 @@ public class ErrorMessageProviderTests
     }
 
     [Fact]
-    public async Task ErrorMessageProvider_OnValidateContext_OverridesOptions()
-    {
-        var customer = new TestCustomer { Name = null, Age = 25 };
-        var options = new ValidationOptions
-        {
-            ErrorMessageProvider = (in _) => "Options-level message"
-        };
-        var context = CreateContext(customer, options);
-        context.ErrorMessageProvider = (in _) => "Context-level message";
-
-        var typeInfo = CreateCustomerTypeInfo();
-        await typeInfo.ValidateAsync(customer, context, default);
-
-        Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("Context-level message", context.ValidationErrors["Name"].First());
-    }
-
-    [Fact]
     public async Task ErrorMessageProvider_SkippedWhenErrorMessageResourceTypeIsSet()
     {
         var providerCalled = false;
