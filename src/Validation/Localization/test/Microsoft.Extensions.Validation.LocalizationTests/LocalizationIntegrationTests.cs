@@ -7,7 +7,6 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation.Localization;
-using Microsoft.Extensions.Validation.Localization.Attributes;
 using Microsoft.Extensions.Validation.LocalizationTests.Helpers;
 
 namespace Microsoft.Extensions.Validation.LocalizationTests;
