@@ -174,8 +174,8 @@ public class CbcAuthenticatedEncryptorTests
         ArraySegment<byte> aad = new ArraySegment<byte>(Encoding.UTF8.GetBytes("aad"));
 
         byte[] ciphertext = encryptor.Encrypt(plaintext, aad);
-        byte[] decryptedText = encryptor.Decrypt(new ArraySegment<byte>(ciphertext), aad);
+        byte[] decryptedData = encryptor.Decrypt(new ArraySegment<byte>(ciphertext), aad);
 
-        Assert.Equal(plaintext.AsSpan(), decryptedText.AsSpan());
+        Assert.Equal(plaintext.AsSpan(), decryptedData.AsSpan());
     }
 }

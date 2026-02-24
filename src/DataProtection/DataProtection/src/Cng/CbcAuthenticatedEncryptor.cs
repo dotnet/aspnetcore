@@ -445,8 +445,8 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         // Use uninitialized IV and input data - only the lengths matter.
         // Don't size the stack allocation to cbInput, since this method may be called for multi-MB payloads.
         byte* pbDummyIV = stackalloc byte[checked((int)_symmetricAlgorithmBlockSizeInBytes)];
-        byte dummy;
-        byte* pbDummyInput = &dummy;
+        byte sizeQueryBuffer;
+        byte* pbDummyInput = &sizeQueryBuffer;
 
         var ntstatus = UnsafeNativeMethods.BCryptEncrypt(
             hKey: tempKeyHandle,
