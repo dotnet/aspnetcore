@@ -161,7 +161,7 @@ public class CbcAuthenticatedEncryptorTests
 
     [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]
-    public void Encrypt_OverTwoMegabytes_RoundTrips()
+    public void Encrypt_OverTwoMB_RoundTrips()
     {
         Secret kdk = new Secret(new byte[512 / 8]);
         CbcAuthenticatedEncryptor encryptor = new CbcAuthenticatedEncryptor(kdk,
