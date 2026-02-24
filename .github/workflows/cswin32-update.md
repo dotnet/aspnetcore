@@ -21,7 +21,7 @@ network:
 tools:
   github:
   edit:
-  bash: ["curl", "grep", "sed", "jq", "git", "cat", "ls", "find"]
+  bash: ["curl", "grep", "sed", "jq", "git", "cat", "ls", "find", "dotnet", "./eng/build.cmd", "./restore.cmd"]
   web-fetch:
 
 safe-inputs:
@@ -73,18 +73,39 @@ Then compare it with the current version defined in `eng/Versions.props` under `
 
 ---
 
-### Step 2: Build check after version update
+### Step 2: Restore and build
 
-If the version was updated in Step 1, run the build for the affected projects to make sure nothing is broken.
-The affected project directories are:
+Regardless of whether the version was updated, you need to build the affected projects.
+This is required both to validate a version bump AND to inspect CsWin32-generated source files for workaround cleanup.
 
-- `src/Servers/HttpSys/`
-- `src/Servers/IIS/IIS/`
-- `src/Shared/test/Shared.Tests/`
+First, restore dependencies from the repository root:
 
-Use the build script at the repo root: `./eng/build.cmd` or run `dotnet build` on the individual `.csproj` files.
-In order to build specific projects, navigate to them (e.g. `src/Servers/HttpSys`) and run local `build.cmd`.
-If the build breaks, investigate and attempt a fix (e.g. adapting to renamed types or changed API surface).
+```bash
+./restore.cmd
+```
+
+Then build the specific affected projects:
+
+```bash
+dotnet build src/Servers/HttpSys/src/Microsoft.AspNetCore.Server.HttpSys.csproj
+dotnet build src/Servers/IIS/IIS/src/Microsoft.AspNetCore.Server.IIS.csproj
+```
+
+If the build breaks after a version update, investigate and attempt a fix (e.g. adapting to renamed types or changed API surface).
+
+After a successful build, the CsWin32 source generator will have produced files in the `obj/` directory.
+You can inspect them to check which enum values, types, and APIs are now available:
+
+```bash
+find src/Servers/HttpSys/obj -name "*.g.cs" | grep -i cswin32
+grep -r "HttpFeatureCacheTlsClientHello" src/Servers/HttpSys/obj/
+grep -r "HttpFeatureQueryCipherInfo" src/Servers/HttpSys/obj/
+grep -r "HttpRequestPropertyTlsCipherInfo" src/Servers/HttpSys/obj/
+grep -r "HttpRequestPropertyTlsClientHello" src/Servers/HttpSys/obj/
+grep -r "SecPkgContext_CipherInfo" src/Servers/HttpSys/obj/
+```
+
+Use these grep results to determine which workarounds can be removed.
 
 ---
 
@@ -150,12 +171,17 @@ If so:
 
 ### How to verify workaround removability
 
+You MUST actually attempt each workaround replacement — do not skip this step or report that verification is impossible.
+
 For each workaround:
 
-1. Try making the replacement (use proper enum value, remove `.AsReadOnlySpan()`, etc.)
-2. Build the affected project
-3. If it compiles successfully, keep the change. You can additionally run tests to ensure no breaking change.
-4. If it fails to compile, revert and leave the workaround in place — note it in the PR body as "still needed"
+1. First, grep the `obj/` directory (after building) to check if the symbol now exists in CsWin32-generated code
+2. If the symbol exists: make the replacement using the `edit` tool
+3. Rebuild: `dotnet build src/Servers/HttpSys/src/Microsoft.AspNetCore.Server.HttpSys.csproj`
+4. If it compiles successfully, keep the change
+5. If it fails to compile, revert the change and leave the workaround in place — note it in the PR body as "still needed"
+
+Do NOT skip verification by saying you lack build capability — you have `dotnet build` available.
 
 ---
 
