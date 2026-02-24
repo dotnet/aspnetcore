@@ -40,18 +40,17 @@ safe-inputs:
 
 safe-outputs:
   create-pull-request:
-    title-prefix: "[build-ops] "
-    labels: [build-ops]
+    title-prefix: "[package] "
+    labels: [area-networking]
     draft: false
     base-branch: main
 ---
 
-# Update CsWin32 Package Version and Remove Workarounds
+# Update CsWin32 Packag
 
 Microsoft.Windows.CsWin32 is a source generator that produces P/Invoke signatures and types
 for Win32 APIs used by HttpSys and IIS server implementations in ASP.NET Core.
-When CsWin32 releases new versions, previously missing enum values or types may become available,
-allowing us to remove hardcoded workarounds in the code.
+When CsWin32 releases new versions, previously missing enum values or types may become available, allowing us to remove hardcoded workarounds in the code.
 
 ## Important: Shell Environment
 
@@ -150,6 +149,7 @@ https://github.com/microsoft/CsWin32/releases
 Look for:
 - New enum values added to Win32 types
 - New types or structs supported
+- New API or API overloads
 - Bug fixes for inline arrays or source generation
 - Issues referenced in this codebase's workaround comments
 
@@ -171,7 +171,7 @@ find src/ -name "NativeMethods.txt"
 grep -rl "Microsoft.Windows.CsWin32" src/ eng/
 ```
 
-Then search for workaround patterns in those directories.
+Then search for workaround patterns in those directories. Below are only example patterns - you can look for any opportunity to improve the code, fix workarounds and apply suggestions (aka use new APIs) introduced in newer versions of CsWin32 package.
 
 ---
 

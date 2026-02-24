@@ -23,9 +23,9 @@
 #
 # Monthly workflow that checks for a newer Microsoft.Windows.CsWin32 package version, updates it, and removes any workarounds that are no longer necessary.
 #
-# frontmatter-hash: 61b43de7dfa75b8224f55eee4842c02da77d319c025b71f7f3391cdff31f12e4
+# frontmatter-hash: 6f490a520477ea8704fd7c66a275823e38f596e5be2d0fae46ad17c84af8e1a2
 
-name: "Update CsWin32 Package Version and Remove Workarounds"
+name: "Update CsWin32 Packag"
 "on":
   schedule:
   - cron: "0 0 1 * *"
@@ -37,7 +37,7 @@ permissions: {}
 concurrency:
   group: "gh-aw-${{ github.workflow }}"
 
-run-name: "Update CsWin32 Package Version and Remove Workarounds"
+run-name: "Update CsWin32 Packag"
 
 jobs:
   activation:
@@ -293,7 +293,7 @@ jobs:
               version: "",
               agent_version: "0.0.410",
               cli_version: "v0.45.5",
-              workflow_name: "Update CsWin32 Package Version and Remove Workarounds",
+              workflow_name: "Update CsWin32 Packag",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -355,7 +355,7 @@ jobs:
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
             {
-              "description": "Create a new GitHub pull request to propose code changes. Use this after making file edits to submit them for review and merging. The PR will be created from the current branch with your committed changes. For code review comments on an existing PR, use create_pull_request_review_comment instead. CONSTRAINTS: Maximum 1 pull request(s) can be created. Title will be prefixed with \"[build-ops] \". Labels [build-ops] will be automatically added.",
+              "description": "Create a new GitHub pull request to propose code changes. Use this after making file edits to submit them for review and merging. The PR will be created from the current branch with your committed changes. For code review comments on an existing PR, use create_pull_request_review_comment instead. CONSTRAINTS: Maximum 1 pull request(s) can be created. Title will be prefixed with \"[package] \". Labels [area-networking] will be automatically added.",
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
@@ -977,7 +977,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Update CsWin32 Package Version and Remove Workarounds"
+          GH_AW_WORKFLOW_NAME: "Update CsWin32 Packag"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -990,7 +990,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Update CsWin32 Package Version and Remove Workarounds"
+          GH_AW_WORKFLOW_NAME: "Update CsWin32 Packag"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1003,7 +1003,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Update CsWin32 Package Version and Remove Workarounds"
+          GH_AW_WORKFLOW_NAME: "Update CsWin32 Packag"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "cswin32-update"
@@ -1021,7 +1021,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Update CsWin32 Package Version and Remove Workarounds"
+          GH_AW_WORKFLOW_NAME: "Update CsWin32 Packag"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1038,7 +1038,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Update CsWin32 Package Version and Remove Workarounds"
+          GH_AW_WORKFLOW_NAME: "Update CsWin32 Packag"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
@@ -1083,7 +1083,7 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Update CsWin32 Package Version and Remove Workarounds"
+          WORKFLOW_NAME: "Update CsWin32 Packag"
           WORKFLOW_DESCRIPTION: "Monthly workflow that checks for a newer Microsoft.Windows.CsWin32 package version, updates it, and removes any workarounds that are no longer necessary."
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
@@ -1164,7 +1164,7 @@ jobs:
     env:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_WORKFLOW_ID: "cswin32-update"
-      GH_AW_WORKFLOW_NAME: "Update CsWin32 Package Version and Remove Workarounds"
+      GH_AW_WORKFLOW_NAME: "Update CsWin32 Packag"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}
@@ -1217,7 +1217,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"main\",\"draft\":false,\"labels\":[\"build-ops\"],\"max\":1,\"max_patch_size\":1024,\"title_prefix\":\"[build-ops] \"},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"main\",\"draft\":false,\"labels\":[\"area-networking\"],\"max\":1,\"max_patch_size\":1024,\"title_prefix\":\"[package] \"},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
