@@ -534,7 +534,7 @@ public class ListAdapterTest
         Assert.True(success);
         var jsonValue = Assert.IsAssignableFrom<JsonValue>(value);
         Assert.Equal(expectedValue, jsonValue.GetValue<int>());
-        Assert.Null(message);;
+        Assert.Null(message);
     }
 
     [Theory]
