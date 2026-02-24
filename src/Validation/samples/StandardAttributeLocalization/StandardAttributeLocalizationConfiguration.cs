@@ -6,7 +6,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
-using Microsoft.Extensions.Validation.Localization.Attributes;
+using Microsoft.Extensions.Validation.Localization;
 using StandardAttributeLocalization.Resources;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure

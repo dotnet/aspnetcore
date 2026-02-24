@@ -3,7 +3,7 @@
 
 using System.Globalization;
 
-namespace Microsoft.Extensions.Validation.Localization.Attributes;
+namespace Microsoft.Extensions.Validation.Localization;
 
 /// <summary>
 /// Formats a validation error message template with attribute-specific arguments.

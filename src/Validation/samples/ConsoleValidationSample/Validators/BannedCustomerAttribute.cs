@@ -4,7 +4,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using ConsoleValidationSample.Models;
-using Microsoft.Extensions.Validation.Localization.Attributes;
+using Microsoft.Extensions.Validation.Localization;
 
 namespace ConsoleValidationSample.Validators;
 
