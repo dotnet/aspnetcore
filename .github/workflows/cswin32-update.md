@@ -21,7 +21,7 @@ network:
 tools:
   github:
   edit:
-  bash: ["curl", "grep", "sed", "jq", "git", "cat", "ls", "find", "dotnet", "./eng/build.cmd", "./restore.cmd"]
+  bash: ["curl", "grep", "sed", "jq", "git", "cat", "ls", "find", "dotnet", "bash", "source", "chmod"]
   web-fetch:
 
 safe-inputs:
@@ -78,10 +78,13 @@ Then compare it with the current version defined in `eng/Versions.props` under `
 Regardless of whether the version was updated, you need to build the affected projects.
 This is required both to validate a version bump AND to inspect CsWin32-generated source files for workaround cleanup.
 
-First, restore dependencies from the repository root:
+**Important:** The workflow runs on Linux (`ubuntu-latest`). Use `.sh` scripts, not `.cmd`.
+
+First, activate the local .NET SDK and restore dependencies from the repository root:
 
 ```bash
-./restore.cmd
+source activate.sh
+./restore.sh
 ```
 
 Then build the specific affected projects:
@@ -91,13 +94,20 @@ dotnet build src/Servers/HttpSys/src/Microsoft.AspNetCore.Server.HttpSys.csproj
 dotnet build src/Servers/IIS/IIS/src/Microsoft.AspNetCore.Server.IIS.csproj
 ```
 
-If the build breaks after a version update, investigate and attempt a fix (e.g. adapting to renamed types or changed API surface).
+Note: These projects target Windows APIs but the CsWin32 source generator runs at build time on any OS.
+If the build fails on Linux due to platform-specific runtime dependencies, that's OK — the important thing
+is that the source generator runs and produces files in `obj/`. You may need to pass `/p:TargetOS=windows`
+or similar. Check if `dotnet build` completes the source generation step even with other errors.
 
-After a successful build, the CsWin32 source generator will have produced files in the `obj/` directory.
+If the build breaks after a version update due to CsWin32 API changes, investigate and attempt a fix
+(e.g. adapting to renamed types or changed API surface).
+
+After building, the CsWin32 source generator will have produced files in the `obj/` directory.
 You can inspect them to check which enum values, types, and APIs are now available:
 
 ```bash
-find src/Servers/HttpSys/obj -name "*.g.cs" | grep -i cswin32
+find src/Servers/HttpSys/obj -name "*.g.cs" | head -20
+find src/Servers/IIS/obj -name "*.g.cs" | head -20
 ```
 
 You will use these generated files in Step 3 to verify whether workarounds can be removed.
@@ -168,13 +178,17 @@ You MUST actually attempt each workaround replacement — do not skip this step 
 
 For each workaround:
 
-1. First, grep the `obj/` directory (after building) to check if the symbol now exists in CsWin32-generated code
-2. If the symbol exists: make the replacement using the `edit` tool
+1. First, grep the `obj/` directory (after building in Step 2) to check if the symbol now exists in CsWin32-generated code:
+   ```bash
+   grep -r "SymbolName" src/Servers/HttpSys/obj/
+   ```
+2. If the symbol exists in generated code: make the replacement using the `edit` tool
 3. Rebuild: `dotnet build src/Servers/HttpSys/src/Microsoft.AspNetCore.Server.HttpSys.csproj`
 4. If it compiles successfully, keep the change
 5. If it fails to compile, revert the change and leave the workaround in place — note it in the PR body as "still needed"
 
-Do NOT skip verification by saying you lack build capability — you have `dotnet build` available.
+Do NOT skip verification by saying you lack build capability — you have `dotnet`, `bash`, and `source` available.
+Make sure you ran `source activate.sh` before any `dotnet` commands.
 
 ---
 
