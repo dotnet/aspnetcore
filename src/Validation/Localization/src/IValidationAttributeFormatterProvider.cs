@@ -3,7 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Microsoft.Extensions.Validation.Localization.Attributes;
+namespace Microsoft.Extensions.Validation.Localization;
 
 /// <summary>
 /// Provides <see cref="IValidationAttributeFormatter"/> instances for
