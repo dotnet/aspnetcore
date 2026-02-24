@@ -46,7 +46,7 @@ safe-outputs:
     base-branch: main
 ---
 
-# Update CsWin32 Packag
+# Update CsWin32 Package
 
 Microsoft.Windows.CsWin32 is a source generator that produces P/Invoke signatures and types
 for Win32 APIs used by HttpSys and IIS server implementations in ASP.NET Core.
