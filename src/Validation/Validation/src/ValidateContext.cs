@@ -25,7 +25,7 @@ public sealed class ValidateContext
     /// <example>
     /// <code language="csharp">
     /// var validationContext = new ValidationContext(objectToValidate, serviceProvider, items);
-    /// var validationOptions = serviceProvider.GetService&lt;IOptions&lt;ValidationOptions&gt;&gt;()?.Value;
+    /// var validationOptions = serviceProvider.GetRequiredService&lt;IOptions&lt;ValidationOptions&gt;&gt;().Value;
     /// var validateContext = new ValidateContext
     /// {
     ///     ValidationContext = validationContext,
