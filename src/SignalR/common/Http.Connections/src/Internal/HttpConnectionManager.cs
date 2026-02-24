@@ -26,6 +26,7 @@ internal sealed partial class HttpConnectionManager
     private readonly ILogger<HttpConnectionContext> _connectionLogger;
     private readonly TimeSpan _disconnectTimeout;
     private readonly HttpConnectionsMetrics _metrics;
+    private readonly IHostApplicationLifetime _applicationLifetime;
 
     public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions, HttpConnectionsMetrics metrics)
     {
@@ -34,6 +35,7 @@ internal sealed partial class HttpConnectionManager
         _nextHeartbeat = new PeriodicTimer(_heartbeatTickRate);
         _disconnectTimeout = connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout;
         _metrics = metrics;
+        _applicationLifetime = appLifetime;
 
         // Register these last as the callbacks could run immediately
         appLifetime.ApplicationStarted.Register(Start);
@@ -78,7 +80,8 @@ internal sealed partial class HttpConnectionManager
         Log.CreatedNewConnection(_logger, id);
 
         var pair = CreateConnectionPair(options.TransportPipeOptions, options.AppPipeOptions);
-        var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, metricsContext, pair.Application, pair.Transport, options, useStatefulReconnect);
+        var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger,
+            metricsContext, pair.Application, pair.Transport, options, useStatefulReconnect, _applicationLifetime);
 
         _connections.TryAdd(connectionToken, connection);
 
