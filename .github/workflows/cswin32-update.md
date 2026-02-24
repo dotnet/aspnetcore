@@ -78,7 +78,7 @@ Then compare it with the current version defined in `eng/Versions.props` under `
 Regardless of whether the version was updated, you need to build the affected projects.
 This is required both to validate a version bump AND to inspect CsWin32-generated source files for workaround cleanup.
 
-**Important:** The workflow runs on Linux (`ubuntu-latest`). Use `.sh` scripts, not `.cmd`.
+Note: If the workflow runs on Linux (`ubuntu-latest`) use `.sh` scripts, not `.cmd`.
 
 First, activate the local .NET SDK and restore dependencies from the repository root:
 
@@ -140,7 +140,7 @@ Scan for these common workaround patterns in `.cs` files under the directories f
    grep -rn "(HTTP_FEATURE_ID)" src/Servers/
    grep -rn "(HTTP_REQUEST_PROPERTY)" src/Servers/
    ```
-   More generally, look for casts like `(SomeWin32Type)N` followed by a `/* ... */` comment.
+   Note that there can be other enum types to use, so dont limit your search only on listed types.
 
 2. **Comments referencing CsWin32 issues or workarounds** — search for:
    ```bash
@@ -154,6 +154,10 @@ Scan for these common workaround patterns in `.cs` files under the directories f
 
 4. **Manual P/Invoke delegates or `[DllImport]`/`[LibraryImport]`** for APIs that CsWin32 could generate —
    especially any resolved via `GetProcAddress` at runtime as a compatibility shim.
+
+Listed above patterns are only examples of what to search for - there can be many other use cases.
+You can check release notes to see what changed in latest packages and think about possible changes.
+Please, revisit all use-cases to spot and imagine the changes.
 
 #### How to check if a workaround is removable
 
