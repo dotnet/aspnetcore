@@ -18,8 +18,7 @@ public readonly struct DisplayNameProviderContext
     public Type? DeclaringType { get; init; }
 
     /// <summary>
-    /// Gets the default display name, from <see cref="DisplayAttribute.Name"/>
-    /// or the CLR member name.
+    /// Gets the display name from <see cref="DisplayAttribute.Name"/> to use as a localization lookup key.
     /// </summary>
     public required string Name { get; init; }
 

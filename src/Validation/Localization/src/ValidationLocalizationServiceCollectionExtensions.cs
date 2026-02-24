@@ -26,7 +26,7 @@ public static class ValidationLocalizationServiceCollectionExtensions
     /// An optional action to configure <see cref="ValidationLocalizationOptions"/>.
     /// When <see langword="null"/>, default settings are used:
     /// error messages are looked up per declaring type using the attribute's
-    /// error message template as the resource key.
+    /// <see cref="System.ComponentModel.DataAnnotations.ValidationAttribute.ErrorMessage"/> as the resource key.
     /// </param>
     /// <returns>The <see cref="IServiceCollection"/> for chaining.</returns>
     /// <example>
@@ -55,7 +55,7 @@ public static class ValidationLocalizationServiceCollectionExtensions
         services.TryAddSingleton<IValidationAttributeFormatterProvider, ValidationAttributeFormatterProvider>();
 
         // Register the bridge that reads ValidationLocalizationOptions and sets up IStringLocalizer-based implementations
-        // of ErrorMessageProvider and DisplayNameResolver in ValidationOptions.
+        // of ErrorMessageProvider and DisplayNameProvider in ValidationOptions.
         services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<ValidationOptions>, ValidationLocalizationSetup>());
 
         return services;
