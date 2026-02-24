@@ -45,7 +45,7 @@ public sealed class ValidationLocalizationOptions
     /// </para>
     /// <example>
     /// <code>
-    /// options.ErrorMessageKeySelector = context =&gt;
+    /// options.ErrorMessageKeyProvider = context =&gt;
     ///     $"{context.Attribute.GetType().Name}_ValidationError";
     /// // This makes the localizer look up "RequiredAttribute_ValidationError"
     /// // instead of "The {0} field is required."
@@ -53,7 +53,7 @@ public sealed class ValidationLocalizationOptions
     /// </example>
     /// <para>
     /// The delegate receives an <see cref="ErrorMessageProviderContext"/> which contains the
-    /// attribute instance, the default error message template, the display name, and
+    /// attribute instance, the display name, and
     /// other contextual information. Return <see langword="null"/> to skip localization
     /// for the particular attribute.
     /// </para>

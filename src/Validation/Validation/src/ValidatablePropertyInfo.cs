@@ -40,13 +40,13 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     }
 
     /// <summary>
-    /// Gets the member type.
+    /// Gets the type that declares this property.
     /// </summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
     internal Type DeclaringType { get; }
 
     /// <summary>
-    /// Gets the member type.
+    /// Gets the type of the property.
     /// </summary>
     internal Type PropertyType { get; }
 
@@ -61,7 +61,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     internal string? DisplayName { get; }
 
     /// <summary>
-    /// Gets the display name for the member as designated by the <see cref="DisplayAttribute.ResourceType"/>
+    /// Gets a function that resolves the display name for the member using <see cref="DisplayAttribute.ResourceType"/>
     /// and <see cref="DisplayAttribute.Name"/>.
     /// </summary>
     internal Func<string>? DisplayNameAccessor { get; }

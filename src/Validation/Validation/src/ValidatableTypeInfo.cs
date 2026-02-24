@@ -29,9 +29,9 @@ public abstract class ValidatableTypeInfo(
     private readonly List<Type> _superTypes = type.GetAllImplementedTypes();
 
     /// <summary>
-    /// Gets the validation attributes for this member.
+    /// Gets the validation attributes for this type.
     /// </summary>
-    /// <returns>An array of validation attributes to apply to this member.</returns>
+    /// <returns>An array of validation attributes to apply to this type.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
     /// <summary>
@@ -40,12 +40,12 @@ public abstract class ValidatableTypeInfo(
     internal Type Type { get; } = type;
 
     /// <summary>
-    /// Gets the display name for the member as designated by the <see cref="DisplayAttribute.Name"/>.
+    /// Gets the display name for the type as designated by the <see cref="DisplayAttribute.Name"/>.
     /// </summary>
     internal string? DisplayName { get; } = displayName;
 
     /// <summary>
-    /// Gets the display name for the member as designated by the <see cref="DisplayAttribute.ResourceType"/>
+    /// Gets a function that resolves the display name for the type using <see cref="DisplayAttribute.ResourceType"/>
     /// and <see cref="DisplayAttribute.Name"/>.
     /// </summary>
     internal Func<string>? DisplayNameAccessor { get; } = displayNameAccessor;
