@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Validation.Localization.Attributes;
 
 namespace Microsoft.Extensions.Validation.Localization;
 

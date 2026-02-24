@@ -4,7 +4,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 
-namespace Microsoft.Extensions.Validation.Localization.Attributes;
+namespace Microsoft.Extensions.Validation.Localization.AttributeFormatters;
 
 /// <summary>
 /// Formats error messages for <see cref="StringLengthAttribute"/> using the maximum and minimum length.
