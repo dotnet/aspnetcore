@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.RequestDecompression.Tests;
 public class DefaultRequestDecompressionProviderTests
 {
     [Theory]
+    [InlineData("zstd", typeof(ZstandardStream))]
+    [InlineData("ZSTD", typeof(ZstandardStream))]
     [InlineData("br", typeof(BrotliStream))]
     [InlineData("BR", typeof(BrotliStream))]
     [InlineData("deflate", typeof(ZLibStream))]
