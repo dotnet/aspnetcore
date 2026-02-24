@@ -99,7 +99,7 @@ public abstract class ValidatableTypeInfo(
                 DisplayName,
                 DisplayNameAccessor,
                 declaringType: Type,
-                context.DisplayNameProvider,
+                context.ValidationOptions.DisplayNameProvider,
                 context.ValidationContext);
 
             context.ValidationContext.DisplayName = displayName;
@@ -145,7 +145,7 @@ public abstract class ValidatableTypeInfo(
     {
         var validationAttributes = GetValidationAttributes();
         var errorPrefix = context.CurrentValidationPath;
-        var errorMessageProvider = context.ErrorMessageProvider;
+        var errorMessageProvider = context.ValidationOptions.ErrorMessageProvider;
 
         for (var i = 0; i < validationAttributes.Length; i++)
         {
