@@ -49,7 +49,7 @@ public sealed partial class XmlCommentGenerator : IIncrementalGenerator
             var groupedAddOpenApiInvocations = output.Right;
             var (generatedCommentsFromXmlFile, generatedCommentsFromCompilation) = output.Left;
             var compiledXmlFileComments = !generatedCommentsFromXmlFile.IsDefaultOrEmpty
-                ? string.Join("\n", generatedCommentsFromXmlFile)
+                ? string.Join("\r\n", generatedCommentsFromXmlFile)
                 : string.Empty;
             Emit(context, compiledXmlFileComments, generatedCommentsFromCompilation, groupedAddOpenApiInvocations);
         });
