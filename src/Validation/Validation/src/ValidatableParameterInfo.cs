@@ -43,7 +43,7 @@ public abstract class ValidatableParameterInfo(
     internal string? DisplayName { get; } = displayName;
 
     /// <summary>
-    /// Gets the display name for the parameter as designated by the <see cref="DisplayAttribute.ResourceType"/>
+    /// Gets a function that resolves the display name for the parameter using <see cref="DisplayAttribute.ResourceType"/>
     /// and <see cref="DisplayAttribute.Name"/>.
     /// </summary>
     internal Func<string>? DisplayNameAccessor { get; } = displayNameAccessor;
