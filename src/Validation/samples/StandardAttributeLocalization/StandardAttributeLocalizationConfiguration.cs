@@ -30,13 +30,13 @@ internal sealed class StandardAttributeLocalizationConfiguration(
         var localizationOptions = new OptionsWrapper<LocalizationOptions>(new LocalizationOptions());
         var resourceLocalizerFactory = new ResourceManagerStringLocalizerFactory(localizationOptions, loggerFactory);
         var localizer = resourceLocalizerFactory.Create(typeof(StandardValidationMessages));
-        var originalMessageProvider = options.ErrorMessageProvider ?? ((in context) => null);
+        var originalProvider = options.ErrorMessageProvider ?? ((in context) => null);
 
         options.ErrorMessageProvider = (in context) =>
         {
-            if (context.Attribute.ErrorMessageResourceType is not null || !string.IsNullOrEmpty(context.Attribute.ErrorMessage))
+            if (!string.IsNullOrEmpty(context.Attribute.ErrorMessage))
             {
-                return originalMessageProvider(context);
+                return originalProvider(context);
             }
 
             var lookupKey = $"{context.Attribute.GetType().Name}_ValidationError";
@@ -44,14 +44,11 @@ internal sealed class StandardAttributeLocalizationConfiguration(
 
             if (localizedTemplate.ResourceNotFound)
             {
-                return originalMessageProvider(context);
+                return originalProvider(context);
             }
 
             var displayName = context.DisplayName ?? context.MemberName;
-
-            var attributeFormatter = context.Attribute is IValidationAttributeFormatter formatter
-                ? formatter
-                : attributeFormatterProvider.GetFormatter(context.Attribute);
+            var attributeFormatter = attributeFormatterProvider.GetFormatter(context.Attribute);
 
             return attributeFormatter?.FormatErrorMessage(CultureInfo.CurrentCulture, localizedTemplate, displayName)
                 ?? string.Format(CultureInfo.CurrentCulture, localizedTemplate, displayName);

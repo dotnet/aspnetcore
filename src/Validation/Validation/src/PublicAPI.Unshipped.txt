@@ -28,10 +28,6 @@ Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.Service
 Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, string? displayName, System.Func<string!>? displayNameAccessor) -> void
 *REMOVED*Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.Type! type, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Validation.ValidatablePropertyInfo!>! members) -> void
 Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.Type! type, string? displayName, System.Func<string!>? displayNameAccessor, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Validation.ValidatablePropertyInfo!>! members) -> void
-Microsoft.Extensions.Validation.ValidateContext.DisplayNameProvider.get -> Microsoft.Extensions.Validation.Localization.DisplayNameProvider?
-Microsoft.Extensions.Validation.ValidateContext.DisplayNameProvider.set -> void
-Microsoft.Extensions.Validation.ValidateContext.ErrorMessageProvider.get -> Microsoft.Extensions.Validation.Localization.ErrorMessageProvider?
-Microsoft.Extensions.Validation.ValidateContext.ErrorMessageProvider.set -> void
 Microsoft.Extensions.Validation.ValidationOptions.DisplayNameProvider.get -> Microsoft.Extensions.Validation.Localization.DisplayNameProvider?
 Microsoft.Extensions.Validation.ValidationOptions.DisplayNameProvider.set -> void
 Microsoft.Extensions.Validation.ValidationOptions.ErrorMessageProvider.get -> Microsoft.Extensions.Validation.Localization.ErrorMessageProvider?
