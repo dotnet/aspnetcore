@@ -824,6 +824,11 @@ function MSBuild-Core() {
 
   $cmdArgs = "$($buildTool.Command) /m /nologo /clp:Summary /v:$verbosity /nr:$nodeReuse /p:ContinuousIntegrationBuild=$ci"
 
+  # Add -mt flag for MSBuild multithreaded mode if enabled via environment variable
+  if ($env:MSBUILD_MT_ENABLED -eq "1") {
+    $cmdArgs += ' -mt'
+  }
+
   if ($warnAsError) {
     $cmdArgs += ' /warnaserror /p:TreatWarningsAsErrors=true'
   }
