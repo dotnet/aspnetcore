@@ -49,18 +49,12 @@ internal static class TypeExtensions
     /// <returns><see langword="true"/> if the type is nullable; otherwise, <see langword="false"/>.</returns>
     public static bool IsNullable(this Type type)
     {
-        if (type.IsValueType)
-        {
-            return false;
-        }
-
-        if (type.IsGenericType &&
-            type.GetGenericTypeDefinition() == typeof(Nullable<>))
+        if (!type.IsValueType)
         {
             return true;
         }
 
-        return false;
+        return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
     }
 
     /// <summary>
