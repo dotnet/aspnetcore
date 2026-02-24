@@ -145,6 +145,7 @@
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.AzureAppServicesIntegration" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.SignalR.Client.Core" />
+    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.SignalR.Client.InMemory" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.SignalR.Client" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Http.Connections.Client" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />

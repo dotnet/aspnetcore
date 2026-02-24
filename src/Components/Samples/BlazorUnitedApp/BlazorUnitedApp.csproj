@@ -66,6 +66,8 @@
     <Reference Include="Microsoft.AspNetCore.SignalR" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Client.InMemory" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Client" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
     <Reference Include="Microsoft.AspNetCore.StaticAssets" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />

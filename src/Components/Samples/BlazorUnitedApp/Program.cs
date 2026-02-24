@@ -3,6 +3,7 @@
 
 using BlazorUnitedApp;
 using BlazorUnitedApp.Data;
+using Microsoft.AspNetCore.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,8 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddSingleton<WeatherForecastService>();
+
+builder.Services.AddInMemoryHubConnection<ChatHub>(typeof(HubConnectionHandler<ChatHub>));
 
 var app = builder.Build();
 
@@ -28,9 +31,19 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
 
+app.MapHub<ChatHub>("/hub");
+
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode();
 
 app.Run();
+
+public class ChatHub : Hub
+{
+    public async Task SendMessage(string user, string message)
+    {
+        await Clients.All.SendAsync("ReceiveMessage", user, message);
+    }
+}

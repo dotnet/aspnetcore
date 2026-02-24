@@ -1,0 +1,7 @@
+#nullable enable
+Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderInMemoryExtensions
+Microsoft.AspNetCore.SignalR.Client.InMemory.InMemoryConnectionChannel<THub>
+Microsoft.AspNetCore.SignalR.Client.InMemory.InMemoryConnectionChannel<THub>.InMemoryConnectionChannel(System.Type! connectionHandlerType) -> void
+Microsoft.Extensions.DependencyInjection.InMemoryHubServiceCollectionExtensions
+static Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderInMemoryExtensions.WithInMemoryHub<THub>(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder! hubConnectionBuilder, System.IServiceProvider! serverServices) -> Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder!
+static Microsoft.Extensions.DependencyInjection.InMemoryHubServiceCollectionExtensions.AddInMemoryHubConnection<THub>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Type! connectionHandlerType) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

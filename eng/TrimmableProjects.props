@@ -89,6 +89,7 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Mvc.ApiExplorer" />
     <TrimmableProject Include="Microsoft.AspNetCore.Mvc.Core" />
     <TrimmableProject Include="Microsoft.AspNetCore.SignalR.Client.Core" />
+    <TrimmableProject Include="Microsoft.AspNetCore.SignalR.Client.InMemory" />
     <TrimmableProject Include="Microsoft.AspNetCore.SignalR.Client" />
     <TrimmableProject Include="Microsoft.AspNetCore.Http.Connections.Client" />
     <TrimmableProject Include="Microsoft.AspNetCore.Http.Connections.Common" />

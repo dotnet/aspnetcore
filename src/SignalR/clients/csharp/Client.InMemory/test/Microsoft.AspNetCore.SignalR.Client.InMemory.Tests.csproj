@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.SignalR.Client.InMemory" />
+    <Reference Include="Microsoft.AspNetCore.SignalR" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Client.Core" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
+    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="Microsoft.AspNetCore.InternalTesting" />
+  </ItemGroup>
+
+</Project>

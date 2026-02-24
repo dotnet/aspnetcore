@@ -1077,6 +1077,12 @@
   <Folder Name="/src/SignalR/clients/csharp/Client/">
     <Project Path="src/SignalR/clients/csharp/Client/src/Microsoft.AspNetCore.SignalR.Client.csproj" />
   </Folder>
+  <Folder Name="/src/SignalR/clients/csharp/Client.InMemory/">
+    <Project Path="src/SignalR/clients/csharp/Client.InMemory/src/Microsoft.AspNetCore.SignalR.Client.InMemory.csproj" />
+  </Folder>
+  <Folder Name="/src/SignalR/clients/csharp/Client.InMemory/test/">
+    <Project Path="src/SignalR/clients/csharp/Client.InMemory/test/Microsoft.AspNetCore.SignalR.Client.InMemory.Tests.csproj" />
+  </Folder>
   <Folder Name="/src/SignalR/clients/csharp/Client/test/">
     <Project Path="src/SignalR/clients/csharp/Client/test/FunctionalTests/Microsoft.AspNetCore.SignalR.Client.FunctionalTests.csproj" />
     <Project Path="src/SignalR/clients/csharp/Client/test/UnitTests/Microsoft.AspNetCore.SignalR.Client.Tests.csproj" />
