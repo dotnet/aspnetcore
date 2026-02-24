@@ -442,9 +442,11 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
 
         using var tempKeyHandle = _symmetricAlgorithmHandle.GenerateSymmetricKey(pbDummyKey, _symmetricAlgorithmSubkeyLengthInBytes);
 
-        // Use uninitialized IV and input data - only the lengths matter
+        // Use uninitialized IV and input data - only the lengths matter.
+        // Don't size the stack allocation to cbInput, since this method may be called for multi-MB payloads.
         byte* pbDummyIV = stackalloc byte[checked((int)_symmetricAlgorithmBlockSizeInBytes)];
-        byte* pbDummyInput = stackalloc byte[checked((int)cbInput)];
+        byte dummy;
+        byte* pbDummyInput = &dummy;
 
         var ntstatus = UnsafeNativeMethods.BCryptEncrypt(
             hKey: tempKeyHandle,

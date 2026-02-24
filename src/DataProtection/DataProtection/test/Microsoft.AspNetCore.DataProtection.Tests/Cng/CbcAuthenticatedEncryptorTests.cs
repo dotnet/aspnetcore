@@ -158,4 +158,24 @@ public class CbcAuthenticatedEncryptorTests
 
         RoundtripEncryptionHelpers.AssertTryEncryptTryDecryptParity(encryptor, plaintext, aad);
     }
+
+    [ConditionalFact]
+    [ConditionalRunTestOnlyOnWindows]
+    public void Encrypt_OverTwoMegabytes_RoundTrips()
+    {
+        Secret kdk = new Secret(new byte[512 / 8]);
+        CbcAuthenticatedEncryptor encryptor = new CbcAuthenticatedEncryptor(kdk,
+            symmetricAlgorithmHandle: CachedAlgorithmHandles.AES_CBC,
+            symmetricAlgorithmKeySizeInBytes: 256 / 8,
+            hmacAlgorithmHandle: CachedAlgorithmHandles.HMAC_SHA256);
+        var largePlaintext = new byte[(2 * 1024 * 1024) + 1];
+        RandomNumberGenerator.Fill(largePlaintext);
+        ArraySegment<byte> plaintext = new ArraySegment<byte>(largePlaintext);
+        ArraySegment<byte> aad = new ArraySegment<byte>(Encoding.UTF8.GetBytes("aad"));
+
+        byte[] ciphertext = encryptor.Encrypt(plaintext, aad);
+        byte[] decryptedText = encryptor.Decrypt(new ArraySegment<byte>(ciphertext), aad);
+
+        Assert.Equal(plaintext.AsSpan(), decryptedText.AsSpan());
+    }
 }
