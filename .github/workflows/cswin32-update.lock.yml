@@ -21,9 +21,9 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Monthly workflow that checks for a newer Microsoft.Windows.CsWin32 package version, updates it, and removes any workarounds that are no longer necessary after the update.
+# Monthly workflow that checks for a newer Microsoft.Windows.CsWin32 package version, updates it, and removes any workarounds that are no longer necessary.
 #
-# frontmatter-hash: f0035f6e5d5f1f389a357653d1ea99b31edf1020c0d56bcb5b06c0e59a000a8b
+# frontmatter-hash: 61b43de7dfa75b8224f55eee4842c02da77d319c025b71f7f3391cdff31f12e4
 
 name: "Update CsWin32 Package Version and Remove Workarounds"
 "on":
@@ -1084,7 +1084,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           WORKFLOW_NAME: "Update CsWin32 Package Version and Remove Workarounds"
-          WORKFLOW_DESCRIPTION: "Monthly workflow that checks for a newer Microsoft.Windows.CsWin32 package version, updates it, and removes any workarounds that are no longer necessary after the update."
+          WORKFLOW_DESCRIPTION: "Monthly workflow that checks for a newer Microsoft.Windows.CsWin32 package version, updates it, and removes any workarounds that are no longer necessary."
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
           script: |

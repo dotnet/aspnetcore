@@ -5,7 +5,7 @@ on:
 
 description: >
   Monthly workflow that checks for a newer Microsoft.Windows.CsWin32 package version,
-  updates it, and removes any workarounds that are no longer necessary after the update.
+  updates it, and removes any workarounds that are no longer necessary.
 
 permissions:
   contents: read
@@ -21,7 +21,7 @@ network:
 tools:
   github:
   edit:
-  bash: ["curl", "grep", "sed", "jq", "git", "cat", "ls", "find", "dotnet", "bash", "source", "chmod"]
+  bash: ["curl", "grep", "sed", "jq", "git", "cat", "ls", "find", "bash", "head", "tail", "dotnet", "source", "chmod"]
   web-fetch:
 
 safe-inputs:
@@ -53,12 +53,40 @@ for Win32 APIs used by HttpSys and IIS server implementations in ASP.NET Core.
 When CsWin32 releases new versions, previously missing enum values or types may become available,
 allowing us to remove hardcoded workarounds in the code.
 
+## Important: Shell Environment
+
+Each `shell()` tool call runs in a **separate process**. Environment variables set by `source activate.sh`
+do NOT persist to subsequent tool calls. You MUST chain commands using `bash -c '...'` to keep the
+environment within a single invocation.
+
+**Correct** (single bash invocation):
+```bash
+bash -c 'source activate.sh && dotnet build src/Servers/HttpSys/src/Microsoft.AspNetCore.Server.HttpSys.csproj'
+```
+
+**Wrong** (separate calls — dotnet won't find the SDK):
+```
+shell(source): source activate.sh
+shell(dotnet): dotnet build ...    ← ERROR: SDK not found
+```
+
+Before running dotnet commands, you must first restore dependencies. This downloads the .NET SDK
+into `.dotnet/` and restores NuGet packages. Combine restore + build in one bash invocation:
+
+```bash
+bash -c 'source activate.sh && ./restore.sh && dotnet build src/Servers/HttpSys/src/Microsoft.AspNetCore.Server.HttpSys.csproj'
+```
+
+The initial restore may take a few minutes. After it completes, subsequent builds reuse the cached SDK.
+
 ## Task
 
-Perform two independent checks and apply any necessary changes:
+Perform these checks and apply changes:
 
 1. **Version update** — check if a newer stable version of CsWin32 is available and update it.
-2. **Workaround cleanup** — check if any existing workarounds can be replaced with proper CsWin32-generated types.
+2. **Restore and build** — restore dependencies and build projects to produce CsWin32-generated sources.
+3. **Research** — check CsWin32 release notes and referenced issues to understand what changed.
+4. **Workaround cleanup** — find workarounds and fix any that are now removable (verify with generated code and rebuild).
 
 ---
 
@@ -66,145 +94,238 @@ Perform two independent checks and apply any necessary changes:
 
 Use the `get-nuget-version` tool with `package_id: "Microsoft.Windows.CsWin32"` to fetch the latest stable version.
 
-Then compare it with the current version defined in `eng/Versions.props` under `<MicrosoftWindowsCsWin32Version>`.
+Compare with the current version in `eng/Versions.props` under `<MicrosoftWindowsCsWin32Version>`.
 
-- If a newer version is available, update the value in `eng/Versions.props`.
-- If already up to date, note that and move on.
+- If a newer version is available, update the value in `eng/Versions.props` using the `edit` tool.
+- If already up to date, note that and proceed. Workaround cleanup is valuable even without a version bump.
+
+A version bump alone (without workaround changes) is a valid PR.
 
 ---
 
 ### Step 2: Restore and build
 
-Regardless of whether the version was updated, you need to build the affected projects.
-This is required both to validate a version bump AND to inspect CsWin32-generated source files for workaround cleanup.
+Restore dependencies and build the affected projects. This serves two purposes:
+- Validates a version bump (if done in Step 1)
+- Produces CsWin32-generated source files in `obj/` that you'll inspect in Step 4
 
-Note: If the workflow runs on Linux (`ubuntu-latest`) use `.sh` scripts, not `.cmd`.
+**IMPORTANT**: You MUST chain `source activate.sh` with subsequent commands using `bash -c '...'`,
+because each shell tool call is a separate process and environment variables don't persist.
 
-First, activate the local .NET SDK and restore dependencies from the repository root:
+First, restore (this downloads the .NET SDK and restores NuGet packages):
 
 ```bash
-source activate.sh
-./restore.sh
+bash -c 'source activate.sh && ./restore.sh'
 ```
 
 Then build the specific affected projects:
 
 ```bash
-dotnet build src/Servers/HttpSys/src/Microsoft.AspNetCore.Server.HttpSys.csproj
-dotnet build src/Servers/IIS/IIS/src/Microsoft.AspNetCore.Server.IIS.csproj
+bash -c 'source activate.sh && dotnet build src/Servers/HttpSys/src/Microsoft.AspNetCore.Server.HttpSys.csproj'
+bash -c 'source activate.sh && dotnet build src/Servers/IIS/IIS/src/Microsoft.AspNetCore.Server.IIS.csproj'
 ```
 
 Note: These projects target Windows APIs but the CsWin32 source generator runs at build time on any OS.
 If the build fails on Linux due to platform-specific runtime dependencies, that's OK — the important thing
-is that the source generator runs and produces files in `obj/`. You may need to pass `/p:TargetOS=windows`
-or similar. Check if `dotnet build` completes the source generation step even with other errors.
+is that the source generator runs and produces files in `obj/`. Check if the source generation step completes
+even if later compilation steps have errors.
 
-If the build breaks after a version update due to CsWin32 API changes, investigate and attempt a fix
-(e.g. adapting to renamed types or changed API surface).
-
-After building, the CsWin32 source generator will have produced files in the `obj/` directory.
-You can inspect them to check which enum values, types, and APIs are now available:
+After building, inspect CsWin32's generated output:
 
 ```bash
 find src/Servers/HttpSys/obj -name "*.g.cs" | head -20
 find src/Servers/IIS/obj -name "*.g.cs" | head -20
 ```
 
-You will use these generated files in Step 3 to verify whether workarounds can be removed.
+---
+
+### Step 3: Research what changed in CsWin32
+
+Use `web_fetch` to check CsWin32's release notes and changelog:
+
+```
+https://github.com/microsoft/CsWin32/releases
+```
+
+Look for:
+- New enum values added to Win32 types
+- New types or structs supported
+- Bug fixes for inline arrays or source generation
+- Issues referenced in this codebase's workaround comments
+
+Also check the status of referenced GitHub issues. For example, if a workaround comment
+references `https://github.com/microsoft/CsWin32/issues/1086`, use `web_fetch` to check
+if the issue is closed/resolved.
 
 ---
 
-### Step 3: Search for and clean up CsWin32 workarounds
+### Step 4: Find and fix CsWin32 workarounds
 
-Regardless of whether the version was updated, scan the codebase for workarounds
-that were introduced because CsWin32 didn't yet generate certain types, enum values, or APIs.
-These workarounds may become unnecessary as CsWin32 evolves.
+Scan the codebase for workarounds that were introduced because CsWin32 didn't yet generate
+certain types, enum values, or APIs.
 
-**Where to search:** all directories that use CsWin32 — find them by looking for `NativeMethods.txt` files
-and `.csproj` files that reference `Microsoft.Windows.CsWin32`:
+**Locate CsWin32 consumer directories:**
 
 ```bash
 find src/ -name "NativeMethods.txt"
 grep -rl "Microsoft.Windows.CsWin32" src/ eng/
 ```
 
-Then search the source files in those directories for workaround patterns.
-
-#### What to look for
-
-Scan for these common workaround patterns in `.cs` files under the directories found above:
-
-1. **Hardcoded integer casts to CsWin32 enum types** — e.g. `(SomeEnumType)11` with a comment naming
-   the enum member that didn't exist yet. Search with:
-   ```bash
-   grep -rn "(HTTP_FEATURE_ID)" src/Servers/
-   grep -rn "(HTTP_REQUEST_PROPERTY)" src/Servers/
-   ```
-   Note that there can be other enum types to use, so dont limit your search only on listed types.
-
-2. **Comments referencing CsWin32 issues or workarounds** — search for:
-   ```bash
-   grep -rn "CsWin32" src/Servers/ src/Shared/
-   grep -rn "cswin32" src/Servers/ src/Shared/
-   grep -rn "workaround" src/Servers/ src/Shared/
-   ```
-
-3. **Manually-defined Win32 structs** — structs with `[StructLayout]` and comments like `// From SomeHeader.h`
-   that could instead be generated by CsWin32. These often live in `NativeInterop/` subdirectories.
-
-4. **Manual P/Invoke delegates or `[DllImport]`/`[LibraryImport]`** for APIs that CsWin32 could generate —
-   especially any resolved via `GetProcAddress` at runtime as a compatibility shim.
-
-Listed above patterns are only examples of what to search for - there can be many other use cases.
-You can check release notes to see what changed in latest packages and think about possible changes.
-Please, revisit all use-cases to spot and imagine the changes.
-
-#### How to check if a workaround is removable
-
-After building (Step 2), CsWin32's source generator output lives in the `obj/` directory.
-For each workaround you find, check if the missing symbol now exists:
-
-```bash
-# Example: check if an enum value is now generated
-grep -r "NameOfEnumMember" src/Servers/HttpSys/obj/
-# Example: check if a struct is now generated
-grep -r "StructName" src/Servers/HttpSys/obj/
-```
-
-If the symbol exists in generated code, replace the workaround with the proper CsWin32-generated symbol.
-If it's a struct, you may need to add it to the relevant `NativeMethods.txt` and rebuild first.
+Then search for workaround patterns in those directories.
 
 ---
 
-### How to verify workaround removability
+#### Pattern A: Hardcoded integer casts to CsWin32 enum types
 
-You MUST actually attempt each workaround replacement — do not skip this step or report that verification is impossible.
+Search for casts to Win32 enum types with inline comments naming the missing member:
 
-For each workaround:
+```bash
+grep -rn "HTTP_FEATURE_ID" src/Servers/
+grep -rn "HTTP_REQUEST_PROPERTY" src/Servers/
+```
 
-1. First, grep the `obj/` directory (after building in Step 2) to check if the symbol now exists in CsWin32-generated code:
-   ```bash
-   grep -r "SymbolName" src/Servers/HttpSys/obj/
-   ```
-2. If the symbol exists in generated code: make the replacement using the `edit` tool
-3. Rebuild: `dotnet build src/Servers/HttpSys/src/Microsoft.AspNetCore.Server.HttpSys.csproj`
-4. If it compiles successfully, keep the change
-5. If it fails to compile, revert the change and leave the workaround in place — note it in the PR body as "still needed"
+These look like:
+```csharp
+(HTTP_FEATURE_ID)11 /* HTTP_FEATURE_ID.HttpFeatureCacheTlsClientHello */
+(HTTP_REQUEST_PROPERTY)14 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo */
+```
 
-Do NOT skip verification by saying you lack build capability — you have `dotnet`, `bash`, and `source` available.
-Make sure you ran `source activate.sh` before any `dotnet` commands.
+**How to fix:** The inline comment tells you exactly what the correct enum member name is.
+Replace the entire cast expression `(EnumType)N /* EnumType.MemberName */` with just `EnumType.MemberName`.
+Remove the now-unnecessary comment.
+
+**When to fix:** First, check if the enum member exists in the CsWin32-generated code from Step 2:
+```bash
+grep -r "HttpFeatureCacheTlsClientHello" src/Servers/HttpSys/obj/
+```
+If found in generated code, make the replacement. If not found, leave the workaround in place.
+
+**Example fix:**
+```csharp
+// BEFORE:
+(HTTP_FEATURE_ID)11 /* HTTP_FEATURE_ID.HttpFeatureCacheTlsClientHello */
+// AFTER:
+HTTP_FEATURE_ID.HttpFeatureCacheTlsClientHello
+```
+
+---
+
+#### Pattern B: Comments referencing CsWin32 issues or workarounds
+
+```bash
+grep -rn -i "cswin32" src/Servers/ src/Shared/
+grep -rn -i "workaround.*win32\|win32.*workaround" src/Servers/ src/Shared/
+```
+
+Read the context around each match. If a comment references a specific CsWin32 GitHub issue URL:
+1. Use `web_fetch` to check if the issue is closed/resolved
+2. If resolved, apply the fix that the comment describes or implies
+3. Remove the workaround comment
+
+For example, if you find:
+```csharp
+// when CsWin32 gets support for inline arrays, remove 'AsReadOnlySpan' call below.
+// https://github.com/microsoft/CsWin32/issues/1086
+```
+Check if issue #1086 is closed. If yes, try removing the `.AsReadOnlySpan()` workaround,
+then rebuild to verify:
+```bash
+bash -c 'source activate.sh && dotnet build src/Servers/HttpSys/src/Microsoft.AspNetCore.Server.HttpSys.csproj'
+```
+
+---
+
+#### Pattern C: Manually-defined Win32 structs
+
+```bash
+grep -rn "StructLayout" src/Servers/ src/Shared/
+grep -rn "// From.*\.h" src/Servers/ src/Shared/
+```
+
+Look for structs with `[StructLayout]` and comments like `// From Schannel.h` that are
+Win32 types CsWin32 could generate instead.
+
+**How to fix:**
+1. Add the struct name to the appropriate `NativeMethods.txt` file (one entry per line, maintain alphabetical order)
+2. Delete the manual struct definition file or remove the struct from its file
+3. Update `using` directives in files that referenced the manual struct if the CsWin32-generated version is in a different namespace
+
+**When to fix:** Check if CsWin32 now generates the struct by searching `obj/`:
+```bash
+grep -r "SecPkgContext_CipherInfo" src/Servers/HttpSys/obj/ src/Servers/IIS/obj/
+```
+If the struct exists in generated code, add it to `NativeMethods.txt` and remove the manual definition.
+Then rebuild to verify:
+```bash
+bash -c 'source activate.sh && dotnet build src/Servers/HttpSys/src/Microsoft.AspNetCore.Server.HttpSys.csproj'
+```
+
+---
+
+#### Pattern D: Manual P/Invoke declarations
+
+```bash
+grep -rn "GetProcAddress" src/Servers/ src/Shared/
+grep -rn "DllImport\|LibraryImport" src/Servers/ src/Shared/
+```
+
+Look for manual P/Invoke delegates or `[DllImport]`/`[LibraryImport]` declarations for APIs that
+CsWin32 could generate — especially those resolved via `GetProcAddress` at runtime.
+
+**How to fix:**
+1. Add the API name to the appropriate `NativeMethods.txt`
+2. Remove the manual P/Invoke declaration and its delegate type
+3. Replace call sites with the CsWin32-generated `PInvoke.ApiName(...)` call
+
+**When to fix:** Check if the API name exists in CsWin32's generated output:
+```bash
+grep -r "HttpQueryRequestProperty\|HttpSetRequestProperty" src/Servers/HttpSys/obj/
+```
+If CsWin32 generates the API, add it to `NativeMethods.txt`, remove the manual P/Invoke,
+and update call sites. Rebuild to verify.
+
+---
+
+### Additional workaround patterns
+
+The patterns above are examples. Also search for:
+- Any comment mentioning "CsWin32", "source generator", or "Win32Metadata"
+- Any TODO comments related to Windows interop
+- Any hardcoded constants that comment out the Win32 symbolic name
+
+```bash
+grep -rn "TODO.*Win32\|TODO.*CsWin32\|TODO.*interop" src/Servers/ src/Shared/
+```
 
 ---
 
 ## Decision: PR or No-Op
 
-- If **any changes** were made (version bump and/or workaround removals), use the `create-pull-request` safe output to open a PR.
-  - In the PR body, list all changes made and any workarounds that remain.
-- If **no changes** are needed (version is current AND all workarounds are still necessary), use the `noop` safe output with a message explaining what was analyzed and why no changes are required.
+**Create a PR** (using `create-pull-request`) if ANY of these are true:
+- You updated the CsWin32 version in `eng/Versions.props`
+- You removed or replaced any workaround
+- You added entries to any `NativeMethods.txt` file
 
-## Guidelines
+The PR body MUST include:
+- What version change was made (if any)
+- A list of each workaround that was fixed, with the file and a brief description
+- A list of workarounds that remain and why they couldn't be fixed yet (e.g., symbol not found in generated code)
+- Build output summary confirming compilation success
+
+**Call `noop`** ONLY if ALL of these are true:
+- The CsWin32 version is already the latest stable release
+- No workarounds were found that can be fixed (verified by checking `obj/` generated code and CsWin32 issue status)
+- You searched for ALL patterns above and found nothing actionable
+
+The `noop` message must list what was checked (version, patterns searched, issues checked).
+
+## Rules
 
 - Only update to **stable** releases — skip prerelease/beta versions.
-- Use the `edit` tool to modify files directly. Do NOT use `git commit`, `git push`, or `git config` commands — the `create-pull-request` safe output handles committing and pushing automatically.
-- When checking if generated types exist, prefer building the project or examining the generated output in `obj/` rather than guessing.
-- Be conservative: if you're unsure whether a workaround can be removed, leave it in place and note it.
+- Use the `edit` tool to modify files. Do NOT use `git commit`, `git push`, or `git config` commands — the `create-pull-request` safe output handles that.
+- Always chain `source activate.sh &&` before any `dotnet` command using `bash -c '...'`. Each shell tool call is a separate process.
+- After making each workaround fix, rebuild the affected project to verify it compiles. If it fails, revert the change and note it in the PR body.
+- When a workaround comment names the correct symbol (e.g., `/* HttpFeatureCacheTlsClientHello */`), use that as the replacement.
+- When adding entries to `NativeMethods.txt`, add each on its own line, maintaining alphabetical order.
+- If you are updating to a newer CsWin32 version, attempt ALL workaround fixes — the new version is likely to support the missing symbols.
+- Prefer creating a PR with verified fixes over calling `noop`. Use the build to confirm each change.
