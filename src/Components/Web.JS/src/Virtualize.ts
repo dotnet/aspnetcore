@@ -111,8 +111,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
   }
 
-  let lastSpacerAfterScrollTop: number | null = null;
-  let lastSpacerBeforeScrollTop: number | null = null;
+  let spacerAfterWasAtBottom = false;
+  let spacerBeforeWasAtTop = false;
 
   let pendingCallbacks: Map<Element, IntersectionObserverEntry> = new Map();
   let callbackTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -183,24 +183,20 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       if (entry.isIntersecting) {
         intersectingEntries.push(entry);
         if (entry.target === spacerAfter && spacerAfter.offsetHeight > 0) {
-          lastSpacerAfterScrollTop = scrollElement.scrollTop;
+          spacerAfterWasAtBottom = scrollElement.scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 1;
         } else if (entry.target === spacerBefore && spacerBefore.offsetHeight > 0) {
-          lastSpacerBeforeScrollTop = scrollElement.scrollTop;
+          spacerBeforeWasAtTop = scrollElement.scrollTop < 1;
         }
       } else if (entry.target === spacerAfter) {
-        if (lastSpacerAfterScrollTop !== null
-            && Math.abs(scrollElement.scrollTop - lastSpacerAfterScrollTop) < 1
-            && spacerAfter.offsetHeight > 0) {
+        if (spacerAfterWasAtBottom && spacerAfter.offsetHeight > 0) {
           scrollElement.scrollTop = scrollElement.scrollHeight;
         }
-        lastSpacerAfterScrollTop = null;
+        spacerAfterWasAtBottom = false;
       } else if (entry.target === spacerBefore) {
-        if (lastSpacerBeforeScrollTop !== null
-            && Math.abs(scrollElement.scrollTop - lastSpacerBeforeScrollTop) < 1
-            && spacerBefore.offsetHeight > 0) {
+        if (spacerBeforeWasAtTop && spacerBefore.offsetHeight > 0) {
           scrollElement.scrollTop = 0;
         }
-        lastSpacerBeforeScrollTop = null;
+        spacerBeforeWasAtTop = false;
       }
     }
 
