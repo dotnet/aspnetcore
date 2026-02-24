@@ -59,24 +59,6 @@ public class DisplayNameProviderTests
     }
 
     [Fact]
-    public async Task DisplayNameProvider_OnValidateContext_OverridesOptions()
-    {
-        var model = new CustomerModel { Name = null, Age = 25 };
-        var options = new ValidationOptions
-        {
-            DisplayNameProvider = (in ctx) => ctx.Name == "Customer Age" ? "Options Age" : null
-        };
-        var context = CreateContext(model, options);
-        context.DisplayNameProvider = (in ctx) => ctx.Name == "Customer Age" ? "Context Age" : null;
-
-        var typeInfo = CreateCustomerTypeInfo();
-        await typeInfo.ValidateAsync(model, context, default);
-
-        Assert.NotNull(context.ValidationErrors);
-        Assert.DoesNotContain("Options Age", context.ValidationErrors.Values.SelectMany(v => v));
-    }
-
-    [Fact]
     public async Task DisplayNameProvider_WithDisplayAttribute_PassesDisplayName()
     {
         DisplayNameProviderContext? captured = null;

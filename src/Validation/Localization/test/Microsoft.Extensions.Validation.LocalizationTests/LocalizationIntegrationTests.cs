@@ -298,11 +298,11 @@ public class LocalizationIntegrationTests
             typeof(SimpleModel), typeof(string), "Name", [new RequiredAttribute()]);
         var typeInfo = new TestValidatableTypeInfo(typeof(SimpleModel), [propInfo]);
 
+        validationOptions.ErrorMessageProvider = (in ctx) => $"Override: {ctx.MemberName} needed";
         var context = new ValidateContext
         {
             ValidationOptions = validationOptions,
             ValidationContext = new ValidationContext(model),
-            ErrorMessageProvider = (in ctx) => $"Override: {ctx.MemberName} needed"
         };
 
         await typeInfo.ValidateAsync(model, context, default);

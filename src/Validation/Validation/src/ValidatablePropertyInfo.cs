@@ -80,7 +80,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             DisplayName,
             DisplayNameAccessor,
             declaringType: DeclaringType,
-            context.DisplayNameProvider,
+            context.ValidationOptions.DisplayNameProvider,
             context.ValidationContext);
 
         context.ValidationContext.DisplayName = displayName;
@@ -98,7 +98,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             context.CurrentValidationPath = $"{originalPrefix}.{Name}";
         }
 
-        var errorMessageProvider = context.ErrorMessageProvider;
+        var errorMessageProvider = context.ValidationOptions.ErrorMessageProvider;
         var propertyValue = _propertyInfo.GetValue(value);
         var validationAttributes = GetValidationAttributes();
 

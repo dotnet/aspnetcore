@@ -72,14 +72,14 @@ public abstract class ValidatableParameterInfo(
             DisplayName,
             DisplayNameAccessor,
             declaringType: null,
-            context.DisplayNameProvider,
+            context.ValidationOptions.DisplayNameProvider,
             context.ValidationContext);
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
 
         var validationAttributes = GetValidationAttributes();
-        var errorMessageProvider = context.ErrorMessageProvider;
+        var errorMessageProvider = context.ValidationOptions.ErrorMessageProvider;
 
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
         {
