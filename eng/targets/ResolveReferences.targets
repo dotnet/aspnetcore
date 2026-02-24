@@ -177,6 +177,15 @@
     </ItemGroup>
   </Target>
 
+  <!-- Remove Transtive Microsoft.Aspnetcore.App FrameworkReference, for projects referencing the affected projects above -->
+  <Target Name="_RemoveAspNetCoreTransitiveFrameworkReference"
+          BeforeTargets="AddTransitiveFrameworkReferences"
+          Condition="'@(TransitiveFrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->Count())' != '0'" >
+    <ItemGroup>
+      <TransitiveFrameworkReference Remove="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+  </Target>
+
   <!--
     This target resolves remaining Reference items to Packages, if possible. If not, they are left as Reference
     items for the SDK to resolve. This executes on NuGet restore and during DesignTimeBuild. It should not run in
