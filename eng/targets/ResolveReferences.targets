@@ -180,7 +180,8 @@
   <!-- Remove Transtive Microsoft.Aspnetcore.App FrameworkReference, for projects referencing the affected projects above -->
   <Target Name="_RemoveAspNetCoreTransitiveFrameworkReference"
           BeforeTargets="AddTransitiveFrameworkReferences"
-          Condition="'@(TransitiveFrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->Count())' != '0'" >
+          Condition="'@(TransitiveFrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->Count())' != '0' AND 
+                     '$(UseAspNetCoreSharedRuntime)' != 'true'" >
     <ItemGroup>
       <TransitiveFrameworkReference Remove="Microsoft.AspNetCore.App" />
     </ItemGroup>
