@@ -487,17 +487,16 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         using var validationAlgorithm = CreateValidationAlgorithm();
         var hashSize = validationAlgorithm.GetDigestSizeInBytes();
 
-        byte[]? correctHashArray = null;
         Span<byte> correctHash = hashSize <= 128
             ? stackalloc byte[128].Slice(0, hashSize)
-            : (correctHashArray = new byte[hashSize]);
+            : new byte[hashSize];
 
         try
         {
-#if NET10_0_OR_GREATER
             var hashSource = payloadArray!.AsSpan(ivOffset, macOffset - ivOffset);
 
             int bytesWritten;
+#if NET10_0_OR_GREATER
             if (validationAlgorithm is HMACSHA256)
             {
                 bytesWritten = HMACSHA256.HashData(key: validationSubkey, source: hashSource, destination: correctHash);
@@ -518,7 +517,9 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 #else
             // if validationSubkey is stackalloc'ed, there is no way we avoid an alloc here
             validationAlgorithm.Key = validationSubkeyArray ?? validationSubkey.ToArray();
-            correctHashArray = validationAlgorithm.ComputeHash(payloadArray, macOffset, eofOffset - macOffset);
+            var success = validationAlgorithm.TryComputeHash(hashSource, correctHash, out bytesWritten);
+            Debug.Assert(success);
+            Debug.Assert(bytesWritten == hashSize);
 #endif
 
             // Step 4: Validate the MAC provided as part of the payload.
