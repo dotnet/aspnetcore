@@ -2,8 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Validation.Localization.AttributeFormatters;
 
-namespace Microsoft.Extensions.Validation.Localization.Attributes;
+namespace Microsoft.Extensions.Validation.Localization;
 
 /// <summary>
 /// Default implementation of <see cref="IValidationAttributeFormatterProvider"/> that returns

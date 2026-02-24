@@ -3,7 +3,7 @@
 
 using System.Globalization;
 
-namespace Microsoft.Extensions.Validation.Localization.Attributes;
+namespace Microsoft.Extensions.Validation.Localization.AttributeFormatters;
 
 /// <summary>
 /// Fallback <see cref="IValidationAttributeFormatter"/> for attributes whose error message
