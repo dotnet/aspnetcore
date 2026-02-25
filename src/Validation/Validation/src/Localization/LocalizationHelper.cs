@@ -12,7 +12,7 @@ internal static class LocalizationHelper
         string? displayName,
         Func<string>? displayNameAccessor,
         Type? declaringType,
-        DisplayNameProvider? provider,
+        Func<DisplayNameProviderContext, string?>? provider,
         IServiceProvider services)
     {
         if (displayNameAccessor?.Invoke() is string resourceDisplayName)
@@ -53,7 +53,7 @@ internal static class LocalizationHelper
         ValidationAttribute attribute,
         Type? declaringType,
         string displayName,
-        ErrorMessageProvider? provider,
+        Func<ErrorMessageProviderContext, string?>? provider,
         IServiceProvider services)
     {
         if (attribute.ErrorMessageResourceType is not null)

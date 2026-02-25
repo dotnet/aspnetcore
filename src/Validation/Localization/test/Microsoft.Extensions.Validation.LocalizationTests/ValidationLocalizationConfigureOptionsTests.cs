@@ -120,7 +120,7 @@ public class ValidationLocalizationConfigureOptionsTests
         var formatterProvider = new ValidationAttributeFormatterProvider();
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions
         {
-            ErrorMessageKeyProvider = (in ctx) => $"{ctx.Attribute.GetType().Name}_Error"
+            ErrorMessageKeyProvider = (ctx) => $"{ctx.Attribute.GetType().Name}_Error"
         });
         var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
 
@@ -152,8 +152,8 @@ public class ValidationLocalizationConfigureOptionsTests
 
         var validationOptions = new ValidationOptions
         {
-            ErrorMessageProvider = (in _) => "Pre-existing error",
-            DisplayNameProvider = (in _) => "Pre-existing name"
+            ErrorMessageProvider = (_) => "Pre-existing error",
+            DisplayNameProvider = (_) => "Pre-existing name"
         };
         configureOptions.Configure(validationOptions);
 
@@ -211,7 +211,7 @@ public class ValidationLocalizationConfigureOptionsTests
         var formatterProvider = new ValidationAttributeFormatterProvider();
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions
         {
-            ErrorMessageKeyProvider = (in _) => null
+            ErrorMessageKeyProvider = (_) => null
         });
         var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
 

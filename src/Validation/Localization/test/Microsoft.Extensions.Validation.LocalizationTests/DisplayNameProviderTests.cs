@@ -30,7 +30,7 @@ public class DisplayNameProviderTests
         var model = new CustomerModel { Name = null, Age = 25 };
         var options = new ValidationOptions
         {
-            DisplayNameProvider = (in _) => null
+            DisplayNameProvider = (_) => null
         };
         var context = CreateContext(model, options);
 
@@ -47,7 +47,7 @@ public class DisplayNameProviderTests
         var model = new CustomerModel { Name = "Test", Age = 200 };
         var options = new ValidationOptions
         {
-            DisplayNameProvider = (in ctx) => ctx.Name == "Customer Age" ? "Âge du client" : null
+            DisplayNameProvider = (ctx) => ctx.Name == "Customer Age" ? "Âge du client" : null
         };
         var context = CreateContext(model, options);
 
@@ -65,7 +65,7 @@ public class DisplayNameProviderTests
         var model = new CustomerModel { Name = "Test", Age = 200 };
         var options = new ValidationOptions
         {
-            DisplayNameProvider = (in ctx) =>
+            DisplayNameProvider = (ctx) =>
             {
                 captured = ctx;
                 return null;
@@ -99,7 +99,7 @@ public class DisplayNameProviderTests
 
         var options = new ValidationOptions
         {
-            DisplayNameProvider = (in _) =>
+            DisplayNameProvider = (_) =>
             {
                 providerCalled = true;
                 return "Should not be used";
@@ -117,7 +117,7 @@ public class DisplayNameProviderTests
         var model = new CustomerModel { Name = null, Age = 25 };
         var options = new ValidationOptions
         {
-            DisplayNameProvider = (in ctx) => ctx.Name switch
+            DisplayNameProvider = (ctx) => ctx.Name switch
             {
                 "Name" => "Nom",
                 "Customer Age" => "Âge",
