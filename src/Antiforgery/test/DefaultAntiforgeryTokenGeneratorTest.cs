@@ -445,6 +445,115 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
     }
 
     [Fact]
+    public void TryValidateTokenSet_ClaimUidMismatch_UnauthenticatedUser_WithClaimUid()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        var identity = new ClaimsIdentity(); // Not authenticated
+        httpContext.User = new ClaimsPrincipal(identity);
+
+        var cookieToken = new AntiforgeryToken() { IsCookieToken = true };
+        var fieldtoken = new AntiforgeryToken()
+        {
+            SecurityToken = cookieToken.SecurityToken,
+            IsCookieToken = false,
+            ClaimUid = new BinaryBlob(256) // Token was meant for authenticated user
+        };
+
+        var mockClaimUidExtractor = new Mock<IClaimUidExtractor>();
+        mockClaimUidExtractor.Setup(o => o.ExtractClaimUid(It.IsAny<ClaimsPrincipal>()))
+                             .Returns((string)null);
+
+        var tokenProvider = new DefaultAntiforgeryTokenGenerator(
+            claimUidExtractor: mockClaimUidExtractor.Object,
+            additionalDataProvider: null);
+
+        string expectedMessage =
+            "The provided antiforgery token was meant for an authenticated user, but the current user is not authenticated. Did you put UseAntiforgery() after UseAuthentication()?";
+
+        // Act
+        string message;
+        var result = tokenProvider.TryValidateTokenSet(httpContext, cookieToken, fieldtoken, out message);
+
+        // Assert
+        Assert.False(result);
+        Assert.Equal(expectedMessage, message);
+    }
+
+    [Fact]
+    public void TryValidateTokenSet_ClaimUidMismatch_UnauthenticatedUser_WithUsername()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        var identity = new ClaimsIdentity(); // Not authenticated
+        httpContext.User = new ClaimsPrincipal(identity);
+
+        var cookieToken = new AntiforgeryToken() { IsCookieToken = true };
+        var fieldtoken = new AntiforgeryToken()
+        {
+            SecurityToken = cookieToken.SecurityToken,
+            IsCookieToken = false,
+            Username = "test-user" // Token was meant for authenticated user with username
+        };
+
+        var mockClaimUidExtractor = new Mock<IClaimUidExtractor>();
+        mockClaimUidExtractor.Setup(o => o.ExtractClaimUid(It.IsAny<ClaimsPrincipal>()))
+                             .Returns((string)null);
+
+        var tokenProvider = new DefaultAntiforgeryTokenGenerator(
+            claimUidExtractor: mockClaimUidExtractor.Object,
+            additionalDataProvider: null);
+
+        string expectedMessage =
+            "The provided antiforgery token was meant for an authenticated user, but the current user is not authenticated. Did you put UseAntiforgery() after UseAuthentication()?";
+
+        // Act
+        string message;
+        var result = tokenProvider.TryValidateTokenSet(httpContext, cookieToken, fieldtoken, out message);
+
+        // Assert
+        Assert.False(result);
+        Assert.Equal(expectedMessage, message);
+    }
+
+    [Fact]
+    public void TryValidateTokenSet_ClaimUidMismatch_AuthenticatedUser_StillUsesOriginalMessage()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        var identity = GetAuthenticatedIdentity("current-user"); // Authenticated
+        httpContext.User = new ClaimsPrincipal(identity);
+
+        var cookieToken = new AntiforgeryToken() { IsCookieToken = true };
+        var fieldtoken = new AntiforgeryToken()
+        {
+            SecurityToken = cookieToken.SecurityToken,
+            IsCookieToken = false,
+            ClaimUid = new BinaryBlob(256) // Different ClaimUid
+        };
+
+        var differentToken = new BinaryBlob(256);
+        var mockClaimUidExtractor = new Mock<IClaimUidExtractor>();
+        mockClaimUidExtractor.Setup(o => o.ExtractClaimUid(It.Is<ClaimsPrincipal>(c => c.Identity == identity)))
+                             .Returns(Convert.ToBase64String(differentToken.GetData()));
+
+        var tokenProvider = new DefaultAntiforgeryTokenGenerator(
+            claimUidExtractor: mockClaimUidExtractor.Object,
+            additionalDataProvider: null);
+
+        string expectedMessage =
+            "The provided antiforgery token was meant for a different claims-based user than the current user.";
+
+        // Act
+        string message;
+        var result = tokenProvider.TryValidateTokenSet(httpContext, cookieToken, fieldtoken, out message);
+
+        // Assert
+        Assert.False(result);
+        Assert.Equal(expectedMessage, message);
+    }
+
+    [Fact]
     public void TryValidateTokenSet_AdditionalDataRejected()
     {
         // Arrange

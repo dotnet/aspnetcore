@@ -127,6 +127,9 @@
   <data name="AntiforgeryToken_ClaimUidMismatch" xml:space="preserve">
     <value>The provided antiforgery token was meant for a different claims-based user than the current user.</value>
   </data>
+  <data name="AntiforgeryToken_ClaimUidMismatch_UnauthenticatedUser" xml:space="preserve">
+    <value>The provided antiforgery token was meant for an authenticated user, but the current user is not authenticated. Did you put UseAntiforgery() after UseAuthentication()?</value>
+  </data>
   <data name="AntiforgeryToken_DeserializationFailed" xml:space="preserve">
     <value>The antiforgery token could not be decrypted.</value>
   </data>
