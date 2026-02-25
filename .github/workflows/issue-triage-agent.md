@@ -86,6 +86,52 @@ Read the full issue title and body first using:
 gh issue view <NUMBER> --repo $GITHUB_REPOSITORY --json title,body,labels,number
 ```
 
+## CRITICAL: Security-Sensitive Issue Handling
+
+**Before performing ANY analysis**, determine whether the issue describes or hints at
+a security vulnerability, MSRC case, exploit, or anything that could compromise
+the security of services, applications, or users relying on ASP.NET Core or its
+tooling.
+
+**Indicators of a security-sensitive issue:**
+- Mentions CVE, MSRC, vulnerability, exploit, RCE, XSS, CSRF bypass, SQL injection,
+  privilege escalation, authentication bypass, token leakage, secret exposure,
+  deserialization attack, path traversal, denial of service, or similar terms
+- Describes a way to bypass security controls, authorization, or authentication
+- Shows how to access data or systems without proper authorization
+- Reports a crash or unexpected behavior that could be weaponized
+- Mentions "responsible disclosure", "coordinated disclosure", or "security advisory"
+- Contains proof-of-concept code that demonstrates breaking a security boundary
+
+**If the issue IS or MAY BE security-sensitive, you MUST:**
+
+1. **STOP all detailed analysis immediately.** Do NOT describe the vulnerability
+   mechanism, do NOT explain how or why it is broken, do NOT include reproduction
+   steps, do NOT reference specific code paths or attack vectors.
+2. Apply ONLY the area label (e.g., `area-auth`, `area-networking`) and `bug`.
+3. Post an extremely minimal comment — nothing more than:
+
+```markdown
+### Triage Summary
+
+**Area:** `area-xyz`
+**Type:** `bug`
+
+> This issue may involve a security-sensitive topic. Detailed triage has been
+> intentionally withheld. Please review this issue through the appropriate
+> internal security process. If this is a genuine security vulnerability, it
+> should be reported privately via https://msrc.microsoft.com and **not** in a
+> public GitHub issue.
+```
+
+4. Do NOT search for or mention duplicates. Do NOT add notes explaining the
+   impact, root cause, or affected components beyond the area label.
+
+**This rule overrides ALL other instructions.** When in doubt about whether
+something is security-sensitive, treat it as security-sensitive.
+
+---
+
 ## Step 1: Area Classification
 
 Classify the issue into exactly **one** area label from the list below. Pick the
