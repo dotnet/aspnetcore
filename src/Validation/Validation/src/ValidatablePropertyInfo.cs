@@ -113,7 +113,6 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                     _requiredAttribute,
                     DeclaringType,
                     displayName,
-                    memberName: Name,
                     errorMessageProvider,
                     context.ValidationContext);
 
@@ -202,7 +201,6 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                             attribute,
                             DeclaringType,
                             displayName,
-                            memberName: Name,
                             errorMessageProvider,
                             context.ValidationContext);
 
