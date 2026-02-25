@@ -29,14 +29,14 @@ internal sealed class ValidationLocalizationSetup(
         options.DisplayNameProvider ??= GetDisplayName;
         options.ErrorMessageProvider ??= GetErrorMessage;
 
-        string? GetDisplayName(in DisplayNameProviderContext context)
+        string? GetDisplayName(DisplayNameProviderContext context)
         {
             var localizer = GetLocalizer(context.DeclaringType);
             var localizedName = localizer[context.Name];
             return localizedName.ResourceNotFound ? null : localizedName.Value;
         }
 
-        string? GetErrorMessage(in ErrorMessageProviderContext context)
+        string? GetErrorMessage(ErrorMessageProviderContext context)
         {
             var lookupKey = !string.IsNullOrEmpty(context.Attribute.ErrorMessage)
                 ? context.Attribute.ErrorMessage

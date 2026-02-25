@@ -58,5 +58,5 @@ public sealed class ValidationLocalizationOptions
     /// for the particular attribute.
     /// </para>
     /// </remarks>
-    public ErrorMessageKeyProvider? ErrorMessageKeyProvider { get; set; }
+    public Func<ErrorMessageProviderContext, string?>? ErrorMessageKeyProvider { get; set; }
 }
