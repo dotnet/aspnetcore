@@ -140,37 +140,131 @@ API names mentioned.
 
 ### Area Labels Reference
 
-| Label | Description |
-|-------|-------------|
-| `area-auth` | Authentication, Authorization, OAuth, OIDC, Bearer tokens |
-| `area-blazor` | Blazor, Razor Components (WASM issues may also relate to dotnet/runtime) |
-| `area-commandlinetools` | CLI tools: dotnet-dev-certs, dotnet-user-jwts, OpenAPI tooling |
-| `area-dataprotection` | Data Protection APIs and key management |
-| `area-grpc` | gRPC wire-up, templates (library itself is grpc/grpc-dotnet) |
-| `area-healthchecks` | Health check endpoints and middleware |
-| `area-hosting` | Host builder, GenericHost, WebHost, startup |
-| `area-identity` | ASP.NET Core Identity, identity providers |
-| `area-infrastructure` | MSBuild, build scripts, CI, installers, shared framework |
-| `area-middleware` | URL rewrite, redirect, response cache/compression, session, caching |
-| `area-minimal` | Minimal APIs, endpoint filters, parameter binding, request delegate generator |
-| `area-mvc` | MVC, Controllers, Localization, CORS, templates |
-| `area-networking` | Kestrel, HTTP/2, HTTP/3, YARP, WebSockets, HttpClient factory, HTTP abstractions |
-| `area-perf` | Performance bugs, perf infrastructure, benchmarks |
-| `area-routing` | Endpoint routing, route matching, URL generation |
-| `area-security` | Security features and hardening |
-| `area-signalr` | SignalR clients and servers |
-| `area-ui-rendering` | MVC Views/Pages, Razor Views/Pages, Razor engine rendering |
-| `area-unified-build` | dotnet/dotnet unified build, source-build |
+Each area below lists key types, APIs, and concepts. Use these as strong signals
+when the issue title/body mentions them.
 
-**Hints for disambiguation:**
-- Kestrel, HTTP protocols, WebSockets, server errors → `area-networking`
-- Blazor component lifecycle, JSInterop, WASM, render modes → `area-blazor`
-- Razor Pages rendering, TagHelpers, view compilation → `area-ui-rendering`
-- `MapGet`/`MapPost`, endpoint filters, `Results.*` → `area-minimal`
-- Controller-based APIs, `[ApiController]`, model binding in controllers → `area-mvc`
-- OAuth/OIDC middleware, `[Authorize]`, policy-based auth → `area-auth`
-- `SignInManager`, `UserManager`, Identity scaffolding → `area-identity`
-- Build failures, CI, `eng/` scripts, package references → `area-infrastructure`
+#### `area-networking`
+Kestrel, HttpSys, HTTP/2, HTTP/3, QUIC, YARP, WebSockets, HTTP abstractions, connection management.
+**Key types:** `KestrelServer`, `KestrelServerOptions`, `KestrelServerLimits`, `ListenOptions`, `HttpsConnectionAdapterOptions`, `Http2Limits`, `Http3Limits`, `HttpSysOptions`, `ConnectionContext`, `ConnectionHandler`, `IConnectionBuilder`, `IConnectionFactory`, `IConnectionListener`, `IConnectionListenerFactory`, `ConnectionAbortedException`, `ConnectionResetException`, `AddressInUseException`, `MinDataRate`, `PipeReader`, `PipeWriter`, `IDuplexPipe`, `IServer`
+**Config:** `UseKestrel()`, `ConfigureKestrel()`, `UseHttpSys()`, `Listen()`, `ListenAnyIP()`, `ListenLocalhost()`, `UseHttps()`
+**Concepts:** port binding, TLS/SSL, HTTPS, connection timeout, keep-alive, request body size limits, named pipes, Unix sockets, reverse proxy, connection middleware, transport layer, `System.IO.Pipelines`
+
+#### `area-blazor`
+Blazor, Razor Components, WebAssembly, interactive rendering modes, circuits.
+**Key types:** `ComponentBase`, `LayoutComponentBase`, `DynamicComponent`, `ErrorBoundary`, `NavigationManager`, `PersistentComponentState`, `CascadingValue<T>`, `RenderMode` (`InteractiveServer`, `InteractiveWebAssembly`, `InteractiveAuto`), `EditContext`, `DataAnnotationsValidator`, `CircuitHandler`, `NavLink`, `RouteView`, `HeadOutlet`, `StreamRendering`, `IComponentRenderMode`, `RenderFragment`, `EventCallback`, `IJSRuntime`, `IJSObjectReference`, `ProtectedBrowserStorage`
+**Config:** `AddRazorComponents()`, `AddInteractiveServerComponents()`, `AddInteractiveWebAssemblyComponents()`, `MapRazorComponents<T>()`
+**Concepts:** `.razor` files, `@code`, render tree, JSInterop, circuit, prerendering, streaming rendering, enhanced navigation, form handling, cascading parameters, Blazor Server, Blazor WASM, Blazor Web App
+
+#### `area-auth`
+Authentication, Authorization, OAuth, OIDC, Bearer tokens, cookie auth, JWT.
+**Key types:** `IAuthenticationHandler`, `IAuthenticationService`, `AuthenticationMiddleware`, `AuthenticationBuilder`, `AuthenticationScheme`, `AuthenticationTicket`, `CookieAuthenticationHandler`, `CookieAuthenticationOptions`, `JwtBearerHandler`, `JwtBearerOptions`, `OAuthHandler<T>`, `OpenIdConnectHandler`, `OpenIdConnectOptions`, `IAuthorizationService`, `IAuthorizationHandler`, `IAuthorizationRequirement`, `AuthorizationPolicy`, `AuthorizationMiddleware`, `AuthorizeAttribute`, `AllowAnonymousAttribute`, `IPolicyEvaluator`, `ClaimsPrincipal`, `AuthenticateResult`
+**Config:** `AddAuthentication()`, `UseAuthentication()`, `AddAuthorization()`, `UseAuthorization()`, `AddJwtBearer()`, `AddCookie()`, `AddOpenIdConnect()`, `AddOAuth()`
+**Concepts:** authentication scheme, claims, bearer token, cookie auth, JWT validation, OAuth 2.0, OpenID Connect, authorization policy, `[Authorize]`, challenge, forbid, sign-in, sign-out, token validation
+
+#### `area-identity`
+ASP.NET Core Identity, user/role management, identity providers, scaffolding.
+**Key types:** `UserManager<TUser>`, `SignInManager<TUser>`, `RoleManager<TRole>`, `IdentityOptions`, `IdentityResult`, `IdentityError`, `IdentityUser`, `IdentityRole`, `IUserStore<T>`, `IRoleStore<T>`, `IPasswordHasher<T>`, `IUserClaimsPrincipalFactory<T>`, `ExternalLoginInfo`, `IEmailSender`, `SecurityStampValidator`, `IPasskeyHandler<T>`
+**Config:** `AddIdentity<TUser,TRole>()`, `AddDefaultIdentity<TUser>()`, `MapIdentityApi<TUser>()`
+**Concepts:** password hashing, two-factor authentication (2FA), external login, lockout, security stamp, email confirmation, password reset, passkey, token provider, Identity UI, Identity scaffolding, Identity API endpoints
+
+#### `area-mvc`
+MVC, Controllers, Actions, model binding, formatters, Razor Pages (page model logic).
+**Key types:** `Controller`, `ControllerBase`, `ApiControllerAttribute`, `MvcOptions`, `ApiBehaviorOptions`, `ActionResult`, `IActionResult`, `JsonResult`, `ObjectResult`, `PageModel`, `IInputFormatter`, `IOutputFormatter`, `IUrlHelper`, `IFilterMetadata`, `ModelBinderAttribute`, `BindingInfo`, `ActionContext`
+**Config:** `AddMvc()`, `AddControllers()`, `AddControllersWithViews()`, `AddRazorPages()`, `MapControllers()`, `MapControllerRoute()`, `MapRazorPages()`
+**Concepts:** `[ApiController]`, `[Route]`, `[HttpGet]`/`[HttpPost]`, model binding, model validation, action filters, exception filters, content negotiation, Razor Pages page model, areas, formatters
+
+#### `area-minimal`
+Minimal APIs, endpoint filters, parameter binding, request delegate generator, HTTP results.
+**Key types:** `HttpContext`, `HttpRequest`, `HttpResponse`, `IResult`, `Results`, `TypedResults`, `IEndpointFilter`, `EndpointFilterInvocationContext`, `ProblemDetails`, `HttpValidationProblemDetails`, `IProblemDetailsService`, `IMiddleware`, `IApplicationBuilder`, `Endpoint`, `IEndpointConventionBuilder`, `BadHttpRequestException`, `IHttpContextAccessor`, `JsonOptions`
+**Config:** `app.MapGet()`, `app.MapPost()`, `app.MapPut()`, `app.MapDelete()`, `app.MapPatch()`, `app.MapGroup()`, `Results.Ok()`, `Results.NotFound()`, `TypedResults.Ok()`, `AddProblemDetails()`
+**Concepts:** route handler, endpoint filter, parameter binding, `[FromBody]`, `[FromQuery]`, `[FromRoute]`, `[FromHeader]`, `[FromServices]`, `[AsParameters]`, route group, request delegate, problem details
+
+#### `area-middleware`
+URL rewrite, response caching/compression, session, CORS, diagnostics, static files, rate limiting, HTTP logging, forwarded headers.
+**Key types:** `CorsMiddleware`, `CorsPolicy`, `DeveloperExceptionPageMiddleware`, `ExceptionHandlerMiddleware`, `IExceptionHandler`, `StatusCodePagesMiddleware`, `StaticFileMiddleware`, `SessionMiddleware`, `ResponseCompressionMiddleware`, `OutputCacheOptions`, `IOutputCacheStore`, `IRateLimiterPolicy<T>`, `HstsMiddleware`, `HttpsRedirectionMiddleware`, `RewriteMiddleware`, `ForwardedHeadersMiddleware`, `ForwardedHeadersOptions`, `ResponseCachingMiddleware`, `IHttpLoggingInterceptor`, `WebSocketOptions`
+**Config:** `AddCors()` / `UseCors()`, `UseExceptionHandler()`, `UseDeveloperExceptionPage()`, `UseStaticFiles()`, `AddSession()` / `UseSession()`, `AddResponseCompression()` / `UseResponseCompression()`, `AddOutputCache()` / `UseOutputCaching()`, `AddRateLimiter()` / `UseRateLimiter()`, `UseHsts()`, `UseHttpsRedirection()`, `UseRewriter()`, `UseForwardedHeaders()`, `AddHttpLogging()` / `UseHttpLogging()`
+**Concepts:** middleware pipeline, CORS policy, exception handler, static files, session state, output caching, response compression, rate limiting, HSTS, HTTPS redirect, URL rewrite, forwarded headers, X-Forwarded-For, X-Forwarded-Proto, host filtering
+
+#### `area-signalr`
+SignalR clients and servers, real-time communication, hub protocol.
+**Key types:** `Hub`, `Hub<T>`, `HubConnection`, `HubConnectionBuilder`, `HubCallerContext`, `HubConnectionContext`, `IHubContext<T>`, `IClientProxy`, `IGroupManager`, `IHubProtocol`, `HubException`, `HubOptions`, `RedisHubLifetimeManager`
+**Config:** `AddSignalR()`, `MapHub<T>()`, `WithUrl()`, `.Build()`
+**Concepts:** hub, hub method, real-time, WebSocket transport, Server-Sent Events, long polling, groups, streaming, MessagePack protocol, JSON protocol, reconnect, retry policy, scale-out, Redis backplane, sticky sessions
+
+#### `area-routing`
+Endpoint routing, route matching, URL generation, route constraints.
+**Key types:** `EndpointDataSource`, `IEndpointRouteBuilder`, `LinkGenerator`, `RouteData`, `IRouteConstraint`, `IRouter`, `IParameterPolicy`, `IOutboundParameterTransformer`, `EndpointNameMetadata`
+**Config:** `UseRouting()`, `UseEndpoints()`, `MapFallback()`, `RequireHost()`, `WithName()`, `AddRouting()`
+**Concepts:** route template, route pattern, route constraint (`{id:int}`, `{slug:regex(...)}`), link generation, URL generation, route values, endpoint metadata, conventional vs attribute routing, catch-all routes
+
+#### `area-dataprotection`
+Data Protection APIs, key management, encryption/decryption.
+**Key types:** `IDataProtectionProvider`, `IDataProtector`, `ITimeLimitedDataProtector`, `DataProtectionOptions`, `IKey`, `IKeyManager`, `IXmlRepository`, `DataProtectionKey`, `KeyManagementOptions`, `IAuthenticatedEncryptor`
+**Config:** `AddDataProtection()`, `PersistKeysToFileSystem()`, `PersistKeysToDbContext()`, `PersistKeysToStackExchangeRedis()`, `ProtectKeysWithCertificate()`, `SetApplicationName()`, `SetDefaultKeyLifetime()`
+**Concepts:** protect/unprotect, key ring, key rotation, XML repository, purpose string, key escrow, data protector
+
+#### `area-hosting`
+Host builder, WebApplication, startup, server configuration.
+**Key types:** `WebApplication`, `WebApplicationBuilder`, `WebApplicationOptions`, `IWebHost`, `IWebHostBuilder`, `IWebHostEnvironment`, `IStartup`, `IStartupFilter`, `IHostingStartup`, `WebHostDefaults`, `StaticWebAssetsLoader`
+**Config:** `WebApplication.CreateBuilder()`, `ConfigureWebHostDefaults()`, `UseStartup<T>()`, `UseUrls()`, `UseContentRoot()`
+**Concepts:** `Program.cs`, `Startup.cs`, minimal hosting, Generic Host, `ASPNETCORE_URLS`, `ASPNETCORE_ENVIRONMENT`, `launchSettings.json`, hosting startup, server addresses, host configuration
+
+#### `area-commandlinetools`
+CLI tools: dotnet-dev-certs, dotnet-user-jwts, dotnet-user-secrets, OpenAPI tooling.
+**Key types:** `SecretsStore`, `JwtStore`, `UserSecretsIdAttribute`
+**Concepts:** `dotnet dev-certs https --trust`, `dotnet user-secrets`, `dotnet user-jwts`, `dotnet sql-cache`, `dotnet-openapi`, `secrets.json`, HTTPS dev certificate, user secrets ID
+
+#### `area-grpc`
+gRPC wire-up, JSON transcoding, gRPC Swagger (main library is grpc/grpc-dotnet).
+**Key types:** `GrpcJsonTranscodingServiceExtensions`, `GrpcSwaggerServiceExtensions`
+**Config:** `AddGrpc()`, `MapGrpcService<T>()`, `AddGrpcJsonTranscoding()`, `AddGrpcSwagger()`
+**Concepts:** gRPC, protobuf, `.proto` files, gRPC-Web, JSON transcoding, gRPC Swagger, unary/streaming calls, gRPC interceptors, gRPC channels
+
+#### `area-healthchecks`
+Health check endpoints and publishers.
+**Key types:** `IHealthCheck`, `IHealthCheckPublisher`, `HealthCheckService`, `IHealthChecksBuilder`, `HealthCheckMiddleware`, `HealthCheckOptions`, `HealthStatus` (Healthy, Degraded, Unhealthy)
+**Config:** `AddHealthChecks()`, `MapHealthChecks()`, `UseHealthChecks()`
+**Concepts:** liveness probe, readiness probe, health status, health check publisher, health check endpoint
+
+#### `area-security`
+Security hardening, antiforgery, cookie policy, CSRF/XSRF protection.
+**Key types:** `IAntiforgery`, `AntiforgeryOptions`, `AntiforgeryTokenSet`, `AntiforgeryValidationException`, `RequireAntiforgeryTokenAttribute`, `CookiePolicyOptions`
+**Config:** `AddAntiforgery()`, `UseAntiforgery()`, `UseCookiePolicy()`
+**Concepts:** antiforgery token, CSRF/XSRF, SameSite cookies, secure cookies, HTTPS enforcement, cookie policy
+
+#### `area-ui-rendering`
+MVC Views, Razor Pages (rendering/templates), TagHelpers, view compilation.
+**Key types:** `ViewResult`, `PartialViewResult`, `IHtmlHelper`, `ViewDataDictionary`, `TempDataDictionary`, `ViewComponent`, `ViewComponentResult`, `RazorPagesOptions`, `AnchorTagHelper`, `FormTagHelper`, `InputTagHelper`, `CacheTagHelper`, `EnvironmentTagHelper`, `ImageTagHelper`, `GlobbingUrlBuilder`
+**Concepts:** `.cshtml`, Razor syntax, `@model`, `@page`, `_ViewImports.cshtml`, `_ViewStart.cshtml`, layout, partial view, tag helper, HTML helper, view component, runtime compilation, Razor SDK, Razor Class Library (RCL), sections
+
+#### `area-perf`
+Performance regressions, benchmarks, perf infrastructure.
+**Concepts:** benchmark, throughput regression, latency, RPS, memory allocation, `BenchmarkDotNet`, perf lab, crank, bombardier
+
+#### `area-infrastructure`
+Build system, CI/CD, shared framework, installers.
+**Concepts:** MSBuild, `Directory.Build.props`, `Directory.Build.targets`, `eng/` scripts, Arcade SDK, source build, shared framework, targeting pack, reference assemblies, NuGet packaging, CI pipelines
+
+#### `area-unified-build`
+dotnet/dotnet unified build, source-build integration.
+**Concepts:** `dotnet/dotnet` repo, unified build, source-build, VMR (Virtual Monolithic Repository)
+
+### Disambiguation Tips
+
+When multiple areas could match, use these priorities:
+- **Pipe-level I/O** (`PipeReader`, `PipeWriter`, `IDuplexPipe`, connection handling) → `area-networking`, NOT `area-middleware`
+- **Kestrel config, HTTP protocol errors, TLS/SSL** → `area-networking`
+- **`Hub`, `HubConnection`, real-time** → `area-signalr` (even though SignalR uses WebSockets)
+- **`ComponentBase`, `.razor`, render modes, JSInterop** → `area-blazor`
+- **`.cshtml`, TagHelpers, view compilation, `ViewResult`** → `area-ui-rendering`
+- **`MapGet`/`MapPost`, `Results.*`, endpoint filters** → `area-minimal`
+- **`[ApiController]`, `Controller`, action filters** → `area-mvc`
+- **`[Authorize]`, authentication schemes, JWT, OAuth** → `area-auth`
+- **`UserManager`, `SignInManager`, Identity scaffolding** → `area-identity`
+- **`UseCors()`, `UseStaticFiles()`, `UseSession()`, response caching** → `area-middleware`
+- **Route templates, constraints, `LinkGenerator`** → `area-routing`
+- **`IDataProtector`, key management, protect/unprotect** → `area-dataprotection`
+- **Build failures, `eng/`, packages, CI** → `area-infrastructure`
 
 If you are truly unsure (confidence below ~40%), do **not** add an area label.
 Explain why in the comment instead.
