@@ -31,7 +31,7 @@ public class ErrorMessageProviderTests
         var customer = new TestCustomer { Name = null, Age = 25 };
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = (in _) => null
+            ErrorMessageProvider = (_) => null
         };
         var context = CreateContext(customer, options);
 
@@ -49,7 +49,7 @@ public class ErrorMessageProviderTests
         var customer = new TestCustomer { Name = null, Age = 25 };
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = (in ctx) => $"Custom: {ctx.DisplayName} is invalid"
+            ErrorMessageProvider = (ctx) => $"Custom: {ctx.DisplayName} is invalid"
         };
         var context = CreateContext(customer, options);
 
@@ -67,7 +67,7 @@ public class ErrorMessageProviderTests
         var providerCalled = false;
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = (in _) =>
+            ErrorMessageProvider = (_) =>
             {
                 providerCalled = true;
                 return "Should not be used";
@@ -99,7 +99,7 @@ public class ErrorMessageProviderTests
         var customer = new TestCustomer { Name = null, Age = 25 };
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = (in ctx) =>
+            ErrorMessageProvider = (ctx) =>
             {
                 captured = ctx;
                 return null;
@@ -124,7 +124,7 @@ public class ErrorMessageProviderTests
         var customer = new TestCustomer { Name = null, Age = 25 };
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = (in ctx) =>
+            ErrorMessageProvider = (ctx) =>
             {
                 captured = ctx;
                 return null;
@@ -152,7 +152,7 @@ public class ErrorMessageProviderTests
 
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = (in ctx) =>
+            ErrorMessageProvider = (ctx) =>
             {
                 captured = ctx;
                 return null;
@@ -171,7 +171,7 @@ public class ErrorMessageProviderTests
         var customer = new TestCustomer { Name = null, Age = 25 };
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = (in ctx) =>
+            ErrorMessageProvider = (ctx) =>
             {
                 if (ctx.Attribute is RequiredAttribute)
                 {
@@ -195,7 +195,7 @@ public class ErrorMessageProviderTests
         var customer = new TestCustomer { Name = "Test", Age = 200 };
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = (in ctx) =>
+            ErrorMessageProvider = (ctx) =>
             {
                 if (ctx.Attribute is RangeAttribute range)
                 {
@@ -225,7 +225,7 @@ public class ErrorMessageProviderTests
 
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = (in ctx) => $"Localized: {ctx.DisplayName} format error"
+            ErrorMessageProvider = (ctx) => $"Localized: {ctx.DisplayName} format error"
         };
         var context = CreateContext(model, options);
         await typeInfo.ValidateAsync(model, context, default);
@@ -249,7 +249,7 @@ public class ErrorMessageProviderTests
 
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = (in ctx) => $"Localized type error: {ctx.DisplayName}"
+            ErrorMessageProvider = (ctx) => $"Localized type error: {ctx.DisplayName}"
         };
         var context = CreateContext(model, options);
         await typeInfo.ValidateAsync(model, context, default);
@@ -272,7 +272,7 @@ public class ErrorMessageProviderTests
 
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = (in ctx) =>
+            ErrorMessageProvider = (ctx) =>
             {
                 captured = ctx;
                 return null;
@@ -300,7 +300,7 @@ public class ErrorMessageProviderTests
 
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = (in ctx) =>
+            ErrorMessageProvider = (ctx) =>
             {
                 captured = ctx;
                 return null;

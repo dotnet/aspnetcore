@@ -62,7 +62,7 @@ public class AddValidationLocalizationTests
         services.AddValidation();
         services.AddValidationLocalization(options =>
         {
-            options.ErrorMessageKeyProvider = (in ctx) => $"{ctx.Attribute.GetType().Name}_Key";
+            options.ErrorMessageKeyProvider = (ctx) => $"{ctx.Attribute.GetType().Name}_Key";
         });
 
         var provider = services.BuildServiceProvider();
@@ -89,8 +89,8 @@ public class AddValidationLocalizationTests
         services.AddValidation();
         services.Configure<ValidationOptions>(options =>
         {
-            options.ErrorMessageProvider = (in _) => "Pre-existing";
-            options.DisplayNameProvider = (in _) => "Pre-existing display";
+            options.ErrorMessageProvider = (_) => "Pre-existing";
+            options.DisplayNameProvider = (_) => "Pre-existing display";
         });
         services.AddValidationLocalization();
 

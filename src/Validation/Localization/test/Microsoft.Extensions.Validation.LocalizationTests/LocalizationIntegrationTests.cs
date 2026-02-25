@@ -297,7 +297,7 @@ public class LocalizationIntegrationTests
             typeof(SimpleModel), typeof(string), "Name", [new RequiredAttribute()]);
         var typeInfo = new TestValidatableTypeInfo(typeof(SimpleModel), [propInfo]);
 
-        validationOptions.ErrorMessageProvider = (in ctx) => $"Override: {ctx.DisplayName} needed";
+        validationOptions.ErrorMessageProvider = (ctx) => $"Override: {ctx.DisplayName} needed";
         var context = new ValidateContext
         {
             ValidationOptions = validationOptions,
