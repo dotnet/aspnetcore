@@ -47,11 +47,10 @@ internal sealed class StandardAttributeLocalizationConfiguration(
                 return originalProvider(context);
             }
 
-            var displayName = context.DisplayName ?? context.MemberName;
             var attributeFormatter = attributeFormatterProvider.GetFormatter(context.Attribute);
 
-            return attributeFormatter?.FormatErrorMessage(CultureInfo.CurrentCulture, localizedTemplate, displayName)
-                ?? string.Format(CultureInfo.CurrentCulture, localizedTemplate, displayName);
+            return attributeFormatter?.FormatErrorMessage(CultureInfo.CurrentCulture, localizedTemplate, context.DisplayName)
+                ?? string.Format(CultureInfo.CurrentCulture, localizedTemplate, context.DisplayName);
         };
     }
 }

@@ -1,6 +1,7 @@
 #nullable enable
 *REMOVED*Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, string! displayName) -> void
 *REMOVED*Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name) -> void
+Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.DisplayName.get -> string!
 Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, string? displayName, System.Func<string!>? displayNameAccessor) -> void
 Microsoft.Extensions.Validation.Localization.DisplayNameProvider
 Microsoft.Extensions.Validation.Localization.DisplayNameProviderContext
@@ -17,11 +18,8 @@ Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.Attribu
 Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.Attribute.init -> void
 Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.DeclaringType.get -> System.Type?
 Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.DeclaringType.init -> void
-Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.DisplayName.get -> string?
 Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.DisplayName.init -> void
 Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.ErrorMessageProviderContext() -> void
-Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.MemberName.get -> string!
-Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.MemberName.init -> void
 Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.Services.get -> System.IServiceProvider!
 Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext.Services.init -> void
 *REMOVED*Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, string! displayName) -> void
