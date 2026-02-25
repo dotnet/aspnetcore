@@ -46,15 +46,13 @@ internal static class LocalizationHelper
     /// <param name="attribute">The validation attribute that produced the error.</param>
     /// <param name="declaringType">The declaring type, or null for parameters.</param>
     /// <param name="displayName">The (possibly localized) display name of the member.</param>
-    /// <param name="memberName">The CLR member name.</param>
     /// <param name="provider">The delegate that resolves error messages for validation attributes.</param>
     /// <param name="services">The service provider for resolving localization services.</param>
     /// <returns>The resolved error message, or null to fall through to default behavior.</returns>
     internal static string? TryResolveErrorMessage(
         ValidationAttribute attribute,
         Type? declaringType,
-        string? displayName,
-        string memberName,
+        string displayName,
         ErrorMessageProvider? provider,
         IServiceProvider services)
     {
@@ -77,7 +75,6 @@ internal static class LocalizationHelper
         {
             Attribute = attribute,
             DisplayName = displayName,
-            MemberName = memberName,
             DeclaringType = declaringType,
             Services = services
         };

@@ -19,14 +19,9 @@ public readonly struct ErrorMessageProviderContext
     /// <summary>
     /// Gets the resolved display name for the member being validated.
     /// This value is already localized if <see cref="ValidationOptions.DisplayNameProvider"/>
-    /// was configured and returned a non-null value.
+    /// was configured and returned a non-null value. Otherwise, the CLR member name is used.
     /// </summary>
-    public required string? DisplayName { get; init; }
-
-    /// <summary>
-    /// Gets the CLR name of the member or parameter being validated.
-    /// </summary>
-    public required string MemberName { get; init; }
+    public required string DisplayName { get; init; }
 
     /// <summary>
     /// Gets the type that declares the member being validated.

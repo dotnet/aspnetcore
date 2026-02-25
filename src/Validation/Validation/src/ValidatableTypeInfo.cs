@@ -157,7 +157,6 @@ public abstract class ValidatableTypeInfo(
                     attribute,
                     declaringType: Type,
                     displayName,
-                    memberName: Type.Name,
                     errorMessageProvider,
                     context.ValidationContext);
 

@@ -74,7 +74,6 @@ public class AddValidationLocalizationTests
         {
             Attribute = new System.ComponentModel.DataAnnotations.RequiredAttribute(),
             DisplayName = "Test",
-            MemberName = "Test",
             DeclaringType = null,
             Services = provider
         });
@@ -102,7 +101,6 @@ public class AddValidationLocalizationTests
         {
             Attribute = new System.ComponentModel.DataAnnotations.RequiredAttribute(),
             DisplayName = "Test",
-            MemberName = "Test",
             DeclaringType = null,
             Services = provider
         });
