@@ -30,9 +30,9 @@ internal sealed class StandardAttributeLocalizationConfiguration(
         var localizationOptions = new OptionsWrapper<LocalizationOptions>(new LocalizationOptions());
         var resourceLocalizerFactory = new ResourceManagerStringLocalizerFactory(localizationOptions, loggerFactory);
         var localizer = resourceLocalizerFactory.Create(typeof(StandardValidationMessages));
-        var originalProvider = options.ErrorMessageProvider ?? ((in context) => null);
+        var originalProvider = options.ErrorMessageProvider ?? ((context) => null);
 
-        options.ErrorMessageProvider = (in context) =>
+        options.ErrorMessageProvider = (context) =>
         {
             if (!string.IsNullOrEmpty(context.Attribute.ErrorMessage))
             {
