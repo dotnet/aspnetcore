@@ -174,7 +174,7 @@
 
   <!-- Remove Transtive Microsoft.Aspnetcore.App FrameworkReference, for projects referencing the affected projects above -->
   <Target Name="_RemoveAspNetCoreTransitiveFrameworkReference"
-          BeforeTargets="AddTransitiveFrameworkReferences"
+          AfterTargets="ResolvePackageAssets"
           Condition="'@(TransitiveFrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->Count())' != '0'">
     <ItemGroup>
       <TransitiveFrameworkReference Remove="Microsoft.AspNetCore.App" />
