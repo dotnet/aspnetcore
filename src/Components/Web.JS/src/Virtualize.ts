@@ -183,9 +183,25 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       if (entry.isIntersecting) {
         intersectingEntries.push(entry);
         if (entry.target === spacerAfter && spacerAfter.offsetHeight > 0) {
-          spacerAfterWasAtBottom = scrollElement.scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 1;
+          const atBottom = scrollElement.scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 1;
+          if (atBottom) {
+            spacerAfterWasAtBottom = true;
+          } else if (spacerAfterWasAtBottom) {
+            
+            scrollElement.scrollTop = scrollElement.scrollHeight;
+          }
+        } else if (entry.target === spacerAfter && spacerAfter.offsetHeight === 0) {
+          
+          spacerAfterWasAtBottom = false;
         } else if (entry.target === spacerBefore && spacerBefore.offsetHeight > 0) {
-          spacerBeforeWasAtTop = scrollElement.scrollTop < 1;
+          const atTop = scrollElement.scrollTop < 1;
+          if (atTop) {
+            spacerBeforeWasAtTop = true;
+          } else if (spacerBeforeWasAtTop) {
+            scrollElement.scrollTop = 0;
+          }
+        } else if (entry.target === spacerBefore && spacerBefore.offsetHeight === 0) {
+          spacerBeforeWasAtTop = false;
         }
       } else if (entry.target === spacerAfter) {
         if (spacerAfterWasAtBottom && spacerAfter.offsetHeight > 0) {
