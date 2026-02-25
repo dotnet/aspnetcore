@@ -160,7 +160,7 @@
                  '@(_FrameworkProjectReference)' != '' AND
                  '@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->Count())' == '0'">
     <KnownFrameworkReference Include="@(_RemovedAspNetKnownFrameworkReference)" />
-    <!-- Mark as IsTransitiveFrameworkReference to exclude the pruning data -->
+    <!-- Mark as IsTransitiveFrameworkReference to exclude the pruning data: https://github.com/dotnet/sdk/issues/53106 -->
     <FrameworkReference Include="Microsoft.AspNetCore.App" IsTransitiveFrameworkReference="true" />
   </ItemGroup>
 
@@ -180,9 +180,7 @@
   <!-- Remove Transtive Microsoft.Aspnetcore.App FrameworkReference, for projects referencing the affected projects above -->
   <Target Name="_RemoveAspNetCoreTransitiveFrameworkReference"
           BeforeTargets="AddTransitiveFrameworkReferences"
-          AfterTargets="ResolvePackageAssets"
-          Condition="'@(TransitiveFrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->Count())' != '0' AND 
-                     '$(UseAspNetCoreSharedRuntime)' != 'true'" >
+          Condition="'$(UseAspNetCoreSharedRuntime)' != 'true'" >
     <ItemGroup>
       <TransitiveFrameworkReference Remove="Microsoft.AspNetCore.App" />
     </ItemGroup>
