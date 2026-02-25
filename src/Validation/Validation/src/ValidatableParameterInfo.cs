@@ -91,7 +91,6 @@ public abstract class ValidatableParameterInfo(
                     _requiredAttribute,
                     declaringType: null,
                     displayName,
-                    memberName: Name,
                     errorMessageProvider,
                     context.ValidationContext);
 
@@ -120,7 +119,6 @@ public abstract class ValidatableParameterInfo(
                         attribute,
                         declaringType: null,
                         displayName,
-                        memberName: Name,
                         errorMessageProvider,
                         context.ValidationContext);
 

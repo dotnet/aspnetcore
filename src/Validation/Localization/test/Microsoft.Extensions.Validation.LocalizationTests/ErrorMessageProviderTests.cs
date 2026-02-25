@@ -49,7 +49,7 @@ public class ErrorMessageProviderTests
         var customer = new TestCustomer { Name = null, Age = 25 };
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = (in ctx) => $"Custom: {ctx.MemberName} is invalid"
+            ErrorMessageProvider = (in ctx) => $"Custom: {ctx.DisplayName} is invalid"
         };
         var context = CreateContext(customer, options);
 
@@ -112,7 +112,7 @@ public class ErrorMessageProviderTests
 
         Assert.NotNull(captured);
         Assert.IsType<RequiredAttribute>(captured.Value.Attribute);
-        Assert.Equal("Name", captured.Value.MemberName);
+        Assert.Equal("Name", captured.Value.DisplayName);
         Assert.Equal(typeof(TestCustomer), captured.Value.DeclaringType);
         Assert.NotNull(captured.Value.Services);
     }
@@ -225,7 +225,7 @@ public class ErrorMessageProviderTests
 
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = (in ctx) => $"Localized: {ctx.MemberName} format error"
+            ErrorMessageProvider = (in ctx) => $"Localized: {ctx.DisplayName} format error"
         };
         var context = CreateContext(model, options);
         await typeInfo.ValidateAsync(model, context, default);
@@ -249,7 +249,7 @@ public class ErrorMessageProviderTests
 
         var options = new ValidationOptions
         {
-            ErrorMessageProvider = (in ctx) => $"Localized type error: {ctx.MemberName}"
+            ErrorMessageProvider = (in ctx) => $"Localized type error: {ctx.DisplayName}"
         };
         var context = CreateContext(model, options);
         await typeInfo.ValidateAsync(model, context, default);

@@ -80,7 +80,6 @@ public class ValidationLocalizationConfigureOptionsTests
         {
             Attribute = new RequiredAttribute { ErrorMessage = "RequiredError" },
             DisplayName = "Name",
-            MemberName = "Name",
             DeclaringType = typeof(object),
             Services = new ServiceCollection().BuildServiceProvider()
         });
@@ -103,7 +102,6 @@ public class ValidationLocalizationConfigureOptionsTests
         {
             Attribute = new RequiredAttribute(),
             DisplayName = "Name",
-            MemberName = "Name",
             DeclaringType = typeof(object),
             Services = new ServiceCollection().BuildServiceProvider()
         });
@@ -133,7 +131,6 @@ public class ValidationLocalizationConfigureOptionsTests
         {
             Attribute = new RequiredAttribute(),
             DisplayName = "Name",
-            MemberName = "Name",
             DeclaringType = typeof(object),
             Services = new ServiceCollection().BuildServiceProvider()
         });
@@ -164,7 +161,6 @@ public class ValidationLocalizationConfigureOptionsTests
         {
             Attribute = new RequiredAttribute(),
             DisplayName = "Name",
-            MemberName = "Name",
             DeclaringType = null,
             Services = new ServiceCollection().BuildServiceProvider()
         });
@@ -197,7 +193,6 @@ public class ValidationLocalizationConfigureOptionsTests
         {
             Attribute = new RangeAttribute(1, 100) { ErrorMessage = "RangeError" },
             DisplayName = "Age",
-            MemberName = "Age",
             DeclaringType = typeof(object),
             Services = new ServiceCollection().BuildServiceProvider()
         });
@@ -227,7 +222,6 @@ public class ValidationLocalizationConfigureOptionsTests
         {
             Attribute = new RequiredAttribute(),
             DisplayName = "Name",
-            MemberName = "Name",
             DeclaringType = null,
             Services = new ServiceCollection().BuildServiceProvider()
         });
