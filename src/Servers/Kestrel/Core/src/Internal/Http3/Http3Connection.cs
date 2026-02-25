@@ -345,6 +345,16 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
         try
         {
+            // https://datatracker.ietf.org/doc/html/rfc9114#section-7.2.4.2
+            // All settings begin at an initial value. Each endpoint SHOULD use
+            // these initial values to send messages before the peer's SETTINGS
+            // frame has arrived, as packets carrying the settings can be lost or
+            // delayed. When the SETTINGS frame arrives, any settings are changed to
+            // their new values.
+            //
+            // Clients SHOULD NOT wait indefinitely for SETTINGS to arrive before sending requests
+
+            // Which implies we shouldn't block on sending the SETTINGS frame before accepting and processing requests
             outboundControlStreamTask = CreateNewUnidirectionalStreamAsync(application);
 
             // Close the connection if we don't receive any request streams
@@ -742,7 +752,6 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
         OutboundControlStream = new Http3ControlStream<TContext>(application, httpConnectionContext, 0L);
 
-        // Don't delay on waiting to send outbound control stream settings.
         await ProcessOutboundControlStreamAsync(OutboundControlStream);
     }
 
