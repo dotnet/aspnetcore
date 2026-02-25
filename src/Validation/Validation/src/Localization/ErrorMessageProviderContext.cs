@@ -27,7 +27,7 @@ public readonly struct ErrorMessageProviderContext
     /// Gets the type that declares the member being validated.
     /// <see langword="null"/> for top-level parameter validation.
     /// </summary>
-    public required Type? DeclaringType { get; init; }
+    public Type? DeclaringType { get; init; }
 
     /// <summary>
     /// Gets the service provider for resolving localization or other services.
