@@ -91,23 +91,14 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   const mutationObserverAfter = createSpacerMutationObserver(spacerAfter);
 
   const containerObserver = new MutationObserver((): void => {
-    if (convergingToBottom) {
-      scrollElement.scrollTop = scrollElement.scrollHeight;
-      if (spacerAfter.offsetHeight === 0) {
-        convergingToBottom = false;
+    if (convergingToBottom || convergingToTop) {
+      scrollElement.scrollTop = convergingToBottom ? scrollElement.scrollHeight : 0;
+      const spacer = convergingToBottom ? spacerAfter : spacerBefore;
+      if (spacer.offsetHeight === 0) {
+        convergingToBottom = convergingToTop = false;
         setSnapToBottom(false);
       }
-      return;
-    }
-    if (convergingToTop) {
-      scrollElement.scrollTop = 0;
-      if (spacerBefore.offsetHeight === 0) {
-        convergingToTop = false;
-        setSnapToBottom(false);
-      }
-      return;
-    }
-    if (spacerAfter.offsetHeight === 0) {
+    } else if (spacerAfter.offsetHeight === 0) {
       scrollElement.scrollTop = scrollElement.scrollHeight;
     } else {
       setSnapToBottom(false);
