@@ -1,12 +1,12 @@
 #
-#    ___                   _   _      
-#   / _ \                 | | (_)     
-#  | |_| | __ _  ___ _ __ | |_ _  ___ 
+#    ___                   _   _
+#   / _ \                 | | (_)
+#  | |_| | __ _  ___ _ __ | |_ _  ___
 #  |  _  |/ _` |/ _ \ '_ \| __| |/ __|
-#  | | | | (_| |  __/ | | | |_| | (__ 
+#  | | | | (_| |  __/ | | | |_| | (__
 #  \_| |_/\__, |\___|_| |_|\__|_|\___|
 #          __/ |
-#  _    _ |___/ 
+#  _    _ |___/
 # | |  | |                / _| |
 # | |  | | ___ _ __ _  __| |_| | _____      ____
 # | |/\| |/ _ \ '__| |/ /|  _| |/ _ \ \ /\ / / ___|
@@ -23,7 +23,7 @@
 #
 # Triage newly opened issues in dotnet/aspnetcore. Classifies the area label, issue type, and searches for potential duplicates. Posts a summary comment and applies labels automatically.
 #
-# frontmatter-hash: 9a512da5068f770480b53ca45d3580ed0d90388c884c5ca27e7a8e656bc2f48b
+# frontmatter-hash: d15cfb6aaf657c5f84122fe9682de3d38441da4d58a00ebff47bcdafca483432
 
 name: "Issue Triage Agent for dotnet/aspnetcore"
 "on":
@@ -124,9 +124,9 @@ jobs:
           </important>
           <instructions>
           To create or modify GitHub resources (issues, discussions, pull requests, etc.), you MUST call the appropriate safe output tool. Simply writing content will NOT work - the workflow requires actual tool calls.
-          
-          Temporary IDs: Some safe output tools support a temporary ID field (usually named temporary_id) so you can reference newly-created items elsewhere in the SAME agent output (for example, using #aw_abc1 in a later body). 
-          
+
+          Temporary IDs: Some safe output tools support a temporary ID field (usually named temporary_id) so you can reference newly-created items elsewhere in the SAME agent output (for example, using #aw_abc1 in a later body).
+
           **IMPORTANT - temporary_id format rules:**
           - If you DON'T need to reference the item later, OMIT the temporary_id field entirely (it will be auto-generated if needed)
           - If you DO need cross-references/chaining, you MUST match this EXACT validation regex: /^aw_[A-Za-z0-9]{3,8}$/i
@@ -135,13 +135,13 @@ jobs:
           - INVALID examples: aw_ab (too short), aw_123456789 (too long), aw_test-id (contains hyphen), aw_id_123 (contains underscore)
           - VALID examples: aw_abc, aw_abc1, aw_Test123, aw_A1B2C3D4, aw_12345678
           - To generate valid IDs: use 3-8 random alphanumeric characters or omit the field to let the system auto-generate
-          
+
           Do NOT invent other aw_* formats — downstream steps will reject them with validation errors matching against /^aw_[A-Za-z0-9]{3,8}$/i.
-          
+
           Discover available tools from the safeoutputs MCP server.
-          
+
           **Critical**: Tool calls write structured data that downstream jobs process. Without tool calls, follow-up actions will be skipped.
-          
+
           **Note**: If you made no other safe output tool calls during this workflow execution, call the "noop" tool to provide a status message indicating completion or that no actions were needed.
           </instructions>
           </safe-outputs>
@@ -172,7 +172,7 @@ jobs:
           - **workflow-run-id**: __GH_AW_GITHUB_RUN_ID__
           {{/if}}
           </github-context>
-          
+
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           </system>
@@ -212,9 +212,9 @@ jobs:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
             setupGlobals(core, github, context, exec, io);
-            
+
             const substitutePlaceholders = require('/opt/gh-aw/actions/substitute_placeholders.cjs');
-            
+
             // Call the substitution function
             return await substitutePlaceholders({
               file: process.env.GH_AW_PROMPT,
@@ -314,7 +314,7 @@ jobs:
         with:
           script: |
             const fs = require('fs');
-            
+
             const awInfo = {
               engine_id: "copilot",
               engine_name: "GitHub Copilot CLI",
@@ -343,13 +343,13 @@ jobs:
               },
               created_at: new Date().toISOString()
             };
-            
+
             // Write to /tmp/gh-aw directory to avoid inclusion in PR
             const tmpPath = '/tmp/gh-aw/aw_info.json';
             fs.writeFileSync(tmpPath, JSON.stringify(awInfo, null, 2));
             console.log('Generated aw_info.json at:', tmpPath);
             console.log(JSON.stringify(awInfo, null, 2));
-            
+
             // Set model as output for reuse in other steps/jobs
             core.setOutput('model', awInfo.model);
       - name: Validate COPILOT_GITHUB_TOKEN secret
@@ -379,7 +379,7 @@ jobs:
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
           cat > /opt/gh-aw/safeoutputs/config.json << 'GH_AW_SAFE_OUTPUTS_CONFIG_EOF'
-          {"add_comment":{"max":1},"add_labels":{"allowed":["area-auth","area-blazor","area-commandlinetools","area-dataprotection","area-grpc","area-healthchecks","area-hosting","area-identity","area-infrastructure","area-middleware","area-minimal","area-mvc","area-networking","area-perf","area-routing","area-security","area-signalr","area-ui-rendering","area-unified-build","bug","feature-request","question","docs","api-proposal","test-failure","performance"],"max":3},"missing_data":{},"missing_tool":{},"noop":{"max":1},"remove_labels":{"allowed":["needs-area-label"],"max":1}}
+          {"add_comment":{"max":1},"add_labels":{"allowed":["area-auth","area-blazor","area-commandlinetools","area-dataprotection","area-grpc","area-healthchecks","area-hosting","area-identity","area-infrastructure","area-middleware","area-minimal","area-mvc","area-networking","area-perf","area-routing","area-security","area-signalr","area-ui-rendering","area-unified-build","bug","feature-request","by-design","question","external","docs","api-proposal","test-failure","performance"],"max":3},"missing_data":{},"missing_tool":{},"noop":{"max":1},"remove_labels":{"allowed":["needs-area-label"],"max":1}}
           GH_AW_SAFE_OUTPUTS_CONFIG_EOF
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
@@ -405,7 +405,7 @@ jobs:
               "name": "add_comment"
             },
             {
-              "description": "Add labels to an existing GitHub issue or pull request for categorization and filtering. Labels must already exist in the repository. For creating new issues with labels, use create_issue with the labels property instead. CONSTRAINTS: Maximum 3 label(s) can be added. Only these labels are allowed: [area-auth area-blazor area-commandlinetools area-dataprotection area-grpc area-healthchecks area-hosting area-identity area-infrastructure area-middleware area-minimal area-mvc area-networking area-perf area-routing area-security area-signalr area-ui-rendering area-unified-build bug feature-request question docs api-proposal test-failure performance].",
+              "description": "Add labels to an existing GitHub issue or pull request for categorization and filtering. Labels must already exist in the repository. For creating new issues with labels, use create_issue with the labels property instead. CONSTRAINTS: Maximum 3 label(s) can be added. Only these labels are allowed: [area-auth area-blazor area-commandlinetools area-dataprotection area-grpc area-healthchecks area-hosting area-identity area-infrastructure area-middleware area-minimal area-mvc area-networking area-perf area-routing area-security area-signalr area-ui-rendering area-unified-build bug feature-request by-design question external docs api-proposal test-failure performance].",
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
@@ -592,17 +592,17 @@ jobs:
           # Mask immediately to prevent timing vulnerabilities
           API_KEY=$(openssl rand -base64 45 | tr -d '/+=')
           echo "::add-mask::${API_KEY}"
-          
+
           PORT=3001
-          
+
           # Set outputs for next steps
           {
             echo "safe_outputs_api_key=${API_KEY}"
             echo "safe_outputs_port=${PORT}"
           } >> "$GITHUB_OUTPUT"
-          
+
           echo "Safe Outputs MCP server will run on port ${PORT}"
-          
+
       - name: Start Safe Outputs MCP HTTP Server
         id: safe-outputs-start
         env:
@@ -620,9 +620,9 @@ jobs:
           export GH_AW_SAFE_OUTPUTS_TOOLS_PATH
           export GH_AW_SAFE_OUTPUTS_CONFIG_PATH
           export GH_AW_MCP_LOG_DIR
-          
+
           bash /opt/gh-aw/actions/start_safe_outputs_server.sh
-          
+
       - name: Start MCP Gateway
         id: start-mcp-gateway
         env:
@@ -634,7 +634,7 @@ jobs:
         run: |
           set -eo pipefail
           mkdir -p /tmp/gh-aw/mcp-config
-          
+
           # Export gateway environment variables for MCP config and gateway script
           export MCP_GATEWAY_PORT="80"
           export MCP_GATEWAY_DOMAIN="host.docker.internal"
@@ -644,10 +644,10 @@ jobs:
           export MCP_GATEWAY_PAYLOAD_DIR="/tmp/gh-aw/mcp-payloads"
           mkdir -p "${MCP_GATEWAY_PAYLOAD_DIR}"
           export DEBUG="*"
-          
+
           export GH_AW_ENGINE="copilot"
           export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_LOCKDOWN -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.1.4'
-          
+
           mkdir -p /home/runner/.copilot
           cat << GH_AW_MCP_CONFIG_EOF | bash /opt/gh-aw/actions/start_mcp_gateway.sh
           {
@@ -747,7 +747,7 @@ jobs:
           # This ensures they are in /tmp/gh-aw/ where secret redaction can scan them
           SESSION_STATE_DIR="$HOME/.copilot/session-state"
           LOGS_DIR="/tmp/gh-aw/sandbox/agent/logs"
-          
+
           if [ -d "$SESSION_STATE_DIR" ]; then
             echo "Copying Copilot session state files from $SESSION_STATE_DIR to $LOGS_DIR"
             mkdir -p "$LOGS_DIR"
@@ -1126,7 +1126,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"hide_older_comments\":true,\"max\":1},\"add_labels\":{\"allowed\":[\"area-auth\",\"area-blazor\",\"area-commandlinetools\",\"area-dataprotection\",\"area-grpc\",\"area-healthchecks\",\"area-hosting\",\"area-identity\",\"area-infrastructure\",\"area-middleware\",\"area-minimal\",\"area-mvc\",\"area-networking\",\"area-perf\",\"area-routing\",\"area-security\",\"area-signalr\",\"area-ui-rendering\",\"area-unified-build\",\"bug\",\"feature-request\",\"question\",\"docs\",\"api-proposal\",\"test-failure\",\"performance\"],\"max\":3},\"missing_data\":{},\"missing_tool\":{},\"remove_labels\":{\"allowed\":[\"needs-area-label\"],\"max\":1}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"hide_older_comments\":true,\"max\":1},\"add_labels\":{\"allowed\":[\"area-auth\",\"area-blazor\",\"area-commandlinetools\",\"area-dataprotection\",\"area-grpc\",\"area-healthchecks\",\"area-hosting\",\"area-identity\",\"area-infrastructure\",\"area-middleware\",\"area-minimal\",\"area-mvc\",\"area-networking\",\"area-perf\",\"area-routing\",\"area-security\",\"area-signalr\",\"area-ui-rendering\",\"area-unified-build\",\"bug\",\"feature-request\",\"by-design\",\"question\",\"external\",\"docs\",\"api-proposal\",\"test-failure\",\"performance\"],\"max\":3},\"missing_data\":{},\"missing_tool\":{},\"remove_labels\":{\"allowed\":[\"needs-area-label\"],\"max\":1}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
