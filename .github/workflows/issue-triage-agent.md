@@ -51,7 +51,9 @@ safe-outputs:
       - area-unified-build
       - bug
       - feature-request
+      - by-design
       - question
+      - external
       - docs
       - api-proposal
       - test-failure
@@ -100,6 +102,8 @@ tooling.
 - Describes a way to bypass security controls, authorization, or authentication
 - Shows how to access data or systems without proper authorization
 - Reports a crash or unexpected behavior that could be weaponized
+- Describes memory growth, memory leaks, resource exhaustion, server becoming
+  unresponsive, or similar symptoms that could indicate a denial-of-service vector
 - Mentions "responsible disclosure", "coordinated disclosure", or "security advisory"
 - Contains proof-of-concept code that demonstrates breaking a security boundary
 
@@ -275,16 +279,19 @@ Classify the issue into one of these types:
 
 | Type label | When to use |
 |-----------|-------------|
-| `bug` | Something is broken or behaving unexpectedly |
-| `feature-request` | Request for new functionality or enhancement |
-| `question` | "How do I...?" or general question (not a bug) |
-| `docs` | Documentation issue, missing/incorrect docs |
-| `api-proposal` | Formal API addition/change proposal |
-| `test-failure` | CI/test infrastructure failure report |
-| `performance` | Performance regression or optimization request |
+| `bug` | The report clearly identifies a behavior as a bug and it can be reproduced. Something is broken or behaving unexpectedly compared to its intended design. |
+| `feature-request` | The report asks for a behavior that is not currently implemented. This may be a brand-new feature or an addition/enhancement to an existing feature. |
+| `by-design` | The report describes a behavior that doesn't match the reporter's expectations, but the behavior is actually the intended design. |
+| `question` | The report describes expected behavior, asks for clarification on how to use the product, or is a general "How do I...?" question. Mark as answered when a response is provided. |
+| `external` | The report is not related to an area that the aspnetcore team owns directly. The issue should be moved to the appropriate repo or the customer should be asked to file through the appropriate channels (typically VS Feedback). |
+| `docs` | Documentation issue, missing/incorrect docs. |
+| `api-proposal` | Formal API addition/change proposal. |
+| `test-failure` | CI/test infrastructure failure report. |
+| `performance` | Performance regression or optimization request. |
 
 Apply the single best type label. If the issue template already indicates the type
-(e.g., filed via the bug report template), trust that signal.
+(e.g., filed via the bug report template), trust that signal but verify it matches
+the actual content — reporters sometimes pick the wrong template.
 
 ## Step 3: Duplicate Detection
 
