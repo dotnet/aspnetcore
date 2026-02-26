@@ -161,19 +161,14 @@
                  '@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->Count())' == '0'">
     <KnownFrameworkReference Include="@(_RemovedAspNetKnownFrameworkReference)" />
     <!-- Mark as IsTransitiveFrameworkReference to exclude the pruning data: https://github.com/dotnet/sdk/issues/53106 -->
-    <FrameworkReference Include="Microsoft.AspNetCore.App" IsTransitiveFrameworkReference="true" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" IsTransitiveFrameworkReference="true" DoNotResolve="true" />
   </ItemGroup>
 
   <!-- Remove the referenced AspNetCore framework before it's resolved in ResolveFrameworkReferences.  This lets us use our own references. -->
   <Target Name="_RemoveAspNetCoreFrameworkReference" 
-          BeforeTargets="ResolveFrameworkReferences"
-          Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' AND
-                     '$(IsPackable)' == 'true' AND
-                     '$(IsAspNetCoreApp)' != 'true' AND
-                     '@(_FrameworkProjectReference)' != '' AND
-                     '@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->Count())' != '0'" >
+          BeforeTargets="ResolveFrameworkReferences" >
     <ItemGroup>
-      <FrameworkReference Remove="Microsoft.AspNetCore.App" />
+      <FrameworkReference Remove="@(FrameworkReference->WithMetadataValue('DoNotResolve', 'true')" />
     </ItemGroup>
   </Target>
 
