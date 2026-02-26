@@ -95,18 +95,19 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       scrollElement.scrollTop = scrollElement.scrollHeight;
       if (spacerAfter.offsetHeight === 0) {
         convergingToBottom = false;
-        spacerAfterWasAtBottom = false;
         setSnapToBottom(false);
       }
-    } else if (convergingToTop) {
+      return;
+    }
+    if (convergingToTop) {
       scrollElement.scrollTop = 0;
       if (spacerBefore.offsetHeight === 0) {
         convergingToTop = false;
-        spacerBeforeWasAtTop = false;
         setSnapToBottom(false);
       }
-    } else if (spacerAfter.offsetHeight === 0) {
-      // Original snap-to-bottom behavior (e.g. after scrollToBottom call)
+      return;
+    }
+    if (spacerAfter.offsetHeight === 0) {
       scrollElement.scrollTop = scrollElement.scrollHeight;
     } else {
       setSnapToBottom(false);
@@ -124,9 +125,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       containerObserver.disconnect();
     }
   }
-
-  let spacerAfterWasAtBottom = false;
-  let spacerBeforeWasAtTop = false;
 
   let convergingToBottom = false;
   let convergingToTop = false;
@@ -147,10 +145,10 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   }
   keydownTarget.addEventListener('keydown', handleKeyDown);
 
+  const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   let pendingCallbacks: Map<Element, IntersectionObserverEntry> = new Map();
   let callbackTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   observersByDotNetObjectId[id] = {
     intersectionObserver,
     mutationObserverBefore,
@@ -199,10 +197,10 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   function intersectionCallback(entries: IntersectionObserverEntry[]): void {
     entries.forEach(entry => pendingCallbacks.set(entry.target, entry));
-    
+
     if (!callbackTimeout) {
       flushPendingCallbacks();
-      
+
       callbackTimeout = setTimeout(() => {
         callbackTimeout = null;
         flushPendingCallbacks();
@@ -210,71 +208,65 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
   }
 
-  function processIntersectionEntries(entries: IntersectionObserverEntry[]): void {
-    const intersectingEntries: IntersectionObserverEntry[] = [];
-
-    for (const entry of entries) {
-      if (entry.isIntersecting) {
-        intersectingEntries.push(entry);
-        if (entry.target === spacerAfter) {
-          if (spacerAfter.offsetHeight === 0) {
-            spacerAfterWasAtBottom = false;
-            if (convergingToBottom) {
-              convergingToBottom = false;
-              setSnapToBottom(false);
-            }
-          } else if (!spacerAfterWasAtBottom) {
-            const atBottom = scrollElement.scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 1;
-            if (atBottom || pendingJumpToEnd) {
-              spacerAfterWasAtBottom = true;
-              if (!convergingToBottom) {
-                convergingToBottom = true;
-                setSnapToBottom(true);
-              }
-              if (pendingJumpToEnd) {
-                scrollElement.scrollTop = scrollElement.scrollHeight;
-                pendingJumpToEnd = false;
-              }
-            }
-          }
-        } else if (entry.target === spacerBefore) {
-          if (spacerBefore.offsetHeight === 0) {
-            spacerBeforeWasAtTop = false;
-            if (convergingToTop) {
-              convergingToTop = false;
-              setSnapToBottom(false);
-            }
-          } else if (!spacerBeforeWasAtTop) {
-            const atTop = scrollElement.scrollTop < 1;
-            if (atTop || pendingJumpToStart) {
-              spacerBeforeWasAtTop = true;
-              if (!convergingToTop) {
-                convergingToTop = true;
-                setSnapToBottom(true);
-              }
-              if (pendingJumpToStart) {
-                scrollElement.scrollTop = 0;
-                pendingJumpToStart = false;
-              }
-            }
-          }
-        }
-      } else if (entry.target === spacerAfter) {
-        if (spacerAfterWasAtBottom && spacerAfter.offsetHeight > 0) {
-          scrollElement.scrollTop = scrollElement.scrollHeight;
-        }
-        if (!convergingToBottom) {
-          spacerAfterWasAtBottom = false;
-        }
-      } else if (entry.target === spacerBefore) {
-        if (spacerBeforeWasAtTop && spacerBefore.offsetHeight > 0) {
-          scrollElement.scrollTop = 0;
-        }
-        if (!convergingToTop) {
-          spacerBeforeWasAtTop = false;
-        }
+  function onSpacerAfterVisible(): void {
+    if (spacerAfter.offsetHeight === 0) {
+      if (convergingToBottom) {
+        convergingToBottom = false;
+        setSnapToBottom(false);
       }
+      return;
     }
+    if (convergingToBottom) return;
+
+    const atBottom = scrollElement.scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 1;
+    if (!atBottom && !pendingJumpToEnd) return;
+
+    convergingToBottom = true;
+    setSnapToBottom(true);
+    if (pendingJumpToEnd) {
+      scrollElement.scrollTop = scrollElement.scrollHeight;
+      pendingJumpToEnd = false;
+    }
+  }
+
+  function onSpacerBeforeVisible(): void {
+    if (spacerBefore.offsetHeight === 0) {
+      if (convergingToTop) {
+        convergingToTop = false;
+        setSnapToBottom(false);
+      }
+      return;
+    }
+    if (convergingToTop) return;
+
+    const atTop = scrollElement.scrollTop < 1;
+    if (!atTop && !pendingJumpToStart) return;
+
+    convergingToTop = true;
+    setSnapToBottom(true);
+    if (pendingJumpToStart) {
+      scrollElement.scrollTop = 0;
+      pendingJumpToStart = false;
+    }
+  }
+
+  function processIntersectionEntries(entries: IntersectionObserverEntry[]): void {
+    const intersectingEntries = entries.filter(entry => {
+      if (entry.isIntersecting) {
+        if (entry.target === spacerAfter) {
+          onSpacerAfterVisible();
+        } else if (entry.target === spacerBefore) {
+          onSpacerBeforeVisible();
+        }
+        return true;
+      }
+      if (entry.target === spacerAfter && convergingToBottom && spacerAfter.offsetHeight > 0) {
+        scrollElement.scrollTop = scrollElement.scrollHeight;
+      } else if (entry.target === spacerBefore && convergingToTop && spacerBefore.offsetHeight > 0) {
+        scrollElement.scrollTop = 0;
+      }
+      return false;
+    });
 
     if (intersectingEntries.length === 0) {
       return;
