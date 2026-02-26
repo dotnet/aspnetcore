@@ -34,58 +34,46 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     [Fact]
     public void CanColumnSortByInt()
     {
-        var grid = app.FindElement(By.CssSelector("#grid > table"));
-        var idColumnSortButton = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(1) > div > button"));
 
         // Click twice to sort by descending
-        idColumnSortButton.Click();
-        idColumnSortButton.Click();
-
-        var firstRow = grid.FindElement(By.CssSelector("tbody > tr:nth-child(1)"));
+        Browser.FindElement(By.CssSelector("#grid > table thead > tr > th:nth-child(1) > div > a")).Click();
+        Browser.FindElement(By.CssSelector("#grid > table thead > tr > th:nth-child(1) > div > a")).Click();
 
         //Compare first row to expected result
-        Assert.Equal("12381", firstRow.FindElement(By.CssSelector("td:nth-child(1)")).Text);
-        Assert.Equal("Matti", firstRow.FindElement(By.CssSelector("td:nth-child(2)")).Text);
-        Assert.Equal("Karttunen", firstRow.FindElement(By.CssSelector("td:nth-child(3)")).Text);
-        Assert.Equal("1981-06-04", firstRow.FindElement(By.CssSelector("td:nth-child(4)")).Text);
+        Browser.Equal("12381", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
+        Browser.Equal("Matti", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(2)")).Text);
+        Browser.Equal("Karttunen", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(3)")).Text);
+        Browser.Equal("1981-06-04", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(4)")).Text);
     }
 
     [Fact]
     public void CanColumnSortByString()
     {
-        var grid = app.FindElement(By.CssSelector("#grid > table"));
-        var firstNameColumnSortButton = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(2) > div > button.col-title"));
 
         // Click twice to sort by descending
-        firstNameColumnSortButton.Click();
-        firstNameColumnSortButton.Click();
-
-        var firstRow = grid.FindElement(By.CssSelector("tbody > tr:nth-child(1)"));
+        Browser.FindElement(By.CssSelector("#grid > table thead > tr > th:nth-child(2) > div > a.col-title")).Click();
+        Browser.FindElement(By.CssSelector("#grid > table thead > tr > th:nth-child(2) > div > a.col-title")).Click();
 
         //Compare first row to expected result
-        Assert.Equal("12379", firstRow.FindElement(By.CssSelector("td:nth-child(1)")).Text);
-        Assert.Equal("Zbyszek", firstRow.FindElement(By.CssSelector("td:nth-child(2)")).Text);
-        Assert.Equal("Piestrzeniewicz", firstRow.FindElement(By.CssSelector("td:nth-child(3)")).Text);
-        Assert.Equal("1981-04-02", firstRow.FindElement(By.CssSelector("td:nth-child(4)")).Text);
+        Browser.Equal("12379", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
+        Browser.Equal("Zbyszek", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(2)")).Text);
+        Browser.Equal("Piestrzeniewicz", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(3)")).Text);
+        Browser.Equal("1981-04-02", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(4)")).Text);
     }
 
     [Fact]
     public void CanColumnSortByDateOnly()
     {
-        var grid = app.FindElement(By.CssSelector("#grid > table"));
-        var birthDateColumnSortButton = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(4) > div > button"));
 
         // Click twice to sort by descending
-        birthDateColumnSortButton.Click();
-        birthDateColumnSortButton.Click();
-
-        var firstRow = grid.FindElement(By.CssSelector("tbody > tr:nth-child(1)"));
+        Browser.FindElement(By.CssSelector("#grid > table thead > tr > th:nth-child(4) > div > a")).Click();
+        Browser.FindElement(By.CssSelector("#grid > table thead > tr > th:nth-child(4) > div > a")).Click();
 
         //Compare first row to expected result
-        Assert.Equal("12364", firstRow.FindElement(By.CssSelector("td:nth-child(1)")).Text);
-        Assert.Equal("Paolo", firstRow.FindElement(By.CssSelector("td:nth-child(2)")).Text);
-        Assert.Equal("Accorti", firstRow.FindElement(By.CssSelector("td:nth-child(3)")).Text);
-        Assert.Equal("2018-05-18", firstRow.FindElement(By.CssSelector("td:nth-child(4)")).Text);
+        Browser.Equal("12364", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
+        Browser.Equal("Paolo", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(2)")).Text);
+        Browser.Equal("Accorti", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(3)")).Text);
+        Browser.Equal("2018-05-18", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(4)")).Text);
     }
 
     [Fact]
@@ -97,8 +85,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
 
         app.FindElement(By.ClassName("go-next")).Click();
 
-        rowCount = grid.FindElements(By.CssSelector("tbody > tr")).Count;
-        Assert.Equal(10, rowCount);
+        Browser.Equal(10, () => Browser.FindElement(By.ClassName("quickgrid")).FindElements(By.CssSelector("tbody > tr")).Count);
     }
 
     [Fact]
@@ -290,12 +277,12 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     {
         app = Browser.MountTestComponent<QuickGridDualPaginatorComponent>();
 
-        Browser.Equal("1", () => app.FindElement(By.CssSelector(".top-paginator .paginator nav > div > strong:nth-child(1)")).Text);
-        Browser.Equal("1", () => app.FindElement(By.CssSelector(".bottom-paginator .paginator nav > div > strong:nth-child(1)")).Text);
+        Browser.Equal("1", () => Browser.FindElement(By.CssSelector(".top-paginator .paginator nav > div > strong:nth-child(1)")).Text);
+        Browser.Equal("1", () => Browser.FindElement(By.CssSelector(".bottom-paginator .paginator nav > div > strong:nth-child(1)")).Text);
 
-        app.FindElement(By.CssSelector(".top-paginator .go-next")).Click();
+        Browser.FindElement(By.CssSelector(".top-paginator .go-next")).Click();
 
-        Browser.Equal("2", () => app.FindElement(By.CssSelector(".top-paginator .paginator nav > div > strong:nth-child(1)")).Text);
-        Browser.Equal("2", () => app.FindElement(By.CssSelector(".bottom-paginator .paginator nav > div > strong:nth-child(1)")).Text);
+        Browser.Equal("2", () => Browser.FindElement(By.CssSelector(".top-paginator .paginator nav > div > strong:nth-child(1)")).Text);
+        Browser.Equal("2", () => Browser.FindElement(By.CssSelector(".bottom-paginator .paginator nav > div > strong:nth-child(1)")).Text);
     }
 }

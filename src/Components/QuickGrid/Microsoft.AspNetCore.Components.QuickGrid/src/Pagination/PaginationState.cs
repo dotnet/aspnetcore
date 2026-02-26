@@ -38,7 +38,7 @@ public class PaginationState
 
     internal EventCallbackSubscribable<PaginationState> CurrentPageItemsChanged { get; } = new();
     internal EventCallbackSubscribable<PaginationState> TotalItemCountChangedSubscribable { get; } = new();
-    internal string QueryName { get; set; } = "QuickGrid";
+    internal string QueryName { get; set; } = "";
 
     /// <inheritdoc />
     public override int GetHashCode()

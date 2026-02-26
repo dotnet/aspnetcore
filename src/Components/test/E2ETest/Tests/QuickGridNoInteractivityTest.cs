@@ -47,7 +47,7 @@ public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSit
         Browser.FindElement(By.CssSelector(".first-paginator .go-next")).Click();
 
         Browser.Equal("2", () => Browser.FindElement(By.CssSelector(".first-paginator .paginator nav > div > strong:nth-child(1)")).Text);
-        Assert.Contains("QuickGrid=2", Browser.Url);
+        Assert.Contains("page=2", Browser.Url);
 
         var grid = Browser.FindElement(By.ClassName("quickgrid"));
         var rowCount = grid.FindElements(By.CssSelector("tbody > tr")).Count;
@@ -57,7 +57,7 @@ public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSit
     [Fact]
     public void PaginatorLinkLoadsCorrectPage()
     {
-        Navigate($"{ServerPathBase}/quickgrid?QuickGrid=3");
+        Navigate($"{ServerPathBase}/quickgrid?page=3");
 
         Browser.Equal("3", () => Browser.FindElement(By.CssSelector(".first-paginator .paginator nav > div > strong:nth-child(1)")).Text);
     }
@@ -75,12 +75,12 @@ public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSit
     }
 
     [Fact]
-    public void PaginatorNavigationButtonsDisabledCorrectly()
+    public void PaginatorNavigationLinksDisabledCorrectly()
     {
         Navigate($"{ServerPathBase}/quickgrid");
 
-        Assert.Equal("true", Browser.FindElement(By.CssSelector(".first-paginator .go-first")).GetDomAttribute("disabled"));
-        Assert.Equal("true", Browser.FindElement(By.CssSelector(".first-paginator .go-previous")).GetDomAttribute("disabled"));
+        Assert.NotNull(Browser.FindElement(By.CssSelector(".first-paginator .go-first")).GetDomAttribute("disabled"));
+        Assert.NotNull(Browser.FindElement(By.CssSelector(".first-paginator .go-previous")).GetDomAttribute("disabled"));
         Assert.Null(Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("disabled"));
         Assert.Null(Browser.FindElement(By.CssSelector(".first-paginator .go-last")).GetDomAttribute("disabled"));
 
@@ -89,8 +89,8 @@ public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSit
 
         Assert.Null(Browser.FindElement(By.CssSelector(".first-paginator .go-first")).GetDomAttribute("disabled"));
         Assert.Null(Browser.FindElement(By.CssSelector(".first-paginator .go-previous")).GetDomAttribute("disabled"));
-        Assert.Equal("true", Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("disabled"));
-        Assert.Equal("true", Browser.FindElement(By.CssSelector(".first-paginator .go-last")).GetDomAttribute("disabled"));
+        Assert.NotNull(Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("disabled"));
+        Assert.NotNull(Browser.FindElement(By.CssSelector(".first-paginator .go-last")).GetDomAttribute("disabled"));
     }
 
     [Fact]
@@ -111,7 +111,7 @@ public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSit
     [Fact]
     public void PaginatorOutOfRangePageClampsToLastPage()
     {
-        Navigate($"{ServerPathBase}/quickgrid?QuickGrid=999");
+        Navigate($"{ServerPathBase}/quickgrid?page=999");
 
         Browser.Equal("5", () => Browser.FindElement(By.CssSelector(".first-paginator .paginator nav > div > strong:nth-child(1)")).Text);
     }
@@ -119,7 +119,7 @@ public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSit
     [Fact]
     public void PaginatorInvalidPageValueDefaultsToFirstPage()
     {
-        Navigate($"{ServerPathBase}/quickgrid?QuickGrid=abc");
+        Navigate($"{ServerPathBase}/quickgrid?page=abc");
 
         Browser.Equal("1", () => Browser.FindElement(By.CssSelector(".first-paginator .paginator nav > div > strong:nth-child(1)")).Text);
     }
@@ -129,13 +129,15 @@ public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSit
     {
         Navigate($"{ServerPathBase}/quickgrid");
 
-        Browser.FindElement(By.CssSelector("#grid table thead > tr > th:nth-child(1) button.col-title")).Click();
+        Browser.FindElement(By.CssSelector("#grid table thead > tr > th:nth-child(1) a.col-title")).Click();
         Browser.Equal("10895", () => Browser.FindElement(By.CssSelector("#grid table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
-        Assert.Contains("QuickGrid_s=0_asc", Browser.Url);
-        Browser.FindElement(By.CssSelector("#grid table thead > tr > th:nth-child(1) button.col-title")).Click();
+        Assert.Contains("sort=PersonId", Browser.Url);
+        Assert.Contains("order=asc", Browser.Url);
+        Browser.FindElement(By.CssSelector("#grid table thead > tr > th:nth-child(1) a.col-title")).Click();
 
         Browser.Equal("12381", () => Browser.FindElement(By.CssSelector("#grid table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
-        Assert.Contains("QuickGrid_s=0_desc", Browser.Url);
+        Assert.Contains("sort=PersonId", Browser.Url);
+        Assert.Contains("order=desc", Browser.Url);
 
         var firstRow = Browser.FindElement(By.CssSelector("#grid table tbody > tr:nth-child(1)"));
         Assert.Equal("Matti", firstRow.FindElement(By.CssSelector("td:nth-child(2)")).Text);
@@ -146,7 +148,7 @@ public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSit
     [Fact]
     public void SortLinkLoadsCorrectOrder()
     {
-        Navigate($"{ServerPathBase}/quickgrid?QuickGrid_s=0_desc");
+        Navigate($"{ServerPathBase}/quickgrid?sort=PersonId&order=desc");
 
         Browser.Equal("12381", () => Browser.FindElement(By.CssSelector("#grid table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
         Assert.Equal("Matti", Browser.FindElement(By.CssSelector("#grid table tbody > tr:nth-child(1) > td:nth-child(2)")).Text);
@@ -155,11 +157,12 @@ public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSit
     [Fact]
     public void SortNavigationWithPagination()
     {
-        Navigate($"{ServerPathBase}/quickgrid?QuickGrid=2");
+        Navigate($"{ServerPathBase}/quickgrid?page=2");
 
         Browser.Equal("2", () => Browser.FindElement(By.CssSelector(".first-paginator .paginator nav > div > strong:nth-child(1)")).Text);
-        Browser.FindElement(By.CssSelector("#grid table thead > tr > th:nth-child(1) button.col-title")).Click();
-        Browser.True(() => Browser.Url.Contains("QuickGrid_s=0_asc"));
+        Browser.FindElement(By.CssSelector("#grid table thead > tr > th:nth-child(1) a.col-title")).Click();
+        Browser.True(() => Browser.Url.Contains("sort=PersonId"));
+        Browser.True(() => Browser.Url.Contains("order=asc"));
         var firstRow = Browser.FindElement(By.CssSelector("#grid table tbody > tr:nth-child(1)"));
         Assert.NotNull(firstRow);
     }
@@ -170,25 +173,29 @@ public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSit
         Navigate($"{ServerPathBase}/quickgrid");
 
         // Sort first grid by PersonId ascending
-        Browser.FindElement(By.CssSelector("#grid table thead > tr > th:nth-child(1) button.col-title")).Click();
+        Browser.FindElement(By.CssSelector("#grid table thead > tr > th:nth-child(1) a.col-title")).Click();
         Browser.Equal("10895", () => Browser.FindElement(By.CssSelector("#grid table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
 
         // Sort second grid by Name ascending
-        Browser.FindElement(By.CssSelector("#grid2 table thead > tr > th:nth-child(2) button.col-title")).Click();
+        Browser.FindElement(By.CssSelector("#grid2 table thead > tr > th:nth-child(2) a.col-title")).Click();
         Browser.Equal("Bangalore", () => Browser.FindElement(By.CssSelector("#grid2 table tbody > tr:nth-child(1) > td:nth-child(2)")).Text);
         Assert.Equal("10895", Browser.FindElement(By.CssSelector("#grid table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
 
-        Assert.Contains("QuickGrid_s=0_asc", Browser.Url);
-        Assert.Contains("QuickGrid2_s=1_asc", Browser.Url);
+        Assert.Contains("sort=PersonId", Browser.Url);
+        Assert.Contains("order=asc", Browser.Url);
+        Assert.Contains("QuickGrid2_sort=Name", Browser.Url);
+        Assert.Contains("QuickGrid2_order=asc", Browser.Url);
 
         // Sort second grid by Name descending
-        Browser.FindElement(By.CssSelector("#grid2 table thead > tr > th:nth-child(2) button.col-title")).Click();
+        Browser.FindElement(By.CssSelector("#grid2 table thead > tr > th:nth-child(2) a.col-title")).Click();
         Browser.Equal("Tokyo", () => Browser.FindElement(By.CssSelector("#grid2 table tbody > tr:nth-child(1) > td:nth-child(2)")).Text);
 
         // First grid should remain unchanged
         Assert.Equal("10895", Browser.FindElement(By.CssSelector("#grid table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
-        Assert.Contains("QuickGrid_s=0_asc", Browser.Url);
-        Assert.Contains("QuickGrid2_s=1_desc", Browser.Url);
+        Assert.Contains("sort=PersonId", Browser.Url);
+        Assert.Contains("order=asc", Browser.Url);
+        Assert.Contains("QuickGrid2_sort=Name", Browser.Url);
+        Assert.Contains("QuickGrid2_order=desc", Browser.Url);
     }
 
     [Fact]

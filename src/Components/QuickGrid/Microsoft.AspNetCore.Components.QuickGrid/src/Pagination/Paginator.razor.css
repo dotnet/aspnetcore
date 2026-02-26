@@ -17,22 +17,26 @@ nav {
     align-items: center;
 }
 
-    nav button {
+    nav a {
         border: 0;
         background: none center center / 1rem no-repeat;
         width: 2rem;
         height: 2rem;
+        display: inline-block;
+        text-decoration: none;
+        font-size: 0;
     }
 
-    nav button[disabled] {
+    nav a:not([href]) {
         opacity: 0.4;
+        pointer-events: none;
     }
 
-    nav button:not([disabled]):hover {
+    nav a[href]:hover {
         background-color: #eee;
     }
 
-    nav button:not([disabled]):active {
+    nav a[href]:active {
         background-color: #aaa;
     }
 
