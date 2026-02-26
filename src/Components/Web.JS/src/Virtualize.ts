@@ -90,9 +90,23 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   const mutationObserverBefore = createSpacerMutationObserver(spacerBefore);
   const mutationObserverAfter = createSpacerMutationObserver(spacerAfter);
 
-  // keeps scroll pinned to bottom after DOM changes if spacerAfter is collapsed
   const containerObserver = new MutationObserver((): void => {
-    if (spacerAfter.offsetHeight === 0) {
+    if (convergingToBottom) {
+      scrollElement.scrollTop = scrollElement.scrollHeight;
+      if (spacerAfter.offsetHeight === 0) {
+        convergingToBottom = false;
+        spacerAfterWasAtBottom = false;
+        setSnapToBottom(false);
+      }
+    } else if (convergingToTop) {
+      scrollElement.scrollTop = 0;
+      if (spacerBefore.offsetHeight === 0) {
+        convergingToTop = false;
+        spacerBeforeWasAtTop = false;
+        setSnapToBottom(false);
+      }
+    } else if (spacerAfter.offsetHeight === 0) {
+      // Original snap-to-bottom behavior (e.g. after scrollToBottom call)
       scrollElement.scrollTop = scrollElement.scrollHeight;
     } else {
       setSnapToBottom(false);
@@ -114,6 +128,25 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   let spacerAfterWasAtBottom = false;
   let spacerBeforeWasAtTop = false;
 
+  let convergingToBottom = false;
+  let convergingToTop = false;
+
+  let pendingJumpToEnd = false;
+  let pendingJumpToStart = false;
+
+  const keydownTarget: EventTarget = scrollContainer || document;
+  function handleKeyDown(e: Event): void {
+    const ke = e as KeyboardEvent;
+    if (ke.key === 'End') {
+      pendingJumpToEnd = true;
+      pendingJumpToStart = false;
+    } else if (ke.key === 'Home') {
+      pendingJumpToStart = true;
+      pendingJumpToEnd = false;
+    }
+  }
+  keydownTarget.addEventListener('keydown', handleKeyDown);
+
   let pendingCallbacks: Map<Element, IntersectionObserverEntry> = new Map();
   let callbackTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -127,6 +160,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     setSnapToBottom,
     onDispose: () => {
       setSnapToBottom(false);
+      keydownTarget.removeEventListener('keydown', handleKeyDown);
       if (callbackTimeout) {
         clearTimeout(callbackTimeout);
         callbackTimeout = null;
@@ -182,37 +216,63 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     for (const entry of entries) {
       if (entry.isIntersecting) {
         intersectingEntries.push(entry);
-        if (entry.target === spacerAfter && spacerAfter.offsetHeight > 0) {
-          const atBottom = scrollElement.scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 1;
-          if (atBottom) {
-            spacerAfterWasAtBottom = true;
-          } else if (spacerAfterWasAtBottom) {
-            
-            scrollElement.scrollTop = scrollElement.scrollHeight;
+        if (entry.target === spacerAfter) {
+          if (spacerAfter.offsetHeight === 0) {
+            spacerAfterWasAtBottom = false;
+            if (convergingToBottom) {
+              convergingToBottom = false;
+              setSnapToBottom(false);
+            }
+          } else if (!spacerAfterWasAtBottom) {
+            const atBottom = scrollElement.scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 1;
+            if (atBottom || pendingJumpToEnd) {
+              spacerAfterWasAtBottom = true;
+              if (!convergingToBottom) {
+                convergingToBottom = true;
+                setSnapToBottom(true);
+              }
+              if (pendingJumpToEnd) {
+                scrollElement.scrollTop = scrollElement.scrollHeight;
+                pendingJumpToEnd = false;
+              }
+            }
           }
-        } else if (entry.target === spacerAfter && spacerAfter.offsetHeight === 0) {
-          
-          spacerAfterWasAtBottom = false;
-        } else if (entry.target === spacerBefore && spacerBefore.offsetHeight > 0) {
-          const atTop = scrollElement.scrollTop < 1;
-          if (atTop) {
-            spacerBeforeWasAtTop = true;
-          } else if (spacerBeforeWasAtTop) {
-            scrollElement.scrollTop = 0;
+        } else if (entry.target === spacerBefore) {
+          if (spacerBefore.offsetHeight === 0) {
+            spacerBeforeWasAtTop = false;
+            if (convergingToTop) {
+              convergingToTop = false;
+              setSnapToBottom(false);
+            }
+          } else if (!spacerBeforeWasAtTop) {
+            const atTop = scrollElement.scrollTop < 1;
+            if (atTop || pendingJumpToStart) {
+              spacerBeforeWasAtTop = true;
+              if (!convergingToTop) {
+                convergingToTop = true;
+                setSnapToBottom(true);
+              }
+              if (pendingJumpToStart) {
+                scrollElement.scrollTop = 0;
+                pendingJumpToStart = false;
+              }
+            }
           }
-        } else if (entry.target === spacerBefore && spacerBefore.offsetHeight === 0) {
-          spacerBeforeWasAtTop = false;
         }
       } else if (entry.target === spacerAfter) {
         if (spacerAfterWasAtBottom && spacerAfter.offsetHeight > 0) {
           scrollElement.scrollTop = scrollElement.scrollHeight;
         }
-        spacerAfterWasAtBottom = false;
+        if (!convergingToBottom) {
+          spacerAfterWasAtBottom = false;
+        }
       } else if (entry.target === spacerBefore) {
         if (spacerBeforeWasAtTop && spacerBefore.offsetHeight > 0) {
           scrollElement.scrollTop = 0;
         }
-        spacerBeforeWasAtTop = false;
+        if (!convergingToTop) {
+          spacerBeforeWasAtTop = false;
+        }
       }
     }
 
