@@ -168,7 +168,7 @@
   <Target Name="_RemoveAspNetCoreFrameworkReference" 
           BeforeTargets="ResolveFrameworkReferences" >
     <ItemGroup>
-      <FrameworkReference Remove="@(FrameworkReference->WithMetadataValue('DoNotResolve', 'true')" />
+      <FrameworkReference Remove="@(FrameworkReference->WithMetadataValue('DoNotResolve', 'true'))" />
     </ItemGroup>
   </Target>
 
