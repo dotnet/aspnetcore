@@ -1190,13 +1190,6 @@
   </Folder>
   <Folder Name="/src/Validation/Localization/">
     <Project Path="src/Validation/Localization/src/Microsoft.Extensions.Validation.Localization.csproj" />
-    <Project Path="src/Validation/Localization/test/Microsoft.Extensions.Validation.LocalizationTests/Microsoft.Extensions.Validation.LocalizationTests.csproj" />
-  </Folder>
-  <Folder Name="/src/Validation/samples/">
-    <Project Path="src/Validation/samples/ConsoleValidationSample/ConsoleValidationSample.csproj" />
-    <Project Path="src/Validation/samples/MinimalApiValidationSample/MinimalApiValidationSample.csproj" />
-    <Project Path="src/Validation/samples/BlazorValidationSample/BlazorValidationSample.csproj" />
-    <Project Path="src/Validation/samples/StandardAttributeLocalization/StandardAttributeLocalization.csproj" />
   </Folder>
   <Folder Name="/src/WebEncoders/">
     <Project Path="src/WebEncoders/src/Microsoft.Extensions.WebEncoders.csproj" />

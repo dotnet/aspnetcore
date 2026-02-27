@@ -19,8 +19,4 @@
     <Reference Include="Microsoft.Extensions.Validation" />
   </ItemGroup>
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.Extensions.Validation.LocalizationTests" />
-  </ItemGroup>
-
 </Project>
