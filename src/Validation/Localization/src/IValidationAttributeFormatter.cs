@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.Validation.Localization;
 
 /// <summary>
 /// Formats a validation error message template with attribute-specific arguments.
-/// The default validation localization pipeline uses <see cref="ValidationAttributeFormatterProvider"/>
+/// The default validation localization pipeline uses <see cref="ValidationAttributeFormatterRegistry"/>
 /// to retrieve a formatter for the built-in <see cref="System.ComponentModel.DataAnnotations.ValidationAttribute"/> types.
 /// </summary>
 /// <remarks>
@@ -18,22 +18,19 @@ namespace Microsoft.Extensions.Validation.Localization;
 ///   <item>
 ///     <description>
 ///     Implement <see cref="IValidationAttributeFormatter"/> directly on the attribute itself.
-///     <see cref="ValidationAttributeFormatterProvider"/> checks for this first and uses the
+///     <see cref="ValidationAttributeFormatterRegistry"/> checks for this first and uses the
 ///     attribute as its own formatter automatically.
 ///     </description>
 ///   </item>
 ///   <item>
 ///     <description>
-///     Create a separate <see cref="IValidationAttributeFormatter"/> implementation and a custom
-///     <see cref="IValidationAttributeFormatterProvider"/> that returns it. Derive from
-///     <see cref="ValidationAttributeFormatterProvider"/> and fall back to the base implementation
-///     for all other attributes.
+///     Create a separate <see cref="IValidationAttributeFormatter"/> implementation and register
+///     it using the <c>AddValidationAttributeFormatter&lt;TAttribute&gt;</c> extension method.
 ///     </description>
 ///   </item>
 /// </list>
 /// <example>
-/// The following example shows a formatter provider that handles a custom attribute and delegates
-/// to the base class for everything else:
+/// The following example shows how to register a formatter for a custom attribute:
 /// <code>
 /// public class MyAttributeFormatter(MyAttribute attribute) : IValidationAttributeFormatter
 /// {
@@ -41,22 +38,9 @@ namespace Microsoft.Extensions.Validation.Localization;
 ///         => string.Format(culture, messageTemplate, displayName, attribute.CustomProperty);
 /// }
 ///
-/// public class CustomFormatterProvider : ValidationAttributeFormatterProvider
-/// {
-///     public override IValidationAttributeFormatter GetFormatter(ValidationAttribute attribute)
-///     {
-///         if (attribute is MyAttribute myAttribute)
-///         {
-///             return new MyAttributeFormatter(myAttribute);
-///         }
-///
-///         return base.GetFormatter(attribute);
-///     }
-/// }
-/// </code>
-/// Register the provider into dependency injection to make it available to the localization pipeline:
-/// <code>
-/// builder.Services.AddSingleton&lt;IValidationAttributeFormatterProvider, CustomFormatterProvider&gt;();
+/// // Register it in Program.cs:
+/// builder.Services.AddValidationAttributeFormatter&lt;MyAttribute&gt;(
+///     attribute =&gt; new MyAttributeFormatter(attribute));
 /// </code>
 /// </example>
 /// </remarks>
