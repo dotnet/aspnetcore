@@ -16,8 +16,8 @@ internal sealed class TlsListener
         _tlsClientHelloBytesCallback = tlsClientHelloBytesCallback;
     }
 
-    // TLS record length must not exceed 2^14 (16384) per RFC 5246/8446
-    internal const ushort MaxTlsRecordLength = 16384;
+    // TLS plaintext fragment length must not exceed 2^14 (16384) per RFC 5246/8446
+    internal const ushort MaxTlsPlaintextFragmentLength = 16384;
 
     /// <summary>
     /// Sniffs the TLS Client Hello message, and invokes a callback if found.
@@ -132,7 +132,7 @@ internal sealed class TlsListener
         // Convert to unsigned interpretation and cap at max TLS record size
         // If the record claims to be larger, we'll just pass what we can (up to 2^14 bytes)
         // We'll let SslStream decide how to handle the oversized record.
-        recordLength = (short)Math.Min((ushort)recordLength, MaxTlsRecordLength);
+        recordLength = (short)Math.Min((ushort)recordLength, MaxTlsPlaintextFragmentLength);
 
         // byte 6: handshake message type (must be 0x01 for ClientHello)
         if (!reader.TryRead(out byte handshakeType) || handshakeType != 0x01)

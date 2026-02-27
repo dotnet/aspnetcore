@@ -173,7 +173,6 @@ public class TlsListenerTests
 
         // Handshake message header (part of payload):
         // - 1 byte: handshake type (0x01 = ClientHello)
-        // - 3 bytes: length of handshake message
         var handshakeHeader = new byte[]
         {
             0x01,             // HandshakeType: ClientHello
