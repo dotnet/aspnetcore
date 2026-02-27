@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Validation.Localization;
 internal sealed class ValidationLocalizationSetup(
     IOptions<ValidationLocalizationOptions> localizationOptions,
     IStringLocalizerFactory stringLocalizerFactory,
-    IValidationAttributeFormatterProvider attributeFormatterProvider)
+    IOptions<ValidationAttributeFormatterRegistry> formatterRegistryOptions)
     : IConfigureOptions<ValidationOptions>
 {
     private readonly ConcurrentDictionary<Type, IStringLocalizer> _localizerCache = new();
@@ -25,6 +25,7 @@ internal sealed class ValidationLocalizationSetup(
         var locOptions = localizationOptions.Value;
         var localizerProvider = locOptions.LocalizerProvider;
         var keyProvider = locOptions.ErrorMessageKeyProvider;
+        var formatterRegistry = formatterRegistryOptions.Value;
 
         options.DisplayNameProvider ??= GetDisplayName;
         options.ErrorMessageProvider ??= GetErrorMessage;
@@ -56,7 +57,7 @@ internal sealed class ValidationLocalizationSetup(
             }
 
             // Format the localized template with attribute-specific arguments
-            var attributeFormatter = attributeFormatterProvider.GetFormatter(context.Attribute);
+            var attributeFormatter = formatterRegistry.GetFormatter(context.Attribute);
 
             return attributeFormatter?.FormatErrorMessage(CultureInfo.CurrentCulture, localizedTemplate, context.DisplayName)
                 ?? string.Format(CultureInfo.CurrentCulture, localizedTemplate, context.DisplayName);
