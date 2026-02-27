@@ -117,4 +117,10 @@ internal static partial class DefaultHubDispatcherLog
 
     [LoggerMessage(28, LogLevel.Trace, "Received SequenceMessage with Sequence ID '{SequenceId}'.", EventName = "ReceivedSequenceMessage")]
     public static partial void ReceivedSequenceMessage(ILogger logger, long sequenceId);
+
+    [LoggerMessage(29, LogLevel.Debug, "Canceling invocation or stream ID '{InvocationId}'.", EventName = "CancelInvocation")]
+    public static partial void CancelInvocation(ILogger logger, string invocationId);
+
+    [LoggerMessage(30, LogLevel.Debug, "CancelInvocationMessage received for ID '{InvocationId}' but invocation or stream was not found.", EventName = "UnexpectedCancelWithId")]
+    public static partial void UnexpectedCancelWithId(ILogger logger, string invocationId);
 }

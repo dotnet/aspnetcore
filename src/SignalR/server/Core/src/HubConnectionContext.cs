@@ -168,7 +168,7 @@ public partial class HubConnectionContext
     /// </summary>
     public virtual IHubProtocol Protocol { get; set; } = default!;
 
-    // Currently used only for streaming methods
+    // Used to cancel hub invocations and streaming methods
     internal ConcurrentDictionary<string, CancellationTokenSource> ActiveRequestCancellationSources { get; } = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.Ordinal);
 
     /// <summary>
