@@ -69,10 +69,13 @@
       <SasToken>$([System.Environment]::GetEnvironmentVariable('DotNetBuildsInternalReadSasToken'))</SasToken>
     </AdditionalDotNetPackageFeed>
 
-    <!-- Grab the tool packages for what HelixTestRunner installs. -->
-    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-dump\$(DotnetDumpVersion)\dotnet-dump.$(DotnetDumpVersion).nupkg" />
-    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-ef\$(DotnetEfVersion)\dotnet-ef.$(DotnetEfVersion).nupkg" />
-    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-serve\$(DotnetServeVersion)\dotnet-serve.$(DotnetServeVersion).nupkg" />
+    <!-- Grab the tool packages for what HelixTestRunner installs.
+         AsArchive="false" prevents the Helix SDK from extracting these nupkg files (which are zip
+         archives under the hood). They must remain as nupkg files so dotnet tool install can use
+         them as a NuGet package source. -->
+    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-dump\$(DotnetDumpVersion)\dotnet-dump.$(DotnetDumpVersion).nupkg" AsArchive="false" />
+    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-ef\$(DotnetEfVersion)\dotnet-ef.$(DotnetEfVersion).nupkg" AsArchive="false" />
+    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-serve\$(DotnetServeVersion)\dotnet-serve.$(DotnetServeVersion).nupkg" AsArchive="false" />
 
     <!-- Grab published `HelixTestRunner` project output. -->
     <HelixCorrelationPayload Include="$(ArtifactsBinDir)HelixTestRunner\$(Configuration)\net10.0\publish\"
