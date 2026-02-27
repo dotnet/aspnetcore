@@ -21,10 +21,9 @@ public class LocalizationIntegrationTests
             ["RequiredError"] = "Le champ {0} est obligatoire."
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var formatterProvider = new ValidationAttributeFormatterProvider();
-
+        var formatterRegistry = new OptionsWrapper<ValidationAttributeFormatterRegistry>(TestFormatterRegistryFactory.Create());
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterRegistry);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -52,10 +51,9 @@ public class LocalizationIntegrationTests
             ["RangeError"] = "Le champ {0} doit être entre {1} et {2}."
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var formatterProvider = new ValidationAttributeFormatterProvider();
-
+        var formatterRegistry = new OptionsWrapper<ValidationAttributeFormatterRegistry>(TestFormatterRegistryFactory.Create());
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterRegistry);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -82,10 +80,9 @@ public class LocalizationIntegrationTests
             ["RangeError"] = "{0}: valeur entre {1} et {2} attendue."
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var formatterProvider = new ValidationAttributeFormatterProvider();
-
+        var formatterRegistry = new OptionsWrapper<ValidationAttributeFormatterRegistry>(TestFormatterRegistryFactory.Create());
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterRegistry);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -109,10 +106,9 @@ public class LocalizationIntegrationTests
     {
         var translations = new Dictionary<string, string>();
         var factory = new TestStringLocalizerFactory(translations);
-        var formatterProvider = new ValidationAttributeFormatterProvider();
-
+        var formatterRegistry = new OptionsWrapper<ValidationAttributeFormatterRegistry>(TestFormatterRegistryFactory.Create());
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterRegistry);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -135,10 +131,9 @@ public class LocalizationIntegrationTests
     public async Task Localization_UsesResourceProperty_WhenResourceTypeIsSet()
     {
         var factory = new TestStringLocalizerFactory([]);
-        var formatterProvider = new ValidationAttributeFormatterProvider();
-
+        var formatterRegistry = new OptionsWrapper<ValidationAttributeFormatterRegistry>(TestFormatterRegistryFactory.Create());
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterRegistry);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -175,10 +170,9 @@ public class LocalizationIntegrationTests
             ["Only letters are allowed."] = "Seules les lettres sont autorisées."
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var formatterProvider = new ValidationAttributeFormatterProvider();
-
+        var formatterRegistry = new OptionsWrapper<ValidationAttributeFormatterRegistry>(TestFormatterRegistryFactory.Create());
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterRegistry);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -209,10 +203,9 @@ public class LocalizationIntegrationTests
             ["Start must be less than End."] = "Le début doit être inférieur à la fin."
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var formatterProvider = new ValidationAttributeFormatterProvider();
-
+        var formatterRegistry = new OptionsWrapper<ValidationAttributeFormatterRegistry>(TestFormatterRegistryFactory.Create());
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterRegistry);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -248,10 +241,9 @@ public class LocalizationIntegrationTests
             ["Custom IValidatableObject error"] = "Should not translate this"
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var formatterProvider = new ValidationAttributeFormatterProvider();
-
+        var formatterRegistry = new OptionsWrapper<ValidationAttributeFormatterRegistry>(TestFormatterRegistryFactory.Create());
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterRegistry);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -284,10 +276,9 @@ public class LocalizationIntegrationTests
             ["The {0} field is required."] = "Options: {0} required"
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var formatterProvider = new ValidationAttributeFormatterProvider();
-
+        var formatterRegistry = new OptionsWrapper<ValidationAttributeFormatterRegistry>(TestFormatterRegistryFactory.Create());
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterRegistry);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);

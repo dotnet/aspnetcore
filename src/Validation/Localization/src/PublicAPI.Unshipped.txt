@@ -2,16 +2,16 @@
 Microsoft.Extensions.DependencyInjection.ValidationLocalizationServiceCollectionExtensions
 Microsoft.Extensions.Validation.Localization.IValidationAttributeFormatter
 Microsoft.Extensions.Validation.Localization.IValidationAttributeFormatter.FormatErrorMessage(System.Globalization.CultureInfo! culture, string! messageTemplate, string! displayName) -> string!
-Microsoft.Extensions.Validation.Localization.IValidationAttributeFormatterProvider
-Microsoft.Extensions.Validation.Localization.IValidationAttributeFormatterProvider.GetFormatter(System.ComponentModel.DataAnnotations.ValidationAttribute! attribute) -> Microsoft.Extensions.Validation.Localization.IValidationAttributeFormatter!
-Microsoft.Extensions.Validation.Localization.ValidationAttributeFormatterProvider
-Microsoft.Extensions.Validation.Localization.ValidationAttributeFormatterProvider.ValidationAttributeFormatterProvider() -> void
+Microsoft.Extensions.Validation.Localization.ValidationAttributeFormatterRegistry
+Microsoft.Extensions.Validation.Localization.ValidationAttributeFormatterRegistry.AddFormatter<TAttribute>(System.Func<TAttribute!, Microsoft.Extensions.Validation.Localization.IValidationAttributeFormatter!>! factory) -> void
+Microsoft.Extensions.Validation.Localization.ValidationAttributeFormatterRegistry.GetFormatter(System.ComponentModel.DataAnnotations.ValidationAttribute! attribute) -> Microsoft.Extensions.Validation.Localization.IValidationAttributeFormatter?
+Microsoft.Extensions.Validation.Localization.ValidationAttributeFormatterRegistry.ValidationAttributeFormatterRegistry() -> void
 Microsoft.Extensions.Validation.Localization.ValidationLocalizationOptions
 Microsoft.Extensions.Validation.Localization.ValidationLocalizationOptions.ErrorMessageKeyProvider.get -> System.Func<Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext, string?>?
 Microsoft.Extensions.Validation.Localization.ValidationLocalizationOptions.ErrorMessageKeyProvider.set -> void
 Microsoft.Extensions.Validation.Localization.ValidationLocalizationOptions.LocalizerProvider.get -> System.Func<System.Type!, Microsoft.Extensions.Localization.IStringLocalizerFactory!, Microsoft.Extensions.Localization.IStringLocalizer!>?
 Microsoft.Extensions.Validation.Localization.ValidationLocalizationOptions.LocalizerProvider.set -> void
 Microsoft.Extensions.Validation.Localization.ValidationLocalizationOptions.ValidationLocalizationOptions() -> void
+static Microsoft.Extensions.DependencyInjection.ValidationLocalizationServiceCollectionExtensions.AddValidationAttributeFormatter<TAttribute>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Func<TAttribute!, Microsoft.Extensions.Validation.Localization.IValidationAttributeFormatter!>! factory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.ValidationLocalizationServiceCollectionExtensions.AddValidationLocalization(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Validation.Localization.ValidationLocalizationOptions!>? configureOptions = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.ValidationLocalizationServiceCollectionExtensions.AddValidationLocalization<TResource>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Validation.Localization.ValidationLocalizationOptions!>? configureOptions = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-virtual Microsoft.Extensions.Validation.Localization.ValidationAttributeFormatterProvider.GetFormatter(System.ComponentModel.DataAnnotations.ValidationAttribute! attribute) -> Microsoft.Extensions.Validation.Localization.IValidationAttributeFormatter!

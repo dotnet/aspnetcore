@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// using the <see cref="StandardValidationMessages"/> resource file.
 /// </summary>
 internal sealed class StandardAttributeLocalizationConfiguration(
-    IValidationAttributeFormatterProvider attributeFormatterProvider,
+    IOptions<ValidationAttributeFormatterRegistry> formatterRegistryOptions,
     ILoggerFactory loggerFactory)
     : IPostConfigureOptions<ValidationOptions>
 {
@@ -31,6 +31,7 @@ internal sealed class StandardAttributeLocalizationConfiguration(
         var resourceLocalizerFactory = new ResourceManagerStringLocalizerFactory(localizationOptions, loggerFactory);
         var localizer = resourceLocalizerFactory.Create(typeof(StandardValidationMessages));
         var originalProvider = options.ErrorMessageProvider ?? ((context) => null);
+        var formatterRegistry = formatterRegistryOptions.Value;
 
         options.ErrorMessageProvider = (context) =>
         {
@@ -47,7 +48,7 @@ internal sealed class StandardAttributeLocalizationConfiguration(
                 return originalProvider(context);
             }
 
-            var attributeFormatter = attributeFormatterProvider.GetFormatter(context.Attribute);
+            var attributeFormatter = formatterRegistry.GetFormatter(context.Attribute);
 
             return attributeFormatter?.FormatErrorMessage(CultureInfo.CurrentCulture, localizedTemplate, context.DisplayName)
                 ?? string.Format(CultureInfo.CurrentCulture, localizedTemplate, context.DisplayName);

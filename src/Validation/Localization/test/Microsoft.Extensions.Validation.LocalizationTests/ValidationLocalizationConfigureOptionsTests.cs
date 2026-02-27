@@ -19,9 +19,9 @@ public class ValidationLocalizationConfigureOptionsTests
     {
         var translations = new Dictionary<string, string> { ["Customer Age"] = "Âge du client" };
         var factory = new TestStringLocalizerFactory(translations);
-        var formatterProvider = new ValidationAttributeFormatterProvider();
+        var formatterRegistry = new OptionsWrapper<ValidationAttributeFormatterRegistry>(TestFormatterRegistryFactory.Create());
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterRegistry);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -42,9 +42,9 @@ public class ValidationLocalizationConfigureOptionsTests
     public void Configure_DisplayNameProvider_ReturnsNullWhenNotFound()
     {
         var factory = new TestStringLocalizerFactory([]);
-        var formatterProvider = new ValidationAttributeFormatterProvider();
+        var formatterRegistry = new OptionsWrapper<ValidationAttributeFormatterRegistry>(TestFormatterRegistryFactory.Create());
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterRegistry);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -67,9 +67,9 @@ public class ValidationLocalizationConfigureOptionsTests
             ["RequiredError"] = "Le champ {0} est obligatoire."
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var formatterProvider = new ValidationAttributeFormatterProvider();
+        var formatterRegistry = new OptionsWrapper<ValidationAttributeFormatterRegistry>(TestFormatterRegistryFactory.Create());
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterRegistry);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -91,9 +91,9 @@ public class ValidationLocalizationConfigureOptionsTests
     public void Configure_ErrorMessageProvider_ReturnsNullWhenNotFound()
     {
         var factory = new TestStringLocalizerFactory([]);
-        var formatterProvider = new ValidationAttributeFormatterProvider();
+        var formatterRegistry = new OptionsWrapper<ValidationAttributeFormatterRegistry>(TestFormatterRegistryFactory.Create());
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterRegistry);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -117,12 +117,12 @@ public class ValidationLocalizationConfigureOptionsTests
             ["RequiredAttribute_Error"] = "Custom key: {0} needed"
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var formatterProvider = new ValidationAttributeFormatterProvider();
+        var formatterRegistry = new OptionsWrapper<ValidationAttributeFormatterRegistry>(TestFormatterRegistryFactory.Create());
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions
         {
             ErrorMessageKeyProvider = (ctx) => $"{ctx.Attribute.GetType().Name}_Error"
         });
-        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterRegistry);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -146,9 +146,9 @@ public class ValidationLocalizationConfigureOptionsTests
             ["The {0} field is required."] = "Translated: {0} required"
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var formatterProvider = new ValidationAttributeFormatterProvider();
+        var formatterRegistry = new OptionsWrapper<ValidationAttributeFormatterRegistry>(TestFormatterRegistryFactory.Create());
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterRegistry);
 
         var validationOptions = new ValidationOptions
         {
@@ -182,9 +182,9 @@ public class ValidationLocalizationConfigureOptionsTests
             ["RangeError"] = "{0} doit être entre {1} et {2}."
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var formatterProvider = new ValidationAttributeFormatterProvider();
+        var formatterRegistry = new OptionsWrapper<ValidationAttributeFormatterRegistry>(TestFormatterRegistryFactory.Create());
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions());
-        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterRegistry);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);
@@ -208,12 +208,12 @@ public class ValidationLocalizationConfigureOptionsTests
             ["The {0} field is required."] = "Should not appear"
         };
         var factory = new TestStringLocalizerFactory(translations);
-        var formatterProvider = new ValidationAttributeFormatterProvider();
+        var formatterRegistry = new OptionsWrapper<ValidationAttributeFormatterRegistry>(TestFormatterRegistryFactory.Create());
         var locOptions = new OptionsWrapper<ValidationLocalizationOptions>(new ValidationLocalizationOptions
         {
             ErrorMessageKeyProvider = (_) => null
         });
-        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterProvider);
+        var configureOptions = new ValidationLocalizationSetup(locOptions, factory, formatterRegistry);
 
         var validationOptions = new ValidationOptions();
         configureOptions.Configure(validationOptions);

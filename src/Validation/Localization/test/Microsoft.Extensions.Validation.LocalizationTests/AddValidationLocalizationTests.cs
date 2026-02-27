@@ -115,7 +115,7 @@ public class AddValidationLocalizationTests
     }
 
     [Fact]
-    public void AddValidationLocalization_RegistersDefaultAttributeArgumentProvider()
+    public void AddValidationLocalization_RegistersFormatterRegistry()
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -123,9 +123,9 @@ public class AddValidationLocalizationTests
         services.AddValidationLocalization();
 
         var provider = services.BuildServiceProvider();
-        var argProvider = provider.GetService<IValidationAttributeFormatterProvider>();
+        var registry = provider.GetService<IOptions<ValidationAttributeFormatterRegistry>>();
 
-        Assert.NotNull(argProvider);
-        Assert.IsType<ValidationAttributeFormatterProvider>(argProvider);
+        Assert.NotNull(registry);
+        Assert.NotNull(registry.Value);
     }
 }
