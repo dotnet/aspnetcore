@@ -440,18 +440,18 @@ configuration:
           branch: main
       then:
       - addMilestone:
-          milestone: 11.0-preview2
+          milestone: 11.0-preview3
       description: '[Milestone Assignments] Assign Milestone to PRs merged to the `main` branch'
     - if:
       - payloadType: Pull_Request
       - isAction:
           action: Closed
       - targetsBranch:
-          branch: release/11.0-preview1
+          branch: release/11.0-preview2
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 11.0-preview1
+          milestone: 11.0-preview2
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/11.0-preview1 branch'
     - if:
       - payloadType: Issues
@@ -761,6 +761,7 @@ configuration:
       description: '[Infrastructure PRs] Add area-infrastructure label to dependabot update Pull Requests & enable auto-merge'
 onFailure:
 onSuccess:
+
 
 
 
