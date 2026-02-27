@@ -242,7 +242,7 @@ public class ValidatableTypeInfoBenchmark
 
     #region Mock Implementations for Testing
 
-    private class MockValidatableTypeInfo(Type type, ValidatablePropertyInfo[] members) : ValidatableTypeInfo(type, members)
+    private class MockValidatableTypeInfo(Type type, ValidatablePropertyInfo[] members) : ValidatableTypeInfo(type, null, null, members)
     {
         protected override ValidationAttribute[] GetValidationAttributes() => [];
     }
@@ -252,7 +252,7 @@ public class ValidatableTypeInfoBenchmark
         Type propertyType,
         string name,
         string displayName,
-        ValidationAttribute[] validationAttributes) : ValidatablePropertyInfo(containingType, propertyType, name, displayName)
+        ValidationAttribute[] validationAttributes) : ValidatablePropertyInfo(containingType, propertyType, name, displayName, null)
     {
         private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
 
@@ -262,7 +262,7 @@ public class ValidatableTypeInfoBenchmark
     #endregion
 
     #region Mock Resolver Implementation
-
+    
     private class MockValidatableTypeInfoResolver : IValidatableInfoResolver
     {
         private readonly Dictionary<Type, ValidatableTypeInfo> _typeInfoCache = [];

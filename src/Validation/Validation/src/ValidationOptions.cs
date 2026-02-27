@@ -1,0 +1,123 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using Microsoft.Extensions.Validation.Localization;
+
+namespace Microsoft.Extensions.Validation;
+
+/// <summary>
+/// Specifies configuration options for the validation system.
+/// </summary>
+public class ValidationOptions
+{
+    /// <summary>
+    /// Gets the list of resolvers that provide validation metadata for types and parameters.
+    /// Resolvers are processed in order, with the first resolver that provides a non-null result being used.
+    /// </summary>
+    /// <remarks>
+    /// Source-generated resolvers are typically inserted at the beginning of this list
+    /// to ensure they are checked before any runtime-based resolvers.
+    /// </remarks>
+    [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+    public IList<IValidatableInfoResolver> Resolvers { get; } = [];
+
+    /// <summary>
+    /// Gets or sets the maximum depth for validation of nested objects.
+    /// </summary>
+    /// <value>
+    /// The default is 32.
+    /// </value>
+    /// <remarks>
+    /// A maximum depth prevents stack overflows from circular references or extremely deep object graphs.
+    /// </remarks>
+    public int MaxDepth { get; set; } = 32;
+
+    /// <summary>
+    /// Gets or sets the delegate that resolves display names for types, properties and parameters.
+    /// If the delegate returns a non-null string, that string is used as the display name.
+    /// If it returns <see langword="null"/>, the value of <see cref="DisplayAttribute.Name"/> or the member name is used.
+    /// </summary>
+    public Func<DisplayNameProviderContext, string?>? DisplayNameProvider { get; set; }
+
+    /// <summary>
+    /// Gets or sets the delegate that resolves error messages for validation attributes.
+    /// When set, this delegate is called for every validation attribute that produces an error,
+    /// <b>unless</b> the attribute has <see cref="ValidationAttribute.ErrorMessageResourceType"/>
+    /// set (which indicates the attribute handles its own resource-based localization).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// If the delegate returns a non-null string, that string is used as the <b>final, formatted</b>
+    /// error message and is displayed directly to the user. The delegate is responsible for
+    /// performing any necessary formatting — for example, replacing <c>{0}</c> with the display name
+    /// and any attribute-specific parameters. It must <b>not</b> return a raw template such as
+    /// <c>"The {0} field is required."</c>; instead, it should return the fully resolved message
+    /// such as <c>"The Name field is required."</c>.
+    /// </para>
+    /// <para>
+    /// If the delegate returns <see langword="null"/>, the attribute's default error message
+    /// (from <see cref="ValidationAttribute.GetValidationResult"/>) is used instead.
+    /// </para>
+    /// <example>
+    /// <code>
+    /// options.ErrorMessageProvider = context =>
+    /// {
+    ///     var displayName = context.DisplayName ?? context.MemberName;
+    ///     return context.Attribute switch
+    ///     {
+    ///         RequiredAttribute => $"{displayName} is mandatory.",
+    ///         _ => null // fall back to default
+    ///     };
+    /// };
+    /// </code>
+    /// </example>
+    /// </remarks>
+    public Func<ErrorMessageProviderContext, string?>? ErrorMessageProvider { get; set; }
+
+    /// <summary>
+    /// Attempts to get validation information for the specified type.
+    /// </summary>
+    /// <param name="type">The type to get validation information for.</param>
+    /// <param name="validatableTypeInfo">When this method returns, contains the validation information for the specified type,
+    /// if the type was found; otherwise, <see langword="null" />.</param>
+    /// <returns><see langword="true" /> if validation information was found for the specified type; otherwise, <see langword="false" />.</returns>
+    [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+    public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableInfo? validatableTypeInfo)
+    {
+        foreach (var resolver in Resolvers)
+        {
+            if (resolver.TryGetValidatableTypeInfo(type, out validatableTypeInfo))
+            {
+                return true;
+            }
+        }
+
+        validatableTypeInfo = null;
+        return false;
+    }
+
+    /// <summary>
+    /// Attempts to get validation information for the specified parameter.
+    /// </summary>
+    /// <param name="parameterInfo">The parameter to get validation information for.</param>
+    /// <param name="validatableInfo">When this method returns, contains the validation information for the specified parameter,
+    /// if validation information was found; otherwise, <see langword="null" />.</param>
+    /// <returns><see langword="true" /> if validation information was found for the specified parameter; otherwise, <see langword="false" />.</returns>
+    [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+    public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+    {
+        foreach (var resolver in Resolvers)
+        {
+            if (resolver.TryGetValidatableParameterInfo(parameterInfo, out validatableInfo))
+            {
+                return true;
+            }
+        }
+
+        validatableInfo = null;
+        return false;
+    }
+}

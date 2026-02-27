@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Http.Validation;
 internal static class ValidationEndpointFilterFactory
 {
     // A small struct to hold the validatable parameter details to avoid allocating arrays for parameters that don't need validation
-    private readonly record struct ValidatableParameterEntry(int Index, IValidatableInfo Parameter, string DisplayName);
+    private readonly record struct ValidatableParameterEntry(int Index, IValidatableInfo Parameter, string Name);
 
     public static EndpointFilterDelegate Create(EndpointFilterFactoryContext context, EndpointFilterDelegate next)
     {
@@ -48,7 +48,7 @@ internal static class ValidationEndpointFilterFactory
                 validatableParameters.Add(new ValidatableParameterEntry(
                     i,
                     validatableParameter,
-                    GetDisplayName(parameters[i])));
+                    parameters[i].Name!));
             }
         }
 
@@ -74,7 +74,7 @@ internal static class ValidationEndpointFilterFactory
                     continue;
                 }
 
-                var validationContext = new ValidationContext(argument, entry.DisplayName, context.HttpContext.RequestServices, items: null);
+                var validationContext = new ValidationContext(argument, entry.Name, context.HttpContext.RequestServices, items: null);
 
                 if (validateContext == null)
                 {
@@ -128,15 +128,4 @@ internal static class ValidationEndpointFilterFactory
 
     private static bool HasFromServicesAttribute(ParameterInfo parameterInfo)
         => parameterInfo.CustomAttributes.OfType<IFromServiceMetadata>().Any();
-
-    private static string GetDisplayName(ParameterInfo parameterInfo)
-    {
-        var displayAttribute = parameterInfo.GetCustomAttribute<DisplayAttribute>();
-        if (displayAttribute != null)
-        {
-            return displayAttribute.Name ?? parameterInfo.Name!;
-        }
-
-        return parameterInfo.Name!;
-    }
 }
