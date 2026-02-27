@@ -196,13 +196,13 @@ builder.Services.AddValidationLocalization(options =>
 });
 ```
 
-Note that this feature is intended for users who want to stay within the default `IStringLocalizer`-based localization pipeline but only add a key fallback mechanism. See [Fully customize the localization logic](#fully-customize-the-localization-logic) below for more complex customization scenarios.
+Note that this feature is intended for users who want to stay within the default `IStringLocalizer`-based localization pipeline but only add a key fallback mechanism. See the _Fully customize the localization logic scenario_ below for more complex customization scenarios.
 
 #### Localize custom validation attributes
 
 As explained in Section 1.4, the localization system needs to be able to properly format error message templates with attribute-specific arguments. Built-in attributes with the default message templates are handled automatically by `AddValidationLocalization()` — no additional configuration is needed.
 
-For custom validation attributes with message templates using other positional arguments than the display name, there are two options for making them compatible with localization (see [`IValidationAttributeFormatter` and `ValidationAttributeFormatterRegistry`](#ivalidationattributeformatter-and-validationattributeformatterregistry) for details):
+For custom validation attributes with message templates using other positional arguments than the display name, there are two options for making them compatible with localization (see `IValidationAttributeFormatter` and `ValidationAttributeFormatterRegistry` in section 3.3 for details):
 
 *Option 1 — Self-formatting:* Implement `IValidationAttributeFormatter` directly on the attribute class. The localization pipeline detects this automatically — no registration needed.
 
@@ -367,7 +367,7 @@ public readonly struct ErrorMessageProviderContext
 
 #### `IValidationAttributeFormatter` and `ValidationAttributeFormatterRegistry`
 
-As described in [section 1.4](#14-aspnet-core-mvc), the `ValidationAttribute.FormatErrorMessage` method cannot accept a localized template, and MVC worked around this with adapter classes coupled to its model metadata pipeline. `IValidationAttributeFormatter` provides a simpler, framework-independent equivalent focused solely on message formatting:
+As described in section 1.4, the `ValidationAttribute.FormatErrorMessage` method cannot accept a localized template, and MVC worked around this with adapter classes coupled to its model metadata pipeline. `IValidationAttributeFormatter` provides a simpler, framework-independent equivalent focused solely on message formatting:
 
 ```csharp
 namespace Microsoft.Extensions.Validation.Localization;
