@@ -203,7 +203,7 @@ public class TlsListenerTests
         await listener.OnTlsClientHelloAsync(transportConnection, CancellationToken.None);
 
         Assert.True(tlsClientHelloCallbackInvoked, "Expected TLS ClientHello callback to be invoked");
-        Assert.Equal(5 + TlsListener.MaxTlsRecordLength, receivedBytes.Length);
+        Assert.Equal(5 + TlsListener.MaxTlsPlaintextFragmentLength, receivedBytes.Length);
     }
 
     private async Task RunTlsClientHelloCallbackTest_WithMultipleSegments(
