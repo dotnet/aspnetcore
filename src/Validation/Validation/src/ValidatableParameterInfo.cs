@@ -61,12 +61,6 @@ public abstract class ValidatableParameterInfo(
     /// </remarks>
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
-        // Skip validation if value is null and parameter is optional
-        if (value == null && ParameterType.IsNullable())
-        {
-            return;
-        }
-
         var displayName = LocalizationHelper.ResolveDisplayName(
             memberName: Name,
             DisplayName,
@@ -81,6 +75,7 @@ public abstract class ValidatableParameterInfo(
         var validationAttributes = GetValidationAttributes();
         var errorMessageProvider = context.ValidationOptions.ErrorMessageProvider;
 
+        // Check required attribute first
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
         {
             var result = _requiredAttribute.GetValidationResult(value, context.ValidationContext);
@@ -104,6 +99,12 @@ public abstract class ValidatableParameterInfo(
 
                 return;
             }
+        }
+
+        // Skip remaining validation if value is null and parameter is nullable
+        if (value is null && ParameterType.IsNullable())
+        {
+            return;
         }
 
         // Validate against validation attributes
