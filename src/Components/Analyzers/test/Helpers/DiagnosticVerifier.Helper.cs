@@ -42,6 +42,19 @@ public abstract partial class DiagnosticVerifier
     }
 
     /// <summary>
+    /// Given classes in the form of strings, their language, parse options, and an IDiagnosticAnalyzer to apply to it, return the diagnostics found in the string after converting it to a document.
+    /// </summary>
+    /// <param name="sources">Classes in the form of strings</param>
+    /// <param name="language">The language the source classes are in</param>
+    /// <param name="analyzer">The analyzer to be run on the sources</param>
+    /// <param name="parseOptions">Parse options to use for the test</param>
+    /// <returns>An IEnumerable of Diagnostics that surfaced in the source code, sorted by Location</returns>
+    private static Diagnostic[] GetSortedDiagnostics(string[] sources, string language, DiagnosticAnalyzer analyzer, CSharpParseOptions parseOptions)
+    {
+        return GetSortedDiagnosticsFromDocuments(analyzer, GetDocuments(sources, language, parseOptions));
+    }
+
+    /// <summary>
     /// Given an analyzer and a document to apply it to, run the analyzer and gather an array of diagnostics found in it.
     /// The returned diagnostics are then ordered by location in the source document.
     /// </summary>
@@ -125,6 +138,31 @@ public abstract partial class DiagnosticVerifier
     }
 
     /// <summary>
+    /// Given an array of strings as sources, a language, and parse options, turn them into a project and return the documents and spans of it.
+    /// </summary>
+    /// <param name="sources">Classes in the form of strings</param>
+    /// <param name="language">The language the source code is in</param>
+    /// <param name="parseOptions">Parse options to use for the test</param>
+    /// <returns>A Tuple containing the Documents produced from the sources and their TextSpans if relevant</returns>
+    private static Document[] GetDocuments(string[] sources, string language, CSharpParseOptions parseOptions)
+    {
+        if (language != LanguageNames.CSharp && language != LanguageNames.VisualBasic)
+        {
+            throw new ArgumentException("Unsupported Language");
+        }
+
+        var project = CreateProject(sources, language, parseOptions);
+        var documents = project.Documents.ToArray();
+
+        if (sources.Length != documents.Length)
+        {
+            throw new InvalidOperationException("Amount of sources did not match amount of Documents created");
+        }
+
+        return documents;
+    }
+
+    /// <summary>
     /// Create a Document from a string through creating a project that contains it.
     /// </summary>
     /// <param name="source">Classes in the form of a string</param>
@@ -151,6 +189,40 @@ public abstract partial class DiagnosticVerifier
         var solution = new AdhocWorkspace()
             .CurrentSolution
             .AddProject(projectId, TestProjectName, TestProjectName, language)
+            .AddMetadataReference(projectId, CorlibReference)
+            .AddMetadataReference(projectId, SystemCoreReference)
+            .AddMetadataReference(projectId, CSharpSymbolsReference)
+            .AddMetadataReference(projectId, CodeAnalysisReference);
+
+        int count = 0;
+        foreach (var source in sources)
+        {
+            var newFileName = fileNamePrefix + count + "." + fileExt;
+            var documentId = DocumentId.CreateNewId(projectId, debugName: newFileName);
+            solution = solution.AddDocument(documentId, newFileName, SourceText.From(source));
+            count++;
+        }
+        return solution.GetProject(projectId);
+    }
+
+    /// <summary>
+    /// Create a project using the inputted strings as sources with specific parse options.
+    /// </summary>
+    /// <param name="sources">Classes in the form of strings</param>
+    /// <param name="language">The language the source code is in</param>
+    /// <param name="parseOptions">Parse options to use for the project</param>
+    /// <returns>A Project created out of the Documents created from the source strings</returns>
+    private static Project CreateProject(string[] sources, string language, CSharpParseOptions parseOptions)
+    {
+        string fileNamePrefix = DefaultFilePathPrefix;
+        string fileExt = language == LanguageNames.CSharp ? CSharpDefaultFileExt : VisualBasicDefaultExt;
+
+        var projectId = ProjectId.CreateNewId(debugName: TestProjectName);
+
+        var solution = new AdhocWorkspace()
+            .CurrentSolution
+            .AddProject(projectId, TestProjectName, TestProjectName, language)
+            .WithProjectParseOptions(projectId, parseOptions)
             .AddMetadataReference(projectId, CorlibReference)
             .AddMetadataReference(projectId, SystemCoreReference)
             .AddMetadataReference(projectId, CSharpSymbolsReference)
