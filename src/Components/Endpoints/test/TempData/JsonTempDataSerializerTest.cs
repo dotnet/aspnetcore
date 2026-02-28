@@ -52,12 +52,26 @@ public class JsonTempDataSerializerTest
                     { typeof(int) },
                     { typeof(int[]) },
                     { typeof(string) },
+                    { typeof(string[]) },
                     { typeof(Guid) },
-                    { typeof(List<string>) },
+                    { typeof(Guid[]) },
                     { typeof(Dictionary<string, int>) },
+                    { typeof(Dictionary<string, string>) },
+                    { typeof(Dictionary<string, bool>) },
+                    { typeof(Dictionary<string, Guid>) },
+                    { typeof(Dictionary<string, DateTime>) },
                     { typeof(DateTime) },
+                    { typeof(DateTime[]) },
                     { typeof(bool) },
-                    { typeof(Guid[]) }
+                    { typeof(bool[]) },
+                    { typeof(TestEnum) },
+                    { typeof(TestEnum[]) },
+                    { typeof(List<int>) },
+                    { typeof(List<string>) },
+                    { typeof(List<bool>) },
+                    { typeof(List<Guid>) },
+                    { typeof(List<DateTime>) },
+                    { typeof(HashSet<int>) },
                 };
         }
     }
@@ -66,13 +80,10 @@ public class JsonTempDataSerializerTest
     [MemberData(nameof(InvalidTypes))]
     public void CanSerialize_ReturnsFalse_OnInvalidType(Type type)
     {
-        // Arrange
         var serializer = CreateSerializer();
 
-        // Act
         var result = serializer.CanSerialize(type);
 
-        // Assert
         Assert.False(result);
     }
 
@@ -80,13 +91,10 @@ public class JsonTempDataSerializerTest
     [MemberData(nameof(InvalidDictionaryKeyTypes))]
     public void CanSerialize_ReturnsFalse_OnInvalidDictionaryKeyType(Type type)
     {
-        // Arrange
         var serializer = CreateSerializer();
 
-        // Act
         var result = serializer.CanSerialize(type);
 
-        // Assert
         Assert.False(result);
     }
 
@@ -94,143 +102,109 @@ public class JsonTempDataSerializerTest
     [MemberData(nameof(ValidTypes))]
     public void CanSerialize_ReturnsTrue_OnValidType(Type type)
     {
-        // Arrange
         var serializer = CreateSerializer();
 
-        // Act
         var result = serializer.CanSerialize(type);
 
-        // Assert
         Assert.True(result);
     }
 
-    [Fact]
-    public void Deserialize_Int()
+    public static TheoryData<object, Type> RoundTripData => new()
     {
-        // Arrange
+        { 42, typeof(int) },
+        { true, typeof(bool) },
+        { "hello", typeof(string) },
+        { Guid.Parse("5fa6e1de-d0b4-4272-a629-2e1382af8b51"), typeof(Guid) },
+        { new DateTime(2007, 1, 1, 0, 0, 0, DateTimeKind.Utc), typeof(DateTime) },
+        { new int[] { 1, 2, 3 }, typeof(int[]) },
+        { new string[] { "foo", "bar" }, typeof(string[]) },
+        { new bool[] { true, false }, typeof(bool[]) },
+        { new DateTime[] { new DateTime(2007, 1, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2008, 1, 1, 0, 0, 0, DateTimeKind.Utc) }, typeof(DateTime[]) },
+        { new Guid[] { Guid.Parse("5fa6e1de-d0b4-4272-a629-2e1382af8b51"), Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567890") }, typeof(Guid[]) },
+        { new Dictionary<string, int> { { "key1", 1 }, { "key2", 2 } }, typeof(Dictionary<string, int>) },
+        { new Dictionary<string, string> { { "key1", "value1" }, { "key2", "value2" } }, typeof(Dictionary<string, string>) },
+        { new Dictionary<string, bool> { { "key1", true }, { "key2", false } }, typeof(Dictionary<string, bool>) },
+        { new Dictionary<string, Guid> { { "key1", Guid.Parse("5fa6e1de-d0b4-4272-a629-2e1382af8b51") } }, typeof(Dictionary<string, Guid>) },
+        { new Dictionary<string, DateTime> { { "key1", new DateTime(2007, 1, 1, 0, 0, 0, DateTimeKind.Utc) } }, typeof(Dictionary<string, DateTime>) },
+        { Array.Empty<int>(), typeof(int[]) },
+    };
+
+    [Theory]
+    [MemberData(nameof(RoundTripData))]
+    public void RoundTrip(object value, Type type)
+    {
         var serializer = CreateSerializer();
-        var serialized = serializer.SerializeData(new Dictionary<string, object>
+        var serialized = serializer.SerializeData(new Dictionary<string, (object Value, Type Type)>
         {
-            { "key", 42 }
+            { "key", (value, type) }
         });
 
-        // Act
         var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
-        var result = serializer.DeserializeData(jsonDocument);
+        var result = serializer.DeserializeData(jsonDocument!);
 
-        // Assert
-        Assert.Equal(42, result["key"]);
+        Assert.Equal(value, result["key"].Value);
     }
 
     [Fact]
-    public void Deserialize_Bool()
+    public void RoundTrip_Null()
     {
-        // Arrange
         var serializer = CreateSerializer();
-        var serialized = serializer.SerializeData(new Dictionary<string, object>
+        var serialized = serializer.SerializeData(new Dictionary<string, (object Value, Type Type)>
         {
-            { "key", true }
+            { "key", ((object)null, (Type)null) }
         });
 
-        // Act
         var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
-        var result = serializer.DeserializeData(jsonDocument);
+        var result = serializer.DeserializeData(jsonDocument!);
 
-        // Assert
-        Assert.Equal(true, result["key"]);
+        Assert.Null(result["key"].Value);
     }
 
     [Fact]
-    public void Deserialize_String()
+    public void RoundTrip_Enum()
     {
-        // Arrange
         var serializer = CreateSerializer();
-        var serialized = serializer.SerializeData(new Dictionary<string, object>
+        var serialized = serializer.SerializeData(new Dictionary<string, (object Value, Type Type)>
         {
-            { "key", "hello" }
+            { "key", (TestEnum.Value2, typeof(TestEnum)) }
         });
 
-        // Act
         var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
-        var result = serializer.DeserializeData(jsonDocument);
+        var result = serializer.DeserializeData(jsonDocument!);
 
-        // Assert
-        Assert.Equal("hello", result["key"]);
+        Assert.Equal(1, result["key"].Value);
     }
 
     [Fact]
-    public void Deserialize_Guid()
+    public void RoundTrip_EnumArray()
     {
-        // Arrange
         var serializer = CreateSerializer();
-        var guid = Guid.NewGuid();
-        var serialized = serializer.SerializeData(new Dictionary<string, object>
+        var serialized = serializer.SerializeData(new Dictionary<string, (object Value, Type Type)>
         {
-            { "key", guid }
+            { "key", (new TestEnum[] { TestEnum.Value1, TestEnum.Value2 }, typeof(TestEnum[])) }
         });
 
-        // Act
         var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
-        var result = serializer.DeserializeData(jsonDocument);
+        var result = serializer.DeserializeData(jsonDocument!);
 
-        // Assert
-        Assert.Equal(guid, result["key"]);
+        var array = Assert.IsType<int[]>(result["key"].Value);
+        Assert.Equal(0, array[0]);
+        Assert.Equal(1, array[1]);
     }
 
     [Fact]
-    public void Deserialize_DateTime()
+    public void RoundTrip_ListDeserializesAsArray()
     {
-        // Arrange
         var serializer = CreateSerializer();
-        var dateTime = new DateTime(2007, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        var serialized = serializer.SerializeData(new Dictionary<string, object>
+        var serialized = serializer.SerializeData(new Dictionary<string, (object Value, Type Type)>
         {
-            { "key", dateTime }
+            { "key", (new List<int> { 1, 2, 3 }, typeof(List<int>)) }
         });
 
-        // Act
         var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
-        var result = serializer.DeserializeData(jsonDocument);
+        var result = serializer.DeserializeData(jsonDocument!);
 
-        // Assert
-        Assert.IsType<DateTime>(result["key"]);
-        Assert.Equal(dateTime, result["key"]);
-    }
-
-    [Fact]
-    public void Deserialize_Null()
-    {
-        // Arrange
-        var serializer = CreateSerializer();
-        var serialized = serializer.SerializeData(new Dictionary<string, object>
-        {
-            { "key", null }
-        });
-
-        // Act
-        var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
-        var result = serializer.DeserializeData(jsonDocument);
-
-        // Assert
-        Assert.Null(result["key"]);
-    }
-
-    [Fact]
-    public void Deserialize_Array()
-    {
-        // Arrange
-        var serializer = CreateSerializer();
-        var serialized = serializer.SerializeData(new Dictionary<string, object>
-        {
-            { "key", new int[] { 1, 2, 3 } }
-        });
-
-        // Act
-        var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
-        var result = serializer.DeserializeData(jsonDocument);
-
-        // Assert
-        var array = Assert.IsType<int[]>(result["key"]);
+        var array = Assert.IsType<int[]>(result["key"].Value);
         Assert.Equal(3, array.Length);
         Assert.Equal(1, array[0]);
         Assert.Equal(2, array[1]);
@@ -238,188 +212,19 @@ public class JsonTempDataSerializerTest
     }
 
     [Fact]
-    public void Deserialize_EmptyArray()
+    public void RoundTrip_HashSetDeserializesAsArray()
     {
-        // Arrange
         var serializer = CreateSerializer();
-        var serialized = serializer.SerializeData(new Dictionary<string, object>
+        var serialized = serializer.SerializeData(new Dictionary<string, (object Value, Type Type)>
         {
-            { "key", Array.Empty<int>() }
+            { "key", (new HashSet<int> { 1, 2, 3 }, typeof(HashSet<int>)) }
         });
 
-        // Act
         var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
-        var result = serializer.DeserializeData(jsonDocument);
+        var result = serializer.DeserializeData(jsonDocument!);
 
-        // Assert
-        var array = Assert.IsType<object[]>(result["key"]);
-        Assert.Empty(array);
-    }
-
-    [Fact]
-    public void Deserialize_Dictionary()
-    {
-        // Arrange
-        var serializer = CreateSerializer();
-        var serialized = serializer.SerializeData(new Dictionary<string, object>
-        {
-            { "key", new Dictionary<string, int> { { "key1", 1 }, { "key2", 2 } } }
-        });
-
-        // Act
-        var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
-        var result = serializer.DeserializeData(jsonDocument);
-
-        // Assert
-        var dictionary = Assert.IsType<Dictionary<string, object>>(result["key"]);
-        Assert.Equal(2, dictionary.Count);
-        Assert.Equal(1, dictionary["key1"]);
-        Assert.Equal(2, dictionary["key2"]);
-    }
-
-    [Fact]
-    public void Deserialize_StringArray()
-    {
-        // Arrange
-        var serializer = CreateSerializer();
-        var serialized = serializer.SerializeData(new Dictionary<string, object>
-        {
-            { "key", new string[] { "foo", "bar" } }
-        });
-
-        // Act
-        var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
-        var result = serializer.DeserializeData(jsonDocument);
-
-        // Assert
-        var array = Assert.IsType<string[]>(result["key"]);
-        Assert.Equal(2, array.Length);
-        Assert.Equal("foo", array[0]);
-        Assert.Equal("bar", array[1]);
-    }
-
-    [Fact]
-    public void Deserialize_DictionaryWithStringValues()
-    {
-        // Arrange
-        var serializer = CreateSerializer();
-        var serialized = serializer.SerializeData(new Dictionary<string, object>
-        {
-            { "key", new Dictionary<string, string> { { "key1", "value1" }, { "key2", "value2" } } }
-        });
-
-        // Act
-        var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
-        var result = serializer.DeserializeData(jsonDocument);
-
-        // Assert
-        var dictionary = Assert.IsType<Dictionary<string, object>>(result["key"]);
-        Assert.Equal(2, dictionary.Count);
-        Assert.Equal("value1", dictionary["key1"]);
-        Assert.Equal("value2", dictionary["key2"]);
-    }
-
-    [Fact]
-    public void Deserialize_NestedArrays()
-    {
-        // Arrange
-        var serializer = CreateSerializer();
-        var serialized = serializer.SerializeData(new Dictionary<string, object>
-        {
-            { "key", new object[] { new int[] { 1 }, new int[] { 2, 3, 4 } } }
-        });
-
-        // Act
-        var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
-        var result = serializer.DeserializeData(jsonDocument);
-
-        // Assert
-        var array = Assert.IsType<object[]>(result["key"]);
-        Assert.Equal(new int[] { 1 }, array[0]);
-        Assert.Equal(new int[] { 2, 3, 4 }, array[1]);
-    }
-
-    [Fact]
-    public void Deserialize_BoolArray()
-    {
-        // Arrange
-        var serializer = CreateSerializer();
-        var serialized = serializer.SerializeData(new Dictionary<string, object>
-        {
-            { "key", new bool[] { true, false } }
-        });
-
-        // Act
-        var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
-        var result = serializer.DeserializeData(jsonDocument);
-
-        // Assert
-        var array = Assert.IsType<bool[]>(result["key"]);
-        Assert.True(array[0]);
-        Assert.False(array[1]);
-    }
-
-    [Fact]
-    public void Deserialize_DateTimeArray()
-    {
-        // Arrange
-        var serializer = CreateSerializer();
-        var dateTime1 = new DateTime(2007, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        var dateTime2 = new DateTime(2008, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        var serialized = serializer.SerializeData(new Dictionary<string, object>
-        {
-            { "key", new DateTime[] { dateTime1, dateTime2 } }
-        });
-
-        // Act
-        var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
-        var result = serializer.DeserializeData(jsonDocument);
-
-        // Assert
-        var array = Assert.IsType<DateTime[]>(result["key"]);
-        Assert.Equal(dateTime1, array[0]);
-        Assert.Equal(dateTime2, array[1]);
-    }
-
-    [Fact]
-    public void Deserialize_GuidArray()
-    {
-        // Arrange
-        var serializer = CreateSerializer();
-        var guid1 = Guid.NewGuid();
-        var guid2 = Guid.NewGuid();
-        var serialized = serializer.SerializeData(new Dictionary<string, object>
-        {
-            { "key", new Guid[] { guid1, guid2 } }
-        });
-
-        // Act
-        var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
-        var result = serializer.DeserializeData(jsonDocument);
-
-        // Assert
-        var array = Assert.IsType<Guid[]>(result["key"]);
-        Assert.Equal(guid1, array[0]);
-        Assert.Equal(guid2, array[1]);
-    }
-
-    [Fact]
-    public void Deserialize_Enum()
-    {
-        // Arrange
-        var serializer = CreateSerializer();
-
-        var serialized = serializer.SerializeData(new Dictionary<string, object>
-        {
-            { "key", TestEnum.Value2 }
-        });
-
-        // Act
-        var jsonDocument = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(serialized);
-        var result = serializer.DeserializeData(jsonDocument);
-
-        // Assert
-        Assert.Equal(1, result["key"]);
+        var array = Assert.IsType<int[]>(result["key"].Value);
+        Assert.Equal(3, array.Length);
     }
 
     private class TestItem
