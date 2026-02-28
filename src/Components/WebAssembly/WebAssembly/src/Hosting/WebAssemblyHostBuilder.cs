@@ -345,6 +345,8 @@ public sealed class WebAssemblyHostBuilder
         });
         Services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AntiforgeryStateProvider>(Services, RenderMode.InteractiveWebAssembly);
+        Services.AddSingleton<CultureStateProvider>();
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<CultureStateProvider>(Services, RenderMode.InteractiveWebAssembly);
         Services.AddSupplyValueFromQueryProvider();
         
         // Register metrics and tracing when explicitly enabled (opt-in via feature switch)
