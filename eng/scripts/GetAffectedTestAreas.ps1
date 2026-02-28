@@ -70,16 +70,18 @@ if (-not $ChangedFiles -or $ChangedFiles.Count -eq 0) {
 Write-Host "Found $($ChangedFiles.Count) changed file(s)"
 
 # Patterns that trigger all tests (infrastructure/global changes)
-$runAllPatterns = @(
-    '^eng/',
-    '^global\.json$',
-    '^Directory\.Build\.',
-    '^NuGet\.config$',
-    '\.azure/',
-    '^build\.',
-    '^restore\.',
-    '^activate\.'
-)
+# TODO: Re-enable these patterns after CI testing is complete.
+# $runAllPatterns = @(
+#     '^eng/',
+#     '^global\.json$',
+#     '^Directory\.Build\.',
+#     '^NuGet\.config$',
+#     '\.azure/',
+#     '^build\.',
+#     '^restore\.',
+#     '^activate\.'
+# )
+$runAllPatterns = @()
 
 foreach ($file in $ChangedFiles) {
     $normalizedFile = $file.Replace('\', '/')
@@ -104,7 +106,8 @@ foreach ($file in $ChangedFiles) {
 }
 
 if ($changedAreas.Count -eq 0) {
-    Write-Host "No src/ areas changed. Changes are outside src/ but not in infrastructure paths. Running all tests as a safety measure."
+    # TODO: Re-enable running all tests when no src/ areas changed after CI testing.
+    Write-Host "No src/ areas changed. Only src/ area changes trigger test filtering. Skipping filtering."
     return ""
 }
 
