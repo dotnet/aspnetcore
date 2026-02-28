@@ -102,4 +102,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.UseInvokeVoidAsyncForObjectReturn_Description)));
+
+      public static readonly DiagnosticDescriptor ComponentShouldNotUseRefAndRenderModeOnSameElement = new(
+        "BL0012",
+        CreateLocalizableResourceString(nameof(Resources.ComponentShouldNotUseRefAndRenderModeOnSameElement_Title)),
+        CreateLocalizableResourceString(nameof(Resources.ComponentShouldNotUseRefAndRenderModeOnSameElement_Format)),
+        Usage,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.ComponentShouldNotUseRefAndRenderModeOnSameElement_Description)));
 }
