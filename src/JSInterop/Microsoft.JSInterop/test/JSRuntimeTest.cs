@@ -37,7 +37,7 @@ public class JSRuntimeTest
     }
 
     [Fact]
-    public async Task InvokeAsync_CancelsAsyncTask_AfterDefaultTimeout()
+    public async Task InvokeAsync_ThrowsTimeoutException_AfterDefaultTimeout()
     {
         // Arrange
         var runtime = new TestJSRuntime();
@@ -45,6 +45,24 @@ public class JSRuntimeTest
 
         // Act
         var task = runtime.InvokeAsync<object>("test identifier 1", "arg1", 123, true);
+
+        // Assert
+        var ex = await Assert.ThrowsAsync<TimeoutException>(async () => await task);
+        Assert.Contains("test identifier 1", ex.Message);
+        Assert.IsAssignableFrom<OperationCanceledException>(ex.InnerException);
+    }
+
+    [Fact]
+    public async Task InvokeAsync_CancelsWithTaskCanceledException_WhenCancellationTokenFires()
+    {
+        // Arrange
+        using var cts = new CancellationTokenSource();
+        var runtime = new TestJSRuntime();
+        runtime.DefaultTimeout = TimeSpan.FromHours(1);
+
+        // Act
+        var task = runtime.InvokeAsync<object>("test identifier 1", cts.Token, new object[] { "arg1", 123, true });
+        cts.Cancel();
 
         // Assert
         await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
