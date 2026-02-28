@@ -472,6 +472,32 @@
     <span id="time-default-step-textbox-timeonly-value">@timeStepTextboxTimeOnlyValue.ToLongTimeString()</span>
 </p>
 
+<h2>ContentEditable</h2>
+<p>
+    ContentEditable div with oninput (standard event):
+    <div id="contenteditable-oninput"
+         contenteditable="true"
+         style="border: 1px solid #ccc; padding: 5px; min-height: 30px;"
+         @oninput="OnContentEditableInput">@contentEditableValue</div>
+    <span id="contenteditable-oninput-value">@contentEditableValue</span>
+</p>
+<p>
+    ContentEditable div with custom contentblur event (blur doesn't fire change on contenteditable):
+    <div id="contenteditable-onchange"
+         contenteditable="true"
+         style="border: 1px solid #ccc; padding: 5px; min-height: 30px;"
+         @oncontentblur="OnContentEditableChange">@contentEditableChangeValue</div>
+    <span id="contenteditable-onchange-value">@contentEditableChangeValue</span>
+</p>
+<p>
+    ContentEditable initially blank:
+    <div id="contenteditable-initially-blank"
+         contenteditable="true"
+         style="border: 1px solid #ccc; padding: 5px; min-height: 30px;"
+         @oninput="OnContentEditableBlankInput">@contentEditableBlankValue</div>
+    <span id="contenteditable-initially-blank-value">@contentEditableBlankValue</span>
+</p>
+
 @code {
     string textboxInitiallyBlankValue = null;
     string textboxInitiallyPopulatedValue = "Hello";
@@ -574,5 +600,25 @@
     {
         selectValue = SelectableValue.Sixth;
         variableValue = SelectableValue.Sixth;
+    }
+
+    // ContentEditable binding
+    string contentEditableValue = "Initial content";
+    string contentEditableChangeValue = "Change on blur";
+    string contentEditableBlankValue = "";
+
+    void OnContentEditableInput(ChangeEventArgs e)
+    {
+        contentEditableValue = e.Value?.ToString() ?? "";
+    }
+
+    void OnContentEditableChange(ContentEditableEventArgs e)
+    {
+        contentEditableChangeValue = e.TextContent ?? "";
+    }
+
+    void OnContentEditableBlankInput(ChangeEventArgs e)
+    {
+        contentEditableBlankValue = e.Value?.ToString() ?? "";
     }
 }

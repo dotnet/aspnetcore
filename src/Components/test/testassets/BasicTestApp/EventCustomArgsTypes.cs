@@ -11,6 +11,7 @@ namespace BasicTestApp.CustomEventTypesNamespace;
 [EventHandler("onkeydown.yetanother", typeof(YetAnotherCustomKeyboardEventArgs), true, true)]
 [EventHandler("oncustommouseover", typeof(EventArgs), true, true)]
 [EventHandler("onsendjsobject", typeof(EventWithCustomSerializedDataEventArgs), true, true)]
+[EventHandler("oncontentblur", typeof(ContentEditableEventArgs), true, true)]
 public static class EventHandlers
 {
 }
@@ -47,4 +48,13 @@ class DotNetType
     {
         Property = propertyValue;
     }
+}
+
+/// <summary>
+/// Event arguments for contenteditable elements that capture both textContent and innerHTML.
+/// </summary>
+class ContentEditableEventArgs : EventArgs
+{
+    public string TextContent { get; set; }
+    public string InnerHTML { get; set; }
 }
