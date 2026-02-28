@@ -798,23 +798,19 @@ public class HubConnection implements AutoCloseable {
             irq = new InvocationRequest(returnType, invocationId);
             connectionState.addInvocation(irq);
 
-            AtomicInteger subscriptionCount = new AtomicInteger();
-            ReplaySubject<T> subject = ReplaySubject.create();
             Subject<Object> pendingCall = irq.getPendingCall();
-            pendingCall.subscribe(result -> {
-                        subject.onNext(Utils.<T>cast(returnClass, result));
-                    }, error -> subject.onError(error),
-                    () -> subject.onComplete());
 
-            Observable<T> observable = subject.doOnSubscribe((subscriber) -> subscriptionCount.incrementAndGet());
+            // Map directly from pendingCall instead of using an intermediate ReplaySubject.
+            // UnicastSubject buffers items until the first subscriber, then items flow without caching.
+            Observable<T> observable = pendingCall
+                    .map(result -> Utils.<T>cast(returnClass, result));
+
             sendInvocationMessage(method, args, invocationId, true);
             return observable.doOnDispose(() -> {
-                if (subscriptionCount.decrementAndGet() == 0) {
-                    CancelInvocationMessage cancelInvocationMessage = new CancelInvocationMessage(null, invocationId);
-                    sendHubMessageWithLock(cancelInvocationMessage);
-                    connectionState.tryRemoveInvocation(invocationId);
-                    subject.onComplete();
-                }
+                CancelInvocationMessage cancelInvocationMessage = new CancelInvocationMessage(null, invocationId);
+                sendHubMessageWithLock(cancelInvocationMessage);
+                connectionState.tryRemoveInvocation(invocationId);
+                pendingCall.onComplete();
             });
         } finally {
             this.state.unlock();

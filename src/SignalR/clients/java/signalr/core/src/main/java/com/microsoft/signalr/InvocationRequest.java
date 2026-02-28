@@ -6,12 +6,12 @@ package com.microsoft.signalr;
 import java.lang.reflect.Type;
 import java.util.concurrent.CancellationException;
 
-import io.reactivex.rxjava3.subjects.ReplaySubject;
 import io.reactivex.rxjava3.subjects.Subject;
+import io.reactivex.rxjava3.subjects.UnicastSubject;
 
 class InvocationRequest {
     private final Type returnType;
-    private final Subject<Object> pendingCall = ReplaySubject.create();
+    private final Subject<Object> pendingCall = UnicastSubject.create();
     private final String invocationId;
 
     InvocationRequest(Type returnType, String invocationId) {
