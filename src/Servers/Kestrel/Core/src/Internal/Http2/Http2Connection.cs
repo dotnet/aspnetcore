@@ -249,10 +249,15 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         if (TryClose())
         {
             SetConnectionErrorCode(reason, errorCode);
-            _frameWriter.WriteGoAwayAsync(int.MaxValue, errorCode).Preserve();
+            // Must write GOAWAY and abort atomically (single lock acquisition) to prevent
+            // ProcessRequestsAsync's cleanup from calling _frameWriter.Complete() between
+            // the GOAWAY write and the abort, which would set _completed=true and discard the GOAWAY.
+            _frameWriter.AbortWithGoAway(int.MaxValue, errorCode, ex);
         }
-
-        _frameWriter.Abort(ex);
+        else
+        {
+            _frameWriter.Abort(ex);
+        }
     }
 
     public void StopProcessingNextRequest(ConnectionEndReason reason)
