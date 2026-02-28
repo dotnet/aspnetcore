@@ -29,6 +29,12 @@ function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | 
 }
 
 function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spacerAfter: HTMLElement, rootMargin = 50): void {
+  // If the component was disposed before the JS interop call completed, the element references may be null.
+  // In this case, we should return early to avoid errors.
+  if (!spacerBefore || !spacerAfter) {
+    return;
+  }
+
   // Overflow anchoring can cause an ongoing scroll loop, because when we resize the spacers, the browser
   // would update the scroll position to compensate. Then the spacer would remain visible and we'd keep on
   // trying to resize it.
@@ -66,6 +72,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     // and reobserving spacers when they get resized, the intersection callback will re-run if they remain visible.
     const observerOptions = { attributes: true };
     const mutationObserver = new MutationObserver((mutations: MutationRecord[], observer: MutationObserver): void => {
+      // Check if the spacer is still in the DOM
+      if (!spacer.isConnected) {
+        return;
+      }
+
       if (isValidTableElement(spacer.parentElement)) {
         observer.disconnect();
         spacer.style.display = 'table-row';
@@ -84,6 +95,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   function intersectionCallback(entries: IntersectionObserverEntry[]): void {
     entries.forEach((entry): void => {
       if (!entry.isIntersecting) {
+        return;
+      }
+
+      // Check if the spacers are still in the DOM. They may have been removed if the component was disposed.
+      if (!spacerBefore.isConnected || !spacerAfter.isConnected) {
         return;
       }
 
