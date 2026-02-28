@@ -75,7 +75,9 @@ internal class WebTransportTestUtilities
             new KeyValuePair<string, string>(WebTransportSession.CurrentSupportedVersion, "1")
         });
 
-        return (WebTransportSession)await appCompletedTcs.Task;
+#pragma warning disable CA2252 // WebTransport is a preview feature
+        return (WebTransportSession)await appCompletedTcs.Task.DefaultTimeout();
+#pragma warning restore CA2252 // WebTransport is a preview feature
     }
 
     public static WebTransportStream CreateStream(WebTransportStreamType type, Memory<byte>? memory = null)
