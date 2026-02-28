@@ -818,7 +818,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         _isBatchInProgress = true;
         var updateDisplayTask = Task.CompletedTask;
         var batchStartTimestamp = ComponentMetrics != null && ComponentMetrics.IsBatchEnabled ? Stopwatch.GetTimestamp() : 0;
-
+        RenderQueueEntry nextToRender = default;
         try
         {
             if (_batchBuilder.ComponentRenderQueue.Count == 0)
@@ -839,7 +839,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             // Process render queue until empty
             while (_batchBuilder.ComponentRenderQueue.Count > 0)
             {
-                var nextToRender = _batchBuilder.ComponentRenderQueue.Dequeue();
+                nextToRender = _batchBuilder.ComponentRenderQueue.Dequeue();
                 RenderInExistingBatch(nextToRender);
             }
 
@@ -860,6 +860,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             if (ComponentMetrics != null && ComponentMetrics.IsBatchEnabled)
             {
                 ComponentMetrics.FailBatchSync(e, batchStartTimestamp);
+            }
+            if (nextToRender.ComponentState?.Component != null)
+            {
+                var componentType = nextToRender.ComponentState.Component.GetType();
+                Log.ErrorRenderingComponent(_logger, componentType, e);
             }
 
             // Ensure we catch errors while running the render functions of the components.
