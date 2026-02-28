@@ -39,7 +39,6 @@ internal class WebTransportTestUtilities
             {
                 appCompletedTcs.SetException(exception);
             }
-#pragma warning restore CA2252 // WebTransport is a preview feature
 
             // wait for the test to tell us to kill the application
             await exitSessionTcs.Task;
@@ -75,7 +74,6 @@ internal class WebTransportTestUtilities
             new KeyValuePair<string, string>(WebTransportSession.CurrentSupportedVersion, "1")
         });
 
-#pragma warning disable CA2252 // WebTransport is a preview feature
         return (WebTransportSession)await appCompletedTcs.Task.DefaultTimeout();
 #pragma warning restore CA2252 // WebTransport is a preview feature
     }
