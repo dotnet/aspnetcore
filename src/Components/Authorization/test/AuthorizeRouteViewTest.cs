@@ -367,6 +367,95 @@ public class AuthorizeRouteViewTest
             });
     }
 
+    [Fact]
+    public void WhenNotAuthorized_RendersNotAuthorizedPageInsideLayout()
+    {
+        // Arrange
+        var routeData = new RouteData(typeof(TestPageRequiringAuthorization), EmptyParametersDictionary);
+        _testAuthorizationService.NextResult = AuthorizationResult.Failed();
+
+        // Act
+        _renderer.RenderRootComponent(_authorizeRouteViewComponentId, ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(AuthorizeRouteView.RouteData), routeData },
+                { nameof(AuthorizeRouteView.DefaultLayout), typeof(TestLayout) },
+                { nameof(AuthorizeRouteView.NotAuthorizedPage), typeof(TestNotAuthorizedPage) },
+            }));
+
+        // Assert: renders layout containing the NotAuthorizedPage component
+        var batch = _renderer.Batches.Single();
+        var layoutDiff = batch.GetComponentDiffs<TestLayout>().Single();
+        Assert.Collection(layoutDiff.Edits,
+            edit => AssertPrependText(batch, edit, "Layout starts here"),
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                AssertFrame.Component<TestNotAuthorizedPage>(batch.ReferenceFrames[edit.ReferenceFrameIndex]);
+            },
+            edit => AssertPrependText(batch, edit, "Layout ends here"));
+
+        // Assert: renders the not authorized page content
+        var pageDiff = batch.GetComponentDiffs<TestNotAuthorizedPage>().Single();
+        Assert.Collection(pageDiff.Edits,
+            edit => AssertPrependText(batch, edit, "This is the not authorized page"));
+    }
+
+    [Fact]
+    public void WhenNotAuthorized_NotAuthorizedPageTakesPriorityOverNotAuthorizedContent()
+    {
+        // Arrange: set both NotAuthorizedPage and NotAuthorized content
+        var routeData = new RouteData(typeof(TestPageRequiringAuthorization), EmptyParametersDictionary);
+        _testAuthorizationService.NextResult = AuthorizationResult.Failed();
+        _authenticationStateProvider.CurrentAuthStateTask = Task.FromResult(new AuthenticationState(
+            new ClaimsPrincipal(new TestIdentity { Name = "Bert" })));
+
+        RenderFragment<AuthenticationState> customNotAuthorized =
+            state => builder => builder.AddContent(0, $"Go away, {state.User.Identity.Name}");
+
+        // Act
+        _renderer.RenderRootComponent(_authorizeRouteViewComponentId, ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(AuthorizeRouteView.RouteData), routeData },
+                { nameof(AuthorizeRouteView.DefaultLayout), typeof(TestLayout) },
+                { nameof(AuthorizeRouteView.NotAuthorizedPage), typeof(TestNotAuthorizedPage) },
+                { nameof(AuthorizeRouteView.NotAuthorized), customNotAuthorized },
+            }));
+
+        // Assert: renders layout containing the NotAuthorizedPage component (not the custom content)
+        var batch = _renderer.Batches.Single();
+        var layoutDiff = batch.GetComponentDiffs<TestLayout>().Single();
+        Assert.Collection(layoutDiff.Edits,
+            edit => AssertPrependText(batch, edit, "Layout starts here"),
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                AssertFrame.Component<TestNotAuthorizedPage>(batch.ReferenceFrames[edit.ReferenceFrameIndex]);
+            },
+            edit => AssertPrependText(batch, edit, "Layout ends here"));
+    }
+
+    [Fact]
+    public void WhenNotAuthorized_ThrowsForInvalidNotAuthorizedPageType()
+    {
+        // Arrange: set NotAuthorizedPage to a type that doesn't implement IComponent
+        var routeData = new RouteData(typeof(TestPageRequiringAuthorization), EmptyParametersDictionary);
+        _testAuthorizationService.NextResult = AuthorizationResult.Failed();
+
+        // Act & Assert
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+        {
+            _renderer.RenderRootComponent(_authorizeRouteViewComponentId, ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(AuthorizeRouteView.RouteData), routeData },
+                { nameof(AuthorizeRouteView.DefaultLayout), typeof(TestLayout) },
+                { nameof(AuthorizeRouteView.NotAuthorizedPage), typeof(string) }, // string doesn't implement IComponent
+            }));
+        });
+
+        Assert.Contains("does not implement", exception.Message);
+        Assert.Contains("IComponent", exception.Message);
+    }
+
     private static void AssertPrependText(CapturedBatch batch, RenderTreeEdit edit, string text)
     {
         Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
@@ -384,6 +473,14 @@ public class AuthorizeRouteViewTest
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.AddContent(0, $"Hello from the page with message: {Message}");
+        }
+    }
+
+    class TestNotAuthorizedPage : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.AddContent(0, "This is the not authorized page");
         }
     }
 
