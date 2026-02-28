@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 using Microsoft.CodeAnalysis;
@@ -195,12 +194,19 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                             ref validatableTypes,
                             ref visitedTypes);
 
+                        var displayName =
+                            parameter.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute)) ??
+                            correspondingProperty.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute)) ??
+                            parameter.GetJsonPropertyName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonPropertyNameAttribute)) ??
+                            correspondingProperty.GetJsonPropertyName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonPropertyNameAttribute)) ??
+                            parameter.Name ??
+                            correspondingProperty.Name;
+
                         members.Add(new ValidatableProperty(
                             ContainingType: correspondingProperty.ContainingType,
                             Type: correspondingProperty.Type,
                             Name: correspondingProperty.Name,
-                            DisplayName: parameter.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute)) ??
-                                        correspondingProperty.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute)),
+                            DisplayName: displayName,
                             Attributes: []));
                     }
                 }
@@ -257,11 +263,16 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 continue;
             }
 
+            var displayName =
+                member.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute)) ??
+                member.GetJsonPropertyName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonPropertyNameAttribute)) ??
+                member.Name;
+
             members.Add(new ValidatableProperty(
                 ContainingType: member.ContainingType,
                 Type: member.Type,
                 Name: member.Name,
-                DisplayName: member.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute)),
+                DisplayName: displayName,
                 Attributes: attributes));
         }
 
