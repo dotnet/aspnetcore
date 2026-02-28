@@ -53,6 +53,26 @@
 </div>
 
 <hr />
+<h2>Error boundary can handle multiple errors thrown</h2>
+<div id="throw-multiple-errors-foreach-test">
+    <ErrorBoundary>
+        <ChildContent>
+            @if (throwMultipleErrorsForeach)
+            {
+                @foreach (var item in Enumerable.Range(1, 3))
+                {
+                    <ForeachErrorsChild />
+                }
+            }
+        </ChildContent>
+        <ErrorContent>
+            <p class="error-message">There was an error.</p>
+        </ErrorContent>
+    </ErrorBoundary>
+    <button class="throw-multiple-errors-foreach" @onclick="@(() => throwMultipleErrorsForeach = true)">Throw multiple errors from child</button>
+</div>
+
+<hr />
 <h2>Exception inline in error boundary markup</h2>
 <p>This shows that, if an ErrorBoundary itself fails while rendering its own ChildContent, then it can catch its own exception. But if the error comes from the error content, this triggers the "infinite error loop" detection logic and becomes fatal.</p>
 <div id="inline-error-test">
@@ -139,6 +159,8 @@
     private bool disposalTestBeginDelayedError;
     private bool multipleChildrenBeginDelayedError;
     private bool twoErrorsInChild;
+
+    private bool throwMultipleErrorsForeach;
 
     void EventHandlerErrorSync()
         => throw new InvalidTimeZoneException("Synchronous error from event handler");

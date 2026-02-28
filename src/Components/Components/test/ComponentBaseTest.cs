@@ -437,6 +437,91 @@ public class ComponentBaseTest
     }
 
     [Fact]
+    public void ErrorBoundaryStaysInTheErrorStateAfterRerender()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        TestErrorBoundary capturedBoundary = null;
+        var shouldThrow = true;
+        var rootComponent = new TestComponent();
+
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundary>(0);
+            builder.AddAttribute(1, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(builder2 =>
+            {
+                builder2.OpenComponent<TestComponentErrorBuildRenderTree>(1);
+                builder2.AddAttribute(2, nameof(TestComponentErrorBuildRenderTree.ThrowDuringRender), shouldThrow);
+                builder2.CloseComponent();
+            }));
+            builder.AddComponentReferenceCapture(2, obj => capturedBoundary = (TestErrorBoundary)obj);
+            builder.CloseComponent();
+        };
+
+        // Render first time
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        renderer.RenderRootComponent(rootComponentId);
+
+        Assert.NotNull(capturedBoundary);
+        Assert.NotNull(capturedBoundary.ReceivedException);
+        var errorBoundaryId = renderer.Batches.Single().GetComponentFrames<TestErrorBoundary>().Single().ComponentId;
+        var frames = renderer.GetCurrentRenderTreeFrames(errorBoundaryId).AsEnumerable();
+        Assert.Collection(frames,
+            frame => AssertFrame.Element(frame, "div", subtreeLength: 2),
+            frame => AssertFrame.Attribute(frame, "class", "blazor-error-boundary"));
+
+        // Render second time with no error
+        shouldThrow = false;
+        renderer.RenderRootComponent(rootComponentId);
+
+        Assert.NotNull(capturedBoundary);
+        Assert.NotNull(capturedBoundary.ReceivedException);
+        frames = renderer.GetCurrentRenderTreeFrames(errorBoundaryId).AsEnumerable();
+        Assert.Collection(frames,
+            frame => AssertFrame.Element(frame, "div", subtreeLength: 2),
+            frame => AssertFrame.Attribute(frame, "class", "blazor-error-boundary"));
+    }
+
+    [Fact]
+    public async Task ErrorBoundaryStaysInTheErrorStateAfterRerenderInTheSameBatch()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        TestErrorBoundary capturedBoundary = null;
+        var shouldThrow = true;
+        var rootComponent = new TestComponent();
+
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundary>(0);
+            builder.AddAttribute(1, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(builder2 =>
+            {
+                builder2.OpenComponent<TestComponentErrorBuildRenderTree>(1);
+                builder2.AddAttribute(2, nameof(TestComponentErrorBuildRenderTree.ThrowDuringRender), shouldThrow);
+                builder2.CloseComponent();
+
+                builder2.OpenComponent<TestComponentErrorBuildRenderTree>(2);
+                builder2.AddAttribute(3, nameof(TestComponentErrorBuildRenderTree.ThrowDuringRender), shouldThrow);
+                builder2.CloseComponent();
+            }));
+            builder.AddComponentReferenceCapture(2, obj => capturedBoundary = (TestErrorBoundary)obj);
+            builder.CloseComponent();
+        };
+
+        // Render first time
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        renderer.RenderRootComponent(rootComponentId);
+
+        Assert.NotNull(capturedBoundary);
+        Assert.NotNull(capturedBoundary.ReceivedException);
+        var errorBoundaryId = renderer.Batches.Single().GetComponentFrames<TestErrorBoundary>().Single().ComponentId;
+        var frames = renderer.GetCurrentRenderTreeFrames(errorBoundaryId).AsEnumerable();
+        Assert.Collection(frames,
+            frame => AssertFrame.Element(frame, "div", subtreeLength: 2),
+            frame => AssertFrame.Attribute(frame, "class", "blazor-error-boundary"));
+    }
+
+    [Fact]
     public async Task ComponentBaseDoesntRenderWhenOnInitializedAsyncFaultedTask()
     {
         // Arrange
@@ -729,6 +814,8 @@ public class ComponentBaseTest
         [Parameter] public bool FaultedTaskOnInitializedAsync { get; set; } = false;
         [Parameter] public bool FaultedTaskOnParametersSetAsync { get; set; } = false;
 
+        [Parameter] public bool ThrowDuringRender { get; set; } = true;
+
         public int StateHasChangedCalled { get; set; } = 0;
 
         protected new void StateHasChanged()
@@ -739,7 +826,10 @@ public class ComponentBaseTest
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            throw new InvalidOperationException("Error in BuildRenderTree");
+            if (ThrowDuringRender)
+            {
+                throw new InvalidOperationException("Error in BuildRenderTree");
+            }
         }
 
         protected override Task OnInitializedAsync()
