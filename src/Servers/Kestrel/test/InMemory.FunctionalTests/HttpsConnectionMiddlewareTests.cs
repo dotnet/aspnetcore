@@ -101,6 +101,70 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
         }
     }
 
+    private static string GetCertificatePath()
+    {
+        var appData = Environment.GetEnvironmentVariable("APPDATA");
+        var home = Environment.GetEnvironmentVariable("HOME");
+        var basePath = appData != null ? Path.Combine(appData, "ASP.NET", "https") : null;
+        basePath = basePath ?? (home != null ? Path.Combine(home, ".aspnet", "https") : null);
+        return Path.Combine(basePath, $"TestApplication.pfx");
+    }
+
+    [Fact]
+    public async Task CanReadAndWriteWithHttpsConnectionMiddlewareWithPfxCertificate()
+    {
+        try
+        {
+            var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
+            var path = GetCertificatePath();
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllBytes(path, bytes);
+
+            var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
+            {
+                ["Certificates:Default:Path"] = path,
+                ["Certificates:Default:Password"] = "1234",
+            }).Build();
+
+            var options = new KestrelServerOptions();
+            var env = new Mock<IHostEnvironment>();
+            env.SetupGet(e => e.ContentRootPath).Returns(Directory.GetCurrentDirectory());
+
+            var serviceProvider = new ServiceCollection().AddLogging().BuildServiceProvider();
+            options.ApplicationServices = serviceProvider;
+
+            var logger = serviceProvider.GetRequiredService<ILogger<KestrelServer>>();
+            var httpsLogger = serviceProvider.GetRequiredService<ILogger<HttpsConnectionMiddleware>>();
+            var loader = new KestrelConfigurationLoader(options, configuration, env.Object, reloadOnChange: false, logger, httpsLogger);
+            loader.Load();
+
+            void ConfigureListenOptions(ListenOptions listenOptions)
+            {
+                listenOptions.KestrelServerOptions = options;
+                listenOptions.UseHttps();
+            };
+
+            await using (var server = new TestServer(App, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+            {
+                var result = await server.HttpClientSlim.PostAsync($"https://localhost:{server.Port}/",
+                    new FormUrlEncodedContent(new[] {
+                        new KeyValuePair<string, string>("content", "Hello World?")
+                    }),
+                    validateCertificate: false);
+
+                Assert.Equal("content=Hello+World%3F", result);
+            }
+        }
+        finally
+        {
+            if (File.Exists(GetCertificatePath()))
+            {
+                File.Delete(GetCertificatePath());
+            }
+        }
+    }
+
     [Fact]
     public async Task SslStreamIsAvailable()
     {
