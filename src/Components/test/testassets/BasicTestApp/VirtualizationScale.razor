@@ -1,0 +1,39 @@
+﻿<div style="scale: @ScaleX @ScaleY; transform-origin: top left;">
+    <div id="virtualize" style="height: 200px; overflow: auto">
+        <table>
+            <tbody>
+                <Virtualize ItemsProvider="@itemsProvider">
+                    <tr class="person"><span>@context.Id</span></tr>
+            </Virtualize>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<input type="number" @bind="ScaleX" id="scale-x-input" />
+<input type="number" @bind="ScaleY" id="scale-y-input" />
+<button id="btn">Click</button>
+
+@code {
+    internal class Person
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+    }
+
+    public double? ScaleX { get; set; } = 1.0;
+    public double? ScaleY { get; set; } = 1.0;
+
+    private ItemsProviderDelegate<Person> itemsProvider = default!;
+
+    protected override void OnInitialized()
+    {
+        itemsProvider = async request =>
+        {
+            await Task.CompletedTask;
+            return new ItemsProviderResult<Person>(
+                items: Enumerable.Range(request.StartIndex, request.Count).Select(i => new Person { Id = i, Name = $"Person {i}" }).ToList(),
+                totalItemCount: 100);
+        };
+    }
+}

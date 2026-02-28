@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Linq;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -424,6 +425,81 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             name => Assert.Equal("Person 1", name),
             name => Assert.Equal("Person 2", name),
             name => Assert.Equal("Person 3", name));
+    }
+
+    [Theory]
+    [InlineData("1")]
+    [InlineData("2")]
+    [InlineData("0.5")]
+    public void CanScrollWhenAppliedScale(string scaleY)
+    {
+        Browser.MountTestComponent<VirtualizationScale>();
+        var container = Browser.Exists(By.Id("virtualize"));
+
+        Browser.True(() =>
+        {
+            try
+            {
+                return Browser.FindElement(By.Id("virtualize"))
+                    .FindElements(By.CssSelector("tbody tr.person")).Count > 0;
+            }
+            catch (StaleElementReferenceException)
+            {
+                return false;
+            }
+        });
+
+        Browser.FindElement(By.Id("scale-y-input")).Clear();
+        Browser.FindElement(By.Id("scale-y-input")).SendKeys(scaleY);
+        Browser.FindElement(By.Id("btn")).Click();
+
+        // Scroll slowly (10px increments) and check if the first visible item changes unexpectedly.
+        // If the item index goes backward (e.g., from "5" to "4") instead of
+        // staying the same or advancing, that indicates flashing.
+        const string detectFlashingScript = @"
+        var done = arguments[0];
+        (async () => {
+            const SCROLL_INCREMENT = 10;
+            let previousTopItemIndex = null;
+            const container = document.querySelector('#virtualize');
+            if (!container) {
+                done(false);
+                return;
+            }
+
+            const getTopVisibleItemIndex = () => {
+                const firstRow = container.querySelector('tbody tr.person span');
+                if (!firstRow) return null;
+                return parseInt(firstRow.textContent, 10);
+            };
+
+            while (true) {
+                const previousScrollTop = container.scrollTop;
+                container.scrollTop += SCROLL_INCREMENT;
+                await new Promise(resolve => requestAnimationFrame(resolve));
+                const currentScrollTop = container.scrollTop;
+                if (currentScrollTop === previousScrollTop) {
+                    done(true);
+                    return;
+                }
+                const currentTopItemIndex = getTopVisibleItemIndex();
+                if (currentTopItemIndex === null) {
+                    done(false);
+                    return;
+                }
+                if (previousTopItemIndex !== null) {
+                    if (currentTopItemIndex < previousTopItemIndex) {
+                        done(false);
+                        return;
+                    }
+                }
+                previousTopItemIndex = currentTopItemIndex;
+            }
+        })();";
+
+        var jsExecutor = (IJavaScriptExecutor)Browser;
+        var noFlashingDetected = (bool)jsExecutor.ExecuteAsyncScript(detectFlashingScript);
+        Assert.True(noFlashingDetected);
     }
 
     [Theory]

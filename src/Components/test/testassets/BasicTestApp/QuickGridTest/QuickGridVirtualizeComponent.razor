@@ -29,7 +29,7 @@
             Interlocked.Increment(ref ItemsProviderCallCount);
             StateHasChanged();
             return GridItemsProviderResult.From(
-                items: Enumerable.Range(1, 100).Select(i => new Person { Id = i, Name = $"Person {i}" }).ToList(),
+                items: Enumerable.Range(request.StartIndex, request.Count ?? 10).Select(i => new Person { Id = i, Name = $"Person {i}" }).ToList(),
                 totalItemCount: 100);
         };
     }
