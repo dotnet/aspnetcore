@@ -323,4 +323,7 @@
     </Otherwise>
   </Choose>
 
+  <!-- Import affected test area filtering (must come after all ProjectToBuild items are defined) -->
+  <Import Project="targets\AffectedTestAreas.targets" Condition=" '$(AffectedTestAreas)' != '' " />
+
 </Project>

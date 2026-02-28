@@ -149,6 +149,19 @@ try {
         & $PSScriptRoot\GenerateProjectList.ps1 -ci:$ci
     }
 
+    #
+    # Verify the affected project areas dependency graph is up to date
+    #
+
+    Write-Host "Verifying dependency graph (eng/AffectedProjectAreas.json)"
+    try {
+        & $PSScriptRoot\VerifyDependencyGraph.ps1 -ci:$ci
+    }
+    catch {
+        LogError -code 'BUILD005' `
+            "Dependency graph verification failed. Run eng/scripts/GenerateAffectedProjectAreas.ps1 to update eng/AffectedProjectAreas.json."
+    }
+
     Write-Host "Running git diff to check for pending changes"
 
     # Redirect stderr to stdout because PowerShell does not consistently handle output to stderr
