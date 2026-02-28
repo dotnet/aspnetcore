@@ -53,10 +53,16 @@ internal class WebTransportTestUtilities
             H3Datagram = 1,
         };
 
-        await controlStream.SendSettingsAsync(settings.GetNonProtocolDefaults());
+        var nonDefaultSettings = settings.GetNonProtocolDefaults();
+        await controlStream.SendSettingsAsync(nonDefaultSettings);
         var response1 = await controlStream2.ExpectSettingsAsync();
 
-        await inMemory.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
+        // Drain all received settings before sending the CONNECT request to avoid a race
+        // where the server processes the request before all settings (e.g. H3Datagram) are applied.
+        for (var i = 0; i < nonDefaultSettings.Count; i++)
+        {
+            await inMemory.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
+        }
 
         var requestStream = await inMemory.CreateRequestStream(new[]
         {
