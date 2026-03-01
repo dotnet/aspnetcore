@@ -1,1 +1,3 @@
 #nullable enable
+static Microsoft.AspNetCore.DataProtection.StackExchangeRedisDataProtectionBuilderExtensions.PersistKeysToStackExchangeRedis(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder, System.Func<System.IServiceProvider!, StackExchange.Redis.IDatabase!>! databaseFactory) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.StackExchangeRedisDataProtectionBuilderExtensions.PersistKeysToStackExchangeRedis(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder, System.Func<System.IServiceProvider!, StackExchange.Redis.IDatabase!>! databaseFactory, StackExchange.Redis.RedisKey key) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
