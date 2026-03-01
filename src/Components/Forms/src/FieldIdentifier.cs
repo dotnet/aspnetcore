@@ -75,7 +75,7 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
     {
         // We want to compare Model instances by reference. RuntimeHelpers.GetHashCode returns identical hashes for equal object references (ignoring any `Equals`/`GetHashCode` overrides) which is what we want.
         var modelHash = RuntimeHelpers.GetHashCode(Model);
-        var fieldHash = StringComparer.Ordinal.GetHashCode(FieldName);
+        var fieldHash = FieldName is null ? 0 : StringComparer.Ordinal.GetHashCode(FieldName);
         return (
             modelHash,
             fieldHash
