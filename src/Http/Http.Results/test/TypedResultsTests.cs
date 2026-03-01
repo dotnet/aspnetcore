@@ -1141,7 +1141,7 @@ public partial class TypedResultsTests
         Assert.Null(result.ProblemDetails.Instance);
         Assert.Equal("application/problem+json", result.ContentType);
         Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
-        Assert.Equal("An error occurred while processing your request.", result.ProblemDetails.Title);
+        Assert.Equal("Internal Server Error", result.ProblemDetails.Title);
         Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", result.ProblemDetails.Type);
         Assert.Empty(result.ProblemDetails.Extensions);
     }
