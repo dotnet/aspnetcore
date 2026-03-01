@@ -117,4 +117,7 @@ internal static partial class DefaultHubDispatcherLog
 
     [LoggerMessage(28, LogLevel.Trace, "Received SequenceMessage with Sequence ID '{SequenceId}'.", EventName = "ReceivedSequenceMessage")]
     public static partial void ReceivedSequenceMessage(ILogger logger, long sequenceId);
+
+    [LoggerMessage(29, LogLevel.Debug, "The service provider was disposed while dispatching 'OnDisconnectedAsync'. Unable to run Hub.OnDisconnectedAsync.", EventName = "ServiceProviderDisposedWhileDisconnecting")]
+    public static partial void ServiceProviderDisposedWhileDisconnecting(ILogger logger);
 }
