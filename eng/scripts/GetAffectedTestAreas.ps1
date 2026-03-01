@@ -57,18 +57,25 @@ if (-not $ChangedFiles) {
 
     Write-Host "Computing changed files against origin/$TargetBranch"
 
+    # Temporarily disable PowerShell 7.4+ behavior that throws on non-zero native command exit codes.
+    # Git commands use non-zero exit codes for expected conditions (e.g., ref not found).
+    $savedNativePref = $PSNativeCommandUseErrorActionPreference
+    $PSNativeCommandUseErrorActionPreference = $false
+
     # Ensure the target branch ref is available (CI may use shallow clones)
-    $refExists = & git rev-parse --verify "origin/$TargetBranch" 2>$null
+    & git rev-parse --verify "origin/$TargetBranch" 2>$null | Out-Null
     if ($LASTEXITCODE -ne 0) {
         Write-Host "origin/$TargetBranch not found locally, fetching..."
-        & git fetch origin "$TargetBranch" --depth=1 2>&1 | Write-Host
+        & git fetch origin "$TargetBranch" --depth=1 2>&1 | ForEach-Object { Write-Host $_ }
         if ($LASTEXITCODE -ne 0) {
             Write-Host "git fetch failed. Running all tests."
+            $PSNativeCommandUseErrorActionPreference = $savedNativePref
             return ""
         }
     }
 
     $ChangedFiles = & git --no-pager diff "origin/$TargetBranch" --name-only --diff-filter=ACMRT
+    $PSNativeCommandUseErrorActionPreference = $savedNativePref
     if ($LASTEXITCODE -ne 0) {
         Write-Host "git diff failed. Running all tests."
         return ""

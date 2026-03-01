@@ -416,8 +416,12 @@ if [ "$ci" = true ] && [ -n "${SYSTEM_PULLREQUEST_TARGETBRANCH:-}" ] && [ -z "${
         echo "Computing affected test areas for PR build..."
         output_file="$artifacts_dir/tmp/AffectedTestAreas.txt"
         mkdir -p "$(dirname "$output_file")"
+        # Use set +e to prevent script failure if area computation fails
+        set +e
         pwsh -NoProfile -Command "& '$affected_areas_script' -OutputFile '$output_file'"
-        if [ -f "$output_file" ]; then
+        pwsh_exit=$?
+        set -e
+        if [ $pwsh_exit -eq 0 ] && [ -f "$output_file" ]; then
             areas=$(cat "$output_file")
             if [ -n "$areas" ]; then
                 export AffectedTestAreas="$areas"
@@ -426,6 +430,8 @@ if [ "$ci" = true ] && [ -n "${SYSTEM_PULLREQUEST_TARGETBRANCH:-}" ] && [ -z "${
                 echo "No test area filtering applied (all tests will run)."
             fi
             rm -f "$output_file"
+        else
+            echo "Warning: Failed to compute affected test areas. All tests will run."
         fi
     fi
 fi

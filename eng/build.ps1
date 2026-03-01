@@ -470,12 +470,18 @@ try {
     if ($CI -and $env:SYSTEM_PULLREQUEST_TARGETBRANCH -and -not $env:AffectedTestAreas) {
         $affectedAreasScript = Join-Path $PSScriptRoot "scripts/GetAffectedTestAreas.ps1"
         if (Test-Path $affectedAreasScript) {
-            Write-Host "Computing affected test areas for PR build..."
-            $env:AffectedTestAreas = & $affectedAreasScript
-            if ($env:AffectedTestAreas) {
-                Write-Host "AffectedTestAreas set to: $($env:AffectedTestAreas)"
-            } else {
-                Write-Host "No test area filtering applied (all tests will run)."
+            try {
+                Write-Host "Computing affected test areas for PR build..."
+                $env:AffectedTestAreas = & $affectedAreasScript
+                if ($env:AffectedTestAreas) {
+                    Write-Host "AffectedTestAreas set to: $($env:AffectedTestAreas)"
+                } else {
+                    Write-Host "No test area filtering applied (all tests will run)."
+                }
+            } catch {
+                Write-Host "Warning: Failed to compute affected test areas: $_"
+                Write-Host "All tests will run."
+                $env:AffectedTestAreas = $null
             }
         }
     }
