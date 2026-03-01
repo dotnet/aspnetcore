@@ -977,6 +977,38 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
     }
 
+    [Fact]
+    public async Task GetOpenApiParameters_DoesNotGenerateNullComponentizedSchemaAsNullableParametersAreOptional()
+    {
+        // Arrange
+        var builder1 = CreateBuilder();
+        builder1.MapGet("/query", (Status status, Status? optionalStatus) => "TEST");
+
+        var builder2 = CreateBuilder();
+        builder2.MapGet("/query", (Status? optionalStatus, Status status) => "TEST");
+
+        // Assert
+        await VerifyOpenApiDocument(builder1, VerifyNonNullComponentizedSchema);
+        await VerifyOpenApiDocument(builder2, VerifyNonNullComponentizedSchema);
+
+        static void VerifyNonNullComponentizedSchema(OpenApiDocument doc)
+        {
+            var schema = doc.Components.Schemas["Status"];
+            Assert.DoesNotContain(schema.Enum, node => node is null);
+            Assert.Equal(3, schema.Enum.Count);
+
+            var operation = doc.Paths["/query"].Operations[HttpMethod.Get];
+
+            Assert.Equal(2, operation.Parameters.Count);
+            var nullableParam = operation.Parameters.First(p => p.Name == "optionalStatus");
+            Assert.Equal("Status", ((OpenApiSchemaReference)nullableParam.Schema).Reference.Id);
+
+            var notNullableParam = operation.Parameters.First(p => p.Name == "status");
+            var notNullableSchemaReference = Assert.IsType<OpenApiSchemaReference>(notNullableParam.Schema);
+            Assert.Equal("Status", notNullableSchemaReference.Reference.Id);
+        }
+    }
+
     [ApiController]
     [Route("[controller]/[action]")]
     private class TestFromQueryController : ControllerBase
