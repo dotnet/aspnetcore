@@ -85,9 +85,11 @@
     private void RenderPlaceholderRow(RenderTreeBuilder __builder, PlaceholderContext placeholderContext)
     {
         <tr aria-rowindex="@(placeholderContext.Index + 1)">
-            @foreach (var col in _columns)
+            @foreach (var col in _columns)  
             {
-                <td class="grid-cell-placeholder @ColumnClass(col)" @key="@col">@{ col.RenderPlaceholderContent(__builder, placeholderContext); }</td>
+                var hasCustomPlaceholder = col.PlaceholderTemplate is not null;
+                var placeholderClass = hasCustomPlaceholder ? "grid-cell-placeholder--custom" : "grid-cell-placeholder";
+                <td class="@($"{placeholderClass} {ColumnClass(col)}".Trim())" @key="@col">@{ col.RenderPlaceholderContent(__builder, placeholderContext); }</td>
             }
         </tr>
     }
