@@ -10,9 +10,6 @@ dotnet_diagnostic.CA1304.severity = error
 # CA1310: Specify StringComparison for correctness
 dotnet_diagnostic.CA1310.severity = error
 
-# TODO: remove this - https://github.com/dotnet/aspnetcore/issues/47912
-dotnet_diagnostic.EnableGenerateDocumentationFile.severity = none
-
 # Referencing types that are defined in M.CA.Workspaces is not appropriate
 # for analyzers or source generators that might be invoked from a command
 # line build because editor-specific types in M.CA.Workspaces are not
@@ -29,3 +26,4 @@ dotnet_diagnostic.EnableGenerateDocumentationFile.severity = none
 # to see if they are from a Workspaces assembly so it will take longer than the
 # greedier (and stricter) check for references overall.
 roslyn_correctness.assembly_reference_validation = relaxed
+
