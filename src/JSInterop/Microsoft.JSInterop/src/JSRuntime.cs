@@ -110,11 +110,19 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
 
     internal async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(long targetInstanceId, string identifier, JSCallType callType, object?[]? args)
     {
-        if (DefaultAsyncTimeout.HasValue)
+        var timeout = DefaultAsyncTimeout;
+        if (timeout.HasValue)
         {
-            using var cts = new CancellationTokenSource(DefaultAsyncTimeout.Value);
-            // We need to await here due to the using
-            return await InvokeAsync<TValue>(targetInstanceId, identifier, callType, cts.Token, args);
+            using var cts = new CancellationTokenSource(timeout.Value);
+            try
+            {
+                // We need to await here due to the using
+                return await InvokeAsync<TValue>(targetInstanceId, identifier, callType, cts.Token, args);
+            }
+            catch (OperationCanceledException ex) when (cts.IsCancellationRequested)
+            {
+                throw new TimeoutException($"The JS interop call '{identifier}' timed out after {timeout.Value}.", ex);
+            }
         }
 
         return await InvokeAsync<TValue>(targetInstanceId, identifier, callType, CancellationToken.None, args);
