@@ -118,7 +118,8 @@ internal static class RequestDelegateGeneratorSources
             HttpContext httpContext,
             LogOrThrowExceptionHelper logOrThrowExceptionHelper,
             string parameterTypeName,
-            string parameterName)
+            string parameterName,
+            bool allowEmptyFormBody = false)
         {
             object? formValue = null;
             var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
@@ -127,6 +128,12 @@ internal static class RequestDelegateGeneratorSources
             {
                 if (!httpContext.Request.HasFormContentType)
                 {
+                    if (allowEmptyFormBody)
+                    {
+                        httpContext.Request.Form = FormCollection.Empty;
+                        return (true, null);
+                    }
+
                     logOrThrowExceptionHelper.UnexpectedNonFormContentType(httpContext.Request.ContentType);
                     httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
                     return (false, null);
@@ -154,6 +161,10 @@ internal static class RequestDelegateGeneratorSources
                     httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                     return (false, null);
                 }
+            }
+            else if (allowEmptyFormBody)
+            {
+                httpContext.Request.Form = FormCollection.Empty;
             }
 
             return (true, formValue);
