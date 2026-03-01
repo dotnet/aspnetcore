@@ -141,4 +141,7 @@
   <data name="TempData_CannotSerializeType" xml:space="preserve">
     <value>The '{0}' cannot serialize an object of type '{1}'.</value>
   </data>
+  <data name="FormatExceptionMessage_NullJsonIsInvalid" xml:space="preserve">
+    <value>A JSON request body containing a null value is not valid for the required '{0}' parameter.</value>
+  </data>
 </root>

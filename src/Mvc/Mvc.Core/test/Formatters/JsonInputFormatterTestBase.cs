@@ -436,32 +436,48 @@ public abstract class JsonInputFormatterTestBase : LoggedTest
         Assert.IsType<TooManyModelErrorsException>(error.Exception);
     }
 
-    [Theory]
-    [InlineData("null", true, true)]
-    [InlineData("null", false, false)]
-    public async Task ReadAsync_WithInputThatDeserializesToNull_SetsModelOnlyIfAllowingEmptyInput(
-        string content,
-        bool treatEmptyInputAsDefaultValue,
-        bool expectedIsModelSet)
+    [Fact]
+    public async Task ReadAsync_WithNullJsonInput_WhenAllowingEmptyInput_SetsModelToNull()
     {
-        // Arrange
         var formatter = GetInputFormatter();
 
-        var contentBytes = Encoding.UTF8.GetBytes(content);
+        var contentBytes = Encoding.UTF8.GetBytes("null");
         var httpContext = GetHttpContext(contentBytes);
 
         var formatterContext = CreateInputFormatterContext(
             typeof(string),
             httpContext,
-            treatEmptyInputAsDefaultValue: treatEmptyInputAsDefaultValue);
+            treatEmptyInputAsDefaultValue: true);
 
-        // Act
         var result = await formatter.ReadAsync(formatterContext);
 
-        // Assert
         Assert.False(result.HasError);
-        Assert.Equal(expectedIsModelSet, result.IsModelSet);
+        Assert.True(result.IsModelSet);
         Assert.Null(result.Model);
+    }
+
+    [Fact]
+    public async Task ReadAsync_WithNullJsonInput_WhenNotAllowingEmptyInput_ReturnsFailureWithDistinctError()
+    {
+        var formatter = GetInputFormatter();
+
+        var contentBytes = Encoding.UTF8.GetBytes("null");
+        var httpContext = GetHttpContext(contentBytes);
+
+        var formatterContext = CreateInputFormatterContext(
+            typeof(string),
+            httpContext,
+            treatEmptyInputAsDefaultValue: false);
+
+        var result = await formatter.ReadAsync(formatterContext);
+
+        Assert.True(result.HasError);
+        Assert.False(result.IsModelSet);
+        Assert.Null(result.Model);
+
+        var error = Assert.Single(formatterContext.ModelState[string.Empty].Errors);
+        Assert.Contains("null", error.ErrorMessage, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("non-empty", error.ErrorMessage, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

@@ -300,6 +300,9 @@
   <data name="ModelBinding_MissingRequestBodyRequiredMember" xml:space="preserve">
     <value>A non-empty request body is required.</value>
   </data>
+  <data name="FormatExceptionMessage_NullJsonIsInvalid" xml:space="preserve">
+    <value>A JSON request body containing a null value is not valid for the required '{0}' parameter.</value>
+  </data>
   <data name="ValueProviderResult_NoConverterExists" xml:space="preserve">
     <value>The parameter conversion from type '{0}' to type '{1}' failed because no type converter can convert between these types.</value>
   </data>
