@@ -1,5 +1,6 @@
 ﻿@page "/tempdata"
 @using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Endpoints
 @inject NavigationManager NavigationManager
 
 <h1>TempData Basic Test</h1>
@@ -12,6 +13,11 @@
 <form method="post" @formname="SetTempDataDiffPage" @onsubmit="() => SetValues(differentPage: true)">
     <AntiforgeryToken />
     <button type="submit" id="set-values-button-diff-page">Set TempData Values and Redirect to Different Page</button>
+</form>
+
+<form method="post" @formname="SetSupplyFromTempData" @onsubmit="() => SetValuesSupplyFromTempData()">
+    <AntiforgeryToken />
+    <button type="submit" id="set-supply-from-tempdata">Set TempData Values via SupplyParameterFromTempData</button>
 </form>
 
 <form method="post" @formname="JustRedirect" @onsubmit="() => NavigateToSamePage()">
@@ -40,6 +46,7 @@
 
 <p id="contains-message">@_containsMessageKey</p>
 <p id="contains-peeked-value">@_containsPeekedValueKey</p>
+<p id="supply-parameter-from-tempdata">@_supplyParameterFromTempData</p>
 
 @code {
     [SupplyParameterFromForm(Name = "_handler")]
@@ -53,6 +60,9 @@
 
     [SupplyParameterFromQuery]
     public string ContainsKey { get; set; } = string.Empty;
+
+    [SupplyParameterFromTempData]
+    private string _supplyParameterFromTempData { get; set; }
 
     private string? _message;
     private string? _peekedValue;
@@ -115,6 +125,12 @@
     private void DeletePeekedValue()
     {
         TempData!.Remove("PeekedValue");
+        NavigateToSamePage();
+    }
+
+    private void SetValuesSupplyFromTempData()
+    {
+        _supplyParameterFromTempData = "Supplied from TempData";
         NavigateToSamePage();
     }
 

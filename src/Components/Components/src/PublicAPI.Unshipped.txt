@@ -1,4 +1,13 @@
 #nullable enable
+Microsoft.AspNetCore.Components.ITempDataValueMapper
+Microsoft.AspNetCore.Components.ITempDataValueMapper.DeleteValueCallback(string! tempDataKey) -> void
+Microsoft.AspNetCore.Components.ITempDataValueMapper.GetValue(string! tempDataKey, System.Type! targetType) -> object?
+Microsoft.AspNetCore.Components.ITempDataValueMapper.RegisterValueCallback(string! tempDataKey, System.Func<object?>! valueGetter) -> void
+Microsoft.AspNetCore.Components.SupplyParameterFromTempDataAttribute
+Microsoft.AspNetCore.Components.SupplyParameterFromTempDataAttribute.Name.get -> string?
+Microsoft.AspNetCore.Components.SupplyParameterFromTempDataAttribute.Name.set -> void
+Microsoft.AspNetCore.Components.SupplyParameterFromTempDataAttribute.SupplyParameterFromTempDataAttribute() -> void
+Microsoft.AspNetCore.Components.SupplyParameterFromTempDataServiceCollectionExtensions
 static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithHash(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! hash) -> string!
 Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.get -> bool
 Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.init -> void
@@ -7,3 +16,4 @@ Microsoft.AspNetCore.Components.IComponentPropertyActivator.GetActivator(System.
 *REMOVED*Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void
 *REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
 *REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void
+static Microsoft.AspNetCore.Components.SupplyParameterFromTempDataServiceCollectionExtensions.AddSupplyValueFromTempDataProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

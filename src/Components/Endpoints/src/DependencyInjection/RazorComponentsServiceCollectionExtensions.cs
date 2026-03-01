@@ -69,7 +69,9 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<EndpointRoutingStateProvider>();
         services.TryAddScoped<IRoutingStateProvider>(sp => sp.GetRequiredService<EndpointRoutingStateProvider>());
         services.TryAddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
+        services.TryAddScoped<ITempDataValueMapper, TempDataValueMapper>();
         services.AddSupplyValueFromQueryProvider();
+        services.AddSupplyValueFromTempDataProvider();
         services.AddSupplyValueFromPersistentComponentStateProvider();
         services.TryAddCascadingValue(sp => sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext);
         services.TryAddScoped<WebAssemblySettingsEmitter>();
