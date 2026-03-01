@@ -470,7 +470,7 @@ try {
     # Cache the result to a file so subsequent build steps in the same CI job use the same areas.
     # This is important because the build step may generate files that change the git diff result.
     if ($CI -and $env:SYSTEM_PULLREQUEST_TARGETBRANCH -and -not $env:AffectedTestAreas) {
-        $affectedAreasCacheFile = Join-Path $ArtifactsDir "tmp" "AffectedTestAreas.txt"
+        $affectedAreasCacheFile = Join-Path (Join-Path $ArtifactsDir "tmp") "AffectedTestAreas.txt"
         if (Test-Path $affectedAreasCacheFile) {
             $env:AffectedTestAreas = (Get-Content $affectedAreasCacheFile -Raw).Trim()
             if ($env:AffectedTestAreas) {
