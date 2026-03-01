@@ -1,0 +1,8 @@
+<h4>ViewData Values</h4>
+<dl>
+  @foreach (var key in ViewData.Keys)
+  {
+    <dt>@key</dt>
+    <dd>@ViewData[key]</dd>
+  }
+</dl>
