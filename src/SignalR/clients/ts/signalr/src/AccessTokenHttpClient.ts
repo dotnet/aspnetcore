@@ -3,6 +3,7 @@
 
 import { HeaderNames } from "./HeaderNames";
 import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
+import { HttpError } from "./Errors";
 
 /** @private */
 export class AccessTokenHttpClient extends HttpClient {
@@ -25,14 +26,24 @@ export class AccessTokenHttpClient extends HttpClient {
             this._accessToken = await this._accessTokenFactory();
         }
         this._setAuthorizationHeader(request);
-        const response = await this._innerClient.send(request);
 
-        if (allowRetry && response.statusCode === 401 && this._accessTokenFactory) {
-            this._accessToken = await this._accessTokenFactory();
-            this._setAuthorizationHeader(request);
-            return await this._innerClient.send(request);
+        try {
+            const response = await this._innerClient.send(request);
+
+            if (allowRetry && response.statusCode === 401 && this._accessTokenFactory) {
+                this._accessToken = await this._accessTokenFactory();
+                this._setAuthorizationHeader(request);
+                return await this._innerClient.send(request);
+            }
+            return response;
+        } catch (e) {
+            if (allowRetry && e instanceof HttpError && e.statusCode === 401 && this._accessTokenFactory) {
+                this._accessToken = await this._accessTokenFactory();
+                this._setAuthorizationHeader(request);
+                return await this._innerClient.send(request);
+            }
+            throw e;
         }
-        return response;
     }
 
     private _setAuthorizationHeader(request: HttpRequest) {
