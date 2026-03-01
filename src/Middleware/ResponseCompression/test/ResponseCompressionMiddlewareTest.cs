@@ -45,8 +45,8 @@ public class ResponseCompressionMiddlewareTest
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: null, responseType: TextPlain);
 
-        CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: false);
-        AssertLog(logMessages.Single(), LogLevel.Debug, "No response compression available, the Accept-Encoding header is missing or invalid.");
+        CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: true);
+        Assert.Contains(logMessages, lm => lm.LogLevel == LogLevel.Debug && lm.State.ToString().Contains("Accept-Encoding header is missing or invalid"));
     }
 
     [Fact]
@@ -136,10 +136,9 @@ public class ResponseCompressionMiddlewareTest
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: null, responseType: TextPlain, httpMethod: HttpMethods.Head);
 
-        CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: false);
-        AssertLog(logMessages.Single(), LogLevel.Debug, "No response compression available, the Accept-Encoding header is missing or invalid.");
+        CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: true);
+        Assert.Contains(logMessages, lm => lm.LogLevel == LogLevel.Debug && lm.State.ToString().Contains("Accept-Encoding header is missing or invalid"));
     }
-
     [Fact]
     public async Task RequestHead_AcceptGzipDeflate_CompressedGzip()
     {

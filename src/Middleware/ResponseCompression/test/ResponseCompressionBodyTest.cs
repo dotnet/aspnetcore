@@ -18,7 +18,7 @@ public class ResponseCompressionBodyTest
     {
         var httpContext = new DefaultHttpContext();
         httpContext.Response.Headers.Vary = providedVaryHeader;
-        var stream = new ResponseCompressionBody(httpContext, new MockResponseCompressionProvider(flushable: true), new StreamResponseBodyFeature(new MemoryStream()));
+        var stream = new ResponseCompressionBody(httpContext, new MockResponseCompressionProvider(flushable: true), new StreamResponseBodyFeature(new MemoryStream()), allowCompression: true);
 
         stream.Write(new byte[] { }, 0, 0);
 
@@ -34,7 +34,7 @@ public class ResponseCompressionBodyTest
         var buffer = new byte[] { 1 };
 
         var memoryStream = new MemoryStream();
-        var stream = new ResponseCompressionBody(new DefaultHttpContext(), new MockResponseCompressionProvider(flushable), new StreamResponseBodyFeature(memoryStream));
+        var stream = new ResponseCompressionBody(new DefaultHttpContext(), new MockResponseCompressionProvider(flushable), new StreamResponseBodyFeature(memoryStream), allowCompression: true);
 
         stream.DisableBuffering();
         stream.Write(buffer, 0, buffer.Length);
@@ -50,7 +50,7 @@ public class ResponseCompressionBodyTest
         var buffer = new byte[] { 1 };
 
         var memoryStream = new MemoryStream();
-        var stream = new ResponseCompressionBody(new DefaultHttpContext(), new MockResponseCompressionProvider(flushable), new StreamResponseBodyFeature(memoryStream));
+        var stream = new ResponseCompressionBody(new DefaultHttpContext(), new MockResponseCompressionProvider(flushable), new StreamResponseBodyFeature(memoryStream), allowCompression: true);
 
         stream.DisableBuffering();
         await stream.WriteAsync(buffer, 0, buffer.Length);
@@ -63,7 +63,7 @@ public class ResponseCompressionBodyTest
     {
         var memoryStream = new MemoryStream();
 
-        var stream = new ResponseCompressionBody(new DefaultHttpContext(), new MockResponseCompressionProvider(true), new StreamResponseBodyFeature(memoryStream));
+        var stream = new ResponseCompressionBody(new DefaultHttpContext(), new MockResponseCompressionProvider(true), new StreamResponseBodyFeature(memoryStream), allowCompression: true);
 
         stream.DisableBuffering();
 
@@ -82,7 +82,7 @@ public class ResponseCompressionBodyTest
 
         var memoryStream = new MemoryStream();
 
-        var stream = new ResponseCompressionBody(new DefaultHttpContext(), new MockResponseCompressionProvider(flushable), new StreamResponseBodyFeature(memoryStream));
+        var stream = new ResponseCompressionBody(new DefaultHttpContext(), new MockResponseCompressionProvider(flushable), new StreamResponseBodyFeature(memoryStream), allowCompression: true);
 
         stream.DisableBuffering();
         stream.BeginWrite(buffer, 0, buffer.Length, (o) => { }, null);
