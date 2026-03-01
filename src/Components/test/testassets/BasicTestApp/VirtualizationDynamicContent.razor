@@ -1,0 +1,90 @@
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+<h1>Virtualization Dynamic Content</h1>
+<p>Tests for items that change height after initial render (images, expandables)</p>
+
+<div id="scroll-container" style="height: 300px; overflow-y: auto; border: 1px solid black;">
+    <Virtualize Items="@items" ItemSize="50" Context="item">
+        <div class="item" 
+             data-index="@item.Index" 
+             style="border: 1px solid gray; padding: 5px; min-height: @(item.Height)px;"
+             @onclick="() => ToggleExpand(item)">
+            <div>Item @item.Index</div>
+            @if (item.IsExpanded)
+            {
+                <div class="expanded-content" style="height: 100px; background-color: lightblue;">
+                    Expanded content for item @item.Index
+                </div>
+            }
+        </div>
+    </Virtualize>
+</div>
+
+<div style="margin-top: 10px;">
+    <button id="expand-item-2" @onclick="() => ExpandItem(2)">Expand Item 2</button>
+    <button id="expand-item-5" @onclick="() => ExpandItem(5)">Expand Item 5</button>
+    <button id="collapse-all" @onclick="CollapseAll">Collapse All</button>
+    <button id="simulate-image-load" @onclick="SimulateImageLoad">Simulate Image Load (Item 3)</button>
+</div>
+
+<p id="status">@statusMessage</p>
+
+@code {
+    private List<DynamicItem> items = new();
+    private string statusMessage = "Ready";
+
+    protected override void OnInitialized()
+    {
+        // Create 30 items with initial height of 50px
+        items = Enumerable.Range(0, 30)
+            .Select(i => new DynamicItem { Index = i, Height = 50, IsExpanded = false })
+            .ToList();
+    }
+
+    private void ToggleExpand(DynamicItem item)
+    {
+        item.IsExpanded = !item.IsExpanded;
+        item.Height = item.IsExpanded ? 160 : 50; // 50 base + 100 expanded + padding
+        statusMessage = $"Item {item.Index} {(item.IsExpanded ? "expanded" : "collapsed")}";
+    }
+
+    private void ExpandItem(int index)
+    {
+        var item = items.FirstOrDefault(i => i.Index == index);
+        if (item != null && !item.IsExpanded)
+        {
+            item.IsExpanded = true;
+            item.Height = 160;
+            statusMessage = $"Item {index} expanded via button";
+        }
+    }
+
+    private void CollapseAll()
+    {
+        foreach (var item in items)
+        {
+            item.IsExpanded = false;
+            item.Height = 50;
+        }
+        statusMessage = "All items collapsed";
+    }
+
+    private void SimulateImageLoad()
+    {
+        // Simulate an image loading that increases item height
+        var item = items.FirstOrDefault(i => i.Index == 3);
+        if (item != null)
+        {
+            item.Height = 120; // Image loaded, item grew
+            statusMessage = "Item 3 height changed (simulated image load)";
+            StateHasChanged();
+        }
+    }
+
+    private class DynamicItem
+    {
+        public int Index { get; set; }
+        public int Height { get; set; }
+        public bool IsExpanded { get; set; }
+    }
+}
