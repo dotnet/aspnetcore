@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.ComponentModel;
@@ -665,7 +666,11 @@ internal sealed class OpenApiDocumentService(
                     }
                     else
                     {
-                        if (isComplexType)
+                        // Identify if this is a collection (excluding string)
+                        var isCollection = typeof(IEnumerable).IsAssignableFrom(description.Type) && description.Type != typeof(string);
+
+                        // Only allow non-collection complex types (POCOs) to take over the root body
+                        if (isComplexType && !isCollection)
                         {
                             complexTypeSchema = parameterSchema;
                         }
