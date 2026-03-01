@@ -57,14 +57,11 @@ if (-not $ChangedFiles) {
 
     Write-Host "Computing changed files against origin/$TargetBranch"
 
-    # Temporarily disable PowerShell 7.4+ behavior that throws on non-zero native command exit codes.
-    # Git commands use non-zero exit codes for expected conditions (e.g., ref not found).
-    # Use try/catch since $PSNativeCommandUseErrorActionPreference may not exist in older PS versions.
-    $savedNativePref = $false
-    if ((Get-Variable -Name PSNativeCommandUseErrorActionPreference -ErrorAction Ignore)) {
-        $savedNativePref = $PSNativeCommandUseErrorActionPreference
-        $PSNativeCommandUseErrorActionPreference = $false
-    }
+    # Lower ErrorActionPreference for git commands. With 'Stop', PowerShell treats native
+    # command stderr output as a terminating error (even with 2>$null redirection).
+    # Git uses stderr for normal status messages and non-zero exits for expected conditions.
+    $savedErrorPref = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
 
     # Ensure the target branch ref is available (CI may use shallow clones)
     & git rev-parse --verify "origin/$TargetBranch" 2>$null | Out-Null
@@ -73,18 +70,15 @@ if (-not $ChangedFiles) {
         & git fetch origin "$TargetBranch" --depth=1 2>&1 | ForEach-Object { Write-Host $_ }
         if ($LASTEXITCODE -ne 0) {
             Write-Host "git fetch failed. Running all tests."
-            if ((Get-Variable -Name PSNativeCommandUseErrorActionPreference -ErrorAction Ignore)) {
-                $PSNativeCommandUseErrorActionPreference = $savedNativePref
-            }
+            $ErrorActionPreference = $savedErrorPref
             return ""
         }
     }
 
     $ChangedFiles = & git --no-pager diff "origin/$TargetBranch" --name-only --diff-filter=ACMRT
-    if ((Get-Variable -Name PSNativeCommandUseErrorActionPreference -ErrorAction Ignore)) {
-        $PSNativeCommandUseErrorActionPreference = $savedNativePref
-    }
-    if ($LASTEXITCODE -ne 0) {
+    $gitExitCode = $LASTEXITCODE
+    $ErrorActionPreference = $savedErrorPref
+    if ($gitExitCode -ne 0) {
         Write-Host "git diff failed. Running all tests."
         return ""
     }
