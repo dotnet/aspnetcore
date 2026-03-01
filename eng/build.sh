@@ -409,5 +409,42 @@ InitializeToolset
 
 restore=$_tmp_restore=
 
+# Compute affected test areas for PR builds to filter tests to only affected areas
+if [ "$ci" = true ] && [ -n "${SYSTEM_PULLREQUEST_TARGETBRANCH:-}" ] && [ -z "${AffectedTestAreas:-}" ]; then
+    output_file="$artifacts_dir/tmp/AffectedTestAreas.txt"
+    if [ -f "$output_file" ]; then
+        # Reuse cached result from a previous build step in this CI job
+        areas=$(cat "$output_file")
+        if [ -n "$areas" ]; then
+            export AffectedTestAreas="$areas"
+            echo "AffectedTestAreas loaded from cache: $areas"
+        else
+            echo "No test area filtering applied (cached result was empty)."
+        fi
+    else
+        affected_areas_script="$DIR/scripts/GetAffectedTestAreas.ps1"
+        if [ -f "$affected_areas_script" ] && command -v pwsh &>/dev/null; then
+            echo "Computing affected test areas for PR build..."
+            mkdir -p "$(dirname "$output_file")"
+            # Use set +e to prevent script failure if area computation fails
+            set +e
+            pwsh -NoProfile -Command "& '$affected_areas_script' -OutputFile '$output_file'"
+            pwsh_exit=$?
+            set -e
+            if [ $pwsh_exit -eq 0 ] && [ -f "$output_file" ]; then
+                areas=$(cat "$output_file")
+                if [ -n "$areas" ]; then
+                    export AffectedTestAreas="$areas"
+                    echo "AffectedTestAreas set to: $areas"
+                else
+                    echo "No test area filtering applied (all tests will run)."
+                fi
+            else
+                echo "Warning: Failed to compute affected test areas. All tests will run."
+            fi
+        fi
+    fi
+fi
+
 MSBuild $_InitializeToolset -p:RepoRoot="$repo_root" ${msbuild_args[@]+"${msbuild_args[@]}"}
 ExitWithExitCode 0

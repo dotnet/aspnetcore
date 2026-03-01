@@ -281,7 +281,62 @@
                           $(RepoRoot)**\bin\**\*;
                           $(RepoRoot)**\obj\**\*;"
                         Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
+      </ItemGroup>
 
+      <!--
+        When AffectedTestAreas is set (semicolon-delimited), remove projects from areas NOT in the list.
+        This filters tests to only run for areas affected by PR changes.
+        The delimiter-wrapping pattern ';Area;' prevents partial matches (e.g., 'Http' matching 'HttpClientFactory').
+      -->
+      <PropertyGroup Condition=" '$(AffectedTestAreas)' != '' ">
+        <_AffectedTestAreasWrapped>;$(AffectedTestAreas);</_AffectedTestAreasWrapped>
+      </PropertyGroup>
+
+      <ItemGroup Condition=" '$(AffectedTestAreas)' != '' AND '$(BuildMainlyReferenceProviders)' != 'true' ">
+        <!-- Subset 1 area filtering -->
+        <ProjectsWithTestsSubset1 Remove="$(RepoRoot)src\Framework\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Framework;')) " />
+        <ProjectsWithTestsSubset1 Remove="$(RepoRoot)src\Caching\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Caching;')) " />
+        <ProjectsWithTestsSubset1 Remove="$(RepoRoot)src\DefaultBuilder\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';DefaultBuilder;')) " />
+        <ProjectsWithTestsSubset1 Remove="$(RepoRoot)src\Features\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Features;')) " />
+        <ProjectsWithTestsSubset1 Remove="$(RepoRoot)src\DataProtection\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';DataProtection;')) " />
+        <ProjectsWithTestsSubset1 Remove="$(RepoRoot)src\Antiforgery\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Antiforgery;')) " />
+        <ProjectsWithTestsSubset1 Remove="$(RepoRoot)src\Hosting\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Hosting;')) " />
+        <ProjectsWithTestsSubset1 Remove="$(RepoRoot)src\Http\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Http;')) " />
+        <ProjectsWithTestsSubset1 Remove="$(RepoRoot)src\HttpClientFactory\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';HttpClientFactory;')) " />
+        <ProjectsWithTestsSubset1 Remove="$(RepoRoot)src\Html.Abstractions\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Html.Abstractions;')) " />
+        <ProjectsWithTestsSubset1 Remove="$(RepoRoot)src\Identity\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Identity;')) " />
+        <ProjectsWithTestsSubset1 Remove="$(RepoRoot)src\Servers\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Servers;')) " />
+        <ProjectsWithTestsSubset1 Remove="$(RepoRoot)src\Security\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Security;')) " />
+        <ProjectsWithTestsSubset1 Remove="$(RepoRoot)src\SiteExtensions\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';SiteExtensions;')) " />
+        <ProjectsWithTestsSubset1 Remove="$(RepoRoot)src\Shared\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Shared;')) " />
+        <ProjectsWithTestsSubset1 Remove="$(RepoRoot)src\Tools\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Tools;')) " />
+        <ProjectsWithTestsSubset1 Remove="$(RepoRoot)src\Logging.AzureAppServices\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Logging.AzureAppServices;')) " />
+        <ProjectsWithTestsSubset1 Remove="$(RepoRoot)src\Middleware\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Middleware;')) " />
+
+        <!-- Subset 2 area filtering -->
+        <ProjectsWithTestsSubset2 Remove="$(RepoRoot)src\Razor\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Razor;')) " />
+        <ProjectsWithTestsSubset2 Remove="$(RepoRoot)src\Mvc\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Mvc;')) " />
+        <ProjectsWithTestsSubset2 Remove="$(RepoRoot)src\Azure\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Azure;')) " />
+        <ProjectsWithTestsSubset2 Remove="$(RepoRoot)src\SignalR\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';SignalR;')) " />
+        <ProjectsWithTestsSubset2 Remove="$(RepoRoot)src\StaticAssets\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';StaticAssets;')) " />
+        <ProjectsWithTestsSubset2 Remove="$(RepoRoot)src\Components\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Components;')) " />
+        <ProjectsWithTestsSubset2 Remove="$(RepoRoot)src\Analyzers\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Analyzers;')) " />
+        <ProjectsWithTestsSubset2 Remove="$(RepoRoot)src\FileProviders\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';FileProviders;')) " />
+        <ProjectsWithTestsSubset2 Remove="$(RepoRoot)src\Configuration.KeyPerFile\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Configuration.KeyPerFile;')) " />
+        <ProjectsWithTestsSubset2 Remove="$(RepoRoot)src\Localization\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Localization;')) " />
+        <ProjectsWithTestsSubset2 Remove="$(RepoRoot)src\ObjectPool\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';ObjectPool;')) " />
+        <ProjectsWithTestsSubset2 Remove="$(RepoRoot)src\JSInterop\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';JSInterop;')) " />
+        <ProjectsWithTestsSubset2 Remove="$(RepoRoot)src\WebEncoders\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';WebEncoders;')) " />
+        <ProjectsWithTestsSubset2 Remove="$(RepoRoot)src\HealthChecks\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';HealthChecks;')) " />
+        <ProjectsWithTestsSubset2 Remove="$(RepoRoot)src\Testing\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Testing;')) " />
+        <ProjectsWithTestsSubset2 Remove="$(RepoRoot)src\Grpc\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Grpc;')) " />
+        <ProjectsWithTestsSubset2 Remove="$(RepoRoot)src\ProjectTemplates\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';ProjectTemplates;')) " />
+        <ProjectsWithTestsSubset2 Remove="$(RepoRoot)src\Extensions\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Extensions;')) " />
+        <ProjectsWithTestsSubset2 Remove="$(RepoRoot)src\OpenApi\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';OpenApi;')) " />
+        <ProjectsWithTestsSubset2 Remove="$(RepoRoot)src\Validation\**\*" Condition=" !$(_AffectedTestAreasWrapped.Contains(';Validation;')) " />
+      </ItemGroup>
+
+      <ItemGroup Condition=" '$(BuildMainlyReferenceProviders)' != 'true' ">
         <DotNetProjects Condition=" '$(HelixSubset)' == '' OR '$(HelixSubset)' == '1'" Include="@(ProjectsWithTestsSubset1)" />
         <DotNetProjects Condition=" '$(HelixSubset)' == '' OR '$(HelixSubset)' == '2'" Include="@(ProjectsWithTestsSubset2)" />
 
