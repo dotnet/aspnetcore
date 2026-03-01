@@ -186,9 +186,10 @@ public partial class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFo
                     // The request body contained a valid JSON value (e.g. the literal "null")
                     // that deserialized to null, but the parameter is required.
                     var modelName = context.ModelName;
+                    var modelDisplayName = context.Metadata.DisplayName ?? context.Metadata.Name ?? modelName;
                     context.ModelState.TryAddModelError(
                         modelName,
-                        Resources.FormatFormatExceptionMessage_NullJsonIsInvalid(modelName));
+                        Resources.FormatFormatExceptionMessage_NullJsonIsInvalid(modelDisplayName));
 
                     return InputFormatterResult.Failure();
                 }

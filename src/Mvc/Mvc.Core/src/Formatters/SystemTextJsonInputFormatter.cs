@@ -122,10 +122,13 @@ public partial class SystemTextJsonInputFormatter : TextInputFormatter, IInputFo
             // that deserialized to null, but the parameter is required. Return a
             // specific error message rather than the generic "non-empty request body"
             // message, because the body is not empty — it just contains null.
-            var modelName = context.ModelName;
+            var modelName = context.ModelName ?? string.Empty;
+            var modelDisplayName = context.Metadata?.DisplayName
+                ?? context.Metadata?.Name
+                ?? modelName;
             context.ModelState.TryAddModelError(
                 modelName,
-                Resources.FormatFormatExceptionMessage_NullJsonIsInvalid(modelName));
+                Resources.FormatFormatExceptionMessage_NullJsonIsInvalid(modelDisplayName));
 
             return InputFormatterResult.Failure();
         }
