@@ -27,7 +27,8 @@
 param(
     [string]$TargetBranch,
     [string[]]$ChangedFiles,
-    [string]$DependencyGraphPath
+    [string]$DependencyGraphPath,
+    [string]$OutputFile
 )
 
 $ErrorActionPreference = 'Stop'
@@ -55,6 +56,18 @@ if (-not $ChangedFiles) {
     }
 
     Write-Host "Computing changed files against origin/$TargetBranch"
+
+    # Ensure the target branch ref is available (CI may use shallow clones)
+    $refExists = & git rev-parse --verify "origin/$TargetBranch" 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "origin/$TargetBranch not found locally, fetching..."
+        & git fetch origin "$TargetBranch" --depth=1 2>&1 | Write-Host
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "git fetch failed. Running all tests."
+            return ""
+        }
+    }
+
     $ChangedFiles = & git --no-pager diff "origin/$TargetBranch" --name-only --diff-filter=ACMRT
     if ($LASTEXITCODE -ne 0) {
         Write-Host "git diff failed. Running all tests."
@@ -164,4 +177,9 @@ Write-Host "Affected areas ($($sortedAreas.Count) total): $($sortedAreas -join '
 
 # Return semicolon-delimited string for MSBuild consumption
 $result = $sortedAreas -join ';'
+
+if ($OutputFile) {
+    $result | Set-Content -Path $OutputFile -NoNewline
+}
+
 return $result

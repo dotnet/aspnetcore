@@ -409,5 +409,26 @@ InitializeToolset
 
 restore=$_tmp_restore=
 
+# Compute affected test areas for PR builds to filter tests to only affected areas
+if [ "$ci" = true ] && [ -n "${SYSTEM_PULLREQUEST_TARGETBRANCH:-}" ] && [ -z "${AffectedTestAreas:-}" ]; then
+    affected_areas_script="$DIR/scripts/GetAffectedTestAreas.ps1"
+    if [ -f "$affected_areas_script" ] && command -v pwsh &>/dev/null; then
+        echo "Computing affected test areas for PR build..."
+        output_file="$artifacts_dir/tmp/AffectedTestAreas.txt"
+        mkdir -p "$(dirname "$output_file")"
+        pwsh -NoProfile -Command "& '$affected_areas_script' -OutputFile '$output_file'"
+        if [ -f "$output_file" ]; then
+            areas=$(cat "$output_file")
+            if [ -n "$areas" ]; then
+                export AffectedTestAreas="$areas"
+                echo "AffectedTestAreas set to: $areas"
+            else
+                echo "No test area filtering applied (all tests will run)."
+            fi
+            rm -f "$output_file"
+        fi
+    fi
+fi
+
 MSBuild $_InitializeToolset -p:RepoRoot="$repo_root" ${msbuild_args[@]+"${msbuild_args[@]}"}
 ExitWithExitCode 0
