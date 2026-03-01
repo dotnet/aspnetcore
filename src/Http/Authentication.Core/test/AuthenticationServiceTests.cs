@@ -487,8 +487,16 @@ public class AuthenticationServiceTests
 
         public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
         {
-            var identity = principal.Identity as ClaimsIdentity ?? new ClaimsIdentity();
-            identity.AddClaim(new Claim(_type, _value));
+            if (principal.Identity is ClaimsIdentity claimsIdentity)
+            {
+                claimsIdentity.AddClaim(new Claim(_type, _value));
+                return Task.FromResult(principal);
+            }
+
+            var newIdentity = new ClaimsIdentity();
+            newIdentity.AddClaim(new Claim(_type, _value));
+            principal.AddIdentity(newIdentity);
+
             return Task.FromResult(principal);
         }
     }
