@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Security.Claims;
 using System.Web;
+
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
@@ -35,7 +36,7 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
         services.AddHttpContextAccessor();
         services.AddCascadingAuthenticationState();
 
-        if (Configuration.GetValue<bool>("UseSessionStorageTempDataProvider"))
+        if (Configuration.GetValue<bool>("UseSession"))
         {
             services.AddDistributedMemoryCache();
             services.AddSession(options =>
@@ -43,10 +44,14 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                 options.Cookie.HttpOnly = true;
                 options.Cookie.IsEssential = true;
             });
-            services.Configure<RazorComponentsServiceOptions>(options =>
+
+            if (Configuration.GetValue<bool>("UseSessionStorageTempDataProvider"))
             {
-                options.TempDataProviderType = TempDataProviderType.SessionStorage;
-            });
+                services.Configure<RazorComponentsServiceOptions>(options =>
+                {
+                    options.TempDataProviderType = TempDataProviderType.SessionStorage;
+                });
+            }
         }
     }
 
@@ -107,6 +112,11 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                         .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"));
                 });
             });
+
+            if (Configuration.GetValue<bool>("UseSession"))
+            {
+                app.UseSession();
+            }
 
             ConfigureSubdirPipeline(app, env);
         });
