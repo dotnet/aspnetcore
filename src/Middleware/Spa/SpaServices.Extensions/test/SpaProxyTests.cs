@@ -58,4 +58,50 @@ public class SpaProxyTests
         var res = await SpaProxy.PerformProxyRequest(context, httpClient, baseUriTask, CancellationToken.None, true);
         Assert.Equal(expected, forwardedRequestMessage.RequestUri.ToString());
     }
+
+    [Fact]
+    public async Task PerformProxyRequest_CancelsRequestWhenRequestAborted()
+    {
+        using var requestAbortedCts = new CancellationTokenSource();
+        CancellationToken capturedToken = default;
+        var sendStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var sendTcs = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var messageHandler = new Mock<HttpMessageHandler>();
+        messageHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync",
+                                        ItExpr.IsAny<HttpRequestMessage>(),
+                                        ItExpr.IsAny<CancellationToken>())
+            .Callback<HttpRequestMessage, CancellationToken>((req, ct) =>
+            {
+                capturedToken = ct;
+                ct.Register(() => sendTcs.TrySetCanceled(ct));
+                sendStarted.SetResult();
+            })
+            .Returns(sendTcs.Task);
+
+        var context = new DefaultHttpContext();
+        context.Request.Path = "/test";
+        context.Request.Method = "GET";
+        context.RequestAborted = requestAbortedCts.Token;
+
+        var httpClient = new HttpClient(messageHandler.Object) { Timeout = Timeout.InfiniteTimeSpan };
+        var baseUriTask = Task.FromResult(new Uri("http://localhost:3000"));
+
+        var proxyTask = SpaProxy.PerformProxyRequest(context, httpClient, baseUriTask, CancellationToken.None, true);
+
+        // Wait for the proxy to start the request
+        await sendStarted.Task;
+
+        Assert.True(capturedToken.CanBeCanceled);
+        Assert.False(capturedToken.IsCancellationRequested);
+
+        // Simulate client disconnect
+        requestAbortedCts.Cancel();
+
+        Assert.True(capturedToken.IsCancellationRequested);
+
+        var result = await proxyTask;
+        Assert.True(result);
+    }
 }
