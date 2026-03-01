@@ -204,6 +204,15 @@ internal static class EndpointParameterEmitter
         var assigningCode = $"(string?)httpContext.Request.RouteValues[\"{endpointParameter.LookupName}\"]";
         codeWriter.WriteLine($"var {endpointParameter.EmitAssigningCodeResult()} = {assigningCode};");
 
+        // Apply Uri.UnescapeDataString to fully decode percent-encoded route values (e.g. %2F → /)
+        if (endpointParameter.UrlDecode)
+        {
+            codeWriter.WriteLine($"if ({endpointParameter.EmitAssigningCodeResult()} is not null)");
+            codeWriter.StartBlock();
+            codeWriter.WriteLine($"{endpointParameter.EmitAssigningCodeResult()} = Uri.UnescapeDataString({endpointParameter.EmitAssigningCodeResult()});");
+            codeWriter.EndBlock();
+        }
+
         if (!endpointParameter.IsOptional)
         {
             codeWriter.WriteLine($"if ({endpointParameter.EmitAssigningCodeResult()} == null)");

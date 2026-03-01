@@ -231,4 +231,49 @@ app.MapGet("/{value}", (string value, HttpContext httpContext) => value);
 
         Assert.Equal(originalRouteParam, httpContext.Items["input"]);
     }
+
+    [Fact]
+    public async Task FromRouteWithUrlDecodeTrueDecodesPercentEncodedValues()
+    {
+        var source = """app.MapGet("/{userId}", ([FromRoute(UrlDecode = true)] string userId) => userId);""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues["userId"] = "domain%2Fuser";
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, "domain/user");
+    }
+
+    [Fact]
+    public async Task FromRouteWithUrlDecodeDefaultPreservesEncodedValues()
+    {
+        var source = """app.MapGet("/{userId}", ([FromRoute] string userId) => userId);""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues["userId"] = "domain%2Fuser";
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, "domain%2Fuser");
+    }
+
+    [Fact]
+    public async Task FromRouteWithUrlDecodeDecodesMultipleEncodedCharacters()
+    {
+        var source = """app.MapGet("/{value}", ([FromRoute(UrlDecode = true)] string value) => value);""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues["value"] = "a%2Fb%2Bc%20d";
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, "a/b+c d");
+    }
 }
