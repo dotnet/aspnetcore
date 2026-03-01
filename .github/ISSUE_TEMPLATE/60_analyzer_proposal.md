@@ -2,8 +2,9 @@
 name: Analyzer proposal
 about: Propose a new analyzer/codefixer or an update to an existing one
 title: ''
-labels: api-suggestion, analyzer
+labels: ''
 assignees: ''
+
 ---
 
 ## Background and Motivation

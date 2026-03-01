@@ -1,0 +1,43 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: MobSF
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '26 8 * * 3'
+
+permissions:
+  contents: read
+
+jobs:
+  mobile-security:
+    permissions:
+      contents: read # for actions/checkout to fetch code
+      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
+      actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup python
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.8
+
+      - name: Run mobsfscan
+        uses: MobSF/mobsfscan@a60d10a83af68e23e0b30611c6515da604f06f65
+        with:
+          args: . --sarif --output results.sarif || true
+
+      - name: Upload mobsfscan report
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: results.sarif
