@@ -59,8 +59,12 @@ if (-not $ChangedFiles) {
 
     # Temporarily disable PowerShell 7.4+ behavior that throws on non-zero native command exit codes.
     # Git commands use non-zero exit codes for expected conditions (e.g., ref not found).
-    $savedNativePref = $PSNativeCommandUseErrorActionPreference
-    $PSNativeCommandUseErrorActionPreference = $false
+    # Use try/catch since $PSNativeCommandUseErrorActionPreference may not exist in older PS versions.
+    $savedNativePref = $false
+    if ((Get-Variable -Name PSNativeCommandUseErrorActionPreference -ErrorAction Ignore)) {
+        $savedNativePref = $PSNativeCommandUseErrorActionPreference
+        $PSNativeCommandUseErrorActionPreference = $false
+    }
 
     # Ensure the target branch ref is available (CI may use shallow clones)
     & git rev-parse --verify "origin/$TargetBranch" 2>$null | Out-Null
@@ -69,13 +73,17 @@ if (-not $ChangedFiles) {
         & git fetch origin "$TargetBranch" --depth=1 2>&1 | ForEach-Object { Write-Host $_ }
         if ($LASTEXITCODE -ne 0) {
             Write-Host "git fetch failed. Running all tests."
-            $PSNativeCommandUseErrorActionPreference = $savedNativePref
+            if ((Get-Variable -Name PSNativeCommandUseErrorActionPreference -ErrorAction Ignore)) {
+                $PSNativeCommandUseErrorActionPreference = $savedNativePref
+            }
             return ""
         }
     }
 
     $ChangedFiles = & git --no-pager diff "origin/$TargetBranch" --name-only --diff-filter=ACMRT
-    $PSNativeCommandUseErrorActionPreference = $savedNativePref
+    if ((Get-Variable -Name PSNativeCommandUseErrorActionPreference -ErrorAction Ignore)) {
+        $PSNativeCommandUseErrorActionPreference = $savedNativePref
+    }
     if ($LASTEXITCODE -ne 0) {
         Write-Host "git diff failed. Running all tests."
         return ""
