@@ -4,6 +4,7 @@
 using System.Collections.Frozen;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Hosting;
@@ -17,6 +18,7 @@ internal static class HostingTelemetryHelpers
     public const string AttributeHttpRoute = "http.route";
     public const string AttributeUrlScheme = "url.scheme";
     public const string AttributeUrlPath = "url.path";
+    public const string AttributeUrlQuery = "url.query";
     public const string AttributeServerAddress = "server.address";
     public const string AttributeServerPort = "server.port";
     public const string AttributeUserAgentOriginal = "user_agent.original";
@@ -145,5 +147,81 @@ internal static class HostingTelemetryHelpers
         var namePrefix = normalizedHttpMethod == OtherHttpMethod ? "HTTP" : normalizedHttpMethod;
 
         return string.IsNullOrEmpty(httpRoute) ? namePrefix : $"{namePrefix} {httpRoute}";
+    }
+
+    /// <summary>
+    /// Redacts sensitive query parameter values from a query string.
+    /// </summary>
+    /// <param name="queryString">The query string to redact.</param>
+    /// <param name="options">The redaction options containing sensitive parameter names and placeholder.</param>
+    /// <returns>The redacted query string, or null if the query string is empty.</returns>
+    public static string? GetRedactedQueryString(QueryString queryString, UrlQueryRedactionOptions options)
+    {
+        if (!queryString.HasValue)
+        {
+            return null;
+        }
+
+        var query = queryString.Value;
+        if (string.IsNullOrEmpty(query))
+        {
+            return null;
+        }
+
+        var body = query.AsSpan().TrimStart('?');
+
+        if (body.IsEmpty)
+        {
+            return query;
+        }
+
+        var escapedPlaceholder = Uri.EscapeDataString(options.RedactedPlaceholder);
+        var sb = new StringBuilder(query.Length);
+        sb.Append('?');
+
+        var isFirstSegment = true;
+
+        foreach (var segment in body.Split('&'))
+        {
+            var pair = body[segment];
+
+            if (!isFirstSegment)
+            {
+                sb.Append('&');
+            }
+            isFirstSegment = false;
+
+            var rawKey = GetKey(pair);
+
+            string decodedKey;
+            try
+            {
+                decodedKey = Uri.UnescapeDataString(rawKey.ToString());
+            }
+            catch (UriFormatException)
+            {
+                sb.Append(pair);
+                continue;
+            }
+
+            if (options.SensitiveQueryParameters.Contains(decodedKey))
+            {
+                sb.Append(rawKey);
+                sb.Append('=');
+                sb.Append(escapedPlaceholder);
+            }
+            else
+            {
+                sb.Append(pair);
+            }
+        }
+
+        return sb.ToString();
+    }
+
+    private static ReadOnlySpan<char> GetKey(ReadOnlySpan<char> pair)
+    {
+        var eqIndex = pair.IndexOf('=');
+        return eqIndex == -1 ? pair : pair.Slice(0, eqIndex);
     }
 }
