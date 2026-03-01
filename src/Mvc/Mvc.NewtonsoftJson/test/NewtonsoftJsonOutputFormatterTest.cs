@@ -45,6 +45,29 @@ public class NewtonsoftJsonOutputFormatterTest : JsonOutputFormatterTestBase
     }
 
     [Fact]
+    public async Task DateFormatHandling_IsRespected_WhenDateFormatStringNotExplicitlySet()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/29532
+        var settings = new JsonSerializerSettings
+        {
+            DateFormatHandling = DateFormatHandling.MicrosoftDateFormat,
+        };
+
+        var formatter = new NewtonsoftJsonOutputFormatter(settings, ArrayPool<char>.Shared, new MvcOptions(), new MvcNewtonsoftJsonOptions());
+        var date = new DateTime(2023, 6, 15, 12, 30, 0, DateTimeKind.Utc);
+        var body = new { Date = date };
+
+        var outputFormatterContext = GetOutputFormatterContext(body, body.GetType());
+        await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.UTF8);
+
+        var actualBody = Encoding.UTF8.GetString(
+            ((MemoryStream)outputFormatterContext.HttpContext.Response.Body).ToArray());
+
+        // Microsoft date format: \/Date(...)\/
+        Assert.Contains("\\/Date(", actualBody);
+    }
+
+    [Fact]
     public async Task MvcJsonOptionsAreUsedToSetBufferThresholdFromServices()
     {
         // Arrange
