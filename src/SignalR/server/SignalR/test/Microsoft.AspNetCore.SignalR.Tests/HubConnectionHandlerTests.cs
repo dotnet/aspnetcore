@@ -1,13 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO.Pipelines;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Channels;
 using MessagePack;
 using MessagePack.Formatters;
 using MessagePack.Resolvers;
@@ -29,6 +22,13 @@ using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using System.Buffers;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO.Pipelines;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Channels;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
 
@@ -5344,6 +5344,197 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             await connectionHandlerTask.DefaultTimeout();
 
             Assert.Null(state.DisconnectedException);
+        }
+    }
+
+    [Fact]
+    public async Task HubMethodCanInjectServiceWithAttribute()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSingleton<Service1>();
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.ServiceWithAttribute)).DefaultTimeout();
+            Assert.True(Assert.IsType<bool>(res.Result));
+        }
+    }
+
+    [Fact]
+    public async Task HubMethodCanInjectServiceWithStringParameterAndAttribute()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSingleton<Service1>();
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.ServiceWithStringAttribute), "test").DefaultTimeout();
+            Assert.Equal(115L, res.Result);
+        }
+    }
+
+    [Fact]
+    public async Task HubMethodWithFromServicesAttributeFailsIfServiceNotFound()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(o => o.EnableDetailedErrors = true);
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.ServiceWithAttribute)).DefaultTimeout();
+            Assert.Equal("An unexpected error occurred invoking 'ServiceWithAttribute' on the server. InvalidOperationException: No service for type 'Microsoft.AspNetCore.SignalR.Tests.Service1' has been registered.", res.Error);
+        }
+    }
+
+    [Fact]
+    public async Task HubMethodWithMultipleFromServicesAttributes()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSingleton<Service1>();
+            provider.AddSingleton<Service2>();
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.MultipleServicesWithAttribute)).DefaultTimeout();
+            Assert.True(Assert.IsType<bool>(res.Result));
+        }
+    }
+
+    [Fact]
+    public async Task HubMethodWithMixedParametersAndFromServicesAttribute()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSingleton<Service1>();
+            provider.AddSingleton<Service2>();
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.MixedParamsWithAttribute), 10, "test").DefaultTimeout();
+            Assert.Equal(111L, res.Result);
+        }
+    }
+
+    [Fact]
+    public async Task HubMethodWithFromServicesAttributeAndNullParameter()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSingleton<Service1>();
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.ServiceWithStringAttribute), (string)null).DefaultTimeout();
+            Assert.Equal(115L, res.Result);
+        }
+    }
+
+    [Fact]
+    public async Task HubMethodWithFromServicesAttributeBeforeRegularParameter()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSingleton<Service1>();
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.ServiceAttributeBeforeParam), 42).DefaultTimeout();
+            Assert.Equal(43L, res.Result);
+        }
+    }
+
+    [Fact]
+    public async Task HubMethodWithFromServicesAttributeAndUploadStream()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSingleton<Service1>();
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            await client.BeginUploadStreamAsync("invocation", nameof(ServicesHub.UploadWithServiceAttribute), new[] { "id" }, new object[] { 5 }).DefaultTimeout();
+
+            await client.SendHubMessageAsync(new StreamItemMessage("id", 10)).DefaultTimeout();
+            await client.SendHubMessageAsync(new StreamItemMessage("id", 20)).DefaultTimeout();
+            await client.SendHubMessageAsync(CompletionMessage.Empty("id")).DefaultTimeout();
+
+            var response = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+            Assert.Equal(31L, response.Result);
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task HubMethodWithFromServicesAttributeRespectsDisableImplicitOption(bool disableImplicit)
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+                options.DisableImplicitFromServicesParameters = disableImplicit;
+            });
+            provider.AddSingleton<Service1>();
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            // ServiceWithAttribute explicitly uses [FromServices] so it should work regardless of DisableImplicitFromServicesParameters
+            var res = await client.InvokeAsync(nameof(ServicesHub.ServiceWithAttribute)).DefaultTimeout();
+            Assert.True(Assert.IsType<bool>(res.Result));
+        }
+    }
+
+    [Fact]
+    public async Task HubMethodWithFromServicesAttributeOnOptionalParameter()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSingleton<Service1>();
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            // Call with value
+            var res = await client.InvokeAsync(nameof(ServicesHub.ServiceWithOptionalParam), 100).DefaultTimeout();
+            Assert.Equal(101L, res.Result);
+
+            // Call without value (using default)
+            res = await client.InvokeAsync(nameof(ServicesHub.ServiceWithOptionalParam)).DefaultTimeout();
+            Assert.Equal(43L, res.Result);
         }
     }
 
