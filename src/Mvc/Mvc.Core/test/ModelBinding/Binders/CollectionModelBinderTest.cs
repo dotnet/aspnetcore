@@ -32,9 +32,86 @@ public class CollectionModelBinderTest
         // Assert
         Assert.Equal(new[] { 42, 0, 200 }, collectionResult.Model.ToArray());
 
-        // This requires a non-default IValidationStrategy
-        var strategy = Assert.IsType<ExplicitIndexCollectionValidationStrategy>(collectionResult.ValidationStrategy);
-        Assert.Equal(new[] { "foo", "bar", "baz" }, strategy.ElementKeys);
+        // After normalization, explicit indices use the default sequential validation strategy
+        Assert.Null(collectionResult.ValidationStrategy);
+    }
+
+    [Fact]
+    public async Task BindComplexCollectionFromIndexes_NonSequentialNumericIndexes_NormalizesModelStateKeys()
+    {
+        // Arrange - reproduces https://github.com/dotnet/aspnetcore/issues/26217
+        // When explicit indices are non-sequential (e.g., [0],[10],[1],[2]), the ModelState keys
+        // must be normalized to sequential indices so that re-rendered views display correct values.
+        var valueProvider = new SimpleValueProvider
+            {
+                { "someName[0]", "100" },
+                { "someName[10]", "200" },
+                { "someName[1]", "300" },
+                { "someName[2]", "400" }
+            };
+        var bindingContext = GetModelBindingContext(valueProvider);
+        var modelState = bindingContext.ModelState;
+        var binder = new CollectionModelBinder<int>(CreateIntBinderWithModelState(), NullLoggerFactory.Instance);
+
+        // Act
+        var collectionResult = await binder.BindComplexCollectionFromIndexes(
+            bindingContext,
+            new[] { "0", "10", "1", "2" });
+
+        // Assert - collection is bound in explicit index order
+        Assert.Equal(new[] { 100, 200, 300, 400 }, collectionResult.Model.ToArray());
+
+        // ModelState keys should be normalized to sequential indices
+        Assert.True(modelState.TryGetValue("someName[0]", out var entry0));
+        Assert.Equal("100", entry0!.AttemptedValue);
+
+        Assert.True(modelState.TryGetValue("someName[1]", out var entry1));
+        Assert.Equal("200", entry1!.AttemptedValue);
+
+        Assert.True(modelState.TryGetValue("someName[2]", out var entry2));
+        Assert.Equal("300", entry2!.AttemptedValue);
+
+        Assert.True(modelState.TryGetValue("someName[3]", out var entry3));
+        Assert.Equal("400", entry3!.AttemptedValue);
+
+        // Old non-sequential keys should no longer exist
+        Assert.False(modelState.ContainsKey("someName[10]"));
+
+        // Uses default sequential validation strategy after normalization
+        Assert.Null(collectionResult.ValidationStrategy);
+    }
+
+    [Fact]
+    public async Task BindComplexCollectionFromIndexes_SequentialIndexes_NoNormalizationNeeded()
+    {
+        // Arrange - sequential indices should not trigger normalization
+        var valueProvider = new SimpleValueProvider
+            {
+                { "someName[0]", "100" },
+                { "someName[1]", "200" },
+                { "someName[2]", "300" }
+            };
+        var bindingContext = GetModelBindingContext(valueProvider);
+        var modelState = bindingContext.ModelState;
+        var binder = new CollectionModelBinder<int>(CreateIntBinderWithModelState(), NullLoggerFactory.Instance);
+
+        // Act
+        var collectionResult = await binder.BindComplexCollectionFromIndexes(
+            bindingContext,
+            new[] { "0", "1", "2" });
+
+        // Assert
+        Assert.Equal(new[] { 100, 200, 300 }, collectionResult.Model.ToArray());
+
+        // ModelState keys should remain unchanged
+        Assert.True(modelState.TryGetValue("someName[0]", out var entry0));
+        Assert.Equal("100", entry0!.AttemptedValue);
+
+        Assert.True(modelState.TryGetValue("someName[1]", out var entry1));
+        Assert.Equal("200", entry1!.AttemptedValue);
+
+        Assert.True(modelState.TryGetValue("someName[2]", out var entry2));
+        Assert.Equal("300", entry2!.AttemptedValue);
     }
 
     [Fact]
@@ -503,6 +580,40 @@ public class CollectionModelBinderTest
             {
                 return ModelBindingResult.Failed();
             }
+
+            object valueToConvert = null;
+            if (value.Values.Count == 1)
+            {
+                valueToConvert = value.Values[0];
+            }
+            else if (value.Values.Count > 1)
+            {
+                valueToConvert = value.Values.ToArray();
+            }
+
+            var model = ModelBindingHelper.ConvertTo(valueToConvert, context.ModelType, value.Culture);
+            if (model == null)
+            {
+                return ModelBindingResult.Failed();
+            }
+            else
+            {
+                return ModelBindingResult.Success(model);
+            }
+        });
+    }
+
+    private static IModelBinder CreateIntBinderWithModelState()
+    {
+        return new StubModelBinder(context =>
+        {
+            var value = context.ValueProvider.GetValue(context.ModelName);
+            if (value == ValueProviderResult.None)
+            {
+                return ModelBindingResult.Failed();
+            }
+
+            context.ModelState.SetModelValue(context.ModelName, value);
 
             object valueToConvert = null;
             if (value.Values.Count == 1)
