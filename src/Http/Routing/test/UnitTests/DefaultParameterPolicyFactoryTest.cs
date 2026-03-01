@@ -128,6 +128,26 @@ public class DefaultParameterPolicyFactoryTest
     }
 
     [Fact]
+    public void Create_CreatesParameterPolicy_FromRoutePattern_Constraint_Optional_PreservesOutboundTransformer()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/23063
+        var factory = GetParameterPolicyFactory();
+
+        var parameter = RoutePatternFactory.ParameterPart(
+            "id",
+            @default: null,
+            parameterKind: RoutePatternParameterKind.Optional,
+            parameterPolicies: new[] { RoutePatternFactory.ParameterPolicy(new TransformingRouteConstraint()), });
+
+        var parameterPolicy = factory.Create(parameter, parameter.ParameterPolicies[0]);
+
+        var optionalConstraint = Assert.IsType<OptionalOutboundParameterTransformerRouteConstraint>(parameterPolicy);
+        Assert.IsType<TransformingRouteConstraint>(optionalConstraint.InnerConstraint);
+        var transformer = Assert.IsAssignableFrom<IOutboundParameterTransformer>(parameterPolicy);
+        Assert.Equal("hello", transformer.TransformOutbound("HELLO"));
+    }
+
+    [Fact]
     public void Create_CreatesParameterPolicy_FromRoutePattern_ParameterPolicy()
     {
         // Arrange
@@ -443,6 +463,24 @@ public class DefaultParameterPolicyFactoryTest
             Values = values;
             RouteDirection = routeDirection;
             return false;
+        }
+    }
+
+    private class TransformingRouteConstraint : IRouteConstraint, IOutboundParameterTransformer
+    {
+        public bool Match(
+            HttpContext httpContext,
+            IRouter route,
+            string routeKey,
+            RouteValueDictionary values,
+            RouteDirection routeDirection)
+        {
+            return true;
+        }
+
+        public string TransformOutbound(object value)
+        {
+            return value?.ToString()?.ToLowerInvariant();
         }
     }
 }
