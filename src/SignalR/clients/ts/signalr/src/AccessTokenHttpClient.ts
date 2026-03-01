@@ -33,6 +33,7 @@ export class AccessTokenHttpClient extends HttpClient {
             if (allowRetry && response.statusCode === 401 && this._accessTokenFactory) {
                 this._accessToken = await this._accessTokenFactory();
                 this._setAuthorizationHeader(request);
+                allowRetry = false;
                 return await this._innerClient.send(request);
             }
             return response;
