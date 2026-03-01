@@ -25,6 +25,7 @@ public class PartialTagHelper : TagHelper
     private bool _hasModel;
     private bool _hasFor;
     private ModelExpression _for;
+    private ViewContext _viewContext;
 
     private readonly ICompositeViewEngine _viewEngine;
     private readonly IViewBufferScope _viewBufferScope;
@@ -98,7 +99,23 @@ public class PartialTagHelper : TagHelper
     /// </summary>
     [HtmlAttributeNotBound]
     [ViewContext]
-    public ViewContext ViewContext { get; set; }
+    public ViewContext ViewContext
+    {
+        get => _viewContext;
+        set
+        {
+            _viewContext = value;
+
+            // Initialize ViewData from the ViewContext so that view-data-* prefix
+            // attributes can be set without a NullReferenceException. When ViewData
+            // is explicitly set via the view-data attribute, the property initializer
+            // runs after ViewContext and overrides this value.
+            if (ViewData is null && value?.ViewData is not null)
+            {
+                ViewData = new ViewDataDictionary(value.ViewData);
+            }
+        }
+    }
 
     /// <inheritdoc />
     public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
