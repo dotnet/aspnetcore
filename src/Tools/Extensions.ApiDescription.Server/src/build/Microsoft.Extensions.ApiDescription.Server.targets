@@ -59,6 +59,7 @@
       <_DotNetGetDocumentCommand Condition=" '$(PlatformTarget)' != '' ">$(_DotNetGetDocumentCommand) --platform "$(PlatformTarget)"</_DotNetGetDocumentCommand>
       <_DotNetGetDocumentCommand Condition=" '$(PlatformTarget)' == '' AND '$(Platform)' != '' ">$(_DotNetGetDocumentCommand) --platform "$(Platform)"</_DotNetGetDocumentCommand>
       <_DotNetGetDocumentCommand Condition=" '$(RuntimeIdentifier)' != '' ">$(_DotNetGetDocumentCommand) --runtime "$(RuntimeIdentifier) --self-contained"</_DotNetGetDocumentCommand>
+      <_DotNetGetDocumentCommand Condition=" '$(OpenApiGenerateEnvironment)' != '' ">$(_DotNetGetDocumentCommand) --environment "$(OpenApiGenerateEnvironment)"</_DotNetGetDocumentCommand>
       <_DotNetGetDocumentCommand>$(_DotNetGetDocumentCommand) $(OpenApiGenerateDocumentsOptions)</_DotNetGetDocumentCommand>
     </PropertyGroup>
 

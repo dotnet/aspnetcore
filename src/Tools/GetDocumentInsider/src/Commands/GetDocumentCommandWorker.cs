@@ -112,8 +112,15 @@ internal sealed class GetDocumentCommandWorker
 
         try
         {
+            // Build the arguments array for the host factory
+            var hostArgs = new List<string> { $"--{HostDefaults.ApplicationKey}={assemblyName}" };
+            if (!string.IsNullOrEmpty(_context.Environment))
+            {
+                hostArgs.Add($"--environment={_context.Environment}");
+            }
+
             // Retrieve the service provider from the target host.
-            var services = ((IHost)factory([$"--{HostDefaults.ApplicationKey}={assemblyName}"])).Services;
+            var services = ((IHost)factory(hostArgs.ToArray())).Services;
             if (services == null)
             {
                 _reporter.WriteError(Resources.FormatServiceProviderNotFound(
@@ -159,7 +166,14 @@ internal sealed class GetDocumentCommandWorker
                 return 4;
             }
 
-            var services = serviceFactory(Array.Empty<string>());
+            // Build the arguments array for the service factory
+            var hostArgs = new List<string>();
+            if (!string.IsNullOrEmpty(_context.Environment))
+            {
+                hostArgs.Add($"--environment={_context.Environment}");
+            }
+
+            var services = serviceFactory(hostArgs.ToArray());
             if (services == null)
             {
                 _reporter.WriteError(Resources.FormatServiceProviderNotFound(
