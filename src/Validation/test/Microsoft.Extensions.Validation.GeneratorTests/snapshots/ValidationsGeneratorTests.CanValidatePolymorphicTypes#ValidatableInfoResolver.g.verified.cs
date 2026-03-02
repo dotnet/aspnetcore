@@ -33,7 +33,8 @@ namespace Microsoft.Extensions.Validation.Generated
             global::System.Type containingType,
             global::System.Type propertyType,
             string name,
-            string displayName) : base(containingType, propertyType, name, displayName)
+            string? displayName,
+            global::System.Func<string?>? displayNameAccessor) : base(containingType, propertyType, name, displayName, displayNameAccessor)
         {
             ContainingType = containingType;
             Name = name;
@@ -53,7 +54,9 @@ namespace Microsoft.Extensions.Validation.Generated
         public GeneratedValidatableTypeInfo(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
             global::System.Type type,
-            ValidatablePropertyInfo[] members) : base(type, members)
+            ValidatablePropertyInfo[] members,
+            string? displayName,
+            global::System.Func<string?>? displayNameAccessor) : base(type, members, displayName, displayNameAccessor)
         {
             Type = type;
         }
@@ -80,9 +83,12 @@ namespace Microsoft.Extensions.Validation.Generated
                             containingType: typeof(global::DerivedType),
                             propertyType: typeof(string),
                             name: "Value3",
-                            displayName: "Value3"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
-                    ]
+                    ],
+                    displayName: null,
+                    displayNameAccessor: null
                 );
                 return true;
             }
@@ -95,15 +101,19 @@ namespace Microsoft.Extensions.Validation.Generated
                             containingType: typeof(global::BaseType),
                             propertyType: typeof(int),
                             name: "Value1",
-                            displayName: "Value 1"
+                            displayName: "Value 1",
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::BaseType),
                             propertyType: typeof(string),
                             name: "Value2",
-                            displayName: "Value2"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
-                    ]
+                    ],
+                    displayName: null,
+                    displayNameAccessor: null
                 );
                 return true;
             }
@@ -116,9 +126,12 @@ namespace Microsoft.Extensions.Validation.Generated
                             containingType: typeof(global::DerivedValidatableType),
                             propertyType: typeof(string),
                             name: "Value3",
-                            displayName: "Value3"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
-                    ]
+                    ],
+                    displayName: null,
+                    displayNameAccessor: null
                 );
                 return true;
             }
@@ -126,7 +139,9 @@ namespace Microsoft.Extensions.Validation.Generated
             {
                 validatableInfo = new GeneratedValidatableTypeInfo(
                     type: typeof(global::BaseValidatableType),
-                    members: []
+                    members: [],
+                    displayName: null,
+                    displayNameAccessor: null
                 );
                 return true;
             }
@@ -139,15 +154,19 @@ namespace Microsoft.Extensions.Validation.Generated
                             containingType: typeof(global::ContainerType),
                             propertyType: typeof(global::BaseType),
                             name: "BaseType",
-                            displayName: "BaseType"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ContainerType),
                             propertyType: typeof(global::BaseValidatableType),
                             name: "BaseValidatableType",
-                            displayName: "BaseValidatableType"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
-                    ]
+                    ],
+                    displayName: null,
+                    displayNameAccessor: null
                 );
                 return true;
             }

@@ -33,7 +33,8 @@ namespace Microsoft.Extensions.Validation.Generated
             global::System.Type containingType,
             global::System.Type propertyType,
             string name,
-            string displayName) : base(containingType, propertyType, name, displayName)
+            string? displayName,
+            global::System.Func<string?>? displayNameAccessor) : base(containingType, propertyType, name, displayName, displayNameAccessor)
         {
             ContainingType = containingType;
             Name = name;
@@ -53,7 +54,9 @@ namespace Microsoft.Extensions.Validation.Generated
         public GeneratedValidatableTypeInfo(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
             global::System.Type type,
-            ValidatablePropertyInfo[] members) : base(type, members)
+            ValidatablePropertyInfo[] members,
+            string? displayName,
+            global::System.Func<string?>? displayNameAccessor) : base(type, members, displayName, displayNameAccessor)
         {
             Type = type;
         }
@@ -80,9 +83,12 @@ namespace Microsoft.Extensions.Validation.Generated
                             containingType: typeof(global::Address),
                             propertyType: typeof(string),
                             name: "Street",
-                            displayName: "Street"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
-                    ]
+                    ],
+                    displayName: null,
+                    displayNameAccessor: null
                 );
                 return true;
             }
@@ -95,15 +101,19 @@ namespace Microsoft.Extensions.Validation.Generated
                             containingType: typeof(global::Order),
                             propertyType: typeof(string),
                             name: "CustomerName",
-                            displayName: "CustomerName"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::Order),
                             propertyType: typeof(global::Address),
                             name: "ShippingAddress",
-                            displayName: "ShippingAddress"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
-                    ]
+                    ],
+                    displayName: null,
+                    displayNameAccessor: null
                 );
                 return true;
             }

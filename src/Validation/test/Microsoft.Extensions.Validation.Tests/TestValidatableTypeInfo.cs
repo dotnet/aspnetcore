@@ -10,7 +10,9 @@ namespace Microsoft.Extensions.Validation.Tests;
 internal class TestValidatableTypeInfo(
     Type type,
     ValidatablePropertyInfo[] members,
-    ValidationAttribute[]? attributes = default) : ValidatableTypeInfo(type, members)
+    ValidationAttribute[]? attributes = default,
+    string? displayName = null,
+    Func<string?>? displayNameAccessor = null) : ValidatableTypeInfo(type, members, displayName, displayNameAccessor)
 {
     private readonly ValidationAttribute[] _attributes = attributes ?? [];
 

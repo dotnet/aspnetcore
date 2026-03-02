@@ -290,13 +290,15 @@ public class ValidatableParameterInfoTests
     private TestValidatableParameterInfo CreateTestParameterInfo(
         Type parameterType,
         string name,
-        string displayName,
-        ValidationAttribute[] validationAttributes)
+        string? displayName,
+        Func<string?>? displayNameAccessor = null,
+        ValidationAttribute[]? validationAttributes = null)
     {
         return new TestValidatableParameterInfo(
             parameterType,
             name,
             displayName,
+            displayNameAccessor,
             validationAttributes);
     }
 
@@ -320,11 +322,12 @@ public class ValidatableParameterInfoTests
         public TestValidatableParameterInfo(
             Type parameterType,
             string name,
-            string displayName,
-            ValidationAttribute[] validationAttributes)
-            : base(parameterType, name, displayName)
+            string? displayName = null,
+            Func<string?>? displayNameAccessor = null,
+            ValidationAttribute[]? validationAttributes = null)
+            : base(parameterType, name, displayName, displayNameAccessor)
         {
-            _validationAttributes = validationAttributes;
+            _validationAttributes = validationAttributes ?? [];
         }
 
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
@@ -338,11 +341,11 @@ public class ValidatableParameterInfoTests
             Type containingType,
             Type propertyType,
             string name,
-            string displayName,
-            ValidationAttribute[] validationAttributes)
-            : base(containingType, propertyType, name, displayName)
+            string? displayName = null,
+            ValidationAttribute[]? validationAttributes = null)
+            : base(containingType, propertyType, name, displayName, displayNameAccessor: null)
         {
-            _validationAttributes = validationAttributes;
+            _validationAttributes = validationAttributes ?? [];
         }
 
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;

@@ -20,15 +20,18 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// </summary>
     /// <param name="parameterType">The <see cref="Type"/> associated with the parameter.</param>
     /// <param name="name">The parameter name.</param>
-    /// <param name="displayName">The display name for the parameter.</param>
+    /// <param name="displayName">The display name for the parameter as designated by <see cref="DisplayAttribute.Name"/>.</param>
+    /// <param name="displayNameAccessor">A function that resolves the display name using <see cref="DisplayAttribute.ResourceType"/> and <see cref="DisplayAttribute.Name"/>.</param>
     protected ValidatableParameterInfo(
         Type parameterType,
         string name,
-        string displayName)
+        string? displayName,
+        Func<string?>? displayNameAccessor)
     {
         ParameterType = parameterType;
         Name = name;
         DisplayName = displayName;
+        DisplayNameAccessor = displayNameAccessor;
     }
 
     /// <summary>
@@ -42,9 +45,15 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     internal string Name { get; }
 
     /// <summary>
-    /// Gets the display name for the parameter.
+    /// Gets the display name for the parameter as designated by the <see cref="DisplayAttribute.Name"/>.
     /// </summary>
-    internal string DisplayName { get; }
+    internal string? DisplayName { get; }
+
+    /// <summary>
+    /// Gets a function that resolves the display name for the parameter using <see cref="DisplayAttribute.ResourceType"/>
+    /// and <see cref="DisplayAttribute.Name"/>.
+    /// </summary>
+    internal Func<string?>? DisplayNameAccessor { get; }
 
     /// <summary>
     /// Gets the validation attributes for this parameter.
@@ -65,7 +74,11 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             return;
         }
 
-        context.ValidationContext.DisplayName = DisplayName;
+        var displayName = DisplayNameAccessor is not null
+            ? DisplayNameAccessor() ?? Name
+            : DisplayName ?? Name;
+
+        context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
 
         var validationAttributes = GetValidationAttributes();

@@ -61,7 +61,8 @@ namespace Microsoft.Extensions.Validation.Generated
             global::System.Type containingType,
             global::System.Type propertyType,
             string name,
-            string displayName) : base(containingType, propertyType, name, displayName)
+            string? displayName,
+            global::System.Func<string?>? displayNameAccessor) : base(containingType, propertyType, name, displayName, displayNameAccessor)
         {
             ContainingType = containingType;
             Name = name;
@@ -81,7 +82,9 @@ namespace Microsoft.Extensions.Validation.Generated
         public GeneratedValidatableTypeInfo(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
             global::System.Type type,
-            ValidatablePropertyInfo[] members) : base(type, members)
+            ValidatablePropertyInfo[] members,
+            string? displayName,
+            global::System.Func<string?>? displayNameAccessor) : base(type, members, displayName, displayNameAccessor)
         {
             Type = type;
         }
@@ -209,6 +212,10 @@ namespace Microsoft.Extensions.Validation.Generated
         foreach (var validatableType in validatableTypes)
         {
             var typeName = validatableType.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            var hasResourceType = validatableType.DisplayResourceType is not null;
+            var displayName = FormatNullableStringLiteral(hasResourceType ? null : validatableType.DisplayName);
+            var displayNameAccessor = FormatNullablePropertyAccessor(validatableType.DisplayResourceType, validatableType.DisplayName);
+
             cw.WriteLine($"if (type == typeof({typeName}))");
             cw.StartBlock();
             cw.WriteLine($"validatableInfo = new GeneratedValidatableTypeInfo(");
@@ -216,7 +223,7 @@ namespace Microsoft.Extensions.Validation.Generated
             cw.WriteLine($"type: typeof({typeName}),");
             if (validatableType.Members.IsDefaultOrEmpty)
             {
-                cw.WriteLine("members: []");
+                cw.WriteLine("members: [],");
             }
             else
             {
@@ -227,8 +234,10 @@ namespace Microsoft.Extensions.Validation.Generated
                     EmitValidatableMemberForCreate(member, cw);
                 }
                 cw.Indent--;
-                cw.WriteLine("]");
+                cw.WriteLine("],");
             }
+            cw.WriteLine($"displayName: {displayName},");
+            cw.WriteLine($"displayNameAccessor: {displayNameAccessor}");
             cw.Indent--;
             cw.WriteLine(");");
             cw.WriteLine("return true;");
@@ -239,13 +248,26 @@ namespace Microsoft.Extensions.Validation.Generated
 
     private static void EmitValidatableMemberForCreate(ValidatableProperty member, CodeWriter cw)
     {
+        var hasResourceType = member.DisplayResourceType is not null;
+        var displayName = FormatNullableStringLiteral(hasResourceType ? null : member.DisplayName);
+        var displayNameAccessor = FormatNullablePropertyAccessor(member.DisplayResourceType, member.DisplayName);
+
         cw.WriteLine("new GeneratedValidatablePropertyInfo(");
         cw.Indent++;
         cw.WriteLine($"containingType: typeof({member.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}),");
         cw.WriteLine($"propertyType: typeof({member.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}),");
         cw.WriteLine($"name: \"{member.Name}\",");
-        cw.WriteLine($"displayName: \"{member.DisplayName}\"");
+        cw.WriteLine($"displayName: {displayName},");
+        cw.WriteLine($"displayNameAccessor: {displayNameAccessor}");
         cw.Indent--;
         cw.WriteLine("),");
     }
+
+    private static string FormatNullableStringLiteral(string? value)
+        => value is null ? "null" : SymbolDisplay.FormatPrimitive(value, quoteStrings: true, false);
+
+    private static string FormatNullablePropertyAccessor(INamedTypeSymbol? containingType, string? propertyName)
+        => containingType is null || propertyName is null
+            ? "null"
+            : $"static () => {containingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}.{propertyName}";
 }

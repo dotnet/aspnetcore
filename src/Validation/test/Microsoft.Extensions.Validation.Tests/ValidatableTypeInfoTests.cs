@@ -714,14 +714,15 @@ public class ValidatableTypeInfoTests
         Type containingType,
         Type propertyType,
         string name,
-        string displayName,
-        ValidationAttribute[] validationAttributes)
+        string? displayName = null,
+        ValidationAttribute[]? validationAttributes = null)
     {
         return new TestValidatablePropertyInfo(
             containingType,
             propertyType,
             name,
             displayName,
+            displayNameAccessor: null,
             validationAttributes);
     }
 
@@ -863,11 +864,12 @@ public class ValidatableTypeInfoTests
             Type containingType,
             Type propertyType,
             string name,
-            string displayName,
-            ValidationAttribute[] validationAttributes)
-            : base(containingType, propertyType, name, displayName)
+            string? displayName = null,
+            Func<string?>? displayNameAccessor = null,
+            ValidationAttribute[]? validationAttributes = null)
+            : base(containingType, propertyType, name, displayName, displayNameAccessor)
         {
-            _validationAttributes = validationAttributes;
+            _validationAttributes = validationAttributes ?? [];
         }
 
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
