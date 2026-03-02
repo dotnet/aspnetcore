@@ -33,7 +33,8 @@ namespace Microsoft.Extensions.Validation.Generated
             global::System.Type containingType,
             global::System.Type propertyType,
             string name,
-            string displayName) : base(containingType, propertyType, name, displayName)
+            string? displayName,
+            global::System.Func<string?>? displayNameAccessor) : base(containingType, propertyType, name, displayName, displayNameAccessor)
         {
             ContainingType = containingType;
             Name = name;
@@ -53,7 +54,9 @@ namespace Microsoft.Extensions.Validation.Generated
         public GeneratedValidatableTypeInfo(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
             global::System.Type type,
-            ValidatablePropertyInfo[] members) : base(type, members)
+            ValidatablePropertyInfo[] members,
+            string? displayName,
+            global::System.Func<string?>? displayNameAccessor) : base(type, members, displayName, displayNameAccessor)
         {
             Type = type;
         }
@@ -80,15 +83,19 @@ namespace Microsoft.Extensions.Validation.Generated
                             containingType: typeof(global::SubRecordStruct),
                             propertyType: typeof(string),
                             name: "RequiredProperty",
-                            displayName: "RequiredProperty"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::SubRecordStruct),
                             propertyType: typeof(string),
                             name: "StringWithLength",
-                            displayName: "StringWithLength"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
-                    ]
+                    ],
+                    displayName: null,
+                    displayNameAccessor: null
                 );
                 return true;
             }
@@ -101,21 +108,26 @@ namespace Microsoft.Extensions.Validation.Generated
                             containingType: typeof(global::ValidatableRecordStruct),
                             propertyType: typeof(int),
                             name: "IntegerWithRange",
-                            displayName: "IntegerWithRange"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ValidatableRecordStruct),
                             propertyType: typeof(int),
                             name: "IntegerWithRangeAndDisplayName",
-                            displayName: "Valid identifier"
+                            displayName: "Valid identifier",
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ValidatableRecordStruct),
                             propertyType: typeof(global::SubRecordStruct),
                             name: "SubProperty",
-                            displayName: "SubProperty"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
-                    ]
+                    ],
+                    displayName: null,
+                    displayNameAccessor: null
                 );
                 return true;
             }

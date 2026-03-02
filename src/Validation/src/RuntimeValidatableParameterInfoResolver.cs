@@ -48,32 +48,30 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
             validatableInfo = null;
             return false;
         }
+
+        var displayAttribute = parameterInfo.GetCustomAttribute<DisplayAttribute>();
+        var displayName = displayAttribute?.ResourceType is null ? displayAttribute?.Name : null;
+        Func<string?>? displayNameAccessor = displayAttribute?.ResourceType is not null && displayAttribute?.Name is not null
+            ? displayAttribute.GetName
+            : null;
+
         validatableInfo = new RuntimeValidatableParameterInfo(
             parameterType: parameterInfo.ParameterType,
             name: parameterInfo.Name,
-            displayName: GetDisplayName(parameterInfo),
+            displayName: displayName,
+            displayNameAccessor: displayNameAccessor,
             validationAttributes: validationAttributes
         );
         return true;
     }
 
-    private static string GetDisplayName(ParameterInfo parameterInfo)
-    {
-        var displayAttribute = parameterInfo.GetCustomAttribute<DisplayAttribute>();
-        if (displayAttribute != null)
-        {
-            return displayAttribute.Name ?? parameterInfo.Name!;
-        }
-
-        return parameterInfo.Name!;
-    }
-
     internal sealed class RuntimeValidatableParameterInfo(
         Type parameterType,
         string name,
-        string displayName,
+        string? displayName,
+        Func<string?>? displayNameAccessor,
         ValidationAttribute[] validationAttributes) :
-            ValidatableParameterInfo(parameterType, name, displayName)
+            ValidatableParameterInfo(parameterType, name, displayName, displayNameAccessor)
     {
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
 

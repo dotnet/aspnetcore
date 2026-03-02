@@ -3,12 +3,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.Extensions.Validation.GeneratorTests;
 
-public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
+public class ValidationsGeneratorDisplayNameTests : ValidationsGeneratorTestBase
 {
     [Fact]
     public async Task PropertyDisplayName_WithNameOnly()
@@ -46,11 +45,9 @@ public class PropertyDisplayNameType
             await endpoint.RequestDelegate(context);
 
             var problemDetails = await AssertBadRequest(context);
-            Assert.Collection(problemDetails.Errors, kvp =>
-            {
-                Assert.Equal("Value", kvp.Key);
-                Assert.Equal("Name:My Custom Name", kvp.Value.Single());
-            });
+            var kvp = Assert.Single(problemDetails.Errors);
+            Assert.Equal("Value", kvp.Key);
+            Assert.Equal("Name:My Custom Name", kvp.Value.Single());
         });
     }
 
@@ -95,11 +92,9 @@ public class TestResources
             await endpoint.RequestDelegate(context);
 
             var problemDetails = await AssertBadRequest(context);
-            Assert.Collection(problemDetails.Errors, kvp =>
-            {
-                Assert.Equal("Value", kvp.Key);
-                Assert.Equal("Name:Localized Value Name", kvp.Value.Single());
-            });
+            var kvp = Assert.Single(problemDetails.Errors);
+            Assert.Equal("Value", kvp.Key);
+            Assert.Equal("Name:Localized Value Name", kvp.Value.Single());
         });
     }
 
@@ -134,11 +129,9 @@ app.Run();
             await endpoint.RequestDelegate(context);
 
             var problemDetails = await AssertBadRequest(context);
-            Assert.Collection(problemDetails.Errors, kvp =>
-            {
-                Assert.Equal("value", kvp.Key);
-                Assert.Equal("Name:Parameter Label", kvp.Value.Single());
-            });
+            var kvp = Assert.Single(problemDetails.Errors);
+            Assert.Equal("value", kvp.Key);
+            Assert.Equal("Name:Parameter Label", kvp.Value.Single());
         });
     }
 
@@ -178,11 +171,9 @@ public class ParamResources
             await endpoint.RequestDelegate(context);
 
             var problemDetails = await AssertBadRequest(context);
-            Assert.Collection(problemDetails.Errors, kvp =>
-            {
-                Assert.Equal("value", kvp.Key);
-                Assert.Equal("Name:Localized Parameter Name", kvp.Value.Single());
-            });
+            var kvp = Assert.Single(problemDetails.Errors);
+            Assert.Equal("value", kvp.Key);
+            Assert.Equal("Name:Localized Parameter Name", kvp.Value.Single());
         });
     }
 
@@ -225,11 +216,9 @@ public class TypeWithDisplayName
             await endpoint.RequestDelegate(context);
 
             var problemDetails = await AssertBadRequest(context);
-            Assert.Collection(problemDetails.Errors, kvp =>
-            {
-                Assert.Equal("Value", kvp.Key);
-                Assert.Equal("Name:Value", kvp.Value.Single());
-            });
+            var kvp = Assert.Single(problemDetails.Errors);
+            Assert.Equal("Value", kvp.Key);
+            Assert.Equal("Name:Value", kvp.Value.Single());
         });
     }
 
@@ -277,11 +266,9 @@ public class TypeResources
             await endpoint.RequestDelegate(context);
 
             var problemDetails = await AssertBadRequest(context);
-            Assert.Collection(problemDetails.Errors, kvp =>
-            {
-                Assert.Equal("Value", kvp.Key);
-                Assert.Equal("Name:Value", kvp.Value.Single());
-            });
+            var kvp = Assert.Single(problemDetails.Errors);
+            Assert.Equal("Value", kvp.Key);
+            Assert.Equal("Name:Value", kvp.Value.Single());
         });
     }
 
@@ -321,11 +308,9 @@ public class NoDisplayAttributeType
             await endpoint.RequestDelegate(context);
 
             var problemDetails = await AssertBadRequest(context);
-            Assert.Collection(problemDetails.Errors, kvp =>
-            {
-                Assert.Equal("MyProperty", kvp.Key);
-                Assert.Equal("Name:MyProperty", kvp.Value.Single());
-            });
+            var kvp = Assert.Single(problemDetails.Errors);
+            Assert.Equal("MyProperty", kvp.Key);
+            Assert.Equal("Name:MyProperty", kvp.Value.Single());
         });
     }
 
@@ -362,11 +347,9 @@ public record RecordWithDisplayName(
             await endpoint.RequestDelegate(context);
 
             var problemDetails = await AssertBadRequest(context);
-            Assert.Collection(problemDetails.Errors, kvp =>
-            {
-                Assert.Equal("Value", kvp.Key);
-                Assert.Equal("Name:Record Field Label", kvp.Value.Single());
-            });
+            var kvp = Assert.Single(problemDetails.Errors);
+            Assert.Equal("Value", kvp.Key);
+            Assert.Equal("Name:Record Field Label", kvp.Value.Single());
         });
     }
 
@@ -408,11 +391,9 @@ public class RecordResources
             await endpoint.RequestDelegate(context);
 
             var problemDetails = await AssertBadRequest(context);
-            Assert.Collection(problemDetails.Errors, kvp =>
-            {
-                Assert.Equal("Value", kvp.Key);
-                Assert.Equal("Name:Localized Record Value", kvp.Value.Single());
-            });
+            var kvp = Assert.Single(problemDetails.Errors);
+            Assert.Equal("Value", kvp.Key);
+            Assert.Equal("Name:Localized Record Value", kvp.Value.Single());
         });
     }
 }

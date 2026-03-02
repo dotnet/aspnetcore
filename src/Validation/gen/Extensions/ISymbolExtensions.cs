@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Linq;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 
@@ -10,28 +8,43 @@ namespace Microsoft.Extensions.Validation;
 
 internal static class ISymbolExtensions
 {
-    public static string GetDisplayName(this ISymbol property, INamedTypeSymbol displayAttribute)
+    public static DisplayInfo? GetDisplayInfo(this ISymbol symbol, INamedTypeSymbol displayAttributeSymbol)
     {
-        var displayNameAttribute = property.GetAttributes()
-            .FirstOrDefault(attribute =>
-                attribute.AttributeClass is { } attributeClass &&
-                SymbolEqualityComparer.Default.Equals(attributeClass, displayAttribute));
+        AttributeData? displayAttribute = null;
 
-        if (displayNameAttribute is not null)
+        foreach (var attribute in symbol.GetAttributes())
         {
-            if (!displayNameAttribute.NamedArguments.IsDefaultOrEmpty)
+            if (attribute.AttributeClass is { } attributeClass &&
+                SymbolEqualityComparer.Default.Equals(attributeClass, displayAttributeSymbol))
             {
-                foreach (var namedArgument in displayNameAttribute.NamedArguments)
-                {
-                    if (string.Equals(namedArgument.Key, "Name", StringComparison.Ordinal))
-                    {
-                        return namedArgument.Value.Value?.ToString() ?? property.Name;
-                    }
-                }
+                displayAttribute = attribute;
+                break;
             }
         }
 
-        return property.Name;
+        if (displayAttribute is null || displayAttribute.NamedArguments.IsDefaultOrEmpty)
+        {
+            return null;
+        }
+
+        string? name = null;
+        INamedTypeSymbol? resourceType = null;
+
+        foreach (var namedArg in displayAttribute.NamedArguments)
+        {
+            switch (namedArg.Key)
+            {
+                case "Name":
+                    name = namedArg.Value.Value as string;
+                    break;
+
+                case "ResourceType":
+                    resourceType = namedArg.Value.Value as INamedTypeSymbol;
+                    break;
+            }
+        }
+
+        return name is not null ? new DisplayInfo(name, resourceType) : null;
     }
 
     public static bool IsEqualityContract(this IPropertySymbol prop, WellKnownTypes wellKnownTypes) =>

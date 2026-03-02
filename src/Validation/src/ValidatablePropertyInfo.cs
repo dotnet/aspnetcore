@@ -22,12 +22,14 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         Type declaringType,
         Type propertyType,
         string name,
-        string displayName)
+        string? displayName,
+        Func<string?>? displayNameAccessor)
     {
         DeclaringType = declaringType;
         PropertyType = propertyType;
         Name = name;
         DisplayName = displayName;
+        DisplayNameAccessor = displayNameAccessor;
     }
 
     /// <summary>
@@ -47,9 +49,15 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     internal string Name { get; }
 
     /// <summary>
-    /// Gets the display name for the member as designated by the <see cref="DisplayAttribute"/>.
+    /// Gets the display name for the member as designated by the <see cref="DisplayAttribute.Name"/>.
     /// </summary>
-    internal string DisplayName { get; }
+    internal string? DisplayName { get; }
+
+    /// <summary>
+    /// Gets a function that resolves the display name for the member using <see cref="DisplayAttribute.ResourceType"/>
+    /// and <see cref="DisplayAttribute.Name"/>.
+    /// </summary>
+    internal Func<string?>? DisplayNameAccessor { get; }
 
     /// <summary>
     /// Gets the validation attributes for this member.
@@ -75,7 +83,11 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             context.CurrentValidationPath = $"{originalPrefix}.{Name}";
         }
 
-        context.ValidationContext.DisplayName = DisplayName;
+        var displayName = DisplayNameAccessor is not null
+            ? DisplayNameAccessor() ?? Name
+            : DisplayName ?? Name;
+
+        context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
 
         // Check required attribute first

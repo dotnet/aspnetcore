@@ -21,12 +21,18 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     /// </summary>
     /// <param name="type">The type being validated.</param>
     /// <param name="members">The members that can be validated.</param>
+    /// <param name="displayName">The display name for the type as designated by <see cref="DisplayAttribute.Name"/>.</param>
+    /// <param name="displayNameAccessor">A function that resolves the display name using <see cref="DisplayAttribute.ResourceType"/> and <see cref="DisplayAttribute.Name"/>.</param>
     protected ValidatableTypeInfo(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type,
-        IReadOnlyList<ValidatablePropertyInfo> members)
+        IReadOnlyList<ValidatablePropertyInfo> members,
+        string? displayName,
+        Func<string?>? displayNameAccessor)
     {
         Type = type;
         Members = members;
+        DisplayName = displayName;
+        DisplayNameAccessor = displayNameAccessor;
         _membersCount = members.Count;
         _superTypes = type.GetAllImplementedTypes();
     }
@@ -46,6 +52,17 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     /// The members that can be validated.
     /// </summary>
     internal IReadOnlyList<ValidatablePropertyInfo> Members { get; }
+
+    /// <summary>
+    /// Gets the display name for the type as designated by the <see cref="DisplayAttribute.Name"/>.
+    /// </summary>
+    internal string? DisplayName { get; }
+
+    /// <summary>
+    /// Gets a function that resolves the display name for the type using <see cref="DisplayAttribute.ResourceType"/>
+    /// and <see cref="DisplayAttribute.Name"/>.
+    /// </summary>
+    internal Func<string?>? DisplayNameAccessor { get; }
 
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
@@ -127,6 +144,12 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         var validationAttributes = GetValidationAttributes();
         var errorPrefix = context.CurrentValidationPath;
 
+        var originalDisplayName = context.ValidationContext.DisplayName;
+        var originalMemberName = context.ValidationContext.MemberName;
+
+        context.ValidationContext.DisplayName = GetDisplayName();
+        context.ValidationContext.MemberName = null;
+
         for (var i = 0; i < validationAttributes.Length; i++)
         {
             var attribute = validationAttributes[i];
@@ -147,6 +170,9 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 }
             }
         }
+
+        context.ValidationContext.DisplayName = originalDisplayName;
+        context.ValidationContext.MemberName = originalMemberName;
     }
 
     private void ValidateValidatableObjectInterface(object? value, ValidateContext context)
@@ -160,7 +186,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             var errorPrefix = context.CurrentValidationPath;
 
             // Set the display name to the class name for IValidatableObject validation
-            context.ValidationContext.DisplayName = Type.Name;
+            context.ValidationContext.DisplayName = GetDisplayName();
             context.ValidationContext.MemberName = null;
 
             var validationResults = validatable.Validate(context.ValidationContext);
@@ -200,4 +226,8 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             }
         }
     }
+
+    private string GetDisplayName() => DisplayNameAccessor is not null
+        ? DisplayNameAccessor() ?? Type.Name
+        : DisplayName ?? Type.Name;
 }

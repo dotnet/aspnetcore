@@ -33,7 +33,8 @@ namespace Microsoft.Extensions.Validation.Generated
             global::System.Type containingType,
             global::System.Type propertyType,
             string name,
-            string displayName) : base(containingType, propertyType, name, displayName)
+            string? displayName,
+            global::System.Func<string?>? displayNameAccessor) : base(containingType, propertyType, name, displayName, displayNameAccessor)
         {
             ContainingType = containingType;
             Name = name;
@@ -53,7 +54,9 @@ namespace Microsoft.Extensions.Validation.Generated
         public GeneratedValidatableTypeInfo(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
             global::System.Type type,
-            ValidatablePropertyInfo[] members) : base(type, members)
+            ValidatablePropertyInfo[] members,
+            string? displayName,
+            global::System.Func<string?>? displayNameAccessor) : base(type, members, displayName, displayNameAccessor)
         {
             Type = type;
         }
@@ -80,15 +83,19 @@ namespace Microsoft.Extensions.Validation.Generated
                             containingType: typeof(global::SubType),
                             propertyType: typeof(string),
                             name: "RequiredProperty",
-                            displayName: "RequiredProperty"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::SubType),
                             propertyType: typeof(string),
                             name: "StringWithLength",
-                            displayName: "StringWithLength"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
-                    ]
+                    ],
+                    displayName: null,
+                    displayNameAccessor: null
                 );
                 return true;
             }
@@ -101,9 +108,12 @@ namespace Microsoft.Extensions.Validation.Generated
                             containingType: typeof(global::SubTypeWithInheritance),
                             propertyType: typeof(string),
                             name: "EmailString",
-                            displayName: "EmailString"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
-                    ]
+                    ],
+                    displayName: null,
+                    displayNameAccessor: null
                 );
                 return true;
             }
@@ -116,15 +126,19 @@ namespace Microsoft.Extensions.Validation.Generated
                             containingType: typeof(global::SubTypeWithoutConstructor),
                             propertyType: typeof(string),
                             name: "RequiredProperty",
-                            displayName: "RequiredProperty"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::SubTypeWithoutConstructor),
                             propertyType: typeof(string),
                             name: "StringWithLength",
-                            displayName: "StringWithLength"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
-                    ]
+                    ],
+                    displayName: null,
+                    displayNameAccessor: null
                 );
                 return true;
             }
@@ -137,63 +151,75 @@ namespace Microsoft.Extensions.Validation.Generated
                             containingType: typeof(global::ValidatableRecord),
                             propertyType: typeof(int),
                             name: "IntegerWithRange",
-                            displayName: "IntegerWithRange"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ValidatableRecord),
                             propertyType: typeof(int),
                             name: "IntegerWithRangeAndDisplayName",
-                            displayName: "Valid identifier"
+                            displayName: "Valid identifier",
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ValidatableRecord),
                             propertyType: typeof(global::SubType),
                             name: "PropertyWithMemberAttributes",
-                            displayName: "PropertyWithMemberAttributes"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ValidatableRecord),
                             propertyType: typeof(global::SubType),
                             name: "PropertyWithoutMemberAttributes",
-                            displayName: "PropertyWithoutMemberAttributes"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ValidatableRecord),
                             propertyType: typeof(global::SubTypeWithInheritance),
                             name: "PropertyWithInheritance",
-                            displayName: "PropertyWithInheritance"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ValidatableRecord),
                             propertyType: typeof(global::SubTypeWithoutConstructor),
                             name: "PropertyOfSubtypeWithoutConstructor",
-                            displayName: "PropertyOfSubtypeWithoutConstructor"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ValidatableRecord),
                             propertyType: typeof(global::System.Collections.Generic.List<global::SubType>),
                             name: "ListOfSubTypes",
-                            displayName: "ListOfSubTypes"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ValidatableRecord),
                             propertyType: typeof(int),
                             name: "IntegerWithDerivedValidationAttribute",
-                            displayName: "IntegerWithDerivedValidationAttribute"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ValidatableRecord),
                             propertyType: typeof(int),
                             name: "IntegerWithCustomValidation",
-                            displayName: "IntegerWithCustomValidation"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ValidatableRecord),
                             propertyType: typeof(int),
                             name: "PropertyWithMultipleAttributes",
-                            displayName: "PropertyWithMultipleAttributes"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
-                    ]
+                    ],
+                    displayName: null,
+                    displayNameAccessor: null
                 );
                 return true;
             }

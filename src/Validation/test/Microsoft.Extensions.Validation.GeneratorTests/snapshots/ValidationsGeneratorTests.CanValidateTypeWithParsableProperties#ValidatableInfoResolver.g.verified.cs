@@ -33,7 +33,8 @@ namespace Microsoft.Extensions.Validation.Generated
             global::System.Type containingType,
             global::System.Type propertyType,
             string name,
-            string displayName) : base(containingType, propertyType, name, displayName)
+            string? displayName,
+            global::System.Func<string?>? displayNameAccessor) : base(containingType, propertyType, name, displayName, displayNameAccessor)
         {
             ContainingType = containingType;
             Name = name;
@@ -53,7 +54,9 @@ namespace Microsoft.Extensions.Validation.Generated
         public GeneratedValidatableTypeInfo(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
             global::System.Type type,
-            ValidatablePropertyInfo[] members) : base(type, members)
+            ValidatablePropertyInfo[] members,
+            string? displayName,
+            global::System.Func<string?>? displayNameAccessor) : base(type, members, displayName, displayNameAccessor)
         {
             Type = type;
         }
@@ -80,57 +83,68 @@ namespace Microsoft.Extensions.Validation.Generated
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(global::System.Guid?),
                             name: "GuidWithRegularExpression",
-                            displayName: "GuidWithRegularExpression"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(global::System.TimeOnly?),
                             name: "TimeOnlyWithRequiredValue",
-                            displayName: "TimeOnlyWithRequiredValue"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(string),
                             name: "Url",
-                            displayName: "Url"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(global::System.DateOnly?),
                             name: "DateOnlyWithRange",
-                            displayName: "DateOnlyWithRange"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(global::System.DateTime?),
                             name: "DateTimeWithRange",
-                            displayName: "DateTimeWithRange"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(decimal?),
                             name: "DecimalWithRange",
-                            displayName: "DecimalWithRange"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(global::System.TimeSpan?),
                             name: "TimeSpanWithHourRange",
-                            displayName: "TimeSpanWithHourRange"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(bool),
                             name: "BooleanWithRange",
-                            displayName: "BooleanWithRange"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(global::System.Version),
                             name: "VersionWithRegex",
-                            displayName: "VersionWithRegex"
+                            displayName: null,
+                            displayNameAccessor: null
                         ),
-                    ]
+                    ],
+                    displayName: null,
+                    displayNameAccessor: null
                 );
                 return true;
             }
