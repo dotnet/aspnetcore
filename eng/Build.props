@@ -11,6 +11,9 @@
   -->
   <Import Project="RequiresDelayedBuildProjects.props" Condition="'$(OnlyTestProjectTemplates)' != 'true'" />
 
+  <!-- Import affected test areas for PR builds. Written by GetAffectedTestAreas.ps1 in build scripts. -->
+  <Import Project="$(ArtifactsDir)tmp\AffectedTestAreas.props" Condition="Exists('$(ArtifactsDir)tmp\AffectedTestAreas.props')" />
+
   <!-- These projects are always excluded, even when -projects is specified on command line. -->
   <ItemGroup>
     <!-- Explicitly excluded projects -->
@@ -284,7 +287,7 @@
       </ItemGroup>
 
       <!--
-        When AffectedTestAreas is set (semicolon-delimited), remove projects from areas NOT in the list.
+        When AffectedTestAreas is set, remove projects from areas NOT in the list.
         This filters tests to only run for areas affected by PR changes.
         The delimiter-wrapping pattern ';Area;' prevents partial matches (e.g., 'Http' matching 'HttpClientFactory').
       -->
