@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Http.RouteValueUrlDecoder
+static Microsoft.AspNetCore.Http.RouteValueUrlDecoder.GetUrlDecodedRouteValue(Microsoft.AspNetCore.Http.HttpContext! httpContext, string! parameterName) -> string?

@@ -1,5 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using System.Globalization;
@@ -241,6 +242,8 @@ app.MapGet("/{value}", (string value, HttpContext httpContext) => value);
 
         var httpContext = CreateHttpContext();
         httpContext.Request.RouteValues["userId"] = "domain%2Fuser";
+        httpContext.Features.Set<IHttpRequestFeature>(new HttpRequestFeature { RawTarget = "/domain%2Fuser" });
+        httpContext.SetEndpoint(endpoint);
 
         await endpoint.RequestDelegate(httpContext);
 
@@ -271,6 +274,8 @@ app.MapGet("/{value}", (string value, HttpContext httpContext) => value);
 
         var httpContext = CreateHttpContext();
         httpContext.Request.RouteValues["value"] = "a%2Fb%2Bc%20d";
+        httpContext.Features.Set<IHttpRequestFeature>(new HttpRequestFeature { RawTarget = "/a%2Fb%2Bc%20d" });
+        httpContext.SetEndpoint(endpoint);
 
         await endpoint.RequestDelegate(httpContext);
 

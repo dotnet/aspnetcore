@@ -201,17 +201,10 @@ internal static class EndpointParameterEmitter
         codeWriter.WriteLine($$"""throw new InvalidOperationException($"'{{endpointParameter.LookupName}}' is not a route parameter.");""");
         codeWriter.EndBlock();
 
-        var assigningCode = $"(string?)httpContext.Request.RouteValues[\"{endpointParameter.LookupName}\"]";
+        var assigningCode = endpointParameter.UrlDecode
+            ? $"RouteValueUrlDecoder.GetUrlDecodedRouteValue(httpContext, \"{endpointParameter.LookupName}\")"
+            : $"(string?)httpContext.Request.RouteValues[\"{endpointParameter.LookupName}\"]";
         codeWriter.WriteLine($"var {endpointParameter.EmitAssigningCodeResult()} = {assigningCode};");
-
-        // Apply Uri.UnescapeDataString to fully decode percent-encoded route values (e.g. %2F → /)
-        if (endpointParameter.UrlDecode)
-        {
-            codeWriter.WriteLine($"if ({endpointParameter.EmitAssigningCodeResult()} is not null)");
-            codeWriter.StartBlock();
-            codeWriter.WriteLine($"{endpointParameter.EmitAssigningCodeResult()} = Uri.UnescapeDataString({endpointParameter.EmitAssigningCodeResult()});");
-            codeWriter.EndBlock();
-        }
 
         if (!endpointParameter.IsOptional)
         {

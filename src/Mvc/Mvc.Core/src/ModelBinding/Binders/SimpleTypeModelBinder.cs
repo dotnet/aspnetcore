@@ -5,6 +5,7 @@
 
 using System.ComponentModel;
 using System.Runtime.ExceptionServices;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.Logging;
 
@@ -57,10 +58,11 @@ public class SimpleTypeModelBinder : IModelBinder
                 ? valueProviderResult.Values.ToString()
                 : valueProviderResult.FirstValue;
 
-            // Apply URL decoding when FromRoute(UrlDecode = true) is specified
+            // Apply URL decoding when FromRoute(UrlDecode = true) is specified.
+            // Decode from the raw request target to avoid double-decoding.
             if (value is not null && ShouldUrlDecodeRouteValue(bindingContext))
             {
-                value = Uri.UnescapeDataString(value);
+                value = RouteValueUrlDecoder.GetUrlDecodedRouteValue(bindingContext.HttpContext, bindingContext.ModelName) ?? value;
             }
 
             object? model;

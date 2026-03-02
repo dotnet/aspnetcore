@@ -300,8 +300,9 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var responseBodyStream = new MemoryStream();
         httpContext.Response.Body = responseBodyStream;
 
-        // %2F is preserved by the server's path decoder, so route values contain literal "%2F"
+        // Simulate what Kestrel does: %2F is preserved in route values, raw target has the original encoding
         httpContext.Request.RouteValues["userId"] = "domain%2Fuser";
+        SetupRawTargetAndEndpoint(httpContext, "/users/domain%2Fuser", "/users/{userId}");
 
         var factoryResult = RequestDelegateFactory.Create(
             ([FromRoute(UrlDecode = true)] string userId) => userId,
@@ -360,6 +361,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         // Multiple encoded characters: %2F (/) and %2B (+) and %20 (space)
         httpContext.Request.RouteValues["value"] = "a%2Fb%2Bc%20d";
+        SetupRawTargetAndEndpoint(httpContext, "/items/a%2Fb%2Bc%20d", "/items/{value}");
 
         var factoryResult = RequestDelegateFactory.Create(
             ([FromRoute(UrlDecode = true)] string value) => value,
@@ -370,6 +372,52 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(200, httpContext.Response.StatusCode);
         var body = Encoding.UTF8.GetString(responseBodyStream.ToArray());
         Assert.Equal("a/b+c d", body);
+    }
+
+    [Fact]
+    public async Task FromRouteWithUrlDecodeDoesNotDoubleDecodePercentEncoding()
+    {
+        var httpContext = CreateHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        // Simulate double-encoding: original URL had %252F, Kestrel decoded %25 to %, leaving %2F in route value
+        httpContext.Request.RouteValues["userId"] = "domain%2Fuser";
+        // Raw target still has %252F (the original encoding)
+        SetupRawTargetAndEndpoint(httpContext, "/users/domain%252Fuser", "/users/{userId}");
+
+        var factoryResult = RequestDelegateFactory.Create(
+            ([FromRoute(UrlDecode = true)] string userId) => userId,
+            new() { RouteParameterNames = new[] { "userId" } });
+
+        await factoryResult.RequestDelegate(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        var body = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        // Single decode of %252F should yield %2F, NOT /
+        Assert.Equal("domain%2Fuser", body);
+    }
+
+    [Fact]
+    public async Task FromRouteWithUrlDecodeFallsBackWhenRawTargetUnavailable()
+    {
+        var httpContext = CreateHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        // No raw target or endpoint set — should fall back to the route value without decoding
+        httpContext.Request.RouteValues["userId"] = "domain%2Fuser";
+
+        var factoryResult = RequestDelegateFactory.Create(
+            ([FromRoute(UrlDecode = true)] string userId) => userId,
+            new() { RouteParameterNames = new[] { "userId" } });
+
+        await factoryResult.RequestDelegate(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        var body = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        // Without raw target, falls back to the route value as-is
+        Assert.Equal("domain%2Fuser", body);
     }
 
     public static object?[][] TryParsableArrayParameters
@@ -3443,6 +3491,13 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var builder = new RouteEndpointBuilder(null, RoutePatternFactory.Parse("/"), 0);
         ((List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>)builder.FilterFactories).AddRange(filterFactories);
         return builder;
+    }
+
+    private static void SetupRawTargetAndEndpoint(DefaultHttpContext httpContext, string rawTarget, string routeTemplate)
+    {
+        httpContext.Features.Set<IHttpRequestFeature>(new HttpRequestFeature { RawTarget = rawTarget });
+        var endpointBuilder = new RouteEndpointBuilder(_ => Task.CompletedTask, RoutePatternFactory.Parse(routeTemplate), 0);
+        httpContext.SetEndpoint(endpointBuilder.Build());
     }
 
     private record MetadataService;
