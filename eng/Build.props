@@ -322,7 +322,7 @@
     Contains Remove lines for unaffected areas from ProjectsWithTestsSubset1/2.
     Must be after the Choose block where the subsets are defined, and before they flow into DotNetProjects.
   -->
-  <Import Project="$(ArtifactsDir)tmp\AffectedTestAreas.props" Condition="Exists('$(ArtifactsDir)tmp\AffectedTestAreas.props') AND '$(BuildMainlyReferenceProviders)' != 'true'" />
+  <Import Project="$(RepoRoot)artifacts\tmp\AffectedTestAreas.props" Condition="Exists('$(RepoRoot)artifacts\tmp\AffectedTestAreas.props') AND '$(BuildMainlyReferenceProviders)' != 'true'" />
 
   <!-- Flow filtered test subsets into DotNetProjects and ProjectToBuild.
        This is outside the Choose block so the AffectedTestAreas Import above can filter the subsets first.
