@@ -54,8 +54,19 @@ internal class ResourceCollectionProvider
             return ResourceAssetCollection.Empty;
         }
 
-        var module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", _url);
-        var result = await module.InvokeAsync<ResourceAsset[]>("get");
-        return result == null ? ResourceAssetCollection.Empty : new ResourceAssetCollection(result);
+        try
+        {
+            var module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", _url);
+            var result = await module.InvokeAsync<ResourceAsset[]>("get");
+            return result == null ? ResourceAssetCollection.Empty : new ResourceAssetCollection(result);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException(
+                $"Failed to load the Blazor resource collection from '{_url}'. " +
+                "This is likely caused by a mismatch in the file integrity check, which can happen when files are modified after they are published. " +
+                "Ensure that all published files are deployed correctly and that none have been modified after publish.",
+                ex);
+        }
     }
 }

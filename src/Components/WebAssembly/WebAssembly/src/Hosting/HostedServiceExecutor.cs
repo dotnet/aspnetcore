@@ -45,7 +45,7 @@ internal sealed partial class HostedServiceExecutor
         // Throw an aggregate exception if there were any exceptions
         if (exceptions is not null)
         {
-            var aggregateException = new AggregateException(exceptions);
+            var aggregateException = new AggregateException("One or more hosted services failed to stop.", exceptions);
             try
             {
                 Log.ErrorStoppingHostedServices(_logger, aggregateException);
