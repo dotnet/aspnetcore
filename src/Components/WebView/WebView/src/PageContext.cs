@@ -41,7 +41,7 @@ internal sealed class PageContext : IAsyncDisposable
         NavigationManager = (WebViewNavigationManager)ServiceProvider.GetRequiredService<NavigationManager>();
         NavigationManager.AttachToWebView(ipcSender, baseUrl, startUrl);
 
-        JSRuntime = (WebViewJSRuntime)ServiceProvider.GetRequiredService<IJSRuntime>();
+        JSRuntime = ServiceProvider.GetRequiredService<WebViewJSRuntime>();
         JSRuntime.AttachToWebView(ipcSender);
 
         var loggerFactory = ServiceProvider.GetRequiredService<ILoggerFactory>();

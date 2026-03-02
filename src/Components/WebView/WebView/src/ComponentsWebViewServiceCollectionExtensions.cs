@@ -24,7 +24,8 @@ public static class ComponentsWebViewServiceCollectionExtensions
     public static IServiceCollection AddBlazorWebView(this IServiceCollection services)
     {
         services.AddLogging();
-        services.TryAddScoped<IJSRuntime, WebViewJSRuntime>();
+        services.TryAddScoped<WebViewJSRuntime>();
+        services.TryAddScoped<IJSRuntime, WebViewJSRuntime>(sp => sp.GetRequiredService<WebViewJSRuntime>());
         services.TryAddScoped<INavigationInterception, WebViewNavigationInterception>();
         services.TryAddScoped<IScrollToLocationHash, WebViewScrollToLocationHash>();
         services.TryAddScoped<NavigationManager, WebViewNavigationManager>();

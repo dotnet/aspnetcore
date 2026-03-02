@@ -106,7 +106,8 @@ public static class ComponentServiceCollectionExtensions
         //
         // These intentionally replace the non-interactive versions included in MVC.
         services.AddScoped<NavigationManager, RemoteNavigationManager>();
-        services.AddScoped<IJSRuntime, RemoteJSRuntime>();
+        services.AddScoped<RemoteJSRuntime>();
+        services.AddScoped<IJSRuntime, RemoteJSRuntime>(sp => sp.GetRequiredService<RemoteJSRuntime>());
         services.AddScoped<INavigationInterception, RemoteNavigationInterception>();
         services.AddScoped<IScrollToLocationHash, RemoteScrollToLocationHash>();
         services.TryAddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
