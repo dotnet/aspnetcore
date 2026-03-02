@@ -28,7 +28,7 @@ This approach has significant limitations:
 
 - **Verbose** — each attribute instance must be annotated individually.
 - **Requires recompilation** — adding or changing translations requires recompiling the application.
-- **Not suitable for runtime data sources** — resource keys and types must be known at compile time, making it impractical to load translations from databases, JSON files, or other dynamic sources.
+- **Static property access** — resources are loaded via static string properties, making it impractical to load translations from databases, JSON files, or other external sources.
 
 Alternatively, if the user specifies `ErrorMessage` on a validation attribute (or `Name` on a `DisplayAttribute`), this value is used as-is with no run-time localization.
 
@@ -122,7 +122,7 @@ The general goal is to enable localization for validation messages emitted by `M
 
 The basic architecture of the localization support is proposed as follows:
 
-- Localization is implemented at the level of the shared validation infrastructure of `Microsoft.Extensions.Validation`, rather than in each individual framework integration (Minimal APIs, Blazor) to avoid logic duplication and provide consistent experience to the users.
+- Localization is implemented at the level of the shared validation infrastructure of `Microsoft.Extensions.Validation`, rather than in each individual framework integration (Minimal APIs, Blazor). First, localization of validation messages requires intercepting the message generation process at the point where the necessary information about the validated types and  is available, including the validation attributes. Additionally, we want to avoid logic duplication and provide consistent experience to the users.
 - The entrypoint into the validation infrastructure is the `ValidationOptions` class. The proposal adds generic extensibility point for localization and customization of validation messages in the form of configurable delegate properties in `ValidationOptions`.
 - Other localization-related code, including the implementation of the `IStringLocalizer`-based localization and extension methods for service registration, is put into a new package `Microsoft.Extensions.Validation.Localization` to minimize the bundle size increase for applications that do not require validation localization. The dependency graph looks like this:
 
@@ -305,7 +305,7 @@ public class ValidationOptions
 
 These are the primary extensibility points for the core validation pipeline. They are configured globally for the entire application via `IConfigureOptions<ValidationOptions>` or directly in the `AddValidation(options => ...)` callback. Per-invocation overrides are also possible using the properties' public setters. Typical consumers (such as the Blazor and Minimal API integrations) would use the globally configured values to provide predicatable and consistent experience.
 
-The `DisplayNameProvider` delegate is only invoked when a `DisplayAttribute` with a non-null `Name` is present **and** `DisplayAttribute.ResourceType` is not set — when `ResourceType` is set, the static accessor already produces the correct localized string and the provider is skipped to avoid double-localization.
+The `DisplayNameProvider` delegate is only invoked when a `DisplayAttribute` with a non-null `Name` is present and `DisplayAttribute.ResourceType` is not set — when `ResourceType` is set, the static accessor already produces the correct localized string and the provider is skipped to avoid double-localization.
 
 The `ErrorMessageProvider` delegate is only invoked when `ValidationAttribute.ErrorMessageResourceType` is `null`. When `ErrorMessageResourceType` is set, the attribute already handles its own localization and the provider is bypassed entirely to avoid double-localization. When invoked, the provider is expected to return a fully formatted localized message (not a template). It is responsible for substituting the display name and any attribute-specific arguments into the localized template. If it returns `null`, the attribute's default message from `ValidationAttribute.GetValidationResult()` is used.
 
@@ -328,9 +328,9 @@ public readonly struct DisplayNameProviderContext
 }
 ```
 
-`DisplayNameProviderContext` is passed to the `DisplayNameProvider` delegate. The delegate is only invoked when a `DisplayAttribute` with a non-null `Name` is present **and** `DisplayAttribute.ResourceType` is not set — when `ResourceType` is set, the static accessor already produces the correct localized string and the provider is skipped to avoid double-localization.
+`DisplayNameProviderContext` is passed to the `DisplayNameProvider` delegate. The delegate is only invoked when a `DisplayAttribute` with a non-null `Name` is present and `DisplayAttribute.ResourceType` is not set — when `ResourceType` is set, the static accessor already produces the correct localized string and the provider is skipped to avoid double-localization.
 
-`Name` is the value of `DisplayAttribute.Name`, used as the localization lookup key.
+If invoked, the `Name` property contains the value of `DisplayAttribute.Name`.
 
 `DeclaringType` allows the localizer to be scoped to the resource associated with the declaring type, enabling per-type resource files as an alternative to a single shared resource. It is `null` for top-level parameter validation in Minimal APIs because parameters do not have a declaring type in the same sense as properties.
 
