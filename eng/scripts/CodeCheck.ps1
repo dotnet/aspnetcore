@@ -150,16 +150,12 @@ try {
     }
 
     #
-    # Verify the affected project areas dependency graph is up to date
+    # Re-generate affected project areas dependency graph
     #
 
-    Write-Host "Verifying dependency graph (eng/AffectedProjectAreas.json)"
-    try {
-        & $PSScriptRoot\VerifyDependencyGraph.ps1 -ci:$ci
-    }
-    catch {
-        LogError -code 'BUILD005' `
-            "Dependency graph verification failed. Run eng/scripts/GenerateAffectedProjectAreas.ps1 to update eng/AffectedProjectAreas.json."
+    Write-Host "  Re-generating affected project areas dependency graph"
+    Invoke-Block {
+        & $PSScriptRoot\GenerateAffectedProjectAreas.ps1 -ci:$ci
     }
 
     Write-Host "Running git diff to check for pending changes"

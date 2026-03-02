@@ -106,7 +106,7 @@ $srcDirs = Get-ChildItem -Directory $srcRoot | Select-Object -ExpandProperty Nam
 
 $lines = [System.Collections.Generic.List[string]]::new()
 $lines.Add('{')
-$lines.Add('  "_comment": "This file defines the dependency graph between top-level src/ areas. Each area maps to the list of other areas it directly depends on (forward dependencies). This is used by GetAffectedTestAreas.ps1 to compute which areas need testing when files change, and by VerifyDependencyGraph.ps1 to ensure the graph stays current. Run eng/scripts/GenerateAffectedProjectAreas.ps1 to regenerate.",')
+$lines.Add('  "_comment": "This file defines the dependency graph between top-level src/ areas. Each area maps to the list of other areas it directly depends on (forward dependencies). This is used by GetAffectedTestAreas.ps1 to compute which areas need testing when files change. Run eng/scripts/GenerateAffectedProjectAreas.ps1 to regenerate.",')
 $lines.Add('')
 
 for ($i = 0; $i -lt $srcDirs.Count; $i++) {
