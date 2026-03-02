@@ -1,0 +1,13 @@
+@* Test that input binding works when the input element is inside a shadow DOM *@
+
+<h3 id="shadow-dom-input-binding">Shadow DOM Input Binding</h3>
+
+<p>
+    Shadow DOM input (oninput):
+    <shadow-input id="shadow-input-oninput" @bind-value="inputTextOninput" @bind-value:event="oninput" />
+    <span id="shadow-input-oninput-value">@inputTextOninput</span>
+</p>
+
+@code {
+    string inputTextOninput { get; set; }
+}

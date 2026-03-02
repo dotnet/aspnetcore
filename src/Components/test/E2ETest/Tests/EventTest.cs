@@ -434,4 +434,27 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
             target.SendKeys(c.ToString());
         }
     }
+
+    [Fact]
+    public void InputEvent_WorksWithShadowDomInput()
+    {
+        // Verifies that input binding works when the actual <input> element is inside
+        // a shadow DOM. In this case, event.target returns the shadow host, not the inner
+        // input. Blazor should use event.composedPath()[0] to get the correct element.
+        // See https://github.com/dotnet/aspnetcore/issues/60885
+
+        Browser.MountTestComponent<ShadowDomInputComponent>();
+        Browser.Exists(By.Id("shadow-dom-input-binding"));
+
+        var shadowHost = Browser.Exists(By.Id("shadow-input-oninput"));
+        var shadowRoot = (ShadowRoot)((IJavaScriptExecutor)Browser)
+            .ExecuteScript("return arguments[0].shadowRoot", shadowHost);
+        var innerInput = shadowRoot.FindElement(By.CssSelector("input"));
+        var output = Browser.Exists(By.Id("shadow-input-oninput-value"));
+
+        Browser.Equal(string.Empty, () => output.Text);
+
+        SendKeysSequentially(innerInput, "abcdefg");
+        Browser.Equal("abcdefg", () => output.Text);
+    }
 }
