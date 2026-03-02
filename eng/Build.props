@@ -325,10 +325,13 @@
   <Import Project="$(ArtifactsDir)tmp\AffectedTestAreas.props" Condition="Exists('$(ArtifactsDir)tmp\AffectedTestAreas.props') AND '$(BuildMainlyReferenceProviders)' != 'true'" />
 
   <!-- Flow filtered test subsets into DotNetProjects and ProjectToBuild.
-       This is outside the Choose block so the AffectedTestAreas Import above can filter the subsets first. -->
-  <ItemGroup Condition=" '$(BuildMainlyReferenceProviders)' != 'true' ">
-    <DotNetProjects Condition=" '$(HelixSubset)' == '' OR '$(HelixSubset)' == '1'" Include="@(ProjectsWithTestsSubset1)" />
-    <DotNetProjects Condition=" '$(HelixSubset)' == '' OR '$(HelixSubset)' == '2'" Include="@(ProjectsWithTestsSubset2)" />
+       This is outside the Choose block so the AffectedTestAreas Import above can filter the subsets first.
+       The test subset lines are conditional on BuildMainlyReferenceProviders, but ProjectToBuild must
+       always be populated from DotNetProjects (CodeGen.proj sets BuildMainlyReferenceProviders=true and
+       still needs ProjectToBuild to contain the src projects). -->
+  <ItemGroup>
+    <DotNetProjects Condition=" '$(BuildMainlyReferenceProviders)' != 'true' AND ('$(HelixSubset)' == '' OR '$(HelixSubset)' == '1')" Include="@(ProjectsWithTestsSubset1)" />
+    <DotNetProjects Condition=" '$(BuildMainlyReferenceProviders)' != 'true' AND ('$(HelixSubset)' == '' OR '$(HelixSubset)' == '2')" Include="@(ProjectsWithTestsSubset2)" />
 
     <ProjectToBuild Condition=" '$(BuildManaged)' == 'true'" Include="@(DotNetProjects)" Exclude="@(ProjectToExclude)" BuildStep="managed" />
     <ProjectToExclude Condition=" '$(BuildManaged)' != 'true'" Include="@(DotNetProjects)" />
