@@ -24,18 +24,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersVersion)" />
-    <!-- Microsoft.Wix is a dotnet tool package, so exlude its assets. -->
-    <PackageReference Include="Microsoft.Wix" Version="$(MicrosoftWixToolsetSdkVersion)" ExcludeAssets="all" />
-    <!-- Installers needs the $(PkgMicrosoftWixToolsetUIwixext) property to locate the extension. -->
-    <PackageReference Include="Microsoft.WixToolset.UI.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.WixToolset.Dependency.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.WixToolset.Util.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.WixToolset.Bal.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.WixToolset.Heat" Version="$(MicrosoftWixToolsetSdkVersion)" />
-  </ItemGroup>
-
-  <ItemGroup>
     <BundleComponentReference Include="$(RepoRoot)/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.sfxproj" />
   </ItemGroup>
 

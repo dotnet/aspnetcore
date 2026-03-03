@@ -31,17 +31,6 @@
     <GenerateNupkgPowershellScript>$(RepoRoot)\src\Installers\Windows\GenerateNugetPackageWithMsi.ps1</GenerateNupkgPowershellScript>
   </PropertyGroup>
 
-  <ItemGroup>
-    <!-- Microsoft.Wix is a dotnet tool package, so exlude its assets. -->
-    <PackageReference Include="Microsoft.Wix" Version="$(MicrosoftWixToolsetSdkVersion)" ExcludeAssets="all" />
-    <!-- Installers needs the $(PkgMicrosoftWixToolsetUIwixext) property to locate the extension. -->
-    <PackageReference Include="Microsoft.WixToolset.UI.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.WixToolset.Dependency.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.WixToolset.Util.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.WixToolset.Bal.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.WixToolset.Heat" Version="$(MicrosoftWixToolsetSdkVersion)" />
-  </ItemGroup>
-
   <!-- Properties for light/lit command package drop generation -->
   <PropertyGroup>
     <!-- Directory for the unzipped directory -->
