@@ -24,6 +24,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
     <BundleComponentReference Include="$(RepoRoot)/src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.sfxproj" />
   </ItemGroup>
 
