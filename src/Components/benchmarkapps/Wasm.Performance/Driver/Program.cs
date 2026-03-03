@@ -120,6 +120,7 @@ public class Program
         } while (isStressRun && !stressRunCancellation.IsCancellationRequested);
 
         Console.WriteLine("Done executing benchmark");
+        await page.CloseAsync();
         return 0;
     }
 
