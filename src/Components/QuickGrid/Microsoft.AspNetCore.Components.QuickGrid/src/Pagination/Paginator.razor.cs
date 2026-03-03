@@ -76,9 +76,6 @@ public partial class Paginator : IDisposable
             {
                 await State.SetCurrentPageIndexAsync(pageFromQuery);
             }
-
-            // Always re-render so that page link URLs reflect the current URI
-            // (e.g., preserving sort query parameters added by QuickGrid).
             StateHasChanged();
         });
     }

@@ -214,5 +214,4 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
             return row ? getComputedStyle(row).cursor : null;");
         Assert.Equal("pointer", cursorStyle);
     }
-
 }

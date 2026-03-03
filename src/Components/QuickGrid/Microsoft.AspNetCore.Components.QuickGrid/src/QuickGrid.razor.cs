@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.JSInterop;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace Microsoft.AspNetCore.Components.QuickGrid;
 
@@ -144,6 +144,8 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     private ColumnBase<TGridItem>? _displayOptionsForColumn;
     private ColumnBase<TGridItem>? _sortByColumn;
     private bool _sortByAscending;
+    private ColumnBase<TGridItem>? _defaultSortColumn;
+    private bool _defaultSortAscending;
     private bool _checkColumnOptionsPosition;
 
     // The associated ES6 module, which uses document-level event listeners
@@ -170,7 +172,6 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
 
     private bool _firstRefreshDataAsync = true;
 
-    private bool _hasReadSortFromQueryString;
     private (string ColumnTitle, bool Ascending)? _cachedSortFromQuery;
 
     private string SortQueryParameterNameBy => QueryName == "" ? "sort" : $"{QueryName}_sort";
@@ -272,15 +273,16 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
             {
                 _sortByColumn = column;
                 _sortByAscending = initialSortDirection.Value != SortDirection.Descending;
+                _defaultSortColumn = column;
+                _defaultSortAscending = _sortByAscending;
             }
 
-            if (!_hasReadSortFromQueryString
-                && _cachedSortFromQuery is { } sortFromQuery
+            if (_cachedSortFromQuery is { } sortFromQuery
                 && sortFromQuery.ColumnTitle == column.Title)
             {
                 _sortByColumn = column;
                 _sortByAscending = sortFromQuery.Ascending;
-                _hasReadSortFromQueryString = true;
+                _cachedSortFromQuery = null;
             }
         }
     }
@@ -289,17 +291,12 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     {
         _columns.Clear();
         _collectingColumns = true;
-        _cachedSortFromQuery = !_hasReadSortFromQueryString ? ReadSortFromQueryString() : null;
+        _cachedSortFromQuery ??= ReadSortFromQueryString();
     }
 
     private void FinishCollectingColumns()
     {
         _collectingColumns = false;
-
-        if (_sortByColumn is not null && !_columns.Contains(_sortByColumn))
-        {
-            _sortByColumn = null;
-        }
     }
 
     /// <summary>
@@ -327,7 +324,6 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     internal string GetSortUrl(ColumnBase<TGridItem> column)
     {
         var ascending = _sortByColumn != column || !_sortByAscending;
-
         return GetSortQueryStringUrl(column, ascending);
     }
 
@@ -359,26 +355,34 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
         _queryParameterValueSupplier.ReadParametersFromQuery(QueryParameterValueSupplier.GetQueryString(NavigationManager.Uri));
-        var sortFromQuery = ReadSortFromQueryString();
-        var currentSort = _sortByColumn is not null ? (_sortByColumn.Title, _sortByAscending) : ((string? ColumnTitle, bool Ascending)?)null;
+        var currentSort = _sortByColumn is not null ? (_sortByColumn.Title, _sortByAscending) : ((string ColumnTitle, bool Ascending)?)null;
 
-        if (sortFromQuery != currentSort)
+        if (ReadSortFromQueryString() is { } sortFromQuery)
         {
-            await InvokeAsync(async () =>
+            if (sortFromQuery != currentSort)
             {
-                if (sortFromQuery is { } sort && sort.ColumnTitle is not null)
+                await InvokeAsync(async () =>
                 {
-                    _sortByColumn = _columns.FirstOrDefault(c => c.Title == sort.ColumnTitle);
-                    _sortByAscending = sort.Ascending;
-                }
-                else
+                    _sortByColumn = _columns.FirstOrDefault(c => c.Title == sortFromQuery.ColumnTitle);
+                    _sortByAscending = sortFromQuery.Ascending;
+                    await RefreshDataCoreAsync();
+                    StateHasChanged();
+                });
+            }
+        }
+        else if (currentSort is not null)
+        {
+            var defaultSort = _defaultSortColumn is not null ? (_defaultSortColumn.Title, _defaultSortAscending) : ((string ColumnTitle, bool Ascending)?)null;
+            if (currentSort != defaultSort)
+            {
+                await InvokeAsync(async () =>
                 {
-                    _sortByColumn = null;
-                }
-
-                await RefreshDataCoreAsync();
-                StateHasChanged();
-            });
+                    _sortByColumn = _defaultSortColumn;
+                    _sortByAscending = _defaultSortAscending;
+                    await RefreshDataCoreAsync();
+                    StateHasChanged();
+                });
+            }
         }
     }
 
