@@ -355,34 +355,30 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
         _queryParameterValueSupplier.ReadParametersFromQuery(QueryParameterValueSupplier.GetQueryString(NavigationManager.Uri));
-        var currentSort = _sortByColumn is not null ? (_sortByColumn.Title, _sortByAscending) : ((string ColumnTitle, bool Ascending)?)null;
+        var sortFromQuery = ReadSortFromQueryString();
 
-        if (ReadSortFromQueryString() is { } sortFromQuery)
+        if (sortFromQuery is { } sort
+            && _columns.FirstOrDefault(c => c.Title == sort.ColumnTitle) is { } column
+            && (column != _sortByColumn || sort.Ascending != _sortByAscending))
         {
-            if (sortFromQuery != currentSort)
+            await InvokeAsync(async () =>
             {
-                await InvokeAsync(async () =>
-                {
-                    _sortByColumn = _columns.FirstOrDefault(c => c.Title == sortFromQuery.ColumnTitle);
-                    _sortByAscending = sortFromQuery.Ascending;
-                    await RefreshDataCoreAsync();
-                    StateHasChanged();
-                });
-            }
+                _sortByColumn = column;
+                _sortByAscending = sort.Ascending;
+                await RefreshDataCoreAsync();
+                StateHasChanged();
+            });
         }
-        else if (currentSort is not null)
+        else if (sortFromQuery is null
+            && (_sortByColumn != _defaultSortColumn || _sortByAscending != _defaultSortAscending))
         {
-            var defaultSort = _defaultSortColumn is not null ? (_defaultSortColumn.Title, _defaultSortAscending) : ((string ColumnTitle, bool Ascending)?)null;
-            if (currentSort != defaultSort)
+            await InvokeAsync(async () =>
             {
-                await InvokeAsync(async () =>
-                {
-                    _sortByColumn = _defaultSortColumn;
-                    _sortByAscending = _defaultSortAscending;
-                    await RefreshDataCoreAsync();
-                    StateHasChanged();
-                });
-            }
+                _sortByColumn = _defaultSortColumn;
+                _sortByAscending = _defaultSortAscending;
+                await RefreshDataCoreAsync();
+                StateHasChanged();
+            });
         }
     }
 
