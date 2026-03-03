@@ -346,7 +346,9 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
 
         // We favor types added via the extension methods (which implements IProducesResponseTypeMetadata)
         // over those that are added via attributes.
-        var responseMetadataTypes = producesResponseMetadataTypes.Values.Concat(responseProviderMetadataTypes.Values);
+        var producesStatusCodes = producesResponseMetadataTypes.Values.Select(metadata => metadata.StatusCode).ToHashSet();
+        var responseMetadataTypes = producesResponseMetadataTypes.Values.Concat(
+            responseProviderMetadataTypes.Values.Where(metadata => !producesStatusCodes.Contains(metadata.StatusCode)));
 
         if (responseMetadataTypes.Any())
         {
@@ -377,7 +379,10 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
 
                 apiResponseType.Description ??= GetMatchingResponseTypeDescription(responseProviderMetadataTypes.Values, apiResponseType);
 
-                if (!supportedResponseTypes.Any(existingResponseType => existingResponseType.StatusCode == apiResponseType.StatusCode))
+                if (!supportedResponseTypes.Any(existingResponseType =>
+                    existingResponseType.StatusCode == apiResponseType.StatusCode &&
+                    existingResponseType.Type == apiResponseType.Type &&
+                    existingResponseType.ApiResponseFormats.FirstOrDefault()?.MediaType == apiResponseType.ApiResponseFormats.FirstOrDefault()?.MediaType))
                 {
                     supportedResponseTypes.Add(apiResponseType);
                 }
@@ -396,6 +401,21 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
             }
 
             supportedResponseTypes.Add(defaultApiResponseType);
+        }
+
+        if (supportedResponseTypes.Count > 1)
+        {
+            var orderedSupportedResponseTypes = supportedResponseTypes
+                .OrderBy(responseType => responseType.StatusCode)
+                .ThenBy(responseType => responseType.Type?.Name)
+                .ThenBy(responseType => responseType.ApiResponseFormats.FirstOrDefault()?.MediaType)
+                .ToList();
+
+            supportedResponseTypes.Clear();
+            foreach (var orderedSupportedResponseType in orderedSupportedResponseTypes)
+            {
+                supportedResponseTypes.Add(orderedSupportedResponseType);
+            }
         }
 
         static string? GetMatchingResponseTypeDescription(IEnumerable<ApiResponseType> responseMetadataTypes, ApiResponseType apiResponseType)

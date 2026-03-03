@@ -63,6 +63,19 @@ public class ApiResponseTypeProviderTest
             });
     }
 
+    [Fact]
+    public void GetApiResponseTypes_PreservesMultipleProducesResponseTypeWithSameStatusCodeButDifferentTypesWithoutContentTypes()
+    {
+        var actionDescriptor = GetControllerActionDescriptor(typeof(TestController), nameof(TestController.GetMultipleTypes));
+        var provider = new ApiResponseTypeProvider(new EmptyModelMetadataProvider(), new ActionResultTypeMapper(), new MvcOptions());
+
+        var result = provider.GetApiResponseTypes(actionDescriptor);
+
+        Assert.Equal(2, result.Count);
+        Assert.Contains(result, responseType => responseType is { StatusCode: 200, Type: not null } && responseType.Type == typeof(BaseModel));
+        Assert.Contains(result, responseType => responseType is { StatusCode: 200, Type: not null } && responseType.Type == typeof(string));
+    }
+
     [ApiConventionType(typeof(DefaultApiConventions))]
     public class GetApiResponseTypes_ReturnsResponseTypesFromActionIfPresentController : ControllerBase
     {
@@ -889,6 +902,10 @@ public class ApiResponseTypeProviderTest
 
         public IResult GetIResult(int id) => null;
 
+        [ProducesResponseType(typeof(BaseModel), 200)]
+        [ProducesResponseType(typeof(string), 200)]
+        public IResult GetMultipleTypes() => Results.Ok();
+
         public MyResponse GetCustomIResult() => new MyResponse { Content = "Test Content" };
     }
 
@@ -910,6 +927,78 @@ public class ApiResponseTypeProviderTest
         }
 
         public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context) => Task.CompletedTask;
+    }
+
+    [Fact]
+    public void GetApiResponseTypes_PreservesMultipleProducesResponseTypeWithSameStatusCodeButDifferentContentTypes()
+    {
+        // Arrange
+        var actionDescriptor = GetControllerActionDescriptor(
+            typeof(MultipleProducesForSameStatusCodeController),
+            nameof(MultipleProducesForSameStatusCodeController.Get));
+
+        var provider = new ApiResponseTypeProvider(new EmptyModelMetadataProvider(), new ActionResultTypeMapper(), new MvcOptions());
+
+        // Act
+        var result = provider.GetApiResponseTypes(actionDescriptor);
+
+        // Assert
+        Assert.Collection(
+            result.OrderBy(r => r.StatusCode).ThenBy(r => r.Type?.Name),
+            responseType =>
+            {
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(typeof(BaseModel), responseType.Type);
+                Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(typeof(string), responseType.Type);
+                Assert.Equal(new[] { "text/html" }, GetSortedMediaTypes(responseType));
+            });
+    }
+
+    public class MultipleProducesForSameStatusCodeController : ControllerBase
+    {
+        [ProducesResponseType(typeof(BaseModel), 200, "application/json")]
+        [ProducesResponseType(typeof(string), 200, "text/html")]
+        public IActionResult Get() => null;
+    }
+
+    [Fact]
+    public void GetApiResponseTypes_PreservesMultipleProducesResponseTypeFromEndpointMetadata()
+    {
+        // Arrange
+        var actionDescriptor = GetControllerActionDescriptor(
+            typeof(MultipleProducesForSameStatusCodeController),
+            nameof(MultipleProducesForSameStatusCodeController.Get));
+        actionDescriptor.EndpointMetadata =
+        [
+            new ProducesResponseTypeMetadata(200, typeof(BaseModel), ["application/json"]),
+            new ProducesResponseTypeMetadata(200, typeof(string), ["text/html"]),
+        ];
+
+        var provider = new ApiResponseTypeProvider(new EmptyModelMetadataProvider(), new ActionResultTypeMapper(), new MvcOptions());
+
+        // Act
+        var result = provider.GetApiResponseTypes(actionDescriptor);
+
+        // Assert
+        Assert.Collection(
+            result.OrderBy(r => r.StatusCode).ThenBy(r => r.Type?.Name),
+            responseType =>
+            {
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(typeof(BaseModel), responseType.Type);
+                Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(typeof(string), responseType.Type);
+                Assert.Equal(new[] { "text/html" }, GetSortedMediaTypes(responseType));
+            });
     }
 
     public static class SearchApiConventions
