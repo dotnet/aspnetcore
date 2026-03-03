@@ -30,23 +30,35 @@ Trust issue content over title prefixes: `[BUG]` in title but actually asking ho
 
 | Label | Covers |
 |-------|--------|
-| `area-blazor` | Blazor, Razor Components (use `feature-` for sub-area) |
-| `area-mvc` | MVC, Actions, Controllers, Razor Views, Razor Pages, Localization, CORS, Templates |
 | `area-auth` | Authentication, Authorization, OAuth, OIDC, Bearer tokens |
-| `area-signalr` | SignalR hubs, clients (use `feature-client-*` for specific client) |
-| `area-grpc` | gRPC wire-up, templates |
-| `area-identity` | ASP.NET Core Identity (user store, sign-in manager, UI) |
-| `area-dataprotection` | Data Protection APIs |
-| `area-healthchecks` | Health check endpoints and middleware |
-| `area-infrastructure` | Build, CI, Installers, MSBuild targets/props, Shared Framework |
+| `area-blazor` | Blazor, Razor Components (use `feature-` for sub-area) |
 | `area-commandlinetools` | dotnet-dev-certs, dotnet-user-jwts, OpenAPI CLI |
+| `area-dataprotection` | Data Protection APIs |
+| `area-grpc` | gRPC wire-up, templates |
+| `area-healthchecks` | Health check endpoints and middleware |
+| `area-hosting` | Generic Host, `WebApplication`, startup, program lifecycle |
+| `area-identity` | ASP.NET Core Identity (user store, sign-in manager, UI) |
+| `area-infrastructure` | Build, CI, Installers, MSBuild targets/props, Shared Framework |
+| `area-middleware` | Custom middleware, middleware pipeline composition |
+| `area-minimal` | Minimal APIs (`app.MapGet` etc.) and related filters/parameters |
+| `area-mvc` | MVC, Actions, Controllers, Razor Views, Localization, CORS, Templates |
+| `area-networking` | HTTP/2, HTTP/3, QUIC, connections, Kestrel networking stack |
 | `area-perf` | Performance infrastructure and benchmarks |
+| `area-routing` | URL routing, route constraints, endpoint routing |
+| `area-security` | Cross-cutting security (HSTS, CSP, anti-forgery outside MVC) |
+| `area-signalr` | SignalR hubs, clients (use `feature-client-*` for specific client) |
+| `area-ui-rendering` | Server-side rendering, HTMX integration, Razor rendering |
 
 **Area disambiguation:**
-- Kestrel, HTTP.sys, IIS → `area-infrastructure` if build/deploy, otherwise no dedicated area; pick the feature label
-- Minimal APIs, routing, middleware → use `area-mvc` (routing lives in MVC scope) or the specific feature label
-- OpenAPI / Swagger → `area-commandlinetools` (uses dotnet CLI tooling)
-- HttpClientFactory → no area label; use `feature-httpclientfactory`
+- **Minimal APIs** (`app.MapGet`, route handlers, filters) → `area-minimal`
+- **Routing** (endpoint routing, constraints, link generation) → `area-routing`
+- **Middleware** (custom middleware classes, pipeline order) → `area-middleware`
+- **Kestrel** (HTTP server, TLS, connections) → `area-networking` + `feature-kestrel`
+- **IIS / HTTP.sys** → `area-infrastructure` (deploy) or `area-networking` (protocol); add `feature-iis` / `feature-httpsys`
+- **Host / startup lifecycle** → `area-hosting`
+- **Security** (non-auth: HSTS, anti-forgery) → `area-security`
+- **OpenAPI / Swagger** → `area-commandlinetools` + `feature-openapi`
+- **HttpClientFactory** → no area label; use `feature-httpclientfactory`
 
 ### Feature (optional, single — adds specificity within area)
 
@@ -84,9 +96,12 @@ Only add when the issue explicitly fails on a specific OS or is OS-specific.
 
 ## Tips
 
-- **Kestrel issues**: use `area-infrastructure` + `feature-kestrel`
-- **Minimal API issues**: use `area-mvc` + `feature-minimal-actions`
+- **Kestrel issues**: use `area-networking` + `feature-kestrel`
+- **Minimal API issues**: use `area-minimal` + `feature-minimal-actions`
+- **Routing issues**: use `area-routing` + `feature-routing`
+- **Middleware pipeline issues**: use `area-middleware`
+- **Host / startup issues**: use `area-hosting`
 - **Blazor WASM issues**: use `area-blazor` + `feature-blazor-wasm`
 - **SignalR client issues**: use `area-signalr` + `feature-client-javascript` (or appropriate client)
-- **Performance issues**: add `tenet/performance`; use `area-perf` only for infrastructure
+- **Performance issues**: add `tenet/performance`; use `area-perf` only for benchmark infrastructure
 - **Security vulnerabilities**: DO NOT file via GitHub. Direct to secure@microsoft.com.

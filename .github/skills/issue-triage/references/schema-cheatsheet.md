@@ -49,7 +49,7 @@ Read this BEFORE generating JSON. Full schema: `references/triage-schema.json`.
 | Enum | Values |
 |------|--------|
 | **classifiedType** | `bug`, `enhancement`, `feature-request`, `question`, `documentation` |
-| **classifiedArea** | `area-blazor`, `area-mvc`, `area-auth`, `area-signalr`, `area-grpc`, `area-identity`, `area-dataprotection`, `area-healthchecks`, `area-infrastructure`, `area-commandlinetools`, `area-perf` |
+| **classifiedArea** | `area-auth`, `area-blazor`, `area-commandlinetools`, `area-dataprotection`, `area-grpc`, `area-healthchecks`, `area-hosting`, `area-identity`, `area-infrastructure`, `area-middleware`, `area-minimal`, `area-mvc`, `area-networking`, `area-perf`, `area-routing`, `area-security`, `area-signalr`, `area-ui-rendering` |
 | **classifiedPlatform** | `os/Windows`, `os/Linux`, `os/macOS`, `os/WASM` |
 | **classifiedTenet** | `tenet/compatibility`, `tenet/performance`, `tenet/reliability`, `tenet/security` |
 | **suggestedAction** | `needs-investigation`, `close-as-fixed`, `close-as-by-design`, `close-with-docs`, `close-as-duplicate`, `convert-to-discussion`, `request-info`, `keep-open` |
@@ -100,4 +100,4 @@ Read this BEFORE generating JSON. Full schema: `references/triage-schema.json`.
 5. **Null values** — Omit optional fields entirely. Never set to `null`.
 6. **Absolute paths** — Redact `/Users/name/` → `$HOME/`
 7. **`bugSignals` without `bug` type** — Only include when `classification.type.value` is `"bug"`.
-8. **Invalid area** — Use only the 11 `area-*` values. Do NOT invent new ones.
+8. **Invalid area** — Use only the 18 `area-*` values. Do NOT invent new ones. Use dedicated labels: `area-routing` (not `area-mvc`) for routing, `area-middleware` for middleware, `area-minimal` for Minimal APIs, `area-networking` for Kestrel/HTTP.
