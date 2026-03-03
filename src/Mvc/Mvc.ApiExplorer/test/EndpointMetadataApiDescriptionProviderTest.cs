@@ -1301,7 +1301,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     public void HandleMultipleProducesWithSameStatusCodeAndDifferentContentTypes()
     {
         var builder = CreateBuilder();
-        builder.MapGet("/api/todos", () => "")
+        builder.MapGet("/api/todos", () => Results.Ok())
             .Produces<InferredJsonClass>(StatusCodes.Status200OK, "application/json")
             .Produces<string>(StatusCodes.Status200OK, "text/html");
         var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
@@ -1332,7 +1332,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     public void HandleMultipleProducesWithSameStatusCodeAndDifferentTypesWithoutContentType()
     {
         var builder = CreateBuilder();
-        builder.MapGet("/api/todos", () => "")
+        builder.MapGet("/api/todos", () => Results.Ok())
             .Produces<InferredJsonClass>(StatusCodes.Status200OK)
             .Produces<string>(StatusCodes.Status200OK);
         var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());

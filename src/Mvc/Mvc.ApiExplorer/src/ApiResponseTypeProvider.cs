@@ -100,6 +100,22 @@ internal sealed class ApiResponseTypeProvider
             out var _,
             responseTypeMetadataProviders);
 
+        var responseProviderStatusCodes = responseTypesFromProvider.Values
+            .Select(responseType => responseType.StatusCode)
+            .ToHashSet();
+
+        // Preserve existing source precedence: when metadata providers/attributes define a given status code,
+        // entries for that status code discovered from endpoint metadata are removed before merge.
+        // This keeps provider metadata authoritative per status code while still allowing multiple provider
+        // entries for the same status code when their keys differ (type/content-type).
+        foreach (var existingResponseType in responseTypes.Keys.ToList())
+        {
+            if (responseProviderStatusCodes.Contains(existingResponseType.StatusCode))
+            {
+                responseTypes.Remove(existingResponseType);
+            }
+        }
+
         foreach (var responseType in responseTypesFromProvider)
         {
             responseTypes[responseType.Key] = responseType.Value;
@@ -280,6 +296,24 @@ internal sealed class ApiResponseTypeProvider
 
             if (apiResponseType.Type != null)
             {
+                // If metadata explicitly specifies a different type for this status code than the inferred
+                // return type, drop the inferred entry for that status code. This preserves long-standing
+                // behavior where explicit metadata takes precedence over inference while still allowing
+                // multiple explicit entries for the same status code.
+                if (type != null &&
+                    type != typeof(void) &&
+                    apiResponseType.Type != type)
+                {
+                    foreach (var existingResponseKey in results.Keys.ToList())
+                    {
+                        if (existingResponseKey.StatusCode == apiResponseType.StatusCode &&
+                            existingResponseKey.DeclaredType == type)
+                        {
+                            results.Remove(existingResponseKey);
+                        }
+                    }
+                }
+
                 var key = new ResponseKey(apiResponseType.StatusCode, apiResponseType.Type, metadata.ContentTypes?.FirstOrDefault());
                 results[key] = apiResponseType;
             }

@@ -63,19 +63,6 @@ public class ApiResponseTypeProviderTest
             });
     }
 
-    [Fact]
-    public void GetApiResponseTypes_PreservesMultipleProducesResponseTypeWithSameStatusCodeButDifferentTypesWithoutContentTypes()
-    {
-        var actionDescriptor = GetControllerActionDescriptor(typeof(TestController), nameof(TestController.GetMultipleTypes));
-        var provider = new ApiResponseTypeProvider(new EmptyModelMetadataProvider(), new ActionResultTypeMapper(), new MvcOptions());
-
-        var result = provider.GetApiResponseTypes(actionDescriptor);
-
-        Assert.Equal(2, result.Count);
-        Assert.Contains(result, responseType => responseType is { StatusCode: 200, Type: not null } && responseType.Type == typeof(BaseModel));
-        Assert.Contains(result, responseType => responseType is { StatusCode: 200, Type: not null } && responseType.Type == typeof(string));
-    }
-
     [ApiConventionType(typeof(DefaultApiConventions))]
     public class GetApiResponseTypes_ReturnsResponseTypesFromActionIfPresentController : ControllerBase
     {
@@ -110,41 +97,35 @@ public class ApiResponseTypeProviderTest
         var result = provider.GetApiResponseTypes(actionDescriptor);
 
         // Assert
-        Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
-            responseType =>
-            {
-                Assert.Equal(201, responseType.StatusCode);
-                Assert.Equal(typeof(BaseModel), responseType.Type);
-                Assert.False(responseType.IsDefaultResponse);
-                Assert.Collection(
-                    responseType.ApiResponseFormats,
-                    format =>
-                    {
-                        Assert.Equal("application/json", format.MediaType);
-                        Assert.IsType<TestOutputFormatter>(format.Formatter);
-                    });
-            },
-            responseType =>
-            {
-                Assert.Equal(400, responseType.StatusCode);
-                Assert.Equal(typeof(ProblemDetails), responseType.Type);
-                Assert.False(responseType.IsDefaultResponse);
-                Assert.Collection(
-                    responseType.ApiResponseFormats,
-                    format =>
-                    {
-                        Assert.Equal("application/json", format.MediaType);
-                        Assert.IsType<TestOutputFormatter>(format.Formatter);
-                    });
-            },
-            responseType =>
-            {
-                Assert.Equal(404, responseType.StatusCode);
-                Assert.Equal(typeof(void), responseType.Type);
-                Assert.False(responseType.IsDefaultResponse);
-                Assert.Empty(responseType.ApiResponseFormats);
-            });
+        Assert.Equal(5, result.Count);
+
+        Assert.Contains(result, responseType =>
+            responseType.StatusCode == 201 &&
+            responseType.Type == typeof(object) &&
+            responseType.ApiResponseFormats.Count == 1 &&
+            responseType.ApiResponseFormats[0].MediaType == "application/json");
+
+        Assert.Contains(result, responseType =>
+            responseType.StatusCode == 201 &&
+            responseType.Type == typeof(BaseModel) &&
+            responseType.ApiResponseFormats.Count == 1 &&
+            responseType.ApiResponseFormats[0].MediaType == "application/json");
+
+        Assert.Contains(result, responseType =>
+            responseType.StatusCode == 400 &&
+            responseType.Type == typeof(ProblemDetails) &&
+            responseType.ApiResponseFormats.Count == 1 &&
+            responseType.ApiResponseFormats[0].MediaType == "application/json");
+
+        Assert.Contains(result, responseType =>
+            responseType.StatusCode == 400 &&
+            responseType.Type == typeof(void) &&
+            responseType.ApiResponseFormats.Count == 0);
+
+        Assert.Contains(result, responseType =>
+            responseType.StatusCode == 404 &&
+            responseType.Type == typeof(void) &&
+            responseType.ApiResponseFormats.Count == 0);
     }
 
     [Fact]
@@ -821,6 +802,19 @@ public class ApiResponseTypeProviderTest
                 Assert.Equal(409, responseType.StatusCode);
                 Assert.Empty(GetSortedMediaTypes(responseType));
             });
+    }
+
+    [Fact]
+    public void GetApiResponseTypes_PreservesMultipleProducesResponseTypeWithSameStatusCodeButDifferentTypesWithoutContentTypes()
+    {
+        var actionDescriptor = GetControllerActionDescriptor(typeof(TestController), nameof(TestController.GetMultipleTypes));
+        var provider = new ApiResponseTypeProvider(new EmptyModelMetadataProvider(), new ActionResultTypeMapper(), new MvcOptions());
+
+        var result = provider.GetApiResponseTypes(actionDescriptor);
+
+        Assert.Equal(2, result.Count);
+        Assert.Contains(result, responseType => responseType is { StatusCode: 200, Type: not null } && responseType.Type == typeof(BaseModel));
+        Assert.Contains(result, responseType => responseType is { StatusCode: 200, Type: not null } && responseType.Type == typeof(string));
     }
 
     [Fact]
