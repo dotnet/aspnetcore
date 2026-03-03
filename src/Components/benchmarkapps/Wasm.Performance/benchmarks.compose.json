@@ -10,12 +10,12 @@
   "jobs": {
     "blazorwasmbenchmark": {
       "source": {
-        "repository": "https://github.com/dotnet/AspNetCore.git",
-        "branchOrCommit": "main",
+        "repository": "https://github.com/ilonatommy/aspnetcore.git",
+        "branchOrCommit": "fix-kestrel-problem",
         "dockerfile": "src/Components/benchmarkapps/Wasm.Performance/dockerfile"
       },
       "buildArguments": [
-        "gitBranch=main"
+        "gitBranch=fix-kestrel-problem"
       ],
       "waitForExit": true,
       "readyStateText": "Application started."
