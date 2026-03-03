@@ -1,7 +1,7 @@
 <Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.bundleproj' OR '$(GenerateInstallers)' == 'true'">
     <!-- Microsoft.Wix is a dotnet tool package, so exclude its assets. -->
     <PackageReference Include="Microsoft.Wix" Version="$(MicrosoftWixToolsetSdkVersion)" ExcludeAssets="all" />
     <!-- Installers need the $(PkgMicrosoftWixToolsetUIwixext) property to locate the extension. -->
