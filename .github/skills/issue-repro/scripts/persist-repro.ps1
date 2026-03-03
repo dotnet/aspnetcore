@@ -59,12 +59,7 @@ if (-not (Test-Path $ArtifactDir)) {
 $Destination = Join-Path $ArtifactDir "$Number.json"
 
 if ((Test-Path $Destination) -and -not $Force) {
-    Write-Host "File already exists: $Destination"
-    $answer = Read-Host "Overwrite? [y/N]"
-    if ($answer -notmatch '^[Yy]') {
-        Write-Host "Aborted — file not overwritten."
-        exit 0
-    }
+    Write-Warning "File already exists — overwriting: $Destination (use -Force to suppress this warning)"
 }
 
 Copy-Item -Path $Path -Destination $Destination -Force

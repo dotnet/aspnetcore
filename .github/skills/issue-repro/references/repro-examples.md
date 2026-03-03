@@ -104,7 +104,7 @@ Each example conforms to [`repro-schema.json`](repro-schema.json).
   },
   "output": {
     "actionability": {
-      "suggestedAction": "close-with-docs",
+      "suggestedAction": "close-as-by-design",
       "confidence": 0.85,
       "reason": "Reproduced as reported. Behavior is by-design — middleware ordering is documented. Workaround is trivial: swap UseAuthentication and UseAuthorization."
     },

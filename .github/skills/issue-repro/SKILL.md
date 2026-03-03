@@ -183,7 +183,8 @@ To test against main branch source, build and run the aspnetcore repo (if needed
 
 ```bash
 # Activate the local SDK from repo root first
-source /Users/matthew/.polypilot/worktrees/dotnet-aspnetcore-20931c79/activate.sh
+REPO_ROOT=$(git rev-parse --show-toplevel)
+source "$REPO_ROOT/activate.sh"
 
 # Or point to daily builds from dev feed
 dotnet new webapi -n Repro{number}-main

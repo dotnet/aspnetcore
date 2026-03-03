@@ -1,13 +1,22 @@
 <#
 .SYNOPSIS Persist a validated triage JSON to artifacts/ai/triage/.
 .EXAMPLE  pwsh scripts/persist-triage.ps1 /tmp/aspnetcore/triage/12345.json
-.NOTES    Copies to artifacts/ai/triage/{number}.json. No git push.
+.NOTES    Validates then copies to artifacts/ai/triage/{number}.json. No git push.
 #>
 #requires -Version 7.5
 param([Parameter(Mandatory, Position = 0)] [string]$Path)
 $ErrorActionPreference = 'Stop'
 
 if (-not (Test-Path $Path)) { Write-Host "❌ Source file not found: $Path"; exit 2 }
+
+# Validate before persisting
+$ValidateScript = Join-Path $PSScriptRoot 'validate-triage.ps1'
+Write-Host "Validating $Path …"
+& $ValidateScript $Path
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "❌ Validation failed (exit $LASTEXITCODE). File not persisted."
+    exit 1
+}
 
 # Read the JSON to get the issue number
 $triage = Get-Content $Path -Raw | ConvertFrom-Json -Depth 50

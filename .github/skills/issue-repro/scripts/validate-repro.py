@@ -16,20 +16,20 @@ import sys
 from pathlib import Path
 
 VALID_CONCLUSIONS = {
-    "reproduced", "not-reproduced", "partially-reproduced",
-    "needs-platform", "inconclusive", "enhancement"
+    "reproduced", "not-reproduced", "needs-platform",
+    "needs-hardware", "partial", "inconclusive"
 }
 VALID_LAYERS = {"setup", "csharp", "hosting", "middleware", "http", "deployment"}
-VALID_STEP_RESULTS = {"success", "failure", "wrong-output", "skipped"}
-VALID_VERSION_RESULTS = {"reproduced", "not-reproduced", "partially-reproduced", "error", "skipped"}
+VALID_STEP_RESULTS = {"success", "failure", "wrong-output", "skip"}
+VALID_VERSION_RESULTS = {"reproduced", "not-reproduced", "error", "not-tested"}
 VALID_PROJ_TYPES = {
     "webapi", "mvc", "razorpages", "blazor-wasm", "blazor-server", "blazor-ssr",
     "grpc", "console", "docker", "test", "existing", "simulation"
 }
 VALID_ARCH = {"x64", "arm64", "x86", "wasm"}
 VALID_SUGGESTED_ACTIONS = {
-    "close-no-fix", "close-with-docs", "fix", "request-info",
-    "forward", "investigate", "monitor"
+    "needs-investigation", "close-as-fixed", "close-as-by-design", "close-with-docs",
+    "close-as-duplicate", "convert-to-discussion", "request-info", "keep-open"
 }
 
 
@@ -37,7 +37,7 @@ def validate(data: dict) -> list[str]:
     errors = []
 
     # Required top-level
-    for field in ("meta", "conclusion", "notes", "reproductionSteps", "environment", "output"):
+    for field in ("meta", "conclusion", "notes", "reproductionSteps", "environment"):
         if field not in data:
             errors.append(f"Missing required field: '{field}'")
 
@@ -51,9 +51,22 @@ def validate(data: dict) -> list[str]:
             errors.append("meta.analyzedAt is required")
 
     # conclusion
-    if conclusion := data.get("conclusion"):
+    conclusion = data.get("conclusion")
+    if conclusion:
         if conclusion not in VALID_CONCLUSIONS:
             errors.append(f"conclusion '{conclusion}' not in: {', '.join(sorted(VALID_CONCLUSIONS))}")
+        # Conditional required fields based on conclusion
+        needs_output    = {"reproduced", "not-reproduced"}
+        needs_blockers  = {"needs-platform", "needs-hardware", "partial", "inconclusive"}
+        if conclusion in needs_output:
+            if "output" not in data:
+                errors.append(f"'output' is required when conclusion is '{conclusion}'")
+            if "versionResults" not in data:
+                errors.append(f"'versionResults' is required when conclusion is '{conclusion}'")
+        elif conclusion in needs_blockers:
+            blockers = data.get("blockers")
+            if not blockers or len(blockers) == 0:
+                errors.append(f"'blockers' (non-empty) is required when conclusion is '{conclusion}'")
 
     # notes
     if notes := data.get("notes"):

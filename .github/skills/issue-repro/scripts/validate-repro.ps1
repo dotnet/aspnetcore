@@ -51,9 +51,9 @@ try {
 
 $errors = [System.Collections.Generic.List[string]]::new()
 
-# ── Required top-level fields ───────────────────────────────────────────────
-$required = @('meta', 'conclusion', 'notes', 'reproductionSteps', 'environment', 'output')
-foreach ($field in $required) {
+# ── Required top-level fields (always required) ─────────────────────────────
+$alwaysRequired = @('meta', 'conclusion', 'notes', 'reproductionSteps', 'environment')
+foreach ($field in $alwaysRequired) {
     if ($null -eq $json.$field) {
         $errors.Add("Missing required field: '$field'")
     }
@@ -73,9 +73,25 @@ if ($json.meta) {
 }
 
 # ── conclusion ──────────────────────────────────────────────────────────────
-$validConclusions = @('reproduced', 'not-reproduced', 'partially-reproduced', 'needs-platform', 'inconclusive', 'enhancement')
+$validConclusions = @('reproduced', 'not-reproduced', 'needs-platform', 'needs-hardware', 'partial', 'inconclusive')
 if ($json.conclusion -and $json.conclusion -notin $validConclusions) {
     $errors.Add("conclusion '$($json.conclusion)' is not one of: $($validConclusions -join ', ')")
+}
+
+# ── Conditional required fields based on conclusion ──────────────────────────
+$conclusionsRequiringOutput   = @('reproduced', 'not-reproduced')
+$conclusionsRequiringBlockers = @('needs-platform', 'needs-hardware', 'partial', 'inconclusive')
+if ($json.conclusion -in $conclusionsRequiringOutput) {
+    if ($null -eq $json.output) {
+        $errors.Add("'output' is required when conclusion is '$($json.conclusion)'")
+    }
+    if ($null -eq $json.versionResults) {
+        $errors.Add("'versionResults' is required when conclusion is '$($json.conclusion)'")
+    }
+} elseif ($json.conclusion -in $conclusionsRequiringBlockers) {
+    if ($null -eq $json.blockers -or $json.blockers.Count -eq 0) {
+        $errors.Add("'blockers' (non-empty) is required when conclusion is '$($json.conclusion)'")
+    }
 }
 
 # ── notes ───────────────────────────────────────────────────────────────────
@@ -100,7 +116,7 @@ if ($json.reproductionSteps) {
             if ($step.layer -and $step.layer -notin $validLayers) {
                 $errors.Add("reproductionSteps[$i]: layer '$($step.layer)' not in: $($validLayers -join ', ')")
             }
-            $validResults = @('success', 'failure', 'wrong-output', 'skipped')
+            $validResults = @('success', 'failure', 'wrong-output', 'skip')
             if ($step.result -and $step.result -notin $validResults) {
                 $errors.Add("reproductionSteps[$i]: result '$($step.result)' not in: $($validResults -join ', ')")
             }
@@ -115,7 +131,7 @@ if ($json.reproductionSteps) {
 
 # ── versionResults ──────────────────────────────────────────────────────────
 if ($json.versionResults) {
-    $validVersionResults = @('reproduced', 'not-reproduced', 'partially-reproduced', 'error', 'skipped')
+    $validVersionResults = @('reproduced', 'not-reproduced', 'error', 'not-tested')
     for ($i = 0; $i -lt $json.versionResults.Count; $i++) {
         $vr = $json.versionResults[$i]
         if (-not $vr.version) {
@@ -153,7 +169,7 @@ if ($json.environment) {
 if ($json.output) {
     if ($json.output.actionability) {
         $act = $json.output.actionability
-        $validActions = @('close-no-fix', 'close-with-docs', 'fix', 'request-info', 'forward', 'investigate', 'monitor')
+        $validActions = @('needs-investigation', 'close-as-fixed', 'close-as-by-design', 'close-with-docs', 'close-as-duplicate', 'convert-to-discussion', 'request-info', 'keep-open')
         if ($act.suggestedAction -and $act.suggestedAction -notin $validActions) {
             $errors.Add("output.actionability.suggestedAction '$($act.suggestedAction)' not in: $($validActions -join ', ')")
         }
