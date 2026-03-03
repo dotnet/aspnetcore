@@ -2,9 +2,9 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
 
   <ItemGroup>
-    <!-- Microsoft.Wix is a dotnet tool package, so exlude its assets. -->
+    <!-- Microsoft.Wix is a dotnet tool package, so exclude its assets. -->
     <PackageReference Include="Microsoft.Wix" Version="$(MicrosoftWixToolsetSdkVersion)" ExcludeAssets="all" />
-    <!-- Installers needs the $(PkgMicrosoftWixToolsetUIwixext) property to locate the extension. -->
+    <!-- Installers need the $(PkgMicrosoftWixToolsetUIwixext) property to locate the extension. -->
     <PackageReference Include="Microsoft.WixToolset.UI.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.WixToolset.Dependency.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.WixToolset.Util.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" GeneratePathProperty="true" />
