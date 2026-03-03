@@ -120,8 +120,7 @@ may be turned into `<PackageReference>` items in projects.
     <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.openbsd-x64" />
     <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.openbsd-arm64" />
     <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.illumos-x64" />
-    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.illumos-x64" />
-    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.haiku-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.solaris-x64" />
     <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.haiku-x64" />
     <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.$(TargetRuntimeIdentifier)" Condition=" '$(DotNetBuildSourceOnly)' == 'true'" />
 
