@@ -1,0 +1,28 @@
+﻿<h3 id="shadow-dom-bind-cases">Shadow DOM Bind Cases</h3>
+
+<p>
+    Shadow DOM input with oninput:
+    <shadow-dom-input id="shadow-input" @oninput="OnShadowInput" />
+    <span id="shadow-input-value">@shadowInputValue</span>
+</p>
+
+<p>
+    Shadow DOM input with onchange:
+    <shadow-dom-input id="shadow-input-onchange" @onchange="OnShadowChange" />
+    <span id="shadow-input-onchange-value">@shadowInputOnChangeValue</span>
+</p>
+
+@code {
+    string shadowInputValue { get; set; }
+    string shadowInputOnChangeValue { get; set; }
+
+    void OnShadowInput(ChangeEventArgs e)
+    {
+        shadowInputValue = e.Value?.ToString();
+    }
+
+    void OnShadowChange(ChangeEventArgs e)
+    {
+        shadowInputOnChangeValue = e.Value?.ToString();
+    }
+}

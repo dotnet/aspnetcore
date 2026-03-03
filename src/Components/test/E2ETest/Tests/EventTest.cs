@@ -425,6 +425,25 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("Microsoft.AspNetCore.Components.Web.DragEventArgs:1", () => output.Text);
     }
 
+    [Fact]
+    public void InputEvent_ShadowDom_RespondsOnKeystrokes()
+    {
+        Browser.MountTestComponent<ShadowDomBindCasesComponent>();
+
+        var shadowHost = Browser.Exists(By.Id("shadow-input"));
+        var shadowRoot = shadowHost.GetShadowRoot();
+        var input = shadowRoot.FindElement(By.CssSelector("input"));
+        var output = Browser.Exists(By.Id("shadow-input-value"));
+
+        Browser.Equal(string.Empty, () => output.Text);
+
+        SendKeysSequentially(input, "abcdefghijklmnopqrstuvwxyz");
+        Browser.Equal("abcdefghijklmnopqrstuvwxyz", () => output.Text);
+
+        input.SendKeys(Keys.Backspace);
+        Browser.Equal("abcdefghijklmnopqrstuvwxy", () => output.Text);
+    }
+
     void SendKeysSequentially(IWebElement target, string text)
     {
         // Calling it for each character works around some chars being skipped
