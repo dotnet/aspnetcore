@@ -12,16 +12,16 @@ RUN apt-get update \
     nodejs \
     git
 
-ARG gitBranch=fix-kestrel-problem
+ARG gitBranch=main
 
 WORKDIR /src
-ADD https://api.github.com/repos/ilonatommy/aspnetcore/git/ref/heads/${gitBranch} /aspnetcore.commit
+ADD https://api.github.com/repos/dotnet/aspnetcore/git/ref/heads/${gitBranch} /aspnetcore.commit
 
 RUN git init \
-    && git fetch https://github.com/ilonatommy/aspnetcore ${gitBranch} \
+    && git fetch https://github.com/aspnet/aspnetcore ${gitBranch} \
     && git reset --hard FETCH_HEAD \
     && git submodule update --init \
-    && git remote add origin https://github.com/ilonatommy/aspnetcore
+    && git remote add origin https://github.com/aspnet/aspnetcore
 
 RUN ./restore.sh
 RUN npm run build
