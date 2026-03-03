@@ -79,18 +79,18 @@ public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSit
     {
         Navigate($"{ServerPathBase}/quickgrid");
 
-        Assert.NotNull(Browser.FindElement(By.CssSelector(".first-paginator .go-first")).GetDomAttribute("disabled"));
-        Assert.NotNull(Browser.FindElement(By.CssSelector(".first-paginator .go-previous")).GetDomAttribute("disabled"));
-        Assert.Null(Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("disabled"));
-        Assert.Null(Browser.FindElement(By.CssSelector(".first-paginator .go-last")).GetDomAttribute("disabled"));
+        Assert.Equal("true", Browser.FindElement(By.CssSelector(".first-paginator .go-first")).GetDomAttribute("aria-disabled"));
+        Assert.Equal("true", Browser.FindElement(By.CssSelector(".first-paginator .go-previous")).GetDomAttribute("aria-disabled"));
+        Assert.Equal("false", Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("aria-disabled"));
+        Assert.Equal("false", Browser.FindElement(By.CssSelector(".first-paginator .go-last")).GetDomAttribute("aria-disabled"));
 
         Browser.FindElement(By.CssSelector(".first-paginator .go-last")).Click();
         Browser.Equal("5", () => Browser.FindElement(By.CssSelector(".first-paginator .paginator nav > div > strong:nth-child(1)")).Text);
 
-        Assert.Null(Browser.FindElement(By.CssSelector(".first-paginator .go-first")).GetDomAttribute("disabled"));
-        Assert.Null(Browser.FindElement(By.CssSelector(".first-paginator .go-previous")).GetDomAttribute("disabled"));
-        Assert.NotNull(Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("disabled"));
-        Assert.NotNull(Browser.FindElement(By.CssSelector(".first-paginator .go-last")).GetDomAttribute("disabled"));
+        Assert.Equal("false", Browser.FindElement(By.CssSelector(".first-paginator .go-first")).GetDomAttribute("aria-disabled"));
+        Assert.Equal("false", Browser.FindElement(By.CssSelector(".first-paginator .go-previous")).GetDomAttribute("aria-disabled"));
+        Assert.Equal("true", Browser.FindElement(By.CssSelector(".first-paginator .go-next")).GetDomAttribute("aria-disabled"));
+        Assert.Equal("true", Browser.FindElement(By.CssSelector(".first-paginator .go-last")).GetDomAttribute("aria-disabled"));
     }
 
     [Fact]

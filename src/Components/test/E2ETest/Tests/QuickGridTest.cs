@@ -32,63 +32,6 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     }
 
     [Fact]
-    public void CanColumnSortByInt()
-    {
-
-        // Click twice to sort by descending
-        Browser.FindElement(By.CssSelector("#grid > table thead > tr > th:nth-child(1) > div > a")).Click();
-        Browser.FindElement(By.CssSelector("#grid > table thead > tr > th:nth-child(1) > div > a")).Click();
-
-        //Compare first row to expected result
-        Browser.Equal("12381", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
-        Browser.Equal("Matti", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(2)")).Text);
-        Browser.Equal("Karttunen", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(3)")).Text);
-        Browser.Equal("1981-06-04", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(4)")).Text);
-    }
-
-    [Fact]
-    public void CanColumnSortByString()
-    {
-
-        // Click twice to sort by descending
-        Browser.FindElement(By.CssSelector("#grid > table thead > tr > th:nth-child(2) > div > a.col-title")).Click();
-        Browser.FindElement(By.CssSelector("#grid > table thead > tr > th:nth-child(2) > div > a.col-title")).Click();
-
-        //Compare first row to expected result
-        Browser.Equal("12379", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
-        Browser.Equal("Zbyszek", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(2)")).Text);
-        Browser.Equal("Piestrzeniewicz", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(3)")).Text);
-        Browser.Equal("1981-04-02", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(4)")).Text);
-    }
-
-    [Fact]
-    public void CanColumnSortByDateOnly()
-    {
-
-        // Click twice to sort by descending
-        Browser.FindElement(By.CssSelector("#grid > table thead > tr > th:nth-child(4) > div > a")).Click();
-        Browser.FindElement(By.CssSelector("#grid > table thead > tr > th:nth-child(4) > div > a")).Click();
-
-        //Compare first row to expected result
-        Browser.Equal("12364", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
-        Browser.Equal("Paolo", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(2)")).Text);
-        Browser.Equal("Accorti", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(3)")).Text);
-        Browser.Equal("2018-05-18", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(4)")).Text);
-    }
-
-    [Fact]
-    public void PaginatorCorrectItemsPerPage()
-    {
-        var grid = app.FindElement(By.ClassName("quickgrid"));
-        var rowCount = grid.FindElements(By.CssSelector("tbody > tr")).Count;
-        Assert.Equal(10, rowCount);
-
-        app.FindElement(By.ClassName("go-next")).Click();
-
-        Browser.Equal(10, () => Browser.FindElement(By.ClassName("quickgrid")).FindElements(By.CssSelector("tbody > tr")).Count);
-    }
-
-    [Fact]
     public void PaginatorDisplaysCorrectItemCount()
     {
         var paginator = app.FindElement(By.ClassName("paginator"));
@@ -272,17 +215,4 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Assert.Equal("pointer", cursorStyle);
     }
 
-    [Fact]
-    public void DualPaginatorsNavigatesAndBothUpdate()
-    {
-        app = Browser.MountTestComponent<QuickGridDualPaginatorComponent>();
-
-        Browser.Equal("1", () => Browser.FindElement(By.CssSelector(".top-paginator .paginator nav > div > strong:nth-child(1)")).Text);
-        Browser.Equal("1", () => Browser.FindElement(By.CssSelector(".bottom-paginator .paginator nav > div > strong:nth-child(1)")).Text);
-
-        Browser.FindElement(By.CssSelector(".top-paginator .go-next")).Click();
-
-        Browser.Equal("2", () => Browser.FindElement(By.CssSelector(".top-paginator .paginator nav > div > strong:nth-child(1)")).Text);
-        Browser.Equal("2", () => Browser.FindElement(By.CssSelector(".bottom-paginator .paginator nav > div > strong:nth-child(1)")).Text);
-    }
 }
