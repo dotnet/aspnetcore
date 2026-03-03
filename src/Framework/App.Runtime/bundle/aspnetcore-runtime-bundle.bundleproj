@@ -21,7 +21,6 @@
     <PatchVersion>$(AspNetCorePatchVersion)</PatchVersion>
 
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
-    <UseWix5>true</UseWix5>
   </PropertyGroup>
 
   <ItemGroup>
