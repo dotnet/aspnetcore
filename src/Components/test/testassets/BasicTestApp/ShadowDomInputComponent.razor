@@ -1,0 +1,21 @@
+@using Microsoft.JSInterop
+
+<shadow-dom-input id="shadow-input" @oninput="OnInput" @onchange="OnChange"></shadow-dom-input>
+
+<p id="shadow-input-oninput-value">@oninputValue</p>
+<p id="shadow-input-onchange-value">@onchangeValue</p>
+
+@code {
+    string oninputValue = "";
+    string onchangeValue = "";
+
+    void OnInput(ChangeEventArgs e)
+    {
+        oninputValue = e.Value?.ToString() ?? "";
+    }
+
+    void OnChange(ChangeEventArgs e)
+    {
+        onchangeValue = e.Value?.ToString() ?? "";
+    }
+}
