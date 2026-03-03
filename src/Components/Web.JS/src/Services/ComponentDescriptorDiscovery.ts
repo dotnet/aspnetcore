@@ -1,6 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+// Metadata comments are consumed during discovery and should not be part of the logical tree.
+// They include: WebAssembly options, component state, and web initializers.
+export function isMetadataComment(node: Node): boolean {
+  if (node.nodeType !== Node.COMMENT_NODE) {
+    return false;
+  }
+  const content = node.textContent || '';
+  return content.trim().startsWith('Blazor-Server-Component-State:') ||
+         content.trim().startsWith('Blazor-WebAssembly-Component-State:') ||
+         content.trim().startsWith('Blazor-Web-Initializers:') ||
+         content.trim().startsWith('Blazor-WebAssembly:');
+}
+
 export function discoverComponents(root: Node, type: 'webassembly' | 'server' | 'auto'): ComponentDescriptor[] {
   switch (type) {
     case 'webassembly':
