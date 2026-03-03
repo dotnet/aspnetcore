@@ -27,16 +27,16 @@ nav {
         font-size: 0;
     }
 
-    nav a:not([href]) {
+    nav a[aria-disabled="true"] {
         opacity: 0.4;
         pointer-events: none;
     }
 
-    nav a[href]:hover {
+    nav a:not([aria-disabled="true"]):hover {
         background-color: #eee;
     }
 
-    nav a[href]:active {
+    nav a:not([aria-disabled="true"]):active {
         background-color: #aaa;
     }
 

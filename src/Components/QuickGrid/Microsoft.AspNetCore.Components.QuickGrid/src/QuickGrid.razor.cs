@@ -171,7 +171,6 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     private bool _firstRefreshDataAsync = true;
 
     private bool _hasReadSortFromQueryString;
-    private bool _suppressNextLocationChange;
     private (string ColumnTitle, bool Ascending)? _cachedSortFromQuery;
 
     private string SortQueryParameterNameBy => QueryName == "" ? "sort" : $"{QueryName}_sort";
@@ -321,20 +320,13 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
 
         _sortByColumn = column;
         var newUri = GetSortQueryStringUrl(_sortByColumn, _sortByAscending);
-        _suppressNextLocationChange = true;
         NavigationManager.NavigateTo(newUri);
         return RefreshDataAsync();
     }
 
-    internal string GetSortUrl(ColumnBase<TGridItem> column, SortDirection direction = SortDirection.Auto)
+    internal string GetSortUrl(ColumnBase<TGridItem> column)
     {
-        var ascending = direction switch
-        {
-            SortDirection.Ascending => true,
-            SortDirection.Descending => false,
-            SortDirection.Auto => _sortByColumn != column || !_sortByAscending,
-            _ => throw new NotSupportedException($"Unknown sort direction {direction}"),
-        };
+        var ascending = _sortByColumn != column || !_sortByAscending;
 
         return GetSortQueryStringUrl(column, ascending);
     }
@@ -366,12 +358,6 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
 
     private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        if (_suppressNextLocationChange)
-        {
-            _suppressNextLocationChange = false;
-            return;
-        }
-
         _queryParameterValueSupplier.ReadParametersFromQuery(QueryParameterValueSupplier.GetQueryString(NavigationManager.Uri));
         var sortFromQuery = ReadSortFromQueryString();
         var currentSort = _sortByColumn is not null ? (_sortByColumn.Title, _sortByAscending) : ((string? ColumnTitle, bool Ascending)?)null;
