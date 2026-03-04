@@ -25,7 +25,7 @@ permissions:
   issues: read
 
 tools:
-  bash: ["gh", "cat", "head", "tail", "grep", "wc", "jq"]
+  bash: ["cat", "head", "tail", "grep", "wc", "jq"]
 
 safe-outputs:
   add-labels:
@@ -80,59 +80,19 @@ is to analyze a newly opened issue and perform three tasks:
 Triage the issue that triggered this workflow.
 
 - For `issues.opened` events, use the triggering issue context.
-- For `workflow_dispatch`, fetch issue `${{ github.event.inputs.issue_number }}` using `gh issue view`.
+- For `workflow_dispatch`, fetch the issue using the GitHub MCP Server's `get_issue` tool with issue number `${{ github.event.inputs.issue_number }}`.
 
-Read the full issue title and body first using:
+Read the full issue title and body using the GitHub MCP Server tools:
 
-```bash
-gh issue view <NUMBER> --repo $GITHUB_REPOSITORY --json title,body,labels,number
-```
+- Use the `get_issue` tool from the **github** MCP server, providing the repository owner, repository name, and issue number.
 
-## CRITICAL: Security-Sensitive Issue Handling
+## Security Concerns Are Out of Scope
 
-**Before performing ANY analysis**, determine whether the issue describes or hints at
-a security vulnerability, MSRC case, exploit, or anything that could compromise
-the security of services, applications, or users relying on ASP.NET Core or its
-tooling.
-
-**Indicators of a security-sensitive issue:**
-- Mentions CVE, MSRC, vulnerability, exploit, RCE, XSS, CSRF bypass, SQL injection,
-  privilege escalation, authentication bypass, token leakage, secret exposure,
-  deserialization attack, path traversal, denial of service, or similar terms
-- Describes a way to bypass security controls, authorization, or authentication
-- Shows how to access data or systems without proper authorization
-- Reports a crash or unexpected behavior that could be weaponized
-- Describes memory growth, memory leaks, resource exhaustion, server becoming
-  unresponsive, or similar symptoms that could indicate a denial-of-service vector
-- Mentions "responsible disclosure", "coordinated disclosure", or "security advisory"
-- Contains proof-of-concept code that demonstrates breaking a security boundary
-
-**If the issue IS or MAY BE security-sensitive, you MUST:**
-
-1. **STOP all detailed analysis immediately.** Do NOT describe the vulnerability
-   mechanism, do NOT explain how or why it is broken, do NOT include reproduction
-   steps, do NOT reference specific code paths or attack vectors.
-2. Apply ONLY the area label (e.g., `area-auth`, `area-networking`) and `bug`.
-3. Post an extremely minimal comment — nothing more than:
-
-```markdown
-### Triage Summary
-
-**Area:** `area-xyz`
-**Type:** `bug`
-
-> This issue may involve a security-sensitive topic. Detailed triage has been
-> intentionally withheld. Please review this issue through the appropriate
-> internal security process. If this is a genuine security vulnerability, it
-> should be reported privately via https://msrc.microsoft.com and **not** in a
-> public GitHub issue.
-```
-
-4. Do NOT search for or mention duplicates. Do NOT add notes explaining the
-   impact, root cause, or affected components beyond the area label.
-
-**This rule overrides ALL other instructions.** When in doubt about whether
-something is security-sensitive, treat it as security-sensitive.
+❌ **Security concerns are out of scope.** This workflow does not assess, discuss, or
+make recommendations about potential security implications of issues. If an issue
+claims to describe a security vulnerability, do not evaluate whether the claim is
+valid, do not discuss the potential impact, and do not include any security analysis
+in the triage report. Security assessment is handled through separate processes.
 
 ---
 
@@ -293,14 +253,35 @@ Apply the single best type label. If the issue template already indicates the ty
 (e.g., filed via the bug report template), trust that signal but verify it matches
 the actual content — reporters sometimes pick the wrong template.
 
-## Step 3: Duplicate Detection
+## Step 3: Regression Detection
 
-Search for potential duplicates among recent open issues. Use the GitHub CLI to
-search for similar issues:
+If the issue is classified as a `bug`, check whether it describes a **regression** —
+a behavior that previously worked in an older version but is now broken in a newer one.
 
-```bash
-gh issue list --repo $GITHUB_REPOSITORY --state open --search "<keywords>" --limit 10 --json number,title,labels,url
-```
+**Look for these signals in the issue body:**
+- Explicit mentions of a version where it **used to work** (e.g., ".NET 8", "ASP.NET Core 7.0.x", "worked in preview 3")
+- Explicit mentions of a version where it **stopped working** (e.g., "after upgrading to .NET 9", "broken since 9.0.1")
+- Phrases like "regression", "used to work", "broke after update", "worked before", "behavior changed"
+- References to specific release notes, preview builds, or SDK versions
+
+**If regression information is present**, include a **Regression** section in the
+triage summary with:
+- **Previously working version:** the version where the behavior was correct (if stated)
+- **Broken since:** the version where the regression appeared (if stated)
+- A brief note on the behavior change (what worked vs. what no longer works)
+
+If the author mentions a regression but does not specify exact versions, note what
+is known and flag that more information may be needed from the author.
+
+If there is no indication of a regression, omit this section from the summary.
+
+## Step 4: Duplicate Detection
+
+Search for potential duplicates among recent open issues using the GitHub MCP
+Server tools:
+
+- Use the `search_issues` tool from the **github** MCP server to find issues
+  matching relevant keywords. Filter by repository and open state.
 
 Extract 2-4 key technical terms from the issue (e.g., API names, error messages,
 component names) and search for them. Try **2 different searches** with
@@ -315,7 +296,7 @@ Only flag an issue as a potential duplicate if you have **high confidence** that
 it describes the same problem or feature request. When in doubt, list it as
 "related" rather than "duplicate".
 
-## Step 4: Post Results
+## Step 5: Post Results
 
 Compose a single triage comment summarizing your findings. Structure it as:
 
@@ -324,6 +305,12 @@ Compose a single triage comment summarizing your findings. Structure it as:
 
 **Area:** `area-xyz` (brief reason)
 **Type:** `bug` | `feature-request` | ... (brief reason)
+
+#### Regression Info
+- **Previously working version:** .NET x.y / ASP.NET Core x.y
+- **Broken since:** .NET x.y / ASP.NET Core x.y
+- Brief description of the behavior change
+- _(Omit this section if not a regression)_
 
 #### Potential Duplicates
 - #123 - Title (similarity: high/medium)
