@@ -28,7 +28,7 @@
     <Paginator State="@pagination2" />
 </div>
 <div id="grid2">
-    <QuickGrid Items="@people" Pagination="@pagination2">
+    <QuickGrid Items="@people" Pagination="@pagination2" QueryName="people">
         <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" />
         <PropertyColumn Property="@(p => p.FirstName)" Sortable="true" />
         <PropertyColumn Property="@(p => p.LastName)" Sortable="true" />

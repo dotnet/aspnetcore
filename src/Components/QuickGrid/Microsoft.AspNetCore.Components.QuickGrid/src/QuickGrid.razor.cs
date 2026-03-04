@@ -366,7 +366,6 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
                 _sortByColumn = column;
                 _sortByAscending = sort.Ascending;
                 await RefreshDataCoreAsync();
-                StateHasChanged();
             });
         }
         else if (sortFromQuery is null
@@ -377,9 +376,9 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
                 _sortByColumn = _defaultSortColumn;
                 _sortByAscending = _defaultSortAscending;
                 await RefreshDataCoreAsync();
-                StateHasChanged();
             });
         }
+        await InvokeAsync(StateHasChanged);
     }
 
     /// <summary>
