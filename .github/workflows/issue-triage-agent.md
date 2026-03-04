@@ -88,11 +88,9 @@ Read the full issue title and body using the GitHub MCP Server tools:
 
 ## Security Concerns Are Out of Scope
 
-❌ **Security concerns are out of scope.** This workflow does not assess, discuss, or
-make recommendations about potential security implications of issues. If an issue
-claims to describe a security vulnerability, do not evaluate whether the claim is
-valid, do not discuss the potential impact, and do not include any security analysis
-in the triage report. Security assessment is handled through separate processes.
+This workflow does not assess, discuss, or make recommendations about potential security implications of issues. If an issue
+claims to describe a security vulnerability, do not evaluate whether the claim is valid, do not discuss the potential impact,
+and do not include any security analysis in the triage report. Security assessment is handled through separate processes.
 
 ---
 
