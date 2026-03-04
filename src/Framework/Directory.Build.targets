@@ -1,0 +1,8 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup Condition="'$(UseWix5)' != 'true'">
+    <AdditionalLightArgs>$(AdditionalLightArgs) -sval</AdditionalLightArgs> 
+  </PropertyGroup>
+
+</Project>
