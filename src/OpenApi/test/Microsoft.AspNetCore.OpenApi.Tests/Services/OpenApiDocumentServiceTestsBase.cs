@@ -243,17 +243,28 @@ public abstract class OpenApiDocumentServiceTestBase
             .SelectMany(a => a.HttpMethods)
             .DefaultIfEmpty("GET")
         )];
+
+        var actionFilters = action.MethodInfo.GetCustomAttributes()
+            .OfType<IFilterMetadata>()
+            .Select(f => new FilterDescriptor(f, FilterScope.Action));
+
+        var controllerFilters = Enumerable.Empty<FilterDescriptor>();
         if (controllerType is not null)
         {
             foreach (var attribute in controllerType.GetCustomAttributes())
             {
                 action.EndpointMetadata.Add(attribute);
             }
+
+            controllerFilters = controllerType.GetCustomAttributes()
+                .OfType<IFilterMetadata>()
+                .Select(f => new FilterDescriptor(f, FilterScope.Controller));
         }
 
-        action.FilterDescriptors = action.EndpointMetadata
-            .OfType<IFilterMetadata>()
-            .Select((f, i) => new FilterDescriptor(f, FilterScope.Action) { Order = i })
+        action.FilterDescriptors = actionFilters
+            .Concat(controllerFilters)
+            .OrderBy(d => d.Order)
+            .ThenBy(d => d.Scope)
             .ToList();
 
         action.Parameters = [];
