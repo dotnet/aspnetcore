@@ -21,15 +21,11 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         [param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
         Type declaringType,
         Type propertyType,
-        string name,
-        string? displayName,
-        Func<string?>? displayNameAccessor)
+        string name)
     {
         DeclaringType = declaringType;
         PropertyType = propertyType;
         Name = name;
-        DisplayName = displayName;
-        DisplayNameAccessor = displayNameAccessor;
     }
 
     /// <summary>
@@ -49,21 +45,20 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     internal string Name { get; }
 
     /// <summary>
-    /// Gets the display name for the member as designated by the <see cref="DisplayAttribute.Name"/>.
-    /// </summary>
-    internal string? DisplayName { get; }
-
-    /// <summary>
-    /// Gets a function that resolves the display name for the member using <see cref="DisplayAttribute.ResourceType"/>
-    /// and <see cref="DisplayAttribute.Name"/>.
-    /// </summary>
-    internal Func<string?>? DisplayNameAccessor { get; }
-
-    /// <summary>
     /// Gets the validation attributes for this member.
     /// </summary>
     /// <returns>An array of validation attributes to apply to this member.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
+
+    /// <summary>
+    /// Gets the display name for this member resolved from display-related attributes
+    /// such as <see cref="DisplayAttribute"/> and <c>DisplayNameAttribute</c>.
+    /// </summary>
+    /// <returns>
+    /// The resolved display name, or <see langword="null"/> if no display name attribute
+    /// is present on the member, indicating that the caller should fall back to the member name.
+    /// </returns>
+    protected abstract string? GetDisplayName();
 
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
@@ -83,9 +78,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             context.CurrentValidationPath = $"{originalPrefix}.{Name}";
         }
 
-        var displayName = DisplayNameAccessor is not null
-            ? DisplayNameAccessor() ?? Name
-            : DisplayName ?? Name;
+        var displayName = GetDisplayName() ?? Name;
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;

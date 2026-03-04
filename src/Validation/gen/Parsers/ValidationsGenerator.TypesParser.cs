@@ -113,16 +113,10 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             return false;
         }
 
-        var displayInfo = typeSymbol.GetDisplayInfo(
-            wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute),
-            wellKnownTypes.GetOptional(WellKnownTypeData.WellKnownType.System_ComponentModel_DisplayNameAttribute));
-
         // Add the type itself as a validatable type itself.
         validatableTypes.Add(new ValidatableType(
             Type: typeSymbol,
-            Members: members,
-            DisplayName: displayInfo?.Name,
-            DisplayResourceType: displayInfo?.ResourceType));
+            Members: members));
 
         return true;
     }
@@ -140,10 +134,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonIgnoreAttribute);
         var skipValidationAttributeSymbol = wellKnownTypes.Get(
             WellKnownTypeData.WellKnownType.Microsoft_Extensions_Validation_SkipValidationAttribute);
-        var displayAttributeSymbol = wellKnownTypes.Get(
-         WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute);
-        var displayNameAttributeSymbol = wellKnownTypes.GetOptional(
-            WellKnownTypeData.WellKnownType.System_ComponentModel_DisplayNameAttribute);
 
         // Special handling for record types to extract properties from
         // the primary constructor.
@@ -204,15 +194,10 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                             ref validatableTypes,
                             ref visitedTypes);
 
-                        var displayInfo = parameter.GetDisplayInfo(displayAttributeSymbol, displayNameAttributeSymbol)
-                            ?? correspondingProperty.GetDisplayInfo(displayAttributeSymbol, displayNameAttributeSymbol);
-
                         members.Add(new ValidatableProperty(
                             ContainingType: correspondingProperty.ContainingType,
                             Type: correspondingProperty.Type,
                             Name: correspondingProperty.Name,
-                            DisplayName: displayInfo?.Name,
-                            DisplayResourceType: displayInfo?.ResourceType,
                             Attributes: []));
                     }
                 }
@@ -269,14 +254,10 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 continue;
             }
 
-            var displayInfo = member.GetDisplayInfo(displayAttributeSymbol, displayNameAttributeSymbol);
-
             members.Add(new ValidatableProperty(
                 ContainingType: member.ContainingType,
                 Type: member.Type,
                 Name: member.Name,
-                DisplayName: displayInfo?.Name,
-                DisplayResourceType: displayInfo?.ResourceType,
                 Attributes: attributes));
         }
 
