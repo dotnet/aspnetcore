@@ -51,6 +51,23 @@ internal sealed partial class HttpConnectionManager
         return _connections.TryGetValue(id, out connection);
     }
 
+    internal bool TryGetConnectionByConnectionId(string connectionId, [NotNullWhen(true)] out HttpConnectionContext? connection)
+    {
+        // The _connections dictionary is keyed by connectionToken, so we need to scan
+        // for the matching public ConnectionId.
+        foreach (var kvp in _connections)
+        {
+            if (string.Equals(kvp.Value.ConnectionId, connectionId, StringComparison.Ordinal))
+            {
+                connection = kvp.Value;
+                return true;
+            }
+        }
+
+        connection = null;
+        return false;
+    }
+
     internal HttpConnectionContext CreateConnection()
     {
         return CreateConnection(new());

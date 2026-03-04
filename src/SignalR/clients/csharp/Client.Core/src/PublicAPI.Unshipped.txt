@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.AspNetCore.SignalR.Client.HubConnection.RefreshAuthAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<int?>!
+Microsoft.AspNetCore.SignalR.Client.HubConnection.RefreshBeforeExpiration.get -> System.TimeSpan
+Microsoft.AspNetCore.SignalR.Client.HubConnection.RefreshBeforeExpiration.set -> void

@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.Http.Connections.Client.HttpConnection.RefreshAuthAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<int?>!

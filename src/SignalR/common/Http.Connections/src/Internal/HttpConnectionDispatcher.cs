@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Security.Claims;
 using System.Security.Principal;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
@@ -115,6 +116,97 @@ internal sealed partial class HttpConnectionDispatcher
                 context.Response.ContentType = "text/plain";
                 context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
             }
+        }
+    }
+
+    public async Task ExecuteRefreshAsync(HttpContext context, HttpConnectionDispatcherOptions options)
+    {
+        var logScope = new ConnectionLogScope(connectionId: string.Empty);
+        using (_logger.BeginScope(logScope))
+        {
+            if (HttpMethods.IsPost(context.Request.Method))
+            {
+                await ProcessRefresh(context, options, logScope);
+            }
+            else
+            {
+                context.Response.ContentType = "text/plain";
+                context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
+            }
+        }
+    }
+
+    private async Task ProcessRefresh(HttpContext context, HttpConnectionDispatcherOptions options, ConnectionLogScope logScope)
+    {
+        context.Response.ContentType = "application/json";
+
+        if (!options.EnableAuthRefresh)
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            context.Response.ContentType = "text/plain";
+            await context.Response.WriteAsync("Auth refresh is not enabled.");
+            return;
+        }
+
+        // Get connection ID from the X-SignalR-Connection-Id header
+        var connectionId = context.Request.Headers["X-SignalR-Connection-Id"].ToString();
+        if (string.IsNullOrEmpty(connectionId))
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            context.Response.ContentType = "text/plain";
+            await context.Response.WriteAsync("X-SignalR-Connection-Id header is required.");
+            return;
+        }
+
+        // Look up the connection by ConnectionId (public ID, not the token)
+        if (!_manager.TryGetConnectionByConnectionId(connectionId, out var connection))
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            context.Response.ContentType = "text/plain";
+            await context.Response.WriteAsync("No connection found with the specified ID.");
+            return;
+        }
+
+        logScope.ConnectionId = connection.ConnectionId;
+
+        // The authentication middleware has already run on this request,
+        // so context.User contains the principal from the new token.
+        // Update the connection's User and auth expiration.
+        var authenticateResultFeature = context.Features.Get<IAuthenticateResultFeature>();
+        var newExpiration = authenticateResultFeature?.AuthenticateResult?.Properties?.ExpiresUtc ?? DateTimeOffset.MaxValue;
+        connection.UpdateUser(context.User, newExpiration);
+
+        // Compute TTL for the response
+        int? tokenLifetimeSeconds = null;
+        if (newExpiration != DateTimeOffset.MaxValue)
+        {
+            var ttl = newExpiration - DateTimeOffset.UtcNow;
+            if (ttl.TotalSeconds > 0)
+            {
+                tokenLifetimeSeconds = (int)ttl.TotalSeconds;
+            }
+        }
+
+        // Write the refresh response
+        var writer = new MemoryBufferWriter();
+        try
+        {
+            using var jsonWriter = new Utf8JsonWriter((IBufferWriter<byte>)writer);
+            jsonWriter.WriteStartObject();
+            jsonWriter.WriteString(JsonEncodedText.Encode("connectionId"), connection.ConnectionId);
+            if (tokenLifetimeSeconds.HasValue)
+            {
+                jsonWriter.WriteNumber(JsonEncodedText.Encode("tokenLifetimeSeconds"), tokenLifetimeSeconds.Value);
+            }
+            jsonWriter.WriteEndObject();
+            jsonWriter.Flush();
+
+            context.Response.ContentLength = writer.Length;
+            await writer.CopyToAsync(context.Response.Body);
+        }
+        finally
+        {
+            writer.Reset();
         }
     }
 
@@ -420,6 +512,21 @@ internal sealed partial class HttpConnectionDispatcher
         response.ConnectionToken = connectionToken;
         response.AvailableTransports = new List<AvailableTransport>();
         response.UseStatefulReconnect = useStatefulReconnect;
+
+        // If auth refresh is enabled, compute token lifetime from auth properties
+        if (options.EnableAuthRefresh)
+        {
+            var authenticateResultFeature = context.Features.Get<IAuthenticateResultFeature>();
+            var expiresUtc = authenticateResultFeature?.AuthenticateResult?.Properties?.ExpiresUtc;
+            if (expiresUtc.HasValue && expiresUtc.Value != DateTimeOffset.MaxValue)
+            {
+                var ttl = expiresUtc.Value - DateTimeOffset.UtcNow;
+                if (ttl.TotalSeconds > 0)
+                {
+                    response.TokenLifetimeSeconds = (int)ttl.TotalSeconds;
+                }
+            }
+        }
 
         if ((options.Transports & HttpTransportType.WebSockets) != 0 && ServerHasWebSockets(context.Features))
         {

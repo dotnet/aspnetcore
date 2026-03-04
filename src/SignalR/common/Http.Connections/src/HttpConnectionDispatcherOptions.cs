@@ -132,6 +132,19 @@ public class HttpConnectionDispatcherOptions
     /// </remarks>
     public bool AllowStatefulReconnects { get; set; }
 
+    /// <summary>
+    /// When set to <c>true</c>, enables the <c>/refresh</c> endpoint that allows clients to refresh their
+    /// authentication token without disconnecting. The server will re-authenticate the request and update
+    /// the connection's <see cref="System.Security.Claims.ClaimsPrincipal"/>.
+    /// </summary>
+    public bool EnableAuthRefresh { get; set; }
+
+    /// <summary>
+    /// Gets or sets the grace period after token expiration during which refresh requests are still accepted.
+    /// Default is 5 minutes.
+    /// </summary>
+    public TimeSpan AuthRefreshGracePeriod { get; set; } = TimeSpan.FromMinutes(5);
+
     internal bool TransportSendTimeoutEnabled => _transportSendTimeout != Timeout.InfiniteTimeSpan;
 
     // We initialize these lazily based on the state of the options specified here.
