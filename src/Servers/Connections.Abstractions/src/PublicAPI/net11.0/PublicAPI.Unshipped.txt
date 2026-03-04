@@ -1,2 +1,4 @@
 #nullable enable
+Microsoft.AspNetCore.Connections.Features.IAuthRefreshFeature
+Microsoft.AspNetCore.Connections.Features.IAuthRefreshFeature.RefreshAuthAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<int?>!
 Microsoft.AspNetCore.Connections.Features.ITlsHandshakeFeature.Exception.get -> System.Exception?

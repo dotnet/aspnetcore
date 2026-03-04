@@ -340,5 +340,14 @@ public partial class HubConnection
 
         [LoggerMessage(94, LogLevel.Error, "Failed to bind argument received in stream '{StreamId}'.", EventName = "StreamBindingFailure")]
         public static partial void StreamBindingFailure(ILogger logger, string? streamId, Exception exception);
+
+        [LoggerMessage(95, LogLevel.Debug, "Starting auth token refresh.", EventName = "AuthRefreshStarting")]
+        public static partial void AuthRefreshStarting(ILogger logger);
+
+        [LoggerMessage(96, LogLevel.Debug, "Auth token refresh completed. New TTL: {TokenLifetimeSeconds} seconds.", EventName = "AuthRefreshCompleted")]
+        public static partial void AuthRefreshCompleted(ILogger logger, int? tokenLifetimeSeconds);
+
+        [LoggerMessage(97, LogLevel.Error, "Auth token refresh failed.", EventName = "AuthRefreshFailed")]
+        public static partial void AuthRefreshFailed(ILogger logger, Exception exception);
     }
 }

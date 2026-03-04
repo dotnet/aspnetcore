@@ -245,6 +245,21 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         }
     }
 
+    /// <summary>
+    /// Updates the User/ClaimsPrincipal on this connection and refreshes the authentication expiration.
+    /// </summary>
+    internal void UpdateUser(ClaimsPrincipal user, DateTimeOffset authenticationExpiration)
+    {
+        User = user;
+        AuthenticationExpiration = authenticationExpiration;
+
+        // Also update the HttpContext's user if available
+        if (HttpContext is { } httpContext)
+        {
+            httpContext.User = user;
+        }
+    }
+
     public async Task DisposeAsync(bool closeGracefully = false)
     {
         Task disposeTask;

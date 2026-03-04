@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client;
 /// <summary>
 /// Used to make a connection to an ASP.NET Core ConnectionHandler using an HTTP-based transport.
 /// </summary>
-public partial class HttpConnection : ConnectionContext, IConnectionInherentKeepAliveFeature
+public partial class HttpConnection : ConnectionContext, IConnectionInherentKeepAliveFeature, IAuthRefreshFeature
 {
     // Not configurable on purpose, high enough that if we reach here, it's likely
     // a buggy server
@@ -159,6 +159,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         _logScope = new ConnectionLogScope();
 
         Features.Set<IConnectionInherentKeepAliveFeature>(this);
+        Features.Set<IAuthRefreshFeature>(this);
     }
 
     // Used by unit tests
@@ -723,5 +724,53 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
         _logScope.ConnectionId = _connectionId;
         return negotiationResponse;
+    }
+
+    /// <summary>
+    /// Sends a POST request to the /refresh endpoint to refresh the auth token on the server.
+    /// Returns the updated token lifetime in seconds (or null if not provided).
+    /// </summary>
+    public async Task<int?> RefreshAuthAsync(CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrEmpty(_connectionId))
+        {
+            throw new InvalidOperationException("Cannot refresh auth before the connection is started.");
+        }
+
+        var urlBuilder = new UriBuilder(_url);
+        if (!urlBuilder.Path.EndsWith("/", StringComparison.Ordinal))
+        {
+            urlBuilder.Path += "/";
+        }
+        urlBuilder.Path += "refresh";
+        var refreshUri = urlBuilder.Uri;
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, refreshUri);
+        request.Headers.Add("X-SignalR-Connection-Id", _connectionId);
+
+        // Add the access token if available
+        var accessToken = await GetAccessTokenAsync().ConfigureAwait(false);
+        if (!string.IsNullOrEmpty(accessToken))
+        {
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+        }
+
+        using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+#pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods
+        var responseBuffer = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+#pragma warning restore CA2016
+        // Parse the simple JSON response: { "connectionId": "...", "tokenLifetimeSeconds": ... }
+        using var doc = System.Text.Json.JsonDocument.Parse(responseBuffer);
+        var root = doc.RootElement;
+
+        int? tokenLifetimeSeconds = null;
+        if (root.TryGetProperty("tokenLifetimeSeconds", out var ttlElement))
+        {
+            tokenLifetimeSeconds = ttlElement.GetInt32();
+        }
+
+        return tokenLifetimeSeconds;
     }
 }

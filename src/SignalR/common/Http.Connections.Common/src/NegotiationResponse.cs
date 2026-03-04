@@ -53,4 +53,10 @@ public class NegotiationResponse
     /// application (like SignalR) can react.
     /// </summary>
     public bool UseStatefulReconnect { get; set; }
+
+    /// <summary>
+    /// The number of seconds until the authentication token expires. The client can use this to schedule a token refresh.
+    /// A null value indicates the server does not support auth refresh or the token lifetime is unknown.
+    /// </summary>
+    public int? TokenLifetimeSeconds { get; set; }
 }

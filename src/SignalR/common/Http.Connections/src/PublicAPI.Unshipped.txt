@@ -1,1 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.EnableAuthRefresh.get -> bool
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.EnableAuthRefresh.set -> void
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.AuthRefreshGracePeriod.get -> System.TimeSpan
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.AuthRefreshGracePeriod.set -> void

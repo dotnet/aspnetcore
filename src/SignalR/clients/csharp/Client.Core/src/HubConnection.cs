@@ -89,6 +89,10 @@ public partial class HubConnection : IAsyncDisposable
 
     private bool _disposed;
 
+    // Auth refresh fields
+    private Timer? _authRefreshTimer;
+    private TimeSpan _refreshBeforeExpiration = TimeSpan.FromMinutes(5);
+
     /// <summary>
     /// Occurs when the connection is closed. The connection could be closed due to an error or due to either the server or client intentionally
     /// closing the connection without error.
@@ -550,6 +554,86 @@ public partial class HubConnection : IAsyncDisposable
         Log.Started(_logger);
     }
 
+    /// <summary>
+    /// Sends a POST to the server's /refresh endpoint to refresh the authentication token.
+    /// The server re-authenticates and updates the connection's ClaimsPrincipal.
+    /// Returns the updated token lifetime in seconds, or null if not provided.
+    /// </summary>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+    /// <returns>The new token lifetime in seconds from the server, or null.</returns>
+    public async Task<int?> RefreshAuthAsync(CancellationToken cancellationToken = default)
+    {
+        var connectionState = _state.CurrentConnectionStateUnsynchronized;
+        if (connectionState == null)
+        {
+            throw new InvalidOperationException("Cannot refresh auth when the connection is not active.");
+        }
+
+        var connection = connectionState.Connection;
+        var authRefreshFeature = connection.Features.Get<IAuthRefreshFeature>();
+        if (authRefreshFeature != null)
+        {
+            var newTtl = await authRefreshFeature.RefreshAuthAsync(cancellationToken).ConfigureAwait(false);
+
+            // Reschedule the auto-refresh timer if we got a new TTL
+            if (newTtl.HasValue && newTtl.Value > 0)
+            {
+                ScheduleAuthRefresh(newTtl.Value);
+            }
+
+            return newTtl;
+        }
+
+        throw new InvalidOperationException("Auth refresh is only supported with HTTP-based connections.");
+    }
+
+    /// <summary>
+    /// Schedules an automatic auth refresh based on the server-provided token lifetime.
+    /// The refresh fires at: now + tokenLifetimeSeconds - RefreshBeforeExpiration.
+    /// </summary>
+    internal void ScheduleAuthRefresh(int tokenLifetimeSeconds)
+    {
+        // Cancel any existing timer
+        _authRefreshTimer?.Dispose();
+
+        var refreshIn = TimeSpan.FromSeconds(tokenLifetimeSeconds) - _refreshBeforeExpiration;
+        if (refreshIn <= TimeSpan.Zero)
+        {
+            // Token is about to expire or already expired, refresh immediately
+            refreshIn = TimeSpan.FromSeconds(1);
+        }
+
+        _authRefreshTimer = new Timer(
+            static state => _ = ((HubConnection)state!).OnAuthRefreshTimerFired(),
+            this,
+            refreshIn,
+            Timeout.InfiniteTimeSpan); // One-shot timer
+    }
+
+    private async Task OnAuthRefreshTimerFired()
+    {
+        try
+        {
+            Log.AuthRefreshStarting(_logger);
+            var newTtl = await RefreshAuthAsync().ConfigureAwait(false);
+            Log.AuthRefreshCompleted(_logger, newTtl);
+        }
+        catch (Exception ex)
+        {
+            Log.AuthRefreshFailed(_logger, ex);
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the time before token expiration at which the client should refresh.
+    /// Default is 5 minutes.
+    /// </summary>
+    public TimeSpan RefreshBeforeExpiration
+    {
+        get => _refreshBeforeExpiration;
+        set => _refreshBeforeExpiration = value;
+    }
+
     private static ValueTask CloseAsync(ConnectionContext connection)
     {
         return connection.DisposeAsync();
@@ -560,6 +644,10 @@ public partial class HubConnection : IAsyncDisposable
     // if we're disposing.
     private async Task StopAsyncCore(bool disposing)
     {
+        // Dispose the auth refresh timer
+        _authRefreshTimer?.Dispose();
+        _authRefreshTimer = null;
+
         // StartAsync acquires the connection lock for the duration of the handshake.
         // ReconnectAsync also acquires the connection lock for reconnect attempts and handshakes.
         // Cancel the StopCts without acquiring the lock so we can short-circuit it.

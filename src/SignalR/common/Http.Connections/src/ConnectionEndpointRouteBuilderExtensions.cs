@@ -106,6 +106,18 @@ public static class ConnectionEndpointRouteBuilderExtensions
         negotiateBuilder.WithMetadata(_negotiateMetadata);
         negotiateBuilder.WithMetadata(options);
 
+        // Build the refresh handler for auth token refresh
+        if (options.EnableAuthRefresh)
+        {
+            var refreshApp = endpoints.CreateApplicationBuilder();
+            refreshApp.Run(c => dispatcher.ExecuteRefreshAsync(c, options));
+            var refreshHandler = refreshApp.Build();
+
+            var refreshBuilder = endpoints.Map(pattern + "/refresh", refreshHandler);
+            conventionBuilders.Add(refreshBuilder);
+            refreshBuilder.WithMetadata(options);
+        }
+
         // build the execute handler part of the protocol
         app = endpoints.CreateApplicationBuilder();
         app.UseWebSockets();
