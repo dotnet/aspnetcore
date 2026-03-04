@@ -1417,6 +1417,280 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    public void BimodalHeightDistribution_CanScrollThroughItems()
+    {
+        Browser.MountTestComponent<VirtualizationBimodal>();
+
+        var container = Browser.Exists(By.Id("bimodal-container"));
+        Browser.Equal("200", () => Browser.Exists(By.Id("bimodal-count")).Text);
+        Browser.True(() => GetElementCount(container, ".bimodal-item") > 0);
+
+        var item0 = container.FindElement(By.Id("bimodal-item-0"));
+        Assert.Contains("height: 30px", item0.GetDomAttribute("style"));
+        var item1 = container.FindElement(By.Id("bimodal-item-1"));
+        Assert.Contains("height: 300px", item1.GetDomAttribute("style"));
+
+        JumpToEndWithStabilization(container, hasPlaceholders: null, loadData: null);
+        Browser.True(() => container.FindElements(By.Id("bimodal-item-199")).Count > 0);
+
+        JumpToStartWithStabilization(
+            container,
+            hasPlaceholders: null,
+            loadData: null,
+            () => container.FindElements(By.Id("bimodal-item-0")).Count > 0);
+        Browser.True(() => container.FindElements(By.Id("bimodal-item-0")).Count > 0);
+    }
+
+    [Fact]
+    public void NestedVirtualize_BothRenderIndependently()
+    {
+        Browser.MountTestComponent<VirtualizationBimodal>();
+
+        var outerContainer = Browser.Exists(By.Id("nested-outer-container"));
+        Browser.Equal("50", () => Browser.Exists(By.Id("nested-outer-count")).Text);
+        Browser.Equal("100", () => Browser.Exists(By.Id("nested-inner-count")).Text);
+
+        Browser.True(() => GetElementCount(outerContainer, ".nested-outer-item") > 0);
+
+        var innerContainer = Browser.Exists(By.Id("nested-inner-container"));
+        Browser.True(() => GetElementCount(innerContainer, ".nested-inner-item") > 0);
+
+        var outerItem0 = outerContainer.FindElement(By.Id("nested-outer-item-0"));
+        Assert.Contains("height: 120px", outerItem0.GetDomAttribute("style"));
+
+        var innerItem0 = innerContainer.FindElement(By.Id("nested-inner-item-0"));
+        Assert.Contains("height: 15px", innerItem0.GetDomAttribute("style"));
+
+        Browser.ExecuteJavaScript("document.getElementById('nested-outer-container').scrollTop = 500;");
+        Browser.True(() => GetElementCount(outerContainer, ".nested-outer-item") > 0);
+
+        Browser.ExecuteJavaScript("document.getElementById('nested-outer-container').scrollTop = 0;");
+        Browser.True(() =>
+        {
+            try
+            {
+                var inner = Browser.FindElement(By.Id("nested-inner-container"));
+                return GetElementCount(inner, ".nested-inner-item") > 0;
+            }
+            catch
+            {
+                return false;
+            }
+        });
+    }
+
+    [Fact]
+    public void LargeDataset_CanScrollWithoutErrors()
+    {
+        Browser.MountTestComponent<VirtualizationBimodal>();
+
+        var loadButton = Browser.Exists(By.Id("load-large"));
+        loadButton.Click();
+        Browser.Equal("Loaded 100000 items", () => Browser.Exists(By.Id("large-dataset-status")).Text);
+
+        var container = Browser.Exists(By.Id("large-dataset-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        Browser.True(() => GetElementCount(container, ".large-dataset-item") > 0);
+
+        js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight * 0.01", container);
+        Browser.True(() => GetElementCount(container, ".large-dataset-item") > 0);
+
+        js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight * 0.5", container);
+        Browser.True(() => GetElementCount(container, ".large-dataset-item") > 0);
+
+        js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight * 0.99", container);
+        Browser.True(() => GetElementCount(container, ".large-dataset-item") > 0);
+
+        JumpToEndWithStabilization(container, hasPlaceholders: null, loadData: null);
+        Browser.True(() => GetElementCount(container, ".large-dataset-item") > 0);
+
+        Browser.True(() =>
+        {
+            var items = container.FindElements(By.CssSelector(".large-dataset-item .item-index"));
+            return items.Any(item =>
+            {
+                if (int.TryParse(item.Text, out var idx))
+                {
+                    return idx > 99900;
+                }
+                return false;
+            });
+        });
+
+        JumpToStartWithStabilization(
+            container,
+            hasPlaceholders: null,
+            loadData: null,
+            () => container.FindElements(By.Id("large-item-0")).Count > 0);
+        Browser.True(() => container.FindElements(By.Id("large-item-0")).Count > 0);
+    }
+
+    [Fact]
+    public void RapidScrollReversals_DoNotCauseErrors()
+    {
+        Browser.MountTestComponent<VirtualizationScrollBehavior>();
+
+        var container = Browser.Exists(By.Id("scroll-behavior-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => GetElementCount(container, ".scroll-behavior-item") > 0);
+
+        const string rapidScrollScript = @"
+            var done = arguments[0];
+            (async () => {
+                const container = document.getElementById('scroll-behavior-container');
+                const wait = ms => new Promise(r => setTimeout(r, ms));
+
+                for (let i = 0; i < 20; i++) {
+                    container.scrollTop += 300;
+                    await wait(30);
+                    container.scrollTop -= 150;
+                    await wait(30);
+                }
+                await wait(200);
+
+                const items = container.querySelectorAll('.scroll-behavior-item');
+                done({ itemCount: items.length, scrollTop: container.scrollTop });
+            })();";
+
+        var result = (Dictionary<string, object>)js.ExecuteAsyncScript(rapidScrollScript);
+        var itemCount = Convert.ToInt32(result["itemCount"], CultureInfo.InvariantCulture);
+        Assert.True(itemCount > 0, "Items should still be visible after rapid scroll reversals");
+    }
+
+    [Fact]
+    public void ProgrammaticScrollToBottom_ReachesLastItems()
+    {
+        Browser.MountTestComponent<VirtualizationScrollBehavior>();
+
+        var container = Browser.Exists(By.Id("scroll-behavior-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => GetElementCount(container, ".scroll-behavior-item") > 0);
+        Browser.True(() => container.FindElements(By.Id("scroll-item-0")).Count > 0);
+
+        js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", container);
+        WaitForScrollStabilization(container);
+
+        Browser.True(() =>
+        {
+            var items = container.FindElements(By.CssSelector(".scroll-behavior-item .item-index"));
+            return items.Any(item =>
+            {
+                if (int.TryParse(item.Text, out var idx))
+                {
+                    return idx > 480;
+                }
+                return false;
+            });
+        });
+    }
+
+    [Fact]
+    public void NonZeroStartIndex_ScrollToMiddleThenMeasure()
+    {
+        Browser.MountTestComponent<VirtualizationScrollBehavior>();
+
+        var container = Browser.Exists(By.Id("scroll-behavior-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => GetElementCount(container, ".scroll-behavior-item") > 0);
+
+        js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight / 2", container);
+        WaitForScrollStabilization(container);
+
+        Browser.True(() =>
+        {
+            var items = container.FindElements(By.CssSelector(".scroll-behavior-item .item-index"));
+            return items.Any(item =>
+            {
+                if (int.TryParse(item.Text, out var idx))
+                {
+                    return idx > 50;
+                }
+                return false;
+            });
+        });
+
+        var visibleItems = container.FindElements(By.CssSelector(".scroll-behavior-item"));
+        Assert.True(visibleItems.Count > 0, "Should have visible items at non-zero start");
+
+        foreach (var item in visibleItems)
+        {
+            var style = item.GetDomAttribute("style");
+            Assert.Contains("height:", style);
+            Assert.DoesNotContain("height: 0px", style);
+        }
+    }
+
+    [Fact]
+    public void VariableHeight_VisualStability_NoBackwardJumps()
+    {
+        Browser.MountTestComponent<VirtualizationVariableHeightAsync>();
+
+        var container = Browser.Exists(By.Id("async-variable-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.Exists(By.Id("toggle-autoload")).Click();
+
+        var setCount200Button = Browser.Exists(By.Id("set-count-200"));
+        setCount200Button.Click();
+        Browser.Exists(By.Id("refresh-data")).Click();
+        Browser.True(() => GetElementCount(container, ".async-variable-item") > 0);
+
+        const string stabilityScript = @"
+            var done = arguments[0];
+            (async () => {
+                const container = document.getElementById('async-variable-container');
+                const scrollLog = [];
+                const wait = ms => new Promise(r => setTimeout(r, ms));
+
+                const scrollHandler = () => {
+                    scrollLog.push({
+                        t: performance.now(),
+                        st: container.scrollTop,
+                        items: container.querySelectorAll('.async-variable-item').length
+                    });
+                };
+                container.addEventListener('scroll', scrollHandler);
+
+                for (let i = 0; i < 50; i++) {
+                    container.scrollTop += 40;
+                    await wait(50);
+                }
+
+                container.removeEventListener('scroll', scrollHandler);
+                await wait(200);
+
+                let backwardJumps = 0;
+                let maxBackwardJump = 0;
+                for (let i = 1; i < scrollLog.length; i++) {
+                    const delta = scrollLog[i].st - scrollLog[i-1].st;
+                    if (delta < -5) {
+                        backwardJumps++;
+                        maxBackwardJump = Math.max(maxBackwardJump, Math.abs(delta));
+                    }
+                }
+
+                done({
+                    totalEvents: scrollLog.length,
+                    backwardJumps: backwardJumps,
+                    maxBackwardJump: maxBackwardJump,
+                    finalScrollTop: container.scrollTop,
+                    finalItemCount: container.querySelectorAll('.async-variable-item').length
+                });
+            })();";
+
+        var result = (Dictionary<string, object>)js.ExecuteAsyncScript(stabilityScript);
+        var backwardJumps = Convert.ToInt32(result["backwardJumps"], CultureInfo.InvariantCulture);
+        var totalEvents = Convert.ToInt32(result["totalEvents"], CultureInfo.InvariantCulture);
+        var finalItemCount = Convert.ToInt32(result["finalItemCount"], CultureInfo.InvariantCulture);
+
+        Assert.True(finalItemCount > 0, "Should have items after scrolling");
+        Assert.True(totalEvents > 0, "Should have recorded scroll events");
+        Assert.True(backwardJumps <= 3,
+            $"Too many backward scroll jumps detected: {backwardJumps} out of {totalEvents} events " +
+            $"(max jump: {result["maxBackwardJump"]}px). This indicates visual instability.");
+    }
+
+    [Fact]
     public void QuickGrid_CanJumpToEndAndStart()
     {
         Browser.MountTestComponent<BasicTestApp.QuickGridTest.QuickGridVariableHeightComponent>();

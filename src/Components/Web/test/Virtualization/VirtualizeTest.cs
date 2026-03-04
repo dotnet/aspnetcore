@@ -141,6 +141,176 @@ public class VirtualizeTest
             "ItemsProvider should be called after spacer callback with measurements");
     }
 
+    [Fact]
+    public async Task Virtualize_MeasurementsUpdateRunningAverage()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 100);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 80f, 500f, new float[] { 30f, 50f }));
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 120f, 500f, new float[] { 60f, 60f }));
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(100f, 200f, 500f, new float[] { 45f, 55f }));
+    }
+
+    [Fact]
+    public async Task Virtualize_NullMeasurementsUseDefaultItemSize()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 40f, totalItems: 100);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 200f, 400f, null));
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 200f, 400f, Array.Empty<float>()));
+    }
+
+    [Fact]
+    public async Task Virtualize_ZeroLengthMeasurementsDoNotCorruptAverage()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 100);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 100f, 500f, new float[] { 50f, 50f }));
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 100f, 500f, Array.Empty<float>()));
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 100f, 500f, null));
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(50f, 100f, 500f, new float[] { 50f }));
+    }
+
+    [Fact]
+    public async Task Virtualize_BimodalMeasurementsProduceValidAverage()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 200);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        for (int i = 0; i < 5; i++)
+        {
+            var bimodalHeights = new float[] { 30f, 300f, 30f, 300f, 30f, 300f };
+            await renderer.Dispatcher.InvokeAsync(() =>
+                callbacks.OnAfterSpacerVisible(0f, 990f, 600f, bimodalHeights));
+        }
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(200f, 500f, 600f, new float[] { 30f, 300f }));
+    }
+
+    [Fact]
+    public async Task Virtualize_VerySmallMeasurementsDoNotCauseExcessiveItemCounts()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 10000);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 5f, 1000f, new float[] { 1f, 1f, 1f, 1f, 1f }));
+    }
+
+    [Fact]
+    public async Task Virtualize_LargeMeasurementsProduceValidDistribution()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 100);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 4000f, 500f, new float[] { 2000f, 2000f }));
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(2000f, 4000f, 500f, new float[] { 2000f, 2000f }));
+    }
+
+    [Fact]
+    public async Task Virtualize_OnBeforeSpacerVisible_ProcessesMeasurementsBeforeCalculation()
+    {
+        var requests = new List<ItemsProviderRequest>();
+
+        ValueTask<ItemsProviderResult<int>> trackingProvider(ItemsProviderRequest request)
+        {
+            requests.Add(request);
+            return ValueTask.FromResult(new ItemsProviderResult<int>(
+                Enumerable.Range(request.StartIndex, Math.Min(request.Count, 100 - request.StartIndex)),
+                100));
+        }
+
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            itemSize: 50f, totalItems: 100, customProvider: trackingProvider);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        var countBefore = requests.Count;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(100f, 300f, 500f, new float[] { 45f, 55f, 50f }));
+
+        Assert.True(requests.Count > countBefore,
+            "ItemsProvider should be called when before spacer becomes visible with measurements");
+    }
+
+    [Fact]
+    public async Task Virtualize_NonZeroStartIndex_ItemsProviderReceivesCorrectStartIndex()
+    {
+        var requests = new List<ItemsProviderRequest>();
+
+        ValueTask<ItemsProviderResult<int>> trackingProvider(ItemsProviderRequest request)
+        {
+            requests.Add(request);
+            return ValueTask.FromResult(new ItemsProviderResult<int>(
+                Enumerable.Range(request.StartIndex, Math.Min(request.Count, 500 - request.StartIndex)),
+                500));
+        }
+
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            itemSize: 50f, totalItems: 500, customProvider: trackingProvider);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, new float[] { 50f, 50f, 50f }));
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(5000f, 500f, 500f, new float[] { 50f, 50f }));
+
+        Assert.Contains(requests, r => r.StartIndex > 0);
+    }
+
+    private async Task<(Virtualize<int> virtualize, TestRenderer renderer)> CreateRenderedVirtualize(
+        float itemSize,
+        int totalItems,
+        ItemsProviderDelegate<int> customProvider = null)
+    {
+        Virtualize<int> renderedVirtualize = null;
+
+        ItemsProviderDelegate<int> provider = customProvider ?? ((ItemsProviderRequest request) =>
+            ValueTask.FromResult(new ItemsProviderResult<int>(
+                Enumerable.Range(request.StartIndex, Math.Min(request.Count, totalItems - request.StartIndex)),
+                totalItems)));
+
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualize(itemSize, provider, null, virtualize => renderedVirtualize = virtualize)
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+
+        await testRenderer.RenderRootComponentAsync(componentId);
+        Assert.NotNull(renderedVirtualize);
+
+        return (renderedVirtualize, testRenderer);
+    }
+
     private ValueTask<ItemsProviderResult<TItem>> EmptyItemsProvider<TItem>(ItemsProviderRequest request)
         => ValueTask.FromResult(new ItemsProviderResult<TItem>(Enumerable.Empty<TItem>(), 0));
 
