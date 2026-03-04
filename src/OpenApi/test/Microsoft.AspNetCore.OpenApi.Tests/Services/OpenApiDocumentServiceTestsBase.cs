@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -249,6 +250,11 @@ public abstract class OpenApiDocumentServiceTestBase
                 action.EndpointMetadata.Add(attribute);
             }
         }
+
+        action.FilterDescriptors = action.EndpointMetadata
+            .OfType<IFilterMetadata>()
+            .Select((f, i) => new FilterDescriptor(f, FilterScope.Action) { Order = i })
+            .ToList();
 
         action.Parameters = [];
         foreach (var parameter in action.MethodInfo.GetParameters())
