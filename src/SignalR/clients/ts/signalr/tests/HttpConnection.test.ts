@@ -777,7 +777,8 @@ describe("HttpConnection", () => {
 
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
-                accessTokenFactory: () => "appToken",
+                // explicitly do not provide an access token factory to verify we correctly reset state
+                // accessTokenFactory: () => null,
                 httpClient,
                 logger,
                 transport: HttpTransportType.LongPolling,
