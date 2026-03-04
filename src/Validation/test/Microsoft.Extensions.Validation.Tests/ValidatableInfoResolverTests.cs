@@ -38,9 +38,7 @@ public class ValidatableInfoResolverTests
         // Arrange
         var mockTypeInfo = new Mock<ValidatableTypeInfo>(
             typeof(ValidatableType),
-            Array.Empty<ValidatablePropertyInfo>(),
-            /* displayName */ (string?)null,
-            /* displayNameAccessor */ (Func<string?>?)null).Object;
+            Array.Empty<ValidatablePropertyInfo>()).Object;
 
         var resolver = new Mock<IValidatableInfoResolver>();
         IValidatableInfo? validatableInfo = null;
@@ -88,9 +86,7 @@ public class ValidatableInfoResolverTests
 
         var mockParamInfo = new Mock<ValidatableParameterInfo>(
             typeof(string),
-            "model",
-            /* displayName */ (string?)null,
-            /* displayNameAccessor */ (Func<string?>?)null).Object;
+            "model").Object;
 
         var resolver = new Mock<IValidatableInfoResolver>();
 
@@ -124,9 +120,7 @@ public class ValidatableInfoResolverTests
         // Create the object that will be returned by resolver2
         var mockTypeInfo = new Mock<ValidatableTypeInfo>(
             typeof(ValidatableType),
-            Array.Empty<ValidatablePropertyInfo>(),
-            /* displayName */ (string?)null,
-            /* displayNameAccessor */ (Func<string?>?)null).Object;
+            Array.Empty<ValidatablePropertyInfo>()).Object;
 
         // Setup resolver1 to return false (doesn't handle this type)
         resolver1
@@ -195,15 +189,15 @@ public class ValidatableInfoResolverTests
             Type containingType,
             Type propertyType,
             string name,
-            string? displayName = null,
-            Func<string?>? displayNameAccessor = null,
-            ValidationAttribute[]? validationAttributes = null)
-            : base(containingType, propertyType, name, displayName, displayNameAccessor)
+            ValidationAttribute[] validationAttributes)
+            : base(containingType, propertyType, name)
         {
-            _validationAttributes = validationAttributes ?? [];
+            _validationAttributes = validationAttributes;
         }
 
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+
+        protected override string? GetDisplayName() => null;
     }
 
     private class TestValidatableParameterInfo : ValidatableParameterInfo
@@ -213,14 +207,14 @@ public class ValidatableInfoResolverTests
         public TestValidatableParameterInfo(
             Type parameterType,
             string name,
-            string? displayName = null,
-            Func<string?>? displayNameAccessor = null,
-            ValidationAttribute[]? validationAttributes = null)
-            : base(parameterType, name, displayName, displayNameAccessor)
+            ValidationAttribute[] validationAttributes)
+            : base(parameterType, name)
         {
-            _validationAttributes = validationAttributes ?? [];
+            _validationAttributes = validationAttributes;
         }
 
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+
+        protected override string? GetDisplayName() => null;
     }
 }

@@ -3,9 +3,9 @@
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using System.Text;
-using Microsoft.CodeAnalysis.CSharp;
 using System.IO;
 
 namespace Microsoft.Extensions.Validation;
@@ -60,9 +60,7 @@ namespace Microsoft.Extensions.Validation.Generated
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
             global::System.Type containingType,
             global::System.Type propertyType,
-            string name,
-            string? displayName,
-            global::System.Func<string?>? displayNameAccessor) : base(containingType, propertyType, name, displayName, displayNameAccessor)
+            string name) : base(containingType, propertyType, name)
         {
             ContainingType = containingType;
             Name = name;
@@ -74,6 +72,9 @@ namespace Microsoft.Extensions.Validation.Generated
 
         protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes()
             => ValidationAttributeCache.GetPropertyValidationAttributes(ContainingType, Name);
+
+        protected override string? GetDisplayName()
+            => ValidationAttributeCache.GetPropertyDisplayName(ContainingType, Name);
     }
 
     {{GeneratedCodeAttribute}}
@@ -82,9 +83,7 @@ namespace Microsoft.Extensions.Validation.Generated
         public GeneratedValidatableTypeInfo(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
             global::System.Type type,
-            ValidatablePropertyInfo[] members,
-            string? displayName,
-            global::System.Func<string?>? displayNameAccessor) : base(type, members, displayName, displayNameAccessor)
+            ValidatablePropertyInfo[] members) : base(type, members)
         {
             Type = type;
         }
@@ -94,6 +93,9 @@ namespace Microsoft.Extensions.Validation.Generated
 
         protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes()
             => ValidationAttributeCache.GetTypeValidationAttributes(Type);
+
+        protected override string? GetDisplayName()
+            => ValidationAttributeCache.GetTypeDisplayName(Type);
     }
 
     {{GeneratedCodeAttribute}}
@@ -201,6 +203,86 @@ namespace Microsoft.Extensions.Validation.Generated
                 return global::System.Linq.Enumerable.ToArray(typeAttributes);
             });
         }
+
+        private static readonly global::System.Collections.Concurrent.ConcurrentDictionary<CacheKey, string?> _propertyDisplayNameCache = new();
+        private static readonly global::System.Lazy<global::System.Collections.Concurrent.ConcurrentDictionary<global::System.Type, string?>> _lazyTypeDisplayNameCache = new(() => new());
+        private static global::System.Collections.Concurrent.ConcurrentDictionary<global::System.Type, string?> TypeDisplayNameCache => _lazyTypeDisplayNameCache.Value;
+
+        public static string? GetPropertyDisplayName(
+            [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
+            global::System.Type containingType,
+            string propertyName)
+        {
+            var key = new CacheKey(containingType, propertyName);
+            return _propertyDisplayNameCache.GetOrAdd(key, static k =>
+            {
+                // Check constructor parameters first to handle record scenarios
+                // where [Display] is on the parameter rather than the property.
+                foreach (var constructor in k.ContainingType.GetConstructors())
+                {
+                    var parameter = global::System.Linq.Enumerable.FirstOrDefault(
+                        constructor.GetParameters(),
+                        p => string.Equals(p.Name, k.PropertyName, global::System.StringComparison.OrdinalIgnoreCase));
+
+                    if (parameter != null)
+                    {
+                        var paramDisplayAttr = global::System.Reflection.CustomAttributeExtensions
+                            .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(parameter);
+                        if (paramDisplayAttr?.GetName() is { } paramDisplayName)
+                        {
+                            return paramDisplayName;
+                        }
+
+                        break;
+                    }
+                }
+
+                // Check property attributes
+                var property = k.ContainingType.GetProperty(k.PropertyName);
+                if (property != null)
+                {
+                    var displayAttr = global::System.Reflection.CustomAttributeExtensions
+                        .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(property);
+                    if (displayAttr?.GetName() is { } displayName)
+                    {
+                        return displayName;
+                    }
+
+                    var displayNameAttr = global::System.Reflection.CustomAttributeExtensions
+                        .GetCustomAttribute<global::System.ComponentModel.DisplayNameAttribute>(property);
+                    if (displayNameAttr?.DisplayName is { } dn)
+                    {
+                        return dn;
+                    }
+                }
+
+                return null;
+            });
+        }
+
+        public static string? GetTypeDisplayName(
+            [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
+            global::System.Type type)
+        {
+            return TypeDisplayNameCache.GetOrAdd(type, static t =>
+            {
+                var displayAttr = global::System.Reflection.CustomAttributeExtensions
+                    .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(t);
+                if (displayAttr?.GetName() is { } displayName)
+                {
+                    return displayName;
+                }
+
+                var displayNameAttr = global::System.Reflection.CustomAttributeExtensions
+                    .GetCustomAttribute<global::System.ComponentModel.DisplayNameAttribute>(t);
+                if (displayNameAttr?.DisplayName is { } dn)
+                {
+                    return dn;
+                }
+
+                return null;
+            });
+        }
     }
 }
 """;
@@ -212,9 +294,6 @@ namespace Microsoft.Extensions.Validation.Generated
         foreach (var validatableType in validatableTypes)
         {
             var typeName = validatableType.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-            var hasResourceType = validatableType.DisplayResourceType is not null;
-            var displayName = FormatNullableStringLiteral(hasResourceType ? null : validatableType.DisplayName);
-            var displayNameAccessor = FormatNullablePropertyAccessor(validatableType.DisplayResourceType, validatableType.DisplayName);
 
             cw.WriteLine($"if (type == typeof({typeName}))");
             cw.StartBlock();
@@ -223,7 +302,7 @@ namespace Microsoft.Extensions.Validation.Generated
             cw.WriteLine($"type: typeof({typeName}),");
             if (validatableType.Members.IsDefaultOrEmpty)
             {
-                cw.WriteLine("members: [],");
+                cw.WriteLine("members: []");
             }
             else
             {
@@ -234,10 +313,8 @@ namespace Microsoft.Extensions.Validation.Generated
                     EmitValidatableMemberForCreate(member, cw);
                 }
                 cw.Indent--;
-                cw.WriteLine("],");
+                cw.WriteLine("]");
             }
-            cw.WriteLine($"displayName: {displayName},");
-            cw.WriteLine($"displayNameAccessor: {displayNameAccessor}");
             cw.Indent--;
             cw.WriteLine(");");
             cw.WriteLine("return true;");
@@ -248,26 +325,12 @@ namespace Microsoft.Extensions.Validation.Generated
 
     private static void EmitValidatableMemberForCreate(ValidatableProperty member, CodeWriter cw)
     {
-        var hasResourceType = member.DisplayResourceType is not null;
-        var displayName = FormatNullableStringLiteral(hasResourceType ? null : member.DisplayName);
-        var displayNameAccessor = FormatNullablePropertyAccessor(member.DisplayResourceType, member.DisplayName);
-
         cw.WriteLine("new GeneratedValidatablePropertyInfo(");
         cw.Indent++;
         cw.WriteLine($"containingType: typeof({member.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}),");
         cw.WriteLine($"propertyType: typeof({member.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}),");
-        cw.WriteLine($"name: \"{member.Name}\",");
-        cw.WriteLine($"displayName: {displayName},");
-        cw.WriteLine($"displayNameAccessor: {displayNameAccessor}");
+        cw.WriteLine($"name: \"{member.Name}\"");
         cw.Indent--;
         cw.WriteLine("),");
     }
-
-    private static string FormatNullableStringLiteral(string? value)
-        => value is null ? "null" : SymbolDisplay.FormatPrimitive(value, quoteStrings: true, false);
-
-    private static string FormatNullablePropertyAccessor(INamedTypeSymbol? containingType, string? propertyName)
-        => containingType is null || propertyName is null
-            ? "null"
-            : $"static () => {containingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}.{propertyName}";
 }

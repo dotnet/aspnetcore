@@ -8,7 +8,5 @@ namespace Microsoft.Extensions.Validation;
 
 internal sealed record class ValidatableType(
     ITypeSymbol Type,
-    ImmutableArray<ValidatableProperty> Members,
-    string? DisplayName,
-    INamedTypeSymbol? DisplayResourceType
+    ImmutableArray<ValidatableProperty> Members
 );

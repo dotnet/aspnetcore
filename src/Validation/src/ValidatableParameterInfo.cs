@@ -20,18 +20,12 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// </summary>
     /// <param name="parameterType">The <see cref="Type"/> associated with the parameter.</param>
     /// <param name="name">The parameter name.</param>
-    /// <param name="displayName">The display name for the parameter as designated by <see cref="DisplayAttribute.Name"/>.</param>
-    /// <param name="displayNameAccessor">A function that resolves the display name using <see cref="DisplayAttribute.ResourceType"/> and <see cref="DisplayAttribute.Name"/>.</param>
     protected ValidatableParameterInfo(
         Type parameterType,
-        string name,
-        string? displayName,
-        Func<string?>? displayNameAccessor)
+        string name)
     {
         ParameterType = parameterType;
         Name = name;
-        DisplayName = displayName;
-        DisplayNameAccessor = displayNameAccessor;
     }
 
     /// <summary>
@@ -45,21 +39,20 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     internal string Name { get; }
 
     /// <summary>
-    /// Gets the display name for the parameter as designated by the <see cref="DisplayAttribute.Name"/>.
-    /// </summary>
-    internal string? DisplayName { get; }
-
-    /// <summary>
-    /// Gets a function that resolves the display name for the parameter using <see cref="DisplayAttribute.ResourceType"/>
-    /// and <see cref="DisplayAttribute.Name"/>.
-    /// </summary>
-    internal Func<string?>? DisplayNameAccessor { get; }
-
-    /// <summary>
     /// Gets the validation attributes for this parameter.
     /// </summary>
     /// <returns>An array of validation attributes to apply to this parameter.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
+
+    /// <summary>
+    /// Gets the display name for this parameter resolved from display-related attributes
+    /// such as <see cref="DisplayAttribute"/>.
+    /// </summary>
+    /// <returns>
+    /// The resolved display name, or <see langword="null"/> if no display name attribute
+    /// is present on the parameter, indicating that the caller should fall back to the parameter name.
+    /// </returns>
+    protected abstract string? GetDisplayName();
 
     /// <inheritdoc />
     /// <remarks>
@@ -74,9 +67,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             return;
         }
 
-        var displayName = DisplayNameAccessor is not null
-            ? DisplayNameAccessor() ?? Name
-            : DisplayName ?? Name;
+        var displayName = GetDisplayName() ?? Name;
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;

@@ -722,8 +722,7 @@ public class ValidatableTypeInfoTests
             propertyType,
             name,
             displayName,
-            displayNameAccessor: null,
-            validationAttributes);
+            validationAttributes ?? []);
     }
 
     // Test model classes
@@ -859,20 +858,23 @@ public class ValidatableTypeInfoTests
     private class TestValidatablePropertyInfo : ValidatablePropertyInfo
     {
         private readonly ValidationAttribute[] _validationAttributes;
+        private readonly string? _displayName;
 
         public TestValidatablePropertyInfo(
             Type containingType,
             Type propertyType,
             string name,
-            string? displayName = null,
-            Func<string?>? displayNameAccessor = null,
-            ValidationAttribute[]? validationAttributes = null)
-            : base(containingType, propertyType, name, displayName, displayNameAccessor)
+            string? displayName,
+            ValidationAttribute[] validationAttributes)
+            : base(containingType, propertyType, name)
         {
-            _validationAttributes = validationAttributes ?? [];
+            _displayName = displayName;
+            _validationAttributes = validationAttributes;
         }
 
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+
+        protected override string? GetDisplayName() => _displayName;
     }
 
     private class TestValidationOptions : ValidationOptions

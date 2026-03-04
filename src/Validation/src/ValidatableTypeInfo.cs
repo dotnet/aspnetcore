@@ -21,27 +21,15 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     /// </summary>
     /// <param name="type">The type being validated.</param>
     /// <param name="members">The members that can be validated.</param>
-    /// <param name="displayName">The display name for the type as designated by <see cref="DisplayAttribute.Name"/>.</param>
-    /// <param name="displayNameAccessor">A function that resolves the display name using <see cref="DisplayAttribute.ResourceType"/> and <see cref="DisplayAttribute.Name"/>.</param>
     protected ValidatableTypeInfo(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type,
-        IReadOnlyList<ValidatablePropertyInfo> members,
-        string? displayName,
-        Func<string?>? displayNameAccessor)
+        IReadOnlyList<ValidatablePropertyInfo> members)
     {
         Type = type;
         Members = members;
-        DisplayName = displayName;
-        DisplayNameAccessor = displayNameAccessor;
         _membersCount = members.Count;
         _superTypes = type.GetAllImplementedTypes();
     }
-
-    /// <summary>
-    /// Gets the validation attributes for this member.
-    /// </summary>
-    /// <returns>An array of validation attributes to apply to this member.</returns>
-    protected abstract ValidationAttribute[] GetValidationAttributes();
 
     /// <summary>
     /// The type being validated.
@@ -54,15 +42,20 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     internal IReadOnlyList<ValidatablePropertyInfo> Members { get; }
 
     /// <summary>
-    /// Gets the display name for the type as designated by the <see cref="DisplayAttribute.Name"/>.
+    /// Gets the validation attributes for this member.
     /// </summary>
-    internal string? DisplayName { get; }
+    /// <returns>An array of validation attributes to apply to this member.</returns>
+    protected abstract ValidationAttribute[] GetValidationAttributes();
 
     /// <summary>
-    /// Gets a function that resolves the display name for the type using <see cref="DisplayAttribute.ResourceType"/>
-    /// and <see cref="DisplayAttribute.Name"/>.
+    /// Gets the display name for this type resolved from display-related attributes
+    /// such as <see cref="DisplayAttribute"/> and <c>DisplayNameAttribute</c>.
     /// </summary>
-    internal Func<string?>? DisplayNameAccessor { get; }
+    /// <returns>
+    /// The resolved display name, or <see langword="null"/> if no display name attribute
+    /// is present on the type, indicating that the caller should fall back to the type name.
+    /// </returns>
+    protected abstract string? GetDisplayName();
 
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
@@ -147,7 +140,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         var originalDisplayName = context.ValidationContext.DisplayName;
         var originalMemberName = context.ValidationContext.MemberName;
 
-        context.ValidationContext.DisplayName = GetDisplayName();
+        context.ValidationContext.DisplayName = GetDisplayName() ?? Type.Name;
         context.ValidationContext.MemberName = null;
 
         for (var i = 0; i < validationAttributes.Length; i++)
@@ -186,7 +179,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             var errorPrefix = context.CurrentValidationPath;
 
             // Set the display name to the class name for IValidatableObject validation
-            context.ValidationContext.DisplayName = GetDisplayName();
+            context.ValidationContext.DisplayName = GetDisplayName() ?? Type.Name;
             context.ValidationContext.MemberName = null;
 
             var validationResults = validatable.Validate(context.ValidationContext);
@@ -227,7 +220,4 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         }
     }
 
-    private string GetDisplayName() => DisplayNameAccessor is not null
-        ? DisplayNameAccessor() ?? Type.Name
-        : DisplayName ?? Type.Name;
 }
