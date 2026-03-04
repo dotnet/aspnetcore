@@ -137,9 +137,6 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         var validationAttributes = GetValidationAttributes();
         var errorPrefix = context.CurrentValidationPath;
 
-        var originalDisplayName = context.ValidationContext.DisplayName;
-        var originalMemberName = context.ValidationContext.MemberName;
-
         context.ValidationContext.DisplayName = GetDisplayName() ?? Type.Name;
         context.ValidationContext.MemberName = null;
 
@@ -163,19 +160,12 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 }
             }
         }
-
-        context.ValidationContext.DisplayName = originalDisplayName;
-        context.ValidationContext.MemberName = originalMemberName;
     }
 
     private void ValidateValidatableObjectInterface(object? value, ValidateContext context)
     {
         if (Type.ImplementsInterface(typeof(IValidatableObject)) && value is IValidatableObject validatable)
         {
-            // Important: Set the DisplayName to the type name for top-level validations
-            // and restore the original validation context properties
-            var originalDisplayName = context.ValidationContext.DisplayName;
-            var originalMemberName = context.ValidationContext.MemberName;
             var errorPrefix = context.CurrentValidationPath;
 
             // Set the display name to the class name for IValidatableObject validation
@@ -201,10 +191,6 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                     }
                 }
             }
-
-            // Restore the original validation context properties
-            context.ValidationContext.DisplayName = originalDisplayName;
-            context.ValidationContext.MemberName = originalMemberName;
         }
     }
 
