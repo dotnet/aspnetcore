@@ -106,7 +106,9 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Equal("OK", response.Value.Description);
             var content = Assert.Single(response.Value.Content);
             Assert.Equal("application/json", content.Key);
-            // Todo: Check that this generates a schema using `oneOf`.
+            var schema = content.Value.Schema;
+            Assert.NotNull(schema.OneOf);
+            Assert.Equal(2, schema.OneOf.Count);
         });
     }
 
@@ -158,6 +160,10 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Equal("200", response.Key);
             Assert.Equal("OK", response.Value.Description);
             Assert.Collection(response.Value.Content.OrderBy(c => c.Key),
+                content =>
+                {
+                    Assert.Equal("application/json", content.Key);
+                },
                 content =>
                 {
                     Assert.Equal("application/xml", content.Key);
