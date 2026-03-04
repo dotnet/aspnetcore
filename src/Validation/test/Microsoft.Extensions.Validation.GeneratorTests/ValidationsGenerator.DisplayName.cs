@@ -396,4 +396,186 @@ public class RecordResources
             Assert.Equal("Name:Localized Record Value", kvp.Value.Single());
         });
     }
+
+    [Fact]
+    public async Task PropertyDisplayName_WithDisplayNameAttribute()
+    {
+        var source = """
+using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/display-name-attr", (DisplayNameAttrType model) => Results.Ok("Passed"!));
+
+app.Run();
+
+public class DisplayNameAttrType
+{
+    [Range(10, 100, ErrorMessage = "Name:{0}"), DisplayName("Friendly Name")]
+    public int Value { get; set; } = 10;
+}
+""";
+        await Verify(source, out var compilation);
+        await VerifyEndpoint(compilation, "/display-name-attr", async (endpoint, serviceProvider) =>
+        {
+            var payload = """{ "Value": 5 }""";
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+            await endpoint.RequestDelegate(context);
+
+            var problemDetails = await AssertBadRequest(context);
+            var kvp = Assert.Single(problemDetails.Errors);
+            Assert.Equal("Value", kvp.Key);
+            Assert.Equal("Name:Friendly Name", kvp.Value.Single());
+        });
+    }
+
+    [Fact]
+    public async Task PropertyDisplayName_DisplayAttributeTakesPrecedenceOverDisplayNameAttribute()
+    {
+        var source = """
+using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/both-display-attrs", (BothDisplayAttrsType model) => Results.Ok("Passed"!));
+
+app.Run();
+
+public class BothDisplayAttrsType
+{
+    [Range(10, 100, ErrorMessage = "Name:{0}"), Display(Name = "Display Attr Name"), DisplayName("DisplayName Attr Name")]
+    public int Value { get; set; } = 10;
+}
+""";
+        await Verify(source, out var compilation);
+        await VerifyEndpoint(compilation, "/both-display-attrs", async (endpoint, serviceProvider) =>
+        {
+            var payload = """{ "Value": 5 }""";
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+            await endpoint.RequestDelegate(context);
+
+            var problemDetails = await AssertBadRequest(context);
+            var kvp = Assert.Single(problemDetails.Errors);
+            Assert.Equal("Value", kvp.Key);
+            Assert.Equal("Name:Display Attr Name", kvp.Value.Single());
+        });
+    }
+
+    [Fact]
+    public async Task PropertyDisplayName_DisplayAttributeResourceTypeTakesPrecedenceOverDisplayNameAttribute()
+    {
+        var source = """
+using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/resource-over-displayname", (ResourceOverDisplayNameType model) => Results.Ok("Passed"!));
+
+app.Run();
+
+public class ResourceOverDisplayNameType
+{
+    [Range(10, 100, ErrorMessage = "Name:{0}"), Display(Name = "ValueDisplayName", ResourceType = typeof(PrecedenceResources)), DisplayName("Should Not Use This")]
+    public int Value { get; set; } = 10;
+}
+
+public class PrecedenceResources
+{
+    public static string ValueDisplayName => "Localized From Resource";
+}
+""";
+        await Verify(source, out var compilation);
+        await VerifyEndpoint(compilation, "/resource-over-displayname", async (endpoint, serviceProvider) =>
+        {
+            var payload = """{ "Value": 5 }""";
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+            await endpoint.RequestDelegate(context);
+
+            var problemDetails = await AssertBadRequest(context);
+            var kvp = Assert.Single(problemDetails.Errors);
+            Assert.Equal("Value", kvp.Key);
+            Assert.Equal("Name:Localized From Resource", kvp.Value.Single());
+        });
+    }
+
+    [Fact]
+    public async Task TypeDisplayName_WithDisplayNameAttribute()
+    {
+        var source = """
+#pragma warning disable ASP0029
+
+using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/type-displayname-attr", (TypeWithDisplayNameAttr model) => Results.Ok("Passed"!));
+
+app.Run();
+
+[DisplayName("Friendly Type")]
+public class TypeWithDisplayNameAttr
+{
+    [Range(10, 100, ErrorMessage = "Name:{0}")]
+    public int Value { get; set; } = 10;
+}
+""";
+        await Verify(source, out var compilation);
+        await VerifyEndpoint(compilation, "/type-displayname-attr", async (endpoint, serviceProvider) =>
+        {
+            var payload = """{ "Value": 5 }""";
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+            await endpoint.RequestDelegate(context);
+
+            var problemDetails = await AssertBadRequest(context);
+            var kvp = Assert.Single(problemDetails.Errors);
+            Assert.Equal("Value", kvp.Key);
+            // Type display name doesn't affect per-property error messages;
+            // the property still uses its own name as the display name.
+            Assert.Equal("Name:Value", kvp.Value.Single());
+        });
+    }
 }
