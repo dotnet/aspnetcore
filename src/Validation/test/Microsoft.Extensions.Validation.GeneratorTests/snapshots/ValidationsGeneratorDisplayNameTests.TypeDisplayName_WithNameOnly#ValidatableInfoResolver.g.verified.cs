@@ -78,15 +78,7 @@ namespace Microsoft.Extensions.Validation.Generated
             {
                 validatableInfo = new GeneratedValidatableTypeInfo(
                     type: typeof(global::TypeWithDisplayName),
-                    members: [
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::TypeWithDisplayName),
-                            propertyType: typeof(int),
-                            name: "Value",
-                            displayName: null,
-                            displayNameAccessor: null
-                        ),
-                    ],
+                    members: [],
                     displayName: "My Model",
                     displayNameAccessor: null
                 );
