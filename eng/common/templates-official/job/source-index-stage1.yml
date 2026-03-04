@@ -31,7 +31,7 @@ jobs:
     pool:
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
         name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals windows.vs2019.amd64.open
+        demands: ImageOverride -equals windows.vs2022.amd64.open
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
         name: $(DncEngInternalBuildPool)
         image: windows.vs2022.amd64
