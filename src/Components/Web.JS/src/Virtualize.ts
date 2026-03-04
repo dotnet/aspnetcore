@@ -48,8 +48,7 @@ interface MeasurementResult {
 
 function measureRenderedItems(spacerBefore: HTMLElement, spacerAfter: HTMLElement): MeasurementResult {
   const scaleFactor = getScaleFactor(spacerBefore, spacerAfter);
-  const items = spacerBefore.parentElement
-    ?.querySelectorAll<HTMLElement>('[data-virtualize-item]');
+  const items = spacerBefore.parentElement?.querySelectorAll<HTMLElement>('[data-virtualize-item]');
 
   if (!items || items.length === 0) {
     return { heights: [], scaleFactor };
@@ -85,7 +84,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   intersectionObserver.observe(spacerBefore);
   intersectionObserver.observe(spacerAfter);
 
-  let snapToBottom = false;
+  let observingContainer = false;
 
   const mutationObserverBefore = createSpacerMutationObserver(spacerBefore);
   const mutationObserverAfter = createSpacerMutationObserver(spacerAfter);
@@ -96,25 +95,27 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       const spacer = convergingToBottom ? spacerAfter : spacerBefore;
       if (spacer.offsetHeight === 0) {
         convergingToBottom = convergingToTop = false;
-        setSnapToBottom(false);
+        stopObservingContainer();
       }
     } else if (spacerAfter.offsetHeight === 0) {
       scrollElement.scrollTop = scrollElement.scrollHeight;
     } else {
-      setSnapToBottom(false);
+      stopObservingContainer();
     }
   });
 
-  function setSnapToBottom(value: boolean): void {
-    if (value === snapToBottom) {
-      return;
-    }
-    snapToBottom = value;
-    if (value && spacerBefore.parentElement) {
+  function startObservingContainer(): void {
+    if (observingContainer) return;
+    observingContainer = true;
+    if (spacerBefore.parentElement) {
       containerObserver.observe(spacerBefore.parentElement, { childList: true, subtree: true, attributes: true });
-    } else if (!value) {
-      containerObserver.disconnect();
     }
+  }
+
+  function stopObservingContainer(): void {
+    if (!observingContainer) return;
+    observingContainer = false;
+    containerObserver.disconnect();
   }
 
   let convergingToBottom = false;
@@ -124,7 +125,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   let pendingJumpToStart = false;
 
   const keydownTarget: EventTarget = scrollContainer || document;
-  function handleKeyDown(e: Event): void {
+  function handleJumpKeys(e: Event): void {
     const ke = e as KeyboardEvent;
     if (ke.key === 'End') {
       pendingJumpToEnd = true;
@@ -134,7 +135,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       pendingJumpToEnd = false;
     }
   }
-  keydownTarget.addEventListener('keydown', handleKeyDown);
+  keydownTarget.addEventListener('keydown', handleJumpKeys);
 
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   let pendingCallbacks: Map<Element, IntersectionObserverEntry> = new Map();
@@ -146,10 +147,10 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     mutationObserverAfter,
     containerObserver,
     scrollElement,
-    setSnapToBottom,
+    startObservingContainer,
     onDispose: () => {
-      setSnapToBottom(false);
-      keydownTarget.removeEventListener('keydown', handleKeyDown);
+      stopObservingContainer();
+      keydownTarget.removeEventListener('keydown', handleJumpKeys);
       if (callbackTimeout) {
         clearTimeout(callbackTimeout);
         callbackTimeout = null;
@@ -203,7 +204,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     if (spacerAfter.offsetHeight === 0) {
       if (convergingToBottom) {
         convergingToBottom = false;
-        setSnapToBottom(false);
+        stopObservingContainer();
       }
       return;
     }
@@ -213,7 +214,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     if (!atBottom && !pendingJumpToEnd) return;
 
     convergingToBottom = true;
-    setSnapToBottom(true);
+    startObservingContainer();
     if (pendingJumpToEnd) {
       scrollElement.scrollTop = scrollElement.scrollHeight;
       pendingJumpToEnd = false;
@@ -224,7 +225,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     if (spacerBefore.offsetHeight === 0) {
       if (convergingToTop) {
         convergingToTop = false;
-        setSnapToBottom(false);
+        stopObservingContainer();
       }
       return;
     }
@@ -234,7 +235,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     if (!atTop && !pendingJumpToStart) return;
 
     convergingToTop = true;
-    setSnapToBottom(true);
+    startObservingContainer();
     if (pendingJumpToStart) {
       scrollElement.scrollTop = 0;
       pendingJumpToStart = false;
@@ -305,7 +306,7 @@ function scrollToBottom(dotNetHelper: DotNet.DotNetObject): void {
   const entry = observersByDotNetObjectId[id];
   if (entry) {
     entry.scrollElement.scrollTop = entry.scrollElement.scrollHeight;
-    entry.setSnapToBottom?.(true);
+    entry.startObservingContainer?.();
   }
 }
 
