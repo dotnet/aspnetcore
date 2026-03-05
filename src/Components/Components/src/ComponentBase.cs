@@ -43,6 +43,11 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     }
 
     /// <summary>
+    /// Indicates if the component finished calling the <see cref="OnInitialized"/> and <see cref="OnInitializedAsync"/>.
+    /// </summary>
+    protected bool IsAfterInitialization { get; private set; }
+
+    /// <summary>
     /// Gets the <see cref="Components.RendererInfo"/> the component is running on.
     /// </summary>
     protected RendererInfo RendererInfo => _renderHandle.RendererInfo;
@@ -306,6 +311,8 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
 
             // Don't call StateHasChanged here. CallOnParametersSetAsync should handle that for us.
         }
+
+        IsAfterInitialization = true;
 
         await CallOnParametersSetAsync();
     }
