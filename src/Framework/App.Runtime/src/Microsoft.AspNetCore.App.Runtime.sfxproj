@@ -136,6 +136,7 @@
   </Target>
 
   <Target Name="PublishToSharedLayoutRoot" BeforeTargets="Build">
+    <!-- Set _PublishingToLayout=true to differentiate global properties for this nested MSBuild call and avoid an intermittent circular dependency involving GetFilesToPublish. -->
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="PublishToDisk"
              Properties="OutputPath=$(SharedFrameworkLayoutRoot);_PublishingToLayout=true" />
