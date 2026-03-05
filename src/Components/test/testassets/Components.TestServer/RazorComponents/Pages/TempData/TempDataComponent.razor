@@ -1,6 +1,5 @@
 ﻿@page "/tempdata"
 @using Microsoft.AspNetCore.Components.Forms
-@using Microsoft.AspNetCore.Components.Endpoints
 @inject NavigationManager NavigationManager
 
 <h1>TempData Basic Test</h1>
@@ -46,7 +45,7 @@
 
 <p id="contains-message">@_containsMessageKey</p>
 <p id="contains-peeked-value">@_containsPeekedValueKey</p>
-<p id="supply-parameter-from-tempdata">@_supplyParameterFromTempData</p>
+<p id="supply-parameter-from-tempdata">@SupplyParameterFromTempDataValue</p>
 
 @code {
     [SupplyParameterFromForm(Name = "_handler")]
@@ -62,7 +61,7 @@
     public string ContainsKey { get; set; } = string.Empty;
 
     [SupplyParameterFromTempData]
-    private string _supplyParameterFromTempData { get; set; }
+    private string SupplyParameterFromTempDataValue { get; set; } = string.Empty;
 
     private string? _message;
     private string? _peekedValue;
@@ -130,7 +129,7 @@
 
     private void SetValuesSupplyFromTempData()
     {
-        _supplyParameterFromTempData = "Supplied from TempData";
+        SupplyParameterFromTempDataValue = "Supplied from TempData";
         NavigateToSamePage();
     }
 

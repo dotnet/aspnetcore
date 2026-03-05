@@ -122,9 +122,9 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             antiforgery.SetRequestContext(httpContext);
         }
 
-        if (httpContext.RequestServices.GetService<ITempDataValueMapper>() is TempDataValueMapper tempDataValueMapper)
+        if (httpContext.RequestServices.GetService<TempDataCascadingValueSupplier>() is {} tempDataSupplier)
         {
-            tempDataValueMapper.SetRequestContext(httpContext);
+            tempDataSupplier.SetRequestContext(httpContext);
         }
 
         // It's important that this is initialized since a component might try to restore state during prerendering

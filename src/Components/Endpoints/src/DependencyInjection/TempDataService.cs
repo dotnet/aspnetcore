@@ -27,9 +27,9 @@ internal sealed partial class TempDataService
 
     public void Save(HttpContext httpContext, TempData tempData)
     {
-        if (httpContext.RequestServices.GetService<ITempDataValueMapper>() is TempDataValueMapper tempDataValueMapper)
+        if (httpContext.RequestServices.GetService<TempDataCascadingValueSupplier>() is { } supplier)
         {
-            tempDataValueMapper.PersistValues(tempData);
+            supplier.PersistValues(tempData);
         }
 
         if (!tempData.WasLoaded)

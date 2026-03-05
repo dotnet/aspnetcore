@@ -69,14 +69,15 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<EndpointRoutingStateProvider>();
         services.TryAddScoped<IRoutingStateProvider>(sp => sp.GetRequiredService<EndpointRoutingStateProvider>());
         services.TryAddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
-        services.TryAddScoped<ITempDataValueMapper, TempDataValueMapper>();
         services.AddSupplyValueFromQueryProvider();
-        services.AddSupplyValueFromTempDataProvider();
         services.AddSupplyValueFromPersistentComponentStateProvider();
         services.TryAddCascadingValue(sp => sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext);
         services.TryAddScoped<WebAssemblySettingsEmitter>();
         services.TryAddScoped<ResourcePreloadService>();
         services.AddTempData();
+        services.TryAddScoped<TempDataCascadingValueSupplier>();
+        services.AddCascadingValueSupplier<SupplyParameterFromTempDataAttribute>(
+            sp => sp.GetRequiredService<TempDataCascadingValueSupplier>().CreateSubscription);
 
         services.TryAddScoped<ResourceCollectionProvider>();
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<ResourceCollectionProvider>(services, RenderMode.InteractiveWebAssembly);

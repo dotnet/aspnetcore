@@ -7,13 +7,13 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-public class TempDataValueMapperTest
+public class TempDataCascadingValueSupplierTest
 {
-    private readonly TempDataValueMapper _mapper;
+    private readonly TempDataCascadingValueSupplier _supplier;
 
-    public TempDataValueMapperTest()
+    public TempDataCascadingValueSupplierTest()
     {
-        _mapper = new TempDataValueMapper(NullLogger<TempDataValueMapper>.Instance);
+        _supplier = new TempDataCascadingValueSupplier(NullLogger<TempDataCascadingValueSupplier>.Instance);
     }
 
     private static HttpContext CreateHttpContextWithTempData(ITempData tempData)
@@ -26,7 +26,7 @@ public class TempDataValueMapperTest
     [Fact]
     public void GetValue_ReturnsNull_WhenHttpContextNotSet()
     {
-        var result = _mapper.GetValue("key", typeof(string));
+        var result = _supplier.GetValue("key", typeof(string));
 
         Assert.Null(result);
     }
@@ -36,9 +36,9 @@ public class TempDataValueMapperTest
     {
         var tempData = new TempData(() => new Dictionary<string, object>());
         var httpContext = CreateHttpContextWithTempData(tempData);
-        _mapper.SetRequestContext(httpContext);
+        _supplier.SetRequestContext(httpContext);
 
-        var result = _mapper.GetValue("nonexistent", typeof(string));
+        var result = _supplier.GetValue("nonexistent", typeof(string));
 
         Assert.Null(result);
     }
@@ -49,9 +49,9 @@ public class TempDataValueMapperTest
         var tempData = new TempData(() => new Dictionary<string, object>());
         tempData["mykey"] = "myvalue";
         var httpContext = CreateHttpContextWithTempData(tempData);
-        _mapper.SetRequestContext(httpContext);
+        _supplier.SetRequestContext(httpContext);
 
-        var result = _mapper.GetValue("mykey", typeof(string));
+        var result = _supplier.GetValue("mykey", typeof(string));
 
         Assert.Equal("myvalue", result);
     }
@@ -62,9 +62,9 @@ public class TempDataValueMapperTest
         var tempData = new TempData(() => new Dictionary<string, object>());
         tempData["MyKey"] = "myvalue";
         var httpContext = CreateHttpContextWithTempData(tempData);
-        _mapper.SetRequestContext(httpContext);
+        _supplier.SetRequestContext(httpContext);
 
-        var result = _mapper.GetValue("mykey", typeof(string));
+        var result = _supplier.GetValue("mykey", typeof(string));
 
         Assert.Equal("myvalue", result);
     }
@@ -73,14 +73,14 @@ public class TempDataValueMapperTest
     public void RegisterValueCallback_AddsCallback()
     {
         var callbackInvoked = false;
-        _mapper.RegisterValueCallback("key", () =>
+        _supplier.RegisterValueCallback("key", () =>
         {
             callbackInvoked = true;
             return "value";
         });
 
         var tempData = new TempData(() => new Dictionary<string, object>());
-        _mapper.PersistValues(tempData);
+        _supplier.PersistValues(tempData);
 
         Assert.True(callbackInvoked);
     }
@@ -88,10 +88,10 @@ public class TempDataValueMapperTest
     [Fact]
     public void RegisterValueCallback_ThrowsForDuplicateKey()
     {
-        _mapper.RegisterValueCallback("key", () => "value1");
+        _supplier.RegisterValueCallback("key", () => "value1");
 
         var ex = Assert.Throws<InvalidOperationException>(() =>
-            _mapper.RegisterValueCallback("key", () => "value2"));
+            _supplier.RegisterValueCallback("key", () => "value2"));
 
         Assert.Contains("key", ex.Message);
     }
@@ -99,10 +99,10 @@ public class TempDataValueMapperTest
     [Fact]
     public void PersistValues_SetsValueInTempData()
     {
-        _mapper.RegisterValueCallback("key", () => "persisted value");
+        _supplier.RegisterValueCallback("key", () => "persisted value");
 
         var tempData = new TempData(() => new Dictionary<string, object>());
-        _mapper.PersistValues(tempData);
+        _supplier.PersistValues(tempData);
 
         Assert.Equal("persisted value", tempData.Peek("key"));
     }
@@ -113,8 +113,8 @@ public class TempDataValueMapperTest
         var tempData = new TempData(() => new Dictionary<string, object>());
         tempData["key"] = "existing";
 
-        _mapper.RegisterValueCallback("key", () => null);
-        _mapper.PersistValues(tempData);
+        _supplier.RegisterValueCallback("key", () => null);
+        _supplier.PersistValues(tempData);
 
         Assert.Null(tempData.Peek("key"));
     }
@@ -122,12 +122,12 @@ public class TempDataValueMapperTest
     [Fact]
     public void PersistValues_HandlesMultipleKeys()
     {
-        _mapper.RegisterValueCallback("key1", () => "value1");
-        _mapper.RegisterValueCallback("key2", () => "value2");
-        _mapper.RegisterValueCallback("key3", () => "value3");
+        _supplier.RegisterValueCallback("key1", () => "value1");
+        _supplier.RegisterValueCallback("key2", () => "value2");
+        _supplier.RegisterValueCallback("key3", () => "value3");
 
         var tempData = new TempData(() => new Dictionary<string, object>());
-        _mapper.PersistValues(tempData);
+        _supplier.PersistValues(tempData);
 
         Assert.Equal("value1", tempData.Peek("key1"));
         Assert.Equal("value2", tempData.Peek("key2"));
@@ -137,11 +137,11 @@ public class TempDataValueMapperTest
     [Fact]
     public void PersistValues_ContinuesOnCallbackException()
     {
-        _mapper.RegisterValueCallback("key1", () => throw new InvalidOperationException("Test exception"));
-        _mapper.RegisterValueCallback("key2", () => "value2");
+        _supplier.RegisterValueCallback("key1", () => throw new InvalidOperationException("Test exception"));
+        _supplier.RegisterValueCallback("key2", () => "value2");
 
         var tempData = new TempData(() => new Dictionary<string, object>());
-        _mapper.PersistValues(tempData);
+        _supplier.PersistValues(tempData);
 
         Assert.Null(tempData.Peek("key1"));
         Assert.Equal("value2", tempData.Peek("key2"));
@@ -150,10 +150,10 @@ public class TempDataValueMapperTest
     [Fact]
     public void PersistValues_IsCaseInsensitiveForKeys()
     {
-        _mapper.RegisterValueCallback("MyKey", () => "value");
+        _supplier.RegisterValueCallback("MyKey", () => "value");
 
         var tempData = new TempData(() => new Dictionary<string, object>());
-        _mapper.PersistValues(tempData);
+        _supplier.PersistValues(tempData);
 
         Assert.True(tempData.ContainsKey("mykey"));
     }
@@ -162,16 +162,16 @@ public class TempDataValueMapperTest
     public void DeleteCallbacks_RemovesCallbacksForKey()
     {
         var callbackInvoked = false;
-        _mapper.RegisterValueCallback("key", () =>
+        _supplier.RegisterValueCallback("key", () =>
         {
             callbackInvoked = true;
             return "value";
         });
 
-        _mapper.DeleteValueCallback("key");
+        _supplier.DeleteValueCallback("key");
 
         var tempData = new TempData(() => new Dictionary<string, object>());
-        _mapper.PersistValues(tempData);
+        _supplier.PersistValues(tempData);
 
         Assert.False(callbackInvoked);
         Assert.Null(tempData.Peek("key"));
@@ -183,9 +183,9 @@ public class TempDataValueMapperTest
         var tempData = new TempData(() => new Dictionary<string, object>());
         tempData["status"] = 1; // Stored as int (enums are serialized as int)
         var httpContext = CreateHttpContextWithTempData(tempData);
-        _mapper.SetRequestContext(httpContext);
+        _supplier.SetRequestContext(httpContext);
 
-        var result = _mapper.GetValue("status", typeof(TestEnum));
+        var result = _supplier.GetValue("status", typeof(TestEnum));
 
         Assert.IsType<TestEnum>(result);
         Assert.Equal(TestEnum.Active, result);
@@ -197,9 +197,9 @@ public class TempDataValueMapperTest
         var tempData = new TempData(() => new Dictionary<string, object>());
         tempData["status"] = 2;
         var httpContext = CreateHttpContextWithTempData(tempData);
-        _mapper.SetRequestContext(httpContext);
+        _supplier.SetRequestContext(httpContext);
 
-        var result = _mapper.GetValue("status", typeof(TestEnum?));
+        var result = _supplier.GetValue("status", typeof(TestEnum?));
 
         Assert.IsType<TestEnum>(result);
         Assert.Equal(TestEnum.Inactive, result);
@@ -210,9 +210,9 @@ public class TempDataValueMapperTest
     {
         var tempData = new TempData(() => new Dictionary<string, object>());
         var httpContext = CreateHttpContextWithTempData(tempData);
-        _mapper.SetRequestContext(httpContext);
+        _supplier.SetRequestContext(httpContext);
 
-        var result = _mapper.GetValue("missing", typeof(TestEnum));
+        var result = _supplier.GetValue("missing", typeof(TestEnum));
 
         Assert.Null(result);
     }
@@ -224,9 +224,9 @@ public class TempDataValueMapperTest
         mockTempData.Setup(t => t.Get(It.IsAny<string>())).Throws(new InvalidOperationException("test error"));
         var httpContext = new DefaultHttpContext();
         httpContext.Items[typeof(ITempData)] = mockTempData.Object;
-        _mapper.SetRequestContext(httpContext);
+        _supplier.SetRequestContext(httpContext);
 
-        var result = _mapper.GetValue("key", typeof(string));
+        var result = _supplier.GetValue("key", typeof(string));
 
         Assert.Null(result);
     }
@@ -238,9 +238,9 @@ public class TempDataValueMapperTest
         var tempData = new TempData(() => new Dictionary<string, object>());
         tempData["key"] = "not an int";
         var httpContext = CreateHttpContextWithTempData(tempData);
-        _mapper.SetRequestContext(httpContext);
+        _supplier.SetRequestContext(httpContext);
 
-        var result = _mapper.GetValue("key", typeof(int));
+        var result = _supplier.GetValue("key", typeof(int));
 
         // Should gracefully return null instead of crashing the render
         Assert.Null(result);
@@ -252,9 +252,9 @@ public class TempDataValueMapperTest
         var tempData = new TempData(() => new Dictionary<string, object>());
         tempData["key"] = 42;
         var httpContext = CreateHttpContextWithTempData(tempData);
-        _mapper.SetRequestContext(httpContext);
+        _supplier.SetRequestContext(httpContext);
 
-        var result = _mapper.GetValue("key", typeof(bool));
+        var result = _supplier.GetValue("key", typeof(bool));
 
         Assert.Null(result);
     }
@@ -265,9 +265,9 @@ public class TempDataValueMapperTest
         var tempData = new TempData(() => new Dictionary<string, object>());
         tempData["key"] = true;
         var httpContext = CreateHttpContextWithTempData(tempData);
-        _mapper.SetRequestContext(httpContext);
+        _supplier.SetRequestContext(httpContext);
 
-        var result = _mapper.GetValue("key", typeof(Guid));
+        var result = _supplier.GetValue("key", typeof(Guid));
 
         Assert.Null(result);
     }
