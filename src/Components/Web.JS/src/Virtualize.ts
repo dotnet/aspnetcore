@@ -154,8 +154,10 @@ function dispose(dotNetHelper: DotNet.DotNetObject): void {
     observers.mutationObserverBefore.disconnect();
     observers.mutationObserverAfter.disconnect();
 
-    dotNetHelper.dispose();
-
     delete observersByDotNetObjectId[id];
   }
+
+  // Always dispose the dotNetHelper to release the DotNetObjectReference,
+  // even if init() returned early and no observers were created.
+  dotNetHelper.dispose();
 }
