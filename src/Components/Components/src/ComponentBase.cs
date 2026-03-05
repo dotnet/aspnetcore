@@ -24,7 +24,7 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     private readonly RenderFragment _renderFragment;
     private (IComponentRenderMode? mode, bool cached) _renderMode;
     private RenderHandle _renderHandle;
-    private bool _initialized;
+    private bool _wasInitAndSetParametersRun;
     private bool _hasNeverRendered = true;
     private bool _hasPendingQueuedRender;
     private bool _hasCalledOnAfterRender;
@@ -259,9 +259,9 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     public virtual Task SetParametersAsync(ParameterView parameters)
     {
         parameters.SetParameterProperties(this);
-        if (!_initialized)
+        if (!_wasInitAndSetParametersRun)
         {
-            _initialized = true;
+            _wasInitAndSetParametersRun = true;
 
             return RunInitAndSetParametersAsync();
         }
