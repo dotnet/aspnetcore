@@ -47,6 +47,8 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     private ITransport? _transport;
     private readonly ITransportFactory _transportFactory;
     private string? _connectionId;
+    private string? _connectionToken;
+    private int? _initialTokenLifetimeSeconds;
     private readonly ConnectionLogScope _logScope;
     private readonly ILoggerFactory _loggerFactory;
     private readonly Uri _url;
@@ -91,6 +93,9 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
     /// <inheritdoc />
     bool IConnectionInherentKeepAliveFeature.HasInherentKeepAlive => _hasInherentKeepAlive;
+
+    /// <inheritdoc />
+    int? IAuthRefreshFeature.InitialTokenLifetimeSeconds => _initialTokenLifetimeSeconds;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpConnection"/> class.
@@ -721,6 +726,8 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         {
             negotiationResponse.ConnectionToken = _connectionId;
         }
+        _connectionToken = negotiationResponse.ConnectionToken;
+        _initialTokenLifetimeSeconds = negotiationResponse.TokenLifetimeSeconds;
 
         _logScope.ConnectionId = _connectionId;
         return negotiationResponse;
@@ -732,7 +739,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     /// </summary>
     public async Task<int?> RefreshAuthAsync(CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(_connectionId))
+        if (string.IsNullOrEmpty(_connectionToken))
         {
             throw new InvalidOperationException("Cannot refresh auth before the connection is started.");
         }
@@ -743,10 +750,9 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
             urlBuilder.Path += "/";
         }
         urlBuilder.Path += "refresh";
-        var refreshUri = urlBuilder.Uri;
+        var refreshUri = Utils.AppendQueryString(urlBuilder.Uri, $"id={_connectionToken}");
 
         using var request = new HttpRequestMessage(HttpMethod.Post, refreshUri);
-        request.Headers.Add("X-SignalR-Connection-Id", _connectionId);
 
         // Add the access token if available
         var accessToken = await GetAccessTokenAsync().ConfigureAwait(false);

@@ -51,23 +51,6 @@ internal sealed partial class HttpConnectionManager
         return _connections.TryGetValue(id, out connection);
     }
 
-    internal bool TryGetConnectionByConnectionId(string connectionId, [NotNullWhen(true)] out HttpConnectionContext? connection)
-    {
-        // The _connections dictionary is keyed by connectionToken, so we need to scan
-        // for the matching public ConnectionId.
-        foreach (var kvp in _connections)
-        {
-            if (string.Equals(kvp.Value.ConnectionId, connectionId, StringComparison.Ordinal))
-            {
-                connection = kvp.Value;
-                return true;
-            }
-        }
-
-        connection = null;
-        return false;
-    }
-
     internal HttpConnectionContext CreateConnection()
     {
         return CreateConnection(new());
@@ -192,8 +175,22 @@ internal sealed partial class HttpConnectionManager
                 if (connection.IsAuthenticationExpirationEnabled && connection.AuthenticationExpiration < now &&
                     !connection.ConnectionClosedRequested.IsCancellationRequested)
                 {
-                    Log.AuthenticationExpired(_logger, connection.ConnectionId);
-                    connection.RequestClose();
+                    // When auth refresh is enabled, allow a grace period for the client to refresh
+                    // before closing the connection
+                    if (connection.IsAuthRefreshEnabled)
+                    {
+                        var graceDeadline = connection.AuthenticationExpiration + connection.AuthRefreshGracePeriod;
+                        if (graceDeadline < now)
+                        {
+                            Log.AuthenticationExpired(_logger, connection.ConnectionId);
+                            connection.RequestClose();
+                        }
+                    }
+                    else
+                    {
+                        Log.AuthenticationExpired(_logger, connection.ConnectionId);
+                        connection.RequestClose();
+                    }
                 }
             }
         }

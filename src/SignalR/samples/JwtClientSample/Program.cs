@@ -14,9 +14,9 @@ class Program
     {
         var app = new Program();
         await Task.WhenAll(
-            app.RunConnection(HttpTransportType.WebSockets),
-            app.RunConnection(HttpTransportType.ServerSentEvents),
-            app.RunConnection(HttpTransportType.LongPolling));
+            app.RunConnection(HttpTransportType.WebSockets));
+            //app.RunConnection(HttpTransportType.ServerSentEvents),
+            //app.RunConnection(HttpTransportType.LongPolling));
     }
 
     private const string ServerUrl = "http://localhost:54543";
@@ -28,17 +28,30 @@ class Program
         var userId = "C#" + transportType;
         _tokens[userId] = GetJwtToken(userId);
 
+        var i = 6;
+
         var hubConnection = new HubConnectionBuilder()
             .WithUrl(ServerUrl + "/broadcast", options =>
             {
                 options.Transports = transportType;
-                options.AccessTokenProvider = () => _tokens[userId];
+                options.AccessTokenProvider = () =>
+                {
+                    //if (i-- > 0)
+                    {
+                        return GetJwtToken(userId);
+                    }
+
+                    //return new Task<string>(() => "");
+                };
             })
             .Build();
+
+        hubConnection.RefreshBeforeExpiration = TimeSpan.FromSeconds(10);
 
         var closedTcs = new TaskCompletionSource();
         hubConnection.Closed += e =>
         {
+            Console.WriteLine(e);
             closedTcs.SetResult();
             return Task.CompletedTask;
         };
@@ -59,17 +72,17 @@ class Program
                 if (ticks % 15 == 0)
                 {
                     // no need to refresh the token for websockets
-                    if (transportType != HttpTransportType.WebSockets)
-                    {
-                        _tokens[userId] = GetJwtToken(userId);
-                        Console.WriteLine($"[{userId}] Token refreshed");
-                    }
+                    //if (transportType != HttpTransportType.WebSockets)
+                    //{
+                    //    _tokens[userId] = GetJwtToken(userId);
+                    //    Console.WriteLine($"[{userId}] Token refreshed");
+                    //}
                 }
 
                 if (ticks % nextMsgAt == 0)
                 {
                     await hubConnection.SendAsync("Broadcast", userId, $"Hello at {DateTime.Now}");
-                    nextMsgAt = Random.Shared.Next(2, 5);
+                    nextMsgAt = Random.Shared.Next(20, 50);
                 }
             }
         }

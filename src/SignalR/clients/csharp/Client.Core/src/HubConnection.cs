@@ -551,6 +551,13 @@ public partial class HubConnection : IAsyncDisposable
         }
         startingConnectionState.ReceiveTask = ReceiveLoop(startingConnectionState);
 
+        // Schedule automatic auth refresh if the server provided a token lifetime
+        var authRefreshFeature = connection.Features.Get<IAuthRefreshFeature>();
+        if (authRefreshFeature?.InitialTokenLifetimeSeconds is > 0)
+        {
+            ScheduleAuthRefresh(authRefreshFeature.InitialTokenLifetimeSeconds.Value);
+        }
+
         Log.Started(_logger);
     }
 
@@ -590,17 +597,31 @@ public partial class HubConnection : IAsyncDisposable
     /// <summary>
     /// Schedules an automatic auth refresh based on the server-provided token lifetime.
     /// The refresh fires at: now + tokenLifetimeSeconds - RefreshBeforeExpiration.
+    /// For short-lived tokens (TTL &lt; 2x RefreshBeforeExpiration), refreshes at half the TTL.
     /// </summary>
     internal void ScheduleAuthRefresh(int tokenLifetimeSeconds)
     {
         // Cancel any existing timer
         _authRefreshTimer?.Dispose();
 
-        var refreshIn = TimeSpan.FromSeconds(tokenLifetimeSeconds) - _refreshBeforeExpiration;
-        if (refreshIn <= TimeSpan.Zero)
+        var ttl = TimeSpan.FromSeconds(tokenLifetimeSeconds);
+        TimeSpan refreshIn;
+
+        if (ttl <= new TimeSpan(_refreshBeforeExpiration.Ticks * 2))
         {
-            // Token is about to expire or already expired, refresh immediately
-            refreshIn = TimeSpan.FromSeconds(1);
+            // Short-lived token: refresh at half the TTL to avoid spamming
+            refreshIn = TimeSpan.FromSeconds(tokenLifetimeSeconds / 2.0);
+        }
+        else
+        {
+            refreshIn = ttl - _refreshBeforeExpiration;
+        }
+
+        // Enforce a minimum interval to prevent spamming the server
+        var minimumRefreshInterval = TimeSpan.FromSeconds(30);
+        if (refreshIn < minimumRefreshInterval)
+        {
+            refreshIn = minimumRefreshInterval;
         }
 
         _authRefreshTimer = new Timer(
