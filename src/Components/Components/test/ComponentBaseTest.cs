@@ -583,6 +583,153 @@ public class ComponentBaseTest
         Assert.Same(expected, actual);
     }
 
+    [Fact]
+    public void IsAfterInitialization_FalseBeforeRendering()
+    {
+        // Arrange
+        var component = new TestComponent();
+
+        // Assert
+        Assert.False(component.ExposedIsAfterInitialization);
+    }
+
+    [Fact]
+    public void IsAfterInitialization_TrueAfterSyncInit()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent();
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        renderer.RenderRootComponent(componentId);
+
+        // Assert
+        Assert.True(component.ExposedIsAfterInitialization);
+    }
+
+    [Fact]
+    public void IsAfterInitialization_FalseDuringAsyncInit()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent();
+        var initTask = new TaskCompletionSource<bool>();
+
+        bool? valueDuringInit = null;
+        component.OnInitAsyncLogic = c =>
+        {
+            valueDuringInit = c.ExposedIsAfterInitialization;
+            return initTask.Task;
+        };
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        renderer.RenderRootComponentAsync(componentId);
+
+        // Assert
+        Assert.False(valueDuringInit);
+        Assert.False(component.ExposedIsAfterInitialization);
+    }
+
+    [Fact]
+    public async Task IsAfterInitialization_TrueAfterAsyncInitCompletes()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent();
+        var initTask = new TaskCompletionSource<bool>();
+
+        component.OnInitAsyncLogic = _ => initTask.Task;
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        var renderTask = renderer.RenderRootComponentAsync(componentId);
+
+        Assert.False(component.ExposedIsAfterInitialization);
+
+        initTask.SetResult(true);
+        await renderTask;
+
+        // Assert
+        Assert.True(component.ExposedIsAfterInitialization);
+    }
+
+    [Fact]
+    public async Task IsAfterInitialization_TrueOnSubsequentParameterSets()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent();
+
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+        Assert.True(component.ExposedIsAfterInitialization);
+
+        // Act — trigger a subsequent render (re-enters SetParametersAsync)
+        await renderer.RenderRootComponentAsync(componentId);
+
+        // Assert
+        Assert.True(component.ExposedIsAfterInitialization);
+    }
+
+    [Fact]
+    public async Task IsAfterInitialization_FalseWhenOnInitAsyncThrows()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        renderer.ShouldHandleExceptions = true;
+        var component = new TestComponent();
+
+        component.OnInitAsyncLogic = _ => Task.FromException(new InvalidTimeZoneException());
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+
+        // Assert
+        Assert.False(component.ExposedIsAfterInitialization);
+    }
+
+    [Fact]
+    public async Task IsAfterInitialization_FalseWhenOnInitThrows()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent();
+
+        component.OnInitLogic = _ => throw new InvalidTimeZoneException();
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        await Assert.ThrowsAsync<InvalidTimeZoneException>(
+            () => renderer.RenderRootComponentAsync(componentId));
+
+        // Assert
+        Assert.False(component.ExposedIsAfterInitialization);
+    }
+
+    [Fact]
+    public async Task IsAfterInitialization_TrueWhenOnInitAsyncCancelled()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent();
+        var initTask = new TaskCompletionSource();
+
+        component.OnInitAsyncLogic = _ => initTask.Task;
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        var renderTask = renderer.RenderRootComponentAsync(componentId);
+
+        initTask.SetCanceled();
+        await renderTask;
+
+        // Assert
+        Assert.True(component.ExposedIsAfterInitialization);
+    }
+
     private class TestComponent : ComponentBase
     {
         public bool RunsBaseOnInit { get; set; } = true;
@@ -610,6 +757,8 @@ public class ComponentBaseTest
         public Func<TestComponent, bool, Task> OnAfterRenderAsyncLogic { get; set; }
 
         public int Counter { get; set; }
+
+        public bool ExposedIsAfterInitialization => IsAfterInitialization;
 
         public RenderFragment ChildContent { get; set; }
 
