@@ -107,108 +107,159 @@ when the issue title/body mentions them.
 
 #### `area-networking`
 Kestrel, HttpSys, HTTP/2, HTTP/3, QUIC, YARP, WebSockets, HTTP abstractions, connection management.
+**Code:** `src/Servers/` (Kestrel, HttpSys, IIS), `src/Http/Http/`, `src/Http/Http.Abstractions/`, `src/Http/Http.Extensions/`, `src/Http/Http.Features/`, `src/Http/Headers/`, `src/Http/WebUtilities/`, `src/Middleware/WebSockets/`, `src/Hosting/Server.Abstractions/`, `src/HttpClientFactory/`
+**Namespaces:** `Microsoft.AspNetCore.Server.Kestrel.*`, `Microsoft.AspNetCore.Server.HttpSys.*`, `Microsoft.AspNetCore.Server.IIS.*`, `Microsoft.AspNetCore.Connections.*`, `Microsoft.AspNetCore.Http.*` (core abstractions), `Microsoft.AspNetCore.Http.Features.*`, `Microsoft.Net.Http.Headers.*`, `Microsoft.AspNetCore.WebUtilities.*`, `Microsoft.AspNetCore.WebSockets.*`, `Microsoft.Extensions.Http.*`
+**Packages:** `Microsoft.AspNetCore.Server.Kestrel`, `Microsoft.AspNetCore.Server.Kestrel.Core`, `Microsoft.AspNetCore.Server.Kestrel.Https`, `Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets`, `Microsoft.AspNetCore.Server.Kestrel.Transport.Quic`, `Microsoft.AspNetCore.Server.HttpSys`, `Microsoft.AspNetCore.Server.IIS`, `Microsoft.AspNetCore.Connections.Abstractions`, `Microsoft.AspNetCore.Http`, `Microsoft.AspNetCore.Http.Abstractions`, `Microsoft.AspNetCore.Http.Extensions`, `Microsoft.AspNetCore.Http.Features`, `Microsoft.Net.Http.Headers`, `Microsoft.AspNetCore.WebUtilities`, `Microsoft.AspNetCore.WebSockets`
 **Key types:** `KestrelServer`, `KestrelServerOptions`, `KestrelServerLimits`, `ListenOptions`, `HttpsConnectionAdapterOptions`, `Http2Limits`, `Http3Limits`, `HttpSysOptions`, `ConnectionContext`, `ConnectionHandler`, `IConnectionBuilder`, `IConnectionFactory`, `IConnectionListener`, `IConnectionListenerFactory`, `ConnectionAbortedException`, `ConnectionResetException`, `AddressInUseException`, `MinDataRate`, `PipeReader`, `PipeWriter`, `IDuplexPipe`, `IServer`
 **Config:** `UseKestrel()`, `ConfigureKestrel()`, `UseHttpSys()`, `Listen()`, `ListenAnyIP()`, `ListenLocalhost()`, `UseHttps()`
 **Concepts:** port binding, TLS/SSL, HTTPS, connection timeout, keep-alive, request body size limits, named pipes, Unix sockets, reverse proxy, connection middleware, transport layer, `System.IO.Pipelines`
 
 #### `area-blazor`
 Blazor, Razor Components, WebAssembly, interactive rendering modes, circuits.
+**Code:** `src/Components/` (Components, Web, WebAssembly, Server, WebView, Endpoints), `src/JSInterop/`
+**Namespaces:** `Microsoft.AspNetCore.Components.*`, `Microsoft.AspNetCore.Components.Web.*`, `Microsoft.AspNetCore.Components.Forms.*`, `Microsoft.AspNetCore.Components.WebAssembly.*`, `Microsoft.AspNetCore.Components.Endpoints.*`, `Microsoft.JSInterop.*`
+**Packages:** `Microsoft.AspNetCore.Components`, `Microsoft.AspNetCore.Components.Web`, `Microsoft.AspNetCore.Components.Forms`, `Microsoft.AspNetCore.Components.Authorization`, `Microsoft.AspNetCore.Components.WebAssembly`, `Microsoft.AspNetCore.Components.WebAssembly.Authentication`, `Microsoft.AspNetCore.Components.WebAssembly.DevServer`, `Microsoft.AspNetCore.Components.CustomElements`, `Microsoft.AspNetCore.Components.QuickGrid`, `Microsoft.JSInterop`
 **Key types:** `ComponentBase`, `LayoutComponentBase`, `DynamicComponent`, `ErrorBoundary`, `NavigationManager`, `PersistentComponentState`, `CascadingValue<T>`, `RenderMode` (`InteractiveServer`, `InteractiveWebAssembly`, `InteractiveAuto`), `EditContext`, `DataAnnotationsValidator`, `CircuitHandler`, `NavLink`, `RouteView`, `HeadOutlet`, `StreamRendering`, `IComponentRenderMode`, `RenderFragment`, `EventCallback`, `IJSRuntime`, `IJSObjectReference`, `ProtectedBrowserStorage`
 **Config:** `AddRazorComponents()`, `AddInteractiveServerComponents()`, `AddInteractiveWebAssemblyComponents()`, `MapRazorComponents<T>()`
 **Concepts:** `.razor` files, `@code`, render tree, JSInterop, circuit, prerendering, streaming rendering, enhanced navigation, form handling, cascading parameters, Blazor Server, Blazor WASM, Blazor Web App
 
 #### `area-auth`
 Authentication, Authorization, OAuth, OIDC, Bearer tokens, cookie auth, JWT.
+**Code:** `src/Security/Authentication/`, `src/Security/Authorization/`, `src/Http/Authentication.Abstractions/`, `src/Http/Authentication.Core/`, `src/Components/Authorization/`
+**Namespaces:** `Microsoft.AspNetCore.Authentication.*`, `Microsoft.AspNetCore.Authentication.Cookies.*`, `Microsoft.AspNetCore.Authentication.JwtBearer.*`, `Microsoft.AspNetCore.Authentication.OAuth.*`, `Microsoft.AspNetCore.Authentication.OpenIdConnect.*`, `Microsoft.AspNetCore.Authentication.BearerToken.*`, `Microsoft.AspNetCore.Authorization.*`
+**Packages:** `Microsoft.AspNetCore.Authentication`, `Microsoft.AspNetCore.Authentication.Abstractions`, `Microsoft.AspNetCore.Authentication.Core`, `Microsoft.AspNetCore.Authentication.Cookies`, `Microsoft.AspNetCore.Authentication.JwtBearer`, `Microsoft.AspNetCore.Authentication.OAuth`, `Microsoft.AspNetCore.Authentication.OpenIdConnect`, `Microsoft.AspNetCore.Authentication.BearerToken`, `Microsoft.AspNetCore.Authorization`, `Microsoft.AspNetCore.Authorization.Policy`
 **Key types:** `IAuthenticationHandler`, `IAuthenticationService`, `AuthenticationMiddleware`, `AuthenticationBuilder`, `AuthenticationScheme`, `AuthenticationTicket`, `CookieAuthenticationHandler`, `CookieAuthenticationOptions`, `JwtBearerHandler`, `JwtBearerOptions`, `OAuthHandler<T>`, `OpenIdConnectHandler`, `OpenIdConnectOptions`, `IAuthorizationService`, `IAuthorizationHandler`, `IAuthorizationRequirement`, `AuthorizationPolicy`, `AuthorizationMiddleware`, `AuthorizeAttribute`, `AllowAnonymousAttribute`, `IPolicyEvaluator`, `ClaimsPrincipal`, `AuthenticateResult`
 **Config:** `AddAuthentication()`, `UseAuthentication()`, `AddAuthorization()`, `UseAuthorization()`, `AddJwtBearer()`, `AddCookie()`, `AddOpenIdConnect()`, `AddOAuth()`
 **Concepts:** authentication scheme, claims, bearer token, cookie auth, JWT validation, OAuth 2.0, OpenID Connect, authorization policy, `[Authorize]`, challenge, forbid, sign-in, sign-out, token validation
 
 #### `area-identity`
 ASP.NET Core Identity, user/role management, identity providers, scaffolding.
+**Code:** `src/Identity/` (Core, UI, Extensions.Core, Extensions.Stores, EntityFrameworkCore)
+**Namespaces:** `Microsoft.AspNetCore.Identity.*`, `Microsoft.Extensions.Identity.Core.*`, `Microsoft.Extensions.Identity.Stores.*`
+**Packages:** `Microsoft.AspNetCore.Identity`, `Microsoft.AspNetCore.Identity.UI`, `Microsoft.AspNetCore.Identity.EntityFrameworkCore`, `Microsoft.Extensions.Identity.Core`, `Microsoft.Extensions.Identity.Stores`
 **Key types:** `UserManager<TUser>`, `SignInManager<TUser>`, `RoleManager<TRole>`, `IdentityOptions`, `IdentityResult`, `IdentityError`, `IdentityUser`, `IdentityRole`, `IUserStore<T>`, `IRoleStore<T>`, `IPasswordHasher<T>`, `IUserClaimsPrincipalFactory<T>`, `ExternalLoginInfo`, `IEmailSender`, `SecurityStampValidator`, `IPasskeyHandler<T>`
 **Config:** `AddIdentity<TUser,TRole>()`, `AddDefaultIdentity<TUser>()`, `MapIdentityApi<TUser>()`
 **Concepts:** password hashing, two-factor authentication (2FA), external login, lockout, security stamp, email confirmation, password reset, passkey, token provider, Identity UI, Identity scaffolding, Identity API endpoints
 
 #### `area-mvc`
 MVC, Controllers, Actions, model binding, formatters, Razor Pages (page model logic).
+**Code:** `src/Mvc/`, `src/Html.Abstractions/`
+**Namespaces:** `Microsoft.AspNetCore.Mvc.*`, `Microsoft.AspNetCore.Mvc.Abstractions.*`, `Microsoft.AspNetCore.Mvc.ApiExplorer.*`, `Microsoft.AspNetCore.Mvc.Cors.*`, `Microsoft.AspNetCore.Mvc.DataAnnotations.*`, `Microsoft.AspNetCore.Mvc.Razor.*`, `Microsoft.AspNetCore.Mvc.RazorPages.*`, `Microsoft.AspNetCore.Mvc.TagHelpers.*`, `Microsoft.AspNetCore.Mvc.ViewFeatures.*`
+**Packages:** `Microsoft.AspNetCore.Mvc`, `Microsoft.AspNetCore.Mvc.Core`, `Microsoft.AspNetCore.Mvc.Abstractions`, `Microsoft.AspNetCore.Mvc.ApiExplorer`, `Microsoft.AspNetCore.Mvc.Cors`, `Microsoft.AspNetCore.Mvc.DataAnnotations`, `Microsoft.AspNetCore.Mvc.Formatters.Json`, `Microsoft.AspNetCore.Mvc.Formatters.Xml`, `Microsoft.AspNetCore.Mvc.Localization`, `Microsoft.AspNetCore.Mvc.Razor`, `Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation`, `Microsoft.AspNetCore.Mvc.RazorPages`, `Microsoft.AspNetCore.Mvc.TagHelpers`, `Microsoft.AspNetCore.Mvc.ViewFeatures`
 **Key types:** `Controller`, `ControllerBase`, `ApiControllerAttribute`, `MvcOptions`, `ApiBehaviorOptions`, `ActionResult`, `IActionResult`, `JsonResult`, `ObjectResult`, `PageModel`, `IInputFormatter`, `IOutputFormatter`, `IUrlHelper`, `IFilterMetadata`, `ModelBinderAttribute`, `BindingInfo`, `ActionContext`
 **Config:** `AddMvc()`, `AddControllers()`, `AddControllersWithViews()`, `AddRazorPages()`, `MapControllers()`, `MapControllerRoute()`, `MapRazorPages()`
 **Concepts:** `[ApiController]`, `[Route]`, `[HttpGet]`/`[HttpPost]`, model binding, model validation, action filters, exception filters, content negotiation, Razor Pages page model, areas, formatters
 
 #### `area-minimal`
 Minimal APIs, endpoint filters, parameter binding, request delegate generator, HTTP results.
+**Code:** `src/Http/Http.Results/`, `src/OpenApi/` (OpenAPI document generation for minimal APIs)
+**Namespaces:** `Microsoft.AspNetCore.Http.Result.*`, `Microsoft.AspNetCore.OpenApi.*`
+**Packages:** `Microsoft.AspNetCore.Http.Results`, `Microsoft.AspNetCore.OpenApi`
 **Key types:** `HttpContext`, `HttpRequest`, `HttpResponse`, `IResult`, `Results`, `TypedResults`, `IEndpointFilter`, `EndpointFilterInvocationContext`, `ProblemDetails`, `HttpValidationProblemDetails`, `IProblemDetailsService`, `IMiddleware`, `IApplicationBuilder`, `Endpoint`, `IEndpointConventionBuilder`, `BadHttpRequestException`, `IHttpContextAccessor`, `JsonOptions`
 **Config:** `app.MapGet()`, `app.MapPost()`, `app.MapPut()`, `app.MapDelete()`, `app.MapPatch()`, `app.MapGroup()`, `Results.Ok()`, `Results.NotFound()`, `TypedResults.Ok()`, `AddProblemDetails()`
 **Concepts:** route handler, endpoint filter, parameter binding, `[FromBody]`, `[FromQuery]`, `[FromRoute]`, `[FromHeader]`, `[FromServices]`, `[AsParameters]`, route group, request delegate, problem details
 
 #### `area-middleware`
 URL rewrite, response caching/compression, session, CORS, diagnostics, static files, rate limiting, HTTP logging, forwarded headers.
+**Code:** `src/Middleware/` (CORS, Diagnostics, HttpLogging, HttpOverrides, HttpsPolicy, Localization, OutputCaching, RateLimiting, RequestDecompression, ResponseCaching, ResponseCompression, Rewrite, Session, Spa, StaticFiles, HeaderPropagation), `src/StaticAssets/`, `src/Caching/`
+**Namespaces:** `Microsoft.AspNetCore.Cors.*`, `Microsoft.AspNetCore.Diagnostics.*`, `Microsoft.AspNetCore.HttpLogging.*`, `Microsoft.AspNetCore.OutputCaching.*`, `Microsoft.AspNetCore.RateLimiting.*`, `Microsoft.AspNetCore.ResponseCompression.*`, `Microsoft.AspNetCore.Rewrite.*`, `Microsoft.AspNetCore.Session.*`, `Microsoft.AspNetCore.StaticFiles.*`, `Microsoft.AspNetCore.StaticAssets.*`
+**Packages:** `Microsoft.AspNetCore.Cors`, `Microsoft.AspNetCore.Diagnostics`, `Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore`, `Microsoft.AspNetCore.HttpLogging`, `Microsoft.AspNetCore.OutputCaching`, `Microsoft.AspNetCore.RateLimiting`, `Microsoft.AspNetCore.ResponseCompression`, `Microsoft.AspNetCore.Rewrite`, `Microsoft.AspNetCore.Session`, `Microsoft.AspNetCore.StaticFiles`, `Microsoft.AspNetCore.StaticAssets`, `Microsoft.AspNetCore.MiddlewareAnalysis`
 **Key types:** `CorsMiddleware`, `CorsPolicy`, `DeveloperExceptionPageMiddleware`, `ExceptionHandlerMiddleware`, `IExceptionHandler`, `StatusCodePagesMiddleware`, `StaticFileMiddleware`, `SessionMiddleware`, `ResponseCompressionMiddleware`, `OutputCacheOptions`, `IOutputCacheStore`, `IRateLimiterPolicy<T>`, `HstsMiddleware`, `HttpsRedirectionMiddleware`, `RewriteMiddleware`, `ForwardedHeadersMiddleware`, `ForwardedHeadersOptions`, `ResponseCachingMiddleware`, `IHttpLoggingInterceptor`, `WebSocketOptions`
 **Config:** `AddCors()` / `UseCors()`, `UseExceptionHandler()`, `UseDeveloperExceptionPage()`, `UseStaticFiles()`, `AddSession()` / `UseSession()`, `AddResponseCompression()` / `UseResponseCompression()`, `AddOutputCache()` / `UseOutputCaching()`, `AddRateLimiter()` / `UseRateLimiter()`, `UseHsts()`, `UseHttpsRedirection()`, `UseRewriter()`, `UseForwardedHeaders()`, `AddHttpLogging()` / `UseHttpLogging()`
 **Concepts:** middleware pipeline, CORS policy, exception handler, static files, session state, output caching, response compression, rate limiting, HSTS, HTTPS redirect, URL rewrite, forwarded headers, X-Forwarded-For, X-Forwarded-Proto, host filtering
 
 #### `area-signalr`
 SignalR clients and servers, real-time communication, hub protocol.
+**Code:** `src/SignalR/`
+**Namespaces:** `Microsoft.AspNetCore.SignalR.*`, `Microsoft.AspNetCore.SignalR.Client.*`, `Microsoft.AspNetCore.Http.Connections.*`, `Microsoft.AspNetCore.SignalR.Protocols.*`
+**Packages:** `Microsoft.AspNetCore.SignalR`, `Microsoft.AspNetCore.SignalR.Core`, `Microsoft.AspNetCore.SignalR.Common`, `Microsoft.AspNetCore.SignalR.Client.Core`, `Microsoft.AspNetCore.Http.Connections`, `Microsoft.AspNetCore.Http.Connections.Common`, `Microsoft.AspNetCore.Http.Connections.Client`, `Microsoft.AspNetCore.SignalR.Protocols.Json`, `Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson`, `Microsoft.AspNetCore.SignalR.Protocols.MessagePack`
 **Key types:** `Hub`, `Hub<T>`, `HubConnection`, `HubConnectionBuilder`, `HubCallerContext`, `HubConnectionContext`, `IHubContext<T>`, `IClientProxy`, `IGroupManager`, `IHubProtocol`, `HubException`, `HubOptions`, `RedisHubLifetimeManager`
 **Config:** `AddSignalR()`, `MapHub<T>()`, `WithUrl()`, `.Build()`
 **Concepts:** hub, hub method, real-time, WebSocket transport, Server-Sent Events, long polling, groups, streaming, MessagePack protocol, JSON protocol, reconnect, retry policy, scale-out, Redis backplane, sticky sessions
 
 #### `area-routing`
 Endpoint routing, route matching, URL generation, route constraints.
+**Code:** `src/Http/Routing/`, `src/Http/Routing.Abstractions/`, `src/Http/Metadata/`
+**Namespaces:** `Microsoft.AspNetCore.Routing.*`, `Microsoft.AspNetCore.Routing.Abstractions.*`
+**Packages:** `Microsoft.AspNetCore.Routing`, `Microsoft.AspNetCore.Routing.Abstractions`
 **Key types:** `EndpointDataSource`, `IEndpointRouteBuilder`, `LinkGenerator`, `RouteData`, `IRouteConstraint`, `IRouter`, `IParameterPolicy`, `IOutboundParameterTransformer`, `EndpointNameMetadata`
 **Config:** `UseRouting()`, `UseEndpoints()`, `MapFallback()`, `RequireHost()`, `WithName()`, `AddRouting()`
 **Concepts:** route template, route pattern, route constraint (`{id:int}`, `{slug:regex(...)}`), link generation, URL generation, route values, endpoint metadata, conventional vs attribute routing, catch-all routes
 
 #### `area-dataprotection`
 Data Protection APIs, key management, encryption/decryption.
+**Code:** `src/DataProtection/` (DataProtection, Abstractions, Cryptography.Internal, Cryptography.KeyDerivation, Extensions, EntityFrameworkCore, StackExchangeRedis)
+**Namespaces:** `Microsoft.AspNetCore.DataProtection.*`, `Microsoft.AspNetCore.Cryptography.*`
+**Packages:** `Microsoft.AspNetCore.DataProtection`, `Microsoft.AspNetCore.DataProtection.Abstractions`, `Microsoft.AspNetCore.DataProtection.Extensions`, `Microsoft.AspNetCore.DataProtection.EntityFrameworkCore`, `Microsoft.AspNetCore.DataProtection.StackExchangeRedis`, `Microsoft.AspNetCore.Cryptography.Internal`, `Microsoft.AspNetCore.Cryptography.KeyDerivation`
 **Key types:** `IDataProtectionProvider`, `IDataProtector`, `ITimeLimitedDataProtector`, `DataProtectionOptions`, `IKey`, `IKeyManager`, `IXmlRepository`, `DataProtectionKey`, `KeyManagementOptions`, `IAuthenticatedEncryptor`
 **Config:** `AddDataProtection()`, `PersistKeysToFileSystem()`, `PersistKeysToDbContext()`, `PersistKeysToStackExchangeRedis()`, `ProtectKeysWithCertificate()`, `SetApplicationName()`, `SetDefaultKeyLifetime()`
 **Concepts:** protect/unprotect, key ring, key rotation, XML repository, purpose string, key escrow, data protector
 
 #### `area-hosting`
 Host builder, WebApplication, startup, server configuration.
+**Code:** `src/Hosting/` (Hosting, Abstractions, WindowsServices), `src/DefaultBuilder/`, `src/Azure/` (AzureAppServices.HostingStartup, AzureAppServicesIntegration)
+**Namespaces:** `Microsoft.AspNetCore.Hosting.*`, `Microsoft.AspNetCore.Builder.*`, `Microsoft.AspNetCore.*` (default builder)
+**Packages:** `Microsoft.AspNetCore`, `Microsoft.AspNetCore.Hosting`, `Microsoft.AspNetCore.Hosting.Abstractions`, `Microsoft.AspNetCore.Hosting.Server.Abstractions`, `Microsoft.AspNetCore.TestHost`, `Microsoft.AspNetCore.Hosting.WindowsServices`
 **Key types:** `WebApplication`, `WebApplicationBuilder`, `WebApplicationOptions`, `IWebHost`, `IWebHostBuilder`, `IWebHostEnvironment`, `IStartup`, `IStartupFilter`, `IHostingStartup`, `WebHostDefaults`, `StaticWebAssetsLoader`
 **Config:** `WebApplication.CreateBuilder()`, `ConfigureWebHostDefaults()`, `UseStartup<T>()`, `UseUrls()`, `UseContentRoot()`
 **Concepts:** `Program.cs`, `Startup.cs`, minimal hosting, Generic Host, `ASPNETCORE_URLS`, `ASPNETCORE_ENVIRONMENT`, `launchSettings.json`, hosting startup, server addresses, host configuration
 
 #### `area-commandlinetools`
 CLI tools: dotnet-dev-certs, dotnet-user-jwts, dotnet-user-secrets, OpenAPI tooling.
+**Code:** `src/Tools/` (dotnet-dev-certs, dotnet-user-secrets, dotnet-user-jwts, dotnet-sql-cache, Extensions.ApiDescription.Server/Client), `src/OpenApi/Microsoft.dotnet-openapi/`, `src/ProjectTemplates/`, `src/Installers/`
+**Namespaces:** `Microsoft.Extensions.SecretManager.*`, `Microsoft.AspNetCore.DeveloperCertificates.*`, `Microsoft.AspNetCore.Authentication.JwtBearer.Tools.*`
+**Packages:** `Microsoft.AspNetCore.DeveloperCertificates.XPlat`, `Microsoft.dotnet-openapi`, `Microsoft.Extensions.ApiDescription.Client`, `Microsoft.Extensions.ApiDescription.Server`
 **Key types:** `SecretsStore`, `JwtStore`, `UserSecretsIdAttribute`
 **Concepts:** `dotnet dev-certs https --trust`, `dotnet user-secrets`, `dotnet user-jwts`, `dotnet sql-cache`, `dotnet-openapi`, `secrets.json`, HTTPS dev certificate, user secrets ID
 
 #### `area-grpc`
 gRPC wire-up, JSON transcoding, gRPC Swagger (main library is grpc/grpc-dotnet).
+**Code:** `src/Grpc/` (JsonTranscoding, Interop)
+**Namespaces:** `Microsoft.AspNetCore.Grpc.JsonTranscoding.*`, `Microsoft.AspNetCore.Grpc.Swagger.*`
+**Packages:** `Microsoft.AspNetCore.Grpc.JsonTranscoding`, `Microsoft.AspNetCore.Grpc.Swagger`
 **Key types:** `GrpcJsonTranscodingServiceExtensions`, `GrpcSwaggerServiceExtensions`
 **Config:** `AddGrpc()`, `MapGrpcService<T>()`, `AddGrpcJsonTranscoding()`, `AddGrpcSwagger()`
 **Concepts:** gRPC, protobuf, `.proto` files, gRPC-Web, JSON transcoding, gRPC Swagger, unary/streaming calls, gRPC interceptors, gRPC channels
 
 #### `area-healthchecks`
 Health check endpoints and publishers.
+**Code:** `src/HealthChecks/`, `src/Middleware/HealthChecks/`
+**Namespaces:** `Microsoft.Extensions.Diagnostics.HealthChecks.*`, `Microsoft.AspNetCore.Diagnostics.HealthChecks.*`
+**Packages:** `Microsoft.Extensions.Diagnostics.HealthChecks`, `Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions`, `Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore`, `Microsoft.AspNetCore.Diagnostics.HealthChecks`
 **Key types:** `IHealthCheck`, `IHealthCheckPublisher`, `HealthCheckService`, `IHealthChecksBuilder`, `HealthCheckMiddleware`, `HealthCheckOptions`, `HealthStatus` (Healthy, Degraded, Unhealthy)
 **Config:** `AddHealthChecks()`, `MapHealthChecks()`, `UseHealthChecks()`
 **Concepts:** liveness probe, readiness probe, health status, health check publisher, health check endpoint
 
 #### `area-security`
 Security hardening, antiforgery, cookie policy, CSRF/XSRF protection.
+**Code:** `src/Antiforgery/`, `src/Security/CookiePolicy/`
+**Namespaces:** `Microsoft.AspNetCore.Antiforgery.*`, `Microsoft.AspNetCore.CookiePolicy.*`
+**Packages:** `Microsoft.AspNetCore.Antiforgery`, `Microsoft.AspNetCore.CookiePolicy`
 **Key types:** `IAntiforgery`, `AntiforgeryOptions`, `AntiforgeryTokenSet`, `AntiforgeryValidationException`, `RequireAntiforgeryTokenAttribute`, `CookiePolicyOptions`
 **Config:** `AddAntiforgery()`, `UseAntiforgery()`, `UseCookiePolicy()`
 **Concepts:** antiforgery token, CSRF/XSRF, SameSite cookies, secure cookies, HTTPS enforcement, cookie policy
 
 #### `area-ui-rendering`
 MVC Views, Razor Pages (rendering/templates), TagHelpers, view compilation.
+**Code:** `src/Razor/`, `src/Components/Forms/`, `src/Components/QuickGrid/`, `src/Components/CustomElements/`
+**Namespaces:** `Microsoft.AspNetCore.Razor.*`, `Microsoft.AspNetCore.Html.*`
+**Packages:** `Microsoft.AspNetCore.Razor`, `Microsoft.AspNetCore.Razor.Runtime`, `Microsoft.AspNetCore.Html.Abstractions`
 **Key types:** `ViewResult`, `PartialViewResult`, `IHtmlHelper`, `ViewDataDictionary`, `TempDataDictionary`, `ViewComponent`, `ViewComponentResult`, `RazorPagesOptions`, `AnchorTagHelper`, `FormTagHelper`, `InputTagHelper`, `CacheTagHelper`, `EnvironmentTagHelper`, `ImageTagHelper`, `GlobbingUrlBuilder`
 **Concepts:** `.cshtml`, Razor syntax, `@model`, `@page`, `_ViewImports.cshtml`, `_ViewStart.cshtml`, layout, partial view, tag helper, HTML helper, view component, runtime compilation, Razor SDK, Razor Class Library (RCL), sections
 
 #### `area-perf`
 Performance regressions, benchmarks, perf infrastructure.
+**Code:** (no single directory — perf benchmarks are spread across area-specific `perf/` or `benchmarks/` folders)
 **Concepts:** benchmark, throughput regression, latency, RPS, memory allocation, `BenchmarkDotNet`, perf lab, crank, bombardier
 
 #### `area-infrastructure`
 Build system, CI/CD, shared framework, installers.
+**Code:** `eng/`, `src/Framework/`, `src/Shared/`, `src/Analyzers/`, `src/BuildAfterTargetingPack/`, `src/Testing/`, `src/Extensions/`, `src/Features/`, `src/ObjectPool/`, `src/WebEncoders/`, `src/FileProviders/`, `src/Localization/`, `src/Configuration.KeyPerFile/`, `src/Logging.AzureAppServices/`
 **Concepts:** MSBuild, `Directory.Build.props`, `Directory.Build.targets`, `eng/` scripts, Arcade SDK, source build, shared framework, targeting pack, reference assemblies, NuGet packaging, CI pipelines
 
 #### `area-unified-build`
 dotnet/dotnet unified build, source-build integration.
+**Code:** `src/SiteExtensions/` (shared with infrastructure)
 **Concepts:** `dotnet/dotnet` repo, unified build, source-build, VMR (Virtual Monolithic Repository)
 
 ### Disambiguation Tips
