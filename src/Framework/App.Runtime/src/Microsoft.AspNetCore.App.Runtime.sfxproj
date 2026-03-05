@@ -138,7 +138,7 @@
   <Target Name="PublishToSharedLayoutRoot" BeforeTargets="Build">
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="PublishToDisk"
-             Properties="OutputPath=$(SharedFrameworkLayoutRoot)" />
+             Properties="OutputPath=$(SharedFrameworkLayoutRoot);_PublishingToLayout=true" />
   </Target>
 
   <Target Name="ReturnProductVersion" Returns="$(Version)" />
