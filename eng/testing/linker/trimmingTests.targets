@@ -104,7 +104,18 @@
     <MSBuild Projects="@(TestConsoleApps)"
              BuildInParallel="false"
              Targets="Restore"
+             ContinueOnError="ErrorAndContinue"
              Condition="'$(SkipTrimmingProjectsRestore)' != 'true'"
+             Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid());Configuration=$(Configuration);RestoreDisableParallel=true" />
+
+    <!-- Retry restore if the first attempt failed due to a concurrent NuGet file-move race on Windows (https://github.com/dotnet/aspnetcore/issues/61178).
+         Multiple trimming-test .proj files restore in parallel; their static-graph restores can race when
+         committing project.assets.json for shared ProjectReference targets. The retry succeeds because the
+         competing restore has finished by then, and already-restored projects are quick no-ops. -->
+    <MSBuild Projects="@(TestConsoleApps)"
+             BuildInParallel="false"
+             Targets="Restore"
+             Condition="'$(SkipTrimmingProjectsRestore)' != 'true' and '$(MSBuildLastTaskResult)' != 'true'"
              Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid());Configuration=$(Configuration);RestoreDisableParallel=true" />
 
     <MSBuild Projects="@(TestConsoleApps)"
