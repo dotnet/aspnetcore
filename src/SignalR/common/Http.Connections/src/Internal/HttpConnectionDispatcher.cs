@@ -148,18 +148,18 @@ internal sealed partial class HttpConnectionDispatcher
             return;
         }
 
-        // Get connection ID from the X-SignalR-Connection-Id header
-        var connectionId = context.Request.Headers["X-SignalR-Connection-Id"].ToString();
-        if (string.IsNullOrEmpty(connectionId))
+        // Get connection token from query string (same pattern as send/poll/delete)
+        var connectionToken = GetConnectionToken(context);
+        if (StringValues.IsNullOrEmpty(connectionToken))
         {
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             context.Response.ContentType = "text/plain";
-            await context.Response.WriteAsync("X-SignalR-Connection-Id header is required.");
+            await context.Response.WriteAsync("Missing connection token.");
             return;
         }
 
-        // Look up the connection by ConnectionId (public ID, not the token)
-        if (!_manager.TryGetConnectionByConnectionId(connectionId, out var connection))
+        // Look up the connection by connection token (private, not the public connectionId)
+        if (!_manager.TryGetConnection(connectionToken.ToString(), out var connection))
         {
             context.Response.StatusCode = StatusCodes.Status404NotFound;
             context.Response.ContentType = "text/plain";
@@ -169,12 +169,20 @@ internal sealed partial class HttpConnectionDispatcher
 
         logScope.ConnectionId = connection.ConnectionId;
 
-        // The authentication middleware has already run on this request,
-        // so context.User contains the principal from the new token.
-        // Update the connection's User and auth expiration.
-        var authenticateResultFeature = context.Features.Get<IAuthenticateResultFeature>();
-        var newExpiration = authenticateResultFeature?.AuthenticateResult?.Properties?.ExpiresUtc ?? DateTimeOffset.MaxValue;
-        connection.UpdateUser(context.User, newExpiration);
+        // Explicitly authenticate the request to get the AuthenticateResult with ExpiresUtc.
+        // We cannot rely on IAuthenticateResultFeature as it is only set by the authorization
+        // middleware and may not be available depending on the middleware configuration.
+        var authResult = await context.AuthenticateAsync();
+        if (!authResult.Succeeded)
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            context.Response.ContentType = "text/plain";
+            await context.Response.WriteAsync("Authentication failed.");
+            return;
+        }
+
+        var newExpiration = authResult.Properties?.ExpiresUtc ?? DateTimeOffset.MaxValue;
+        connection.UpdateUser(authResult.Principal ?? context.User, newExpiration);
 
         // Compute TTL for the response
         int? tokenLifetimeSeconds = null;

@@ -13,6 +13,12 @@ namespace Microsoft.AspNetCore.Connections.Features;
 public interface IAuthRefreshFeature
 {
     /// <summary>
+    /// Gets the initial token lifetime in seconds as provided by the server during negotiation.
+    /// Null if the server did not provide a token lifetime.
+    /// </summary>
+    int? InitialTokenLifetimeSeconds { get; }
+
+    /// <summary>
     /// Sends a refresh request to the server with new authentication credentials.
     /// Returns the updated token lifetime in seconds, or null if not provided.
     /// </summary>

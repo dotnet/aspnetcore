@@ -66,7 +66,12 @@ public class Startup
 
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapHub<Broadcaster>("/broadcast");
+            endpoints.MapHub<Broadcaster>("/broadcast", o =>
+            {
+                o.EnableAuthRefresh = true;
+                o.CloseOnAuthenticationExpiration = true;
+                o.AuthRefreshGracePeriod = TimeSpan.FromSeconds(10);
+            });
             endpoints.MapGet("/generatetoken", context =>
             {
                 return context.Response.WriteAsync(GenerateToken(context));

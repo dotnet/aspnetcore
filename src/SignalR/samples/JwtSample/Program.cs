@@ -13,8 +13,9 @@ public class Program
                 webHostBuilder
                 .ConfigureLogging(factory =>
                 {
+                    factory.SetMinimumLevel(LogLevel.Debug);
                     factory.AddConsole();
-                    factory.AddFilter("Console", level => level >= LogLevel.Information);
+                    //factory.AddFilter("Console", level => level >= LogLevel.Information);
                     factory.AddDebug();
                 })
                 .UseKestrel()
