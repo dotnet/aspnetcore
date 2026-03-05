@@ -38,12 +38,20 @@ internal sealed class ApiResponseTypeProvider
         var runtimeReturnType = GetRuntimeReturnType(declaredReturnType);
 
         var responseMetadataAttributes = GetResponseMetadataAttributes(action);
+        IReadOnlyList<int>? scopes = null;
         if (!HasSignificantMetadataProvider(responseMetadataAttributes) &&
             action.Properties.TryGetValue(typeof(ApiConventionResult), out var result))
         {
             // Action does not have any conventions. Use conventions on it if present.
             var apiConventionResult = (ApiConventionResult)result!;
             responseMetadataAttributes.AddRange(apiConventionResult.ResponseMetadataProviders);
+        }
+        else
+        {
+            // When filter-based attributes are used (no conventions), extract scope info
+            // so that action-level attributes can properly override controller-level attributes
+            // for the same status code.
+            scopes = GetResponseMetadataScopes(action);
         }
 
         var defaultErrorType = typeof(void);
@@ -53,7 +61,7 @@ internal sealed class ApiResponseTypeProvider
         }
 
         var producesResponseMetadata = action.EndpointMetadata.OfType<IProducesResponseTypeMetadata>().ToList();
-        var apiResponseTypes = GetApiResponseTypes(responseMetadataAttributes, producesResponseMetadata, runtimeReturnType, defaultErrorType);
+        var apiResponseTypes = GetApiResponseTypes(responseMetadataAttributes, producesResponseMetadata, runtimeReturnType, defaultErrorType, scopes);
         return apiResponseTypes;
     }
 
@@ -74,11 +82,25 @@ internal sealed class ApiResponseTypeProvider
             .ToList();
     }
 
+    private static List<int> GetResponseMetadataScopes(ControllerActionDescriptor action)
+    {
+        if (action.FilterDescriptors == null)
+        {
+            return [];
+        }
+
+        return action.FilterDescriptors
+            .Where(fd => fd.Filter is IApiResponseMetadataProvider)
+            .Select(fd => fd.Scope)
+            .ToList();
+    }
+
     private ICollection<ApiResponseType> GetApiResponseTypes(
        IReadOnlyList<IApiResponseMetadataProvider> responseMetadataAttributes,
        IReadOnlyList<IProducesResponseTypeMetadata> producesResponseMetadata,
        Type? type,
-       Type defaultErrorType)
+       Type defaultErrorType,
+       IReadOnlyList<int>? scopes = null)
     {
         var contentTypes = new MediaTypeCollection();
         var responseTypeMetadataProviders = _mvcOptions.OutputFormatters.OfType<IApiResponseTypeMetadataProvider>();
@@ -98,7 +120,8 @@ internal sealed class ApiResponseTypeProvider
             defaultErrorType,
             contentTypes,
             out var _,
-            responseTypeMetadataProviders);
+            responseTypeMetadataProviders,
+            scopes: scopes);
 
         var responseProviderStatusCodes = responseTypesFromProvider.Values
             .Select(responseType => responseType.StatusCode)
@@ -162,18 +185,26 @@ internal sealed class ApiResponseTypeProvider
         MediaTypeCollection contentTypes,
         out bool errorSetByDefault,
         IEnumerable<IApiResponseTypeMetadataProvider>? responseTypeMetadataProviders = null,
-        IModelMetadataProvider? modelMetadataProvider = null)
+        IModelMetadataProvider? modelMetadataProvider = null,
+        IReadOnlyList<int>? scopes = null)
     {
         errorSetByDefault = false;
         var results = new Dictionary<ResponseKey, ApiResponseType>();
+        // When scope info is available, track the scope that added each entry so that
+        // higher-scope entries (action) can override lower-scope entries (controller)
+        // for the same status code.
+        Dictionary<ResponseKey, int>? entryScopes = scopes is not null ? new() : null;
 
         // Get the content type that the action explicitly set to support.
         // Walk through all 'filter' attributes in order, and allow each one to see or override
         // the results of the previous ones. This is similar to the execution path for content-negotiation.
         if (responseMetadataAttributes != null)
         {
-            foreach (var metadataAttribute in responseMetadataAttributes)
+            for (var i = 0; i < responseMetadataAttributes.Count; i++)
             {
+                var metadataAttribute = responseMetadataAttributes[i];
+                var scope = scopes is not null && i < scopes.Count ? scopes[i] : 0;
+
                 // All ProducesXAttributes, except for ProducesResponseTypeAttribute do
                 // not allow multiple instances on the same method/class/etc. For those
                 // scenarios, the `SetContentTypes` method on the attribute continuously
@@ -239,7 +270,30 @@ internal sealed class ApiResponseTypeProvider
                 if (apiResponseType.Type != null)
                 {
                     var key = new ResponseKey(apiResponseType.StatusCode, apiResponseType.Type, keyContentType);
+
+                    // When scope info is available, remove entries from lower scopes that define
+                    // the same status code. This preserves the long-standing behavior where
+                    // action-level attributes override controller-level attributes, while still
+                    // allowing multiple entries within the same scope to coexist.
+                    if (entryScopes is not null)
+                    {
+                        foreach (var existingKey in results.Keys.ToList())
+                        {
+                            if (existingKey.StatusCode == apiResponseType.StatusCode &&
+                                entryScopes.TryGetValue(existingKey, out var existingScope) &&
+                                existingScope < scope)
+                            {
+                                results.Remove(existingKey);
+                                entryScopes.Remove(existingKey);
+                            }
+                        }
+                    }
+
                     results[key] = apiResponseType;
+                    if (entryScopes is not null)
+                    {
+                        entryScopes[key] = scope;
+                    }
                 }
             }
         }
