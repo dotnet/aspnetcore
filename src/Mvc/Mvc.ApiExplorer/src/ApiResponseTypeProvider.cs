@@ -46,7 +46,7 @@ internal sealed class ApiResponseTypeProvider
             var apiConventionResult = (ApiConventionResult)result!;
 
             // scope here is the highest - those are "significant" metadata providers, so we use the highest scope
-            var apiConventionedAttributes = apiConventionResult.ResponseMetadataProviders.Select(x => new ApiResponseMetadataProviderWithScope(x, scope: 100));
+            var apiConventionedAttributes = apiConventionResult.ResponseMetadataProviders.Select(x => new ApiResponseMetadataProviderWithScope(x, scope: int.MaxValue));
             responseMetadataAttributes.AddRange(apiConventionedAttributes);
         }
 
@@ -56,7 +56,10 @@ internal sealed class ApiResponseTypeProvider
             defaultErrorType = ((ProducesErrorResponseTypeAttribute)result!).Type;
         }
 
-        var producesResponseMetadata = action.EndpointMetadata.OfType<IProducesResponseTypeMetadata>().ToList();
+        var producesResponseMetadata = action.EndpointMetadata
+            .OfType<IProducesResponseTypeMetadata>()
+            .Where(m => m is not IApiResponseMetadataProvider)
+            .ToList();
         var apiResponseTypes = GetApiResponseTypes(responseMetadataAttributes, producesResponseMetadata, runtimeReturnType, defaultErrorType);
         return apiResponseTypes;
     }
@@ -338,21 +341,25 @@ internal sealed class ApiResponseTypeProvider
 
             if (apiResponseType.Type != null)
             {
-                // If metadata explicitly specifies a different type for this status code than the inferred
-                // return type, drop the inferred entry for that status code. This preserves long-standing
-                // behavior where explicit metadata takes precedence over inference while still allowing
-                // multiple explicit entries for the same status code.
-                if (type != null &&
-                    type != typeof(void) &&
-                    apiResponseType.Type != type)
+                // If metadata explicitly specifies a different type for this status code than
+                // the inferred return type, drop the inferred entry. This ensures explicit
+                // metadata is authoritative over inference. The type check is required so that
+                // multiple entries with the same type and status code can merge their formats
+                // instead of each removing the previous one.
+                if (type != null && type != typeof(void) && apiResponseType.Type != type)
                 {
-                    foreach (var existingResponseKey in results.Keys.ToList())
+                    // for case like:
+                    // app.MapGet("/", () => new Product())
+                    //  .Produces<Product>(200, "json")
+                    //  .Produces<Product>(200, "xml")
+                    //  .Produces<Customer>(200, "xml")
+                    //  .Produces(200);
+                    // we want add all explicit types, merge of same status-code and type, but remote all inferred types (like .Produces(200))
+
+                    var inferredKey = new ResponseKey(apiResponseType.StatusCode, type);
+                    if (results.TryGetValue(inferredKey, out _))
                     {
-                        if (existingResponseKey.StatusCode == apiResponseType.StatusCode &&
-                            existingResponseKey.DeclaredType == type)
-                        {
-                            results.Remove(existingResponseKey);
-                        }
+                        results.Remove(inferredKey);
                     }
                 }
 
