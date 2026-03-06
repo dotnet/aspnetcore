@@ -133,6 +133,11 @@
     <!-- xUnit1004 = warns about skipped tests. Make this a non-fatal build warning. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1004</WarningsNotAsErrors>
 
+    <!-- MSB3026 is logged at error level for each copy-retry attempt during parallel builds, even when the
+         retry succeeds. This can fail CI despite the build completing successfully. Suppress to message level;
+         genuine copy failures still surface as MSB3021 when all retries are exhausted. -->
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB3026</MSBuildWarningsAsMessages>
+
     <!-- don't warn about calling ConfigureAwait in test methods. we already commonly get off the xunit threads because they cause issues. -->
     <NoWarn>$(NoWarn);xUnit1030</NoWarn>
 
