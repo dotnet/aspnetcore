@@ -1454,6 +1454,143 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     [Fact]
+    public void CombinesTypedResultWithProducesExtensionAndAttribute_IResultReturn()
+    {
+        // Precedence in EndpointMetadataApiDescriptionProvider:
+        //   - .Produces<T>() (IProducesResponseTypeMetadata) wins per status code
+        //   - [ProducesResponseType] (IApiResponseMetadataProvider) fills remaining status codes
+        //   - TypedResults metadata is skipped (IResult + IEndpointMetadataProvider)
+        var apiDescription = GetApiDescription(
+            [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+            () => TypedResults.Created("https://example.com", new InferredJsonClass()),
+            httpMethods: ["POST"]);
+
+        // Manually add .Produces<T>() metadata by using builder pattern
+        var builder = CreateBuilder();
+        builder.MapPost("/api/todos",
+            [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+            () => TypedResults.Created("https://example.com", new InferredJsonClass()))
+            .Produces<TimeSpan>(StatusCodes.Status200OK);
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        provider.OnProvidersExecuting(context);
+        provider.OnProvidersExecuted(context);
+
+        var result = Assert.Single(context.Results);
+
+        // .Produces<TimeSpan>(200) wins for status 200
+        Assert.Contains(result.SupportedResponseTypes,
+            r => r is { StatusCode: 200, Type: { } t } && t == typeof(TimeSpan));
+
+        // TypedResults.Created adds 201 via IEndpointMetadataProvider — these are NOT skipped
+        // because the metadata (IProducesResponseTypeMetadata) is distinct from the IResult type itself.
+        // The Created<T> result type adds metadata that gets processed.
+        Assert.Contains(result.SupportedResponseTypes,
+            r => r is { StatusCode: 201, Type: { } t } && t == typeof(InferredJsonClass));
+
+        // [ProducesResponseType(typeof(string), 404)] fills in status 404
+        Assert.Contains(result.SupportedResponseTypes,
+            r => r is { StatusCode: 404, Type: { } t } && t == typeof(string));
+    }
+
+    [Fact]
+    public void CombinesTypedResultWithProducesExtensionAndAttribute_SameStatusCode_ProducesWins()
+    {
+        // When .Produces<T>() and [ProducesResponseType] both declare the same status code,
+        // .Produces<T>() (IProducesResponseTypeMetadata) takes precedence.
+        var builder = CreateBuilder();
+        builder.MapPost("/api/todos",
+            [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+            () => TypedResults.Ok(new InferredJsonClass()))
+            .Produces<TimeSpan>(StatusCodes.Status200OK);
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        provider.OnProvidersExecuting(context);
+        provider.OnProvidersExecuted(context);
+
+        var result = Assert.Single(context.Results);
+
+        // .Produces<TimeSpan>(200) wins over [ProducesResponseType(typeof(string), 200)]
+        Assert.Contains(result.SupportedResponseTypes,
+            r => r is { StatusCode: 200, Type: { } t } && t == typeof(TimeSpan));
+
+        // The attribute's string type for 200 should NOT appear
+        Assert.DoesNotContain(result.SupportedResponseTypes,
+            r => r is { StatusCode: 200, Type: { } t } && t == typeof(string));
+    }
+
+    [Fact]
+    public void CombinesProducesExtensionAndAttribute_PocoReturn()
+    {
+        // Handler returns a POCO (not IResult), so the return type is inferred as InferredJsonClass.
+        // Three metadata sources:
+        //   1. Return type inference → 200/InferredJsonClass (default, only if no metadata covers it)
+        //   2. .Produces<TimeSpan>(201) → ReadEndpointResponseMetadata
+        //   3. [ProducesResponseType(typeof(string), 404)] → ReadAttributeResponseMetadata
+        var builder = CreateBuilder();
+        builder.MapGet("/api/todos",
+            [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+            () => new InferredJsonClass())
+            .Produces<TimeSpan>(StatusCodes.Status201Created);
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        provider.OnProvidersExecuting(context);
+        provider.OnProvidersExecuted(context);
+
+        var result = Assert.Single(context.Results);
+
+        // Inferred return type InferredJsonClass gets a default 200 response
+        Assert.Contains(result.SupportedResponseTypes,
+            r => r is { StatusCode: 200, Type: { } t } && t == typeof(InferredJsonClass));
+
+        // .Produces<TimeSpan>(201) from extension method
+        Assert.Contains(result.SupportedResponseTypes,
+            r => r is { StatusCode: 201, Type: { } t } && t == typeof(TimeSpan));
+
+        // [ProducesResponseType(typeof(string), 404)] from attribute
+        Assert.Contains(result.SupportedResponseTypes,
+            r => r is { StatusCode: 404, Type: { } t } && t == typeof(string));
+    }
+
+    [Fact]
+    public void CombinesProducesExtensionAndAttribute_PocoReturn_SameStatusCode_ProducesWins()
+    {
+        // Handler returns a POCO. Both .Produces<T>() and [ProducesResponseType] declare status 200.
+        // .Produces<T>() should win for that status code.
+        var builder = CreateBuilder();
+        builder.MapGet("/api/todos",
+            [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+            () => new InferredJsonClass())
+            .Produces<TimeSpan>(StatusCodes.Status200OK);
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        provider.OnProvidersExecuting(context);
+        provider.OnProvidersExecuted(context);
+
+        var result = Assert.Single(context.Results);
+
+        // .Produces<TimeSpan>(200) wins over [ProducesResponseType(typeof(string), 200)]
+        Assert.Contains(result.SupportedResponseTypes,
+            r => r is { StatusCode: 200, Type: { } t } && t == typeof(TimeSpan));
+
+        // The attribute's string type for 200 should NOT appear
+        Assert.DoesNotContain(result.SupportedResponseTypes,
+            r => r is { StatusCode: 200, Type: { } t } && t == typeof(string));
+
+        // The inferred InferredJsonClass for 200 should also NOT appear (Produces claimed 200)
+        Assert.DoesNotContain(result.SupportedResponseTypes,
+            r => r is { StatusCode: 200, Type: { } t } && t == typeof(InferredJsonClass));
+    }
+
+    [Fact]
     public void HandleDefaultIAcceptsMetadataForRequiredBodyParameter()
     {
         // Arrange
