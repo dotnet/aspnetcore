@@ -168,9 +168,12 @@ internal sealed class ApiResponseTypeProvider
         IEnumerable<IApiResponseTypeMetadataProvider>? responseTypeMetadataProviders = null,
         IModelMetadataProvider? modelMetadataProvider = null)
     {
-        // Minimal API does not have scopes, it is prioritizing some of responses based on the order they are added (if same statusCode&Content-Type)
+        // Minimal API does not have scopes — all metadata lives at the same level.
+        // Using the same scope (0) for all entries ensures that entries with the same
+        // status code and type are merged (e.g., different content types) rather than
+        // one overriding the other.
         var responseMetadataAttributesWithScope = responseMetadataAttributes
-            .Select((provider, index) => new ApiResponseMetadataProviderWithScope(provider, index))
+            .Select(provider => new ApiResponseMetadataProviderWithScope(provider, scope: 0))
             .ToList();
 
         return ReadResponseMetadata(responseMetadataAttributesWithScope, type, defaultErrorType, contentTypes, out errorSetByDefault, responseTypeMetadataProviders, modelMetadataProvider);
@@ -188,10 +191,12 @@ internal sealed class ApiResponseTypeProvider
         errorSetByDefault = false;
         var results = new Dictionary<ResponseKey, ApiResponseType>();
         var statusCodeScopes = new Dictionary<int, int>();
+        var contentTypesAlreadySet = false;
 
         // Get the content type that the action explicitly set to support.
-        // Walk through all 'filter' attributes in order, and allow each one to see or override
-        // the results of the previous ones. This is similar to the execution path for content-negotiation.
+        // Walk through all 'filter' attributes in descending scope order. Descending order ensures
+        // that higher-scope entries (e.g., action-level) are processed first, so lower-scope entries
+        // for the same status code can be skipped.
         if (responseMetadataAttributes != null)
         {
             foreach (var metadataAttributeWithScope in responseMetadataAttributes.OrderByDescending(attr => attr.Scope))
@@ -199,29 +204,28 @@ internal sealed class ApiResponseTypeProvider
                 var metadataAttribute = metadataAttributeWithScope.Provider;
                 var attributeScope = metadataAttributeWithScope.Scope;
 
-                // All ProducesXAttributes, except for ProducesResponseTypeAttribute do
-                // not allow multiple instances on the same method/class/etc. For those
-                // scenarios, the `SetContentTypes` method on the attribute continuously
-                // clears out more general content types in favor of more specific ones
-                // since we iterate through the attributes in order. For example, if a
-                // Produces exists on both a controller and an action within the controller,
-                // we favor the definition in the action. This is a semantic that does not
-                // apply to ProducesResponseType, which allows multiple instances on an target.
-                if (metadataAttribute is not ProducesResponseTypeAttribute)
+                // All IApiResponseMetadataProvider attributes, except for ProducesResponseTypeAttribute
+                // (which gets its own content type collection) and ProducesDefaultResponseTypeAttribute
+                // (whose SetContentTypes is a no-op), can set shared content types. Since we iterate
+                // in descending scope order, only the first (highest-scope) such attribute should set
+                // content types. Lower-scope attributes must not overwrite content types already set
+                // by a higher-scope one (e.g., action-level Produces overrides controller-level Produces).
+                if (metadataAttribute is not ProducesResponseTypeAttribute
+                    and not ProducesDefaultResponseTypeAttribute
+                    && !contentTypesAlreadySet)
                 {
                     metadataAttribute.SetContentTypes(contentTypes);
+                    contentTypesAlreadySet = true;
                 }
 
                 var statusCode = metadataAttribute.StatusCode;
-
-                var description = metadataAttribute.Description;
 
                 var apiResponseType = new ApiResponseType
                 {
                     Type = metadataAttribute.Type,
                     StatusCode = statusCode,
                     IsDefaultResponse = metadataAttribute is IApiDefaultResponseMetadataProvider,
-                    Description = description
+                    Description = metadataAttribute.Description
                 };
 
                 if (apiResponseType.Type == typeof(void))
@@ -247,7 +251,7 @@ internal sealed class ApiResponseTypeProvider
                     }
                 }
 
-                // We special case the handling of ProcuesResponseTypeAttributes since
+                // We special case the handling of ProducesResponseTypeAttributes since
                 // multiple ProducesResponseTypeAttributes are permitted on a single
                 // action/controller/etc. In that scenario, instead of picking the most-specific
                 // set of content types (like we do with the Produces attribute above) we process
@@ -263,30 +267,31 @@ internal sealed class ApiResponseTypeProvider
                 {
                     var key = new ResponseKey(apiResponseType.StatusCode, apiResponseType.Type);
 
-                    // make sure we dont keep the lesser-scope entry for same status code
-                    if (statusCodeScopes.TryGetValue(apiResponseType.StatusCode, out var existingScope))
+                    if (statusCodeScopes.TryGetValue(statusCode, out var existingScope))
                     {
                         if (attributeScope > existingScope)
                         {
-                            statusCodeScopes[apiResponseType.StatusCode] = attributeScope;
+                            statusCodeScopes[statusCode] = attributeScope;
                             results[key] = apiResponseType;
                         }
-                        else if (attributeScope == existingScope) // same statuscode, and same scope.
+                        else if (attributeScope == existingScope)
                         {
-                            if (results.TryGetValue(key, out var existingEntry)) // also same type -> merge the content-types
+                            // Same scope, same key: merge content types
+                            if (results.TryGetValue(key, out var existingEntry))
                             {
                                 MergeApiResponseFormats(existingEntry, apiResponseType);
                             }
-                            else // different type
+                            else
                             {
+                                // Same scope, different type: add alongside
                                 results[key] = apiResponseType;
                             }
                         }
+                        // attributeScope < existingScope: skip, higher scope already claimed this status code
                     }
                     else
                     {
-                        // add new entry -> first statusCode per scope
-                        statusCodeScopes[apiResponseType.StatusCode] = attributeScope;
+                        statusCodeScopes[statusCode] = attributeScope;
                         results[key] = apiResponseType;
                     }
                 }
@@ -503,6 +508,12 @@ internal sealed class ApiResponseTypeProvider
             {
                 existing.ApiResponseFormats.Add(format);
             }
+        }
+
+        // rewrite description
+        if (newEntry.Description is not null)
+        {
+            existing.Description = newEntry.Description;
         }
     }
 
