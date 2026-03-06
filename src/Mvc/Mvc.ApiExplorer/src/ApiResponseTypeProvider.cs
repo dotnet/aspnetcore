@@ -87,16 +87,17 @@ internal sealed class ApiResponseTypeProvider
         var contentTypes = new MediaTypeCollection();
         var responseTypeMetadataProviders = _mvcOptions.OutputFormatters.OfType<IApiResponseTypeMetadataProvider>();
 
-        var responseTypes = ReadResponseMetadata(
+        // Read response types from endpoint metadata (IProducesResponseTypeMetadata),
+        // e.g. from TypedResults or .Produces<T>() extension methods.
+        var endpointResponseTypes = ReadEndpointResponseMetadata(
             producesResponseMetadata,
             type,
             responseTypeMetadataProviders,
             _modelMetadataProvider);
 
-        // Read response metadata from providers and
-        // overwrite responseTypes from the metadata based
-        // on the status code and content type
-        var responseTypesFromProvider = ReadResponseMetadata(
+        // Read response types from filter attributes (IApiResponseMetadataProvider),
+        // e.g. [ProducesResponseType], [Produces], and conventions.
+        var attributeResponseTypes = ReadAttributeResponseMetadata(
             responseMetadataAttributes,
             type,
             defaultErrorType,
@@ -104,26 +105,24 @@ internal sealed class ApiResponseTypeProvider
             out var _,
             responseTypeMetadataProviders);
 
-        var responseProviderStatusCodes = responseTypesFromProvider.Values
-            .Select(responseType => responseType.StatusCode)
-            .ToHashSet();
-
-        // Preserve existing source precedence: when metadata providers/attributes define a given status code,
-        // entries for that status code discovered from endpoint metadata are removed before merge.
-        // This keeps provider metadata authoritative per status code while still allowing multiple provider
-        // entries for the same status code when their keys differ (type/content-type).
-        foreach (var existingResponseType in responseTypes.Keys.ToList())
+        // Attribute metadata takes precedence: for any status code defined by attributes,
+        // remove all endpoint entries for that status code before merging.
+        var attributeStatusCodes = attributeResponseTypes.Values.Select(r => r.StatusCode).ToHashSet();
+        foreach (var key in endpointResponseTypes.Keys.ToList())
         {
-            if (responseProviderStatusCodes.Contains(existingResponseType.StatusCode))
+            if (attributeStatusCodes.Contains(key.StatusCode))
             {
-                responseTypes.Remove(existingResponseType);
+                endpointResponseTypes.Remove(key);
             }
         }
 
-        foreach (var responseType in responseTypesFromProvider)
+        // Merge Attribute metadata with Endpoint metadata
+        foreach (var entry in attributeResponseTypes)
         {
-            responseTypes[responseType.Key] = responseType.Value;
+            endpointResponseTypes[entry.Key] = entry.Value;
         }
+
+        var responseTypes = endpointResponseTypes;
 
         // Set the default status only when no status has already been set explicitly
         if (responseTypes.Count == 0 && type != null)
@@ -159,7 +158,7 @@ internal sealed class ApiResponseTypeProvider
     }
 
     // Shared with EndpointMetadataApiDescriptionProvider for Minimal API
-    internal static Dictionary<ResponseKey, ApiResponseType> ReadResponseMetadata(
+    internal static Dictionary<ResponseKey, ApiResponseType> ReadAttributeResponseMetadata(
         IReadOnlyList<IApiResponseMetadataProvider> responseMetadataAttributes,
         Type? type,
         Type? defaultErrorType,
@@ -176,10 +175,10 @@ internal sealed class ApiResponseTypeProvider
             .Select(provider => new ApiResponseMetadataProviderWithScope(provider, scope: 0))
             .ToList();
 
-        return ReadResponseMetadata(responseMetadataAttributesWithScope, type, defaultErrorType, contentTypes, out errorSetByDefault, responseTypeMetadataProviders, modelMetadataProvider);
+        return ReadAttributeResponseMetadata(responseMetadataAttributesWithScope, type, defaultErrorType, contentTypes, out errorSetByDefault, responseTypeMetadataProviders, modelMetadataProvider);
     }
 
-    internal static Dictionary<ResponseKey, ApiResponseType> ReadResponseMetadata(
+    internal static Dictionary<ResponseKey, ApiResponseType> ReadAttributeResponseMetadata(
         IReadOnlyList<ApiResponseMetadataProviderWithScope> responseMetadataAttributes,
         Type? type,
         Type? defaultErrorType,
@@ -301,7 +300,7 @@ internal sealed class ApiResponseTypeProvider
         return results;
     }
 
-    internal static Dictionary<ResponseKey, ApiResponseType> ReadResponseMetadata(
+    internal static Dictionary<ResponseKey, ApiResponseType> ReadEndpointResponseMetadata(
         IReadOnlyList<IProducesResponseTypeMetadata> responseMetadata,
         Type? type,
         IEnumerable<IApiResponseTypeMetadataProvider>? responseTypeMetadataProviders = null,

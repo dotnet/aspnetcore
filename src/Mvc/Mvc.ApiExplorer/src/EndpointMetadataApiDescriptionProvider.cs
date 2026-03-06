@@ -340,9 +340,9 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
             responseType = typeof(void);
         }
 
-        var responseProviderMetadataTypes = ApiResponseTypeProvider.ReadResponseMetadata(
+        var responseProviderMetadataTypes = ApiResponseTypeProvider.ReadAttributeResponseMetadata(
             responseProviderMetadata, responseType, defaultErrorType, contentTypes, out var errorSetByDefault);
-        var producesResponseMetadataTypes = ApiResponseTypeProvider.ReadResponseMetadata(producesResponseMetadata, responseType);
+        var producesResponseMetadataTypes = ApiResponseTypeProvider.ReadEndpointResponseMetadata(producesResponseMetadata, responseType);
 
         // We favor types added via the extension methods (which implements IProducesResponseTypeMetadata)
         // over those that are added via attributes.
