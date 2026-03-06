@@ -688,6 +688,8 @@ public class ComponentBaseTest
         await renderer.RenderRootComponentAsync(componentId);
 
         // Assert
+        Assert.Single(renderer.HandledExceptions);
+        Assert.IsType<InvalidTimeZoneException>(renderer.HandledExceptions[0]);
         Assert.False(component.ExposedIsAfterInitialization);
     }
 
