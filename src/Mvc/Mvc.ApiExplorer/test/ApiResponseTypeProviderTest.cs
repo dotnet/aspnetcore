@@ -33,7 +33,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.Equal(200, responseType.StatusCode);
@@ -109,7 +109,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             // BaseModel; 201 => scope=Action
             responseType =>
             {
@@ -170,7 +170,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-           result.OrderBy(r => r.StatusCode),
+           result,
            responseType =>
            {
                Assert.Equal(200, responseType.StatusCode);
@@ -227,7 +227,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-           result.OrderBy(r => r.StatusCode),
+           result,
            responseType =>
            {
                Assert.Equal(200, responseType.StatusCode);
@@ -281,7 +281,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-           result.OrderBy(r => r.StatusCode),
+           result,
            responseType =>
            {
                Assert.Equal(200, responseType.StatusCode);
@@ -320,7 +320,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.True(responseType.IsDefaultResponse);
@@ -376,7 +376,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.Equal(201, responseType.StatusCode);
@@ -419,7 +419,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.Equal(200, responseType.StatusCode);
@@ -471,7 +471,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.Equal(errorType, responseType.Type);
@@ -514,7 +514,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.Equal(typeof(DivideByZeroException), responseType.Type);
@@ -565,7 +565,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.Equal(201, responseType.StatusCode);
@@ -611,7 +611,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.True(responseType.IsDefaultResponse);
@@ -657,7 +657,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.True(responseType.IsDefaultResponse);
@@ -707,7 +707,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.Equal(200, responseType.StatusCode);
@@ -737,7 +737,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.Equal(200, responseType.StatusCode);
@@ -763,7 +763,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.Equal(200, responseType.StatusCode);
@@ -796,7 +796,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
+            result,
             responseType =>
             {
                 Assert.Equal(typeof(BaseModel), responseType.Type);
@@ -832,9 +832,18 @@ public class ApiResponseTypeProviderTest
 
         var result = provider.GetApiResponseTypes(actionDescriptor);
 
-        Assert.Equal(2, result.Count);
-        Assert.Contains(result, responseType => responseType is { StatusCode: 200, Type: not null } && responseType.Type == typeof(BaseModel));
-        Assert.Contains(result, responseType => responseType is { StatusCode: 200, Type: not null } && responseType.Type == typeof(string));
+        Assert.Collection(
+            result,
+            responseType =>
+            {
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(typeof(BaseModel), responseType.Type);
+            },
+            responseType =>
+            {
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(typeof(string), responseType.Type);
+            });
     }
 
     [Fact]
@@ -958,7 +967,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode).ThenBy(r => r.Type?.Name),
+            result,
             responseType =>
             {
                 Assert.Equal(200, responseType.StatusCode);
@@ -1000,7 +1009,7 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode).ThenBy(r => r.Type?.Name),
+            result,
             responseType =>
             {
                 Assert.Equal(200, responseType.StatusCode);
