@@ -85,6 +85,17 @@ public class ApiResponseTypeProviderTest
                 new FilterDescriptor(new ProducesResponseTypeAttribute(404), FilterScope.Action),
             };
 
+        // Global:
+        //  400 => void (ignored, overriden by 400 status code in controller scope)
+        // --
+        // Controller:
+        //  201 => object (ignored, overriden by 201 status code in action scope)
+        //  400 => ProblemDetails
+        // --
+        // Action:
+        // 201 => BaseModel
+        // 404 => void
+
         var actionDescriptor = new ControllerActionDescriptor
         {
             FilterDescriptors = filterDescriptors,
@@ -99,6 +110,7 @@ public class ApiResponseTypeProviderTest
         // Assert
         Assert.Collection(
             result.OrderBy(r => r.StatusCode),
+            // BaseModel; 201 => scope=Action
             responseType =>
             {
                 Assert.Equal(201, responseType.StatusCode);
@@ -112,6 +124,7 @@ public class ApiResponseTypeProviderTest
                         Assert.IsType<TestOutputFormatter>(format.Formatter);
                     });
             },
+            // ProblemDetails; 400 => scope=Controller
             responseType =>
             {
                 Assert.Equal(400, responseType.StatusCode);
@@ -125,6 +138,7 @@ public class ApiResponseTypeProviderTest
                         Assert.IsType<TestOutputFormatter>(format.Formatter);
                     });
             },
+            // 404; void => scope=Action
             responseType =>
             {
                 Assert.Equal(404, responseType.StatusCode);

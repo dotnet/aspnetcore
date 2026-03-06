@@ -13,7 +13,9 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 
 internal sealed class ApiResponseTypeProvider
 {
-    internal readonly record struct ResponseKey(int StatusCode, Type? DeclaredType, string? ContentType);
+    // ApiResponseType has Type, StatusCode and ApiResponseFormats (which keeps MediaTypes aka Content-Type)
+    // so we need to distinguish per StatusCode+Type here
+    internal readonly record struct ResponseKey(int StatusCode, Type? DeclaredType);
 
     private readonly IModelMetadataProvider _modelMetadataProvider;
     private readonly IActionResultTypeMapper _mapper;
@@ -34,24 +36,18 @@ internal sealed class ApiResponseTypeProvider
         // We only provide response info if we can figure out a type that is a user-data type.
         // Void /Task object/IActionResult will result in no data.
         var declaredReturnType = GetDeclaredReturnType(action);
-
         var runtimeReturnType = GetRuntimeReturnType(declaredReturnType);
 
         var responseMetadataAttributes = GetResponseMetadataAttributes(action);
-        IReadOnlyList<int>? scopes = null;
         if (!HasSignificantMetadataProvider(responseMetadataAttributes) &&
             action.Properties.TryGetValue(typeof(ApiConventionResult), out var result))
         {
             // Action does not have any conventions. Use conventions on it if present.
             var apiConventionResult = (ApiConventionResult)result!;
-            responseMetadataAttributes.AddRange(apiConventionResult.ResponseMetadataProviders);
-        }
-        else
-        {
-            // When filter-based attributes are used (no conventions), extract scope info
-            // so that action-level attributes can properly override controller-level attributes
-            // for the same status code.
-            scopes = GetResponseMetadataScopes(action);
+
+            // scope here is the highest - those are "significant" metadata providers, so we use the highest scope
+            var apiConventionedAttributes = apiConventionResult.ResponseMetadataProviders.Select(x => new ApiResponseMetadataProviderWithScope(x, scope: 100));
+            responseMetadataAttributes.AddRange(apiConventionedAttributes);
         }
 
         var defaultErrorType = typeof(void);
@@ -61,15 +57,15 @@ internal sealed class ApiResponseTypeProvider
         }
 
         var producesResponseMetadata = action.EndpointMetadata.OfType<IProducesResponseTypeMetadata>().ToList();
-        var apiResponseTypes = GetApiResponseTypes(responseMetadataAttributes, producesResponseMetadata, runtimeReturnType, defaultErrorType, scopes);
+        var apiResponseTypes = GetApiResponseTypes(responseMetadataAttributes, producesResponseMetadata, runtimeReturnType, defaultErrorType);
         return apiResponseTypes;
     }
 
-    private static List<IApiResponseMetadataProvider> GetResponseMetadataAttributes(ControllerActionDescriptor action)
+    private static List<ApiResponseMetadataProviderWithScope> GetResponseMetadataAttributes(ControllerActionDescriptor action)
     {
         if (action.FilterDescriptors == null)
         {
-            return new List<IApiResponseMetadataProvider>();
+            return new List<ApiResponseMetadataProviderWithScope>();
         }
 
         // This technique for enumerating filters will intentionally ignore any filter that is an IFilterFactory
@@ -77,30 +73,16 @@ internal sealed class ApiResponseTypeProvider
         //
         // The workaround for that is to implement the metadata interface on the IFilterFactory.
         return action.FilterDescriptors
-            .Select(fd => fd.Filter)
-            .OfType<IApiResponseMetadataProvider>()
-            .ToList();
-    }
-
-    private static List<int> GetResponseMetadataScopes(ControllerActionDescriptor action)
-    {
-        if (action.FilterDescriptors == null)
-        {
-            return [];
-        }
-
-        return action.FilterDescriptors
             .Where(fd => fd.Filter is IApiResponseMetadataProvider)
-            .Select(fd => fd.Scope)
+            .Select(fd => new ApiResponseMetadataProviderWithScope((IApiResponseMetadataProvider)fd.Filter, fd.Scope))
             .ToList();
     }
 
     private ICollection<ApiResponseType> GetApiResponseTypes(
-       IReadOnlyList<IApiResponseMetadataProvider> responseMetadataAttributes,
+       IReadOnlyList<ApiResponseMetadataProviderWithScope> responseMetadataAttributes,
        IReadOnlyList<IProducesResponseTypeMetadata> producesResponseMetadata,
        Type? type,
-       Type defaultErrorType,
-       IReadOnlyList<int>? scopes = null)
+       Type defaultErrorType)
     {
         var contentTypes = new MediaTypeCollection();
         var responseTypeMetadataProviders = _mvcOptions.OutputFormatters.OfType<IApiResponseTypeMetadataProvider>();
@@ -120,8 +102,7 @@ internal sealed class ApiResponseTypeProvider
             defaultErrorType,
             contentTypes,
             out var _,
-            responseTypeMetadataProviders,
-            scopes: scopes);
+            responseTypeMetadataProviders);
 
         var responseProviderStatusCodes = responseTypesFromProvider.Values
             .Select(responseType => responseType.StatusCode)
@@ -147,7 +128,7 @@ internal sealed class ApiResponseTypeProvider
         // Set the default status only when no status has already been set explicitly
         if (responseTypes.Count == 0 && type != null)
         {
-            var defaultKey = new ResponseKey(StatusCodes.Status200OK, type, null);
+            var defaultKey = new ResponseKey(StatusCodes.Status200OK, type);
             responseTypes.Add(defaultKey, new ApiResponseType
             {
                 StatusCode = StatusCodes.Status200OK,
@@ -177,7 +158,7 @@ internal sealed class ApiResponseTypeProvider
             .ToList();
     }
 
-    // Shared with EndpointMetadataApiDescriptionProvider
+    // Shared with EndpointMetadataApiDescriptionProvider for Minimal API
     internal static Dictionary<ResponseKey, ApiResponseType> ReadResponseMetadata(
         IReadOnlyList<IApiResponseMetadataProvider> responseMetadataAttributes,
         Type? type,
@@ -185,25 +166,38 @@ internal sealed class ApiResponseTypeProvider
         MediaTypeCollection contentTypes,
         out bool errorSetByDefault,
         IEnumerable<IApiResponseTypeMetadataProvider>? responseTypeMetadataProviders = null,
-        IModelMetadataProvider? modelMetadataProvider = null,
-        IReadOnlyList<int>? scopes = null)
+        IModelMetadataProvider? modelMetadataProvider = null)
+    {
+        // Minimal API does not have scopes, it is prioritizing some of responses based on the order they are added (if same statusCode&Content-Type)
+        var responseMetadataAttributesWithScope = responseMetadataAttributes
+            .Select((provider, index) => new ApiResponseMetadataProviderWithScope(provider, index))
+            .ToList();
+
+        return ReadResponseMetadata(responseMetadataAttributesWithScope, type, defaultErrorType, contentTypes, out errorSetByDefault, responseTypeMetadataProviders, modelMetadataProvider);
+    }
+
+    internal static Dictionary<ResponseKey, ApiResponseType> ReadResponseMetadata(
+        IReadOnlyList<ApiResponseMetadataProviderWithScope> responseMetadataAttributes,
+        Type? type,
+        Type? defaultErrorType,
+        MediaTypeCollection contentTypes,
+        out bool errorSetByDefault,
+        IEnumerable<IApiResponseTypeMetadataProvider>? responseTypeMetadataProviders = null,
+        IModelMetadataProvider? modelMetadataProvider = null)
     {
         errorSetByDefault = false;
         var results = new Dictionary<ResponseKey, ApiResponseType>();
-        // When scope info is available, track the scope that added each entry so that
-        // higher-scope entries (action) can override lower-scope entries (controller)
-        // for the same status code.
-        Dictionary<ResponseKey, int>? entryScopes = scopes is not null ? new() : null;
+        var statusCodeScopes = new Dictionary<int, int>();
 
         // Get the content type that the action explicitly set to support.
         // Walk through all 'filter' attributes in order, and allow each one to see or override
         // the results of the previous ones. This is similar to the execution path for content-negotiation.
         if (responseMetadataAttributes != null)
         {
-            for (var i = 0; i < responseMetadataAttributes.Count; i++)
+            foreach (var metadataAttributeWithScope in responseMetadataAttributes.OrderByDescending(attr => attr.Scope))
             {
-                var metadataAttribute = responseMetadataAttributes[i];
-                var scope = scopes is not null && i < scopes.Count ? scopes[i] : 0;
+                var metadataAttribute = metadataAttributeWithScope.Provider;
+                var attributeScope = metadataAttributeWithScope.Scope;
 
                 // All ProducesXAttributes, except for ProducesResponseTypeAttribute do
                 // not allow multiple instances on the same method/class/etc. For those
@@ -258,41 +252,42 @@ internal sealed class ApiResponseTypeProvider
                 // action/controller/etc. In that scenario, instead of picking the most-specific
                 // set of content types (like we do with the Produces attribute above) we process
                 // the content types for each attribute independently.
-                string? keyContentType = null;
                 if (metadataAttribute is ProducesResponseTypeAttribute)
                 {
                     var attributeContentTypes = new MediaTypeCollection();
                     metadataAttribute.SetContentTypes(attributeContentTypes);
                     CalculateResponseFormatForType(apiResponseType, attributeContentTypes, responseTypeMetadataProviders, modelMetadataProvider);
-                    keyContentType = attributeContentTypes.FirstOrDefault();
                 }
 
                 if (apiResponseType.Type != null)
                 {
-                    var key = new ResponseKey(apiResponseType.StatusCode, apiResponseType.Type, keyContentType);
+                    var key = new ResponseKey(apiResponseType.StatusCode, apiResponseType.Type);
 
-                    // When scope info is available, remove entries from lower scopes that define
-                    // the same status code. This preserves the long-standing behavior where
-                    // action-level attributes override controller-level attributes, while still
-                    // allowing multiple entries within the same scope to coexist.
-                    if (entryScopes is not null)
+                    // make sure we dont keep the lesser-scope entry for same status code
+                    if (statusCodeScopes.TryGetValue(apiResponseType.StatusCode, out var existingScope))
                     {
-                        foreach (var existingKey in results.Keys.ToList())
+                        if (attributeScope > existingScope)
                         {
-                            if (existingKey.StatusCode == apiResponseType.StatusCode &&
-                                entryScopes.TryGetValue(existingKey, out var existingScope) &&
-                                existingScope < scope)
+                            statusCodeScopes[apiResponseType.StatusCode] = attributeScope;
+                            results[key] = apiResponseType;
+                        }
+                        else if (attributeScope == existingScope) // same statuscode, and same scope.
+                        {
+                            if (results.TryGetValue(key, out var existingEntry)) // also same type -> merge the content-types
                             {
-                                results.Remove(existingKey);
-                                entryScopes.Remove(existingKey);
+                                MergeApiResponseFormats(existingEntry, apiResponseType);
+                            }
+                            else // different type
+                            {
+                                results[key] = apiResponseType;
                             }
                         }
                     }
-
-                    results[key] = apiResponseType;
-                    if (entryScopes is not null)
+                    else
                     {
-                        entryScopes[key] = scope;
+                        // add new entry -> first statusCode per scope
+                        statusCodeScopes[apiResponseType.StatusCode] = attributeScope;
+                        results[key] = apiResponseType;
                     }
                 }
             }
@@ -368,8 +363,16 @@ internal sealed class ApiResponseTypeProvider
                     }
                 }
 
-                var key = new ResponseKey(apiResponseType.StatusCode, apiResponseType.Type, metadata.ContentTypes?.FirstOrDefault());
-                results[key] = apiResponseType;
+                var key = new ResponseKey(apiResponseType.StatusCode, apiResponseType.Type);
+                if (results.TryGetValue(key, out var existingEntry))
+                {
+                    // Same key: merge formats
+                    MergeApiResponseFormats(existingEntry, apiResponseType);
+                }
+                else
+                {
+                    results[key] = apiResponseType;
+                }
             }
         }
 
@@ -492,18 +495,29 @@ internal sealed class ApiResponseTypeProvider
         return declaredReturnType;
     }
 
+    private static void MergeApiResponseFormats(ApiResponseType existing, ApiResponseType newEntry)
+    {
+        foreach (var format in newEntry.ApiResponseFormats)
+        {
+            if (!existing.ApiResponseFormats.Any(f => f.MediaType == format.MediaType))
+            {
+                existing.ApiResponseFormats.Add(format);
+            }
+        }
+    }
+
     private static bool IsClientError(int statusCode)
     {
         return statusCode >= 400 && statusCode < 500;
     }
 
-    private static bool HasSignificantMetadataProvider(IReadOnlyList<IApiResponseMetadataProvider> providers)
+    private static bool HasSignificantMetadataProvider(IReadOnlyList<ApiResponseMetadataProviderWithScope> providers)
     {
         for (var i = 0; i < providers.Count; i++)
         {
             var provider = providers[i];
 
-            if (provider is ProducesAttribute producesAttribute && producesAttribute.Type is null)
+            if (provider.Provider is ProducesAttribute producesAttribute && producesAttribute.Type is null)
             {
                 // ProducesAttribute that does not specify type is considered not significant.
                 continue;
