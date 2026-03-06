@@ -81,15 +81,15 @@
 
   <!--
     Restore dotnet tools so their nupkgs are in the NuGet package cache, then include them
-    in the correlation payload. This must happen in a target (not a static ItemGroup) because
-    the nupkgs don't exist until after 'dotnet tool restore' runs.
+    in the correlation payload with AsArchive="false" so the Helix SDK ships them as plain files
+    instead of extracting them (nupkgs are zip files and would otherwise be auto-extracted).
   -->
   <Target Name="RestoreDotnetTools" BeforeTargets="IncludeAspNetRuntime">
     <Exec Command="dotnet tool restore" WorkingDirectory="$(RepoRoot)" IgnoreExitCode="true" />
     <ItemGroup>
-      <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-dump\$(DotnetDumpVersion)\dotnet-dump.$(DotnetDumpVersion).nupkg" />
-      <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-ef\$(DotnetEfVersion)\dotnet-ef.$(DotnetEfVersion).nupkg" />
-      <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-serve\$(DotnetServeVersion)\dotnet-serve.$(DotnetServeVersion).nupkg" />
+      <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-dump\$(DotnetDumpVersion)\dotnet-dump.$(DotnetDumpVersion).nupkg" AsArchive="false" />
+      <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-ef\$(DotnetEfVersion)\dotnet-ef.$(DotnetEfVersion).nupkg" AsArchive="false" />
+      <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-serve\$(DotnetServeVersion)\dotnet-serve.$(DotnetServeVersion).nupkg" AsArchive="false" />
     </ItemGroup>
     <Warning Text="dotnet-ef nupkg not found at '$(NUGET_PACKAGES)\dotnet-ef\$(DotnetEfVersion)\dotnet-ef.$(DotnetEfVersion).nupkg'. Helix template tests may install an incompatible version."
         Condition="!Exists('$(NUGET_PACKAGES)\dotnet-ef\$(DotnetEfVersion)\dotnet-ef.$(DotnetEfVersion).nupkg')" />

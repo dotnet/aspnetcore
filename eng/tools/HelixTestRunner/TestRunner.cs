@@ -148,7 +148,7 @@ public class TestRunner
                 // Extract version from filename: dotnet-ef.{version}.nupkg
                 var fileName = Path.GetFileNameWithoutExtension(efPackages[0]);
                 var version = fileName["dotnet-ef.".Length..];
-                efVersionArg = $"--version {version}";
+                efVersionArg = $"--version {version} ";
                 ProcessUtil.PrintMessage($"Found dotnet-ef package in payload: {efPackages[0]}, version: {version}");
             }
             else
@@ -157,7 +157,7 @@ public class TestRunner
             }
 
             await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                $"tool install dotnet-ef {efVersionArg} --tool-path {Options.HELIX_WORKITEM_ROOT} --add-source {correlationPayload}",
+                $"tool install dotnet-ef {efVersionArg}--tool-path {Options.HELIX_WORKITEM_ROOT} --add-source {correlationPayload}",
                 environmentVariables: EnvironmentVariables,
                 outputDataReceived: ProcessUtil.PrintMessage,
                 errorDataReceived: ProcessUtil.PrintErrorMessage,
