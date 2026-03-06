@@ -106,23 +106,12 @@ internal sealed class ApiResponseTypeProvider
             responseTypeMetadataProviders);
 
         // Attribute metadata takes precedence: for any status code defined by attributes,
-        // remove all endpoint entries for that status code before merging.
+        // all endpoint entries for that status code are replaced by the attribute entries.
         var attributeStatusCodes = attributeResponseTypes.Values.Select(r => r.StatusCode).ToHashSet();
-        foreach (var key in endpointResponseTypes.Keys.ToList())
-        {
-            if (attributeStatusCodes.Contains(key.StatusCode))
-            {
-                endpointResponseTypes.Remove(key);
-            }
-        }
-
-        // Merge Attribute metadata with Endpoint metadata
-        foreach (var entry in attributeResponseTypes)
-        {
-            endpointResponseTypes[entry.Key] = entry.Value;
-        }
-
-        var responseTypes = endpointResponseTypes;
+        var responseTypes = endpointResponseTypes
+            .Where(kvp => !attributeStatusCodes.Contains(kvp.Key.StatusCode))
+            .Concat(attributeResponseTypes)
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
         // Set the default status only when no status has already been set explicitly
         if (responseTypes.Count == 0 && type != null)
