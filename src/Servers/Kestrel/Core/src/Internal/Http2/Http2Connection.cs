@@ -1251,12 +1251,21 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     {
         Debug.Assert(_currentHeadersStream != null);
 
-        _hpackDecoder.Decode(payload, endHeaders, handler: this);
-
-        if (endHeaders)
+        try
         {
-            _currentHeadersStream.OnEndStreamReceived();
+            _hpackDecoder.Decode(payload, endHeaders, handler: this);
+
+            if (endHeaders)
+            {
+                _currentHeadersStream.OnEndStreamReceived();
+                ResetRequestHeaderParsingState();
+            }
+        }
+        catch (Http2StreamErrorException)
+        {
+            // stream will be correctly aborted by the caller
             ResetRequestHeaderParsingState();
+            throw;
         }
 
         return Task.CompletedTask;
