@@ -21,7 +21,7 @@ internal sealed partial class SessionStorageTempDataProvider : ITempDataProvider
         _logger = logger;
     }
 
-    public IDictionary<string, object?> LoadTempData(HttpContext context)
+    public IDictionary<string, (object? Value, Type? Type)> LoadTempData(HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
 
@@ -34,7 +34,7 @@ internal sealed partial class SessionStorageTempDataProvider : ITempDataProvider
                 var dataFromSession = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(value);
                 if (dataFromSession is null)
                 {
-                    return new Dictionary<string, object?>();
+                    return new Dictionary<string, (object? Value, Type? Type)>();
                 }
 
                 var convertedData = _tempDataSerializer.DeserializeData(dataFromSession);
@@ -43,23 +43,23 @@ internal sealed partial class SessionStorageTempDataProvider : ITempDataProvider
             }
 
             Log.TempDataSessionNotFound(_logger);
-            return new Dictionary<string, object?>();
+            return new Dictionary<string, (object? Value, Type? Type)>();
         }
         catch (Exception ex)
         {
             Log.TempDataSessionLoadFailure(_logger, ex);
-            return new Dictionary<string, object?>();
+            return new Dictionary<string, (object? Value, Type? Type)>();
         }
     }
 
-    public void SaveTempData(HttpContext context, IDictionary<string, object?> values)
+    public void SaveTempData(HttpContext context, IDictionary<string, (object? Value, Type? Type)> values)
     {
         ArgumentNullException.ThrowIfNull(context);
         foreach (var kvp in values)
         {
-            if (kvp.Value is not null && !_tempDataSerializer.CanSerialize(kvp.Value.GetType()))
+            if (kvp.Value.Value is not null && !_tempDataSerializer.CanSerialize(kvp.Value.Type!))
             {
-                throw new InvalidOperationException($"TempData cannot store values of type '{kvp.Value.GetType()}'.");
+                throw new InvalidOperationException($"TempData cannot store values of type '{kvp.Value.Type}'.");
             }
         }
 
