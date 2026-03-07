@@ -19,6 +19,8 @@ internal sealed class ProjectOptions
 
     public CommandOption TargetFramework { get; private set; }
 
+    public CommandOption Environment { get; private set; }
+
     public void Configure(CommandLineApplication command)
     {
         AssemblyPath = command.Option("--assembly <Path>", Resources.AssemblyDescription);
@@ -27,6 +29,7 @@ internal sealed class ProjectOptions
         Platform = command.Option("--platform <Target>", Resources.PlatformDescription);
         ProjectName = command.Option("--project <Name>", Resources.ProjectDescription);
         RuntimeFrameworkVersion = command.Option("--runtime <RUNTIME_IDENTIFIER>", Resources.RuntimeDescription);
+        Environment = command.Option("--environment <Name>", Resources.EnvironmentDescription);
     }
 
     public void Validate()
