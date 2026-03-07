@@ -349,4 +349,40 @@ webApp.MapGet(""/"", HttpMethod);
 static Task HttpMethod(HttpContext context) => Task.CompletedTask;
 ");
     }
+
+    [Fact]
+    public async Task AnonymousDelegate_RequestDelegate_ReturnType_InNestedAnonymousDelegate_DoesNotReportDiagnostics()
+    {
+        await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+var webApp = WebApplication.Create();
+webApp.Run((context) =>
+{
+    Func<Task<DateTime>> _ = () => Task.FromResult(DateTime.Now);
+    return Task.CompletedTask;
+});
+");
+    }
+
+    [Fact]
+    public async Task AnonymousDelegate_RequestDelegate_ReturnType_InNestedLambdaPassedToMethod_DoesNotReportDiagnostics()
+    {
+        // This test simulates the real-world case from the issue where a lambda
+        // returning Task<Stream> is passed to ThrowsAsync as Func<Task<Stream>>
+        await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+var webApp = WebApplication.Create();
+webApp.Run(async (context) =>
+{
+    await SomeMethodThatTakesFunc(() => Task.FromResult(Stream.Null));
+});
+
+static Task SomeMethodThatTakesFunc(Func<Task<Stream>> func) => Task.CompletedTask;
+");
+    }
 }
