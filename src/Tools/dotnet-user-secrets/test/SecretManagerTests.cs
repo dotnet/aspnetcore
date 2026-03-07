@@ -236,6 +236,21 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
     }
 
     [Fact]
+    public void Load_Handles_Case_Different_Keys_In_SecretsFile()
+    {
+        string secretId;
+        var projectPath = _fixture.GetTempSecretProject(out secretId);
+        var secretsFile = PathHelper.GetSecretsPathFromSecretsId(secretId);
+        Directory.CreateDirectory(Path.GetDirectoryName(secretsFile));
+        File.WriteAllText(secretsFile, @"{ ""ConnectionStrings:DefaultConnection"": ""test"", ""connectionStrings:DefaultConnection"": ""test2"" }", Encoding.UTF8);
+
+        var secretManager = CreateProgram();
+        secretManager.RunInternal("list", "-p", projectPath, "--verbose");
+
+        Assert.DoesNotContain("Error", _console.GetOutput());
+    }
+
+    [Fact]
     public void List_Flattens_Nested_Objects()
     {
         string secretId;
