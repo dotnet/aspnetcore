@@ -1,3 +1,5 @@
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
@@ -68,7 +70,6 @@ public class RuntimeValidatableParameterInfoResolverTests
         Assert.NotNull(validatableInfo);
         var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
         Assert.Equal("testParam", parameterValidatableInfo.Name);
-        Assert.Equal("testParam", parameterValidatableInfo.DisplayName);
     }
 
     [Fact]
@@ -84,11 +85,10 @@ public class RuntimeValidatableParameterInfoResolverTests
         Assert.NotNull(validatableInfo);
         var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
         Assert.Equal("value", parameterValidatableInfo.Name);
-        Assert.Equal("value", parameterValidatableInfo.DisplayName);
     }
 
     [Fact]
-    public void TryGetValidatableParameterInfo_WithDisplayAttribute_UsesDisplayNameFromAttribute()
+    public async Task TryGetValidatableParameterInfo_WithDisplayAttribute_UsesDisplayNameFromAttribute()
     {
         var parameterInfo = typeof(TestController)
             .GetMethod(nameof(TestController.MethodWithDisplayAttribute))!
@@ -100,7 +100,17 @@ public class RuntimeValidatableParameterInfoResolverTests
         Assert.NotNull(validatableInfo);
         var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
         Assert.Equal("value", parameterValidatableInfo.Name);
-        Assert.Equal("Custom Display Name", parameterValidatableInfo.DisplayName);
+
+        // Verify the display name is used during validation by triggering Required validation
+        var validationContext = new ValidationContext(new object());
+        var context = new ValidateContext
+        {
+            ValidationContext = validationContext,
+            ValidationOptions = new ValidationOptions()
+        };
+        await validatableInfo.ValidateAsync(null, context, CancellationToken.None);
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Contains("Custom Display Name", context.ValidationErrors.Values.First().First());
     }
 
     [Fact]
@@ -116,7 +126,6 @@ public class RuntimeValidatableParameterInfoResolverTests
         Assert.NotNull(validatableInfo);
         var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
         Assert.Equal("value", parameterValidatableInfo.Name);
-        Assert.Equal("value", parameterValidatableInfo.DisplayName);
     }
 
     [Fact]
@@ -141,7 +150,6 @@ public class RuntimeValidatableParameterInfoResolverTests
         Assert.NotNull(validatableInfo);
         var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
         Assert.Equal("testParam", parameterValidatableInfo.Name);
-        Assert.Equal("testParam", parameterValidatableInfo.DisplayName);
     }
 
     private static ParameterInfo GetParameter(Type parameterType)

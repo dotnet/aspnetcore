@@ -32,8 +32,7 @@ namespace Microsoft.Extensions.Validation.Generated
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
             global::System.Type containingType,
             global::System.Type propertyType,
-            string name,
-            string displayName) : base(containingType, propertyType, name, displayName)
+            string name) : base(containingType, propertyType, name)
         {
             ContainingType = containingType;
             Name = name;
@@ -45,6 +44,9 @@ namespace Microsoft.Extensions.Validation.Generated
 
         protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes()
             => ValidationAttributeCache.GetPropertyValidationAttributes(ContainingType, Name);
+
+        protected override string? GetDisplayName()
+            => ValidationAttributeCache.GetPropertyDisplayName(ContainingType, Name);
     }
 
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
@@ -63,6 +65,9 @@ namespace Microsoft.Extensions.Validation.Generated
 
         protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes()
             => ValidationAttributeCache.GetTypeValidationAttributes(Type);
+
+        protected override string? GetDisplayName()
+            => ValidationAttributeCache.GetTypeDisplayName(Type);
     }
 
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
@@ -79,14 +84,12 @@ namespace Microsoft.Extensions.Validation.Generated
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::SubType),
                             propertyType: typeof(string),
-                            name: "RequiredProperty",
-                            displayName: "RequiredProperty"
+                            name: "RequiredProperty"
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::SubType),
                             propertyType: typeof(string),
-                            name: "StringWithLength",
-                            displayName: "StringWithLength"
+                            name: "StringWithLength"
                         ),
                     ]
                 );
@@ -108,14 +111,12 @@ namespace Microsoft.Extensions.Validation.Generated
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexValidatableType),
                             propertyType: typeof(string),
-                            name: "Value2",
-                            displayName: "Value2"
+                            name: "Value2"
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexValidatableType),
                             propertyType: typeof(global::ValidatableSubType),
-                            name: "SubType",
-                            displayName: "SubType"
+                            name: "SubType"
                         ),
                     ]
                 );
@@ -218,6 +219,86 @@ namespace Microsoft.Extensions.Validation.Generated
                 var typeAttributes = global::System.Reflection.CustomAttributeExtensions
                         .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(t, inherit: true);
                 return global::System.Linq.Enumerable.ToArray(typeAttributes);
+            });
+        }
+
+        private static readonly global::System.Collections.Concurrent.ConcurrentDictionary<CacheKey, string?> _propertyDisplayNameCache = new();
+        private static readonly global::System.Lazy<global::System.Collections.Concurrent.ConcurrentDictionary<global::System.Type, string?>> _lazyTypeDisplayNameCache = new(() => new());
+        private static global::System.Collections.Concurrent.ConcurrentDictionary<global::System.Type, string?> TypeDisplayNameCache => _lazyTypeDisplayNameCache.Value;
+
+        public static string? GetPropertyDisplayName(
+            [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
+            global::System.Type containingType,
+            string propertyName)
+        {
+            var key = new CacheKey(containingType, propertyName);
+            return _propertyDisplayNameCache.GetOrAdd(key, static k =>
+            {
+                // Check constructor parameters first to handle record scenarios
+                // where [Display] is on the parameter rather than the property.
+                foreach (var constructor in k.ContainingType.GetConstructors())
+                {
+                    var parameter = global::System.Linq.Enumerable.FirstOrDefault(
+                        constructor.GetParameters(),
+                        p => string.Equals(p.Name, k.PropertyName, global::System.StringComparison.OrdinalIgnoreCase));
+
+                    if (parameter != null)
+                    {
+                        var paramDisplayAttr = global::System.Reflection.CustomAttributeExtensions
+                            .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(parameter);
+                        if (paramDisplayAttr?.GetName() is { } paramDisplayName)
+                        {
+                            return paramDisplayName;
+                        }
+
+                        break;
+                    }
+                }
+
+                // Check property attributes
+                var property = k.ContainingType.GetProperty(k.PropertyName);
+                if (property != null)
+                {
+                    var displayAttr = global::System.Reflection.CustomAttributeExtensions
+                        .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(property);
+                    if (displayAttr?.GetName() is { } displayName)
+                    {
+                        return displayName;
+                    }
+
+                    var displayNameAttr = global::System.Reflection.CustomAttributeExtensions
+                        .GetCustomAttribute<global::System.ComponentModel.DisplayNameAttribute>(property);
+                    if (displayNameAttr?.DisplayName is { } dn)
+                    {
+                        return dn;
+                    }
+                }
+
+                return null;
+            });
+        }
+
+        public static string? GetTypeDisplayName(
+            [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
+            global::System.Type type)
+        {
+            return TypeDisplayNameCache.GetOrAdd(type, static t =>
+            {
+                var displayAttr = global::System.Reflection.CustomAttributeExtensions
+                    .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(t);
+                if (displayAttr?.GetName() is { } displayName)
+                {
+                    return displayName;
+                }
+
+                var displayNameAttr = global::System.Reflection.CustomAttributeExtensions
+                    .GetCustomAttribute<global::System.ComponentModel.DisplayNameAttribute>(t);
+                if (displayNameAttr?.DisplayName is { } dn)
+                {
+                    return dn;
+                }
+
+                return null;
             });
         }
     }

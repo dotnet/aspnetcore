@@ -1,1 +1,8 @@
 #nullable enable
+*REMOVED*Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, string! displayName) -> void
+Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name) -> void
+abstract Microsoft.Extensions.Validation.ValidatableParameterInfo.GetDisplayName() -> string?
+*REMOVED*Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, string! displayName) -> void
+Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name) -> void
+abstract Microsoft.Extensions.Validation.ValidatablePropertyInfo.GetDisplayName() -> string?
+abstract Microsoft.Extensions.Validation.ValidatableTypeInfo.GetDisplayName() -> string?

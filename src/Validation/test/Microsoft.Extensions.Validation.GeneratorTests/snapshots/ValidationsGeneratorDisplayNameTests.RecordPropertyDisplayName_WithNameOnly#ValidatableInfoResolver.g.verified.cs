@@ -76,29 +76,15 @@ namespace Microsoft.Extensions.Validation.Generated
         public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo)
         {
             validatableInfo = null;
-            if (type == typeof(global::ComplexTypeWithJsonIgnore))
+            if (type == typeof(global::RecordWithDisplayName))
             {
                 validatableInfo = new GeneratedValidatableTypeInfo(
-                    type: typeof(global::ComplexTypeWithJsonIgnore),
+                    type: typeof(global::RecordWithDisplayName),
                     members: [
                         new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ComplexTypeWithJsonIgnore),
+                            containingType: typeof(global::RecordWithDisplayName),
                             propertyType: typeof(int),
-                            name: "ValidatedProperty"
-                        ),
-                    ]
-                );
-                return true;
-            }
-            if (type == typeof(global::RecordTypeWithJsonIgnore))
-            {
-                validatableInfo = new GeneratedValidatableTypeInfo(
-                    type: typeof(global::RecordTypeWithJsonIgnore),
-                    members: [
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::RecordTypeWithJsonIgnore),
-                            propertyType: typeof(int),
-                            name: "ValidatedProperty"
+                            name: "Value"
                         ),
                     ]
                 );
