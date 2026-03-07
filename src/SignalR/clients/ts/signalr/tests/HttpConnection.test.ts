@@ -729,6 +729,98 @@ describe("HttpConnection", () => {
         });
     });
 
+    it("does not send access token from redirect negotiate to original server on reconnect", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let negotiateCount = 0;
+            let firstPoll = true;
+            const pollingPromiseSource = new PromiseSource();
+            const httpClient = new TestHttpClient()
+                .on("POST", /\/negotiate/, (r) => {
+                    negotiateCount++;
+                    if (negotiateCount === 1) {
+                        // First negotiate to app server - redirect to Azure SignalR with a token
+                        return { url: "https://azure.signalr.net/client/", accessToken: "azureSignalRToken" };
+                    }
+
+                    if (negotiateCount === 2) {
+                        // Second negotiate to Azure SignalR service (redirect target) - succeeds
+                        return {
+                            availableTransports: [{ transport: "LongPolling", transferFormats: ["Text"] }],
+                            connectionId: "0rge0d00-0040-0030-0r00-000q00r00e00",
+                        };
+                    }
+
+                    if (negotiateCount === 3) {
+                        // Third negotiate is a reconnect to the original app server
+                        // It should NOT include the Azure SignalR token
+                        if (r.headers && r.headers.Authorization === "Bearer azureSignalRToken") {
+                            fail("Reconnect negotiate to app server must not include the Azure SignalR access token.");
+                        }
+                        return { url: "https://azure.signalr.net/client/", accessToken: "azureSignalRToken2" };
+                    }
+
+                    // Fourth negotiate to Azure SignalR service on reconnect
+                    return {
+                        availableTransports: [{ transport: "LongPolling", transferFormats: ["Text"] }],
+                        connectionId: "1rge0d00-0040-0030-0r00-000q00r00e01",
+                    };
+                })
+                .on("GET", async (r) => {
+                    if (firstPoll) {
+                        firstPoll = false;
+                        return "";
+                    }
+                    await pollingPromiseSource.promise;
+                    return new HttpResponse(204, "No Content", "");
+                })
+                .on("DELETE", () => new HttpResponse(202));
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                // explicitly do not provide an access token factory to verify we correctly reset state
+                // accessTokenFactory: () => null,
+                httpClient,
+                logger,
+                transport: HttpTransportType.LongPolling,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            try {
+                await connection.start(TransferFormat.Text);
+
+                // Verify first connection negotiated through the redirect
+                expect(negotiateCount).toBe(2);
+
+                pollingPromiseSource.resolve();
+            } finally {
+                await connection.stop();
+            }
+
+            // Reconnect - start again
+            firstPoll = true;
+            const pollingPromiseSource2 = new PromiseSource();
+            httpClient.on("GET", async (r) => {
+                if (firstPoll) {
+                    firstPoll = false;
+                    return "";
+                }
+                await pollingPromiseSource2.promise;
+                return new HttpResponse(204, "No Content", "");
+            });
+
+            try {
+                await connection.start(TransferFormat.Text);
+
+                // Verify reconnect also went through redirect (4 total negotiates)
+                expect(negotiateCount).toBe(4);
+
+                pollingPromiseSource2.resolve();
+            } finally {
+                await connection.stop();
+            }
+        });
+    });
+
     it("throws error if negotiate response has error", async () => {
         await VerifyLogger.run(async (logger) => {
             const httpClient = new TestHttpClient()
