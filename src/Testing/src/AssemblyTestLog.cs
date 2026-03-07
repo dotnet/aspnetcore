@@ -9,6 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -81,11 +82,47 @@ public class AssemblyTestLog : IAcceptFailureReports, IDisposable
         return new Disposable(() =>
         {
             stopwatch.Stop();
-            _globalLogger.LogInformation("Finished test {testName} in {duration}s", testName, stopwatch.Elapsed.TotalSeconds);
-            logger.LogInformation("Finished test {testName} in {duration}s", testName, stopwatch.Elapsed.TotalSeconds);
-            scope.Dispose();
-            factory.Dispose();
-            (serviceProvider as IDisposable)?.Dispose();
+
+            // Best-effort logging during cleanup - may fail if logger is already disposed
+            try
+            {
+                _globalLogger.LogInformation("Finished test {testName} in {duration}s", testName, stopwatch.Elapsed.TotalSeconds);
+                logger.LogInformation("Finished test {testName} in {duration}s", testName, stopwatch.Elapsed.TotalSeconds);
+            }
+            catch
+            {
+                // Ignore logging failures during cleanup
+            }
+
+            // Dispose in order, catching exceptions from each to ensure all are attempted.
+            // This prevents issues where concurrent disposal or the new System.Threading.Lock
+            // in .NET 9+ throws InvalidOperationException when the underlying handle is invalid.
+            try
+            {
+                scope?.Dispose();
+            }
+            catch
+            {
+                // Ignore - scope may already be disposed
+            }
+
+            try
+            {
+                factory?.Dispose();
+            }
+            catch
+            {
+                // Ignore - factory may already be disposed
+            }
+
+            try
+            {
+                (serviceProvider as IDisposable)?.Dispose();
+            }
+            catch
+            {
+                // Ignore - serviceProvider may already be disposed or in invalid state
+            }
         });
     }
 
@@ -341,6 +378,7 @@ public class AssemblyTestLog : IAcceptFailureReports, IDisposable
     private sealed class Disposable : IDisposable
     {
         private readonly Action _action;
+        private int _disposed;
 
         public Disposable(Action action)
         {
@@ -349,7 +387,12 @@ public class AssemblyTestLog : IAcceptFailureReports, IDisposable
 
         public void Dispose()
         {
-            _action();
+            // Prevent double-dispose using interlocked compare-exchange.
+            // This guards against concurrent calls from test framework teardown.
+            if (Interlocked.CompareExchange(ref _disposed, 1, 0) == 0)
+            {
+                _action();
+            }
         }
     }
 }
