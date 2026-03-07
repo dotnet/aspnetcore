@@ -41,7 +41,7 @@ import { prepareRuntimeConfig } from '../src/Platform/Mono/MonoPlatform';
 import { fetchAndInvokeInitializers } from '../src/JSInitializers/JSInitializers.WebAssembly';
 
 // Cast to jest mock for type safety
-const mockFetchAndInvokeInitializers = fetchAndInvokeInitializers as jest.Mock;
+const mockFetchAndInvokeInitializers = fetchAndInvokeInitializers as any;
 
 // ---------- Helpers ----------
 
@@ -90,7 +90,7 @@ describe('prepareRuntimeConfig — onConfigLoaded timing (Issue #54358)', () => 
             callOrder.push('fetchAndInvokeInitializers');
             opts.loadBootResource = customLoader;
             opts.environment = 'Development123';
-            return {};
+            return {} as any;
         });
 
         const moduleConfig = prepareRuntimeConfig(options as any, builder as any);
@@ -109,7 +109,7 @@ describe('prepareRuntimeConfig — onConfigLoaded timing (Issue #54358)', () => 
         mockFetchAndInvokeInitializers.mockImplementation(async (opts: any) => {
             callOrder.push('fetchAndInvokeInitializers');
             opts.environment = 'Staging';
-            return {};
+            return {} as any;
         });
 
         const moduleConfig = prepareRuntimeConfig(options as any, builder as any);
@@ -124,7 +124,7 @@ describe('prepareRuntimeConfig — onConfigLoaded timing (Issue #54358)', () => 
         const options: Record<string, any> = {};
         const { builder } = createMockDotnetBuilder();
 
-        mockFetchAndInvokeInitializers.mockResolvedValue({});
+        mockFetchAndInvokeInitializers.mockResolvedValue({} as any);
 
         const moduleConfig = prepareRuntimeConfig(options as any, builder as any);
         await moduleConfig.onConfigLoaded!(createMockMonoConfig() as any);
@@ -143,7 +143,7 @@ describe('prepareRuntimeConfig — onConfigLoaded timing (Issue #54358)', () => 
         mockFetchAndInvokeInitializers.mockImplementation(async (opts: any) => {
             callOrder.push('fetchAndInvokeInitializers');
             opts.configureRuntime = customConfigureRuntime;
-            return {};
+            return {} as any;
         });
 
         const moduleConfig = prepareRuntimeConfig(options as any, builder as any);
@@ -161,7 +161,7 @@ describe('prepareRuntimeConfig — onConfigLoaded timing (Issue #54358)', () => 
 
         mockFetchAndInvokeInitializers.mockImplementation(async () => {
             callOrder.push('fetchAndInvokeInitializers');
-            return {};
+            return {} as any;
         });
 
         const onConfigLoadedCallback = jest.fn(() => {
@@ -184,7 +184,7 @@ describe('prepareRuntimeConfig — onConfigLoaded timing (Issue #54358)', () => 
         };
         const { builder } = createMockDotnetBuilder();
 
-        mockFetchAndInvokeInitializers.mockResolvedValue({});
+        mockFetchAndInvokeInitializers.mockResolvedValue({} as any);
 
         const moduleConfig = prepareRuntimeConfig(options as any, builder as any);
         await moduleConfig.onConfigLoaded!(createMockMonoConfig() as any);
