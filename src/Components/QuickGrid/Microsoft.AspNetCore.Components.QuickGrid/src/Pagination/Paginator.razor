@@ -15,14 +15,14 @@
             }
         </div>
         <nav role="navigation">
-            <button class="go-first" type="button" @onclick="GoFirstAsync" disabled="@(!CanGoBack)" title="Go to first page" aria-label="Go to first page"></button>
-            <button class="go-previous" type="button" @onclick="GoPreviousAsync" disabled="@(!CanGoBack)" title="Go to previous page" aria-label="Go to previous page"></button>
+            <a class="go-first" href="@(CanGoBack ? GetPageUrl(0) : null)" title="Go to first page" aria-label="Go to first page" aria-disabled="@(!CanGoBack ? "true" : "false")">«</a>
+            <a class="go-previous" href="@(CanGoBack ? GetPageUrl(State.CurrentPageIndex - 1) : null)" title="Go to previous page" aria-label="Go to previous page" aria-disabled="@(!CanGoBack ? "true" : "false")">‹</a>
             <div class="pagination-text">
                 Page <strong>@(State.CurrentPageIndex + 1)</strong>
                 of <strong>@(State.LastPageIndex + 1)</strong>
             </div>
-            <button class="go-next" type="button" @onclick="GoNextAsync" disabled="@(!CanGoForwards)" title="Go to next page" aria-label="Go to next page"></button>
-            <button class="go-last" type="button" @onclick="GoLastAsync" disabled="@(!CanGoForwards)" title="Go to last page" aria-label="Go to last page"></button>
+            <a class="go-next" href="@(CanGoForwards ? GetPageUrl(State.CurrentPageIndex + 1) : null)" title="Go to next page" aria-label="Go to next page" aria-disabled="@(!CanGoForwards ? "true" : "false")">›</a>
+            <a class="go-last" href="@(CanGoForwards ? GetPageUrl(State.LastPageIndex.GetValueOrDefault(0)) : null)" title="Go to last page" aria-label="Go to last page" aria-disabled="@(!CanGoForwards ? "true" : "false")">»</a>
         </nav>
     }
 </div>

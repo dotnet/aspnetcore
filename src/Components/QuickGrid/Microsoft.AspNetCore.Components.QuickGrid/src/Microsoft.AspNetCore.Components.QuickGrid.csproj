@@ -17,6 +17,11 @@
     <_CurrentProjectDiscoveredScopedCssFiles Include="@(ThemeCssFiles)" RelativePath="%(Identity)" BasePath="_content/$(AssemblyName)" />
 
     <Compile Include="$(ComponentsSharedSourceRoot)src\AttributeUtilities.cs" LinkBase="Infrastructure" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\QueryParameterValueSupplier.cs" LinkBase="Infrastructure" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\StringSegmentAccumulator.cs" LinkBase="Infrastructure" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\QueryParameterNameComparer.cs" LinkBase="Infrastructure" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\UrlValueConstraint.cs" LinkBase="Infrastructure" />
+    <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" LinkBase="Infrastructure" />
   </ItemGroup>
 
   <ItemGroup>
