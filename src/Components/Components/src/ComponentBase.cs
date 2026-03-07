@@ -24,7 +24,7 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     private readonly RenderFragment _renderFragment;
     private (IComponentRenderMode? mode, bool cached) _renderMode;
     private RenderHandle _renderHandle;
-    private bool _initialized;
+    private bool _wasInitAndSetParametersRun;
     private bool _hasNeverRendered = true;
     private bool _hasPendingQueuedRender;
     private bool _hasCalledOnAfterRender;
@@ -41,6 +41,11 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
             BuildRenderTree(builder);
         };
     }
+
+    /// <summary>
+    /// Indicates if the component finished calling the <see cref="OnInitialized"/> and <see cref="OnInitializedAsync"/>.
+    /// </summary>
+    protected bool IsAfterInitialization { get; private set; }
 
     /// <summary>
     /// Gets the <see cref="Components.RendererInfo"/> the component is running on.
@@ -259,9 +264,9 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     public virtual Task SetParametersAsync(ParameterView parameters)
     {
         parameters.SetParameterProperties(this);
-        if (!_initialized)
+        if (!_wasInitAndSetParametersRun)
         {
-            _initialized = true;
+            _wasInitAndSetParametersRun = true;
 
             return RunInitAndSetParametersAsync();
         }
@@ -306,6 +311,8 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
 
             // Don't call StateHasChanged here. CallOnParametersSetAsync should handle that for us.
         }
+
+        IsAfterInitialization = true;
 
         await CallOnParametersSetAsync();
     }
