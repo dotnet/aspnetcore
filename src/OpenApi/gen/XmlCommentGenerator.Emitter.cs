@@ -57,6 +57,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.OpenApi;
     using Microsoft.AspNetCore.Mvc.Controllers;
+    using Microsoft.AspNetCore.Mvc.ModelBinding;
     using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.OpenApi;
@@ -149,30 +150,6 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 }
                 sb.Append(')');
             }
-
-            return sb.ToString();
-        }
-
-        /// <summary>
-        /// Generates a documentation comment ID for a property given its container type and property name.
-        /// Example: P:Namespace.ContainingType.PropertyName
-        /// </summary>
-        public static string CreateDocumentationId(Type containerType, string propertyName)
-        {
-            if (containerType == null)
-            {
-                throw new ArgumentNullException(nameof(containerType));
-            }
-            if (string.IsNullOrEmpty(propertyName))
-            {
-                throw new ArgumentException("Property name cannot be null or empty.", nameof(propertyName));
-            }
-
-            var sb = new StringBuilder();
-            sb.Append("P:");
-            sb.Append(GetTypeDocId(containerType, includeGenericArguments: false, omitGenericArity: false));
-            sb.Append('.');
-            sb.Append(propertyName);
 
             return sb.ToString();
         }
@@ -389,7 +366,11 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     foreach (var parameterComment in methodComment.Parameters)
                     {
                         var parameterInfo = methodInfo.GetParameters().SingleOrDefault(info => info.Name == parameterComment.Name);
-                        var operationParameter = operation.Parameters?.SingleOrDefault(parameter => parameter.Name == parameterComment.Name);
+                        if (parameterInfo?.ParameterType == typeof(CancellationToken))
+                        {
+                            continue;
+                        }
+                        var operationParameter = GetOperationParameter(operation, parameterInfo, parameterComment);
                         if (operationParameter is not null)
                         {
                             var targetOperationParameter = UnwrapOpenApiParameter(operationParameter);
@@ -449,10 +430,14 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     && metadata.ContainerType is { } containerType
                     && metadata.PropertyName is { } propertyName)
                 {
-                    var propertyDocId = DocumentationCommentIdHelper.CreateDocumentationId(containerType, propertyName);
-                    if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyDocId), out var propertyComment))
+                    var propertyInfo = containerType.GetProperty(propertyName);
+                    if (propertyInfo is null)
                     {
-                        var parameter = operation.Parameters?.SingleOrDefault(p => p.Name == metadata.Name);
+                        continue;
+                    }
+                    if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
+                    {
+                        var parameter = GetOperationParameter(operation, propertyInfo);
                         var description = propertyComment.Summary;
                         if (!string.IsNullOrEmpty(description) && !string.IsNullOrEmpty(propertyComment.Value))
                         {
@@ -497,6 +482,69 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             }
 
             return Task.CompletedTask;
+        }
+
+        private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, PropertyInfo propertyInfo)
+        {
+            return GetOperationParameter(operation, propertyInfo, propertyInfo?.Name);
+        }
+
+        private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, ParameterInfo? parameterInfo, XmlParameterComment comment)
+        {
+            return GetOperationParameter(operation, parameterInfo, parameterInfo?.Name ?? comment.Name);
+        }
+
+        private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, ICustomAttributeProvider? attributeProvider, string? name)
+        {
+            var parameters = operation.Parameters;
+            if (parameters is null || parameters.Count == 0)
+            {
+                return null;
+            }
+
+            var modelNames = GetModelNames(attributeProvider, name);
+
+            foreach (var parameter in parameters)
+            {
+                var parameterName = parameter.Name;
+
+                if (string.IsNullOrEmpty(parameterName))
+                {
+                    continue;
+                }
+
+                if (modelNames.Contains(parameterName))
+                {
+                    return parameter;
+                }
+            }
+
+            return null;
+        }
+
+        private static IReadOnlySet<string> GetModelNames(ICustomAttributeProvider? attributeProvider, string? name)
+        {
+            var modelNames = new HashSet<string>();
+
+            if (!string.IsNullOrEmpty(name))
+            {
+                modelNames.Add(name);
+            }
+
+            if (attributeProvider is null)
+            {
+                return modelNames;
+            }
+
+            foreach (var attribute in attributeProvider.GetCustomAttributes(inherit: false))
+            {
+                if (attribute is IModelNameProvider modelNameProvider && !string.IsNullOrEmpty(modelNameProvider.Name))
+                {
+                    modelNames.Add(modelNameProvider.Name);
+                }
+            }
+
+            return modelNames;
         }
 
         private static OpenApiParameter UnwrapOpenApiParameter(IOpenApiParameter sourceParameter)
