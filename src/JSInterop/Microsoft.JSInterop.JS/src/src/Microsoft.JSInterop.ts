@@ -616,7 +616,7 @@ export module DotNet {
       switch (callType) {
           case JSCallType.FunctionCall:
               const func = parent[memberName];
-              if (func instanceof Function) {
+              if (typeof func === 'function') {
                   return func.bind(parent);
               } else {
                   throw new Error(`The value '${identifier}' is not a function.`);
