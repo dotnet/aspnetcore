@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.AspNetCore.Components.WebView.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebView;
 
@@ -41,7 +40,7 @@ internal sealed class PageContext : IAsyncDisposable
         NavigationManager = (WebViewNavigationManager)ServiceProvider.GetRequiredService<NavigationManager>();
         NavigationManager.AttachToWebView(ipcSender, baseUrl, startUrl);
 
-        JSRuntime = (WebViewJSRuntime)ServiceProvider.GetRequiredService<IJSRuntime>();
+        JSRuntime = ServiceProvider.GetRequiredService<WebViewJSRuntime>();
         JSRuntime.AttachToWebView(ipcSender);
 
         var loggerFactory = ServiceProvider.GetRequiredService<ILoggerFactory>();

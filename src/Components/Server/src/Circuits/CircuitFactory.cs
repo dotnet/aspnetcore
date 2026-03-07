@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
@@ -48,7 +47,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         ResourceAssetCollection resourceCollection)
     {
         var scope = _scopeFactory.CreateAsyncScope();
-        var jsRuntime = (RemoteJSRuntime)scope.ServiceProvider.GetRequiredService<IJSRuntime>();
+        var jsRuntime = scope.ServiceProvider.GetRequiredService<RemoteJSRuntime>();
         jsRuntime.Initialize(client);
 
         var navigationManager = (RemoteNavigationManager)scope.ServiceProvider.GetRequiredService<NavigationManager>();
