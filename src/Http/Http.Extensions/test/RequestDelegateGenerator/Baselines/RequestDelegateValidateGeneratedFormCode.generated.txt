@@ -328,7 +328,8 @@ namespace Microsoft.AspNetCore.Http.Generated
             HttpContext httpContext,
             LogOrThrowExceptionHelper logOrThrowExceptionHelper,
             string parameterTypeName,
-            string parameterName)
+            string parameterName,
+            bool allowEmptyFormBody = false)
         {
             object? formValue = null;
             var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
@@ -337,6 +338,12 @@ namespace Microsoft.AspNetCore.Http.Generated
             {
                 if (!httpContext.Request.HasFormContentType)
                 {
+                    if (allowEmptyFormBody)
+                    {
+                        httpContext.Request.Form = FormCollection.Empty;
+                        return (true, null);
+                    }
+
                     logOrThrowExceptionHelper.UnexpectedNonFormContentType(httpContext.Request.ContentType);
                     httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
                     return (false, null);
@@ -364,6 +371,10 @@ namespace Microsoft.AspNetCore.Http.Generated
                     httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                     return (false, null);
                 }
+            }
+            else if (allowEmptyFormBody)
+            {
+                httpContext.Request.Form = FormCollection.Empty;
             }
 
             return (true, formValue);

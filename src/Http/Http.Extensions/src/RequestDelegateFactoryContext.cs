@@ -51,6 +51,7 @@ internal sealed class RequestDelegateFactoryContext
     // is called.
     public bool ReadForm { get; set; }
     public bool ReadFormFile { get; set; }
+    public bool AllowEmptyFormBody { get; set; } = true;
     public ParameterInfo? FirstFormRequestBodyParameter { get; set; }
     // Properties for constructing and managing filters
     public Expression? MethodCall { get; set; }
