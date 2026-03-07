@@ -4,9 +4,7 @@
     <title>ASP.NET Core Logging Integration</title>
     <Description>This site extension enables logging integration for ASP.NET Core applications on Azure App Service.</Description>
     <TargetFramework>$(DefaultNetFxTargetFramework)</TargetFramework>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PackageTags>aspnet;logging;aspnetcore;AzureSiteExtension;keyvault;configuration;dataprotection</PackageTags>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PackageType>AzureSiteExtension</PackageType>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <IncludeBuildOutput>false</IncludeBuildOutput>
