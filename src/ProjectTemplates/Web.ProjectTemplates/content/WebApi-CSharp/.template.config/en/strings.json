@@ -3,7 +3,7 @@
   "_version.comment": "{Locked}",
   "strings": {
     "name": "ASP.NET Core Web API",
-    "description": "A project template for creating a RESTful Web API using ASP.NET Core controllers or minimal APIs, with optional support for OpenAPI and authentication.",
+    "description": "A Web API that apps and websites can use to send and receive data.",
     "parameter.DisableOpenAPI.name": "Enable _OpenAPI support",
     "parameter.DisableOpenAPI.description": "Enables OpenAPI (Swagger) support",
     "parameter.UseMinimalAPIs.name": "Use controllers",
