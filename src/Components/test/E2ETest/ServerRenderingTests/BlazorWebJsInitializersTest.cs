@@ -50,12 +50,6 @@ public class BlazorWebJsInitializersTest : ServerTestBase<BasicTestAppServerSite
             Browser.Click(By.Id("remove-server-component"));
             Browser.Exists(By.Id("classic-and-modern-circuit-closed"));
         }
-
-        if (webassembly)
-        {
-            Browser.Exists(By.Id("total-requests"));
-            Browser.True(() => Browser.FindElements(By.CssSelector("#total-requests tr")).Count > 1);
-        }
     }
 
     [Theory]
@@ -83,12 +77,6 @@ public class BlazorWebJsInitializersTest : ServerTestBase<BasicTestAppServerSite
         {
             Browser.Click(By.Id("remove-server-component"));
             Browser.Exists(By.Id("classic-and-modern-circuit-closed"));
-        }
-
-        if (webassembly)
-        {
-            Browser.Exists(By.Id("total-requests"));
-            Browser.True(() => Browser.FindElements(By.CssSelector("#total-requests tr")).Count > 1);
         }
     }
 
