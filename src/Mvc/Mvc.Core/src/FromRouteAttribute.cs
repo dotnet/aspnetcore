@@ -34,4 +34,19 @@ public class FromRouteAttribute : Attribute, IBindingSourceMetadata, IModelNameP
     /// The <see cref="HttpRequest.RouteValues"/> name.
     /// </summary>
     public string? Name { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the route parameter value should be fully URL-decoded
+    /// using <see cref="Uri.UnescapeDataString(string)"/>.
+    /// </summary>
+    /// <remarks>
+    /// When set to <see langword="true"/>, characters such as <c>%2F</c> (forward slash) that
+    /// are normally preserved in route values will be decoded. Defaults to <see langword="false"/>.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// app.MapGet("/users/{userId}", ([FromRoute(UrlDecode = true)] string userId) => userId);
+    /// </code>
+    /// </example>
+    public bool UrlDecode { get; set; }
 }

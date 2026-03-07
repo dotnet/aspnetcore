@@ -60,6 +60,7 @@ public static partial class RequestDelegateFactory
     private static readonly MethodInfo ResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteResultWriteResponse), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo StringResultWriteResponseAsyncMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ExecuteWriteStringResponseAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo StringIsNullOrEmptyMethod = typeof(string).GetMethod(nameof(string.IsNullOrEmpty), BindingFlags.Static | BindingFlags.Public)!;
+    private static readonly MethodInfo GetUrlDecodedRouteValueMethod = typeof(RouteValueUrlDecoder).GetMethod(nameof(RouteValueUrlDecoder.GetUrlDecodedRouteValue), BindingFlags.Static | BindingFlags.Public)!;
     private static readonly MethodInfo WrapObjectAsValueTaskMethod = typeof(RequestDelegateFactory).GetMethod(nameof(WrapObjectAsValueTask), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo TaskOfTToValueTaskOfObjectMethod = typeof(RequestDelegateFactory).GetMethod(nameof(TaskOfTToValueTaskOfObject), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo ValueTaskOfTToValueTaskOfObjectMethod = typeof(RequestDelegateFactory).GetMethod(nameof(ValueTaskOfTToValueTaskOfObject), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -732,6 +733,13 @@ public static partial class RequestDelegateFactory
             if (factoryContext.RouteParameters is { } routeParams && !routeParams.Contains(routeName, StringComparer.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException($"'{routeName}' is not a route parameter.");
+            }
+
+            if (routeAttribute.UrlDecode)
+            {
+                // Decode from the raw request target to avoid double-decoding.
+                var valueExpression = Expression.Call(GetUrlDecodedRouteValueMethod, HttpContextExpr, Expression.Constant(routeName));
+                return BindParameterFromValue(parameter, valueExpression, factoryContext, "route");
             }
 
             return BindParameterFromProperty(parameter, RouteValuesExpr, RouteValuesIndexerProperty, routeName, factoryContext, "route");

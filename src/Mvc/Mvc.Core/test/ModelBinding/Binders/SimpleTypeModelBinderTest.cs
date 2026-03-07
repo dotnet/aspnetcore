@@ -2,7 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 
@@ -492,6 +497,105 @@ public class SimpleTypeModelBinderTest
             ModelState = new ModelStateDictionary(),
             ValueProvider = new SimpleValueProvider() // empty
         };
+    }
+
+    private static DefaultModelBindingContext GetBindingContextForParameter(Type controllerType, string methodName, string paramName, string rawTarget = null, string routeTemplate = null, string routeValue = null)
+    {
+        var provider = new Metadata.DefaultModelMetadataProvider(
+            new DefaultCompositeMetadataDetailsProvider(new IMetadataDetailsProvider[]
+            {
+                new DefaultBindingMetadataProvider()
+            }));
+        var method = controllerType.GetMethod(methodName)!;
+        var parameter = method.GetParameters().First(p => p.Name == paramName);
+        var metadata = provider.GetMetadataForParameter(parameter);
+
+        var httpContext = new DefaultHttpContext();
+        if (rawTarget is not null)
+        {
+            httpContext.Features.Set<IHttpRequestFeature>(new HttpRequestFeature { RawTarget = rawTarget });
+        }
+        if (routeTemplate is not null)
+        {
+            var endpointBuilder = new RouteEndpointBuilder(_ => Task.CompletedTask, RoutePatternFactory.Parse(routeTemplate), 0);
+            httpContext.SetEndpoint(endpointBuilder.Build());
+        }
+        if (routeValue is not null)
+        {
+            httpContext.Request.RouteValues[paramName] = routeValue;
+        }
+
+        return new DefaultModelBindingContext
+        {
+            ModelMetadata = metadata,
+            ModelName = paramName,
+            ModelState = new ModelStateDictionary(),
+            BindingSource = metadata.BindingSource,
+            ValueProvider = new SimpleValueProvider(),
+            ActionContext = new ActionContext { HttpContext = httpContext },
+        };
+    }
+
+    [Fact]
+    public async Task BindModelAsync_UrlDecodesRouteValue_WhenFromRouteUrlDecodeIsTrue()
+    {
+        var bindingContext = GetBindingContextForParameter(
+            typeof(UrlDecodeTestController), nameof(UrlDecodeTestController.WithUrlDecode), "userId",
+            rawTarget: "/users/domain%2Fuser", routeTemplate: "/users/{userId}", routeValue: "domain%2Fuser");
+        bindingContext.ValueProvider = new SimpleValueProvider
+        {
+            { "userId", "domain%2Fuser" }
+        };
+
+        var binder = new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance);
+
+        await binder.BindModelAsync(bindingContext);
+
+        Assert.True(bindingContext.Result.IsModelSet);
+        Assert.Equal("domain/user", bindingContext.Result.Model);
+    }
+
+    [Fact]
+    public async Task BindModelAsync_PreservesEncodedRouteValue_WhenFromRouteUrlDecodeIsFalse()
+    {
+        var bindingContext = GetBindingContextForParameter(
+            typeof(UrlDecodeTestController), nameof(UrlDecodeTestController.WithoutUrlDecode), "userId");
+        bindingContext.ValueProvider = new SimpleValueProvider
+        {
+            { "userId", "domain%2Fuser" }
+        };
+
+        var binder = new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance);
+
+        await binder.BindModelAsync(bindingContext);
+
+        Assert.True(bindingContext.Result.IsModelSet);
+        Assert.Equal("domain%2Fuser", bindingContext.Result.Model);
+    }
+
+    [Fact]
+    public async Task BindModelAsync_UrlDecodesMultipleEncodedCharacters()
+    {
+        var bindingContext = GetBindingContextForParameter(
+            typeof(UrlDecodeTestController), nameof(UrlDecodeTestController.WithUrlDecode), "userId",
+            rawTarget: "/users/a%2Fb%2Bc%20d", routeTemplate: "/users/{userId}", routeValue: "a%2Fb%2Bc%20d");
+        bindingContext.ValueProvider = new SimpleValueProvider
+        {
+            { "userId", "a%2Fb%2Bc%20d" }
+        };
+
+        var binder = new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance);
+
+        await binder.BindModelAsync(bindingContext);
+
+        Assert.True(bindingContext.Result.IsModelSet);
+        Assert.Equal("a/b+c d", bindingContext.Result.Model);
+    }
+
+    private class UrlDecodeTestController
+    {
+        public void WithUrlDecode([FromRoute(UrlDecode = true)] string userId) { }
+        public void WithoutUrlDecode([FromRoute] string userId) { }
     }
 
     private sealed class TestClass
