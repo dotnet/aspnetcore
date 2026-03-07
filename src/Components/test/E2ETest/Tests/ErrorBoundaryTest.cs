@@ -115,6 +115,16 @@ public class ErrorBoundaryTest : ServerTestBase<ToggleExecutionModeServerFixture
     }
 
     [Fact]
+    public void CanHandleMultipleExceptionsForOnce()
+    {
+        var container = Browser.Exists(By.Id("throw-multiple-errors-foreach-test"));
+        container.FindElement(By.ClassName("throw-multiple-errors-foreach")).Click();
+        Browser.Collection(() => container.FindElements(By.ClassName("error-message")),
+            elem => Assert.Equal("There was an error.", elem.Text));
+        AssertGlobalErrorState(false);
+    }
+
+    [Fact]
     public void CanHandleErrorsAfterDisposingComponent()
     {
         var container = Browser.Exists(By.Id("error-after-disposal-test"));
