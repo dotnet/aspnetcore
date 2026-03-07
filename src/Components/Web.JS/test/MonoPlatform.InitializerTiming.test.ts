@@ -20,25 +20,25 @@ import { describe, test, expect, jest, beforeEach } from '@jest/globals';
 // any const from outer scope inside the mock factory. Instead, we get a reference
 // to the mock function via require() after mocking.
 
-jest.mock('JSInitializers/JSInitializers.WebAssembly', () => ({
+jest.mock('../src/JSInitializers/JSInitializers.WebAssembly', () => ({
     fetchAndInvokeInitializers: jest.fn(),
 }));
 
-jest.mock('GlobalExports', () => ({
+jest.mock('../src/GlobalExports', () => ({
     Blazor: { _internal: {} },
 }));
 
-jest.mock('BootErrors', () => ({
+jest.mock('../src/BootErrors', () => ({
     showErrorNotification: jest.fn(),
 }));
 
-jest.mock('Platform/Mono/MonoDebugger', () => ({
+jest.mock('../src/Platform/Mono/MonoDebugger', () => ({
     attachDebuggerHotkey: jest.fn(),
 }));
 
 // Import modules after mocks
-import { prepareRuntimeConfig } from 'Platform/Mono/MonoPlatform';
-import { fetchAndInvokeInitializers } from 'JSInitializers/JSInitializers.WebAssembly';
+import { prepareRuntimeConfig } from '../src/Platform/Mono/MonoPlatform';
+import { fetchAndInvokeInitializers } from '../src/JSInitializers/JSInitializers.WebAssembly';
 
 // Cast to jest mock for type safety
 const mockFetchAndInvokeInitializers = fetchAndInvokeInitializers as jest.Mock;
