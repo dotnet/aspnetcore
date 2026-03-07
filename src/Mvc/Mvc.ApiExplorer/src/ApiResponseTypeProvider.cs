@@ -13,6 +13,10 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 
 internal sealed class ApiResponseTypeProvider
 {
+    // ApiResponseType has Type, StatusCode and ApiResponseFormats (which keeps MediaTypes aka Content-Type)
+    // so we need to distinguish per StatusCode+Type here
+    internal readonly record struct ResponseKey(int StatusCode, Type? DeclaredType);
+
     private readonly IModelMetadataProvider _modelMetadataProvider;
     private readonly IActionResultTypeMapper _mapper;
     private readonly MvcOptions _mvcOptions;
@@ -32,7 +36,6 @@ internal sealed class ApiResponseTypeProvider
         // We only provide response info if we can figure out a type that is a user-data type.
         // Void /Task object/IActionResult will result in no data.
         var declaredReturnType = GetDeclaredReturnType(action);
-
         var runtimeReturnType = GetRuntimeReturnType(declaredReturnType);
 
         var responseMetadataAttributes = GetResponseMetadataAttributes(action);
@@ -41,7 +44,10 @@ internal sealed class ApiResponseTypeProvider
         {
             // Action does not have any conventions. Use conventions on it if present.
             var apiConventionResult = (ApiConventionResult)result!;
-            responseMetadataAttributes.AddRange(apiConventionResult.ResponseMetadataProviders);
+
+            // scope here is the highest - those are "significant" metadata providers, so we use the highest scope
+            var apiConventionedAttributes = apiConventionResult.ResponseMetadataProviders.Select(x => new ApiResponseMetadataProviderWithScope(x, scope: int.MaxValue));
+            responseMetadataAttributes.AddRange(apiConventionedAttributes);
         }
 
         var defaultErrorType = typeof(void);
@@ -50,16 +56,19 @@ internal sealed class ApiResponseTypeProvider
             defaultErrorType = ((ProducesErrorResponseTypeAttribute)result!).Type;
         }
 
-        var producesResponseMetadata = action.EndpointMetadata.OfType<IProducesResponseTypeMetadata>().ToList();
+        var producesResponseMetadata = action.EndpointMetadata
+            .OfType<IProducesResponseTypeMetadata>()
+            .Where(m => m is not IApiResponseMetadataProvider)
+            .ToList();
         var apiResponseTypes = GetApiResponseTypes(responseMetadataAttributes, producesResponseMetadata, runtimeReturnType, defaultErrorType);
         return apiResponseTypes;
     }
 
-    private static List<IApiResponseMetadataProvider> GetResponseMetadataAttributes(ControllerActionDescriptor action)
+    private static List<ApiResponseMetadataProviderWithScope> GetResponseMetadataAttributes(ControllerActionDescriptor action)
     {
         if (action.FilterDescriptors == null)
         {
-            return new List<IApiResponseMetadataProvider>();
+            return new List<ApiResponseMetadataProviderWithScope>();
         }
 
         // This technique for enumerating filters will intentionally ignore any filter that is an IFilterFactory
@@ -67,13 +76,13 @@ internal sealed class ApiResponseTypeProvider
         //
         // The workaround for that is to implement the metadata interface on the IFilterFactory.
         return action.FilterDescriptors
-            .Select(fd => fd.Filter)
-            .OfType<IApiResponseMetadataProvider>()
+            .Where(fd => fd.Filter is IApiResponseMetadataProvider)
+            .Select(fd => new ApiResponseMetadataProviderWithScope((IApiResponseMetadataProvider)fd.Filter, fd.Scope))
             .ToList();
     }
 
     private ICollection<ApiResponseType> GetApiResponseTypes(
-       IReadOnlyList<IApiResponseMetadataProvider> responseMetadataAttributes,
+       IReadOnlyList<ApiResponseMetadataProviderWithScope> responseMetadataAttributes,
        IReadOnlyList<IProducesResponseTypeMetadata> producesResponseMetadata,
        Type? type,
        Type defaultErrorType)
@@ -81,16 +90,17 @@ internal sealed class ApiResponseTypeProvider
         var contentTypes = new MediaTypeCollection();
         var responseTypeMetadataProviders = _mvcOptions.OutputFormatters.OfType<IApiResponseTypeMetadataProvider>();
 
-        var responseTypes = ReadResponseMetadata(
+        // Read response types from endpoint metadata (IProducesResponseTypeMetadata),
+        // e.g. from TypedResults or .Produces<T>() extension methods.
+        var endpointResponseTypes = ReadEndpointResponseMetadata(
             producesResponseMetadata,
             type,
             responseTypeMetadataProviders,
             _modelMetadataProvider);
 
-        // Read response metadata from providers and
-        // overwrite responseTypes from the metadata based
-        // on the status code
-        var responseTypesFromProvider = ReadResponseMetadata(
+        // Read response types from filter attributes (IApiResponseMetadataProvider),
+        // e.g. [ProducesResponseType], [Produces], and conventions.
+        var attributeResponseTypes = ReadAttributeResponseMetadata(
             responseMetadataAttributes,
             type,
             defaultErrorType,
@@ -98,15 +108,19 @@ internal sealed class ApiResponseTypeProvider
             out var _,
             responseTypeMetadataProviders);
 
-        foreach (var responseType in responseTypesFromProvider)
-        {
-            responseTypes[responseType.Key] = responseType.Value;
-        }
+        // Attribute metadata takes precedence: for any status code defined by attributes,
+        // all endpoint entries for that status code are replaced by the attribute entries.
+        var attributeStatusCodes = attributeResponseTypes.Values.Select(r => r.StatusCode).ToHashSet();
+        var responseTypes = endpointResponseTypes
+            .Where(kvp => !attributeStatusCodes.Contains(kvp.Key.StatusCode))
+            .Concat(attributeResponseTypes)
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
         // Set the default status only when no status has already been set explicitly
         if (responseTypes.Count == 0 && type != null)
         {
-            responseTypes.Add(StatusCodes.Status200OK, new ApiResponseType
+            var defaultKey = new ResponseKey(StatusCodes.Status200OK, type);
+            responseTypes.Add(defaultKey, new ApiResponseType
             {
                 StatusCode = StatusCodes.Status200OK,
                 Type = type,
@@ -128,11 +142,15 @@ internal sealed class ApiResponseTypeProvider
             CalculateResponseFormatForType(apiResponse, contentTypes, responseTypeMetadataProviders, _modelMetadataProvider);
         }
 
-        return responseTypes.Values;
+        return responseTypes.Values
+            .OrderBy(responseType => responseType.StatusCode)
+            .ThenBy(responseType => responseType.Type?.Name)
+            .ThenBy(responseType => responseType.ApiResponseFormats.FirstOrDefault()?.MediaType)
+            .ToList();
     }
 
-    // Shared with EndpointMetadataApiDescriptionProvider
-    internal static Dictionary<int, ApiResponseType> ReadResponseMetadata(
+    // Shared with EndpointMetadataApiDescriptionProvider for Minimal API
+    internal static Dictionary<ResponseKey, ApiResponseType> ReadAttributeResponseMetadata(
         IReadOnlyList<IApiResponseMetadataProvider> responseMetadataAttributes,
         Type? type,
         Type? defaultErrorType,
@@ -141,39 +159,64 @@ internal sealed class ApiResponseTypeProvider
         IEnumerable<IApiResponseTypeMetadataProvider>? responseTypeMetadataProviders = null,
         IModelMetadataProvider? modelMetadataProvider = null)
     {
+        // Minimal API does not have scopes — all metadata lives at the same level.
+        // Using the same scope (0) for all entries ensures that entries with the same
+        // status code and type are merged (e.g., different content types) rather than
+        // one overriding the other.
+        var responseMetadataAttributesWithScope = responseMetadataAttributes
+            .Select(provider => new ApiResponseMetadataProviderWithScope(provider, scope: 0))
+            .ToList();
+
+        return ReadAttributeResponseMetadata(responseMetadataAttributesWithScope, type, defaultErrorType, contentTypes, out errorSetByDefault, responseTypeMetadataProviders, modelMetadataProvider);
+    }
+
+    internal static Dictionary<ResponseKey, ApiResponseType> ReadAttributeResponseMetadata(
+        IReadOnlyList<ApiResponseMetadataProviderWithScope> responseMetadataAttributes,
+        Type? type,
+        Type? defaultErrorType,
+        MediaTypeCollection contentTypes,
+        out bool errorSetByDefault,
+        IEnumerable<IApiResponseTypeMetadataProvider>? responseTypeMetadataProviders = null,
+        IModelMetadataProvider? modelMetadataProvider = null)
+    {
         errorSetByDefault = false;
-        var results = new Dictionary<int, ApiResponseType>();
+        var results = new Dictionary<ResponseKey, ApiResponseType>();
+        var statusCodeScopes = new Dictionary<int, int>();
+        var contentTypesAlreadySet = false;
 
         // Get the content type that the action explicitly set to support.
-        // Walk through all 'filter' attributes in order, and allow each one to see or override
-        // the results of the previous ones. This is similar to the execution path for content-negotiation.
+        // Walk through all 'filter' attributes in descending scope order. Descending order ensures
+        // that higher-scope entries (e.g., action-level) are processed first, so lower-scope entries
+        // for the same status code can be skipped.
         if (responseMetadataAttributes != null)
         {
-            foreach (var metadataAttribute in responseMetadataAttributes)
+            foreach (var metadataAttributeWithScope in responseMetadataAttributes.OrderByDescending(attr => attr.Scope))
             {
-                // All ProducesXAttributes, except for ProducesResponseTypeAttribute do
-                // not allow multiple instances on the same method/class/etc. For those
-                // scenarios, the `SetContentTypes` method on the attribute continuously
-                // clears out more general content types in favor of more specific ones
-                // since we iterate through the attributes in order. For example, if a
-                // Produces exists on both a controller and an action within the controller,
-                // we favor the definition in the action. This is a semantic that does not
-                // apply to ProducesResponseType, which allows multiple instances on an target.
-                if (metadataAttribute is not ProducesResponseTypeAttribute)
+                var metadataAttribute = metadataAttributeWithScope.Provider;
+                var attributeScope = metadataAttributeWithScope.Scope;
+
+                // All IApiResponseMetadataProvider attributes, except for ProducesResponseTypeAttribute
+                // (which gets its own content type collection) and ProducesDefaultResponseTypeAttribute
+                // (whose SetContentTypes is a no-op), can set shared content types. Since we iterate
+                // in descending scope order, only the first (highest-scope) such attribute should set
+                // content types. Lower-scope attributes must not overwrite content types already set
+                // by a higher-scope one (e.g., action-level Produces overrides controller-level Produces).
+                if (metadataAttribute is not ProducesResponseTypeAttribute
+                    and not ProducesDefaultResponseTypeAttribute
+                    && !contentTypesAlreadySet)
                 {
                     metadataAttribute.SetContentTypes(contentTypes);
+                    contentTypesAlreadySet = true;
                 }
 
                 var statusCode = metadataAttribute.StatusCode;
-
-                var description = metadataAttribute.Description;
 
                 var apiResponseType = new ApiResponseType
                 {
                     Type = metadataAttribute.Type,
                     StatusCode = statusCode,
                     IsDefaultResponse = metadataAttribute is IApiDefaultResponseMetadataProvider,
-                    Description = description
+                    Description = metadataAttribute.Description
                 };
 
                 if (apiResponseType.Type == typeof(void))
@@ -199,7 +242,7 @@ internal sealed class ApiResponseTypeProvider
                     }
                 }
 
-                // We special case the handling of ProcuesResponseTypeAttributes since
+                // We special case the handling of ProducesResponseTypeAttributes since
                 // multiple ProducesResponseTypeAttributes are permitted on a single
                 // action/controller/etc. In that scenario, instead of picking the most-specific
                 // set of content types (like we do with the Produces attribute above) we process
@@ -213,7 +256,35 @@ internal sealed class ApiResponseTypeProvider
 
                 if (apiResponseType.Type != null)
                 {
-                    results[apiResponseType.StatusCode] = apiResponseType;
+                    var key = new ResponseKey(apiResponseType.StatusCode, apiResponseType.Type);
+
+                    if (statusCodeScopes.TryGetValue(statusCode, out var existingScope))
+                    {
+                        if (attributeScope > existingScope)
+                        {
+                            statusCodeScopes[statusCode] = attributeScope;
+                            results[key] = apiResponseType;
+                        }
+                        else if (attributeScope == existingScope)
+                        {
+                            // Same scope, same key: merge content types
+                            if (results.TryGetValue(key, out var existingEntry))
+                            {
+                                MergeApiResponseFormats(existingEntry, apiResponseType);
+                            }
+                            else
+                            {
+                                // Same scope, different type: add alongside
+                                results[key] = apiResponseType;
+                            }
+                        }
+                        // attributeScope < existingScope: skip, higher scope already claimed this status code
+                    }
+                    else
+                    {
+                        statusCodeScopes[statusCode] = attributeScope;
+                        results[key] = apiResponseType;
+                    }
                 }
             }
         }
@@ -221,13 +292,13 @@ internal sealed class ApiResponseTypeProvider
         return results;
     }
 
-    internal static Dictionary<int, ApiResponseType> ReadResponseMetadata(
+    internal static Dictionary<ResponseKey, ApiResponseType> ReadEndpointResponseMetadata(
         IReadOnlyList<IProducesResponseTypeMetadata> responseMetadata,
         Type? type,
         IEnumerable<IApiResponseTypeMetadataProvider>? responseTypeMetadataProviders = null,
         IModelMetadataProvider? modelMetadataProvider = null)
     {
-        var results = new Dictionary<int, ApiResponseType>();
+        var results = new Dictionary<ResponseKey, ApiResponseType>();
 
         foreach (var metadata in responseMetadata)
         {
@@ -270,7 +341,38 @@ internal sealed class ApiResponseTypeProvider
 
             if (apiResponseType.Type != null)
             {
-                results[apiResponseType.StatusCode] = apiResponseType;
+                // If metadata explicitly specifies a different type for this status code than
+                // the inferred return type, drop the inferred entry. This ensures explicit
+                // metadata is authoritative over inference. The type check is required so that
+                // multiple entries with the same type and status code can merge their formats
+                // instead of each removing the previous one.
+                if (type != null && type != typeof(void) && apiResponseType.Type != type)
+                {
+                    // for case like:
+                    // app.MapGet("/", () => new Product())
+                    //  .Produces<Product>(200, "json")
+                    //  .Produces<Product>(200, "xml")
+                    //  .Produces<Customer>(200, "xml")
+                    //  .Produces(200);
+                    // we want add all explicit types, merge of same status-code and type, but remote all inferred types (like .Produces(200))
+
+                    var inferredKey = new ResponseKey(apiResponseType.StatusCode, type);
+                    if (results.TryGetValue(inferredKey, out _))
+                    {
+                        results.Remove(inferredKey);
+                    }
+                }
+
+                var key = new ResponseKey(apiResponseType.StatusCode, apiResponseType.Type);
+                if (results.TryGetValue(key, out var existingEntry))
+                {
+                    // Same key: merge formats
+                    MergeApiResponseFormats(existingEntry, apiResponseType);
+                }
+                else
+                {
+                    results[key] = apiResponseType;
+                }
             }
         }
 
@@ -393,18 +495,35 @@ internal sealed class ApiResponseTypeProvider
         return declaredReturnType;
     }
 
+    private static void MergeApiResponseFormats(ApiResponseType existing, ApiResponseType newEntry)
+    {
+        foreach (var format in newEntry.ApiResponseFormats)
+        {
+            if (!existing.ApiResponseFormats.Any(f => f.MediaType == format.MediaType))
+            {
+                existing.ApiResponseFormats.Add(format);
+            }
+        }
+
+        // rewrite description
+        if (newEntry.Description is not null)
+        {
+            existing.Description = newEntry.Description;
+        }
+    }
+
     private static bool IsClientError(int statusCode)
     {
         return statusCode >= 400 && statusCode < 500;
     }
 
-    private static bool HasSignificantMetadataProvider(IReadOnlyList<IApiResponseMetadataProvider> providers)
+    private static bool HasSignificantMetadataProvider(IReadOnlyList<ApiResponseMetadataProviderWithScope> providers)
     {
         for (var i = 0; i < providers.Count; i++)
         {
             var provider = providers[i];
 
-            if (provider is ProducesAttribute producesAttribute && producesAttribute.Type is null)
+            if (provider.Provider is ProducesAttribute producesAttribute && producesAttribute.Type is null)
             {
                 // ProducesAttribute that does not specify type is considered not significant.
                 continue;
