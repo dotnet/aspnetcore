@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.AspNetCore.WebUtilities;
@@ -190,6 +191,9 @@ public partial class NewtonsoftJsonOutputFormatter : TextOutputFormatter
         }
     }
 
+    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_dateFormatStringSet")]
+    private static extern ref bool DateFormatStringSetField(JsonSerializerSettings settings);
+
     private static JsonSerializerSettings ShallowCopy(JsonSerializerSettings settings)
     {
         var copiedSettings = new JsonSerializerSettings
@@ -201,7 +205,6 @@ public partial class NewtonsoftJsonOutputFormatter : TextOutputFormatter
             DateFormatHandling = settings.DateFormatHandling,
             Formatting = settings.Formatting,
             MaxDepth = settings.MaxDepth,
-            DateFormatString = settings.DateFormatString,
             Context = settings.Context,
             Error = settings.Error,
             SerializationBinder = settings.SerializationBinder,
@@ -224,6 +227,15 @@ public partial class NewtonsoftJsonOutputFormatter : TextOutputFormatter
             CheckAdditionalContent = settings.CheckAdditionalContent,
             StringEscapeHandling = settings.StringEscapeHandling,
         };
+
+        // Only copy DateFormatString when it was explicitly set by the user.
+        // The JsonSerializerSettings.DateFormatString setter marks an internal
+        // _dateFormatStringSet flag that causes DateFormatString to take precedence
+        // over DateFormatHandling, even when the value is the default.
+        if (DateFormatStringSetField(settings))
+        {
+            copiedSettings.DateFormatString = settings.DateFormatString;
+        }
 
         return copiedSettings;
     }
