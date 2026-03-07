@@ -164,7 +164,10 @@ public static partial class RequestDelegateFactory
     /// <summary>
     /// Creates a <see cref="RequestDelegate"/> implementation for <paramref name="handler"/>.
     /// </summary>
-    /// <param name="handler">A request handler with any number of custom parameters that often produces a response with its return value.</param>
+    /// <param name="handler">
+    /// A request handler with any number of custom parameters that often produces a response with its return value.
+    /// If delegate points to instance method, but <see cref="Delegate.Target"/> is set to <see langword="null"/>, target will be fetched from <seealso cref="HttpContext.RequestServices"/>.
+    /// </param>
     /// <param name="options">The <see cref="RequestDelegateFactoryOptions"/> used to configure the behavior of the handler.</param>
     /// <param name="metadataResult">
     /// The result returned from <see cref="InferMetadata(MethodInfo, RequestDelegateFactoryOptions?)"/> if that was used to inferring metadata before creating the final RequestDelegate.
@@ -178,23 +181,37 @@ public static partial class RequestDelegateFactory
     {
         ArgumentNullException.ThrowIfNull(handler);
 
-        var targetExpression = handler.Target switch
+        UnaryExpression? targetExpression = null;
+        Func<HttpContext, object?>? targetFactory = null;
+        Expression<Func<HttpContext, object?>>? targetFactoryExpression = null;
+
+        switch (handler.Target)
         {
-            object => Expression.Convert(TargetExpr, handler.Target.GetType()),
-            null => null,
-        };
+            case object:
+                targetExpression = Expression.Convert(TargetExpr, handler.Target.GetType());
+                targetFactory = (httpContext) => handler.Target;
+                targetFactoryExpression = (httpContext) => handler.Target;
+
+                break;
+
+            case null when !handler.Method.IsStatic:
+                targetExpression = Expression.Convert(TargetExpr, handler.Method.ReflectedType!);
+                targetFactory = (httpContext) => httpContext.RequestServices.GetRequiredService(handler.Method.ReflectedType!);
+                targetFactoryExpression = (httpContext) => httpContext.RequestServices.GetRequiredService(handler.Method.ReflectedType!);
+
+                break;
+        }
 
         var factoryContext = CreateFactoryContext(options, metadataResult, handler);
 
-        Expression<Func<HttpContext, object?>> targetFactory = (httpContext) => handler.Target;
-        var targetableRequestDelegate = CreateTargetableRequestDelegate(handler.Method, targetExpression, factoryContext, targetFactory);
+        var targetableRequestDelegate = CreateTargetableRequestDelegate(handler.Method, targetExpression, factoryContext, targetFactoryExpression);
 
         RequestDelegate finalRequestDelegate = targetableRequestDelegate switch
         {
             // handler is a RequestDelegate that has not been modified by a filter. Short-circuit and return the original RequestDelegate back.
             // It's possible a filter factory has still modified the endpoint metadata though.
             null => (RequestDelegate)handler,
-            _ => httpContext => targetableRequestDelegate(handler.Target, httpContext),
+            _ => httpContext => targetableRequestDelegate(targetFactory?.Invoke(httpContext), httpContext),
         };
 
         return CreateRequestDelegateResult(finalRequestDelegate, factoryContext.EndpointBuilder);
@@ -369,8 +386,9 @@ public static partial class RequestDelegateFactory
             }
         }
 
-        // return null for plain RequestDelegates that have not been modified by filters so we can just pass back the original RequestDelegate.
-        if (filterPipeline is null && factoryContext.Handler is RequestDelegate)
+        // return null for plain RequestDelegates that have not been modified by filters so we can just pass back the original RequestDelegate
+        // but only when target is not injected
+        if (filterPipeline is null && factoryContext.Handler is RequestDelegate && (factoryContext.Handler.Method.IsStatic || factoryContext.Handler.Target is not null))
         {
             return null;
         }
