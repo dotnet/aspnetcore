@@ -18,6 +18,7 @@ safe-outputs:
     labels: [test-failure]
     draft: false
     max: 10
+    base-branch: main
   create-issue:
     title-prefix: "Quarantine "
     labels: [test-failure]
