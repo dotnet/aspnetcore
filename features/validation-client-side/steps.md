@@ -125,3 +125,67 @@ Planned file structure under `src/Components/Web.JS/src/Validation/`:
 
 8 built-in providers: required, length, minlength, maxlength, range, regex, email, url.
 22 implementation tasks across 5 phases. Sample app to be modified with manual `data-val-*` attributes for testing.
+
+## Step 5: Prototype Implementation
+
+**Files created:**
+
+### TypeScript source (`src/Components/Web.JS/src/Validation/`)
+
+| File | Purpose | LOC |
+|------|---------|-----|
+| `Types.ts` | Shared types: `ValidatableElement`, `ValidationProvider`, `ValidationDirective`, `ElementState`, `CssClassConfig` | 50 |
+| `ValidationEngine.ts` | Provider registry with `addProvider`/`setProvider`/`getProvider` | 27 |
+| `BuiltInProviders.ts` | 8 providers: required, length, minlength, maxlength, range, regex, email, url | 70 |
+| `DirectiveParser.ts` | Two-pass `data-val-*` attribute parser → `ValidationDirective[]` | 48 |
+| `ErrorDisplay.ts` | `findMessageElements()`, `showFieldError()`, `clearFieldError()`, `updateSummary()` with CSS class management | 80 |
+| `ValidationCoordinator.ts` | `WeakMap<Element, State>` state management, `markInvalid`/`markValid` with `setCustomValidity()`, `validateElement()`, `validateForm()` | 130 |
+| `EventManager.ts` | Capture-phase submit interception (runs before enhanced nav), smart input/change handlers | 85 |
+| `DomScanner.ts` | Idempotent DOM scanning, `novalidate` management | 50 |
+| `BlazorWiring.ts` | `createValidationService()`, `initializeBlazorValidation()` with `enhancedload` hook, public API | 60 |
+| `index.ts` | Entry point — auto-initializes on `DOMContentLoaded` | 10 |
+
+### Build integration
+
+- Added `'aspnet-validation': './src/Validation/index.ts'` entry to `rollup.config.mjs`
+- Rollup produces `dist/Debug/aspnet-validation.js` (~7 KB raw, IIFE format with sourcemap)
+- Copied to `src/Components/Samples/BlazorSSR/wwwroot/js/aspnet-validation.js`
+
+### Sample app changes
+
+| File | Change |
+|------|--------|
+| `Pages/ContactManual.razor` | **NEW** — Copy of Contact.razor at `/contact-manual` with hardcoded `data-val-*` attributes, `data-valmsg-for` spans, validation summary container, and `formnovalidate` bypass button |
+| `Pages/Contact.razor` | **UNCHANGED** — Baseline server-only validation |
+| `Pages/Index.razor` | Updated with links to both form pages |
+| `App.razor` | Added `<script src="js/aspnet-validation.js">` after `blazor.web.js` |
+| `wwwroot/css/site.css` | Added MVC-compatible validation CSS classes (`input-validation-error`, `field-validation-error`, `validation-summary-errors`, etc.) |
+
+### Verification (jsdom tests — all pass)
+
+| Test | Result |
+|------|--------|
+| Empty form → 4 required errors shown | ✅ |
+| Valid data → all errors clear, form valid | ✅ |
+| Invalid email → email error shown | ✅ |
+| Out-of-range age → range error shown | ✅ |
+| Short name (length min) → length error shown | ✅ |
+| Invalid regex pattern → regex error shown | ✅ |
+| Valid regex pattern → clears | ✅ |
+| Invalid URL → url error shown | ✅ |
+| Valid URL → all clear, form valid | ✅ |
+| CSS classes toggle correctly | ✅ |
+| `novalidate` set on form automatically | ✅ |
+| `setCustomValidity()` called (Constraint Validation API) | ✅ |
+| Validation summary `<li>` items rendered | ✅ |
+| Optional fields (no `data-val`) skip validation | ✅ |
+
+### Key architectural properties verified
+
+1. **Capture-phase submit handler** — registered with `addEventListener('submit', handler, true)`, runs before enhanced nav's bubble-phase handler
+2. **`WeakMap` state** — elements tracked without GUID arrays, auto-GC on DOM removal
+3. **Smart timing** — `input` events only clear existing errors, `change` events can set new errors
+4. **`setCustomValidity()`** — sets browser validity state, enables `:invalid` CSS pseudo-class
+5. **`textContent` only** — no `innerHTML` for error messages (XSS prevention)
+6. **ARIA extension points** — commented hooks in `markInvalid`/`markValid` for future `aria-invalid` / `aria-describedby`
+7. **MVC protocol compatible** — same `data-val-*` / `data-valmsg-*` / CSS class names as MVC unobtrusive validation
