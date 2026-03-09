@@ -1521,16 +1521,31 @@ public class EndpointMetadataApiDescriptionProviderTest
         // The attribute's string type for 200 should NOT appear
         Assert.DoesNotContain(result.SupportedResponseTypes,
             r => r is { StatusCode: 200, Type: { } t } && t == typeof(string));
+
+        // TypedResults.Ok<InferredJsonClass>() added IProducesResponseTypeMetadata(200, InferredJsonClass)
+        // to endpoint metadata. Both TypedResults and .Produces<T>() are IProducesResponseTypeMetadata
+        // entries — there's currently no way to distinguish "framework-inferred" from "user-explicit"
+        // within ReadEndpointResponseMetadata, so both coexist for the same status code.
+        // This matches the new multi-produces behavior where different types for the same status code
+        // are preserved (e.g., .Produces<Product>(200, "json").Produces<string>(200, "html")).
+        Assert.Contains(result.SupportedResponseTypes,
+            r => r is { StatusCode: 200, Type: { } t } && t == typeof(InferredJsonClass));
     }
 
     [Fact]
     public void CombinesProducesExtensionAndAttribute_PocoReturn()
     {
-        // Handler returns a POCO (not IResult), so the return type is inferred as InferredJsonClass.
+        // Handler returns a POCO (not IResult), so responseType = typeof(InferredJsonClass).
         // Three metadata sources:
-        //   1. Return type inference → 200/InferredJsonClass (default, only if no metadata covers it)
-        //   2. .Produces<TimeSpan>(201) → ReadEndpointResponseMetadata
-        //   3. [ProducesResponseType(typeof(string), 404)] → ReadAttributeResponseMetadata
+        //   1. RequestDelegateFactory adds ProducesResponseTypeMetadata(200, InferredJsonClass, "application/json")
+        //      to endpoint metadata for POCO-returning handlers (see RequestDelegateFactory.cs line ~1060).
+        //      This is IProducesResponseTypeMetadata → goes through ReadEndpointResponseMetadata.
+        //   2. .Produces<TimeSpan>(201) → ReadEndpointResponseMetadata → {(201, TimeSpan)}
+        //   3. [ProducesResponseType(typeof(string), 404)] → ReadAttributeResponseMetadata → {(404, string)}
+        //
+        // All three survive: RDF-added (200, InferredJsonClass), extension (201, TimeSpan),
+        // and attribute (404, string). The 200 entry is NOT from the default fallback else branch —
+        // it's from RDF-added IProducesResponseTypeMetadata in the endpoint metadata.
         var builder = CreateBuilder();
         builder.MapGet("/api/todos",
             [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
@@ -1545,7 +1560,7 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         var result = Assert.Single(context.Results);
 
-        // Inferred return type InferredJsonClass gets a default 200 response
+        // RDF-added ProducesResponseTypeMetadata(200, InferredJsonClass) from endpoint building
         Assert.Contains(result.SupportedResponseTypes,
             r => r is { StatusCode: 200, Type: { } t } && t == typeof(InferredJsonClass));
 

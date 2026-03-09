@@ -294,7 +294,7 @@ internal sealed class ApiResponseTypeProvider
 
     internal static Dictionary<ResponseKey, ApiResponseType> ReadEndpointResponseMetadata(
         IReadOnlyList<IProducesResponseTypeMetadata> responseMetadata,
-        Type? type,
+        Type? inferredType,
         IEnumerable<IApiResponseTypeMetadataProvider>? responseTypeMetadataProviders = null,
         IModelMetadataProvider? modelMetadataProvider = null)
     {
@@ -320,11 +320,11 @@ internal sealed class ApiResponseTypeProvider
 
             if (apiResponseType.Type == null)
             {
-                if (type != null && (statusCode == StatusCodes.Status200OK || statusCode == StatusCodes.Status201Created))
+                if (inferredType != null && (statusCode == StatusCodes.Status200OK || statusCode == StatusCodes.Status201Created))
                 {
                     // Allow setting the response type from the return type of the method if it has
                     // not been set explicitly by the method.
-                    apiResponseType.Type = type;
+                    apiResponseType.Type = inferredType;
                 }
             }
 
@@ -341,25 +341,45 @@ internal sealed class ApiResponseTypeProvider
 
             if (apiResponseType.Type != null)
             {
-                // If metadata explicitly specifies a different type for this status code than
-                // the inferred return type, drop the inferred entry. This ensures explicit
-                // metadata is authoritative over inference. The type check is required so that
-                // multiple entries with the same type and status code can merge their formats
-                // instead of each removing the previous one.
-                if (type != null && type != typeof(void) && apiResponseType.Type != type)
+                // ── Controller example ──────────────────────────────────────────────────
+                //
+                //   For controllers, after our .Where(m => m is not IApiResponseMetadataProvider) filter,
+                //   responseMetadata is typically empty (attributes are handled by ReadAttributeResponseMetadata).
+                //   So this removal logic rarely fires for controllers.
+                //
+                // ── Minimal API example (POCO return, inferredType != void) ─────────────────────
+                //
+                //   app.MapGet("/", () => new Product())      // inferredType = typeof(Product)
+                //       .Produces(200)                        // metadata: (200, null) → inferred as Product
+                //       .Produces<Customer>(200, "text/xml"); // metadata: (200, Customer)
+                //
+                //   On 2nd iteration will remove (200, Product) because DeclaredType == inferredType (Product)
+                //     results = { (200, Customer) }
+                //
+                // ── Minimal API example (IResult return, type == void) ──────────────────
+                //
+                //   app.MapPost("/", () => TypedResults.Ok(new Product()))  // type = void (IResult)
+                //       .Produces<Customer>(200);
+                //
+                //   type = void → `type != typeof(void)` is false → removal is SKIPPED.
+                //   Both TypedResults' (200, Product) and .Produces<Customer>(200) coexist.
+                //   This is expected: we cannot distinguish framework-inferred metadata from
+                //   user-explicit metadata when both are IProducesResponseTypeMetadata.
+                //
+                // ── Minimal API example (POCO return, same type merges) ─────────────────
+                //
+                //   app.MapGet("/", () => new Product())      // type = typeof(Product)
+                //       .Produces<Product>(200, "app/json")   // metadata: (200, Product)
+                //       .Produces<Product>(200, "app/xml");   // metadata: (200, Product)
+                //
+                //   For same statusCode+types will merge the ApiResponseType into results = { (200, Product) with json+xml }
+                // 
+                if (inferredType != null && inferredType != typeof(void) && apiResponseType.Type != inferredType)
                 {
-                    // for case like:
-                    // app.MapGet("/", () => new Product())
-                    //  .Produces<Product>(200, "json")
-                    //  .Produces<Product>(200, "xml")
-                    //  .Produces<Customer>(200, "xml")
-                    //  .Produces(200);
-                    // we want add all explicit types, merge of same status-code and type, but remote all inferred types (like .Produces(200))
-
-                    var inferredKey = new ResponseKey(apiResponseType.StatusCode, type);
-                    if (results.TryGetValue(inferredKey, out _))
+                    var inferredTypeKey = new ResponseKey(apiResponseType.StatusCode, inferredType);
+                    if (results.TryGetValue(inferredTypeKey, out _))
                     {
-                        results.Remove(inferredKey);
+                        results.Remove(inferredTypeKey);
                     }
                 }
 

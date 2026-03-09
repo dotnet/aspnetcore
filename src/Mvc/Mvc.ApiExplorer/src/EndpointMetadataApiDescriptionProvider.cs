@@ -345,7 +345,19 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         var producesResponseMetadataTypes = ApiResponseTypeProvider.ReadEndpointResponseMetadata(producesResponseMetadata, responseType);
 
         // We favor types added via the extension methods (which implements IProducesResponseTypeMetadata)
-        // over those that are added via attributes.
+        // over those that are added via attributes (IApiResponseMetadataProvider).
+        //
+        // Note: TypedResults (e.g. TypedResults.Ok<Product>()) also add IProducesResponseTypeMetadata
+        // via IEndpointMetadataProvider, so they end up in the same bucket as .Produces<T>() and
+        // coexist for the same status code.
+        //
+        // Example:
+        //   [ProducesResponseType(typeof(string), 200)]             // attribute → IApiResponseMetadataProvider
+        //   app.MapPost("/", () => TypedResults.Ok(new Product()))  // TypedResults → IProducesResponseTypeMetadata (200, Product)
+        //       .Produces<Customer>(200);                           // extension  → IProducesResponseTypeMetadata (200, Customer)
+        //
+        // Result: (200, Product) and (200, Customer) both appear. The attribute (200, string) is
+        //         dropped because status 200 is already claimed by IProducesResponseTypeMetadata entries.
         var producesStatusCodes = producesResponseMetadataTypes.Values.Select(metadata => metadata.StatusCode).ToHashSet();
         var responseMetadataTypes = producesResponseMetadataTypes.Values.Concat(
             responseProviderMetadataTypes.Values.Where(metadata => !producesStatusCodes.Contains(metadata.StatusCode)));
