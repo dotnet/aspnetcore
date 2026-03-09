@@ -23,7 +23,7 @@
 #
 # Daily quarantine/unquarantine flaky tests based on Azure DevOps pipeline analytics
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"0d51a99ea56ce28d1da102e0923561326a6a02d2fa9bbd015603913b536407fd","compiler_version":"v0.57.0","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"a6700d173a6f81177df37c0d2a586228575941f11ed842b2bb4cff55154aba24","compiler_version":"v0.57.0","strict":true}
 
 name: "Daily Test Quarantine Management"
 "on":
@@ -855,7 +855,7 @@ jobs:
       - name: Execute GitHub Copilot CLI
         id: agentic_execution
         # Copilot CLI tool arguments (sorted):
-        timeout-minutes: 45
+        timeout-minutes: 90
         run: |
           set -o pipefail
           touch /tmp/gh-aw/agent-step-summary.md
@@ -1230,7 +1230,7 @@ jobs:
           GH_AW_CODE_PUSH_FAILURE_ERRORS: ${{ needs.safe_outputs.outputs.code_push_failure_errors }}
           GH_AW_CODE_PUSH_FAILURE_COUNT: ${{ needs.safe_outputs.outputs.code_push_failure_count }}
           GH_AW_GROUP_REPORTS: "false"
-          GH_AW_TIMEOUT_MINUTES: "45"
+          GH_AW_TIMEOUT_MINUTES: "90"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

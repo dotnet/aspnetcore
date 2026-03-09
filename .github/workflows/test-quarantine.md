@@ -48,7 +48,7 @@ network:
     - "helix.dot.net"
     - "*.blob.core.windows.net"
 
-timeout-minutes: 45
+timeout-minutes: 90
 ---
 
 # Daily Test Quarantine Management
