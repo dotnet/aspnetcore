@@ -189,3 +189,85 @@ Planned file structure under `src/Components/Web.JS/src/Validation/`:
 5. **`textContent` only** — no `innerHTML` for error messages (XSS prevention)
 6. **ARIA extension points** — commented hooks in `markInvalid`/`markValid` for future `aria-invalid` / `aria-describedby`
 7. **MVC protocol compatible** — same `data-val-*` / `data-valmsg-*` / CSS class names as MVC unobtrusive validation
+
+## Step 6: C# Server-Side Design for Attribute Emission
+
+**File:** `features/validation-client-side/04-csharp-design.md`
+
+Designed the C# infrastructure to automatically emit `data-val-*` HTML attributes from Blazor input components. This involved:
+
+### Analysis Performed
+
+1. **MVC pipeline deep-dive**: Traced the full path from `InputTagHelper` → `DefaultHtmlGenerator.AddValidationAttributes()` → `DefaultValidationHtmlAttributeProvider` → `DataAnnotationsClientModelValidatorProvider` → `ValidationAttributeAdapterProvider` → concrete adapters (`RequiredAttributeAdapter`, `RangeAttributeAdapter`, etc.). Each adapter implements `AddValidation(ClientModelValidationContext)` calling `MergeAttribute()` to write `data-val-*` into an attributes dictionary.
+
+2. **Blazor input component analysis**: Studied `InputBase<T>` (which only has `FieldIdentifier` — model ref + field name string, no access to validation attributes), all subclasses (`InputText`, `InputNumber`, `InputTextArea`, `InputSelect`), `EditForm` (cascades `EditContext`), `ValidationMessage<T>` (renders `<div>` per error, no `data-valmsg-for`), and `ValidationSummary` (renders `<ul>`, no `data-valmsg-summary`).
+
+3. **Validation metadata discovery**: Analyzed both reflection-based discovery (`PropertyInfo.GetCustomAttributes<ValidationAttribute>()` with `ConcurrentDictionary` cache, as used by `DataAnnotationsValidator`) and the new source generator infrastructure (`ValidatableTypeInfo` / `ValidatablePropertyInfo` with `ValidationAttributeCache`).
+
+4. **Localization integration**: Read the full proposal in [#65539](https://github.com/dotnet/aspnetcore/issues/65539). The design explicitly states that `ErrorMessageProviderContext` excludes validation-execution types so that "localized and formatted messages are retrievable *outside* of validation execution" — designed precisely for our client-side validation attribute emission use case.
+
+### Key Design Decisions
+
+| Decision | Choice | Rationale |
+|---|---|---|
+| Integration point | Cascaded service via `EditContext.Properties` | Non-invasive; reuses existing `EditContext` cascade; no changes to `EditForm` |
+| Opt-in | `<ClientSideValidator />` component | Follows `<DataAnnotationsValidator />` pattern; explicit per-form opt-in |
+| ValidationMessage / Summary | Modify rendering when service is present | Backwards-compatible; renders `<span data-valmsg-for>` instead of `<div>` per message |
+| Custom validators | `IClientValidationAdapter` + `IClientValidationAdapterProvider` via DI | Blazor-native, no MVC dependency; familiar adapter pattern |
+| Metadata discovery | Source generator preferred, reflection fallback | AOT-friendly with graceful degradation |
+| Localization | `ValidationOptions.ErrorMessageProvider` / `DisplayNameProvider` | From [#65539](https://github.com/dotnet/aspnetcore/issues/65539), designed for this use case |
+| Script emission | `<ClientSideValidator IncludeScript="true" />` (default on) | Minimal ceremony; opt-out via `IncludeScript="false"` |
+
+### Architecture
+
+```
+ClientSideValidator (component)
+    → stores IClientValidationService on EditContext.Properties
+    → optionally emits <script> tag
+
+InputBase<T> (modified)
+    → reads IClientValidationService from EditContext.Properties
+    → merges data-val-* into AdditionalAttributes (Option B — zero subclass changes)
+
+DefaultClientValidationService
+    → discovers ValidationAttributes (source gen or reflection)
+    → maps each to IClientValidationAdapter via IClientValidationAdapterProvider
+    → adapters emit data-val-* into attributes dictionary
+    → error messages resolved via ValidationOptions.ErrorMessageProvider (localized)
+
+ValidationMessage<T> (modified)
+    → when service present: renders <span data-valmsg-for="fieldName">
+ValidationSummary (modified)
+    → when service present: renders container with data-valmsg-summary="true"
+```
+
+### New Types
+
+| Type | Kind | Assembly |
+|---|---|---|
+| `IClientValidationService` | Interface | `Microsoft.AspNetCore.Components.Forms` |
+| `IClientValidationAdapter` | Interface | `Microsoft.AspNetCore.Components.Forms` |
+| `IClientValidationAdapterProvider` | Interface | `Microsoft.AspNetCore.Components.Forms` |
+| `ClientValidationContext` | Class | `Microsoft.AspNetCore.Components.Forms` |
+| `DefaultClientValidationService` | Internal class | `Microsoft.AspNetCore.Components.Forms` |
+| `DefaultClientValidationAdapterProvider` | Internal class | `Microsoft.AspNetCore.Components.Forms` |
+| 11 built-in adapters | Internal classes | `Microsoft.AspNetCore.Components.Forms` |
+| `ErrorMessageResolver` | Internal static | `Microsoft.AspNetCore.Components.Forms` |
+| `ClientSideValidator` | Component | `Microsoft.AspNetCore.Components.Web` |
+
+### Built-In Adapters (11 total)
+
+Mirrors MVC's `ValidationAttributeAdapterProvider` mapping:
+- `RequiredAttribute` → `data-val-required`
+- `StringLengthAttribute` → `data-val-length`, `-max`, `-min`
+- `MinLengthAttribute` → `data-val-minlength`, `-min`
+- `MaxLengthAttribute` → `data-val-maxlength`, `-max`
+- `RangeAttribute` → `data-val-range`, `-min`, `-max`
+- `RegularExpressionAttribute` → `data-val-regex`, `-pattern`
+- `EmailAddressAttribute` → `data-val-email`
+- `UrlAttribute` → `data-val-url`
+- `CreditCardAttribute` → `data-val-creditcard`
+- `PhoneAttribute` → `data-val-phone`
+- `CompareAttribute` → `data-val-equalto`, `-other`
+
+### Implementation phases: 5 phases, 24 tasks (detailed in design doc)
