@@ -9,24 +9,26 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal;
 
 public class DefaultClaimUidExtractorTest
 {
-    private static readonly ObjectPool<AntiforgerySerializationContext> _pool =
-        new DefaultObjectPoolProvider().Create(new AntiforgerySerializationContextPooledObjectPolicy());
+    private readonly DefaultClaimUidExtractor _claimUidExtractor;
+
+    public DefaultClaimUidExtractorTest()
+    {
+        _claimUidExtractor = new DefaultClaimUidExtractor();
+    }
 
     [Fact]
     public void ExtractClaimUid_Unauthenticated()
     {
-        // Arrange
-        var extractor = new DefaultClaimUidExtractor(_pool);
-
         var mockIdentity = new Mock<ClaimsIdentity>();
         mockIdentity.Setup(o => o.IsAuthenticated)
                     .Returns(false);
 
         // Act
-        var claimUid = extractor.ExtractClaimUid(new ClaimsPrincipal(mockIdentity.Object));
+        var claimUid = new byte[32];
+        var result = _claimUidExtractor.TryExtractClaimUidBytes(new ClaimsPrincipal(mockIdentity.Object), claimUid);
 
         // Assert
-        Assert.Null(claimUid);
+        Assert.False(result);
     }
 
     [Fact]
@@ -36,16 +38,15 @@ public class DefaultClaimUidExtractorTest
         var mockIdentity = new Mock<ClaimsIdentity>();
         mockIdentity.Setup(o => o.IsAuthenticated)
                     .Returns(true);
-        mockIdentity.Setup(o => o.Claims).Returns(new Claim[] { new Claim(ClaimTypes.Name, "someName") });
-
-        var extractor = new DefaultClaimUidExtractor(_pool);
+        mockIdentity.Setup(o => o.Claims).Returns([new Claim(ClaimTypes.Name, "someName")]);
 
         // Act
-        var claimUid = extractor.ExtractClaimUid(new ClaimsPrincipal(mockIdentity.Object));
+        var claimUid = new byte[32];
+        var result = _claimUidExtractor.TryExtractClaimUidBytes(new ClaimsPrincipal(mockIdentity.Object), claimUid);
 
         // Assert
-        Assert.NotNull(claimUid);
-        Assert.Equal("yhXE+2v4zSXHtRHmzm4cmrhZca2J0g7yTUwtUerdeF4=", claimUid);
+        Assert.True(result);
+        Assert.Equal("yhXE+2v4zSXHtRHmzm4cmrhZca2J0g7yTUwtUerdeF4=", Convert.ToBase64String(claimUid));
     }
 
     [Fact]
@@ -58,11 +59,10 @@ public class DefaultClaimUidExtractorTest
         identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, string.Empty));
 
         // Arrange
-        var claimsIdentity = (ClaimsIdentity)identity;
+        var claimsIdentity = identity;
 
         // Act
-        var identiferParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters(new ClaimsIdentity[] { claimsIdentity })!
-                                                          .ToArray();
+        var identiferParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters([claimsIdentity])!.ToArray();
         var claims = claimsIdentity.Claims.ToList();
         claims.Sort((a, b) => string.Compare(a.Type, b.Type, StringComparison.Ordinal));
 
@@ -85,7 +85,7 @@ public class DefaultClaimUidExtractorTest
         identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "nameIdentifierValue"));
 
         // Act
-        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters(new ClaimsIdentity[] { identity });
+        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters([identity]);
 
         // Assert
         Assert.Equal(new string[]
@@ -106,7 +106,7 @@ public class DefaultClaimUidExtractorTest
         identity.AddClaim(new Claim(ClaimTypes.Upn, "upnClaimValue"));
 
         // Act
-        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters(new ClaimsIdentity[] { identity });
+        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters([identity]);
 
         // Assert
         Assert.Equal(new string[]
@@ -126,7 +126,7 @@ public class DefaultClaimUidExtractorTest
         identity.AddClaim(new Claim(ClaimTypes.Upn, "upnClaimValue"));
 
         // Act
-        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters(new ClaimsIdentity[] { identity });
+        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters([identity]);
 
         // Assert
         Assert.Equal(new string[]
@@ -146,7 +146,7 @@ public class DefaultClaimUidExtractorTest
         identity.AddClaim(new Claim(ClaimTypes.Upn, "upnClaimValue"));
 
         // Act
-        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters(new ClaimsIdentity[] { identity });
+        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters([identity]);
 
         // Assert
         Assert.Equal(new string[]
@@ -167,7 +167,7 @@ public class DefaultClaimUidExtractorTest
         identity2.AddClaim(new Claim(ClaimTypes.NameIdentifier, "nameIdentifierValue"));
 
         // Act
-        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters(new ClaimsIdentity[] { identity1, identity2 });
+        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters([identity1, identity2]);
 
         // Assert
         Assert.Equal(new string[]
@@ -192,8 +192,7 @@ public class DefaultClaimUidExtractorTest
         identity4.AddClaim(new Claim(ClaimTypes.Name, "claimName"));
 
         // Act
-        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters(
-            new ClaimsIdentity[] { identity1, identity2, identity3, identity4 });
+        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters([identity1, identity2, identity3, identity4]);
 
         // Assert
         Assert.Equal(new List<string>
@@ -220,8 +219,7 @@ public class DefaultClaimUidExtractorTest
         identity2.AddClaim(new Claim("sub", "subClaimValue"));
 
         // Act
-        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters(
-            new ClaimsIdentity[] { identity1, identity2 });
+        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters([identity1, identity2]);
 
         // Assert
         Assert.Equal(new string[]
@@ -242,8 +240,7 @@ public class DefaultClaimUidExtractorTest
         identity2.AddClaim(new Claim(ClaimTypes.NameIdentifier, "nameIdentifierValue"));
 
         // Act
-        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters(
-            new ClaimsIdentity[] { identity1, identity2 });
+        var uniqueIdentifierParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters([identity1, identity2]);
 
         // Assert
         Assert.Equal(new string[]

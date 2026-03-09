@@ -1,0 +1,125 @@
+﻿@page "/tempdata"
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager NavigationManager
+
+<h1>TempData Basic Test</h1>
+
+<form method="post" @formname="SetTempData" @onsubmit="() => SetValues()">
+    <AntiforgeryToken />
+    <button type="submit" id="set-values-button">Set TempData Values</button>
+</form>
+
+<form method="post" @formname="SetTempDataDiffPage" @onsubmit="() => SetValues(differentPage: true)">
+    <AntiforgeryToken />
+    <button type="submit" id="set-values-button-diff-page">Set TempData Values and Redirect to Different Page</button>
+</form>
+
+<form method="post" @formname="JustRedirect" @onsubmit="() => NavigateToSamePage()">
+    <AntiforgeryToken />
+    <button type="submit" id="redirect-button">Navigate to the Same Page</button>
+</form>
+
+<form method="post" @formname="DeletePeekedValue" @onsubmit="() => DeletePeekedValue()">
+    <AntiforgeryToken />
+    <button type="submit" id="delete-button">Delete peeked value</button>
+</form>
+
+<form method="post" @formname="RedirectToNotReadPage" @onsubmit="() => SetValues(notReadPage: true)">
+    <AntiforgeryToken />
+    <button type="submit" id="set-values-not-read">Navigate to the Page That Does Not Access TempData</button>
+</form>
+
+<hr />
+
+<p id="message">@_message</p>
+<p id="peeked-value">@_peekedValue</p>
+<p id="kept-value">@_keptValue</p>
+
+<p id="string-array">@_stringArrayResult</p>
+<p id="int-array">@_intArrayResult</p>
+
+<p id="contains-message">@_containsMessageKey</p>
+<p id="contains-peeked-value">@_containsPeekedValueKey</p>
+
+@code {
+    [SupplyParameterFromForm(Name = "_handler")]
+    public string? Handler { get; set; }
+
+    [CascadingParameter]
+    public ITempData? TempData { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string ValueToKeep { get; set; } = string.Empty;
+
+    [SupplyParameterFromQuery]
+    public string ContainsKey { get; set; } = string.Empty;
+
+    private string? _message;
+    private string? _peekedValue;
+    private string? _keptValue;
+    private string? _stringArrayResult;
+    private string? _intArrayResult;
+
+    private bool _containsMessageKey;
+    private bool _containsPeekedValueKey;
+
+    protected override void OnInitialized()
+    {
+        _containsMessageKey = TempData?.ContainsKey("Message") ?? false;
+        _containsPeekedValueKey = TempData?.ContainsKey("PeekedValue") ?? false;
+
+        if (Handler is not null)
+        {
+            return;
+        }
+        _message = TempData!.Get("Message") as string ?? "No message";
+        _peekedValue = TempData!.Peek("PeekedValue") as string ?? "No peeked value";
+        _keptValue = TempData!.Get("KeptValue") as string ?? "No kept value";
+
+        // Test typed array deserialization - these should be string[] and int[], not object[]
+        var stringArray = TempData!.Get("StringArray");
+        var intArray = TempData!.Get("IntArray");
+        _stringArrayResult = stringArray is string[] arr ? string.Join(",", arr) : $"Wrong type: {stringArray?.GetType().Name ?? "null"}";
+        _intArrayResult = intArray is int[] nums ? string.Join(",", nums) : $"Wrong type: {intArray?.GetType().Name ?? "null"}";
+
+        if (ValueToKeep == "all")
+        {
+            TempData!.Keep();
+        }
+        else if (!string.IsNullOrEmpty(ValueToKeep))
+        {
+            TempData!.Keep(ValueToKeep);
+        }
+    }
+
+    private void SetValues(bool differentPage = false, bool notReadPage = false)
+    {
+        TempData!["Message"] = "Message";
+        TempData!["PeekedValue"] = "Peeked value";
+        TempData!["KeptValue"] = "Kept value";
+        TempData!["StringArray"] = new string[] { "a", "b", "c" };
+        TempData!["IntArray"] = new int[] { 1, 2, 3 };
+        if (differentPage)
+        {
+            NavigateToDifferentPage();
+            return;
+        }
+        if (notReadPage)
+        {
+            NavigateToWithoutReadPage();
+            return;
+        }
+        NavigateToSamePageKeep(ValueToKeep);
+    }
+
+    private void DeletePeekedValue()
+    {
+        TempData!.Remove("PeekedValue");
+        NavigateToSamePage();
+    }
+
+    private void NavigateToSamePage() => NavigationManager.NavigateTo("/subdir/tempdata", forceLoad: true);
+    private void NavigateToSamePageKeep(string valueToKeep) => NavigationManager.NavigateTo($"/subdir/tempdata?ValueToKeep={valueToKeep}", forceLoad: true);
+    private void NavigateToDifferentPage() => NavigationManager.NavigateTo("/subdir/tempdata/read", forceLoad: true);
+    private void NavigateToWithoutReadPage() => NavigationManager.NavigateTo("/subdir/tempdata/redirect_without_read", forceLoad: true);
+}

@@ -277,13 +277,6 @@ internal sealed class OutputCacheMiddleware
 
         context.IsCacheEntryFresh = true;
 
-        // Validate expiration
-        if (context.CachedEntryAge <= TimeSpan.Zero)
-        {
-            _logger.ExpirationExpiresExceeded(context.ResponseTime!.Value);
-            context.IsCacheEntryFresh = false;
-        }
-
         var cachedResponse = context.CachedResponse;
         if (context.IsCacheEntryFresh)
         {

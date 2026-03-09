@@ -45,8 +45,8 @@
       Condition=" '$(DotNetBuildSourceOnly)' != 'true' AND ('$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'x64') "
       Returns="@(TargetPathWithTargetPlatformMoniker)">
     <MSBuild Projects="@(RequiresDelayedBuild)"
-        BuildInParallel="$(BuildInParallel)"
-        Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())"
+        BuildInParallel="false"
+        Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid());RestoreDisableParallel=true"
         Targets="Restore" />
     <MSBuild Projects="@(RequiresDelayedBuild)" BuildInParallel="$(BuildInParallel)" Targets="Build">
       <Output TaskParameter="TargetOutputs" ItemName="TargetPathWithTargetPlatformMoniker" />
