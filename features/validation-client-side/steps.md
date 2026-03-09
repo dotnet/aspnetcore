@@ -71,3 +71,35 @@ Tested the running app interactively:
 4. **Valid data submit** — filling all fields correctly shows success message: "Thank you, Jane Smith! We received your message."
 
 **Key observation**: Today, Blazor SSR forms render **no `data-val-*` attributes** on inputs, and `ValidationMessage`/`ValidationSummary` render **nothing** when there are no errors. All validation requires a server round-trip. This is the gap the feature will close.
+
+## Step 3: Prior Art Analysis
+
+**File:** `features/validation-client-side/02-prior-art.md` (uncommitted)
+
+Deep-dive analysis of [haacked/aspnet-client-validation](https://github.com/haacked/aspnet-client-validation) — a jQuery-free (~4 KB gzip) drop-in replacement for `jquery.validate.unobtrusive.js`. Reviewed the full TypeScript source (~1,565 lines) and documented:
+
+- **Architecture**: `ValidationService` orchestrator with pluggable `ValidationProvider` functions `(value, element, params) => boolean | string`. Providers registered by name, parsed from `data-val-{rule}` / `data-val-{rule}-{param}` attributes via a clean two-pass algorithm.
+- **Built-in providers**: 12 validators (required, length, maxlength, minlength, range, regex, equalto, email, url, phone, creditcard, remote) — all skip validation on empty values, deferring to `required`.
+- **Validation timing**: Debounced input/change events with smart UX — `input` events only *clear* errors, `change`/blur events can *set* errors. This prevents "red while typing" annoyance.
+- **DOM manipulation**: Updates `data-valmsg-for` spans and `data-valmsg-summary` containers with CSS class toggling.
+- **MutationObserver**: Watches for dynamic DOM changes (added/removed inputs).
+- **Extensibility**: `addProvider()`, overridable hooks (preValidate, handleValidated, highlight/unhighlight), configurable CSS class names.
+
+### Key Decisions from Analysis
+
+**Adopt from the library:**
+1. `data-val-*` attribute protocol (same as MVC, ecosystem compatible)
+2. Provider/plugin architecture with `addProvider(name, callback)`
+3. Two-pass directive parsing algorithm
+4. Smart validation timing (clear on input, invalidate on change/blur)
+5. Empty-value passthrough convention
+6. `formnovalidate` support per HTML spec
+
+**Do differently in our implementation:**
+1. **Constraint Validation API** (`setCustomValidity()`) instead of custom state tracking — enables `:invalid` CSS pseudo-class, screen reader integration
+2. **ARIA from day one** — `aria-invalid`, `aria-describedby`, `aria-live` (library has none)
+3. **`textContent` not `innerHTML`** — prevent XSS in error message display
+4. **`WeakMap` for state tracking** — instead of GUID arrays (O(1) lookup, auto-GC)
+5. **Synchronous validation** — no Promises needed without remote validation
+6. **Enhanced navigation integration** — hook into submit flow before enhanced nav, don't call `form.submit()` (which bypasses enhanced nav entirely)
+7. **`enhancedload` event** — instead of MutationObserver for post-navigation re-scan
