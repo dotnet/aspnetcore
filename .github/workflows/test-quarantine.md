@@ -222,6 +222,34 @@ For each test or group of tests to quarantine:
 - **One issue + one PR per test** (or per related group) for quarantining.
 - When modifying IIS tests in `Common.LongTests` or `Common.FunctionalTests`, be aware these are compiled into multiple test assemblies (IIS.FunctionalTests, IISExpress.FunctionalTests, IIS.NewHandler.FunctionalTests, IIS.NewShim.FunctionalTests). A single source change affects all variants.
 
+## Output Budget and Prioritization
+
+This workflow has a limit of **10** for each safe output type (PRs, issues, issue closures, comments) per run. You must plan your output usage carefully to avoid orphaned state.
+
+### Budget planning
+
+Before creating any outputs, build a complete plan of all actions you intend to take. Count the totals for each output type:
+
+- **Unquarantine actions** each consume: 1 PR + 0-1 issue closures (only if no remaining tests reference the issue).
+- **Quarantine actions** each consume: 1 issue + 1 PR + 1 comment. These three outputs are **atomic** — never create a quarantine PR without its corresponding issue, and never create an issue without its corresponding PR. If you don't have budget remaining for all three, skip that test entirely and let the next day's run handle it.
+
+If the total planned actions exceed any output limit, **trim from the bottom of the priority list** until all limits are satisfied. It is always safe to defer work to the next day's run.
+
+### Priority order
+
+Process items in this order:
+
+1. **Quarantine** tests first, sorted by total failure count (most failures first). Flaky tests actively harm CI, so fixing them is higher priority than unquarantining stable tests.
+2. **Unquarantine** tests second, sorted by total pass count (most runs first). These tests are already stable and just need cleanup.
+
+### Atomicity rules
+
+- **Never create a quarantine PR without a corresponding issue.** If you've hit the issue limit, stop creating quarantine PRs too.
+- **Never create a quarantine issue without a corresponding PR.** If you've hit the PR limit, stop creating quarantine issues too.
+- **Never create a quarantine issue without its investigation comment.** If you've hit the comment limit, stop creating quarantine issues and PRs too.
+- **Unquarantine PRs do not require issues or comments**, so they can fill remaining PR budget after quarantine actions are complete.
+- **Issue closures are best-effort.** If you run out of close-issue budget, the issue simply stays open until the next run — this is harmless.
+
 ## API Reference (Azure DevOps & Helix)
 
 These are the key API endpoints. All are public and require no authentication:
