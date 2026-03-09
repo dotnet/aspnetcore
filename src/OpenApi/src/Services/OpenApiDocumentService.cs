@@ -91,6 +91,7 @@ internal sealed class OpenApiDocumentService(
             // Sort schemas by key name for better readability and consistency
             // This works around an API change in OpenAPI.NET
             document.Components.Schemas = new Dictionary<string, IOpenApiSchema>(
+
                 document.Components.Schemas.OrderBy(kvp => kvp.Key),
                 StringComparer.Ordinal);
         }
@@ -418,7 +419,7 @@ internal sealed class OpenApiDocumentService(
         var response = new OpenApiResponse
         {
             Description = apiResponseType.Description ?? ReasonPhrases.GetReasonPhrase(statusCode),
-            Content = new Dictionary<string, IOpenApiMediaType>()
+            Content = new Dictionary<string, IOpenApiMediaType> ()
         };
 
         // ApiResponseFormats aggregates information about the supported response content types
@@ -444,7 +445,7 @@ internal sealed class OpenApiDocumentService(
         // looks for when generating ApiResponseFormats above so we need to pull the content
         // types defined there separately.
         var explicitContentTypes = apiDescription.ActionDescriptor.EndpointMetadata
-            .OfType<ProducesAttribute>()
+            .OfType<ProducesAttribute> ()
             .SelectMany(attr => attr.ContentTypes);
         foreach (var contentType in explicitContentTypes)
         {
@@ -567,7 +568,7 @@ internal sealed class OpenApiDocumentService(
         {
             // Assume "application/x-www-form-urlencoded" as the default media type
             // to match the default assumed in IFormFeature.
-            supportedRequestFormats = [new ApiRequestFormat { MediaType = "application/x-www-form-urlencoded" }];
+            supportedRequestFormats = [new ApiRequestFormat { MediaType = "application/x-www-form-urlencoded" } ];
         }
 
         var requestBody = new OpenApiRequestBody
@@ -576,7 +577,7 @@ internal sealed class OpenApiDocumentService(
             // serializing a form collection from an empty body. Instead, requiredness
             // must be set on a per-parameter basis. See below.
             Required = true,
-            Content = new Dictionary<string, IOpenApiMediaType>()
+            Content = new Dictionary<string, IOpenApiMediaType> ()
         };
 
         var schema = new OpenApiSchema { Type = JsonSchemaType.Object, Properties = new Dictionary<string, IOpenApiSchema>() };
@@ -633,9 +634,9 @@ internal sealed class OpenApiDocumentService(
                     // Resolve complex type state from endpoint metadata when checking for
                     // minimal API types to use trim friendly code paths.
                     var isComplexType = endpointMetadata
-                        .OfType<IParameterBindingMetadata>()
-                        .SingleOrDefault(parameter => parameter.Name == description.Name)?
-                        .HasTryParse == false;
+                        .OfType<IParameterBindingMetadata> ()
+                        .SingleOrDefault(parameter => parameter.Name == description.Name)?.
+                        HasTryParse == false;
                     if (hasMultipleFormParameters)
                     {
                         // Here and below: POCOs do not need to be need under their parameter name in the grouping.
@@ -731,26 +732,26 @@ internal sealed class OpenApiDocumentService(
             {
                 // Assume "application/octet-stream" as the default media type
                 // for stream-based parameter types.
-                supportedRequestFormats = [new ApiRequestFormat { MediaType = "application/octet-stream" }];
+                supportedRequestFormats = [new ApiRequestFormat { MediaType = "application/octet-stream" } ];
             }
             else if (bodyParameter.Type.IsJsonPatchDocument())
             {
                 // Assume "application/json-patch+json" as the default media type
                 // for JSON Patch documents.
-                supportedRequestFormats = [new ApiRequestFormat { MediaType = "application/json-patch+json" }];
+                supportedRequestFormats = [new ApiRequestFormat { MediaType = "application/json-patch+json" } ];
             }
             else
             {
                 // Assume "application/json" as the default media type
                 // for everything else.
-                supportedRequestFormats = [new ApiRequestFormat { MediaType = "application/json" }];
+                supportedRequestFormats = [new ApiRequestFormat { MediaType = "application/json" } ];
             }
         }
 
         var requestBody = new OpenApiRequestBody
         {
             Required = IsRequired(bodyParameter),
-            Content = new Dictionary<string, IOpenApiMediaType>(),
+            Content = new Dictionary<string, IOpenApiMediaType> (),
             Description = GetParameterDescriptionFromAttribute(bodyParameter)
         };
 
@@ -782,7 +783,7 @@ internal sealed class OpenApiDocumentService(
     private static Type GetTargetType(ApiDescription description, ApiParameterDescription parameter)
     {
         var bindingMetadata = description.ActionDescriptor.EndpointMetadata
-            .OfType<IParameterBindingMetadata>()
+            .OfType<IParameterBindingMetadata> ()
             .SingleOrDefault(metadata => metadata.Name == parameter.Name);
         var parameterType = parameter.Type is not null
             ? Nullable.GetUnderlyingType(parameter.Type) ?? parameter.Type
