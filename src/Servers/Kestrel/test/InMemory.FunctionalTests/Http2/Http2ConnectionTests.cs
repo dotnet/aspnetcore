@@ -3592,9 +3592,10 @@ public class Http2ConnectionTests : Http2TestBase
         await SendDataAsync(1, new byte[1], endStream: false);
         await SendRstStreamAsync(1);
         await SendRstStreamAsync(1);
-        tcs.TrySetResult();
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+        tcs.TrySetResult(); // Don't let the response start until after the connection stops
 
         AssertConnectionNoError();
     }
