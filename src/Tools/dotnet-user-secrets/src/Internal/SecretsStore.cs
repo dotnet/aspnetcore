@@ -21,6 +21,12 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal;
 /// </summary>
 public class SecretsStore
 {
+    internal static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions
+    {
+        WriteIndented = true,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
     private readonly string _secretsFilePath;
     private readonly IDictionary<string, string> _secrets;
 
@@ -71,13 +77,7 @@ public class SecretsStore
     {
         Directory.CreateDirectory(Path.GetDirectoryName(_secretsFilePath));
 
-        var options = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-        };
-
-        var contents = JsonSerializer.Serialize(_secrets, options);
+        var contents = JsonSerializer.Serialize(_secrets, SerializerOptions);
 
         // Create a temp file with the correct Unix file mode before moving it to the expected _filePath.
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

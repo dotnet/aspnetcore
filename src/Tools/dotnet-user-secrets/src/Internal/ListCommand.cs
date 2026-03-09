@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Extensions.CommandLineUtils;
 
@@ -60,14 +59,8 @@ internal sealed class ListCommand : ICommand
             secrets[item.Key] = item.Value;
         }
 
-        var options = new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-        };
-
         context.Reporter.Output("//BEGIN");
-        context.Reporter.Output(JsonSerializer.Serialize(secrets, options));
+        context.Reporter.Output(JsonSerializer.Serialize(secrets, SecretsStore.SerializerOptions));
         context.Reporter.Output("//END");
     }
 }
