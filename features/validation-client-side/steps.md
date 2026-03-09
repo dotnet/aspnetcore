@@ -103,3 +103,25 @@ Deep-dive analysis of [haacked/aspnet-client-validation](https://github.com/haac
 5. **Synchronous validation** — no Promises needed without remote validation
 6. **Enhanced navigation integration** — hook into submit flow before enhanced nav, don't call `form.submit()` (which bypasses enhanced nav entirely)
 7. **`enhancedload` event** — instead of MutationObserver for post-navigation re-scan
+
+## Step 4: Prototype Implementation Plan
+
+**File:** `features/validation-client-side/03-prototype-plan.md` (uncommitted)
+
+Wrote a full implementation plan for the JavaScript validation library prototype. Key architectural decisions:
+
+- **Three-layer architecture**: Core validation engine (host-agnostic) → Unobtrusive adapter (event wiring, error display) → Blazor wiring layer (`enhancedload` integration)
+- **Constraint Validation API**: `setCustomValidity()` as the primary validity state mechanism — enables `:invalid` CSS pseudo-class and screen reader integration
+- **Capture-phase submit interception**: Validation handler runs in capture phase, before Blazor's enhanced navigation handler (which uses bubble phase). If validation fails, `preventDefault()` + `stopPropagation()` blocks enhanced nav.
+- **WeakMap state tracking**: `WeakMap<Element, State>` for O(1) lookup and automatic GC when elements are removed by DOM patching
+- **ARIA-ready design**: `markInvalid()`/`markValid()` are explicit methods with commented extension points for `aria-invalid`, `aria-describedby`
+- **Synchronous-only**: No async/Promise pipeline — keeps the prototype simple
+- **MVC protocol compatibility**: Uses `data-val-*` / `data-valmsg-*` attribute protocol, MVC CSS class defaults
+
+Planned file structure under `src/Components/Web.JS/src/Validation/`:
+- `Types.ts`, `ValidationEngine.ts`, `BuiltInProviders.ts`, `DirectiveParser.ts`
+- `ValidationCoordinator.ts`, `EventManager.ts`, `ErrorDisplay.ts`, `DomScanner.ts`
+- `BlazorWiring.ts`, `index.ts`
+
+8 built-in providers: required, length, minlength, maxlength, range, regex, email, url.
+22 implementation tasks across 5 phases. Sample app to be modified with manual `data-val-*` attributes for testing.
