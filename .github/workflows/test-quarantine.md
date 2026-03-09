@@ -87,6 +87,11 @@ A test is a candidate for unquarantining if ALL of the following are true:
 - It does **not** have a suspiciously low total count (i.e. it appeared in at least 20 of the 30 builds)
 - It is **not** `AlwaysTestTests.SuccessfulTests.GuaranteedQuarantinedTest` (this test must always stay quarantined)
 - It is an **individual test case**, not a work item (exclude names ending in `.WorkItemExecution`)
+- The `[QuarantinedTest]` attribute has been present for **at least 30 days**. To check this, use `git log -G` with a regex matching the issue URL from the attribute to find the commit that introduced it:
+  ```
+  git log --format="%H %ai" -1 -G 'QuarantinedTest.*{ISSUE_NUMBER}' -- {FILE_PATH}
+  ```
+  If the commit date is less than 30 days ago, skip this test — it was recently quarantined and needs more time to establish reliability.
 
 For IIS tests compiled into multiple assemblies (Common.LongTests, Common.FunctionalTests), the same test method appears with different namespace prefixes (e.g., `FunctionalTests.StartupTests.X`, `IISExpress.FunctionalTests.StartupTests.X`, `NewHandler.FunctionalTests.StartupTests.X`, `NewShim.FunctionalTests.StartupTests.X`). ALL variants must have 100% pass rates. Variants with 0 pass / 0 fail (all "other" outcomes) represent tests skipped by `[ConditionalFact]` and should be excluded from the pass-rate check — they are neither passing nor failing.
 
