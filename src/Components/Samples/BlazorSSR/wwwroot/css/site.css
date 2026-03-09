@@ -87,3 +87,56 @@ button[type="submit"]:hover {
     background-color: #d4edda;
     color: #155724;
 }
+
+/* Client-side validation styles (MVC-compatible class names) */
+
+.input-validation-error {
+    border-color: #dc3545 !important;
+}
+
+.input-validation-valid {
+    border-color: #28a745;
+}
+
+.field-validation-error {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+.field-validation-valid {
+    display: none;
+}
+
+.validation-summary-errors {
+    color: #dc3545;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    border: 1px solid #dc3545;
+    border-radius: 4px;
+    background-color: #f8d7da;
+}
+
+.validation-summary-errors ul {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.validation-summary-valid {
+    display: none;
+}
+
+.form-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.form-actions button[formnovalidate] {
+    background-color: #6c757d;
+}
+
+.form-actions button[formnovalidate]:hover {
+    background-color: #5a6268;
+}
