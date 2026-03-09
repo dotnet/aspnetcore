@@ -65,7 +65,7 @@ Before creating any PRs or issues, check for existing open PRs in dotnet/aspnetc
 
 ### Step 1.1 — Gather passing test data from the quarantined pipeline
 
-Query the **aspnetcore-quarantined-pr** pipeline (definition ID **84**) in the `dnceng-public` Azure DevOps organization, `public` project.
+Query the **aspnetcore-quarantined-tests** pipeline (definition ID **84**) in the `dnceng-public` Azure DevOps organization, `public` project.
 
 1. Get all completed builds from the last 30 days:
    ```
