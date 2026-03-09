@@ -23,13 +23,12 @@
 #
 # Daily quarantine/unquarantine flaky tests based on Azure DevOps pipeline analytics
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"7564461ea790d6596c58e4e06e0df34a8a7dfe475c129d294fbf21dde404a89a","compiler_version":"v0.57.0","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"0ba50b4d7a3222b4f7b28fdf68bfbff49c862ff4a677e3eeb623aa334fd0a451","compiler_version":"v0.57.0","strict":true}
 
 name: "Daily Test Quarantine Management"
 "on":
   schedule:
-  - cron: "44 10 * * *"
-    # Friendly format: daily around 5am utc-5 (scattered)
+  - cron: "0 10 * * *"
   workflow_dispatch:
 
 permissions: {}

@@ -1,6 +1,7 @@
 ---
 on:
-  schedule: daily around 5am utc-5
+  schedule:
+    - cron: "0 10 * * *"
   workflow_dispatch:
 
 description: "Daily quarantine/unquarantine flaky tests based on Azure DevOps pipeline analytics"
