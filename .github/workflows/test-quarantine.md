@@ -58,7 +58,7 @@ You are an automated workflow that manages flaky test quarantine in the dotnet/a
 1. **Unquarantine** tests that have been reliably passing for 30+ days
 2. **Quarantine** tests that are flaky and causing CI failures
 
-Before creating any PRs or issues, check for existing open PRs in dotnet/aspnetcore with the `[test-quarantine]` prefix in their title that already address the same tests. Skip any test that is already covered by an existing open PR.
+Before creating any PRs or issues, check for existing open PRs in dotnet/aspnetcore that already address the same tests. Humans may also open quarantine/unquarantine PRs without the `[test-quarantine]` prefix, so do not rely solely on title matching. For each test you plan to modify, search open PRs for any that touch the same test file by looking at PR changed files. If an open PR already adds or removes a `[QuarantinedTest]` attribute for a test you were about to modify, skip that test.
 
 ---
 
@@ -240,7 +240,7 @@ For each test or group of tests to quarantine:
 ## Important Rules
 
 - **Always exclude** `AlwaysTestTests.SuccessfulTests.GuaranteedQuarantinedTest` from all analysis. This test must never be unquarantined.
-- **Check for existing PRs** before creating new ones. Search for open PRs with `[test-quarantine]` in the title that mention the same test names. Skip tests already covered.
+- **Check for existing PRs** before creating new ones. Search all open PRs for any that modify the same test file. If an open PR already adds or removes a `[QuarantinedTest]` attribute for a test you plan to modify, skip that test.
 - **One PR per issue** for unquarantining. Group tests by their quarantine issue.
 - **One issue + one PR per test** (or per related group) for quarantining.
 - When modifying IIS tests in `Common.LongTests` or `Common.FunctionalTests`, be aware these are compiled into multiple test assemblies (IIS.FunctionalTests, IISExpress.FunctionalTests, IIS.NewHandler.FunctionalTests, IIS.NewShim.FunctionalTests). A single source change affects all variants.
