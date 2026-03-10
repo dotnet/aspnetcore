@@ -65,13 +65,6 @@
 
     protected override void OnInitialized()
     {
-        _containsMessageKey = TempData?.ContainsKey("Message") ?? false;
-        _containsPeekedValueKey = TempData?.ContainsKey("PeekedValue") ?? false;
-
-        if (Handler is not null)
-        {
-            return;
-        }
         _message = TempData!.Get("Message") as string ?? "No message";
         _peekedValue = TempData!.Peek("PeekedValue") as string ?? "No peeked value";
         _keptValue = TempData!.Get("KeptValue") as string ?? "No kept value";
@@ -81,6 +74,9 @@
         var intArray = TempData!.Get("IntArray");
         _stringArrayResult = stringArray is string[] arr ? string.Join(",", arr) : $"Wrong type: {stringArray?.GetType().Name ?? "null"}";
         _intArrayResult = intArray is int[] nums ? string.Join(",", nums) : $"Wrong type: {intArray?.GetType().Name ?? "null"}";
+
+        _containsMessageKey = TempData?.ContainsKey("Message") ?? false;
+        _containsPeekedValueKey = TempData?.ContainsKey("PeekedValue") ?? false;
 
         if (ValueToKeep == "all")
         {
