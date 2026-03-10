@@ -415,3 +415,52 @@ After initial implementation, the adapter provider pattern (`IClientValidationAd
 - `DefaultClientValidationService` now takes `ClientValidationAdapterRegistry` instead of `IClientValidationAdapterProvider`
 - Custom adapters can now override built-in adapters (last-wins semantics), whereas the old provider pattern gave built-ins precedence
 - Self-adapting pattern added: a `ValidationAttribute` that implements `IClientValidationAdapter` is returned directly without needing a factory registration
+
+## Step 10: JS Validator Fixes & Completions
+
+Fixed bugs and filled gaps in the JS validation providers to achieve full parity with .NET `System.ComponentModel.DataAnnotations`.
+
+### Regex Fix (full-string match)
+
+Changed `regex` provider from `RegExp.test()` (partial match) to `exec()` with `match.index === 0 && match[0].length === value.length` check. This matches .NET `RegularExpressionAttribute.IsValid()` and jquery-validation-unobtrusive behavior — the pattern must match the **entire** input, not just a substring.
+
+### New Providers
+
+| Provider | .NET Attribute | Logic |
+|----------|---------------|-------|
+| `creditcard` | `CreditCardAttribute` | Luhn algorithm ported from .NET: iterates chars in reverse, skips `-` and ` `, rejects other non-digit chars, doubles every other digit, checksum mod 10 must equal 0 |
+| `equalto` | `CompareAttribute` | Resolves `*.PropertyName` convention (strips prefix from current field name, finds other element via `form.elements.namedItem()`), compares `value === otherValue` |
+| `fileextensions` | `FileExtensionsAttribute` | Extracts extension via `lastIndexOf('.')`, normalizes allowed list (strips spaces/dots, lowercases), checks membership. Default: `png,jpg,jpeg,gif` |
+
+### C# Adapter Added
+
+| File | Purpose |
+|------|---------|
+| `src/Components/Forms/src/ClientValidation/Adapters/FileExtensionsClientAdapter.cs` | Emits `data-val-fileextensions` and `data-val-fileextensions-extensions` |
+
+Registered in `BuiltInAdapterRegistration` alongside other built-in adapters.
+
+### Comparative Analysis
+
+Wrote `features/validation-client-side/06-js-validators.md` — comprehensive comparison of validation logic across 5 layers:
+1. .NET `System.ComponentModel.DataAnnotations` (server-side source of truth)
+2. MVC built-in adapters (attribute emission)
+3. `jquery-validation-unobtrusive` (adapter bridge)
+4. `jquery-validation` (JS validation logic for MVC)
+5. Our JS prototype
+
+Key findings: MVC's phone validation is silently broken (no adapter registered), email validation is stricter client-side than server-side across all libraries (accepted behavior), our URL/phone/creditcard implementations match .NET exactly.
+
+### Test Coverage
+
+| Suite | Tests | Notes |
+|-------|-------|-------|
+| JS `BuiltInProviders.test.ts` | 69 | url(10) + phone(19) + regex(10) + creditcard(12) + equalto(6) + fileextensions(12) |
+| C# Forms | 129 | Unchanged — FileExtensions adapter is internal, covered by existing DI registration tests |
+
+### JS Bundle Size
+
+| Metric | Size |
+|--------|------|
+| Brotli | 2.56 KB |
+| Gzipped | 2.85 KB |
