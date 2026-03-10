@@ -1779,6 +1779,11 @@ public partial class Startup
         return Task.CompletedTask;
     }
 
+    public async Task GetHostLifetime(HttpContext context)
+    {
+        await context.Response.WriteAsync(context.RequestServices.GetService<IHostLifetime>().GetType().Name);
+    }
+
     internal static readonly HashSet<(string, StringValues, StringValues)> NullTrailers = new HashSet<(string, StringValues, StringValues)>()
         {
             ("NullString", (string)null, (string)null),

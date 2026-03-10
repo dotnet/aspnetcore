@@ -1449,6 +1449,27 @@ public class StartupTests : IISFunctionalTestBase
         Assert.Equal(true, response.Headers.ConnectionClose);
     }
 
+    [ConditionalFact]
+    public async Task InProcessHostlifetime()
+    {
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
+
+        Assert.Equal("IISHostLifetime", await GetStringAsync(deploymentParameters, "GetHostLifetime"));
+    }
+
+    [ConditionalFact]
+    public async Task OutOfProcessHostlifetime()
+    {
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+
+        if (deploymentParameters.ServerType == ServerType.IISExpress)
+        {
+            return;
+        }
+
+        Assert.Equal("ConsoleLifetime", await GetStringAsync(deploymentParameters, "GetHostLifetime"));
+    }
+
     public static int GetNextSSLPort(int avoid = 0)
     {
         var next = 44300;
