@@ -59,34 +59,61 @@ public class ValidationSummary : ComponentBase, IDisposable
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
+        var hasClientValidation = CurrentEditContext.Properties.TryGetValue(
+            ClientSideValidator.ServiceKey, out _);
+
         // As an optimization, only evaluate the messages enumerable once, and
         // only produce the enclosing <ul> if there's at least one message
         var validationMessages = Model is null ?
             CurrentEditContext.GetValidationMessages() :
             CurrentEditContext.GetValidationMessages(new FieldIdentifier(Model, string.Empty));
 
-        var first = true;
-        foreach (var error in validationMessages)
+        if (hasClientValidation)
         {
-            if (first)
-            {
-                first = false;
+            // Always render the container for the JS library to find
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "data-valmsg-summary", "true");
+            builder.AddMultipleAttributes(2, AdditionalAttributes);
 
-                builder.OpenElement(0, "ul");
-                builder.AddAttribute(1, "class", "validation-errors");
-                builder.AddMultipleAttributes(2, AdditionalAttributes);
+            builder.OpenElement(3, "ul");
+            builder.AddAttribute(4, "class", "validation-errors");
+
+            foreach (var error in validationMessages)
+            {
+                builder.OpenElement(5, "li");
+                builder.AddAttribute(6, "class", "validation-message");
+                builder.AddContent(7, error);
+                builder.CloseElement();
             }
 
-            builder.OpenElement(3, "li");
-            builder.AddAttribute(4, "class", "validation-message");
-            builder.AddContent(5, error);
-            builder.CloseElement();
+            builder.CloseElement(); // ul
+            builder.CloseElement(); // div
         }
-
-        if (!first)
+        else
         {
-            // We have at least one validation message.
-            builder.CloseElement();
+            var first = true;
+            foreach (var error in validationMessages)
+            {
+                if (first)
+                {
+                    first = false;
+
+                    builder.OpenElement(0, "ul");
+                    builder.AddAttribute(1, "class", "validation-errors");
+                    builder.AddMultipleAttributes(2, AdditionalAttributes);
+                }
+
+                builder.OpenElement(3, "li");
+                builder.AddAttribute(4, "class", "validation-message");
+                builder.AddContent(5, error);
+                builder.CloseElement();
+            }
+
+            if (!first)
+            {
+                // We have at least one validation message.
+                builder.CloseElement();
+            }
         }
     }
 
