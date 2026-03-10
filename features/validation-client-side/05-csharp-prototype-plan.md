@@ -24,16 +24,22 @@ Write interfaces, context class, and their tests. No implementation logic yet �
 
 **Files to create:**
 - `src/Components/Forms/src/IClientValidationService.cs` — interface
-- `src/Components/Forms/src/IClientValidationAdapter.cs` — interface  
+- `src/Components/Forms/src/IClientValidationAdapter.cs` — interface (single method: `AddClientValidation(in ClientValidationContext, string)`)
 - `src/Components/Forms/src/IClientValidationAdapterProvider.cs` — interface
-- `src/Components/Forms/src/ClientValidationContext.cs` — context class with `MergeAttribute()`
-- `src/Components/Forms/test/ClientValidationContextTest.cs` — tests for context behavior
+- `src/Components/Forms/src/ClientValidationContext.cs` — readonly struct: `Attributes` + `MergeAttribute()`
+- `src/Components/Forms/test/ClientValidation/ClientValidationContextTest.cs` — tests for context behavior
 
 **Tests for `ClientValidationContext`:**
-- `MergeAttribute_AddsNewKey` — verify key/value is added
+- `Constructor_SetsAttributes` — verify MergeAttribute writes to the underlying dictionary
+- `DefaultConstructor_HasNullAttributes` — verify default struct has null backing field
+- `Constructor_ThrowsOnNullAttributes` — verify null check
+- `MergeAttribute_AddsNewKey` — verify key/value is added to underlying dictionary
 - `MergeAttribute_DoesNotOverwriteExistingKey` — verify returns false, original value kept
-- `MergeAttribute_SetsDataVal_True` — verify `data-val` = `"true"` convention
-- `Properties_AreAccessible` — verify DisplayName, DeclaringType, PropertyName, Services are readable
+- `MergeAttribute_AddsMultipleKeys` — verify multiple data-val-* keys
+- `MergeAttribute_ThrowsOnNullKey` / `MergeAttribute_ThrowsOnNullValue` — null guards
+- `ContextCanBeReusedAcrossMultipleAdapters` — single instance accumulates attributes from multiple adapters
+
+**Design note:** `ClientValidationContext` is a `readonly struct` with no public `Attributes` property. The underlying dictionary is stored in a private field. Adapters interact only through `MergeAttribute()`, which enforces add-only, first-wins semantics. The error message is passed as a separate argument to `AddClientValidation(in ClientValidationContext context, string errorMessage)`. A single context instance is created per field and reused across all adapters, enabling zero per-attribute allocation. The error message is pre-resolved by the service (using `ValidationOptions.ErrorMessageProvider` + `IValidationAttributeFormatter` from #65539, or `ValidationAttribute.FormatErrorMessage()` as fallback). The adapter receives the `ValidationAttribute` instance via its constructor from the provider factory. This separates message resolution (service + localization) from HTML attribute mapping (adapter).
 
 **Public API updates:**
 - `src/Components/Forms/src/PublicAPI.Unshipped.txt` — add all new public types
@@ -55,7 +61,7 @@ Implement the 11 built-in adapters and the `DefaultClientValidationAdapterProvid
 - `src/Components/Forms/test/ClientValidation/DefaultClientValidationAdapterProviderTest.cs`
 
 **Tests for each adapter** (parameterized or individual):
-- `RequiredAdapter_EmitsDataValRequired` — `data-val=true`, `data-val-required={message}`
+- `RequiredAdapter_EmitsDataValRequired` — `data-val=true`, `data-val-required={errorMessage}`
 - `StringLengthAdapter_EmitsLengthAttributes` — `data-val-length`, `-max`, `-min`
 - `MinLengthAdapter_EmitsMinLengthAttributes` — `data-val-minlength`, `-min`
 - `MaxLengthAdapter_EmitsMaxLengthAttributes` — `data-val-maxlength`, `-max`
@@ -66,8 +72,7 @@ Implement the 11 built-in adapters and the `DefaultClientValidationAdapterProvid
 - `CreditCardAdapter_EmitsCreditCardAttribute` — `data-val-creditcard`
 - `PhoneAdapter_EmitsPhoneAttribute` — `data-val-phone`
 - `CompareAdapter_EmitsEqualtoAttributes` — `data-val-equalto`, `-other`
-- `Adapter_UsesDisplayNameInErrorMessage` — verify display name substitution
-- `Adapter_UsesCustomErrorMessage` — verify `ErrorMessage` property on attribute is used
+- `Adapter_UsesErrorMessageArgument` — verify `errorMessage` parameter is placed in the correct `data-val-*` key
 
 **Tests for `DefaultClientValidationAdapterProvider`:**
 - `GetAdapter_ReturnsCorrectAdapterForEachBuiltInAttribute` — type switch coverage
@@ -88,16 +93,19 @@ Implement the 11 built-in adapters and the `DefaultClientValidationAdapterProvid
 - `src/Components/Forms/src/ClientValidation/CompareClientAdapter.cs`
 - `src/Components/Forms/src/ClientValidation/DefaultClientValidationAdapterProvider.cs`
 
-All adapters are `internal sealed`. Each follows the pattern:
+All adapters are `internal sealed`. Each follows the pattern — adapter receives the attribute in its constructor, uses the `errorMessage` parameter for the pre-resolved message:
 ```csharp
-internal sealed class RequiredClientAdapter : IClientValidationAdapter
+internal sealed class RequiredClientAdapter(RequiredAttribute attribute) : IClientValidationAdapter
 {
-    public void AddClientValidation(ClientValidationContext context) { ... }
-    public string GetErrorMessage(ClientValidationContext context) { ... }
+    public void AddClientValidation(in ClientValidationContext context, string errorMessage)
+    {
+        context.MergeAttribute("data-val", "true");
+        context.MergeAttribute("data-val-required", errorMessage);
+    }
 }
 ```
 
-Error message resolution: call `attribute.FormatErrorMessage(context.DisplayName)`. The localization-aware `ErrorMessageProvider` path is a follow-up when #65539 lands.
+Adapters do NOT resolve error messages. The service resolves messages before calling the adapter, passing the result as the `errorMessage` argument.
 
 ---
 
@@ -146,7 +154,8 @@ Key implementation details:
 - `ConcurrentDictionary<(Type, string), IReadOnlyDictionary<string, string>>` cache
 - Reflection-based attribute discovery: `PropertyInfo.GetCustomAttributes<ValidationAttribute>(inherit: true)`
 - Display name resolution: `DisplayAttribute.GetName()` → `DisplayNameAttribute.DisplayName` → property name
-- Creates `ClientValidationContext`, iterates adapters, collects attributes
+- Error message resolution per attribute: `ValidationOptions.ErrorMessageProvider` → `attribute.FormatErrorMessage(displayName)` fallback
+- Creates one `ClientValidationContext(attributes)` per field, reuses it across all adapters; passes error message as argument to each adapter call
 
 ---
 
@@ -252,7 +261,7 @@ Modify existing components to consume `IClientValidationService` and emit the ap
 | `src/Components/Forms/src/IClientValidationService.cs` | 1 | Interface |
 | `src/Components/Forms/src/IClientValidationAdapter.cs` | 1 | Interface |
 | `src/Components/Forms/src/IClientValidationAdapterProvider.cs` | 1 | Interface |
-| `src/Components/Forms/src/ClientValidationContext.cs` | 1 | Class |
+| `src/Components/Forms/src/ClientValidationContext.cs` | 1 | Readonly Struct |
 | `src/Components/Forms/test/ClientValidation/ClientValidationContextTest.cs` | 1 | Test |
 | `src/Components/Forms/src/ClientValidation/RequiredClientAdapter.cs` | 2 | Adapter |
 | `src/Components/Forms/src/ClientValidation/StringLengthClientAdapter.cs` | 2 | Adapter |
