@@ -195,7 +195,12 @@ Combine failure counts from all sources across both pipelines. A test is a candi
 - It is **not already quarantined** (check the source code for existing `[QuarantinedTest]` attributes)
 - The failures are **not** from a PR that modified the test itself (check if the PR's changed files include the test file)
 
-Additionally, if a **test class** has failed more than 3 times total with **multiple failing test methods** that share the **same error message or similar stack traces**, you may quarantine the entire class.
+Additionally, check for **class-level quarantine** candidates. If a **test class** has more than 3 total failures across multiple methods, you **must** investigate the error messages before deciding:
+
+1. For each failure in the class, extract the error message and stack trace from the Helix console log. When searching the console log for `[FAIL]`, also capture the lines immediately following it — these contain the `Error Message:` and `Stack Trace:` sections.
+2. Compare the error messages and stack traces across all failing methods in the class. Look for the same exception type, similar call chains, or a shared root cause.
+3. If the errors are similar (e.g., all show the same exception type or share a common stack frame), quarantine the entire class instead of individual methods.
+4. If the errors are unrelated, treat each method as an independent candidate using the individual 2-failure threshold.
 
 ### Step 2.3 — Group related failures and file issues
 
