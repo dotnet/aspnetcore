@@ -213,7 +213,7 @@ Designed the C# infrastructure to automatically emit `data-val-*` HTML attribute
 | Integration point | Cascaded service via `EditContext.Properties` | Non-invasive; reuses existing `EditContext` cascade; no changes to `EditForm` |
 | Opt-in | `<ClientSideValidator />` component | Follows `<DataAnnotationsValidator />` pattern; explicit per-form opt-in |
 | ValidationMessage / Summary | Modify rendering when service is present | Backwards-compatible; renders `<span data-valmsg-for>` instead of `<div>` per message |
-| Custom validators | `IClientValidationAdapter` + `IClientValidationAdapterProvider` via DI | Blazor-native, no MVC dependency; familiar adapter pattern |
+| Custom validators | `IClientValidationAdapter` + `ClientValidationAdapterRegistry` via DI | Blazor-native, no MVC dependency; options-based registry pattern |
 | Metadata discovery | Source generator preferred, reflection fallback | AOT-friendly with graceful degradation |
 | Localization | `ValidationOptions.ErrorMessageProvider` / `DisplayNameProvider` | From [#65539](https://github.com/dotnet/aspnetcore/issues/65539), designed for this use case |
 | Script emission | `<ClientSideValidator IncludeScript="true" />` (default on) | Minimal ceremony; opt-out via `IncludeScript="false"` |
@@ -231,7 +231,7 @@ InputBase<T> (modified)
 
 DefaultClientValidationService
     → discovers ValidationAttributes (source gen or reflection)
-    → maps each to IClientValidationAdapter via IClientValidationAdapterProvider
+    → maps each to IClientValidationAdapter via ClientValidationAdapterRegistry
     → adapters emit data-val-* into attributes dictionary
     → error messages resolved via ValidationOptions.ErrorMessageProvider (localized)
 
@@ -247,10 +247,10 @@ ValidationSummary (modified)
 |---|---|---|
 | `IClientValidationService` | Interface | `Microsoft.AspNetCore.Components.Forms` |
 | `IClientValidationAdapter` | Interface | `Microsoft.AspNetCore.Components.Forms` |
-| `IClientValidationAdapterProvider` | Interface | `Microsoft.AspNetCore.Components.Forms` |
+| `ClientValidationAdapterRegistry` | Options class | `Microsoft.AspNetCore.Components.Forms` |
 | `ClientValidationContext` | Class | `Microsoft.AspNetCore.Components.Forms` |
 | `DefaultClientValidationService` | Internal class | `Microsoft.AspNetCore.Components.Forms` |
-| `DefaultClientValidationAdapterProvider` | Internal class | `Microsoft.AspNetCore.Components.Forms` |
+| `BuiltInAdapterRegistration` | Internal class | `Microsoft.AspNetCore.Components.Forms` |
 | 11 built-in adapters | Internal classes | `Microsoft.AspNetCore.Components.Forms` |
 | `ErrorMessageResolver` | Internal static | `Microsoft.AspNetCore.Components.Forms` |
 | `ClientSideValidator` | Component | `Microsoft.AspNetCore.Components.Web` |
@@ -316,3 +316,102 @@ Added a `directiveFingerprint` field to `ElementState` (in `Types.ts`) — a sor
 - Rebuilt `aspnet-validation.js` (~7.4 KB)
 
 **Verified with Playwright:** Enhanced nav from `/contact-manual` → `/contact-manual-extra`, submit subscribe form → Email correctly shows "Email address is required." and Name shows "Your name is required."
+
+## Step 8: C# Server-Side Infrastructure — Design & Implementation Plan
+
+**Documents:**
+- `04-csharp-prototype-design.md` — Comprehensive design doc covering architecture decisions
+- `05-csharp-prototype-plan.md` — Tests-first implementation plan in 5 phases
+
+### Key Design Decisions
+
+- **`ClientValidationContext`** is a `readonly struct` with private `IDictionary<string, string>` field — adapters interact only through `MergeAttribute()` (add-only, first-wins semantics)
+- **`IClientValidationAdapter.AddClientValidation(in ClientValidationContext, string errorMessage)`** — context passed by `in` reference, error message as separate parameter (not on context)
+- **Error message resolution** is the service's responsibility, not the adapters'. Adapters only map validation attribute properties to `data-val-*` HTML attribute names/values
+- **Integration via `EditContext.Properties`** — `ClientSideValidator` component stores `IClientValidationService` on the edit context; `InputBase<T>`, `ValidationMessage<T>`, `ValidationSummary` read from it
+- **Localization alignment** — `IClientValidationAdapter` and `IValidationAttributeFormatter` (#65539) are complementary single-responsibility interfaces
+
+## Step 9: C# Implementation — Phases 1–5
+
+Implemented the full C# infrastructure in 5 phases using a tests-first approach.
+
+### Phase 1: Core Abstractions
+
+Created the public API surface:
+
+| File | Type |
+|------|------|
+| `src/Components/Forms/src/IClientValidationService.cs` | Interface |
+| `src/Components/Forms/src/IClientValidationAdapter.cs` | Interface |
+| `src/Components/Forms/src/ClientValidation/ClientValidationAdapterRegistry.cs` | Options class |
+| `src/Components/Forms/src/ClientValidationContext.cs` | Readonly struct |
+| `src/Components/Forms/test/ClientValidation/ClientValidationContextTest.cs` | 8 tests |
+
+### Phase 2: Built-In Adapters
+
+Created 8 adapter classes in `src/Components/Forms/src/ClientValidation/Adapters/` covering 11 validation attributes:
+
+| Adapter | Attributes Covered |
+|---------|--------------------|
+| `RequiredClientAdapter` | `RequiredAttribute` |
+| `StringLengthClientAdapter` | `StringLengthAttribute` |
+| `MinLengthClientAdapter` | `MinLengthAttribute` |
+| `MaxLengthClientAdapter` | `MaxLengthAttribute` |
+| `RangeClientAdapter` | `RangeAttribute` |
+| `RegexClientAdapter` | `RegularExpressionAttribute` |
+| `DataTypeClientAdapter` | `EmailAddressAttribute`, `UrlAttribute`, `CreditCardAttribute`, `PhoneAttribute` |
+| `CompareClientAdapter` | `CompareAttribute` |
+
+Plus `BuiltInAdapterRegistration` (registers adapters on `ClientValidationAdapterRegistry` via options pipeline).
+Tests: 17 adapter tests + 8 registry tests.
+
+### Phase 3: DefaultClientValidationService
+
+Created `DefaultClientValidationService` (internal sealed) with:
+- Reflection-based `ValidationAttribute` discovery on model properties
+- Display name resolution: `DisplayAttribute` → `DisplayNameAttribute` → property name
+- `ConcurrentDictionary<(Type, string), IReadOnlyDictionary<string, string>>` caching
+- Trimmer annotation (`[UnconditionalSuppressMessage]` for `IL2077`)
+
+Tests: 14 tests covering attribute discovery, display names, caching, custom providers.
+
+### Phase 4: Component Integration
+
+**New component:**
+- `src/Components/Web/src/Forms/ClientSideValidator.cs` — injects `IClientValidationService` from DI, stores on `EditContext.Properties`, optionally renders `<script>` tag
+
+**Modified components:**
+- `InputBase.cs` — added `MergeClientValidationAttributes()` called from `UpdateAdditionalValidationAttributes()`, merges `data-val-*` into `AdditionalAttributes` using `TryAdd` (developer attributes take precedence)
+- `ValidationMessage.cs` — conditional render: `<span data-valmsg-for="fieldName">` when service present, original `<div>` per message otherwise
+- `ValidationSummary.cs` — conditional render: `<div data-valmsg-summary="true"><ul>...</ul></div>` when service present
+
+Tests: 5 InputText tests + 3 ValidationMessage tests + 3 ValidationSummary tests = 11 total.
+
+### Phase 5: DI Registration + Sample App
+
+**DI extension methods** in `ClientValidationServiceCollectionExtensions.cs`:
+- `AddClientSideValidation()` — registers `ClientValidationAdapterRegistry` options with built-in adapters via `IConfigureOptions<ClientValidationAdapterRegistry>` (idempotent via `TryAddEnumerable`), uses `IOptions<ClientValidationAdapterRegistry>` to resolve the registry
+- `AddClientValidationAdapter<TAttribute>(services, factory)` — registers custom adapter via `Configure<ClientValidationAdapterRegistry>()` (last-wins override semantics)
+
+**Sample app updated:**
+- `Program.cs` — added `builder.Services.AddClientSideValidation()`
+- `Contact.razor` — added `<ClientSideValidator />` inside `<EditForm>` after `<DataAnnotationsValidator />`
+
+Tests: 8 DI registration tests.
+
+### Test Summary
+
+| Project | Total Tests | New Tests |
+|---------|-------------|-----------|
+| Forms | 138 | 52 (8 context + 17 adapter + 8 registry + 13 service + 8 DI) |
+| Web | 284 | 11 (5 InputText + 3 ValidationMessage + 3 ValidationSummary) |
+
+### Registry Refactoring Note
+
+After initial implementation, the adapter provider pattern (`IClientValidationAdapterProvider` / `DefaultClientValidationAdapterProvider`) was refactored to an options-based registry pattern (`ClientValidationAdapterRegistry`). This aligns with the localization proposal (PR #65460) where `ValidationAttributeFormatterRegistry` uses the same pattern. Key changes:
+- `IClientValidationAdapterProvider` interface → removed; replaced by `ClientValidationAdapterRegistry` (public sealed options class)
+- `DefaultClientValidationAdapterProvider` → removed; built-in adapter registration moved to `BuiltInAdapterRegistration` (an `IConfigureOptions<ClientValidationAdapterRegistry>`)
+- `AddClientValidationAdapterProvider<T>()` → replaced by `AddClientValidationAdapter<TAttribute>(factory)` using `Configure<ClientValidationAdapterRegistry>()`
+- `DefaultClientValidationService` now takes `ClientValidationAdapterRegistry` instead of `IClientValidationAdapterProvider`
+- Custom adapters can now override built-in adapters (last-wins semantics), whereas the old provider pattern gave built-ins precedence
+- Self-adapting pattern added: a `ValidationAttribute` that implements `IClientValidationAdapter` is returned directly without needing a factory registration

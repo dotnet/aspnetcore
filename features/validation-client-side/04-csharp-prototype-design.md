@@ -17,7 +17,7 @@ This document designs a Blazor-native mechanism to emit `data-val-*` attributes 
 | Integration point | Cascaded service consumed by `InputBase<T>` | Keeps InputBase clean; service provides metadata on demand |
 | Opt-in mechanism | `<ClientSideValidator />` component | Follows existing `<DataAnnotationsValidator />` pattern |
 | ValidationMessage / Summary | Modify when client validation service is cascaded | Backwards-compatible; no change without the service |
-| Custom validator extensibility | Blazor-specific `IClientValidationAdapter` + provider | DI-first design, no MVC dependency |
+| Custom validator extensibility | Blazor-specific `IClientValidationAdapter` + `ClientValidationAdapterRegistry` | DI-first design, no MVC dependency |
 | Metadata discovery | Source generator when available, reflection fallback | AOT-friendly with graceful degradation |
 | Error message localization | `ValidationOptions.ErrorMessageProvider` / `DisplayNameProvider` delegates | Designed for this use case per [#65539](https://github.com/dotnet/aspnetcore/issues/65539) |
 | Script emission | Auto-emit `<script>` tag by default, opt-out parameter | Minimal ceremony for common case |
@@ -201,7 +201,7 @@ public readonly struct ClientValidationContext
 - A single context instance wrapping the attributes dictionary is reused across all adapters for a given field. The per-attribute error message is passed as a separate argument to `AddClientValidation`.
 - Error message resolution is the caller's responsibility (using `ValidationOptions.ErrorMessageProvider` / `IValidationAttributeFormatter` from the localization pipeline, or `ValidationAttribute.FormatErrorMessage()` as fallback).
 - This mirrors the separation of concerns in the localization proposal ([#65539](https://github.com/dotnet/aspnetcore/issues/65539)): `IValidationAttributeFormatter` produces the message, `IClientValidationAdapter` places it into HTML attributes.
-- The adapter receives the `ValidationAttribute` instance via its constructor (from the adapter provider factory), not via the context.
+- The adapter receives the `ValidationAttribute` instance via its constructor (from the adapter registry factory), not via the context.
 - Aligns with `readonly struct` usage in the localization proposal (e.g., `DisplayNameProviderContext`, `ErrorMessageProviderContext`).
 
 **Location:** `src/Components/Forms/src/ClientValidationContext.cs`
@@ -242,29 +242,78 @@ public interface IClientValidationAdapter
 
 **Location:** `src/Components/Forms/src/IClientValidationAdapter.cs`
 
-### 5.4 `IClientValidationAdapterProvider` — Adapter Factory
+### 5.4 `ClientValidationAdapterRegistry` — Adapter Registry
 
 ```csharp
 namespace Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>
-/// Factory that creates <see cref="IClientValidationAdapter"/> instances
-/// for <see cref="ValidationAttribute"/>s.
+/// Options class that holds the registry of
+/// <see cref="IClientValidationAdapter"/> factories keyed by
+/// <see cref="ValidationAttribute"/> type.
+/// Configured via <see cref="IConfigureOptions{ClientValidationAdapterRegistry}"/>.
 /// </summary>
-public interface IClientValidationAdapterProvider
+public sealed class ClientValidationAdapterRegistry
 {
+    private readonly Dictionary<Type, Func<ValidationAttribute, IClientValidationAdapter>> _factories = new();
+
+    /// <summary>
+    /// Registers a factory that creates an <see cref="IClientValidationAdapter"/>
+    /// for the specified <typeparamref name="TAttribute"/> type.
+    /// Last-wins: calling this multiple times for the same attribute type
+    /// replaces the previous registration (enabling custom overrides of built-ins).
+    /// </summary>
+    public void AddAdapter<TAttribute>(
+        Func<TAttribute, IClientValidationAdapter> factory)
+        where TAttribute : ValidationAttribute
+    {
+        ArgumentNullException.ThrowIfNull(factory);
+        _factories[typeof(TAttribute)] = attr => factory((TAttribute)attr);
+    }
+
     /// <summary>
     /// Returns an <see cref="IClientValidationAdapter"/> for the given
     /// <paramref name="attribute"/>, or <see langword="null"/> if no adapter
-    /// exists for that attribute type.
+    /// is registered for that attribute type.
     /// </summary>
-    /// <param name="attribute">The validation attribute to adapt.</param>
-    /// <returns>An adapter, or <see langword="null"/>.</returns>
-    IClientValidationAdapter? GetAdapter(ValidationAttribute attribute);
+    /// <remarks>
+    /// Resolution order:
+    /// 1. Self-adapting: if the attribute itself implements <see cref="IClientValidationAdapter"/>, return it directly.
+    /// 2. Registered factory: look up by the attribute's runtime type.
+    /// 3. <see langword="null"/>: no adapter available.
+    /// </remarks>
+    public IClientValidationAdapter? GetAdapter(ValidationAttribute attribute)
+    {
+        ArgumentNullException.ThrowIfNull(attribute);
+
+        // 1. Self-adapting (attribute implements IClientValidationAdapter directly)
+        if (attribute is IClientValidationAdapter selfAdapter)
+        {
+            return selfAdapter;
+        }
+
+        // 2. Registered factory
+        if (_factories.TryGetValue(attribute.GetType(), out var factory))
+        {
+            return factory(attribute);
+        }
+
+        // 3. No adapter
+        return null;
+    }
 }
 ```
 
-**Location:** `src/Components/Forms/src/IClientValidationAdapterProvider.cs`
+**Design rationale:**
+- Parallel to the localization proposal's `ValidationAttributeFormatterRegistry` ([#65460](https://github.com/dotnet/aspnetcore/pull/65460)):
+  - `ValidationAttributeFormatterRegistry` ↔ `ClientValidationAdapterRegistry` (parallel registries)
+  - `AddFormatter<T>(factory)` ↔ `AddAdapter<T>(factory)` (parallel registration methods)
+  - Self-formatting ↔ Self-adapting (parallel self-implementing patterns)
+- Options-based: configured via `IConfigureOptions<ClientValidationAdapterRegistry>`, composed naturally through the options pipeline
+- Last-wins replacement: custom adapters registered after built-ins override them (unlike the old provider pattern where built-ins always took precedence)
+- Self-adapting: a `ValidationAttribute` that implements `IClientValidationAdapter` directly is used as-is, without needing a separate registration
+
+**Location:** `src/Components/Forms/src/ClientValidation/ClientValidationAdapterRegistry.cs`
 
 ### 5.5 Built-In Adapters
 
@@ -318,67 +367,42 @@ internal sealed class RangeClientAdapter(RangeAttribute attribute) : IClientVali
 
 **Location:** `src/Components/Forms/src/ClientValidation/Adapters/` (one file per adapter, or a single `BuiltInAdapters.cs`)
 
-### 5.6 `DefaultClientValidationAdapterProvider`
+### 5.6 `BuiltInAdapterRegistration` — Built-In Adapter Configuration
 
 ```csharp
 namespace Microsoft.AspNetCore.Components.Forms.ClientValidation;
 
 /// <summary>
-/// Default implementation that maps built-in <see cref="ValidationAttribute"/>
-/// types to <see cref="IClientValidationAdapter"/> instances.
-/// Falls back to registered <see cref="IClientValidationAdapterProvider"/>
-/// services for custom attributes.
+/// Registers the built-in <see cref="IClientValidationAdapter"/> factories
+/// on <see cref="ClientValidationAdapterRegistry"/> via the options pipeline.
+/// Registered with <see cref="TryAddEnumerable"/> for idempotent registration.
 /// </summary>
-internal sealed class DefaultClientValidationAdapterProvider : IClientValidationAdapterProvider
+internal sealed class BuiltInAdapterRegistration
+    : IConfigureOptions<ClientValidationAdapterRegistry>
 {
-    private readonly IEnumerable<IClientValidationAdapterProvider> _customProviders;
-
-    public DefaultClientValidationAdapterProvider(
-        IEnumerable<IClientValidationAdapterProvider> customProviders)
+    public void Configure(ClientValidationAdapterRegistry registry)
     {
-        _customProviders = customProviders;
-    }
-
-    public IClientValidationAdapter? GetAdapter(ValidationAttribute attribute)
-    {
-        // Built-in mapping (same order as MVC's ValidationAttributeAdapterProvider)
-        var adapter = attribute switch
-        {
-            RequiredAttribute a => new RequiredClientAdapter(a),
-            StringLengthAttribute a => new StringLengthClientAdapter(a),
-            RangeAttribute a => new RangeClientAdapter(a),
-            MinLengthAttribute a => new MinLengthClientAdapter(a),
-            MaxLengthAttribute a => new MaxLengthClientAdapter(a),
-            RegularExpressionAttribute a => new RegexClientAdapter(a),
-            EmailAddressAttribute a => new DataTypeClientAdapter(a, "data-val-email"),
-            UrlAttribute a => new DataTypeClientAdapter(a, "data-val-url"),
-            CreditCardAttribute a => new DataTypeClientAdapter(a, "data-val-creditcard"),
-            PhoneAttribute a => new DataTypeClientAdapter(a, "data-val-phone"),
-            CompareAttribute a => new CompareClientAdapter(a),
-            _ => null
-        };
-
-        if (adapter is not null)
-        {
-            return adapter;
-        }
-
-        // Try custom providers (registered via DI)
-        foreach (var provider in _customProviders)
-        {
-            adapter = provider.GetAdapter(attribute);
-            if (adapter is not null)
-            {
-                return adapter;
-            }
-        }
-
-        return null;
+        registry.AddAdapter<RequiredAttribute>(a => new RequiredClientAdapter(a));
+        registry.AddAdapter<StringLengthAttribute>(a => new StringLengthClientAdapter(a));
+        registry.AddAdapter<RangeAttribute>(a => new RangeClientAdapter(a));
+        registry.AddAdapter<MinLengthAttribute>(a => new MinLengthClientAdapter(a));
+        registry.AddAdapter<MaxLengthAttribute>(a => new MaxLengthClientAdapter(a));
+        registry.AddAdapter<RegularExpressionAttribute>(a => new RegexClientAdapter(a));
+        registry.AddAdapter<EmailAddressAttribute>(a => new DataTypeClientAdapter(a, "data-val-email"));
+        registry.AddAdapter<UrlAttribute>(a => new DataTypeClientAdapter(a, "data-val-url"));
+        registry.AddAdapter<CreditCardAttribute>(a => new DataTypeClientAdapter(a, "data-val-creditcard"));
+        registry.AddAdapter<PhoneAttribute>(a => new DataTypeClientAdapter(a, "data-val-phone"));
+        registry.AddAdapter<CompareAttribute>(a => new CompareClientAdapter(a));
     }
 }
 ```
 
-**Location:** `src/Components/Forms/src/ClientValidation/Adapters/DefaultClientValidationAdapterProvider.cs`
+**Design notes:**
+- Built-in adapters are registered via `IConfigureOptions<ClientValidationAdapterRegistry>` using `TryAddEnumerable` (idempotent — safe to call `AddClientSideValidation()` multiple times)
+- Because `AddAdapter<T>()` uses last-wins semantics, custom adapters registered after this configuration override built-in adapters
+- The options pipeline ensures built-in registrations run first, then any custom `Configure<ClientValidationAdapterRegistry>()` calls
+
+**Location:** `src/Components/Forms/src/ClientValidation/BuiltInAdapterRegistration.cs`
 
 ### 5.7 `DefaultClientValidationService` — Service Implementation
 
@@ -387,7 +411,7 @@ namespace Microsoft.AspNetCore.Components.Forms.ClientValidation;
 
 internal sealed class DefaultClientValidationService : IClientValidationService
 {
-    private readonly IClientValidationAdapterProvider _adapterProvider;
+    private readonly ClientValidationAdapterRegistry _adapterRegistry;
     private readonly ValidationOptions? _validationOptions;
     private readonly IServiceProvider _serviceProvider;
 
@@ -395,11 +419,11 @@ internal sealed class DefaultClientValidationService : IClientValidationService
     private readonly ConcurrentDictionary<(Type, string), IReadOnlyDictionary<string, string>> _cache = new();
 
     public DefaultClientValidationService(
-        IClientValidationAdapterProvider adapterProvider,
+        ClientValidationAdapterRegistry adapterRegistry,
         IServiceProvider serviceProvider,
         IOptions<ValidationOptions>? validationOptions = null)
     {
-        _adapterProvider = adapterProvider;
+        _adapterRegistry = adapterRegistry;
         _serviceProvider = serviceProvider;
         _validationOptions = validationOptions?.Value;
     }
@@ -426,7 +450,7 @@ internal sealed class DefaultClientValidationService : IClientValidationService
 
         foreach (var validationAttribute in validationAttributes)
         {
-            var adapter = _adapterProvider.GetAdapter(validationAttribute);
+            var adapter = _adapterRegistry.GetAdapter(validationAttribute);
             if (adapter is not null)
             {
                 // Resolve the error message using the localization pipeline
@@ -600,7 +624,7 @@ public sealed class ClientSideValidator : ComponentBase, IDisposable
     private EditContext CurrentEditContext { get; set; } = default!;
 
     [Inject]
-    private IClientValidationAdapterProvider AdapterProvider { get; set; } = default!;
+    private IOptions<ClientValidationAdapterRegistry> AdapterRegistry { get; set; } = default!;
 
     [Inject]
     private IServiceProvider ServiceProvider { get; set; } = default!;
@@ -618,7 +642,7 @@ public sealed class ClientSideValidator : ComponentBase, IDisposable
         }
 
         _service = new DefaultClientValidationService(
-            AdapterProvider,
+            AdapterRegistry.Value,
             ServiceProvider,
             ValidationOptions);
     }
@@ -950,8 +974,8 @@ public static class ClientValidationServiceCollectionExtensions
 {
     /// <summary>
     /// Adds client-side validation services for Blazor forms.
-    /// This registers the default adapter provider with built-in adapters
-    /// for standard <see cref="ValidationAttribute"/> types.
+    /// This registers the <see cref="ClientValidationAdapterRegistry"/> options
+    /// with built-in adapters via <see cref="IConfigureOptions{T}"/>.
     /// </summary>
     /// <example>
     /// <code>
@@ -960,25 +984,31 @@ public static class ClientValidationServiceCollectionExtensions
     /// </example>
     public static IServiceCollection AddClientSideValidation(this IServiceCollection services)
     {
-        services.TryAddSingleton<IClientValidationAdapterProvider,
-            DefaultClientValidationAdapterProvider>();
+        services.AddOptions();
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IConfigureOptions<ClientValidationAdapterRegistry>,
+                BuiltInAdapterRegistration>());
         return services;
     }
 
     /// <summary>
-    /// Registers a custom <see cref="IClientValidationAdapterProvider"/>
-    /// that can supply adapters for custom validation attributes.
+    /// Registers a custom <see cref="IClientValidationAdapter"/> factory for the
+    /// specified <typeparamref name="TAttribute"/> type. Last-wins: this can
+    /// override built-in adapters.
     /// </summary>
     /// <example>
     /// <code>
-    /// builder.Services.AddClientValidationAdapterProvider&lt;MyCustomAdapterProvider&gt;();
+    /// builder.Services.AddClientValidationAdapter&lt;ClassicMovieAttribute&gt;(
+    ///     attr =&gt; new ClassicMovieClientAdapter(attr));
     /// </code>
     /// </example>
-    public static IServiceCollection AddClientValidationAdapterProvider<TProvider>(
-        this IServiceCollection services)
-        where TProvider : class, IClientValidationAdapterProvider
+    public static IServiceCollection AddClientValidationAdapter<TAttribute>(
+        this IServiceCollection services,
+        Func<TAttribute, IClientValidationAdapter> factory)
+        where TAttribute : ValidationAttribute
     {
-        services.AddSingleton<IClientValidationAdapterProvider, TProvider>();
+        services.Configure<ClientValidationAdapterRegistry>(registry =>
+            registry.AddAdapter(factory));
         return services;
     }
 }
@@ -1011,22 +1041,10 @@ public class ClassicMovieClientAdapter(ClassicMovieAttribute attribute) : IClien
 builder.Services.AddValidationAttributeFormatter<ClassicMovieAttribute>(
     attr => new ClassicMovieFormatter(attr));
 
-// User's adapter provider
-public class MyAdapterProvider : IClientValidationAdapterProvider
-{
-    public IClientValidationAdapter? GetAdapter(ValidationAttribute attribute)
-    {
-        if (attribute is ClassicMovieAttribute classicMovie)
-        {
-            return new ClassicMovieClientAdapter(classicMovie);
-        }
-        return null;
-    }
-}
-
-// Registration in Program.cs
+// Registration in Program.cs — register custom adapter factory
 builder.Services.AddClientSideValidation();
-builder.Services.AddClientValidationAdapterProvider<MyAdapterProvider>();
+builder.Services.AddClientValidationAdapter<ClassicMovieAttribute>(
+    attr => new ClassicMovieClientAdapter(attr));
 ```
 
 And on the JS side, register a matching provider:
@@ -1050,8 +1068,8 @@ validationService.engine.registerProvider({
 
 | Assembly | New Types | Notes |
 |---|---|---|
-| `Microsoft.AspNetCore.Components.Forms` | `IClientValidationService`, `IClientValidationAdapter`, `IClientValidationAdapterProvider`, `ClientValidationContext` (readonly struct) | Core abstractions; no MVC dependency |
-| `Microsoft.AspNetCore.Components.Forms` | `DefaultClientValidationService`, `DefaultClientValidationAdapterProvider`, built-in adapters | Internal implementations |
+| `Microsoft.AspNetCore.Components.Forms` | `IClientValidationService`, `IClientValidationAdapter`, `ClientValidationAdapterRegistry`, `ClientValidationContext` (readonly struct) | Core abstractions; no MVC dependency |
+| `Microsoft.AspNetCore.Components.Forms` | `DefaultClientValidationService`, `BuiltInAdapterRegistration`, built-in adapters | Internal implementations |
 | `Microsoft.AspNetCore.Components.Web` | `ClientSideValidator` | Component; references Forms |
 | `Microsoft.AspNetCore.Components.Web` | Modified `InputBase<T>`, `InputText`, `ValidationMessage<T>`, `ValidationSummary` | Existing files, minimal changes |
 | `Microsoft.Extensions.Validation` | (Possible) Public `ValidationAttributes` on `ValidatablePropertyInfo` | Enables source generator path |
@@ -1121,7 +1139,7 @@ Since error messages are baked into the HTML at render time:
 
 ### Phase 1: Core Infrastructure
 1. `IClientValidationAdapter` interface (single method: `AddClientValidation(in ClientValidationContext, string)`)
-2. `IClientValidationAdapterProvider` interface
+2. `ClientValidationAdapterRegistry` class
 3. `ClientValidationContext` readonly struct (`Attributes` + `MergeAttribute()`)
 4. `IClientValidationService` interface
 
@@ -1133,7 +1151,7 @@ Since error messages are baked into the HTML at render time:
 10. `RegexClientAdapter`
 11. `DataTypeClientAdapter` (email, url, creditcard, phone)
 12. `CompareClientAdapter`
-13. `DefaultClientValidationAdapterProvider`
+13. `BuiltInAdapterRegistration` (registers adapters on `ClientValidationAdapterRegistry`)
 
 ### Phase 3: Service Implementation
 14. `DefaultClientValidationService` (reflection path)
@@ -1268,7 +1286,7 @@ This section records the design choices that were considered during the creation
 
 | # | Variant | Description |
 |---|---------|-------------|
-| 1 | **Blazor-specific adapter interface with DI registration** ✅ | New `IClientValidationAdapter` and `IClientValidationAdapterProvider` interfaces. Users register custom providers via `services.AddClientValidationAdapterProvider<T>()`. Same spirit as MVC's adapter pattern but designed for Blazor's DI-first model, no MVC dependencies. |
+| 1 | **Blazor-specific adapter interface with options-based registry** ✅ | New `IClientValidationAdapter` interface and `ClientValidationAdapterRegistry` options class. Users register custom adapters via `services.AddClientValidationAdapter<T>(factory)`. Parallel to the localization proposal's `ValidationAttributeFormatterRegistry`. DI-first design with last-wins override semantics, no MVC dependencies. |
 | 2 | **Reuse MVC's `IClientModelValidator` interface** | The `ValidationAttribute` itself implements the interface. Familiar to MVC users but creates a coupling between validation attributes and the HTML protocol, and depends on MVC-specific types (`ClientModelValidationContext` with `ModelMetadata`). |
 | 3 | **Attribute-based approach** | Decorate `ValidationAttribute` subclasses with `[ClientValidation("ruleName", ...)]` to declare the `data-val` mapping statically. Simple for common cases but limited for attributes with dynamic parameter values. |
 

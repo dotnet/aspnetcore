@@ -68,13 +68,36 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        foreach (var message in CurrentEditContext.GetValidationMessages(_fieldIdentifier))
+        var hasClientValidation = CurrentEditContext.Properties.TryGetValue(
+            ClientSideValidator.ServiceKey, out _);
+
+        if (hasClientValidation)
         {
-            builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "class", "validation-message");
-            builder.AddMultipleAttributes(2, AdditionalAttributes);
-            builder.AddContent(3, message);
+            // Render a single container element with data-valmsg-for for the JS library to find
+            var fieldName = ExpressionFormatter.FormatLambda(For!);
+
+            builder.OpenElement(0, "span");
+            builder.AddAttribute(1, "data-valmsg-for", fieldName);
+            builder.AddAttribute(2, "class", "field-validation-valid");
+            builder.AddMultipleAttributes(3, AdditionalAttributes);
+
+            foreach (var message in CurrentEditContext.GetValidationMessages(_fieldIdentifier))
+            {
+                builder.AddContent(4, message);
+            }
+
             builder.CloseElement();
+        }
+        else
+        {
+            foreach (var message in CurrentEditContext.GetValidationMessages(_fieldIdentifier))
+            {
+                builder.OpenElement(0, "div");
+                builder.AddAttribute(1, "class", "validation-message");
+                builder.AddMultipleAttributes(2, AdditionalAttributes);
+                builder.AddContent(3, message);
+                builder.CloseElement();
+            }
         }
     }
 

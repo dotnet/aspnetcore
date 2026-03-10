@@ -355,6 +355,34 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
                 additionalAttributes.Remove("aria-invalid");
             }
         }
+
+        MergeClientValidationAttributes();
+    }
+
+    private void MergeClientValidationAttributes()
+    {
+        if (EditContext?.Properties.TryGetValue(ClientSideValidator.ServiceKey, out var serviceObj) != true
+            || serviceObj is not IClientValidationService service)
+        {
+            return;
+        }
+
+        var validationAttributes = service.GetValidationAttributes(FieldIdentifier);
+        if (validationAttributes.Count == 0)
+        {
+            return;
+        }
+
+        if (ConvertToDictionary(AdditionalAttributes, out var additionalAttributes))
+        {
+            AdditionalAttributes = additionalAttributes;
+        }
+
+        foreach (var kvp in validationAttributes)
+        {
+            // Developer-specified attributes take precedence
+            additionalAttributes.TryAdd(kvp.Key, kvp.Value);
+        }
     }
 
     /// <summary>

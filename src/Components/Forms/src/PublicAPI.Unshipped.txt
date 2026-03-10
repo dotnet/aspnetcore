@@ -1,13 +1,18 @@
 #nullable enable
 *REMOVED*static Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.AddDataAnnotationsValidation(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext) -> Microsoft.AspNetCore.Components.Forms.EditContext!
 *REMOVED*static Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.EnableDataAnnotationsValidation(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext) -> System.IDisposable!
+Microsoft.AspNetCore.Components.Forms.ClientValidationAdapterRegistry
+Microsoft.AspNetCore.Components.Forms.ClientValidationAdapterRegistry.AddAdapter<TAttribute>(System.Func<TAttribute!, Microsoft.AspNetCore.Components.Forms.IClientValidationAdapter!>! factory) -> void
+Microsoft.AspNetCore.Components.Forms.ClientValidationAdapterRegistry.ClientValidationAdapterRegistry() -> void
+Microsoft.AspNetCore.Components.Forms.ClientValidationAdapterRegistry.GetAdapter(System.ComponentModel.DataAnnotations.ValidationAttribute! attribute) -> Microsoft.AspNetCore.Components.Forms.IClientValidationAdapter?
 Microsoft.AspNetCore.Components.Forms.ClientValidationContext
 Microsoft.AspNetCore.Components.Forms.ClientValidationContext.ClientValidationContext() -> void
 Microsoft.AspNetCore.Components.Forms.ClientValidationContext.ClientValidationContext(System.Collections.Generic.IDictionary<string!, string!>! attributes) -> void
 Microsoft.AspNetCore.Components.Forms.ClientValidationContext.MergeAttribute(string! key, string! value) -> bool
 Microsoft.AspNetCore.Components.Forms.IClientValidationAdapter
 Microsoft.AspNetCore.Components.Forms.IClientValidationAdapter.AddClientValidation(in Microsoft.AspNetCore.Components.Forms.ClientValidationContext context, string! errorMessage) -> void
-Microsoft.AspNetCore.Components.Forms.IClientValidationAdapterProvider
-Microsoft.AspNetCore.Components.Forms.IClientValidationAdapterProvider.GetAdapter(System.ComponentModel.DataAnnotations.ValidationAttribute! attribute) -> Microsoft.AspNetCore.Components.Forms.IClientValidationAdapter?
 Microsoft.AspNetCore.Components.Forms.IClientValidationService
 Microsoft.AspNetCore.Components.Forms.IClientValidationService.GetValidationAttributes(Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.Extensions.DependencyInjection.ClientValidationServiceCollectionExtensions
+static Microsoft.Extensions.DependencyInjection.ClientValidationServiceCollectionExtensions.AddClientSideValidation(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.ClientValidationServiceCollectionExtensions.AddClientValidationAdapter<TAttribute>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Func<TAttribute!, Microsoft.AspNetCore.Components.Forms.IClientValidationAdapter!>! factory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
