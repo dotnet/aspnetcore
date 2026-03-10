@@ -91,7 +91,6 @@ internal sealed class OpenApiDocumentService(
             // Sort schemas by key name for better readability and consistency
             // This works around an API change in OpenAPI.NET
             document.Components.Schemas = new Dictionary<string, IOpenApiSchema>(
-
                 document.Components.Schemas.OrderBy(kvp => kvp.Key),
                 StringComparer.Ordinal);
         }
@@ -419,7 +418,7 @@ internal sealed class OpenApiDocumentService(
         var response = new OpenApiResponse
         {
             Description = apiResponseType.Description ?? ReasonPhrases.GetReasonPhrase(statusCode),
-            Content = new Dictionary<string, IOpenApiMediaType> ()
+            Content = new Dictionary<string, IOpenApiMediaType>()
         };
 
         // ApiResponseFormats aggregates information about the supported response content types
@@ -568,7 +567,7 @@ internal sealed class OpenApiDocumentService(
         {
             // Assume "application/x-www-form-urlencoded" as the default media type
             // to match the default assumed in IFormFeature.
-            supportedRequestFormats = [new ApiRequestFormat { MediaType = "application/x-www-form-urlencoded" } ];
+            supportedRequestFormats = [new ApiRequestFormat { MediaType = "application/x-www-form-urlencoded" }];
         }
 
         var requestBody = new OpenApiRequestBody
@@ -635,8 +634,7 @@ internal sealed class OpenApiDocumentService(
                     // minimal API types to use trim friendly code paths.
                     var isComplexType = endpointMetadata
                         .OfType<IParameterBindingMetadata> ()
-                        .SingleOrDefault(parameter => parameter.Name == description.Name)?.
-                        HasTryParse == false;
+                        .SingleOrDefault(parameter => parameter.Name == description.Name)?.HasTryParse == false;
                     if (hasMultipleFormParameters)
                     {
                         // Here and below: POCOs do not need to be need under their parameter name in the grouping.
