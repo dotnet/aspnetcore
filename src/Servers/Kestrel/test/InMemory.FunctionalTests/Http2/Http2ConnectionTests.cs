@@ -3588,6 +3588,7 @@ public class Http2ConnectionTests : Http2TestBase
     [Fact]
     public async Task RST_STREAM_IncompleteRequest_AdditionalResetFrame_IgnoreAdditionalReset()
     {
+        var abortedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var headers = new[]
@@ -3596,16 +3597,22 @@ public class Http2ConnectionTests : Http2TestBase
             new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
             new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
         };
-        await InitializeConnectionAsync(context => tcs.Task);
+        await InitializeConnectionAsync(context =>
+        {
+            context.RequestAborted.Register(() => abortedTcs.TrySetResult());
+            return tcs.Task;
+        });
 
         await StartStreamAsync(1, headers, endStream: false);
         await SendDataAsync(1, new byte[1], endStream: false);
         await SendRstStreamAsync(1);
         await SendRstStreamAsync(1);
 
-        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        await abortedTcs.Task;
 
-        tcs.TrySetResult(); // Don't let the response start until after the connection stops
+        tcs.TrySetResult(); // Don't let the response start until after the request aborts
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
         AssertConnectionNoError();
     }
