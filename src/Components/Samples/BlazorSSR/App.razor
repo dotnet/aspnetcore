@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -12,5 +12,10 @@
     <Routes />
     <script src="@Assets["_framework/blazor.web.js"]"></script>
     <script src="js/aspnet-validation.js"></script>
+    <script>
+        Blazor.addEventListener('enhancedload', function (event) {
+            console.log('[enhancedload] Enhanced navigation completed');
+        });
+    </script>
 </body>
 </html>

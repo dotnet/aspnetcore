@@ -271,3 +271,48 @@ Mirrors MVC's `ValidationAttributeAdapterProvider` mapping:
 - `CompareAttribute` → `data-val-equalto`, `-other`
 
 ### Implementation phases: 5 phases, 24 tasks (detailed in design doc)
+
+## Step 7: Enhanced Navigation Test Pages & Bug Fix
+
+### Enhanced Navigation Test Pages
+
+Extended the BlazorSSR sample app with pages that test adding a second form via enhanced navigation:
+
+| File | Route | Purpose |
+|------|-------|---------|
+| `Models/SubscribeModel.cs` | — | Simple model (Name + Email with `[Required]`) |
+| `Pages/ContactExtra.razor` | `/contact-extra` | Two forms (Contact + Subscribe), server-only validation |
+| `Pages/ContactManualExtra.razor` | `/contact-manual-extra` | Two forms with hardcoded `data-val-*` attributes, client-side validation |
+| `Pages/Contact.razor` | `/contact` | Added link to `/contact-extra` |
+| `Pages/ContactManual.razor` | `/contact-manual` | Added link to `/contact-manual-extra` |
+| `Pages/Index.razor` | `/` | Added links to all form pages |
+| `App.razor` | — | Added `enhancedload` debug event handler, favicon link |
+
+### Bug: Stale Validation State After Enhanced Navigation
+
+**Symptom:** Hard-navigate to `/contact-manual` (1-form page), then enhanced-navigate to `/contact-manual-extra` (2-form page). Submit the subscribe form → Email field shows "Name is required." instead of "Email address is required."
+
+**Root Cause — DomSync Element Reuse:**
+
+Blazor's enhanced navigation uses DomSync (`src/Components/Web.JS/src/Services/NavigationEnhancement/DomSync.ts`) to patch the DOM rather than replacing it. DomSync uses Levenshtein edit distance with suffix matching:
+
+1. **Suffix matching**: The old page's single `<form>` (contact form) gets matched with the new page's *last* `<form>` (subscribe form) because suffix matching matches forms from the end of the document.
+2. **Element reuse**: DomSync KEEPS the old DOM node and calls `synchronizeAttributes()` to update its attributes to the new values.
+3. **WeakMap retains stale state**: The validation library's `WeakMap<Element, ElementState>` still holds the old directives (with wrong error messages) for the kept DOM node.
+4. **Scanner skips tracked elements**: The original `scan()` method checked `hasState(input)` and skipped elements that were already tracked — so it never re-parsed the (now changed) `data-val-*` attributes.
+
+**Fix — Directive Fingerprinting:**
+
+Added a `directiveFingerprint` field to `ElementState` (in `Types.ts`) — a sorted concatenation of all `data-val*` attribute name=value pairs. The `DomScanner.scan()` method now:
+
+1. Checks if the element already has state
+2. If yes, computes the current fingerprint and compares to the stored one
+3. If fingerprints differ (attributes changed by DomSync), calls `unregisterElement()` to clean up old listeners/state, then re-registers with fresh directives
+4. If fingerprints match, skips (efficient no-op)
+
+**Files changed:**
+- `src/Components/Web.JS/src/Validation/Types.ts` — Added `directiveFingerprint: string` to `ElementState`
+- `src/Components/Web.JS/src/Validation/DomScanner.ts` — Added `getDirectiveFingerprint()` method, changed `scan()` to compare fingerprints and re-register on mismatch
+- Rebuilt `aspnet-validation.js` (~7.4 KB)
+
+**Verified with Playwright:** Enhanced nav from `/contact-manual` → `/contact-manual-extra`, submit subscribe form → Email correctly shows "Email address is required." and Name shows "Your name is required."

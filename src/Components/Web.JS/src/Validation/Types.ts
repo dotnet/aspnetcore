@@ -25,6 +25,7 @@ export interface ElementState {
   currentError: string;
   messageElements: Element[];
   listeners: { event: string; handler: EventListener }[];
+  directiveFingerprint: string;
 }
 
 export interface CssClassConfig {

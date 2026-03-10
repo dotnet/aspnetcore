@@ -1,0 +1,121 @@
+@page "/contact-extra"
+
+<PageTitle>Contact + Subscribe</PageTitle>
+
+<h1>Contact Form + Newsletter Subscribe</h1>
+<p>This page has <strong>two forms</strong> — navigate here from <a href="/contact">/contact</a> to test enhanced navigation adding a second form to the DOM.</p>
+<p>Server-side validation only (baseline). <a href="/contact-manual-extra">Compare with client validation version</a></p>
+
+<hr />
+
+<h2>Contact Form</h2>
+
+<EditForm Model="ContactFormModel" OnValidSubmit="HandleContactSubmit" Enhance FormName="contact-extra">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="name">Name</label>
+        <InputText id="name" @bind-Value="ContactFormModel.Name" />
+        <ValidationMessage For="@(() => ContactFormModel.Name)" />
+    </div>
+
+    <div class="form-group">
+        <label for="email">Email</label>
+        <InputText id="email" @bind-Value="ContactFormModel.Email" />
+        <ValidationMessage For="@(() => ContactFormModel.Email)" />
+    </div>
+
+    <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <InputText id="phone" @bind-Value="ContactFormModel.PhoneNumber" />
+        <ValidationMessage For="@(() => ContactFormModel.PhoneNumber)" />
+    </div>
+
+    <div class="form-group">
+        <label for="age">Age</label>
+        <InputNumber id="age" @bind-Value="ContactFormModel.Age" />
+        <ValidationMessage For="@(() => ContactFormModel.Age)" />
+    </div>
+
+    <div class="form-group">
+        <label for="website">Website</label>
+        <InputText id="website" @bind-Value="ContactFormModel.Website" />
+        <ValidationMessage For="@(() => ContactFormModel.Website)" />
+    </div>
+
+    <div class="form-group">
+        <label for="message">Message</label>
+        <InputTextArea id="message" @bind-Value="ContactFormModel.Message" />
+        <ValidationMessage For="@(() => ContactFormModel.Message)" />
+    </div>
+
+    <div class="form-group">
+        <label for="refcode">Reference Code (XX-0000)</label>
+        <InputText id="refcode" @bind-Value="ContactFormModel.ReferenceCode" />
+        <ValidationMessage For="@(() => ContactFormModel.ReferenceCode)" />
+    </div>
+
+    <button type="submit">Submit Contact</button>
+</EditForm>
+
+@if (_contactSubmitted)
+{
+    <div class="success-message">
+        <h2>Contact Form Submitted</h2>
+        <p>Thank you, @ContactFormModel.Name!</p>
+    </div>
+}
+
+<hr />
+
+<h2>Newsletter Subscribe</h2>
+<p><em>This form was added to the DOM via enhanced navigation.</em></p>
+
+<EditForm Model="SubscribeFormModel" OnValidSubmit="HandleSubscribeSubmit" Enhance FormName="subscribe-extra">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="sub-name">Name</label>
+        <InputText id="sub-name" @bind-Value="SubscribeFormModel.Name" />
+        <ValidationMessage For="@(() => SubscribeFormModel.Name)" />
+    </div>
+
+    <div class="form-group">
+        <label for="sub-email">Email</label>
+        <InputText id="sub-email" @bind-Value="SubscribeFormModel.Email" />
+        <ValidationMessage For="@(() => SubscribeFormModel.Email)" />
+    </div>
+
+    <button type="submit">Subscribe</button>
+</EditForm>
+
+@if (_subscribeSubmitted)
+{
+    <div class="success-message">
+        <h2>Subscribed!</h2>
+        <p>Thanks, @SubscribeFormModel.Name — you're signed up.</p>
+    </div>
+}
+
+@code {
+    [SupplyParameterFromForm(FormName = "contact-extra")]
+    private ContactModel ContactFormModel { get; set; } = new();
+
+    [SupplyParameterFromForm(FormName = "subscribe-extra")]
+    private SubscribeModel SubscribeFormModel { get; set; } = new();
+
+    private bool _contactSubmitted;
+    private bool _subscribeSubmitted;
+
+    private void HandleContactSubmit()
+    {
+        _contactSubmitted = true;
+    }
+
+    private void HandleSubscribeSubmit()
+    {
+        _subscribeSubmitted = true;
+    }
+}

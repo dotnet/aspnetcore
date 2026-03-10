@@ -1,0 +1,180 @@
+@page "/contact-manual-extra"
+
+<PageTitle>Contact + Subscribe (Client Validation)</PageTitle>
+
+<h1>Contact Form + Newsletter Subscribe — Client-Side Validation</h1>
+<p>This page has <strong>two forms</strong> — navigate here from <a href="/contact-manual">/contact-manual</a> to test enhanced navigation adding a second form with <code>data-val-*</code> attributes to the DOM.</p>
+<p><a href="/contact-extra">Compare with server-only version</a></p>
+
+<hr />
+
+<h2>Contact Form</h2>
+
+<EditForm Model="ContactFormModel" OnValidSubmit="HandleContactSubmit" Enhance FormName="contact-manual-extra">
+    <DataAnnotationsValidator />
+
+    <div>
+        <h3>Client-side validation summary</h3>
+        <div data-valmsg-summary="true" class="validation-summary-valid">
+            <ul></ul>
+        </div>
+    </div>
+
+    <div>
+        <h3>Server-side validation summary</h3>
+        <ValidationSummary />
+    </div>
+
+    <div class="form-group">
+        <label for="name">Name</label>
+        <InputText id="name" @bind-Value="ContactFormModel.Name"
+            data-val="true"
+            data-val-required="Name is required."
+            data-val-length="Name must be between 2 and 100 characters."
+            data-val-length-min="2"
+            data-val-length-max="100" />
+        <span data-valmsg-for="ContactFormModel.Name" class="field-validation-valid"></span>
+        <ValidationMessage For="@(() => ContactFormModel.Name)" />
+    </div>
+
+    <div class="form-group">
+        <label for="email">Email</label>
+        <InputText id="email" @bind-Value="ContactFormModel.Email"
+            data-val="true"
+            data-val-required="Email is required."
+            data-val-email="Please enter a valid email address." />
+        <span data-valmsg-for="ContactFormModel.Email" class="field-validation-valid"></span>
+        <ValidationMessage For="@(() => ContactFormModel.Email)" />
+    </div>
+
+    <div class="form-group">
+        <label for="phone">Phone Number</label>
+        <InputText id="phone" @bind-Value="ContactFormModel.PhoneNumber" />
+        <span data-valmsg-for="ContactFormModel.PhoneNumber" class="field-validation-valid"></span>
+        <ValidationMessage For="@(() => ContactFormModel.PhoneNumber)" />
+    </div>
+
+    <div class="form-group">
+        <label for="age">Age</label>
+        <InputNumber id="age" @bind-Value="ContactFormModel.Age"
+            data-val="true"
+            data-val-required="Age is required."
+            data-val-range="Age must be between 18 and 120."
+            data-val-range-min="18"
+            data-val-range-max="120" />
+        <span data-valmsg-for="ContactFormModel.Age" class="field-validation-valid"></span>
+        <ValidationMessage For="@(() => ContactFormModel.Age)" />
+    </div>
+
+    <div class="form-group">
+        <label for="website">Website</label>
+        <InputText id="website" @bind-Value="ContactFormModel.Website"
+            data-val="true"
+            data-val-url="Please enter a valid URL." />
+        <span data-valmsg-for="ContactFormModel.Website" class="field-validation-valid"></span>
+        <ValidationMessage For="@(() => ContactFormModel.Website)" />
+    </div>
+
+    <div class="form-group">
+        <label for="message">Message</label>
+        <InputTextArea id="message" @bind-Value="ContactFormModel.Message"
+            data-val="true"
+            data-val-required="A message is required."
+            data-val-minlength="Message must be at least 10 characters."
+            data-val-minlength-min="10"
+            data-val-maxlength="Message cannot exceed 1000 characters."
+            data-val-maxlength-max="1000" />
+        <span data-valmsg-for="ContactFormModel.Message" class="field-validation-valid"></span>
+        <ValidationMessage For="@(() => ContactFormModel.Message)" />
+    </div>
+
+    <div class="form-group">
+        <label for="refcode">Reference Code (XX-0000)</label>
+        <InputText id="refcode" @bind-Value="ContactFormModel.ReferenceCode"
+            data-val="true"
+            data-val-regex="Reference code must be in the format XX-0000."
+            data-val-regex-pattern="^[A-Z]{2}-\d{4}$" />
+        <span data-valmsg-for="ContactFormModel.ReferenceCode" class="field-validation-valid"></span>
+        <ValidationMessage For="@(() => ContactFormModel.ReferenceCode)" />
+    </div>
+
+    <div class="form-actions">
+        <button type="submit">Submit Contact</button>
+        <button type="submit" formnovalidate>Submit without validation</button>
+    </div>
+</EditForm>
+
+@if (_contactSubmitted)
+{
+    <div class="success-message">
+        <h2>Contact Form Submitted</h2>
+        <p>Thank you, @ContactFormModel.Name!</p>
+    </div>
+}
+
+<hr />
+
+<h2>Newsletter Subscribe</h2>
+<p><em>This form was added to the DOM via enhanced navigation. Client-side validation should work on it too.</em></p>
+
+<EditForm Model="SubscribeFormModel" OnValidSubmit="HandleSubscribeSubmit" Enhance FormName="subscribe-manual-extra">
+    <DataAnnotationsValidator />
+
+    <div data-valmsg-summary="true" class="validation-summary-valid">
+        <ul></ul>
+    </div>
+
+    <div class="form-group">
+        <label for="sub-name">Name</label>
+        <InputText id="sub-name" @bind-Value="SubscribeFormModel.Name"
+            data-val="true"
+            data-val-required="Your name is required."
+            data-val-length="Name must be between 2 and 50 characters."
+            data-val-length-min="2"
+            data-val-length-max="50" />
+        <span data-valmsg-for="SubscribeFormModel.Name" class="field-validation-valid"></span>
+    </div>
+
+    <div class="form-group">
+        <label for="sub-email">Email</label>
+        <InputText id="sub-email" @bind-Value="SubscribeFormModel.Email"
+            data-val="true"
+            data-val-required="Email address is required."
+            data-val-email="Please enter a valid email address." />
+        <span data-valmsg-for="SubscribeFormModel.Email" class="field-validation-valid"></span>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit">Subscribe</button>
+        <button type="submit" formnovalidate>Subscribe without validation</button>
+    </div>
+</EditForm>
+
+@if (_subscribeSubmitted)
+{
+    <div class="success-message">
+        <h2>Subscribed!</h2>
+        <p>Thanks, @SubscribeFormModel.Name — you're signed up.</p>
+    </div>
+}
+
+@code {
+    [SupplyParameterFromForm(FormName = "contact-manual-extra")]
+    private ContactModel ContactFormModel { get; set; } = new();
+
+    [SupplyParameterFromForm(FormName = "subscribe-manual-extra")]
+    private SubscribeModel SubscribeFormModel { get; set; } = new();
+
+    private bool _contactSubmitted;
+    private bool _subscribeSubmitted;
+
+    private void HandleContactSubmit()
+    {
+        _contactSubmitted = true;
+    }
+
+    private void HandleSubscribeSubmit()
+    {
+        _subscribeSubmitted = true;
+    }
+}
