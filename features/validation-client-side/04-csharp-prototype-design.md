@@ -156,41 +156,24 @@ namespace Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>
 /// Context passed to <see cref="IClientValidationAdapter"/> implementations
-/// to emit <c>data-val-*</c> HTML attributes.
+/// to emit <c>data-val-*</c> HTML attributes. A single context instance is
+/// reused across all adapters for a given field; the per-attribute error
+/// message is passed as a separate argument to
+/// <see cref="IClientValidationAdapter.AddClientValidation"/>.
 /// </summary>
-public sealed class ClientValidationContext
+public readonly struct ClientValidationContext
 {
-    /// <summary>
-    /// Gets the HTML attributes dictionary. Adapters add <c>data-val-*</c>
-    /// entries to this dictionary.
-    /// </summary>
-    public IDictionary<string, string> Attributes { get; }
+    private readonly IDictionary<string, string> _attributes;
 
     /// <summary>
-    /// Gets the <see cref="ValidationAttribute"/> being adapted.
+    /// Initializes a new instance of <see cref="ClientValidationContext"/>.
     /// </summary>
-    public ValidationAttribute ValidationAttribute { get; }
-
-    /// <summary>
-    /// Gets the display name for the field (already localized if a
-    /// <see cref="ValidationOptions.DisplayNameProvider"/> is configured).
-    /// </summary>
-    public string DisplayName { get; }
-
-    /// <summary>
-    /// Gets the type that declares the property being validated.
-    /// </summary>
-    public Type DeclaringType { get; }
-
-    /// <summary>
-    /// Gets the property name being validated.
-    /// </summary>
-    public string PropertyName { get; }
-
-    /// <summary>
-    /// Gets the application's <see cref="IServiceProvider"/>.
-    /// </summary>
-    public IServiceProvider Services { get; }
+    /// <param name="attributes">The HTML attributes dictionary to populate.</param>
+    public ClientValidationContext(IDictionary<string, string> attributes)
+    {
+        ArgumentNullException.ThrowIfNull(attributes);
+        _attributes = attributes;
+    }
 
     /// <summary>
     /// Adds an attribute to the dictionary if the key does not already exist.
@@ -198,21 +181,28 @@ public sealed class ClientValidationContext
     /// </summary>
     public bool MergeAttribute(string key, string value)
     {
-        if (Attributes.ContainsKey(key))
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(value);
+
+        if (_attributes.ContainsKey(key))
         {
             return false;
         }
 
-        Attributes[key] = value;
+        _attributes[key] = value;
         return true;
     }
 }
 ```
 
-**Compared to MVC's `ClientModelValidationContext`:**
-- No dependency on `ActionContext`, `ModelMetadata`, `IModelMetadataProvider`
-- Includes `DisplayName` (pre-resolved) and `Services` for custom adapters that need DI
-- `MergeAttribute` helper method is on the context itself rather than a base class
+**Design rationale:**
+- `ClientValidationContext` is a `readonly struct` — zero allocation, passed by `in` reference to adapters.
+- The attributes dictionary is stored in a private field. Adapters interact only through `MergeAttribute()`, which enforces add-only, first-wins semantics. There is no public `Attributes` property — adapters cannot enumerate, remove, or overwrite entries directly.
+- A single context instance wrapping the attributes dictionary is reused across all adapters for a given field. The per-attribute error message is passed as a separate argument to `AddClientValidation`.
+- Error message resolution is the caller's responsibility (using `ValidationOptions.ErrorMessageProvider` / `IValidationAttributeFormatter` from the localization pipeline, or `ValidationAttribute.FormatErrorMessage()` as fallback).
+- This mirrors the separation of concerns in the localization proposal ([#65539](https://github.com/dotnet/aspnetcore/issues/65539)): `IValidationAttributeFormatter` produces the message, `IClientValidationAdapter` places it into HTML attributes.
+- The adapter receives the `ValidationAttribute` instance via its constructor (from the adapter provider factory), not via the context.
+- Aligns with `readonly struct` usage in the localization proposal (e.g., `DisplayNameProviderContext`, `ErrorMessageProviderContext`).
 
 **Location:** `src/Components/Forms/src/ClientValidationContext.cs`
 
@@ -222,8 +212,11 @@ public sealed class ClientValidationContext
 namespace Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>
-/// Defines a mapping from a <see cref="ValidationAttribute"/> to
+/// Defines a mapping from a validation attribute to
 /// <c>data-val-*</c> HTML attributes for client-side validation.
+/// The adapter is responsible only for emitting the correct attribute names
+/// and parameter values; the error message is pre-resolved by the caller
+/// and provided via the <c>errorMessage</c> parameter.
 /// </summary>
 public interface IClientValidationAdapter
 {
@@ -233,21 +226,19 @@ public interface IClientValidationAdapter
     /// </summary>
     /// <param name="context">
     /// The <see cref="ClientValidationContext"/> containing the attribute
-    /// dictionary and metadata.
+    /// dictionary.
     /// </param>
-    void AddClientValidation(ClientValidationContext context);
-
-    /// <summary>
-    /// Gets the localized error message for this validation rule.
-    /// </summary>
-    /// <param name="context">
-    /// The <see cref="ClientValidationContext"/> containing metadata
-    /// needed for message formatting.
+    /// <param name="errorMessage">
+    /// The pre-resolved, fully formatted error message for this validation rule.
     /// </param>
-    /// <returns>The formatted, localized error message.</returns>
-    string GetErrorMessage(ClientValidationContext context);
+    void AddClientValidation(in ClientValidationContext context, string errorMessage);
 }
 ```
+
+**Compared to MVC's dual-interface pattern:**
+- MVC split this into `IClientModelValidator` (on the attribute) and `IAttributeAdapter` (wrapping it with `GetErrorMessage`). Both had error message responsibilities.
+- Our design separates the concerns more cleanly: `IClientValidationAdapter` only maps to HTML attributes, while `IValidationAttributeFormatter` (from [#65539](https://github.com/dotnet/aspnetcore/issues/65539)) handles message formatting. The service orchestrates both.
+- The `in` keyword passes the `readonly struct` context by reference, avoiding copies.
 
 **Location:** `src/Components/Forms/src/IClientValidationAdapter.cs`
 
@@ -298,24 +289,12 @@ The following adapters are registered by default, mirroring MVC's `ValidationAtt
 ```csharp
 namespace Microsoft.AspNetCore.Components.Forms.ClientValidation;
 
-internal sealed class RequiredClientAdapter : IClientValidationAdapter
+internal sealed class RequiredClientAdapter(RequiredAttribute attribute) : IClientValidationAdapter
 {
-    private readonly RequiredAttribute _attribute;
-
-    public RequiredClientAdapter(RequiredAttribute attribute)
-    {
-        _attribute = attribute;
-    }
-
-    public void AddClientValidation(ClientValidationContext context)
+    public void AddClientValidation(ClientValidationContext context, string errorMessage)
     {
         context.MergeAttribute("data-val", "true");
-        context.MergeAttribute("data-val-required", GetErrorMessage(context));
-    }
-
-    public string GetErrorMessage(ClientValidationContext context)
-    {
-        return ResolveErrorMessage(context, _attribute, context.DisplayName);
+        context.MergeAttribute("data-val-required", errorMessage);
     }
 }
 ```
@@ -323,31 +302,16 @@ internal sealed class RequiredClientAdapter : IClientValidationAdapter
 **Example — `RangeClientAdapter`:**
 
 ```csharp
-internal sealed class RangeClientAdapter : IClientValidationAdapter
+internal sealed class RangeClientAdapter(RangeAttribute attribute) : IClientValidationAdapter
 {
-    private readonly RangeAttribute _attribute;
-
-    public RangeClientAdapter(RangeAttribute attribute)
-    {
-        _attribute = attribute;
-        // Trigger conversion (same trick as MVC's RangeAttributeAdapter)
-        attribute.IsValid(3);
-    }
-
-    public void AddClientValidation(ClientValidationContext context)
+    public void AddClientValidation(ClientValidationContext context, string errorMessage)
     {
         context.MergeAttribute("data-val", "true");
-        context.MergeAttribute("data-val-range", GetErrorMessage(context));
+        context.MergeAttribute("data-val-range", errorMessage);
         context.MergeAttribute("data-val-range-min",
-            Convert.ToString(_attribute.Minimum, CultureInfo.InvariantCulture)!);
+            Convert.ToString(attribute.Minimum, CultureInfo.InvariantCulture)!);
         context.MergeAttribute("data-val-range-max",
-            Convert.ToString(_attribute.Maximum, CultureInfo.InvariantCulture)!);
-    }
-
-    public string GetErrorMessage(ClientValidationContext context)
-    {
-        return ResolveErrorMessage(context, _attribute,
-            context.DisplayName, _attribute.Minimum, _attribute.Maximum);
+            Convert.ToString(attribute.Maximum, CultureInfo.InvariantCulture)!);
     }
 }
 ```
@@ -458,23 +422,50 @@ internal sealed class DefaultClientValidationService : IClientValidationService
 
         var displayName = ResolveDisplayName(modelType, fieldName);
         var attributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-        var context = new ClientValidationContext
-        {
-            Attributes = attributes,
-            DisplayName = displayName,
-            DeclaringType = modelType,
-            PropertyName = fieldName,
-            Services = _serviceProvider
-        };
+        var context = new ClientValidationContext(attributes);
 
         foreach (var validationAttribute in validationAttributes)
         {
             var adapter = _adapterProvider.GetAdapter(validationAttribute);
             if (adapter is not null)
             {
-                context.ValidationAttribute = validationAttribute;
-                adapter.AddClientValidation(context);
+                // Resolve the error message using the localization pipeline
+                // (ErrorMessageProvider + IValidationAttributeFormatter) or fallback
+                var errorMessage = ResolveErrorMessage(validationAttribute, displayName);
+                adapter.AddClientValidation(in context, errorMessage);
+            }
+        }
+
+        return attributes;
+    }
+
+    /// <summary>
+    /// Resolves the error message for a validation attribute, using
+    /// ValidationOptions.ErrorMessageProvider if configured, otherwise
+    /// falling back to ValidationAttribute.FormatErrorMessage.
+    /// </summary>
+    private string ResolveErrorMessage(ValidationAttribute attribute, string displayName)
+    {
+        if (_validationOptions?.ErrorMessageProvider is { } errorMessageProvider)
+        {
+            var providerContext = new ErrorMessageProviderContext
+            {
+                Attribute = attribute,
+                DisplayName = displayName,
+                DeclaringType = /* modelType */ null, // simplified for prototype
+                Services = _serviceProvider,
+            };
+
+            var localizedMessage = errorMessageProvider(providerContext);
+            if (localizedMessage is not null)
+            {
+                return localizedMessage;
+            }
+        }
+
+        // Fallback: use the attribute's own formatting
+        return attribute.FormatErrorMessage(displayName);
+    }
             }
         }
 
@@ -567,54 +558,13 @@ internal sealed class DefaultClientValidationService : IClientValidationService
 
 **Location:** `src/Components/Forms/src/ClientValidation/DefaultClientValidationService.cs`
 
-### 5.8 Error Message Resolution
+**Error message resolution** is now a responsibility of the service, not the adapters. The service's `ResolveErrorMessage()` method:
+1. Tries `ValidationOptions.ErrorMessageProvider` first (which internally uses `IValidationAttributeFormatter` from [#65539](https://github.com/dotnet/aspnetcore/issues/65539) for template formatting with attribute-specific args)
+2. Falls back to `ValidationAttribute.FormatErrorMessage(displayName)` when no provider is configured
 
-Adapters resolve error messages using a shared helper that integrates with the localization infrastructure from [#65539](https://github.com/dotnet/aspnetcore/issues/65539):
+This means `IValidationAttributeFormatter` (message formatting) and `IClientValidationAdapter` (HTML attribute mapping) are complementary single-responsibility interfaces, orchestrated by the service.
 
-```csharp
-namespace Microsoft.AspNetCore.Components.Forms.ClientValidation;
-
-internal static class ErrorMessageResolver
-{
-    /// <summary>
-    /// Resolves the error message for a validation attribute, using the
-    /// <see cref="ValidationOptions.ErrorMessageProvider"/> if configured,
-    /// otherwise falling back to <see cref="ValidationAttribute.FormatErrorMessage"/>.
-    /// </summary>
-    public static string Resolve(
-        ClientValidationContext context,
-        ValidationAttribute attribute,
-        params object[] formatArgs)
-    {
-        // Path 1: Use ErrorMessageProvider from ValidationOptions (localization-aware)
-        var validationOptions = context.Services.GetService<IOptions<ValidationOptions>>()?.Value;
-
-        if (validationOptions?.ErrorMessageProvider is { } errorMessageProvider)
-        {
-            var providerContext = new ErrorMessageProviderContext
-            {
-                Attribute = attribute,
-                DisplayName = context.DisplayName,
-                DeclaringType = context.DeclaringType,
-                Services = context.Services,
-            };
-
-            var localizedMessage = errorMessageProvider(providerContext);
-            if (localizedMessage is not null)
-            {
-                return localizedMessage;
-            }
-        }
-
-        // Path 2: Default — use the attribute's own formatting
-        return attribute.FormatErrorMessage(context.DisplayName);
-    }
-}
-```
-
-**Key insight from [#65539](https://github.com/dotnet/aspnetcore/issues/65539):** The localization proposal explicitly states that `ErrorMessageProviderContext` excludes validation-execution types so that "localized and formatted messages are retrievable *outside* of validation execution" — precisely our use case. The `ErrorMessageProvider` returns a **fully formatted** message (not a template), handling attribute-specific placeholders internally via `IValidationAttributeFormatter`.
-
-### 5.9 `<ClientSideValidator />` Component
+### 5.8 `<ClientSideValidator />` Component
 
 ```csharp
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -1044,27 +994,22 @@ public class ClassicMovieAttribute : ValidationAttribute
     // ...
 }
 
-// User's custom adapter
-public class ClassicMovieClientAdapter : IClientValidationAdapter
+// User's custom adapter — only maps to HTML attributes, no message resolution
+public class ClassicMovieClientAdapter(ClassicMovieAttribute attribute) : IClientValidationAdapter
 {
-    private readonly ClassicMovieAttribute _attribute;
-
-    public ClassicMovieClientAdapter(ClassicMovieAttribute attribute)
-    {
-        _attribute = attribute;
-    }
-
-    public void AddClientValidation(ClientValidationContext context)
+    public void AddClientValidation(ClientValidationContext context, string errorMessage)
     {
         context.MergeAttribute("data-val", "true");
-        context.MergeAttribute("data-val-classicmovie", GetErrorMessage(context));
+        context.MergeAttribute("data-val-classicmovie", errorMessage);
         context.MergeAttribute("data-val-classicmovie-year",
-            _attribute.Year.ToString(CultureInfo.InvariantCulture));
+            attribute.Year.ToString(CultureInfo.InvariantCulture));
     }
-
-    public string GetErrorMessage(ClientValidationContext context)
-        => ErrorMessageResolver.Resolve(context, _attribute, context.DisplayName, _attribute.Year);
 }
+
+// To support localization of the error message template (which has {0} = display name,
+// {1} = year), register an IValidationAttributeFormatter:
+builder.Services.AddValidationAttributeFormatter<ClassicMovieAttribute>(
+    attr => new ClassicMovieFormatter(attr));
 
 // User's adapter provider
 public class MyAdapterProvider : IClientValidationAdapterProvider
@@ -1105,8 +1050,8 @@ validationService.engine.registerProvider({
 
 | Assembly | New Types | Notes |
 |---|---|---|
-| `Microsoft.AspNetCore.Components.Forms` | `IClientValidationService`, `IClientValidationAdapter`, `IClientValidationAdapterProvider`, `ClientValidationContext` | Core abstractions; no MVC dependency |
-| `Microsoft.AspNetCore.Components.Forms` | `DefaultClientValidationService`, `DefaultClientValidationAdapterProvider`, built-in adapters, `ErrorMessageResolver` | Internal implementations |
+| `Microsoft.AspNetCore.Components.Forms` | `IClientValidationService`, `IClientValidationAdapter`, `IClientValidationAdapterProvider`, `ClientValidationContext` (readonly struct) | Core abstractions; no MVC dependency |
+| `Microsoft.AspNetCore.Components.Forms` | `DefaultClientValidationService`, `DefaultClientValidationAdapterProvider`, built-in adapters | Internal implementations |
 | `Microsoft.AspNetCore.Components.Web` | `ClientSideValidator` | Component; references Forms |
 | `Microsoft.AspNetCore.Components.Web` | Modified `InputBase<T>`, `InputText`, `ValidationMessage<T>`, `ValidationSummary` | Existing files, minimal changes |
 | `Microsoft.Extensions.Validation` | (Possible) Public `ValidationAttributes` on `ValidatablePropertyInfo` | Enables source generator path |
@@ -1123,9 +1068,9 @@ Given the localization proposal in [#65539](https://github.com/dotnet/aspnetcore
 2. This sets `ValidationOptions.ErrorMessageProvider` and `ValidationOptions.DisplayNameProvider`
 3. When `DefaultClientValidationService.ComputeAttributes()` runs during render:
    - It calls `DisplayNameProvider` to get the localized display name
-   - Each adapter calls `ErrorMessageResolver.Resolve()` which calls `ErrorMessageProvider`
-   - `ErrorMessageProvider` uses `IValidationAttributeFormatter` to format the template with attribute-specific args
-   - The **fully formatted, localized message** is written into `data-val-*`
+   - For each attribute, the service calls `ErrorMessageProvider` (which uses `IValidationAttributeFormatter` to format the template with attribute-specific args)
+   - The **fully formatted, localized message** is passed to the adapter as an argument
+   - The adapter writes it into the correct `data-val-*` attribute
 4. The JS library reads these pre-localized messages and displays them as-is
 
 ### 9.2 Without Localization
@@ -1175,11 +1120,10 @@ Since error messages are baked into the HTML at render time:
 ## 11. Implementation Order
 
 ### Phase 1: Core Infrastructure
-1. `IClientValidationAdapter` interface
+1. `IClientValidationAdapter` interface (single method: `AddClientValidation(in ClientValidationContext, string)`)
 2. `IClientValidationAdapterProvider` interface
-3. `ClientValidationContext` class
+3. `ClientValidationContext` readonly struct (`Attributes` + `MergeAttribute()`)
 4. `IClientValidationService` interface
-5. `ErrorMessageResolver` helper
 
 ### Phase 2: Built-In Adapters
 6. `RequiredClientAdapter`
