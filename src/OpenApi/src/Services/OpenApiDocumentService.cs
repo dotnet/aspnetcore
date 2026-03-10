@@ -444,7 +444,7 @@ internal sealed class OpenApiDocumentService(
         // looks for when generating ApiResponseFormats above so we need to pull the content
         // types defined there separately.
         var explicitContentTypes = apiDescription.ActionDescriptor.EndpointMetadata
-            .OfType<ProducesAttribute> ()
+            .OfType<ProducesAttribute>()
             .SelectMany(attr => attr.ContentTypes);
         foreach (var contentType in explicitContentTypes)
         {
@@ -576,7 +576,7 @@ internal sealed class OpenApiDocumentService(
             // serializing a form collection from an empty body. Instead, requiredness
             // must be set on a per-parameter basis. See below.
             Required = true,
-            Content = new Dictionary<string, IOpenApiMediaType> ()
+            Content = new Dictionary<string, IOpenApiMediaType>()
         };
 
         var schema = new OpenApiSchema { Type = JsonSchemaType.Object, Properties = new Dictionary<string, IOpenApiSchema>() };
@@ -633,7 +633,7 @@ internal sealed class OpenApiDocumentService(
                     // Resolve complex type state from endpoint metadata when checking for
                     // minimal API types to use trim friendly code paths.
                     var isComplexType = endpointMetadata
-                        .OfType<IParameterBindingMetadata> ()
+                        .OfType<IParameterBindingMetadata>()
                         .SingleOrDefault(parameter => parameter.Name == description.Name)?.HasTryParse == false;
                     if (hasMultipleFormParameters)
                     {
@@ -749,7 +749,7 @@ internal sealed class OpenApiDocumentService(
         var requestBody = new OpenApiRequestBody
         {
             Required = IsRequired(bodyParameter),
-            Content = new Dictionary<string, IOpenApiMediaType> (),
+            Content = new Dictionary<string, IOpenApiMediaType>(),
             Description = GetParameterDescriptionFromAttribute(bodyParameter)
         };
 
@@ -781,7 +781,7 @@ internal sealed class OpenApiDocumentService(
     private static Type GetTargetType(ApiDescription description, ApiParameterDescription parameter)
     {
         var bindingMetadata = description.ActionDescriptor.EndpointMetadata
-            .OfType<IParameterBindingMetadata> ()
+            .OfType<IParameterBindingMetadata>()
             .SingleOrDefault(metadata => metadata.Name == parameter.Name);
         var parameterType = parameter.Type is not null
             ? Nullable.GetUnderlyingType(parameter.Type) ?? parameter.Type
