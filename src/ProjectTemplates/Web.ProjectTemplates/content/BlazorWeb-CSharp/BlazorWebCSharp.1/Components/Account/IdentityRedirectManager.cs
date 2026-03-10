@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Identity;
 using BlazorWebCSharp._1.Data;
@@ -6,15 +7,7 @@ namespace BlazorWebCSharp._1.Components.Account;
 
 internal sealed class IdentityRedirectManager(NavigationManager navigationManager)
 {
-    public const string StatusCookieName = "Identity.StatusMessage";
-
-    private static readonly CookieBuilder StatusCookieBuilder = new()
-    {
-        SameSite = SameSiteMode.Strict,
-        HttpOnly = true,
-        IsEssential = true,
-        MaxAge = TimeSpan.FromSeconds(5),
-    };
+    public const string StatusMessageKey = "Identity.StatusMessage";
 
     public void RedirectTo(string? uri)
     {
@@ -36,9 +29,9 @@ internal sealed class IdentityRedirectManager(NavigationManager navigationManage
         RedirectTo(newUri);
     }
 
-    public void RedirectToWithStatus(string uri, string message, HttpContext context)
+    public void RedirectToWithStatus(string uri, string message, ITempData tempData)
     {
-        context.Response.Cookies.Append(StatusCookieName, message, StatusCookieBuilder.Build(context));
+        tempData[StatusMessageKey] = message;
         RedirectTo(uri);
     }
 
@@ -46,9 +39,9 @@ internal sealed class IdentityRedirectManager(NavigationManager navigationManage
 
     public void RedirectToCurrentPage() => RedirectTo(CurrentPath);
 
-    public void RedirectToCurrentPageWithStatus(string message, HttpContext context)
-        => RedirectToWithStatus(CurrentPath, message, context);
+    public void RedirectToCurrentPageWithStatus(string message, ITempData tempData)
+        => RedirectToWithStatus(CurrentPath, message, tempData);
 
-    public void RedirectToInvalidUser(UserManager<ApplicationUser> userManager, HttpContext context)
-        => RedirectToWithStatus("Account/InvalidUser", $"Error: Unable to load user with ID '{userManager.GetUserId(context.User)}'.", context);
+    public void RedirectToInvalidUser(UserManager<ApplicationUser> userManager, ClaimsPrincipal user, ITempData tempData)
+        => RedirectToWithStatus("Account/InvalidUser", $"Error: Unable to load user with ID '{userManager.GetUserId(user)}'.", tempData);
 }

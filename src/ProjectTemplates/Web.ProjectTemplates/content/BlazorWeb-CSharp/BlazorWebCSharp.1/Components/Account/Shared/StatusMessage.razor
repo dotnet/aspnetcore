@@ -7,23 +7,18 @@
 }
 
 @code {
-    private string? messageFromCookie;
+    private string? messageFromTempData;
 
     [Parameter]
     public string? Message { get; set; }
 
     [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
+    private ITempData TempData { get; set; } = default!;
 
-    private string? DisplayMessage => Message ?? messageFromCookie;
+    private string? DisplayMessage => Message ?? messageFromTempData;
 
     protected override void OnInitialized()
     {
-        messageFromCookie = HttpContext.Request.Cookies[IdentityRedirectManager.StatusCookieName];
-
-        if (messageFromCookie is not null)
-        {
-            HttpContext.Response.Cookies.Delete(IdentityRedirectManager.StatusCookieName);
-        }
+        messageFromTempData = TempData.Get(IdentityRedirectManager.StatusMessageKey) as string;
     }
 }
