@@ -83,15 +83,15 @@ Implement the 11 built-in adapters and the `DefaultClientValidationAdapterProvid
 ### 2b. Implementation
 
 **Files to create:**
-- `src/Components/Forms/src/ClientValidation/RequiredClientAdapter.cs`
-- `src/Components/Forms/src/ClientValidation/StringLengthClientAdapter.cs`
-- `src/Components/Forms/src/ClientValidation/MinLengthClientAdapter.cs`
-- `src/Components/Forms/src/ClientValidation/MaxLengthClientAdapter.cs`
-- `src/Components/Forms/src/ClientValidation/RangeClientAdapter.cs`
-- `src/Components/Forms/src/ClientValidation/RegexClientAdapter.cs`
-- `src/Components/Forms/src/ClientValidation/DataTypeClientAdapter.cs` (email, url, creditcard, phone)
-- `src/Components/Forms/src/ClientValidation/CompareClientAdapter.cs`
-- `src/Components/Forms/src/ClientValidation/DefaultClientValidationAdapterProvider.cs`
+- `src/Components/Forms/src/ClientValidation/Adapters/RequiredClientAdapter.cs`
+- `src/Components/Forms/src/ClientValidation/Adapters/StringLengthClientAdapter.cs`
+- `src/Components/Forms/src/ClientValidation/Adapters/MinLengthClientAdapter.cs`
+- `src/Components/Forms/src/ClientValidation/Adapters/MaxLengthClientAdapter.cs`
+- `src/Components/Forms/src/ClientValidation/Adapters/RangeClientAdapter.cs`
+- `src/Components/Forms/src/ClientValidation/Adapters/RegexClientAdapter.cs`
+- `src/Components/Forms/src/ClientValidation/Adapters/DataTypeClientAdapter.cs` (email, url, creditcard, phone)
+- `src/Components/Forms/src/ClientValidation/Adapters/CompareClientAdapter.cs`
+- `src/Components/Forms/src/ClientValidation/Adapters/DefaultClientValidationAdapterProvider.cs`
 
 All adapters are `internal sealed`. Each follows the pattern — adapter receives the attribute in its constructor, uses the `errorMessage` parameter for the pre-resolved message:
 ```csharp
@@ -263,15 +263,15 @@ Modify existing components to consume `IClientValidationService` and emit the ap
 | `src/Components/Forms/src/IClientValidationAdapterProvider.cs` | 1 | Interface |
 | `src/Components/Forms/src/ClientValidationContext.cs` | 1 | Readonly Struct |
 | `src/Components/Forms/test/ClientValidation/ClientValidationContextTest.cs` | 1 | Test |
-| `src/Components/Forms/src/ClientValidation/RequiredClientAdapter.cs` | 2 | Adapter |
-| `src/Components/Forms/src/ClientValidation/StringLengthClientAdapter.cs` | 2 | Adapter |
-| `src/Components/Forms/src/ClientValidation/MinLengthClientAdapter.cs` | 2 | Adapter |
-| `src/Components/Forms/src/ClientValidation/MaxLengthClientAdapter.cs` | 2 | Adapter |
-| `src/Components/Forms/src/ClientValidation/RangeClientAdapter.cs` | 2 | Adapter |
-| `src/Components/Forms/src/ClientValidation/RegexClientAdapter.cs` | 2 | Adapter |
-| `src/Components/Forms/src/ClientValidation/DataTypeClientAdapter.cs` | 2 | Adapter |
-| `src/Components/Forms/src/ClientValidation/CompareClientAdapter.cs` | 2 | Adapter |
-| `src/Components/Forms/src/ClientValidation/DefaultClientValidationAdapterProvider.cs` | 2 | Internal |
+| `src/Components/Forms/src/ClientValidation/Adapters/RequiredClientAdapter.cs` | 2 | Adapter |
+| `src/Components/Forms/src/ClientValidation/Adapters/StringLengthClientAdapter.cs` | 2 | Adapter |
+| `src/Components/Forms/src/ClientValidation/Adapters/MinLengthClientAdapter.cs` | 2 | Adapter |
+| `src/Components/Forms/src/ClientValidation/Adapters/MaxLengthClientAdapter.cs` | 2 | Adapter |
+| `src/Components/Forms/src/ClientValidation/Adapters/RangeClientAdapter.cs` | 2 | Adapter |
+| `src/Components/Forms/src/ClientValidation/Adapters/RegexClientAdapter.cs` | 2 | Adapter |
+| `src/Components/Forms/src/ClientValidation/Adapters/DataTypeClientAdapter.cs` | 2 | Adapter |
+| `src/Components/Forms/src/ClientValidation/Adapters/CompareClientAdapter.cs` | 2 | Adapter |
+| `src/Components/Forms/src/ClientValidation/Adapters/DefaultClientValidationAdapterProvider.cs` | 2 | Internal |
 | `src/Components/Forms/test/ClientValidation/BuiltInAdapterTests.cs` | 2 | Test |
 | `src/Components/Forms/test/ClientValidation/DefaultClientValidationAdapterProviderTest.cs` | 2 | Test |
 | `src/Components/Forms/src/ClientValidation/DefaultClientValidationService.cs` | 3 | Internal |

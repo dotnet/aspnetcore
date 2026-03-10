@@ -316,7 +316,7 @@ internal sealed class RangeClientAdapter(RangeAttribute attribute) : IClientVali
 }
 ```
 
-**Location:** `src/Components/Forms/src/ClientValidation/` (one file per adapter, or a single `BuiltInAdapters.cs`)
+**Location:** `src/Components/Forms/src/ClientValidation/Adapters/` (one file per adapter, or a single `BuiltInAdapters.cs`)
 
 ### 5.6 `DefaultClientValidationAdapterProvider`
 
@@ -378,7 +378,7 @@ internal sealed class DefaultClientValidationAdapterProvider : IClientValidation
 }
 ```
 
-**Location:** `src/Components/Forms/src/ClientValidation/DefaultClientValidationAdapterProvider.cs`
+**Location:** `src/Components/Forms/src/ClientValidation/Adapters/DefaultClientValidationAdapterProvider.cs`
 
 ### 5.7 `DefaultClientValidationService` — Service Implementation
 
