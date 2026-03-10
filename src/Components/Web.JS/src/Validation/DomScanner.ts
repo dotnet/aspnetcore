@@ -15,14 +15,24 @@ export class DomScanner {
 
   /**
      * Scan a DOM subtree for validatable elements and wire them up.
-     * Idempotent — already-tracked elements are skipped.
+     * If an element is already tracked but its data-val-* attributes have changed
+     * (e.g., after enhanced navigation DOM patching), it is re-registered with
+     * fresh directives and message elements.
      */
   scan(root: ParentNode): void {
     const inputs = root.querySelectorAll<ValidatableElement>('input[data-val="true"], select[data-val="true"], textarea[data-val="true"]');
 
     for (const input of Array.from(inputs)) {
-      if (this.coordinator.hasState(input)) {
-        continue;
+      const existingState = this.coordinator.getState(input);
+      if (existingState) {
+        // Element already tracked — check if its attributes have changed
+        // (DomSync can keep a DOM node but update its attributes)
+        const currentFingerprint = this.getDirectiveFingerprint(input);
+        if (existingState.directiveFingerprint === currentFingerprint) {
+          continue;
+        }
+        // Attributes changed — unregister old state before re-registering
+        this.coordinator.unregisterElement(input);
       }
 
       const directives = parseDirectives(input);
@@ -43,6 +53,7 @@ export class DomScanner {
         currentError: '',
         messageElements,
         listeners: [],
+        directiveFingerprint: this.getDirectiveFingerprint(input),
       });
 
       this.eventManager.attachInputListeners(input);
@@ -52,5 +63,21 @@ export class DomScanner {
         form.setAttribute('novalidate', '');
       }
     }
+  }
+
+  /**
+     * Compute a fingerprint of all data-val-* attributes on an element.
+     * Used to detect when DomSync has kept a DOM node but changed its validation attributes.
+     */
+  private getDirectiveFingerprint(element: ValidatableElement): string {
+    const parts: string[] = [];
+    for (let i = 0; i < element.attributes.length; i++) {
+      const attr = element.attributes[i];
+      if (attr.name.startsWith('data-val')) {
+        parts.push(`${attr.name}=${attr.value}`);
+      }
+    }
+    parts.sort();
+    return parts.join('|');
   }
 }
