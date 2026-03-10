@@ -622,9 +622,9 @@ elif [[ "$__CodeName" == "openbsd" ]]; then
         FILE="${set}${__OpenBSDVersion//./}.tgz"
         echo "Downloading $FILE..."
         if [[ "$__hasWget" == 1 ]]; then
-            wget -O- "$OPENBSD_MIRROR/$FILE" | tar -C "$ROOTFS" -xzpf -
+            wget -O- "$OPENBSD_MIRROR/$FILE" | tar -C "$__RootfsDir" -xzpf -
         else
-            curl -SL "$OPENBSD_MIRROR/$FILE" | tar -C "$ROOTFS" -xzpf -
+            curl -SL "$OPENBSD_MIRROR/$FILE" | tar -C "$__RootfsDir" -xzpf -
         fi
     done
 
@@ -638,11 +638,11 @@ elif [[ "$__CodeName" == "openbsd" ]]; then
         if [[ "$__hasWget" == 1 ]]; then
             PKG_FILE=$(wget -qO- "$PKG_MIRROR/" | grep -Eo "${pkg}-[0-9][^\" ]*\.tgz" | head -n1)
             [[ -z "$PKG_FILE" ]] && { echo "ERROR: Package $pkg not found"; exit 1; }
-            wget -O- "$PKG_MIRROR/$PKG_FILE" | tar -C "$ROOTFS" -xzpf -
+            wget -O- "$PKG_MIRROR/$PKG_FILE" | tar -C "$__RootfsDir" -xzpf -
         else
             PKG_FILE=$(curl -s "$PKG_MIRROR/" | grep -Eo "${pkg}-[0-9][^\" ]*\.tgz" | head -n1)
             [[ -z "$PKG_FILE" ]] && { echo "ERROR: Package $pkg not found"; exit 1; }
-            curl -SL "$PKG_MIRROR/$PKG_FILE" | tar -C "$ROOTFS" -xzpf -
+            curl -SL "$PKG_MIRROR/$PKG_FILE" | tar -C "$__RootfsDir" -xzpf -
         fi
     done
 elif [[ "$__CodeName" == "illumos" ]]; then
