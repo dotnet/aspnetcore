@@ -634,7 +634,8 @@ internal sealed class OpenApiDocumentService(
                     // minimal API types to use trim friendly code paths.
                     var isComplexType = endpointMetadata
                         .OfType<IParameterBindingMetadata>()
-                        .SingleOrDefault(parameter => parameter.Name == description.Name)?.HasTryParse == false;
+                        .SingleOrDefault(parameter => parameter.Name == description.Name)?
+                        .HasTryParse == false;
                     if (hasMultipleFormParameters)
                     {
                         // Here and below: POCOs do not need to be need under their parameter name in the grouping.
