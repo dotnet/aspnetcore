@@ -102,6 +102,7 @@ public static class ClientValidationServiceCollectionExtensions
             registry.AddAdapter<CreditCardAttribute>(_ => new DataTypeClientAdapter("data-val-creditcard"));
             registry.AddAdapter<PhoneAttribute>(_ => new DataTypeClientAdapter("data-val-phone"));
             registry.AddAdapter<CompareAttribute>(a => new CompareClientAdapter(a));
+            registry.AddAdapter<FileExtensionsAttribute>(a => new FileExtensionsClientAdapter(a));
         }
     }
 }

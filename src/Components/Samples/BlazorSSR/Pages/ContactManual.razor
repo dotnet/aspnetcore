@@ -48,10 +48,11 @@
 
     <div class="form-group">
         <label for="phone">Phone Number</label>
-        <InputText id="phone" @bind-Value="Model.PhoneNumber" />
+        <InputText id="phone" @bind-Value="Model.PhoneNumber"
+            data-val="true"
+            data-val-phone="Please enter a valid phone number." />
         <span data-valmsg-for="Model.PhoneNumber" class="field-validation-valid"></span>
         <ValidationMessage For="@(() => Model.PhoneNumber)" />
-        <small>No client-side validation (Phone provider not in prototype scope)</small>
     </div>
 
     <div class="form-group">
