@@ -64,13 +64,18 @@ Before creating any PRs or issues, check for existing open PRs in dotnet/aspnetc
 
 ## Part 1: Unquarantine Reliable Tests
 
-### Step 1.1 — Gather passing test data from the quarantined pipeline
+### Step 1.1 — Gather passing test data from the quarantined pipeline and components-e2e pipeline
 
-Query the **aspnetcore-quarantined-tests** pipeline (definition ID **84**) in the `dnceng-public` Azure DevOps organization, `public` project.
+Query two pipelines in the `dnceng-public` Azure DevOps organization, `public` project:
 
-1. Get all completed builds from the last 30 days:
+- **aspnetcore-quarantined-tests** (definition ID **84**) — runs only quarantined tests
+- **components-e2e** (definition ID **87**) — runs both quarantined and non-quarantined tests
+
+For each pipeline, query only builds on the **main branch**:
+
+1. Get all completed builds from the last 30 days on `refs/heads/main`:
    ```
-   GET https://dev.azure.com/dnceng-public/public/_apis/build/builds?definitions=84&statusFilter=completed&$top=100&minTime={30_DAYS_AGO}&api-version=7.1
+   GET https://dev.azure.com/dnceng-public/public/_apis/build/builds?definitions={DEF_ID}&branchName=refs/heads/main&statusFilter=completed&$top=100&minTime={30_DAYS_AGO}&api-version=7.1
    ```
 
 2. For each build, get all test results:
@@ -78,7 +83,9 @@ Query the **aspnetcore-quarantined-tests** pipeline (definition ID **84**) in th
    GET https://vstmr.dev.azure.com/dnceng-public/public/_apis/testresults/resultsbyBuild?buildId={BUILD_ID}&$top=10000&api-version=7.1-preview.1
    ```
 
-3. Aggregate per test name across all builds: total pass count, total fail count, total "other" count, number of builds the test appeared in.
+3. Aggregate per test name across all builds from both pipelines: total pass count, total fail count, total "other" count, number of builds the test appeared in.
+
+**Note:** Since pipeline 87 runs non-quarantined tests too, those will appear in the data but will be filtered out in Step 1.3 when we verify each candidate has a `[QuarantinedTest]` attribute in source.
 
 ### Step 1.2 — Identify unquarantine candidates
 
@@ -139,9 +146,14 @@ Group the candidates by their associated GitHub issue number. For each group:
 
 ## Part 2: Quarantine Flaky Tests
 
-### Step 2.1 — Gather failure data from the main CI pipeline
+### Step 2.1 — Gather failure data from CI pipelines
 
-Query the **aspnetcore-ci** pipeline (definition ID **83**) for two types of failures:
+Query two pipelines for test failures:
+
+- **aspnetcore-ci** (definition ID **83**) — the main CI pipeline
+- **components-e2e** (definition ID **87**) — runs both quarantined and non-quarantined tests
+
+For each pipeline, collect failures from three sources:
 
 #### Source A: Main branch failures
 Get all completed builds on `refs/heads/main` from the last 30 days. For each build with `result` = `failed` or `partiallySucceeded`, get the failed test results:
@@ -177,7 +189,7 @@ For work items (names ending in `.WorkItemExecution`) that failed 2+ times, inve
 
 ### Step 2.2 — Combine and identify quarantine candidates
 
-Combine failure counts from all three sources. A test is a candidate for quarantining if:
+Combine failure counts from all sources across both pipelines. A test is a candidate for quarantining if:
 - It is an **individual test case** (not a `.WorkItemExecution`)
 - It has failed **2 or more times** total across all sources
 - It is **not already quarantined** (check the source code for existing `[QuarantinedTest]` attributes)
