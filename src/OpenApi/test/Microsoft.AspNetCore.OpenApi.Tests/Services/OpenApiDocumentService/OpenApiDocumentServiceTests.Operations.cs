@@ -173,11 +173,11 @@ public partial class OpenApiDocumentServiceTests
             },
             tag =>
             {
-                Assert.Equal("v1", tag.Name);
+                Assert.Equal("users", tag.Name);
             },
             tag =>
             {
-                Assert.Equal("users", tag.Name);
+                Assert.Equal("v1", tag.Name);
             });
         });
     }
