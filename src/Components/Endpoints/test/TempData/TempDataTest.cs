@@ -254,7 +254,7 @@ public class TempDataTest
     [Fact]
     public void Get_ConsumesValue_WhenFirstAccessTriggersLazyLoad()
     {
-        var tempData = new TempData(() => new Dictionary<string, object?>
+        var tempData = new TempData(() => new Dictionary<string, object>
         {
             ["Message"] = "hello"
         });
@@ -269,7 +269,7 @@ public class TempDataTest
     [Fact]
     public void Indexer_ConsumesValue_WhenFirstAccessTriggersLazyLoad()
     {
-        var tempData = new TempData(() => new Dictionary<string, object?>
+        var tempData = new TempData(() => new Dictionary<string, object>
         {
             ["Message"] = "hello"
         });
@@ -284,7 +284,7 @@ public class TempDataTest
     [Fact]
     public void Remove_RemovesValue_WhenFirstAccessTriggersLazyLoad()
     {
-        var tempData = new TempData(() => new Dictionary<string, object?>
+        var tempData = new TempData(() => new Dictionary<string, object>
         {
             ["Message"] = "hello"
         });
@@ -299,7 +299,7 @@ public class TempDataTest
     [Fact]
     public void Keep_RetainsAllKeys_WhenFirstAccessTriggersLazyLoad()
     {
-        var tempData = new TempData(() => new Dictionary<string, object?>
+        var tempData = new TempData(() => new Dictionary<string, object>
         {
             ["Key1"] = "Value1",
             ["Key2"] = "Value2"
@@ -316,13 +316,13 @@ public class TempDataTest
     [Fact]
     public void Enumerator_IteratesAllKeys_WhenFirstAccessTriggersLazyLoad()
     {
-        var tempData = new TempData(() => new Dictionary<string, object?>
+        var tempData = new TempData(() => new Dictionary<string, object>
         {
             ["Key1"] = "Value1",
             ["Key2"] = "Value2"
         });
 
-        var items = ((IEnumerable<KeyValuePair<string, object?>>)tempData).ToList();
+        var items = ((IEnumerable<KeyValuePair<string, object>>)tempData).ToList();
 
         Assert.Equal(2, items.Count);
     }
