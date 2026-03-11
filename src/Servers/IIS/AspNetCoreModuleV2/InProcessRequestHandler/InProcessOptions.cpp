@@ -65,7 +65,9 @@ InProcessOptions::InProcessOptions(const ConfigurationSource &configurationSourc
     const auto handlerSettings = aspNetCoreSection->GetKeyValuePairs(CS_ASPNETCORE_HANDLER_SETTINGS);
     m_fSetCurrentDirectory = equals_ignore_case(find_element(handlerSettings, CS_ASPNETCORE_HANDLER_SET_CURRENT_DIRECTORY).value_or(L"true"), L"true");
     m_fCallStartupHook = equals_ignore_case(find_element(handlerSettings, CS_ASPNETCORE_HANDLER_CALL_STARTUP_HOOK).value_or(L"true"), L"true");
-    // Parse stack size: config accepts hex (with or without 0x prefix), new API requires decimal
+    // Parse stack size: config accepts hex (with or without 0x prefix), new API requires decimal.
+    // For invalid or out-of-range values, pass through the raw string so the runtime handles it
+    // the same way as the previous DEFAULT_STACK_SIZE property did.
     auto rawStackSize = find_element(handlerSettings, CS_ASPNETCORE_HANDLER_STACK_SIZE);
     if (rawStackSize.has_value())
     {
@@ -73,7 +75,7 @@ InProcessOptions::InProcessOptions(const ConfigurationSource &configurationSourc
         wchar_t* endPtr = nullptr;
         errno = 0;
         unsigned long stackSizeVal = wcstoul(rawStr, &endPtr, 16);
-        if (endPtr != rawStr && errno == 0 && stackSizeVal > 0)
+        if (endPtr != rawStr && errno == 0)
         {
             wchar_t decimalBuf[32];
             swprintf_s(decimalBuf, L"%lu", stackSizeVal);
@@ -81,7 +83,8 @@ InProcessOptions::InProcessOptions(const ConfigurationSource &configurationSourc
         }
         else
         {
-            m_strStackSize = L"1048576"; // 1 MB in decimal (default fallback)
+            // Invalid or out-of-range value: pass through as-is, letting the runtime handle it
+            m_strStackSize = rawStackSize.value();
         }
     }
     else
