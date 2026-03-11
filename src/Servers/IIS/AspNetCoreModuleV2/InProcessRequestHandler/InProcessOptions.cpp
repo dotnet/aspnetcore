@@ -65,9 +65,10 @@ InProcessOptions::InProcessOptions(const ConfigurationSource &configurationSourc
     const auto handlerSettings = aspNetCoreSection->GetKeyValuePairs(CS_ASPNETCORE_HANDLER_SETTINGS);
     m_fSetCurrentDirectory = equals_ignore_case(find_element(handlerSettings, CS_ASPNETCORE_HANDLER_SET_CURRENT_DIRECTORY).value_or(L"true"), L"true");
     m_fCallStartupHook = equals_ignore_case(find_element(handlerSettings, CS_ASPNETCORE_HANDLER_CALL_STARTUP_HOOK).value_or(L"true"), L"true");
-    // Parse stack size: config accepts hex (with or without 0x prefix), new API requires decimal.
-    // For invalid or out-of-range values, pass through the raw string so the runtime handles it
-    // the same way as the previous DEFAULT_STACK_SIZE property did.
+    // Parse stack size: this was previously using an undocumented runtime configuration
+    // that accepted a hex string. We had to switch to the documented one but that one
+    // accepts a decimal string. So we need to convert hex to decimal.
+    // For invalid or out-of-range values, pass through the raw string and let the runtime fail.
     auto rawStackSize = find_element(handlerSettings, CS_ASPNETCORE_HANDLER_STACK_SIZE);
     if (rawStackSize.has_value())
     {
