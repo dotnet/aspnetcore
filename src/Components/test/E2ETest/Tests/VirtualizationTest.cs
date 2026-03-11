@@ -274,6 +274,36 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Assert.Contains(expectedInitialSpacerStyle, bottomSpacer.GetDomAttribute("style"));
     }
 
+    [Fact]
+    public void VariableHeight_HtmlTable_DoesNotProduceNestedTrElements()
+    {
+        Browser.MountTestComponent<VirtualizationVariableHeightTable>();
+
+        Browser.Equal("Total items: 500", () => Browser.Exists(By.Id("vht-total-items")).Text);
+        Browser.True(() => Browser.Exists(By.Id("vht-row-0")).Displayed);
+
+        var topSpacer = Browser.Exists(By.CssSelector("#variable-height-table > tbody > :first-child"));
+        Assert.Equal("tr", topSpacer.TagName.ToLowerInvariant());
+
+        var js = (IJavaScriptExecutor)Browser;
+
+        // Item wrappers should be <tr> with data-virtualize-item, containing <td> — not nested <tr>
+        var nestedTrCount = (long)js.ExecuteScript(
+            "return document.querySelectorAll('#variable-height-table tr > tr').length;");
+        Assert.Equal(0, nestedTrCount);
+
+        var wrapperCount = (long)js.ExecuteScript(
+            "return document.querySelectorAll('#variable-height-table tr[data-virtualize-item]').length;");
+        Assert.True(wrapperCount > 0, "Should have wrapper <tr> elements with data-virtualize-item");
+
+        Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
+        Browser.True(() => Browser.Exists(By.Id("vht-row-499")).Displayed);
+
+        var nestedTrCountAfterScroll = (long)js.ExecuteScript(
+            "return document.querySelectorAll('#variable-height-table tr > tr').length;");
+        Assert.Equal(0, nestedTrCountAfterScroll);
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

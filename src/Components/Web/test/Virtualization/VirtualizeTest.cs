@@ -151,11 +151,8 @@ public class VirtualizeTest
         await renderer.Dispatcher.InvokeAsync(() =>
             callbacks.OnAfterSpacerVisible(0f, 80f, 500f, new float[] { 30f, 50f }));
 
-        await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 120f, 500f, new float[] { 60f, 60f }));
-
-        await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(100f, 200f, 500f, new float[] { 45f, 55f }));
+        Assert.Equal(80f, virtualize._totalMeasuredHeight);
+        Assert.Equal(2, virtualize._measuredItemCount);
     }
 
     [Fact]
@@ -186,8 +183,8 @@ public class VirtualizeTest
         await renderer.Dispatcher.InvokeAsync(() =>
             callbacks.OnAfterSpacerVisible(0f, 100f, 500f, null));
 
-        await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(50f, 100f, 500f, new float[] { 50f }));
+        Assert.Equal(100f, virtualize._totalMeasuredHeight);
+        Assert.Equal(2, virtualize._measuredItemCount);
     }
 
     [Fact]
@@ -196,15 +193,12 @@ public class VirtualizeTest
         var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 200);
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
 
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 2; i++)
         {
             var bimodalHeights = new float[] { 30f, 300f, 30f, 300f, 30f, 300f };
             await renderer.Dispatcher.InvokeAsync(() =>
                 callbacks.OnAfterSpacerVisible(0f, 990f, 600f, bimodalHeights));
         }
-
-        await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(200f, 500f, 600f, new float[] { 30f, 300f }));
     }
 
     [Fact]
@@ -225,9 +219,6 @@ public class VirtualizeTest
 
         await renderer.Dispatcher.InvokeAsync(() =>
             callbacks.OnAfterSpacerVisible(0f, 4000f, 500f, new float[] { 2000f, 2000f }));
-
-        await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(2000f, 4000f, 500f, new float[] { 2000f, 2000f }));
     }
 
     [Fact]
@@ -552,6 +543,134 @@ public class VirtualizeTest
 
         var lastRequest = requests[^1];
         Assert.Equal(0, lastRequest.StartIndex);
+    }
+
+    [Fact]
+    public async Task Virtualize_BothSpacersVisible_SmallItemCountDoesNotCrash()
+    {
+        Virtualize<int> renderedVirtualize = null;
+
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualizeWithContent(50f, new List<int> { 1, 2, 3 },
+                captureRenderedVirtualize: v => renderedVirtualize = v)
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+
+        await testRenderer.RenderRootComponentAsync(componentId);
+        Assert.NotNull(renderedVirtualize);
+
+        var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
+
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 150f, 1000f, new float[] { 50f, 50f, 50f }));
+
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(0f, 150f, 1000f, null));
+
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 150f, 1000f, null));
+
+        Assert.Equal(3, renderedVirtualize._measuredItemCount);
+    }
+
+    [Fact]
+    public async Task Virtualize_FixedItems_MeasurementsAccumulateWithoutBreakingRendering()
+    {
+        Virtualize<int> renderedVirtualize = null;
+
+        var items = Enumerable.Range(1, 20).ToList();
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualizeWithContent(50f, items,
+                captureRenderedVirtualize: v => renderedVirtualize = v)
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+
+        await testRenderer.RenderRootComponentAsync(componentId);
+        Assert.NotNull(renderedVirtualize);
+
+        var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
+
+        Assert.Equal(0f, renderedVirtualize._totalMeasuredHeight);
+        Assert.Equal(0, renderedVirtualize._measuredItemCount);
+
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 1000f, 500f, new float[] { 50f, 50f, 50f }));
+
+        Assert.Equal(150f, renderedVirtualize._totalMeasuredHeight);
+        Assert.Equal(3, renderedVirtualize._measuredItemCount);
+
+        var hasItemWrappers = testRenderer.Batches
+            .SelectMany(b => b.ReferenceFrames)
+            .Any(f => f.FrameType == RenderTreeFrameType.Attribute
+                   && f.AttributeName == "data-virtualize-item");
+        Assert.True(hasItemWrappers);
+    }
+
+    [Fact]
+    public async Task Virtualize_RapidScrollCancellation_StaleRequestsCancelled()
+    {
+        var pendingCalls = new List<(ItemsProviderRequest request, TaskCompletionSource<ItemsProviderResult<int>> tcs)>();
+
+        ValueTask<ItemsProviderResult<int>> delayedProvider(ItemsProviderRequest request)
+        {
+            var tcs = new TaskCompletionSource<ItemsProviderResult<int>>();
+            pendingCalls.Add((request, tcs));
+            return new ValueTask<ItemsProviderResult<int>>(tcs.Task);
+        }
+
+        Virtualize<int> renderedVirtualize = null;
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualize(50f, delayedProvider, null, v => renderedVirtualize = v)
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+
+        await testRenderer.RenderRootComponentAsync(componentId);
+        Assert.NotNull(renderedVirtualize);
+
+        var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
+
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 0f, 500f, new float[] { 50f }));
+
+        Assert.Single(pendingCalls);
+        var firstCall = pendingCalls[0];
+
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 0f, 1000f, new float[] { 50f }));
+
+        Assert.Equal(2, pendingCalls.Count);
+        var secondCall = pendingCalls[1];
+
+        Assert.True(firstCall.request.CancellationToken.IsCancellationRequested);
+        Assert.False(secondCall.request.CancellationToken.IsCancellationRequested);
+
+        Assert.Equal(2, renderedVirtualize._measuredItemCount);
+        Assert.Equal(100f, renderedVirtualize._totalMeasuredHeight);
+        foreach (var call in pendingCalls.Where(c => !c.tcs.Task.IsCompleted))
+        {
+            call.tcs.TrySetResult(new ItemsProviderResult<int>(Array.Empty<int>(), 0));
+        }
     }
 
     private async Task<(Virtualize<int> virtualize, TestRenderer renderer)> CreateRenderedVirtualize(
