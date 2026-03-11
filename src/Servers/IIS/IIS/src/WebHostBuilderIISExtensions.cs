@@ -83,7 +83,6 @@ public static class WebHostBuilderIISExtensions
 
         public Task WaitForStartAsync(CancellationToken cancellationToken)
         {
-            Console.WriteLine("test");
             _sigTermRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM,
                 _ =>
                 {
