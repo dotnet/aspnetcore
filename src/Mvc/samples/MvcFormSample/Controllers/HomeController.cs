@@ -42,6 +42,24 @@ public class HomeController : Controller
         return View(todo);
     }
 
+    public IActionResult Contact()
+    {
+        return View(new ContactModel());
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Contact(ContactModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        ViewBag.SuccessMessage = "Form submitted successfully!";
+        return View(new ContactModel());
+    }
+
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {
