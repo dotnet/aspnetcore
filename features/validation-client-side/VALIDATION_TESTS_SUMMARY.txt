@@ -1,0 +1,180 @@
+## ASP.NET Core E2E/Functional Tests for MVC Client-Side Validation - Summary
+
+### TEST FILES LOCATED:
+
+#### 1. MVC FUNCTIONAL TESTS (Primary Client-Side Validation Tests)
+File: C:\code\aspnetcore2\src\Mvc\test\Mvc.FunctionalTests\HtmlGenerationTest.cs
+- Test: ValidationTagHelpers_GeneratesExpectedSpansAndDivs()
+  - Verifies data-val* attributes are generated on form fields with validation errors
+  - POSTs empty form data to test server-side rendering of validation spans
+  - Tests FormUrlEncodedContent with empty fields for Number, Name, Email, PhoneNumber, Password
+  
+- Test: ClientValidators_AreGeneratedDuringInitialRender()
+  - Tests initial HTML generation includes data-val="true" attributes
+  - Validates data-val-range="The field Number must be between 1 and 100."
+  - Validates data-val-required="The Number field is required."
+  - Tests Number, Password, Address inputs with data-val attributes
+  
+- Test: ValidationTagHelpers_UsingRecords()
+  - Tests validation message spans with data-valmsg-for attribute
+  - Verifies span[data-valmsg-for=Number] contains error message
+  - Tests field-validation-valid and field-validation-error CSS classes
+  - Tests span[data-valmsg-for] elements render correctly
+  
+- Test: ValidationProviderAttribute_ValidationTagHelpers_GeneratesExpectedDataAttributes()
+  - Tests FirstName field validation attributes (data-val-required, data-val-length, data-val-regex)
+  - Validates attributes: data-val-length-max, data-val-regex-pattern
+  - Tests LastName field validation attributes
+  
+- Test: ValidationProviderAttribute_ValidationTagHelpers_GeneratesExpectedSpansAndDivsOnValidationError()
+  - Tests validation summary errors div
+  - Verifies error messages render in summary
+
+File: C:\code\aspnetcore2\src\Mvc\test\Mvc.FunctionalTests\RemoteAttributeValidationTest.cs
+- Test: RemoteAttribute_LeadsToExpectedValidationAttributes()
+  - Tests remote validation attribute generation
+  - POSTs to /RemoteAttribute_Home/Create endpoints (root and Area1)
+  - Compares generated HTML against baseline resources
+  
+- Test: RemoteAttribute_VerificationAction_GetReturnsExpectedJson()
+  - Tests remote validation verification endpoint via GET
+  - Validates /RemoteAttribute_Verify/IsIdAvailable endpoint
+  - Returns JSON responses: true/false or error messages
+  - Tests UserId1, UserId2, UserId3, UserId4 parameters
+  
+- Test: RemoteAttribute_VerificationAction_PostReturnsExpectedJson()
+  - Tests remote validation verification via POST
+  - Validates POST to /RemoteAttribute_Verify/IsIdAvailable
+  - Returns JSON error messages
+
+File: C:\code\aspnetcore2\src\Mvc\test\Mvc.FunctionalTests\InputValidationTests.cs
+- Test: ValidRequest_IsAccepted()
+  - Tests form submission with valid input
+  - Validates RequiredProp, BindRequiredProp, RequiredAndBindRequiredProp
+  - Tests with FormUrlEncodedContent
+  
+- Test: InvalidRequest_IsRejected()
+  - Tests form submission with invalid StringLength and Range validations
+  - Verifies error messages for OptionalStringLengthProp, OptionalRangeDisplayNameProp
+  - Returns 400 BadRequest with JSON error responses
+
+File: C:\code\aspnetcore2\src\Mvc\test\Mvc.FunctionalTests\InputObjectValidationTests.cs
+- Complex object validation tests with nested properties
+- Tests for excluded fields not being validated
+- Shallow validation on complex type properties
+
+File: C:\code\aspnetcore2\src\Mvc\test\Mvc.FunctionalTests\InputParentValidationTests.cs
+- Tests ValidateComplexTypesIfChildValidationFails MvcOptions
+- Tests parent and child object validation scenarios
+
+File: C:\code\aspnetcore2\src\Mvc\test\Mvc.FunctionalTests\ClientValidationOptionsTests.cs
+- Test: DisablingClientValidation_DisablesItForPagesAndViews()
+  - Tests with StartupWithClientValidationDisabled
+  - Verifies response equals "ClientValidationDisabled"
+
+#### 2. COMPONENTS E2E TESTS (Blazor Client-Side Validation)
+
+File: C:\code\aspnetcore2\src\Components\test\E2ETest\ServerRenderingTests\AddValidationIntegrationTest.cs
+- Test: FormWithNestedValidation_Works()
+  - E2E test with Selenium/browser automation
+  - Tests nested form validation in Blazor SSR components
+  - Validates error messages for Order Name, Full Name, Email, Street, Zip Code, Product Name
+  - Tests validation-errors CSS class and validation-message elements
+  - Tests individual field validation messages
+
+File: C:\code\aspnetcore2\src\Components\test\E2ETest\Tests\FormsTest.cs
+- Test: EditFormWorksWithDataAnnotationsValidator()
+  - E2E test using OpenQA.Selenium
+  - Tests SimpleValidationComponent
+  - Tests user interactions: SendKeys, Click for form submission
+  - Validates OnInvalidSubmit and OnValidSubmit callbacks
+  
+File: C:\code\aspnetcore2\src\Components\Web\test\Forms\ValidationMessageClientValidationTest.cs
+- Test: RendersSpanWithDataValmsgFor_WhenServiceIsPresent()
+  - Unit test for ValidationMessage component
+  - Verifies renders span[data-valmsg-for] with client validation service
+  - Tests element.ElementName == "span"
+  - Tests data-valmsg-for attribute contains field name
+  
+- Test: RendersOriginalDivs_WhenServiceIsNotPresent()
+  - Tests fallback rendering without client validation service
+  - Verifies renders div.validation-message instead
+  - Ensures no data-valmsg-for attribute when service absent
+  
+- Test: RendersSpanEvenWithNoMessages_WhenServiceIsPresent()
+  - Tests span rendering even with empty validation messages
+
+File: C:\code\aspnetcore2\src\Components\Web\test\Forms\ValidationSummaryClientValidationTest.cs
+- Test: RendersContainerWithDataValmsgSummary_WhenServiceIsPresent()
+  - Unit test for ValidationSummary component
+  - Verifies renders div[data-valmsg-summary="true"]
+  - Tests ul element rendering inside summary container
+  
+- Test: DoesNotRenderContainer_WhenServiceIsNotPresent_AndNoErrors()
+- Test: RendersOriginalUl_WhenServiceIsNotPresent_WithErrors()
+  - Tests fallback behavior without client validation service
+
+File: C:\code\aspnetcore2\src\Components\Forms\test\ClientValidation\DefaultClientValidationServiceTest.cs
+- Test: GetValidationAttributes_ReturnsCorrectAttributes_ForRequiredField()
+  - Tests DefaultClientValidationService service
+  - Returns data-val="true", data-val-required, data-val-length, data-val-length-min/max attributes
+  
+- Test: GetValidationAttributes_ReturnsCorrectAttributes_ForEmailField()
+  - Tests email field validation attributes
+  - Returns data-val, data-val-required, data-val-email
+  
+- Test: GetValidationAttributes_ReturnsEmpty_ForFieldWithNoAttributes()
+
+#### 3. TEST WEB SITES WITH VALIDATION FORMS
+
+File: C:\code\aspnetcore2\src\Mvc\test\WebSites\BasicWebSite\Views\RemoteAttribute_Home\Create.cshtml
+- Tests remote validation attribute
+- Uses Html.EditorFor and Html.ValidationMessageFor
+- References jquery.validate and jquery.validate.unobtrusive libraries
+- Models: RemoteAttributeUser with UserId1-UserId5 properties
+
+File: C:\code\aspnetcore2\src\Mvc\test\WebSites\BasicWebSite\Areas\Area1\Views\RemoteAttribute_Home\Create.cshtml
+- Area-based remote validation test form
+
+File: C:\code\aspnetcore2\src\Mvc\test\WebSites\HtmlGenerationWebSite
+- Tests various HTML generation scenarios with validation
+- Contains customer forms with validation attributes
+
+#### 4. JQUERY.VALIDATE.UNOBTRUSIVE LIBRARY REFERENCES
+
+Bundled in:
+- C:\code\aspnetcore2\src\Mvc\test\WebSites\BasicWebSite\wwwroot\lib\jquery-validation-unobtrusive\
+- C:\code\aspnetcore2\src\Mvc\test\WebSites\GenericHostWebSite\wwwroot\lib\jquery-validation-unobtrusive\
+- C:\code\aspnetcore2\src\Identity\UI\src\assets\V4\lib\jquery-validation-unobtrusive\
+- C:\code\aspnetcore2\src\Identity\UI\src\assets\V5\lib\jquery-validation-unobtrusive\
+
+### KEY VALIDATION ATTRIBUTES TESTED:
+
+Server-generated data-val attributes:
+- data-val="true" - indicates field has validation
+- data-val-required - required field validation
+- data-val-length - string length validation (min/max)
+- data-val-range - numeric range validation
+- data-val-regex - regular expression validation
+- data-val-email - email address validation
+- data-valmsg-for - validation message container for specific field
+- data-valmsg-summary - validation summary container
+- data-valmsg-replace - whether to replace message or append
+
+### VALIDATION FLOW TESTED:
+
+1. HTML Generation Phase:
+   - Server renders data-val* attributes based on DataAnnotations
+   - Validates Required, StringLength, Range, RegularExpression, Email attributes
+   
+2. Client-Side Validation Phase:
+   - jquery.validate.unobtrusive parses data-val attributes
+   - Attaches jQuery Validate rules dynamically
+   - Validates on form submit and field blur
+   - Updates validation-message spans with data-valmsg-for
+   
+3. Error Display:
+   - field-validation-error CSS class when invalid
+   - field-validation-valid CSS class when valid
+   - validation-summary-errors div for summary
+   - Individual span[data-valmsg-for] messages
