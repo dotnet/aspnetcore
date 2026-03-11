@@ -254,7 +254,7 @@ Performance regressions, benchmarks, perf infrastructure.
 
 #### `area-infrastructure`
 Build system, CI/CD, shared framework, installers.
-**Code:** `eng/`, `src/Framework/`, `src/Shared/`, `src/Analyzers/`, `src/BuildAfterTargetingPack/`, `src/Testing/`, `src/Extensions/`, `src/Features/`, `src/ObjectPool/`, `src/WebEncoders/`, `src/FileProviders/`, `src/Localization/`, `src/Configuration.KeyPerFile/`, `src/Logging.AzureAppServices/`
+**Code:** `eng/`, `src/Framework/`, `src/BuildAfterTargetingPack/`, `src/Testing/`, `src/Installers/`, any file ending in `.props` or `.targets`
 **Concepts:** MSBuild, `Directory.Build.props`, `Directory.Build.targets`, `eng/` scripts, Arcade SDK, source build, shared framework, targeting pack, reference assemblies, NuGet packaging, CI pipelines
 
 #### `area-unified-build`
