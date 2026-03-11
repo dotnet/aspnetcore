@@ -84,13 +84,12 @@ internal sealed class OpenApiGenerator
 
         static bool ShouldDisableInferredBody(string method)
         {
-            // GET, DELETE, HEAD, CONNECT, TRACE, QUERY and OPTIONS normally do not contain bodies
+            // GET, DELETE, HEAD, CONNECT, TRACE, and OPTIONS normally do not contain bodies
             return method.Equals(HttpMethods.Get, StringComparison.Ordinal) ||
                    method.Equals(HttpMethods.Delete, StringComparison.Ordinal) ||
                    method.Equals(HttpMethods.Head, StringComparison.Ordinal) ||
                    method.Equals(HttpMethods.Options, StringComparison.Ordinal) ||
                    method.Equals(HttpMethods.Trace, StringComparison.Ordinal) ||
-                   method.Equals(HttpMethods.Query, StringComparison.Ordinal) ||
                    method.Equals(HttpMethods.Connect, StringComparison.Ordinal);
         }
     }
