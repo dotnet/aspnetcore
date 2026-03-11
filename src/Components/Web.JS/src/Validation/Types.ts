@@ -4,14 +4,22 @@
 export type ValidatableElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
 /**
- * A validation provider function.
- * @returns true if valid, false to use the directive's default error message, or a string for a custom error message.
+ * The result of a synchronous validation check.
+ * - true: valid
+ * - false: invalid (use the directive's default error message)
+ * - string: invalid with a custom error message
+ */
+export type ValidationProviderResult = boolean | string;
+
+/**
+ * A validation provider function. May return a result synchronously
+ * or a Promise for async validation (e.g., remote server checks).
  */
 export type ValidationProvider = (
   value: string,
   element: ValidatableElement,
   params: Record<string, string>
-) => boolean | string;
+) => ValidationProviderResult | Promise<ValidationProviderResult>;
 
 export interface ValidationDirective {
   rule: string;
