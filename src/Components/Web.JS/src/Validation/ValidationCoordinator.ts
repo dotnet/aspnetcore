@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ValidatableElement, ElementState } from './Types';
+import { ValidatableElement, ElementState, ValidationProviderResult } from './Types';
 import { ValidationEngine } from './ValidationEngine';
 import { ErrorDisplay } from './ErrorDisplay';
 
@@ -39,10 +39,11 @@ export class ValidationCoordinator {
   }
 
   /**
-     * Validate a single element against all its directives.
-     * Returns the first error message, or empty string if valid.
-     */
-  validateElement(element: ValidatableElement): string {
+   * Validate a single element against all its directives.
+   * Returns a Promise resolving to the first error message, or empty string if valid.
+   * Directives are evaluated sequentially — a sync failure prevents later async calls.
+   */
+  async validateElement(element: ValidatableElement): Promise<string> {
     const state = this.elementState.get(element);
     if (!state) {
       return '';
@@ -56,23 +57,21 @@ export class ValidationCoordinator {
         continue;
       }
 
-      const result = provider(value, element, directive.params);
-      if (result === true) {
-        continue;
+      const result = await provider(value, element, directive.params);
+      const error = this.resolveResult(result, directive);
+      if (error) {
+        return error;
       }
-
-      // Provider returned false (use default message) or a string (custom message)
-      return typeof result === 'string' ? result : directive.message;
     }
 
     return '';
   }
 
   /**
-     * Validate and update the visual state for an element.
-     */
-  validateAndUpdate(element: ValidatableElement): boolean {
-    const error = this.validateElement(element);
+   * Validate and update the visual state for an element.
+   */
+  async validateAndUpdate(element: ValidatableElement): Promise<boolean> {
+    const error = await this.validateElement(element);
     const state = this.elementState.get(element);
     if (!state) {
       return true;
@@ -88,34 +87,27 @@ export class ValidationCoordinator {
   }
 
   /**
-     * Validate all tracked inputs within a form.
-     */
-  validateForm(form: HTMLFormElement): boolean {
-    const inputs = form.querySelectorAll<ValidatableElement>(validatableSelector);
-    let allValid = true;
-    let firstInvalid: ValidatableElement | null = null;
+   * Validate all tracked inputs within a form in parallel.
+   */
+  async validateForm(form: HTMLFormElement): Promise<boolean> {
+    const inputs = Array.from(form.querySelectorAll<ValidatableElement>(validatableSelector));
+    const results = await Promise.all(
+      inputs.map(input => this.validateAndUpdate(input))
+    );
 
-    for (const input of Array.from(inputs)) {
-      if (!this.validateAndUpdate(input)) {
-        allValid = false;
-        if (!firstInvalid) {
-          firstInvalid = input;
-        }
-      }
-    }
-
-    if (firstInvalid) {
-      firstInvalid.focus();
+    const allValid = results.every(v => v);
+    const firstInvalidIndex = results.findIndex(v => !v);
+    if (firstInvalidIndex >= 0) {
+      inputs[firstInvalidIndex].focus();
     }
 
     this.updateFormSummary(form);
-
     return allValid;
   }
 
   /**
-     * Collect current errors and update the validation summary for a form.
-     */
+   * Collect current errors and update the validation summary for a form.
+   */
   updateFormSummary(form: HTMLFormElement): void {
     const errors = new Map<string, string>();
     const inputs = form.querySelectorAll<ValidatableElement>(validatableSelector);
@@ -129,6 +121,16 @@ export class ValidationCoordinator {
     }
 
     this.display.updateSummary(form, errors);
+  }
+
+  private resolveResult(result: ValidationProviderResult, directive: { message: string }): string {
+    if (result === false) {
+      return directive.message;
+    }
+    if (typeof result === 'string') {
+      return result;
+    }
+    return '';
   }
 
   private markInvalid(element: ValidatableElement, state: ElementState, message: string): void {

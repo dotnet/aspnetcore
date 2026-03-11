@@ -24,7 +24,10 @@ export class ErrorDisplay {
     input.classList.remove(this.css.inputValid);
 
     for (const el of messageElements) {
-      el.textContent = message;
+      // data-valmsg-replace="false" → toggle CSS only, preserve original content
+      if (el.getAttribute('data-valmsg-replace') !== 'false') {
+        el.textContent = message;
+      }
       el.classList.add(this.css.messageError);
       el.classList.remove(this.css.messageValid);
     }
@@ -41,7 +44,9 @@ export class ErrorDisplay {
     input.classList.add(this.css.inputValid);
 
     for (const el of messageElements) {
-      el.textContent = '';
+      if (el.getAttribute('data-valmsg-replace') !== 'false') {
+        el.textContent = '';
+      }
       el.classList.remove(this.css.messageError);
       el.classList.add(this.css.messageValid);
     }
