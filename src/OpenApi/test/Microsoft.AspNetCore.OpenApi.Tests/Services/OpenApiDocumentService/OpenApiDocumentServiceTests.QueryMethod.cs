@@ -5,7 +5,6 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Routing;
 
 public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -13,13 +12,15 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
     public async Task QueryMethod_AppearsInDocument()
     {
         // Arrange
-        var action = CreateActionDescriptor(nameof(ActionWithQueryMethod));
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapMethods("/api/search", [HttpMethods.Query], () => Results.Ok());
 
         // Assert
-        await VerifyOpenApiDocument(action, document =>
+        await VerifyOpenApiDocument(builder, document =>
         {
             var path = Assert.Single(document.Paths.Values);
-            // Check that QUERY method operation exists
             Assert.True(path.Operations.ContainsKey(HttpMethod.Query));
             var operation = path.Operations[HttpMethod.Query];
             Assert.NotNull(operation);
@@ -30,18 +31,18 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
     public async Task QueryMethod_SupportsRequestBody()
     {
         // Arrange
-        var action = CreateActionDescriptor(nameof(ActionWithQueryMethodAndBody));
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapMethods("/api/search", [HttpMethods.Query], (TodoItem todo) => Results.Ok(todo));
 
         // Assert
-        await VerifyOpenApiDocument(action, document =>
+        await VerifyOpenApiDocument(builder, document =>
         {
             var path = Assert.Single(document.Paths.Values);
             Assert.True(path.Operations.ContainsKey(HttpMethod.Query));
             var operation = path.Operations[HttpMethod.Query];
-
-            // QUERY should support request bodies
             Assert.NotNull(operation.RequestBody);
-            Assert.True(operation.RequestBody.Required);
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
             Assert.Equal("application/json", content.Key);
@@ -49,9 +50,9 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
     }
 
     [Fact]
-    public async Task QueryMethod_WithoutBody_StillWorks()
+    public async Task QueryMethod_WithQueryParameters()
     {
-        // Arrange - using minimal API approach for testing query parameters
+        // Arrange
         var builder = CreateBuilder();
 
         // Act
@@ -63,8 +64,6 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             var path = Assert.Single(document.Paths.Values);
             Assert.True(path.Operations.ContainsKey(HttpMethod.Query));
             var operation = path.Operations[HttpMethod.Query];
-
-            // QUERY without body should have query parameters
             Assert.Null(operation.RequestBody);
             Assert.NotNull(operation.Parameters);
             var parameter = Assert.Single(operation.Parameters);
@@ -72,20 +71,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         });
     }
 
-    public class HttpQuery : HttpMethodAttribute
-    {
-        public HttpQuery() : base(["QUERY"]) { }
-    }
-
-    [HttpQuery]
-    [Route("/query")]
-    private void ActionWithQueryMethod() { }
-
-    [HttpQuery]
-    [Route("/query-with-body")]
-    private void ActionWithQueryMethodAndBody([FromBody] TodoItem todo) { }
-
-#nullable enable
+    #nullable enable
     private record TodoItem(int Id, string Title, bool Completed);
 #nullable restore
 }

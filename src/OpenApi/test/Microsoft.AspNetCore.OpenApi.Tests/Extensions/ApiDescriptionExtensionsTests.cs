@@ -69,7 +69,7 @@ public class ApiDescriptionExtensionsTests
             new object[] { "OPTIONS", HttpMethod.Options },
             new object[] { "TRACE", HttpMethod.Trace },
             new object[] { "QUERY", HttpMethod.Query },
-            new object[] { "gEt", HttpMethod.Get },  // Test case-insensitivity
+            new object[] { "gEt", HttpMethod.Get }, // Test case-insensitivity
         };
     }
 
