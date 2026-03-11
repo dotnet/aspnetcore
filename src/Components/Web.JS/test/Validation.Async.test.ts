@@ -306,8 +306,8 @@ describe('ValidationCoordinator async', () => {
   });
 });
 
-describe('EventManager async submit', () => {
-  test('submit is prevented and re-submitted on valid form', async () => {
+describe('EventManager submit', () => {
+  test('valid form with sync providers: event NOT prevented (sync path)', async () => {
     const { scanner, eventManager } = createStack();
     const { form } = createForm([
       { name: 'name', value: 'John', rules: { 'data-val-required': 'Required' } },
@@ -316,19 +316,42 @@ describe('EventManager async submit', () => {
     scanner.scan(form);
     eventManager.attachSubmitInterception();
 
-    let resubmitCount = 0;
-    form.requestSubmit = () => { resubmitCount++; };
-
-    // Dispatch submit event from the form (bubbles up to document where capture handler listens)
     const event = new Event('submit', { cancelable: true, bubbles: true }) as SubmitEvent;
     form.dispatchEvent(event);
 
-    // The handler always prevents the original submit
+    // Sync validation passes — event is NOT prevented, form submits normally
+    expect(event.defaultPrevented).toBe(false);
+
+    eventManager.detachSubmitInterception();
+  });
+
+  test('valid form with async provider: prevented then re-submitted', async () => {
+    const { engine, scanner, eventManager } = createStack();
+
+    // Register an async provider
+    engine.addProvider('asynccheck', () => Promise.resolve(true));
+
+    const { form } = createForm([
+      { name: 'name', value: 'John', rules: {
+        'data-val-required': 'Required',
+        'data-val-asynccheck': 'Async check failed',
+      } },
+    ]);
+    trackForm(form);
+    scanner.scan(form);
+    eventManager.attachSubmitInterception();
+
+    let resubmitCount = 0;
+    form.requestSubmit = () => { resubmitCount++; };
+
+    const event = new Event('submit', { cancelable: true, bubbles: true }) as SubmitEvent;
+    form.dispatchEvent(event);
+
+    // Async provider detected — event IS prevented
     expect(event.defaultPrevented).toBe(true);
 
     // Wait for async validation to complete and re-submit
     await new Promise(resolve => setTimeout(resolve, 10));
-
     expect(resubmitCount).toBe(1);
 
     eventManager.detachSubmitInterception();

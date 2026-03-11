@@ -106,6 +106,66 @@ export class ValidationCoordinator {
   }
 
   /**
+   * Synchronous form validation attempt. Runs all providers synchronously.
+   * If any provider returns a Promise, aborts and returns 'async' to signal
+   * that the caller must use the async path.
+   *
+   * Returns: true (all valid), false (validation failed), or 'async' (needs async).
+   */
+  validateFormSync(form: HTMLFormElement): boolean | 'async' {
+    const inputs = Array.from(form.querySelectorAll<ValidatableElement>(validatableSelector));
+    let allValid = true;
+    let firstInvalid: ValidatableElement | null = null;
+
+    for (const input of inputs) {
+      const state = this.elementState.get(input);
+      if (!state) {
+        continue;
+      }
+
+      const value = this.getElementValue(input);
+      let inputValid = true;
+
+      for (const directive of state.directives) {
+        const provider = this.engine.getProvider(directive.rule);
+        if (!provider) {
+          continue;
+        }
+
+        const result = provider(value, input, directive.params);
+
+        // If any provider returns a Promise, bail to async path
+        if (result instanceof Promise) {
+          return 'async';
+        }
+
+        const error = this.resolveResult(result, directive);
+        if (error) {
+          this.markInvalid(input, state, error);
+          inputValid = false;
+          break;
+        }
+      }
+
+      if (inputValid) {
+        this.markValid(input, state);
+      } else {
+        allValid = false;
+        if (!firstInvalid) {
+          firstInvalid = input;
+        }
+      }
+    }
+
+    if (firstInvalid) {
+      firstInvalid.focus();
+    }
+
+    this.updateFormSummary(form);
+    return allValid;
+  }
+
+  /**
    * Collect current errors and update the validation summary for a form.
    */
   updateFormSummary(form: HTMLFormElement): void {
