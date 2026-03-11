@@ -1195,6 +1195,11 @@ public partial class Startup
         }
     }
 
+    private async Task GetHostLifetime(HttpContext context)
+    {
+        await context.Response.WriteAsync(context.RequestServices.GetService<IHostLifetime>().GetType().Name);
+    }
+
 #if !FORWARDCOMPAT
     public Task ResponseTrailers_HTTP2_TrailersAvailable(HttpContext context)
     {
@@ -1777,11 +1782,6 @@ public partial class Startup
     {
         context.Abort();
         return Task.CompletedTask;
-    }
-
-    public async Task GetHostLifetime(HttpContext context)
-    {
-        await context.Response.WriteAsync(context.RequestServices.GetService<IHostLifetime>().GetType().Name);
     }
 
     internal static readonly HashSet<(string, StringValues, StringValues)> NullTrailers = new HashSet<(string, StringValues, StringValues)>()
