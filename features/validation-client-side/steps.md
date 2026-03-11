@@ -501,3 +501,116 @@ Added detailed analysis of async provider support and `RemoteAttribute` to `07-m
 - **jquery-validation approach:** Uses `pendingRequest` counter + magic `"pending"` return value + auto-resubmit. Deeply coupled but proven
 - **aspnet-client-validation approach:** Provider returns `Promise`, validation loop uses `await`. Simpler but always async
 - **Effort:** ~200-300 lines across 3-4 files, medium complexity, low risk to existing sync behavior
+
+---
+
+## Step 12: Async Support, Remote Provider, MVC Wiring (Implementation)
+
+**Plan document:** `08-async-mvc-plan.md`
+
+### Design Decision: Always-Async
+
+We chose the always-async approach (modeled after aspnet-client-validation) over the dual sync/async path. The always-async design eliminates ~80 lines of branching code (`instanceof Promise` checks, `formHasAsyncProviders` tracking, split submit handler) at the cost of one microtask tick of latency for sync-only forms — imperceptible to users.
+
+### Phase 1: Type System (Types.ts)
+
+- Added `ValidationProviderResult = boolean | string` type alias
+- Widened `ValidationProvider` return type to `ValidationProviderResult | Promise<ValidationProviderResult>`
+- No changes to `ValidationEngine` — `addProvider`/`getProvider` work as before
+
+### Phase 2: Always-Async Validation Core (ValidationCoordinator.ts)
+
+- `validateElement()` → `async validateElement(): Promise<string>` — sequential directive loop with `await`
+- `validateAndUpdate()` → `async validateAndUpdate(): Promise<boolean>` — awaits validation, updates CSS
+- `validateForm()` → `async validateForm(): Promise<boolean>` — parallel `Promise.all` across fields
+- Added `resolveResult()` helper to interpret `ValidationProviderResult` values
+- Sync providers resolve instantly via `await` on a non-Promise (zero-cost microtask)
+
+### Phase 3: Always-Async Submit Handler (EventManager.ts)
+
+- Submit handler always calls `preventDefault()` + `stopPropagation()` in capture phase
+- Runs `coordinator.validateForm(form).then()` — re-submits via `requestSubmit(submitter)` on success
+- `resubmitting` guard flag prevents recursive interception on the re-submitted event
+- Input/change handlers use `.then()` for async `validateAndUpdate()`
+
+**Blazor Enhanced Navigation Compatibility Verified:**
+1. Our capture-phase handler runs first → prevents + stops the original event
+2. Async validation resolves → `requestSubmit()` fires a **fresh** SubmitEvent
+3. `resubmitting=true` → our handler returns early → event bubbles to Blazor's enhanced nav handler
+4. Blazor's handler checks `event.defaultPrevented` (line 132 of NavigationEnhancement.ts) → sees `false` → proceeds normally
+
+### Phase 4: Remote Validation Provider (RemoteProvider.ts — NEW)
+
+- Uses `fetch` API (not XMLHttpRequest) — Promise-native
+- `WeakMap<ValidatableElement, RemoteCache>` for per-element caching — auto-GC when DOM elements are removed
+- Cache keyed on serialized `URLSearchParams` — invalidates when any field value changes
+- Collects additional fields via `*.PropertyName` resolution
+- Response protocol matches MVC: `true`/"true" = valid, string = error, `false` = default message
+- Network errors resolve to `true` — remote validation never blocks the user
+- Supports GET and POST methods
+
+### Phase 5: MVC Wiring + ErrorDisplay Fix
+
+**MvcWiring.ts (NEW):**
+- `initializeMvcValidation()` — registers built-in providers + remote provider
+- `MvcValidationApi` interface with `parse()`, `addProvider()`, `validateForm()`, `validateField()`
+- `parse(selectorOrElement?)` — drop-in replacement for `$.validator.unobtrusive.parse()`
+
+**ErrorDisplay.ts:**
+- Added `data-valmsg-replace` support: when `"false"`, CSS classes toggle but content is preserved
+
+**index.ts:**
+- Auto-detection: checks for `window.Blazor.addEventListener` → Blazor mode, else MVC mode
+
+**BlazorWiring.ts:**
+- Updated `ValidationServiceApi` return types to `Promise<boolean>`
+
+### Phase 6: Blazor RemoteAttribute Guard (C#)
+
+**DefaultClientValidationService.cs:**
+- Added `ThrowIfRemoteAttribute()` — checks type hierarchy by `FullName` to avoid assembly dependency on `Mvc.ViewFeatures`
+- Throws `NotSupportedException` with descriptive message including attribute name, property, and model type
+
+**FakeRemoteAttribute.cs (test):**
+- Created in `Microsoft.AspNetCore.Mvc` namespace so `FullName` matches the real `RemoteAttributeBase`
+
+### Test Counts
+
+| Suite | Tests |
+|-------|-------|
+| JS BuiltInProviders | 69 |
+| JS Async + EventManager | 17 |
+| JS RemoteProvider | 12 |
+| **JS Total** | **98** |
+| C# Forms | 131 |
+
+### Bundle Size
+
+| Metric | Before | After |
+|--------|--------|-------|
+| Brotli | 2.56 KB | 3.11 KB |
+| Gzipped | 2.85 KB | 3.41 KB |
+| Raw | ~8 KB | 10.5 KB |
+
+### Files Changed
+
+| File | Change |
+|------|--------|
+| `src/Components/Web.JS/src/Validation/Types.ts` | `ValidationProviderResult` type, async provider return |
+| `src/Components/Web.JS/src/Validation/ValidationCoordinator.ts` | All methods now `async`, `Promise.all` in validateForm |
+| `src/Components/Web.JS/src/Validation/EventManager.ts` | Always-async submit handler with resubmit guard |
+| `src/Components/Web.JS/src/Validation/ErrorDisplay.ts` | `data-valmsg-replace` support |
+| `src/Components/Web.JS/src/Validation/BlazorWiring.ts` | Async return types on `ValidationServiceApi` |
+| `src/Components/Web.JS/src/Validation/index.ts` | Auto-detection: Blazor vs MVC mode |
+| `src/Components/Forms/src/ClientValidation/DefaultClientValidationService.cs` | `ThrowIfRemoteAttribute` guard |
+
+### Files Added
+
+| File | Purpose |
+|------|---------|
+| `src/Components/Web.JS/src/Validation/RemoteProvider.ts` | Remote validation with fetch + WeakMap caching |
+| `src/Components/Web.JS/src/Validation/MvcWiring.ts` | MVC initialization with `parse()` API |
+| `src/Components/Web.JS/test/Validation.Async.test.ts` | 17 tests for async coordinator + submit handler |
+| `src/Components/Web.JS/test/Validation.RemoteProvider.test.ts` | 12 tests for remote provider |
+| `src/Components/Forms/test/ClientValidation/FakeRemoteAttribute.cs` | Test double for RemoteAttribute |
+| `features/validation-client-side/08-async-mvc-plan.md` | Implementation plan document |

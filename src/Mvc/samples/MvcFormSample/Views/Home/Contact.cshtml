@@ -1,0 +1,67 @@
+@model MvcFormSample.Models.ContactModel
+
+@{
+    ViewData["Title"] = "Contact — Client Validation Test";
+}
+
+<h1>Contact Form (aspnet-validation.js)</h1>
+<p>This form uses our new client-side validation library instead of jquery-validation-unobtrusive.</p>
+
+@if (ViewBag.SuccessMessage != null)
+{
+    <div style="padding: 10px; background: #d4edda; border: 1px solid #c3e6cb; margin-bottom: 15px;">
+        @ViewBag.SuccessMessage
+    </div>
+}
+
+<form asp-action="Contact" method="post">
+    <div asp-validation-summary="All" style="color: red; margin-bottom: 15px;"></div>
+
+    <div style="margin-bottom: 10px;">
+        <label asp-for="Name"></label><br />
+        <input asp-for="Name" style="width: 300px;" />
+        <span asp-validation-for="Name" style="color: red;"></span>
+    </div>
+
+    <div style="margin-bottom: 10px;">
+        <label asp-for="Email"></label><br />
+        <input asp-for="Email" type="email" style="width: 300px;" />
+        <span asp-validation-for="Email" style="color: red;"></span>
+    </div>
+
+    <div style="margin-bottom: 10px;">
+        <label asp-for="PhoneNumber"></label><br />
+        <input asp-for="PhoneNumber" type="tel" style="width: 300px;" />
+        <span asp-validation-for="PhoneNumber" style="color: red;"></span>
+    </div>
+
+    <div style="margin-bottom: 10px;">
+        <label asp-for="Website"></label><br />
+        <input asp-for="Website" type="url" style="width: 300px;" />
+        <span asp-validation-for="Website" style="color: red;"></span>
+    </div>
+
+    <div style="margin-bottom: 10px;">
+        <label asp-for="Age"></label><br />
+        <input asp-for="Age" type="number" style="width: 100px;" />
+        <span asp-validation-for="Age" style="color: red;"></span>
+    </div>
+
+    <div style="margin-bottom: 10px;">
+        <label asp-for="Password"></label><br />
+        <input asp-for="Password" type="password" style="width: 300px;" />
+        <span asp-validation-for="Password" style="color: red;"></span>
+    </div>
+
+    <div style="margin-bottom: 10px;">
+        <label asp-for="ConfirmPassword"></label><br />
+        <input asp-for="ConfirmPassword" type="password" style="width: 300px;" />
+        <span asp-validation-for="ConfirmPassword" style="color: red;"></span>
+    </div>
+
+    <button type="submit">Submit</button>
+</form>
+
+@section Scripts {
+    <script src="~/js/aspnet-validation.js"></script>
+}
