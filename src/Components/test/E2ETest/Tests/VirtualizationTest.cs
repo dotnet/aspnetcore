@@ -1691,6 +1691,30 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    public void ChatList_CanJumpToHomeFromEnd()
+    {
+        Browser.MountTestComponent<VirtualizationChatListAsync>();
+
+        var container = Browser.Exists(By.Id("async-chat-container"));
+        var finishLoadingButton = Browser.Exists(By.Id("async-chat-finish-loading"));
+        Func<bool> hasPlaceholders = () => GetElementCount(container, ".async-chat-placeholder") > 0;
+        Action loadData = () => finishLoadingButton.Click();
+
+        finishLoadingButton.Click();
+        Browser.True(() => GetElementCount(container, ".async-chat-message") > 0);
+
+        JumpToEndWithStabilization(container, hasPlaceholders, loadData);
+        Browser.True(() => container.FindElements(By.Id("async-chat-msg-499")).Count > 0);
+
+        JumpToStartWithStabilization(
+            container,
+            hasPlaceholders,
+            loadData,
+            () => container.FindElements(By.Id("async-chat-msg-0")).Count > 0);
+        Browser.True(() => container.FindElements(By.Id("async-chat-msg-0")).Count > 0);
+    }
+
+    [Fact]
     public void QuickGrid_CanJumpToEndAndStart()
     {
         Browser.MountTestComponent<BasicTestApp.QuickGridTest.QuickGridVariableHeightComponent>();
