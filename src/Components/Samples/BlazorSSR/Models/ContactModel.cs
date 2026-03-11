@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using BlazorSSR.Validation;
 
 namespace BlazorSSR.Models;
 
@@ -12,6 +13,7 @@ public class ContactModel
 {
     [Required(ErrorMessage = "Name is required.")]
     [StringLength(100, MinimumLength = 2, ErrorMessage = "Name must be between 2 and 100 characters.")]
+    [NoProfanity(ErrorMessage = "Name contains inappropriate language.")]
     public string Name { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Email is required.")]
@@ -31,6 +33,7 @@ public class ContactModel
     [Required(ErrorMessage = "A message is required.")]
     [MinLength(10, ErrorMessage = "Message must be at least 10 characters.")]
     [MaxLength(1000, ErrorMessage = "Message cannot exceed 1000 characters.")]
+    [NoProfanity(ErrorMessage = "Message contains inappropriate language.")]
     public string Message { get; set; } = string.Empty;
 
     [RegularExpression(@"^[A-Z]{2}-\d{4}$", ErrorMessage = "Reference code must be in the format XX-0000.")]

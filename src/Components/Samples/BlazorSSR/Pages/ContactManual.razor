@@ -31,7 +31,9 @@
             data-val-required="Name is required."
             data-val-length="Name must be between 2 and 100 characters."
             data-val-length-min="2"
-            data-val-length-max="100" />
+            data-val-length-max="100"
+            data-val-noprofanity="Name contains inappropriate language."
+            data-val-noprofanity-words="spam,scam,fake" />
         <span data-valmsg-for="Model.Name" class="field-validation-valid"></span>
         <ValidationMessage For="@(() => Model.Name)" />
     </div>
@@ -84,7 +86,9 @@
             data-val-minlength="Message must be at least 10 characters."
             data-val-minlength-min="10"
             data-val-maxlength="Message cannot exceed 1000 characters."
-            data-val-maxlength-max="1000" />
+            data-val-maxlength-max="1000"
+            data-val-noprofanity="Message contains inappropriate language."
+            data-val-noprofanity-words="spam,scam,fake" />
         <span data-valmsg-for="Model.Message" class="field-validation-valid"></span>
         <ValidationMessage For="@(() => Model.Message)" />
     </div>

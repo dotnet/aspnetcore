@@ -15,13 +15,20 @@ export class EventManager {
    * This runs before Blazor's enhanced navigation handler (which uses bubble phase),
    * allowing us to preventDefault() before enhanced nav sends the fetch request.
    *
-   * Validation is always async (providers may return Promises). The handler
-   * prevents the original submit, runs validation, and re-submits via
-   * requestSubmit() on success.
+   * Uses a sync-first strategy:
+   * 1. Try validateFormSync() — if all providers return synchronously, we can
+   *    decide within the original event handler whether to prevent.
+   * 2. If any provider returns a Promise (async), fall back to preventDefault()
+   *    + async validation + requestSubmit() on success.
+   *
+   * The sync path is critical for Blazor SSR: Blazor's EventDelegator intercepts
+   * submit events in capture phase and prevents re-submitted synthetic events from
+   * reaching the .NET handler. By validating synchronously when possible, we avoid
+   * the need to re-submit entirely.
    */
   attachSubmitInterception(): void {
     this.submitHandler = (event: SubmitEvent) => {
-      // Let re-submitted events pass through to reach Blazor's enhanced nav handler
+      // Let re-submitted events pass through (async path only)
       if (this.resubmitting) {
         return;
       }
@@ -41,7 +48,23 @@ export class EventManager {
         return;
       }
 
-      // Always prevent — validation is async, we re-submit on success
+      // Try synchronous validation first
+      const syncResult = this.coordinator.validateFormSync(form);
+
+      if (syncResult === true) {
+        // All providers returned synchronously and form is valid — let the event through
+        return;
+      }
+
+      if (syncResult === false) {
+        // All providers returned synchronously and form is invalid — block
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+
+      // syncResult === 'async': at least one provider returned a Promise.
+      // Must prevent, validate async, and re-submit on success.
       event.preventDefault();
       event.stopPropagation();
 

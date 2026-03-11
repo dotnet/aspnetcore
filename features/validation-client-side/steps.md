@@ -614,3 +614,49 @@ We chose the always-async approach (modeled after aspnet-client-validation) over
 | `src/Components/Web.JS/test/Validation.RemoteProvider.test.ts` | 12 tests for remote provider |
 | `src/Components/Forms/test/ClientValidation/FakeRemoteAttribute.cs` | Test double for RemoteAttribute |
 | `features/validation-client-side/08-async-mvc-plan.md` | Implementation plan document |
+
+---
+
+## Step 13: MVC Sample App Validation Test
+
+Added a Contact form to `src/Mvc/samples/MvcFormSample` that uses our new JS library instead of jquery-validation-unobtrusive.
+
+### Files Added/Changed
+
+| File | Purpose |
+|------|---------|
+| `src/Mvc/samples/MvcFormSample/Models/ContactModel.cs` | Model with Required, Email, Phone, Url, Range, StringLength, Regex, Compare |
+| `src/Mvc/samples/MvcFormSample/Views/Home/Contact.cshtml` | Form view using tag helpers + our JS library |
+| `src/Mvc/samples/MvcFormSample/wwwroot/js/aspnet-validation.js` | Built validation bundle |
+| `src/Mvc/samples/MvcFormSample/Controllers/HomeController.cs` | Added Contact GET/POST actions |
+
+### Playwright Test Results
+
+All validators work with MVC-generated HTML:
+
+| Validator | Test | Result |
+|-----------|------|--------|
+| Required | Empty form → 5 errors | ✅ |
+| StringLength (min) | "A" → minlength error | ✅ |
+| Email | "not-email" → error | ✅ |
+| URL | "not-a-url" → error | ✅ |
+| Range | 200 → out of range | ✅ |
+| Regex | "weakpassword" → pattern error | ✅ |
+| Compare | Password mismatch → error | ✅ |
+| Valid submit | POST succeeds, success message | ✅ |
+| Summary | All errors in summary div | ✅ |
+| Focus | First invalid field focused | ✅ |
+| Async resubmit | requestSubmit after validation | ✅ |
+
+---
+
+## Step 14: Custom Attributes Analysis
+
+Created `09-custom-attributes-scenarios.md` analyzing:
+
+- Full workflow comparison: old MVC (3 layers, 2 JS registrations) vs new library (2 layers, 1 JS registration)
+- Self-implementing adapter pattern (`IClientValidationAdapter` on the attribute itself)
+- Dual MVC+Blazor support (implement both `IClientModelValidator` and `IClientValidationAdapter`)
+- Migration path for MVC users (script swap, JS conversion, no C# changes)
+- Gap identified: `setProvider` not exposed on public API (can't override built-ins)
+- Rule name constraint: names cannot contain hyphens (DirectiveParser limitation)
