@@ -229,6 +229,33 @@ public class DefaultClientValidationServiceTest
         Assert.Equal(@"^\d{5}$", result["data-val-regex-pattern"]);
     }
 
+    [Fact]
+    public void GetValidationAttributes_RemoteAttribute_ThrowsNotSupportedException()
+    {
+        var service = CreateService();
+        var model = new RemoteModel();
+        var field = CreateFieldIdentifier(model, nameof(RemoteModel.Username));
+
+        var ex = Assert.Throws<NotSupportedException>(() => service.GetValidationAttributes(field));
+
+        Assert.Contains("FakeRemoteAttribute", ex.Message);
+        Assert.Contains(nameof(RemoteModel.Username), ex.Message);
+        Assert.Contains(nameof(RemoteModel), ex.Message);
+        Assert.Contains("not supported", ex.Message);
+    }
+
+    [Fact]
+    public void GetValidationAttributes_StandardAttributes_DoNotThrow()
+    {
+        var service = CreateService();
+        var model = new TestModel();
+        var field = CreateFieldIdentifier(model, nameof(TestModel.Email));
+
+        // Should not throw — standard attributes are fine
+        var result = service.GetValidationAttributes(field);
+        Assert.True(result.ContainsKey("data-val-email"));
+    }
+
     // Test models
 
     private class TestModel
@@ -291,5 +318,11 @@ public class DefaultClientValidationServiceTest
     {
         [RegularExpression(@"^\d{5}$")]
         public string ZipCode { get; set; } = "";
+    }
+
+    private class RemoteModel
+    {
+        [Microsoft.AspNetCore.Mvc.FakeRemoteAttribute]
+        public string Username { get; set; } = "";
     }
 }

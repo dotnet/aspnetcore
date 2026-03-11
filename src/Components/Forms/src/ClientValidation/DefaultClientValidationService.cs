@@ -61,6 +61,8 @@ internal sealed class DefaultClientValidationService : IClientValidationService
 
         foreach (var validationAttribute in validationAttributes)
         {
+            ThrowIfRemoteAttribute(validationAttribute, modelType, fieldName);
+
             var adapter = _adapterRegistry.GetAdapter(validationAttribute);
             if (adapter is not null)
             {
@@ -96,5 +98,29 @@ internal sealed class DefaultClientValidationService : IClientValidationService
         }
 
         return fieldName;
+    }
+
+    /// <summary>
+    /// Throws <see cref="NotSupportedException"/> if the attribute inherits from
+    /// <c>Microsoft.AspNetCore.Mvc.RemoteAttributeBase</c>. RemoteAttribute depends on MVC
+    /// conventions (URL routing, controller endpoints) that are not available in Blazor.
+    /// The check is done by type name to avoid an assembly dependency on Mvc.ViewFeatures.
+    /// </summary>
+    private static void ThrowIfRemoteAttribute(ValidationAttribute attribute, Type modelType, string fieldName)
+    {
+        var type = attribute.GetType();
+        while (type is not null)
+        {
+            if (string.Equals(type.FullName, "Microsoft.AspNetCore.Mvc.RemoteAttributeBase", StringComparison.Ordinal))
+            {
+                throw new NotSupportedException(
+                    $"The '{attribute.GetType().Name}' attribute on property '{fieldName}' of type " +
+                    $"'{modelType.Name}' is not supported for client-side validation in Blazor. " +
+                    $"RemoteAttribute requires server-side AJAX endpoints which are an MVC pattern. " +
+                    $"Consider using a custom validation approach for Blazor forms.");
+            }
+
+            type = type.BaseType;
+        }
     }
 }
