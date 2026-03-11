@@ -1447,6 +1447,7 @@ public class StartupTests : IISFunctionalTestBase
         }
 
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
+        deploymentParameters.TransformArguments((a, _) => $"{a} HostBuilder");
 
         Assert.Equal("IISHostLifetime", await GetStringAsync(deploymentParameters, "GetHostLifetime"));
     }
@@ -1461,6 +1462,7 @@ public class StartupTests : IISFunctionalTestBase
         }
 
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+        deploymentParameters.TransformArguments((a, _) => $"{a} HostBuilder");
 
         if (deploymentParameters.ServerType == ServerType.IISExpress)
         {
