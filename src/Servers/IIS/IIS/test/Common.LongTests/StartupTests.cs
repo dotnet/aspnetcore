@@ -1440,6 +1440,12 @@ public class StartupTests : IISFunctionalTestBase
     [ConditionalFact]
     public async Task InProcessHostlifetime()
     {
+        if (DeployerSelector.IsNewShimTest)
+        {
+            // NewShim tests use 2.2 IIS packages which don't have the host lifetime
+            return;
+        }
+
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
 
         Assert.Equal("IISHostLifetime", await GetStringAsync(deploymentParameters, "GetHostLifetime"));
@@ -1448,6 +1454,12 @@ public class StartupTests : IISFunctionalTestBase
     [ConditionalFact]
     public async Task OutOfProcessHostlifetime()
     {
+        if (DeployerSelector.IsNewShimTest)
+        {
+            // NewShim tests use 2.2 IIS packages which don't have the host lifetime
+            return;
+        }
+
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
 
         if (deploymentParameters.ServerType == ServerType.IISExpress)
