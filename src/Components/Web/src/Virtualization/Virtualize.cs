@@ -59,11 +59,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private bool _loading;
 
-    private float _totalMeasuredHeight;
+    internal float _totalMeasuredHeight;
 
-    private int _measuredItemCount;
+    internal int _measuredItemCount;
 
-    private bool _pendingScrollToBottom;
+    internal bool _pendingScrollToBottom;
 
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
@@ -157,6 +157,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // We don't auto-render after this operation because in the typical use case, the
         // host component calls this from one of its lifecycle methods, and will naturally
         // re-render afterwards anyway. It's not desirable to re-render twice.
+        _totalMeasuredHeight = 0;
+        _measuredItemCount = 0;
         await RefreshDataCoreAsync(renderOnSuccess: false);
     }
 
