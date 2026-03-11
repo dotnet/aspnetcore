@@ -17,5 +17,9 @@ public interface IHttpMinResponseDataRateFeature
     /// This feature is not available for HTTP/2 requests. Instead, use <see cref="KestrelServerLimits.MinResponseDataRate"/>
     /// for server-wide configuration which applies to both HTTP/2 and HTTP/1.x.
     /// </summary>
+    /// <remarks>
+    /// This rate may not accurately measure how much data a client is reading.
+    /// Data is immediately copied into operating system buffers until those are full, and the rate only applies to the application buffers.
+    /// </remarks>
     MinDataRate? MinDataRate { get; set; }
 }

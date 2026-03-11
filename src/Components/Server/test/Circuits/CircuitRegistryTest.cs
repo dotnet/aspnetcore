@@ -348,7 +348,12 @@ public class CircuitRegistryTest
 
         var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId(), serviceProvider.CreateAsyncScope());
         registry.Register(circuitHost);
-        circuitHost.AttachPersistedState(new PersistedCircuitState());
+        var state = new ResumedPersistedCircuitState
+        {
+            ApplicationState = new Dictionary<string, byte[]>(),
+            RootComponentDescriptors = new Dictionary<int, WebRootComponentDescriptor>(),
+        };
+        circuitHost.AttachPersistedState(state);
         var client = Mock.Of<ISingleClientProxy>();
         var newId = "new-connection";
 

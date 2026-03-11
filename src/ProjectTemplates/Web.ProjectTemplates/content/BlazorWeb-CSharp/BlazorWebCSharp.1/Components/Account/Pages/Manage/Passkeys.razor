@@ -22,7 +22,10 @@
             @foreach (var passkey in currentPasskeys)
             {
                 <tr>
-                    <td>@(passkey.Name ?? "Unnamed passkey")</td>
+                    <td>
+                        <div>@PasskeyAuthenticators.GetDisplayName(passkey)</div>
+                        <small class="text-muted">Created @passkey.CreatedAt.UtcDateTime.ToString("MMM d, yyyy") (UTC)</small>
+                    </td>
                     <td>
                         @{
                             var credentialId = Base64Url.EncodeToString(passkey.CredentialId);
@@ -123,6 +126,12 @@ else
             return;
         }
 
+        // If the authenticator is known, assign the inferred name
+        if (PasskeyAuthenticators.TryGetDefaultDisplayName(attestationResult.Passkey, out var defaultName))
+        {
+            attestationResult.Passkey.Name = defaultName;
+        }
+
         var addPasskeyResult = await UserManager.AddOrUpdatePasskeyAsync(user, attestationResult.Passkey);
         if (!addPasskeyResult.Succeeded)
         {
@@ -130,7 +139,14 @@ else
             return;
         }
 
-        // Immediately prompt the user to enter a name for the credential
+        // If a name was inferred, go back to the passkeys list
+        if (!string.IsNullOrEmpty(attestationResult.Passkey.Name))
+        {
+            RedirectManager.RedirectToCurrentPageWithStatus("Your passkey was added successfully.", HttpContext);
+            return;
+        }
+
+        // For unknown authenticators, prompt the user to enter a name
         var credentialIdBase64Url = Base64Url.EncodeToString(attestationResult.Passkey.CredentialId);
         RedirectManager.RedirectTo($"Account/Manage/RenamePasskey/{credentialIdBase64Url}");
     }

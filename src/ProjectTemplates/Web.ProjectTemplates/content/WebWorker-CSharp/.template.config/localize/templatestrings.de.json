@@ -1,0 +1,10 @@
+﻿{
+  "author": "Microsoft",
+  "name": ".NET-Worker",
+  "description": "Ein Projekt zur Erstellung einer Klassenbibliothek, die .NET-Code in einem Worker ausführt.",
+  "symbols/Framework/description": "Das Zielframework für das Projekt.",
+  "symbols/Framework/choices/net11.0/description": "Ziel net11.0",
+  "symbols/skipRestore/description": "Wenn angegeben, wird die automatische Wiederherstellung des Projekts beim Erstellen übersprungen.",
+  "postActions/restore/description": "Stellt die NuGet-Pakete wieder her, die für dieses Projekt erforderlich sind.",
+  "postActions/restore/manualInstructions/default/text": "„dotnet restore“ ausführen"
+}

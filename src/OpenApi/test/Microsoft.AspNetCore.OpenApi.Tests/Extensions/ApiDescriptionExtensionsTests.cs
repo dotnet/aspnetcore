@@ -3,6 +3,7 @@
 
 using System.Net.Http;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Routing.Patterns;
 
 public class ApiDescriptionExtensionsTests
 {
@@ -22,6 +23,30 @@ public class ApiDescriptionExtensionsTests
         var apiDescription = new ApiDescription
         {
             RelativePath = relativePath
+        };
+
+        // Act
+        var itemPath = apiDescription.MapRelativePathToItemPath();
+
+        // Assert
+        Assert.Equal(expectedItemPath, itemPath);
+    }
+
+    [Theory]
+    [InlineData("/~health", "~health", "/~health")]
+    [InlineData("/~api/todos", "~api/todos", "/~api/todos")]
+    [InlineData("/~api/todos/{id}", "~api/todos/{id}", "/~api/todos/{id}")]
+    [InlineData("~/health", "health", "/health")]
+    [InlineData("~/api/todos", "api/todos", "/api/todos")]
+    [InlineData("~/api/todos/{id}", "api/todos/{id}", "/api/todos/{id}")]
+    public void MapRelativePathToItemPath_WithRoutePattern_HandlesRoutesThatStartWithTilde(string rawPattern, string relativePath, string expectedItemPath)
+    {
+        // Arrange
+        var routePattern = RoutePatternFactory.Parse(rawPattern);
+        var apiDescription = new ApiDescription
+        {
+            RelativePath = relativePath,
+            RoutePattern = routePattern
         };
 
         // Act

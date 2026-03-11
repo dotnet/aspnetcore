@@ -12,6 +12,10 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
     <PackageTags>diagnostics;healthchecks</PackageTags>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <IsTrimmable>true</IsTrimmable>
+    <!-- SYSLIB1006, SYSLIB1025: multiple logging methods using the same event id/name
+         Pragma suppression doesn't work with incremental generators due to trimmed locations (known Roslyn limitation).
+         Suppress at project level instead. -->
+    <NoWarn>$(NoWarn);SYSLIB1006;SYSLIB1025</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
