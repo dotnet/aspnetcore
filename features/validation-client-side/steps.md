@@ -464,3 +464,40 @@ Key findings: MVC's phone validation is silently broken (no adapter registered),
 |--------|------|
 | Brotli | 2.56 KB |
 | Gzipped | 2.85 KB |
+
+## Step 11: MVC Support Analysis
+
+Wrote `features/validation-client-side/07-mvc-support.md` — comprehensive analysis of dual-mode support.
+
+### Key Findings
+
+- **~90% MVC-compatible already** — the attribute protocol (`data-val-*`), CSS classes, validation rules, and error display conventions are identical between our library and MVC's jquery-validation-unobtrusive
+- **Core library is framework-agnostic** — only `BlazorWiring.ts` is Blazor-specific. Adding `MvcWiring.ts` is straightforward
+- **Size reduction potential:** jQuery + jquery-validation + jquery-validation-unobtrusive (~118 KB min) → our library (~2.5 KB Brotli)
+
+### Remaining Work for MVC
+
+| Item | Effort |
+|------|--------|
+| `data-valmsg-replace` attribute support in ErrorDisplay | Low (~10 lines) |
+| `MvcWiring.ts` with `parse(selector)` API | Low (new small file) |
+| Auto-detection or dual entry points in index.ts | Low |
+| Remote validation provider (optional plugin) | Medium (deferred) |
+
+### E2E Test Analysis
+
+- **No existing E2E tests cover client-side JS validation** — MVC functional tests verify server-rendered HTML only
+- Baseline HTML files at `src/Mvc/test/Mvc.FunctionalTests/compiler/resources/` can be used as DOM fixtures for Jest integration tests
+- Recommended approach: Jest unit/integration tests + Playwright E2E tests for both modes
+
+### Async & Remote Validation Analysis
+
+Added detailed analysis of async provider support and `RemoteAttribute` to `07-mvc-support.md` (Section 9). Key findings:
+
+- **`ValidationProvider` type can be expanded** to `boolean | string | Promise<boolean | string>` — fully backward compatible
+- **Submit handler is the hard part** — `event.preventDefault()` must be called synchronously
+- **Recommended: Option B (sync fast-path)** — run sync providers first, only invoke async path when async providers exist and cache is cold
+- **Remote provider** uses `fetch` API with response caching per element; ~50 lines of code
+- **jquery-validation approach:** Uses `pendingRequest` counter + magic `"pending"` return value + auto-resubmit. Deeply coupled but proven
+- **aspnet-client-validation approach:** Provider returns `Promise`, validation loop uses `await`. Simpler but always async
+- **Effort:** ~200-300 lines across 3-4 files, medium complexity, low risk to existing sync behavior
