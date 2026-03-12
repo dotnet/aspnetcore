@@ -26,7 +26,6 @@ public class ResponseCompressionMiddlewareTest
         [
             "gzip",
             "br",
-            "zstd"
         ];
 
     public static IEnumerable<object[]> SupportedEncodings =>
@@ -68,9 +67,28 @@ public class ResponseCompressionMiddlewareTest
     }
 
     [Fact]
-    public async Task Request_AcceptZstd_CompressedZstd()
+    public async Task Request_AcceptZstd_NotCompressed_ZstdNotDefault()
     {
+        // Zstandard is not included in the default providers; a request accepting only zstd gets an uncompressed response.
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "zstd" }, responseType: TextPlain);
+
+        CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: true);
+        Assert.Equal(3, logMessages.Count);
+        AssertLog(logMessages.First(), LogLevel.Trace, "This request accepts compression.");
+        AssertLog(logMessages.Skip(1).First(), LogLevel.Trace, "Response compression is available for this Content-Type.");
+        AssertLog(logMessages.Skip(2).First(), LogLevel.Debug, "No matching response compression provider found.");
+    }
+
+    [Fact]
+    public async Task Request_AcceptZstd_CompressedZstd_WhenExplicitlyConfigured()
+    {
+        // Zstandard must be opted into explicitly.
+        void Configure(ResponseCompressionOptions options)
+        {
+            options.Providers.Add<ZstandardCompressionProvider>();
+        }
+
+        var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "zstd" }, responseType: TextPlain, configure: Configure);
 
         await CheckResponseCompressed(response, "zstd");
         AssertCompressedWithLog(logMessages, "zstd");
@@ -79,16 +97,27 @@ public class ResponseCompressionMiddlewareTest
     [Theory]
     [InlineData("zstd", "gzip")]
     [InlineData("gzip", "zstd")]
+    public async Task Request_AcceptZstdAndGzip_CompressedGzip(string encoding1, string encoding2)
+    {
+        // Zstandard is not a default provider; gzip should be selected from the default providers.
+        var (response, logMessages) = await InvokeMiddleware(100, new[] { encoding1, encoding2 }, responseType: TextPlain);
+
+        await CheckResponseCompressed(response, "gzip");
+        AssertCompressedWithLog(logMessages, "gzip");
+    }
+
+    [Theory]
     [InlineData("zstd", "br")]
     [InlineData("br", "zstd")]
     [InlineData("zstd", "gzip", "br")]
     [InlineData("br", "gzip", "zstd")]
-    public async Task Request_AcceptMixed_CompressedZstd(params string[] encodings)
+    public async Task Request_AcceptZstdAndBrotli_CompressedBrotli(params string[] encodings)
     {
+        // Zstandard is not a default provider; brotli should be selected from the default providers.
         var (response, logMessages) = await InvokeMiddleware(100, encodings, responseType: TextPlain);
 
-        await CheckResponseCompressed(response, "zstd");
-        AssertCompressedWithLog(logMessages, "zstd");
+        await CheckResponseCompressed(response, "br");
+        AssertCompressedWithLog(logMessages, "br");
     }
 
     [Theory]
@@ -364,8 +393,8 @@ public class ResponseCompressionMiddlewareTest
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "*" }, responseType: TextPlain);
 
-        await CheckResponseCompressed(response, "zstd");
-        AssertCompressedWithLog(logMessages, "zstd");
+        await CheckResponseCompressed(response, "br");
+        AssertCompressedWithLog(logMessages, "br");
     }
 
     [Fact]
