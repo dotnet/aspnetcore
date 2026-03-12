@@ -62,6 +62,12 @@ function measureRenderedItems(spacerBefore: HTMLElement, spacerAfter: HTMLElemen
 }
 
 function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spacerAfter: HTMLElement, rootMargin = 50): void {
+  // If the component was disposed before the JS interop call completed, the element references may be null
+  // or the elements may have been disconnected from the DOM. Return early to avoid errors.
+  if (!spacerBefore || !spacerAfter || !spacerBefore.isConnected || !spacerAfter.isConnected) {
+    return;
+  }
+
   // Overflow anchoring can cause an ongoing scroll loop, because when we resize the spacers, the browser
   // would update the scroll position to compensate. Then the spacer would remain visible and we'd keep on
   // trying to resize it.
@@ -165,6 +171,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     // and reobserving spacers when they get resized, the intersection callback will re-run if they remain visible.
     const observerOptions = { attributes: true };
     const mutationObserver = new MutationObserver((mutations: MutationRecord[], observer: MutationObserver): void => {
+      // Check if the spacer is still in the DOM
+      if (!spacer.isConnected) {
+        return;
+      }
+
       if (isValidTableElement(spacer.parentElement)) {
         observer.disconnect();
         spacer.style.display = 'table-row';
@@ -243,6 +254,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   }
 
   function processIntersectionEntries(entries: IntersectionObserverEntry[]): void {
+    // Check if the spacers are still in the DOM. They may have been removed if the component was disposed.
+    if (!spacerBefore.isConnected || !spacerAfter.isConnected) {
+      return;
+    }
+
     const intersectingEntries = entries.filter(entry => {
       if (entry.isIntersecting) {
         if (entry.target === spacerAfter) {
@@ -331,8 +347,10 @@ function dispose(dotNetHelper: DotNet.DotNetObject): void {
     observers.mutationObserverAfter.disconnect();
     observers.onDispose?.();
 
-    dotNetHelper.dispose();
-
     delete observersByDotNetObjectId[id];
   }
+
+  // Always dispose the dotNetHelper to release the DotNetObjectReference,
+  // even if init() returned early and no observers were created.
+  dotNetHelper.dispose();
 }
