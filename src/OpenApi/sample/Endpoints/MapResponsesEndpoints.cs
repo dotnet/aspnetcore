@@ -11,7 +11,13 @@ public static class ResponseEndpoints
         responses.MapGet("/200-add-xml", () => new TodoWithDueDate(1, "Test todo", false, DateTime.Now.AddDays(1), DateTime.Now))
             .Produces<Todo>(additionalContentTypes: "text/xml");
 
+        responses.MapGet("/200-add-xml-results", () => Results.Ok(new TodoWithDueDate(1, "Test todo", false, DateTime.Now.AddDays(1), DateTime.Now)))
+            .Produces<Todo>(additionalContentTypes: "text/xml");
+
         responses.MapGet("/200-only-xml", () => new TodoWithDueDate(1, "Test todo", false, DateTime.Now.AddDays(1), DateTime.Now))
+            .Produces<Todo>(contentType: "text/xml");
+
+        responses.MapGet("/200-only-xml-results", () => Results.Ok(new TodoWithDueDate(1, "Test todo", false, DateTime.Now.AddDays(1), DateTime.Now)))
             .Produces<Todo>(contentType: "text/xml");
 
         responses.MapGet("/200-multi-content-type", () => Results.Ok())

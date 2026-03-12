@@ -36,6 +36,30 @@
         }
       }
     },
+    "/responses/200-add-xml-results": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Todo"
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Todo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/responses/200-only-xml": {
       "get": {
         "tags": [
@@ -53,6 +77,25 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TodoWithDueDate"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/responses/200-only-xml-results": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Todo"
                 }
               }
             }
