@@ -1884,7 +1884,7 @@ public class EndpointMetadataApiDescriptionProviderTest
         var responseType = Assert.Single(result.SupportedResponseTypes);
         Assert.Equal(201, responseType.StatusCode);
         Assert.Equal(typeof(InferredJsonClass), responseType.Type);
-        Assert.Equal(new[] { "application/json", "text/xml" }, GetSortedMediaTypes(responseType));
+        Assert.Equal(["application/json", "text/xml"], GetSortedMediaTypes(responseType));
     }
 
     [Fact]
