@@ -75,7 +75,6 @@
     <Project Path="src/Components/Forms/test/Microsoft.AspNetCore.Components.Forms.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Components/Samples/">
-    <Project Path="src/Components/Samples/BlazorServerApp/BlazorServerApp.csproj" />
     <Project Path="src/Components/Samples/BlazorUnitedApp.Client/BlazorUnitedApp.Client.csproj" />
     <Project Path="src/Components/Samples/BlazorUnitedApp/BlazorUnitedApp.csproj" />
   </Folder>

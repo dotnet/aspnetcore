@@ -754,7 +754,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         //
         // We choose to do that here so we don't have to keep state to track implicitly closed
         // streams vs. streams closed with END_STREAM or RST_STREAM.
-        throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamClosed(_incomingFrame.Type, _incomingFrame.StreamId), Http2ErrorCode.STREAM_CLOSED, ConnectionEndReason.UnknownStream);
+        throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamClosed(_incomingFrame.Type, _incomingFrame.StreamId), Http2ErrorCode.STREAM_CLOSED, ConnectionEndReason.FrameAfterStreamClose);
     }
 
     private Http2ConnectionErrorException CreateReceivedFrameStreamAbortedException(Http2Stream stream)

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Net;
 using System.Net.Http;
+using System.Net.Quic;
 using System.Net.Security;
 using System.Text;
 using Microsoft.AspNetCore;
@@ -18,7 +19,6 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Hosting;
@@ -2355,8 +2355,141 @@ public class Http3RequestTests : LoggedTest
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task OutboundControlStream_ClientNeverAccepts_GracefulShutdownCompletes()
+    {
+        // Test that the server can gracefully shut down even when the client never
+        // accepts/reads the server's outbound control stream.
+        //
+        // This tests the scenario where a misbehaving client connects, sends its control
+        // stream, but never reads from the connection. The server should still be able
+        // to shut down gracefully without hanging.
+
+        var builder = CreateHostBuilder(context =>
+        {
+            context.Response.StatusCode = 200;
+            return Task.CompletedTask;
+        });
+
+        using var host = builder.Build();
+        await host.StartAsync();
+
+        var port = host.GetPort();
+
+        await using var connection = await QuicConnection.ConnectAsync(new QuicClientConnectionOptions
+        {
+            RemoteEndPoint = new IPEndPoint(IPAddress.Loopback, port),
+            DefaultCloseErrorCode = 0,
+            DefaultStreamErrorCode = 0,
+            MaxInboundBidirectionalStreams = 0,
+            MaxInboundUnidirectionalStreams = 0,
+            ClientAuthenticationOptions = new SslClientAuthenticationOptions
+            {
+                ApplicationProtocols = [new SslApplicationProtocol("h3")],
+                RemoteCertificateValidationCallback = static (_, _, _, _) => true,
+                TargetHost = "localhost"
+            }
+        });
+
+        // Open client control stream - this is required by HTTP/3
+        await using var clientControlStream = await connection.OpenOutboundStreamAsync(QuicStreamType.Unidirectional);
+        await clientControlStream.WriteAsync(EncodeVarInt(0x0)); // ControlStream type
+        await clientControlStream.WriteAsync(EncodeVarInt(0x4)); // Settings frame
+        await clientControlStream.WriteAsync(EncodeVarInt(0));
+
+        // The server will open its outbound control stream to send us settings.
+        // We intentionally never call AcceptInboundStreamAsync() or read from it.
+        // This simulates a client that doesn't read the server's control stream.
+
+        // Trigger graceful shutdown - this should complete even though
+        // the client never accepted/read the control stream
+        await host.StopAsync().DefaultTimeout();
+
+        // If we get here without timeout, the server successfully shut down
+        // even with the unread control stream
+
+        // Verify that the server logged an error about the outbound control stream
+        await WaitForLogAsync(logs =>
+        {
+            return logs.Any(w => w.EventId.Name == "Http3OutboundControlStreamError");
+        }, "Check for Http3OutboundControlStreamError log.");
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task OutboundControlStream_ClientNeverAccepts_ClosesConnection()
+    {
+        // Test that the server can gracefully shut down even when the client never
+        // accepts/reads the server's outbound control stream.
+        //
+        // This tests the scenario where a misbehaving client connects, sends its control
+        // stream, but never reads from the connection. The server should still be able
+        // to shut down gracefully without hanging.
+
+        var builder = CreateHostBuilder(context =>
+        {
+            context.Response.StatusCode = 200;
+            return Task.CompletedTask;
+        });
+
+        using var host = builder.Build();
+        await host.StartAsync();
+
+        var port = host.GetPort();
+
+        await using var connection = await QuicConnection.ConnectAsync(new QuicClientConnectionOptions
+        {
+            RemoteEndPoint = new IPEndPoint(IPAddress.Loopback, port),
+            DefaultCloseErrorCode = 0,
+            DefaultStreamErrorCode = 0,
+            MaxInboundBidirectionalStreams = 0,
+            MaxInboundUnidirectionalStreams = 0,
+            ClientAuthenticationOptions = new SslClientAuthenticationOptions
+            {
+                ApplicationProtocols = [new SslApplicationProtocol("h3")],
+                RemoteCertificateValidationCallback = static (_, _, _, _) => true,
+                TargetHost = "localhost"
+            }
+        });
+
+        // Open client control stream - this is required by HTTP/3
+        await using var clientControlStream = await connection.OpenOutboundStreamAsync(QuicStreamType.Unidirectional);
+        await clientControlStream.WriteAsync(EncodeVarInt(0x0)); // ControlStream type
+        await clientControlStream.WriteAsync(EncodeVarInt(0x4)); // Settings frame
+        await clientControlStream.WriteAsync(EncodeVarInt(0));
+
+        var stream = await connection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
+
+        await connection.CloseAsync(0);
+
+        // The server will open its outbound control stream to send us settings.
+        // We intentionally never call AcceptInboundStreamAsync() or read from it.
+        // This simulates a client that doesn't read the server's control stream.
+
+        // Verify that the server logged an error about the outbound control stream
+        await WaitForLogAsync(logs =>
+        {
+            return logs.Any(w => w.EventId.Name == "Http3OutboundControlStreamError");
+        }, "Check for Http3OutboundControlStreamError log.");
+
+        // Trigger graceful shutdown - this should complete even though
+        // the client never accepted/read the control stream
+        await host.StopAsync().DefaultTimeout();
+
+        // If we get here without timeout, the server successfully shut down
+        // even with the unread control stream
+    }
+
     private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null, TimeSpan? shutdownTimeout = null)
     {
         return HttpHelpers.CreateHostBuilder(AddTestLogging, requestDelegate, protocol, configureKestrel, shutdownTimeout: shutdownTimeout);
+    }
+
+    private static byte[] EncodeVarInt(ulong value)
+    {
+        var buffer = new byte[VariableLengthIntegerHelper.MaximumEncodedLength];
+        var length = VariableLengthIntegerHelper.WriteInteger(buffer, (long)value);
+        return buffer[..length];
     }
 }
