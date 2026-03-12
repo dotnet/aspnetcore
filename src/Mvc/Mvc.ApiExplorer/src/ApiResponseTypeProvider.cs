@@ -264,12 +264,9 @@ internal sealed class ApiResponseTypeProvider
 
                     if (statusCodeScopes.TryGetValue(statusCode, out var existingScope))
                     {
-                        if (attributeScope > existingScope)
-                        {
-                            statusCodeScopes[statusCode] = attributeScope;
-                            results[key] = apiResponseType;
-                        }
-                        else if (attributeScope == existingScope)
+                        // attributeScope > existingScope: cannot happend due to desc order processing
+                        // attributeScope < existingScope: skip, higher scope already claimed this status code
+                        if (attributeScope == existingScope)
                         {
                             // Same scope, same key: merge content types
                             if (results.TryGetValue(key, out var existingEntry))
@@ -282,7 +279,6 @@ internal sealed class ApiResponseTypeProvider
                                 results[key] = apiResponseType;
                             }
                         }
-                        // attributeScope < existingScope: skip, higher scope already claimed this status code
                     }
                     else
                     {
