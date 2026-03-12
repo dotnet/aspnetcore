@@ -88,8 +88,6 @@ public static class WebHostBuilderIISExtensions
                 {
                     // Logic copied from
                     // https://github.com/dotnet/runtime/blob/535c5deba263df5bd4be244247e43bddce288254/src/libraries/Microsoft.Extensions.Hosting/src/Internal/ConsoleLifetime.netcoreapp.cs#L38
-                    // for SIGTERM on Windows we must block this thread until the application is finished
-                    // otherwise the process will be killed immediately on return from this handler
 
                     // don't allow Dispose to unregister handlers, since Windows has a lock that prevents the unregistration while this handler is running
                     // just leak these, since the process is exiting
