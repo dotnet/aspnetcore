@@ -76,7 +76,7 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<ResourcePreloadService>();
         services.AddTempData();
         services.TryAddScoped<TempDataCascadingValueSupplier>();
-        services.AddCascadingValueSupplier<SupplyParameterFromTempDataAttribute>(
+        services.TryAddCascadingValueSupplier<SupplyParameterFromTempDataAttribute>(
             sp => sp.GetRequiredService<TempDataCascadingValueSupplier>().CreateSubscription);
 
         services.TryAddScoped<ResourceCollectionProvider>();

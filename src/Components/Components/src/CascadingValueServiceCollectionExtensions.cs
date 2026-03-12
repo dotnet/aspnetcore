@@ -60,11 +60,16 @@ public static class CascadingValueServiceCollectionExtensions
     /// <param name="serviceCollection">The <see cref="IServiceCollection"/>.</param>
     /// <param name="subscribeFactory">A callback that supplies a <see cref="CascadingParameterSubscription"/> that handles subscriptions for attribute.</param>
     /// <returns>The <see cref="IServiceCollection"/>.</returns>
-    public static IServiceCollection AddCascadingValueSupplier<TAttribute>(
+    public static IServiceCollection TryAddCascadingValueSupplier<TAttribute>(
         this IServiceCollection serviceCollection,
         Func<IServiceProvider, Func<ComponentState, TAttribute, CascadingParameterInfo, CascadingParameterSubscription>> subscribeFactory)
         where TAttribute : CascadingParameterAttributeBase
-        => serviceCollection.AddScoped<ICascadingValueSupplier>(sp => new CascadingParameterValueProvider<TAttribute>(subscribeFactory(sp)));
+    {
+        serviceCollection.TryAddEnumerable(
+           ServiceDescriptor.Scoped<ICascadingValueSupplier, CascadingParameterValueProvider<TAttribute>>(
+               sp => new CascadingParameterValueProvider<TAttribute>(subscribeFactory(sp))));
+        return serviceCollection;
+    }
 
     /// <summary>
     /// Adds a cascading value to the <paramref name="serviceCollection"/>, if none is already registered
