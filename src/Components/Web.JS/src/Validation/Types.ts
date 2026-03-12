@@ -12,8 +12,19 @@ export type ValidatableElement = HTMLInputElement | HTMLSelectElement | HTMLText
 export type ValidationProviderResult = boolean | string;
 
 /**
+ * A synchronous validation provider function.
+ * Used by Blazor, where async validation is not supported.
+ */
+export type SyncValidationProvider = (
+  value: string,
+  element: ValidatableElement,
+  params: Record<string, string>
+) => ValidationProviderResult;
+
+/**
  * A validation provider function. May return a result synchronously
  * or a Promise for async validation (e.g., remote server checks).
+ * Used by MVC, which supports async providers via the requestSubmit fallback.
  */
 export type ValidationProvider = (
   value: string,
