@@ -48,7 +48,7 @@ interface MeasurementResult {
 
 function measureRenderedItems(spacerBefore: HTMLElement, spacerAfter: HTMLElement): MeasurementResult {
   const scaleFactor = getScaleFactor(spacerBefore, spacerAfter);
-  const items = spacerBefore.parentElement?.querySelectorAll<HTMLElement>('[data-virtualize-item]');
+  const items = spacerBefore.parentElement?.querySelectorAll<HTMLElement>(':scope > [data-virtualize-item]');
 
   if (!items || items.length === 0) {
     return { heights: [], scaleFactor };

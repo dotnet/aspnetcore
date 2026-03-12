@@ -1482,6 +1482,9 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.True(() => GetElementCount(outerContainer, ".nested-outer-item") > 0);
 
+        var outerItemCount = GetElementCount(outerContainer, ".nested-outer-item");
+        Assert.True(outerItemCount < 50, $"Outer rendered all {outerItemCount}/50 items — measurement may be polluted by inner item heights");
+
         var innerContainer = Browser.Exists(By.Id("nested-inner-container"));
         Browser.True(() => GetElementCount(innerContainer, ".nested-inner-item") > 0);
 
@@ -1800,5 +1803,26 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         {
             return false;
         }
+    }
+
+    [Fact]
+    public void NestedVariableHeight_OuterMeasurementsNotPollutedByInner()
+    {
+        Browser.MountTestComponent<VirtualizationNestedVariableHeight>();
+
+        var outerContainer = Browser.Exists(By.Id("nested-vh-outer-container"));
+        Browser.Equal("Outer: 40", () => Browser.Exists(By.Id("nested-vh-outer-count")).Text);
+
+        Browser.True(() => GetElementCount(outerContainer, ".nested-vh-outer") > 0);
+
+        // Outer container is 400px with 100-300px items (~200px average).
+        // Should render a small subset of 40 total items.
+        // If outer measurement is polluted by inner items (15-45px), the average
+        // drops dramatically, causing it to think it can fit many more items.
+        var outerItemCount = GetElementCount(outerContainer, ".nested-vh-outer");
+        Assert.True(outerItemCount < 40,
+            $"Outer rendered all {outerItemCount}/40 items — measurement likely polluted by inner item heights (15-45px vs 100-300px outer)");
+
+        Browser.True(() => GetElementCount(outerContainer, ".nested-vh-inner") > 0);
     }
 }
