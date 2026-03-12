@@ -69,13 +69,14 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private IJSRuntime JSRuntime { get; set; } = default!;
 
     /// <summary>
-    /// Gets or sets the item template for the list.
+    /// Gets or sets the item template for the list. See <see cref="ItemContent"/>.
     /// </summary>
     [Parameter]
     public RenderFragment<TItem>? ChildContent { get; set; }
 
     /// <summary>
     /// Gets or sets the item template for the list.
+    /// Each item is rendered inside a <c>&lt;SpacerElement data-virtualize-item&gt;</c> wrapper element.
     /// </summary>
     [Parameter]
     public RenderFragment<TItem>? ItemContent { get; set; }
