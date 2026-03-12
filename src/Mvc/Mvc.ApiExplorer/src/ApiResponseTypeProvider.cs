@@ -56,6 +56,11 @@ internal sealed class ApiResponseTypeProvider
             defaultErrorType = ((ProducesErrorResponseTypeAttribute)result!).Type;
         }
 
+        // ProducesResponseTypeAttribute implements both IApiResponseMetadataProvider and
+        // IProducesResponseTypeMetadata. Filter attributes are already processed with scope
+        // support via ReadFilterAttributeResponseMetadata, so we exclude them here to
+        // avoid processing the same attribute twice. This leaves only "pure" endpoint metadata
+        // entries (e.g., from TypedResults or custom IProducesResponseTypeMetadata implementations).
         var producesResponseMetadata = action.EndpointMetadata
             .OfType<IProducesResponseTypeMetadata>()
             .Where(m => m is not IApiResponseMetadataProvider)
