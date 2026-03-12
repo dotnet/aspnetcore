@@ -1328,7 +1328,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Todo"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/Todo"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TodoWithDueDate"
+                    }
+                  ]
                 }
               },
               "text/xml": {
@@ -1353,6 +1360,11 @@
               "text/xml": {
                 "schema": {
                   "$ref": "#/components/schemas/Todo"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodoWithDueDate"
                 }
               }
             }
