@@ -84,7 +84,7 @@ internal sealed class ApiResponseTypeProvider
     private ICollection<ApiResponseType> GetApiResponseTypes(
        IReadOnlyList<ApiResponseMetadataProviderWithScope> responseMetadataAttributes,
        IReadOnlyList<IProducesResponseTypeMetadata> producesResponseMetadata,
-       Type? type,
+       Type? declaredReturnType,
        Type defaultErrorType)
     {
         var contentTypes = new MediaTypeCollection();
@@ -94,15 +94,15 @@ internal sealed class ApiResponseTypeProvider
         // e.g. from TypedResults or .Produces<T>() extension methods.
         var endpointResponseTypes = ReadEndpointResponseMetadata(
             producesResponseMetadata,
-            type,
+            declaredReturnType,
             responseTypeMetadataProviders,
             _modelMetadataProvider);
 
         // Read response types from filter attributes (IApiResponseMetadataProvider),
         // e.g. [ProducesResponseType], [Produces], and conventions.
-        var attributeResponseTypes = ReadAttributeResponseMetadata(
+        var filterAttributeResponseTypes = ReadFilterAttributeResponseMetadata(
             responseMetadataAttributes,
-            type,
+            declaredReturnType,
             defaultErrorType,
             contentTypes,
             out var _,
@@ -110,20 +110,20 @@ internal sealed class ApiResponseTypeProvider
 
         // Attribute metadata takes precedence: for any status code defined by attributes,
         // all endpoint entries for that status code are replaced by the attribute entries.
-        var attributeStatusCodes = attributeResponseTypes.Values.Select(r => r.StatusCode).ToHashSet();
+        var attributeStatusCodes = filterAttributeResponseTypes.Values.Select(r => r.StatusCode).ToHashSet();
         var responseTypes = endpointResponseTypes
             .Where(kvp => !attributeStatusCodes.Contains(kvp.Key.StatusCode))
-            .Concat(attributeResponseTypes)
+            .Concat(filterAttributeResponseTypes)
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
         // Set the default status only when no status has already been set explicitly
-        if (responseTypes.Count == 0 && type != null)
+        if (responseTypes.Count == 0 && declaredReturnType != null)
         {
-            var defaultKey = new ResponseKey(StatusCodes.Status200OK, type);
+            var defaultKey = new ResponseKey(StatusCodes.Status200OK, declaredReturnType);
             responseTypes.Add(defaultKey, new ApiResponseType
             {
                 StatusCode = StatusCodes.Status200OK,
-                Type = type,
+                Type = declaredReturnType,
             });
         }
 
@@ -149,30 +149,34 @@ internal sealed class ApiResponseTypeProvider
             .ToList();
     }
 
-    // Shared with EndpointMetadataApiDescriptionProvider for Minimal API
+    // Shared with EndpointMetadataApiDescriptionProvider for Minimal API.
     internal static Dictionary<ResponseKey, ApiResponseType> ReadAttributeResponseMetadata(
         IReadOnlyList<IApiResponseMetadataProvider> responseMetadataAttributes,
-        Type? type,
+        Type? declaredReturnType,
         Type? defaultErrorType,
         MediaTypeCollection contentTypes,
         out bool errorSetByDefault,
         IEnumerable<IApiResponseTypeMetadataProvider>? responseTypeMetadataProviders = null,
         IModelMetadataProvider? modelMetadataProvider = null)
     {
-        // Minimal API does not have scopes — all metadata lives at the same level.
-        // Using the same scope (0) for all entries ensures that entries with the same
-        // status code and type are merged (e.g., different content types) rather than
-        // one overriding the other.
+        // Minimal APIs do not have scopes — all metadata lives at the same level.
+        // This overload wraps all providers at scope=0 and delegates to the scoped method.
         var responseMetadataAttributesWithScope = responseMetadataAttributes
             .Select(provider => new ApiResponseMetadataProviderWithScope(provider, scope: 0))
             .ToList();
 
-        return ReadAttributeResponseMetadata(responseMetadataAttributesWithScope, type, defaultErrorType, contentTypes, out errorSetByDefault, responseTypeMetadataProviders, modelMetadataProvider);
+        return ReadFilterAttributeResponseMetadata(responseMetadataAttributesWithScope, declaredReturnType, defaultErrorType, contentTypes, out errorSetByDefault, responseTypeMetadataProviders, modelMetadataProvider);
     }
 
-    internal static Dictionary<ResponseKey, ApiResponseType> ReadAttributeResponseMetadata(
+    /// <summary>
+    /// Reads response metadata from filter attributes (IApiResponseMetadataProvider) with scope support.
+    /// Used by the controller path where FilterDescriptor.Scope provides real scope values
+    /// (e.g., 10 for action, 20 for controller), and by conventions which use int.MaxValue.
+    /// Entries are processed in descending scope order so higher-scope entries take precedence per status code.
+    /// </summary>
+    internal static Dictionary<ResponseKey, ApiResponseType> ReadFilterAttributeResponseMetadata(
         IReadOnlyList<ApiResponseMetadataProviderWithScope> responseMetadataAttributes,
-        Type? type,
+        Type? declaredReturnType,
         Type? defaultErrorType,
         MediaTypeCollection contentTypes,
         out bool errorSetByDefault,
@@ -221,13 +225,13 @@ internal sealed class ApiResponseTypeProvider
 
                 if (apiResponseType.Type == typeof(void))
                 {
-                    if (type != null && (statusCode == StatusCodes.Status200OK || statusCode == StatusCodes.Status201Created))
+                    if (declaredReturnType != null && (statusCode == StatusCodes.Status200OK || statusCode == StatusCodes.Status201Created))
                     {
                         // ProducesResponseTypeAttribute's constructor defaults to setting "Type" to void when no value is specified.
                         // In this event, use the action's return type for 200 or 201 status codes. This lets you decorate an action with a
                         // [ProducesResponseType(201)] instead of [ProducesResponseType(typeof(Person), 201] when typeof(Person) can be inferred
                         // from the return type.
-                        apiResponseType.Type = type;
+                        apiResponseType.Type = declaredReturnType;
                     }
                     else if (IsClientError(statusCode))
                     {
@@ -341,56 +345,19 @@ internal sealed class ApiResponseTypeProvider
 
             if (apiResponseType.Type != null)
             {
-                // ── Controller example ──────────────────────────────────────────────────
-                //
-                //   For controllers, after our .Where(m => m is not IApiResponseMetadataProvider) filter,
-                //   responseMetadata is typically empty (attributes are handled by ReadAttributeResponseMetadata).
-                //   So this removal logic rarely fires for controllers.
-                //
-                // ── Minimal API example (POCO return, inferredType != void) ─────────────────────
-                //
-                //   app.MapGet("/", () => new Product())      // inferredType = typeof(Product)
-                //       .Produces(200)                        // metadata: (200, null) → inferred as Product
-                //       .Produces<Customer>(200, "text/xml"); // metadata: (200, Customer)
-                //
-                //   On 2nd iteration will remove (200, Product) because DeclaredType == inferredType (Product)
-                //     results = { (200, Customer) }
-                //
-                // ── Minimal API example (IResult return, type == void) ──────────────────
-                //
-                //   app.MapPost("/", () => TypedResults.Ok(new Product()))  // type = void (IResult)
-                //       .Produces<Customer>(200);
-                //
-                //   type = void → `type != typeof(void)` is false → removal is SKIPPED.
-                //   Both TypedResults' (200, Product) and .Produces<Customer>(200) coexist.
-                //   This is expected: we cannot distinguish framework-inferred metadata from
-                //   user-explicit metadata when both are IProducesResponseTypeMetadata.
-                //
-                // ── Minimal API example (POCO return, same type merges) ─────────────────
-                //
-                //   app.MapGet("/", () => new Product())      // type = typeof(Product)
-                //       .Produces<Product>(200, "app/json")   // metadata: (200, Product)
-                //       .Produces<Product>(200, "app/xml");   // metadata: (200, Product)
-                //
-                //   For same statusCode+types will merge the ApiResponseType into results = { (200, Product) with json+xml }
-                // 
-                if (inferredType != null && inferredType != typeof(void) && apiResponseType.Type != inferredType)
-                {
-                    var inferredTypeKey = new ResponseKey(apiResponseType.StatusCode, inferredType);
-                    if (results.TryGetValue(inferredTypeKey, out _))
-                    {
-                        results.Remove(inferredTypeKey);
-                    }
-                }
-
                 var key = new ResponseKey(apiResponseType.StatusCode, apiResponseType.Type);
                 if (results.TryGetValue(key, out var existingEntry))
                 {
-                    // Same key: merge formats
+                    // Same (statusCode, type): merge content types.
+                    // Example: .Produces<Product>(200, "json").Produces<Product>(200, "xml")
+                    //   → (200, Product) with [json, xml]
                     MergeApiResponseFormats(existingEntry, apiResponseType);
                 }
                 else
                 {
+                    // Different type for the same status code: add alongside.
+                    // Example: .Produces<Product>(200, "json").Produces<Customer>(200, "xml")
+                    //   → (200, Product) [json] + (200, Customer) [xml]
                     results[key] = apiResponseType;
                 }
             }
