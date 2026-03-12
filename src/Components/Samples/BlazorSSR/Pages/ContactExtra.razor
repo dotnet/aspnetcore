@@ -4,7 +4,6 @@
 
 <h1>Contact Form + Newsletter Subscribe</h1>
 <p>This page has <strong>two forms</strong> — navigate here from <a href="/contact">/contact</a> to test enhanced navigation adding a second form to the DOM.</p>
-<p>Server-side validation only (baseline). <a href="/contact-manual-extra">Compare with client validation version</a></p>
 
 <hr />
 
@@ -12,6 +11,7 @@
 
 <EditForm Model="ContactFormModel" OnValidSubmit="HandleContactSubmit" Enhance FormName="contact-extra">
     <DataAnnotationsValidator />
+    <ClientSideValidator />
     <ValidationSummary />
 
     <div class="form-group">
@@ -74,6 +74,7 @@
 
 <EditForm Model="SubscribeFormModel" OnValidSubmit="HandleSubscribeSubmit" Enhance FormName="subscribe-extra">
     <DataAnnotationsValidator />
+    <ClientSideValidator />
     <ValidationSummary />
 
     <div class="form-group">

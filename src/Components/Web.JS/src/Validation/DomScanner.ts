@@ -21,6 +21,7 @@ export class DomScanner {
      */
   scan(root: ParentNode): void {
     const inputs = root.querySelectorAll<ValidatableElement>('input[data-val="true"], select[data-val="true"], textarea[data-val="true"]');
+    const initializedForms = new Set<HTMLFormElement>();
 
     for (const input of Array.from(inputs)) {
       const existingState = this.coordinator.getState(input);
@@ -62,6 +63,14 @@ export class DomScanner {
       if (!form.hasAttribute('novalidate')) {
         form.setAttribute('novalidate', '');
       }
+
+      initializedForms.add(form);
+    }
+
+    // Initialize validation summaries to the "valid" state so they don't
+    // show an empty error container before the first validation.
+    for (const form of initializedForms) {
+      this.coordinator.updateFormSummary(form);
     }
   }
 
