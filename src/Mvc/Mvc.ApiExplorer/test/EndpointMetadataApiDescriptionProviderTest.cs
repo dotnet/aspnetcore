@@ -1379,6 +1379,82 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     [Fact]
+    public void HandleMultipleProducesWithSameStatusCodeAndTypeMergesContentTypes()
+    {
+        // Same (StatusCode, Type) with different content types → merge into single entry with multiple content types
+
+        var builder = CreateBuilder();
+        builder.MapGet("/api/todos", () => Results.Ok())
+            .Produces<InferredJsonClass>(StatusCodes.Status200OK, "application/json")
+            .Produces<InferredJsonClass>(StatusCodes.Status200OK, "text/xml");
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        provider.OnProvidersExecuting(context);
+        provider.OnProvidersExecuted(context);
+
+        // Assert — single entry for (200, InferredJsonClass) with both content types merged
+        var responseType = Assert.Single(context.Results.SelectMany(r => r.SupportedResponseTypes));
+        Assert.Equal(typeof(InferredJsonClass), responseType.Type);
+        Assert.Equal(200, responseType.StatusCode);
+        Assert.Equal(["application/json", "text/xml"], GetSortedMediaTypes(responseType));
+    }
+
+    [Fact]
+    public void HandleMultipleProducesDeterministicOrdering()
+    {
+        // Deterministic ordering in complex scenario — multiple types, status codes, and merged content types
+
+        var builder = CreateBuilder();
+        builder.MapGet("/api/todos", () => Results.Ok())
+            .Produces<InferredJsonClass>(StatusCodes.Status200OK, "application/json")
+            .Produces<InferredJsonClass>(StatusCodes.Status200OK, "text/xml")
+            .Produces<string>(StatusCodes.Status200OK, "text/plain")
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces<InferredJsonClass>(StatusCodes.Status201Created, "application/json");
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        provider.OnProvidersExecuting(context);
+        provider.OnProvidersExecuted(context);
+
+        // Assert — ordered by StatusCode, then by Type name, content types merged for same (StatusCode, Type)
+        Assert.Collection(
+            context.Results.SelectMany(r => r.SupportedResponseTypes).OrderBy(r => r.StatusCode).ThenBy(r => r.Type?.Name),
+            responseType =>
+            {
+                // (200, InferredJsonClass) — merged from two .Produces calls
+                Assert.Equal(typeof(InferredJsonClass), responseType.Type);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(["application/json", "text/xml"], GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                // (200, string)
+                Assert.Equal(typeof(string), responseType.Type);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(["text/plain"], GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                // (201, InferredJsonClass)
+                Assert.Equal(typeof(InferredJsonClass), responseType.Type);
+                Assert.Equal(201, responseType.StatusCode);
+                Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                // (404, void)
+                Assert.Equal(typeof(void), responseType.Type);
+                Assert.Equal(404, responseType.StatusCode);
+            });
+    }
+
+    [Fact]
     public void HandleAcceptsMetadata()
     {
         // Arrange
