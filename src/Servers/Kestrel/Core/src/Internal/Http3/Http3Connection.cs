@@ -339,21 +339,23 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         // Don't create Encoder and Decoder as they aren't used now.
 
         Exception? error = null;
-        Http3ControlStream? outboundControlStream = null;
         ValueTask outboundControlStreamTask = default;
         bool clientAbort = false;
         ConnectionEndReason reason = ConnectionEndReason.Unset;
 
         try
         {
-            outboundControlStream = await CreateNewUnidirectionalStreamAsync(application);
-            lock (_sync)
-            {
-                OutboundControlStream = outboundControlStream;
-            }
+            // https://datatracker.ietf.org/doc/html/rfc9114#section-7.2.4.2
+            // All settings begin at an initial value. Each endpoint SHOULD use
+            // these initial values to send messages before the peer's SETTINGS
+            // frame has arrived, as packets carrying the settings can be lost or
+            // delayed. When the SETTINGS frame arrives, any settings are changed to
+            // their new values.
+            //
+            // Clients SHOULD NOT wait indefinitely for SETTINGS to arrive before sending requests
 
-            // Don't delay on waiting to send outbound control stream settings.
-            outboundControlStreamTask = ProcessOutboundControlStreamAsync(outboundControlStream);
+            // Which implies we shouldn't block on sending the SETTINGS frame before accepting and processing requests
+            outboundControlStreamTask = CreateNewUnidirectionalStreamAsync(application);
 
             // Close the connection if we don't receive any request streams
             TimeoutControl.SetTimeout(Limits.KeepAliveTimeout, TimeoutReason.KeepAlive);
@@ -539,15 +541,6 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
                     }
                 }
 
-                if (outboundControlStream != null)
-                {
-                    // Don't gracefully close the outbound control stream. If the peer detects
-                    // the control stream closes it will close with a procotol error.
-                    // Instead, allow control stream to be automatically aborted when the
-                    // connection is aborted.
-                    await outboundControlStreamTask;
-                }
-
                 // Use graceful close reason if it has been set.
                 if (reason == ConnectionEndReason.Unset && _gracefulCloseReason != ConnectionEndReason.Unset)
                 {
@@ -556,6 +549,23 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
                 // Complete
                 Abort(CreateConnectionAbortError(error, clientAbort), errorCode, reason);
+
+                // Don't gracefully close the outbound control stream. If the peer detects
+                // the control stream closes it will close with a protocol error.
+                // Instead, allow control stream to be automatically aborted when the
+                // connection is aborted.
+                //
+                // If the client never accepts the control stream or closes the connection
+                // abruptly, this task may throw. Ignore those errors since we're already
+                // in cleanup mode.
+                try
+                {
+                    await outboundControlStreamTask;
+                }
+                catch (Exception ex)
+                {
+                    Log.Http3OutboundControlStreamError(ConnectionId, ex);
+                }
 
                 // Wait for active requests to complete.
                 while (_activeRequestCount > 0)
@@ -737,25 +747,21 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         }
     }
 
-    private async ValueTask<Http3ControlStream> CreateNewUnidirectionalStreamAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull
+    private async ValueTask CreateNewUnidirectionalStreamAsync<TContext>(IHttpApplication<TContext> application) where TContext : notnull
     {
         var features = new FeatureCollection();
         features.Set<IStreamDirectionFeature>(new DefaultStreamDirectionFeature(canRead: false, canWrite: true));
         var streamContext = await _multiplexedContext.ConnectAsync(features);
         var httpConnectionContext = CreateHttpStreamContext(streamContext);
 
-        return new Http3ControlStream<TContext>(application, httpConnectionContext, 0L);
+        OutboundControlStream = new Http3ControlStream<TContext>(application, httpConnectionContext, 0L);
+
+        await ProcessOutboundControlStreamAsync(OutboundControlStream);
     }
 
     private async ValueTask<FlushResult> SendGoAwayAsync(long id)
     {
-        Http3ControlStream? stream;
-        lock (_sync)
-        {
-            stream = OutboundControlStream;
-        }
-
-        if (stream != null)
+        if (OutboundControlStream is Http3ControlStream stream)
         {
             try
             {
