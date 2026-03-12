@@ -3,7 +3,7 @@
 <PageTitle>Contact</PageTitle>
 
 <h1>Contact Form</h1>
-<p>This form uses static SSR with DataAnnotations validation (server-side only, no interactivity).</p>
+<p>This form uses static SSR with DataAnnotations validation and client-side validation via <code>&lt;ClientSideValidator /&gt;</code>.</p>
 <p><a href="/contact-extra">Load page with second form</a> — tests enhanced navigation adding a new form to the DOM.</p>
 
 <EditForm Model="Model" OnValidSubmit="HandleValidSubmit" Enhance FormName="contact">
@@ -53,7 +53,10 @@
         <ValidationMessage For="@(() => Model.ReferenceCode)" />
     </div>
 
-    <button type="submit">Submit</button>
+    <div class="form-actions">
+        <button type="submit">Submit</button>
+        <button type="submit" formnovalidate>Submit without validation</button>
+    </div>
 </EditForm>
 
 @if (_submitted)

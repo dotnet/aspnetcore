@@ -3,17 +3,10 @@
 <PageTitle>Home</PageTitle>
 
 <h1>Blazor SSR Sample</h1>
-<p>This is a static server-rendered Blazor app with no interactivity.</p>
+<p>This is a static server-rendered Blazor app with client-side validation.</p>
 
-<h2>Single-form pages</h2>
+<h2>Pages</h2>
 <ul>
-    <li><a href="/contact">Contact Form</a> — server-only validation (baseline)</li>
-    <li><a href="/contact-manual">Contact Form (Client Validation)</a> — prototype with client-side validation</li>
-</ul>
-
-<h2>Two-form pages (enhanced navigation test)</h2>
-<p>Navigate from a single-form page to these to test that the JS library picks up newly added forms after enhanced navigation.</p>
-<ul>
-    <li><a href="/contact-extra">Contact + Subscribe</a> — server-only validation</li>
-    <li><a href="/contact-manual-extra">Contact + Subscribe (Client Validation)</a> — prototype with client-side validation</li>
+    <li><a href="/contact">Contact Form</a> — single form with client-side validation</li>
+    <li><a href="/contact-extra">Contact + Subscribe</a> — two forms (tests enhanced navigation adding a second form to the DOM)</li>
 </ul>
