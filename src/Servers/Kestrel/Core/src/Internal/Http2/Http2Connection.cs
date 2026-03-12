@@ -1263,7 +1263,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         }
         catch (Http2StreamErrorException)
         {
-            // stream will be correctly aborted by the caller
+            _currentHeadersStream.Dispose();
             ResetRequestHeaderParsingState();
             throw;
         }
