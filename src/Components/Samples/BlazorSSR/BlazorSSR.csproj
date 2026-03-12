@@ -69,4 +69,11 @@
     <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 
+  <Target Name="CopyValidationScript" BeforeTargets="Build">
+    <Copy
+      SourceFiles="$(BlazorFrameworkStaticWebAssetRoot)\aspnet-validation.js"
+      DestinationFolder="$(ProjectDir)wwwroot\js\"
+      SkipUnchangedFiles="true" />
+  </Target>
+
 </Project>
