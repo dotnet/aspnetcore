@@ -20,7 +20,14 @@
 14. [Custom Async Validator Components](#14-custom-async-validator-components)
 15. [Sync-First, Then Async Optimization](#15-sync-first-then-async-optimization)
 16. [Debouncing](#16-debouncing)
-17. [Security Considerations](#17-security-considerations)
+17. [Behavior of Sync `Validate()` with Async Validators](#17-behavior-of-sync-validate-with-async-validators)
+18. [DI Services in Async Validators](#18-di-services-in-async-validators)
+19. [AOT and Trimming Compatibility](#19-aot-and-trimming-compatibility)
+20. [Zero Performance Overhead for Sync-Only](#20-zero-performance-overhead-for-sync-only)
+21. [Parallel vs Sequential Async Execution](#21-parallel-vs-sequential-async-execution)
+22. [`IValidatableInfoResolver` Extensibility](#22-ivalidatableinforesolverextensibility)
+23. [Broader Ecosystem Compatibility](#23-broader-ecosystem-compatibility)
+24. [Security Considerations](#24-security-considerations)
 
 ---
 
@@ -28,7 +35,7 @@
 
 ### Scenario
 
-A developer has a form with fields that require server-side validation (e.g., username uniqueness check via an HTTP call). When the user clicks "Submit", the form should:
+A developer has a form with fields that require server-side validation (e.g., username uniqueness check via a DB query). When the user clicks "Submit", the form should:
 1. Run all validation (sync and async)
 2. Wait for all async validation to complete
 3. Only then invoke `OnValidSubmit` or `OnInvalidSubmit`
@@ -884,7 +891,9 @@ public class Registration
 
 ### Note
 
-This may be better left to libraries and developer code rather than built into the framework. Angular supports it via `updateOn: 'blur'`, react-hook-form requires manual debounce. The question is whether Blazor should provide this as a first-class feature or leave it to the ecosystem.
+@oroztocil (feature owner) [commented on the PRD](https://github.com/aspnet/specs/pull/777#discussion_r2878753448): *"I am strongly for adding built-in debounce/throttling feature. Typical async validations (DB/HTTP queries) would be unusable without it, meaning that everyone will be forced to implement it anyway."*
+
+This elevates debounce from "ecosystem concern" to a framework feature. The question is whether it should be a form-validation-specific feature or a more generic Blazor mechanism. Angular supports it via `updateOn: 'blur'`; react-hook-form requires manual debounce.
 
 ### References
 - Angular: `updateOn: 'blur'` option
@@ -893,7 +902,207 @@ This may be better left to libraries and developer code rather than built into t
 
 ---
 
-## 17. Security Considerations
+## 17. Behavior of Sync `Validate()` with Async Validators
+
+### Scenario
+
+A developer has a model with async validation attributes but accidentally calls the existing `EditContext.Validate()` (sync) instead of the new `ValidateAsync()`. Or, existing code that predates async support calls `Validate()` on a model that has since gained async attributes.
+
+### User needs
+
+- Clear, predictable behavior — not silent data loss where async validators are silently skipped and the form submits as "valid"
+- A clear migration path from `Validate()` to `ValidateAsync()`
+- Developers should get a clear error message if they call `Validate()` on a model that requires async validation
+
+### Desired developer experience
+
+```csharp
+// If model has async validators and you call Validate():
+var isValid = editContext.Validate();
+// → throws InvalidOperationException:
+//   "This model requires async validation. Use ValidateAsync() instead."
+
+// The correct call:
+var isValid = await editContext.ValidateAsync();
+// → runs both sync and async validators, returns true/false
+```
+
+### Design tension
+
+There are competing concerns:
+- **Throwing** (recommended by PRD, matches MiniValidation and FluentValidation pattern) — prevents accidental data loss where async validators are silently skipped
+- **Running sync-only, ignoring async** — less disruptive but risks invalid data passing validation
+- **Running sync-over-async** — worst option, causes deadlocks
+
+### References
+- PRD R13, review discussion between @oroztocil and @danroth27
+- MiniValidation: throws `InvalidOperationException` when sync path encounters async-required type
+- FluentValidation: throws `AsyncValidatorInvokedSynchronouslyException`
+
+---
+
+## 18. DI Services in Async Validators
+
+### Scenario
+
+Nearly every real-world async validation requires injected services — a `DbContext` for uniqueness checks, an `HttpClient` for remote validation, a tenant provider for multi-tenant rules. Validators must have access to DI-registered services.
+
+### User needs
+
+- Async validation attributes should access DI services via `ValidationContext.GetRequiredService<T>()`
+- This is the existing pattern for sync validators — it must work identically for async
+- Custom validator components should receive services via standard Blazor DI (`[Inject]`)
+
+### Desired developer experience
+
+```csharp
+public class UniqueInTenantAttribute : AsyncValidationAttribute
+{
+    protected override async ValueTask<ValidationResult?> IsValidAsync(
+        object? value, ValidationContext ctx, CancellationToken ct)
+    {
+        // DI services available via ValidationContext — same as sync validators
+        var db = ctx.GetRequiredService<AppDbContext>();
+        var tenant = ctx.GetRequiredService<ITenantProvider>();
+
+        var exists = await db.Users
+            .Where(u => u.TenantId == tenant.TenantId && u.Email == (string)value!)
+            .AnyAsync(ct);
+
+        return exists
+            ? new ValidationResult("Email already registered in this organization.")
+            : ValidationResult.Success;
+    }
+}
+```
+
+### References
+- PRD R25: "Async validation should support DI-injected services via `ValidationContext.GetRequiredService<T>()`"
+- MiniValidation: passes `IServiceProvider` to `ValidationContext` constructor
+
+---
+
+## 19. AOT and Trimming Compatibility
+
+### Scenario
+
+.NET applications using Native AOT or IL trimming need async validation to work without runtime reflection failures. The `Microsoft.Extensions.Validation` source generator already handles this for sync validators — async validators must be covered too.
+
+### User needs
+
+- Async validation attributes discovered and invoked via source-generated code (no reflection at runtime)
+- The source generator should detect whether a type has async validators and emit appropriate metadata
+- No new trimming warnings introduced by async validation
+
+### References
+- PRD R30: "AOT/trimming compatibility for async validation attributes and source-generated validators"
+- Source generator already emits `GeneratedValidatablePropertyInfo` / `GeneratedValidatableTypeInfo`
+
+---
+
+## 20. Zero Performance Overhead for Sync-Only
+
+### Scenario
+
+The vast majority of existing applications use sync-only validators. Adding async validation support must not introduce performance regressions (extra allocations, `Task` wrapping overhead, etc.) for applications that don't use async validators.
+
+### User needs
+
+- When all validators on a model are synchronous, the validation path should remain fully synchronous with no `Task` allocations
+- Pre-computed detection of whether a type requires async validation (at source-gen time or cached at runtime) so the fast path is chosen without per-invocation checks
+- `ValueTask<>` should be used instead of `Task<>` for async method signatures to avoid allocations when the common path completes synchronously
+
+### References
+- PRD §6.4: @javiercn's comment: *"One of the reasons we avoided this in the past is due to the perf implications involved in supporting async here."*
+- MiniValidation: `TypeDetailsCache.RequiresAsync` flag for fast-path detection
+- PRD R4: "Default implementation of `IsValidAsync` should fall back to calling the synchronous `IsValid()`"
+
+---
+
+## 21. Parallel vs Sequential Async Execution
+
+### Scenario
+
+A model has multiple async validators (e.g., `[UniqueEmail]` and `[ValidDomain]` on the same property, or async validators on different properties). Should these run sequentially or concurrently?
+
+### User needs
+
+- Clear, predictable execution model
+- For validators on **different properties**: concurrent execution is safe and desirable (faster)
+- For validators on the **same property**: sequential execution (stop on first failure) is generally preferred, matching sync behavior
+- Developers should understand the execution order guarantees
+
+### Design tension
+
+- **Sequential** (simpler, matches sync model): validators run one after another; if one fails, subsequent ones may be skipped
+- **Concurrent** (faster, returns all errors at once): validators on different fields run in parallel via `Task.WhenAll`; but complicates error ordering and cancellation
+- **Hybrid** (Angular approach): per-property sequential, cross-property concurrent
+
+### References
+- PRD Q4 / review discussion: "Should async validators short-circuit on first failure or run in parallel?"
+- @oroztocil's clarification: "1. Should async validation stop on first error? 2. Can async validations be executed in parallel?"
+
+---
+
+## 22. `IValidatableInfoResolver` Extensibility
+
+### Scenario
+
+Third-party validation libraries (FluentValidation, custom validators) need an extension point to plug their own async validation logic into the `Microsoft.Extensions.Validation` pipeline, without the framework needing to know about them.
+
+### User needs
+
+- A clear extensibility seam where libraries can register their own async validators
+- The resolver should be invocable from Blazor forms (via `DataAnnotationsValidator` or a custom validator component)
+- Multiple resolvers can coexist (e.g., source-generated + runtime reflection + third-party)
+
+### Desired developer experience
+
+```csharp
+// Third-party library registration
+builder.Services.AddValidation(options =>
+{
+    options.Resolvers.Add(new FluentValidationResolver());
+});
+
+// The resolver plugs into the async validation pipeline
+public class FluentValidationResolver : IValidatableInfoResolver
+{
+    public bool TryGetValidatableTypeInfo(Type type, out IValidatableInfo? info)
+    {
+        // Return a custom IValidatableInfo that calls FluentValidation's ValidateAsync
+        // ...
+    }
+}
+```
+
+### References
+- PRD review: @danroth27 — "the key thing we need to get right is the `IValidatableInfoResolver` extensibility point in `Microsoft.Extensions.Validation`"
+- `ValidationOptions.Resolvers` — existing chain-of-responsibility pattern
+
+---
+
+## 23. Broader Ecosystem Compatibility
+
+### Scenario
+
+Changes to `System.ComponentModel.DataAnnotations` types affect a broad ecosystem beyond FluentValidation. Libraries like CommunityToolkit.Mvvm (`ObservableValidator`), EF Core (uses DataAnnotations for model configuration), and MiniValidation all depend on `ValidationAttribute` and `IValidatableObject`.
+
+### User needs
+
+- Adding `IsValidAsync` to `ValidationAttribute` must not break any existing subclass
+- The default `IsValidAsync` implementation must call sync `IsValid()` so all existing attributes work in async pipelines without modification
+- Adding a new `IAsyncValidatableObject` interface must not conflict with MiniValidation's existing interface of the same name (namespace separation)
+- `ObservableValidator` in CommunityToolkit.Mvvm (implements `INotifyDataErrorInfo`) should continue to work
+
+### References
+- PRD §5.3: Ecosystem compatibility analysis
+- PRD Q9: "How should we handle coexistence with MiniValidation's `IAsyncValidatableObject`?"
+- CommunityToolkit.Mvvm `ObservableValidator`: uses DataAnnotations + `INotifyDataErrorInfo`
+
+---
+
+## 24. Security Considerations
 
 ### Scenario
 
@@ -933,5 +1142,12 @@ This is not a framework implementation concern per se, but should be addressed i
 | 13 | Submit button / form interaction | **Should have** | Disable during validation |
 | 14 | Custom async validator components | **Must have** | Primary extensibility model |
 | 15 | Sync-first, then async optimization | **Should have** | Avoids wasted async calls |
-| 16 | Debouncing | **Nice to have** | May be better left to ecosystem |
-| 17 | Security considerations | **Documentation** | Not a code change |
+| 16 | Debouncing | **Should have** | @oroztocil strongly advocates built-in support |
+| 17 | Sync `Validate()` behavior with async validators | **Must have** | Must throw, not silently skip — matches MiniValidation/FluentValidation |
+| 18 | DI services in async validators | **Must have** | Every real-world async validator needs DI |
+| 19 | AOT / trimming compatibility | **Should have** | Source generator must handle async attributes |
+| 20 | Zero perf overhead for sync-only | **Must have** | No regressions for existing apps |
+| 21 | Parallel vs sequential async execution | **Should have** | Clear execution model needed |
+| 22 | `IValidatableInfoResolver` extensibility | **Should have** | Seam for third-party library integration |
+| 23 | Broader ecosystem compatibility | **Must have** | CommunityToolkit.Mvvm, EF Core, MiniValidation |
+| 24 | Security considerations | **Documentation** | Enumeration risk guidance |
