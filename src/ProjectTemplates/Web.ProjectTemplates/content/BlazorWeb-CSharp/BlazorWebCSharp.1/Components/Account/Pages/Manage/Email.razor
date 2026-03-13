@@ -64,6 +64,9 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
+    [CascadingParameter]
+    private ITempData TempData { get; set; } = default!;
+
     [SupplyParameterFromForm(FormName = "change-email")]
     private InputModel Input { get; set; } = default!;
 
@@ -74,7 +77,7 @@
         user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext.User, TempData);
             return;
         }
 
@@ -94,7 +97,7 @@
 
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext.User, TempData);
             return;
         }
 
@@ -119,7 +122,7 @@
 
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext.User, TempData);
             return;
         }
 
