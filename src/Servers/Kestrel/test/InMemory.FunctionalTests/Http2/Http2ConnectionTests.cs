@@ -2271,6 +2271,7 @@ public class Http2ConnectionTests : Http2TestBase
         // (via HEADERS + CONTINUATION) results in a stream reset, not a connection error.
         // A second stream on the same connection should complete successfully.
         var stream1RequestReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var stream3RequestReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         await InitializeConnectionAsync(async context =>
         {
@@ -2288,6 +2289,10 @@ public class Http2ConnectionTests : Http2TestBase
                 {
                     // Expected when the stream is reset
                 }
+            }
+            else if (context.Features.Get<IHttp2StreamIdFeature>().StreamId == 3)
+            {
+                stream3RequestReceived.SetResult();
             }
         });
 
@@ -2319,6 +2324,7 @@ public class Http2ConnectionTests : Http2TestBase
 
         // Stream 3: Verify the connection is still alive by opening a new stream
         await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+        await stream3RequestReceived.Task.DefaultTimeout();
 
         await ExpectAsync(Http2FrameType.HEADERS,
             withLength: 36,
