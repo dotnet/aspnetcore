@@ -7,6 +7,7 @@ export const Virtualize = {
   init,
   dispose,
   scrollToBottom,
+  measureRenderedItems,
 };
 
 const dispatcherObserversByDotNetIdPropname = Symbol();
@@ -57,7 +58,7 @@ function measureRenderedItems(spacerBefore: HTMLElement, spacerAfter: HTMLElemen
   const heights = Array.from(
     items,
     item => item.getBoundingClientRect().height / scaleFactor,
-  );
+  ).filter(h => Number.isFinite(h) && h > 0);
   return { heights, scaleFactor };
 }
 
