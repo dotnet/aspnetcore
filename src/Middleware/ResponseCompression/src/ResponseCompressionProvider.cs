@@ -37,10 +37,11 @@ public class ResponseCompressionProvider : IResponseCompressionProvider
         _providers = responseCompressionOptions.Providers.ToArray();
         if (_providers.Length == 0)
         {
-            // Use the factory so the default compression providers and their options can be resolved from DI.
+            // Use the factory so it can resolve IOptions<BrotliCompressionProviderOptions> and IOptions<GzipCompressionProviderOptions> from DI.
+            // Zstandard is not included in the defaults because it requires an opt-in to avoid
+            // unexpected behavior changes for applications that already rely on the default encoding order.
             _providers = new ICompressionProvider[]
             {
-                new CompressionProviderFactory(typeof(ZstandardCompressionProvider)),
                 new CompressionProviderFactory(typeof(BrotliCompressionProvider)),
                 new CompressionProviderFactory(typeof(GzipCompressionProvider)),
             };
