@@ -795,7 +795,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             throw CreateStreamIdZeroException();
         }
 
-        if (_incomingFrame.HeadersHasPadding && _incomingFrame.HeadersPadLength >= _incomingFrame.PayloadLength - 1)
+        if (_incomingFrame.HeadersHasPadding && _incomingFrame.HeadersPayloadLength <= 0)
         {
             throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorPaddingTooLong(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR, ConnectionEndReason.InvalidDataPadding);
         }
