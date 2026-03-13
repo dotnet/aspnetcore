@@ -49,6 +49,8 @@ internal sealed class OpenApiDocumentService(
     /// </summary>
     private readonly ConcurrentDictionary<string, OpenApiOperationTransformerContext> _operationTransformerContextCache = new();
     private static readonly ApiResponseType _defaultApiResponseType = new() { StatusCode = StatusCodes.Status200OK };
+    private static readonly IComparer<OpenApiTag> _openApiTagComparer = Comparer<OpenApiTag>.Create(
+        static (left, right) => StringComparer.Ordinal.Compare(left.Name, right.Name));
 
     private static readonly FrozenSet<string> _disallowedHeaderParameters = new[] { HeaderNames.Accept, HeaderNames.Authorization, HeaderNames.ContentType }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
@@ -358,7 +360,12 @@ internal sealed class OpenApiDocumentService(
             HashSet<OpenApiTagReference> tags = [];
             foreach (var tag in tagsMetadata.Tags)
             {
-                document.Tags ??= new HashSet<OpenApiTag>();
+                document.Tags = document.Tags switch
+                {
+                    null => new SortedSet<OpenApiTag>(_openApiTagComparer),
+                    SortedSet<OpenApiTag> sortedTags => sortedTags,
+                    _ => new SortedSet<OpenApiTag>(document.Tags, _openApiTagComparer)
+                };
                 document.Tags.Add(new OpenApiTag { Name = tag });
                 tags.Add(new OpenApiTagReference(tag, document));
 
@@ -368,7 +375,12 @@ internal sealed class OpenApiDocumentService(
         // If no tags are specified, use the controller name as the tag. This effectively
         // allows us to group endpoints by the "resource" concept (e.g. users, todos, etc.)
         var controllerName = description.ActionDescriptor.RouteValues["controller"];
-        document.Tags ??= new HashSet<OpenApiTag>();
+        document.Tags = document.Tags switch
+        {
+            null => new SortedSet<OpenApiTag>(_openApiTagComparer),
+            SortedSet<OpenApiTag> sortedTags => sortedTags,
+            _ => new SortedSet<OpenApiTag>(document.Tags, _openApiTagComparer)
+        };
         document.Tags.Add(new OpenApiTag { Name = controllerName });
         return controllerName is not null ? [new(controllerName, document)] : [];
     }

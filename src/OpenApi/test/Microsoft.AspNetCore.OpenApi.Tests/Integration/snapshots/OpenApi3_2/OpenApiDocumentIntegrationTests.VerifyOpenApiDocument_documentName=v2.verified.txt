@@ -60,10 +60,10 @@
   },
   "tags": [
     {
-      "name": "users"
+      "name": "Sample"
     },
     {
-      "name": "Sample"
+      "name": "users"
     }
   ]
 }
