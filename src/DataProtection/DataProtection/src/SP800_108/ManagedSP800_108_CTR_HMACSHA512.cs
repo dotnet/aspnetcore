@@ -83,7 +83,7 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
 #if NET10_0_OR_GREATER
             HMACSHA512.HashSizeInBytes;
 #else
-            prf.GetDigestSizeInBytes();
+            prf!.GetDigestSizeInBytes();
 #endif
 
 #if NET10_0_OR_GREATER
@@ -140,7 +140,7 @@ internal static class ManagedSP800_108_CTR_HMACSHA512
                     Debug.Assert(bytesWritten == prfOutputSizeInBytes);
                 }
 #else
-                var prfOutputArray = prf.ComputeHash(prfInputArray);
+                var prfOutputArray = prf!.ComputeHash(prfInputArray);
                 var prfOutput = prfOutputArray.AsSpan();
 #endif
                 CryptoUtil.Assert(prfOutputSizeInBytes == prfOutput.Length, "prfOutputSizeInBytes == prfOutput.Length");
