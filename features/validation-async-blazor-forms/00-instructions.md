@@ -35,6 +35,17 @@ Compile your findings into a structured markdown document `01-research.md`.
 
 Based on this research, lets create a specification listing goals for the solution. Try to not tie the goals to a specific deisgn (we will create that later) but focus on scenarios and user needs. Include code examples of use. List anything that could make sense - we will review and trim the list later. Write the output into 02-spec-draft.md
 
+### Spec triage
+
+Lets go through each goal item in the spec draft one by one. We will incrementally create a new document 03-spec-draft-v2.md For each item:
+
+- Show me the full text of the item
+- Give me options to choose from:
+    1. Keep as-is => if selected, output this goal to the next version as-is,
+    2. Remove => if selected, do not output this goal and also remove any references to it from the rest of the doc,
+    3. Review => if selected, ask me for additional instructions on what to change, after you make the changes, give me the same dialog with options for the updated goal item,
+    4. Postpone => if selected, move this item to the end of the queue of remaining items, we will decide for it later.
+
 ## Design
 
 
