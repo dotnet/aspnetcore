@@ -2475,7 +2475,7 @@ public class ControllerBaseTest
         var problemDetails = Assert.IsType<ProblemDetails>(badRequestResult.Value);
         Assert.Equal(500, actionResult.StatusCode);
         Assert.Equal(500, problemDetails.Status);
-        Assert.Equal("An error occurred while processing your request.", problemDetails.Title);
+        Assert.Equal("Internal Server Error", problemDetails.Title);
         Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", problemDetails.Type);
         Assert.Equal("some-trace", problemDetails.Extensions["traceId"]);
     }
@@ -2568,7 +2568,7 @@ public class ControllerBaseTest
                     },
                     [500] = new ClientErrorData
                     {
-                        Title = "An error occurred while processing your request.",
+                        Title = "Internal Server Error",
                         Link = "https://tools.ietf.org/html/rfc9110#section-15.6.1"
                     }
                 }
