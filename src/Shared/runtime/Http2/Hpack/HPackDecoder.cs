@@ -611,11 +611,19 @@ namespace System.Net.Http.HPack
                 if (_state == State.HeaderName)
                 {
                     _headerNameLength = Decode(ref _headerNameOctets);
+                    if (_headerNameLength > _maxHeadersLength)
+                    {
+                        throw new HPackDecodingException(SR.Format(SR.net_http_headers_exceeded_length, _maxHeadersLength));
+                    }
                     _headerName = _headerNameOctets;
                 }
                 else
                 {
                     _headerValueLength = Decode(ref _headerValueOctets);
+                    if (_headerValueLength > _maxHeadersLength)
+                    {
+                        throw new HPackDecodingException(SR.Format(SR.net_http_headers_exceeded_length, _maxHeadersLength));
+                    }
                 }
             }
             catch (HuffmanDecodingException ex)
