@@ -4,6 +4,26 @@ let resourceRequests = [];
 // we are using the resource list in BootResourceCachingTest and when it's too full it stops reporting correctly
 window.performance.setResourceTimingBufferSize(1000);
 
+// Helper function to register contentblur custom event for contenteditable elements.
+// Note: The standard 'input' event works for oninput on contenteditable elements.
+// However, 'change' events don't fire on blur for contenteditable, so we need
+// a custom event mapped to 'blur' to handle that scenario.
+function registerContentBlurEvent(blazorInstance) {
+    blazorInstance.registerCustomEventType('contentblur', {
+        browserEventName: 'blur',
+        createEventArgs: event => {
+            const element = event.target;
+            if (element instanceof HTMLElement && element.isContentEditable) {
+                return {
+                    textContent: element.textContent || '',
+                    innerHTML: element.innerHTML || ''
+                };
+            }
+            return { textContent: '', innerHTML: '' };
+        }
+    });
+}
+
 export async function beforeStart(options) {
     const url = new URL(document.URL);
     runInitializer = url.hash.indexOf('initializer') !== -1;
@@ -24,6 +44,12 @@ export async function beforeStart(options) {
 }
 
 export async function afterStarted() {
+    // Register custom contentblur event for contenteditable elements using global Blazor object.
+    // Standard 'change' events don't fire on blur for contenteditable, so we need this custom event.
+    if (typeof Blazor !== 'undefined' && Blazor.registerCustomEventType) {
+        registerContentBlurEvent(Blazor);
+    }
+
     if (runInitializer) {
         const end = document.createElement('p');
         end.setAttribute('id', 'initializer-end');
