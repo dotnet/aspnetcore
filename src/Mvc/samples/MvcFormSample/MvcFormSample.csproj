@@ -58,14 +58,11 @@
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <_ValidationJsSource Condition="'$(Configuration)' == 'Debug'">$(RepoRoot)src\Components\Web.JS\dist\Debug\aspnet-validation.js</_ValidationJsSource>
-    <_ValidationJsSource Condition="'$(Configuration)' != 'Debug'">$(RepoRoot)src\Components\Web.JS\dist\Release\aspnet-validation.js</_ValidationJsSource>
-  </PropertyGroup>
-
-  <Target Name="CopyValidationScript" BeforeTargets="Build" Condition="Exists('$(_ValidationJsSource)')">
+  <!-- aspnet-validation.js is always built to dist/Release by rollup (regardless of configuration) -->
+  <Target Name="CopyValidationScript" BeforeTargets="Build"
+          Condition="Exists('$(RepoRoot)src\Components\Web.JS\dist\Release\aspnet-validation.js')">
     <Copy
-      SourceFiles="$(_ValidationJsSource)"
+      SourceFiles="$(RepoRoot)src\Components\Web.JS\dist\Release\aspnet-validation.js"
       DestinationFolder="$(ProjectDir)wwwroot\js\"
       SkipUnchangedFiles="true" />
   </Target>
