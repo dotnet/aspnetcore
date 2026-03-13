@@ -69,9 +69,11 @@
     <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 
-  <Target Name="CopyValidationScript" BeforeTargets="Build">
+  <!-- aspnet-validation.js is always built to dist/Release by rollup (regardless of configuration) -->
+  <Target Name="CopyValidationScript" BeforeTargets="Build"
+          Condition="Exists('$(RepoRoot)src\Components\Web.JS\dist\Release\aspnet-validation.js')">
     <Copy
-      SourceFiles="$(BlazorFrameworkStaticWebAssetRoot)\aspnet-validation.js"
+      SourceFiles="$(RepoRoot)src\Components\Web.JS\dist\Release\aspnet-validation.js"
       DestinationFolder="$(ProjectDir)wwwroot\js\"
       SkipUnchangedFiles="true" />
   </Target>
