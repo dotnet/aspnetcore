@@ -287,7 +287,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     // because each conceptual item could be made from multiple elements. Using getBoundingClientRect allows for the size to be
     // a fractional value. It's important not to add or subtract any such fractional values (e.g., to subtract the 'top' of
     // one item from the 'bottom' of another to get the distance between them) because floating point errors would cause
-    // scrolling glitches.
+    // scrolling glitches. Note: spacerSize below does require subtracting fractional rect values,
+    // but OverscanCount absorbs any small rounding error.
     rangeBetweenSpacers.setStartAfter(spacerBefore);
     rangeBetweenSpacers.setEndBefore(spacerAfter);
     const spacerSeparation = rangeBetweenSpacers.getBoundingClientRect().height / scaleFactor;
