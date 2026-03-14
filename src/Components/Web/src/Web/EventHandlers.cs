@@ -122,8 +122,8 @@ namespace Microsoft.AspNetCore.Components.Web;
 [EventHandler("onreadystatechange", typeof(EventArgs), true, true)]
 [EventHandler("onscroll", typeof(EventArgs), true, true)]
 
-// <details>
-[EventHandler("ontoggle", typeof(EventArgs), true, true)]
+// <details> and elements with popover attribute
+[EventHandler("ontoggle", typeof(ChangeEventArgs), true, true)]
 
 // <dialog>
 [EventHandler("oncancel", typeof(EventArgs), false, true)]
