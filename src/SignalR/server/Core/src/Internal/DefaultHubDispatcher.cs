@@ -118,10 +118,36 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 
     public override async Task OnDisconnectedAsync(HubConnectionContext connection, Exception? exception)
     {
-        await using var scope = _serviceScopeFactory.CreateAsyncScope();
+        AsyncServiceScope scope;
+        try
+        {
+            scope = _serviceScopeFactory.CreateAsyncScope();
+        }
+        catch (ObjectDisposedException)
+        {
+            // The service provider was disposed during shutdown. We can't resolve the hub
+            // or run OnDisconnectedAsync, so just no-op.
+            Log.ServiceProviderDisposedWhileDisconnecting(_logger);
+            return;
+        }
 
-        var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
-        var hub = hubActivator.Create();
+        await using var _ = scope;
+
+        IHubActivator<THub> hubActivator;
+        THub hub;
+        try
+        {
+            hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
+            hub = hubActivator.Create();
+        }
+        catch (ObjectDisposedException)
+        {
+            // The service provider can be disposed between CreateAsyncScope() and service
+            // resolution during shutdown.
+            Log.ServiceProviderDisposedWhileDisconnecting(_logger);
+            return;
+        }
+
         Activity? activity = null;
         try
         {
