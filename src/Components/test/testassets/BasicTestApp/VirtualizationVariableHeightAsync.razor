@@ -1,0 +1,200 @@
+<p>
+    Variable Height Items with Async ItemsProvider:<br />
+    <label><input id="toggle-autoload" type="checkbox" checked="@autoLoad" @onchange="ToggleAutoLoad" /> Auto-load items</label>
+    <button id="finish-loading" @onclick="FinishLoading" disabled="@autoLoad">Finish loading</button>
+    <button id="refresh-data" @onclick="() => virtualizeRef.RefreshDataAsync()">Refresh data</button>
+    <button id="add-item-start" @onclick="AddItemAtStart">Add at start</button>
+    <button id="remove-item-middle" @onclick="RemoveItemFromMiddle">Remove from middle</button>
+    <button id="set-count-0" @onclick="() => SetItemCount(0)">Set 0 items</button>
+    <button id="set-count-1" @onclick="() => SetItemCount(1)">Set 1 item</button>
+    <button id="set-count-5" @onclick="() => SetItemCount(5)">Set 5 items</button>
+    <button id="set-count-200" @onclick="() => SetItemCount(200)">Set 200 items</button>
+    <button id="toggle-rtl" @onclick="ToggleRtl">Toggle RTL</button>
+    <button id="scale-200" @onclick="() => SetTransformScale(2.0)">Transform Scale 200%</button>
+    <button id="scale-150" @onclick="() => SetTransformScale(1.5)">Transform Scale 150%</button>
+    <button id="scale-100" @onclick="() => SetTransformScale(1.0)">Transform Scale 100%</button>
+    <button id="scale-75" @onclick="() => SetTransformScale(0.75)">Transform Scale 75%</button>
+    <button id="scale-50" @onclick="() => SetTransformScale(0.5)">Transform Scale 50%</button>
+    <button id="zoom-200" @onclick="() => SetCssZoom(2.0)">CSS Zoom 200%</button>
+    <button id="zoom-150" @onclick="() => SetCssZoom(1.5)">CSS Zoom 150%</button>
+    <button id="zoom-100" @onclick="() => SetCssZoom(1.0)">CSS Zoom 100%</button>
+    <button id="zoom-75" @onclick="() => SetCssZoom(0.75)">CSS Zoom 75%</button>
+    <button id="zoom-50" @onclick="() => SetCssZoom(0.5)">CSS Zoom 50%</button>
+    <button id="cssscale-200" @onclick="() => SetCssScale(2.0)">CSS Scale 200%</button>
+    <button id="cssscale-150" @onclick="() => SetCssScale(1.5)">CSS Scale 150%</button>
+    <button id="cssscale-100" @onclick="() => SetCssScale(1.0)">CSS Scale 100%</button>
+    <button id="cssscale-75" @onclick="() => SetCssScale(0.75)">CSS Scale 75%</button>
+    <button id="cssscale-50" @onclick="() => SetCssScale(0.5)">CSS Scale 50%</button>
+    <span id="direction-status">Direction: @(isRtl ? "RTL" : "LTR")</span>
+    <span id="zoom-status">Transform Scale: @(transformScaleLevel * 100)%, CSS Zoom: @(cssZoomLevel * 100)%, CSS Scale: @(cssScaleLevel * 100)%</span>
+    <span id="load-count">Loads: @loadCount</span>
+    <span id="cancellation-count">Cancellations: @cancellationCount</span>
+    <span id="total-item-count">Total: @totalItemCount</span>
+    <div id="async-variable-container" style="background-color: #eee; height: 200px; overflow-y: auto; direction: @(isRtl ? "rtl" : "ltr"); transform: scale(@transformScaleLevel.ToString(System.Globalization.CultureInfo.InvariantCulture)); transform-origin: top left; zoom: @cssZoomLevel.ToString(System.Globalization.CultureInfo.InvariantCulture); scale: @cssScaleLevel.ToString(System.Globalization.CultureInfo.InvariantCulture);">
+        <Virtualize @ref="virtualizeRef" ItemsProvider="GetItemsAsync" ItemSize="35">
+            <ItemContent>
+                <div @key="context.Id" id="async-variable-item-@context.Index" class="async-variable-item" 
+                     style="height: @(context.Height)px; background-color: hsl(@(context.Hue), 70%, 80%); padding: 4px; box-sizing: border-box;">
+                    <span class="item-index">@context.Index</span> - Height: @context.Height px
+                </div>
+            </ItemContent>
+            <Placeholder>
+                <div id="async-variable-placeholder-@context.Index" class="async-variable-placeholder" 
+                     style="height: @(context.Size)px; background-color: #ccc; padding: 4px; box-sizing: border-box;">
+                    Loading @context.Index...
+                </div>
+            </Placeholder>
+            <EmptyContent>
+                <p id="no-data">No data to show</p>
+            </EmptyContent>
+        </Virtualize>
+    </div>
+</p>
+
+@code {
+    Virtualize<VariableHeightItem> virtualizeRef;
+    TaskCompletionSource loadingTcs = new TaskCompletionSource();
+    int totalItemCount = 1000;
+    int loadCount = 0;
+    int cancellationCount = 0;
+    bool autoLoad = false;
+    bool isRtl = false;
+    double transformScaleLevel = 1.0;
+    double cssZoomLevel = 1.0;
+    double cssScaleLevel = 1.0;
+
+    // Pre-generate all items for consistency
+    List<VariableHeightItem> allItems;
+    int nextId = 0;
+
+    void ToggleAutoLoad(ChangeEventArgs e)
+    {
+        autoLoad = (bool)e.Value;
+    }
+
+    void ToggleRtl()
+    {
+        isRtl = !isRtl;
+    }
+
+    void SetTransformScale(double scale)
+    {
+        transformScaleLevel = scale;
+    }
+
+    void SetCssZoom(double zoom)
+    {
+        cssZoomLevel = zoom;
+    }
+
+    void SetCssScale(double scale)
+    {
+        cssScaleLevel = scale;
+    }
+
+    protected override void OnInitialized()
+    {
+        // Generate totalItemCount items (default 100) with deterministic variable heights (25-55px range)
+        allItems = Enumerable.Range(0, totalItemCount).Select(i => new VariableHeightItem
+        {
+            Id = nextId++,
+            Index = i,
+            Height = 25 + (i * 11 % 31), // Heights vary from 25-55px
+            Hue = i * 12 % 360
+        }).ToList();
+    }
+
+    async ValueTask<ItemsProviderResult<VariableHeightItem>> GetItemsAsync(ItemsProviderRequest request)
+    {
+        if (!autoLoad)
+        {
+            var registration = request.CancellationToken.Register(() =>
+            {
+                loadingTcs.TrySetCanceled(request.CancellationToken);
+                loadingTcs = new TaskCompletionSource();
+                cancellationCount++;
+                InvokeAsync(StateHasChanged);
+            });
+
+            try
+            {
+                await loadingTcs.Task;
+            }
+            catch (OperationCanceledException)
+            {
+                registration.Dispose();
+                throw;
+            }
+
+            registration.Dispose();
+        }
+
+        loadCount++;
+
+        var items = allItems
+            .Skip(request.StartIndex)
+            .Take(request.Count)
+            .ToList();
+
+        return new ItemsProviderResult<VariableHeightItem>(items, totalItemCount);
+    }
+
+    void FinishLoading()
+    {
+        loadingTcs.TrySetResult();
+        loadingTcs = new TaskCompletionSource();
+    }
+
+    void RecalculateIndices()
+    {
+        for (int i = 0; i < allItems.Count; i++)
+        {
+            allItems[i].Index = i;
+        }
+    }
+
+    void AddItemAtStart()
+    {
+        var newItem = new VariableHeightItem
+        {
+            Id = nextId++,
+            Index = -1,
+            Height = 100,
+            Hue = 0
+        };
+        allItems.Insert(0, newItem);
+        totalItemCount++;
+        RecalculateIndices();
+    }
+
+    void RemoveItemFromMiddle()
+    {
+        if (totalItemCount > 2)
+        {
+            allItems.RemoveAt(totalItemCount / 2);
+            totalItemCount--;
+            RecalculateIndices();
+        }
+    }
+
+    void SetItemCount(int count)
+    {
+        // Generate new items with variable heights for small count scenarios
+        allItems = Enumerable.Range(0, count).Select(i => new VariableHeightItem
+        {
+            Id = nextId++,
+            Index = i,
+            Height = 30 + (i * 17 % 41), // Heights vary from 30-70px
+            Hue = i * 72 % 360
+        }).ToList();
+        totalItemCount = count;
+    }
+
+    class VariableHeightItem
+    {
+        public int Id { get; set; }
+        public int Index { get; set; }
+        public int Height { get; set; }
+        public int Hue { get; set; }
+    }
+}
