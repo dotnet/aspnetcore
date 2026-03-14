@@ -239,7 +239,7 @@ public static class RouteHandlerExtensionMethods
     /// <param name="bindingParams">Parameters from different sources.</param>
     public static IResult Get20([AsParameters] BindingSourceParametersClass bindingParams)
     {
-        return TypedResults.Ok($"Query: {bindingParams.QueryParam}, Header: {bindingParams.HeaderParam}");
+        return TypedResults.Ok($"Query: {bindingParams.QueryParam}, Query with custom name: {bindingParams.QueryParamWithCustomName}, Header: {bindingParams.HeaderParam}");
     }
 
     /// <summary>
@@ -347,6 +347,12 @@ public class BindingSourceParametersClass
     /// </summary>
     [FromQuery]
     public string? QueryParam { get; set; }
+
+    /// <summary>
+    /// Query parameter from URL with custom name.
+    /// </summary>
+    [FromQuery(Name = "custom_name")]
+    public string? QueryParamWithCustomName { get; set; }
 
     /// <summary>
     /// Header value from request.
@@ -496,7 +502,10 @@ public class SummaryValueParametersClass
             var path20 = document.Paths["/20"].Operations[HttpMethod.Get];
             Assert.Equal("Tests AsParameters with different binding sources.", path20.Summary);
             Assert.Equal("Query parameter from URL.", path20.Parameters[0].Description);
-            Assert.Equal("Header value from request.", path20.Parameters[1].Description);
+            var customNameParam = path20.Parameters[1];
+            Assert.Equal("custom_name", customNameParam.Name);
+            Assert.Equal("Query parameter from URL with custom name.", customNameParam.Description);
+            Assert.Equal("Header value from request.", path20.Parameters[2].Description);
 
             // Test XML documentation priority order: value > returns > summary
             var path22 = document.Paths["/21"].Operations[HttpMethod.Get];
