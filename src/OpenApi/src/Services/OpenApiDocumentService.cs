@@ -302,8 +302,13 @@ internal sealed class OpenApiDocumentService(
                 continue;
             }
 
+            if (operations.TryGetValue(method, out var existingOperation))
+            {
+                operationDescriptions.Remove(existingOperation);
+            }
+
             operations[method] = operation;
-            operationDescriptions.Add(operation, description);
+            operationDescriptions[operation] = description;
 
             // Use index-based for loop to avoid allocating an enumerator with a foreach.
             for (var i = 0; i < operationTransformers.Length; i++)

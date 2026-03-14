@@ -28,7 +28,7 @@ public sealed class OpenApiDocumentTransformerContext
     public required IServiceProvider ApplicationServices { get; init; }
 
     /// <summary>
-    /// Map of <see cref="OpenApiOperation"/> instances to their associated <see cref="ApiDescription"/>.
+    /// Gets a map of <see cref="OpenApiOperation"/> instances to their associated <see cref="ApiDescription"/>.
     /// </summary>
     public required IReadOnlyDictionary<OpenApiOperation, ApiDescription> OperationDescriptions { get; init; }
 
