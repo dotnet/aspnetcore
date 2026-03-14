@@ -1,5 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using System.Globalization;
@@ -230,5 +231,54 @@ app.MapGet("/{value}", (string value, HttpContext httpContext) => value);
         await requestDelegate(httpContext);
 
         Assert.Equal(originalRouteParam, httpContext.Items["input"]);
+    }
+
+    [Fact]
+    public async Task FromRouteWithUrlDecodeTrueDecodesPercentEncodedValues()
+    {
+        var source = """app.MapGet("/{userId}", ([FromRoute(UrlDecode = true)] string userId) => userId);""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues["userId"] = "domain%2Fuser";
+        httpContext.Features.Set<IHttpRequestFeature>(new HttpRequestFeature { RawTarget = "/domain%2Fuser" });
+        httpContext.SetEndpoint(endpoint);
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, "domain/user");
+    }
+
+    [Fact]
+    public async Task FromRouteWithUrlDecodeDefaultPreservesEncodedValues()
+    {
+        var source = """app.MapGet("/{userId}", ([FromRoute] string userId) => userId);""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues["userId"] = "domain%2Fuser";
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, "domain%2Fuser");
+    }
+
+    [Fact]
+    public async Task FromRouteWithUrlDecodeDecodesMultipleEncodedCharacters()
+    {
+        var source = """app.MapGet("/{value}", ([FromRoute(UrlDecode = true)] string value) => value);""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues["value"] = "a%2Fb%2Bc%20d";
+        httpContext.Features.Set<IHttpRequestFeature>(new HttpRequestFeature { RawTarget = "/a%2Fb%2Bc%20d" });
+        httpContext.SetEndpoint(endpoint);
+
+        await endpoint.RequestDelegate(httpContext);
+
+        await VerifyResponseBodyAsync(httpContext, "a/b+c d");
     }
 }

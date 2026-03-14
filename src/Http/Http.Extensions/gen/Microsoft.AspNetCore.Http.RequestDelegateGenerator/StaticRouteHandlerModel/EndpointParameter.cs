@@ -73,6 +73,7 @@ internal class EndpointParameter
             LookupName = GetEscapedParameterName(fromRouteAttribute, symbol.Name);
             IsParsable = TryGetParsability(Type, wellKnownTypes, out var preferredTryParseInvocation);
             PreferredTryParseInvocation = preferredTryParseInvocation;
+            UrlDecode = fromRouteAttribute.TryGetNamedArgumentValue<bool>("UrlDecode", out var urlDecode) && urlDecode;
         }
         else if (attributes.TryGetAttributeImplementingInterface(wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromQueryMetadata), out var fromQueryAttribute))
         {
@@ -297,6 +298,7 @@ internal class EndpointParameter
     public bool IsParsable { get; set; }
     public Func<string, string, string>? PreferredTryParseInvocation { get; set; }
     public bool IsStringValues { get; set; }
+    public bool UrlDecode { get; set; }
 
     public BindabilityMethod? BindMethod { get; set; }
     public IMethodSymbol? BindableMethodSymbol { get; set; }
@@ -599,7 +601,8 @@ internal class EndpointParameter
         other.Ordinal == Ordinal &&
         other.IsOptional == IsOptional &&
         SymbolEqualityComparer.IncludeNullability.Equals(other.Type, Type) &&
-        other.KeyedServiceKey == KeyedServiceKey;
+        other.KeyedServiceKey == KeyedServiceKey &&
+        other.UrlDecode == UrlDecode;
 
     public bool SignatureEquals(object obj) =>
         obj is EndpointParameter other &&
