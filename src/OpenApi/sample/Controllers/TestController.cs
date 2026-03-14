@@ -54,6 +54,20 @@ public class TestController : ControllerBase
     public ActionResult<CurrentWeather> UnsupportedHttpMethod()
         => Ok(new CurrentWeather(100));
 
+    [HttpGet]
+    [Route("/multi-content-type")]
+    [ProducesResponseType(typeof(MvcTodo), StatusCodes.Status200OK, "application/json")]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK, "text/plain")]
+    public IActionResult GetMultiContentType()
+        => Ok(new MvcTodo("Title", "Description", true));
+
+    [HttpGet]
+    [Route("/one-of")]
+    [ProducesResponseType(typeof(MvcTodo), StatusCodes.Status200OK, "application/json")]
+    [ProducesResponseType(typeof(CurrentWeather), StatusCodes.Status200OK, "application/json")]
+    public IActionResult GetOneOf()
+        => Ok(new MvcTodo("Title", "Description", true));
+
     public class HttpQuery() : HttpMethodAttribute(["QUERY"]);
 
     public class HttpFoo() : HttpMethodAttribute(["FOO"]);
