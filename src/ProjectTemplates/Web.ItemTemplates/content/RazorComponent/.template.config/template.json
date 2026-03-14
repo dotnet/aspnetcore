@@ -20,10 +20,38 @@
   "primaryOutputs": [
     {
       "path": "Component1.razor"
+    },
+    {
+      "path": "Component1.razor.cs",
+      "condition": "(use-code-behind)"
     }
   ],
   "defaultName": "Component1",
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "condition": "(!use-code-behind)",
+          "exclude": [
+            "Component1.razor.cs"
+          ]
+        }
+      ]
+    }
+  ],
   "symbols": {
+    "namespace": {
+      "description": "namespace for the generated code",
+      "replaces": "MyApp.Namespace",
+      "type": "parameter"
+    },
+    "use-code-behind": {
+      "description": "create component with a code-behind file",
+      "displayName": "Use Code Behind",
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false"
+    },
     "HostIdentifier": {
       "type": "bind",
       "binding": "HostIdentifier"
