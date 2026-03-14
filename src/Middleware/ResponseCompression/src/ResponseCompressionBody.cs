@@ -26,14 +26,16 @@ internal sealed class ResponseCompressionBody : Stream, IHttpResponseBodyFeature
     private bool _providerCreated;
     private bool _autoFlush;
     private bool _complete;
+    private readonly bool _allowCompression;
 
     internal ResponseCompressionBody(HttpContext context, IResponseCompressionProvider provider,
-        IHttpResponseBodyFeature innerBodyFeature)
+        IHttpResponseBodyFeature innerBodyFeature, bool allowCompression)
     {
         _context = context;
         _provider = provider;
         _innerBodyFeature = innerBodyFeature;
         _innerStream = innerBodyFeature.Stream;
+        _allowCompression = allowCompression;
     }
 
     internal async Task FinishCompressionAsync()
@@ -224,17 +226,22 @@ internal sealed class ResponseCompressionBody : Stream, IHttpResponseBodyFeature
                 headers.Vary = StringValues.Concat(headers.Vary, HeaderNames.AcceptEncoding);
             }
 
-            var compressionProvider = ResolveCompressionProvider();
-            if (compressionProvider != null)
+            // Only attempt compression when the request includes Accept-Encoding.
+            // The Vary header is always added above for correct caching behavior.
+            if (_allowCompression)
             {
-                // Can't use += as StringValues does not override operator+
-                // and the implict conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
-                headers.ContentEncoding = StringValues.Concat(headers.ContentEncoding, compressionProvider.EncodingName);
-                headers.ContentMD5 = default; // Reset the MD5 because the content changed.
-                headers.ContentLength = default;
-            }
+                var compressionProvider = ResolveCompressionProvider();
+                if (compressionProvider != null)
+                {
+                    // Can't use += as StringValues does not override operator+
+                    // and the implict conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
+                    headers.ContentEncoding = StringValues.Concat(headers.ContentEncoding, compressionProvider.EncodingName);
+                    headers.ContentMD5 = default; // Reset the MD5 because the content changed.
+                    headers.ContentLength = default;
+                }
 
-            return compressionProvider;
+                return compressionProvider;
+            }
         }
 
         return null;

@@ -36,21 +36,17 @@ public class ResponseCompressionMiddleware
     /// <returns>A task that represents the execution of this middleware.</returns>
     public Task Invoke(HttpContext context)
     {
-        if (!_provider.CheckRequestAcceptsCompression(context))
-        {
-            return _next(context);
-        }
-        return InvokeCore(context);
+        return InvokeCore(context, _provider.CheckRequestAcceptsCompression(context));
     }
 
-    private async Task InvokeCore(HttpContext context)
+    private async Task InvokeCore(HttpContext context, bool allowCompression)
     {
         var originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>();
         var originalCompressionFeature = context.Features.Get<IHttpsCompressionFeature>();
 
         Debug.Assert(originalBodyFeature != null);
 
-        var compressionBody = new ResponseCompressionBody(context, _provider, originalBodyFeature);
+        var compressionBody = new ResponseCompressionBody(context, _provider, originalBodyFeature, allowCompression);
         context.Features.Set<IHttpResponseBodyFeature>(compressionBody);
         context.Features.Set<IHttpsCompressionFeature>(compressionBody);
 
