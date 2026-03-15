@@ -155,14 +155,17 @@ public class RemoteRendererTest
 
         firstBatchTCS.SetResult();
 
-        // The continuation of SetResult runs asynchronously on the renderer's
-        // dispatcher. Dispatch a no-op to ensure all prior work has completed
-        // before we trigger more renders.
-        await renderer.Dispatcher.InvokeAsync(() => { });
-
-        circuitClient.SetDisconnected();
-        component.TriggerRender();
-        component.TriggerRender();
+        // After SetResult, async continuations are queued on the renderer's
+        // dispatcher. Run the remaining setup on the dispatcher so that:
+        // 1) All prior queued work drains before our callback executes, and
+        // 2) TriggerRender runs with CheckAccess() == true, bypassing the
+        //    internal task queue and executing the render synchronously.
+        await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            circuitClient.SetDisconnected();
+            component.TriggerRender();
+            component.TriggerRender();
+        });
 
         // Act
         circuitClient.Transfer(client.Object, "new-connection");
