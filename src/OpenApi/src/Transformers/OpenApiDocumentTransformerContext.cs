@@ -22,24 +22,30 @@ public sealed class OpenApiDocumentTransformerContext
     public required string DocumentName { get; init; }
 
     /// <summary>
-    /// Gets the API description groups associated with the current document.
+    /// Gets the API description groups for the application.
     /// </summary>
     /// <remarks>
     /// Each <see cref="ApiDescriptionGroup"/> contains a collection of <see cref="ApiDescription"/>
-    /// items that describe the API endpoints in that group. These descriptions provide
-    /// metadata about each endpoint such as the HTTP method, relative path, supported request/response
-    /// formats, and parameters. This information can be used in document transformers to inspect or
-    /// modify the generated OpenAPI document based on the underlying endpoint metadata.
+    /// items that describe API endpoints. These descriptions provide metadata about each endpoint
+    /// such as the HTTP method, relative path, supported request/response formats, and parameters.
+    /// <para>
+    /// This property contains all API descriptions from the application, not only the endpoints
+    /// included in the current document. To determine which descriptions correspond to endpoints
+    /// in this document, use <see cref="OpenApiOptions.ShouldInclude"/> to filter the descriptions.
+    /// </para>
     /// </remarks>
     /// <example>
     /// <code>
-    /// // Iterate over all API descriptions across all groups
-    /// foreach (var group in context.DescriptionGroups)
+    /// // Filter to only the API descriptions included in this document
+    /// var options = context.ApplicationServices
+    ///     .GetRequiredService&lt;IOptionsMonitor&lt;OpenApiOptions&gt;&gt;()
+    ///     .Get(context.DocumentName);
+    /// var descriptions = context.DescriptionGroups
+    ///     .SelectMany(g =&gt; g.Items)
+    ///     .Where(options.ShouldInclude);
+    /// foreach (var description in descriptions)
     /// {
-    ///     foreach (var description in group.Items)
-    ///     {
-    ///         Console.WriteLine($"{description.HttpMethod} {description.RelativePath}");
-    ///     }
+    ///     Console.WriteLine($"{description.HttpMethod} {description.RelativePath}");
     /// }
     /// </code>
     /// </example>
