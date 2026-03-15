@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Endpoints;
@@ -9,7 +8,6 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -22,10 +20,6 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering;
 
 public class RemoteRendererTest
 {
-    // Nothing should exceed the timeout in a successful run of the the tests, this is just here to catch
-    // failures.
-    private static readonly TimeSpan Timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
-
     private const int MaxInteractiveServerRootComponentCount = 3;
 
     private readonly IDataProtectionProvider _ephemeralDataProtectionProvider = new EphemeralDataProtectionProvider();
@@ -127,11 +121,9 @@ public class RemoteRendererTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61807")]
     public async Task ProcessBufferedRenderBatches_WritesRenders()
     {
         // Arrange
-        var @event = new ManualResetEventSlim();
         var serviceProvider = CreateServiceProvider();
         var renderIds = new List<long>();
 
@@ -161,11 +153,12 @@ public class RemoteRendererTest
         component.TriggerRender();
         _ = renderer.OnRenderCompletedAsync(2, null);
 
-        @event.Reset();
         firstBatchTCS.SetResult();
 
-        // Waiting is required here because the continuations of SetResult will not execute synchronously.
-        @event.Wait(Timeout);
+        // The continuation of SetResult runs asynchronously on the renderer's
+        // dispatcher. Dispatch a no-op to ensure all prior work has completed
+        // before we trigger more renders.
+        await renderer.Dispatcher.InvokeAsync(() => { });
 
         circuitClient.SetDisconnected();
         component.TriggerRender();
