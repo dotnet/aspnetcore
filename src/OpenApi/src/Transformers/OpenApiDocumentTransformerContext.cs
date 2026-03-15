@@ -15,16 +15,49 @@ public sealed class OpenApiDocumentTransformerContext
     /// <summary>
     /// Gets the name of the associated OpenAPI document.
     /// </summary>
+    /// <remarks>
+    /// This corresponds to the document name provided when calling
+    /// <c>AddOpenApi</c> during service registration. The default document name is <c>"v1"</c>.
+    /// </remarks>
     public required string DocumentName { get; init; }
 
     /// <summary>
-    /// Gets the API description groups associated with current document.
+    /// Gets the API description groups associated with the current document.
     /// </summary>
+    /// <remarks>
+    /// Each <see cref="ApiDescriptionGroup"/> contains a collection of <see cref="ApiDescription"/>
+    /// items that describe the API endpoints in that group. These descriptions provide
+    /// metadata about each endpoint such as the HTTP method, relative path, supported request/response
+    /// formats, and parameters. This information can be used in document transformers to inspect or
+    /// modify the generated OpenAPI document based on the underlying endpoint metadata.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Iterate over all API descriptions across all groups
+    /// foreach (var group in context.DescriptionGroups)
+    /// {
+    ///     foreach (var description in group.Items)
+    ///     {
+    ///         Console.WriteLine($"{description.HttpMethod} {description.RelativePath}");
+    ///     }
+    /// }
+    /// </code>
+    /// </example>
     public required IReadOnlyList<ApiDescriptionGroup> DescriptionGroups { get; init; }
 
     /// <summary>
-    /// Gets the application services associated with current document.
+    /// Gets the application services associated with the current document.
     /// </summary>
+    /// <remarks>
+    /// This is a scoped <see cref="IServiceProvider"/> that can be used to resolve application
+    /// services within a document transformer. A new scope is created each time the OpenAPI
+    /// document is generated, so scoped services will be unique to each document generation request.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var myService = context.ApplicationServices.GetRequiredService&lt;MyService&gt;();
+    /// </code>
+    /// </example>
     public required IServiceProvider ApplicationServices { get; init; }
 
     internal IOpenApiSchemaTransformer[] SchemaTransformers { get; init; } = [];
@@ -34,11 +67,14 @@ public sealed class OpenApiDocumentTransformerContext
     internal OpenApiDocument? Document { get; init; }
 
     /// <summary>
-    /// Gets or creates an <see cref="OpenApiSchema"/> for the specified type. Augments
-    /// the schema with any <see cref="IOpenApiSchemaTransformer"/>s that are registered
-    /// on the document. If <paramref name="parameterDescription"/> is not null, the schema will be
-    /// augmented with the <see cref="ApiParameterDescription"/> information.
+    /// Gets or creates an <see cref="OpenApiSchema"/> for the specified type.
     /// </summary>
+    /// <remarks>
+    /// The returned schema is augmented with any <see cref="IOpenApiSchemaTransformer"/>s that are
+    /// registered on the document. If <paramref name="parameterDescription"/> is not null, the schema
+    /// will also be augmented with the <see cref="ApiParameterDescription"/> information, such as
+    /// default values and validation metadata.
+    /// </remarks>
     /// <param name="type">The type for which the schema is being created.</param>
     /// <param name="parameterDescription">An optional parameter description to augment the schema.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
