@@ -32,6 +32,7 @@ public static partial class H2SpecCommands
     {
         if (RuntimeInformation.OSArchitecture != Architecture.X64)
         {
+            // This is a known, unsupported scenario, no-op.
             return null;
         }
 
