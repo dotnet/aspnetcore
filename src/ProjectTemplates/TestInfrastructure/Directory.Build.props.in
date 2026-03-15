@@ -24,14 +24,4 @@
   <PropertyGroup>
     <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(ArtifactsShippingPackagesDir)</RestoreAdditionalProjectSources>
   </PropertyGroup>
-
-  <!--
-    Pin the DevServer package to the exact locally-built version so that stable versions from
-    darc feeds (which outrank prerelease in SemVer) don't cause NU1603 with TreatWarningsAsErrors.
-    See https://github.com/dotnet/aspnetcore/issues/65701
-  -->
-  <ItemGroup Condition="'${MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion}' != ''">
-    <PackageReference Update="Microsoft.AspNetCore.Components.WebAssembly.DevServer"
-                      Version="[${MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion}]" />
-  </ItemGroup>
 </Project>
