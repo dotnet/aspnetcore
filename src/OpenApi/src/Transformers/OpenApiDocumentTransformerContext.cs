@@ -49,9 +49,11 @@ public sealed class OpenApiDocumentTransformerContext
     /// Gets the application services associated with the current document.
     /// </summary>
     /// <remarks>
-    /// This is a scoped <see cref="IServiceProvider"/> that can be used to resolve application
-    /// services within a document transformer. A new scope is created each time the OpenAPI
-    /// document is generated, so scoped services will be unique to each document generation request.
+    /// This is the <see cref="IServiceProvider"/> used when generating the OpenAPI document and can
+    /// be used to resolve application services within a document transformer. It is typically a
+    /// scoped provider, such as <c>HttpContext.RequestServices</c> or a scope created specifically
+    /// for document generation, but the exact lifetime of resolved services depends on how the
+    /// OpenAPI document generation was invoked.
     /// </remarks>
     /// <example>
     /// <code>
