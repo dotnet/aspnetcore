@@ -18,7 +18,10 @@ public static partial class H2SpecCommands
 {
     private static void EnsureExecutable(string pathname)
     {
-        if (OperatingSystem.IsWindows()) return;
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
 
         // 0755: Owner (RWX), Group (RX), Other (RX)
         var mode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
