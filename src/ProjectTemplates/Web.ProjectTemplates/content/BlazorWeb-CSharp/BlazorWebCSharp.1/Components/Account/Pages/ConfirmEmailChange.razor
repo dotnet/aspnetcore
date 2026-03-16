@@ -37,7 +37,7 @@
     {
         if (UserId is null || Email is null || Code is null)
         {
-                RedirectManager.RedirectToWithStatus(
+            RedirectManager.RedirectToWithStatus(
                 "Account/Login", "Error: Invalid email change confirmation link.", TempData);
             return;
         }
@@ -45,7 +45,7 @@
         var user = await UserManager.FindByIdAsync(UserId);
         if (user is null)
         {
-            message = "Unable to find user with Id '{userId}'";
+            message = $"Unable to find user with Id '{UserId}'";
             return;
         }
 
