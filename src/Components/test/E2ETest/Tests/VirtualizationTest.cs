@@ -1825,4 +1825,18 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.True(() => GetElementCount(outerContainer, ".nested-vh-inner") > 0);
     }
+
+    [Fact]
+    public void VirtualizeWorksInsideHorizontalOverflowContainer()
+    {
+        Browser.MountTestComponent<VirtualizationHorizontalOverflow>();
+
+        Browser.True(() => Browser.FindElements(By.CssSelector("#horizontal-overflow-table tbody tr[id^='horizontal-overflow-row-']")).Count > 0);
+        Browser.DoesNotExist(By.Id("horizontal-overflow-row-999"));
+
+        Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
+
+        var lastElement = Browser.Exists(By.Id("horizontal-overflow-row-999"));
+        Browser.True(() => lastElement.Displayed);
+    }
 }
