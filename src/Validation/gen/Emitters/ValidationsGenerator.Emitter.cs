@@ -3,9 +3,9 @@
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using System.Text;
+using Microsoft.CodeAnalysis.CSharp;
 using System.IO;
 
 namespace Microsoft.Extensions.Validation;
@@ -294,7 +294,6 @@ namespace Microsoft.Extensions.Validation.Generated
         foreach (var validatableType in validatableTypes)
         {
             var typeName = validatableType.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-
             cw.WriteLine($"if (type == typeof({typeName}))");
             cw.StartBlock();
             cw.WriteLine($"validatableInfo = new GeneratedValidatableTypeInfo(");
