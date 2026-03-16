@@ -16,7 +16,7 @@ namespace Interop.FunctionalTests;
 
 public static partial class H2SpecCommands
 {
-    private const int TimeoutSeconds = 30;
+    private const int TimeoutSeconds = 15;
 
     private static string GetToolLocation()
     {
