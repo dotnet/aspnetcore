@@ -16,20 +16,7 @@ namespace Interop.FunctionalTests;
 
 public static partial class H2SpecCommands
 {
-    private static void EnsureExecutable(string pathname)
-    {
-        if (OperatingSystem.IsWindows())
-        {
-            return;
-        }
-
-        // 0755: Owner (RWX), Group (RX), Other (RX)
-        var mode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
-                   UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
-                   UnixFileMode.OtherRead | UnixFileMode.OtherExecute;
-
-        File.SetUnixFileMode(pathname, mode);
-    }
+    private const int TimeoutSeconds = 30;
 
     private static string GetToolLocation()
     {
@@ -44,7 +31,7 @@ public static partial class H2SpecCommands
 
         if (OperatingSystem.IsWindows())
         {
-            return Path.Combine(root, "windows", "h2spec.exe");
+            toolPath = Path.Combine(root, "windows", "h2spec.exe");
         }
         else if (OperatingSystem.IsLinux())
         {
@@ -59,13 +46,18 @@ public static partial class H2SpecCommands
             throw new NotImplementedException("Invalid OS");
         }
 
-        EnsureExecutable(toolPath);
+        if (!OperatingSystem.IsWindows())
+        {
+            // 0755: Owner (RWX), Group (RX), Other (RX)
+            File.SetUnixFileMode(toolPath, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+        }
+
         return toolPath;
     }
 
     public static IList<Tuple<string, string>> EnumerateTestCases()
     {
-        // The tool isn't supported on some platforms (arm64), so we can't even enumerate the tests.
         var toolLocation = GetToolLocation();
         if (toolLocation == null)
         {
@@ -73,6 +65,7 @@ public static partial class H2SpecCommands
         }
 
         var testCases = new List<Tuple<string, string>>();
+
         var processOptions = new ProcessStartInfo
         {
             FileName = toolLocation,
@@ -81,21 +74,11 @@ public static partial class H2SpecCommands
             WindowStyle = ProcessWindowStyle.Hidden,
             CreateNoWindow = true,
         };
+
         using (var process = Process.Start(processOptions))
         {
-            // https://github.com/summerwind/h2spec#running-a-specific-test-case
-            //Hypertext Transfer Protocol Version 2(HTTP / 2)
-            //  3.Starting HTTP / 2
-            //    3.5.HTTP / 2 Connection Preface
-            //      1: Sends client connection preface
-            //      2: Sends invalid connection preface
-            //Generic tests for HTTP / 2 server
-            //  1.Starting HTTP / 2
-            //    1: Sends a client connection preface
-
-            // Expected output: "http2/3.5/1", "Sends client connection preface"
-            var groupName = string.Empty; // http2, generic, or hpack
-            var sectionId = string.Empty; // 3 or 3.5
+            var groupName = string.Empty;
+            var sectionId = string.Empty;
 
             var line = string.Empty;
             while (line != null)
@@ -128,6 +111,7 @@ public static partial class H2SpecCommands
                 throw new InvalidOperationException("Unrecognized line: " + line);
             }
         }
+
         return testCases;
     }
 
@@ -144,34 +128,36 @@ public static partial class H2SpecCommands
             groupName = "http2";
             return true;
         }
+
         if (line.StartsWith("Generic", StringComparison.Ordinal))
         {
             groupName = "generic";
             return true;
         }
+
         if (line.StartsWith("HPACK", StringComparison.Ordinal))
         {
             groupName = "hpack";
             return true;
         }
+
         throw new InvalidOperationException("Unrecognized line: " + line);
     }
 
-    // "8.1.2.1. Pseudo-Header Fields"
     private static bool IsSectionLine(string line, out string section)
     {
         line = line.TrimStart();
         var firstSpace = line.IndexOf(" ", StringComparison.Ordinal);
-        if (firstSpace < 2) // Minimum: "8. description"
+
+        if (firstSpace < 2)
         {
             section = string.Empty;
             return false;
         }
 
-        // As opposed to test cases that are marked with :
         if (line[firstSpace - 1] == '.')
         {
-            section = line.Substring(0, firstSpace - 1); // Drop the trailing dot.
+            section = line.Substring(0, firstSpace - 1);
             return true;
         }
 
@@ -179,22 +165,21 @@ public static partial class H2SpecCommands
         return false;
     }
 
-    // "1: Sends a DATA frame"
     private static bool IsTestLine(string line, out string testNumber, out string description)
     {
         line = line.TrimStart();
         var firstSpace = line.IndexOf(" ", StringComparison.Ordinal);
-        if (firstSpace < 2) // Minimum: "8: description"
+
+        if (firstSpace < 2)
         {
             testNumber = string.Empty;
             description = string.Empty;
             return false;
         }
 
-        // As opposed to test cases that are marked with :
         if (line[firstSpace - 1] == ':')
         {
-            testNumber = line.Substring(0, firstSpace - 1); // Drop the trailing colon.
+            testNumber = line.Substring(0, firstSpace - 1);
             description = line.Substring(firstSpace + 1);
             return true;
         }
@@ -207,12 +192,14 @@ public static partial class H2SpecCommands
     public static async Task RunTest(string testId, int port, bool https, ILogger logger)
     {
         var tempFile = Path.GetTempPath() + Guid.NewGuid() + ".xml";
+
         using (var process = new Process())
         {
             process.StartInfo.FileName = GetToolLocation();
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.RedirectStandardError = true;
-            process.StartInfo.Arguments = $"{testId} -p {port.ToString(CultureInfo.InvariantCulture)} --strict -v -j {tempFile} --timeout {TimeoutSeconds}"
+            process.StartInfo.Arguments =
+                $"{testId} -p {port.ToString(CultureInfo.InvariantCulture)} --strict -v -j {tempFile} --timeout {TimeoutSeconds}"
                 + (https ? " --tls --insecure" : "");
             process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             process.StartInfo.CreateNoWindow = true;
@@ -224,6 +211,7 @@ public static partial class H2SpecCommands
                     logger.LogDebug(args.Data);
                 }
             };
+
             process.ErrorDataReceived += (_, args) =>
             {
                 if (!string.IsNullOrEmpty(args.Data))
@@ -231,17 +219,20 @@ public static partial class H2SpecCommands
                     logger.LogError(args.Data);
                 }
             };
+
             var exitedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            process.EnableRaisingEvents = true; // Enables Exited
-            process.Exited += (_, args) =>
+
+            process.EnableRaisingEvents = true;
+            process.Exited += (_, _) =>
             {
                 logger.LogDebug("H2spec has exited.");
                 exitedTcs.TrySetResult();
             };
 
             Assert.True(process.Start());
-            process.BeginOutputReadLine(); // Starts OutputDataReceived
-            process.BeginErrorReadLine(); // Starts ErrorDataReceived
+
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
 
             if (await Task.WhenAny(exitedTcs.Task, Task.Delay(TimeSpan.FromSeconds(TimeoutSeconds * 2))) != exitedTcs.Task)
             {
@@ -253,6 +244,7 @@ public static partial class H2SpecCommands
                 {
                     throw new TimeoutException($"h2spec didn't exit within {TimeoutSeconds * 2} seconds.", ex);
                 }
+
                 throw new TimeoutException($"h2spec didn't exit within {TimeoutSeconds * 2} seconds.");
             }
 
@@ -261,17 +253,17 @@ public static partial class H2SpecCommands
 
             var xml = new XmlDocument();
             xml.LoadXml(results);
-            // <testsuites>
-            //     <testsuite name="4.2. Maximum Table Size" package="hpack/4.2" id="4.2" tests="1" skipped="0" failures="0" errors="1">
+
             var foundTests = false;
             var failures = new List<string>();
+
             foreach (XmlNode node in xml.GetElementsByTagName("testsuite"))
             {
                 if (node.Attributes["errors"].Value != "0")
                 {
-                    // This does not list the individual sub-tests in each section
                     failures.Add("Test failed: " + node.Attributes["package"].Value + "; " + node.Attributes["name"].Value);
                 }
+
                 if (node.Attributes["tests"].Value != "0")
                 {
                     foundTests = true;
