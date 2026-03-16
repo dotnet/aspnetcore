@@ -203,89 +203,58 @@ var isValid = await editContext.ValidateAsync();
 
 ## 5. Validation Task Tracking
 
-The system needs a mechanism to know which async validations are in progress, so it can await them on submit, report pending state, and cancel them when needed.
+The system needs a mechanism to coordinate async validation at two levels: form-submit validation (where everything must complete before the form proceeds) and field-level validation (where async work runs in the background).
 
-### Scenario
+### Design
 
-Multiple async validations can be in-flight simultaneously (different fields, or both per-field and per-form validation). The system needs to track these tasks so it can:
-- Know when all validations have completed
-- Report pending state per-field and per-form
-- Cancel specific field validations when the field value changes
+Two complementary mechanisms serve different purposes:
 
-### User needs
+**`OnValidationRequestedAsync`** — an async event on `EditContext`, the counterpart to the existing sync `OnValidationRequested`. This is the extensibility point for form-submit validation. `EditContext.ValidateAsync()` invokes and awaits all handlers before determining form validity. Validator components (built-in `DataAnnotationsValidator`, third-party `FluentValidationValidator`, etc.) subscribe to this event.
 
-- The framework should track all in-flight async validation tasks
-- Per-field tracking: which fields currently have pending validations?
-- Per-form tracking: are there any pending validations anywhere in the form?
-- Completion signal: await all pending validations (used by `ValidateAsync()` and form submission)
-- Validators (built-in or custom) should be able to participate in the tracking system
+**`AddValidationTask(FieldIdentifier, Task)`** — a method on `EditContext` that registers an in-flight async validation task for a specific field. This is the coordination mechanism for field-level async validation. It enables pending state queries (Goal 6) and cancellation (Goal 7).
 
-### Open question
+Tracked tasks are **not awaited on submit** — they are cancelled. Full-form validation re-validates everything from scratch, just like the current sync `Validate()` clears all messages and runs `TryValidateObject`. Awaiting tracked tasks before re-validating would cause double work (e.g., waiting for a field-level uniqueness check to finish, then running it again as part of full-model validation).
 
-What is the mechanism for tracking async validation?
+The existing sync `OnFieldChanged` event remains unchanged. When a field changes, the sync handler runs sync validators immediately, then starts async validators and registers them via `AddValidationTask`. No new `OnFieldChangedAsync` event is needed.
 
-**Option A — Explicit task tracking**: Validators call `EditContext.AddValidationTask(field, task)` to register async work. The `EditContext` maintains a set of in-flight tasks per field. Naturally supports per-field pending state, cancellation, and concurrent validations. More API surface; validators must explicitly register.
+### Flow example
 
-**Option B — Async event handlers**: Add `OnFieldChangedAsync` and `OnValidationRequestedAsync` events. The `EditContext` invokes and awaits all handlers. Simpler API, mirrors existing sync event pattern. But per-field pending state is harder to derive (which handler corresponds to which field?), and cancellation of overlapping field validations is less natural.
+```
+Field change (blur/change):
+  → EditContext fires sync OnFieldChanged (unchanged)
+    → DataAnnotationsValidator handler:
+        1. Runs sync validators immediately (Required, MinLength, etc.)
+        2. Updates ValidationMessageStore with sync results
+        3. Starts async validator (UniqueUsername)
+        4. Calls EditContext.AddValidationTask(field, asyncTask)
+    → Handler returns
+  → UI shows sync errors immediately + pending indicator for async
 
-**Option C — Hybrid**: `OnValidationRequestedAsync` for form-submit validation, explicit task tracking for field-level async validation where concurrency and cancellation matter most.
+Async validator completes:
+  → Task registered via AddValidationTask finishes
+  → Results added to ValidationMessageStore
+  → EditContext.NotifyValidationStateChanged() triggers UI update
+  → Pending indicator removed, async errors (if any) shown
+
+Field edited again while async running:
+  → Tracked task for that field is cancelled (see Goal 7)
+  → New sync validation runs, new async task registered
+
+Form submit:
+  → EditContext.ValidateAsync():
+      1. Cancels all tracked field-level tasks (superseded by full validation)
+      2. Clears pending state
+      3. Fires OnValidationRequestedAsync, awaits all handlers
+         (handlers run full model validation including async validators)
+      4. Returns !GetValidationMessages().Any()
+```
 
 ### References
 - [#7680](https://github.com/dotnet/aspnetcore/issues/7680) — `AddValidationTask`, `HasPendingValidationTasks`, `WhenAllValidationTasks`
 
 ---
 
-## 6. Cancellation of Stale Validations
-
-### Scenario
-
-A user types into a field that has async validation. The validator starts checking "alice" against the server. Before the response arrives, the user changes the field to "bob". The validation for "alice" is now stale — its result should be discarded, and validation for "bob" should start.
-
-### User needs
-
-- When a field is edited while an async validation for that field is already in progress, the previous validation should be cancelled (or at minimum, its result should be discarded)
-- Async validators should receive a `CancellationToken` so they can abort in-flight work (e.g., HTTP requests)
-- No stale validation results should appear in the UI after the field value has changed
-- Cancellation should not throw — it should silently discard the result
-
-### Desired developer experience
-
-```csharp
-public class UniqueUsernameAttribute : AsyncValidationAttribute
-{
-    protected override async ValueTask<ValidationResult?> IsValidAsync(
-        object? value, ValidationContext ctx, CancellationToken cancellationToken)
-    {
-        var username = value as string;
-        if (string.IsNullOrEmpty(username)) return ValidationResult.Success;
-
-        // The CancellationToken is cancelled if the user edits the field again
-        // before this call completes — the HTTP request is aborted cleanly
-        var userService = ctx.GetRequiredService<IUserService>();
-        var exists = await userService.UsernameExistsAsync(username, cancellationToken);
-
-        return exists
-            ? new ValidationResult("Username is taken.")
-            : ValidationResult.Success;
-    }
-}
-```
-
-From the form's perspective, cancellation is transparent:
-```razor
-<!-- No special handling needed — the framework cancels stale validations automatically -->
-<InputText @bind-Value="user.Username" />
-<ValidationMessage For="() => user.Username" />
-```
-
-### References
-- Angular: Observable unsubscription on value change
-- react-hook-form: Counter/AbortController pattern
-- `Microsoft.Extensions.Validation`: `CancellationToken` already threaded through `ValidateAsync`
-
----
-
-## 7. Pending Validation State
+## 6. Pending Validation State
 
 ### Scenario
 
@@ -343,9 +312,63 @@ Or via a dedicated component:
 </EditForm>
 ```
 
+### Open question
+
+Should we provide a built-in component (e.g., `<ValidationPendingIndicator>`) for displaying pending validation state, or is it sufficient to expose the `IsValidationPending()` API and let developers build their own UI?
+
 ### References
 - Angular: `control.pending` property, `FormGroup.pending`
 - react-hook-form: `formState.isValidating`
+
+---
+
+## 7. Cancellation of Stale Validations
+
+### Scenario
+
+A user types into a field that has async validation. The validator starts checking "alice" against the server. Before the response arrives, the user changes the field to "bob". The validation for "alice" is now stale — its result should be discarded, and validation for "bob" should start.
+
+### User needs
+
+- When a field is edited while an async validation for that field is already in progress, the previous validation should be cancelled (or at minimum, its result should be discarded)
+- Async validators should receive a `CancellationToken` so they can abort in-flight work (e.g., HTTP requests)
+- No stale validation results should appear in the UI after the field value has changed
+- Cancellation should not throw — it should silently discard the result
+
+### Desired developer experience
+
+```csharp
+public class UniqueUsernameAttribute : AsyncValidationAttribute
+{
+    protected override async ValueTask<ValidationResult?> IsValidAsync(
+        object? value, ValidationContext ctx, CancellationToken cancellationToken)
+    {
+        var username = value as string;
+        if (string.IsNullOrEmpty(username)) return ValidationResult.Success;
+
+        // The CancellationToken is cancelled if the user edits the field again
+        // before this call completes — the HTTP request is aborted cleanly
+        var userService = ctx.GetRequiredService<IUserService>();
+        var exists = await userService.UsernameExistsAsync(username, cancellationToken);
+
+        return exists
+            ? new ValidationResult("Username is taken.")
+            : ValidationResult.Success;
+    }
+}
+```
+
+From the form's perspective, cancellation is transparent:
+```razor
+<!-- No special handling needed — the framework cancels stale validations automatically -->
+<InputText @bind-Value="user.Username" />
+<ValidationMessage For="() => user.Username" />
+```
+
+### References
+- Angular: Observable unsubscription on value change
+- react-hook-form: Counter/AbortController pattern
+- `Microsoft.Extensions.Validation`: `CancellationToken` already threaded through `ValidateAsync`
 
 ---
 
@@ -493,9 +516,9 @@ Developers using third-party validation libraries (especially FluentValidation) 
 - The existing pattern of creating validator components (like `<DataAnnotationsValidator />`) should extend naturally to async scenarios
 - Libraries should not need to fork `EditForm` or use `async void` event handlers
 
-### Open question
+### Extension point
 
-What should be the extension point for third-party validators to hook into async validation? Should it be a new async event (e.g., `OnValidationRequestedAsync`), a callback registration API, or something else? The mechanism must be properly awaitable by `EditContext.ValidateAsync()` so the form doesn't submit before all validators complete.
+For form-submit validation, third-party validators subscribe to `OnValidationRequestedAsync` on `EditContext` (see Goal 5). For field-level async validation, they use the existing sync `OnFieldChanged` event and register async work via `AddValidationTask`.
 
 ### Desired developer experience
 
@@ -608,7 +631,7 @@ Are there any interactions (design-wise) between server-side async validation fo
 
 During form-submit validation of a complex object graph (e.g., an order with many items), async validators on different fields may complete at different times. The question is whether errors should appear in the UI progressively as each field's validation completes, or be batched and shown all at once after the entire form finishes validating.
 
-This goal applies to form-submit validation only. For field-level validation (on blur/change), the pending-to-result transition is covered by Goal 7 (Pending Validation State).
+This goal applies to form-submit validation only. For field-level validation (on blur/change), the pending-to-result transition is covered by Goal 6 (Pending Validation State).
 
 ### User needs
 
@@ -689,8 +712,8 @@ Should debouncing be built into Blazor's form validation infrastructure, or left
 | 3 | Backward Compatibility | Must have |
 | 4 | Behavior of Sync `Validate()` with Async Validators | Must have |
 | 5 | Validation Task Tracking | Must have |
-| 6 | Cancellation of Stale Validations | Must have |
-| 7 | Pending Validation State | Must have |
+| 6 | Pending Validation State | Must have |
+| 7 | Cancellation of Stale Validations | Must have |
 | 8 | CSS Classes for Validation State | Should have |
 | 9 | Integration with Microsoft.Extensions.Validation | Must have |
 | 10 | Third-Party Validator Integration | Must have |
@@ -705,11 +728,10 @@ Should debouncing be built into Blazor's form validation infrastructure, or left
 | 2 | When multiple fields trigger async validation concurrently, should they run in parallel or be queued? |
 | 4 | Should sync `Validate()` throwing be handled at Blazor or validation infrastructure level? |
 | 4 | Should we provide a Roslyn analyzer to detect `Validate()` calls with async models? |
-| 5 | What is the mechanism for tracking async validation — task tracking, async events, or hybrid? |
+| 6 | Should we provide a built-in `<ValidationPendingIndicator>` component or just the `IsValidationPending()` API? |
 | 8 | Should we support a form-level CSS class (e.g., `<form class="validating">`)? |
 | 9 | Should we unify on `Microsoft.Extensions.Validation` or keep the legacy `Validator` path? |
 | 9 | Should we use `ValidateContext.OnValidationError` for real-time error streaming? |
-| 10 | What should be the extension point for third-party validators to hook into async validation? |
 | 11 | Interactions between server-side async validation and client-side validation (#51040)? |
 | 12 | Granularity and default behavior of incremental error reporting? |
 | 13 | Should debouncing be built-in or left for users to implement? |
