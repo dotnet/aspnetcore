@@ -325,6 +325,8 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     [InlineData("Has\0Null")]
     [InlineData("Control\u001FChar")]
     [InlineData("Del\u007FChar")]
+    [InlineData("Non-ASCII\u0080Char")]
+    [InlineData("Caf\u00E9")]
     public void ThrowsWhenReasonPhraseContainsControlCharacters(string reasonPhrase)
     {
         Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)_http1Connection).ReasonPhrase = reasonPhrase);

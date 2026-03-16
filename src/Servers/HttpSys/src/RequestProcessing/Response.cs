@@ -91,9 +91,9 @@ internal sealed class Response
 
             if (value is not null)
             {
-                // reason-phrase allows HTAB / SP / VCHAR / obs-text (RFC 9110 §15.1),
-                // which is the same character set as field-value. Reject CR/LF and other
-                // control characters to prevent HTTP response splitting.
+                // Reject non-ASCII (> 0x7E), CR/LF, and other control characters
+                // to prevent HTTP response splitting. Only HTAB, SP, and VCHAR
+                // (0x21-0x7E) are allowed per RFC 9112 Section 4.
                 var invalid = HttpCharacters.IndexOfInvalidFieldValueChar(value);
                 if (invalid >= 0)
                 {
