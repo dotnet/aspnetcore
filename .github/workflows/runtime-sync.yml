@@ -64,7 +64,7 @@ jobs:
     - name: Send PR
       if: steps.check.outputs.sendpr == 'true'
       # https://github.com/marketplace/actions/create-pull-request
-      uses: dotnet/actions-create-pull-request@2b011faafdcbc9ceb11414d64d0573f37c774b04 # v4.2.3
+      uses: dotnet/actions-create-pull-request@e8d799aa1f8b17f324f9513832811b0a62f1e0b1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         path: .\aspnetcore
