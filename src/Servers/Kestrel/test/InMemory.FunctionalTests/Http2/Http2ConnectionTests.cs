@@ -2265,6 +2265,76 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    public async Task CONTINUATION_Received_WithTrailers_ContentLengthMismatch_StreamError()
+    {
+        // Verify that a Content-Length mismatch detected during trailer decoding
+        // (via HEADERS + CONTINUATION) results in a stream reset, not a connection error.
+        // A second stream on the same connection should complete successfully.
+        var stream1RequestReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var stream3RequestReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await InitializeConnectionAsync(async context =>
+        {
+            if (context.Features.Get<IHttp2StreamIdFeature>().StreamId == 1)
+            {
+                stream1RequestReceived.SetResult();
+
+                // Read the body — will be interrupted by the stream error
+                var buffer = new byte[100];
+                try
+                {
+                    while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
+                }
+                catch (IOException)
+                {
+                    // Expected when the stream is reset
+                }
+            }
+            else if (context.Features.Get<IHttp2StreamIdFeature>().StreamId == 3)
+            {
+                stream3RequestReceived.SetResult();
+            }
+        });
+
+        // Stream 1: POST with Content-Length: 12 but only send 5 bytes of body data
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
+        };
+
+        await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS, headers);
+        await SendDataAsync(1, _helloBytes, endStream: false);
+
+        await stream1RequestReceived.Task.DefaultTimeout();
+
+        // Send trailers for stream 1 as HEADERS (no END_HEADERS) + CONTINUATION (END_HEADERS).
+        // OnEndStreamReceived will detect InputRemaining != 0 and throw Http2StreamErrorException.
+        var trailers = new byte[] { 0x00, 0x09 }
+            .Concat(Encoding.ASCII.GetBytes("trailer-1"))
+            .Concat(new byte[] { 0x01, (byte)'1' })
+            .ToArray();
+        await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM, new byte[0]);
+        await SendContinuationAsync(1, Http2ContinuationFrameFlags.END_HEADERS, trailers);
+
+        // Should get RST_STREAM for stream 1 only, not GOAWAY
+        await WaitForStreamErrorAsync(1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.Http2StreamErrorLessDataThanLength);
+
+        // Stream 3: Verify the connection is still alive by opening a new stream
+        await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+        await stream3RequestReceived.Task.DefaultTimeout();
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 36,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 3);
+
+        await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+    }
+
+    [Fact]
     public async Task HEADERS_Received_ContainsExpect100Continue_100ContinueSent()
     {
         await InitializeConnectionAsync(_echoApplication);
