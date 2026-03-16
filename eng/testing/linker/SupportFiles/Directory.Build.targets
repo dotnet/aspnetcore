@@ -70,7 +70,8 @@
     Mirrors _RemoveAspNetCoreTransitiveFrameworkReference in eng/targets/ResolveReferences.targets.
   -->
   <Target Name="_RemoveAspNetCoreTransitiveFrameworkReference"
-          BeforeTargets="AddTransitiveFrameworkReferences">
+          BeforeTargets="AddTransitiveFrameworkReferences"
+          Condition="'$(UseAspNetCoreSharedRuntime)' != 'true'">
     <ItemGroup>
       <TransitiveFrameworkReference Remove="Microsoft.AspNetCore.App" />
     </ItemGroup>
