@@ -265,8 +265,26 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
                 ThrowResponseAlreadyStartedException(nameof(ReasonPhrase));
             }
 
+            if (value is not null)
+            {
+                // reason-phrase allows HTAB / SP / VCHAR / obs-text (RFC 9110 §15.1),
+                // which is the same character set as field-value. Reject CR/LF and other
+                // control characters to prevent HTTP response splitting.
+                var invalid = HttpCharacters.IndexOfInvalidFieldValueChar(value);
+                if (invalid >= 0)
+                {
+                    ThrowInvalidReasonPhraseCharacter(value[invalid]);
+                }
+            }
+
             _reasonPhrase = value;
         }
+    }
+
+    private static void ThrowInvalidReasonPhraseCharacter(char ch)
+    {
+        throw new InvalidOperationException(CoreStrings.FormatInvalidAsciiOrControlChar(
+            string.Format(System.Globalization.CultureInfo.InvariantCulture, "0x{0:X4}", (ushort)ch)));
     }
 
     public IHeaderDictionary ResponseHeaders { get; set; } = default!;

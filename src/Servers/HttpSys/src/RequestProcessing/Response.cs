@@ -87,8 +87,20 @@ internal sealed class Response
         get { return _reasonPhrase; }
         set
         {
-            // TODO: Validate user input for illegal chars, length limit, etc.?
             CheckResponseStarted();
+
+            if (value is not null)
+            {
+                // reason-phrase allows HTAB / SP / VCHAR / obs-text (RFC 9110 §15.1),
+                // which is the same character set as field-value. Reject CR/LF and other
+                // control characters to prevent HTTP response splitting.
+                var invalid = HttpCharacters.IndexOfInvalidFieldValueChar(value);
+                if (invalid >= 0)
+                {
+                    ThrowInvalidReasonPhraseCharacter(value[invalid]);
+                }
+            }
+
             _reasonPhrase = value;
         }
     }
@@ -235,6 +247,12 @@ internal sealed class Response
         {
             throw new InvalidOperationException("Headers already sent.");
         }
+    }
+
+    private static void ThrowInvalidReasonPhraseCharacter(char ch)
+    {
+        throw new InvalidOperationException(Resources.FormatException_InvalidReasonPhraseCharacter(
+            string.Format(CultureInfo.InvariantCulture, "0x{0:X4}", (ushort)ch)));
     }
 
     [MemberNotNull(nameof(_nativeStream))]

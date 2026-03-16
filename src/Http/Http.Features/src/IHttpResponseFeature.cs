@@ -17,6 +17,11 @@ public interface IHttpResponseFeature
     /// <summary>
     /// Gets or sets the reason-phrase as defined in RFC 7230. Note this field is no longer supported by HTTP/2.
     /// </summary>
+    /// <remarks>
+    /// Must contain only valid reason-phrase characters (HTAB, SP, VCHAR) per https://www.rfc-editor.org/rfc/rfc9112#section-4.
+    /// Control characters including CR and LF are rejected. Callers should not pass
+    /// untrusted or user-supplied input without prior sanitization.
+    /// </remarks>
     string? ReasonPhrase { get; set; }
 
     /// <summary>
