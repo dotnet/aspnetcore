@@ -100,7 +100,7 @@ public class HttpsConnectionAdapterOptions
     /// <summary>
     /// A callback to be invoked to get the TLS client hello bytes. The client hello bytes are still wrapped in the record layer fragment.
     /// Null by default.
-    /// If you want to store the bytes from the <see cref="System.Buffers.ReadOnlySequence{T}"/>, 
+    /// If you want to store the bytes from the <see cref="System.Buffers.ReadOnlySequence{T}"/>,
     /// copy them into a buffer that you control rather than keeping a reference to the <see cref="ReadOnlySequence{T}"/> or <see cref="ReadOnlyMemory{T}"/> instances.
     /// </summary>
     /// <remarks>
