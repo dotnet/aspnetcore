@@ -108,7 +108,12 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
 
         // REVIEW: note we lost login authentication method
         context.ReplacePrincipal(newPrincipal);
-        context.ShouldRenew = true;
+
+        var allowRefresh = context.Properties.AllowRefresh ?? true;
+        if (allowRefresh)
+        {
+            context.ShouldRenew = true;
+        }
 
         if (!context.Options.SlidingExpiration)
         {
