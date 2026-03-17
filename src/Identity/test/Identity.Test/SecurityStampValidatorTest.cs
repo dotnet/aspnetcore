@@ -364,6 +364,30 @@ public class SecurityStampTest
         Assert.False(context.ShouldRenew);
     }
 
+    [Fact]
+    public async Task OnValidateIdentityRenewsWhenAllowRefreshIsNotSet()
+    {
+        var user = new PocoUser("test");
+        var httpContext = new Mock<HttpContext>();
+
+        await RunApplicationCookieTest(user, httpContext, /*shouldStampValidate*/true, async () =>
+        {
+            var id = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
+            id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
+            var ticket = new AuthenticationTicket(new ClaimsPrincipal(id),
+                new AuthenticationProperties { IssuedUtc = DateTimeOffset.UtcNow.AddSeconds(-1) },
+                IdentityConstants.ApplicationScheme);
+
+            var context = new CookieValidatePrincipalContext(httpContext.Object, new AuthenticationSchemeBuilder(IdentityConstants.ApplicationScheme) { HandlerType = typeof(NoopHandler) }.Build(), new CookieAuthenticationOptions(), ticket);
+            // AllowRefresh is null (not set) — should default to true
+            Assert.Null(context.Properties.AllowRefresh);
+            await SecurityStampValidator.ValidatePrincipalAsync(context);
+
+            Assert.NotNull(context.Principal);
+            Assert.True(context.ShouldRenew);
+        });
+    }
+
     private async Task RunRememberClientCookieTest(bool shouldStampValidate, bool validationSuccess)
     {
         var user = new PocoUser("test");

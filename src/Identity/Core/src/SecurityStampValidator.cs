@@ -108,18 +108,13 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
 
         // REVIEW: note we lost login authentication method
         context.ReplacePrincipal(newPrincipal);
+        context.ShouldRenew = context.Properties.AllowRefresh ?? true;
 
-        var allowRefresh = context.Properties.AllowRefresh ?? true;
-        if (allowRefresh)
+        if (context.ShouldRenew && !context.Options.SlidingExpiration)
         {
-            context.ShouldRenew = true;
-
-            if (!context.Options.SlidingExpiration)
-            {
-                // On renewal calculate the new ticket length relative to now to avoid
-                // extending the expiration.
-                context.Properties.IssuedUtc = TimeProvider.GetUtcNow();
-            }
+            // On renewal calculate the new ticket length relative to now to avoid
+            // extending the expiration.
+            context.Properties.IssuedUtc = TimeProvider.GetUtcNow();
         }
     }
 
