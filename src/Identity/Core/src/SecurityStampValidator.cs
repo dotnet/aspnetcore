@@ -113,13 +113,13 @@ public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser
         if (allowRefresh)
         {
             context.ShouldRenew = true;
-        }
 
-        if (!context.Options.SlidingExpiration)
-        {
-            // On renewal calculate the new ticket length relative to now to avoid
-            // extending the expiration.
-            context.Properties.IssuedUtc = TimeProvider.GetUtcNow();
+            if (!context.Options.SlidingExpiration)
+            {
+                // On renewal calculate the new ticket length relative to now to avoid
+                // extending the expiration.
+                context.Properties.IssuedUtc = TimeProvider.GetUtcNow();
+            }
         }
     }
 
