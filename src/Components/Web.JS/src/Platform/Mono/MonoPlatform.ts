@@ -87,7 +87,7 @@ export const monoPlatform: Platform = {
       }
       // TODO-WASM cache interned strings
       // https://github.com/dotnet/runtime/issues/121415
-      const length = runtime.getHeapI16(fieldValue as any + 4);
+      const length = runtime.getHeapU32(fieldValue as any + 4);
       const ptr = fieldValue + 8;
       const view = runtime.localHeapViewU8();
       return textDecoderUtf16.decode(view.subarray(ptr, ptr + length * 2));
