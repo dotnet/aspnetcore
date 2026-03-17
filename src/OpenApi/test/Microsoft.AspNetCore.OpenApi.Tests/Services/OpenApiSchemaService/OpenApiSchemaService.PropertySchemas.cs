@@ -711,6 +711,52 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
     }
 
+    [Fact]
+    public async Task GetOpenApiSchema_HandlesDescriptionAttributeOnPrimaryConstructorParameters()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (PrimaryCtorWithDescription model) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var schema = document.Paths["/api"].Operations[HttpMethod.Post].RequestBody.Content.First().Value.Schema;
+
+            // [Description] on constructor parameter should appear in schema
+            var ageProperty = schema.Properties["age"];
+            Assert.Equal("The user's age in years", ageProperty.Description);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiSchema_RecordWithValidationAttributesStillWorks()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (RecordWithValidationAttributes model) => { });
+
+        // Assert — records already had this working; verify no regression from the
+        // constructor-parameter fallback applying attributes a second time.
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var schema = document.Paths["/api"].Operations[HttpMethod.Post].RequestBody.Content.First().Value.Schema;
+
+            var scoreProperty = schema.Properties["score"];
+            Assert.Equal(JsonSchemaType.Integer, scoreProperty.Type);
+            Assert.Equal("1", scoreProperty.Minimum);
+            Assert.Equal("100", scoreProperty.Maximum);
+
+            var nameProperty = schema.Properties["name"];
+            Assert.Equal(JsonSchemaType.String, nameProperty.Type);
+            Assert.Equal(2, nameProperty.MinLength);
+        });
+    }
+
 #nullable enable
     // Primary constructor class (NOT a record) with validation attributes on constructor parameters.
     // Unlike records, C# does not synthesize property attributes for class primary constructors,
@@ -737,6 +783,19 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [Range(10, 50)]
         public int Score { get; set; } = score;
     }
+
+    private class PrimaryCtorWithDescription(
+        [Description("The user's age in years")] int age)
+    {
+        public int Age { get; set; } = age;
+    }
+
+    // Record type — the compiler copies constructor parameter attributes to the
+    // synthesized properties, so both AttributeProvider and AssociatedParameter
+    // return the same attributes. This test verifies no double-application regression.
+    private record RecordWithValidationAttributes(
+        [Range(1, 100)] int Score,
+        [MinLength(2)] string Name);
 
     private class NullablePropertiesTestModel
     {
