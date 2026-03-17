@@ -105,7 +105,9 @@ public class HttpsConnectionAdapterOptions
     /// </summary>
     /// <remarks>
     /// If a client hello spans multiple record fragments then this callback only gets the first fragment.
+    /// Use <see cref="Microsoft.AspNetCore.Hosting.ListenOptionsTlsExtensions.UseTlsClientHelloListener"/> instead.
     /// </remarks>
+    [Obsolete("Use ListenOptions.UseTlsClientHelloListener() instead.", error: false)]
     public Action<ConnectionContext, ReadOnlySequence<byte>>? TlsClientHelloBytesCallback { get; set; }
 
     /// <summary>

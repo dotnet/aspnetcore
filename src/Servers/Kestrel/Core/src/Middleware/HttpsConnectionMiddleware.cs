@@ -117,10 +117,12 @@ internal sealed class HttpsConnectionMiddleware
 
         _sslStreamFactory = s => new SslStream(s, leaveInnerStreamOpen: false, userCertificateValidationCallback: remoteCertificateValidationCallback);
 
+#pragma warning disable CS0618 // Type or member is obsolete - still need to support the old property for back-compat
         if (options.TlsClientHelloBytesCallback is not null)
         {
             _tlsListener = new TlsListener(options.TlsClientHelloBytesCallback);
         }
+#pragma warning restore CS0618
     }
 
     internal HttpsConnectionMiddleware(

@@ -106,6 +106,10 @@ public class Startup
                         options.Listen(IPAddress.Loopback, basePort + 1, listenOptions =>
                         {
                             listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1;
+                            listenOptions.UseTlsClientHelloListener((connection, clientHelloBytes) =>
+                            {
+                                Console.WriteLine($"TLS Client Hello received on {connection.ConnectionId}, {clientHelloBytes.Length} bytes");
+                            });
                             listenOptions.UseHttps();
                             listenOptions.UseConnectionLogging();
                         });
