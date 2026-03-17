@@ -187,6 +187,7 @@ internal sealed class HttpsConnectionMiddleware
         }
         catch (OperationCanceledException ex)
         {
+            feature.HandshakeException = ex;
             RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, metricsTagsFeature, ex);
 
             _logger.AuthenticationTimedOut();
@@ -195,6 +196,7 @@ internal sealed class HttpsConnectionMiddleware
         }
         catch (IOException ex)
         {
+            feature.HandshakeException = ex;
             RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, metricsTagsFeature, ex);
 
             _logger.AuthenticationFailed(ex);
@@ -203,6 +205,7 @@ internal sealed class HttpsConnectionMiddleware
         }
         catch (AuthenticationException ex)
         {
+            feature.HandshakeException = ex;
             RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, metricsTagsFeature, ex);
 
             _logger.AuthenticationFailed(ex);

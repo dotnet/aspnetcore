@@ -51,6 +51,8 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 
     public SslStream SslStream => _sslStream;
 
+    public Exception? HandshakeException { get; set; }
+
     // We don't store the values for these because they could be changed by a renegotiation.
 
     public TlsCipherSuite? NegotiatedCipherSuite => _sslStream.NegotiatedCipherSuite;
