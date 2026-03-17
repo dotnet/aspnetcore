@@ -90,7 +90,7 @@ export const monoPlatform: Platform = {
       const length = runtime.getHeapI16(fieldValue as any + 4);
       const ptr = fieldValue + 8;
       const view = runtime.localHeapViewU8();
-      return textDecoderUtf16.decode(view.slice(ptr, ptr + length * 2));
+      return textDecoderUtf16.decode(view.subarray(ptr, ptr + length * 2));
     }
 
     return MONO_INTERNAL.monoStringToStringUnsafe(fieldValue);
