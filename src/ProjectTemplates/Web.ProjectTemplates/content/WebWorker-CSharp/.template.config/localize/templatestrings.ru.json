@@ -1,0 +1,10 @@
+﻿{
+  "author": "Майкрософт",
+  "name": "Рабочая роль .NET",
+  "description": "Проект по созданию библиотеки классов, которая выполняет код .NET в рабочей роли.",
+  "symbols/Framework/description": "Целевая платформа для проекта.",
+  "symbols/Framework/choices/net11.0/description": "Цель net11.0",
+  "symbols/skipRestore/description": "Если указано, пропускает автоматическое восстановление проекта при создании.",
+  "postActions/restore/description": "Восстановление пакетов NuGet, необходимых для этого проекта.",
+  "postActions/restore/manualInstructions/default/text": "Выполнить команду \"dotnet restore\""
+}

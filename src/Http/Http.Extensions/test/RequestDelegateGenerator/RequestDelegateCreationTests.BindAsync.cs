@@ -254,7 +254,7 @@ app.MapPost("/", (HttpContext context, MyBindAsyncRecord myBindAsyncParam, Todo 
         Assert.Equal("Write more tests!", todo!.Name);
     }
 
-    [Fact(Skip = "Resetting Stream.Position to 0 doesn't work with StreamPipeReader currently.")]
+    [Fact]
     public async Task BindAsyncRunsBeforeBodyBinding()
     {
         Todo originalTodo = new()

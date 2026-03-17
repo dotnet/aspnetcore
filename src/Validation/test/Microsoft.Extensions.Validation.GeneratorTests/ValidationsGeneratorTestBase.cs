@@ -71,6 +71,13 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
             [CSharpSyntaxTree.ParseText(source, options: ParseOptions, path: "Program.cs")],
             references,
             new CSharpCompilationOptions(OutputKind.ConsoleApplication));
+
+        var programEmitResult = inputCompilation.Emit(Stream.Null);
+        if (!programEmitResult.Success)
+        {
+            throw new InvalidOperationException($"Failed to compile Program.cs: {string.Join(Environment.NewLine, programEmitResult.Diagnostics)}");
+        }
+
         var generator = new ValidationsGenerator();
         var driver = CSharpGeneratorDriver.Create(generators: [generator.AsSourceGenerator()], parseOptions: ParseOptions);
         return Verifier
@@ -488,7 +495,7 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
 
             public void OnCompleted()
             {
-                _disposable.Dispose();
+                _disposable?.Dispose();
             }
 
             public void OnError(Exception error)

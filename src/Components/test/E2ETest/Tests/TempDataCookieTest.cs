@@ -1,0 +1,150 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
+using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Components.TestServer.RazorComponents;
+using Microsoft.AspNetCore.E2ETesting;
+using Xunit.Abstractions;
+using OpenQA.Selenium;
+using TestServer;
+
+namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
+
+public class TempDataCookieTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>>>
+{
+    private const string TempDataCookieName = ".AspNetCore.Components.TempData";
+
+    public TempDataCookieTest(
+        BrowserFixture browserFixture,
+        BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>> serverFixture,
+        ITestOutputHelper output)
+        : base(browserFixture, serverFixture, output)
+    {
+    }
+
+    public override Task InitializeAsync() => InitializeAsync(BrowserFixture.StreamingContext);
+
+    protected override void InitializeAsyncCore()
+    {
+        base.InitializeAsyncCore();
+        Browser.Manage().Cookies.DeleteCookieNamed(TempDataCookieName);
+    }
+
+    [Fact]
+    public void TempDataCanPersistThroughNavigation()
+    {
+        Navigate($"{ServerPathBase}/tempdata");
+
+        Browser.Equal("No message", () => Browser.FindElement(By.Id("message")).Text);
+        Browser.FindElement(By.Id("set-values-button")).Click();
+        Browser.Equal("Message", () => Browser.FindElement(By.Id("message")).Text);
+    }
+
+    [Fact]
+    public void TempDataCanPersistThroughDifferentPages()
+    {
+        Navigate($"{ServerPathBase}/tempdata");
+
+        Browser.Equal("No message", () => Browser.FindElement(By.Id("message")).Text);
+        Browser.FindElement(By.Id("set-values-button-diff-page")).Click();
+        Browser.Equal("Message", () => Browser.FindElement(By.Id("message")).Text);
+    }
+
+    [Fact]
+    public void TempDataPeekDoesntDelete()
+    {
+        Navigate($"{ServerPathBase}/tempdata");
+
+        Browser.Equal("No message", () => Browser.FindElement(By.Id("message")).Text);
+        Browser.FindElement(By.Id("set-values-button")).Click();
+        Browser.Equal("Message", () => Browser.FindElement(By.Id("message")).Text);
+        Browser.FindElement(By.Id("redirect-button")).Click();
+        Browser.Equal("No message", () => Browser.FindElement(By.Id("message")).Text);
+        Browser.Equal("Peeked value", () => Browser.FindElement(By.Id("peeked-value")).Text);
+    }
+
+    [Fact]
+    public void TempDataKeepAllElements()
+    {
+        Navigate($"{ServerPathBase}/tempdata?ValueToKeep=all");
+
+        Browser.Equal("No message", () => Browser.FindElement(By.Id("message")).Text);
+        Browser.FindElement(By.Id("set-values-button")).Click();
+        Browser.Equal("Kept value", () => Browser.FindElement(By.Id("kept-value")).Text);
+        Browser.Equal("Message", () => Browser.FindElement(By.Id("message")).Text);
+        Browser.FindElement(By.Id("redirect-button")).Click();
+        Browser.Equal("Kept value", () => Browser.FindElement(By.Id("kept-value")).Text);
+        Browser.Equal("Message", () => Browser.FindElement(By.Id("message")).Text);
+    }
+
+    [Fact]
+    public void TempDataKeepOneElement()
+    {
+        Navigate($"{ServerPathBase}/tempdata?ValueToKeep=KeptValue");
+
+        Browser.Equal("No message", () => Browser.FindElement(By.Id("message")).Text);
+        Browser.FindElement(By.Id("set-values-button")).Click();
+        Browser.Equal("Kept value", () => Browser.FindElement(By.Id("kept-value")).Text);
+        Browser.Equal("Message", () => Browser.FindElement(By.Id("message")).Text);
+        Browser.FindElement(By.Id("redirect-button")).Click();
+        Browser.Equal("No message", () => Browser.FindElement(By.Id("message")).Text);
+        Browser.Equal("Kept value", () => Browser.FindElement(By.Id("kept-value")).Text);
+    }
+
+    [Fact]
+    public void CanRemoveTheElementWithRemove()
+    {
+        Navigate($"{ServerPathBase}/tempdata");
+
+        Browser.Equal("No peeked value", () => Browser.FindElement(By.Id("peeked-value")).Text);
+        Browser.FindElement(By.Id("set-values-button")).Click();
+        Browser.Equal("Peeked value", () => Browser.FindElement(By.Id("peeked-value")).Text);
+        Browser.Equal("Message", () => Browser.FindElement(By.Id("message")).Text);
+        Browser.FindElement(By.Id("redirect-button")).Click();
+        Browser.Equal("No message", () => Browser.FindElement(By.Id("message")).Text);
+        Browser.Equal("Peeked value", () => Browser.FindElement(By.Id("peeked-value")).Text);
+        Browser.FindElement(By.Id("delete-button")).Click();
+        Browser.Equal("No message", () => Browser.FindElement(By.Id("message")).Text);
+        Browser.Equal("No peeked value", () => Browser.FindElement(By.Id("peeked-value")).Text);
+    }
+
+    [Fact]
+    public void CanCheckIfTempDataContainsKey()
+    {
+        Navigate($"{ServerPathBase}/tempdata");
+
+        Browser.Equal("False", () => Browser.FindElement(By.Id("contains-peeked-value")).Text);
+        Browser.Equal("False", () => Browser.FindElement(By.Id("contains-message")).Text);
+        Browser.FindElement(By.Id("set-values-button")).Click();
+        Browser.Equal("True", () => Browser.FindElement(By.Id("contains-peeked-value")).Text);
+        Browser.Equal("True", () => Browser.FindElement(By.Id("contains-message")).Text);
+        Browser.FindElement(By.Id("redirect-button")).Click();
+        Browser.Equal("True", () => Browser.FindElement(By.Id("contains-peeked-value")).Text);
+        Browser.Equal("False", () => Browser.FindElement(By.Id("contains-message")).Text);
+    }
+
+    [Fact]
+    public void TempDataPersistWithoutAccessing()
+    {
+        Navigate($"{ServerPathBase}/tempdata");
+        Browser.Equal("No message", () => Browser.FindElement(By.Id("message")).Text);
+        Browser.FindElement(By.Id("set-values-not-read")).Click();
+        Browser.FindElement(By.Id("redirect-button")).Click();
+        Browser.Equal("Message", () => Browser.FindElement(By.Id("message")).Text);
+    }
+
+    [Fact]
+    public void TempDataPreservesTypedArrays()
+    {
+        Navigate($"{ServerPathBase}/tempdata");
+
+        Browser.Equal("Wrong type: null", () => Browser.FindElement(By.Id("string-array")).Text);
+        Browser.Equal("Wrong type: null", () => Browser.FindElement(By.Id("int-array")).Text);
+
+        Browser.FindElement(By.Id("set-values-button")).Click();
+
+        Browser.Equal("a,b,c", () => Browser.FindElement(By.Id("string-array")).Text);
+        Browser.Equal("1,2,3", () => Browser.FindElement(By.Id("int-array")).Text);
+    }
+}

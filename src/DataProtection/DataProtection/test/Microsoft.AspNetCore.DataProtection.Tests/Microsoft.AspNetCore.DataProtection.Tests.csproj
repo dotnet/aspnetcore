@@ -11,7 +11,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.Cryptography.Internal" />
     <Reference Include="Microsoft.AspNetCore.DataProtection" />
     <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
@@ -21,5 +29,5 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
-  </ItemGroup>  
+  </ItemGroup>
 </Project>

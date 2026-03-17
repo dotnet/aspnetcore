@@ -49,15 +49,19 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
     <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.OutputCaching" />
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />

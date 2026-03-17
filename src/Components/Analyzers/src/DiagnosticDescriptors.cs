@@ -73,7 +73,8 @@ internal static class DiagnosticDescriptors
         CreateLocalizableResourceString(nameof(Resources.ComponentParametersShouldBeAutoProperties_Message)),
         Usage,
         DiagnosticSeverity.Warning,
-        isEnabledByDefault: true);
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.ComponentParametersShouldBeAutoProperties_Description)));
 
     public static readonly DiagnosticDescriptor SupplyParameterFromFormShouldNotHavePropertyInitializer = new(
         "BL0008",
@@ -92,4 +93,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.PersistentStateShouldNotHavePropertyInitializer_Description)));
+
+    public static readonly DiagnosticDescriptor UseInvokeVoidAsyncForObjectReturn = new(
+        "BL0010",
+        CreateLocalizableResourceString(nameof(Resources.UseInvokeVoidAsyncForObjectReturn_Title)),
+        CreateLocalizableResourceString(nameof(Resources.UseInvokeVoidAsyncForObjectReturn_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.UseInvokeVoidAsyncForObjectReturn_Description)));
 }

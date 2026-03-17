@@ -102,6 +102,29 @@
     <Reference Remove="@(Reference->HasMetadata('ProjectPath'))" />
   </ItemGroup>
 
+  <!-- For source projects, mark shared framework assemblies as non-transitive (privateassets=all) and non app-local (private=false). -->
+  <ItemGroup Condition="'@(ProjectReference)' != '' and
+                        '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and
+                        '$(IsTestProject)' != 'true' and '$(IsTestAssetProject)' != 'true' and
+                        '$(IsBenchmarkProject)' != 'true' and '$(IsSampleProject)' != 'true' and '$(IsMicrobenchmarksProject)' != 'true' and
+                        '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime' and
+                        '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Runtime.Composite' and
+                        '$(MSBuildProjectName)' != 'Microsoft.AspNetCore.App.Ref'" >
+    <_ProjectReferenceWithOriginalIdentity Include="@(ProjectReference)"
+                                           OriginalIdentity="%(Identity)" />
+    <_ProjectReferenceWithFilename Include="@(_ProjectReferenceWithOriginalIdentity->Metadata('Filename'))" />
+
+    <_ProjectReferenceExcludedWithFilename Include="@(_ProjectReferenceWithFilename)"
+                                           Exclude="@(AspNetCoreAppReference)" />
+    <_FrameworkProjectReference Include="@(_ProjectReferenceWithFilename)"
+                                Exclude="@(_ProjectReferenceExcludedWithFilename)" />
+
+    <ProjectReference Update="@(_FrameworkProjectReference->Metadata('OriginalIdentity'))">
+      <PrivateAssets Condition="'%(PrivateAssets)' == ''">all</PrivateAssets>
+      <Private Condition="'%(Private)' == ''">false</Private>
+    </ProjectReference>
+  </ItemGroup>
+
   <!--
     This target helps ensure projects within the shared framework do not unintentionally add new references, and that
     assemblies outside the shared framework reference the framework as a whole instead of using individual assemblies.
@@ -124,6 +147,38 @@
     <Warning
         Condition="@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->Count()) &gt; 1"
         Text="Redundant &lt;FrameworkReference&gt;. If you have an explicit item in the project file, you might be able to remove it. Some SDKs, like Microsoft.NET.Sdk.Web, add this implicitly." />
+  </Target>
+
+  <!--
+    NuGet pack reads framework references from restore assets. For affected SDK-pack projects, add a temporary
+    framework reference during project evaluation so that it flows into the restore assets used by pack / GenerateNuspec.
+  -->
+
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' AND
+                 '$(IsPackable)' == 'true' AND
+                 '$(IsAspNetCoreApp)' != 'true' AND
+                 '@(_FrameworkProjectReference)' != '' AND
+                 '@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->Count())' == '0'">
+    <KnownFrameworkReference Include="@(_RemovedAspNetKnownFrameworkReference)" />
+    <!-- Mark as IsTransitiveFrameworkReference to exclude the pruning data: https://github.com/dotnet/sdk/issues/53106 -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" IsTransitiveFrameworkReference="true" DoNotResolve="true" />
+  </ItemGroup>
+
+  <!-- Remove the referenced AspNetCore framework before it's resolved in ResolveFrameworkReferences.  This lets us use our own references. -->
+  <Target Name="_RemoveAspNetCoreFrameworkReference" 
+          BeforeTargets="ResolveFrameworkReferences" >
+    <ItemGroup>
+      <FrameworkReference Remove="@(FrameworkReference->WithMetadataValue('DoNotResolve', 'true'))" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Remove Transtive Microsoft.Aspnetcore.App FrameworkReference, for projects referencing the affected projects above -->
+  <Target Name="_RemoveAspNetCoreTransitiveFrameworkReference"
+          BeforeTargets="AddTransitiveFrameworkReferences"
+          Condition="'$(UseAspNetCoreSharedRuntime)' != 'true'" >
+    <ItemGroup>
+      <TransitiveFrameworkReference Remove="Microsoft.AspNetCore.App" />
+    </ItemGroup>
   </Target>
 
   <!--

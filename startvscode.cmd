@@ -11,7 +11,7 @@ SET DOTNET_ROOT(x86)=%~dp0.dotnet\x86
 SET PATH=%DOTNET_ROOT%;%PATH%
 
 :: Sets TFW for Visual Studio Code usage
-SET TARGET=net10.0
+SET TARGET=net11.0
 
 SET folder=%~1
 

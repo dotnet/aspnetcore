@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -7,6 +7,17 @@
     <NoWarn>$(NoWarn);CS0649;CS0436;CS9195</NoWarn><!-- Not all APIs are called in the shared test project --><!-- Conflicts between internal and public Quic APIs -->
     <Nullable>annotations</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ActivatorUtilities\**\*.cs" Link="Shared\ActivatorUtilities\%(Filename)%(Extension)" />
@@ -43,14 +54,14 @@
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\StringValuesDictionaryDebugView.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)PooledArrayBufferWriter.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)Buffers\RefPooledArrayBufferWriter.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)PooledArrayBufferWriter.cs" Link="Shared\Buffers\%(Filename)%(Extension)" />
+    <Compile Include="$(SharedSourceRoot)Buffers\RefPooledArrayBufferWriter.cs" Link="Shared\Buffers\%(Filename)%(Extension)" />
+    <Compile Include="$(SharedSourceRoot)Encoding\Int7BitEncodingUtils.cs" Link="Shared\Encoding\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="FSharp.Core" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
-    <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
     <Reference Include="Microsoft.Net.Http.Headers" />
     <Reference Include="Microsoft.Windows.CsWin32">

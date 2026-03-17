@@ -168,6 +168,7 @@ public class BrowserFixture : IAsyncLifetime
 
         opts.AddArgument("--no-sandbox");
         opts.AddArgument("--ignore-certificate-errors");
+        opts.AddArgument("--disable-dev-shm-usage");
 
         // Log errors
         opts.SetLoggingPreference(LogType.Browser, LogLevel.All);
