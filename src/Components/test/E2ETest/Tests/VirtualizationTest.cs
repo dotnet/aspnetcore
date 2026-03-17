@@ -691,4 +691,18 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var js = (IJavaScriptExecutor)Browser;
         js.ExecuteScript("arguments[0].scrollLeft = arguments[0].scrollWidth", elem);
     }
+
+    [Fact]
+    public void VirtualizeWorksInsideHorizontalOverflowContainer()
+    {
+        Browser.MountTestComponent<VirtualizationHorizontalOverflow>();
+
+        Browser.True(() => Browser.FindElements(By.CssSelector("#horizontal-overflow-table tbody tr[id^='horizontal-overflow-row-']")).Count > 0);
+        Browser.DoesNotExist(By.Id("horizontal-overflow-row-999"));
+
+        Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
+
+        var lastElement = Browser.Exists(By.Id("horizontal-overflow-row-999"));
+        Browser.True(() => lastElement.Displayed);
+    }
 }
