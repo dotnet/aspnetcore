@@ -685,6 +685,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
             // [Required] on constructor parameter should mark the property as required
             Assert.Contains("email", schema.Required);
+            // Property without [Required] should not be in the required list
+            Assert.DoesNotContain("optionalNote", schema.Required);
         });
     }
 
@@ -722,9 +724,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     private class PrimaryCtorWithRequiredAttribute(
-        [Required] string email)
+        [Required] string email,
+        string? optionalNote = null)
     {
         public string Email { get; set; } = email;
+        public string? OptionalNote { get; set; } = optionalNote;
     }
 
     private class PrimaryCtorWithPropertyOverride(
