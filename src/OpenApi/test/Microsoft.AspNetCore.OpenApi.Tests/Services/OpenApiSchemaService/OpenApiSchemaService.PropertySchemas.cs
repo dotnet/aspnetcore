@@ -641,7 +641,99 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
     }
 
+    [Fact]
+    public async Task GetOpenApiSchema_HandlesValidationAttributesOnPrimaryConstructorParameters()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (PrimaryCtorWithValidationAttributes model) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var schema = document.Paths["/api"].Operations[HttpMethod.Post].RequestBody.Content.First().Value.Schema;
+
+            // [Range(0, 120)] on constructor parameter should produce minimum/maximum
+            var ageProperty = schema.Properties["age"];
+            Assert.Equal(JsonSchemaType.Integer, ageProperty.Type);
+            Assert.Equal("0", ageProperty.Minimum);
+            Assert.Equal("120", ageProperty.Maximum);
+
+            // [MinLength(1), MaxLength(100)] on constructor parameter should produce minLength/maxLength
+            var nameProperty = schema.Properties["name"];
+            Assert.Equal(JsonSchemaType.String, nameProperty.Type);
+            Assert.Equal(1, nameProperty.MinLength);
+            Assert.Equal(100, nameProperty.MaxLength);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiSchema_HandlesRequiredAttributeOnPrimaryConstructorParameters()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (PrimaryCtorWithRequiredAttribute model) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var schema = document.Paths["/api"].Operations[HttpMethod.Post].RequestBody.Content.First().Value.Schema;
+
+            // [Required] on constructor parameter should mark the property as required
+            Assert.Contains("email", schema.Required);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiSchema_PropertyAttributeOverridesConstructorParameterAttribute()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (PrimaryCtorWithPropertyOverride model) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var schema = document.Paths["/api"].Operations[HttpMethod.Post].RequestBody.Content.First().Value.Schema;
+
+            // Property-level [Range(10, 50)] should override constructor parameter [Range(0, 100)]
+            var scoreProperty = schema.Properties["score"];
+            Assert.Equal("10", scoreProperty.Minimum);
+            Assert.Equal("50", scoreProperty.Maximum);
+        });
+    }
+
 #nullable enable
+    // Primary constructor class (NOT a record) with validation attributes on constructor parameters.
+    // Unlike records, C# does not synthesize property attributes for class primary constructors,
+    // so these attributes are only on the ParameterInfo, not the PropertyInfo.
+    private class PrimaryCtorWithValidationAttributes(
+        [Range(0, 120)] int age,
+        [MinLength(1), MaxLength(100)] string name)
+    {
+        public int Age { get; set; } = age;
+        public string Name { get; set; } = name;
+    }
+
+    private class PrimaryCtorWithRequiredAttribute(
+        [Required] string email)
+    {
+        public string Email { get; set; } = email;
+    }
+
+    private class PrimaryCtorWithPropertyOverride(
+        [Range(0, 100)] int score)
+    {
+        [Range(10, 50)]
+        public int Score { get; set; } = score;
+    }
+
     private class NullablePropertiesTestModel
     {
         public int? NullableInt { get; set; }
