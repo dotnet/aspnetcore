@@ -21,7 +21,7 @@ function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | 
 
   const style = getComputedStyle(element);
 
-  if (style.overflowY !== 'visible') {
+  if (style.overflowY !== 'visible' && style.overflowY !== 'hidden' && style.overflowY !== 'clip') {
     return element;
   }
 
