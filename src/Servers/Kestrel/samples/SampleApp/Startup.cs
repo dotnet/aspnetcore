@@ -106,6 +106,22 @@ public class Startup
                         options.Listen(IPAddress.Loopback, basePort + 1, listenOptions =>
                         {
                             listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1;
+
+                            listenOptions.Use(next => async context =>
+                            {
+                                await next(context);
+
+                                var tlsHandshakeFeature = context.Features.Get<ITlsHandshakeFeature>();
+                                if (tlsHandshakeFeature?.HandshakeException is { } ex)
+                                {
+                                    Console.WriteLine($"[TLS Handshake Failed] ConnectionId={context.ConnectionId}, Exception={ex.GetType().Name}: {ex.Message}");
+                                }
+                                else if (tlsHandshakeFeature is not null)
+                                {
+                                    Console.WriteLine($"[TLS Handshake OK] ConnectionId={context.ConnectionId}, Protocol={tlsHandshakeFeature.Protocol}");
+                                }
+                            });
+
                             listenOptions.UseHttps();
                             listenOptions.UseConnectionLogging();
                         });
