@@ -42,7 +42,7 @@
         variableHeightProvider = async request =>
         {
             await Task.Yield();
-            Interlocked.Increment(ref ItemsProviderCallCount);
+            ItemsProviderCallCount++;
             
             var items = Enumerable.Range(request.StartIndex, request.Count ?? 1000)
                 .Where(i => i < 1000)
