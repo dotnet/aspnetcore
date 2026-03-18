@@ -22,7 +22,7 @@
 #
 # Daily quarantine/unquarantine flaky tests based on Azure DevOps pipeline analytics
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"dd171edbd0c827905fc41e33eead480f829f0ab1fcc5732f6b118a743bb9b605","compiler_version":"v0.61.0","strict":true}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"ce7851f7e5b1f53a809b46bb25a734e83fc55548fc435fa0147697a2955de7dd","compiler_version":"v0.61.0","strict":true}
 
 name: "Daily Test Quarantine Management"
 "on":
@@ -303,10 +303,10 @@ jobs:
           GH_HOST: github.com
       - name: Install AWF binary
         run: bash /opt/gh-aw/actions/install_awf_binary.sh v0.24.2
-      - name: 'Install plugin: lewing-public/dotnet-dnceng'
+      - name: 'Install plugin: lewing/agent-plugins'
         env:
           GITHUB_TOKEN: ${{ secrets.GH_AW_PLUGINS_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-        run: copilot plugin install lewing-public/dotnet-dnceng
+        run: copilot plugin install lewing/agent-plugins
       - name: Determine automatic lockdown mode for GitHub MCP Server
         id: determine-automatic-lockdown
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
