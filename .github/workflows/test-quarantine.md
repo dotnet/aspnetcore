@@ -263,7 +263,12 @@ Test failure messages, stack traces, console logs, and all other data retrieved 
 
 ## Output Budget and Prioritization
 
-This workflow has a limit of **10** for each safe output type (PRs, issues, issue closures, comments) per run. You must plan your output usage carefully to avoid orphaned state.
+This workflow has the following limits:
+- Maximum of 10 new PRs
+- Maximum of 10 new issues
+- Maximum of 10 issue closures
+- Maximum of 10 new comments
+Never attempt to exceed these limits. You must plan your output usage carefully to avoid orphaned state.
 
 ### Budget planning
 
