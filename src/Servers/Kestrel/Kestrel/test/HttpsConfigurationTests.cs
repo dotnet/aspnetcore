@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Tests;
 
@@ -21,6 +22,7 @@ public class HttpsConfigurationTests
     [InlineData("http://127.0.0.1:0", false)]
     [InlineData("https://127.0.0.1:0", true)]
     [InlineData("https://127.0.0.1:0", false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65836")]
     public async Task BindAddressFromSetting(string address, bool useKestrelHttpsConfiguration)
     {
         var hostBuilder = new HostBuilder()
@@ -90,6 +92,7 @@ public class HttpsConfigurationTests
     [InlineData("http://127.0.0.1:0", false)]
     [InlineData("https://127.0.0.1:0", true)]
     [InlineData("https://127.0.0.1:0", false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65836")]
     public async Task BindAddressFromEndpoint(string address, bool useKestrelHttpsConfiguration)
     {
         var hostBuilder = new HostBuilder()
@@ -168,6 +171,7 @@ public class HttpsConfigurationTests
     [InlineData("http://127.0.0.1:0", false)]
     [InlineData("https://127.0.0.1:0", true)]
     [InlineData("https://127.0.0.1:0", false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65836")]
     public async Task LoadEndpointCertificate(string address, bool useKestrelHttpsConfiguration)
     {
         var hostBuilder = new HostBuilder()
@@ -208,6 +212,7 @@ public class HttpsConfigurationTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65836")]
     public async Task UseHttpsJustWorks()
     {
         var hostBuilder = new HostBuilder()
@@ -237,6 +242,7 @@ public class HttpsConfigurationTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65836")]
     public async Task UseHttpsMayNotImplyUseKestrelHttpsConfiguration()
     {
         var hostBuilder = new HostBuilder()
