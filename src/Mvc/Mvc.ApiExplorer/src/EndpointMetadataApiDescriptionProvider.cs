@@ -417,17 +417,14 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
 
         if (supportedResponseTypes.Count > 1)
         {
-            var orderedSupportedResponseTypes = supportedResponseTypes
+            // With multiple response types (e.g., different types for the same status code),
+            // we need deterministic ordering so that API documentation is stable across runs.
+            // This matches the ordering used by the controller path in ApiResponseTypeProvider.
+            supportedResponseTypes = supportedResponseTypes
                 .OrderBy(responseType => responseType.StatusCode)
                 .ThenBy(responseType => responseType.Type?.Name)
                 .ThenBy(responseType => responseType.ApiResponseFormats.FirstOrDefault()?.MediaType)
-                .ToList();
-
-            supportedResponseTypes.Clear();
-            foreach (var orderedSupportedResponseType in orderedSupportedResponseTypes)
-            {
-                supportedResponseTypes.Add(orderedSupportedResponseType);
-            }
+                .ToList(); // clears and rewrites the supportedResponseTypes list in-place
         }
 
         static string? GetMatchingResponseTypeDescription(IEnumerable<ApiResponseType> responseMetadataTypes, ApiResponseType apiResponseType)
