@@ -59,20 +59,20 @@ public class WebAssemblyRenderingTest : ServerTestBase<BlazorWasmTestAppFixture<
 
         // Initial state: isBoolEnabled=true, so data-enabled is present, hidden is absent
         Browser.Equal("True", () => stateLabel.Text);
-        Assert.Equal(string.Empty, target.GetDomAttribute("data-enabled"));
-        Assert.Null(target.GetDomAttribute("hidden"));
+        Browser.Equal(string.Empty, () => target.GetDomAttribute("data-enabled"));
+        Browser.True(() => target.GetDomAttribute("hidden") is null);
 
         // Toggle to false: data-enabled removed, hidden added
         toggleButton.Click();
         Browser.Equal("False", () => stateLabel.Text);
-        Assert.Null(target.GetDomAttribute("data-enabled"));
-        Assert.Equal(string.Empty, target.GetDomAttribute("hidden"));
+        Browser.True(() => target.GetDomAttribute("data-enabled") is null);
+        Browser.Equal(string.Empty, () => target.GetDomAttribute("hidden"));
 
         // Toggle back to true: data-enabled present again, hidden removed
         toggleButton.Click();
         Browser.Equal("True", () => stateLabel.Text);
-        Assert.Equal(string.Empty, target.GetDomAttribute("data-enabled"));
-        Assert.Null(target.GetDomAttribute("hidden"));
+        Browser.Equal(string.Empty, () => target.GetDomAttribute("data-enabled"));
+        Browser.True(() => target.GetDomAttribute("hidden") is null);
     }
 
     [Fact]
@@ -89,8 +89,8 @@ public class WebAssemblyRenderingTest : ServerTestBase<BlazorWasmTestAppFixture<
         Assert.Equal("Second choice", selectElement.SelectedOption.Text);
         Assert.Equal("Second", boundValue.Text);
         Browser.Equal("False", () => disabledState.Text);
-        Assert.Null(Browser.FindElement(By.Id("select-with-bool-attrs")).GetDomAttribute("disabled"));
-        Assert.Equal("custom-value", Browser.FindElement(By.Id("select-with-bool-attrs")).GetDomAttribute("data-custom"));
+        Browser.True(() => Browser.FindElement(By.Id("select-with-bool-attrs")).GetDomAttribute("disabled") is null);
+        Browser.Equal("custom-value", () => Browser.FindElement(By.Id("select-with-bool-attrs")).GetDomAttribute("data-custom"));
 
         // Change selection while enabled
         selectElement.SelectByText("Third choice");
@@ -99,12 +99,12 @@ public class WebAssemblyRenderingTest : ServerTestBase<BlazorWasmTestAppFixture<
         // Disable the select via bool attribute toggle
         toggleDisabledButton.Click();
         Browser.Equal("True", () => disabledState.Text);
-        Assert.Equal(string.Empty, Browser.FindElement(By.Id("select-with-bool-attrs")).GetDomAttribute("disabled"));
+        Browser.Equal(string.Empty, () => Browser.FindElement(By.Id("select-with-bool-attrs")).GetDomAttribute("disabled"));
 
         // Re-enable the select
         toggleDisabledButton.Click();
         Browser.Equal("False", () => disabledState.Text);
-        Assert.Null(Browser.FindElement(By.Id("select-with-bool-attrs")).GetDomAttribute("disabled"));
+        Browser.True(() => Browser.FindElement(By.Id("select-with-bool-attrs")).GetDomAttribute("disabled") is null);
 
         // Verify select still works after re-enabling
         selectElement.SelectByText("First choice");
@@ -122,22 +122,22 @@ public class WebAssemblyRenderingTest : ServerTestBase<BlazorWasmTestAppFixture<
 
         // Initial state: readonly=false (absent), data-active=true (present), placeholder is string
         Browser.Equal("False", () => stateLabel.Text);
-        Assert.Null(input.GetDomAttribute("readonly"));
-        Assert.Equal(string.Empty, input.GetDomAttribute("data-active"));
-        Assert.Equal("type here", input.GetDomAttribute("placeholder"));
+        Browser.True(() => input.GetDomAttribute("readonly") is null);
+        Browser.Equal(string.Empty, () => input.GetDomAttribute("data-active"));
+        Browser.Equal("type here", () => input.GetDomAttribute("placeholder"));
 
         // Toggle: readonly=true (present), data-active=false (absent), placeholder unchanged
         toggleButton.Click();
         Browser.Equal("True", () => stateLabel.Text);
-        Assert.Equal(string.Empty, input.GetDomAttribute("readonly"));
-        Assert.Null(input.GetDomAttribute("data-active"));
-        Assert.Equal("type here", input.GetDomAttribute("placeholder"));
+        Browser.Equal(string.Empty, () => input.GetDomAttribute("readonly"));
+        Browser.True(() => input.GetDomAttribute("data-active") is null);
+        Browser.Equal("type here", () => input.GetDomAttribute("placeholder"));
 
         // Toggle back: readonly removed, data-active restored
         toggleButton.Click();
         Browser.Equal("False", () => stateLabel.Text);
-        Assert.Null(input.GetDomAttribute("readonly"));
-        Assert.Equal(string.Empty, input.GetDomAttribute("data-active"));
-        Assert.Equal("type here", input.GetDomAttribute("placeholder"));
+        Browser.True(() => input.GetDomAttribute("readonly") is null);
+        Browser.Equal(string.Empty, () => input.GetDomAttribute("data-active"));
+        Browser.Equal("type here", () => input.GetDomAttribute("placeholder"));
     }
 }
