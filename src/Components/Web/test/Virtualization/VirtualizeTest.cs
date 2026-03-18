@@ -367,7 +367,7 @@ public class VirtualizeTest
     }
 
     [Fact]
-    public async Task Virtualize_RendersItemWrapperWithDataVirtualizeItemAttribute()
+    public async Task Virtualize_RendersCommentDelimitersForItemMeasurement()
     {
         Virtualize<int> renderedVirtualize = null;
 
@@ -390,25 +390,25 @@ public class VirtualizeTest
         await testRenderer.Dispatcher.InvokeAsync(() =>
             ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(0f, 150f, 500f, null));
 
-        var hasDataVirtualizeItemAttr = testRenderer.Batches
+        var commentDelimiters = testRenderer.Batches
             .SelectMany(b => b.ReferenceFrames)
-            .Any(f => f.FrameType == RenderTreeFrameType.Attribute
-                   && f.AttributeName == "data-virtualize-item");
+            .Where(f => f.FrameType == RenderTreeFrameType.Markup
+                     && f.MarkupContent == "<!--virtualize:item-->")
+            .Count();
 
-        Assert.True(hasDataVirtualizeItemAttr,
-            "Items should be wrapped in elements with 'data-virtualize-item' attribute for JS measurement");
+        Assert.True(commentDelimiters > 0,
+            "Items should be preceded by <!--virtualize:item--> comment delimiters for JS measurement");
     }
 
     [Fact]
-    public async Task Virtualize_TableSpacerElement_RendersMatchingWrapperElement()
+    public async Task Virtualize_MultiRootItemTemplate_RendersOneCommentPerItem()
     {
         Virtualize<int> renderedVirtualize = null;
 
         var rootComponent = new VirtualizeTestHostcomponent
         {
-            InnerContent = BuildVirtualizeWithContent(50f, new List<int> { 1, 2, 3 },
-                captureRenderedVirtualize: virtualize => renderedVirtualize = virtualize,
-                spacerElement: "tr")
+            InnerContent = BuildVirtualizeWithMultiRootContent(50f, new List<int> { 1, 2, 3 },
+                captureRenderedVirtualize: virtualize => renderedVirtualize = virtualize)
         };
 
         var serviceProvider = new ServiceCollection()
@@ -424,19 +424,14 @@ public class VirtualizeTest
         await testRenderer.Dispatcher.InvokeAsync(() =>
             ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(0f, 150f, 500f, null));
 
-        var referenceFrames = testRenderer.Batches.SelectMany(b => b.ReferenceFrames).ToList();
+        var commentDelimiters = testRenderer.Batches
+            .SelectMany(b => b.ReferenceFrames)
+            .Where(f => f.FrameType == RenderTreeFrameType.Markup
+                     && f.MarkupContent == "<!--virtualize:item-->")
+            .Count();
 
-        var hasDataVirtualizeItemAttr = referenceFrames
-            .Any(f => f.FrameType == RenderTreeFrameType.Attribute
-                   && f.AttributeName == "data-virtualize-item");
-
-        var hasTrElements = referenceFrames
-            .Any(f => f.FrameType == RenderTreeFrameType.Element && f.ElementName == "tr");
-
-        Assert.True(hasDataVirtualizeItemAttr,
-            "Wrapper elements should have 'data-virtualize-item' attribute");
-        Assert.True(hasTrElements,
-            "Wrapper elements should use 'tr' tag when SpacerElement='tr'");
+        // 3 items produce 4 delimiters (N+1 fence pattern: one before each item + trailing)
+        Assert.Equal(4, commentDelimiters);
     }
 
     [Fact]
@@ -612,12 +607,6 @@ public class VirtualizeTest
 
         Assert.Equal(150f, renderedVirtualize._totalMeasuredHeight);
         Assert.Equal(3, renderedVirtualize._measuredItemCount);
-
-        var hasItemWrappers = testRenderer.Batches
-            .SelectMany(b => b.ReferenceFrames)
-            .Any(f => f.FrameType == RenderTreeFrameType.Attribute
-                   && f.AttributeName == "data-virtualize-item");
-        Assert.True(hasItemWrappers);
     }
 
     [Fact]
@@ -750,6 +739,35 @@ public class VirtualizeTest
         if (captureRenderedVirtualize != null)
         {
             builder.AddComponentReferenceCapture(5, component =>
+                captureRenderedVirtualize(component as Virtualize<int>));
+        }
+
+        builder.CloseComponent();
+    };
+
+    private RenderFragment BuildVirtualizeWithMultiRootContent(
+        float itemSize,
+        ICollection<int> items,
+        Action<Virtualize<int>> captureRenderedVirtualize = null)
+        => builder =>
+    {
+        builder.OpenComponent<Virtualize<int>>(0);
+        builder.AddComponentParameter(1, "ItemSize", itemSize);
+        builder.AddComponentParameter(2, "Items", items);
+        builder.AddComponentParameter(3, "ChildContent", (RenderFragment<int>)(item => b =>
+        {
+            // Two root elements per item
+            b.OpenElement(0, "div");
+            b.AddContent(1, $"Part A of {item.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+            b.CloseElement();
+            b.OpenElement(2, "div");
+            b.AddContent(3, $"Part B of {item.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+            b.CloseElement();
+        }));
+
+        if (captureRenderedVirtualize != null)
+        {
+            builder.AddComponentReferenceCapture(4, component =>
                 captureRenderedVirtualize(component as Virtualize<int>));
         }
 

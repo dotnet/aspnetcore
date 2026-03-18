@@ -49,16 +49,25 @@ interface MeasurementResult {
 
 function measureRenderedItems(spacerBefore: HTMLElement, spacerAfter: HTMLElement): MeasurementResult {
   const scaleFactor = getScaleFactor(spacerBefore, spacerAfter);
-  const items = spacerBefore.parentElement?.querySelectorAll<HTMLElement>(':scope > [data-virtualize-item]');
 
-  if (!items || items.length === 0) {
-    return { heights: [], scaleFactor };
+  // Collect <!--virtualize:item--> comment delimiters between spacers (N+1 fence for N items).
+  const delimiters: Comment[] = [];
+  for (let node = spacerBefore.nextSibling; node && node !== spacerAfter; node = node.nextSibling) {
+    if (node.nodeType === Node.COMMENT_NODE && node.textContent === 'virtualize:item') {
+      delimiters.push(node as Comment);
+    }
   }
 
-  const heights = Array.from(
-    items,
-    item => item.getBoundingClientRect().height / scaleFactor,
-  ).filter(h => Number.isFinite(h) && h > 0);
+  // Measure each item's height via Range between consecutive delimiters.
+  const heights = delimiters.slice(0, -1)
+    .map((start, i) => {
+      const range = document.createRange();
+      range.setStartAfter(start);
+      range.setEndBefore(delimiters[i + 1]);
+      return range.getBoundingClientRect().height / scaleFactor;
+    })
+    .filter(h => Number.isFinite(h) && h > 0);
+
   return { heights, scaleFactor };
 }
 
