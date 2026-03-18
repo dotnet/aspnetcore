@@ -1381,7 +1381,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         Assert.Equal("1.1", tags[HostingTelemetryHelpers.AttributeNetworkProtocolVersion]);
         Assert.Equal("System.InvalidOperationException", tags[HostingTelemetryHelpers.AttributeErrorType]);
         Assert.Equal(ActivityStatusCode.Error, stoppedActivity.Status);
-        Assert.Equal("Test exception", stoppedActivity.StatusDescription);
+        Assert.Null(stoppedActivity.StatusDescription);
     }
 
     [Theory]
