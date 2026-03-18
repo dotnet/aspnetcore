@@ -326,21 +326,21 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private float GetItemHeight()
         => _measuredItemCount > 0 ? _totalMeasuredHeight / _measuredItemCount : _itemSize;
 
-    private bool ProcessMeasurements(float[]? itemHeights)
+    private bool ProcessMeasurements(float measuredItemHeightSum, int measuredItemCount)
     {
-        if (itemHeights is not { Length: > 0 })
+        if (measuredItemCount <= 0)
         {
             return false;
         }
 
-        _totalMeasuredHeight += itemHeights.Sum();
-        _measuredItemCount += itemHeights.Length;
+        _totalMeasuredHeight += measuredItemHeightSum;
+        _measuredItemCount += measuredItemCount;
         return true;
     }
 
-    void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, float[]? itemHeights)
+    void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, float measuredItemHeightSum, int measuredItemCount)
     {
-        ProcessMeasurements(itemHeights);
+        ProcessMeasurements(measuredItemHeightSum, measuredItemCount);
 
         CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
 
@@ -353,9 +353,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
     }
 
-    void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, float[]? itemHeights)
+    void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, float measuredItemHeightSum, int measuredItemCount)
     {
-        var hadNewMeasurements = ProcessMeasurements(itemHeights);
+        var hadNewMeasurements = ProcessMeasurements(measuredItemHeightSum, measuredItemCount);
 
         CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
 

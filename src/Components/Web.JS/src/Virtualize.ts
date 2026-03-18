@@ -43,7 +43,8 @@ function getScaleFactor(spacerBefore: HTMLElement, spacerAfter: HTMLElement): nu
 }
 
 interface MeasurementResult {
-  heights: number[];
+  heightSum: number;
+  heightCount: number;
   scaleFactor: number;
 }
 
@@ -58,17 +59,21 @@ function measureRenderedItems(spacerBefore: HTMLElement, spacerAfter: HTMLElemen
     }
   }
 
-  // Measure each item's height via Range between consecutive delimiters.
-  const heights = delimiters.slice(0, -1)
-    .map((start, i) => {
-      const range = document.createRange();
-      range.setStartAfter(start);
-      range.setEndBefore(delimiters[i + 1]);
-      return range.getBoundingClientRect().height / scaleFactor;
-    })
-    .filter(h => Number.isFinite(h) && h > 0);
+  // Measure each item's height via Range between consecutive delimiters
+  let heightSum = 0;
+  let heightCount = 0;
+  for (let i = 0; i < delimiters.length - 1; i++) {
+    const range = document.createRange();
+    range.setStartAfter(delimiters[i]);
+    range.setEndBefore(delimiters[i + 1]);
+    const h = range.getBoundingClientRect().height / scaleFactor;
+    if (Number.isFinite(h) && h > 0) {
+      heightSum += h;
+      heightCount++;
+    }
+  }
 
-  return { heights, scaleFactor };
+  return { heightSum, heightCount, scaleFactor };
 }
 
 function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spacerAfter: HTMLElement, rootMargin = 50): void {
@@ -290,7 +295,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       return;
     }
 
-    const { heights: measurements, scaleFactor } = measureRenderedItems(spacerBefore, spacerAfter);
+    const { heightSum: measurementSum, heightCount: measurementCount, scaleFactor } = measureRenderedItems(spacerBefore, spacerAfter);
 
     // To compute the ItemSize, work out the separation between the two spacers. We can't just measure an individual element
     // because each conceptual item could be made from multiple elements. Using getBoundingClientRect allows for the size to be
@@ -307,13 +312,13 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
       if (entry.target === spacerBefore) {
         const spacerSize = (entry.intersectionRect.top - entry.boundingClientRect.top) / scaleFactor;
-        dotNetHelper.invokeMethodAsync('OnSpacerBeforeVisible', spacerSize, spacerSeparation, containerSize, measurements);
+        dotNetHelper.invokeMethodAsync('OnSpacerBeforeVisible', spacerSize, spacerSeparation, containerSize, measurementSum, measurementCount);
       } else if (entry.target === spacerAfter && spacerAfter.offsetHeight > 0) {
         // When we first start up, both the "before" and "after" spacers will be visible, but it's only relevant to raise a
         // single event to load the initial data. To avoid raising two events, skip the one for the "after" spacer if we know
         // it's meaningless to talk about any overlap into it.
         const spacerSize = (entry.boundingClientRect.bottom - entry.intersectionRect.bottom) / scaleFactor;
-        dotNetHelper.invokeMethodAsync('OnSpacerAfterVisible', spacerSize, spacerSeparation, containerSize, measurements);
+        dotNetHelper.invokeMethodAsync('OnSpacerAfterVisible', spacerSize, spacerSeparation, containerSize, measurementSum, measurementCount);
       }
     });
   }
