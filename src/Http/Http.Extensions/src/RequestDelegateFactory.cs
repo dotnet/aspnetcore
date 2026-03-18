@@ -1801,9 +1801,9 @@ public static partial class RequestDelegateFactory
         // For nullable value types, treat empty strings as null (don't attempt to parse them).
         // This matches controller behavior and avoids parse failures on ?param= (empty value).
         var isNullableValueType = Nullable.GetUnderlyingType(parameter.ParameterType) != null;
-        var sourceCheckExpr = isOptional && isNullableValueType
+        var sourceCheckExpr = (Expression)(isNullableValueType
             ? TempSourceStringIsNotNullOrEmptyExpr
-            : TempSourceStringNotNullExpr;
+            : TempSourceStringNotNullExpr);
 
         var ifNotNullTryParse = !parameter.HasDefaultValue
             ? Expression.IfThen(sourceCheckExpr, tryParseExpression)
