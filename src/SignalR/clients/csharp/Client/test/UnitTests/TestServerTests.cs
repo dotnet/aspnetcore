@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Xunit;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests;
 
@@ -78,6 +79,7 @@ public class TestServerTests : VerifiableLoggedTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65839")]
     public async Task LongPollingWorks()
     {
         using (StartVerifiableLog())
