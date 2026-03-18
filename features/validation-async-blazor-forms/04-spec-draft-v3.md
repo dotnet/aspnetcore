@@ -42,9 +42,9 @@ The solution adds async validation capabilities to Blazor forms through two comp
 
 2. **`AddValidationTask(FieldIdentifier, Task)`** — a method for tracking in-flight async validation tasks per field. This enables pending state queries (`IsValidationPending`), automatic cancellation when a field is re-edited, and automatic cancellation on form submit (where full-form validation supersedes field-level tasks).
 
-`EditForm.HandleSubmitAsync()` is updated to call `ValidateAsync()` instead of `Validate()`. The existing sync `Validate()` will either be marked `[Obsolete]` or gain an optional `syncOnly` parameter — two alternative designs are presented in Scenarios 8 and 9.
+`EditForm.HandleSubmitAsync()` is updated to call `ValidateAsync()` instead of `Validate()`. The existing sync `Validate()` will either be marked `[Obsolete]` or gain an optional `syncOnly` parameter — two alternative designs are presented in Scenario 5.
 
-UI feedback is provided through a `"pending"` CSS class on `InputBase` (via `FieldCssClassProvider`) and a new `ValidationPendingIndicator` component.
+UI feedback is provided through `"pending"` and `"cancelled"` CSS classes on `InputBase` (via `FieldCssClassProvider`) and optional render fragments on `ValidationMessage`.
 
 ### Scenario 1: Validate form with async validators on submit
 
@@ -135,7 +135,132 @@ No manual wiring is needed — `DataAnnotationsValidator` handles the async vali
 
 > **TODO:** When multiple fields trigger async validation concurrently, should they run in parallel or be queued?
 
-### Scenario 4: Display async validation state declaratively
+### Scenario 4: Validate complex form with async validators on submit
+
+For forms with complex object graphs (nested objects, collections), async validation works automatically when the application uses `AddValidation()` in startup and `DataAnnotationsValidator` in the form. The `Microsoft.Extensions.Validation` infrastructure traverses the object graph asynchronously, validating nested properties including those with async validators.
+
+```csharp
+// Program.cs
+builder.Services.AddValidation();
+```
+
+```csharp
+[ValidatableType]
+public class Order
+{
+    [Required]
+    public string CustomerName { get; set; } = "";
+
+    [Required]
+    public List<OrderItem> Items { get; set; } = new();
+}
+
+[ValidatableType]
+public class OrderItem
+{
+    [Required]
+    public string ProductName { get; set; } = "";
+
+    [Range(1, 1000)]
+    public int Quantity { get; set; }
+
+    [UniqueProductInOrder]  // async validator checking server-side inventory
+    public string ProductId { get; set; } = "";
+}
+```
+
+```razor
+<EditForm Model="@order" OnValidSubmit="SubmitOrder">
+    <DataAnnotationsValidator />
+
+    <InputText @bind-Value="order.CustomerName" />
+    <ValidationMessage For="() => order.CustomerName" />
+
+    @for (int i = 0; i < order.Items.Count; i++)
+    {
+        var item = order.Items[i];
+        <InputText @bind-Value="item.ProductId" />
+        <ValidationMessage For="() => item.ProductId" />
+    }
+
+    <ValidationSummary />
+    <button type="submit">Place Order</button>
+</EditForm>
+```
+
+Both the legacy `System.ComponentModel.Validator` path and the `Microsoft.Extensions.Validation` path are retained for now.
+
+> **TODO:** Should we unify on `Microsoft.Extensions.Validation` or keep the legacy `Validator` path?
+
+> **TODO:** Should we use `ValidateContext.OnValidationError` for real-time error streaming?
+
+### Scenario 5: Backward compatibility and behavior of sync `Validate()`
+
+Existing forms with sync-only validators continue to work identically at runtime. `EditForm` internally uses `ValidateAsync()`, so no changes are needed in form markup or `OnValidSubmit`/`OnInvalidSubmit` handlers.
+
+```razor
+<!-- This continues to work exactly as before — no changes needed -->
+<EditForm Model="@person" OnValidSubmit="Save">
+    <DataAnnotationsValidator />
+
+    <InputText @bind-Value="person.Name" />
+    <ValidationMessage For="() => person.Name" />
+
+    <button type="submit">Save</button>
+</EditForm>
+
+@code {
+    public class Person
+    {
+        [Required]
+        [StringLength(100)]
+        public string Name { get; set; } = "";
+    }
+}
+```
+
+For the sync `Validate()` method, there are two alternative designs under consideration:
+
+**Alternative A — Mark `Validate()` as `[Obsolete]`:**
+
+```csharp
+// Still compiles and runs, but produces warning CS0618:
+var isValid = editContext.Validate();
+// Warning: 'EditContext.Validate()' is obsolete. Use 'ValidateAsync()' instead.
+
+// Recommended:
+var isValid = await editContext.ValidateAsync();
+```
+
+**Alternative B — Add an optional `syncOnly` parameter:**
+
+```csharp
+// Default behavior unchanged — but throws at runtime if model has async validators:
+var isValid = editContext.Validate();
+
+// Explicitly opt in to sync-only validation — no throw even with async validators,
+// async validators are simply skipped:
+var isValid = editContext.Validate(syncOnly: true);
+
+// Full validation including async:
+var isValid = await editContext.ValidateAsync();
+```
+
+Alternative B preserves `Validate()` as a non-obsolete API for cases where a developer intentionally wants only sync validation (e.g., instant field-level checks without triggering async work). Alternative A provides a cleaner migration signal but removes the ability to explicitly request sync-only validation.
+
+> **TODO:** Resolve which alternative to use for `Validate()` — Obsolete vs `syncOnly` parameter.
+
+In both alternatives, if the model has async validators and the developer calls `Validate()` without opting into sync-only mode, the validation infrastructure throws at runtime:
+
+```csharp
+// Runtime throws if model has async validators:
+// InvalidOperationException:
+//   "This model contains async validators. Use EditContext.ValidateAsync() instead of Validate()."
+```
+
+This prevents silent data loss where async validators would be silently skipped.
+
+### Scenario 6: Display async validation state declaratively
 
 Developers need a declarative way to show pending and cancelled validation feedback next to a field — without writing manual conditional rendering logic. The component should handle subscribing to state changes and rendering the appropriate content automatically.
 
@@ -155,11 +280,11 @@ The proposed approach extends `ValidationMessage` with optional `PendingContent`
 
 When the render fragments are not provided, `ValidationMessage` behaves exactly as it does today — it only renders error messages. This makes the change fully backward compatible.
 
-> **TODO:** Alternative approaches to consider: (1) A separate dedicated `ValidationPendingIndicator` component instead of extending `ValidationMessage`. This provides cleaner separation of concerns and independent placement control, but requires two components per field. (2) Not providing any built-in component and leaving this to developers using the programmatic `IsValidationPending()` / `IsValidationCancelled()` APIs (Scenario 5).
+> **TODO:** Alternative approaches to consider: (1) A separate dedicated `ValidationPendingIndicator` component instead of extending `ValidationMessage`. This provides cleaner separation of concerns and independent placement control, but requires two components per field. (2) Not providing any built-in component and leaving this to developers using the programmatic `IsValidationPending()` / `IsValidationCancelled()` APIs (Scenario 7).
 
-### Scenario 5: Check async validation state programmatically
+### Scenario 7: Check async validation state programmatically
 
-For cases where the declarative approach (Scenario 4) is insufficient — such as disabling the submit button, showing a form-level indicator, or implementing custom validation UX — developers can query pending and cancelled state directly on `EditContext`.
+For cases where the declarative approach (Scenario 6) is insufficient — such as disabling the submit button, showing a form-level indicator, or implementing custom validation UX — developers can query pending and cancelled state directly on `EditContext`.
 
 ```razor
 <EditForm Model="@registration">
@@ -195,7 +320,7 @@ For cases where the declarative approach (Scenario 4) is insufficient — such a
 
 > **TODO:** The name "cancelled" may be confusing since this state is not about user-initiated cancellation (which is silent) but about validation infrastructure failures. Naming alternatives to consider: "failed" (`IsValidationFailed`), "faulted" (`IsValidationFaulted`, mirrors `Task.IsFaulted`), "errored" (`IsValidationErrored`), "inconclusive" (`IsValidationInconclusive`). Resolve naming before API review.
 
-### Scenario 6: Style input forms based on async validation state
+### Scenario 8: Style input forms based on async validation state
 
 `InputBase` automatically applies `"pending"` or `"cancelled"` CSS classes based on async validation state, using the existing `FieldCssClassProvider` mechanism.
 
@@ -209,7 +334,6 @@ input.pending {
 
 input.cancelled {
     border-color: #cc7700;
-}
 }
 
 input.valid { border-color: green; }
@@ -240,7 +364,7 @@ public class BootstrapFieldCssClassProvider : FieldCssClassProvider
 
 > **TODO:** Should we support a form-level CSS class (e.g., `<form class="validating">`) when any field has pending validation?
 
-### Scenario 7: Cancellation of stale validations vs validation failures
+### Scenario 9: Cancellation of stale validations vs validation failures
 
 There are two distinct situations where an async validation task does not complete normally:
 
@@ -278,7 +402,7 @@ public class UniqueUsernameAttribute : AsyncValidationAttribute
 }
 ```
 
-### Scenario 8: Retry validation for a specific field
+### Scenario 10: Retry validation for a specific field
 
 When async validation for a field fails (enters "cancelled" state), the developer or the user needs a way to retry validation for that specific field without changing its value and without re-validating the entire form.
 
@@ -298,83 +422,9 @@ When async validation for a field fails (enters "cancelled" state), the develope
 </div>
 ```
 
-`ValidateFieldAsync(FieldIdentifier)` triggers validation for a specific field — clears any cancelled state, runs sync validators, starts async validators, and registers the async task via `AddValidationTask`.
+`ValidateFieldAsync(FieldIdentifier)` triggers validation for a specific field — clears any cancelled state, runs sync validators, starts async validators, and registers the async task for tracking.
 
 > **TODO:** Technically, developers could call `NotifyFieldChanged(fieldIdentifier)` to achieve a similar effect today, since it triggers `OnFieldChanged` which runs validation in `DataAnnotationsEventSubscriptions`. However, `NotifyFieldChanged` is semantically a *value change* notification — it marks the field as modified and signals that the value has changed, which is not true in a retry scenario. A dedicated `ValidateFieldAsync` provides the correct semantics: "re-validate this field's current value" without implying a value change.
-
-### Scenario 9: Backward compatibility — sync-only forms unchanged
-
-Existing forms with sync-only validators continue to work identically at runtime. `EditForm` internally uses `ValidateAsync()`, so no changes are needed in form markup or `OnValidSubmit`/`OnInvalidSubmit` handlers.
-
-For the sync `Validate()` method, there are two alternative designs under consideration:
-
-**Alternative A — Mark `Validate()` as `[Obsolete]`:**
-
-```csharp
-// Still compiles and runs, but produces warning CS0618:
-var isValid = editContext.Validate();
-// Warning: 'EditContext.Validate()' is obsolete. Use 'ValidateAsync()' instead.
-
-// Recommended:
-var isValid = await editContext.ValidateAsync();
-```
-
-**Alternative B — Add an optional `syncOnly` parameter:**
-
-```csharp
-// Default behavior unchanged — but throws at runtime if model has async validators:
-var isValid = editContext.Validate();
-
-// Explicitly opt in to sync-only validation — no throw even with async validators,
-// async validators are simply skipped:
-var isValid = editContext.Validate(syncOnly: true);
-
-// Full validation including async:
-var isValid = await editContext.ValidateAsync();
-```
-
-Alternative B preserves `Validate()` as a non-obsolete API for cases where a developer intentionally wants only sync validation (e.g., instant field-level checks without triggering async work). Alternative A provides a cleaner migration signal but removes the ability to explicitly request sync-only validation.
-
-> **TODO:** Resolve which alternative to use for `Validate()` — Obsolete vs `syncOnly` parameter.
-
-Forms that use `OnValidSubmit` / `OnInvalidSubmit` (without calling `Validate()` directly) require no changes under either alternative — `EditForm` handles the transition internally.
-
-```razor
-<!-- This continues to work exactly as before — no changes needed -->
-<EditForm Model="@person" OnValidSubmit="Save">
-    <DataAnnotationsValidator />
-
-    <InputText @bind-Value="person.Name" />
-    <ValidationMessage For="() => person.Name" />
-
-    <button type="submit">Save</button>
-</EditForm>
-
-@code {
-    public class Person
-    {
-        [Required]
-        [StringLength(100)]
-        public string Name { get; set; } = "";
-    }
-}
-```
-
-### Scenario 10: Sync `Validate()` called with async validators
-
-Under **Alternative A** (`[Obsolete]`), developers get a compiler warning when calling `Validate()` directly. At runtime, if the validation infrastructure encounters an async validator, it throws `InvalidOperationException`.
-
-Under **Alternative B** (`syncOnly` parameter), the default `Validate()` call (without `syncOnly: true`) throws at runtime if async validators are present. With `syncOnly: true`, async validators are silently skipped and only sync results are returned.
-
-In both alternatives, if the model has async validators and the developer has not opted into an async-aware path, the runtime throws:
-
-```csharp
-// Runtime throws if model has async validators:
-// InvalidOperationException:
-//   "This model contains async validators. Use EditContext.ValidateAsync() instead of Validate()."
-```
-
-> **TODO:** Resolve which alternative to use — this scenario's behavior depends on the Scenario 9 decision.
 
 ### Scenario 11: Third-party validator integration
 
@@ -410,62 +460,7 @@ From the form developer's perspective, third-party validators work just like `Da
 </EditForm>
 ```
 
-### Scenario 12: Integration with Microsoft.Extensions.Validation
-
-`DataAnnotationsValidator` uses the `Microsoft.Extensions.Validation` async pipeline when available. The current async throw guard is removed.
-
-```csharp
-[ValidatableType]
-public class Order
-{
-    [Required]
-    public string CustomerName { get; set; } = "";
-
-    [Required]
-    public List<OrderItem> Items { get; set; } = new();
-}
-
-[ValidatableType]
-public class OrderItem
-{
-    [Required]
-    public string ProductName { get; set; } = "";
-
-    [Range(1, 1000)]
-    public int Quantity { get; set; }
-
-    [UniqueProductInOrder]  // async validator
-    public string ProductId { get; set; } = "";
-}
-```
-
-```razor
-<!-- Deep async validation of Order → Items[i] → ProductId works automatically -->
-<EditForm Model="@order" OnValidSubmit="SubmitOrder">
-    <DataAnnotationsValidator />
-
-    <InputText @bind-Value="order.CustomerName" />
-    <ValidationMessage For="() => order.CustomerName" />
-
-    @for (int i = 0; i < order.Items.Count; i++)
-    {
-        var item = order.Items[i];
-        <InputText @bind-Value="item.ProductId" />
-        <ValidationMessage For="() => item.ProductId" />
-    }
-
-    <ValidationSummary />
-    <button type="submit">Place Order</button>
-</EditForm>
-```
-
-Both the legacy `System.ComponentModel.Validator` path and the `Microsoft.Extensions.Validation` path are retained for now.
-
-> **TODO:** Should we unify on `Microsoft.Extensions.Validation` or keep the legacy `Validator` path?
-
-> **TODO:** Should we use `ValidateContext.OnValidationError` for real-time error streaming?
-
-### Scenario 13: Static SSR forms
+### Scenario 12: Static SSR forms
 
 In Static Server Rendering mode, async validation runs server-side during form POST processing. Since there is no persistent connection, validation must complete fully before the response is rendered — no progressive UI updates are possible.
 
