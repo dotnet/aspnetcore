@@ -177,7 +177,6 @@ $@"<OpenApiReference Include=""{expectedJsonName}"" SourceUrl=""{FakeOpenApiUrl}
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61348")]
     public async Task OpenApi_Add_Url_SameName_UniqueFile()
     {
         var project = CreateBasicProject(withOpenApi: false);
@@ -334,7 +333,6 @@ $@"<OpenApiReference Include=""{expectedJsonName}"" SourceUrl=""{FakeOpenApiUrl}
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61348")]
     public async Task OpenApi_Add_URL_FileAlreadyExists_Fail()
     {
         var project = CreateBasicProject(withOpenApi: false);
