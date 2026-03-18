@@ -795,7 +795,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             throw CreateStreamIdZeroException();
         }
 
-        if (_incomingFrame.HeadersHasPadding && _incomingFrame.HeadersPadLength >= _incomingFrame.PayloadLength - 1)
+        if (_incomingFrame.HeadersHasPadding && _incomingFrame.HeadersPayloadLength <= 0)
         {
             throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorPaddingTooLong(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR, ConnectionEndReason.InvalidDataPadding);
         }
@@ -1251,12 +1251,21 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     {
         Debug.Assert(_currentHeadersStream != null);
 
-        _hpackDecoder.Decode(payload, endHeaders, handler: this);
-
-        if (endHeaders)
+        try
         {
-            _currentHeadersStream.OnEndStreamReceived();
+            _hpackDecoder.Decode(payload, endHeaders, handler: this);
+
+            if (endHeaders)
+            {
+                _currentHeadersStream.OnEndStreamReceived();
+                ResetRequestHeaderParsingState();
+            }
+        }
+        catch (Http2StreamErrorException)
+        {
+            _currentHeadersStream.Dispose();
             ResetRequestHeaderParsingState();
+            throw;
         }
 
         return Task.CompletedTask;
