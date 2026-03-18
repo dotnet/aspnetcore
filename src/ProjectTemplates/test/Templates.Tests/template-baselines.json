@@ -634,6 +634,7 @@
         "Components/Account/Pages/ResetPassword.razor",
         "Components/Account/Pages/ResetPasswordConfirmation.razor",
         "Components/Account/Pages/_Imports.razor",
+        "Components/Account/PasskeyAuthenticators.cs",
         "Components/Account/PasskeyInputModel.cs",
         "Components/Account/PasskeyOperation.cs",
         "Components/Account/Shared/ExternalLoginPicker.razor",
@@ -832,6 +833,7 @@
         "Components/Account/Pages/ResetPassword.razor",
         "Components/Account/Pages/ResetPasswordConfirmation.razor",
         "Components/Account/Pages/_Imports.razor",
+        "Components/Account/PasskeyAuthenticators.cs",
         "Components/Account/PasskeyInputModel.cs",
         "Components/Account/PasskeyOperation.cs",
         "Components/Account/Shared/ExternalLoginPicker.razor",
@@ -960,6 +962,7 @@
         "Components/Account/Pages/ResetPassword.razor",
         "Components/Account/Pages/ResetPasswordConfirmation.razor",
         "Components/Account/Pages/_Imports.razor",
+        "Components/Account/PasskeyAuthenticators.cs",
         "Components/Account/PasskeyInputModel.cs",
         "Components/Account/PasskeyOperation.cs",
         "Components/Account/Shared/ExternalLoginPicker.razor",
@@ -1172,6 +1175,7 @@
         "{ProjectName}/Components/Account/Pages/ResetPassword.razor",
         "{ProjectName}/Components/Account/Pages/ResetPasswordConfirmation.razor",
         "{ProjectName}/Components/Account/Pages/_Imports.razor",
+        "{ProjectName}/Components/Account/PasskeyAuthenticators.cs",
         "{ProjectName}/Components/Account/PasskeyInputModel.cs",
         "{ProjectName}/Components/Account/PasskeyOperation.cs",
         "{ProjectName}/Components/Account/Shared/ExternalLoginPicker.razor",
@@ -1383,6 +1387,7 @@
         "{ProjectName}/Components/Account/Pages/ResetPassword.razor",
         "{ProjectName}/Components/Account/Pages/ResetPasswordConfirmation.razor",
         "{ProjectName}/Components/Account/Pages/_Imports.razor",
+        "{ProjectName}/Components/Account/PasskeyAuthenticators.cs",
         "{ProjectName}/Components/Account/PasskeyInputModel.cs",
         "{ProjectName}/Components/Account/PasskeyOperation.cs",
         "{ProjectName}/Components/Account/Shared/ExternalLoginPicker.razor",
@@ -1842,6 +1847,7 @@
         "{ProjectName}/Components/Account/Pages/ResetPassword.razor",
         "{ProjectName}/Components/Account/Pages/ResetPasswordConfirmation.razor",
         "{ProjectName}/Components/Account/Pages/_Imports.razor",
+        "{ProjectName}/Components/Account/PasskeyAuthenticators.cs",
         "{ProjectName}/Components/Account/PasskeyInputModel.cs",
         "{ProjectName}/Components/Account/PasskeyOperation.cs",
         "{ProjectName}/Components/Account/Shared/ExternalLoginPicker.razor",
@@ -1918,6 +1924,7 @@
         "Components/Account/Pages/ResetPassword.razor",
         "Components/Account/Pages/ResetPasswordConfirmation.razor",
         "Components/Account/Pages/_Imports.razor",
+        "Components/Account/PasskeyAuthenticators.cs",
         "Components/Account/PasskeyInputModel.cs",
         "Components/Account/PasskeyOperation.cs",
         "Components/Account/Shared/ExternalLoginPicker.razor",
@@ -2063,6 +2070,7 @@
         "{ProjectName}/Components/Account/Pages/ResetPassword.razor",
         "{ProjectName}/Components/Account/Pages/ResetPasswordConfirmation.razor",
         "{ProjectName}/Components/Account/Pages/_Imports.razor",
+        "{ProjectName}/Components/Account/PasskeyAuthenticators.cs",
         "{ProjectName}/Components/Account/PasskeyInputModel.cs",
         "{ProjectName}/Components/Account/PasskeyOperation.cs",
         "{ProjectName}/Components/Account/Shared/ExternalLoginPicker.razor",
@@ -2198,6 +2206,7 @@
         "{ProjectName}/Components/Account/Pages/ResetPassword.razor",
         "{ProjectName}/Components/Account/Pages/ResetPasswordConfirmation.razor",
         "{ProjectName}/Components/Account/Pages/_Imports.razor",
+        "{ProjectName}/Components/Account/PasskeyAuthenticators.cs",
         "{ProjectName}/Components/Account/PasskeyInputModel.cs",
         "{ProjectName}/Components/Account/PasskeyOperation.cs",
         "{ProjectName}/Components/Account/Shared/ExternalLoginPicker.razor",
@@ -3733,6 +3742,17 @@
         "wwwroot/icon-192.png",
         "wwwroot/index.html",
         "wwwroot/css/app.css"
+      ]
+    }
+  },
+  "webworker": {
+    "Default": {
+      "Template": "webworker",
+      "Arguments": "new webworker",
+      "Files": [
+        "WebWorkerClient.cs",
+        "wwwroot/dotnet-web-worker.js",
+        "wwwroot/dotnet-web-worker-client.js"
       ]
     }
   }

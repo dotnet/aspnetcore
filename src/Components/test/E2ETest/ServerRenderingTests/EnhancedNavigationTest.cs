@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
-using OpenQA.Selenium.BiDi.Communication;
+using OpenQA.Selenium.BiDi;
 using OpenQA.Selenium.DevTools;
 using OpenQA.Selenium.Support.Extensions;
 using TestServer;
