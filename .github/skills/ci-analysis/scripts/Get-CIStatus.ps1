@@ -2036,12 +2036,6 @@ try {
                                                     if ($jobDetail.errorCategory -notin @("crash")) {
                                                         $jobDetail.errorCategory = "crash"
                                                     }
-                                                } elseif ($failureInfo -match 'Traceback \(most recent call last\)' -and $helixLog -match 'Tests run:.*Failures:\s*0') {
-                                                    # Work item failed (non-zero exit from reporter crash) but all tests passed.
-                                                    # The Python traceback is from Helix infrastructure, not from the test itself.
-                                                    if ($jobDetail.errorCategory -notin @("crash", "test-timeout")) {
-                                                        $jobDetail.errorCategory = "tests-passed-reporter-failed"
-                                                    }
                                                 } elseif ($jobDetail.errorCategory -eq "unclassified") {
                                                     $jobDetail.errorCategory = "test-failure"
                                                 }
@@ -2062,6 +2056,15 @@ try {
                                                     $jobDetail.errorSnippet = $tailText.Substring(0, [Math]::Min(200, $tailText.Length))
                                                 }
                                                 Show-KnownIssues -TestName $workItemName -ErrorMessage $tailText -IncludeMihuBot:$SearchMihuBot
+                                            }
+
+                                            # Categorize Helix infrastructure failures where tests passed but the reporter/harness crashed with a Python traceback.
+                                            if ($helixLog -match 'Traceback \(most recent call last\)' -and $helixLog -match 'Tests run:.*Failures:\s*0') {
+                                                # Work item failed (non-zero exit from reporter crash) but all tests passed.
+                                                # The Python traceback is from Helix infrastructure, not from the test itself.
+                                                if ($jobDetail.errorCategory -notin @("crash", "test-timeout")) {
+                                                    $jobDetail.errorCategory = "tests-passed-reporter-failed"
+                                                }
                                             }
                                         }
                                     }
