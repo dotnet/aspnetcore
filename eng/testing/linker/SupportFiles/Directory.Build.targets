@@ -4,23 +4,23 @@
                         RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRefVersion)" />
 
     <!-- Workaround when there is no vNext SDK available; copy known packs info from 9.0. -->
-    <KnownAppHostPack Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net9.0'))"
+    <KnownAppHostPack Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net10.0'))"
                      TargetFramework="$(TargetFramework)"
                      Condition="'@(KnownAppHostPack->Count())' != '0' AND
                                  !(@(KnownAppHostPack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
-    <KnownRuntimePack Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net9.0'))"
+    <KnownRuntimePack Include="@(KnownRuntimePack->WithMetadataValue('TargetFramework', 'net10.0'))"
                      TargetFramework="$(TargetFramework)"
                      Condition="'@(KnownRuntimePack->Count())' != '0' AND
                                  !(@(KnownRuntimePack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
-    <KnownFrameworkReference Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net9.0'))"
+    <KnownFrameworkReference Include="@(KnownFrameworkReference->WithMetadataValue('TargetFramework', 'net10.0'))"
                      TargetFramework="$(TargetFramework)"
                      Condition="'@(KnownFrameworkReference->Count())' != '0' AND
                                  !(@(KnownFrameworkReference->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
-    <KnownILLinkPack Include="@(KnownILLinkPack->WithMetadataValue('TargetFramework', 'net9.0'))"
+    <KnownILLinkPack Include="@(KnownILLinkPack->WithMetadataValue('TargetFramework', 'net10.0'))"
                      TargetFramework="$(TargetFramework)"
                      Condition="'@(KnownILLinkPack->Count())' != '0' AND
                                  !(@(KnownILLinkPack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
-    <KnownILCompilerPack Include="@(KnownILCompilerPack->WithMetadataValue('TargetFramework', 'net9.0'))"
+    <KnownILCompilerPack Include="@(KnownILCompilerPack->WithMetadataValue('TargetFramework', 'net10.0'))"
                      TargetFramework="$(TargetFramework)"
                      Condition="'@(KnownILCompilerPack->Count())' != '0' AND
                                  !(@(KnownILCompilerPack->AnyHaveMetadataValue('TargetFramework', '$(TargetFramework)')))" />
@@ -62,6 +62,20 @@
       <ILLinkPackVersion>$(MicrosoftNETCoreAppRefVersion)</ILLinkPackVersion>
     </KnownILLinkPack>
   </ItemGroup>
+
+  <!--
+    Remove transitive Microsoft.AspNetCore.App FrameworkReference that flows from the ProjectReferences below.
+    Without this, the SDK resolves the targeting pack version of ASP.NET Core assemblies, which may be older than
+    the locally-built versions and cause compilation errors when APIs have changed.
+    Mirrors _RemoveAspNetCoreTransitiveFrameworkReference in eng/targets/ResolveReferences.targets.
+  -->
+  <Target Name="_RemoveAspNetCoreTransitiveFrameworkReference"
+          BeforeTargets="AddTransitiveFrameworkReferences"
+          Condition="'$(UseAspNetCoreSharedRuntime)' != 'true'">
+    <ItemGroup>
+      <TransitiveFrameworkReference Remove="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+  </Target>
 
   <!--
   Reference the Microsoft.AspNetCore.App shared framework assemblies with ProjectReference.

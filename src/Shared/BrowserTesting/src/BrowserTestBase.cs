@@ -40,13 +40,10 @@ public class BrowserTestBase : LoggedTest, IAsyncLifetime
     private static IConfiguration CreateConfiguration()
     {
         var basePath = Path.GetDirectoryName(typeof(BrowserTestBase).Assembly.Location);
-        var os = Environment.OSVersion.Platform switch
-        {
-            PlatformID.Win32NT => "win",
-            PlatformID.Unix => "linux",
-            PlatformID.MacOSX => "osx",
-            _ => null
-        };
+        var os = OperatingSystem.IsWindows() ? "win"
+            : OperatingSystem.IsLinux() ? "linux"
+            : OperatingSystem.IsMacOS() ? "osx"
+            : null;
 
         var builder = new ConfigurationBuilder()
             .AddJsonFile(Path.Combine(basePath, "playwrightSettings.json"))

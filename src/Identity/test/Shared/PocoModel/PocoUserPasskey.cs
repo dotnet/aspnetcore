@@ -84,4 +84,12 @@ public class PocoUserPasskey<TKey> where TKey : IEquatable<TKey>
     /// See <see href="https://www.w3.org/TR/webauthn-3/#dictdef-collectedclientdata"/>.
     /// </remarks>
     public virtual byte[] ClientDataJson { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the AAGUID of the authenticator that created this passkey.
+    /// </summary>
+    /// <remarks>
+    /// See <see href="https://www.w3.org/TR/webauthn-3/#aaguid"/>.
+    /// </remarks>
+    public virtual byte[] Aaguid { get; set; }
 }
