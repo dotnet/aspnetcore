@@ -200,6 +200,7 @@ Combine failure counts from all sources across both pipelines. A test is a candi
 - It has failed **2 or more times** total across all sources
 - It is **not already quarantined** (check the source code for existing `[QuarantinedTest]` attributes)
 - The failures are **not** from a PR that modified the test itself (check if the PR's changed files include the test file)
+- OR: the test was **recently unquarantined** (had its `[QuarantinedTest]` attribute removed within the past 14 days, detectable via `git log --since="14 days ago" -G 'QuarantinedTest' -- '*.cs'`) and has **even a single failure**. Failing so soon after unquarantining means it was unquarantined too early. For these tests, search for the original closed quarantine issue (title prefix "Quarantine" referencing the test name) and **reopen** it rather than creating a new one.
 
 Additionally, check for **class-level quarantine** candidates. If a **test class** has more than 3 total failures across multiple methods, you **must** investigate the error messages before deciding:
 
@@ -227,7 +228,7 @@ For each test or group of tests to quarantine:
      - `## Failing Test(s)` — fully qualified test name(s)
      - `## Error Message` — from the most recent failure's console log, in a ` ```text ``` ` block
      - `## Stacktrace` — in a `<details>` block with ` ```text ``` `
-     - `## Logs` — the full console log content from the most recent failure, in a `<details>` block with ` ```text ``` `. Get this from the Helix work item files API: find the file named `{TestClassName}_{TestMethodName}.log` for the specific test.
+     - `## Logs` — the full, verbatim console log content from the most recent failure, in a `<details>` block with ` ```text ``` `. Get this from the Helix work item files API: find the file named `{TestClassName}_{TestMethodName}.log` for the specific test. Include the entire log content — do not summarize or truncate it.
      - `## Build` — link to the most recent failing build: `https://dev.azure.com/dnceng-public/public/_build/results?buildId={BUILD_ID}`
 
 2. **Post an investigation comment** on the new issue. Examine all available failure logs for the test. Be concise but thorough:
@@ -239,7 +240,7 @@ For each test or group of tests to quarantine:
 3. **Create a PR** that:
    - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/{ISSUE_NUMBER}")]` to the test method (or class)
    - Adds `using Microsoft.AspNetCore.InternalTesting;` if not already present in the file
-   - References the issue in the PR body with `Fixes #{ISSUE_NUMBER}` only if this is the sole test for that issue; otherwise just mention the issue without `Fixes`
+   - References the issue in the PR body with `Associated issue: #{ISSUE_NUMBER}`. Do **not** use the word `Fixes` or `Closes` — quarantine PRs open tracking issues, they do not fix them, and GitHub would auto-close the issue when the PR merges.
 
 ---
 
