@@ -43,6 +43,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private float _itemSize;
 
+    private float _lastSetItemSize;
+
     private IEnumerable<TItem>? _loadedItems;
 
     private CancellationTokenSource? _refreshCts;
@@ -133,6 +135,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     [Parameter]
     public string SpacerElement { get; set; } = "div";
 
+    // Matches SpacerElement to maintain valid HTML in tables.
+    private string ItemWrapperElement => SpacerElement;
+
     /// <summary>
     /// Gets or sets the maximum number of items that will be rendered, even if the client reports
     /// that its viewport is large enough to show more. The default value is 100.
@@ -172,6 +177,15 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         if (_itemSize <= 0)
         {
             _itemSize = ItemSize;
+        }
+
+        // Without this reset, visibleItemCapacity is under/over-estimated after a size change,
+        // causing extra provider calls that may never complete (e.g., async providers).
+        if (_lastSetItemSize != ItemSize)
+        {
+            _lastSetItemSize = ItemSize;
+            _totalMeasuredHeight = 0;
+            _measuredItemCount = 0;
         }
 
         if (ItemsProvider != null)
@@ -223,6 +237,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _pendingScrollToBottom = false;
             await _jsInterop.ScrollToBottomAsync();
         }
+
+        // After render the set of items could change. Tell JS to refresh ResizeObserver.
+        if (!firstRender && _jsInterop is not null)
+        {
+            await _jsInterop.RefreshObserversAsync();
+        }
     }
 
     /// <inheritdoc />
@@ -272,17 +292,15 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
             builder.OpenRegion(5);
 
-            // Render items with comment delimiters for JS height measurement (N+1 fence pattern).
+            // Render the loaded items, each wrapped in an element for JS measurement.
             foreach (var item in itemsToShow)
             {
-                builder.AddMarkupContent(0, "<!--virtualize:item-->");
+                builder.OpenElement(_lastRenderedItemCount, ItemWrapperElement);
+                builder.AddAttribute(0, "data-virtualize-item", true);
+                builder.SetKey(item);
                 _itemTemplate(item)(builder);
+                builder.CloseElement();
                 _lastRenderedItemCount++;
-            }
-
-            if (_lastRenderedItemCount > 0)
-            {
-                builder.AddMarkupContent(1, "<!--virtualize:item-->");
             }
 
             renderIndex += _lastRenderedItemCount;

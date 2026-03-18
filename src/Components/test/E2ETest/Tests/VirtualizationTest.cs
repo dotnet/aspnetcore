@@ -287,15 +287,14 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         var js = (IJavaScriptExecutor)Browser;
 
-        // Items should be rendered as <tr> directly (no wrapper), with comment node delimiters
+        // Item wrappers should be <tr> with data-virtualize-item, containing <td> — not nested <tr>
         var nestedTrCount = (long)js.ExecuteScript(
             "return document.querySelectorAll('#variable-height-table tr > tr').length;");
         Assert.Equal(0, nestedTrCount);
 
-        // Verify items render with <td> containing expected ids
-        var rowCount = (long)js.ExecuteScript(
-            "return document.querySelectorAll('#variable-height-table > tbody > tr > td[id^=\"vht-row-\"]').length;");
-        Assert.True(rowCount > 0, "Should have <tr> rows with item <td> elements");
+        var wrapperCount = (long)js.ExecuteScript(
+            "return document.querySelectorAll('#variable-height-table tr[data-virtualize-item]').length;");
+        Assert.True(wrapperCount > 0, "Should have wrapper <tr> elements with data-virtualize-item");
 
         Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
         Browser.True(() => Browser.Exists(By.Id("vht-row-499")).Displayed);

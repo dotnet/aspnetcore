@@ -9,22 +9,17 @@ function createDOM(heights: number[]): { before: HTMLDivElement; after: HTMLDivE
   const before = document.createElement('div');
   const after = document.createElement('div');
   container.appendChild(before);
+  container.appendChild(after);
 
   for (const h of heights) {
-    const delimiter = document.createComment('virtualize:item');
-    container.appendChild(delimiter);
     const item = document.createElement('div');
+    item.setAttribute('data-virtualize-item', '');
     item.getBoundingClientRect = () => ({
       height: h, width: 100, top: 0, left: 0, bottom: h, right: 100,
       x: 0, y: 0, toJSON() { return this; },
     });
-    container.appendChild(item);
+    container.insertBefore(item, after);
   }
-  // Trailing delimiter
-  const trailingDelimiter = document.createComment('virtualize:item');
-  container.appendChild(trailingDelimiter);
-
-  container.appendChild(after);
 
   return { before, after };
 }

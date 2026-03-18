@@ -372,7 +372,7 @@ public class VirtualizeTest
     }
 
     [Fact]
-    public async Task Virtualize_RendersCommentDelimitersForItemMeasurement()
+    public async Task Virtualize_RendersItemWrapperWithDataVirtualizeItemAttribute()
     {
         Virtualize<int> renderedVirtualize = null;
 
@@ -395,25 +395,25 @@ public class VirtualizeTest
         await testRenderer.Dispatcher.InvokeAsync(() =>
             ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(0f, 150f, 500f, 0f, 0));
 
-        var commentDelimiters = testRenderer.Batches
+        var hasDataVirtualizeItemAttr = testRenderer.Batches
             .SelectMany(b => b.ReferenceFrames)
-            .Where(f => f.FrameType == RenderTreeFrameType.Markup
-                     && f.MarkupContent == "<!--virtualize:item-->")
-            .Count();
+            .Any(f => f.FrameType == RenderTreeFrameType.Attribute
+                   && f.AttributeName == "data-virtualize-item");
 
-        Assert.True(commentDelimiters > 0,
-            "Items should be preceded by <!--virtualize:item--> comment delimiters for JS measurement");
+        Assert.True(hasDataVirtualizeItemAttr,
+            "Items should be wrapped in elements with 'data-virtualize-item' attribute for JS measurement");
     }
 
     [Fact]
-    public async Task Virtualize_MultiRootItemTemplate_RendersOneCommentPerItem()
+    public async Task Virtualize_TableSpacerElement_RendersMatchingWrapperElement()
     {
         Virtualize<int> renderedVirtualize = null;
 
         var rootComponent = new VirtualizeTestHostcomponent
         {
-            InnerContent = BuildVirtualizeWithMultiRootContent(50f, new List<int> { 1, 2, 3 },
-                captureRenderedVirtualize: virtualize => renderedVirtualize = virtualize)
+            InnerContent = BuildVirtualizeWithContent(50f, new List<int> { 1, 2, 3 },
+                captureRenderedVirtualize: virtualize => renderedVirtualize = virtualize,
+                spacerElement: "tr")
         };
 
         var serviceProvider = new ServiceCollection()
@@ -429,14 +429,19 @@ public class VirtualizeTest
         await testRenderer.Dispatcher.InvokeAsync(() =>
             ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(0f, 150f, 500f, 0f, 0));
 
-        var commentDelimiters = testRenderer.Batches
-            .SelectMany(b => b.ReferenceFrames)
-            .Where(f => f.FrameType == RenderTreeFrameType.Markup
-                     && f.MarkupContent == "<!--virtualize:item-->")
-            .Count();
+        var referenceFrames = testRenderer.Batches.SelectMany(b => b.ReferenceFrames).ToList();
 
-        // 3 items produce 4 delimiters (N+1 fence pattern: one before each item + trailing)
-        Assert.Equal(4, commentDelimiters);
+        var hasDataVirtualizeItemAttr = referenceFrames
+            .Any(f => f.FrameType == RenderTreeFrameType.Attribute
+                   && f.AttributeName == "data-virtualize-item");
+
+        var hasTrElements = referenceFrames
+            .Any(f => f.FrameType == RenderTreeFrameType.Element && f.ElementName == "tr");
+
+        Assert.True(hasDataVirtualizeItemAttr,
+            "Wrapper elements should have 'data-virtualize-item' attribute");
+        Assert.True(hasTrElements,
+            "Wrapper elements should use 'tr' tag when SpacerElement='tr'");
     }
 
     [Fact]
