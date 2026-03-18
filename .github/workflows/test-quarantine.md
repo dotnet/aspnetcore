@@ -237,7 +237,7 @@ For each test or group of tests to quarantine:
      - `## Failing Test(s)` — fully qualified test name(s)
      - `## Error Message` — from the most recent failure's console log, in a ` ```text ``` ` block
      - `## Stacktrace` — in a `<details>` block with ` ```text ``` `
-     - `## Logs` — the full, verbatim console log content from the most recent failure, in a `<details>` block with ` ```text ``` `. Get this from the Helix work item files API: find the file named `{TestClassName}_{TestMethodName}.log` for the specific test. Include the entire log content — do not summarize or truncate it.
+     - `## Logs` — console log content from the most recent failure, in a `<details>` block with ` ```text ``` `. Get this from the Helix work item files API: find the file named `{TestClassName}_{TestMethodName}.log` for the specific test. Prefer to include the full, verbatim log when it fits within GitHub issue size limits. If the log is very large or would exceed those limits, include a representative head and tail of the log in the issue and provide a direct link to the full Helix log file (and/or attach it as an artifact) so the complete output is still accessible.
      - `## Build` — link to the most recent failing build: `https://dev.azure.com/dnceng-public/public/_build/results?buildId={BUILD_ID}`
 
 2. **Post an investigation comment** on the new issue. Examine all available failure logs for the test. Be concise but thorough:
