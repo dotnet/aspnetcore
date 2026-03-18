@@ -47,6 +47,9 @@ network:
     - "dev.azure.com"
     - "vstmr.dev.azure.com"
     - "helix.dot.net"
+    - "learn.microsoft.com"
+    - "*.vsblob.vsassets.io"
+    - "*.vssps.visualstudio.com"
     - "*.blob.core.windows.net"
 
 timeout-minutes: 90
