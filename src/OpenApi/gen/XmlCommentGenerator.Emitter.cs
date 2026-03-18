@@ -400,22 +400,33 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                             }
                             targetOperationParameter.Deprecated = parameterComment.Deprecated;
                         }
-                        else
+                        else if (parameterInfo is not null)
                         {
-                            var requestBody = operation.RequestBody;
-                            if (requestBody is not null)
+                            // Only use this parameter's comment for the request body if it's actually a [FromBody] parameter.
+                            // Check for [FromBody] attribute or if it's a complex type without any binding attribute.
+                            var hasFromBodyAttribute = parameterInfo.GetCustomAttributes()
+                                .Any(attr => attr.GetType().Name == "FromBodyAttribute");
+                            var isComplexType = !parameterInfo.ParameterType.IsValueType && 
+                                parameterInfo.ParameterType != typeof(string) &&
+                                parameterInfo.ParameterType.Namespace != "System";
+                            
+                            if (hasFromBodyAttribute || (isComplexType && operation.RequestBody is not null))
                             {
-                                requestBody.Description = parameterComment.Description;
-                                if (parameterComment.Example is { } jsonString)
+                                var requestBody = operation.RequestBody;
+                                if (requestBody is not null)
                                 {
-                                    var content = requestBody?.Content?.Values;
-                                    if (content is null)
+                                    requestBody.Description = parameterComment.Description;
+                                    if (parameterComment.Example is { } jsonString)
                                     {
-                                        continue;
-                                    }
-                                    foreach (var mediaType in content.OfType<OpenApiMediaType>())
-                                    {
-                                        mediaType.Example = jsonString.Parse();
+                                        var content = requestBody?.Content?.Values;
+                                        if (content is null)
+                                        {
+                                            continue;
+                                        }
+                                        foreach (var mediaType in content.OfType<OpenApiMediaType>())
+                                        {
+                                            mediaType.Example = jsonString.Parse();
+                                        }
                                     }
                                 }
                             }
