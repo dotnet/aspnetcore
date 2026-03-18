@@ -1012,6 +1012,9 @@ public static partial class RequestDelegateFactory
                 CompletedTaskExpr);
         }
 
+        // checkWasParamCheckFailure is a conditional expression: if WasParamCheckFailureExpr is true
+        // (i.e. any parameter binding or validation failed), it executes failureBranch (returns a 400);
+        // otherwise it invokes the handler method and writes its response.
         var checkWasParamCheckFailure = Expression.Condition(
             WasParamCheckFailureExpr,
             failureBranch,
