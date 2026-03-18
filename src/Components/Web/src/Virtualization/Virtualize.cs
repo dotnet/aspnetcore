@@ -279,7 +279,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             foreach (var item in itemsToShow)
             {
                 builder.OpenElement(_lastRenderedItemCount, ItemWrapperElement);
-                builder.AddAttribute(1, "data-virtualize-item", true);
+                builder.AddAttribute(0, "data-virtualize-item", true);
                 builder.SetKey(item);
                 _itemTemplate(item)(builder);
                 builder.CloseElement();
