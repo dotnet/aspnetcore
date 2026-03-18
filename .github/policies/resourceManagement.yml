@@ -632,7 +632,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 10.0.5
+          milestone: 10.0.6
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/10.0 branch'
     - if:
       - payloadType: Pull_Request
