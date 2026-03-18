@@ -1,4 +1,10 @@
 <p>
+    <strong>Test:</strong> Synchronous Items collection with extreme height variance (20-2000px).
+    Covers scrolling through all items, spacer adjustment, correct per-item heights,
+    and container resize while scrolled.
+</p>
+
+<p>
     Variable Height Items (small container):<br />
     <div id="variable-height-container" style="background-color: #eee; height: @(containerHeight)px; overflow-y: auto">
         <Virtualize Items="@variableHeightItems" ItemSize="30">

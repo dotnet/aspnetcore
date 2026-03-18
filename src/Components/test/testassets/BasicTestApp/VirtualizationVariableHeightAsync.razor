@@ -1,4 +1,10 @@
 <p>
+    <strong>Test:</strong> Async ItemsProvider with variable-height items (25-55px).
+    Covers manual/auto loading, RTL layout, transform scale, CSS zoom/scale,
+    collection mutations (add/remove), and small item counts (0, 1, 5).
+</p>
+
+<p>
     Variable Height Items with Async ItemsProvider:<br />
     <label><input id="toggle-autoload" type="checkbox" checked="@autoLoad" @onchange="ToggleAutoLoad" /> Auto-load items</label>
     <button id="finish-loading" @onclick="FinishLoading" disabled="@autoLoad">Finish loading</button>
