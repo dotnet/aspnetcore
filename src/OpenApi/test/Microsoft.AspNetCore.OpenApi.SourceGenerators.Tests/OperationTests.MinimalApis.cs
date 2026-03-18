@@ -544,6 +544,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 var builder = WebApplication.CreateBuilder();
@@ -569,22 +571,22 @@ public static class TestEndpoint
     {
         ArgumentNullException.ThrowIfNull(data);
         logger.LogInformation("User supplied {Number} and {Text}", data.Number, data.Text);
-        await Task.Delay(1000, cancellation).ConfigureAwait(false);
+        await Task.Delay(1, cancellation).ConfigureAwait(false);
         return TypedResults.Ok(data.Number);
     }
 }
 
 public record SampleData(int Number, string Text);
 """;
-        await SnapshotTestHelper.VerifyOpenApiDocument(source, document =>
+        var generator = new XmlCommentGenerator();
+        await SnapshotTestHelper.Verify(source, generator, out var compilation);
+        await SnapshotTestHelper.VerifyOpenApi(compilation, document =>
         {
             var postOperation = document.Paths["/test"].Operations[HttpMethod.Post];
             var requestBody = postOperation.RequestBody;
 
-            // The request body description should come from the [FromBody] SampleData parameter
             Assert.NotNull(requestBody);
             Assert.Equal("Sample data provided by the user.", requestBody.Description);
-            // Ensure it's NOT using the last parameter's comment
             Assert.NotEqual("Injected cancellation token.", requestBody.Description);
         });
     }
