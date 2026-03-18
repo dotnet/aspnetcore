@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks.Extensions;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Xunit;
@@ -553,6 +554,7 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65838")]
     public async Task ClientDisconnectsWithoutCompletingClientResultOnSecondServer()
     {
         var backplane = CreateBackplane();
