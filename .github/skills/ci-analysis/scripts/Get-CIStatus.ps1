@@ -2005,6 +2005,7 @@ try {
                                     $jobDetail.errorCategory = "test-failure"
                                     $jobDetail.errorSnippet = ($failures | Select-Object -First 3 | ForEach-Object { $_.TestName }) -join "; "
                                 }
+                            }
 
                             # Extract and optionally fetch Helix URLs
                             $helixUrls = Extract-HelixUrls -LogContent $logContent
