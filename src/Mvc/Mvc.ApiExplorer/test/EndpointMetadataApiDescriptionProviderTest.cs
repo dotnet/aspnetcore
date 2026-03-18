@@ -1180,11 +1180,20 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         // Assert
         var apiDescription = Assert.Single(context.Results);
-        // RDF infers (200, string, "text/plain") from the `() => ""` return type,
-        // and .Produces<InferredJsonClass>() adds (200, InferredJsonClass, "application/json").
-        // Both coexist as IProducesResponseTypeMetadata entries.
-        Assert.Contains(apiDescription.SupportedResponseTypes,
-            r => r is { StatusCode: 200, Type: { } t } && t == typeof(InferredJsonClass));
+        Assert.Collection(
+            apiDescription.SupportedResponseTypes,
+            responseType =>
+            {
+                Assert.Equal(typeof(InferredJsonClass), responseType.Type);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                Assert.Equal(typeof(string), responseType.Type);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(["text/plain"], GetSortedMediaTypes(responseType));
+            });
         Assert.Equal(endpointGroupName, apiDescription.GroupName);
     }
 
@@ -1234,39 +1243,37 @@ public class EndpointMetadataApiDescriptionProviderTest
         provider.OnProvidersExecuted(context);
 
         // Assert
-        // RDF infers (200, string, "text/plain") from `() => ""`, which coexists
-        // with .Produces<InferredJsonClass>(200) since both are IProducesResponseTypeMetadata.
         Assert.Collection(
-            context.Results.SelectMany(r => r.SupportedResponseTypes).OrderBy(r => r.StatusCode).ThenBy(r => r.Type?.Name),
+            context.Results.SelectMany(r => r.SupportedResponseTypes),
             responseType =>
             {
                 Assert.Equal(typeof(InferredJsonClass), responseType.Type);
                 Assert.Equal(200, responseType.StatusCode);
-                Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+                Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
             },
             responseType =>
             {
                 Assert.Equal(typeof(string), responseType.Type);
                 Assert.Equal(200, responseType.StatusCode);
-                Assert.Equal(new[] { "text/plain" }, GetSortedMediaTypes(responseType));
+                Assert.Equal(["text/plain"], GetSortedMediaTypes(responseType));
             },
             responseType =>
             {
                 Assert.Equal(typeof(HttpValidationProblemDetails), responseType.Type);
                 Assert.Equal(400, responseType.StatusCode);
-                Assert.Equal(new[] { "application/problem+json" }, GetSortedMediaTypes(responseType));
+                Assert.Equal(["application/problem+json"], GetSortedMediaTypes(responseType));
             },
             responseType =>
             {
                 Assert.Equal(typeof(ProblemDetails), responseType.Type);
                 Assert.Equal(404, responseType.StatusCode);
-                Assert.Equal(new[] { "application/problem+json" }, GetSortedMediaTypes(responseType));
+                Assert.Equal(["application/problem+json"], GetSortedMediaTypes(responseType));
             },
             responseType =>
             {
                 Assert.Equal(typeof(ProblemDetails), responseType.Type);
                 Assert.Equal(409, responseType.StatusCode);
-                Assert.Equal(new[] { "application/problem+json" }, GetSortedMediaTypes(responseType));
+                Assert.Equal(["application/problem+json"], GetSortedMediaTypes(responseType));
             });
     }
 
@@ -1292,27 +1299,25 @@ public class EndpointMetadataApiDescriptionProviderTest
         provider.OnProvidersExecuted(context);
 
         // Assert
-        // RDF infers (200, string, "text/plain") from `() => ""`, which coexists
-        // with .Produces<InferredJsonClass>(200). Both are IProducesResponseTypeMetadata.
         Assert.Collection(
-            context.Results.SelectMany(r => r.SupportedResponseTypes).OrderBy(r => r.StatusCode).ThenBy(r => r.Type?.Name),
+            context.Results.SelectMany(r => r.SupportedResponseTypes),
             responseType =>
             {
                 Assert.Equal(typeof(InferredJsonClass), responseType.Type);
                 Assert.Equal(200, responseType.StatusCode);
-                Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+                Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
             },
             responseType =>
             {
                 Assert.Equal(typeof(string), responseType.Type);
                 Assert.Equal(200, responseType.StatusCode);
-                Assert.Equal(new[] { "text/plain" }, GetSortedMediaTypes(responseType));
+                Assert.Equal(["text/plain"], GetSortedMediaTypes(responseType));
             },
             responseType =>
             {
                 Assert.Equal(typeof(InferredJsonClass), responseType.Type);
                 Assert.Equal(201, responseType.StatusCode);
-                Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+                Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
             });
     }
 
@@ -1337,13 +1342,13 @@ public class EndpointMetadataApiDescriptionProviderTest
             {
                 Assert.Equal(typeof(InferredJsonClass), responseType.Type);
                 Assert.Equal(200, responseType.StatusCode);
-                Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+                Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
             },
             responseType =>
             {
                 Assert.Equal(typeof(string), responseType.Type);
                 Assert.Equal(200, responseType.StatusCode);
-                Assert.Equal(new[] { "text/html" }, GetSortedMediaTypes(responseType));
+                Assert.Equal(["text/html"], GetSortedMediaTypes(responseType));
             });
     }
 
@@ -1424,7 +1429,7 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         // Assert — ordered by StatusCode, then by Type name, content types merged for same (StatusCode, Type)
         Assert.Collection(
-            context.Results.SelectMany(r => r.SupportedResponseTypes).OrderBy(r => r.StatusCode).ThenBy(r => r.Type?.Name),
+            context.Results.SelectMany(r => r.SupportedResponseTypes),
             responseType =>
             {
                 // (200, InferredJsonClass) — merged from two .Produces calls
@@ -1538,353 +1543,101 @@ public class EndpointMetadataApiDescriptionProviderTest
         provider.OnProvidersExecuted(context);
 
         // Assert
-        // [ProducesResponseType(typeof(List<string>), 200)] is an attribute (IApiResponseMetadataProvider).
-        // .Produces<InferredJsonClass>(200) and RDF-inferred (200, string) are endpoint metadata
-        // (IProducesResponseTypeMetadata). Endpoint metadata wins for status 200, so the attribute
-        // entry is dropped. Both endpoint entries coexist.
         Assert.Collection(
-            context.Results.SelectMany(r => r.SupportedResponseTypes).OrderBy(r => r.StatusCode).ThenBy(r => r.Type?.Name),
+            context.Results.SelectMany(r => r.SupportedResponseTypes).OrderBy(r => r.StatusCode),
             responseType =>
             {
                 Assert.Equal(typeof(InferredJsonClass), responseType.Type);
                 Assert.Equal(200, responseType.StatusCode);
                 Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+            });
+    }
+
+    [Fact]
+    public void RouteGroup_AndRouteSpecific_SameStatusCodeAndType_MergesContentTypes()
+    {
+        // Route group adds (200, InferredJsonClass, "application/json"),
+        // route-specific adds (200, InferredJsonClass, "text/xml").
+        // Same (StatusCode, Type) → content types merge into a single entry.
+
+        var builder = CreateBuilder();
+        var group = builder.MapGroup("/api")
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(InferredJsonClass), ["application/json"]));
+        group.MapGet("/todos", () => Results.Ok())
+            .Produces<InferredJsonClass>(StatusCodes.Status200OK, "text/xml");
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        provider.OnProvidersExecuting(context);
+        provider.OnProvidersExecuted(context);
+
+        var responseType = Assert.Single(context.Results.SelectMany(r => r.SupportedResponseTypes));
+        Assert.Equal(typeof(InferredJsonClass), responseType.Type);
+        Assert.Equal(200, responseType.StatusCode);
+        Assert.Equal(["application/json", "text/xml"], GetSortedMediaTypes(responseType));
+    }
+
+    [Fact]
+    public void RouteGroup_AndRouteSpecific_SameStatusCodeDifferentType_BothCoexist()
+    {
+        // Route group adds (200, InferredJsonClass, "application/json"),
+        // route-specific adds (200, string, "text/plain").
+        // Different types at same status code → both coexist.
+
+        var builder = CreateBuilder();
+        var group = builder.MapGroup("/api")
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(InferredJsonClass), ["application/json"]));
+        group.MapGet("/todos", () => Results.Ok())
+            .Produces<string>(StatusCodes.Status200OK, "text/plain");
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        provider.OnProvidersExecuting(context);
+        provider.OnProvidersExecuted(context);
+
+        Assert.Collection(
+            context.Results.SelectMany(r => r.SupportedResponseTypes),
+            responseType =>
+            {
+                Assert.Equal(typeof(InferredJsonClass), responseType.Type);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
             },
             responseType =>
             {
                 Assert.Equal(typeof(string), responseType.Type);
                 Assert.Equal(200, responseType.StatusCode);
-                Assert.Equal(new[] { "text/plain" }, GetSortedMediaTypes(responseType));
+                Assert.Equal(["text/plain"], GetSortedMediaTypes(responseType));
             });
     }
 
     [Fact]
-    public void CombinesTypedResultWithProducesExtensionAndAttribute_IResultReturn()
+    public void RouteGroup_AndRouteSpecific_IdenticalMetadata_SingleEntry()
     {
-        // Precedence in EndpointMetadataApiDescriptionProvider:
-        //   - .Produces<T>() (IProducesResponseTypeMetadata) wins per status code
-        //   - [ProducesResponseType] (IApiResponseMetadataProvider) fills remaining status codes
-        //   - TypedResults metadata is skipped (IResult + IEndpointMetadataProvider)
-        var apiDescription = GetApiDescription(
-            [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-            () => TypedResults.Created("https://example.com", new InferredJsonClass()),
-            httpMethods: ["POST"]);
+        // Route group and route-specific both add (200, InferredJsonClass, "application/json").
+        // Identical (StatusCode, Type) → merged into a single entry, not duplicated.
 
-        // Manually add .Produces<T>() metadata by using builder pattern
         var builder = CreateBuilder();
-        builder.MapPost("/api/todos",
-            [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-            () => TypedResults.Created("https://example.com", new InferredJsonClass()))
-            .Produces<TimeSpan>(StatusCodes.Status200OK);
-        var context = new ApiDescriptionProviderContext([]);
+        var group = builder.MapGroup("/api")
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(InferredJsonClass), ["application/json"]));
+        group.MapGet("/todos", () => Results.Ok())
+            .Produces<InferredJsonClass>(StatusCodes.Status200OK, "application/json");
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
         var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
         var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
 
         provider.OnProvidersExecuting(context);
         provider.OnProvidersExecuted(context);
 
-        var result = Assert.Single(context.Results);
-
-        // .Produces<TimeSpan>(200) wins for status 200
-        Assert.Contains(result.SupportedResponseTypes, r => r is { StatusCode: 200, Type: { } t } && t == typeof(TimeSpan));
-
-        // TypedResults.Created adds 201 via IEndpointMetadataProvider — these are NOT skipped
-        // because the metadata (IProducesResponseTypeMetadata) is distinct from the IResult type itself.
-        // The Created<T> result type adds metadata that gets processed.
-        Assert.Contains(result.SupportedResponseTypes, r => r is { StatusCode: 201, Type: { } t } && t == typeof(InferredJsonClass));
-
-        // [ProducesResponseType(typeof(string), 404)] fills in status 404
-        Assert.Contains(result.SupportedResponseTypes, r => r is { StatusCode: 404, Type: { } t } && t == typeof(string));
-    }
-
-    [Fact]
-    public void CombinesTypedResultWithProducesExtensionAndAttribute_SameStatusCode_ProducesWins()
-    {
-        // When .Produces<T>() and [ProducesResponseType] both declare the same status code,
-        // .Produces<T>() (IProducesResponseTypeMetadata) takes precedence.
-        var builder = CreateBuilder();
-        builder.MapPost("/api/todos",
-            [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-            () => TypedResults.Ok(new InferredJsonClass()))
-            .Produces<TimeSpan>(StatusCodes.Status200OK);
-        var context = new ApiDescriptionProviderContext([]);
-        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
-        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
-
-        provider.OnProvidersExecuting(context);
-        provider.OnProvidersExecuted(context);
-
-        var result = Assert.Single(context.Results);
-
-        // .Produces<TimeSpan>(200) wins over [ProducesResponseType(typeof(string), 200)]
-        Assert.Contains(result.SupportedResponseTypes, r => r is { StatusCode: 200, Type: { } t } && t == typeof(TimeSpan));
-
-        // The attribute's string type for 200 should NOT appear
-        Assert.DoesNotContain(result.SupportedResponseTypes, r => r is { StatusCode: 200, Type: { } t } && t == typeof(string));
-
-        // TypedResults.Ok<InferredJsonClass>() added IProducesResponseTypeMetadata(200, InferredJsonClass)
-        // to endpoint metadata. Both TypedResults and .Produces<T>() are IProducesResponseTypeMetadata
-        // entries — there's currently no way to distinguish "framework-inferred" from "user-explicit"
-        // within ReadEndpointResponseMetadata, so both coexist for the same status code.
-        // This matches the new multi-produces behavior where different types for the same status code
-        // are preserved (e.g., .Produces<Product>(200, "json").Produces<string>(200, "html")).
-        Assert.Contains(result.SupportedResponseTypes, r => r is { StatusCode: 200, Type: { } t } && t == typeof(InferredJsonClass));
-    }
-
-    [Fact]
-    public void CombinesProducesExtensionAndAttribute_PocoReturn()
-    {
-        // Handler returns a POCO (not IResult), so responseType = typeof(InferredJsonClass).
-        // Three metadata sources:
-        //   1. RequestDelegateFactory adds ProducesResponseTypeMetadata(200, InferredJsonClass, "application/json")
-        //      to endpoint metadata for POCO-returning handlers (see RequestDelegateFactory.cs line ~1060).
-        //      This is IProducesResponseTypeMetadata → goes through ReadEndpointResponseMetadata.
-        //   2. .Produces<TimeSpan>(201) → ReadEndpointResponseMetadata → {(201, TimeSpan)}
-        //   3. [ProducesResponseType(typeof(string), 404)] → ReadAttributeResponseMetadata → {(404, string)}
-        //
-        // All three survive: RDF-added (200, InferredJsonClass), extension (201, TimeSpan),
-        // and attribute (404, string). The 200 entry is NOT from the default fallback else branch —
-        // it's from RDF-added IProducesResponseTypeMetadata in the endpoint metadata.
-        var builder = CreateBuilder();
-        builder.MapGet("/api/todos",
-            [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
-            () => new InferredJsonClass())
-            .Produces<TimeSpan>(StatusCodes.Status201Created);
-        var context = new ApiDescriptionProviderContext([]);
-        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
-        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
-
-        provider.OnProvidersExecuting(context);
-        provider.OnProvidersExecuted(context);
-
-        var result = Assert.Single(context.Results);
-
-        // RDF-added ProducesResponseTypeMetadata(200, InferredJsonClass) from endpoint building
-        Assert.Contains(result.SupportedResponseTypes,
-            r => r is { StatusCode: 200, Type: { } t } && t == typeof(InferredJsonClass));
-
-        // .Produces<TimeSpan>(201) from extension method
-        Assert.Contains(result.SupportedResponseTypes,
-            r => r is { StatusCode: 201, Type: { } t } && t == typeof(TimeSpan));
-
-        // [ProducesResponseType(typeof(string), 404)] from attribute
-        Assert.Contains(result.SupportedResponseTypes,
-            r => r is { StatusCode: 404, Type: { } t } && t == typeof(string));
-    }
-
-    [Fact]
-    public void CombinesProducesExtensionAndAttribute_PocoReturn_SameStatusCode_ProducesWins()
-    {
-        // Handler returns a POCO. Both .Produces<T>() and [ProducesResponseType] declare status 200.
-        // .Produces<T>() should win for that status code.
-        var builder = CreateBuilder();
-        builder.MapGet("/api/todos",
-            [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-            () => new InferredJsonClass())
-            .Produces<TimeSpan>(StatusCodes.Status200OK);
-        var context = new ApiDescriptionProviderContext([]);
-        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
-        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
-
-        provider.OnProvidersExecuting(context);
-        provider.OnProvidersExecuted(context);
-
-        var result = Assert.Single(context.Results);
-
-        // .Produces<TimeSpan>(200) wins over [ProducesResponseType(typeof(string), 200)]
-        Assert.Contains(result.SupportedResponseTypes,
-            r => r is { StatusCode: 200, Type: { } t } && t == typeof(TimeSpan));
-
-        // The attribute's string type for 200 should NOT appear
-        Assert.DoesNotContain(result.SupportedResponseTypes,
-            r => r is { StatusCode: 200, Type: { } t } && t == typeof(string));
-
-        // The inferred InferredJsonClass for 200 also appears (RDF-added entry coexists
-        // with .Produces<TimeSpan>(200) since both are IProducesResponseTypeMetadata).
-        Assert.Contains(result.SupportedResponseTypes,
-            r => r is { StatusCode: 200, Type: { } t } && t == typeof(InferredJsonClass));
-    }
-
-    [Fact]
-    public void ExplicitProducesMatchingInferredType_NotRemovedByOtherProduces()
-    {
-        // Regression test: explicit .Produces<T>() calls that happen to match the inferred return
-        // type must NOT be removed when a different .Produces<U>() for the same status code appears.
-        //
-        // Handler: () => new InferredJsonClass()  → inferredType = InferredJsonClass
-        // Metadata:
-        //   RDF adds (200, InferredJsonClass, "application/json")
-        //   .Produces<InferredJsonClass>(200, "text/xml")  → explicit, same type as inferred
-        //   .Produces<TimeSpan>(200, "text/plain")         → explicit, different type
-        //
-        // All three (200, InferredJsonClass) entries merge, and (200, TimeSpan) coexists.
-        var builder = CreateBuilder();
-        builder.MapGet("/api/todos", () => new InferredJsonClass())
-            .Produces<InferredJsonClass>(StatusCodes.Status200OK, "text/xml")
-            .Produces<TimeSpan>(StatusCodes.Status200OK, "text/plain");
-        var context = new ApiDescriptionProviderContext([]);
-        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
-        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
-
-        provider.OnProvidersExecuting(context);
-        provider.OnProvidersExecuted(context);
-
-        var result = Assert.Single(context.Results);
-
-        // (200, InferredJsonClass) must survive — it was explicitly declared via .Produces<>()
-        Assert.Contains(result.SupportedResponseTypes,
-            r => r is { StatusCode: 200, Type: { } t } && t == typeof(InferredJsonClass));
-
-        // (200, TimeSpan) coexists for the same status code
-        Assert.Contains(result.SupportedResponseTypes,
-            r => r is { StatusCode: 200, Type: { } t } && t == typeof(TimeSpan));
-    }
-
-    [Fact]
-    public void TypedResultsOk_WithProducesSameType_MergesContentTypes()
-    {
-        // TypedResults.Ok(obj) adds ProducesResponseTypeMetadata(200, T, "application/json") via IEndpointMetadataProvider.
-        // .Produces<T>(200, "text/xml") adds another ProducesResponseTypeMetadata(200, T, "text/xml").
-        // Same (200, T) → content types merge into a single entry.
-
-        var builder = CreateBuilder();
-        builder.MapGet("/api/todos", () => TypedResults.Ok(new InferredJsonClass()))
-            .Produces<InferredJsonClass>(StatusCodes.Status200OK, "text/xml");
-        var context = new ApiDescriptionProviderContext([]);
-        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
-        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
-
-        provider.OnProvidersExecuting(context);
-        provider.OnProvidersExecuted(context);
-
-        var result = Assert.Single(context.Results);
-
-        // Single (200, InferredJsonClass) with both content types merged
-        var responseType = Assert.Single(result.SupportedResponseTypes);
-        Assert.Equal(200, responseType.StatusCode);
+        var responseType = Assert.Single(context.Results.SelectMany(r => r.SupportedResponseTypes));
         Assert.Equal(typeof(InferredJsonClass), responseType.Type);
-        Assert.Equal(["application/json", "text/xml"], GetSortedMediaTypes(responseType));
-    }
-
-    [Fact]
-    public void TypedResultsOk_WithProducesDifferentType_BothCoexist()
-    {
-        // TypedResults.Ok(obj) adds (200, T). .Produces<U>(200) adds (200, U).
-        // Different types for same status code → both coexist.
-
-        var builder = CreateBuilder();
-        builder.MapGet("/api/todos", () => TypedResults.Ok(new InferredJsonClass()))
-            .Produces<TimeSpan>(StatusCodes.Status200OK);
-        var context = new ApiDescriptionProviderContext([]);
-        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
-        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
-
-        provider.OnProvidersExecuting(context);
-        provider.OnProvidersExecuted(context);
-
-        var result = Assert.Single(context.Results);
-
-        // Both types coexist for status 200
-        Assert.Contains(result.SupportedResponseTypes, r => r is { StatusCode: 200, Type: { } t } && t == typeof(InferredJsonClass));
-        Assert.Contains(result.SupportedResponseTypes, r => r is { StatusCode: 200, Type: { } t } && t == typeof(TimeSpan));
-    }
-
-    [Fact]
-    public void TypedResultsOk_NoPayload_WithProduce_BothCoexist()
-    {
-        // TypedResults.Ok() adds ProducesResponseTypeMetadata(200, null)
-        // coexists with .Produces<T>(200, "application/json")
-
-        var builder = CreateBuilder();
-        builder.MapGet("/api/todos", () => TypedResults.Ok())
-            .Produces<InferredJsonClass>(StatusCodes.Status200OK);
-        var context = new ApiDescriptionProviderContext([]);
-        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
-        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
-
-        provider.OnProvidersExecuting(context);
-        provider.OnProvidersExecuted(context);
-
-        var result = Assert.Single(context.Results);
-
-        // .Produces<InferredJsonClass>(200) → (200, InferredJsonClass)
-        Assert.Contains(result.SupportedResponseTypes, r => r is { StatusCode: 200, Type: { } t } && t == typeof(InferredJsonClass));
-        // TypedResults.Ok() adds metadata with null type → inferred as void → (200, void) with no formats
-        Assert.Contains(result.SupportedResponseTypes, r => r is { StatusCode: 200, Type: { } t } && t == typeof(void));
-    }
-
-    [Fact]
-    public void ResultsOk_NoPayload_WithProduce_OnlyProducesSurvives()
-    {
-        // Results.Ok() returns IResult — can't infer a type, no metadata added.
-        // Only .Produces<T>(200) survives.
-
-        var builder = CreateBuilder();
-        builder.MapGet("/api/todos", () => Results.Ok())
-            .Produces<InferredJsonClass>(StatusCodes.Status200OK);
-        var context = new ApiDescriptionProviderContext([]);
-        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
-        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
-
-        provider.OnProvidersExecuting(context);
-        provider.OnProvidersExecuted(context);
-
-        var result = Assert.Single(context.Results);
-
-        // Only .Produces<InferredJsonClass>(200) survives
-        var responseType = Assert.Single(result.SupportedResponseTypes);
         Assert.Equal(200, responseType.StatusCode);
-        Assert.Equal(typeof(InferredJsonClass), responseType.Type);
         Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
-    }
-
-    [Fact]
-    public void ResultsOk_WithPayload_WithProduce_OnlyProducesSurvives()
-    {
-        // Results.Ok(obj) returns IResult — can't see through to the payload type.
-        // .Produces<T>(200) is the only metadata source.
-
-        var builder = CreateBuilder();
-        builder.MapGet("/api/todos", () => Results.Ok(new InferredJsonClass()))
-            .Produces<InferredJsonClass>(StatusCodes.Status200OK);
-        var context = new ApiDescriptionProviderContext([]);
-        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
-        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
-
-        provider.OnProvidersExecuting(context);
-        provider.OnProvidersExecuted(context);
-
-        var result = Assert.Single(context.Results);
-
-        // Only .Produces<InferredJsonClass>(200) — Results.Ok(obj) contributes no metadata
-        var responseType = Assert.Single(result.SupportedResponseTypes);
-        Assert.Equal(200, responseType.StatusCode);
-        Assert.Equal(typeof(InferredJsonClass), responseType.Type);
-        Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
-    }
-
-    [Fact]
-    public void TypedResultsCreated_WithProducesSameType_MergesContentTypes()
-    {
-        // TypedResults.Created(url, obj) + .Produces<T>(201, "text/xml") with same type → merge
-
-        var builder = CreateBuilder();
-        builder.MapPost("/api/todos", () => TypedResults.Created("https://example.com", new InferredJsonClass()))
-            .Produces<InferredJsonClass>(StatusCodes.Status201Created, "text/xml");
-        var context = new ApiDescriptionProviderContext([]);
-        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
-        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
-
-        provider.OnProvidersExecuting(context);
-        provider.OnProvidersExecuted(context);
-
-        var result = Assert.Single(context.Results);
-
-        // Single (201, InferredJsonClass) with merged content types
-        var responseType = Assert.Single(result.SupportedResponseTypes);
-        Assert.Equal(201, responseType.StatusCode);
-        Assert.Equal(typeof(InferredJsonClass), responseType.Type);
-        Assert.Equal(["application/json", "text/xml"], GetSortedMediaTypes(responseType));
     }
 
     [Fact]
