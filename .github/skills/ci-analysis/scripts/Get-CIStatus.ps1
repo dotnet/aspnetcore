@@ -20,7 +20,7 @@
     The Helix work item name to query (requires -HelixJob).
 
 .PARAMETER Repository
-    The GitHub repository (owner/repo format). Default: dotnet/aspnetcore
+    The GitHub repository (owner/repo format). Default: dotnet/runtime
 
 .PARAMETER Organization
     The Azure DevOps organization. Default: dnceng-public
@@ -104,7 +104,7 @@ param(
     [Parameter(ParameterSetName = 'ClearCache', Mandatory = $true)]
     [switch]$ClearCache,
 
-    [string]$Repository = "dotnet/aspnetcore",
+    [string]$Repository = "dotnet/runtime",
     [string]$Organization = "dnceng-public",
     [string]$Project = "cbb18261-c48f-4abb-8651-8cdcb5474649",
     [switch]$ShowLogs,
@@ -319,7 +319,7 @@ function Test-RepositoryFormat {
     # Validate repository format to prevent command injection
     $repoPattern = '^[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+$'
     if ($Repo -notmatch $repoPattern) {
-        throw "Invalid repository format '$Repo'. Expected 'owner/repo' (e.g., 'dotnet/aspnetcore')."
+        throw "Invalid repository format '$Repo'. Expected 'owner/repo' (e.g., 'dotnet/runtime')."
     }
     return $true
 }
@@ -459,7 +459,7 @@ function Get-BuildAnalysisKnownIssues {
         }
 
         # Parse known issues from the output text
-        # Format: <a href="https://github.com/dotnet/aspnetcore/issues/117164">Issue Title</a>
+        # Format: <a href="https://github.com/dotnet/runtime/issues/117164">Issue Title</a>
         $knownIssues = @()
         $issuePattern = '<a href="(https://github\.com/[^/]+/[^/]+/issues/(\d+))">([^<]+)</a>'
         $matches = [regex]::Matches($output.text, $issuePattern)
@@ -918,7 +918,7 @@ function Search-MihuBotIssues {
     param(
         [string[]]$SearchTerms,
         [string]$ExtraContext = "",
-        [string]$Repository = "dotnet/aspnetcore",
+        [string]$Repository = "dotnet/runtime",
         [bool]$IncludeOpen = $true,
         [bool]$IncludeClosed = $true,
         [int]$TimeoutSec = 30
@@ -1000,7 +1000,7 @@ function Search-KnownIssues {
     param(
         [string]$TestName,
         [string]$ErrorMessage,
-        [string]$Repository = "dotnet/aspnetcore"
+        [string]$Repository = "dotnet/runtime"
     )
 
     # Search for known issues using the "Known Build Error" label
@@ -1584,7 +1584,7 @@ try {
     # Handle direct Helix job query
     if ($PSCmdlet.ParameterSetName -eq 'HelixJob') {
         Write-Host "`n=== Helix Job $HelixJob ===" -ForegroundColor Yellow
-        Write-Host "URL: https://helix.dot.net/api/jobs/$HelixJob" -ForegroundColor Gray
+        Write-Host "URL: https://helix.dot.net/api/2019-06-17/jobs/$HelixJob" -ForegroundColor Gray
 
         # Get job details
         $jobDetails = Get-HelixJobDetails -JobId $HelixJob
@@ -1625,7 +1625,8 @@ try {
                 }
 
                 # Fetch console log
-                $consoleUrl = "https://helix.dot.net/api/2019-06-17/jobs/$HelixJob/workitems/$WorkItem/console"
+                $escapedWorkItem = [uri]::EscapeDataString($WorkItem)
+                $consoleUrl = "https://helix.dot.net/api/2019-06-17/jobs/$HelixJob/workitems/$escapedWorkItem/console"
                 Write-Host "`n  Console Log: $consoleUrl" -ForegroundColor Yellow
 
                 $consoleLog = Get-HelixConsoleLog -Url $consoleUrl
