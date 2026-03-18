@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
@@ -35,72 +36,22 @@ internal partial class TempDataCascadingValueSupplier
         var propertyInfo = componentType.GetProperty(
             parameterInfo.PropertyName,
             BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        this.RegisterValueCallback(tempDataKey, () =>
-        {
-            var value = propertyInfo?.GetValue(componentState.Component);
-            return value;
-        });
-        return new TempDataSubscription(this, tempDataKey, parameterInfo.PropertyType);
+        var getter = new PropertyGetter(componentType, propertyInfo!);
+        Func<object?> valueGetter = () => getter.GetValue(componentState.Component);
+        RegisterValueCallback(tempDataKey, valueGetter);
+        return new TempDataSubscription(this, tempDataKey, parameterInfo.PropertyType, valueGetter);
     }
 
-    internal object? GetValue(string tempDataKey, Type targetType)
-    {
-        var tempData = GetTempData();
-        if (tempData is null)
-        {
-            return null;
-        }
-
-        try
-        {
-            var value = tempData.Get(tempDataKey);
-            if (value is null)
-            {
-                return null;
-            }
-
-            var underlyingType = Nullable.GetUnderlyingType(targetType) ?? targetType;
-            if (underlyingType.IsEnum && value is int intValue)
-            {
-                return Enum.ToObject(underlyingType, intValue);
-            }
-
-            if (!underlyingType.IsAssignableFrom(value.GetType()))
-            {
-                return null;
-            }
-
-            return value;
-        }
-        catch (Exception ex)
-        {
-            Log.TempDataDeserializeFail(_logger, ex);
-            return null;
-        }
-    }
+    internal ITempData? GetTempData() => _httpContext is null
+        ? null
+        : TempDataProviderServiceCollectionExtensions.GetOrCreateTempData(_httpContext);
 
     internal void RegisterValueCallback(string tempDataKey, Func<object?> valueGetter)
     {
         if (!_valueCallbacks.TryAdd(tempDataKey, valueGetter))
         {
-            throw new InvalidOperationException($"A callback is already registered for the TempData key '{tempDataKey}'. Multiple components cannot use the same TempData key.");
+            throw new InvalidOperationException($"A callback is already registered for the TempData key '{tempDataKey}'. Multiple components cannot use the same TempData key for multiple [SupplyParameterFromTempData] attributes.");
         }
-    }
-
-    private ITempData? GetTempData()
-    {
-        if (_httpContext is null)
-        {
-            return null;
-        }
-
-        var key = typeof(ITempData);
-        if (_httpContext.Items.TryGetValue(key, out var tempDataObj) && tempDataObj is ITempData tempData)
-        {
-            return tempData;
-        }
-
-        return null;
     }
 
     internal void PersistValues(ITempData tempData)
@@ -140,22 +91,70 @@ internal partial class TempDataCascadingValueSupplier
         public static partial void TempDataDeserializeFail(ILogger logger, Exception exception);
     }
 
-    private partial class TempDataSubscription : CascadingParameterSubscription
+    internal partial class TempDataSubscription : CascadingParameterSubscription
     {
         private readonly TempDataCascadingValueSupplier _owner;
         private readonly string _tempDataKey;
-        private readonly Type _propertyType;
+        private readonly Type _underlyingType;
+        private readonly bool _isEnum;
+        private readonly Func<object?> _currentValueGetter;
+        private bool _delivered;
 
-        public TempDataSubscription(TempDataCascadingValueSupplier owner, string tempDataKey, Type propertyType)
+        public TempDataSubscription(
+            TempDataCascadingValueSupplier owner,
+            string tempDataKey,
+            Type propertyType,
+            Func<object?> currentValueGetter)
         {
             _owner = owner;
             _tempDataKey = tempDataKey;
-            _propertyType = propertyType;
+            _underlyingType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+            _isEnum = _underlyingType.IsEnum;
+            _currentValueGetter = currentValueGetter;
         }
 
         public override object? GetCurrentValue()
         {
-            return _owner.GetValue(_tempDataKey, _propertyType);
+            if (_delivered)
+            {
+                // After the first delivery, return the component's current property value
+                // to avoid overriding modifications the component made during rendering.
+                return _currentValueGetter();
+            }
+
+            _delivered = true;
+
+            var tempData = _owner.GetTempData();
+            if (tempData is null)
+            {
+                return null;
+            }
+
+            try
+            {
+                var value = tempData.Get(_tempDataKey);
+                if (value is null)
+                {
+                    return null;
+                }
+
+                if (_isEnum && value is int intValue)
+                {
+                    return Enum.ToObject(_underlyingType, intValue);
+                }
+
+                if (!_underlyingType.IsAssignableFrom(value.GetType()))
+                {
+                    return null;
+                }
+
+                return value;
+            }
+            catch (Exception ex)
+            {
+                Log.TempDataDeserializeFail(_owner._logger, ex);
+                return null;
+            }
         }
 
         public override void Dispose()

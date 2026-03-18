@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -14,59 +13,6 @@ public class TempDataCascadingValueSupplierTest
     public TempDataCascadingValueSupplierTest()
     {
         _supplier = new TempDataCascadingValueSupplier(NullLogger<TempDataCascadingValueSupplier>.Instance);
-    }
-
-    private static HttpContext CreateHttpContextWithTempData(ITempData tempData)
-    {
-        var httpContext = new DefaultHttpContext();
-        httpContext.Items[typeof(ITempData)] = tempData;
-        return httpContext;
-    }
-
-    [Fact]
-    public void GetValue_ReturnsNull_WhenHttpContextNotSet()
-    {
-        var result = _supplier.GetValue("key", typeof(string));
-
-        Assert.Null(result);
-    }
-
-    [Fact]
-    public void GetValue_ReturnsNull_WhenKeyNotFound()
-    {
-        var tempData = new TempData(() => new Dictionary<string, object>());
-        var httpContext = CreateHttpContextWithTempData(tempData);
-        _supplier.SetRequestContext(httpContext);
-
-        var result = _supplier.GetValue("nonexistent", typeof(string));
-
-        Assert.Null(result);
-    }
-
-    [Fact]
-    public void GetValue_ReturnsValue_WhenKeyExists()
-    {
-        var tempData = new TempData(() => new Dictionary<string, object>());
-        tempData["mykey"] = "myvalue";
-        var httpContext = CreateHttpContextWithTempData(tempData);
-        _supplier.SetRequestContext(httpContext);
-
-        var result = _supplier.GetValue("mykey", typeof(string));
-
-        Assert.Equal("myvalue", result);
-    }
-
-    [Fact]
-    public void GetValue_IsCaseInsensitive()
-    {
-        var tempData = new TempData(() => new Dictionary<string, object>());
-        tempData["MyKey"] = "myvalue";
-        var httpContext = CreateHttpContextWithTempData(tempData);
-        _supplier.SetRequestContext(httpContext);
-
-        var result = _supplier.GetValue("mykey", typeof(string));
-
-        Assert.Equal("myvalue", result);
     }
 
     [Fact]
@@ -175,107 +121,5 @@ public class TempDataCascadingValueSupplierTest
 
         Assert.False(callbackInvoked);
         Assert.Null(tempData.Peek("key"));
-    }
-
-    [Fact]
-    public void GetValue_ConvertsIntToEnum_WhenTargetTypeIsEnum()
-    {
-        var tempData = new TempData(() => new Dictionary<string, object>());
-        tempData["status"] = 1; // Stored as int (enums are serialized as int)
-        var httpContext = CreateHttpContextWithTempData(tempData);
-        _supplier.SetRequestContext(httpContext);
-
-        var result = _supplier.GetValue("status", typeof(TestEnum));
-
-        Assert.IsType<TestEnum>(result);
-        Assert.Equal(TestEnum.Active, result);
-    }
-
-    [Fact]
-    public void GetValue_ConvertsIntToNullableEnum_WhenTargetTypeIsNullableEnum()
-    {
-        var tempData = new TempData(() => new Dictionary<string, object>());
-        tempData["status"] = 2;
-        var httpContext = CreateHttpContextWithTempData(tempData);
-        _supplier.SetRequestContext(httpContext);
-
-        var result = _supplier.GetValue("status", typeof(TestEnum?));
-
-        Assert.IsType<TestEnum>(result);
-        Assert.Equal(TestEnum.Inactive, result);
-    }
-
-    [Fact]
-    public void GetValue_ReturnsNull_WhenKeyNotFound_ForEnumType()
-    {
-        var tempData = new TempData(() => new Dictionary<string, object>());
-        var httpContext = CreateHttpContextWithTempData(tempData);
-        _supplier.SetRequestContext(httpContext);
-
-        var result = _supplier.GetValue("missing", typeof(TestEnum));
-
-        Assert.Null(result);
-    }
-
-    [Fact]
-    public void GetValue_ReturnsNull_WhenExceptionOccurs()
-    {
-        var mockTempData = new Mock<ITempData>();
-        mockTempData.Setup(t => t.Get(It.IsAny<string>())).Throws(new InvalidOperationException("test error"));
-        var httpContext = new DefaultHttpContext();
-        httpContext.Items[typeof(ITempData)] = mockTempData.Object;
-        _supplier.SetRequestContext(httpContext);
-
-        var result = _supplier.GetValue("key", typeof(string));
-
-        Assert.Null(result);
-    }
-
-    [Fact]
-    public void GetValue_ReturnsNull_WhenStoredValueTypeDoesNotMatchTargetType()
-    {
-        // TempData has a string, but the component property expects an int
-        var tempData = new TempData(() => new Dictionary<string, object>());
-        tempData["key"] = "not an int";
-        var httpContext = CreateHttpContextWithTempData(tempData);
-        _supplier.SetRequestContext(httpContext);
-
-        var result = _supplier.GetValue("key", typeof(int));
-
-        // Should gracefully return null instead of crashing the render
-        Assert.Null(result);
-    }
-
-    [Fact]
-    public void GetValue_ReturnsNull_WhenStoredIntButTargetIsBool()
-    {
-        var tempData = new TempData(() => new Dictionary<string, object>());
-        tempData["key"] = 42;
-        var httpContext = CreateHttpContextWithTempData(tempData);
-        _supplier.SetRequestContext(httpContext);
-
-        var result = _supplier.GetValue("key", typeof(bool));
-
-        Assert.Null(result);
-    }
-
-    [Fact]
-    public void GetValue_ReturnsNull_WhenStoredBoolButTargetIsGuid()
-    {
-        var tempData = new TempData(() => new Dictionary<string, object>());
-        tempData["key"] = true;
-        var httpContext = CreateHttpContextWithTempData(tempData);
-        _supplier.SetRequestContext(httpContext);
-
-        var result = _supplier.GetValue("key", typeof(Guid));
-
-        Assert.Null(result);
-    }
-
-    public enum TestEnum
-    {
-        None = 0,
-        Active = 1,
-        Inactive = 2,
     }
 }
