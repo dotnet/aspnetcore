@@ -34,9 +34,6 @@ safe-outputs:
     target: "*"
     max: 10
 
-plugins:
-  - lewing/agent-plugins
-
 tools:
   edit:
   bash: ["git:*", "grep", "cat", "head", "tail", "wc", "curl", "python3", "echo", "date", "sort", "uniq"]
