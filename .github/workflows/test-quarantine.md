@@ -35,7 +35,7 @@ safe-outputs:
     max: 10
 
 plugins:
-  - lewing-public/dotnet-dnceng
+  - lewing/agent-plugins
 
 tools:
   edit:
