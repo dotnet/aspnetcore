@@ -13,6 +13,8 @@ permissions:
   actions: read
 
 safe-outputs:
+  noop:
+    report-as-issue: false
   create-pull-request:
     title-prefix: "[test-quarantine] "
     labels: [test-failure]
