@@ -493,8 +493,8 @@ internal sealed class ApiResponseTypeProvider
             }
         }
 
-        // rewrite description
-        if (newEntry.Description is not null)
+        // iterating in reverse order to give precedence to higher scope attributes which are processed first
+        if (existing.Description is null && newEntry.Description is not null)
         {
             existing.Description = newEntry.Description;
         }

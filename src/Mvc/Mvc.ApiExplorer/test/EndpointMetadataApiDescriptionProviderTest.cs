@@ -553,11 +553,11 @@ public class EndpointMetadataApiDescriptionProviderTest
         const string expectedBadRequestDescription = "Validation failed for the request";
 
         var apiDescription = GetApiDescription(
-    [ProducesResponseType(typeof(int), StatusCodes.Status201Created, Description = "First description")] // The first item is an int, not a timespan, shouldn't match
-        [ProducesResponseType(typeof(int), StatusCodes.Status201Created, Description = "Second description")] // Not a timespan AND not the final item, shouldn't match
-        [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created, Description = expectedCreatedDescription)] // This is the last item, which should match
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Description = "First description")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status201Created, Description = "First description")]
+        [ProducesResponseType(typeof(int), StatusCodes.Status201Created, Description = "Second description")]
+        [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created, Description = expectedCreatedDescription)]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Description = expectedBadRequestDescription)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Description = "Last description for bad request")]
         () => TypedResults.Created("https://example.com", new TimeSpan()));
 
         Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
@@ -1544,12 +1544,18 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         // Assert
         Assert.Collection(
-            context.Results.SelectMany(r => r.SupportedResponseTypes).OrderBy(r => r.StatusCode),
+            context.Results.SelectMany(r => r.SupportedResponseTypes),
             responseType =>
             {
                 Assert.Equal(typeof(InferredJsonClass), responseType.Type);
                 Assert.Equal(200, responseType.StatusCode);
-                Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+                Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                Assert.Equal(typeof(string), responseType.Type);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(["text/plain"], GetSortedMediaTypes(responseType));
             });
     }
 
