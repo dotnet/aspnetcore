@@ -77,15 +77,17 @@ Query two pipelines in the `dnceng-public` Azure DevOps organization, `public` p
 
 For each pipeline, query only builds on the **main branch**:
 
-1. Get all completed builds from the last 30 days on `refs/heads/main`:
+1. Get all completed builds from the last 30 days on `refs/heads/main`. Use pagination via `continuationToken` to ensure all builds are retrieved, not just the first page:
    ```
    GET https://dev.azure.com/dnceng-public/public/_apis/build/builds?definitions={DEF_ID}&branchName=refs/heads/main&statusFilter=completed&$top=100&minTime={30_DAYS_AGO}&api-version=7.1
    ```
+   If the response includes a `continuationToken`, repeat the request with `&continuationToken={TOKEN}` until no more tokens are returned.
 
-2. For each build, get all test results:
+2. For each build, get all test results. Use pagination via `continuationToken` to ensure all results are retrieved:
    ```
    GET https://vstmr.dev.azure.com/dnceng-public/public/_apis/testresults/resultsbyBuild?buildId={BUILD_ID}&$top=10000&api-version=7.1-preview.1
    ```
+   If the response includes a `continuationToken`, repeat the request with `&continuationToken={TOKEN}` until no more tokens are returned.
 
 3. Aggregate per test name across all builds from both pipelines: total pass count, total fail count, total "other" count, number of builds the test appeared in.
 
@@ -95,7 +97,7 @@ For each pipeline, query only builds on the **main branch**:
 
 A test is a candidate for unquarantining if ALL of the following are true:
 - It has a **100% pass rate** (zero failures) across the past 30 days
-- It does **not** have a suspiciously low total count (i.e. it appeared in at least 20 of the 30 builds)
+- It does **not** have a suspiciously low total count (i.e. it appeared in at least 66% of the builds returned for the time window)
 - It is **not** `AlwaysTestTests.SuccessfulTests.GuaranteedQuarantinedTest` (this test must always stay quarantined)
 - It is an **individual test case**, not a work item (exclude names ending in `.WorkItemExecution`)
 - The `[QuarantinedTest]` attribute has been present for **at least 30 days**. To check this, use `git log -G` with a regex matching the issue URL from the attribute to find the commit that introduced it:
@@ -170,7 +172,7 @@ Get all PR builds (`reasonFilter=pullRequest`) from the last 30 days. Group by P
 - Multiple builds exist for the same PR + source SHA
 - At least one build failed and a subsequent one succeeded
 - This was the **final commit** for the PR (the last `pr.sourceSha` seen for that PR)
-- The PR was **merged** (check via `gh pr view`)
+- The PR was **merged** (check via GitHub MCP `pull_request_read` with method `get` and verify the `merged` field is `true`)
 
 For qualifying builds, get the failed test results.
 
