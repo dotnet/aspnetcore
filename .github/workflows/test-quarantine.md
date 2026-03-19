@@ -211,7 +211,7 @@ All of the following are true:
 
 All of the following are true:
 - The test was **recently unquarantined** (had its `[QuarantinedTest]` attribute removed within the past 14 days, detectable via `git log --since="14 days ago" -G 'QuarantinedTest' -- '*.cs'`)
-- It has **at least one failure** in the observation window. Failing so soon after unquarantining means it was unquarantined too early. For these tests, search for the original closed quarantine issue (title prefix "Quarantine" referencing the test name) and **reopen** it rather than creating a new one in Step&nbsp;2.4. Add the `re-quarantine` label to the PR.
+- It has **at least one failure** in the observation window. Failing so soon after unquarantining means it was unquarantined too early. For these tests, search for the original closed quarantine issue (title prefix "Quarantine" referencing the test name) and **reopen** it rather than creating a new one in Step&nbsp;2.4.
 
 Additionally, check for **class-level quarantine** candidates. If a **test class** has more than 3 total failures across multiple methods, you **must** investigate the error messages before deciding:
 
@@ -252,6 +252,7 @@ For each test or group of tests to quarantine:
    - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/{ISSUE_NUMBER}")]` to the test method (or class)
    - Adds `using Microsoft.AspNetCore.InternalTesting;` if not already present in the file
    - References the issue in the PR body with `Associated issue: #{ISSUE_NUMBER}`. Do **not** use the word `Fixes` or `Closes` — quarantine PRs open tracking issues, they do not fix them, and GitHub would auto-close the issue when the PR merges.
+   - If the test matched **Case B** (re-quarantine of a recently unquarantined test), add the `re-quarantine` label to the PR.
 
 ---
 
