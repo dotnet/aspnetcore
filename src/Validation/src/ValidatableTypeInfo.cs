@@ -166,6 +166,10 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     {
         if (Type.ImplementsInterface(typeof(IValidatableObject)) && value is IValidatableObject validatable)
         {
+            // Important: Set the DisplayName to the type name for top-level validations
+            // and restore the original validation context properties
+            var originalDisplayName = context.ValidationContext.DisplayName;
+            var originalMemberName = context.ValidationContext.MemberName;
             var errorPrefix = context.CurrentValidationPath;
 
             // Set the display name to the class name for IValidatableObject validation
@@ -191,6 +195,10 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                     }
                 }
             }
+
+            // Restore the original validation context properties
+            context.ValidationContext.DisplayName = originalDisplayName;
+            context.ValidationContext.MemberName = originalMemberName;
         }
     }
 
@@ -205,5 +213,4 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             }
         }
     }
-
 }
