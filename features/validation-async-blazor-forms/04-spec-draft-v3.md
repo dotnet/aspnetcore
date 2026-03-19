@@ -110,8 +110,7 @@ A field with an async validator shows inline errors as the user interacts with i
 
     <InputText @bind-Value="registration.Username" />
     <ValidationMessage For="() => registration.Username" />
-
-    <button type="submit">Register</button>
+    ...
 </EditForm>
 ```
 
@@ -121,13 +120,8 @@ The async validation is defined on the model (once BCL async attribute support l
 public class Registration
 {
     [Required]
-    [UniqueEmail]    // async validator
+    [UniqueEmail]    // async validator — checked on field change and form submit
     public string Email { get; set; } = "";
-
-    [Required]
-    [MinLength(3)]
-    [UniqueUsername]  // async validator
-    public string Username { get; set; } = "";
 }
 ```
 
@@ -138,7 +132,7 @@ No manual wiring is needed — `DataAnnotationsValidator` handles the async vali
 For forms with complex object graphs (nested objects, collections), async validation works automatically when the application uses `AddValidation()` in startup and `DataAnnotationsValidator` in the form. The `Microsoft.Extensions.Validation` infrastructure traverses the object graph asynchronously, validating nested properties including those with async validators.
 
 ```csharp
-// Program.cs
+// Program.cs — enables Microsoft.Extensions.Validation for complex object graph traversal
 builder.Services.AddValidation();
 ```
 
@@ -153,14 +147,10 @@ public class Order
     public List<OrderItem> Items { get; set; } = new();
 }
 
-[ValidatableType]
 public class OrderItem
 {
     [Required]
     public string ProductName { get; set; } = "";
-
-    [Range(1, 1000)]
-    public int Quantity { get; set; }
 
     [UniqueProductInOrder]  // async validator checking server-side inventory
     public string ProductId { get; set; } = "";
@@ -487,6 +477,7 @@ From the form developer's perspective, third-party validators work just like `Da
 In Static Server Rendering mode, async validation runs server-side during form POST processing. Since there is no persistent connection, validation must complete fully before the response is rendered — no progressive UI updates are possible. This applies to both enhanced (`Enhance`) and non-enhanced forms — in the non-enhanced case, `ValidateAsync` is awaited during POST processing and the complete result (with any validation errors) is rendered in the full-page response.
 
 ```razor
+@* SSR-specific: FormName and SupplyParameterFromForm are required for static rendering *@
 <EditForm Model="@contact" FormName="contact" Enhance OnValidSubmit="HandleSubmit">
     <DataAnnotationsValidator />
 
@@ -500,10 +491,8 @@ In Static Server Rendering mode, async validation runs server-side during form P
     [SupplyParameterFromForm]
     private ContactForm contact { get; set; } = new();
 
-    private async Task HandleSubmit()
-    {
-        await ContactService.SaveAsync(contact);
-    }
+    // Async validation completes server-side before this handler is invoked
+    private async Task HandleSubmit() => await ContactService.SaveAsync(contact);
 }
 ```
 
