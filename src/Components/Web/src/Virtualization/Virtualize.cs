@@ -80,7 +80,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     /// <summary>
     /// Gets or sets the item template for the list.
-    /// Each item is rendered inside a <c>&lt;SpacerElement data-virtualize-item&gt;</c> wrapper element.
     /// </summary>
     [Parameter]
     public RenderFragment<TItem>? ItemContent { get; set; }
@@ -136,9 +135,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// </summary>
     [Parameter]
     public string SpacerElement { get; set; } = "div";
-
-    // Matches SpacerElement to maintain valid HTML in tables.
-    private string ItemWrapperElement => SpacerElement;
 
     /// <summary>
     /// Gets or sets the maximum number of items that will be rendered, even if the client reports
@@ -294,15 +290,17 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
             builder.OpenRegion(5);
 
-            // Render the loaded items, each wrapped in an element for JS measurement.
+            // Render items with comment delimiters for JS height measurement (N+1 fence pattern).
             foreach (var item in itemsToShow)
             {
-                builder.OpenElement(_lastRenderedItemCount, ItemWrapperElement);
-                builder.AddAttribute(0, "data-virtualize-item", true);
-                builder.SetKey(item);
+                builder.AddMarkupContent(0, "<!--virtualize:item-->");
                 _itemTemplate(item)(builder);
-                builder.CloseElement();
                 _lastRenderedItemCount++;
+            }
+
+            if (_lastRenderedItemCount > 0)
+            {
+                builder.AddMarkupContent(1, "<!--virtualize:item-->");
             }
 
             renderIndex += _lastRenderedItemCount;

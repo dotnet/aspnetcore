@@ -287,14 +287,16 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         var js = (IJavaScriptExecutor)Browser;
 
-        // Item wrappers should be <tr> with data-virtualize-item, containing <td> — not nested <tr>
+        // With comment-based approach, the template provides <tr> directly — no wrapper elements.
+        // Verify no nested <tr> inside <tr> (which would indicate invalid table structure).
         var nestedTrCount = (long)js.ExecuteScript(
             "return document.querySelectorAll('#variable-height-table tr > tr').length;");
         Assert.Equal(0, nestedTrCount);
 
-        var wrapperCount = (long)js.ExecuteScript(
-            "return document.querySelectorAll('#variable-height-table tr[data-virtualize-item]').length;");
-        Assert.True(wrapperCount > 0, "Should have wrapper <tr> elements with data-virtualize-item");
+        // Verify rendered item rows exist (user template <tr> containing <td>)
+        var itemRowCount = (long)js.ExecuteScript(
+            "return document.querySelectorAll('#variable-height-table tbody tr td').length;");
+        Assert.True(itemRowCount > 0, "Should have <tr> elements containing <td> cells");
 
         Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
         Browser.True(() => Browser.Exists(By.Id("vht-row-499")).Displayed);

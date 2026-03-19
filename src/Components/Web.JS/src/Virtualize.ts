@@ -51,21 +51,26 @@ interface MeasurementResult {
 
 function measureRenderedItems(spacerBefore: HTMLElement, spacerAfter: HTMLElement): MeasurementResult {
   const scaleFactor = getScaleFactor(spacerBefore, spacerAfter);
-  const items = spacerBefore.parentElement?.querySelectorAll<HTMLElement>(':scope > [data-virtualize-item]');
 
-  if (!items || items.length === 0) {
+  // Collect <!--virtualize:item--> comment delimiters between spacers (N+1 fence for N items).
+  const delimiters: Comment[] = [];
+  for (let node: Node | null = spacerBefore.nextSibling; node && node !== spacerAfter; node = node.nextSibling) {
+    if (node.nodeType === Node.COMMENT_NODE && node.textContent === 'virtualize:item') {
+      delimiters.push(node as Comment);
+    }
+  }
+
+  if (delimiters.length < 2) {
     return { heightSum: 0, heightCount: 0, scaleFactor };
   }
 
-  let heightSum = 0;
-  let heightCount = 0;
-  for (let i = 0; i < items.length; i++) {
-    const h = items[i].getBoundingClientRect().height / scaleFactor;
-    if (Number.isFinite(h) && h > 0) {
-      heightSum += h;
-      heightCount++;
-    }
-  }
+  // Measure total height from first to last delimiter. Using a single Range
+  // naturally includes any table border-spacing between rows.
+  const heightCount = delimiters.length - 1;
+  const range = document.createRange();
+  range.setStartAfter(delimiters[0]);
+  range.setEndBefore(delimiters[delimiters.length - 1]);
+  const heightSum = range.getBoundingClientRect().height / scaleFactor;
 
   return { heightSum, heightCount, scaleFactor };
 }
@@ -135,6 +140,13 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   resizeObserver.observe(spacerAfter);
 
   function refreshObservedElements(): void {
+    // C# style updates overwrite the entire style attribute, losing display: table-row.
+    // Re-apply it so spacers participate in table layout alongside bare <tr> items.
+    if (isValidTableElement(spacerAfter.parentElement)) {
+      spacerBefore.style.display = 'table-row';
+      spacerAfter.style.display = 'table-row';
+    }
+
     // Ensure spacers are always observed (idempotent).
     resizeObserver.observe(spacerBefore);
     resizeObserver.observe(spacerAfter);
@@ -309,12 +321,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
     const { heightSum: measurementSum, heightCount: measurementCount, scaleFactor } = measureRenderedItems(spacerBefore, spacerAfter);
 
-    // To compute the ItemSize, work out the separation between the two spacers. We can't just measure an individual element
-    // because each conceptual item could be made from multiple elements. Using getBoundingClientRect allows for the size to be
-    // a fractional value. It's important not to add or subtract any such fractional values (e.g., to subtract the 'top' of
-    // one item from the 'bottom' of another to get the distance between them) because floating point errors would cause
-    // scrolling glitches. Note: spacerSize below does require subtracting fractional rect values,
-    // but OverscanCount absorbs any small rounding error.
     rangeBetweenSpacers.setStartAfter(spacerBefore);
     rangeBetweenSpacers.setEndBefore(spacerAfter);
     const spacerSeparation = rangeBetweenSpacers.getBoundingClientRect().height / scaleFactor;

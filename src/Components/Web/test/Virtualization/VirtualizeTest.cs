@@ -372,7 +372,7 @@ public class VirtualizeTest
     }
 
     [Fact]
-    public async Task Virtualize_RendersItemWrapperWithDataVirtualizeItemAttribute()
+    public async Task Virtualize_RendersCommentDelimitersForJsMeasurement()
     {
         Virtualize<int> renderedVirtualize = null;
 
@@ -395,17 +395,17 @@ public class VirtualizeTest
         await testRenderer.Dispatcher.InvokeAsync(() =>
             ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(0f, 150f, 500f, 0f, 0));
 
-        var hasDataVirtualizeItemAttr = testRenderer.Batches
+        var hasCommentDelimiters = testRenderer.Batches
             .SelectMany(b => b.ReferenceFrames)
-            .Any(f => f.FrameType == RenderTreeFrameType.Attribute
-                   && f.AttributeName == "data-virtualize-item");
+            .Any(f => f.FrameType == RenderTreeFrameType.Markup
+                   && f.MarkupContent == "<!--virtualize:item-->");
 
-        Assert.True(hasDataVirtualizeItemAttr,
-            "Items should be wrapped in elements with 'data-virtualize-item' attribute for JS measurement");
+        Assert.True(hasCommentDelimiters,
+            "Items should be delimited by <!--virtualize:item--> comments for JS measurement");
     }
 
     [Fact]
-    public async Task Virtualize_TableSpacerElement_RendersMatchingWrapperElement()
+    public async Task Virtualize_TableSpacerElement_UsesCommentDelimitersNotWrapperElements()
     {
         Virtualize<int> renderedVirtualize = null;
 
@@ -431,17 +431,17 @@ public class VirtualizeTest
 
         var referenceFrames = testRenderer.Batches.SelectMany(b => b.ReferenceFrames).ToList();
 
-        var hasDataVirtualizeItemAttr = referenceFrames
-            .Any(f => f.FrameType == RenderTreeFrameType.Attribute
-                   && f.AttributeName == "data-virtualize-item");
+        var hasCommentDelimiters = referenceFrames
+            .Any(f => f.FrameType == RenderTreeFrameType.Markup
+                   && f.MarkupContent == "<!--virtualize:item-->");
 
-        var hasTrElements = referenceFrames
+        var hasTrSpacers = referenceFrames
             .Any(f => f.FrameType == RenderTreeFrameType.Element && f.ElementName == "tr");
 
-        Assert.True(hasDataVirtualizeItemAttr,
-            "Wrapper elements should have 'data-virtualize-item' attribute");
-        Assert.True(hasTrElements,
-            "Wrapper elements should use 'tr' tag when SpacerElement='tr'");
+        Assert.True(hasCommentDelimiters,
+            "Items should use comment delimiters, not wrapper elements");
+        Assert.True(hasTrSpacers,
+            "Spacer elements should use 'tr' tag when SpacerElement='tr'");
     }
 
     [Fact]
