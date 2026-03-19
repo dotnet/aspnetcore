@@ -211,7 +211,7 @@ All of the following are true:
 
 All of the following are true:
 - The test was **recently unquarantined** (had its `[QuarantinedTest]` attribute removed within the past 14 days, detectable via `git log --since="14 days ago" -G 'QuarantinedTest' -- '*.cs'`)
-- It has **at least one failure** in the observation window. Failing so soon after unquarantining means it was unquarantined too early. For these tests, search for the original closed quarantine issue (title prefix "Quarantine" referencing the test name) and **reopen** it rather than creating a new one in Step&nbsp;2.4.
+- It has **at least one failure** in the observation window. Failing so soon after unquarantining means it was unquarantined too early. For these tests, search for the original closed quarantine issue (title prefix "Quarantine" referencing the test name) and **reopen** it rather than creating a new one in Step&nbsp;2.4. Add the `re-quarantine` label to the PR.
 
 Additionally, check for **class-level quarantine** candidates. If a **test class** has more than 3 total failures across multiple methods, you **must** investigate the error messages before deciding:
 
