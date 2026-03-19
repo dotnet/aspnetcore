@@ -37,8 +37,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private int _loadedItemsStartIndex;
 
-    private int _loadedItemCount;
-
     private int _lastRenderedItemCount;
 
     private int _lastRenderedPlaceholderCount;
@@ -50,6 +48,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private IEnumerable<TItem>? _loadedItems;
 
     private CancellationTokenSource? _refreshCts;
+
+    private bool _skipNextDistributionRefresh;
 
     private Exception? _refreshException;
 
@@ -459,13 +459,17 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _visibleItemCapacity = visibleItemCapacity;
             _unusedItemCapacity = unusedItemCapacity;
 
-            // Skip reloading if the already-loaded items fully cover the new range.
-            // This avoids a redundant ItemsProvider call when measurement refinement
-            // changes the distribution but the data is already available.
-            var requestedEnd = _itemsBefore + _visibleItemCapacity + OverscanCount;
-            if (_loadedItems != null
-                && _itemsBefore >= _loadedItemsStartIndex
-                && requestedEnd <= _loadedItemsStartIndex + _loadedItemCount)
+            // After a successful data load, the ResizeObserver→IntersectionObserver cycle
+            // re-triggers with refined measurements. This one-shot flag skips the single
+            // redundant provider call that follows. At end-of-list, don't skip: refined
+            // capacity may reveal that more items are needed to fill the viewport.
+            var skipRefresh = _skipNextDistributionRefresh
+                && _loadedItems != null
+                && _loadedItemsStartIndex == _itemsBefore
+                && _itemsBefore + visibleItemCapacity < _itemCount;
+            _skipNextDistributionRefresh = false;
+
+            if (skipRefresh)
             {
                 StateHasChanged();
             }
@@ -513,8 +517,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 _itemCount = result.TotalItemCount;
                 _loadedItems = result.Items;
                 _loadedItemsStartIndex = request.StartIndex;
-                _loadedItemCount = request.Count;
                 _loading = false;
+                _skipNextDistributionRefresh = request.Count > 0;
 
                 if (renderOnSuccess)
                 {

@@ -125,8 +125,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         convergingToBottom = convergingToTop = false;
         stopConvergenceObserving();
       }
-    } else if (spacerAfter.offsetHeight === 0) {
-      scrollElement.scrollTop = scrollElement.scrollHeight;
     } else if (convergingElements) {
       stopConvergenceObserving();
     }
