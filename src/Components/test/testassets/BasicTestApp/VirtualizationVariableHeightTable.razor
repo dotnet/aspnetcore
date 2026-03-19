@@ -1,5 +1,5 @@
 ﻿<p>This tests variable-height items inside an HTML table with SpacerElement="tr".</p>
-<p>Each item template renders a complete &lt;tr&gt; row with &lt;td&gt; cells.</p>
+<p>The Virtualize wrapper provides the &lt;tr&gt; element, so the template renders &lt;td&gt; cells only.</p>
 
 <table id="variable-height-table">
     <thead style="position: sticky; top: 0; background-color: silver">
@@ -10,14 +10,12 @@
     </thead>
     <tbody>
         <Virtualize Items="@items" ItemSize="50" SpacerElement="tr" OverscanCount="3">
-            <tr>
-                <td id="vht-row-@context.Index">Item @context.Index</td>
-                <td>
-                    <div style="height: @(context.Height)px; background-color: hsl(@(context.Hue), 70%, 80%);">
-                        @(context.Height)px
-                    </div>
-                </td>
-            </tr>
+            <td id="vht-row-@context.Index">Item @context.Index</td>
+            <td>
+                <div style="height: @(context.Height)px; background-color: hsl(@(context.Hue), 70%, 80%);">
+                    @(context.Height)px
+                </div>
+            </td>
         </Virtualize>
     </tbody>
 </table>
