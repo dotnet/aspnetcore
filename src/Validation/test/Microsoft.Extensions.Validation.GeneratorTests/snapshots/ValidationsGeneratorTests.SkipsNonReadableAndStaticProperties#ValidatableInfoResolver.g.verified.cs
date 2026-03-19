@@ -71,16 +71,37 @@ namespace Microsoft.Extensions.Validation.Generated
         public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo)
         {
             validatableInfo = null;
-            if (type == typeof(global::TestService))
+            if (type == typeof(global::Address))
             {
                 validatableInfo = new GeneratedValidatableTypeInfo(
-                    type: typeof(global::TestService),
+                    type: typeof(global::Address),
                     members: [
                         new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::TestService),
-                            propertyType: typeof(int),
-                            name: "Value",
-                            displayName: "Value"
+                            containingType: typeof(global::Address),
+                            propertyType: typeof(string),
+                            name: "Street",
+                            displayName: "Street"
+                        ),
+                    ]
+                );
+                return true;
+            }
+            if (type == typeof(global::Order))
+            {
+                validatableInfo = new GeneratedValidatableTypeInfo(
+                    type: typeof(global::Order),
+                    members: [
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::Order),
+                            propertyType: typeof(string),
+                            name: "CustomerName",
+                            displayName: "CustomerName"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::Order),
+                            propertyType: typeof(global::Address),
+                            name: "ShippingAddress",
+                            displayName: "ShippingAddress"
                         ),
                     ]
                 );
