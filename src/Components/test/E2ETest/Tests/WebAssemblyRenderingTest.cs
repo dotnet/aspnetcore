@@ -53,26 +53,25 @@ public class WebAssemblyRenderingTest : ServerTestBase<BlazorWasmTestAppFixture<
     {
         var appElement = Browser.MountTestComponent<DuplicateAttributesComponent>();
 
-        var target = appElement.FindElement(By.Id("bool-toggle-target"));
         var toggleButton = appElement.FindElement(By.Id("bool-toggle-button"));
         var stateLabel = appElement.FindElement(By.Id("bool-toggle-state"));
 
         // Initial state: isBoolEnabled=true, so data-enabled is present, hidden is absent
         Browser.Equal("True", () => stateLabel.Text);
-        Browser.Equal(string.Empty, () => target.GetDomAttribute("data-enabled"));
-        Browser.True(() => target.GetDomAttribute("hidden") is null);
+        Browser.True(() => BoolAttributeIsPresent("bool-toggle-target", "data-enabled"));
+        Browser.True(() => !BoolAttributeIsPresent("bool-toggle-target", "hidden"));
 
         // Toggle to false: data-enabled removed, hidden added
         toggleButton.Click();
         Browser.Equal("False", () => stateLabel.Text);
-        Browser.True(() => target.GetDomAttribute("data-enabled") is null);
-        Browser.Equal(string.Empty, () => target.GetDomAttribute("hidden"));
+        Browser.True(() => !BoolAttributeIsPresent("bool-toggle-target", "data-enabled"));
+        Browser.True(() => BoolAttributeIsPresent("bool-toggle-target", "hidden"));
 
         // Toggle back to true: data-enabled present again, hidden removed
         toggleButton.Click();
         Browser.Equal("True", () => stateLabel.Text);
-        Browser.Equal(string.Empty, () => target.GetDomAttribute("data-enabled"));
-        Browser.True(() => target.GetDomAttribute("hidden") is null);
+        Browser.True(() => BoolAttributeIsPresent("bool-toggle-target", "data-enabled"));
+        Browser.True(() => !BoolAttributeIsPresent("bool-toggle-target", "hidden"));
     }
 
     [Fact]
@@ -89,7 +88,7 @@ public class WebAssemblyRenderingTest : ServerTestBase<BlazorWasmTestAppFixture<
         Assert.Equal("Second choice", selectElement.SelectedOption.Text);
         Assert.Equal("Second", boundValue.Text);
         Browser.Equal("False", () => disabledState.Text);
-        Browser.True(() => Browser.FindElement(By.Id("select-with-bool-attrs")).GetDomAttribute("disabled") is null);
+        Browser.True(() => !BoolAttributeIsPresent("select-with-bool-attrs", "disabled"));
         Browser.Equal("custom-value", () => Browser.FindElement(By.Id("select-with-bool-attrs")).GetDomAttribute("data-custom"));
 
         // Change selection while enabled
@@ -99,12 +98,12 @@ public class WebAssemblyRenderingTest : ServerTestBase<BlazorWasmTestAppFixture<
         // Disable the select via bool attribute toggle
         toggleDisabledButton.Click();
         Browser.Equal("True", () => disabledState.Text);
-        Browser.Equal(string.Empty, () => Browser.FindElement(By.Id("select-with-bool-attrs")).GetDomAttribute("disabled"));
+        Browser.True(() => BoolAttributeIsPresent("select-with-bool-attrs", "disabled"));
 
         // Re-enable the select
         toggleDisabledButton.Click();
         Browser.Equal("False", () => disabledState.Text);
-        Browser.True(() => Browser.FindElement(By.Id("select-with-bool-attrs")).GetDomAttribute("disabled") is null);
+        Browser.True(() => !BoolAttributeIsPresent("select-with-bool-attrs", "disabled"));
 
         // Verify select still works after re-enabling
         selectElement.SelectByText("First choice");
@@ -122,22 +121,35 @@ public class WebAssemblyRenderingTest : ServerTestBase<BlazorWasmTestAppFixture<
 
         // Initial state: readonly=false (absent), data-active=true (present), placeholder is string
         Browser.Equal("False", () => stateLabel.Text);
-        Browser.True(() => input.GetDomAttribute("readonly") is null);
-        Browser.Equal(string.Empty, () => input.GetDomAttribute("data-active"));
+        Browser.True(() => !BoolAttributeIsPresent("mixed-attrs-input", "readonly"));
+        Browser.True(() => BoolAttributeIsPresent("mixed-attrs-input", "data-active"));
         Browser.Equal("type here", () => input.GetDomAttribute("placeholder"));
 
         // Toggle: readonly=true (present), data-active=false (absent), placeholder unchanged
         toggleButton.Click();
         Browser.Equal("True", () => stateLabel.Text);
-        Browser.Equal(string.Empty, () => input.GetDomAttribute("readonly"));
-        Browser.True(() => input.GetDomAttribute("data-active") is null);
+        Browser.True(() => BoolAttributeIsPresent("mixed-attrs-input", "readonly"));
+        Browser.True(() => !BoolAttributeIsPresent("mixed-attrs-input", "data-active"));
         Browser.Equal("type here", () => input.GetDomAttribute("placeholder"));
 
         // Toggle back: readonly removed, data-active restored
         toggleButton.Click();
         Browser.Equal("False", () => stateLabel.Text);
-        Browser.True(() => input.GetDomAttribute("readonly") is null);
-        Browser.Equal(string.Empty, () => input.GetDomAttribute("data-active"));
+        Browser.True(() => !BoolAttributeIsPresent("mixed-attrs-input", "readonly"));
+        Browser.True(() => BoolAttributeIsPresent("mixed-attrs-input", "data-active"));
         Browser.Equal("type here", () => input.GetDomAttribute("placeholder"));
+    }
+
+    /// <summary>
+    /// Checks attribute presence via JavaScript to avoid Selenium's GetDomAttribute
+    /// returning "true" for standard HTML boolean attributes (hidden, disabled, readonly)
+    /// instead of the actual attribute value.
+    /// </summary>
+    private bool BoolAttributeIsPresent(string elementId, string attributeName)
+    {
+        var js = (IJavaScriptExecutor)Browser;
+        return (bool)js.ExecuteScript(
+            "return document.getElementById(arguments[0]).hasAttribute(arguments[1])",
+            elementId, attributeName);
     }
 }
