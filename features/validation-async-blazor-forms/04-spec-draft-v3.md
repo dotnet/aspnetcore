@@ -50,23 +50,38 @@ UI feedback is provided through `"pending"` and `"cancelled"` CSS classes on `In
 
 A form with an async validator (e.g., uniqueness check) awaits all validation before invoking `OnValidSubmit`.
 
+The following model is used throughout the scenarios in this spec:
+
+```csharp
+public class Registration
+{
+    [Required]
+    [UniqueEmail]    // async validator
+    public string Email { get; set; } = "";
+
+    [Required]
+    [UniqueUsername]  // async validator
+    public string Username { get; set; } = "";
+}
+```
+
 ```razor
-<EditForm Model="@user" OnValidSubmit="HandleValidSubmit">
+<EditForm Model="@registration" OnValidSubmit="HandleValidSubmit">
     <DataAnnotationsValidator />
 
-    <InputText @bind-Value="user.Username" />
-    <ValidationMessage For="() => user.Username" />
+    <InputText @bind-Value="registration.Username" />
 
     <button type="submit">Register</button>
+    <ValidationSummary />
 </EditForm>
 
 @code {
-    private User user = new();
+    private Registration registration = new();
 
     private async Task HandleValidSubmit(EditContext context)
     {
         // This only fires after ALL validation (including async) has passed
-        await UserService.CreateUserAsync(user);
+        await UserService.CreateAsync(registration);
     }
 }
 ```
@@ -75,10 +90,10 @@ No changes to the developer's form code are needed — `EditForm` internally cal
 
 ### Scenario 2: Validate form with async validators explicitly
 
-A developer using `OnSubmit` can await async validation explicitly.
+A developer using `OnSubmit` can await async validation explicitly via `EditContext.ValidateAsync`.
 
 ```razor
-<EditForm Model="@user" OnSubmit="HandleSubmit">
+<EditForm Model="@registration" OnSubmit="HandleSubmit">
     <DataAnnotationsValidator />
     <!-- ... -->
 </EditForm>
@@ -89,7 +104,7 @@ A developer using `OnSubmit` can await async validation explicitly.
         var isValid = await context.ValidateAsync();
         if (isValid)
         {
-            await UserService.CreateUserAsync(user);
+            await UserService.CreateAsync(registration);
         }
     }
 }
@@ -99,7 +114,7 @@ A developer using `OnSubmit` can await async validation explicitly.
 
 ### Scenario 3: Validate individual form field with async validators
 
-A field with an async validator shows inline errors as the user interacts with it. Sync validators run immediately; async validators start afterward if sync validators pass.
+A field with an async validator shows inline errors as the user interacts with it, with no additional code beyond declaring the validator attributes on the model.
 
 ```razor
 <EditForm Model="@registration">
@@ -107,22 +122,8 @@ A field with an async validator shows inline errors as the user interacts with i
 
     <InputText @bind-Value="registration.Email" />
     <ValidationMessage For="() => registration.Email" />
-
-    <InputText @bind-Value="registration.Username" />
-    <ValidationMessage For="() => registration.Username" />
     ...
 </EditForm>
-```
-
-The async validation is defined on the model (once BCL async attribute support lands):
-
-```csharp
-public class Registration
-{
-    [Required]
-    [UniqueEmail]    // async validator — checked on field change and form submit
-    public string Email { get; set; } = "";
-}
 ```
 
 No manual wiring is needed — `DataAnnotationsValidator` handles the async validation lifecycle automatically.
@@ -422,7 +423,7 @@ When async validation for a field fails (enters "cancelled" state), the develope
 </div>
 ```
 
-`ValidateFieldAsync(FieldIdentifier)` is a new method proposed on `EditContext`. It triggers validation for a specific field — clears any cancelled state, runs sync validators, starts async validators, and registers the async task for tracking. The field transitions from "cancelled" → "pending" (while async validation runs) → "valid" or "invalid" (based on the validation result).
+`ValidateFieldAsync(FieldIdentifier)` is a new method proposed on `EditContext`. It triggers validation for a specific field — clears any cancelled state, runs validators, and registers the async task for tracking. The field transitions from "cancelled" → "pending" (while async validation runs) → "valid" or "invalid" (based on the validation result).
 
 > **TODO:** Technically, developers could call `NotifyFieldChanged(fieldIdentifier)` to achieve a similar effect today, since it triggers `OnFieldChanged` which runs validation in `DataAnnotationsEventSubscriptions`. However, `NotifyFieldChanged` is semantically a *value change* notification — it marks the field as modified and signals that the value has changed, which is not true in a retry scenario. A dedicated `ValidateFieldAsync` provides the correct semantics: "re-validate this field's current value" without implying a value change.
 
@@ -450,7 +451,8 @@ public class FluentValidationValidator : ComponentBase
         EditContext.OnFieldChanged += (sender, args) =>
         {
             var cts = new CancellationTokenSource();
-            var task = ValidateFieldAsync(args.FieldIdentifier, cts.Token);
+            // Note: this is the component's own method, not EditContext.ValidateFieldAsync
+            var task = RunFieldValidationAsync(args.FieldIdentifier, cts.Token);
             EditContext.AddValidationTask(args.FieldIdentifier, task, cts);
         };
     }
@@ -502,10 +504,9 @@ In Static Server Rendering mode, async validation runs server-side during form P
 
 ## Assumptions
 
-- `Validator.TryValidatePropertyAsync` does not exist yet in the BCL. The field-level async validation path depends on this future API ([dotnet/runtime#121536](https://github.com/dotnet/runtime/issues/121536)). Until it ships, a polyfill or alternative implementation will be needed.
+- `Validator.TryValidatePropertyAsync` and `Validator.TryValidateObjectAsync` do not exist yet in the BCL. The async validation path without `AddValidation` depends on this future API ([dotnet/runtime#121536](https://github.com/dotnet/runtime/issues/121536)). Until it ships, a polyfill or alternative implementation will be needed.
 - `EditContext` is accessed from a single synchronization context (Blazor's component rendering thread). No concurrent access safeguards are needed.
-- The `Microsoft.Extensions.Validation` package will address its current `[Experimental]` status and runtime type discovery limitations independently of this work.
-- Async validation attributes (e.g., `AsyncValidationAttribute`, `UniqueUsernameAttribute` in the examples) are aspirational — they depend on BCL changes. The Blazor infrastructure is designed to support them when they arrive.
+- The order in which sync and async validators execute for a given field or model (e.g., whether sync validators run before async ones, or whether async validators are skipped when sync validators fail) is determined by the validation infrastructure (`Microsoft.Extensions.Validation`, `System.ComponentModel.DataAnnotations`), not by Blazor's form components. This spec does not prescribe validator execution order.
 
 ## References
 
