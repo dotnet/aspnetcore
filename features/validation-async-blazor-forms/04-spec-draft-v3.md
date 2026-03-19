@@ -30,7 +30,7 @@ This proposal adds `EditContext.ValidateAsync()`, an async event model for valid
 
 - **Incremental error reporting during form-submit validation.** The built-in `DataAnnotationsValidator` will not stream errors progressively as each field's async validation completes during form submission. Instead, all validation results are batched and reported together once the entire validation pass finishes. Streaming errors one-by-one causes layout shifts and unpredictable UX as the error list grows during validation. Third-party validator components are free to implement incremental reporting via the `ValidationMessageStore` and `NotifyValidationStateChanged()` APIs if they choose to.
 
-- **Built-in debouncing for async field validation.** Blazor's built-in input components bind to `onchange` (which fires on blur), not `oninput` (every keystroke). Since async validation already triggers on blur by default, debouncing is necessary for the common case. Using async validators with `oninput` binding is not recommended. Debouncing will be reconsidered as part of a future general event debounce feature for Blazor.
+- **Built-in debouncing for async field validation.** Blazor's built-in input components bind to `onchange` (which fires on blur), not `oninput` (every keystroke). Since async validation already triggers on blur by default, debouncing is unnecessary for the common case. Using async validators with `oninput` binding is not recommended. Debouncing will be reconsidered as part of a future general event debounce feature for Blazor.
 
 ## Proposed solution
 
@@ -40,7 +40,7 @@ The solution adds async validation capabilities to Blazor forms through two comp
 
 2. **`AddValidationTask(FieldIdentifier, Task)`** — a method for tracking in-flight async validation tasks per field. This enables pending state queries (`IsValidationPending`), automatic cancellation when a field is re-edited, and automatic cancellation on form submit (where full-form validation supersedes field-level tasks).
 
-`EditForm.HandleSubmitAsync()` is updated to call `ValidateAsync()` instead of `Validate()`. The existing sync `Validate()` will either be marked `[Obsolete]` or gain an optional `syncOnly` parameter — two alternative designs are presented in Scenario 5.
+`EditForm.HandleSubmitAsync()` is updated to call `ValidateAsync()` instead of `Validate()`. The existing sync `Validate()` will either be marked `[Obsolete]` or gain an optional `syncOnly` parameter — two alternative designs are presented in Scenario 6.
 
 UI feedback is provided through `"pending"` and `"cancelled"` CSS classes on `InputBase` (via `FieldCssClassProvider`) and optional render fragments on `ValidationMessage`.
 
@@ -131,8 +131,6 @@ public class Registration
 
 No manual wiring is needed — `DataAnnotationsValidator` handles the async validation lifecycle automatically.
 
-> **TODO:** When multiple fields trigger async validation concurrently, should they run in parallel or be queued?
-
 ### Scenario 4: Validate complex form with async validators on submit
 
 For forms with complex object graphs (nested objects, collections), async validation works automatically when the application uses `AddValidation()` in startup and `DataAnnotationsValidator` in the form. The `Microsoft.Extensions.Validation` infrastructure traverses the object graph asynchronously, validating nested properties including those with async validators.
@@ -188,11 +186,21 @@ public class OrderItem
 
 Both the legacy `System.ComponentModel.Validator` path and the `Microsoft.Extensions.Validation` path are retained for now.
 
-> **TODO:** Should we unify on `Microsoft.Extensions.Validation` or keep the legacy `Validator` path?
+### Scenario 5: Submit form while per-field async validations are pending
 
-> **TODO:** Should we use `ValidateContext.OnValidationError` for real-time error streaming?
+When the user submits the form while per-field async validations are still in progress (e.g., a uniqueness check is running for the Username field), the pending field-level validations are cancelled because the form-submit validation supersedes them. The full-form validation via `ValidateAsync()` re-validates everything from scratch — there is no need to wait for the field-level tasks to finish first, and doing so would cause double work.
 
-### Scenario 5: Backward compatibility and behavior of sync `Validate()`
+```
+User blurs Username field → async field validation starts (pending)
+User immediately clicks Submit:
+  1. Pending Username validation is cancelled
+  2. Full-form ValidateAsync() runs — re-validates all fields (including Username) from scratch
+  3. OnValidSubmit or OnInvalidSubmit fires based on the full-form result
+```
+
+From the developer's perspective, no special handling is needed — the form code is identical to Scenario 1. The cancellation and re-validation happen automatically inside `EditContext.ValidateAsync()`.
+
+### Scenario 6: Use existing sync-only forms without changes
 
 Existing forms with sync-only validators continue to work identically at runtime. `EditForm` internally uses `ValidateAsync()`, so no changes are needed in form markup or `OnValidSubmit`/`OnInvalidSubmit` handlers.
 
@@ -246,7 +254,7 @@ var isValid = await editContext.ValidateAsync();
 
 Alternative B preserves `Validate()` as a non-obsolete API for cases where a developer intentionally wants only sync validation (e.g., instant field-level checks without triggering async work). Alternative A provides a cleaner migration signal but removes the ability to explicitly request sync-only validation.
 
-> **TODO:** Resolve which alternative to use for `Validate()` — Obsolete vs `syncOnly` parameter.
+> **TODO:** Resolve which alternative to use for `Validate()` — Obsolete vs `syncOnly` parameter vs some other solution.
 
 In both alternatives, if the model has async validators and the developer calls `Validate()` without opting into sync-only mode, the validation infrastructure throws at runtime:
 
@@ -258,7 +266,7 @@ In both alternatives, if the model has async validators and the developer calls 
 
 This prevents silent data loss where async validators would be silently skipped.
 
-### Scenario 6: Display async validation state declaratively
+### Scenario 7: Display async validation state declaratively
 
 Developers need a declarative way to show pending and cancelled validation feedback next to a field — without writing manual conditional rendering logic. The component should handle subscribing to state changes and rendering the appropriate content automatically.
 
@@ -278,11 +286,11 @@ The proposed approach extends `ValidationMessage` with optional `PendingContent`
 
 When the render fragments are not provided, `ValidationMessage` behaves exactly as it does today — it only renders error messages. This makes the change fully backward compatible.
 
-> **TODO:** Alternative approaches to consider: (1) A separate dedicated `ValidationPendingIndicator` component instead of extending `ValidationMessage`. This provides cleaner separation of concerns and independent placement control, but requires two components per field. (2) Not providing any built-in component and leaving this to developers using the programmatic `IsValidationPending()` / `IsValidationCancelled()` APIs (Scenario 7).
+> **TODO:** Alternative approaches to consider: (1) A separate dedicated `ValidationPendingIndicator` component instead of extending `ValidationMessage`. This provides cleaner separation of concerns and independent placement control, but requires two components per field. (2) Not providing any built-in component and leaving this to developers using the programmatic `IsValidationPending()` / `IsValidationCancelled()` APIs (Scenario 8).
 
-### Scenario 7: Check async validation state programmatically
+### Scenario 8: Check async validation state programmatically
 
-For cases where the declarative approach (Scenario 6) is insufficient — such as disabling the submit button, showing a form-level indicator, or implementing custom validation UX — developers can query pending and cancelled state directly on `EditContext`.
+For cases where the declarative approach (Scenario 7) is insufficient — such as disabling the submit button, showing a form-level indicator, or implementing custom validation UX — developers can query pending and cancelled state directly on `EditContext`.
 
 ```razor
 <EditForm Model="@registration">
@@ -314,11 +322,11 @@ For cases where the declarative approach (Scenario 6) is insufficient — such a
 
 `IsValidationPending(FieldIdentifier)` returns `true` while a tracked async task is running for that field. `IsValidationPending()` (no args) returns `true` if any field has a pending task.
 
-`IsValidationCancelled(FieldIdentifier)` returns `true` when an async validation task for the field completed with an exception (network error, timeout, etc.) — not when it was cancelled by the user re-editing the field. The cancelled state is cleared when the field is edited again (triggering a new validation attempt).
+`IsValidationCancelled(FieldIdentifier)` returns `true` when an async validation task for the field failed due to an infrastructure error — see Scenario 10 for the detailed distinction between user-initiated cancellation (silent) and validation failures (enters cancelled state).
 
-> **TODO:** The name "cancelled" may be confusing since this state is not about user-initiated cancellation (which is silent) but about validation infrastructure failures. Naming alternatives to consider: "failed" (`IsValidationFailed`), "faulted" (`IsValidationFaulted`, mirrors `Task.IsFaulted`), "errored" (`IsValidationErrored`), "inconclusive" (`IsValidationInconclusive`). Resolve naming before API review.
+> **TODO:** Discuss naming. The name "cancelled" may be confusing since this state is not about user-initiated cancellation (which is silent) but about validation infrastructure failures. Naming alternatives to consider: "failed" (`IsValidationFailed`), "faulted" (`IsValidationFaulted`, mirrors `Task.IsFaulted`), "errored" (`IsValidationErrored`), "inconclusive" (`IsValidationInconclusive`). Resolve naming before API review.
 
-### Scenario 8: Style input forms based on async validation state
+### Scenario 9: Style input forms based on async validation state
 
 `InputBase` automatically applies `"pending"` or `"cancelled"` CSS classes based on async validation state, using the existing `FieldCssClassProvider` mechanism.
 
@@ -360,9 +368,7 @@ public class BootstrapFieldCssClassProvider : FieldCssClassProvider
 }
 ```
 
-> **TODO:** Should we support a form-level CSS class (e.g., `<form class="validating">`) when any field has pending validation?
-
-### Scenario 9: Cancellation of stale validations vs validation failures
+### Scenario 10: Handle stale validations and validation failures
 
 There are two distinct situations where an async validation task does not complete normally:
 
@@ -400,7 +406,7 @@ public class UniqueUsernameAttribute : AsyncValidationAttribute
 }
 ```
 
-### Scenario 10: Retry validation for a specific field
+### Scenario 11: Retry validation for a specific field
 
 When async validation for a field fails (enters "cancelled" state), the developer or the user needs a way to retry validation for that specific field without changing its value and without re-validating the entire form.
 
@@ -424,7 +430,7 @@ When async validation for a field fails (enters "cancelled" state), the develope
 
 > **TODO:** Technically, developers could call `NotifyFieldChanged(fieldIdentifier)` to achieve a similar effect today, since it triggers `OnFieldChanged` which runs validation in `DataAnnotationsEventSubscriptions`. However, `NotifyFieldChanged` is semantically a *value change* notification — it marks the field as modified and signals that the value has changed, which is not true in a retry scenario. A dedicated `ValidateFieldAsync` provides the correct semantics: "re-validate this field's current value" without implying a value change.
 
-### Scenario 11: Third-party validator integration
+### Scenario 12: Integrate third-party async validators
 
 Third-party validator components subscribe to `OnValidationRequestedAsync` for form-submit validation and use `AddValidationTask` for field-level async validation. The existing pattern of creating validator components extends naturally to async scenarios.
 
@@ -458,7 +464,7 @@ From the form developer's perspective, third-party validators work just like `Da
 </EditForm>
 ```
 
-### Scenario 12: Static SSR forms
+### Scenario 13: Validate forms with async validators in static SSR
 
 In Static Server Rendering mode, async validation runs server-side during form POST processing. Since there is no persistent connection, validation must complete fully before the response is rendered — no progressive UI updates are possible.
 
@@ -496,15 +502,14 @@ In Static Server Rendering mode, async validation runs server-side during form P
 
 ## References
 
-- [dotnet/aspnetcore#7680](https://github.com/dotnet/aspnetcore/issues/7680) — Blazor form async validation enhancements (original issue, 2019)
-- [dotnet/aspnetcore#64892](https://github.com/dotnet/aspnetcore/issues/64892) — Blazor Form Validation Enhancements epic (11.0-preview4)
-- [dotnet/aspnetcore#31905](https://github.com/dotnet/aspnetcore/issues/31905) — "Please reconsider allowing async model validation" by FluentValidation author (227👍)
-- [dotnet/aspnetcore#51501](https://github.com/dotnet/aspnetcore/issues/51501) — ValidateAsync proposal
-- [dotnet/aspnetcore#40244](https://github.com/dotnet/aspnetcore/issues/40244) — Async validation request with manual workaround by @SteveSandersonMS
-- [dotnet/aspnetcore#64609](https://github.com/dotnet/aspnetcore/issues/64609) — Async validation in minimal APIs
-- [dotnet/runtime#121536](https://github.com/dotnet/runtime/issues/121536) — Runtime async validation APIs
-- [dotnet/designs#363](https://github.com/dotnet/designs/pull/363) — BCL async validation design proposal
-- [Blazored/FluentValidation#38](https://github.com/Blazored/FluentValidation/issues/38) — Async validator not working (canonical bug report)
-- [Blazilla](https://github.com/loresoft/Blazilla/) — Third-party FluentValidation async integration for Blazor
-- [Angular Async Validators](https://angular.dev/guide/forms/form-validation) — Reference implementation with `ng-pending` CSS class
-- [react-hook-form](https://github.com/orgs/react-hook-form/discussions/9005) — Async validation patterns with `isValidating` state
+- [dotnet/aspnetcore #7680](https://github.com/dotnet/aspnetcore/issues/7680) — Original design sketch for async support in Blazor form validation. Contains the initial API shape (`AddValidationTask`, `HasPendingValidationTasks`, `ValidateAsync`) that informs this proposal.
+- [dotnet/aspnetcore #31905](https://github.com/dotnet/aspnetcore/issues/31905) — Request from the FluentValidation author to allow async model validation in ASP.NET Core (227👍). Demonstrates the ecosystem demand and the dual sync/async code path maintenance burden that third-party libraries face.
+- [dotnet/aspnetcore #51501](https://github.com/dotnet/aspnetcore/issues/51501) — Community proposal for adding `ValidateAsync` to `EditContext`. Shows a concrete API sketch that influenced the `OnValidationRequestedAsync` event design.
+- [dotnet/aspnetcore #40244](https://github.com/dotnet/aspnetcore/issues/40244#issuecomment-1044298329) — Workaround sketch for doing async form validation with current Blazor API. Illustrates the amount of boilerplate developers must write today and the UX tradeoffs involved.
+- [dotnet/aspnetcore #64609](https://github.com/dotnet/aspnetcore/issues/64609) — Tracking issue for async validation support in Minimal APIs. The Minimal API and Blazor async validation efforts share the `Microsoft.Extensions.Validation` infrastructure.
+- [dotnet/runtime #121536](https://github.com/dotnet/runtime/issues/121536) — Tracking issue for adding async APIs to `System.ComponentModel.DataAnnotations`. The Blazor infrastructure designed in this spec is intended to support these BCL async APIs when they land.
+- [dotnet/designs #363](https://github.com/dotnet/designs/pull/363) — Design draft for adding async validation support in the BCL. Defines the `AsyncValidationAttribute` and `Validator.TryValidateObjectAsync` APIs that Blazor will consume.
+- [Blazored #38](https://github.com/Blazored/FluentValidation/issues/38) — Discussion about issues and workarounds while using async FluentValidation validators with current Blazor API. Documents the core pain point: forms submit before async validation completes.
+- [Blazilla](https://github.com/loresoft/Blazilla/) — Form validator package that works around the missing async features in the current Blazor API. Demonstrates one approach (replacing `EditForm`) and validates that the problem is solvable at the framework level.
+- [Angular Async Validators](https://angular.dev/guide/forms/form-validation) — Angular's async validation with built-in `PENDING` state and `ng-pending` CSS class. Serves as prior art for the pending state, CSS class, and cancellation patterns proposed here.
+- [react-hook-form](https://github.com/orgs/react-hook-form/discussions/9005) — React async validation patterns with `isValidating` state and debounce/cancel strategies. Serves as prior art for the programmatic pending state query and stale validation cancellation patterns.
