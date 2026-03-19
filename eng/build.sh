@@ -29,7 +29,6 @@ build_nodejs=''
 build_java=''
 build_installers=''
 build_projects=''
-target_arch='x64'
 configuration=''
 runtime_source_feed=''
 runtime_source_feed_key=''
@@ -39,13 +38,10 @@ from_vmr=''
 warn_as_error=true
 from_vmr=''
 
-if [ "$(uname)" = "Darwin" ]; then
-    target_os_name='osx'
-elif [ "$(uname)" = "FreeBSD" ]; then
-    target_os_name='freebsd'
-else
-    target_os_name='linux'
-fi
+source "$DIR/common/native/init-os-and-arch.sh"
+
+target_os_name="$os"
+target_arch="$arch"
 
 msbuild_args=()
 

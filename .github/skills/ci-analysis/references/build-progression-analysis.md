@@ -12,9 +12,7 @@ When the current build is failing, the PR's build history can reveal whether the
 
 ### Step 0: Start with the recent builds
 
-Don't try to analyze the full build history upfront — especially on large PRs with many pushes. Start with the most recent N builds (5-8), present the progression table, and let the user decide whether to dig deeper into earlier builds.
-
-On large PRs, the user is usually iterating toward a solution. The recent builds are the most relevant. Offer: "Here are the last N builds — the pass→fail transition was between X and Y. Want me to look at earlier builds?"
+Start with the 5-8 most recent builds. Present the progression table and offer to look at earlier builds if needed.
 
 ### Step 1: List builds for the PR
 
@@ -24,7 +22,7 @@ On large PRs, the user is usually iterating toward a solution. The recent builds
 
 Query AzDO for builds on `refs/pull/{PR}/merge` branch, sorted by queue time descending, top 20, in the `public` project. The response includes `triggerInfo` with `pr.sourceSha` — the PR's HEAD commit for each build.
 
-> 💡 Key parameters: `branchName: "refs/pull/{PR}/merge"`, `queryOrder: "QueueTimeDescending"`, `top: 20`, project `public` (for dnceng-public org).
+> Key parameters: `branchName: "refs/pull/{PR}/merge"`, `queryOrder: "QueueTimeDescending"`, `top: 20`, project `public` (for dnceng-public org).
 
 **Without MCP (fallback):**
 ```powershell

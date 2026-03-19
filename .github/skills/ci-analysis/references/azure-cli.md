@@ -4,7 +4,7 @@ The AzDO MCP tools handle most pipeline queries directly. This reference covers 
 
 When the CI script and GitHub APIs aren't enough (e.g., investigating internal pipeline definitions or downloading build artifacts), use the Azure CLI with the `azure-devops` extension.
 
-> 💡 **Prefer `az pipelines` / `az devops` commands over raw REST API calls.** The CLI handles authentication, pagination, and JSON output formatting. Only fall back to manual `Invoke-RestMethod` calls when the CLI doesn't expose the endpoint you need (e.g., build timelines). The CLI's `--query` (JMESPath) and `-o table` flags are powerful for filtering without extra scripting.
+> 💡 Use `az pipelines` before raw REST. `--query` (JMESPath) and `-o table` are useful for filtering.
 
 ## Checking Authentication
 
@@ -79,9 +79,9 @@ All dotnet repos that use arcade put their pipeline definitions under `eng/pipel
 # Find the YAML path for a pipeline
 az pipelines show --id 1330 --org $org -p $project --query "{yamlPath:process.yamlFilename, repo:repository.name}" -o table
 
-# Fetch the YAML from the repo (example: dotnet/aspnetcore's ci-public pipeline)
+# Fetch the YAML from the repo (example: dotnet/runtime's runtime-official pipeline)
 #   Read the pipeline YAML from the repo to understand build stages and conditions
-#   e.g., .azure/pipelines/ci-public.yml in dotnet/aspnetcore
+#   e.g., eng/pipelines/runtime-official.yml in dotnet/runtime
 
 # For VMR unified builds, the YAML is in dotnet/dotnet:
 #   eng/pipelines/unified-build.yml

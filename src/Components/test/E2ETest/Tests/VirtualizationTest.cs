@@ -6,6 +6,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.Extensions;
 using OpenQA.Selenium.Support.UI;
@@ -246,6 +247,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65852")]
     public void CanRenderHtmlTable()
     {
         Browser.MountTestComponent<VirtualizationTable>();
@@ -574,6 +576,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65852")]
     public void CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax()
     {
         Browser.MountTestComponent<VirtualizationLargeOverscan>();
@@ -690,5 +693,19 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         var js = (IJavaScriptExecutor)Browser;
         js.ExecuteScript("arguments[0].scrollLeft = arguments[0].scrollWidth", elem);
+    }
+
+    [Fact]
+    public void VirtualizeWorksInsideHorizontalOverflowContainer()
+    {
+        Browser.MountTestComponent<VirtualizationHorizontalOverflow>();
+
+        Browser.True(() => Browser.FindElements(By.CssSelector("#horizontal-overflow-table tbody tr[id^='horizontal-overflow-row-']")).Count > 0);
+        Browser.DoesNotExist(By.Id("horizontal-overflow-row-999"));
+
+        Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
+
+        var lastElement = Browser.Exists(By.Id("horizontal-overflow-row-999"));
+        Browser.True(() => lastElement.Displayed);
     }
 }
