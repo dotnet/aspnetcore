@@ -46,14 +46,15 @@ Lets go through each goal item in the spec draft one by one. We will incremental
     3. Review => if selected, ask me for additional instructions on what to change, after you make the changes, give me the same dialog with options for the updated goal item,
     4. Postpone => if selected, move this item to the end of the queue of remaining items, we will decide for it later.
 
+### Spec refinement
+
 ## Design
 
+Lets use the spec to create a full end to end design and implementation plan. Do not write any code yet. Write a design doc that would cover all the requirements. Include full code listings for the code changes. For each open question - or any other questions you run into where you see multiple possible options - ask me first and then continue. Write all output into 0n-design-draft.md (were n is latest doc number)
 
-Use either custom AsyncValidationAttribute prototype (before BCL changes) or FluentValidation async validators as benchmark of viability.
+## Test plan
 
-## Implementation plan
-
-## Testing plan
+Now write a test plan that would cover the entire spec and the design. Describe all relevant test scenarios. Include both unit tests (for non-trivial logic) and E2E tests. Reason for each test why it is needed (so we dont have superfluous tests), and for each scenario/API that the test suite is comprehensive (so that we are not missing any edge cases). Plan where the different tests need to go in the project structure. Output into 0n-test-plan-draft.md (were n is latest doc number)
 
 ## Implementation
 
