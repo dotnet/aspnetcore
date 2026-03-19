@@ -4,35 +4,33 @@
 
 This document proposes adding async validation support to Blazor's form validation infrastructure (`EditContext`, `EditForm`, `DataAnnotationsValidator`, and related components) to address the inability to perform I/O-bound validation operations — such as database uniqueness checks, remote API calls, or service-based business rule validation — within the standard Blazor form validation pipeline.
 
-Today, the entire Blazor form validation pipeline is synchronous. `EditContext.Validate()` fires a synchronous event and returns `bool`. Developers who need async validation are forced to block on async operations using `.Result` or `.GetAwaiter().GetResult()`, which is incompatible with Blazor WebAssembly and causes deadlocks on Blazor Server. Third-party libraries like FluentValidation — which has first-class async support — cannot fully integrate with Blazor's `EditContext` because the event model is synchronous.
+Today, the entire Blazor form validation pipeline is synchronous. `EditContext.Validate()` fires a synchronous event and returns `bool`. Developers who need async validation are forced to block on async operations using `.Result` or `.GetAwaiter().GetResult()`, which is incompatible with Blazor WebAssembly and causes deadlocks on Blazor Server. Third-party libraries like FluentValidation — which has first-class async support — cannot fully integrate with Blazor's `EditContext` because the event model is synchronous. Additionally, async validation APIs are being added to `System.ComponentModel.DataAnnotations` in the BCL ([dotnet/runtime#121536](https://github.com/dotnet/runtime/issues/121536)); the Blazor form infrastructure needs to be ready to support these when they land.
 
 This proposal adds `EditContext.ValidateAsync()`, an async event model for validation requests, per-field async validation task tracking with pending state and cancellation, and UI feedback mechanisms including CSS classes and an optional indicator component — enabling async validation to work end-to-end across all Blazor rendering modes.
 
 ## Goals
 
-- **Enable async validation on form submit.** Developers need forms that await async validators (e.g., server-side uniqueness checks) before invoking `OnValidSubmit` or `OnInvalidSubmit`. Today, forms either submit before async validation completes or require sync-over-async blocking that deadlocks.
+- **Enable async validation on form submit.** Developers need forms that await async validators (e.g., server-side uniqueness checks) before invoking `OnValidSubmit` or `OnInvalidSubmit`, for both simple models and complex object graphs with nested objects and collections. Today, forms either submit before async validation completes or require sync-over-async blocking that deadlocks.
 
 - **Enable async validation on field change.** Developers need individual fields to validate asynchronously as the user interacts with them (on change or blur), with errors appearing inline via `<ValidationMessage>` — the same way sync validation works today.
 
 - **Expose pending and cancelled validation state.** While async validation is in progress, developers need to query pending state per-field and per-form to show spinners, "Checking…" text, or disable submit buttons. When async validation fails due to infrastructure errors (network failure, timeout, unhandled exception in the validator), the field should enter a "cancelled" state distinct from both "valid" and "invalid" — enabling UI like "Validation failed, please try again." Both states must trigger UI re-renders automatically.
 
-- **Cancel stale validations.** When a user edits a field while its async validation is in progress, the previous validation must be cancelled (or its result discarded) so stale results never appear in the UI.
+- **Cancel stale validations.** When a user edits a field while its async validation is in progress, the previous validation must be cancelled (or its result discarded) so stale results never appear in the UI and the amount of unnecessary work is minimized.
 
-- **Maintain full backward compatibility.** Existing applications using sync-only validators must continue to work without any runtime regressions or performance overhead. The sync `Validate()` method will either be marked `[Obsolete]` (Alternative A) or gain a `syncOnly` parameter (Alternative B) — see Scenarios 8 and 9.
+- **Maintain full backward compatibility.** Existing applications using sync-only validators must continue to work without any runtime regressions or noticable performance overhead.
 
-- **Enable third-party validator integration.** Library authors (e.g., FluentValidation) need an async-capable extension point to hook into the validation pipeline without forking `EditForm` or resorting to `async void` event handlers.
-
-- **Integrate with Microsoft.Extensions.Validation.** The existing `DataAnnotationsValidator` should use the async-first `Microsoft.Extensions.Validation` pipeline (which already exists but currently throws if it doesn't complete synchronously) without blocking or throwing.
+- **Enable third-party validator integration.** Library authors or integrators (e.g., FluentValidation) need an async-capable extension point to hook into the validation pipeline without forking `EditForm` or resorting to `async void` event handlers.
 
 ## Non-goals
 
-- **BCL-level async validation APIs.** Adding `AsyncValidationAttribute`, `Validator.TryValidateObjectAsync()`, or `IAsyncValidatableObject` to `System.ComponentModel.DataAnnotations` is tracked separately ([dotnet/runtime#121536](https://github.com/dotnet/runtime/issues/121536), [dotnet/designs#363](https://github.com/dotnet/designs/pull/363)). This spec focuses on the Blazor-side changes that can proceed independently. When BCL async APIs land, they will flow through naturally.
+- **BCL-level async validation APIs.** Adding async validation APIs to `System.ComponentModel.DataAnnotations` is tracked separately ([dotnet/runtime#121536](https://github.com/dotnet/runtime/issues/121536), [dotnet/designs#363](https://github.com/dotnet/designs/pull/363)). This spec focuses on the Blazor-side changes that can proceed independently.
 
 - **Parallel execution strategy for validators.** Whether async validators on the same property run sequentially or concurrently, and how error short-circuiting works, are validation infrastructure concerns — not Blazor form concerns. This spec treats the validation engine as a black box that returns results.
 
 - **Incremental error reporting during form-submit validation.** The built-in `DataAnnotationsValidator` will not stream errors progressively as each field's async validation completes during form submission. Instead, all validation results are batched and reported together once the entire validation pass finishes. Streaming errors one-by-one causes layout shifts and unpredictable UX as the error list grows during validation. Third-party validator components are free to implement incremental reporting via the `ValidationMessageStore` and `NotifyValidationStateChanged()` APIs if they choose to.
 
-- **Built-in debouncing for async field validation.** Blazor's built-in input components bind to `onchange` (which fires on blur), not `oninput` (every keystroke). Since async validation already triggers on blur by default, debouncing is unnecessary for the common case. Using async validators with `oninput` binding is not recommended. Debouncing may be reconsidered as part of a future general event debounce feature for Blazor.
+- **Built-in debouncing for async field validation.** Blazor's built-in input components bind to `onchange` (which fires on blur), not `oninput` (every keystroke). Since async validation already triggers on blur by default, debouncing is necessary for the common case. Using async validators with `oninput` binding is not recommended. Debouncing will be reconsidered as part of a future general event debounce feature for Blazor.
 
 ## Proposed solution
 
