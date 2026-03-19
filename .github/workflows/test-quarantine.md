@@ -33,6 +33,8 @@ safe-outputs:
   add-comment:
     target: "*"
     max: 10
+  add-labels:
+    allowed: [re-quarantine]
 
 tools:
   edit:
@@ -200,7 +202,7 @@ Combine failure counts from all sources across both pipelines. A test is a candi
 - It has failed **2 or more times** total across all sources
 - It is **not already quarantined** (check the source code for existing `[QuarantinedTest]` attributes)
 - The failures are **not** from a PR that modified the test itself (check if the PR's changed files include the test file)
-- OR: the test was **recently unquarantined** (had its `[QuarantinedTest]` attribute removed within the past 14 days, detectable via `git log --since="14 days ago" -G 'QuarantinedTest' -- '*.cs'`) and has **even a single failure**. Failing so soon after unquarantining means it was unquarantined too early. For these tests, search for the original closed quarantine issue (title prefix "Quarantine" referencing the test name) and **reopen** it rather than creating a new one.
+- OR: the test was **recently unquarantined** (had its `[QuarantinedTest]` attribute removed within the past 14 days, detectable via `git log --since="14 days ago" -G 'QuarantinedTest' -- '*.cs'`) and has **even a single failure**. Failing so soon after unquarantining means it was unquarantined too early. For these tests, search for the original closed quarantine issue (title prefix "Quarantine" referencing the test name) and **reopen** it rather than creating a new one. Add the `re-quarantine` label to the PR.
 
 Additionally, check for **class-level quarantine** candidates. If a **test class** has more than 3 total failures across multiple methods, you **must** investigate the error messages before deciding:
 
