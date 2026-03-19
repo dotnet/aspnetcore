@@ -33,6 +33,8 @@ safe-outputs:
   add-comment:
     target: "*"
     max: 10
+  add-labels:
+    allowed: [re-quarantine]
 
 tools:
   edit:
@@ -195,11 +197,21 @@ For work items (names ending in `.WorkItemExecution`) that failed 2+ times, inve
 
 ### Step 2.2 — Combine and identify quarantine candidates
 
-Combine failure counts from all sources across both pipelines. A test is a candidate for quarantining if:
+Combine failure counts from all sources across both pipelines. A test is a candidate for quarantining if it meets **either** of the following cases:
+
+**Case A – New quarantine**
+
+All of the following are true:
 - It is an **individual test case** (not a `.WorkItemExecution`)
 - It has failed **2 or more times** total across all sources
 - It is **not already quarantined** (check the source code for existing `[QuarantinedTest]` attributes)
 - The failures are **not** from a PR that modified the test itself (check if the PR's changed files include the test file)
+
+**Case B – Re-quarantine of a recently unquarantined test**
+
+All of the following are true:
+- The test was **recently unquarantined** (had its `[QuarantinedTest]` attribute removed within the past 14 days, detectable via `git log --since="14 days ago" -G 'QuarantinedTest' -- '*.cs'`)
+- It has **at least one failure** in the observation window. Failing so soon after unquarantining means it was unquarantined too early. For these tests, search for the original closed quarantine issue (title prefix "Quarantine" referencing the test name) and **reopen** it rather than creating a new one in Step&nbsp;2.4.
 
 Additionally, check for **class-level quarantine** candidates. If a **test class** has more than 3 total failures across multiple methods, you **must** investigate the error messages before deciding:
 
@@ -227,7 +239,7 @@ For each test or group of tests to quarantine:
      - `## Failing Test(s)` — fully qualified test name(s)
      - `## Error Message` — from the most recent failure's console log, in a ` ```text ``` ` block
      - `## Stacktrace` — in a `<details>` block with ` ```text ``` `
-     - `## Logs` — the full console log content from the most recent failure, in a `<details>` block with ` ```text ``` `. Get this from the Helix work item files API: find the file named `{TestClassName}_{TestMethodName}.log` for the specific test.
+     - `## Logs` — console log content from the most recent failure, in a `<details>` block with ` ```text ``` `. Get this from the Helix work item files API: find the file named `{TestClassName}_{TestMethodName}.log` for the specific test. Prefer to include the full, verbatim log when it fits within GitHub issue size limits. If the log is very large or would exceed those limits, include a representative head and tail of the log in the issue and provide a direct link to the full Helix log file (and/or attach it as an artifact) so the complete output is still accessible.
      - `## Build` — link to the most recent failing build: `https://dev.azure.com/dnceng-public/public/_build/results?buildId={BUILD_ID}`
 
 2. **Post an investigation comment** on the new issue. Examine all available failure logs for the test. Be concise but thorough:
@@ -239,13 +251,15 @@ For each test or group of tests to quarantine:
 3. **Create a PR** that:
    - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/{ISSUE_NUMBER}")]` to the test method (or class)
    - Adds `using Microsoft.AspNetCore.InternalTesting;` if not already present in the file
-   - References the issue in the PR body with `Fixes #{ISSUE_NUMBER}` only if this is the sole test for that issue; otherwise just mention the issue without `Fixes`
+   - References the issue in the PR body with `Associated issue: #{ISSUE_NUMBER}`. Do **not** use the word `Fixes` or `Closes` — quarantine PRs open tracking issues, they do not fix them, and GitHub would auto-close the issue when the PR merges.
+   - If the test matched **Case B** (re-quarantine of a recently unquarantined test), add the `re-quarantine` label to the PR.
 
 ---
 
 ## Important Rules
 
 - **Always exclude** `AlwaysTestTests.SuccessfulTests.GuaranteedQuarantinedTest` from all analysis. This test must never be unquarantined.
+- **Always exclude** tests under `Microsoft.AspNetCore.SignalR.Specification.Tests` from all analysis. These are abstract base classes inherited by other test projects — there is no good way to quarantine them, so they must be ignored entirely.
 - **Check for existing PRs** before creating new ones. Search all open PRs for any that modify the same test file. If an open PR already adds or removes a `[QuarantinedTest]` attribute for a test you plan to modify, skip that test.
 - **One PR per issue** for unquarantining. Group tests by their quarantine issue.
 - **One issue + one PR per test** (or per related group) for quarantining.
