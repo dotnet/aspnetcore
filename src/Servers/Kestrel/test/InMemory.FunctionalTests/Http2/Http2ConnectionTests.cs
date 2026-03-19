@@ -1995,7 +1995,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/44415")]
     public async Task OutputFlowControl_ConnectionAndRequestAborted_NoException()
     {
         // Ensure the stream window size is bigger than the connection window size
