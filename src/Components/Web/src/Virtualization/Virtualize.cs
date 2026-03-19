@@ -37,6 +37,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private int _loadedItemsStartIndex;
 
+    private int _loadedItemCount;
+
     private int _lastRenderedItemCount;
 
     private int _lastRenderedPlaceholderCount;
@@ -456,11 +458,25 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _itemsBefore = itemsBefore;
             _visibleItemCapacity = visibleItemCapacity;
             _unusedItemCapacity = unusedItemCapacity;
-            var refreshTask = RefreshDataCoreAsync(renderOnSuccess: true);
 
-            if (!refreshTask.IsCompleted)
+            // Skip reloading if the already-loaded items fully cover the new range.
+            // This avoids a redundant ItemsProvider call when measurement refinement
+            // changes the distribution but the data is already available.
+            var requestedEnd = _itemsBefore + _visibleItemCapacity + OverscanCount;
+            if (_loadedItems != null
+                && _itemsBefore >= _loadedItemsStartIndex
+                && requestedEnd <= _loadedItemsStartIndex + _loadedItemCount)
             {
                 StateHasChanged();
+            }
+            else
+            {
+                var refreshTask = RefreshDataCoreAsync(renderOnSuccess: true);
+
+                if (!refreshTask.IsCompleted)
+                {
+                    StateHasChanged();
+                }
             }
         }
     }
@@ -497,6 +513,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 _itemCount = result.TotalItemCount;
                 _loadedItems = result.Items;
                 _loadedItemsStartIndex = request.StartIndex;
+                _loadedItemCount = request.Count;
                 _loading = false;
 
                 if (renderOnSuccess)
