@@ -2,9 +2,9 @@
 
 This document proposes adding first-class localization support for validation error messages and display names to `Microsoft.Extensions.Validation`, and transitively to Blazor form validation and Minimal API model validation, to address the current lack of localization and customization support for validation messages.
 
-Internationalized applications need to present validation errors in the user's language, and even English-only applications may need to customize the built-in validation messages. Currently, `System.ComponentModel.DataAnnotations` only offers a limited, verbose, static-property-based mechanism (`ErrorMessageResourceType`/`ErrorMessageResourceName`) that requires explicit annotation on every attribute instance and cannot load translations from databases, JSON files, or other dynamic sources. `Microsoft.Extensions.Validation`, the validation infrastructure powering Blazor and Minimal APIs since .NET 10, inherits these limitations and provides no additional localization capabilities.
+Internationalized applications need to present validation errors in the user's language, and even English-only applications may need to customize the built-in validation messages. The basic `System.ComponentModel.DataAnnotations` API only offers a limited, verbose, static-property-based localization mechanism (`ErrorMessageResourceType`/`ErrorMessageResourceName`) that cannot use services to load translations from databases, JSON files, or other dynamic sources. `Microsoft.Extensions.Validation`, the validation infrastructure used by Blazor and Minimal APIs since .NET 10, currently inherits these limitations and provides no additional localization capabilities.
 
-The proposed solution adds generic delegate-based extensibility points to the core `Microsoft.Extensions.Validation` package, and provides a default `IStringLocalizer`-based localization implementation in a new `Microsoft.Extensions.Validation.Localization` package that integrates with `Microsoft.Extensions.Localization` and achieves feature parity with ASP.NET Core MVC's localization while offering more flexibility and broader framework support.
+The proposed solution adds localization extensibility points to the core `Microsoft.Extensions.Validation` package, and provides a default `IStringLocalizer`-based localization implementation in a new `Microsoft.Extensions.Validation.Localization` package that integrates with `Microsoft.Extensions.Localization` and achieves feature parity with ASP.NET Core MVC's localization while offering more flexibility and broader framework support.
 
 ## Goals
 
@@ -26,7 +26,15 @@ The proposed solution adds generic delegate-based extensibility points to the co
 
 ## Proposed solution
 
-The localization support is implemented at the level of the shared `Microsoft.Extensions.Validation` infrastructure, rather than in each individual framework integration (Minimal APIs, Blazor). This approach avoids logic duplication and provides a consistent experience regardless of the hosting framework.
+Localization support is implemented at the level of `Microsoft.Extensions.Validation` because producing a correctly localized validation message requires intercepting the validation process at the point where individual attributes are evaluated. Specifically, for each attribute the localization pipeline must:
+
+1. Resolve a localized message template using the attribute's error message as a lookup key.
+2. Resolve the localized display name for the validated member.
+3. Format the localized template with the display name and any attribute-specific arguments (e.g., min/max values for `RangeAttribute`).
+
+The `DataAnnotations` APIs do not expose any hooks into this process — `ValidationAttribute.FormatErrorMessage` uses the attribute's own unlocalized template internally and returns an already-formatted string. By the time a `ValidationResult` is produced, the original template, display name, and formatting arguments are lost, making it impossible to properly localize the message after the fact.
+
+`Microsoft.Extensions.Validation` owns the validation pipeline and can intercept at the right point — before each attribute formats its message — providing the necessary access to attribute metadata, display names, and formatting arguments. Implementing localization at this shared infrastructure level also avoids logic duplication and provides a consistent localization experience across Minimal APIs and Blazor.
 
 The core extensibility consists of two new configurable delegate properties on `ValidationOptions`: `DisplayNameProvider` and `ErrorMessageProvider`. When set, the validation pipeline invokes these delegates to resolve localized display names and error messages. The delegates receive a readonly struct context containing the declaring type, the relevant attribute, the service provider, and (for error messages) the already-resolved display name. If the delegates are `null` or return `null`, the validation pipeline falls back to the default behavior. This design keeps the core validation library decoupled from any specific localization framework — it never resolves services directly.
 
@@ -47,16 +55,16 @@ To handle the `DataAnnotations` limitation where `ValidationAttribute.FormatErro
 
 The localization delegates are designed to be invocable outside of validation execution. This supports future features such as client-side validation code generation in Blazor SSR, where localized messages need to be resolved at render time before any validation occurs.
 
-### Enable default localization
+### Scenario 1: Localize validation messages with resource files
 
-The simplest way to enable localization is to call `AddValidationLocalization()` after `AddValidation()`. This registers `IStringLocalizer`-based localization using the per-type resource file lookup strategy (e.g., `Resources/Models.Customer.fr.resx`).
+The simplest way to enable localization is to call `AddValidationLocalization()` after `AddValidation()`. This registers localization using the per-type resource file lookup strategy (e.g., `Resources/Models.Customer.fr.resx`).
 
 ```csharp
 builder.Services.AddValidation();
 builder.Services.AddValidationLocalization();
 ```
 
-### Use a shared resource file
+### Scenario 2: Use a shared resource file
 
 A common pattern is to use a single shared resource file for all localized validation strings. The generic `AddValidationLocalization<TResource>()` overload identifies the shared resource via the type parameter.
 
@@ -65,9 +73,9 @@ builder.Services.AddValidation();
 builder.Services.AddValidationLocalization<ValidationMessages>();
 ```
 
-### Configure `IStringLocalizer` creation
+### Scenario 3: Customize resource file resolution
 
-The `IStringLocalizer` creation strategy can be controlled via the `LocalizerProvider` property on `ValidationLocalizationOptions`. This delegate receives the declaring type and the `IStringLocalizerFactory`, and returns the `IStringLocalizer` to use.
+By default, the localization pipeline creates a separate `IStringLocalizer` per declaring type, following the standard per-type resource file naming convention. The `LocalizerProvider` property on `ValidationLocalizationOptions` allows overriding this strategy — for example, to scope localizers differently or to implement custom naming conventions.
 
 ```csharp
 builder.Services.AddValidationLocalization(options =>
@@ -78,9 +86,9 @@ builder.Services.AddValidationLocalization(options =>
 
 `AddValidationLocalization<TResource>()` is a convenience shorthand equivalent to setting `LocalizerProvider` to `(_, factory) => factory.Create(typeof(TResource))`.
 
-### Use custom `IStringLocalizer` implementations
+### Scenario 4: Load translations from other data sources
 
-The localization pipeline uses whichever `IStringLocalizerFactory` is registered in DI. Registering a custom implementation (e.g., database-backed) replaces the default resource file-based localizer.
+Applications that store translations in databases, JSON files, or other non-resource-file sources can plug in a custom `IStringLocalizerFactory` implementation. The localization pipeline uses whichever `IStringLocalizerFactory` is registered in DI, so registering a custom implementation replaces the default resource file-based localizer.
 
 ```csharp
 builder.Services.AddValidation();
@@ -88,9 +96,9 @@ builder.Services.AddValidationLocalization();
 builder.Services.AddSingleton<IStringLocalizerFactory, MyStringLocalizerFactory>();
 ```
 
-### Map localization keys with `ErrorMessageKeyProvider`
+### Scenario 5: Derive localization keys by convention
 
-By default, the localization pipeline uses the attribute's `ErrorMessage` value as the lookup key and skips localization when `ErrorMessage` is not set. `ErrorMessageKeyProvider` provides a fallback mechanism for deriving keys automatically, enabling convention-based localization without explicit `ErrorMessage` on every attribute.
+By default, the localization pipeline uses the attribute's `ErrorMessage` value as the resource lookup key and skips localization when `ErrorMessage` is not set. For applications that want to localize built-in attributes (like `[Required]`) without setting `ErrorMessage` on every instance, the `ErrorMessageKeyProvider` delegate provides a fallback mechanism for deriving keys automatically — enabling convention-based "zero-touch" localization.
 
 ```csharp
 builder.Services.AddValidationLocalization(options =>
@@ -99,7 +107,7 @@ builder.Services.AddValidationLocalization(options =>
 });
 ```
 
-### Localize custom validation attributes
+### Scenario 6: Localize custom validation attributes
 
 Built-in attributes with default message templates are handled automatically by `AddValidationLocalization()`. For custom attributes with message templates using additional positional arguments beyond the display name, there are two options.
 
@@ -122,9 +130,9 @@ builder.Services.AddValidationAttributeFormatter<CustomAttribute>(
     attribute => new CustomAttributeFormatter(attribute));
 ```
 
-### Fully customize the localization logic
+### Scenario 7: Customize the localization logic
 
-The `DisplayNameProvider` and `ErrorMessageProvider` delegates on `ValidationOptions` are the lowest-level extensibility points. They enable full customization without using `Microsoft.Extensions.Validation.Localization` or `IStringLocalizer`, useful for integrating existing translation libraries or proprietary localization services.
+For applications that use a localization system other than `IStringLocalizer` — such as an existing translation library, a proprietary localization service, or a more complex lookup strategy — the `DisplayNameProvider` and `ErrorMessageProvider` delegates on `ValidationOptions` are the lowest-level extensibility points. They enable full customization without using `Microsoft.Extensions.Validation.Localization` at all. Because the providers are simple delegates, they can also be intercepted and composed — enabling scenarios such as layering multiple localization sources, logging missing translations, or providing fallback strategies.
 
 ```csharp
 builder.Services.AddSingleton<ILocalizationService, MyLocalizationService>();
@@ -139,31 +147,6 @@ builder.Services.AddValidation(options =>
     options.ErrorMessageProvider = context => { /* Custom logic */ };
 });
 ```
-
-### Combine message providers
-
-Because providers are delegates, they can be intercepted and composed for scenarios such as logging missing translations, providing localization overrides, or implementing layered fallback strategies.
-
-```csharp
-builder.Services.PostConfigure<ValidationOptions>(options =>
-{
-    var originalProvider = options.ErrorMessageProvider;
-
-    options.ErrorMessageProvider = (context) =>
-    {
-        // If the user specified a custom message, process it with the standard pipeline.
-        if (!string.IsNullOrEmpty(context.Attribute.ErrorMessage))
-        {
-            return originalProvider?.Invoke(context);
-        }
-
-        // Otherwise, retrieve/construct the message based on other context data.
-        // ...
-    };
-});
-```
-
-See the [example library](https://github.com/dotnet/aspnetcore/tree/oroztocil/validation-localization/src/Validation/samples/StandardAttributeLocalization) in the prototype implementation for a composable localization package for built-in validation attributes.
 
 ## Assumptions
 
