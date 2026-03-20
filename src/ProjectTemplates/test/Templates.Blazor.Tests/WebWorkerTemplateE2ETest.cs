@@ -91,12 +91,13 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
     {
         await using var testRun = await SetupWorkerLibAndPublish(_sharedHostProject);
 
-        var (serveProcess, listeningUri) = RunPublishedStandaloneProject(_sharedHostProject);
-        using (serveProcess)
-        {
-            var baseUri = listeningUri.EndsWith('/') ? listeningUri : listeningUri + "/";
-            await TestWebWorkerInteractionPublished(browserKind, baseUri);
-        }
+        using var aspNetProcess = _sharedHostProject.StartPublishedProjectAsync(noHttps: true);
+        Assert.False(
+            aspNetProcess.Process.HasExited,
+            ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", _sharedHostProject, aspNetProcess.Process));
+
+        await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+        await TestWebWorkerInteraction(browserKind, aspNetProcess.ListeningUri.AbsoluteUri + "webworker-test");
     }
 
     private async Task<WorkerLibTestRun> SetupWorkerLibAndPublish(Project hostProject)
@@ -115,53 +116,6 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await hostProject.RunDotNetPublishAsync(noRestore: false);
 
         return new WorkerLibTestRun(workerLibDir, hostProject, Output);
-    }
-
-    private (ProcessEx, string url) RunPublishedStandaloneProject(Project project)
-    {
-        var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
-
-        Output.WriteLine("Running dotnet serve on published output...");
-        var command = DotNetMuxer.MuxerPathOrDefault();
-        string args;
-        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX_DIR")))
-        {
-            args = "serve";
-        }
-        else
-        {
-            command = "dotnet-serve";
-            args = "--roll-forward LatestMajor";
-        }
-
-        var serveProcess = ProcessEx.Run(TestOutputHelper, publishDir, command, args);
-        var listeningUri = ResolveListeningUrl(serveProcess);
-        return (serveProcess, listeningUri);
-
-        static string ResolveListeningUrl(ProcessEx process)
-        {
-            var buffer = new List<string>();
-            try
-            {
-                foreach (var line in process.OutputLinesAsEnumerable)
-                {
-                    if (line != null)
-                    {
-                        buffer.Add(line);
-                        if (line.Trim().Contains("https://", StringComparison.Ordinal) || line.Trim().Contains("http://", StringComparison.Ordinal))
-                        {
-                            return line.Trim();
-                        }
-                    }
-                }
-            }
-            catch (OperationCanceledException)
-            {
-            }
-
-            throw new InvalidOperationException(
-                $"Couldn't find listening url:\n{string.Join(Environment.NewLine, buffer.Append(process.Error))}");
-        }
     }
 
     private async Task<WorkerLibTestRun> SetupWorkerLibAndBuild(Project hostProject)
@@ -277,44 +231,6 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
         var workerMethodsSource = Path.Combine(TestAssetsPath, "TestWorkerMethods.cs");
         File.Copy(workerMethodsSource, Path.Combine(hostProject.TemplateOutputDir, "TestWorkerMethods.cs"), overwrite: true);
-    }
-
-    private async Task TestWebWorkerInteractionPublished(BrowserKind browserKind, string baseUri)
-    {
-        if (!BrowserManager.IsAvailable(browserKind))
-        {
-            EnsureBrowserAvailable(browserKind);
-            return;
-        }
-
-        await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
-        var page = await browser.NewPageAsync();
-
-        // Navigate to root first — dotnet serve doesn't support SPA fallback routing,
-        // so we let Blazor load at '/' then client-side navigate to the test page.
-        await page.GotoAsync(baseUri);
-        await page.WaitForSelectorAsync("#app > *", new() { Timeout = 60000 });
-        await page.EvaluateAsync(@"() => {
-            const a = document.createElement('a');
-            a.href = 'webworker-test';
-            document.body.appendChild(a);
-            a.click();
-        }");
-        await page.WaitForSelectorAsync("#webworker-test", new() { Timeout = 15000 });
-
-        await page.ClickAsync("#btn-init");
-        await WaitForWorkerInit(page);
-
-        await page.ClickAsync("#btn-add");
-        await WaitForElementText(page, "#add-result", "8", timeout: 30000);
-
-        await page.ClickAsync("#btn-echo");
-        await WaitForElementText(page, "#echo-result", "Hello Worker", timeout: 30000);
-
-        await page.ClickAsync("#btn-dispose");
-        await WaitForElementText(page, "#dispose-status", "Disposed");
-
-        await page.CloseAsync();
     }
 
     private async Task TestWebWorkerInteraction(BrowserKind browserKind, string baseUri)
