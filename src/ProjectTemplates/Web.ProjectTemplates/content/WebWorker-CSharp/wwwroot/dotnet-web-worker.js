@@ -12,9 +12,10 @@ async function initialize(dotnetJsUrl) {
         workerExports = await getAssemblyExports(assemblyName);
         self.postMessage({ type: "ready" });
     } catch (err) {
-        startupError = err.message;
+        const errorMessage = err?.message ?? String(err);
+        startupError = errorMessage;
         console.error("[Worker] Failed to initialize .NET:", err);
-        self.postMessage({ type: "ready", error: err.message });
+        self.postMessage({ type: "ready", error: errorMessage });
     }
 }
 
