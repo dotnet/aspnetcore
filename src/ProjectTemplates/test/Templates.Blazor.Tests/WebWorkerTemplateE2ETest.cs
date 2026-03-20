@@ -85,6 +85,84 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await TestWebWorkerDisposal(browserKind, aspNetProcess.ListeningUri.AbsoluteUri + "webworker-test");
     }
 
+    [Theory]
+    [InlineData(BrowserKind.Chromium)]
+    public async Task WebWorkerTemplate_CanInvokeMethodsAfterPublish(BrowserKind browserKind)
+    {
+        await using var testRun = await SetupWorkerLibAndPublish(_sharedHostProject);
+
+        var (serveProcess, listeningUri) = RunPublishedStandaloneProject(_sharedHostProject);
+        using (serveProcess)
+        {
+            await TestWebWorkerInteraction(browserKind, listeningUri + "webworker-test");
+        }
+    }
+
+    private async Task<WorkerLibTestRun> SetupWorkerLibAndPublish(Project hostProject)
+    {
+        var parentDir = Path.GetDirectoryName(hostProject.TemplateOutputDir);
+        var workerLibDir = Path.Combine(parentDir, "WorkerLib");
+
+        if (Directory.Exists(workerLibDir))
+        {
+            Directory.Delete(workerLibDir, recursive: true);
+        }
+        Directory.CreateDirectory(workerLibDir);
+
+        await CreateWebWorkerLibrary(workerLibDir);
+        await AddWorkerLibReferenceAsync(hostProject);
+        await hostProject.RunDotNetPublishAsync(noRestore: false);
+
+        return new WorkerLibTestRun(workerLibDir, hostProject, Output);
+    }
+
+    private (ProcessEx, string url) RunPublishedStandaloneProject(Project project)
+    {
+        var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
+
+        Output.WriteLine("Running dotnet serve on published output...");
+        var command = DotNetMuxer.MuxerPathOrDefault();
+        string args;
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX_DIR")))
+        {
+            args = "serve";
+        }
+        else
+        {
+            command = "dotnet-serve";
+            args = "--roll-forward LatestMajor";
+        }
+
+        var serveProcess = ProcessEx.Run(TestOutputHelper, publishDir, command, args);
+        var listeningUri = ResolveListeningUrl(serveProcess);
+        return (serveProcess, listeningUri);
+
+        static string ResolveListeningUrl(ProcessEx process)
+        {
+            var buffer = new List<string>();
+            try
+            {
+                foreach (var line in process.OutputLinesAsEnumerable)
+                {
+                    if (line != null)
+                    {
+                        buffer.Add(line);
+                        if (line.Trim().Contains("https://", StringComparison.Ordinal) || line.Trim().Contains("http://", StringComparison.Ordinal))
+                        {
+                            return line.Trim();
+                        }
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+
+            throw new InvalidOperationException(
+                $"Couldn't find listening url:\n{string.Join(Environment.NewLine, buffer.Append(process.Error))}");
+        }
+    }
+
     private async Task<WorkerLibTestRun> SetupWorkerLibAndBuild(Project hostProject)
     {
         var parentDir = Path.GetDirectoryName(hostProject.TemplateOutputDir);
