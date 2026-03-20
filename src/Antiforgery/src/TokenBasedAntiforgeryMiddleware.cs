@@ -1,16 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Antiforgery.CrossOrigin;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Antiforgery.Internal;
 
 /// <summary>
-/// Default antiforgery middleware. Performs cross-origin validation first;
-/// falls back to token-based validation when the result is inconclusive.
+/// Middleware that performs token-based-only antiforgery validation.
+/// This is the legacy behavior prior to .NET 11.
 /// </summary>
-internal sealed class AntiforgeryMiddleware(ICrossOriginAntiforgery crossOriginAntiforgery, IAntiforgery antiforgery, RequestDelegate next)
+internal sealed class TokenBasedAntiforgeryMiddleware(IAntiforgery antiforgery, RequestDelegate next)
 {
     private readonly RequestDelegate _next = next;
     private readonly IAntiforgery _antiforgery = antiforgery;
@@ -35,23 +34,10 @@ internal sealed class AntiforgeryMiddleware(ICrossOriginAntiforgery crossOriginA
 
         if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true })
         {
-            var crossOriginResult = crossOriginAntiforgery.Validate(context);
-
-            return crossOriginResult switch
-            {
-                CrossOriginValidationResult.Allowed => _next(context),
-                CrossOriginValidationResult.Denied => HandleDenied(context),
-                CrossOriginValidationResult.Unknown or _ => InvokeTokenValidation(context)
-            };
+            return InvokeTokenValidation(context);
         }
 
         return _next(context);
-    }
-
-    private async Task HandleDenied(HttpContext context)
-    {
-        context.Features.Set<IAntiforgeryValidationFeature>(new AntiforgeryValidationFeature(isValid: false, exception: null));
-        await _next(context);
     }
 
     private async Task InvokeTokenValidation(HttpContext context)

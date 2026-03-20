@@ -9,12 +9,12 @@ namespace Microsoft.AspNetCore.Antiforgery.CrossOrigin;
 public enum CrossOriginValidationResult
 {
     /// <summary>
-    /// Request is safe (same-origin, trusted, safe method)
+    /// Request is safe (same-origin, trusted, safe method).
     /// </summary>
     Allowed,
 
     /// <summary>
-    /// Request is cross-origin attack
+    /// Request is a cross-origin attack.
     /// </summary>
     Denied,
 

@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Antiforgery.CrossOrigin;
 using Microsoft.AspNetCore.Antiforgery.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -24,30 +23,29 @@ public static class AntiforgeryServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddDataProtection();
+        services.AddAntiforgery((AntiforgeryOptions _) => { }, (CrossOriginAntiforgeryOptions _) => { });
 
-        // Don't overwrite any options setups that a user may have added.
-        services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<AntiforgeryOptions>, AntiforgeryOptionsSetup>());
+        return services;
+    }
 
-        // token-based Antiforgery
-        services.TryAddSingleton<IAntiforgery, DefaultAntiforgery>();
-        services.TryAddSingleton<IAntiforgeryTokenGenerator, DefaultAntiforgeryTokenGenerator>();
-        services.TryAddSingleton<IAntiforgeryTokenSerializer, DefaultAntiforgeryTokenSerializer>();
-        services.TryAddSingleton<IAntiforgeryTokenStore, DefaultAntiforgeryTokenStore>();
-        services.TryAddSingleton<IClaimUidExtractor, DefaultClaimUidExtractor>();
-        services.TryAddSingleton<IAntiforgeryAdditionalDataProvider, DefaultAntiforgeryAdditionalDataProvider>();
-        services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
+    /// <summary>
+    /// Adds antiforgery services to the specified <see cref="IServiceCollection" />.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+    /// <param name="setupAction">An <see cref="Action{AntiforgeryOptions}"/> to configure the provided <see cref="AntiforgeryOptions"/>.</param>
+    /// <param name="crossOriginSetupAction">An <see cref="Action{CrossOriginAntiforgeryOptions}"/> to configure the provided <see cref="CrossOriginAntiforgeryOptions"/>.</param>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    public static IServiceCollection AddAntiforgery(this IServiceCollection services, Action<AntiforgeryOptions> setupAction, Action<CrossOriginAntiforgeryOptions> crossOriginSetupAction)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(setupAction);
+        ArgumentNullException.ThrowIfNull(crossOriginSetupAction);
 
-        // cross-origin (sec-fetch-*) Antiforgery
-        services.TryAddSingleton<ICrossOriginAntiforgery, CrossOriginRequestValidator>();
+        services.AddAntiforgery((AntiforgeryOptions _) => { }); // token-based
+        services.AddCrossOriginAntiforgery((CrossOriginAntiforgeryOptions _) => { }); // cross-origin
 
-        services.TryAddSingleton<ObjectPool<AntiforgerySerializationContext>>(serviceProvider =>
-        {
-            var provider = serviceProvider.GetRequiredService<ObjectPoolProvider>();
-            var policy = new AntiforgerySerializationContextPooledObjectPolicy();
-            return provider.Create(policy);
-        });
-
+        services.Configure(setupAction);
+        services.Configure(crossOriginSetupAction);
         return services;
     }
 
@@ -62,46 +60,52 @@ public static class AntiforgeryServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(setupAction);
 
-        services.AddAntiforgery();
-        services.Configure(setupAction);
+        services.AddDataProtection();
+
+        // Don't overwrite any options setups that a user may have added.
+        services.TryAddEnumerable(
+            ServiceDescriptor.Transient<IConfigureOptions<AntiforgeryOptions>, AntiforgeryOptionsSetup>());
+
+        // Token-based antiforgery
+        services.TryAddSingleton<IAntiforgery, DefaultAntiforgery>();
+        services.TryAddSingleton<IAntiforgeryTokenGenerator, DefaultAntiforgeryTokenGenerator>();
+        services.TryAddSingleton<IAntiforgeryTokenSerializer, DefaultAntiforgeryTokenSerializer>();
+        services.TryAddSingleton<IAntiforgeryTokenStore, DefaultAntiforgeryTokenStore>();
+        services.TryAddSingleton<IClaimUidExtractor, DefaultClaimUidExtractor>();
+        services.TryAddSingleton<IAntiforgeryAdditionalDataProvider, DefaultAntiforgeryAdditionalDataProvider>();
+
         return services;
     }
 
     /// <summary>
-    /// Adds antiforgery services to the specified <see cref="IServiceCollection" />.
+    /// Adds cross-origin antiforgery services to the specified <see cref="IServiceCollection" />.
+    /// Only registers cross-origin validation; does not register token-based antiforgery or data protection services.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    public static IServiceCollection AddCrossOriginAntiforgery(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.TryAddSingleton<ICrossOriginAntiforgery, CrossOriginRequestValidator>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds cross-origin antiforgery services to the specified <see cref="IServiceCollection" />.
+    /// Only registers cross-origin validation; does not register token-based antiforgery or data protection services.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
     /// <param name="setupAction">An <see cref="Action{CrossOriginAntiforgeryOptions}"/> to configure the provided <see cref="CrossOriginAntiforgeryOptions"/>.</param>
     /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    public static IServiceCollection AddAntiforgery(this IServiceCollection services, Action<CrossOriginAntiforgeryOptions> setupAction)
+    public static IServiceCollection AddCrossOriginAntiforgery(this IServiceCollection services, Action<CrossOriginAntiforgeryOptions> setupAction)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(setupAction);
 
-        services.AddAntiforgery();
+        services.AddCrossOriginAntiforgery();
         services.Configure(setupAction);
-        return services;
-    }
-
-    /// <summary>
-    /// Adds antiforgery services to the specified <see cref="IServiceCollection" />.
-    /// </summary>
-    /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
-    /// <param name="crossOriginAntiforgeryOptionsSetup">An <see cref="Action{CrossOriginAntiforgeryOptions}"/> to configure the provided <see cref="CrossOriginAntiforgeryOptions"/>.</param>
-    /// <param name="antiforgeryOptionsSetup">An <see cref="Action{AntiforgeryOptions}"/> to configure the provided <see cref="AntiforgeryOptions"/>.</param>
-    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-    public static IServiceCollection AddAntiforgery(this IServiceCollection services,
-        Action<CrossOriginAntiforgeryOptions> crossOriginAntiforgeryOptionsSetup,
-        Action<AntiforgeryOptions> antiforgeryOptionsSetup)
-    {
-        ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(crossOriginAntiforgeryOptionsSetup);
-        ArgumentNullException.ThrowIfNull(antiforgeryOptionsSetup);
-
-        services.AddAntiforgery();
-        services.Configure(crossOriginAntiforgeryOptionsSetup);
-        services.Configure(antiforgeryOptionsSetup);
-
         return services;
     }
 }

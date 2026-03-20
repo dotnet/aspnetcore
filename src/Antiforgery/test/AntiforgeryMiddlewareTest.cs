@@ -18,13 +18,13 @@ public class AntiforgeryMiddlewareTest
     {
         var antiforgeryService = new Mock<IAntiforgery>();
         antiforgeryService.Setup(af => af.ValidateRequestAsync(It.IsAny<HttpContext>())).Returns(Task.FromResult(true));
-        var antiforgeryMiddleware = new AntiforgeryMiddleware(CreateCrossOriginAntiforgeryThatReturnsUnknown(), antiforgeryService.Object, hc => Task.CompletedTask);
+        var antiforgeryMiddleware = new AntiforgeryMiddleware(CreateCrossOriginThatReturnsUnknown(), antiforgeryService.Object, hc => Task.CompletedTask);
         var httpContext = GetHttpContext();
         httpContext.Request.Method = method;
 
         await antiforgeryMiddleware.Invoke(httpContext);
 
-        antiforgeryService.Verify(antiforgeryService => antiforgeryService.ValidateRequestAsync(httpContext), Times.AtMostOnce());
+        antiforgeryService.Verify(af => af.ValidateRequestAsync(httpContext), Times.AtMostOnce());
         Assert.True(httpContext.Features.Get<IAntiforgeryValidationFeature>()?.IsValid);
     }
 
@@ -32,12 +32,12 @@ public class AntiforgeryMiddlewareTest
     public async Task RespectsIgnoreAntiforgeryMetadata()
     {
         var antiforgeryService = new Mock<IAntiforgery>();
-        var antiforgeryMiddleware = new AntiforgeryMiddleware(CreateCrossOriginAntiforgeryThatReturnsUnknown(), antiforgeryService.Object, hc => Task.CompletedTask);
+        var antiforgeryMiddleware = new AntiforgeryMiddleware(CreateCrossOriginThatReturnsUnknown(), antiforgeryService.Object, hc => Task.CompletedTask);
         var httpContext = GetHttpContext(hasIgnoreMetadata: true);
 
         await antiforgeryMiddleware.Invoke(httpContext);
 
-        antiforgeryService.Verify(antiforgeryService => antiforgeryService.ValidateRequestAsync(httpContext), Times.Never());
+        antiforgeryService.Verify(af => af.ValidateRequestAsync(httpContext), Times.Never());
     }
 
     [Theory]
@@ -50,13 +50,13 @@ public class AntiforgeryMiddlewareTest
     public async Task IgnoresUnsupportedHttpMethods(string method)
     {
         var antiforgeryService = new Mock<IAntiforgery>();
-        var antiforgeryMiddleware = new AntiforgeryMiddleware(CreateCrossOriginAntiforgeryThatReturnsUnknown(), antiforgeryService.Object, hc => Task.CompletedTask);
+        var antiforgeryMiddleware = new AntiforgeryMiddleware(CreateCrossOriginThatReturnsUnknown(), antiforgeryService.Object, hc => Task.CompletedTask);
         var httpContext = GetHttpContext();
         httpContext.Request.Method = method;
 
         await antiforgeryMiddleware.Invoke(httpContext);
 
-        antiforgeryService.Verify(antiforgeryService => antiforgeryService.ValidateRequestAsync(httpContext), Times.Never());
+        antiforgeryService.Verify(af => af.ValidateRequestAsync(httpContext), Times.Never());
     }
 
     [Theory]
@@ -66,7 +66,7 @@ public class AntiforgeryMiddlewareTest
     {
         var antiforgeryService = new Mock<IAntiforgery>();
         antiforgeryService.Setup(af => af.ValidateRequestAsync(It.IsAny<HttpContext>())).Returns(Task.FromResult(true));
-        var antiforgeryMiddleware = new AntiforgeryMiddleware(CreateCrossOriginAntiforgeryThatReturnsUnknown(), antiforgeryService.Object, hc => Task.CompletedTask);
+        var antiforgeryMiddleware = new AntiforgeryMiddleware(CreateCrossOriginThatReturnsUnknown(), antiforgeryService.Object, hc => Task.CompletedTask);
         var httpContext = GetHttpContext(hasIgnoreMetadata);
 
         await antiforgeryMiddleware.Invoke(httpContext);
@@ -74,12 +74,69 @@ public class AntiforgeryMiddlewareTest
         Assert.True(httpContext.Items.ContainsKey("__AntiforgeryMiddlewareWithEndpointInvoked"));
     }
 
-    /// <summary>
-    /// Creates a mock ICrossOriginAntiforgery that always returns Unknown,
-    /// which triggers fallback to token-based validation.
-    /// This simulates the behavior for legacy clients or when cross-origin validation is inconclusive.
-    /// </summary>
-    private static ICrossOriginAntiforgery CreateCrossOriginAntiforgeryThatReturnsUnknown()
+    [Theory]
+    [InlineData("POST")]
+    [InlineData("PUT")]
+    [InlineData("PATCH")]
+    public async Task SkipsTokenValidation_WhenCrossOriginAllows(string method)
+    {
+        var antiforgeryService = new Mock<IAntiforgery>();
+        var crossOrigin = new Mock<ICrossOriginAntiforgery>();
+        crossOrigin.Setup(c => c.Validate(It.IsAny<HttpContext>())).Returns(CrossOriginValidationResult.Allowed);
+        var nextCalled = false;
+        var antiforgeryMiddleware = new AntiforgeryMiddleware(crossOrigin.Object, antiforgeryService.Object, hc =>
+        {
+            nextCalled = true;
+            return Task.CompletedTask;
+        });
+        var httpContext = GetHttpContext();
+        httpContext.Request.Method = method;
+
+        await antiforgeryMiddleware.Invoke(httpContext);
+
+        Assert.True(nextCalled);
+        antiforgeryService.Verify(af => af.ValidateRequestAsync(httpContext), Times.Never());
+    }
+
+    [Theory]
+    [InlineData("POST")]
+    [InlineData("PUT")]
+    [InlineData("PATCH")]
+    public async Task DeniesRequest_WhenCrossOriginDenies(string method)
+    {
+        var antiforgeryService = new Mock<IAntiforgery>();
+        var crossOrigin = new Mock<ICrossOriginAntiforgery>();
+        crossOrigin.Setup(c => c.Validate(It.IsAny<HttpContext>())).Returns(CrossOriginValidationResult.Denied);
+        var antiforgeryMiddleware = new AntiforgeryMiddleware(crossOrigin.Object, antiforgeryService.Object, hc => Task.CompletedTask);
+        var httpContext = GetHttpContext();
+        httpContext.Request.Method = method;
+
+        await antiforgeryMiddleware.Invoke(httpContext);
+
+        antiforgeryService.Verify(af => af.ValidateRequestAsync(httpContext), Times.Never());
+        Assert.False(httpContext.Features.Get<IAntiforgeryValidationFeature>()?.IsValid);
+    }
+
+    [Theory]
+    [InlineData("POST")]
+    [InlineData("PUT")]
+    [InlineData("PATCH")]
+    public async Task FallsBackToToken_WhenCrossOriginUnknown(string method)
+    {
+        var antiforgeryService = new Mock<IAntiforgery>();
+        antiforgeryService.Setup(af => af.ValidateRequestAsync(It.IsAny<HttpContext>())).Returns(Task.CompletedTask);
+        var crossOrigin = new Mock<ICrossOriginAntiforgery>();
+        crossOrigin.Setup(c => c.Validate(It.IsAny<HttpContext>())).Returns(CrossOriginValidationResult.Unknown);
+        var antiforgeryMiddleware = new AntiforgeryMiddleware(crossOrigin.Object, antiforgeryService.Object, hc => Task.CompletedTask);
+        var httpContext = GetHttpContext();
+        httpContext.Request.Method = method;
+
+        await antiforgeryMiddleware.Invoke(httpContext);
+
+        antiforgeryService.Verify(af => af.ValidateRequestAsync(httpContext), Times.Once());
+    }
+
+    private static ICrossOriginAntiforgery CreateCrossOriginThatReturnsUnknown()
     {
         var mock = new Mock<ICrossOriginAntiforgery>();
         mock.Setup(c => c.Validate(It.IsAny<HttpContext>())).Returns(CrossOriginValidationResult.Unknown);

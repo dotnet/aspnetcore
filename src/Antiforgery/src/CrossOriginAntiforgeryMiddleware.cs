@@ -7,13 +7,12 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Antiforgery.Internal;
 
 /// <summary>
-/// Default antiforgery middleware. Performs cross-origin validation first;
-/// falls back to token-based validation when the result is inconclusive.
+/// Middleware that performs cross-origin-only antiforgery validation.
+/// Unknown results are treated as denied (strict mode).
 /// </summary>
-internal sealed class AntiforgeryMiddleware(ICrossOriginAntiforgery crossOriginAntiforgery, IAntiforgery antiforgery, RequestDelegate next)
+internal sealed class CrossOriginAntiforgeryMiddleware(ICrossOriginAntiforgery crossOriginAntiforgery, RequestDelegate next)
 {
     private readonly RequestDelegate _next = next;
-    private readonly IAntiforgery _antiforgery = antiforgery;
 
     private const string AntiforgeryMiddlewareWithEndpointInvokedKey = "__AntiforgeryMiddlewareWithEndpointInvoked";
     private static readonly object AntiforgeryMiddlewareWithEndpointInvokedValue = new object();
@@ -35,13 +34,12 @@ internal sealed class AntiforgeryMiddleware(ICrossOriginAntiforgery crossOriginA
 
         if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true })
         {
-            var crossOriginResult = crossOriginAntiforgery.Validate(context);
+            var result = crossOriginAntiforgery.Validate(context);
 
-            return crossOriginResult switch
+            return result switch
             {
                 CrossOriginValidationResult.Allowed => _next(context),
-                CrossOriginValidationResult.Denied => HandleDenied(context),
-                CrossOriginValidationResult.Unknown or _ => InvokeTokenValidation(context)
+                _ => HandleDenied(context)
             };
         }
 
@@ -51,20 +49,6 @@ internal sealed class AntiforgeryMiddleware(ICrossOriginAntiforgery crossOriginA
     private async Task HandleDenied(HttpContext context)
     {
         context.Features.Set<IAntiforgeryValidationFeature>(new AntiforgeryValidationFeature(isValid: false, exception: null));
-        await _next(context);
-    }
-
-    private async Task InvokeTokenValidation(HttpContext context)
-    {
-        try
-        {
-            await _antiforgery.ValidateRequestAsync(context);
-            context.Features.Set(AntiforgeryValidationFeature.Valid);
-        }
-        catch (AntiforgeryValidationException e)
-        {
-            context.Features.Set<IAntiforgeryValidationFeature>(new AntiforgeryValidationFeature(false, e));
-        }
         await _next(context);
     }
 }

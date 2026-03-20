@@ -14,13 +14,12 @@ public class CrossOriginAntiforgeryMiddlewareTest
     [InlineData("POST")]
     [InlineData("PUT")]
     [InlineData("PATCH")]
-    public async Task AllowsRequestWhenCrossOriginValidationReturnsAllowed(string method)
+    public async Task AllowsRequest_WhenCrossOriginReturnsAllowed(string method)
     {
-        var antiforgeryService = new Mock<IAntiforgery>();
-        var crossOriginAntiforgery = new Mock<ICrossOriginAntiforgery>();
-        crossOriginAntiforgery.Setup(c => c.Validate(It.IsAny<HttpContext>())).Returns(CrossOriginValidationResult.Allowed);
+        var crossOrigin = new Mock<ICrossOriginAntiforgery>();
+        crossOrigin.Setup(c => c.Validate(It.IsAny<HttpContext>())).Returns(CrossOriginValidationResult.Allowed);
         var nextCalled = false;
-        var antiforgeryMiddleware = new AntiforgeryMiddleware(crossOriginAntiforgery.Object, antiforgeryService.Object, hc =>
+        var middleware = new CrossOriginAntiforgeryMiddleware(crossOrigin.Object, hc =>
         {
             nextCalled = true;
             return Task.CompletedTask;
@@ -28,37 +27,26 @@ public class CrossOriginAntiforgeryMiddlewareTest
         var httpContext = GetHttpContext();
         httpContext.Request.Method = method;
 
-        await antiforgeryMiddleware.Invoke(httpContext);
+        await middleware.Invoke(httpContext);
 
         Assert.True(nextCalled);
-        // Token validation should NOT be called when cross-origin validation allows the request
-        antiforgeryService.Verify(af => af.ValidateRequestAsync(httpContext), Times.Never());
+        Assert.Null(httpContext.Features.Get<IAntiforgeryValidationFeature>());
     }
 
     [Theory]
     [InlineData("POST")]
     [InlineData("PUT")]
     [InlineData("PATCH")]
-    public async Task DeniesRequestWhenCrossOriginValidationReturnsDenied(string method)
+    public async Task DeniesRequest_WhenCrossOriginReturnsDenied(string method)
     {
-        var antiforgeryService = new Mock<IAntiforgery>();
-        var crossOriginAntiforgery = new Mock<ICrossOriginAntiforgery>();
-        crossOriginAntiforgery.Setup(c => c.Validate(It.IsAny<HttpContext>())).Returns(CrossOriginValidationResult.Denied);
-        var nextCalled = false;
-        var antiforgeryMiddleware = new AntiforgeryMiddleware(crossOriginAntiforgery.Object, antiforgeryService.Object, hc =>
-        {
-            nextCalled = true;
-            return Task.CompletedTask;
-        });
+        var crossOrigin = new Mock<ICrossOriginAntiforgery>();
+        crossOrigin.Setup(c => c.Validate(It.IsAny<HttpContext>())).Returns(CrossOriginValidationResult.Denied);
+        var middleware = new CrossOriginAntiforgeryMiddleware(crossOrigin.Object, hc => Task.CompletedTask);
         var httpContext = GetHttpContext();
         httpContext.Request.Method = method;
 
-        await antiforgeryMiddleware.Invoke(httpContext);
+        await middleware.Invoke(httpContext);
 
-        Assert.True(nextCalled);
-        // Token validation should NOT be called when cross-origin validation denies the request
-        antiforgeryService.Verify(af => af.ValidateRequestAsync(httpContext), Times.Never());
-        // The validation feature should indicate invalid
         Assert.False(httpContext.Features.Get<IAntiforgeryValidationFeature>()?.IsValid);
     }
 
@@ -66,20 +54,17 @@ public class CrossOriginAntiforgeryMiddlewareTest
     [InlineData("POST")]
     [InlineData("PUT")]
     [InlineData("PATCH")]
-    public async Task FallsBackToTokenValidationWhenCrossOriginValidationReturnsUnknown(string method)
+    public async Task DeniesRequest_WhenCrossOriginReturnsUnknown(string method)
     {
-        var antiforgeryService = new Mock<IAntiforgery>();
-        var crossOriginAntiforgery = new Mock<ICrossOriginAntiforgery>();
-        crossOriginAntiforgery.Setup(c => c.Validate(It.IsAny<HttpContext>())).Returns(CrossOriginValidationResult.Unknown);
-        antiforgeryService.Setup(af => af.ValidateRequestAsync(It.IsAny<HttpContext>())).Returns(Task.CompletedTask);
-        var antiforgeryMiddleware = new AntiforgeryMiddleware(crossOriginAntiforgery.Object, antiforgeryService.Object, hc => Task.CompletedTask);
+        var crossOrigin = new Mock<ICrossOriginAntiforgery>();
+        crossOrigin.Setup(c => c.Validate(It.IsAny<HttpContext>())).Returns(CrossOriginValidationResult.Unknown);
+        var middleware = new CrossOriginAntiforgeryMiddleware(crossOrigin.Object, hc => Task.CompletedTask);
         var httpContext = GetHttpContext();
         httpContext.Request.Method = method;
 
-        await antiforgeryMiddleware.Invoke(httpContext);
+        await middleware.Invoke(httpContext);
 
-        // Token validation SHOULD be called when cross-origin validation is unknown
-        antiforgeryService.Verify(af => af.ValidateRequestAsync(httpContext), Times.Once());
+        Assert.False(httpContext.Features.Get<IAntiforgeryValidationFeature>()?.IsValid);
     }
 
     [Theory]
@@ -87,35 +72,29 @@ public class CrossOriginAntiforgeryMiddlewareTest
     [InlineData("HEAD")]
     [InlineData("OPTIONS")]
     [InlineData("TRACE")]
-    public async Task DoesNotInvokeCrossOriginValidationForSafeMethods(string method)
+    public async Task SkipsValidation_ForSafeMethods(string method)
     {
-        var antiforgeryService = new Mock<IAntiforgery>();
-        var crossOriginAntiforgery = new Mock<ICrossOriginAntiforgery>();
-        var antiforgeryMiddleware = new AntiforgeryMiddleware(crossOriginAntiforgery.Object, antiforgeryService.Object, hc => Task.CompletedTask);
+        var crossOrigin = new Mock<ICrossOriginAntiforgery>();
+        var middleware = new CrossOriginAntiforgeryMiddleware(crossOrigin.Object, hc => Task.CompletedTask);
         var httpContext = GetHttpContext();
         httpContext.Request.Method = method;
 
-        await antiforgeryMiddleware.Invoke(httpContext);
+        await middleware.Invoke(httpContext);
 
-        // Cross-origin validation should NOT be called for safe methods
-        crossOriginAntiforgery.Verify(c => c.Validate(It.IsAny<HttpContext>()), Times.Never());
-        // Token validation should also NOT be called for safe methods
-        antiforgeryService.Verify(af => af.ValidateRequestAsync(httpContext), Times.Never());
+        crossOrigin.Verify(c => c.Validate(It.IsAny<HttpContext>()), Times.Never());
     }
 
     [Fact]
-    public async Task DoesNotInvokeCrossOriginValidationWhenEndpointHasIgnoreMetadata()
+    public async Task SkipsValidation_WhenEndpointHasIgnoreMetadata()
     {
-        var antiforgeryService = new Mock<IAntiforgery>();
-        var crossOriginAntiforgery = new Mock<ICrossOriginAntiforgery>();
-        var antiforgeryMiddleware = new AntiforgeryMiddleware(crossOriginAntiforgery.Object, antiforgeryService.Object, hc => Task.CompletedTask);
+        var crossOrigin = new Mock<ICrossOriginAntiforgery>();
+        var middleware = new CrossOriginAntiforgeryMiddleware(crossOrigin.Object, hc => Task.CompletedTask);
         var httpContext = GetHttpContext(hasIgnoreMetadata: true);
         httpContext.Request.Method = "POST";
 
-        await antiforgeryMiddleware.Invoke(httpContext);
+        await middleware.Invoke(httpContext);
 
-        // Cross-origin validation should NOT be called when endpoint has ignore metadata
-        crossOriginAntiforgery.Verify(c => c.Validate(It.IsAny<HttpContext>()), Times.Never());
+        crossOrigin.Verify(c => c.Validate(It.IsAny<HttpContext>()), Times.Never());
     }
 
     private static DefaultHttpContext GetHttpContext(bool hasIgnoreMetadata = false)
