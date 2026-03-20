@@ -16,9 +16,11 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 {
     private readonly SslStream _sslStream;
     private readonly ConnectionContext _context;
+    private bool _snapshotted;
+
     private X509Certificate2? _clientCert;
     private Task<X509Certificate2?>? _clientCertTask;
-    private bool _snapshotted;
+
     private SslProtocols _protocol;
     private TlsCipherSuite? _negotiatedCipherSuite;
     private ReadOnlyMemory<byte> _applicationProtocol;

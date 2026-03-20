@@ -114,14 +114,18 @@ public class Startup
                                 {
                                     Console.WriteLine($"[TLS Handshake Failed] ConnectionId={context.ConnectionId}, Exception={ex.GetType().Name}: {ex.Message}");
                                 }
-                                else if (tlsHandshakeFeature is not null)
-                                {
-                                    Console.WriteLine($"[TLS Handshake OK] ConnectionId={context.ConnectionId}, Protocol={tlsHandshakeFeature.Protocol}");
-                                }
                             });
 
                             listenOptions.UseHttps();
                             listenOptions.UseConnectionLogging();
+
+                            listenOptions.Use(next => async context =>
+                            {
+                                var tlsHandshakeFeature = context.Features.Get<ITlsHandshakeFeature>();
+                                Console.WriteLine($"[TLS Handshake OK] ConnectionId={context.ConnectionId}, Protocol={tlsHandshakeFeature.Protocol}");
+
+                                await next(context);
+                            });
                         });
 
                         options.ListenLocalhost(basePort + 2, listenOptions =>
