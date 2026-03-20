@@ -6,6 +6,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.Extensions;
 using OpenQA.Selenium.Support.UI;
@@ -250,6 +251,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65852")]
     public void CanRenderHtmlTable()
     {
         Browser.MountTestComponent<VirtualizationTable>();
@@ -609,6 +611,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65852")]
     public void CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax()
     {
         Browser.MountTestComponent<VirtualizationLargeOverscan>();
