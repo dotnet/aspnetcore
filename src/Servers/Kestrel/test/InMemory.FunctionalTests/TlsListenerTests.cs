@@ -40,6 +40,7 @@ public class TlsListenerTests : TestApplicationErrorLoggerLoggedTest
             {
                 listenOptions.UseHttps(_x509Certificate2, httpsOptions =>
                 {
+#pragma warning disable CS0618 // Type or member is obsolete - testing back-compat path
                     httpsOptions.TlsClientHelloBytesCallback = (connection, clientHelloBytes) =>
                     {
                         Logger.LogDebug("[Received TlsClientHelloBytesCallback] Connection: {0}; TLS client hello buffer: {1}", connection.ConnectionId, clientHelloBytes.Length);
@@ -47,6 +48,7 @@ public class TlsListenerTests : TestApplicationErrorLoggerLoggedTest
                         Assert.True(clientHelloBytes.Length > 32);
                         Assert.NotNull(connection);
                     };
+#pragma warning restore CS0618
                 });
             }))
         {
@@ -83,6 +85,7 @@ public class TlsListenerTests : TestApplicationErrorLoggerLoggedTest
                 {
                     httpsOptions.HandshakeTimeout = TimeSpan.FromMilliseconds(1);
 
+#pragma warning disable CS0618 // Type or member is obsolete - testing back-compat path
                     httpsOptions.TlsClientHelloBytesCallback = (connection, clientHelloBytes) =>
                     {
                         Logger.LogDebug("[Received TlsClientHelloBytesCallback] Connection: {0}; TLS client hello buffer: {1}", connection.ConnectionId, clientHelloBytes.Length);
@@ -90,6 +93,7 @@ public class TlsListenerTests : TestApplicationErrorLoggerLoggedTest
                         Assert.True(clientHelloBytes.Length > 32);
                         Assert.NotNull(connection);
                     };
+#pragma warning restore CS0618
                 });
             }))
         {
