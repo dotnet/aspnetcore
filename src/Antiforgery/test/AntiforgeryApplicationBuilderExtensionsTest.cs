@@ -17,7 +17,7 @@ public class AntiforgeryApplicationBuilderExtensionsTest
         var antiforgeryService = new Mock<IAntiforgery>();
         var services = CreateServices(antiforgeryService.Object);
         var builder = new ApplicationBuilder(services);
-        var httpContext = AntiforgeryMiddlewareTest.GetHttpContext();
+        var httpContext = TokenBasedAntiforgeryMiddlewareTest.GetHttpContext();
 
         Assert.False(builder.Properties.ContainsKey("__AntiforgeryMiddlewareSet"));
 

@@ -27,7 +27,7 @@ public static class AntiforgeryApplicationBuilderExtensions
         builder.VerifyAntiforgeryServicesAreRegistered();
 
         builder.Properties[AntiforgeryMiddlewareSetKey] = true;
-        builder.UseMiddleware<AntiforgeryMiddleware>();
+        builder.UseMiddleware<TokenBasedAntiforgeryMiddleware>();
 
         return builder;
     }

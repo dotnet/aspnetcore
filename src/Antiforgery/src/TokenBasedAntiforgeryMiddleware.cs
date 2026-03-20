@@ -7,7 +7,6 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal;
 
 /// <summary>
 /// Middleware that performs token-based-only antiforgery validation.
-/// This is the legacy behavior prior to .NET 11.
 /// </summary>
 internal sealed class TokenBasedAntiforgeryMiddleware(IAntiforgery antiforgery, RequestDelegate next)
 {
