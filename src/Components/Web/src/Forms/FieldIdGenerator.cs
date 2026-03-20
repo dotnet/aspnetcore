@@ -11,10 +11,10 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// </summary>
 internal static class FieldIdGenerator
 {
-    // Valid characters for HTML 4.01 id attributes (excluding '.' to avoid CSS selector conflicts)
-    // See: https://www.w3.org/TR/html401/types.html#type-id
-    private static readonly SearchValues<char> ValidIdChars =
-        SearchValues.Create("-0123456789:ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz");
+    // Invalid characters for HTML5 id attributes: all Unicode whitespace characters and periods
+    // Periods are excluded to avoid CSS selector conflicts
+    private static readonly SearchValues<char> InvalidIdChars = SearchValues.Create(
+        " \t\n\r\f\v\u0085\u00A0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u2028\u2029\u202F\u205F\u3000.");
 
     /// <summary>
     /// Sanitizes a field name to create a valid HTML id attribute value.
@@ -22,9 +22,9 @@ internal static class FieldIdGenerator
     /// <param name="fieldName">The field name to sanitize.</param>
     /// <returns>A valid HTML id attribute value, or an empty string if the input is null or empty.</returns>
     /// <remarks>
-    /// This method follows HTML 4.01 id attribute rules:
-    /// - The first character must be a letter (A-Z, a-z)
-    /// - Subsequent characters can be letters, digits, hyphens, underscores, colons, or periods
+    /// This method follows HTML5 id attribute rules:
+    /// - The value must contain at least one character
+    /// - The value must not contain any whitespace characters
     /// - Periods are replaced with underscores to avoid CSS selector conflicts
     /// </remarks>
     public static string SanitizeHtmlId(string? fieldName)
@@ -35,11 +35,7 @@ internal static class FieldIdGenerator
         }
 
         // Fast path: check if sanitization is needed
-        var firstChar = fieldName[0];
-        var startsWithLetter = char.IsAsciiLetter(firstChar);
-        var indexOfInvalidChar = fieldName.AsSpan(1).IndexOfAnyExcept(ValidIdChars);
-
-        if (startsWithLetter && indexOfInvalidChar < 0)
+        if (fieldName.AsSpan().IndexOfAny(InvalidIdChars) < 0)
         {
             return fieldName;
         }
@@ -47,34 +43,18 @@ internal static class FieldIdGenerator
         // Slow path: build sanitized string
         var result = new StringBuilder(fieldName.Length);
 
-        // First character must be a letter
-        if (startsWithLetter)
+        foreach (var c in fieldName)
         {
-            result.Append(firstChar);
-        }
-        else
-        {
-            result.Append('z');
-            if (IsValidIdChar(firstChar))
-            {
-                result.Append(firstChar);
-            }
-            else
+            if (InvalidIdChars.Contains(c))
             {
                 result.Append('_');
             }
-        }
-
-        // Process remaining characters
-        for (var i = 1; i < fieldName.Length; i++)
-        {
-            var c = fieldName[i];
-            result.Append(IsValidIdChar(c) ? c : '_');
+            else
+            {
+                result.Append(c);
+            }
         }
 
         return result.ToString();
     }
-
-    private static bool IsValidIdChar(char c)
-        => ValidIdChars.Contains(c);
 }

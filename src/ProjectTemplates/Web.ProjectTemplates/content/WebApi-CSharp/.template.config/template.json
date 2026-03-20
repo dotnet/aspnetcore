@@ -93,6 +93,21 @@
             "Program.MinimalAPIs.WindowsOrNoAuth.cs",
             "Program.MinimalAPIs.OrgOrIndividualB2CAuth.cs"
           ]
+        },
+        {
+          "condition": "(!EnableOpenAPI)",
+          "exclude": [
+            "Company.WebApplication1.http"
+          ],
+          "rename": {
+            "Company.WebApplication1.NoOpenAPI.http": "Company.WebApplication1.http"
+          }
+        },
+        {
+          "condition": "(EnableOpenAPI)",
+          "exclude": [
+            "Company.WebApplication1.NoOpenAPI.http"
+          ]
         }
       ]
     }
@@ -207,7 +222,10 @@
         "sourceVariableName": "kestrelHttpPort",
         "fallbackVariableName": "kestrelHttpPortGenerated"
       },
-      "replaces": "5000"
+      "replaces": "5000",
+      "onlyIf": [{
+        "after": "localhost:"
+      }]
     },
     "kestrelHttpsPort": {
       "type": "parameter",
@@ -229,7 +247,10 @@
         "sourceVariableName": "kestrelHttpsPort",
         "fallbackVariableName": "kestrelHttpsPortGenerated"
       },
-      "replaces": "5001"
+      "replaces": "5001",
+      "onlyIf": [{
+        "after": "localhost:"
+      }]
     },
     "iisHttpPort": {
       "type": "parameter",
@@ -325,8 +346,7 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net11.0",
-          "description": "Target net11.0"
+          "choice": "net11.0"
         }
       ],
       "replaces": "net11.0",

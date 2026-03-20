@@ -666,6 +666,12 @@ public class SignInManager<TUser> where TUser : class
             return SignInResult.Failed;
         }
 
+        var error = await PreSignInCheck(assertionResult.User);
+        if (error != null)
+        {
+            return error;
+        }
+
         // After a successful assertion, we need to update the passkey so that it has the latest
         // sign count and authenticator data.
         var setPasskeyResult = await UserManager.AddOrUpdatePasskeyAsync(assertionResult.User, assertionResult.Passkey);
