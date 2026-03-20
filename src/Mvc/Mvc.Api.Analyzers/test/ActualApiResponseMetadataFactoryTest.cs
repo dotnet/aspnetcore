@@ -87,6 +87,64 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         Assert.Null(metadata);
     }
 
+    [Fact]
+    public async Task InspectReturnExpression_RecursesIntoConditionalExpression()
+    {
+        // Arrange & Act
+        var source = @"
+using Microsoft.AspNetCore.Mvc;
+
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
+{
+    [ApiController]
+    public class TestController : ControllerBase
+    {
+        public IActionResult Get(int id)
+        {
+            return id == 0 ? NotFound() : Ok();
+        }
+    }
+}";
+        var actualResponseMetadata = await RunInspectReturnStatementSyntax(source, "TestController");
+
+        // Assert
+        Assert.Equal(2, actualResponseMetadata.Length);
+        Assert.NotNull(actualResponseMetadata[0]);
+        Assert.Equal(404, actualResponseMetadata[0].Value.StatusCode);
+        Assert.NotNull(actualResponseMetadata[1]);
+        Assert.Equal(200, actualResponseMetadata[1].Value.StatusCode);
+    }
+
+    [Fact]
+    public async Task InspectReturnExpression_RecursesIntoNestedConditionalExpression()
+    {
+        // Arrange & Act
+        var source = @"
+using Microsoft.AspNetCore.Mvc;
+
+namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
+{
+    [ApiController]
+    public class TestController : ControllerBase
+    {
+        public IActionResult Get(int id)
+        {
+            return id == 0 ? NotFound() : id == 1 ? BadRequest() : Ok();
+        }
+    }
+}";
+        var actualResponseMetadata = await RunInspectReturnStatementSyntax(source, "TestController");
+
+        // Assert
+        Assert.Equal(3, actualResponseMetadata.Length);
+        Assert.NotNull(actualResponseMetadata[0]);
+        Assert.Equal(404, actualResponseMetadata[0].Value.StatusCode);
+        Assert.NotNull(actualResponseMetadata[1]);
+        Assert.Equal(400, actualResponseMetadata[1].Value.StatusCode);
+        Assert.NotNull(actualResponseMetadata[2]);
+        Assert.Equal(200, actualResponseMetadata[2].Value.StatusCode);
+    }
+
     [Theory]
     [InlineData(ReturnOperationTestVariant.Default)]
     [InlineData(ReturnOperationTestVariant.SwitchExpression)]
