@@ -237,11 +237,11 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 
             using var handshakeCts = new CancellationTokenSource(TestConstants.DefaultTimeout);
             await Assert.ThrowsAnyAsync<Exception>(() => sslStream.AuthenticateAsClientAsync(clientAuthOptions, handshakeCts.Token));
-        }
 
-        var handshakeFeature = await handshakeFeatureTcs.Task.DefaultTimeout();
-        Assert.NotNull(handshakeFeature);
-        Assert.NotNull(handshakeFeature.Exception);
+            var handshakeFeature = await handshakeFeatureTcs.Task.DefaultTimeout();
+            Assert.NotNull(handshakeFeature);
+            Assert.NotNull(handshakeFeature.Exception);
+        }
     }
 
     [Fact]
@@ -262,7 +262,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             listenOptions.UseHttps(o =>
             {
                 o.ServerCertificate = _x509Certificate2;
-                o.HandshakeTimeout = TimeSpan.FromMilliseconds(100);
+                o.HandshakeTimeout = TimeSpan.FromSeconds(2);
             });
         }
 
@@ -271,11 +271,11 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             using var connection = server.CreateConnection();
             // Don't send any TLS data — let the handshake time out.
             Assert.Equal(0, await connection.Stream.ReadAsync(new byte[1], 0, 1).DefaultTimeout());
-        }
 
-        var handshakeFeature = await handshakeFeatureTcs.Task.DefaultTimeout();
-        Assert.NotNull(handshakeFeature);
-        Assert.IsAssignableFrom<OperationCanceledException>(handshakeFeature.Exception);
+            var handshakeFeature = await handshakeFeatureTcs.Task.DefaultTimeout();
+            Assert.NotNull(handshakeFeature);
+            Assert.IsAssignableFrom<OperationCanceledException>(handshakeFeature.Exception);
+        }
     }
 
     [Fact]
