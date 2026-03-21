@@ -582,12 +582,13 @@ export module DotNet {
       delete cachedJSObjectsById[id];
   }
 
-  // Traverses the object hierarchy to find an object member specified by the identifier.
-  //
-  // @param obj Root object to search in.
-  // @param identifier Complete identifier of the member to find, e.g. "document.location.href".
-  // @returns A tuple containing the immediate parent of the member and the member name.
-  //
+  /**
+   * Traverses the object hierarchy to find an object member specified by the identifier.
+   *
+   * @param obj Root object to search in.
+   * @param identifier Complete identifier of the member to find, e.g. "document.location.href".
+   * @returns A tuple containing the immediate parent of the member and the member name.
+   */
   export function findObjectMember(obj: any, identifier: string): [any, string] {
       const keys = identifier.split(".");
       let current = obj;
