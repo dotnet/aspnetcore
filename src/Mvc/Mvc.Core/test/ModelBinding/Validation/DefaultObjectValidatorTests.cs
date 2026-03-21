@@ -1480,7 +1480,7 @@ public class DefaultObjectValidatorTests
 
     private static void AssertKeysEqual(ModelStateDictionary modelState, params string[] keys)
     {
-        Assert.Equal<string>(keys.OrderBy(k => k).ToArray(), modelState.Keys.OrderBy(k => k).ToArray());
+        Assert.Equal<string>(keys.OrderBy(k => k).ToList(), modelState.Keys.OrderBy(k => k).ToList());
     }
 
     private class ThrowingProperty

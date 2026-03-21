@@ -7,7 +7,7 @@ This document details the process we use for identifying candidate issues for th
 
 ## Phases
 The process for identifying candidates for the next major release consists of multiple phases. In each phase, we filter issues out of the release by either moving them to the `backlog`, or closing the issue.
-- Filtering & Individual priorization
+- Filtering & Individual prioritization
 - Rough costing
 - Team review & Priority adjustment
 - Capacity planning
@@ -17,7 +17,7 @@ The process for identifying candidates for the next major release consists of mu
 At this stage all the issues are distributed to engineers by feature areas. Each engineer reviews all the issues within their feature area, and returns to the next meeting with individual priority labels assigned - fl-p1, fl-p2, fl-p3, where `fl` are their initials.
 
 All the issues which the engineer believes are lower than `Priority-3` - remain in the backlog. We also agree to approximately balance the distribution of the 3 priority labels on the issues that will be brought back by each engineer, so that it forces real prioritization exercise.
-The issues which engineers think are good candidates and fit in the above listed requirements are moved to the `.NET V Planning` milestone, where `V` is the updcoming version number (7 at the time of this writing) - `.NET 7 Planning`.
+The issues which engineers think are good candidates and fit in the above listed requirements are moved to the `.NET V Planning` milestone, where `V` is the upcoming version number (7 at the time of this writing) - `.NET 7 Planning`.
 
 ### Rough costing
 At this phase engineers apply rough cost estimates to the final list of issues that they have moved to the `.NET V Planning` milestone, by applying one of the `Cost: X` labels below, where X is the size:
@@ -27,7 +27,7 @@ This will be used later during the planning process.
 
 For issues which don't have a clear description of the associated work, it's important to drop a comment summarizing the work involved. This will help at a later time, in case a question about the cost will be raised.
 
-**Note**: while costing issues, it's important to reevaluate costs for those, which already have cost labels applied. Those are most probably from the past and may be outdated, not properly representing the cost any more.
+**Note**: while costing issues, it's important to reevaluate costs for those, which already have cost labels applied. Those are most probably from the past and may be outdated, not properly representing the cost anymore.
 
 ### Team Review & Priority adjustment
 Now, that all the issues are in the `.NET V planning` milestone, the team reviews each issue one at a time starting from the highest priority ones (Priority: 1).

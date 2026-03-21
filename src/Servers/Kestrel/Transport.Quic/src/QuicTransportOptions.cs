@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.Versioning;
-
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic;
 
 /// <summary>
@@ -16,25 +14,21 @@ public sealed class QuicTransportOptions
     /// <summary>
     /// The maximum number of concurrent bi-directional streams per connection.
     /// </summary>
-    [RequiresPreviewFeatures]
     public int MaxBidirectionalStreamCount { get; set; } = 100;
 
     /// <summary>
     /// The maximum number of concurrent inbound uni-directional streams per connection.
     /// </summary>
-    [RequiresPreviewFeatures]
     public int MaxUnidirectionalStreamCount { get; set; } = 10;
 
     /// <summary>
     /// The maximum read size.
     /// </summary>
-    [RequiresPreviewFeatures]
     public long? MaxReadBufferSize { get; set; } = 1024 * 1024;
 
     /// <summary>
     /// The maximum write size.
     /// </summary>
-    [RequiresPreviewFeatures]
     public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
 
     /// <summary>
@@ -68,14 +62,15 @@ public sealed class QuicTransportOptions
         }
     }
 
-    private static void ValidateErrorCode(long errorCode)
+    internal static void ValidateErrorCode(long errorCode)
     {
         const long MinErrorCode = 0;
         const long MaxErrorCode = (1L << 62) - 1;
 
         if (errorCode < MinErrorCode || errorCode > MaxErrorCode)
         {
-            throw new ArgumentOutOfRangeException(nameof(errorCode), errorCode, $"A value between {MinErrorCode} and {MaxErrorCode} is required.");
+            // Print the values in hex since the max is unintelligible in decimal
+            throw new ArgumentOutOfRangeException(nameof(errorCode), errorCode, $"A value between 0x{MinErrorCode:x} and 0x{MaxErrorCode:x} is required.");
         }
     }
 

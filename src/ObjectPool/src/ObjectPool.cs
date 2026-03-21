@@ -27,7 +27,7 @@ public abstract class ObjectPool<T> where T : class
 /// </summary>
 public static class ObjectPool
 {
-    /// <inheritdoc />
+    /// <inheritdoc cref="ObjectPoolProvider.Create{T}(IPooledObjectPolicy{T})" />
     public static ObjectPool<T> Create<T>(IPooledObjectPolicy<T>? policy = null) where T : class, new()
     {
         var provider = new DefaultObjectPoolProvider();

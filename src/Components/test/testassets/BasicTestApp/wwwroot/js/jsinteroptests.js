@@ -217,6 +217,27 @@ function createArgumentList(argumentNumber, dotNetObjectByRef) {
   return array;
 }
 
+class TestClass {
+    constructor(text) {
+        this.text = text;
+    }
+
+    getTextLength() {
+        return this.text.length;
+    }
+}
+
+const testObject = {
+    num: 10,
+    get getOnlyProperty() {
+        return 20;
+    },
+    set setOnlyProperty(value) {
+        this.num = value;
+    },
+    nullProperty: null
+}
+
 window.jsInteropTests = {
   invokeDotNetInteropMethodsAsync: invokeDotNetInteropMethodsAsync,
   collectInteropResults: collectInteropResults,
@@ -233,6 +254,10 @@ window.jsInteropTests = {
   receiveDotNetObjectByRefAsync: receiveDotNetObjectByRefAsync,
   receiveDotNetStreamReference: receiveDotNetStreamReference,
   receiveDotNetStreamWrapperReference: receiveDotNetStreamWrapperReference,
+  returnElementReference: returnElementReference,
+  TestClass: TestClass,
+  nonConstructorFunction: () => { return 42; },
+  testObject: testObject,
 };
 
 function returnUndefined() {
@@ -347,6 +372,10 @@ function returnJSObjectReference() {
       DotNet.disposeJSObjectReference(this);
     },
   };
+}
+
+function returnElementReference(element) {
+  return element;
 }
 
 function addViaJSObjectReference(jsObjectReference, a, b) {

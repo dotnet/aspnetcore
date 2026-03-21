@@ -20,7 +20,9 @@ public class RazorComponentEndpointFactoryTest
         var finallyConventions = new List<Action<EndpointBuilder>>();
         var testRenderMode = new TestRenderMode();
         var configuredRenderModes = new ConfiguredRenderModesMetadata(new[] { testRenderMode });
-        factory.AddEndpoints(endpoints, typeof(App), new PageComponentInfo(
+        factory.AddEndpoints(
+            endpoints,
+            typeof(App), new PageComponentInfo(
             "App",
             typeof(App),
             "/",
@@ -45,6 +47,7 @@ public class RazorComponentEndpointFactoryTest
         var methods = Assert.Single(endpoint.Metadata.GetOrderedMetadata<HttpMethodMetadata>());
         Assert.Collection(methods.HttpMethods,
             method => Assert.Equal("GET", method),
+            method => Assert.Equal("HEAD", method),
             method => Assert.Equal("POST", method)
             );
     }

@@ -254,7 +254,7 @@ public class MvcServiceCollectionExtensionsTest
         Assert.Contains(services, s => s.ServiceType == typeof(CacheTagHelperMemoryCacheFactory));
 
         // No Razor Pages
-        Assert.Empty(services.Where(s => s.ServiceType == typeof(IActionInvokerProvider) && s.ImplementationType == typeof(PageActionInvokerProvider)));
+        Assert.DoesNotContain(services, s => s.ServiceType == typeof(IActionInvokerProvider) && s.ImplementationType == typeof(PageActionInvokerProvider));
     }
 
     private void VerifyAllServices(IServiceCollection services)
@@ -639,9 +639,7 @@ public class MvcServiceCollectionExtensionsTest
 
         if (matches.Length == 0)
         {
-            Assert.True(
-                false,
-                $"Could not find an instance of {implementationType} registered as {serviceType}");
+            Assert.Fail($"Could not find an instance of {implementationType} registered as {serviceType}");
         }
         else if (matches.Length > 1)
         {
@@ -664,9 +662,7 @@ public class MvcServiceCollectionExtensionsTest
                 }
             }
 
-            Assert.True(
-                false,
-                $"Found multiple instances of {implementationType} registered as {serviceType}");
+            Assert.Fail($"Found multiple instances of {implementationType} registered as {serviceType}");
         }
     }
 

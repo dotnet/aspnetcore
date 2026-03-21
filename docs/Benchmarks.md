@@ -23,7 +23,7 @@ For more information about Crank please refer to the [Crank GitHub repository](h
 ### Choose which benchmark to run
 
 - In the [PowerBI dashboard](https://msit.powerbi.com/groups/b5743765-ec44-4dfc-91df-e32401023530/reports/10265790-7e2e-41d3-9388-86ab72be3fe9/ReportSection30725cd056a647733762?experience=power-bi) select a scenario that you would like to benchmark and the environment to use.
-- At the bottom of the page there is table that lists the command lines that were used to execute this benchmark. Pick one.
+- At the bottom of the page there is a table that lists the command lines that were used to execute this benchmark. Pick one.
 - Run the command in a shell. This will start the benchmark remotely on the same target machines as the charts.
 
 This command line contains the specific version of the runtimes and SDK that were used, which makes it deterministic. This means that if you want to investigate a regression you can pick two points on a chart and re-run these to confirm the regression. You can also change each version to understand if the regression is coming from ASP.NET or the .NET Runtime.
@@ -92,7 +92,7 @@ Create a new comment with the correct benchmarks, profiles, and components to bu
 /benchmark json aspnet-citrine-lin kestrel
 ```
 
-Once the benchmark has started (can take up to 10 minutes) the bot adds a comment to the PR. Then, when the benchmark is finished the results are added in a separate comment for both your changes and the source branch so you can compare the metrics your care about.
+Once the benchmark has started (can take up to 10 minutes) the bot adds a comment to the PR. Then, when the benchmark is finished the results are added in a separate comment for both your changes and the source branch so you can compare the metrics you care about.
 
 ## Other scenarios
 

@@ -117,7 +117,8 @@ public sealed class OutputCachePolicyBuilder
     /// <summary>
     /// Adds a policy to vary the cached responses by header.
     /// </summary>
-    /// <param name="headerNames">The header names to vary the cached responses by.</param>
+    /// <param name="headerName">The header name to vary the cached responses by.</param>
+    /// <param name="headerNames">Additional header names to vary the cached responses by.</param>
     public OutputCachePolicyBuilder SetVaryByHeader(string headerName, params string[] headerNames)
     {
         ArgumentNullException.ThrowIfNull(headerName);
@@ -269,7 +270,7 @@ public sealed class OutputCachePolicyBuilder
     /// <summary>
     /// Adds a policy to change the request locking strategy.
     /// </summary>
-    /// <param name="lockResponse">Whether the request should be locked.</param>
+    /// <param name="enabled">Whether the request should be locked.</param>
     /// <remarks>When the default policy is used, locking is enabled by default.</remarks>
     public OutputCachePolicyBuilder SetLocking(bool enabled) => AddPolicy(enabled ? LockingPolicy.Enabled : LockingPolicy.Disabled);
 

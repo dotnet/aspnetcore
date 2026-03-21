@@ -477,7 +477,7 @@ public class DeveloperExceptionPageMiddlewareTest : LoggedTest
         Assert.Equal("An error occurred", await response.Content.ReadAsStringAsync());
     }
 
-    public static TheoryData CompilationExceptionData
+    public static TheoryData<List<CompilationFailure>> CompilationExceptionData
     {
         get
         {

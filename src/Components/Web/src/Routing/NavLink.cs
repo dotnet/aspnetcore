@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -13,10 +12,14 @@ namespace Microsoft.AspNetCore.Components.Routing;
 /// </summary>
 public class NavLink : ComponentBase, IDisposable
 {
+    private const string EnableMatchAllForQueryStringAndFragmentSwitchKey = "Microsoft.AspNetCore.Components.Routing.NavLink.EnableMatchAllForQueryStringAndFragment";
+    private static readonly bool _enableMatchAllForQueryStringAndFragment = AppContext.TryGetSwitch(EnableMatchAllForQueryStringAndFragmentSwitchKey, out var switchValue) && switchValue;
+
     private const string DefaultActiveClass = "active";
 
     private bool _isActive;
     private string? _hrefAbsolute;
+    private string? _hrefToRender;
     private string? _class;
 
     /// <summary>
@@ -50,7 +53,16 @@ public class NavLink : ComponentBase, IDisposable
     [Parameter]
     public NavLinkMatch Match { get; set; }
 
-    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+    /// <summary>
+    /// Gets or sets whether the href should be resolved relative to the current URI.
+    /// When <c>true</c>, relative hrefs (e.g., "sibling") are resolved against the current route's
+    /// directory path and rendered as root-relative URLs (e.g., "/folder/sibling").
+    /// When <c>false</c> (default), the href is rendered as-is from the attribute value.
+    /// </summary>
+    [Parameter]
+    public bool RelativeToCurrentUri { get; set; }
+
+    [Inject] internal NavigationManager NavigationManager { get; set; } = default!;
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -67,6 +79,14 @@ public class NavLink : ComponentBase, IDisposable
         if (AdditionalAttributes != null && AdditionalAttributes.TryGetValue("href", out var obj))
         {
             href = Convert.ToString(obj, CultureInfo.InvariantCulture);
+        }
+
+        // Resolve relative path if RelativeToCurrentUri is true
+        _hrefToRender = null;
+        if (RelativeToCurrentUri && href != null)
+        {
+            _hrefToRender = NavigationManager.ResolveRelativeToCurrentPath(href);
+            href = _hrefToRender;
         }
 
         _hrefAbsolute = href == null ? null : NavigationManager.ToAbsoluteUri(href).AbsoluteUri;
@@ -106,37 +126,87 @@ public class NavLink : ComponentBase, IDisposable
         }
     }
 
-    private bool ShouldMatch(string currentUriAbsolute)
+    /// <summary>
+    /// Determines whether the current URI should match the link.
+    /// </summary>
+    /// <param name="uriAbsolute">The absolute URI of the current location.</param>
+    /// <returns>True if the link should be highlighted as active; otherwise, false.</returns>
+    protected virtual bool ShouldMatch(string uriAbsolute)
     {
         if (_hrefAbsolute == null)
         {
             return false;
         }
 
-        if (EqualsHrefExactlyOrIfTrailingSlashAdded(currentUriAbsolute))
+        var uriAbsoluteSpan = uriAbsolute.AsSpan();
+        var hrefAbsoluteSpan = _hrefAbsolute.AsSpan();
+        if (EqualsHrefExactlyOrIfTrailingSlashAdded(uriAbsoluteSpan, hrefAbsoluteSpan))
         {
             return true;
         }
 
         if (Match == NavLinkMatch.Prefix
-            && IsStrictlyPrefixWithSeparator(currentUriAbsolute, _hrefAbsolute))
+            && IsStrictlyPrefixWithSeparator(uriAbsolute, _hrefAbsolute))
         {
             return true;
         }
 
-        return false;
+        if (_enableMatchAllForQueryStringAndFragment || Match != NavLinkMatch.All)
+        {
+            return false;
+        }
+
+        var uriWithoutQueryAndFragment = GetUriIgnoreQueryAndFragment(uriAbsoluteSpan);
+        if (EqualsHrefExactlyOrIfTrailingSlashAdded(uriWithoutQueryAndFragment, hrefAbsoluteSpan))
+        {
+            return true;
+        }
+        hrefAbsoluteSpan = GetUriIgnoreQueryAndFragment(hrefAbsoluteSpan);
+        return EqualsHrefExactlyOrIfTrailingSlashAdded(uriWithoutQueryAndFragment, hrefAbsoluteSpan);
     }
 
-    private bool EqualsHrefExactlyOrIfTrailingSlashAdded(string currentUriAbsolute)
+    private static ReadOnlySpan<char> GetUriIgnoreQueryAndFragment(ReadOnlySpan<char> uri)
     {
-        Debug.Assert(_hrefAbsolute != null);
+        if (uri.IsEmpty)
+        {
+            return ReadOnlySpan<char>.Empty;
+        }
 
-        if (string.Equals(currentUriAbsolute, _hrefAbsolute, StringComparison.OrdinalIgnoreCase))
+        var queryStartPos = uri.IndexOf('?');
+        var fragmentStartPos = uri.IndexOf('#');
+
+        if (queryStartPos < 0 && fragmentStartPos < 0)
+        {
+            return uri;
+        }
+
+        int minPos;
+        if (queryStartPos < 0)
+        {
+            minPos = fragmentStartPos;
+        }
+        else if (fragmentStartPos < 0)
+        {
+            minPos = queryStartPos;
+        }
+        else
+        {
+            minPos = Math.Min(queryStartPos, fragmentStartPos);
+        }
+
+        return uri.Slice(0, minPos);
+    }
+
+    private static readonly CaseInsensitiveCharComparer CaseInsensitiveComparer = new CaseInsensitiveCharComparer();
+
+    private static bool EqualsHrefExactlyOrIfTrailingSlashAdded(ReadOnlySpan<char> currentUriAbsolute, ReadOnlySpan<char> hrefAbsolute)
+    {
+        if (currentUriAbsolute.SequenceEqual(hrefAbsolute, CaseInsensitiveComparer))
         {
             return true;
         }
 
-        if (currentUriAbsolute.Length == _hrefAbsolute.Length - 1)
+        if (currentUriAbsolute.Length == hrefAbsolute.Length - 1)
         {
             // Special case: highlight links to http://host/path/ even if you're
             // at http://host/path (with no trailing slash)
@@ -146,8 +216,8 @@ public class NavLink : ComponentBase, IDisposable
             // which in turn is because it's common for servers to return the same page
             // for http://host/vdir as they do for host://host/vdir/ as it's no
             // good to display a blank page in that case.
-            if (_hrefAbsolute[_hrefAbsolute.Length - 1] == '/'
-                && _hrefAbsolute.StartsWith(currentUriAbsolute, StringComparison.OrdinalIgnoreCase))
+            if (hrefAbsolute[hrefAbsolute.Length - 1] == '/' &&
+                currentUriAbsolute.SequenceEqual(hrefAbsolute.Slice(0, hrefAbsolute.Length - 1), CaseInsensitiveComparer))
             {
                 return true;
             }
@@ -162,12 +232,16 @@ public class NavLink : ComponentBase, IDisposable
         builder.OpenElement(0, "a");
 
         builder.AddMultipleAttributes(1, AdditionalAttributes);
-        builder.AddAttribute(2, "class", CssClass);
+        if (_hrefToRender != null)
+        {
+            builder.AddAttribute(2, "href", _hrefToRender);
+        }
+        builder.AddAttribute(3, "class", CssClass);
         if (_isActive)
         {
-            builder.AddAttribute(3, "aria-current", "page");
+            builder.AddAttribute(4, "aria-current", "page");
         }
-        builder.AddContent(4, ChildContent);
+        builder.AddContent(5, ChildContent);
 
         builder.CloseElement();
     }
@@ -199,7 +273,7 @@ public class NavLink : ComponentBase, IDisposable
 
     private static bool IsUnreservedCharacter(char c)
     {
-        // Checks whether it is an unreserved character according to 
+        // Checks whether it is an unreserved character according to
         // https://datatracker.ietf.org/doc/html/rfc3986#section-2.3
         // Those are characters that are allowed in a URI but do not have a reserved
         // purpose (e.g. they do not separate the components of the URI)
@@ -208,5 +282,18 @@ public class NavLink : ComponentBase, IDisposable
                 c == '.' ||
                 c == '_' ||
                 c == '~';
+    }
+
+    private class CaseInsensitiveCharComparer : IEqualityComparer<char>
+    {
+        public bool Equals(char x, char y)
+        {
+            return char.ToLowerInvariant(x) == char.ToLowerInvariant(y);
+        }
+
+        public int GetHashCode(char obj)
+        {
+            return char.ToLowerInvariant(obj).GetHashCode();
+        }
     }
 }

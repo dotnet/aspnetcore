@@ -35,11 +35,13 @@
     <Compile Remove="$(RepoRoot)src\Components\Endpoints\src\FormMapping\HttpContextFormValueMapper.cs" LinkBase="SharedFormMapping" />
     <Compile Remove="$(RepoRoot)src\Components\Endpoints\src\FormMapping\HttpContextFormDataProvider.cs" LinkBase="SharedFormMapping" />
     <Compile Remove="$(RepoRoot)src\Components\Endpoints\src\FormMapping\BrowserFileFromFormFile.cs" LinkBase="SharedFormMapping" />
+    <Compile Include="$(SharedSourceRoot)ContentTypeConstants.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.WebUtilities" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.Net.Http.Headers" />
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
   </ItemGroup>

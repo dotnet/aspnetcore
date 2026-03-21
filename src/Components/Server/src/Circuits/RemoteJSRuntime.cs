@@ -18,7 +18,7 @@ internal partial class RemoteJSRuntime : JSRuntime
     private readonly CircuitOptions _options;
     private readonly ILogger<RemoteJSRuntime> _logger;
     private CircuitClientProxy _clientProxy;
-    private readonly ConcurrentDictionary<long, DotNetStreamReference> _pendingDotNetToJSStreams = new();
+    private readonly ConcurrentDictionary<long, CancelableDotNetStreamReference> _pendingDotNetToJSStreams = new();
     private bool _permanentlyDisconnected;
     private readonly long _maximumIncomingBytes;
     private int _byteArraysToBeRevivedTotalBytes;
@@ -106,6 +106,21 @@ internal partial class RemoteJSRuntime : JSRuntime
 
     protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
     {
+        var invocationInfo = new JSInvocationInfo
+        {
+            AsyncHandle = asyncHandle,
+            TargetInstanceId = targetInstanceId,
+            Identifier = identifier,
+            CallType = JSCallType.FunctionCall,
+            ResultType = resultType,
+            ArgsJson = argsJson,
+        };
+
+        BeginInvokeJS(invocationInfo);
+    }
+
+    protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
+    {
         if (_clientProxy is null)
         {
             if (_permanentlyDisconnected)
@@ -123,9 +138,16 @@ internal partial class RemoteJSRuntime : JSRuntime
             }
         }
 
-        Log.BeginInvokeJS(_logger, asyncHandle, identifier);
+        Log.BeginInvokeJS(_logger, invocationInfo.AsyncHandle, invocationInfo.Identifier);
 
-        _clientProxy.SendAsync("JS.BeginInvokeJS", asyncHandle, identifier, argsJson, (int)resultType, targetInstanceId);
+        _clientProxy.SendAsync(
+            "JS.BeginInvokeJS",
+            invocationInfo.AsyncHandle,
+            invocationInfo.Identifier,
+            invocationInfo.ArgsJson,
+            (int)invocationInfo.ResultType,
+            invocationInfo.TargetInstanceId,
+            (int)invocationInfo.CallType);
     }
 
     protected override void ReceiveByteArray(int id, byte[] data)
@@ -152,7 +174,8 @@ internal partial class RemoteJSRuntime : JSRuntime
 
     protected override async Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)
     {
-        if (!_pendingDotNetToJSStreams.TryAdd(streamId, dotNetStreamReference))
+        var cancelableStreamReference = new CancelableDotNetStreamReference(dotNetStreamReference);
+        if (!_pendingDotNetToJSStreams.TryAdd(streamId, cancelableStreamReference))
         {
             throw new ArgumentException($"The stream {streamId} is already pending.");
         }
@@ -160,13 +183,18 @@ internal partial class RemoteJSRuntime : JSRuntime
         // SignalR only supports streaming being initiated from the JS side, so we have to ask it to
         // start the stream. We'll give it a maximum of 10 seconds to do so, after which we give up
         // and discard it.
-        var cancellationToken = new CancellationTokenSource(TimeSpan.FromSeconds(10)).Token;
-        cancellationToken.Register(() =>
+        CancellationTokenSource cancellationTokenSource = new(TimeSpan.FromSeconds(10));
+
+        // Store CTS to dispose later.
+        cancelableStreamReference.CancellationTokenSource = cancellationTokenSource;
+
+        cancellationTokenSource.Token.Register(() =>
         {
             // If by now the stream hasn't been claimed for sending, stop tracking it
-            if (_pendingDotNetToJSStreams.TryRemove(streamId, out var timedOutStream) && !timedOutStream.LeaveOpen)
+            if (_pendingDotNetToJSStreams.TryRemove(streamId, out var timedOutCancelableStreamReference))
             {
-                timedOutStream.Stream.Dispose();
+                timedOutCancelableStreamReference.StreamReference.Dispose();
+                timedOutCancelableStreamReference.CancellationTokenSource?.Dispose();
             }
         });
 
@@ -175,8 +203,13 @@ internal partial class RemoteJSRuntime : JSRuntime
 
     public bool TryClaimPendingStreamForSending(long streamId, out DotNetStreamReference pendingStream)
     {
-        if (_pendingDotNetToJSStreams.TryRemove(streamId, out pendingStream))
+        if (_pendingDotNetToJSStreams.TryRemove(streamId, out var cancelableStreamReference))
         {
+            pendingStream = cancelableStreamReference.StreamReference;
+
+            // Dispose CTS for claimed Stream.
+            cancelableStreamReference.CancellationTokenSource?.Dispose();
+
             return true;
         }
 
@@ -192,6 +225,18 @@ internal partial class RemoteJSRuntime : JSRuntime
 
     protected override async Task<Stream> ReadJSDataAsStreamAsync(IJSStreamReference jsStreamReference, long totalLength, CancellationToken cancellationToken = default)
         => await RemoteJSDataStream.CreateRemoteJSDataStreamAsync(this, jsStreamReference, totalLength, _maximumIncomingBytes, _options.JSInteropDefaultCallTimeout, cancellationToken);
+
+    private class CancelableDotNetStreamReference
+    {
+        public CancelableDotNetStreamReference(DotNetStreamReference streamReference)
+        {
+            StreamReference = streamReference;
+        }
+
+        public CancellationTokenSource? CancellationTokenSource { get; set; }
+
+        public DotNetStreamReference StreamReference { get; }
+    }
 
     public static partial class Log
     {

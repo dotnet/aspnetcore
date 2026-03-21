@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
@@ -13,6 +14,8 @@ using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 
@@ -60,20 +63,44 @@ public static class ComponentServiceCollectionExtensions
         // Here we add a bunch of services that don't vary in any way based on the
         // user's configuration. So even if the user has multiple independent server-side
         // Components entrypoints, this lot is the same and repeated registrations are a no-op.
+
+        services.TryAddSingleton<CircuitMetrics>();
         services.TryAddSingleton<ICircuitFactory, CircuitFactory>();
         services.TryAddSingleton<ICircuitHandleRegistry, CircuitHandleRegistry>();
-        services.TryAddSingleton<RootComponentTypeCache>();
+        services.TryAddSingleton<RootTypeCache>();
         services.TryAddSingleton<ComponentParameterDeserializer>();
         services.TryAddSingleton<ComponentParametersTypeCache>();
         services.TryAddSingleton<CircuitIdFactory>();
+        services.TryAddSingleton<ServerComponentSerializer>();
         services.TryAddScoped<IServerComponentDeserializer, ServerComponentDeserializer>();
         services.TryAddScoped<IErrorBoundaryLogger, RemoteErrorBoundaryLogger>();
         services.TryAddScoped<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
 
         services.TryAddScoped(s => s.GetRequiredService<ICircuitAccessor>().Circuit);
         services.TryAddScoped<ICircuitAccessor, DefaultCircuitAccessor>();
-
+        services.TryAddSingleton<ISystemClock, SystemClock>();
         services.TryAddSingleton<CircuitRegistry>();
+        services.TryAddSingleton<CircuitPersistenceManager>();
+
+        // Register the circuit persistence provider conditionally based on HybridCache availability
+        services.TryAddSingleton<ICircuitPersistenceProvider>(serviceProvider =>
+        {
+            var circuitOptions = serviceProvider.GetRequiredService<IOptions<CircuitOptions>>();
+            if (circuitOptions.Value.HybridPersistenceCache is not null)
+            {
+                var logger = serviceProvider.GetRequiredService<ILogger<ICircuitPersistenceProvider>>();
+                return new HybridCacheCircuitPersistenceProvider(circuitOptions.Value.HybridPersistenceCache, logger, circuitOptions);
+            }
+            else
+            {
+                var logger = serviceProvider.GetRequiredService<ILogger<ICircuitPersistenceProvider>>();
+                var clock = serviceProvider.GetRequiredService<ISystemClock>();
+                return new DefaultInMemoryCircuitPersistenceProvider(clock, logger, circuitOptions);
+            }
+        });
+
+        // Register the configurator for HybridCache
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<CircuitOptions>, DefaultHybridCache>());
 
         // Standard blazor hosting services implementations
         //
@@ -86,6 +113,8 @@ public static class ComponentServiceCollectionExtensions
 
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CircuitOptions>, CircuitOptionsJSInteropDetailedErrorsConfiguration>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CircuitOptions>, CircuitOptionsJavaScriptInitializersConfiguration>());
+
+        services.TryAddScoped<CircuitActivitySource>();
 
         if (configure != null)
         {

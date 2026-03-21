@@ -29,7 +29,7 @@ public class WebConfigurationLevelSwitchTests
         var filterConfiguration = new LoggerFilterOptions();
         levelSwitcher.Configure(filterConfiguration);
 
-        Assert.Equal(1, filterConfiguration.Rules.Count);
+        Assert.Single(filterConfiguration.Rules);
 
         var rule = filterConfiguration.Rules[0];
         Assert.Equal(typeof(TestFileLoggerProvider).FullName, rule.ProviderName);

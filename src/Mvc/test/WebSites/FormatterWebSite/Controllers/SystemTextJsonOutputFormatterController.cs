@@ -19,6 +19,14 @@ public class SystemTextJsonOutputFormatterController : ControllerBase
         Address = "Some address",
     };
 
+    [HttpGet]
+    public async IAsyncEnumerable<int> AsyncEnumerable()
+    {
+        await Task.Yield();
+        HttpContext.Response.Headers["Test"] = "t";
+        yield return 1;
+    }
+
     [JsonPolymorphic]
     [JsonDerivedType(typeof(DerivedModel), nameof(DerivedModel))]
     public class SimpleModel

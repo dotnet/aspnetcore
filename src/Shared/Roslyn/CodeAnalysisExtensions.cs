@@ -141,7 +141,7 @@ internal static class CodeAnalysisExtensions
         return false;
     }
 
-    private static IEnumerable<ITypeSymbol> GetTypeHierarchy(this ITypeSymbol? typeSymbol)
+    public static IEnumerable<ITypeSymbol> GetTypeHierarchy(this ITypeSymbol? typeSymbol)
     {
         while (typeSymbol != null)
         {

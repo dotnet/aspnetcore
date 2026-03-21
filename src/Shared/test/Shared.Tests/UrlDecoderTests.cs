@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Internal;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Shared.Tests;
 
@@ -65,7 +61,7 @@ public class UrlDecoderTests
     }
 
     [Fact]
-    public void StringDestinationLargerThanSourceDecodeRequestLineReturnsCorrenctLenght()
+    public void StringDestinationLargerThanSourceDecodeRequestLineReturnsCorrectLength()
     {
         var source = "/a%20b".ToCharArray();
         var length = UrlDecoder.DecodeRequestLine(source.AsSpan(), new char[source.Length + 10]);
@@ -73,7 +69,7 @@ public class UrlDecoderTests
     }
 
     [Fact]
-    public void ByteDestinationLargerThanSourceDecodeRequestLineReturnsCorrenctLenght()
+    public void ByteDestinationLargerThanSourceDecodeRequestLineReturnsCorrectLength()
     {
         var source = Encoding.UTF8.GetBytes("/a%20b".ToCharArray());
         var length = UrlDecoder.DecodeRequestLine(source.AsSpan(), new byte[source.Length + 10], false);

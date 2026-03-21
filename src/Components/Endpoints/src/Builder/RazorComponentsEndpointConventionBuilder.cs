@@ -4,6 +4,8 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -13,29 +15,36 @@ namespace Microsoft.AspNetCore.Builder;
 public sealed class RazorComponentsEndpointConventionBuilder : IEndpointConventionBuilder
 {
     private readonly object _lock;
-    private readonly ComponentApplicationBuilder _builder;
     private readonly RazorComponentDataSourceOptions _options;
     private readonly List<Action<EndpointBuilder>> _conventions;
     private readonly List<Action<EndpointBuilder>> _finallyConventions;
+    private readonly List<Action<ComponentApplicationBuilder>> _componentApplicationBuilderActions;
 
     internal RazorComponentsEndpointConventionBuilder(
         object @lock,
-        ComponentApplicationBuilder builder,
+        IEndpointRouteBuilder endpointRouteBuilder,
         RazorComponentDataSourceOptions options,
         List<Action<EndpointBuilder>> conventions,
-        List<Action<EndpointBuilder>> finallyConventions)
+        List<Action<EndpointBuilder>> finallyConventions,
+        List<Action<ComponentApplicationBuilder>> componentApplicationBuilderActions)
     {
         _lock = @lock;
-        _builder = builder;
+        EndpointRouteBuilder = endpointRouteBuilder;
         _options = options;
         _conventions = conventions;
         _finallyConventions = finallyConventions;
+        _componentApplicationBuilderActions = componentApplicationBuilderActions;
     }
 
-    /// <summary>
-    /// Gets the <see cref="ComponentApplicationBuilder"/> that is used to build the endpoints.
-    /// </summary>
-    internal ComponentApplicationBuilder ApplicationBuilder => _builder;
+    internal List<Action<ComponentApplicationBuilder>> ComponentApplicationBuilderActions => _componentApplicationBuilderActions;
+
+    internal string? ManifestPath { get => _options.ManifestPath; set => _options.ManifestPath = value; }
+
+    internal bool ResourceCollectionConventionRegistered { get; set; }
+
+    internal IEndpointRouteBuilder EndpointRouteBuilder { get; }
+
+    internal event Action<RazorComponentEndpointUpdateContext>? BeforeCreateEndpoints;
 
     /// <inheritdoc/>
     public void Add(Action<EndpointBuilder> convention)
@@ -65,5 +74,17 @@ public sealed class RazorComponentsEndpointConventionBuilder : IEndpointConventi
     {
         _options.ConfiguredRenderModes.Add(renderMode);
     }
+
+    internal void OnBeforeCreateEndpoints(RazorComponentEndpointUpdateContext endpointContext) =>
+        BeforeCreateEndpoints?.Invoke(endpointContext);
+}
+
+internal class RazorComponentEndpointUpdateContext(
+    List<Endpoint> endpoints,
+    RazorComponentDataSourceOptions options)
+{
+    public List<Endpoint> Endpoints { get; } = endpoints;
+
+    public RazorComponentDataSourceOptions Options { get; } = options;
 }
 

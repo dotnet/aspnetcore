@@ -55,8 +55,8 @@ StandardStreamRedirection::~StandardStreamRedirection() noexcept(false)
 void StandardStreamRedirection::Start()
 {
     SECURITY_ATTRIBUTES     saAttr = { 0 };
-    HANDLE                  hStdErrReadPipe;
-    HANDLE                  hStdErrWritePipe;
+    HANDLE                  hStdErrReadPipe = nullptr;
+    HANDLE                  hStdErrWritePipe = nullptr;
 
     // To make Console.* functions work, allocate a console
     // in the current process.

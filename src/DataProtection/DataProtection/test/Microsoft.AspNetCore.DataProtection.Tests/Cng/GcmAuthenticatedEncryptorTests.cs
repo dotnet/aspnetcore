@@ -4,7 +4,10 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Cryptography.Cng;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.Managed;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
+using Microsoft.AspNetCore.DataProtection.Tests.Internal;
 using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.DataProtection.Cng;
@@ -26,7 +29,7 @@ public class GcmAuthenticatedEncryptorTests
         byte[] decipheredtext = encryptor.Decrypt(new ArraySegment<byte>(ciphertext), aad);
 
         // Assert
-        Assert.Equal(plaintext, decipheredtext);
+        Assert.Equal(plaintext.AsSpan(), decipheredtext.AsSpan());
     }
 
     [ConditionalFact]
@@ -101,5 +104,22 @@ public class GcmAuthenticatedEncryptorTests
 
         string retValAsString = Convert.ToBase64String(retVal);
         Assert.Equal("AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaG0O2kY0NZtmh2UQtXY5B2jlgnOgAAAAA", retValAsString);
+    }
+
+    [ConditionalTheory]
+    [ConditionalRunTestOnlyOnWindows]
+    [InlineData(128)]
+    [InlineData(192)]
+    [InlineData(256)]
+    public void Roundtrip_CngGcm_TryEncryptDecrypt_CorrectlyEstimatesDataLength(int symmetricKeySizeBits)
+    {
+        Secret kdk = new Secret(new byte[512 / 8]);
+        IAuthenticatedEncryptor encryptor = new CngGcmAuthenticatedEncryptor(kdk,
+            symmetricAlgorithmHandle: CachedAlgorithmHandles.AES_GCM,
+            symmetricAlgorithmKeySizeInBytes: (uint)(symmetricKeySizeBits / 8));
+        ArraySegment<byte> plaintext = new ArraySegment<byte>(Encoding.UTF8.GetBytes("plaintext"));
+        ArraySegment<byte> aad = new ArraySegment<byte>(Encoding.UTF8.GetBytes("aad"));
+
+        RoundtripEncryptionHelpers.AssertTryEncryptTryDecryptParity(encryptor, plaintext, aad);
     }
 }

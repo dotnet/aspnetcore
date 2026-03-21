@@ -100,7 +100,7 @@ public class WebSocketsTests : VerifiableLoggedTest
                 await feature.Client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
                 await transport;
 
-                Assert.Equal(1, clientSummary.Received.Count);
+                Assert.Single(clientSummary.Received);
                 Assert.True(clientSummary.Received[0].EndOfMessage);
                 Assert.Equal((WebSocketMessageType)Enum.Parse(typeof(WebSocketMessageType), expectedMessageType), clientSummary.Received[0].MessageType);
                 Assert.Equal("Hello", Encoding.UTF8.GetString(clientSummary.Received[0].Buffer));

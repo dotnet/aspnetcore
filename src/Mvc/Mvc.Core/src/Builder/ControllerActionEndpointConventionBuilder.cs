@@ -23,6 +23,8 @@ public sealed class ControllerActionEndpointConventionBuilder : IEndpointConvent
         _finallyConventions = finallyConventions;
     }
 
+    internal Dictionary<string, object> Items { get; set; } = [];
+
     /// <summary>
     /// Adds the specified convention to the builder. Conventions are used to customize <see cref="EndpointBuilder"/> instances.
     /// </summary>

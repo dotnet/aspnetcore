@@ -3,18 +3,30 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using AngleSharp.Parser.Html;
+using Microsoft.AspNetCore.InternalTesting;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class NonNullableReferenceTypesTest : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
+public class NonNullableReferenceTypesTest : LoggedTest
 {
-    public NonNullableReferenceTypesTest(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        Client = fixture.CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>(LoggerFactory);
+        Client = Factory.CreateDefaultClient();
     }
 
-    private HttpClient Client { get; set; }
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public async Task CanUseNonNullableReferenceType_WithController_OmitData_ValidationErrors()

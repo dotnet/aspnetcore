@@ -42,7 +42,7 @@ public class DefaultApiProblemDetailsWriterTest
 
         //Assert
         stream.Position = 0;
-        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream, JsonSerializerOptions.Web);
         Assert.NotNull(problemDetails);
         Assert.Equal(expectedProblem.Status, problemDetails.Status);
         Assert.Equal(expectedProblem.Type, problemDetails.Type);
@@ -81,7 +81,7 @@ public class DefaultApiProblemDetailsWriterTest
 
         //Assert
         stream.Position = 0;
-        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(stream, JsonSerializerOptions.Web);
         Assert.NotNull(problemDetails);
         Assert.Equal(expectedProblem.Status, problemDetails.Status);
         Assert.Equal(expectedProblem.Type, problemDetails.Type);

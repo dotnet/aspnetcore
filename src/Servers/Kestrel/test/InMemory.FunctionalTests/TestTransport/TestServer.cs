@@ -70,7 +70,7 @@ internal class TestServer : IAsyncDisposable, IStartup
     {
         _app = app;
         Context = context;
-        _memoryPool = context.MemoryPoolFactory();
+        _memoryPool = context.MemoryPoolFactory.Create(new MemoryPoolOptions { Owner = "test_server" });
         _transportFactory = new InMemoryTransportFactory();
         HttpClientSlim = new InMemoryHttpClientSlim(this);
 
@@ -78,7 +78,7 @@ internal class TestServer : IAsyncDisposable, IStartup
             .ConfigureWebHost(webHostBuilder =>
             {
                 webHostBuilder
-                    .UseSetting(WebHostDefaults.ShutdownTimeoutKey, TestConstants.DefaultTimeout.TotalSeconds.ToString(CultureInfo.InvariantCulture))
+                    .UseSetting(WebHostDefaults.ShutdownTimeoutKey, context.ShutdownTimeout.TotalSeconds.ToString(CultureInfo.InvariantCulture))
                     .Configure(app => { app.Run(_app); });
             })
             .ConfigureServices(services =>

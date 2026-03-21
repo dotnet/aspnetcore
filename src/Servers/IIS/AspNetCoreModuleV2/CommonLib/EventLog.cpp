@@ -36,11 +36,11 @@ EventLog::LogEventNoTrace(
         dwEventInfoType,
         0,        // wCategory
         dwEventId,
-        NULL,     // lpUserSid
+        nullptr,     // lpUserSid
         static_cast<WORD>(eventLogDataStrings.size()), // wNumStrings
         0,        // dwDataSize,
         eventLogDataStrings.data(),
-        NULL      // lpRawData
+        nullptr      // lpRawData
     );
 }
 

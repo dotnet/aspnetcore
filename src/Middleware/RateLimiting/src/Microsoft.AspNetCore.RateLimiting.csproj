@@ -18,6 +18,7 @@
     <Reference Include="System.Threading.RateLimiting" />
 
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
+    <Compile Include="$(SharedSourceRoot)Metrics\MetricsConstants.cs" />
   </ItemGroup>
 
   <ItemGroup>

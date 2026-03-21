@@ -46,6 +46,7 @@ public static class OutputCacheConventionBuilderExtensions
     /// <summary>
     /// Marks an endpoint to be cached using the specified policy builder.
     /// </summary>
+    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
     /// <param name="policy">An action on <see cref="OutputCachePolicyBuilder"/>.</param>
     public static TBuilder CacheOutput<TBuilder>(this TBuilder builder, Action<OutputCachePolicyBuilder> policy)
         where TBuilder : IEndpointConventionBuilder
@@ -54,6 +55,7 @@ public static class OutputCacheConventionBuilderExtensions
     /// <summary>
     /// Marks an endpoint to be cached using the specified policy builder.
     /// </summary>
+    /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
     /// <param name="policy">An action on <see cref="OutputCachePolicyBuilder"/>.</param>
     /// <param name="excludeDefaultPolicy">Whether to exclude the default policy or not.</param>
     public static TBuilder CacheOutput<TBuilder>(this TBuilder builder, Action<OutputCachePolicyBuilder> policy, bool excludeDefaultPolicy) where TBuilder : IEndpointConventionBuilder

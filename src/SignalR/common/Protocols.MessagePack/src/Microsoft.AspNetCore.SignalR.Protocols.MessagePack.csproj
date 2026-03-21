@@ -6,6 +6,9 @@
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
+    <!-- Avoid a warning that is emitted by APICompat when it can't find Microsoft.NET.StringTools.dll
+         which is a dependency of MessagePack.dll but is excluded from "compile" in the package's nuspec. -->
+    <NoWarn>$(NoWarn);CP1002</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +17,7 @@
     <Compile Include="$(SignalRSharedSourceRoot)MemoryBufferWriter.cs" Link="Internal\MemoryBufferWriter.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)TryGetReturnType.cs" Link="TryGetReturnType.cs" />
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)TrimmingAttributes.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
   </ItemGroup>
 

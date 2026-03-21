@@ -1,6 +1,6 @@
 {
     "version": "0.0.0",
-    "name": "BasicWebSite",
+    "name": "@microsoft/BasicWebSite",
     "description": "Web site demonstrating various validations.",
     "private":  true,
     "devDependencies": {

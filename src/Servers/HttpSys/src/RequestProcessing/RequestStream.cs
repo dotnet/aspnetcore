@@ -77,10 +77,12 @@ internal sealed partial class RequestStream : Stream
 
     public override void SetLength(long value) => throw new NotSupportedException(Resources.Exception_NoSeek);
 
-    public override void Flush() => throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
+    public override void Flush()
+    {
+        // No-op
+    }
 
-    public override Task FlushAsync(CancellationToken cancellationToken)
-        => throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
+    public override Task FlushAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
     internal void SwitchToOpaqueMode()
     {
@@ -118,32 +120,21 @@ internal sealed partial class RequestStream : Stream
 
         if (_dataChunkIndex == -1 && dataRead == 0)
         {
-            uint statusCode = 0;
-            uint extraDataRead = 0;
-
             // the http.sys team recommends that we limit the size to 128kb
             if (size > MaxReadSize)
             {
                 size = MaxReadSize;
             }
 
-            fixed (byte* pBuffer = buffer)
-            {
-                // issue unmanaged blocking call
+            uint flags = 0;
+            var statusCode = PInvoke.HttpReceiveRequestEntityBody(
+                RequestQueueHandle,
+                RequestId,
+                flags,
+                buffer.AsSpan(offset, size),
+                out var extraDataRead);
 
-                uint flags = 0;
-
-                statusCode = PInvoke.HttpReceiveRequestEntityBody(
-                    RequestQueueHandle,
-                    RequestId,
-                    flags,
-                    (pBuffer + offset),
-                    (uint)size,
-                    &extraDataRead,
-                    default);
-
-                dataRead += extraDataRead;
-            }
+            dataRead += extraDataRead;
 
             // Zero-byte reads
             if (statusCode == ErrorCodes.ERROR_MORE_DATA && size == 0)

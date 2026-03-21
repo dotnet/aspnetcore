@@ -1,33 +1,32 @@
 {
   "sdk": {
-    "version": "9.0.100-preview.4.24201.1"
+    "version": "11.0.100-preview.1.26104.118",
+    "paths": [
+      ".dotnet",
+      "$host$"
+    ],
+    "errorMessage": "The .NET SDK could not be found, run ./restore.cmd or ./restore.sh first."
   },
   "tools": {
-    "dotnet": "9.0.100-preview.4.24201.1",
+    "dotnet": "11.0.100-preview.1.26104.118",
     "runtimes": {
       "dotnet/x86": [
-        "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
+        "$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)"
       ],
       "dotnet": [
-        "$(MicrosoftNETCoreBrowserDebugHostTransportVersion)"
+        "$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)"
       ]
-    },
-    "vs": {
-      "version": "17.2",
-      "components": [
-        "Microsoft.VisualStudio.Component.VC.ATL",
-        "Microsoft.VisualStudio.Component.VC.ATL.ARM64",
-        "Microsoft.VisualStudio.Component.VC.Tools.ARM64",
-        "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
-      ]
-    },
-    "xcopy-msbuild": "17.1.0"
+    }
   },
   "native-tools": {
-    "jdk": "11.0.22"
+    "jdk": "latest"
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "9.0.0-beta.24207.1",
-    "Microsoft.DotNet.Helix.Sdk": "9.0.0-beta.24207.1"
+    "Microsoft.DotNet.Arcade.Sdk": "11.0.0-beta.26153.117",
+    "Microsoft.DotNet.Helix.Sdk": "11.0.0-beta.26153.117",
+    "Microsoft.DotNet.SharedFramework.Sdk": "11.0.0-beta.26153.117",
+    "Microsoft.Build.NoTargets": "3.7.0",
+    "Microsoft.Build.Traversal": "3.4.0",
+    "Microsoft.WixToolset.Sdk": "5.0.2-dotnet.2811440"
   }
 }

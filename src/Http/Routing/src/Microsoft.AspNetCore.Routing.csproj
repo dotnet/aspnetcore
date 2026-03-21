@@ -37,6 +37,8 @@
     <Compile Include="$(SharedSourceRoot)Debugger\DebuggerHelpers.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)AntiforgeryMetadata.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)HttpExtensions.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ContentTypeConstants.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Diagnostics\RouteDiagnosticsHelpers.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
@@ -50,6 +52,7 @@
     <Reference Include="Microsoft.Extensions.Features" />
     <Reference Include="Microsoft.Extensions.ObjectPool" />
     <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="Microsoft.Extensions.Validation" />
   </ItemGroup>
 
   <ItemGroup>

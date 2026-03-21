@@ -5,7 +5,7 @@ import { WebRendererId } from '../Rendering/WebRendererId';
 
 let interactiveRouterRendererId: WebRendererId | undefined = undefined;
 let programmaticEnhancedNavigationHandler: typeof performProgrammaticEnhancedNavigation | undefined;
-let enhancedNavigationListener: typeof notifyEnhancedNavigationListners | undefined;
+let enhancedNavigationListener: typeof notifyEnhancedNavigationListeners | undefined;
 
 /**
  * Checks if a click event corresponds to an <a> tag referencing a URL within the base href, and that interception
@@ -47,9 +47,23 @@ export function isWithinBaseUriSpace(href: string) {
   && (nextChar === '' || nextChar === '/' || nextChar === '?' || nextChar === '#');
 }
 
-export function isSamePageWithHash(absoluteHref: string): boolean {
-  const url = new URL(absoluteHref);
-  return url.hash !== '' && location.origin === url.origin && location.pathname === url.pathname && location.search === url.search;
+export function isSamePageWithHash(oldUrl: string, newUrl: string): boolean {
+  const a = new URL(oldUrl);
+  const b = new URL(newUrl);
+  return a.origin === b.origin && a.pathname === b.pathname
+    && a.search === b.search && b.hash !== '';
+}
+
+export function isForSamePath(url1: string, url2: string) {
+  // We are going to use the scheme, host, port and path to determine if the two URLs are compatible.
+  // We do not account for the query string as we want to allow for the query string to change.
+  // (Blazor doesn't use the query string for routing purposes).
+  const parsedUrl1 = new URL(url1);
+  const parsedUrl2 = new URL(url2);
+  return parsedUrl1.protocol === parsedUrl2.protocol
+    && parsedUrl1.host === parsedUrl2.host
+    && parsedUrl1.port === parsedUrl2.port
+    && parsedUrl1.pathname === parsedUrl2.pathname;
 }
 
 export function performScrollToElementOnTheSamePage(absoluteHref : string): void {
@@ -70,7 +84,7 @@ export function attachEnhancedNavigationListener(listener: typeof enhancedNaviga
   enhancedNavigationListener = listener;
 }
 
-export function notifyEnhancedNavigationListners(internalDestinationHref: string, interceptedLink: boolean) {
+export function notifyEnhancedNavigationListeners(internalDestinationHref: string, interceptedLink: boolean) {
   enhancedNavigationListener?.(internalDestinationHref, interceptedLink);
 }
 

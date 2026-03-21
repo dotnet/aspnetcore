@@ -2,7 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
-import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isSamePageWithHash, notifyEnhancedNavigationListners, performScrollToElementOnTheSamePage } from './NavigationUtils';
+import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash } from './NavigationUtils';
+import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -42,6 +43,7 @@ let performingEnhancedPageLoad: boolean;
 let currentContentUrl = location.href;
 
 export interface NavigationEnhancementCallbacks {
+  enhancedNavigationStarted: () => void;
   documentUpdated: () => void;
   enhancedNavigationCompleted: () => void;
 }
@@ -69,11 +71,17 @@ export function detachProgressivelyEnhancedNavigationListener() {
   window.removeEventListener('popstate', onPopState);
 }
 
-function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, replace: boolean) {
+function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, replace: boolean) : void {
+  const originalLocation = location.href;
+
   if (replace) {
     history.replaceState(null, /* ignored title */ '', absoluteInternalHref);
   } else {
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
+  }
+
+  if (!isForSamePath(absoluteInternalHref, originalLocation)) {
+    scheduleScrollReset(ScrollResetSchedule.AfterDocumentUpdate);
   }
 
   performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ false);
@@ -89,13 +97,19 @@ function onDocumentClick(event: MouseEvent) {
   }
 
   handleClickForNavigationInterception(event, absoluteInternalHref => {
-    const shouldScrollToHash = isSamePageWithHash(absoluteInternalHref);
+    const originalLocation = location.href;
+
+    const shouldScrollToHash = isSamePageWithHash(originalLocation, absoluteInternalHref);
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
 
     if (shouldScrollToHash) {
       performScrollToElementOnTheSamePage(absoluteInternalHref);
     } else {
+      let isSelfNavigation = isForSamePath(absoluteInternalHref, originalLocation);
       performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ true);
+      if (!isSelfNavigation) {
+        scheduleScrollReset(ScrollResetSchedule.AfterDocumentUpdate);
+      }
     }
   });
 }
@@ -105,6 +119,12 @@ function onPopState(state: PopStateEvent) {
     return;
   }
 
+  if (state.state == null && isSamePageWithHash(currentContentUrl, location.href)) {
+    currentContentUrl = location.href;
+    return;
+  }
+
+  // load the new page
   performEnhancedPageLoad(location.href, /* interceptedLink */ false);
 }
 
@@ -143,7 +163,7 @@ function onDocumentSubmit(event: SubmitEvent) {
     const formData = new FormData(formElem);
 
     const submitterName = event.submitter?.getAttribute('name');
-    const submitterValue = event.submitter!.getAttribute('value');
+    const submitterValue = event.submitter?.getAttribute('value');
     if (submitterName && submitterValue) {
       formData.append(submitterName, submitterValue);
     }
@@ -167,7 +187,7 @@ function onDocumentSubmit(event: SubmitEvent) {
         fetchOptions.headers = {
           'content-type': enctype,
           // Setting Accept header here as well so it wouldn't be lost when coping headers
-          'accept': acceptHeader
+          'accept': acceptHeader,
         };
       }
     }
@@ -176,14 +196,17 @@ function onDocumentSubmit(event: SubmitEvent) {
   }
 }
 
-export async function performEnhancedPageLoad(internalDestinationHref: string, interceptedLink: boolean, fetchOptions?: RequestInit, treatAsRedirectionFromMethod?: 'get' | 'post') {
+export async function performEnhancedPageLoad(internalDestinationHref: string, interceptedLink: boolean, fetchOptions?: RequestInit, treatAsRedirectionFromMethod?: 'get' | 'post', changeUrl: boolean = true) {
   performingEnhancedPageLoad = true;
 
   // First, stop any preceding enhanced page load
   currentEnhancedNavigationAbortController?.abort();
 
   // Notify any interactive runtimes that an enhanced navigation is starting
-  notifyEnhancedNavigationListners(internalDestinationHref, interceptedLink);
+  notifyEnhancedNavigationListeners(internalDestinationHref, interceptedLink);
+
+  // Notify handlers that enhanced navigation is starting
+  navigationEnhancementCallbacks.enhancedNavigationStarted();
 
   // Now request the new page via fetch, and a special header that tells the server we want it to inject
   // framing boundaries to distinguish the initial document and each subsequent streaming SSR update.
@@ -238,7 +261,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
       // For 301/302/etc redirections to internal URLs, the browser will already have followed the chain of redirections
       // to the end, and given us the final content. We do still need to update the current URL to match the final location,
       // then let the rest of enhanced nav logic run to patch the new content into the DOM.
-      if (response.redirected || treatAsRedirectionFromMethod) {
+      if (changeUrl && (response.redirected || treatAsRedirectionFromMethod)) {
         const treatAsGet = treatAsRedirectionFromMethod ? (treatAsRedirectionFromMethod === 'get') : isGetRequest;
         if (treatAsGet) {
           // For gets, the intermediate (redirecting) URL is already in the address bar, so we have to use 'replace'
@@ -255,19 +278,19 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
 
       // For enhanced nav redirecting to an external URL, we'll get a special Blazor-specific redirection command
       const externalRedirectionUrl = response.headers.get('blazor-enhanced-nav-redirect-location');
-      if (externalRedirectionUrl) {
+      if (changeUrl && externalRedirectionUrl) {
         location.replace(externalRedirectionUrl);
         return;
       }
 
-      if (!response.redirected && !isGetRequest && isSuccessResponse) {
+      if (changeUrl && !response.redirected && !isGetRequest && isSuccessResponse) {
         // If this is the result of a form post that didn't trigger a redirection.
-        if (!isForSamePath(response)) {
+        if (!isForSamePath(response.url, currentContentUrl)) {
           // In this case we don't want to push the currentContentUrl to the history stack because we don't know if this is a location
           // we can navigate back to (as we don't know if the location supports GET) and we are not able to replicate the Resubmit form?
           // browser behavior.
           // The only case where this is acceptable is when the last content URL, is the same as the URL for the form we posted to.
-          isNonRedirectedPostToADifferentUrlMessage = `Cannot perform enhanced form submission that changes the URL (except via a redirection), because then back/forward would not work. Either remove this form\'s \'action\' attribute, or change its method to \'get\', or do not mark it as enhanced.\nOld URL: ${location.href}\nNew URL: ${response.url}`;
+          isNonRedirectedPostToADifferentUrlMessage = `Cannot perform enhanced form submission that changes the URL (except via a redirection), because then back/forward would not work. Either remove this form's 'action' attribute, or change its method to 'get', or do not mark it as enhanced.\nOld URL: ${location.href}\nNew URL: ${response.url}`;
         } else {
           if (location.href !== currentContentUrl) {
             // The url on the browser might be out of data, so push an entry to the stack to update the url in place.
@@ -277,7 +300,9 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
       }
 
       // Set the currentContentUrl to the location of the last completed navigation.
-      currentContentUrl = response.url;
+      if (changeUrl) {
+        currentContentUrl = response.url;
+      }
 
       const responseContentType = response.headers.get('content-type');
       if (responseContentType?.startsWith('text/html') && initialContent) {
@@ -334,20 +359,6 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
     if (isNonRedirectedPostToADifferentUrlMessage) {
       throw new Error(isNonRedirectedPostToADifferentUrlMessage);
     }
-  }
-
-  function isForSamePath(response: Response) {
-    // We are trying to determine if the response URL is compatible with the last content URL that was successfully loaded on to
-    // the page.
-    // We are going to use the scheme, host, port and path to determine if they are compatible. We do not account for the query string
-    // as we want to allow for the query string to change. (Blazor doesn't use the query string for routing purposes).
-
-    const responseUrl = new URL(response.url);
-    const currentContentUrlParsed = new URL(currentContentUrl!);
-    return responseUrl.protocol === currentContentUrlParsed.protocol
-      && responseUrl.host === currentContentUrlParsed.host
-      && responseUrl.port === currentContentUrlParsed.port
-      && responseUrl.pathname === currentContentUrlParsed.pathname;
   }
 }
 
@@ -448,6 +459,7 @@ function enhancedNavigationIsEnabledForForm(form: HTMLFormElement): boolean {
 function retryEnhancedNavAsFullPageLoad(internalDestinationHref: string) {
   // The ? trick here is the same workaround as described in #10839, and without it, the user
   // would not be able to use the back button afterwards.
+  console.warn(`Enhanced navigation failed for destination ${internalDestinationHref}. Falling back to full page load.`);
   history.replaceState(null, '', internalDestinationHref + '?');
   location.replace(internalDestinationHref);
 }

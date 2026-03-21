@@ -1,4 +1,6 @@
 ﻿@using System.Timers
+@using System.Web
+@inject NavigationManager Navigation
 @implements IDisposable
 <h3>Reconnection Component</h3>
 
@@ -20,16 +22,49 @@
 
     <button id="cause-error" @onclick="CauseError">Cause error</button>
 </div>
+
+@if (useCustomReconnectModal)
+{
+    // We set stricter CSP for styles as we want to check that the application is CSP compliant
+    // when using a custom reconnect modal.
+    // (We know that it is not compliant with the JS-created default reconnect UI.)
+    <HeadContent>
+        <meta http-equiv="Content-Security-Policy" content="style-src 'self';">
+    </HeadContent>
+
+    <dialog id="components-reconnect-modal">
+        Rejoining the server...
+    </dialog>
+
+    <script>
+        const reconnectModal = document.getElementById("components-reconnect-modal");
+        reconnectModal.addEventListener("components-reconnect-state-changed", handleReconnectStateChanged);
+
+        function handleReconnectStateChanged(event) {
+            if (event.detail.state === "show") {
+                reconnectModal.showModal();
+            } else if (event.detail.state === "hide") {
+                reconnectModal.close();
+            }
+        }
+    </script>
+}
+
 @code {
     int count;
     void Increment() => count++;
     int tickCount = 0;
     Timer timer;
     bool causeError = false;
+    bool useCustomReconnectModal = false;
 
-    protected override  void OnInitialized()
+    protected override void OnInitialized()
     {
         timer = StartTimer();
+
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var query = HttpUtility.ParseQueryString(uri.Query);
+        useCustomReconnectModal = query["useCustomReconnectModal"] == "true";
     }
 
     private Timer StartTimer()

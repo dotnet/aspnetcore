@@ -1,5 +1,5 @@
 {
-  "name": "dotnet-runtime",
+  "name": "@microsoft/dotnet-runtime",
   "private": true,
   "description": ".NET is a developer platform with tools and libraries for building any type of app, including web, mobile, desktop, games, IoT, cloud, and microservices.",
   "repository": {

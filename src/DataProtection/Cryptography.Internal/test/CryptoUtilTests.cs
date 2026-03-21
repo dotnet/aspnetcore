@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Cryptography;
@@ -15,7 +16,7 @@ public unsafe class CryptoUtilTests
         byte[] b = new byte[] { 0xAB, 0xCD, 0x23, 0x45, 0x67, 0xEF };
 
         // Act & assert
-        Assert.True(CryptoUtil.TimeConstantBuffersAreEqual(a, 1, 3, b, 2, 3));
+        Assert.True(CryptoUtil.TimeConstantBuffersAreEqual(a.AsSpan(1, 3), b.AsSpan(2, 3)));
     }
 
     [Fact]
@@ -25,7 +26,7 @@ public unsafe class CryptoUtilTests
         byte[] b = new byte[] { 0xAB, 0xCD, 0x23, 0xFF, 0x67, 0xEF };
 
         // Act & assert
-        Assert.False(CryptoUtil.TimeConstantBuffersAreEqual(a, 1, 3, b, 2, 3));
+        Assert.False(CryptoUtil.TimeConstantBuffersAreEqual(a.AsSpan(1, 3), b.AsSpan(2, 3)));
     }
 
     [Fact]

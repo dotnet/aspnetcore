@@ -24,17 +24,18 @@ public class Startup
     {
         var mapAlternativePathApp = Configuration.GetValue<bool>("UseAlternativeBasePath");
         var mapAllApps = Configuration.GetValue<bool>("MapAllApps");
-        app.Use((context, next) =>
+        app.Use(async (context, next) =>
         {
+            string originalRequestPath = context.Request.Path;
+            await next(context);
+
             // This is used by E2E tests to verify that the correct resources were fetched,
             // and that it was possible to override the loading mechanism
             if (context.Request.Query.ContainsKey("customizedbootresource")
-            || context.Request.Headers.ContainsKey("customizedbootresource")
-            || context.Request.Path.Value.EndsWith("/blazor.boot.json", StringComparison.Ordinal))
+            || context.Request.Headers.ContainsKey("customizedbootresource"))
             {
-                bootResourceRequestLog.AddRequest(context.Request);
+                bootResourceRequestLog.AddRequest(originalRequestPath, context.Response);
             }
-            return next(context);
         });
 
         if (env.IsDevelopment())

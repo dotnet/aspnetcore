@@ -3,6 +3,22 @@
 
 <div id="test-info">This page has test cases for programmatic navigation.</div>
 
+<style>
+.sticky-top {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+    background-color: white;
+}
+</style>
+
+<div class="sticky-top">
+    <button id="do-self-navigate" @onclick="SelfNavigate">Navigate to Self</button>
+    <button id="do-self-navigate-with-query" @onclick="SelfNavigateWithQuery">Navigate to Self With Query</button>
+    <button id="do-self-navigate-to-fragment" @onclick="SelfNavigateWithFragment">Navigate to Self with Fragment</button>
+</div>
+
 <button id="do-other-navigation" @onclick="@(() => NavigationManager.NavigateTo("Other", new NavigationOptions()))">
     Programmatic navigation (NavigationOptions overload)
 </button>
@@ -34,3 +50,46 @@
 <button id="do-other-navigation-state-replacehistoryentry" @onclick="@(() => NavigationManager.NavigateTo("Other", new NavigationOptions { HistoryEntryState = "state", ReplaceHistoryEntry = true }))">
     Programmatic navigation (NavigationOptions overload) with replace and state
 </button>
+
+<div>
+    @foreach (var i in Enumerable.Range(0, 200))
+    {
+        <p>before fragment: @i</p>
+    }
+
+    <div id="fragment">
+        Middle section
+    </div>
+
+    @foreach (var i in Enumerable.Range(0, 200))
+    {
+        <p>after fragment: @i</p>
+    }
+</div>
+
+@code
+{
+    private void SelfNavigate()
+    {
+        NavigationManager.NavigateTo(NavigationManager.Uri.ToString(), false);
+    }
+
+    private void SelfNavigateWithQuery()
+    {
+        var newUri = new UriBuilder(NavigationManager.Uri)
+        {
+            Query = $"random={Random.Shared.Next()}"
+        };
+        NavigationManager.NavigateTo(newUri.ToString(), false);
+    }
+
+    private void SelfNavigateWithFragment()
+    {
+        var newUri = new UriBuilder(NavigationManager.Uri)
+        {
+            Fragment = "fragment"
+        };
+        NavigationManager.NavigateTo(newUri.ToString(), false);
+    }
+
+}

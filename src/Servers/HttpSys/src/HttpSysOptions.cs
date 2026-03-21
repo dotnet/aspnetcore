@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Security.AccessControl;
 using System.Text;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -168,6 +169,14 @@ public class HttpSysOptions
     }
 
     /// <summary>
+    /// Gets or sets the security descriptor for the request queue.
+    /// </summary>
+    /// <remarks>
+    /// Only applies when creating a new request queue, see <see cref="RequestQueueMode" />.
+    /// </remarks>
+    public GenericSecurityDescriptor? RequestQueueSecurityDescriptor { get; set; }
+
+    /// <summary>
     /// Gets or sets the maximum allowed size of any request body in bytes.
     /// When set to null, the maximum request body size is unlimited.
     /// This limit has no effect on upgraded connections which are always unlimited.
@@ -237,7 +246,7 @@ public class HttpSysOptions
     /// Configures request headers to use <see cref="Encoding.Latin1"/> encoding.
     /// </summary>
     /// <remarks>
-    /// Defaults to `false`, in which case <see cref="Encoding.UTF8"/> will be used. />.
+    /// Defaults to <c>false</c>, in which case <see cref="Encoding.UTF8"/> will be used. />.
     /// </remarks>
     public bool UseLatin1RequestHeaders { get; set; }
 

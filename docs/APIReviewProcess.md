@@ -4,20 +4,24 @@ To get the process of adding/modifying API going, file a new issue using [the AP
 
 ## Process
 
-The goal of the API Review process is to ensure that the new APIs are following common patterns and the best practices.
+The goal of the API Review process is to ensure that the new APIs are following common patterns and best practices.
 Also, it's aimed to help and guide engineers towards better API design decisions. People should feel empowered to submit their APIs for review as besides all the benefits it's also a learning and knowledge sharing experience.
 
 The process is visualized in the below diagram:
 ![A sequence diagram illustrating the same process described below.](https://user-images.githubusercontent.com/34246760/66542496-95052c80-eae7-11e9-9c7c-549b82a8d492.png)
 
-1. API review process kicks in after the owner for the issue identifies that the work required for the issue will need an API change or addition. In such cases, the issue owner will handle (either himself/herself, or with the community member who has expressed interest in handling the work) driving a design proposal. When working with a community member, the issue owner is responsible for guiding them to an acceptable design.
+1. The API review process kicks in after the owner of the issue identifies that the work required for the issue will need an API change or addition. In such cases, the issue owner will handle (either himself/herself, or with the community member who has expressed interest in handling the work) driving a design proposal. When working with a community member, the issue owner is responsible for guiding them to an acceptable design.
 1. If the proposed design adds new APIs, mark those issues with the `api-suggestion` label
-1. When the issue owner thinks the proposal is in a good shape, he/she marks the issue with `api-ready-for-review` label. Also, the @asp-net-api-reviews team should be notified on the issue.
+1. When the issue owner thinks the proposal is in good shape, he/she marks the issue with `api-ready-for-review` label. Also, the @asp-net-api-reviews team should be notified of the issue.
 1. The `asp-net-api-reviews` team will host a weekly API review meeting and will review your proposed API change during the next meeting. If you have an API scheduled for review, you must have a representative in the meeting.
 1. Some API reviews can happen through a shorter process. For these situations, simply ping the API review crew for a quicker review, so that it can happen as a conversation.
 1. When an API change/suggestion gets approved, the `api-approved` label should be added to the issue.
 1. The owner of the issue is now free to work on the implementation of the proposed API.
 1. In case during implementation changes to the original proposal are required, the review should become obsolete and the process should start from the beginning.
+
+## Learnings and growth
+
+Over time the team will build up certain conventions and principles, that will be useful to establish for future API reviews too. To help with this, the [API Review Principles document](/docs/APIReviewPrinciples.md) document will be used to store such principles and conventions, making them persistent over time. Eventually, it will grow into a good knowledge base that will also help newcomers to learn and be better prepared with designing their APIs.
 
 ## What Makes an issue/PR "ready-for-review"?
 
@@ -40,13 +44,13 @@ In general, larger changes should have more explanation and context provided, an
 
 ### Why do we do this?
 
-Putting this information in an issue with all of the context makes it possible for discussion to take place before the api-review meeting. Writing things down and posting them online enables remote work as well as our community to give feedback on designs as well. We want to provide enough context for people *working outside that feature area* to understand what the change is about and give meaningful feedback. If you're ready to present an change in the meeting, then you should definitely be ready to explain why it matters.
+Putting this information in an issue with all of the context makes it possible for discussion to take place before the api-review meeting. Writing things down and posting them online enables remote work as well as our community to give feedback on designs as well. We want to provide enough context for people *working outside that feature area* to understand what the change is about and give meaningful feedback. If you're ready to present a change in the meeting, then you should definitely be ready to explain why it matters.
 
 We use the ref-assembly format because it's more readable and useful for the kinds of things that come up in api-review discussions. Using a more compact format (without docs and implementations) makes it easier to notice patterns. In the rare case that you have to manually transcribe this format, think of this as you spending a little time to save a lot of others time in the meeting.
 
 ## If you are the "champion" for a community-submitted change
 
-If you are assigned a community-submitted change to *champion* in our API-review then just put on your pretend pajamas and pretend that it was your change to begin with. Come to the meeting ready to explain why this addition is needed, and why it's the best approach.
+If you are assigned a community-submitted change to *champion* in our API-review, then just put on your pretend pajamas and pretend that it was your change to begin with. Come to the meeting ready to explain why this addition is needed, and why it's the best approach.
 
 ## API Review Meeting
 

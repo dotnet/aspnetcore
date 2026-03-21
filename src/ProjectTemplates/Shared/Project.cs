@@ -51,7 +51,7 @@ public class Project : IDisposable
     public string TemplateOutputDir { get; set; }
     public string TargetFramework { get; set; } = GetAssemblyMetadata("Test.DefaultTargetFramework");
     public string RuntimeIdentifier { get; set; } = string.Empty;
-    public static DevelopmentCertificate DevCert { get; } = DevelopmentCertificate.Create(AppContext.BaseDirectory);
+    public static DevelopmentCertificate DevCert { get; } = DevelopmentCertificate.Get(typeof(Project).Assembly);
 
     public string TemplateBuildDir => Path.Combine(TemplateOutputDir, "bin", "Debug", TargetFramework, RuntimeIdentifier);
     public string TemplatePublishDir => Path.Combine(TemplateOutputDir, "bin", "Release", TargetFramework, RuntimeIdentifier, "publish");
@@ -66,13 +66,24 @@ public class Project : IDisposable
         bool useLocalDB = false,
         bool noHttps = false,
         bool errorOnRestoreError = true,
+        bool isItemTemplate = false,
         string[] args = null,
         // Used to set special options in MSBuild
         IDictionary<string, string> environmentVariables = null)
     {
-        var hiveArg = $" --debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
+        if (templateName.Contains(' '))
+        {
+            throw new ArgumentException("Template name cannot contain spaces.");
+        }
+
+        var hiveArg = $"--debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
         var argString = $"new {templateName} {hiveArg}";
         environmentVariables ??= new Dictionary<string, string>();
+        if (!isItemTemplate)
+        {
+            argString += " --no-restore";
+        }
+
         if (!string.IsNullOrEmpty(auth))
         {
             argString += $" --auth {auth}";
@@ -105,6 +116,13 @@ public class Project : IDisposable
         // We omit the hive argument and the template output dir as they are not relevant and add noise.
         ProjectArguments = argString.Replace(hiveArg, "");
 
+        // Only add -n parameter if ProjectName is set and args doesn't already contain -n or --name
+        if (!string.IsNullOrEmpty(ProjectName) &&
+            args?.Any(a => a.Contains("-n ") || a.Contains("--name ") || a == "-n" || a == "--name") != true)
+        {
+            argString += $" -n \"{ProjectName}\"";
+        }
+
         argString += $" -o {TemplateOutputDir}";
 
         if (Directory.Exists(TemplateOutputDir))
@@ -113,18 +131,30 @@ public class Project : IDisposable
             Directory.Delete(TemplateOutputDir, recursive: true);
         }
 
-        using var execution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
-        await execution.Exited;
+        using var createExecution = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
+        await createExecution.Exited;
 
-        var result = new ProcessResult(execution);
+        var createResult = new ProcessResult(createExecution);
+        Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create", this, createResult));
 
-        // Because dotnet new automatically restores but silently ignores restore errors, need to handle restore errors explicitly
-        if (errorOnRestoreError && (execution.Output.Contains("Restore failed.") || execution.Error.Contains("Restore failed.")))
+        if (!isItemTemplate)
         {
-            result.ExitCode = -1;
-        }
+            argString = "restore /bl";
+            using var restoreExecution = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), argString, environmentVariables);
+            await restoreExecution.Exited;
 
-        Assert.True(0 == result.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", this, result));
+            var restoreResult = new ProcessResult(restoreExecution);
+
+            // Because dotnet new automatically restores but silently ignores restore errors, need to handle restore errors explicitly
+            if (errorOnRestoreError && (restoreExecution.Output.Contains("Restore failed.") || restoreExecution.Error.Contains("Restore failed.")))
+            {
+                restoreResult.ExitCode = -1;
+            }
+
+            CaptureBinLogOnFailure(restoreExecution);
+
+            Assert.True(0 == restoreResult.ExitCode, ErrorMessages.GetFailedProcessMessage("restore", this, restoreResult));
+        }
     }
 
     internal async Task RunDotNetPublishAsync(IDictionary<string, string> packageOptions = null, string additionalArgs = null, bool noRestore = true)
@@ -329,18 +359,40 @@ public class Project : IDisposable
 
             // Check there are no more launch profiles defined
             Assert.False(profilesEnumerator.MoveNext());
+        }
+    }
 
-            if (launchSettings.RootElement.TryGetProperty("iisSettings", out var iisSettings)
-                && iisSettings.TryGetProperty("iisExpress", out var iisExpressSettings))
+    public async Task VerifyDnsCompliantHostname(string expectedHostname)
+    {
+        var launchSettingsPath = Path.Combine(TemplateOutputDir, "Properties", "launchSettings.json");
+        Assert.True(File.Exists(launchSettingsPath), $"launchSettings.json not found at {launchSettingsPath}");
+
+        var launchSettingsContent = await File.ReadAllTextAsync(launchSettingsPath);
+        using var launchSettings = JsonDocument.Parse(launchSettingsContent);
+
+        var profiles = launchSettings.RootElement.GetProperty("profiles");
+
+        foreach (var profile in profiles.EnumerateObject())
+        {
+            if (profile.Value.TryGetProperty("applicationUrl", out var applicationUrl))
             {
-                var iisSslPort = iisExpressSettings.GetProperty("sslPort").GetInt32();
-                if (expectedLaunchProfileNames.Contains("https"))
+                var urls = applicationUrl.GetString();
+                if (!string.IsNullOrEmpty(urls))
                 {
-                    Assert.True(iisSslPort >= 44300 && iisSslPort <= 44399, $"IIS Express port was expected to be >= 44300 and <= 44399 but was {iisSslPort} in file {filePath}");
-                }
-                else
-                {
-                    Assert.Equal(0, iisSslPort);
+                    // Verify the hostname in the URL matches expected DNS-compliant format
+                    Assert.Contains($"{expectedHostname}.dev.localhost:", urls);
+
+                    // Verify no underscores in hostname (RFC 952/1123 compliance)
+                    var hostnamePattern = @"://([^:]+)\.dev\.localhost:";
+                    var matches = System.Text.RegularExpressions.Regex.Matches(urls, hostnamePattern);
+                    foreach (System.Text.RegularExpressions.Match match in matches)
+                    {
+                        var hostname = match.Groups[1].Value;
+                        Assert.DoesNotContain("_", hostname);
+                        Assert.DoesNotContain(".", hostname);
+                        Assert.False(hostname.StartsWith("-", StringComparison.Ordinal), $"Hostname '{hostname}' should not start with hyphen (RFC 952/1123 violation)");
+                        Assert.False(hostname.EndsWith("-", StringComparison.Ordinal), $"Hostname '{hostname}' should not end with hyphen (RFC 952/1123 violation)");
+                    }
                 }
             }
         }
@@ -422,7 +474,13 @@ public class Project : IDisposable
 
     public void Dispose()
     {
-        DeleteOutputDirectory();
+        var doNotCleanUpTemplates = typeof(ProjectFactoryFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .Single(attribute => attribute.Key == "DoNotCleanUpTemplates")
+            .Value;
+        if (string.Equals(doNotCleanUpTemplates, "false", StringComparison.OrdinalIgnoreCase))
+        {
+            DeleteOutputDirectory();
+        }
     }
 
     public void DeleteOutputDirectory()

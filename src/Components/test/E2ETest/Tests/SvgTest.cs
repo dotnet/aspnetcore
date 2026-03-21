@@ -23,7 +23,7 @@ public class SvgTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
     }
 
     [Fact]
@@ -36,10 +36,10 @@ public class SvgTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
 
         var svgCircleElement = svgElement.FindElement(By.XPath("//*[local-name()='circle' and namespace-uri()='http://www.w3.org/2000/svg']"));
         Assert.NotNull(svgCircleElement);
-        Assert.Equal("10", svgCircleElement.GetAttribute("r"));
+        Assert.Equal("10", svgCircleElement.GetDomAttribute("r"));
 
         appElement.FindElement(By.TagName("button")).Click();
-        Browser.Equal("20", () => svgCircleElement.GetAttribute("r"));
+        Browser.Equal("20", () => svgCircleElement.GetDomAttribute("r"));
     }
 
     [Fact]
@@ -52,10 +52,10 @@ public class SvgTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
 
         var svgCircleElement = svgElement.FindElement(By.XPath("//*[local-name()='circle' and namespace-uri()='http://www.w3.org/2000/svg']"));
         Assert.NotNull(svgCircleElement);
-        Assert.Equal("stroke: red;", svgCircleElement.GetAttribute("style"));
+        Assert.Equal("stroke: red;", svgCircleElement.GetDomAttribute("style"));
 
         appElement.FindElement(By.TagName("button")).Click();
-        Browser.Equal("", () => svgCircleElement.GetAttribute("style"));
+        Browser.Equal(null, () => svgCircleElement.GetDomAttribute("style"));
     }
 
     [Fact]

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Linq;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -126,7 +127,7 @@ internal static class SyntaxNodeExtensions
     /// </summary>
     private static SyntaxToken FindSkippedTokenBackward(SyntaxTriviaList triviaList, int position)
     {
-        foreach (var trivia in triviaList.Reverse())
+        foreach (var trivia in Enumerable.Reverse(triviaList))
         {
             if (trivia.HasStructure)
             {

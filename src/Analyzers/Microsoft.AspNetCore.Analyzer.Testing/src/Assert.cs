@@ -18,7 +18,7 @@ public class AnalyzerAssert
         {
             if (actualLinePosition.Line + 1 != expected.Line)
             {
-                throw new DiagnosticLocationAssertException(
+                throw EqualException.ForMismatchedValues(
                     expected,
                     actual,
                     $"Expected diagnostic to be on line \"{expected.Line}\" was actually on line \"{actualLinePosition.Line + 1}\"");
@@ -30,25 +30,11 @@ public class AnalyzerAssert
         {
             if (actualLinePosition.Character + 1 != expected.Column)
             {
-                throw new DiagnosticLocationAssertException(
+                throw EqualException.ForMismatchedValues(
                     expected,
                     actual,
                     $"Expected diagnostic to start at column \"{expected.Column}\" was actually on column \"{actualLinePosition.Character + 1}\"");
             }
         }
-    }
-
-    private sealed class DiagnosticLocationAssertException : EqualException
-    {
-        public DiagnosticLocationAssertException(
-            DiagnosticLocation expected,
-            Location actual,
-            string message)
-            : base(expected, actual)
-        {
-            Message = message;
-        }
-
-        public override string Message { get; }
     }
 }

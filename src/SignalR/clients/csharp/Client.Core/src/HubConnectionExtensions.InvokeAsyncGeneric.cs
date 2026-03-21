@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Shared;
 namespace Microsoft.AspNetCore.SignalR.Client;
 
 /// <summary>
-/// Extension methods for <see cref="HubConnectionExtensions"/>.
+/// Extension methods for <see cref="HubConnection"/>.
 /// </summary>
 public static partial class HubConnectionExtensions
 {

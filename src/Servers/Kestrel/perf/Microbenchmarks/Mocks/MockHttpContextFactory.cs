@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
 
 public class MockHttpContextFactory : IHttpContextFactory
 {
-    private readonly object _lock = new object();
+    private readonly Lock _lock = new();
     private readonly Queue<DefaultHttpContext> _cache = new Queue<DefaultHttpContext>();
 
     public HttpContext Create(IFeatureCollection featureCollection)

@@ -146,12 +146,18 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
         var queryParameters = ServiceDescriptorHelpers.ResolveQueryParameterDescriptors(routeParameters, methodDescriptor, bodyDescriptor?.Descriptor, bodyDescriptor?.FieldDescriptor);
         foreach (var queryDescription in queryParameters)
         {
-            var fieldType = MessageDescriptorHelpers.ResolveFieldType(queryDescription.Value);
+            var field = queryDescription.Value;
+            var propertyInfo = field.ContainingType.ClrType.GetProperty(field.PropertyName);
+
+            // If from a property, create model as property to get its XML comments.
+            var identity = propertyInfo != null
+                ? ModelMetadataIdentity.ForProperty(propertyInfo, MessageDescriptorHelpers.ResolveFieldType(field), field.ContainingType.ClrType)
+                : ModelMetadataIdentity.ForType(MessageDescriptorHelpers.ResolveFieldType(field));
 
             apiDescription.ParameterDescriptions.Add(new ApiParameterDescription
             {
                 Name = queryDescription.Key,
-                ModelMetadata = new GrpcModelMetadata(ModelMetadataIdentity.ForType(fieldType)),
+                ModelMetadata = new GrpcModelMetadata(identity),
                 Source = BindingSource.Query,
                 DefaultValue = string.Empty
             });

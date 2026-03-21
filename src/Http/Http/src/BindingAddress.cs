@@ -179,17 +179,17 @@ public class BindingAddress
                 }
             }
 
-            pathDelimiterStart = address.IndexOf(":", schemeDelimiterEnd + unixPipeHostPrefixLength, StringComparison.Ordinal);
+            pathDelimiterStart = address.IndexOf(':', schemeDelimiterEnd + unixPipeHostPrefixLength);
             pathDelimiterEnd = pathDelimiterStart + ":".Length;
         }
         else if (isNamedPipe)
         {
-            pathDelimiterStart = address.IndexOf(":", schemeDelimiterEnd + NamedPipeHostPrefix.Length, StringComparison.Ordinal);
+            pathDelimiterStart = address.IndexOf(':', schemeDelimiterEnd + NamedPipeHostPrefix.Length);
             pathDelimiterEnd = pathDelimiterStart + ":".Length;
         }
         else
         {
-            pathDelimiterStart = address.IndexOf("/", schemeDelimiterEnd, StringComparison.Ordinal);
+            pathDelimiterStart = address.IndexOf('/', schemeDelimiterEnd);
             pathDelimiterEnd = pathDelimiterStart;
         }
 
@@ -205,7 +205,7 @@ public class BindingAddress
         var hasSpecifiedPort = false;
         if (!isUnixPipe)
         {
-            var portDelimiterStart = address.LastIndexOf(":", pathDelimiterStart - 1, pathDelimiterStart - schemeDelimiterEnd, StringComparison.Ordinal);
+            var portDelimiterStart = address.LastIndexOf(':', pathDelimiterStart - 1, pathDelimiterStart - schemeDelimiterEnd);
             if (portDelimiterStart >= 0)
             {
                 var portDelimiterEnd = portDelimiterStart + ":".Length;

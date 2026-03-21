@@ -197,6 +197,45 @@ public class IdentityBuilderTest
     }
 
     [Fact]
+    public void EnsureDefaultSignInManagerDependenciesForIdentity()
+    {
+        var services = new ServiceCollection()
+            .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+        services.AddLogging()
+            .AddIdentity<PocoUser, PocoRole>()
+            .AddUserStore<NoopUserStore>()
+            .AddRoleStore<NoopRoleStore>()
+            .AddSignInManager<MySignInManager>();
+
+        var provider = services.BuildServiceProvider();
+
+        Assert.IsType<MySignInManager>(provider.GetRequiredService<SignInManager<PocoUser>>());
+        Assert.IsType<SecurityStampValidator<PocoUser>>(provider.GetRequiredService<ISecurityStampValidator>());
+        Assert.IsType<TwoFactorSecurityStampValidator<PocoUser>>(provider.GetRequiredService<ITwoFactorSecurityStampValidator>());
+        Assert.NotNull(provider.GetService<IOptions<SecurityStampValidatorOptions>>());
+    }
+
+    [Fact]
+    public void EnsureDefaultSignInManagerDependenciesForIdentityCore()
+    {
+        var services = new ServiceCollection()
+            .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+        services.AddLogging()
+            .AddIdentityCore<PocoUser>()
+            .AddRoles<PocoRole>()
+            .AddUserStore<NoopUserStore>()
+            .AddRoleStore<NoopRoleStore>()
+            .AddSignInManager<MySignInManager>();
+
+        var provider = services.BuildServiceProvider();
+
+        Assert.IsType<MySignInManager>(provider.GetRequiredService<SignInManager<PocoUser>>());
+        Assert.IsType<SecurityStampValidator<PocoUser>>(provider.GetRequiredService<ISecurityStampValidator>());
+        Assert.IsType<TwoFactorSecurityStampValidator<PocoUser>>(provider.GetRequiredService<ITwoFactorSecurityStampValidator>());
+        Assert.NotNull(provider.GetService<IOptions<SecurityStampValidatorOptions>>());
+    }
+
+    [Fact]
     public void EnsureDefaultTokenProviders()
     {
         var services = new ServiceCollection()

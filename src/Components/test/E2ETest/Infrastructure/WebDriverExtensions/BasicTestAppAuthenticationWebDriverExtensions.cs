@@ -22,14 +22,14 @@ internal static class BasicTestAppAuthenticationWebDriverExtensions
             // original page, but this adds several seconds of delay
             var originalWindow = browser.CurrentWindowHandle;
             browser.SwitchTo().NewWindow(WindowType.Tab);
-            browser.Navigate(baseUri, baseRelativeUri, noReload: false);
+            browser.Navigate(baseUri, baseRelativeUri);
             browser.Exists(By.CssSelector("h1#authentication"));
             browser.Close();
             browser.SwitchTo().Window(originalWindow);
         }
         else
         {
-            browser.Navigate(baseUri, baseRelativeUri, noReload: false);
+            browser.Navigate(baseUri, baseRelativeUri);
             browser.Exists(By.CssSelector("h1#authentication"));
         }
     }

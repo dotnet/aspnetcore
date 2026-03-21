@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
 

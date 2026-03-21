@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { AutoComponentDescriptor, ComponentDescriptor, ServerComponentDescriptor, WebAssemblyComponentDescriptor, canMergeDescriptors, discoverComponents, mergeDescriptors } from '../../Services/ComponentDescriptorDiscovery';
+import { AutoComponentDescriptor, ComponentDescriptor, ServerComponentDescriptor, WebAssemblyComponentDescriptor, WebAssemblyServerOptions, canMergeDescriptors, discoverComponents, discoverWebAssemblyOptions, mergeDescriptors } from '../../Services/ComponentDescriptorDiscovery';
 import { isInteractiveRootComponentElement } from '../BrowserRenderer';
 import { applyAnyDeferredValue } from '../DomSpecialPropertyUtil';
 import { LogicalElement, getLogicalChildrenArray, getLogicalNextSibling, getLogicalParent, getLogicalRootDescriptor, insertLogicalChild, insertLogicalChildBefore, isLogicalElement, toLogicalElement, toLogicalRootCommentElement } from '../LogicalElements';
@@ -13,6 +13,7 @@ let descriptorHandler: DescriptorHandler | null = null;
 
 export interface DescriptorHandler {
   registerComponent(descriptor: ComponentDescriptor): void;
+  setWebAssemblyOptions(options: WebAssemblyServerOptions | undefined): void;
 }
 
 export function attachComponentDescriptorHandler(handler: DescriptorHandler) {
@@ -21,6 +22,8 @@ export function attachComponentDescriptorHandler(handler: DescriptorHandler) {
 
 export function registerAllComponentDescriptors(root: Node) {
   const descriptors = upgradeComponentCommentsToLogicalRootComments(root);
+  const webAssemblyOptions = discoverWebAssemblyOptions(root);
+  descriptorHandler?.setWebAssemblyOptions(webAssemblyOptions);
 
   for (const descriptor of descriptors) {
     descriptorHandler?.registerComponent(descriptor);
@@ -168,7 +171,7 @@ function treatAsMatch(destination: Node, source: Node) {
       }
 
       if (destinationRootDescriptor) {
-        // Update the existing descriptor with hte new descriptor's data
+        // Update the existing descriptor with the new descriptor's data
         mergeDescriptors(destinationRootDescriptor, sourceRootDescriptor);
 
         const isDestinationInteractive = isInteractiveRootComponentElement(destinationAsLogicalElement);
@@ -182,22 +185,21 @@ function treatAsMatch(destination: Node, source: Node) {
       break;
     }
     case Node.ELEMENT_NODE: {
-      const editableElementValue = getEditableElementValue(source as Element);
-      synchronizeAttributes(destination as Element, source as Element);
-      applyAnyDeferredValue(destination as Element);
-
       if (isDataPermanentElement(destination as Element)) {
-        // The destination element's content should be retained, so we avoid recursing into it.
+        // The destination element's content and attributes should be retained.
       } else {
+        const editableElementValue = getEditableElementValue(source as Element);
+        synchronizeAttributes(destination as Element, source as Element);
+        applyAnyDeferredValue(destination as Element);
         synchronizeDomContentCore(destination as Element, source as Element);
-      }
 
-      // This is a much simpler alternative to the deferred-value-assignment logic we use in interactive rendering.
-      // Because this sync algorithm goes depth-first, we know all the attributes and descendants are fully in sync
-      // by now, so setting any "special value" property is just a matter of assigning it right now (we don't have
-      // to be concerned that it's invalid because it doesn't correspond to an <option> child or a min/max attribute).
-      if (editableElementValue !== null) {
-        ensureEditableValueSynchronized(destination as Element, editableElementValue);
+        // This is a much simpler alternative to the deferred-value-assignment logic we use in interactive rendering.
+        // Because this sync algorithm goes depth-first, we know all the attributes and descendants are fully in sync
+        // by now, so setting any "special value" property is just a matter of assigning it right now (we don't have
+        // to be concerned that it's invalid because it doesn't correspond to an <option> child or a min/max attribute).
+        if (editableElementValue !== null) {
+          ensureEditableValueSynchronized(destination as Element, editableElementValue);
+        }
       }
       break;
     }

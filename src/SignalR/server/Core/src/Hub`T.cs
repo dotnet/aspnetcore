@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.SignalR.Internal;
 
 namespace Microsoft.AspNetCore.SignalR;
@@ -9,7 +10,8 @@ namespace Microsoft.AspNetCore.SignalR;
 /// A base class for a strongly typed SignalR hub.
 /// </summary>
 /// <typeparam name="T">The type of client.</typeparam>
-public abstract class Hub<T> : Hub where T : class
+[RequiresDynamicCode("Creating a proxy instance requires generating code at runtime")]
+public abstract class Hub<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T> : Hub where T : class
 {
     private IHubCallerClients<T>? _clients;
 

@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.AspNetCore.Hosting;
 
@@ -25,7 +27,14 @@ public static class WebHostBuilderSocketExtensions
     {
         return hostBuilder.ConfigureServices(services =>
         {
-            services.AddSingleton<IConnectionListenerFactory, SocketTransportFactory>();
+            services.TryAddSingleton<IConnectionListenerFactory, SocketTransportFactory>();
+
+            services.TryAddSingleton<IMemoryPoolFactory<byte>, DefaultSimpleMemoryPoolFactory>();
+            services.AddOptions<SocketTransportOptions>().Configure((SocketTransportOptions options, IMemoryPoolFactory<byte> factory) =>
+            {
+                // Set the IMemoryPoolFactory from DI on SocketTransportOptions. Usually this should be the PinnedBlockMemoryPoolFactory from UseKestrelCore.
+                options.MemoryPoolFactory = factory;
+            });
         });
     }
 

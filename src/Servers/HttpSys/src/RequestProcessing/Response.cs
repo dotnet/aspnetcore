@@ -8,6 +8,7 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Windows.Win32;
@@ -86,8 +87,20 @@ internal sealed class Response
         get { return _reasonPhrase; }
         set
         {
-            // TODO: Validate user input for illegal chars, length limit, etc.?
             CheckResponseStarted();
+
+            if (value is not null)
+            {
+                // Reject non-ASCII (> 0x7E), CR/LF, and other control characters
+                // to prevent HTTP response splitting. Only HTAB, SP, and VCHAR
+                // (0x21-0x7E) are allowed per RFC 9112 Section 4.
+                var invalid = HttpCharacters.IndexOfInvalidFieldValueChar(value);
+                if (invalid >= 0)
+                {
+                    ThrowInvalidReasonPhraseCharacter(value[invalid]);
+                }
+            }
+
             _reasonPhrase = value;
         }
     }
@@ -123,7 +136,7 @@ internal sealed class Response
         if (string.IsNullOrWhiteSpace(reasonPhrase))
         {
             // If the user hasn't set this then it is generated on the fly if possible.
-            reasonPhrase = HttpReasonPhrase.Get(statusCode) ?? string.Empty;
+            reasonPhrase = ReasonPhrases.GetReasonPhrase(statusCode);
         }
         return reasonPhrase;
     }
@@ -185,10 +198,7 @@ internal sealed class Response
     // callers if they try to add them too late. E.g. after Content-Length or CompleteAsync().
     internal void MakeTrailersReadOnly()
     {
-        if (_trailers != null)
-        {
-            _trailers.IsReadOnly = true;
-        }
+        _trailers?.IsReadOnly = true;
     }
 
     internal void Abort()
@@ -237,6 +247,12 @@ internal sealed class Response
         {
             throw new InvalidOperationException("Headers already sent.");
         }
+    }
+
+    private static void ThrowInvalidReasonPhraseCharacter(char ch)
+    {
+        throw new InvalidOperationException(Resources.FormatException_InvalidReasonPhraseCharacter(
+            string.Format(CultureInfo.InvariantCulture, "0x{0:X4}", (ushort)ch)));
     }
 
     [MemberNotNull(nameof(_nativeStream))]
@@ -391,6 +407,7 @@ internal sealed class Response
         var requestConnectionString = Request.Headers[HeaderNames.Connection];
         var isHeadRequest = Request.IsHeadMethod;
         var requestCloseSet = Matches(Constants.Close, requestConnectionString);
+        var requestConnectionKeepAliveSet = Matches(Constants.KeepAlive, requestConnectionString);
 
         // Gather everything the app may have set on the response:
         // Http.Sys does not allow us to specify the response protocol version, assume this is a HTTP/1.1 response when making decisions.
@@ -403,7 +420,13 @@ internal sealed class Response
 
         // Determine if the connection will be kept alive or closed.
         var keepConnectionAlive = true;
-        if (requestVersion <= Constants.V1_0 // Http.Sys does not support "Keep-Alive: true" or "Connection: Keep-Alive"
+
+        // An HTTP/1.1 server may also establish persistent connections with
+        // HTTP/1.0 clients upon receipt of a Keep-Alive connection token.
+        // However, a persistent connection with an HTTP/1.0 client cannot make
+        // use of the chunked transfer-coding. From: https://www.rfc-editor.org/rfc/rfc2068#section-19.7.1
+        if (requestVersion < Constants.V1_0
+            || (requestVersion == Constants.V1_0 && (!requestConnectionKeepAliveSet || responseChunkedSet))
             || (requestVersion == Constants.V1_1 && requestCloseSet)
             || responseCloseSet)
         {

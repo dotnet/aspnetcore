@@ -40,11 +40,30 @@
       <_InteropBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**" Exclude="$(InteropWorkingDir)dist\.gitignore" />
     </ItemGroup>
 
-    <DefineStaticWebAssets Condition="'@(_InteropBuildOutput)' != ''" SourceType="Computed" SourceId="$(PackageId)" ContentRoot="$(InteropWorkingDir)dist\$(Configuration)\" BasePath="_content/$(PackageId)" CandidateAssets="@(_InteropBuildOutput)" RelativePathFilter="**.js">
-      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+    <DefineStaticWebAssets
+      Condition="'@(_InteropBuildOutput)' != ''"
+      SourceType="Computed"
+      SourceId="$(PackageId)"
+      ContentRoot="$(InteropWorkingDir)dist\$(Configuration)\"
+      BasePath="_content/$(PackageId)"
+      CandidateAssets="@(_InteropBuildOutput)"
+      RelativePathFilter="**.js"
+    >
+      <Output TaskParameter="Assets" ItemName="_InteropBuildStaticWebAsset" />
     </DefineStaticWebAssets>
 
+    <DefineStaticWebAssetEndpoints
+      Condition="'@(_InteropBuildOutput)' != ''"
+      CandidateAssets="@(_InteropBuildStaticWebAsset)"
+      ExistingEndpoints="@()"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_InteropBuildStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
     <ItemGroup>
+      <StaticWebAsset Include="@(_InteropBuildStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_InteropBuildStaticWebAssetEndpoint)" />
       <_InteropBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**" Exclude="$(InteropWorkingDir)dist\.gitignore" />
       <FileWrites Include="$(_InteropBuildOutput)" />
     </ItemGroup>

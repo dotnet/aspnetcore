@@ -45,7 +45,6 @@ public class IISExpressShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
     public async Task ServerShutsDownWhenMainExitsStress()
     {
         var parameters = Fixture.GetBaseDeploymentParameters();

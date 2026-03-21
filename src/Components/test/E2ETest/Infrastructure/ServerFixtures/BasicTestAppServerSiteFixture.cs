@@ -7,6 +7,7 @@ public class BasicTestAppServerSiteFixture<TStartup> : AspNetSiteServerFixture w
 {
     public BasicTestAppServerSiteFixture()
     {
+        ApplicationAssembly = typeof(TStartup).Assembly;
         BuildWebHostMethod = TestServer.Program.BuildWebHost<TStartup>;
     }
 }

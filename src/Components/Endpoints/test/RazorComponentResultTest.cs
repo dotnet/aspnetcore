@@ -34,7 +34,7 @@ public class RazorComponentResultTest
     {
         var paramsDict = new Dictionary<string, object> { { "First", 123 } };
         var result = new RazorComponentResult(typeof(SimpleComponent), paramsDict);
-        Assert.Equal(1, result.Parameters.Count);
+        Assert.Single(result.Parameters);
         Assert.Equal(123, result.Parameters["First"]);
         Assert.Same(paramsDict, result.Parameters);
     }
@@ -168,7 +168,7 @@ public class RazorComponentResultTest
         Assert.Equal(
             expectedInitialHtml,
             MaskComponentIds(GetStringContent(responseBody)));
-        
+
         // Act/Assert 2: When loading completes, it emits a streaming batch update in which the
         // child is present only within the parent markup, not as a separate entry
         tcs.SetResult();

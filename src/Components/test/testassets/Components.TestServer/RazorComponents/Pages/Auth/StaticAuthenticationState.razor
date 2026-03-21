@@ -1,11 +1,5 @@
 ﻿@page "/auth/static-authentication-state"
-@inject NavigationManager Nav
-@using BasicTestApp.AuthTest
+@using TestContentPackage
 
 <h3>Static authentication state</h3>
-<CascadingAuthenticationStateConsumer />
-
-<hr />
-
-<a href="@Nav.GetUriWithQueryParameter("username", "YourUsername")">Log in</a> |
-<a href="@Nav.GetUriWithQueryParameter("username", "")">Log out</a>
+<CascadingAuthenticationStateReader />

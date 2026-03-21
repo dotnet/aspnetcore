@@ -41,7 +41,7 @@ internal readonly struct HeaderSegment : IEquatable<HeaderSegment>
             return false;
         }
 
-        return obj is HeaderSegment && Equals((HeaderSegment)obj);
+        return obj is HeaderSegment value && Equals(value);
     }
 
     public override int GetHashCode()

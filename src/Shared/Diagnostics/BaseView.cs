@@ -118,7 +118,7 @@ internal abstract class BaseView
         Debug.Assert(AttributeValues != null);
         Debug.Assert(!string.IsNullOrEmpty(AttributeEnding));
 
-        var attributes = string.Join(" ", AttributeValues);
+        var attributes = string.Join(' ', AttributeValues);
         Output.Write(attributes);
         AttributeValues = null;
 

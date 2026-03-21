@@ -638,8 +638,10 @@ public class RuntimeViewCompilerTest
         // Assert
         Assert.True(compilingOne);
         Assert.True(compilingTwo);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.Same(result1, task1.Result);
         Assert.Same(result2, task2.Result);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
     }
 
     [Fact]
@@ -678,9 +680,11 @@ public class RuntimeViewCompilerTest
         await Task.WhenAll(task1, task2);
 
         // Assert
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         var result1 = task1.Result;
         var result2 = task2.Result;
         Assert.Same(result1, result2);
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
     }
 
     [Fact]
@@ -820,10 +824,12 @@ this should fail";
         CSharpCompiler csharpCompiler = null)
     {
         fileProvider = fileProvider ?? new TestFileProvider();
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
         var options = Options.Create(new MvcRazorRuntimeCompilationOptions
         {
             FileProviders = { fileProvider }
         });
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
         var compilationFileProvider = new RuntimeCompilationFileProvider(options);
 
         referenceManager = referenceManager ?? CreateReferenceManager();
@@ -851,7 +857,9 @@ this should fail";
         var assembly = typeof(RuntimeViewCompilerTest).Assembly;
         applicationPartManager.ApplicationParts.Add(new AssemblyPart(assembly));
 
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
         return new RazorReferenceManager(applicationPartManager, Options.Create(new MvcRazorRuntimeCompilationOptions()));
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
     }
 
     private class TestRazorViewCompiler : RuntimeViewCompiler

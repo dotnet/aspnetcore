@@ -58,7 +58,7 @@ public class DatabaseDeveloperPageExceptionFilterTests
             });
 
         Assert.True(nextFilterInvoked);
-        Assert.Equal(1, sink.Writes.Count);
+        Assert.Single(sink.Writes);
         var message = sink.Writes.Single();
         Assert.Equal(LogLevel.Error, message.LogLevel);
         Assert.Contains("An exception occurred while calculating the database error page content.", message.Message);
@@ -84,7 +84,7 @@ public class DatabaseDeveloperPageExceptionFilterTests
             });
 
         Assert.True(nextFilterInvoked);
-        Assert.Equal(1, sink.Writes.Count);
+        Assert.Single(sink.Writes);
         var message = sink.Writes.Single();
         Assert.Equal(LogLevel.Error, message.LogLevel);
         Assert.Contains("An exception occurred while calculating the database error page content.", message.Message);

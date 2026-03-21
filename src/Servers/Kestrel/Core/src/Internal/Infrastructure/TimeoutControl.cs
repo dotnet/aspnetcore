@@ -16,7 +16,7 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
     private long _lastTimestamp;
     private long _timeoutTimestamp = long.MaxValue;
 
-    private readonly object _readTimingLock = new object();
+    private readonly Lock _readTimingLock = new();
     private MinDataRate? _minReadRate;
     private long _minReadRateGracePeriodTicks;
     private bool _readTimingEnabled;
@@ -28,7 +28,7 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
     private int _concurrentIncompleteRequestBodies;
     private int _concurrentAwaitingReads;
 
-    private readonly object _writeTimingLock = new object();
+    private readonly Lock _writeTimingLock = new();
     private int _concurrentAwaitingWrites;
     private long _writeTimingTimeoutTimestamp;
 
@@ -142,8 +142,7 @@ internal sealed class TimeoutControl : ITimeoutControl, IConnectionTimeoutFeatur
 
     private void CheckForWriteDataRateTimeout(long timestamp)
     {
-        var timeout = false;
-
+        bool timeout;
         lock (_writeTimingLock)
         {
             // Assume overly long tick intervals are the result of server resource starvation.

@@ -4,24 +4,34 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Reflection;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using RoutingWebSite;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class ControllerEndpointFiltersTest : IClassFixture<MvcTestFixture<StartupForEndpointFilters>>
+public class ControllerEndpointFiltersTest : LoggedTest
 {
-    public ControllerEndpointFiltersTest(MvcTestFixture<StartupForEndpointFilters> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        Factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<StartupForEndpointFilters>(LoggerFactory).WithWebHostBuilder(ConfigureWebHostBuilder);
+    }
+
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
     }
 
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) => builder.UseStartup<StartupForEndpointFilters>();
 
-    public WebApplicationFactory<StartupForEndpointFilters> Factory { get; }
+    public WebApplicationFactory<StartupForEndpointFilters> Factory { get; private set; }
 
     [Fact]
     public async Task CanApplyEndpointFilterToController()
@@ -37,6 +47,7 @@ public class ControllerEndpointFiltersTest : IClassFixture<MvcTestFixture<Startu
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60109")]
     public async Task CanCaptureMethodInfoFromControllerAction()
     {
         using var client = Factory.CreateClient();

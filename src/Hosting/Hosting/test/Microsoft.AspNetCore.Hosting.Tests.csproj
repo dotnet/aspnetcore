@@ -11,6 +11,7 @@
     <Compile Include="$(SharedSourceRoot)EventSource.Testing\TestCounterListener.cs" />
     <Compile Include="$(SharedSourceRoot)SyncPoint\SyncPoint.cs" />
     <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
+    <Compile Include="$(SharedSourceRoot)AsyncEnumerableExtensions.cs" LinkBase="shared" />
     <Content Include="testroot\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Content Include="Microsoft.AspNetCore.Hosting.StaticWebAssets.xml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
@@ -20,12 +21,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Owin" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="Microsoft.AspNetCore.Owin" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.Testing" />
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="Microsoft.Extensions.Diagnostics.Testing" />
-    <Reference Include="System.Threading.Channels" />
   </ItemGroup>
 
 </Project>

@@ -24,7 +24,7 @@ public class MultipleHostedAppTest : ServerTestBase<AspNetSiteServerFixture>
 
     protected override void InitializeAsyncCore()
     {
-        Navigate("/", noReload: true);
+        Navigate("/");
         WaitUntilLoaded();
     }
 
@@ -34,7 +34,7 @@ public class MultipleHostedAppTest : ServerTestBase<AspNetSiteServerFixture>
         Navigate("/app/");
         WaitUntilLoaded();
         Assert.Equal("App loaded on custom path", Browser.Title);
-        Assert.Equal(0, Browser.GetBrowserLogs(LogLevel.Severe).Count);
+        Assert.Empty(Browser.GetBrowserLogs(LogLevel.Severe));
     }
 
     [Fact]

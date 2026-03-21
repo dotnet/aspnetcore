@@ -12,7 +12,6 @@ The requirements that led to this system are:
 
 * Versions of external dependencies should be consistent and easily discovered.
 * Newer versions of packages should not have lower dependency versions than previous releases.
-* Minimize the cascading effect of servicing updates where possible by keeping a consistent baseline of dependencies.
 * Servicing releases should not add or remove dependencies in existing packages.
 
 As a minor point, the current system also makes our project files somewhat less verbose.
@@ -26,13 +25,9 @@ As a minor point, the current system also makes our project files somewhat less 
 * Only use `<ProjectReference>` in test projects.
 * Name the .csproj file to match the assembly name.
 * Run `eng/scripts/GenerateProjectList.ps1` (or `build.cmd /t:GenerateProjectList`) when adding new projects
-* Use [eng/tools/BaseLineGenerator/](/eng/tools/BaselineGenerator/README.md) if you need to update baselines.
-* If you need to make a breaking change to dependencies, you may need to add `<SuppressBaselineReference>`.
 
 ## Important files
 
-* [eng/Baseline.xml](/eng/Baseline.xml) - this contains the 'baseline' of the latest servicing release for this branch.
-  It should be modified and used to update the generated file, [eng/Baseline.Designer.props](eng/Baseline.Designer.props).
 * [eng/Dependencies.props](/eng/Dependencies.props) - contains a list of all package references that might be used in the repo.
 * [eng/ProjectReferences.props](/eng/ProjectReferences.props) - lists which assemblies or packages might be available to be referenced as a local project.
 * [eng/Versions.props](/eng/Versions.props) - contains a list of versions which may be updated by automation. This is used by MSBuild to restore and build.
@@ -86,23 +81,11 @@ Steps for adding a new package dependency to an existing project. Let's say I'm 
         The attribute value should be `"Microsoft.CodeAnalysis.Razor"` for dotnet/runtime dependencies in
         dotnet/aspnetcore-tooling.
 
-## Example: make a breaking change to references
-
-If Microsoft.AspNetCore.Banana in 2.1 had a reference to `Microsoft.AspNetCore.Orange`, but in 3.1 or 5.0 this reference
-is changing to `Microsoft.AspNetCore.BetterThanOrange`, you would need to make these changes to the .csproj file
-
-```diff
-<!-- in Microsoft.AspNetCore.Banana.csproj -->
-  <ItemGroup>
--    <Reference Include="Microsoft.AspNetCore.Orange" /> <!-- the old dependency -->
-+    <Reference Include="Microsoft.AspNetCore.BetterThanOrange" /> <!-- the new dependency -->
-+    <SuppressBaselineReference Include="Microsoft.AspNetCore.Orange" /> <!-- suppress as a known breaking change -->
-  </ItemGroup>
-```
-
 ## A darc cheatsheet
 
 `darc` is a command-line tool that is used for dependency management in the dotnet ecosystem of repos. `darc` can be installed using the `darc-init` scripts located inside the `eng/common` directory. Once `darc` is installed, you'll need to set up the appropriate access tokens as outlined [in the official Darc docs](https://github.com/dotnet/arcade/blob/master/Documentation/Darc.md#setting-up-your-darc-client).
+
+> :warning: Much of the functionality described below can now be done via the [web UI](https://maestro.dot.net/) - it's recommended to try that out first.
 
 Once `darc` is installed and set-up, it can be used to modify the subscriptions and dependencies in a project.
 

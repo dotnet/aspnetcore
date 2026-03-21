@@ -172,7 +172,7 @@ public class ResponseCompressionTests : LoggedTest
         {
             Assert.Equal(HelloWorldBody, responseText);
             Assert.Equal(HelloWorldBody.Length.ToString(CultureInfo.InvariantCulture), GetContentLength(response));
-            Assert.Equal(0, response.Content.Headers.ContentEncoding.Count);
+            Assert.Empty(response.Content.Headers.ContentEncoding);
         }
         catch (XunitException)
         {
@@ -204,7 +204,7 @@ public class ResponseCompressionTests : LoggedTest
         {
             responseText = await ReadCompressedAsStringAsync(response.Content);
             Assert.Equal(HelloWorldBody, responseText);
-            Assert.Equal(1, response.Content.Headers.ContentEncoding.Count);
+            Assert.Single(response.Content.Headers.ContentEncoding);
             Assert.Equal("gzip", response.Content.Headers.ContentEncoding.First());
         }
         catch (XunitException)

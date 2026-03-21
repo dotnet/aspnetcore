@@ -29,12 +29,15 @@ public class Program
                 var name = Path.ChangeExtension(applicationPath, ".staticwebassets.runtime.json");
                 name = !File.Exists(name) ? Path.ChangeExtension(applicationPath, ".StaticWebAssets.xml") : name;
 
+                var endpointsManifest = Path.ChangeExtension(applicationPath, ".staticwebassets.endpoints.json");
+
                 var inMemoryConfiguration = new Dictionary<string, string?>
                 {
                     [WebHostDefaults.EnvironmentKey] = "Development",
                     ["Logging:LogLevel:Microsoft"] = "Warning",
                     ["Logging:LogLevel:Microsoft.Hosting.Lifetime"] = "Information",
                     [WebHostDefaults.StaticWebAssetsKey] = name,
+                    ["staticAssets"] = endpointsManifest,
                     ["ApplyCopHeaders"] = args.Contains("--apply-cop-headers").ToString()
                 };
 

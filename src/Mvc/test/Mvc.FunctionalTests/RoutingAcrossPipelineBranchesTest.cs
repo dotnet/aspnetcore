@@ -4,22 +4,34 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using RoutingWebSite;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class RoutingAcrossPipelineBranchesTests : IClassFixture<MvcTestFixture<RoutingWebSite.StartupRoutingDifferentBranches>>
+public class RoutingAcrossPipelineBranchesTests : LoggedTest
 {
-    public RoutingAcrossPipelineBranchesTests(MvcTestFixture<RoutingWebSite.StartupRoutingDifferentBranches> fixture)
-    {
-        Factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
-    }
-
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) => builder.UseStartup<RoutingWebSite.StartupRoutingDifferentBranches>();
 
-    public WebApplicationFactory<StartupRoutingDifferentBranches> Factory { get; }
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+    {
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<RoutingWebSite.StartupRoutingDifferentBranches>(LoggerFactory).WithWebHostBuilder(ConfigureWebHostBuilder);
+        Client = Factory.CreateDefaultClient();
+    }
+
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<RoutingWebSite.StartupRoutingDifferentBranches> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public async Task MatchesConventionalRoutesInTheirBranches()

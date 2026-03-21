@@ -4,19 +4,31 @@
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class XmlSerializerInputFormatterTests : IClassFixture<MvcTestFixture<XmlFormattersWebSite.Startup>>
+public class XmlSerializerInputFormatterTests : LoggedTest
 {
-    public XmlSerializerInputFormatterTests(MvcTestFixture<XmlFormattersWebSite.Startup> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        Client = fixture.CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<XmlFormattersWebSite.Startup>(LoggerFactory);
+        Client = Factory.CreateDefaultClient();
     }
 
-    public HttpClient Client { get; }
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public MvcTestFixture<XmlFormattersWebSite.Startup> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public async Task CheckIfXmlSerializerInputFormatterIsCalled()

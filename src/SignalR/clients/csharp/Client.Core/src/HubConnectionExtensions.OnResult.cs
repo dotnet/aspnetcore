@@ -9,6 +9,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.SignalR.Client;
+
+/// <summary>
+/// Extension methods for <see cref="HubConnection"/>.
+/// </summary>
 public static partial class HubConnectionExtensions
 {
     private static IDisposable On<TResult>(this HubConnection hubConnection, string methodName, Type[] parameterTypes, Func<object?[], TResult> handler)

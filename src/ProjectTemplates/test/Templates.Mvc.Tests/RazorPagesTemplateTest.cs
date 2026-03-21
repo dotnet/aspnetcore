@@ -54,8 +54,8 @@ public class RazorPagesTemplateTest : LoggedTest
         await project.RunDotNetNewAsync("razor", args: args);
 
         var expectedLaunchProfileNames = noHttps
-            ? new[] { "http", "IIS Express" }
-            : new[] { "http", "https", "IIS Express" };
+            ? new[] { "http" }
+            : new[] { "http", "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
         var projectFileContents = ReadFile(project.TemplateOutputDir, $"{project.ProjectName}.csproj");
@@ -148,8 +148,8 @@ public class RazorPagesTemplateTest : LoggedTest
 
         // Individual auth supports no https OK
         var expectedLaunchProfileNames = noHttps
-            ? new[] { "http", "IIS Express" }
-            : new[] { "http", "https", "IIS Express" };
+            ? new[] { "http" }
+            : new[] { "http", "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
         var projectFileContents = ReadFile(project.TemplateOutputDir, $"{project.ProjectName}.csproj");
@@ -293,7 +293,7 @@ public class RazorPagesTemplateTest : LoggedTest
         await project.RunDotNetNewAsync("razor", auth: auth, args: args);
 
         // Identity Web auth requires https and thus ignores the --no-https option if passed so there should never be an 'http' profile
-        var expectedLaunchProfileNames = new[] { "https", "IIS Express" };
+        var expectedLaunchProfileNames = new[] { "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
         // Verify building in debug works

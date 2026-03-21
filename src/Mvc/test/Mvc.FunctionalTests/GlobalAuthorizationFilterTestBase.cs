@@ -3,12 +3,33 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public abstract class GlobalAuthorizationFilterTestBase : IClassFixture<MvcTestFixture<SecurityWebSite.StartupWithGlobalDenyAnonymousFilter>>
+public abstract class GlobalAuthorizationFilterTestBase<TStartup> : LoggedTest where TStartup : class
 {
-    public HttpClient Client { get; protected set; }
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+    {
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<TStartup>(LoggerFactory).WithWebHostBuilder(ConfigureWebHostBuilder);
+        Client = Factory.CreateDefaultClient();
+    }
+
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<TStartup> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
+
+    public virtual void ConfigureWebHostBuilder(IWebHostBuilder builder) { }
 
     [Fact]
     public virtual async Task DeniesAnonymousUsers_ByDefault()

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 internal sealed class TransportManager
 {
-    private readonly List<ActiveTransport> _transports = new List<ActiveTransport>();
+    private readonly List<ActiveTransport> _transports = [];
 
     private readonly List<IConnectionListenerFactory> _transportFactories;
     private readonly List<IMultiplexedConnectionListenerFactory> _multiplexedTransportFactories;
@@ -30,7 +30,6 @@ internal sealed class TransportManager
         _serviceContext = serviceContext;
     }
 
-    private ConnectionManager ConnectionManager => _serviceContext.ConnectionManager;
     private KestrelTrace Trace => _serviceContext.Log;
 
     public async Task<EndPoint> BindAsync(EndPoint endPoint, ConnectionDelegate connectionDelegate, EndpointConfig? endpointConfig, CancellationToken cancellationToken)

@@ -34,6 +34,11 @@ public class ApiResponseType
     public Type? Type { get; set; }
 
     /// <summary>
+    /// Gets or sets the description of the response.
+    /// </summary>
+    public string? Description { get; set; }
+
+    /// <summary>
     /// Gets or sets the HTTP response status code.
     /// </summary>
     public int StatusCode { get; set; }

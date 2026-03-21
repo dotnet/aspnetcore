@@ -12,7 +12,7 @@ Similarly, you should have a basic understanding of `EventCounter` and how they 
 
 ## Event Patterns
 
-* Add `ILogger` based tracing in all the places you add `EventSource` tracing unless there's a really good reason not to. You can always used the `Trace` level ;).
+* Add `ILogger` based tracing in all the places you add `EventSource` tracing unless there's a really good reason not to. You can always use the `Trace` level ;).
 * `Start`/`Stop` events should have at least one payload value in common that can be used to correlate them. For example, Request ID, Request Path, Action Name, etc.
 * `Error` events should use the `EventLevel.Error` level (which should be obvious I hope ;))
 * `Stop` events should include a `double durationInMilliseconds` payload value with the duration between the `Start` and `End` event in milliseconds.
@@ -98,7 +98,7 @@ Since Event Counters are only actually enabled when the `EventCounterIntervalSec
 There are a number of different "kinds" of event counters in our system. They are characterized by what kind of value is written in the `EventCounter.WriteMetric` call. Counters provide multiple aggregations (Count, Mean, StdDev, Min, Max), and certain aggregations are appropriate for different kinds of counters.
 
 * Counters track the number of times an event occurs. They are written by calling `.WriteMetric(1.0f)` to the counter. The consumer can determine the number of events that occurred over an interval by reading the "Count" aggregation. They should have names combining a plural noun and adjective, like "RequestsStarted"
-* Metrics track a value that changes over time or per "unit" (i.e. per request, per connection, etc.). They are written by calling `.WriteMetric` with the current value of the metric. The consumer can use the aggregates to get data about the metric over time. They should have names combining a singular nouns describing the metric, like "RequestBodySize"
+* Metrics track a value that changes over time or per "unit" (i.e. per request, per connection, etc.). They are written by calling `.WriteMetric` with the current value of the metric. The consumer can use the aggregates to get data about the metric over time. They should have names combining a singular noun describing the metric, like "RequestBodySize"
   * Durations are a Metric that tracks a time duration in milliseconds. They have names ending with "Duration", like "RequestDuration"
 
 ## Full Example
@@ -169,7 +169,34 @@ namespace Microsoft.AspNetCore.Authentication.Internal
 
 ## Automated Testing of EventSources
 
-EventSources can be tested using the `EventSourceTestBase` base class in `Microsoft.AspNetCore.InternalTesting`. An example test is below:
+### Validating Event ID Consistency
+
+All `EventSource` subclasses should have a test that validates the `[Event(N)]` attribute IDs match the `WriteEvent(N, ...)` call arguments. This catches drift caused by bad merge resolution or missed updates that would otherwise surface only as runtime errors.
+
+Use the `EventSourceValidator` utility in `Microsoft.AspNetCore.InternalTesting.Tracing`:
+
+```csharp
+using Microsoft.AspNetCore.InternalTesting.Tracing;
+
+public class MyEventSourceTests
+{
+    [Fact]
+    public void EventIdsAreConsistent()
+    {
+        EventSourceValidator.ValidateEventSourceIds<MyEventSource>();
+    }
+}
+```
+
+The validator:
+* Uses `EventSource.GenerateManifest` with `EventManifestOptions.Strict` to perform IL-level validation that each `WriteEvent(id, ...)` call argument matches the `[Event(id)]` attribute — the same validation the .NET runtime uses internally
+* Checks for duplicate event IDs across methods
+
+> **Important:** Every new `EventSource` class should include this one-line validation test.
+
+### Functional Testing with EventSourceTestBase
+
+EventSources can also be functionally tested using the `EventSourceTestBase` base class in `Microsoft.AspNetCore.InternalTesting`. An example test is below:
 
 ```csharp
 // The base class MUST be used for EventSource testing because EventSources are global and parallel tests can cause issues.

@@ -18,7 +18,7 @@ architecture=''
 runtime='dotnet'
 runtimeSourceFeed=''
 runtimeSourceFeedKey=''
-while [[ $# > 0 ]]; do
+while [[ $# -gt 0 ]]; do
   opt="$(echo "$1" | tr "[:upper:]" "[:lower:]")"
   case "$opt" in
     -version|-v)
@@ -71,6 +71,9 @@ case $cpuname in
   i[3-6]86)
     buildarch=x86
     ;;
+  riscv64)
+    buildarch=riscv64
+    ;;
   *)
     echo "Unknown CPU $cpuname detected, treating it as x64"
     buildarch=x64
@@ -82,7 +85,7 @@ if [[ $architecture != "" ]] && [[ $architecture != $buildarch ]]; then
   dotnetRoot="$dotnetRoot/$architecture"
 fi
 
-InstallDotNet $dotnetRoot $version "$architecture" $runtime true $runtimeSourceFeed $runtimeSourceFeedKey || {
+InstallDotNet "$dotnetRoot" $version "$architecture" $runtime true $runtimeSourceFeed $runtimeSourceFeedKey || {
   local exit_code=$?
   Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "dotnet-install.sh failed (exit code '$exit_code')." >&2
   ExitWithExitCode $exit_code

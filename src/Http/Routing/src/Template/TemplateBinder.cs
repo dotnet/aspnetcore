@@ -360,8 +360,8 @@ public class TemplateBinder
 
             // We use a sentinel value here so we can track the different between omission and explicit null.
             // 'real null' means that the value was omitted.
-            var hasExplictValue = value != null;
-            if (hasExplictValue)
+            var hasExplicitValue = value != null;
+            if (hasExplicitValue)
             {
                 // If there is a non-parameterized value in the route and there is a
                 // new value for it and it doesn't match, this route won't match.

@@ -23,7 +23,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Net.Http.Headers" />
-    <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 
   <ItemGroup>

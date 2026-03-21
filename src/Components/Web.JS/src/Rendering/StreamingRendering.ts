@@ -45,35 +45,16 @@ class BlazorStreamingUpdate extends HTMLElement {
             insertStreamingContentIntoDocument(componentId, node.content);
           }
         } else {
+          const isEnhancedNav = node.getAttribute('enhanced') === 'true';
           switch (node.getAttribute('type')) {
             case 'redirection':
-              // We use 'replace' here because it's closest to the non-progressively-enhanced behavior, and will make the most sense
-              // if the async delay was very short, as the user would not perceive having been on the intermediate page.
-              const destinationUrl = toAbsoluteUri(node.content.textContent!);
-              const isFormPost = node.getAttribute('from') === 'form-post';
-              const isEnhancedNav = node.getAttribute('enhanced') === 'true';
-              if (isEnhancedNav && isWithinBaseUriSpace(destinationUrl)) {
-                // At this point the destinationUrl might be an opaque URL so we don't know whether it's internal/external or
-                // whether it's even going to the same URL we're currently on. So we don't know how to update the history.
-                // Defer that until the redirection is resolved by performEnhancedPageLoad.
-                const treatAsRedirectionFromMethod = isFormPost ? 'post' : 'get';
-                const fetchOptions = undefined;
-                performEnhancedPageLoad(destinationUrl, /* interceptedLink */ false, fetchOptions, treatAsRedirectionFromMethod);
-              } else {
-                if (isFormPost) {
-                  // The URL is not yet updated. Push a whole new entry so that 'back' goes back to the pre-redirection location.
-                  // WARNING: The following check to avoid duplicating history entries won't work if the redirection is to an opaque URL.
-                  // We could change the server-side logic to return URLs in plaintext if they match the current request URL already,
-                  // but it's arguably easier to understand that history non-duplication only works for enhanced nav, which is also the
-                  // case for non-streaming responses.
-                  if (destinationUrl !== location.href) {
-                    location.assign(destinationUrl);
-                  }
-                } else {
-                  // The URL was already updated on the original link click. Replace so that 'back' goes to the pre-redirection location.
-                  location.replace(destinationUrl);
-                }
-              }
+              redirect(node, true, isEnhancedNav);
+              break;
+            case 'not-found':
+              // not-found template has enhanced nav set to true by default,
+              // check for the options to avoid overriding user settings
+              const useEnhancedNav = isEnhancedNav && enableDomPreservation;
+              redirect(node, false, useEnhancedNav);
               break;
             case 'error':
               // This is kind of brutal but matches what happens without progressive enhancement
@@ -83,6 +64,35 @@ class BlazorStreamingUpdate extends HTMLElement {
         }
       }
     });
+  }
+}
+
+function redirect(node: HTMLTemplateElement, changeUrl: boolean, isEnhancedNav: boolean): void {
+  // We use 'replace' here because it's closest to the non-progressively-enhanced behavior, and will make the most sense
+ // if the async delay was very short, as the user would not perceive having been on the intermediate page.
+ const destinationUrl = toAbsoluteUri(node.content.textContent!);
+ const isFormPost = node.getAttribute('from') === 'form-post';
+ if (isEnhancedNav && isWithinBaseUriSpace(destinationUrl)) {
+   // At this point the destinationUrl might be an opaque URL so we don't know whether it's internal/external or
+   // whether it's even going to the same URL we're currently on. So we don't know how to update the history.
+   // Defer that until the redirection is resolved by performEnhancedPageLoad.
+   const treatAsRedirectionFromMethod = isFormPost ? 'post' : 'get';
+   const fetchOptions = undefined;
+   performEnhancedPageLoad(destinationUrl, /* interceptedLink */ false, fetchOptions, treatAsRedirectionFromMethod, changeUrl);
+ } else {
+   if (isFormPost) {
+     // The URL is not yet updated. Push a whole new entry so that 'back' goes back to the pre-redirection location.
+     // WARNING: The following check to avoid duplicating history entries won't work if the redirection is to an opaque URL.
+     // We could change the server-side logic to return URLs in plaintext if they match the current request URL already,
+     // but it's arguably easier to understand that history non-duplication only works for enhanced nav, which is also the
+     // case for non-streaming responses.
+     if (destinationUrl !== location.href) {
+       location.assign(destinationUrl);
+     }
+   } else {
+     // The URL was already updated on the original link click. Replace so that 'back' goes to the pre-redirection location.
+     location.replace(destinationUrl);
+   }
   }
 }
 

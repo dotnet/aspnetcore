@@ -1,23 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
+using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Moq.Protected;
-using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests;
 
@@ -120,7 +117,7 @@ public class ServerSentEventsTransportTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task SSETransportStopsWithErrorIfServerSendsIncompleteResults()
+    public async Task SSETransportStopIfServerSendsIncompleteResults()
     {
         var mockHttpHandler = new Mock<HttpMessageHandler>();
         var calls = 0;
@@ -155,11 +152,9 @@ public class ServerSentEventsTransportTests : VerifiableLoggedTest
             await sseTransport.StartAsync(
                 new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
 
-            var exception = await Assert.ThrowsAsync<FormatException>(() => sseTransport.Input.ReadAllAsync());
+            await sseTransport.Input.ReadAllAsync().DefaultTimeout();
 
             await sseTransport.Running.DefaultTimeout();
-
-            Assert.Equal("Incomplete message.", exception.Message);
         }
     }
 
@@ -407,6 +402,117 @@ public class ServerSentEventsTransportTests : VerifiableLoggedTest
 
             Assert.Contains($"The '{transferFormat}' transfer format is not supported by this transport.", exception.Message);
             Assert.Equal("transferFormat", exception.ParamName);
+        }
+    }
+
+    [Fact]
+    public async Task StartAsyncSetsCorrectAcceptHeaderForSSE()
+    {
+        var testHttpHandler = new TestHttpMessageHandler();
+        var responseTaskCompletionSource = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // Setting up the handler to check for 'text/event-stream' Accept header
+        testHttpHandler.OnRequest((request, next, cancellationToken) =>
+        {
+            if (request.Headers.Accept?.Contains(new MediaTypeWithQualityHeaderValue("text/event-stream")) == true)
+            {
+                responseTaskCompletionSource.SetResult(new HttpResponseMessage(HttpStatusCode.OK));
+            }
+            else
+            {
+                responseTaskCompletionSource.SetResult(new HttpResponseMessage(HttpStatusCode.NoContent));
+            }
+            return responseTaskCompletionSource.Task;
+        });
+
+        using (var httpClient = new HttpClient(testHttpHandler))
+        {
+            var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
+
+            // Starting the SSE transport and verifying the outcome
+            await sseTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
+            await sseTransport.StopAsync().DefaultTimeout();
+
+            Assert.True(responseTaskCompletionSource.Task.IsCompleted);
+            var response = await responseTaskCompletionSource.Task.DefaultTimeout();
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+    }
+
+    [Theory]
+    [InlineData(new[] { "\r\n" }, "")]
+    [InlineData(new[] { "\r\n:\r\n" }, "")]
+    [InlineData(new[] { "\r\n:comment\r\n" }, "")]
+    [InlineData(new[] { "data: \r\r\n\n" }, "")]
+    [InlineData(new[] { ":comment\r\ndata: \r\r\n\r\n" }, "")]
+    [InlineData(new[] { "data: A\rB\r\n\r\n" }, "A")]
+    [InlineData(new[] { "data: Hello, World\r\n\r\n" }, "Hello, World")]
+    [InlineData(new[] { "data: Hello, World\r\n\r\ndata: " }, "Hello, World")]
+    [InlineData(new[] { "data: Hello, World\r\n\r\n:comment\r\ndata: " }, "Hello, World")]
+    [InlineData(new[] { "data: Hello, World\r\n\r\n:comment" }, "Hello, World")]
+    [InlineData(new[] { "data: Hello, World\r\n\r\n:comment\r\n" }, "Hello, World")]
+    [InlineData(new[] { "data: Hello, World\r\n:comment\r\n\r\n" }, "Hello, World")]
+    [InlineData(new[] { "data: SGVsbG8sIFdvcmxk\r\n\r\n" }, "SGVsbG8sIFdvcmxk")]
+    [InlineData(new[] { "d", "ata: Hello, World\r\n\r\n" }, "Hello, World")]
+    [InlineData(new[] { "da", "ta: Hello, World\r\n\r\n" }, "Hello, World")]
+    [InlineData(new[] { "dat", "a: Hello, World\r\n\r\n" }, "Hello, World")]
+    [InlineData(new[] { "data", ": Hello, World\r\n\r\n" }, "Hello, World")]
+    [InlineData(new[] { "data:", " Hello, World\r\n\r\n" }, "Hello, World")]
+    [InlineData(new[] { "data: Hello, World", "\r\n\r\n" }, "Hello, World")]
+    [InlineData(new[] { "data: Hello, World\r\n", "\r\n" }, "Hello, World")]
+    [InlineData(new[] { "data: ", "Hello, World\r\n\r\n" }, "Hello, World")]
+    [InlineData(new[] { "data: ", "Hello, World\n\n" }, "Hello, World")]
+    [InlineData(new[] { "data: ", "Hello, World\r\n\n" }, "Hello, World")]
+    [InlineData(new[] { ":", "comment", "\r\n", "d", "ata: Hello, World\r\n\r\n" }, "Hello, World")]
+    [InlineData(new[] { ":comment", "\r\n", "data: Hello, World", "\r\n\r\n" }, "Hello, World")]
+    [InlineData(new[] { "data: Hello, World\r\n", ":comment\r\n", "\r\n" }, "Hello, World")]
+    [InlineData(new[] { "data: Hello \r\n", "data: World\r\n\r\n" }, "Hello \nWorld")]
+    public async Task CanProcessMessagesSuccessfully(string[] messageParts, string expectedMessage)
+    {
+        var mockHttpHandler = new Mock<HttpMessageHandler>();
+        mockHttpHandler.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+            {
+                await Task.Yield();
+                return new HttpResponseMessage { Content = new StreamContent(new OneAtATimeStream(messageParts)) };
+            });
+
+        using (var httpClient = new HttpClient(mockHttpHandler.Object))
+        using (StartVerifiableLog())
+        {
+            var sseTransport = new ServerSentEventsTransport(httpClient, loggerFactory: LoggerFactory);
+
+            await sseTransport.StartAsync(
+                new Uri("http://fakeuri.org"), TransferFormat.Text).DefaultTimeout();
+
+            var message = await sseTransport.Input.ReadAllAsync().DefaultTimeout();
+            Assert.Equal(expectedMessage, Encoding.ASCII.GetString(message));
+
+            await sseTransport.Running.DefaultTimeout();
+        }
+    }
+
+    public sealed class OneAtATimeStream : MemoryStream
+    {
+        private readonly string[] _contents;
+        private int _index;
+
+        public OneAtATimeStream(string[] contents)
+        {
+            _contents = contents;
+        }
+
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            if (_index == _contents.Length)
+            {
+                return new(0);
+            }
+
+            Debug.Assert(buffer.Length > _contents[_index].Length);
+
+            return new(Encoding.UTF8.GetBytes(_contents[_index++], buffer.Span));
         }
     }
 }

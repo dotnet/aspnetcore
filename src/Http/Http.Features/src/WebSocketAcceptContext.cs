@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Http;
 public class WebSocketAcceptContext
 {
     private int _serverMaxWindowBits = 15;
+    private TimeSpan? _keepAliveTimeout;
 
     /// <summary>
     /// Gets or sets the subprotocol being negotiated.
@@ -18,9 +19,35 @@ public class WebSocketAcceptContext
     public virtual string? SubProtocol { get; set; }
 
     /// <summary>
-    /// The interval to send pong frames. This is a heart-beat that keeps the connection alive.
+    /// The interval to send keep-alive frames. This is a heart-beat that keeps the connection alive.
     /// </summary>
+    /// <remarks>
+    /// May be either a Ping or a Pong frame, depending on if <see cref="KeepAliveTimeout" /> is set.
+    /// </remarks>
     public virtual TimeSpan? KeepAliveInterval { get; set; }
+
+    /// <summary>
+    /// The time to wait for a Pong frame response after sending a Ping frame. If the time is exceeded the websocket will be aborted.
+    /// </summary>
+    /// <remarks>
+    /// <c>null</c> means use the value from <c>WebSocketOptions.KeepAliveTimeout</c>.
+    /// <see cref="Timeout.InfiniteTimeSpan"/> and <see cref="TimeSpan.Zero"/> are valid values and will disable the timeout.
+    /// </remarks>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <see cref="TimeSpan"/> is less than <see cref="TimeSpan.Zero"/>.
+    /// </exception>
+    public TimeSpan? KeepAliveTimeout
+    {
+        get => _keepAliveTimeout;
+        set
+        {
+            if (value is not null && value != Timeout.InfiniteTimeSpan)
+            {
+                ArgumentOutOfRangeException.ThrowIfLessThan(value.Value, TimeSpan.Zero);
+            }
+            _keepAliveTimeout = value;
+        }
+    }
 
     /// <summary>
     /// Enables support for the 'permessage-deflate' WebSocket extension.<para />

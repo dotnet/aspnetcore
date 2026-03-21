@@ -128,9 +128,13 @@ internal sealed class TlsConfigurationLoader
     {
         if (configurationReader.Certificates.TryGetValue("Default", out var defaultCertConfig))
         {
-            var (defaultCert, _ /* cert chain */) = _certificateConfigLoader.LoadCertificate(defaultCertConfig, "Default");
+            var (defaultCert, defaultCertChain) = _certificateConfigLoader.LoadCertificate(defaultCertConfig, "Default");
             if (defaultCert != null)
             {
+                if (defaultCertChain != null)
+                {
+                    return new CertificateAndConfig(defaultCert, defaultCertConfig, defaultCertChain);
+                }
                 return new CertificateAndConfig(defaultCert, defaultCertConfig);
             }
         }
@@ -176,20 +180,8 @@ internal sealed class TlsConfigurationLoader
 
     private static bool IsDevelopmentCertificate(X509Certificate2 certificate)
     {
-        if (!string.Equals(certificate.Subject, "CN=localhost", StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        foreach (var ext in certificate.Extensions)
-        {
-            if (string.Equals(ext.Oid?.Value, CertificateManager.AspNetHttpsOid, StringComparison.Ordinal))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return string.Equals(certificate.Subject, CertificateManager.LocalhostHttpsDistinguishedName, StringComparison.Ordinal) &&
+            CertificateManager.IsHttpsDevelopmentCertificate(certificate);
     }
 
     private static bool TryGetCertificatePath(string applicationName, [NotNullWhen(true)] out string? path)

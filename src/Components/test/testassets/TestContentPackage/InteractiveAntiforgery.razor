@@ -1,0 +1,54 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+
+@if (RenderForm)
+{
+    if (RendererInfo.IsInteractive)
+    {
+        <p id="interactive">Interactive</p>
+
+        <form @formname="Sample" method="post">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" />
+            <AntiforgeryToken />
+            <input type="hidden" name="_handler" value="Sample" />
+            <button id="submit" type="submit">Submit</button>
+        </form>
+    }
+    else
+    {
+        <form @formname="Sample" method="post" @onsubmit="Redirect">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" />
+            <AntiforgeryToken />
+            <button type="submit">Submit</button>
+        </form>
+    }
+}else{
+    if (RendererInfo.IsInteractive)
+    {
+        <p id="interactive">Interactive</p>
+    }
+    <a id="render-form" href="@(Navigation.Uri + "/true")">Render form</a>
+}
+
+@code {
+    [SupplyParameterFromForm(FormName = "Sample")] public string Name { get; set; }
+
+    [Parameter] public bool RenderForm { get; set; }
+
+    [Inject] NavigationManager Navigation { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Name ??= "";
+    }
+
+    public void Redirect()
+    {
+        if (!string.IsNullOrEmpty(Name))
+        {
+            var url = Navigation.GetUriWithQueryParameter("Name", Name);
+            Navigation.NavigateTo(url, forceLoad: true);
+        }
+    }
+}

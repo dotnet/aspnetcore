@@ -5,6 +5,8 @@
     <OutputType>Exe</OutputType>
     <IsShippingPackage>false</IsShippingPackage>
     <SignAssembly>false</SignAssembly>
+    <_WebViewAssetsBasePath>..\..\..\..\..\Web.JS\dist\Release\</_WebViewAssetsBasePath>
+    <_BlazorModulesFilePath>..\..\..\..\WebView\src\blazor.modules.json</_BlazorModulesFilePath>
   </PropertyGroup>
 
   <Import Project="..\..\..\..\WebView\src\buildTransitive\Microsoft.AspNetCore.Components.WebView.props" />

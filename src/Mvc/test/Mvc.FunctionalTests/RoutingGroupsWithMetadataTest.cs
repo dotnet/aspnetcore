@@ -3,25 +3,36 @@
 
 using System.Net;
 using System.Net.Http.Json;
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using RoutingWebSite;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class RoutingGroupsWithMetadataTests : IClassFixture<MvcTestFixture<StartupForRouteGroupsWithMetadata>>
+public class RoutingGroupsWithMetadataTests : LoggedTest
 {
-    public RoutingGroupsWithMetadataTests(MvcTestFixture<StartupForRouteGroupsWithMetadata> fixture)
-    {
-        Factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
-    }
-
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) => builder.UseStartup<StartupForRouteGroupsWithMetadata>();
 
-    public WebApplicationFactory<StartupForRouteGroupsWithMetadata> Factory { get; }
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+    {
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<StartupForRouteGroupsWithMetadata>(LoggerFactory).WithWebHostBuilder(ConfigureWebHostBuilder);
+    }
+
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<StartupForRouteGroupsWithMetadata> Factory { get; private set; }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55927")]
     public async Task OrderedGroupMetadataForControllers()
     {
         using var client = Factory.CreateClient();

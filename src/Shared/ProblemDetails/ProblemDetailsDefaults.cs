@@ -46,6 +46,12 @@ internal static class ProblemDetailsDefaults
             "Not Acceptable"
         ),
 
+        [407] =
+        (
+            "https://tools.ietf.org/html/rfc9110#section-15.5.8",
+            "Proxy Authentication Required"
+        ),
+
         [408] =
         (
             "https://tools.ietf.org/html/rfc9110#section-15.5.9",
@@ -58,16 +64,58 @@ internal static class ProblemDetailsDefaults
             "Conflict"
         ),
 
+        [410] =
+        (
+            "https://tools.ietf.org/html/rfc9110#section-15.5.11",
+            "Gone"
+        ),
+
+        [411] =
+        (
+            "https://tools.ietf.org/html/rfc9110#section-15.5.12",
+            "Length Required"
+        ),
+
         [412] =
         (
             "https://tools.ietf.org/html/rfc9110#section-15.5.13",
             "Precondition Failed"
         ),
 
+        [413] =
+        (
+            "https://tools.ietf.org/html/rfc9110#section-15.5.14",
+            "Content Too Large"
+        ),
+
+        [414] =
+        (
+            "https://tools.ietf.org/html/rfc9110#section-15.5.15",
+            "URI Too Long"
+        ),
+
         [415] =
         (
             "https://tools.ietf.org/html/rfc9110#section-15.5.16",
             "Unsupported Media Type"
+        ),
+
+        [416] =
+        (
+            "https://tools.ietf.org/html/rfc9110#section-15.5.17",
+            "Range Not Satisfiable"
+        ),
+
+        [417] =
+        (
+            "https://tools.ietf.org/html/rfc9110#section-15.5.18",
+            "Expectation Failed"
+        ),
+
+        [421] =
+        (
+            "https://tools.ietf.org/html/rfc9110#section-15.5.20",
+            "Misdirected Request"
         ),
 
         [422] =
@@ -88,6 +136,12 @@ internal static class ProblemDetailsDefaults
             "An error occurred while processing your request."
         ),
 
+        [501] =
+        (
+            "https://tools.ietf.org/html/rfc9110#section-15.6.2",
+            "Not Implemented"
+        ),
+
         [502] =
         (
             "https://tools.ietf.org/html/rfc9110#section-15.6.3",
@@ -104,6 +158,12 @@ internal static class ProblemDetailsDefaults
         (
             "https://tools.ietf.org/html/rfc9110#section-15.6.5",
             "Gateway Timeout"
+        ),
+
+        [505] =
+        (
+            "https://tools.ietf.org/html/rfc9110#section-15.6.6",
+            "HTTP Version Not Supported"
         ),
     };
 

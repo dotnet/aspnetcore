@@ -50,6 +50,9 @@ app.MapGet("/", TestAction);
             static string GetInvalidConstructorError(Type type)
                 => $"The public parameterized constructor must contain only parameters that match the declared public properties for type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}'. For more information, please see https://aka.ms/aspnet/rdg-known-issues";
 
+            static string GetEnumerableTypeError(Type type)
+                => $"The enumerable type '{TypeNameHelper.GetTypeDisplayName(type, fullName: false)}' is not supported. For more information, please see https://aka.ms/aspnet/rdg-known-issues";
+
             return new []
             {
                     new object[] { "BadArgumentListRecord", DiagnosticDescriptors.InvalidAsParametersSingleConstructorOnly.Id, GetMultipleContructorsError(typeof(BadArgumentListRecord)) },
@@ -57,6 +60,9 @@ app.MapGet("/", TestAction);
                     new object[] { "BadArgumentListClassMultipleCtors", DiagnosticDescriptors.InvalidAsParametersSingleConstructorOnly.Id, GetMultipleContructorsError(typeof(BadArgumentListClassMultipleCtors))  },
                     new object[] { "BadAbstractArgumentListClass", DiagnosticDescriptors.InvalidAsParametersAbstractType.Id, GetAbstractTypeError(typeof(BadAbstractArgumentListClass)) },
                     new object[] { "BadNoPublicConstructorArgumentListClass", DiagnosticDescriptors.InvalidAsParametersNoConstructorFound.Id, GetNoContructorsError(typeof(BadNoPublicConstructorArgumentListClass)) },
+                    new object[] { "List<string>", DiagnosticDescriptors.InvalidAsParametersEnumerableType.Id, GetEnumerableTypeError(typeof(List<string>)) },
+                    new object[] { "List<IFormFile>", DiagnosticDescriptors.InvalidAsParametersEnumerableType.Id, GetEnumerableTypeError(typeof(List<IFormFile>)) },
+                    new object[] { "Dictionary<string, string>", DiagnosticDescriptors.InvalidAsParametersEnumerableType.Id, GetEnumerableTypeError(typeof(Dictionary<string, string>)) }
             };
         }
     }

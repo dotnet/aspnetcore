@@ -7,6 +7,7 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using OpenQA.Selenium;
 using TestServer;
@@ -50,6 +51,43 @@ public abstract partial class AllowedWebSocketCompressionTests(
             Assert.DoesNotContain("Content-Security-Policy", response.Headers.Select(h => h.Key));
         }
     }
+
+    [Fact]
+    public async Task EmbeddingServerAppInsideIframe_WorksWithMultipleCspHeaders()
+    {
+        Navigate("/subdir/iframe?add-csp");
+
+        var logs = Browser.GetBrowserLogs(LogLevel.Severe);
+
+        Assert.Empty(logs);
+
+        // Get the iframe element from the page, and inspect its contents for a p element with id inside-iframe
+        var iframe = Browser.FindElement(By.TagName("iframe"));
+        Browser.SwitchTo().Frame(iframe);
+        Browser.Exists(By.Id("inside-iframe"));
+
+        using var client = new HttpClient() { BaseAddress = _serverFixture.RootUri };
+        var response = await client.GetAsync("/subdir/iframe?add-csp");
+        response.EnsureSuccessStatusCode();
+
+        if (ExpectedPolicy != null)
+        {
+            Assert.Equal(
+                [
+                    "script-src 'self' 'unsafe-inline'",
+                    $"frame-ancestors {ExpectedPolicy}"
+                ],
+                response.Headers.GetValues("Content-Security-Policy"));
+        }
+        else
+        {
+            Assert.Equal(
+                [
+                    "script-src 'self' 'unsafe-inline'"
+                ],
+                response.Headers.GetValues("Content-Security-Policy"));
+        }
+    }
 }
 
 public abstract partial class BlockedWebSocketCompressionTests(
@@ -67,11 +105,17 @@ public abstract partial class BlockedWebSocketCompressionTests(
 
         Assert.True(logs.Count > 0);
 
-        Assert.Matches(ParseErrorMessage(), logs[0].Message);
+        Assert.True(
+            ParseErrorMessageRegexOld.IsMatch(logs[0].Message) ||
+            ParseErrorMessageRegexNew.IsMatch(logs[0].Message),
+            $"Expected log message to match one of the CSP error patterns: {ParseErrorMessageRegexOld} or {ParseErrorMessageRegexNew}. Actual: {logs[0].Message}");
     }
 
     [GeneratedRegex(@"security - Refused to frame 'http://\d+\.\d+\.\d+\.\d+:\d+/' because an ancestor violates the following Content Security Policy directive: ""frame-ancestors 'none'"".")]
-    private static partial Regex ParseErrorMessage();
+    private static partial Regex ParseErrorMessageRegexOld { get; }
+
+    [GeneratedRegex(@"security - Framing 'http://\d+\.\d+\.\d+\.\d+:\d+/' violates the following Content Security Policy directive: ""frame-ancestors 'none'"".")]
+    private static partial Regex ParseErrorMessageRegexNew { get; }
 }
 
 public partial class DefaultConfigurationWebSocketCompressionTests : AllowedWebSocketCompressionTests

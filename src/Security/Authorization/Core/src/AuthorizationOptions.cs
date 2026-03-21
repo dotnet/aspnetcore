@@ -24,21 +24,26 @@ public class AuthorizationOptions
     public bool InvokeHandlersAfterFailure { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets the default authorization policy. Defaults to require authenticated users.
+    /// Gets or sets the default authorization policy. Defaults to requiring authenticated users.
     /// </summary>
     /// <remarks>
-    /// The default policy used when evaluating <see cref="IAuthorizeData"/> with no policy name specified.
+    /// - The `DefaultPolicy` applies whenever authorization is required, but no specific policy is set.
+    /// - If an `[Authorize]` attribute is present without a policy name, the `DefaultPolicy` is used instead of the `FallbackPolicy`.
+    /// - This behavior ensures that endpoints explicitly requesting authorization (via `[Authorize]` or `RequireAuthorization()`) default to a secure policy.
+    /// - When non-default behavior is needed, developers should define named policies.
     /// </remarks>
     public AuthorizationPolicy DefaultPolicy { get; set; } = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
 
     /// <summary>
     /// Gets or sets the fallback authorization policy used by <see cref="AuthorizationPolicy.CombineAsync(IAuthorizationPolicyProvider, IEnumerable{IAuthorizeData})"/>
-    /// when no IAuthorizeData have been provided. As a result, the AuthorizationMiddleware uses the fallback policy
-    /// if there are no <see cref="IAuthorizeData"/> instances for a resource. If a resource has any <see cref="IAuthorizeData"/>
-    /// then they are evaluated instead of the fallback policy. By default the fallback policy is null, and usually will have no
-    /// effect unless you have the AuthorizationMiddleware in your pipeline. It is not used in any way by the
-    /// default <see cref="IAuthorizationService"/>.
+    /// when no authorization metadata (e.g., `[Authorize]` attribute, `RequireAuthorization()`) is explicitly provided for a resource.
     /// </summary>
+    /// <remarks>
+    /// - The `FallbackPolicy` only applies when there are no authorization attributes or explicit policies set.
+    /// - If a resource has an `[Authorize]` attribute (even without a policy name), the `DefaultPolicy` is used instead of the `FallbackPolicy`.
+    /// - This means `FallbackPolicy` is mainly relevant for middleware-based authorization flows where no per-endpoint authorization is specified.
+    /// - By default, `FallbackPolicy` is `null`, meaning it has no effect unless explicitly set.
+    /// </remarks>
     public AuthorizationPolicy? FallbackPolicy { get; set; }
 
     /// <summary>

@@ -27,7 +27,7 @@ public class JsonPatchDocument : IJsonPatchDocument
 
     public JsonPatchDocument()
     {
-        Operations = new List<Operation>();
+        Operations = [];
         ContractResolver = new DefaultContractResolver();
     }
 
@@ -205,12 +205,13 @@ public class JsonPatchDocument : IJsonPatchDocument
         {
             foreach (var op in Operations)
             {
-                var untypedOp = new Operation();
-
-                untypedOp.op = op.op;
-                untypedOp.value = op.value;
-                untypedOp.path = op.path;
-                untypedOp.from = op.from;
+                var untypedOp = new Operation
+                {
+                    op = op.op,
+                    value = op.value,
+                    path = op.path,
+                    from = op.from
+                };
 
                 allOps.Add(untypedOp);
             }
@@ -218,4 +219,5 @@ public class JsonPatchDocument : IJsonPatchDocument
 
         return allOps;
     }
+
 }

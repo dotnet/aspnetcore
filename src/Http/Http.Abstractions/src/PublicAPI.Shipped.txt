@@ -207,10 +207,10 @@ Microsoft.AspNetCore.Cors.Infrastructure.ICorsMetadata
 Microsoft.AspNetCore.Http.AsParametersAttribute
 Microsoft.AspNetCore.Http.AsParametersAttribute.AsParametersAttribute() -> void
 Microsoft.AspNetCore.Http.BadHttpRequestException
-Microsoft.AspNetCore.Http.BadHttpRequestException.BadHttpRequestException(string! message) -> void
-Microsoft.AspNetCore.Http.BadHttpRequestException.BadHttpRequestException(string! message, int statusCode) -> void
 Microsoft.AspNetCore.Http.BadHttpRequestException.BadHttpRequestException(string! message, int statusCode, System.Exception! innerException) -> void
+Microsoft.AspNetCore.Http.BadHttpRequestException.BadHttpRequestException(string! message, int statusCode) -> void
 Microsoft.AspNetCore.Http.BadHttpRequestException.BadHttpRequestException(string! message, System.Exception! innerException) -> void
+Microsoft.AspNetCore.Http.BadHttpRequestException.BadHttpRequestException(string! message) -> void
 Microsoft.AspNetCore.Http.BadHttpRequestException.StatusCode.get -> int
 Microsoft.AspNetCore.Http.ConnectionInfo
 Microsoft.AspNetCore.Http.ConnectionInfo.ConnectionInfo() -> void
@@ -274,10 +274,10 @@ Microsoft.AspNetCore.Http.HostString.HasValue.get -> bool
 Microsoft.AspNetCore.Http.HostString.Host.get -> string!
 Microsoft.AspNetCore.Http.HostString.HostString() -> void
 Microsoft.AspNetCore.Http.HostString.HostString(string! host, int port) -> void
-Microsoft.AspNetCore.Http.HostString.HostString(string! value) -> void
+Microsoft.AspNetCore.Http.HostString.HostString(string? value) -> void
 Microsoft.AspNetCore.Http.HostString.Port.get -> int?
 Microsoft.AspNetCore.Http.HostString.ToUriComponent() -> string!
-Microsoft.AspNetCore.Http.HostString.Value.get -> string!
+Microsoft.AspNetCore.Http.HostString.Value.get -> string?
 Microsoft.AspNetCore.Http.HttpContext
 Microsoft.AspNetCore.Http.HttpContext.HttpContext() -> void
 Microsoft.AspNetCore.Http.HttpMethods
@@ -294,6 +294,7 @@ Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.get -> System.Coll
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.set -> void
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails() -> void
 Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IDictionary<string!, string![]!>! errors) -> void
+Microsoft.AspNetCore.Http.HttpValidationProblemDetails.HttpValidationProblemDetails(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string![]!>>! errors) -> void
 Microsoft.AspNetCore.Http.IBindableFromHttpContext<TSelf>
 Microsoft.AspNetCore.Http.IBindableFromHttpContext<TSelf>.BindAsync(Microsoft.AspNetCore.Http.HttpContext! context, System.Reflection.ParameterInfo! parameter) -> System.Threading.Tasks.ValueTask<TSelf?>
 Microsoft.AspNetCore.Http.IContentTypeHttpResult
@@ -344,6 +345,10 @@ Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata
 Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.ContentTypes.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.IsOptional.get -> bool
 Microsoft.AspNetCore.Http.Metadata.IAcceptsMetadata.RequestType.get -> System.Type?
+Microsoft.AspNetCore.Http.Metadata.IAllowCookieRedirectMetadata
+Microsoft.AspNetCore.Http.Metadata.IDisableCookieRedirectMetadata
+Microsoft.AspNetCore.Http.Metadata.IDisableHttpMetricsMetadata
+Microsoft.AspNetCore.Http.Metadata.IDisableValidationMetadata
 Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata
 Microsoft.AspNetCore.Http.Metadata.IEndpointDescriptionMetadata.Description.get -> string!
 Microsoft.AspNetCore.Http.Metadata.IEndpointMetadataProvider
@@ -374,8 +379,15 @@ Microsoft.AspNetCore.Http.Metadata.IFromQueryMetadata.Name.get -> string?
 Microsoft.AspNetCore.Http.Metadata.IFromRouteMetadata
 Microsoft.AspNetCore.Http.Metadata.IFromRouteMetadata.Name.get -> string?
 Microsoft.AspNetCore.Http.Metadata.IFromServiceMetadata
+Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata
+Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.HasBindAsync.get -> bool
+Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.HasTryParse.get -> bool
+Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.IsOptional.get -> bool
+Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.Name.get -> string!
+Microsoft.AspNetCore.Http.Metadata.IParameterBindingMetadata.ParameterInfo.get -> System.Reflection.ParameterInfo!
 Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata
 Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.ContentTypes.get -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.Description.get -> string?
 Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.StatusCode.get -> int
 Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.Type.get -> System.Type?
 Microsoft.AspNetCore.Http.Metadata.IRequestSizeLimitMetadata
@@ -388,17 +400,17 @@ Microsoft.AspNetCore.Http.Metadata.ITagsMetadata.Tags.get -> System.Collections.
 Microsoft.AspNetCore.Http.PathString
 Microsoft.AspNetCore.Http.PathString.Add(Microsoft.AspNetCore.Http.PathString other) -> Microsoft.AspNetCore.Http.PathString
 Microsoft.AspNetCore.Http.PathString.Add(Microsoft.AspNetCore.Http.QueryString other) -> string!
-Microsoft.AspNetCore.Http.PathString.Equals(Microsoft.AspNetCore.Http.PathString other) -> bool
 Microsoft.AspNetCore.Http.PathString.Equals(Microsoft.AspNetCore.Http.PathString other, System.StringComparison comparisonType) -> bool
+Microsoft.AspNetCore.Http.PathString.Equals(Microsoft.AspNetCore.Http.PathString other) -> bool
 Microsoft.AspNetCore.Http.PathString.HasValue.get -> bool
 Microsoft.AspNetCore.Http.PathString.PathString() -> void
 Microsoft.AspNetCore.Http.PathString.PathString(string? value) -> void
-Microsoft.AspNetCore.Http.PathString.StartsWithSegments(Microsoft.AspNetCore.Http.PathString other) -> bool
 Microsoft.AspNetCore.Http.PathString.StartsWithSegments(Microsoft.AspNetCore.Http.PathString other, out Microsoft.AspNetCore.Http.PathString matched, out Microsoft.AspNetCore.Http.PathString remaining) -> bool
 Microsoft.AspNetCore.Http.PathString.StartsWithSegments(Microsoft.AspNetCore.Http.PathString other, out Microsoft.AspNetCore.Http.PathString remaining) -> bool
-Microsoft.AspNetCore.Http.PathString.StartsWithSegments(Microsoft.AspNetCore.Http.PathString other, System.StringComparison comparisonType) -> bool
 Microsoft.AspNetCore.Http.PathString.StartsWithSegments(Microsoft.AspNetCore.Http.PathString other, System.StringComparison comparisonType, out Microsoft.AspNetCore.Http.PathString matched, out Microsoft.AspNetCore.Http.PathString remaining) -> bool
 Microsoft.AspNetCore.Http.PathString.StartsWithSegments(Microsoft.AspNetCore.Http.PathString other, System.StringComparison comparisonType, out Microsoft.AspNetCore.Http.PathString remaining) -> bool
+Microsoft.AspNetCore.Http.PathString.StartsWithSegments(Microsoft.AspNetCore.Http.PathString other, System.StringComparison comparisonType) -> bool
+Microsoft.AspNetCore.Http.PathString.StartsWithSegments(Microsoft.AspNetCore.Http.PathString other) -> bool
 Microsoft.AspNetCore.Http.PathString.ToUriComponent() -> string!
 Microsoft.AspNetCore.Http.PathString.Value.get -> string?
 Microsoft.AspNetCore.Http.ProblemDetailsContext
@@ -413,6 +425,8 @@ Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.set -> void
 Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetailsContext() -> void
 Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata
 Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.ContentTypes.get -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.get -> string?
+Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.set -> void
 Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.ProducesResponseTypeMetadata(int statusCode, System.Type? type = null, string![]? contentTypes = null) -> void
 Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.StatusCode.get -> int
 Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Type.get -> System.Type?
@@ -464,8 +478,8 @@ Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator.MoveNext() -> bool
 Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator.Reset() -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.GetEnumerator() -> Microsoft.AspNetCore.Routing.RouteValueDictionary.Enumerator
 Microsoft.AspNetCore.Routing.RouteValueDictionary.Keys.get -> System.Collections.Generic.ICollection<string!>!
-Microsoft.AspNetCore.Routing.RouteValueDictionary.Remove(string! key) -> bool
 Microsoft.AspNetCore.Routing.RouteValueDictionary.Remove(string! key, out object? value) -> bool
+Microsoft.AspNetCore.Routing.RouteValueDictionary.Remove(string! key) -> bool
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary() -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(Microsoft.AspNetCore.Routing.RouteValueDictionary? dictionary) -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(object? values) -> void
@@ -539,6 +553,7 @@ static Microsoft.AspNetCore.Http.HttpMethods.IsOptions(string! method) -> bool
 static Microsoft.AspNetCore.Http.HttpMethods.IsPatch(string! method) -> bool
 static Microsoft.AspNetCore.Http.HttpMethods.IsPost(string! method) -> bool
 static Microsoft.AspNetCore.Http.HttpMethods.IsPut(string! method) -> bool
+static Microsoft.AspNetCore.Http.HttpMethods.IsQuery(string! method) -> bool
 static Microsoft.AspNetCore.Http.HttpMethods.IsTrace(string! method) -> bool
 static Microsoft.AspNetCore.Http.HttpProtocol.GetHttpProtocol(System.Version! version) -> string!
 static Microsoft.AspNetCore.Http.HttpProtocol.IsHttp09(string! protocol) -> bool
@@ -585,6 +600,7 @@ static readonly Microsoft.AspNetCore.Http.HttpMethods.Options -> string!
 static readonly Microsoft.AspNetCore.Http.HttpMethods.Patch -> string!
 static readonly Microsoft.AspNetCore.Http.HttpMethods.Post -> string!
 static readonly Microsoft.AspNetCore.Http.HttpMethods.Put -> string!
+static readonly Microsoft.AspNetCore.Http.HttpMethods.Query -> string!
 static readonly Microsoft.AspNetCore.Http.HttpMethods.Trace -> string!
 static readonly Microsoft.AspNetCore.Http.HttpProtocol.Http09 -> string!
 static readonly Microsoft.AspNetCore.Http.HttpProtocol.Http10 -> string!

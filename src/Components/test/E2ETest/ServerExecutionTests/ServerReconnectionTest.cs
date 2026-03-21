@@ -23,7 +23,7 @@ public class ServerReconnectionTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: false);
+        Navigate(ServerPathBase);
         Browser.MountTestComponent<ReconnectionComponent>();
         Browser.Exists(By.Id("count"));
     }

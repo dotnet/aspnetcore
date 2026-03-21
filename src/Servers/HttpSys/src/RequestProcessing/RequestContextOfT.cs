@@ -27,7 +27,11 @@ internal sealed partial class RequestContext<TContext> : RequestContext where TC
 
         try
         {
-            InitializeFeatures();
+            if (!InitializeFeatures())
+            {
+                Abort();
+                return;
+            }
 
             if (messagePump.Stopping)
             {
@@ -38,7 +42,6 @@ internal sealed partial class RequestContext<TContext> : RequestContext where TC
 
             TContext? context = default;
             Exception? applicationException = null;
-            messagePump.IncrementOutstandingRequest();
             try
             {
                 context = application.CreateContext(Features);
@@ -103,15 +106,9 @@ internal sealed partial class RequestContext<TContext> : RequestContext where TC
             }
             finally
             {
-                if (context != null)
+                if (context is not null)
                 {
                     application.DisposeContext(context, applicationException);
-                }
-
-                if (messagePump.DecrementOutstandingRequest() == 0 && messagePump.Stopping)
-                {
-                    Log.RequestsDrained(Logger);
-                    messagePump.SetShutdownSignal();
                 }
 
                 Dispose();

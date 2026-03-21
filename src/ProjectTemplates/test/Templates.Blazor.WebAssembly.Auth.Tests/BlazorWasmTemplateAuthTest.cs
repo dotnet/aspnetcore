@@ -1,21 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.InternalTesting;
-using Newtonsoft.Json.Linq;
 using Templates.Test.Helpers;
-using Xunit;
-using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace Templates.Blazor.Test;
+
+#pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
 
 public class BlazorWasmTemplateAuthTest : BlazorTemplateTest
 {
@@ -95,31 +86,31 @@ public class BlazorWasmTemplateAuthTest : BlazorTemplateTest
 
     [ConditionalTheory]
     [MemberData(nameof(TemplateDataIndividualB2C))]
-    public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_IndividualB2C_Works(TemplateInstance instance)
+    public Task BlazorWasmStandaloneTemplate_AzureActiveDirectoryTemplate_IndividualB2C_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(auth: instance.Auth, args: instance.Arguments, targetFramework: "netstandard2.1");
 
     [ConditionalTheory]
     [MemberData(nameof(TemplateDataIndividualB2C))]
-    public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_IndividualB2C_NoHttps_Works(TemplateInstance instance)
+    public Task BlazorWasmStandaloneTemplate_AzureActiveDirectoryTemplate_IndividualB2C_NoHttps_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(auth: instance.Auth, args: instance.Arguments.Union(new[] { ArgConstants.NoHttps }).ToArray(), targetFramework: "netstandard2.1");
 
     [ConditionalTheory]
     [MemberData(nameof(TemplateDataSingleOrg))]
-    public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_SingleOrg_Works(TemplateInstance instance)
+    public Task BlazorWasmStandaloneTemplate_AzureActiveDirectoryTemplate_SingleOrg_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(auth: instance.Auth, args: instance.Arguments, targetFramework: "netstandard2.1");
 
     [ConditionalTheory]
     [MemberData(nameof(TemplateDataSingleOrg))]
-    public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_SingleOrg_NoHttps_Works(TemplateInstance instance)
+    public Task BlazorWasmStandaloneTemplate_AzureActiveDirectoryTemplate_SingleOrg_NoHttps_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(auth: instance.Auth, args: instance.Arguments.Union(new[] { ArgConstants.NoHttps }).ToArray(), targetFramework: "netstandard2.1");
 
     [ConditionalTheory]
     [MemberData(nameof(TemplateDataSingleOrgProgramMain))]
-    public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_SingleOrg_ProgramMain_Works(TemplateInstance instance)
+    public Task BlazorWasmStandaloneTemplate_AzureActiveDirectoryTemplate_SingleOrg_ProgramMain_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(auth: instance.Auth, args: instance.Arguments, targetFramework: "netstandard2.1");
 
     [ConditionalTheory]
     [MemberData(nameof(TemplateDataSingleOrgProgramMain))]
-    public Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_SingleOrg_NoHttps_ProgramMain_Works(TemplateInstance instance)
+    public Task BlazorWasmStandaloneTemplate_AzureActiveDirectoryTemplate_SingleOrg_NoHttps_ProgramMain_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(auth: instance.Auth, args: instance.Arguments.Union(new[] { ArgConstants.NoHttps }).ToArray(), targetFramework: "netstandard2.1");
 }

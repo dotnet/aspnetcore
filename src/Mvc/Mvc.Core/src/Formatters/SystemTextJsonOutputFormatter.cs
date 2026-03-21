@@ -83,21 +83,20 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
             }
         }
 
-        var responseStream = httpContext.Response.Body;
         if (selectedEncoding.CodePage == Encoding.UTF8.CodePage)
         {
             try
             {
+                var responseWriter = httpContext.Response.BodyWriter;
+
                 if (jsonTypeInfo is not null)
                 {
-                    await JsonSerializer.SerializeAsync(responseStream, context.Object, jsonTypeInfo, httpContext.RequestAborted);
+                    await JsonSerializer.SerializeAsync(responseWriter, context.Object, jsonTypeInfo, httpContext.RequestAborted);
                 }
                 else
                 {
-                    await JsonSerializer.SerializeAsync(responseStream, context.Object, SerializerOptions, httpContext.RequestAborted);
+                    await JsonSerializer.SerializeAsync(responseWriter, context.Object, SerializerOptions, httpContext.RequestAborted);
                 }
-
-                await responseStream.FlushAsync(httpContext.RequestAborted);
             }
             catch (OperationCanceledException) when (context.HttpContext.RequestAborted.IsCancellationRequested) { }
         }

@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" DefaultTargets="Pack">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Description>ASP.NET Core static framework assets</Description>
+    <PackageId>Microsoft.AspNetCore.App.Internal.Assets</PackageId>
+    <IsPackable>true</IsPackable>
+    <OutputType>Library</OutputType>
+    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <ImplicitUsings>disable</ImplicitUsings>
+
+    <!-- The package doesn't produce any lib or ref assemblies -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_BlazorJSContentRoot Condition="'$(Configuration)' == 'Debug'">$(RepoRoot)src\Components\Web.JS\dist\Debug</_BlazorJSContentRoot>
+    <_BlazorJSContentRoot Condition="'$(Configuration)' == 'Release'">$(RepoRoot)src\Components\Web.JS\dist\Release</_BlazorJSContentRoot>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(BuildNodeJS)' == 'true'">
+    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.web.js" />
+    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.server.js" />
+    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.webassembly.js" />
+
+    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.web.js.map" />
+    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.server.js.map" />
+    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.webassembly.js.map" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="build\*" Pack="true" PackagePath="%(Identity)" />
+    <None Include="buildMultiTargeting\*" Pack="true" PackagePath="%(Identity)" />
+    <None Include="buildTransitive\*" Pack="true" PackagePath="%(Identity)" />
+    <None Include="@(_BlazorJSFile)" Pack="true" PackagePath="_framework\%(FileName)%(Extension)" />
+  </ItemGroup>
+
+  <Target Name="_CheckBlazorJSPath" AfterTargets="ResolveProjectReferences">
+    <ItemGroup>
+      <_MissingBlazorJSFile Include="@(_BlazorJSFile)" Condition="!EXISTS('%(_BlazorJSFile.FullPath)')" />
+    </ItemGroup>
+
+    <Error
+      Condition="'@(_MissingBlazorJSFile)' != ''"
+      Text="'%(_MissingBlazorJSFile.Identity)' does not exist. Run 'npm run build' in the repo root to generate the file." />
+  </Target>
+
+</Project>

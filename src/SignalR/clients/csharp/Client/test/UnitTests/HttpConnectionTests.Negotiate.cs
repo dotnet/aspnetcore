@@ -456,6 +456,7 @@ public partial class HttpConnectionTests
 
             testHttpHandler.OnLongPollDelete((token) => ResponseUtils.CreateResponse(HttpStatusCode.Accepted));
 
+            EndPoint connectedEndpoint = null;
             using (var noErrorScope = new VerifyNoErrorsScope())
             {
                 await WithConnectionAsync(
@@ -463,6 +464,7 @@ public partial class HttpConnectionTests
                     async (connection) =>
                     {
                         await connection.StartAsync().DefaultTimeout();
+                        connectedEndpoint = connection.RemoteEndPoint;
                     });
             }
 
@@ -471,6 +473,7 @@ public partial class HttpConnectionTests
             Assert.Equal("https://another.domain.url/chat?negotiateVersion=1&id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[2].RequestUri.ToString());
             Assert.Equal("https://another.domain.url/chat?negotiateVersion=1&id=0rge0d00-0040-0030-0r00-000q00r00e00", testHttpHandler.ReceivedRequests[3].RequestUri.ToString());
             Assert.Equal(5, testHttpHandler.ReceivedRequests.Count);
+            Assert.Equal("https://another.domain.url/chat", connectedEndpoint.ToString());
         }
 
         [Fact]

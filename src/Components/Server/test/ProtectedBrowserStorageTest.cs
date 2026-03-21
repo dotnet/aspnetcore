@@ -352,19 +352,54 @@ public class ProtectedBrowserStorageTest
 
     class TestJSRuntime : IJSRuntime
     {
-        public List<(string Identifier, object[] Args)> Invocations { get; }
-            = new List<(string Identifier, object[] Args)>();
+        public List<(string Identifier, object[] Args, JSCallType CallType)> Invocations { get; } = [];
 
         public object NextInvocationResult { get; set; }
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
         {
-            Invocations.Add((identifier, args));
+            Invocations.Add((identifier, args, JSCallType.FunctionCall));
             return (ValueTask<TValue>)NextInvocationResult;
         }
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
             => InvokeAsync<TValue>(identifier, cancellationToken: CancellationToken.None, args: args);
+
+        public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object[] args)
+        {
+            Invocations.Add((identifier, args, JSCallType.ConstructorCall));
+            return (ValueTask<IJSObjectReference>)NextInvocationResult;
+        }
+
+        public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object[] args)
+        {
+            Invocations.Add((identifier, args, JSCallType.ConstructorCall));
+            return (ValueTask<IJSObjectReference>)NextInvocationResult;
+        }
+
+        public ValueTask<TValue> GetValueAsync<TValue>(string identifier)
+        {
+            Invocations.Add((identifier, [], JSCallType.GetValue));
+            return (ValueTask<TValue>)NextInvocationResult;
+        }
+
+        public ValueTask<TValue> GetValueAsync<TValue>(string identifier, CancellationToken cancellationToken)
+        {
+            Invocations.Add((identifier, [], JSCallType.GetValue));
+            return (ValueTask<TValue>)NextInvocationResult;
+        }
+
+        public ValueTask SetValueAsync<TValue>(string identifier, TValue value)
+        {
+            Invocations.Add((identifier, [value], JSCallType.SetValue));
+            return ValueTask.CompletedTask;
+        }
+
+        public ValueTask SetValueAsync<TValue>(string identifier, TValue value, CancellationToken cancellationToken)
+        {
+            Invocations.Add((identifier, [value], JSCallType.SetValue));
+            return ValueTask.CompletedTask;
+        }
     }
 
     class TestProtectedBrowserStorage : ProtectedBrowserStorage

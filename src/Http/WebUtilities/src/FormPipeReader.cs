@@ -52,7 +52,7 @@ public class FormPipeReader
     /// <param name="encoding">The <see cref="Encoding"/>.</param>
     public FormPipeReader(PipeReader pipeReader, Encoding encoding)
     {
-        // https://learn.microsoft.com/en-us/dotnet/core/compatibility/syslib-warnings/syslib0001
+        // https://learn.microsoft.com/dotnet/core/compatibility/syslib-warnings/syslib0001
         if (encoding is Encoding { CodePage: 65000 })
         {
             throw new ArgumentException("UTF7 is unsupported and insecure. Please select a different encoding.");

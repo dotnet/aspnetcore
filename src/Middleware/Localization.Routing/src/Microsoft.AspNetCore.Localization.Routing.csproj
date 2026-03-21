@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Localization" />
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
   </ItemGroup>

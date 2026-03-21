@@ -438,7 +438,7 @@ public class DataAnnotationsModelValidatorTest
 
     private const string LocalizationKey = "LocalizeIt";
 
-    public static TheoryData Validate_AttributesIncludeValues
+    public static TheoryData<ValidationAttribute, string, object[]> Validate_AttributesIncludeValues
     {
         get
         {

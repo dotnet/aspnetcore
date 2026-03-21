@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
@@ -94,6 +93,23 @@ internal sealed class MessageTypeInfoResolver : IJsonTypeInfoResolver
             JsonConverterHelper.GetFieldType(field),
             name);
 
+        // A property with a wrapper type is usually the underlying type on the DTO.
+        // For example, a field of type google.protobuf.StringValue will have a property of type string.
+        // However, the wrapper type is exposed if someone manually creates a DTO with it, or there is a problem
+        // detecting wrapper type in code generation. For example, https://github.com/protocolbuffers/protobuf/issues/22744
+        FieldDescriptor? wrapperTypeValueField = null;
+        if (field.FieldType == FieldType.Message && ServiceDescriptorHelpers.IsWrapperType(field.MessageType))
+        {
+            var property = field.ContainingType.ClrType.GetProperty(field.PropertyName);
+
+            // Check if the property type is the same as the field type. This means the property is StringValue, et al,
+            // and additional conversion is required.
+            if (property != null && property.PropertyType == field.MessageType.ClrType)
+            {
+                wrapperTypeValueField = field.MessageType.FindFieldByName("value");
+            }
+        }
+
         propertyInfo.ShouldSerialize = (o, v) =>
         {
             // Properties that don't have this flag set are only used to deserialize incoming JSON.
@@ -105,7 +121,13 @@ internal sealed class MessageTypeInfoResolver : IJsonTypeInfoResolver
         };
         propertyInfo.Get = (o) =>
         {
-            return field.Accessor.GetValue((IMessage)o);
+            var value = field.Accessor.GetValue((IMessage)o);
+            if (wrapperTypeValueField != null && value is IMessage wrapperMessage)
+            {
+                return wrapperTypeValueField.Accessor.GetValue(wrapperMessage);
+            }
+
+            return value;
         };
 
         if (field.IsMap || field.IsRepeated)
@@ -115,13 +137,13 @@ internal sealed class MessageTypeInfoResolver : IJsonTypeInfoResolver
         }
         else
         {
-            propertyInfo.Set = GetSetMethod(field);
+            propertyInfo.Set = GetSetMethod(field, wrapperTypeValueField);
         }
 
         return propertyInfo;
     }
 
-    private static Action<object, object?> GetSetMethod(FieldDescriptor field)
+    private static Action<object, object?> GetSetMethod(FieldDescriptor field, FieldDescriptor? wrapperTypeValueField)
     {
         Debug.Assert(!field.IsRepeated && !field.IsMap, "Collections shouldn't have a setter.");
 
@@ -135,19 +157,27 @@ internal sealed class MessageTypeInfoResolver : IJsonTypeInfoResolver
                     throw new InvalidOperationException($"Multiple values specified for oneof {field.RealContainingOneof.Name}.");
                 }
 
-                SetFieldValue(field, (IMessage)o, v);
+                SetFieldValue(field, wrapperTypeValueField, (IMessage)o, v);
             };
         }
 
         return (o, v) =>
         {
-            SetFieldValue(field, (IMessage)o, v);
+            SetFieldValue(field, wrapperTypeValueField, (IMessage)o, v);
         };
 
-        static void SetFieldValue(FieldDescriptor field, IMessage m, object? v)
+        static void SetFieldValue(FieldDescriptor field, FieldDescriptor? wrapperTypeValueField, IMessage m, object? v)
         {
             if (v != null)
             {
+                // This field exposes a wrapper type. Need to create a wrapper instance and set the value on it.
+                if (wrapperTypeValueField != null && v is not IMessage)
+                {
+                    var wrapper = (IMessage)Activator.CreateInstance(field.MessageType.ClrType)!;
+                    wrapperTypeValueField.Accessor.SetValue(wrapper, v);
+                    v = wrapper;
+                }
+
                 field.Accessor.SetValue(m, v);
             }
             else

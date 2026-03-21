@@ -9,7 +9,7 @@
     <Compile Include="..\..\..\..\Shared\Process\ProcessExtensions.cs" Link="Helpers\ProcessExtensions.cs" />
 
     <!-- Enforce build order. Need shared Fx before PublishTestAssets runs. -->
-    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
+    <ProjectReference Include="$(RepoRoot)\src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />

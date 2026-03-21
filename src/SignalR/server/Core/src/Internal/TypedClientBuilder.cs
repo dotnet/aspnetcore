@@ -1,13 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal static class TypedClientBuilder<T>
+[RequiresDynamicCode("Creating a proxy instance requires generating code at runtime")]
+internal static class TypedClientBuilder<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>
 {
     private const string ClientModuleName = "Microsoft.AspNetCore.SignalR.TypedClientBuilder";
 
@@ -44,6 +46,7 @@ internal static class TypedClientBuilder<T>
         return (Func<IClientProxy, T>)factoryMethod!.CreateDelegate(typeof(Func<IClientProxy, T>));
     }
 
+    [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     private static Type GenerateInterfaceImplementation(ModuleBuilder moduleBuilder)
     {
         var name = ClientModuleName + "." + typeof(T).Name + "Impl";
@@ -64,14 +67,19 @@ internal static class TypedClientBuilder<T>
             BuildMethod(type, method, proxyField);
         }
 
-        return type.CreateTypeInfo()!;
+        return type.CreateType();
     }
 
-    private static IEnumerable<MethodInfo> GetAllInterfaceMethods(Type interfaceType)
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2062:UnrecognizedReflectionPattern",
+        Justification = "interfaceType is annotated as preserve All members, so any Types returned from GetInterfaces will be preserved as well. https://github.com/mono/linker/issues/1731 tracks not emitting warnings here.")]
+    private static IEnumerable<MethodInfo> GetAllInterfaceMethods([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type interfaceType)
     {
         foreach (var parent in interfaceType.GetInterfaces())
         {
+            // interfaceType is annotated as preserve All members, so any Types returned from GetInterfaces will be preserved as well. https://github.com/mono/linker/issues/1731 tracks not emitting warnings here.
+#pragma warning disable IL2072
             foreach (var parentMethod in GetAllInterfaceMethods(parent))
+#pragma warning restore IL2072
             {
                 yield return parentMethod;
             }
@@ -239,7 +247,9 @@ internal static class TypedClientBuilder<T>
         generator.Emit(OpCodes.Ret); // Return the typed client
     }
 
-    private static void VerifyInterface(Type interfaceType)
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2062:UnrecognizedReflectionPattern",
+        Justification = "interfaceType is annotated as preserve All members, so any Types returned from GetInterfaces will be preserved as well. https://github.com/mono/linker/issues/1731 tracks not emitting warnings here.")]
+    private static void VerifyInterface([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type interfaceType)
     {
         if (!interfaceType.IsInterface)
         {
@@ -263,7 +273,10 @@ internal static class TypedClientBuilder<T>
 
         foreach (var parent in interfaceType.GetInterfaces())
         {
+            // interfaceType is annotated as preserve All members, so any Types returned from GetInterfaces will be preserved as well. https://github.com/mono/linker/issues/1731 tracks not emitting warnings here.
+#pragma warning disable IL2072
             VerifyInterface(parent);
+#pragma warning restore IL2072
         }
     }
 

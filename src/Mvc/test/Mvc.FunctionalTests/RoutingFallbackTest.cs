@@ -3,24 +3,35 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class RoutingFallbackTest : IClassFixture<MvcTestFixture<RoutingWebSite.StartupForFallback>>
+public class RoutingFallbackTest : LoggedTest
 {
-    public RoutingFallbackTest(MvcTestFixture<RoutingWebSite.StartupForFallback> fixture)
-    {
-        var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
-        Client = factory.CreateDefaultClient();
-    }
-
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) => builder.UseStartup<RoutingWebSite.StartupForFallback>();
 
-    public HttpClient Client { get; }
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+    {
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<RoutingWebSite.StartupForFallback>(LoggerFactory).WithWebHostBuilder(ConfigureWebHostBuilder);
+        Client = Factory.CreateDefaultClient();
+    }
+
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<RoutingWebSite.StartupForFallback> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public async Task Fallback_CanGet404ForMissingFile()

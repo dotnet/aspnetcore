@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <RuntimeIdentifiers>$(RuntimeIdentifiers);win-x64;win-x86</RuntimeIdentifiers>
+    <RuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true'">$(TargetRuntimeIdentifier)</RuntimeIdentifiers>
     <Platforms>x64;x86</Platforms>
     <IISExpressAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.config</IISExpressAppHostConfig>
     <IISAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.iis.config</IISAppHostConfig>

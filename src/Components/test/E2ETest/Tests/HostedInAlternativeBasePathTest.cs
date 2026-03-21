@@ -24,7 +24,7 @@ public class HostedInAlternativeBasePathTest : ServerTestBase<AspNetSiteServerFi
 
     protected override void InitializeAsyncCore()
     {
-        Navigate("/app/", noReload: true);
+        Navigate("/app/");
         WaitUntilLoaded();
     }
 
@@ -32,7 +32,7 @@ public class HostedInAlternativeBasePathTest : ServerTestBase<AspNetSiteServerFi
     public void CanLoadBlazorAppFromSubPath()
     {
         Assert.Equal("App loaded on custom path", Browser.Title);
-        Assert.Equal(0, Browser.GetBrowserLogs(LogLevel.Severe).Count);
+        Assert.Empty(Browser.GetBrowserLogs(LogLevel.Severe));
     }
 
     private void WaitUntilLoaded()

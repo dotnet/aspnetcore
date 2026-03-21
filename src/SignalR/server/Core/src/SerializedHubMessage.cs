@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR;
@@ -40,6 +41,8 @@ public class SerializedHubMessage
     /// <param name="message">The hub message for the cache. This will be serialized with an <see cref="IHubProtocol"/> in <see cref="GetSerializedMessage"/> to get the message's serialized representation.</param>
     public SerializedHubMessage(HubMessage message)
     {
+        // Type currently only used for invocation messages, we should probably refactor it to be explicit about that e.g. new property for message type?
+        Debug.Assert(message.GetType().IsAssignableTo(typeof(HubInvocationMessage)));
         Message = message;
     }
 

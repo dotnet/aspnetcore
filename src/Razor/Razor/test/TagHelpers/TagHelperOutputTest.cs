@@ -164,9 +164,8 @@ public class TagHelperOutputTest
             var data = new TheoryData<bool, HtmlEncoder>();
             foreach (var useCachedResult in new[] { false, true })
             {
-                foreach (var encoderEntry in HtmlEncoderData)
+                foreach (var encoder in HtmlEncoderData)
                 {
-                    var encoder = (HtmlEncoder)(encoderEntry[0]);
                     data.Add(useCachedResult, encoder);
                 }
             }

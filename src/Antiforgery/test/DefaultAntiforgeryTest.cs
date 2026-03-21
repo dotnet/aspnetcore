@@ -1079,7 +1079,7 @@ public class DefaultAntiforgeryTest
     [InlineData(true, null)]
     public void SetCookieTokenAndHeader_AddsXFrameOptionsHeader(
         bool suppressXFrameOptions,
-        string expectedHeaderValue)
+        string? expectedHeaderValue)
     {
         // Arrange
         var options = new AntiforgeryOptions()

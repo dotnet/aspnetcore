@@ -94,15 +94,33 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Equal(0, dynamicTable.Size);
         }
 
-        [Theory]
-        [InlineData(0)]
-        [InlineData(1)]
-        [InlineData(2)]
-        [InlineData(3)]
-        public void DynamicTable_WrapsRingBuffer_Success(int targetInsertIndex)
+        public static IEnumerable<object[]> DynamicTable_WrapsRingBuffer_Success_MemberData()
         {
+            foreach (int maxSize in new[] { 100, 256, 1000 })
+            {
+                int maxCount = maxSize / (2 * "header-0".Length + HeaderField.RfcOverhead);
+
+                for (int i = 0; i < maxCount; i++)
+                {
+                    yield return new object[] { maxSize, i };
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DynamicTable_WrapsRingBuffer_Success_MemberData))]
+        public void DynamicTable_WrapsRingBuffer_Success(int maxSize, int targetInsertIndex)
+        {
+            DynamicTable table = new DynamicTable(maxSize);
+
+            // The table grows its internal buffer dynamically.
+            // Fill it with enough entries to force it to grow to max size.
+            for (int i = 0; i < table.MaxSize / HeaderField.RfcOverhead; i++)
+            {
+                table.Insert("a"u8, "b"u8);
+            }
+
             FieldInfo insertIndexField = typeof(DynamicTable).GetField("_insertIndex", BindingFlags.NonPublic | BindingFlags.Instance);
-            DynamicTable table = new DynamicTable(maxSize: 256);
             Stack<byte[]> insertedHeaders = new Stack<byte[]>();
 
             // Insert into dynamic table until its insert index into its ring buffer loops back to 0.
@@ -167,7 +185,7 @@ namespace System.Net.Http.Unit.Tests.HPack
                 headers.Add(dynamicTable[i]);
             }
 
-            dynamicTable.Resize(finalMaxSize);
+            dynamicTable.UpdateMaxSize(finalMaxSize);
 
             int expectedCount = Math.Min(finalMaxSize / 64, headers.Count);
             Assert.Equal(expectedCount, dynamicTable.Count);
@@ -188,7 +206,7 @@ namespace System.Net.Http.Unit.Tests.HPack
 
             VerifyTableEntries(dynamicTable, _header2, _header1);
 
-            dynamicTable.Resize(_header2.Length);
+            dynamicTable.UpdateMaxSize(_header2.Length);
 
             VerifyTableEntries(dynamicTable, _header2);
         }
@@ -200,7 +218,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             dynamicTable.Insert(_header1.Name, _header1.Value);
             dynamicTable.Insert(_header2.Name, _header2.Value);
 
-            dynamicTable.Resize(0);
+            dynamicTable.UpdateMaxSize(0);
 
             Assert.Equal(0, dynamicTable.Count);
             Assert.Equal(0, dynamicTable.Size);
@@ -219,7 +237,7 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Equal(0, dynamicTable.Count);
             Assert.Equal(0, dynamicTable.Size);
 
-            dynamicTable.Resize(dynamicTable.MaxSize + _header2.Length);
+            dynamicTable.UpdateMaxSize(dynamicTable.MaxSize + _header2.Length);
             dynamicTable.Insert(_header2.Name, _header2.Value);
 
             VerifyTableEntries(dynamicTable, _header2);

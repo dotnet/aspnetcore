@@ -18,8 +18,7 @@ public interface IRazorViewEngine : IViewEngine
     /// <param name="pageName">The name or path of the page.</param>
     /// <returns>The <see cref="RazorPageResult"/> of locating the page.</returns>
     /// <remarks>
-    /// <remarks>Use <see cref="GetPage(string, string)"/> when the absolute or relative
-    /// path of the page is known.</remarks>
+    /// Use <see cref="GetPage(string, string)"/> when the absolute or relative path of the page is known.
     /// <seealso cref="IViewEngine.FindView"/>.
     /// </remarks>
     RazorPageResult FindPage(ActionContext context, string pageName);

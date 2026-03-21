@@ -46,7 +46,7 @@ internal class SupplyParameterFromFormValueProvider : ICascadingValueSupplier
         return false;
     }
 
-    public object? GetCurrentValue(in CascadingParameterInfo parameterInfo)
+    public object? GetCurrentValue(object? key, in CascadingParameterInfo parameterInfo)
     {
         // We supply a FormMappingContext
         if (parameterInfo.Attribute is CascadingParameterAttribute && parameterInfo.PropertyType == typeof(FormMappingContext))

@@ -20,10 +20,10 @@ internal partial class AlphaRouteConstraint : RegexRouteConstraint
     /// <summary>
     /// Initializes a new instance of the <see cref="AlphaRouteConstraint" /> class.
     /// </summary>
-    public AlphaRouteConstraint() : base(GetAlphaRouteRegex())
+    public AlphaRouteConstraint() : base(AlphaRouteRegex)
     {
     }
 
     [GeneratedRegex(@"^[A-Za-z]*$")]
-    private static partial Regex GetAlphaRouteRegex();
+    private static partial Regex AlphaRouteRegex { get; }
 }

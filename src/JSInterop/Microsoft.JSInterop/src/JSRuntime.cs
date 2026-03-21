@@ -15,6 +15,8 @@ namespace Microsoft.JSInterop;
 /// </summary>
 public abstract partial class JSRuntime : IJSRuntime, IDisposable
 {
+    internal const long WindowObjectId = 0;
+
     private long _nextObjectReferenceId; // Initial value of 0 signals no object, but we increment prior to assignment. The first tracked object should have id 1
     private long _nextPendingTaskId = 1; // Start at 1 because zero signals "no response needed"
     private readonly ConcurrentDictionary<long, object> _pendingTasks = new();
@@ -66,7 +68,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
     public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, object?[]? args)
-        => InvokeAsync<TValue>(0, identifier, args);
+        => InvokeAsync<TValue>(WindowObjectId, identifier, JSCallType.FunctionCall, args);
 
     /// <summary>
     /// Invokes the specified JavaScript function asynchronously.
@@ -80,24 +82,49 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
     public ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
-        => InvokeAsync<TValue>(0, identifier, cancellationToken, args);
+        => InvokeAsync<TValue>(WindowObjectId, identifier, JSCallType.FunctionCall, cancellationToken, args);
 
-    internal async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(long targetInstanceId, string identifier, object?[]? args)
+    /// <inheritdoc />
+    public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object?[]? args)
+        => InvokeAsync<IJSObjectReference>(WindowObjectId, identifier, JSCallType.ConstructorCall, args);
+
+    /// <inheritdoc />
+    public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
+        => InvokeAsync<IJSObjectReference>(WindowObjectId, identifier, JSCallType.ConstructorCall, cancellationToken, args);
+
+    /// <inheritdoc />
+    public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier)
+        => InvokeAsync<TValue>(WindowObjectId, identifier, JSCallType.GetValue, null);
+
+    /// <inheritdoc />
+    public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken)
+        => InvokeAsync<TValue>(WindowObjectId, identifier, JSCallType.GetValue, cancellationToken, null);
+
+    /// <inheritdoc />
+    public async ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value)
+        => await InvokeAsync<IJSVoidResult>(WindowObjectId, identifier, JSCallType.SetValue, [value]);
+
+    /// <inheritdoc />
+    public async ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value, CancellationToken cancellationToken)
+        => await InvokeAsync<IJSVoidResult>(WindowObjectId, identifier, JSCallType.SetValue, cancellationToken, [value]);
+
+    internal async ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(long targetInstanceId, string identifier, JSCallType callType, object?[]? args)
     {
         if (DefaultAsyncTimeout.HasValue)
         {
             using var cts = new CancellationTokenSource(DefaultAsyncTimeout.Value);
             // We need to await here due to the using
-            return await InvokeAsync<TValue>(targetInstanceId, identifier, cts.Token, args);
+            return await InvokeAsync<TValue>(targetInstanceId, identifier, callType, cts.Token, args);
         }
 
-        return await InvokeAsync<TValue>(targetInstanceId, identifier, CancellationToken.None, args);
+        return await InvokeAsync<TValue>(targetInstanceId, identifier, callType, CancellationToken.None, args);
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure JS interop arguments are linker friendly.")]
     internal ValueTask<TValue> InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(
         long targetInstanceId,
         string identifier,
+        JSCallType callType,
         CancellationToken cancellationToken,
         object?[]? args)
     {
@@ -123,12 +150,19 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                 return new ValueTask<TValue>(tcs.Task);
             }
 
-            var argsJson = args is not null && args.Length != 0 ?
-                JsonSerializer.Serialize(args, JsonSerializerOptions) :
-                null;
+            var argsJson = args is not null && args.Length != 0 ? JsonSerializer.Serialize(args, JsonSerializerOptions) : "[]";
             var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
+            var invocationInfo = new JSInvocationInfo
+            {
+                AsyncHandle = taskId,
+                TargetInstanceId = targetInstanceId,
+                Identifier = identifier,
+                CallType = callType,
+                ResultType = resultType,
+                ArgsJson = argsJson,
+            };
 
-            BeginInvokeJS(taskId, identifier, argsJson, resultType, targetInstanceId);
+            BeginInvokeJS(invocationInfo);
 
             return new ValueTask<TValue>(tcs.Task);
         }
@@ -155,10 +189,11 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// <param name="identifier">The identifier for the function to invoke.</param>
     /// <param name="argsJson">A JSON representation of the arguments.</param>
     protected virtual void BeginInvokeJS(long taskId, string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson)
-        => BeginInvokeJS(taskId, identifier, argsJson, JSCallResultType.Default, 0);
+        => BeginInvokeJS(taskId, identifier, argsJson, JSCallResultType.Default, WindowObjectId);
 
     /// <summary>
-    /// Begins an asynchronous function invocation.
+    /// Begins an asynchronous function invocation with the call type <see cref="JSCallType.FunctionCall"/>.
+    /// For more configuration options, use the overload <see cref="BeginInvokeJS(in JSInvocationInfo)" />.
     /// </summary>
     /// <param name="taskId">The identifier for the function invocation, or zero if no async callback is required.</param>
     /// <param name="identifier">The identifier for the function to invoke.</param>
@@ -166,6 +201,15 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// <param name="resultType">The type of result expected from the invocation.</param>
     /// <param name="targetInstanceId">The instance ID of the target JS object.</param>
     protected abstract void BeginInvokeJS(long taskId, string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson, JSCallResultType resultType, long targetInstanceId);
+
+    /// <summary>
+    /// Begins an asynchronous function invocation.
+    /// </summary>
+    /// <param name="invocationInfo">Configuration of the interop call from .NET to JavaScript.</param>
+    protected virtual void BeginInvokeJS(in JSInvocationInfo invocationInfo)
+    {
+        BeginInvokeJS(invocationInfo.AsyncHandle, invocationInfo.Identifier, invocationInfo.ArgsJson, invocationInfo.ResultType, invocationInfo.TargetInstanceId);
+    }
 
     /// <summary>
     /// Completes an async JS interop call from JavaScript to .NET

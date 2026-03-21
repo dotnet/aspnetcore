@@ -23,16 +23,29 @@
     <Compile Include="$(KestrelSharedSourceRoot)test\LifetimeNotImplemented.cs" Link="shared\LifetimeNotImplemented.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\PassThroughConnectionMiddleware.cs" Link="shared\PassThroughConnectionMiddleware.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestApp.cs" Link="shared\TestApp.cs" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\MetricsAssert.cs" Link="shared\MetricsAssert.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\StreamExtensions.cs" Link="shared\StreamExtensions.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\*.cs" LinkBase="shared\TransportTestHelpers" />
     <Content Include="$(SharedSourceRoot)TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.Testing" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <Reference Include="Newtonsoft.Json" />
   </ItemGroup>

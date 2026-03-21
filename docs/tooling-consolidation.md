@@ -2,17 +2,17 @@
 
 ## Objectives
 
-We want to consolidate dotnet/aspnetcore-tooling into dotnet/aspnetcore to achieve 3 goals
+We want to consolidate dotnet/aspnetcore-tooling into dotnet/aspnetcore to achieve 3 goals:
 
-1. Reduce overall build time end to end for the .NET Core SDK
+1. Reduce overall build time end to end for the .NET Core SDK.
 2. Reduce the complexity of maintaining multiple repositories.
-3. Maintain, or if possible, improve, developer productivity
+3. Maintain, or if possible, improve, developer productivity.
 
 We are prioritizing the first objective since it is part of a cross-team effort to reduce the SDK build time. To ensure we are able to achieve this goal quickly and with minimal risk, we plan to take a multi-phase approach. The first phase will involve moving the language components from aspnetcore-tooling to aspnetcore which is required for the SDK build. The second phase will involve a more gradual migration for the remaining tooling components with an emphasis on maintaining developer productivity.
 
 ## Phase one: Migration of language components
 
-In this phase, we are primarily concerned with the overall goals of repo consolidation to reduce the number of repository required to build the SDK while keeping the build in aspnetcore as simple as possible without needing to support build/test for tooling scenarios such as testing on VSCode. As such, we will not require all of aspnetcore-tooling to be merged into aspnetcore. For example, tooling for VSMac and VSCode will remain in aspnetcore-tooling. There is also an added benefit of maintaining the current development and release workflow for aspnetcore-tooling which is more "agile" than aspnetcore (e.g. faster PR builds, release cycles that synchronize with VS releases).
+In this phase, we are primarily concerned with the overall goals of repo consolidation to reduce the number of repositories required to build the SDK while keeping the build in aspnetcore as simple as possible without needing to support build/test for tooling scenarios such as testing on VSCode. As such, we will not require all of aspnetcore-tooling to be merged into aspnetcore. For example, tooling for VSMac and VSCode will remain in aspnetcore-tooling. There is also an added benefit of maintaining the current development and release workflow for aspnetcore-tooling which is more "agile" than aspnetcore (e.g. faster PR builds, release cycles that synchronize with VS releases).
 
 To achieve this we will be migrating the following (and associated tests) from aspnetcore-tooling to aspnetcore:
 
@@ -48,7 +48,7 @@ RazorDeveloperTools
 rzls
 ```
 
-THe following will be deleted:
+The following will be deleted:
 
 ```text
 RazorPageGenerator
@@ -72,7 +72,7 @@ runtime +--> aspnetcore +--> SDK
 
 ## Phase two: Migration of tooling components
 
-After phase one is completed, we will migrate the tooling components remaining in aspnetcore-tooling piecemeal at a time as required. Our current understanding is that we will eventually be moving all of aspnetcore-tooling into aspnetcore but this can be scoped as appropriate given time/resource constraints. The overall goal here is to reduce build complexity in our repos and maintain developer productivity. As such, more discussion will be made with area owners to identify workflow impacts.
+After phase one is completed, we will migrate the tooling components remaining in aspnetcore-tooling piecemeal at a time as required. Our current understanding is that we will eventually be moving all of aspnetcore-tooling into aspnetcore but this can be scoped as appropriate given time/resource constraints. The overall goal here is to reduce build complexity in our repos and maintain developer productivity. As such, more discussions will be made with area owners to identify workflow impacts.
 
 ## Major considerations
 
@@ -96,7 +96,7 @@ In phase one, the migrated projects are C# only so there are no test infrastruct
 
 ### Reliability
 
-There is concern that there is test reliability issues in both repos and combining them would aggravate the problem in aspnetcore. This has been deemed a non-issue in phase one since the test to be migrated are found to be very reliable. For phase two, we will ensure tests are reliable before we migrate each tooling component over to aspnetcore.
+There is concern that there are test reliability issues in both repos and combining them would aggravate the problem in aspnetcore. This has been deemed a non-issue in phase one since the tests to be migrated are found to be very reliable. For phase two, we will ensure tests are reliable before we migrate each tooling component over to aspnetcore.
 
 ### Release cycles
 

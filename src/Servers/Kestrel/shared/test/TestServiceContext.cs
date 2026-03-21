@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.IO.Pipelines;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -64,13 +65,28 @@ internal class TestServiceContext : ServiceContext
 
         DateHeaderValueManager.OnHeartbeat();
         Metrics = metrics;
+        ShutdownTimeout = TestConstants.DefaultTimeout;
     }
+
+    public TimeSpan ShutdownTimeout { get; set; }
 
     public ILoggerFactory LoggerFactory { get; set; }
 
     public FakeTimeProvider FakeTimeProvider { get; set; }
 
-    public Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.PinnedBlockMemoryPoolFactory.Create;
+    public IMemoryPoolFactory<byte> MemoryPoolFactory { get; set; } = new WrappingMemoryPoolFactory(() => TestMemoryPoolFactory.Create());
 
     public string DateHeaderValue => DateHeaderValueManager.GetDateHeaderValues().String;
+
+    internal sealed class WrappingMemoryPoolFactory : IMemoryPoolFactory<byte>
+    {
+        private readonly Func<MemoryPool<byte>> _memoryPoolFactory;
+
+        public WrappingMemoryPoolFactory(Func<MemoryPool<byte>> memoryPoolFactory)
+        {
+            _memoryPoolFactory = memoryPoolFactory;
+        }
+
+        public MemoryPool<byte> Create(MemoryPoolOptions options = null) => _memoryPoolFactory();
+    }
 }

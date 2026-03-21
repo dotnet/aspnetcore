@@ -3,25 +3,37 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Net.Http.Headers;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
 // Each of these tests makes two requests, because we want each test to verify that the data is
 // PER-REQUEST and does not linger around to impact the next request.
-public abstract class RequestServicesTestBase<TStartup> : IClassFixture<MvcTestFixture<TStartup>> where TStartup : class
+public abstract class RequestServicesTestBase<TStartup> : LoggedTest where TStartup : class
 {
-    protected RequestServicesTestBase(MvcTestFixture<TStartup> fixture)
-    {
-        var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
-        Client = factory.CreateDefaultClient();
-    }
-
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
         builder.UseStartup<TStartup>();
 
-    public HttpClient Client { get; }
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+    {
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<TStartup>(LoggerFactory).WithWebHostBuilder(ConfigureWebHostBuilder);
+        Client = Factory.CreateDefaultClient();
+    }
+
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<TStartup> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public abstract Task HasEndpointMatch();

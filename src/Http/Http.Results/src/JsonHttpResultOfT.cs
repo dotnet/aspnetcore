@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -13,7 +16,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// <summary>
 /// An action result which formats the given object as JSON.
 /// </summary>
-public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpResult, IValueHttpResult, IValueHttpResult<TValue>, IContentTypeHttpResult
+public sealed partial class JsonHttpResult<TValue> : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult, IValueHttpResult, IValueHttpResult<TValue>, IContentTypeHttpResult
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Json"/> class with the values.
@@ -117,7 +120,7 @@ public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpRes
                     typedJsonTypeInfo,
                     contentType: ContentType);
             }
-            
+
             return httpContext.Response.WriteAsJsonAsync(
                 Value,
                 JsonTypeInfo,
@@ -130,5 +133,10 @@ public sealed partial class JsonHttpResult<TValue> : IResult, IStatusCodeHttpRes
             Value,
             ContentType,
             JsonSerializerOptions);
+    }
+
+    static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+    {
+        builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
     }
 }

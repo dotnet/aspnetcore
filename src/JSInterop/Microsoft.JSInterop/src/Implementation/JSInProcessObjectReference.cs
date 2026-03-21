@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices.JavaScript;
+using Microsoft.JSInterop.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.JSInterop.Implementation;
@@ -30,7 +31,34 @@ public partial class JSInProcessObjectReference : JSObjectReference, IJSInProces
     {
         ThrowIfDisposed();
 
-        return _jsRuntime.Invoke<TValue>(identifier, Id, args);
+        return _jsRuntime.Invoke<TValue>(identifier, Id, JSCallType.FunctionCall, args);
+    }
+
+    /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+    public IJSInProcessObjectReference InvokeConstructor(string identifier, object?[]? args)
+    {
+        ThrowIfDisposed();
+
+        return _jsRuntime.Invoke<IJSInProcessObjectReference>(identifier, Id, JSCallType.ConstructorCall, args);
+    }
+
+    /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+    public TValue GetValue<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier)
+    {
+        ThrowIfDisposed();
+
+        return _jsRuntime.Invoke<TValue>(identifier, Id, JSCallType.GetValue);
+    }
+
+    /// <inheritdoc />
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+    public void SetValue<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value)
+    {
+        ThrowIfDisposed();
+
+        _jsRuntime.Invoke<TValue>(identifier, Id, JSCallType.SetValue, value);
     }
 
     /// <inheritdoc />

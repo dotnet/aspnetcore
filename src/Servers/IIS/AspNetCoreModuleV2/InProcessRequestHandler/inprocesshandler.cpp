@@ -6,7 +6,7 @@
 #include "ShuttingDownApplication.h"
 #include "ntassert.h"
 
-ALLOC_CACHE_HANDLER * IN_PROCESS_HANDLER::sm_pAlloc = NULL;
+ALLOC_CACHE_HANDLER * IN_PROCESS_HANDLER::sm_pAlloc = nullptr;
 
 IN_PROCESS_HANDLER::IN_PROCESS_HANDLER(
     _In_ std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> pApplication,
@@ -37,7 +37,7 @@ IN_PROCESS_HANDLER::ExecuteRequestHandler()
 {
     ::RaiseEvent<ANCMEvents::ANCM_INPROC_EXECUTE_REQUEST_START>(m_pW3Context, nullptr);
 
-    if (m_pRequestHandler == NULL)
+    if (m_pRequestHandler == nullptr)
     {
         ::RaiseEvent<ANCMEvents::ANCM_INPROC_EXECUTE_REQUEST_COMPLETION>(m_pW3Context, nullptr, RQ_NOTIFICATION_FINISH_REQUEST);
         return RQ_NOTIFICATION_FINISH_REQUEST;
@@ -198,10 +198,10 @@ IN_PROCESS_HANDLER::SetManagedHttpContext(
 // static
 void * IN_PROCESS_HANDLER::operator new(size_t)
 {
-    DBG_ASSERT(sm_pAlloc != NULL);
-    if (sm_pAlloc == NULL)
+    DBG_ASSERT(sm_pAlloc != nullptr);
+    if (sm_pAlloc == nullptr)
     {
-        return NULL;
+        return nullptr;
     }
     return sm_pAlloc->Alloc();
 }
@@ -209,8 +209,8 @@ void * IN_PROCESS_HANDLER::operator new(size_t)
 // static
 void IN_PROCESS_HANDLER::operator delete(void * pMemory)
 {
-    DBG_ASSERT(sm_pAlloc != NULL);
-    if (sm_pAlloc != NULL)
+    DBG_ASSERT(sm_pAlloc != nullptr);
+    if (sm_pAlloc != nullptr)
     {
         sm_pAlloc->Free(pMemory);
     }
@@ -234,7 +234,7 @@ HRESULT
     HRESULT                         hr = S_OK;
 
     sm_pAlloc = new ALLOC_CACHE_HANDLER;
-    if (sm_pAlloc == NULL)
+    if (sm_pAlloc == nullptr)
     {
         hr = E_OUTOFMEMORY;
         goto Finished;
@@ -255,9 +255,9 @@ Finished:
 void
 IN_PROCESS_HANDLER::StaticTerminate(VOID)
 {
-    if (sm_pAlloc != NULL)
+    if (sm_pAlloc != nullptr)
     {
         delete sm_pAlloc;
-        sm_pAlloc = NULL;
+        sm_pAlloc = nullptr;
     }
 }

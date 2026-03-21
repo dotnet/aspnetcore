@@ -630,7 +630,7 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
             // If this isn't working properly, we'll get the HTTPS endpoint defined in UseKestrel
             // instead of the HTTP endpoint defined in UseUrls.
             var serverAddresses = host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>().Addresses;
-            Assert.Equal(1, serverAddresses.Count);
+            Assert.Single(serverAddresses);
             var useUrlsAddressWithPort = $"http://127.0.0.1:{port}";
             Assert.Equal(serverAddresses.First(), useUrlsAddressWithPort);
 
@@ -675,7 +675,7 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
             // If this isn't working properly, we'll get the HTTP endpoint defined in UseUrls
             // instead of the HTTPS endpoint defined in UseKestrel.
             var serverAddresses = host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>().Addresses;
-            Assert.Equal(1, serverAddresses.Count);
+            Assert.Single(serverAddresses);
             var endPointAddress = $"https://127.0.0.1:{port}";
             Assert.Equal(serverAddresses.First(), endPointAddress);
 
@@ -715,7 +715,7 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
 
             // If this isn't working properly, we'll not get the HTTPS endpoint defined in UseKestrel.
             var serverAddresses = host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>().Addresses;
-            Assert.Equal(1, serverAddresses.Count);
+            Assert.Single(serverAddresses);
             var endPointAddress = $"https://127.0.0.1:{port}";
             Assert.Equal(serverAddresses.First(), endPointAddress);
 
@@ -994,12 +994,12 @@ public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
 
         if (addressInUseCount >= 10)
         {
-            Assert.True(false, $"The corresponding {otherAddressFamily} address was already in use 10 times.");
+            Assert.Fail($"The corresponding {otherAddressFamily} address was already in use 10 times.");
         }
 
         if (wrongMessageCount >= 10)
         {
-            Assert.True(false, $"An error for a conflict with {otherAddressFamily} was thrown 10 times.");
+            Assert.Fail($"An error for a conflict with {otherAddressFamily} was thrown 10 times.");
         }
     }
 

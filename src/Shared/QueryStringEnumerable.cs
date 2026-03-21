@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -88,21 +89,18 @@ internal
         public ReadOnlyMemory<char> DecodeValue()
             => Decode(EncodedValue);
 
-        private static unsafe ReadOnlyMemory<char> Decode(ReadOnlyMemory<char> chars)
+        private static ReadOnlyMemory<char> Decode(ReadOnlyMemory<char> chars)
         {
-            // If the value is short, it's cheap to check up front if it really needs decoding. If it doesn't,
-            // then we can save some allocations.
-            if (chars.Length < 16 && chars.Span.IndexOfAny('%', '+') < 0)
+            ReadOnlySpan<char> source = chars.Span;
+            if (!source.ContainsAny('%', '+'))
             {
                 return chars;
             }
-
-#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
-            ReadOnlySpan<char> span = chars.Span;
-            return Uri.UnescapeDataString(
-                string.Create(span.Length,
-                    (IntPtr)(&span), static (dest, ptr) => ((ReadOnlySpan<char>*)ptr)->Replace(dest, '+', ' '))).AsMemory();
-#pragma warning restore CS8500
+            var buffer = new char[source.Length];
+            source.Replace(buffer, '+', ' ');
+            var success = Uri.TryUnescapeDataString(buffer, buffer, out var unescapedLength);
+            Debug.Assert(success);
+            return buffer.AsMemory(0, unescapedLength);
         }
     }
 

@@ -11,7 +11,7 @@ internal interface ICascadingValueSupplier
 
     bool CanSupplyValue(in CascadingParameterInfo parameterInfo);
 
-    object? GetCurrentValue(in CascadingParameterInfo parameterInfo);
+    object? GetCurrentValue(object? key, in CascadingParameterInfo parameterInfo);
 
     void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo);
 

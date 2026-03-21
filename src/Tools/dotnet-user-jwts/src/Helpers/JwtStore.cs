@@ -18,10 +18,7 @@ public class JwtStore
         Load();
 
         // For testing.
-        if (program is not null)
-        {
-            program.UserJwtsFilePath = _filePath;
-        }
+        program?.UserJwtsFilePath = _filePath;
     }
 
     public IDictionary<string, Jwt> Jwts { get; private set; } = new Dictionary<string, Jwt>();

@@ -16,9 +16,16 @@ internal sealed class TestInternalJSImportMethods : IInternalJSImportMethods
 
     public string GetApplicationEnvironment()
         => _environment;
+    
+    public string GetApplicationCulture()
+        => "en-US";
 
     public string GetPersistedState()
         => null;
+
+    public void AttachRootComponentToElement(string domElementSelector, int componentId, int rendererId) { }
+
+    public void EndUpdateRootComponents(long batchId) { }
 
     public void NavigationManager_EnableNavigationInterception(int rendererId) { }
 

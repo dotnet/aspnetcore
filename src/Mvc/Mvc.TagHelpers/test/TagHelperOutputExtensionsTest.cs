@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 
 public class TagHelperOutputExtensionsTest
 {
-    public static TheoryData CopyHtmlAttributeData_MaintainsOrder
+    public static TheoryData<string, TagHelperAttributeList, TagHelperAttributeList, IEnumerable<TagHelperAttribute>> CopyHtmlAttributeData_MaintainsOrder
     {
         get
         {
@@ -349,7 +349,7 @@ public class TagHelperOutputExtensionsTest
         Assert.Equal(expectedAttributes, output.Attributes, CaseSensitiveTagHelperAttributeComparer.Default);
     }
 
-    public static TheoryData CopyHtmlAttributeData_MultipleAttributesSameName
+    public static TheoryData<string, TagHelperAttributeList, IEnumerable<TagHelperAttribute>> CopyHtmlAttributeData_MultipleAttributesSameName
     {
         get
         {
@@ -630,7 +630,7 @@ public class TagHelperOutputExtensionsTest
         Assert.Equal(expectedAttribute, attribute);
     }
 
-    public static TheoryData MultipleAttributeSameNameData
+    public static TheoryData<Dictionary<string, string>, TagHelperAttributeList, TagHelperAttributeList> MultipleAttributeSameNameData
     {
         get
         {

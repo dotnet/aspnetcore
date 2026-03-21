@@ -11,9 +11,7 @@ namespace Microsoft.AspNetCore.Antiforgery;
 internal interface IClaimUidExtractor
 {
     /// <summary>
-    /// Extracts claims identifier.
+    /// Extracts claims identifier, and writes into <paramref name="destination"/> buffer.
     /// </summary>
-    /// <param name="claimsPrincipal">The <see cref="ClaimsPrincipal"/>.</param>
-    /// <returns>The claims identifier.</returns>
-    string? ExtractClaimUid(ClaimsPrincipal claimsPrincipal);
+    bool TryExtractClaimUidBytes(ClaimsPrincipal claimsPrincipal, Span<byte> destination);
 }

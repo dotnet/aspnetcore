@@ -22,6 +22,17 @@ APPLICATION_MANAGER::GetOrCreateApplicationInfo(
     _Out_ std::shared_ptr<APPLICATION_INFO>& ppApplicationInfo
 )
 {
+    // GetOrCreateApplicationInfo is called from proxymodule when a request is received.
+
+    PCWSTR pszVariableValue = nullptr;
+    DWORD cbLength = 0;
+    // Check for preload or warmup request, part of the application initialization process, see comments in ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop for more info
+    if (FAILED(pHttpContext.GetServerVariable("PRELOAD_REQUEST", &pszVariableValue, &cbLength)) &&
+        FAILED(pHttpContext.GetServerVariable("WARMUP_REQUEST", &pszVariableValue, &cbLength)))
+    {
+        // Set this value to indicate that a request has been received so we can disable shutdown logic in OnGlobalApplicationStop
+        m_hasStarted = true;
+    }
     auto &pApplication = *pHttpContext.GetApplication();
 
     // The configuration path is unique for each application and is used for the
@@ -123,7 +134,6 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
                 else
                 {
                     ++itr;
-
                 }
             }
 
@@ -143,22 +153,28 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
             }
         }
 
-        // If we receive a request at this point.
-        // OutOfProcess: we will create a new application with new configuration
-        // InProcess: the request would have to be rejected, as we are about to call g_HttpServer->RecycleProcess
-        // on the worker process
-
         if (!applicationsToRecycle.empty())
         {
             for (auto& application : applicationsToRecycle)
             {
                 try
                 {
-                    application->ShutDownApplication(/* fServerInitiated */ false);
+                    if (m_handlerResolver.GetHostingModel() == APP_HOSTING_MODEL::HOSTING_OUT_PROCESS
+                        || UseLegacyShutdown())
+                    {
+                        // Only shutdown the specific application when using OutOfProcess instead of the whole w3wp process
+                        application->ShutDownApplication(/* fServerInitiated */ false);
+                    }
+                    else
+                    {
+                        // Recycle the process to trigger OnGlobalStopListening
+                        // which will shutdown the server and stop listening for new requests for this app
+                        m_pHttpServer.RecycleProcess(L"AspNetCore InProcess Recycle Process on Demand");
+                    }
                 }
                 catch (...)
                 {
-                    LOG_ERRORF(L"Failed to stop application '%ls'", application->QueryApplicationInfoKey().c_str());
+                    LOG_ERRORF(L"Failed to recycle application '%ls'", application->QueryApplicationInfoKey().c_str());
                     OBSERVE_CAUGHT_EXCEPTION()
 
                     // Failed to recycle an application. Log an event
@@ -176,28 +192,31 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
             }
         }
 
-        // Remove apps after calling shutdown on each of them
-        // This is exclusive to in-process, as the shutdown of an in-process app recycles
-        // the entire worker process.
-        if (m_handlerResolver.GetHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
+        if (UseLegacyShutdown())
         {
-            SRWExclusiveLock lock(m_srwLock);
-            const std::wstring configurationPath = pszApplicationId;
-
-            auto itr = m_pApplicationInfoHash.begin();
-            while (itr != m_pApplicationInfoHash.end())
+            // Remove apps after calling shutdown on each of them
+            // This is exclusive to in-process, as the shutdown of an in-process app recycles
+            // the entire worker process.
+            if (m_handlerResolver.GetHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
             {
-                if (itr->second != nullptr && itr->second->ConfigurationPathApplies(configurationPath)
-                    && std::find(applicationsToRecycle.begin(), applicationsToRecycle.end(), itr->second) != applicationsToRecycle.end())
+                SRWExclusiveLock lock(m_srwLock);
+                const std::wstring configurationPath = pszApplicationId;
+
+                auto itr = m_pApplicationInfoHash.begin();
+                while (itr != m_pApplicationInfoHash.end())
                 {
-                    itr = m_pApplicationInfoHash.erase(itr);
+                    if (itr->second != nullptr && itr->second->ConfigurationPathApplies(configurationPath)
+                        && std::find(applicationsToRecycle.begin(), applicationsToRecycle.end(), itr->second) != applicationsToRecycle.end())
+                    {
+                        itr = m_pApplicationInfoHash.erase(itr);
+                    }
+                    else
+                    {
+                        ++itr;
+                    }
                 }
-                else
-                {
-                    ++itr;
-                }
-            }
-        } // Release Exclusive m_srwLock
+            } // Release Exclusive m_srwLock
+        }
     }
     CATCH_RETURN()
 
@@ -211,14 +230,19 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
 VOID
 APPLICATION_MANAGER::ShutDown()
 {
+    // During shutdown we lock until we delete the application
+    SRWExclusiveLock lock(m_srwLock);
+
     // We are guaranteed to only have one outstanding OnGlobalStopListening event at a time
     // However, it is possible to receive multiple OnGlobalStopListening events
     // Protect against this by checking if we already shut down.
+    if (g_fInShutdown)
+    {
+        return;
+    }
+
     g_fInShutdown = TRUE;
     g_fInAppOfflineShutdown = true;
-
-    // During shutdown we lock until we delete the application
-    SRWExclusiveLock lock(m_srwLock);
     for (auto & [str, applicationInfo] : m_pApplicationInfoHash)
     {
         applicationInfo->ShutDownApplication(/* fServerInitiated */ true);

@@ -64,8 +64,8 @@ public class CookieBuilderTests
         Assert.Contains("key=value", options.Extensions);
 
         var cookie = options.CreateCookieHeader("name", "value");
-        Assert.Equal("name", cookie.Name);
-        Assert.Equal("value", cookie.Value);
+        Assert.Equal("name", cookie.Name.AsSpan());
+        Assert.Equal("value", cookie.Value.AsSpan());
         Assert.Equal(2, cookie.Extensions.Count);
         Assert.Contains("simple", cookie.Extensions);
         Assert.Contains("key=value", cookie.Extensions);

@@ -6,9 +6,9 @@
 
 <fieldset>
     <select id="render-mode" @bind="SelectedRenderMode">
-        <option>@RenderMode.FastGrid</option>
-        <option>@RenderMode.PlainTable</option>
-        <option>@RenderMode.ComplexTable</option>
+        <option>@GridRenderMode.FastGrid</option>
+        <option>@GridRenderMode.PlainTable</option>
+        <option>@GridRenderMode.ComplexTable</option>
     </select>
 
     <button id="show" @onclick="Show">Show</button>
@@ -23,7 +23,7 @@
 {
     <p><em>(No data assigned)</em></p>
 }
-else if (SelectedRenderMode == RenderMode.FastGrid)
+else if (SelectedRenderMode == GridRenderMode.FastGrid)
 {
     <p>FastGrid represents a minimal, optimized implementation of a grid.</p>
 
@@ -50,13 +50,13 @@ else if (SelectedRenderMode == RenderMode.FastGrid)
         <GridColumn TRowData="WeatherForecast" Title="Summary">@context.Summary</GridColumn>
     </Grid>
 }
-else if (SelectedRenderMode == RenderMode.PlainTable)
+else if (SelectedRenderMode == GridRenderMode.PlainTable)
 {
     <p>PlainTable represents a minimal but not optimized implementation of a grid.</p>
 
     <Wasm.Performance.TestApp.Shared.PlainTable.TableComponent Data="@forecasts" Columns="@Columns" />
 }
-else if (SelectedRenderMode == RenderMode.ComplexTable)
+else if (SelectedRenderMode == GridRenderMode.ComplexTable)
 {
     <p>ComplexTable represents a maximal, not optimized implementation of a grid, using a wide range of Blazor features at once.</p>
 
@@ -64,9 +64,9 @@ else if (SelectedRenderMode == RenderMode.ComplexTable)
 }
 
 @code {
-    public enum RenderMode { PlainTable, ComplexTable, FastGrid }
+    public enum GridRenderMode { PlainTable, ComplexTable, FastGrid }
 
-    public RenderMode SelectedRenderMode { get; set; } = RenderMode.FastGrid;
+    public GridRenderMode SelectedRenderMode { get; set; } = GridRenderMode.FastGrid;
 
     private WeatherForecast[] forecasts;
     public List<string> Columns { get; set; } = new List<string>

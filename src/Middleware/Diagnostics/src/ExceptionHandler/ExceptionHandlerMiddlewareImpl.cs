@@ -127,13 +127,12 @@ internal sealed class ExceptionHandlerMiddlewareImpl
             return;
         }
 
-        DiagnosticsTelemetry.ReportUnhandledException(_logger, context, edi.SourceException);
-
         // We can't do anything if the response has already started, just abort.
         if (context.Response.HasStarted)
         {
             _logger.ResponseStartedErrorHandler();
 
+            DiagnosticsTelemetry.ReportUnhandledException(_logger, context, edi.SourceException);
             _metrics.RequestException(exceptionName, ExceptionResult.Skipped, handler: null);
             edi.Throw();
         }
@@ -165,54 +164,99 @@ internal sealed class ExceptionHandlerMiddlewareImpl
 
             context.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
             context.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
-            context.Response.StatusCode = DefaultStatusCode;
+            context.Response.StatusCode = _options.StatusCodeSelector?.Invoke(edi.SourceException) ?? DefaultStatusCode;
             context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
 
-            string? handler = null;
-            var handled = false;
+            string? handlerTag = null;
+            var result = ExceptionHandledType.Unhandled;
             foreach (var exceptionHandler in _exceptionHandlers)
             {
-                handled = await exceptionHandler.TryHandleAsync(context, edi.SourceException, context.RequestAborted);
-                if (handled)
+                if (await exceptionHandler.TryHandleAsync(context, edi.SourceException, context.RequestAborted))
                 {
-                    handler = exceptionHandler.GetType().FullName;
+                    result = ExceptionHandledType.ExceptionHandlerService;
+                    handlerTag = exceptionHandler.GetType().FullName;
                     break;
                 }
             }
 
-            if (!handled)
+            if (result == ExceptionHandledType.Unhandled)
             {
                 if (_options.ExceptionHandler is not null)
                 {
                     await _options.ExceptionHandler!(context);
+
+                    // If the response has started, assume exception handler was successful.
+                    if (context.Response.HasStarted)
+                    {
+                        if (_options.ExceptionHandlingPath.HasValue)
+                        {
+                            result = ExceptionHandledType.ExceptionHandlingPath;
+                            handlerTag = _options.ExceptionHandlingPath.Value;
+                        }
+                        else
+                        {
+                            result = ExceptionHandledType.ExceptionHandlerDelegate;
+                        }
+                    }
                 }
                 else
                 {
-                    handled = await _problemDetailsService!.TryWriteAsync(new()
+                    if (await _problemDetailsService!.TryWriteAsync(new()
                     {
                         HttpContext = context,
                         AdditionalMetadata = exceptionHandlerFeature.Endpoint?.Metadata,
-                        ProblemDetails = { Status = DefaultStatusCode },
+                        ProblemDetails = { Status = context.Response.StatusCode },
                         Exception = edi.SourceException,
-                    });
-                    if (handled)
+                    }))
                     {
-                        handler = _problemDetailsService.GetType().FullName;
+                        result = ExceptionHandledType.ProblemDetailsService;
+                        handlerTag = _problemDetailsService.GetType().FullName;
                     }
                 }
             }
-            // If the response has already started, assume exception handler was successful.
-            if (context.Response.HasStarted || handled || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
+
+            if (result != ExceptionHandledType.Unhandled || _options.StatusCodeSelector != null || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
             {
-                const string eventName = "Microsoft.AspNetCore.Diagnostics.HandledException";
-                if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled(eventName))
+                var suppressDiagnostics = false;
+
+                // Customers may prefer to handle the exception and to do their own diagnostics.
+                // In that case, it can be undesirable for the middleware to log the exception at an error level.
+                // Run the configured callback to determine if exception diagnostics in the middleware should be suppressed.
+                if (_options.SuppressDiagnosticsCallback is { } suppressCallback)
                 {
-                    WriteDiagnosticEvent(_diagnosticListener, eventName, new { httpContext = context, exception = edi.SourceException });
+                    var suppressDiagnosticsContext = new ExceptionHandlerSuppressDiagnosticsContext
+                    {
+                        HttpContext = context,
+                        Exception = edi.SourceException,
+                        ExceptionHandledBy = result
+                    };
+                    suppressDiagnostics = suppressCallback(suppressDiagnosticsContext);
+                }
+                else
+                {
+                    // Default behavior is to suppress diagnostics if the exception was handled by an IExceptionHandler service instance.
+                    suppressDiagnostics = result == ExceptionHandledType.ExceptionHandlerService;
                 }
 
-                _metrics.RequestException(exceptionName, ExceptionResult.Handled, handler);
+                if (!suppressDiagnostics)
+                {
+                    // Note: Microsoft.AspNetCore.Diagnostics.HandledException is used by AppInsights to log errors.
+                    // The diagnostics event is run together with standard exception logging.
+                    const string eventName = "Microsoft.AspNetCore.Diagnostics.HandledException";
+                    if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled(eventName))
+                    {
+                        WriteDiagnosticEvent(_diagnosticListener, eventName, new { httpContext = context, exception = edi.SourceException });
+                    }
+
+                    DiagnosticsTelemetry.ReportUnhandledException(_logger, context, edi.SourceException);
+                }
+
+                _metrics.RequestException(exceptionName, ExceptionResult.Handled, handlerTag);
                 return;
             }
+
+            // Exception is unhandled. Record diagnostics for the unhandled exception before it is wrapped.
+            DiagnosticsTelemetry.ReportUnhandledException(_logger, context, edi.SourceException);
 
             edi = ExceptionDispatchInfo.Capture(new InvalidOperationException($"The exception handler configured on {nameof(ExceptionHandlerOptions)} produced a 404 status response. " +
                 $"This {nameof(InvalidOperationException)} containing the original exception was thrown since this is often due to a misconfigured {nameof(ExceptionHandlerOptions.ExceptionHandlingPath)}. " +
@@ -222,6 +266,9 @@ internal sealed class ExceptionHandlerMiddlewareImpl
         {
             // Suppress secondary exceptions, re-throw the original.
             _logger.ErrorHandlerException(ex2);
+
+            // There was an error handling the exception. Log original unhandled exception.
+            DiagnosticsTelemetry.ReportUnhandledException(_logger, context, edi.SourceException);
         }
         finally
         {

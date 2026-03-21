@@ -7,19 +7,30 @@ using System.Reflection;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.Logging;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class ViewEngineTests : IClassFixture<MvcTestFixture<RazorWebSite.Startup>>
+public class ViewEngineTests : LoggedTest
 {
     private static readonly Assembly _assembly = typeof(ViewEngineTests).GetTypeInfo().Assembly;
 
-    public ViewEngineTests(MvcTestFixture<RazorWebSite.Startup> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        Client = fixture.CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<RazorWebSite.Startup>(LoggerFactory);
+        Client = Factory.CreateDefaultClient();
     }
 
-    public HttpClient Client { get; }
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public MvcTestFixture<RazorWebSite.Startup> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     public static IEnumerable<object[]> RazorView_ExecutesPageAndLayoutData
     {
@@ -161,7 +172,7 @@ expander-partial";
         Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
     }
 
-    public static TheoryData ViewLocationExpanders_GetIsMainPageFromContextData
+    public static TheoryData<string, string> ViewLocationExpanders_GetIsMainPageFromContextData
     {
         get
         {

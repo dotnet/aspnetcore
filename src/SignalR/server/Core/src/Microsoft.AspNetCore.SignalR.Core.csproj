@@ -7,6 +7,7 @@
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,10 +21,12 @@
     <Compile Include="$(SignalRSharedSourceRoot)MessageBuffer.cs" Link="MessageBuffer.cs" />
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Diagnostics\ActivityCreator.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
@@ -35,6 +38,7 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Microbenchmarks" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.SignalR.Client.FunctionalTests" />    
   </ItemGroup>
 
 </Project>

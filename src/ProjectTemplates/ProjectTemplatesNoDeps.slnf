@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\..\\AspNetCore.sln",
+    "path": "..\\..\\AspNetCore.slnx",
     "projects": [
       "src\\ProjectTemplates\\Web.Client.ItemTemplates\\Microsoft.DotNet.Web.Client.ItemTemplates.csproj",
       "src\\ProjectTemplates\\Web.ItemTemplates\\Microsoft.DotNet.Web.ItemTemplates.csproj",

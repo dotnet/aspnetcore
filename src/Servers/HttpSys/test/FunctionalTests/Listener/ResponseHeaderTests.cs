@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.InternalTesting;
@@ -207,20 +208,66 @@ public class ResponseHeaderTests : IDisposable
     }
 
     [ConditionalFact]
-    public async Task ResponseHeaders_HTTP10KeepAliveRequest_Gets11Close()
+    public async Task ResponseHeaders_HTTP10KeepAliveRequest_KeepAliveHeader_Gets11NoClose()
     {
         string address;
         using (var server = Utilities.CreateHttpServer(out address))
         {
-            // Http.Sys does not support 1.0 keep-alives.
+            // Track the number of times ConnectCallback is invoked to ensure the underlying socket wasn't closed.
+            int connectCallbackInvocations = 0;
+            var handler = new SocketsHttpHandler();
+            handler.ConnectCallback = (context, cancellationToken) =>
+            {
+                Interlocked.Increment(ref connectCallbackInvocations);
+                return ConnectCallback(context, cancellationToken);
+            };
+
+            using (var client = new HttpClient(handler))
+            {
+                // Send the first request
+                Task<HttpResponseMessage> responseTask = SendRequestAsync(address, usehttp11: false, sendKeepAlive: true, httpClient: client);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+                context.Dispose();
+
+                HttpResponseMessage response = await responseTask;
+                response.EnsureSuccessStatusCode();
+                Assert.Equal(new Version(1, 1), response.Version);
+                Assert.Null(response.Headers.ConnectionClose);
+
+                // Send the second request
+                responseTask = SendRequestAsync(address, usehttp11: false, sendKeepAlive: true, httpClient: client);
+                context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+                context.Dispose();
+
+                response = await responseTask;
+                response.EnsureSuccessStatusCode();
+                Assert.Equal(new Version(1, 1), response.Version);
+                Assert.Null(response.Headers.ConnectionClose);
+            }
+
+            // Verify that ConnectCallback was only called once
+            Assert.Equal(1, connectCallbackInvocations);
+        }
+    }
+
+    [ConditionalFact]
+    public async Task ResponseHeaders_HTTP10KeepAliveRequest_ChunkedTransferEncoding_Gets11Close()
+    {
+        string address;
+        using (var server = Utilities.CreateHttpServer(out address))
+        {
             Task<HttpResponseMessage> responseTask = SendRequestAsync(address, usehttp11: false, sendKeepAlive: true);
 
             var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
+            context.Response.Headers["Transfer-Encoding"] = new string[] { "chunked" };
+            var responseBytes = Encoding.ASCII.GetBytes("10\r\nManually Chunked\r\n0\r\n\r\n");
+            await context.Response.Body.WriteAsync(responseBytes, 0, responseBytes.Length);
             context.Dispose();
 
             HttpResponseMessage response = await responseTask;
             response.EnsureSuccessStatusCode();
             Assert.Equal(new Version(1, 1), response.Version);
+            Assert.True(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
             Assert.True(response.Headers.ConnectionClose.Value);
         }
     }
@@ -289,8 +336,9 @@ public class ResponseHeaderTests : IDisposable
         }
     }
 
-    private async Task<HttpResponseMessage> SendRequestAsync(string uri, bool usehttp11 = true, bool sendKeepAlive = false)
+    private async Task<HttpResponseMessage> SendRequestAsync(string uri, bool usehttp11 = true, bool sendKeepAlive = false, HttpClient httpClient = null)
     {
+        httpClient ??= _client;
         var request = new HttpRequestMessage(HttpMethod.Get, uri);
         if (!usehttp11)
         {
@@ -300,7 +348,7 @@ public class ResponseHeaderTests : IDisposable
         {
             request.Headers.Add("Connection", "Keep-Alive");
         }
-        return await _client.SendAsync(request);
+        return await httpClient.SendAsync(request);
     }
 
     private async Task<HttpResponseMessage> SendHeadRequestAsync(string uri, bool usehttp11 = true)
@@ -311,5 +359,20 @@ public class ResponseHeaderTests : IDisposable
             request.Version = new Version(1, 0);
         }
         return await _client.SendAsync(request);
+    }
+
+    private static async ValueTask<Stream> ConnectCallback(SocketsHttpConnectionContext connectContext, CancellationToken ct)
+    {
+        var s = new Socket(SocketType.Stream, ProtocolType.Tcp) { NoDelay = true };
+        try
+        {
+            await s.ConnectAsync(connectContext.DnsEndPoint, ct);
+            return new NetworkStream(s, ownsSocket: true);
+        }
+        catch
+        {
+            s.Dispose();
+            throw;
+        }
     }
 }

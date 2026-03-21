@@ -58,39 +58,38 @@ internal readonly struct PrefixResolver : IDisposable
             {
                 separatorX = x.Value.Span[currentXPos..].IndexOfAny('.', '[');
                 separatorY = y.Value.Span[currentYPos..].IndexOfAny('.', '[');
+                int compare;
 
                 if (separatorX == -1 && separatorY == -1)
                 {
-                    // no more segments, compare the remaining substrings
+                    // Both x and y have no more segments, compare the remaining segments
                     return MemoryExtensions.CompareTo(x.Value.Span[currentXPos..], y.Value.Span[currentYPos..], StringComparison.Ordinal);
                 }
                 else if (separatorX == -1)
                 {
-                    // x has no more segments, but y does, so x is less than y
-                    return -1;
+                    // x has no more segments, y has remaining segments
+                    compare = MemoryExtensions.CompareTo(x.Value.Span[currentXPos..], y.Value.Span[currentYPos..][..separatorY], StringComparison.Ordinal);
+                    if (compare == 0 && !checkPrefix)
+                    {
+                        return -1;
+                    }
+                    return compare;
                 }
                 else if (separatorY == -1)
                 {
-                    if (!checkPrefix)
+                    // y has no more segments, x has remaining segments
+                    compare = MemoryExtensions.CompareTo(x.Value.Span[currentXPos..][..separatorX], y.Value.Span[currentYPos..], StringComparison.Ordinal);
+                    if (compare == 0 && !checkPrefix)
                     {
-                        // We are just sorting, so x is greater than y because it has more segments.
                         return 1;
                     }
-
-                    var match = MemoryExtensions.CompareTo(
-                        x.Value.Span[currentXPos..][..separatorX],
-                        y.Value.Span[currentYPos..], StringComparison.Ordinal);
-
-                    return match;
+                    return compare;
                 }
 
-                // both have segments, compare the segments
-                var segmentX = x.Value.Span[currentXPos..][..separatorX];
-                var segmentY = y.Value.Span[currentYPos..][..separatorY];
-                var compareResult = MemoryExtensions.CompareTo(segmentX, segmentY, StringComparison.Ordinal);
-                if (compareResult != 0)
+                compare = MemoryExtensions.CompareTo(x.Value.Span[currentXPos..][..separatorX], y.Value.Span[currentYPos..][..separatorY], StringComparison.Ordinal);
+                if (compare != 0)
                 {
-                    return compareResult;
+                    return compare;
                 }
 
                 currentXPos += separatorX + 1;

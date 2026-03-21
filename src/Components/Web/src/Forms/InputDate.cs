@@ -12,10 +12,10 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// An input component for editing date values.
 /// The supported types for the date value are:
 /// <list type="bullet">
-/// <item><see cref="DateTime"/></item>
-/// <item><see cref="DateTimeOffset"/></item>
-/// <item><see cref="DateOnly"/></item>
-/// <item><see cref="TimeOnly"/></item>
+/// <item><description><see cref="DateTime"/></description></item>
+/// <item><description><see cref="DateTimeOffset"/></description></item>
+/// <item><description><see cref="DateOnly"/></description></item>
+/// <item><description><see cref="TimeOnly"/></description></item>
 /// </list>
 /// </summary>
 public class InputDate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : InputBase<TValue>
@@ -86,12 +86,13 @@ public class InputDate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberType
         builder.OpenElement(0, "input");
         builder.AddMultipleAttributes(1, AdditionalAttributes);
         builder.AddAttribute(2, "type", _typeAttributeValue);
-        builder.AddAttributeIfNotNullOrEmpty(3, "name", NameAttributeValue);
-        builder.AddAttribute(4, "class", CssClass);
-        builder.AddAttribute(5, "value", CurrentValueAsString);
-        builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
+        builder.AddAttributeIfNotNullOrEmpty(3, "id", IdAttributeValue);
+        builder.AddAttributeIfNotNullOrEmpty(4, "name", NameAttributeValue);
+        builder.AddAttribute(5, "class", CssClass);
+        builder.AddAttribute(6, "value", CurrentValueAsString);
+        builder.AddAttribute(7, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
         builder.SetUpdatesAttributeName("value");
-        builder.AddElementReferenceCapture(7, __inputReference => Element = __inputReference);
+        builder.AddElementReferenceCapture(8, __inputReference => Element = __inputReference);
         builder.CloseElement();
     }
 

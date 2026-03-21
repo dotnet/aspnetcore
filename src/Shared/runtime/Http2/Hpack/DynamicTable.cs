@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+
 namespace System.Net.Http.HPack
 {
     internal sealed class DynamicTable
@@ -14,7 +16,7 @@ namespace System.Net.Http.HPack
 
         public DynamicTable(int maxSize)
         {
-            _buffer = new HeaderField[maxSize / HeaderField.RfcOverhead];
+            _buffer = [];
             _maxSize = maxSize;
         }
 
@@ -67,18 +69,17 @@ namespace System.Net.Http.HPack
                 return;
             }
 
-            var entry = new HeaderField(staticTableIndex, name, value);
-            _buffer[_insertIndex] = entry;
-            _insertIndex = (_insertIndex + 1) % _buffer.Length;
-            _size += entry.Length;
-            _count++;
-        }
-
-        public void Resize(int maxSize)
-        {
-            if (maxSize > _maxSize)
+            // Ensure that we have at least one slot available.
+            if (_count == _buffer.Length)
             {
-                var newBuffer = new HeaderField[maxSize / HeaderField.RfcOverhead];
+                int maxCapacity = _maxSize / HeaderField.RfcOverhead;
+                Debug.Assert(_count + 1 <= maxCapacity);
+
+                // Double the size of the current buffer, starting with at least 16 entries.
+                int newBufferSize = Math.Min(Math.Max(16, _buffer.Length * 2), maxCapacity);
+                Debug.Assert(newBufferSize > _count);
+
+                var newBuffer = new HeaderField[newBufferSize];
 
                 int headCount = Math.Min(_buffer.Length - _removeIndex, _count);
                 int tailCount = _count - headCount;
@@ -89,11 +90,27 @@ namespace System.Net.Http.HPack
                 _buffer = newBuffer;
                 _removeIndex = 0;
                 _insertIndex = _count;
-                _maxSize = maxSize;
             }
-            else
+
+            var entry = new HeaderField(staticTableIndex, name, value);
+            _buffer[_insertIndex] = entry;
+
+            if (++_insertIndex == _buffer.Length)
             {
-                _maxSize = maxSize;
+                _insertIndex = 0;
+            }
+
+            _size += entry.Length;
+            _count++;
+        }
+
+        public void UpdateMaxSize(int maxSize)
+        {
+            int previousMax = _maxSize;
+            _maxSize = maxSize;
+
+            if (maxSize < previousMax)
+            {
                 EnsureAvailable(0);
             }
         }
@@ -107,7 +124,11 @@ namespace System.Net.Http.HPack
                 field = default;
 
                 _count--;
-                _removeIndex = (_removeIndex + 1) % _buffer.Length;
+
+                if (++_removeIndex == _buffer.Length)
+                {
+                    _removeIndex = 0;
+                }
             }
         }
     }

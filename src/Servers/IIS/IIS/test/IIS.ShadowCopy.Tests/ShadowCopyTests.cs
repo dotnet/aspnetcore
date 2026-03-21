@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 [Collection(PublishedSitesCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class ShadowCopyTests : IISFunctionalTestBase
 {
     public ShadowCopyTests(PublishedSitesFixture fixture) : base(fixture)
@@ -139,6 +138,45 @@ public class ShadowCopyTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
+    public async Task ShadowCopyDetectsSubdirectoryDllChange()
+    {
+        using var directory = TempDirectory.Create();
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+        deploymentParameters.HandlerSettings["enableShadowCopy"] = "true";
+        deploymentParameters.HandlerSettings["shadowCopyDirectory"] = directory.DirectoryPath;
+
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        var response = await deploymentResult.HttpClient.GetAsync("Wow!");
+        Assert.True(response.IsSuccessStatusCode);
+
+        // Find a DLL in a subdirectory and touch it to trigger change detection
+        var contentRoot = new DirectoryInfo(deploymentResult.ContentRoot);
+        string dllPath = null;
+
+        foreach (var subDir in contentRoot.GetDirectories())
+        {
+            var dll = subDir.GetFiles("*.dll", SearchOption.AllDirectories).FirstOrDefault();
+            if (dll is not null)
+            {
+                dllPath = dll.FullName;
+                break;
+            }
+        }
+
+        Assert.NotNull(dllPath);
+
+        // Rewrite the file to update its timestamp
+        var fileContents = File.ReadAllBytes(dllPath);
+        File.WriteAllBytes(dllPath, fileContents);
+
+        await deploymentResult.AssertRecycledAsync();
+
+        response = await deploymentResult.HttpClient.GetAsync("Wow!");
+        Assert.True(response.IsSuccessStatusCode);
+    }
+
+    [ConditionalFact]
     public async Task ShadowCopyDeleteFolderDuringShutdownWorks()
     {
         using var directory = TempDirectory.Create();
@@ -235,6 +273,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/58106")]
     public async Task ShadowCopyCleansUpOlderFolders()
     {
         using var directory = TempDirectory.Create();
@@ -389,7 +428,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
         }
     }
 
-    // copied from https://learn.microsoft.com/en-us/dotnet/standard/io/how-to-copy-directories
+    // copied from https://learn.microsoft.com/dotnet/standard/io/how-to-copy-directories
     private static void DirectoryCopy(string sourceDirName, string destDirName, bool copySubDirs, string ignoreDirectory = "")
     {
         // Get the subdirectories for the specified directory.

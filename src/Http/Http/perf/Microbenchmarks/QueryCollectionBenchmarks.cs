@@ -13,19 +13,10 @@ namespace Microsoft.AspNetCore.Http;
 [CategoriesColumn]
 public class QueryCollectionBenchmarks
 {
-    private string _queryString;
-    private string _singleValue;
-    private string _singleValueWithPlus;
-    private string _encoded;
-
-    [IterationSetup]
-    public void Setup()
-    {
-        _queryString = "?key1=value1&key2=value2&key3=value3&key4=&key5=";
-        _singleValue = "?key1=value1";
-        _singleValueWithPlus = "?key1=value1+value2+value3";
-        _encoded = "?key1=value%231";
-    }
+    private const string _queryString = "?key1=value1&key2=value2&key3=value3&key4=&key5=";
+    private const string _singleValue = "?key1=value1";
+    private const string _singleValueWithPlus = "?key1=value1+value2+value3";
+    private const string _encoded = "?key1=value%231";
 
     [Benchmark(Description = "ParseNew")]
     [BenchmarkCategory("QueryString")]

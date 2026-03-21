@@ -19,7 +19,7 @@
 .PARAMETER RunQuarantinedTests
     By default quarantined tests are not run. Set this to $true to run only the quarantined tests.
 .PARAMETER TargetArchitecture
-    The CPU architecture to build for (x64, x86, arm). Default=x64
+    The CPU architecture to build for (x64, x86, arm64). Default=x64
 .PARAMETER MSBuildArguments
     Additional MSBuild arguments to be passed through.
 #>
@@ -31,7 +31,7 @@ param(
     [string]$HelixQueues = "Windows.10.Amd64.Server20H2.Open",
     [switch]$RunQuarantinedTests,
 
-    [ValidateSet('x64', 'x86', 'arm', 'arm64')]
+    [ValidateSet('x64', 'x86', 'arm64')]
     [string]$TargetArchitecture = "x64",
 
     # Capture the rest

@@ -126,7 +126,7 @@ public class EndpointMetadataProviderTest
             m => Assert.True(m is RouteNameMetadata),
             m => Assert.True(m is SuppressLinkGenerationMetadata),
             m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Finally }),
-            m => Assert.True(m is IRouteDiagnosticsMetadata { Route: "/{controller}/{action}/{id?}" }));
+            m => Assert.True(m is IRouteDiagnosticsMetadata { Route: "/Test/ActionWithParameterMetadata/{id?}" }));
     }
 
     [Theory]

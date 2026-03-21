@@ -9,6 +9,14 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate;
 public class NegotiateOptions : AuthenticationSchemeOptions
 {
     /// <summary>
+    /// Initializes a new instance of <see cref="NegotiateOptions"/>.
+    /// </summary>
+    public NegotiateOptions()
+    {
+        Events = new NegotiateEvents();
+    }
+
+    /// <summary>
     /// The object provided by the application to process events raised by the negotiate authentication handler.
     /// The application may use the existing NegotiateEvents instance and assign delegates only to the events it
     /// wants to process. The application may also replace it with its own derived instance.

@@ -16,7 +16,7 @@
     <script>
         Blazor.start({
             loadBootResource: function (type, name, defaultUri, integrity) {
-                return type === 'dotnetjs'
+                return type === 'dotnetjs' || type === 'manifest'
                     ? `${defaultUri}?customizedbootresource=true`
                     : fetch(defaultUri, { integrity: integrity, cache: 'no-cache', headers: { 'customizedbootresource': 'true' } });
             },

@@ -19,4 +19,8 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.DataProtection.Extensions.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.DataProtection.Tests" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'">
+    <Reference Include="System.Memory" />
+  </ItemGroup>
 </Project>

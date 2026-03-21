@@ -25,6 +25,14 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private int _visibleItemCapacity;
 
+    // If the client reports a viewport so large that it could show more than MaxItemCount items,
+    // we keep track of the "unused" capacity, which is the amount of blank space we want to leave
+    // at the bottom of the viewport (as a number of items). If we didn't leave this blank space,
+    // then the bottom spacer would always stay visible and the client would request more items in an
+    // infinite (but asynchronous) loop, as it would believe there are more items to render and
+    // enough space to render them into.
+    private int _unusedItemCapacity;
+
     private int _itemCount;
 
     private int _loadedItemsStartIndex;
@@ -35,9 +43,13 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private float _itemSize;
 
+    private float _lastSetItemSize;
+
     private IEnumerable<TItem>? _loadedItems;
 
     private CancellationTokenSource? _refreshCts;
+
+    private bool _skipNextDistributionRefresh;
 
     private Exception? _refreshException;
 
@@ -51,11 +63,17 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private bool _loading;
 
+    internal float _totalMeasuredHeight;
+
+    internal int _measuredItemCount;
+
+    internal bool _pendingScrollToBottom;
+
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
 
     /// <summary>
-    /// Gets or sets the item template for the list.
+    /// Gets or sets the item template for the list. See <see cref="ItemContent"/>.
     /// </summary>
     [Parameter]
     public RenderFragment<TItem>? ChildContent { get; set; }
@@ -104,7 +122,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// in the page.
     /// </summary>
     [Parameter]
-    public int OverscanCount { get; set; } = 3;
+    public int OverscanCount { get; set; } = 15;
 
     /// <summary>
     /// Gets or sets the tag name of the HTML element that will be used as the virtualization spacer.
@@ -119,6 +137,17 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     public string SpacerElement { get; set; } = "div";
 
     /// <summary>
+    /// Gets or sets the maximum number of items that will be rendered, even if the client reports
+    /// that its viewport is large enough to show more. The default value is 100.
+    ///
+    /// This should only be used as a safeguard against excessive memory usage or large data loads.
+    /// Do not set this to a smaller number than you expect to fit on a realistic-sized window, because
+    /// that will leave a blank gap below and the user may not be able to see the rest of the content.
+    /// </summary>
+    [Parameter]
+    public int MaxItemCount { get; set; } = 100;
+
+    /// <summary>
     /// Instructs the component to re-request data from its <see cref="ItemsProvider"/>.
     /// This is useful if external data may have changed. There is no need to call this
     /// when using <see cref="Items"/>.
@@ -129,6 +158,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // We don't auto-render after this operation because in the typical use case, the
         // host component calls this from one of its lifecycle methods, and will naturally
         // re-render afterwards anyway. It's not desirable to re-render twice.
+        _totalMeasuredHeight = 0;
+        _measuredItemCount = 0;
         await RefreshDataCoreAsync(renderOnSuccess: false);
     }
 
@@ -144,6 +175,15 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         if (_itemSize <= 0)
         {
             _itemSize = ItemSize;
+        }
+
+        // Without this reset, visibleItemCapacity is under/over-estimated after a size change,
+        // causing extra provider calls that may never complete (e.g., async providers).
+        if (_lastSetItemSize != ItemSize)
+        {
+            _lastSetItemSize = ItemSize;
+            _totalMeasuredHeight = 0;
+            _measuredItemCount = 0;
         }
 
         if (ItemsProvider != null)
@@ -189,6 +229,18 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _jsInterop = new VirtualizeJsInterop(this, JSRuntime);
             await _jsInterop.InitializeAsync(_spacerBefore, _spacerAfter);
         }
+
+        if (_pendingScrollToBottom && _jsInterop is not null)
+        {
+            _pendingScrollToBottom = false;
+            await _jsInterop.ScrollToBottomAsync();
+        }
+
+        // After render the set of items could change. Tell JS to refresh ResizeObserver.
+        if (!firstRender && _jsInterop is not null)
+        {
+            await _jsInterop.RefreshObserversAsync();
+        }
     }
 
     /// <inheritdoc />
@@ -204,7 +256,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         builder.OpenElement(0, SpacerElement);
         builder.AddAttribute(1, "style", GetSpacerStyle(_itemsBefore));
-        builder.AddElementReferenceCapture(2, elementReference => _spacerBefore = elementReference);
+        builder.AddAttribute(2, "aria-hidden", "true");
+        builder.AddElementReferenceCapture(3, elementReference => _spacerBefore = elementReference);
         builder.CloseElement();
 
         var lastItemIndex = Math.Min(_itemsBefore + _visibleItemCapacity, _itemCount);
@@ -237,11 +290,17 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
             builder.OpenRegion(5);
 
-            // Render the loaded items.
+            // Render items with comment delimiters for JS height measurement (N+1 fence pattern).
             foreach (var item in itemsToShow)
             {
+                builder.AddMarkupContent(0, "<!--virtualize:item-->");
                 _itemTemplate(item)(builder);
                 _lastRenderedItemCount++;
+            }
+
+            if (_lastRenderedItemCount > 0)
+            {
+                builder.AddMarkupContent(1, "<!--virtualize:item-->");
             }
 
             renderIndex += _lastRenderedItemCount;
@@ -264,55 +323,85 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         var itemsAfter = Math.Max(0, _itemCount - _visibleItemCapacity - _itemsBefore);
 
         builder.OpenElement(7, SpacerElement);
-        builder.AddAttribute(8, "style", GetSpacerStyle(itemsAfter));
-        builder.AddElementReferenceCapture(9, elementReference => _spacerAfter = elementReference);
+        builder.AddAttribute(8, "aria-hidden", "true");
+        builder.AddAttribute(9, "style", GetSpacerStyle(itemsAfter, _unusedItemCapacity));
+        builder.AddElementReferenceCapture(10, elementReference => _spacerAfter = elementReference);
 
         builder.CloseElement();
     }
 
-    private string GetSpacerStyle(int itemsInSpacer)
-        => $"height: {(itemsInSpacer * _itemSize).ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0;";
-
-    void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
+    private string GetSpacerStyle(int itemsInSpacer, int numItemsGapAbove)
     {
-        CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity);
+        var avgHeight = GetItemHeight();
+        return numItemsGapAbove == 0
+            ? GetSpacerStyle(itemsInSpacer)
+            : $"height: {(itemsInSpacer * avgHeight).ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0; transform: translateY({(numItemsGapAbove * avgHeight).ToString(CultureInfo.InvariantCulture)}px);";
+    }
 
-        // Since we know the before spacer is now visible, we absolutely have to slide the window up
-        // by at least one element. If we're not doing that, the previous item size info we had must
-        // have been wrong, so just move along by one in that case to trigger an update and apply the
-        // new size info.
-        if (itemsBefore == _itemsBefore && itemsBefore > 0)
+    private string GetSpacerStyle(int itemsInSpacer)
+        => $"height: {(itemsInSpacer * GetItemHeight()).ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0;";
+
+    private float GetItemHeight()
+        => _measuredItemCount > 0 ? _totalMeasuredHeight / _measuredItemCount : _itemSize;
+
+    private bool ProcessMeasurements(float measuredItemHeightSum, int measuredItemCount)
+    {
+        if (measuredItemCount <= 0)
+        {
+            return false;
+        }
+
+        _totalMeasuredHeight += measuredItemHeightSum;
+        _measuredItemCount += measuredItemCount;
+        return true;
+    }
+
+    void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, float measuredItemHeightSum, int measuredItemCount)
+    {
+        ProcessMeasurements(measuredItemHeightSum, measuredItemCount);
+
+        CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
+
+        // Slide window up by at least one if spacer is visible but position unchanged.
+        if (_lastRenderedItemCount > 0 && itemsBefore == _itemsBefore && itemsBefore > 0)
         {
             itemsBefore--;
         }
 
-        UpdateItemDistribution(itemsBefore, visibleItemCapacity);
+        UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
     }
 
-    void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
+    void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, float measuredItemHeightSum, int measuredItemCount)
     {
-        CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity);
+        var hadNewMeasurements = ProcessMeasurements(measuredItemHeightSum, measuredItemCount);
+
+        CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
 
         var itemsBefore = Math.Max(0, _itemCount - itemsAfter - visibleItemCapacity);
 
-        // Since we know the after spacer is now visible, we absolutely have to slide the window down
-        // by at least one element. If we're not doing that, the previous item size info we had must
-        // have been wrong, so just move along by one in that case to trigger an update and apply the
-        // new size info.
-        if (itemsBefore == _itemsBefore && itemsBefore < _itemCount - visibleItemCapacity)
+        // Slide window down by at least one if spacer is visible but position unchanged.
+        if (_lastRenderedItemCount > 0 && itemsBefore == _itemsBefore && itemsBefore < _itemCount - visibleItemCapacity)
         {
             itemsBefore++;
         }
 
-        UpdateItemDistribution(itemsBefore, visibleItemCapacity);
+        // When we're at the very bottom and new measurements arrived,
+        // scroll to bottom so the viewport stays pinned while items converge.
+        if (itemsAfter == 0 && hadNewMeasurements)
+        {
+            _pendingScrollToBottom = true;
+        }
+
+        UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
     }
 
-    private void CalcualteItemDistribution(
+    private void CalculateItemDistribution(
         float spacerSize,
         float spacerSeparation,
         float containerSize,
         out int itemsInSpacer,
-        out int visibleItemCapacity)
+        out int visibleItemCapacity,
+        out int unusedItemCapacity)
     {
         if (_lastRenderedItemCount > 0)
         {
@@ -326,11 +415,33 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _itemSize = ItemSize;
         }
 
-        itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / _itemSize) - OverscanCount);
-        visibleItemCapacity = (int)Math.Ceiling(containerSize / _itemSize) + 2 * OverscanCount;
+        // This AppContext data was added as a stopgap for .NET 8 and earlier, since it was added in a patch
+        // where we couldn't add new public API. For backcompat we still support the AppContext setting, but
+        // new applications should use the much more convenient MaxItemCount parameter.
+        var maxItemCount = AppContext.GetData("Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.MaxItemCount") switch
+        {
+            int val => Math.Min(val, MaxItemCount),
+            _ => MaxItemCount
+        };
+
+        // Count the OverscanCount as used capacity, so we don't end up in a situation where
+        // the user has set a very low MaxItemCount and we end up in an infinite loading loop.
+        maxItemCount += OverscanCount * 2;
+
+        // Use average measured height for calculations, falling back to _itemSize to avoid division by zero
+        var effectiveItemSize = GetItemHeight();
+        if (effectiveItemSize <= 0 || float.IsNaN(effectiveItemSize) || float.IsInfinity(effectiveItemSize))
+        {
+            effectiveItemSize = _itemSize;
+        }
+
+        itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / effectiveItemSize) - OverscanCount);
+        visibleItemCapacity = (int)Math.Ceiling(containerSize / effectiveItemSize) + 2 * OverscanCount;
+        unusedItemCapacity = Math.Max(0, visibleItemCapacity - maxItemCount);
+        visibleItemCapacity -= unusedItemCapacity;
     }
 
-    private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity)
+    private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity, int unusedItemCapacity)
     {
         // If the itemcount just changed to a lower number, and we're already scrolled past the end of the new
         // reduced set of items, clamp the scroll position to the new maximum
@@ -340,15 +451,34 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
 
         // If anything about the offset changed, re-render
-        if (itemsBefore != _itemsBefore || visibleItemCapacity != _visibleItemCapacity)
+        if (itemsBefore != _itemsBefore || visibleItemCapacity != _visibleItemCapacity || unusedItemCapacity != _unusedItemCapacity)
         {
             _itemsBefore = itemsBefore;
             _visibleItemCapacity = visibleItemCapacity;
-            var refreshTask = RefreshDataCoreAsync(renderOnSuccess: true);
+            _unusedItemCapacity = unusedItemCapacity;
 
-            if (!refreshTask.IsCompleted)
+            // After a successful data load, the ResizeObserver→IntersectionObserver cycle
+            // re-triggers with refined measurements. This one-shot flag skips the single
+            // redundant provider call that follows. At end-of-list, don't skip: refined
+            // capacity may reveal that more items are needed to fill the viewport.
+            var skipRefresh = _skipNextDistributionRefresh
+                && _loadedItems != null
+                && _loadedItemsStartIndex == _itemsBefore
+                && _itemsBefore + visibleItemCapacity < _itemCount;
+            _skipNextDistributionRefresh = false;
+
+            if (skipRefresh)
             {
                 StateHasChanged();
+            }
+            else
+            {
+                var refreshTask = RefreshDataCoreAsync(renderOnSuccess: true);
+
+                if (!refreshTask.IsCompleted)
+                {
+                    StateHasChanged();
+                }
             }
         }
     }
@@ -386,6 +516,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 _loadedItems = result.Items;
                 _loadedItemsStartIndex = request.StartIndex;
                 _loading = false;
+                _skipNextDistributionRefresh = request.Count > 0;
 
                 if (renderOnSuccess)
                 {

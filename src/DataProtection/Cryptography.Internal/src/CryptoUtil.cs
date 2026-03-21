@@ -92,24 +92,18 @@ internal static unsafe class CryptoUtil
     }
 
     [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-    public static bool TimeConstantBuffersAreEqual(byte[] bufA, int offsetA, int countA, byte[] bufB, int offsetB, int countB)
+    public static bool TimeConstantBuffersAreEqual(ReadOnlySpan<byte> bufA, ReadOnlySpan<byte> bufB)
     {
-        // Technically this is an early exit scenario, but it means that the caller did something bizarre.
-        // An error at the call site isn't usable for timing attacks.
-        Assert(countA == countB, "countA == countB");
+        // This early exit handles unexpected input without introducing timing vulnerabilities.
+        Assert(bufA.Length == bufB.Length, "countA == countB");
 
 #if NETCOREAPP
-        unsafe
-        {
-            return CryptographicOperations.FixedTimeEquals(
-                bufA.AsSpan(start: offsetA, length: countA),
-                bufB.AsSpan(start: offsetB, length: countB));
-        }
+        return CryptographicOperations.FixedTimeEquals(bufA, bufB);
 #else
         bool areEqual = true;
-        for (int i = 0; i < countA; i++)
+        for (int i = 0; i < bufA.Length; i++)
         {
-            areEqual &= (bufA[offsetA + i] == bufB[offsetB + i]);
+            areEqual &= (bufA[i] == bufB[i]);
         }
         return areEqual;
 #endif

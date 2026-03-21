@@ -105,6 +105,7 @@ public static class RoutingServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, HttpMethodMatcherPolicy>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, HostMatcherPolicy>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, AcceptsMatcherPolicy>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, ContentEncodingNegotiationMatcherPolicy>());
 
         //
         // Misc infrastructure

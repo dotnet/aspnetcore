@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.InternalTesting;
 using Templates.Test.Helpers;
@@ -8,6 +9,8 @@ using Xunit;
 using Xunit.Abstractions;
 
 namespace Templates.Test;
+
+#pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
 
 public class EmptyWebTemplateTest : LoggedTest
 {
@@ -71,6 +74,25 @@ public class EmptyWebTemplateTest : LoggedTest
         await EmtpyTemplateCore("F#", args: new[] { ArgConstants.NoHttps });
     }
 
+    [ConditionalTheory]
+    [InlineData("my.namespace.web", "my-namespace-web")]
+    [InlineData(".StartWithDot", "startwithdot")]
+    [InlineData("EndWithDot.", "endwithdot")]
+    [InlineData("My..Test__Project", "my-test-project")]
+    [InlineData("Project123.Test456", "project123-test456")]
+    [InlineData("xn--My.Test.Project", "xn-my-test-project")]
+    [SkipOnHelix("Cert failure, https://github.com/dotnet/aspnetcore/issues/28090", Queues = "All.OSX;" + HelixConstants.Windows10Arm64 + HelixConstants.DebianArm64)]
+    public async Task EmptyWebTemplateLocalhostTld_GeneratesDnsCompliantHostnames(string projectName, string expectedHostname)
+    {
+        var project = await ProjectFactory.CreateProject(Output, projectName);
+
+        await project.RunDotNetNewAsync("web", args: new[] { ArgConstants.LocalhostTld });
+
+        var expectedLaunchProfileNames = new[] { "http", "https" };
+        await project.VerifyLaunchSettings(expectedLaunchProfileNames);
+        await project.VerifyDnsCompliantHostname(expectedHostname);
+    }
+
     private async Task EmtpyTemplateCore(string languageOverride, string[] args = null)
     {
         var project = await ProjectFactory.CreateProject(Output);
@@ -79,8 +101,8 @@ public class EmptyWebTemplateTest : LoggedTest
 
         var noHttps = args?.Contains(ArgConstants.NoHttps) ?? false;
         var expectedLaunchProfileNames = noHttps
-            ? new[] { "http", "IIS Express" }
-            : new[] { "http", "https", "IIS Express" };
+            ? new[] { "http" }
+            : new[] { "http", "https" };
         await project.VerifyLaunchSettings(expectedLaunchProfileNames);
 
         // Avoid the F# compiler. See https://github.com/dotnet/aspnetcore/issues/14022

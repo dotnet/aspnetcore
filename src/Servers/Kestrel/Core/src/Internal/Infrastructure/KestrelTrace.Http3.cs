@@ -37,7 +37,7 @@ internal sealed partial class KestrelTrace : ILogger
     {
         if (_http3Logger.IsEnabled(LogLevel.Trace))
         {
-            Http3Log.Http3FrameReceived(_http3Logger, connectionId, Http3Formatting.ToFormattedType(frame.Type), streamId, frame.Length);
+            Http3Log.Http3FrameReceived(_http3Logger, connectionId, Http3Formatting.ToFormattedType(frame.Type), streamId, frame.RemainingLength);
         }
     }
 
@@ -45,7 +45,7 @@ internal sealed partial class KestrelTrace : ILogger
     {
         if (_http3Logger.IsEnabled(LogLevel.Trace))
         {
-            Http3Log.Http3FrameSending(_http3Logger, connectionId, Http3Formatting.ToFormattedType(frame.Type), streamId, frame.Length);
+            Http3Log.Http3FrameSending(_http3Logger, connectionId, Http3Formatting.ToFormattedType(frame.Type), streamId, frame.RemainingLength);
         }
     }
 

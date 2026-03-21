@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Transcoding;
 using Xunit.Abstractions;
@@ -791,7 +792,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
     [Theory]
     [InlineData(null)]
     [InlineData("text/html")]
-    public async Task HandleCallAsync_BadContentType_BadRequestReturned(string contentType)
+    public async Task HandleCallAsync_BadContentType_BadRequestReturned(string? contentType)
     {
         // Arrange
         UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
@@ -1842,7 +1843,8 @@ public class UnaryServerCallHandlerTests : LoggedTest
             invoker,
             method,
             MethodOptions.Create(new[] { serviceOptions }),
-            new TestGrpcServiceActivator<JsonTranscodingGreeterService>());
+            new TestGrpcServiceActivator<JsonTranscodingGreeterService>(),
+            new InterceptorActivators(TestHelpers.CreateServiceProvider()));
 
         var descriptorRegistry = new DescriptorRegistry();
         descriptorRegistry.RegisterFileDescriptor(TestHelpers.GetMessageDescriptor(typeof(TRequest)).File);

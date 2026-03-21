@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
@@ -16,24 +17,30 @@ public class PersistentComponentState
     private readonly IDictionary<string, byte[]> _currentState;
 
     private readonly List<PersistComponentStateRegistration> _registeredCallbacks;
+    private readonly List<RestoreComponentStateRegistration> _registeredRestoringCallbacks;
 
     internal PersistentComponentState(
-        IDictionary<string , byte[]> currentState,
-        List<PersistComponentStateRegistration> pauseCallbacks)
+        IDictionary<string, byte[]> currentState,
+        List<PersistComponentStateRegistration> pauseCallbacks,
+        List<RestoreComponentStateRegistration> restoringCallbacks)
     {
         _currentState = currentState;
         _registeredCallbacks = pauseCallbacks;
+        _registeredRestoringCallbacks = restoringCallbacks;
     }
 
     internal bool PersistingState { get; set; }
 
-    internal void InitializeExistingState(IDictionary<string, byte[]> existingState)
+    internal RestoreContext CurrentContext { get; private set; } = RestoreContext.InitialValue;
+
+    internal void InitializeExistingState(IDictionary<string, byte[]> existingState, RestoreContext context)
     {
         if (_existingState != null)
         {
             throw new InvalidOperationException("PersistentComponentState already initialized.");
         }
         _existingState = existingState ?? throw new ArgumentNullException(nameof(existingState));
+        CurrentContext = context;
     }
 
     /// <summary>
@@ -56,11 +63,40 @@ public class PersistentComponentState
     {
         ArgumentNullException.ThrowIfNull(callback);
 
+        if (PersistingState)
+        {
+            throw new InvalidOperationException("Registering a callback while persisting state is not allowed.");
+        }
+
         var persistenceCallback = new PersistComponentStateRegistration(callback, renderMode);
 
         _registeredCallbacks.Add(persistenceCallback);
 
         return new PersistingComponentStateSubscription(_registeredCallbacks, persistenceCallback);
+    }
+
+    /// <summary>
+    /// Register a callback to restore the state when the application state is being restored.
+    /// </summary>
+    /// <param name="callback"> The callback to invoke when the application state is being restored.</param>
+    /// <param name="options">Options that control the restoration behavior.</param>
+    /// <returns>A subscription that can be used to unregister the callback when disposed.</returns>
+    public RestoringComponentStateSubscription RegisterOnRestoring(Action callback, RestoreOptions options)
+    {
+        Debug.Assert(CurrentContext != null);
+        if (CurrentContext.ShouldRestore(options))
+        {
+            callback();
+        }
+
+        if (options.AllowUpdates)
+        {
+            var registration = new RestoreComponentStateRegistration(callback);
+            _registeredRestoringCallbacks.Add(registration);
+            return new RestoringComponentStateSubscription(_registeredRestoringCallbacks, registration);
+        }
+
+        return default;
     }
 
     /// <summary>
@@ -79,12 +115,46 @@ public class PersistentComponentState
             throw new InvalidOperationException("Persisting state is only allowed during an OnPersisting callback.");
         }
 
-        if (_currentState.ContainsKey(key))
+        if (!_currentState.TryAdd(key, JsonSerializer.SerializeToUtf8Bytes(instance, JsonSerializerOptionsProvider.Options)))
         {
             throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
         }
+    }
 
-        _currentState.Add(key, JsonSerializer.SerializeToUtf8Bytes(instance, JsonSerializerOptionsProvider.Options));
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+    internal void PersistAsJson(string key, object instance, [DynamicallyAccessedMembers(JsonSerialized)] Type type)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+
+        if (!PersistingState)
+        {
+            throw new InvalidOperationException("Persisting state is only allowed during an OnPersisting callback.");
+        }
+
+        if (!_currentState.TryAdd(key, JsonSerializer.SerializeToUtf8Bytes(instance, type, JsonSerializerOptionsProvider.Options)))
+        {
+            throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
+        }
+    }
+
+    /// <summary>
+    /// Persists the provided byte array under the given key.
+    /// </summary>
+    /// <param name="key">The key to use to persist the state.</param>
+    /// <param name="data">The byte array to persist.</param>
+    internal void PersistAsBytes(string key, byte[] data)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+
+        if (!PersistingState)
+        {
+            throw new InvalidOperationException("Persisting state is only allowed during an OnPersisting callback.");
+        }
+
+        if (!_currentState.TryAdd(key, data))
+        {
+            throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
+        }
     }
 
     /// <summary>
@@ -114,6 +184,37 @@ public class PersistentComponentState
         }
     }
 
+    [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+    internal bool TryTakeFromJson(string key, [DynamicallyAccessedMembers(JsonSerialized)] Type type, [MaybeNullWhen(false)] out object? instance)
+    {
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(key);
+        if (TryTake(key, out var data))
+        {
+            var reader = new Utf8JsonReader(data);
+            instance = JsonSerializer.Deserialize(ref reader, type, JsonSerializerOptionsProvider.Options);
+            return true;
+        }
+        else
+        {
+            instance = default;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Tries to retrieve the persisted state as raw bytes with the given <paramref name="key"/>.
+    /// When the key is present, the raw bytes are successfully returned via <paramref name="data"/>
+    /// and removed from the <see cref="PersistentComponentState"/>.
+    /// </summary>
+    /// <param name="key">The key used to persist the data.</param>
+    /// <param name="data">The persisted raw bytes.</param>
+    /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
+    internal bool TryTakeBytes(string key, [MaybeNullWhen(false)] out byte[]? data)
+    {
+        return TryTake(key, out data);
+    }
+
     private bool TryTake(string key, out byte[]? value)
     {
         ArgumentNullException.ThrowIfNull(key);
@@ -137,5 +238,18 @@ public class PersistentComponentState
         {
             return false;
         }
+    }
+
+    internal void UpdateExistingState(IDictionary<string, byte[]> state, RestoreContext context)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+
+        if (_existingState == null || _existingState.Count > 0)
+        {
+            throw new InvalidOperationException("Cannot update existing state: previous state has not been cleared or state is not initialized.");
+        }
+
+        _existingState = state;
+        CurrentContext = context;
     }
 }

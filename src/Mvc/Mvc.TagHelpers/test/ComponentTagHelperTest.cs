@@ -77,9 +77,6 @@ public class ComponentTagHelperTest
 
     private ViewContext GetViewContext()
     {
-        var navManager = new Mock<NavigationManager>();
-        navManager.As<IHostEnvironmentNavigationManager>();
-
         var httpContext = new DefaultHttpContext
         {
             RequestServices = new ServiceCollection()
@@ -89,7 +86,7 @@ public class ComponentTagHelperTest
                     x => x.CreateProtector(It.IsAny<string>()) == Mock.Of<IDataProtector>()))
                 .AddLogging()
                 .AddScoped<ComponentStatePersistenceManager>()
-                .AddScoped(_ => navManager.Object)
+                .AddScoped<NavigationManager, MockNavigationManager>()
                 .AddScoped<HttpContextFormDataProvider>()
                 .BuildServiceProvider(),
         };
@@ -102,6 +99,18 @@ public class ComponentTagHelperTest
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.AddContent(0, "Hello from the component");
+        }
+    }
+
+    class MockNavigationManager : NavigationManager, IHostEnvironmentNavigationManager
+    {
+        public MockNavigationManager()
+        {
+           Initialize("https://localhost:85/subdir/", "https://localhost:85/subdir/path?query=value#hash");
+        }
+
+        void IHostEnvironmentNavigationManager.Initialize(string baseUri, string uri)
+        {
         }
     }
 }

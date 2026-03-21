@@ -24,6 +24,11 @@ export type BlazorInitializer = {
   afterServerStarted: AfterBlazorServerStartedCallback,
 };
 
+export type JSAsset = {
+    moduleExports?: any | Promise<any>,
+    name?: string; // actually URL
+}
+
 export class JSInitializer {
   private afterStartedCallbacks: AfterBlazorStartedCallback[] = [];
 
@@ -38,21 +43,25 @@ export class JSInitializer {
     }
   }
 
-  async importInitializersAsync(initializerFiles: string[], initializerArguments: unknown[]): Promise<void> {
+  async importInitializersAsync(initializerFiles: JSAsset[], initializerArguments: unknown[]): Promise<void> {
     // This code is not called on WASM, because library intializers are imported by runtime.
 
     await Promise.all(initializerFiles.map(f => importAndInvokeInitializer(this, f)));
 
     function adjustPath(path: string): string {
-      // This is the same we do in JS interop with the import callback
-      const base = document.baseURI;
-      path = base.endsWith('/') ? `${base}${path}` : `${base}/${path}`;
-      return path;
+      // Use URL constructor to properly resolve relative paths, avoiding issues with query parameters
+      // This is the same mechanism as for import dotnet.js in MonoPlatform.ts
+      return new URL(path, document.baseURI).toString();
     }
 
-    async function importAndInvokeInitializer(jsInitializer: JSInitializer, path: string): Promise<void> {
-      const adjustedPath = adjustPath(path);
-      const initializer = await import(/* webpackIgnore: true */ adjustedPath) as Partial<BlazorInitializer>;
+    async function importAndInvokeInitializer(jsInitializer: JSInitializer, asset: JSAsset): Promise<void> {
+      let adjustedPath;
+      if (!asset.moduleExports) {
+        adjustedPath = adjustPath(asset.name!);
+        asset.moduleExports = await import(/* webpackIgnore: true */ adjustedPath);
+      }
+
+      const initializer = asset.moduleExports as Partial<BlazorInitializer>;
       if (initializer === undefined) {
         return;
       }

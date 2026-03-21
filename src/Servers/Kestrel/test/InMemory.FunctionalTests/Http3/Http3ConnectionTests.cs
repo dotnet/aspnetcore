@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Buffers;
 using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
 using System.Reflection;
@@ -13,14 +11,14 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
-using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using Xunit;
 using Http3SettingType = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.Http3SettingType;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -190,6 +188,7 @@ public class Http3ConnectionTests : Http3TestBase
         Assert.Null(await Http3Api.MultiplexedConnectionContext.AcceptAsync().DefaultTimeout());
 
         await Http3Api.WaitForConnectionStopAsync(expectedStreamId, false, expectedErrorCode: Http3ErrorCode.NoError);
+        MetricsAssert.NoError(Http3Api.ConnectionTags);
     }
 
     [Fact]
@@ -219,6 +218,7 @@ public class Http3ConnectionTests : Http3TestBase
         Http3Api.MultiplexedConnectionContext.Abort();
 
         await Http3Api.WaitForConnectionStopAsync(4, false, expectedErrorCode: Http3ErrorCode.NoError);
+        MetricsAssert.NoError(Http3Api.ConnectionTags);
     }
 
     [Theory]
@@ -245,6 +245,7 @@ public class Http3ConnectionTests : Http3TestBase
             expectedErrorCode: Http3ErrorCode.SettingsError,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.FormatHttp3ErrorControlStreamReservedSetting($"0x{settingIdentifier.ToString("X", CultureInfo.InvariantCulture)}"));
+        MetricsAssert.Equal(ConnectionEndReason.InvalidSettings, Http3Api.ConnectionTags);
     }
 
     [Theory]
@@ -264,6 +265,7 @@ public class Http3ConnectionTests : Http3TestBase
             expectedErrorCode: Http3ErrorCode.StreamCreationError,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.FormatHttp3ControlStreamErrorMultipleInboundStreams(name));
+        MetricsAssert.Equal(ConnectionEndReason.StreamCreationError, Http3Api.ConnectionTags);
     }
 
     [Theory]
@@ -285,6 +287,7 @@ public class Http3ConnectionTests : Http3TestBase
             expectedErrorCode: Http3ErrorCode.UnexpectedFrame,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnControlStream(Http3Formatting.ToFormattedType(f)));
+        MetricsAssert.Equal(ConnectionEndReason.UnexpectedFrame, Http3Api.ConnectionTags);
     }
 
     [Fact]
@@ -309,6 +312,7 @@ public class Http3ConnectionTests : Http3TestBase
             expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClosed);
+        MetricsAssert.Equal(ConnectionEndReason.ClosedCriticalStream, Http3Api.ConnectionTags);
     }
 
     [Fact]
@@ -332,6 +336,7 @@ public class Http3ConnectionTests : Http3TestBase
         Http3Api.CloseServerGracefully();
 
         await Http3Api.WaitForConnectionStopAsync(0, true, expectedErrorCode: Http3ErrorCode.NoError);
+        MetricsAssert.NoError(Http3Api.ConnectionTags);
     }
 
     [Fact]
@@ -352,6 +357,36 @@ public class Http3ConnectionTests : Http3TestBase
             expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClosed);
+        MetricsAssert.Equal(ConnectionEndReason.ClosedCriticalStream, Http3Api.ConnectionTags);
+    }
+
+    [Theory]
+    [InlineData((int)Http3FrameType.Settings, 20_000)]
+    //[InlineData((int)Http3FrameType.GoAway, 30)] // GoAway frames trigger graceful connection close which races with sending FRAME_ERROR
+    [InlineData((int)Http3FrameType.CancelPush, 30)]
+    [InlineData((int)Http3FrameType.MaxPushId, 30)]
+    [InlineData(int.MaxValue, 20_000)] // Unknown frame type
+    public async Task ControlStream_ClientToServer_LargeFrame_ConnectionError(int frameType, int length)
+    {
+        await Http3Api.InitializeConnectionAsync(_noopApplication);
+
+        var controlStream = await Http3Api.CreateControlStream();
+
+        // Need to send settings frame before other frames, otherwise it's a connection error
+        if (frameType != (int)Http3FrameType.Settings)
+        {
+            await controlStream.SendSettingsAsync(new List<Http3PeerSetting>());
+        }
+
+        await controlStream.SendFrameAsync((Http3FrameType)frameType, new byte[length]);
+
+        await Http3Api.WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
+            ignoreNonGoAwayFrames: true,
+            expectedLastStreamId: 0,
+            expectedErrorCode: Http3ErrorCode.FrameError,
+            matchExpectedErrorMessage: AssertExpectedErrorMessages,
+            expectedErrorMessage: CoreStrings.FormatHttp3ControlStreamFrameTooLarge(Http3Formatting.ToFormattedType((Http3FrameType)frameType)));
+        MetricsAssert.Equal(ConnectionEndReason.InvalidFrameLength, Http3Api.ConnectionTags);
     }
 
     [Fact]
@@ -589,6 +624,243 @@ public class Http3ConnectionTests : Http3TestBase
         Assert.NotSame(trailersFirst, trailersLast);
     }
 
+    [Fact]
+    public async Task WriteBeforeFlushingHeadersTracksBytesCorrectly()
+    {
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await Http3Api.InitializeConnectionAsync(async c =>
+        {
+            try
+            {
+                var length = 0;
+                var memory = c.Response.BodyWriter.GetMemory();
+                c.Response.BodyWriter.Advance(memory.Length);
+                length += memory.Length;
+                Assert.Equal(length, c.Response.BodyWriter.UnflushedBytes);
+
+                memory = c.Response.BodyWriter.GetMemory();
+                c.Response.BodyWriter.Advance(memory.Length);
+                length += memory.Length;
+
+                Assert.Equal(length, c.Response.BodyWriter.UnflushedBytes);
+
+                await c.Response.BodyWriter.FlushAsync();
+
+                Assert.Equal(0, c.Response.BodyWriter.UnflushedBytes);
+
+                tcs.SetResult();
+            }
+            catch (Exception ex)
+            {
+                tcs.SetException(ex);
+            }
+        });
+
+        var requestStream = await Http3Api.CreateRequestStream(new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "127.0.0.1"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Expect, "100-continue"),
+        });
+
+        await requestStream.SendDataAsync(Memory<byte>.Empty, endStream: true);
+
+        await requestStream.ExpectHeadersAsync();
+        await requestStream.ExpectDataAsync();
+
+        await requestStream.OnDisposedTask.DefaultTimeout();
+        Assert.True(requestStream.Disposed);
+
+        await tcs.Task;
+    }
+
+    [Fact]
+    public async Task WriteAfterFlushingHeadersTracksBytesCorrectly()
+    {
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await Http3Api.InitializeConnectionAsync(async c =>
+        {
+            try
+            {
+                await c.Response.StartAsync();
+
+                var length = 0;
+                var memory = c.Response.BodyWriter.GetMemory();
+                c.Response.BodyWriter.Advance(memory.Length);
+                length += memory.Length;
+                Assert.Equal(length, c.Response.BodyWriter.UnflushedBytes);
+
+                memory = c.Response.BodyWriter.GetMemory();
+                c.Response.BodyWriter.Advance(memory.Length);
+                length += memory.Length;
+
+                Assert.Equal(length, c.Response.BodyWriter.UnflushedBytes);
+
+                await c.Response.BodyWriter.FlushAsync();
+
+                Assert.Equal(0, c.Response.BodyWriter.UnflushedBytes);
+
+                tcs.SetResult();
+            }
+            catch (Exception ex)
+            {
+                tcs.SetException(ex);
+            }
+        });
+
+        var requestStream = await Http3Api.CreateRequestStream(new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "127.0.0.1"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.Expect, "100-continue"),
+        });
+
+        await requestStream.SendDataAsync(Memory<byte>.Empty, endStream: true);
+
+        await requestStream.ExpectHeadersAsync();
+        await requestStream.ExpectDataAsync();
+
+        await requestStream.OnDisposedTask.DefaultTimeout();
+        Assert.True(requestStream.Disposed);
+
+        await tcs.Task;
+    }
+
+    [Fact]
+    public async Task ErrorCodeIsValidOnConnectionTimeout()
+    {
+        // This test loosely repros the scenario in https://github.com/dotnet/aspnetcore/issues/57933.
+        // In particular, there's a request from the server and, once a response has been sent,
+        // the (simulated) transport throws a QuicException that surfaces through AcceptAsync.
+        // This test confirms that Http3Connection.ProcessRequestsAsync doesn't (indirectly) cause
+        // IProtocolErrorCodeFeature.Error to be set to (or left at) -1, which System.Net.Quic will
+        // not accept.
+
+        // Used to signal that a request has been sent and a response has been received
+        var requestTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        // Used to signal that the connection context has been aborted
+        var abortTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // InitializeConnectionAsync consumes the connection context, so set it first
+        Http3Api.MultiplexedConnectionContext = new ThrowingMultiplexedConnectionContext(Http3Api, skipCount: 2, requestTcs, abortTcs);
+        await Http3Api.InitializeConnectionAsync(_echoApplication);
+
+        await Http3Api.CreateControlStream();
+        await Http3Api.GetInboundControlStream();
+        var requestStream = await Http3Api.CreateRequestStream(Headers, endStream: true);
+        var responseHeaders = await requestStream.ExpectHeadersAsync();
+
+        await requestStream.ExpectReceiveEndOfStream();
+        await requestStream.OnDisposedTask.DefaultTimeout();
+
+        requestTcs.SetResult();
+
+        // By the time the connection context is aborted, the error code feature has been updated
+        await abortTcs.Task.DefaultTimeout();
+
+        Http3Api.CloseServerGracefully();
+
+        var errorCodeFeature = Http3Api.MultiplexedConnectionContext.Features.Get<IProtocolErrorCodeFeature>();
+        Assert.InRange(errorCodeFeature.Error, 0, (1L << 62) - 1); // Valid range for HTTP/3 error codes
+    }
+
+    [Theory]
+    [InlineData(2)] // encoder
+    [InlineData(3)] // decoder
+    public async Task IgnoredControlStreams_CloseConnectionOnEndStream(int streamType)
+    {
+        await Http3Api.InitializeConnectionAsync(_noopApplication);
+
+        var stream = await Http3Api.CreateControlStream(streamType);
+
+        // PipeWriter will be completed when end of stream is received. Should exit read loop and close stream
+        // which will cause the connection to close with an error.
+        await stream.SendFrameAsync(Http3FrameType.Data, Memory<byte>.Empty, endStream: true);
+
+        await stream.OnStreamCompletedTask.DefaultTimeout();
+
+        Http3Api.TriggerTick();
+        Http3Api.TriggerTick(TimeSpan.FromSeconds(1));
+
+        await Http3Api.WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
+            ignoreNonGoAwayFrames: true,
+            expectedLastStreamId: 0,
+            expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
+            matchExpectedErrorMessage: AssertExpectedErrorMessages,
+            expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClosed);
+        MetricsAssert.Equal(ConnectionEndReason.ClosedCriticalStream, Http3Api.ConnectionTags);
+    }
+
+    [Theory]
+    [InlineData(2)] // encoder
+    [InlineData(3)] // decoder
+    public async Task IgnoredControlStreams_CloseConnectionOnStreamClose(int streamType)
+    {
+        await Http3Api.InitializeConnectionAsync(_noopApplication);
+
+        var stream = await Http3Api.CreateControlStream(streamType);
+
+        await (streamType == 2 ? stream.OnEncoderStreamCreatedTask : stream.OnDecoderStreamCreatedTask).DefaultTimeout();
+
+        // Simulate quic layer closing the stream
+        stream.StreamContext.Close();
+
+        Http3Api.TriggerTick();
+        Http3Api.TriggerTick(TimeSpan.FromSeconds(1));
+
+        await Http3Api.WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
+            ignoreNonGoAwayFrames: true,
+            expectedLastStreamId: 0,
+            expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
+            matchExpectedErrorMessage: AssertExpectedErrorMessages,
+            expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClosed);
+        MetricsAssert.Equal(ConnectionEndReason.ClosedCriticalStream, Http3Api.ConnectionTags);
+    }
+
+    private sealed class ThrowingMultiplexedConnectionContext : TestMultiplexedConnectionContext
+    {
+        private int _skipCount;
+        private readonly TaskCompletionSource _requestTcs;
+        private readonly TaskCompletionSource _abortTcs;
+
+        /// <summary>
+        /// After <paramref name="skipCount"/> calls to <see cref="AcceptAsync"/>, the next call will throw a <see cref="QuicException"/>
+        /// (after waiting for <see cref="_requestTcs"/> to be set).
+        ///
+        /// <paramref name="abortTcs"/> lets this type signal that <see cref="Abort"/> has been called.
+        /// </summary>
+        public ThrowingMultiplexedConnectionContext(Http3InMemory testBase, int skipCount, TaskCompletionSource requestTcs, TaskCompletionSource abortTcs)
+            : base(testBase)
+        {
+            _skipCount = skipCount;
+            _requestTcs = requestTcs;
+            _abortTcs = abortTcs;
+        }
+
+        public override async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
+        {
+            if (_skipCount-- <= 0)
+            {
+                await _requestTcs.Task.DefaultTimeout();
+                throw new System.Net.Quic.QuicException(
+                    System.Net.Quic.QuicError.ConnectionTimeout,
+                    applicationErrorCode: null,
+                    "Connection timed out waiting for a response from the peer.");
+            }
+            return await base.AcceptAsync(cancellationToken);
+        }
+
+        public override void Abort(ConnectionAbortedException abortReason)
+        {
+            _abortTcs.SetResult();
+            base.Abort(abortReason);
+        }
+    }
+
     private async Task<ConnectionContext> MakeRequestAsync(int index, KeyValuePair<string, string>[] headers, bool sendData, bool waitForServerDispose)
     {
         var requestStream = await Http3Api.CreateRequestStream(headers, endStream: !sendData);
@@ -652,5 +924,177 @@ public class Http3ConnectionTests : Http3TestBase
         public bool Remove(KeyValuePair<string, StringValues> item) => _innerHeaders.Remove(item);
         public bool TryGetValue(string key, out StringValues value) => _innerHeaders.TryGetValue(key, out value);
         IEnumerator IEnumerable.GetEnumerator() => _innerHeaders.GetEnumerator();
+    }
+
+    [Fact]
+    public async Task OutboundControlStream_BlockedConnect_RequestsStillProcessed()
+    {
+        // Test that if ConnectAsync blocks (simulating QUIC backpressure when client
+        // doesn't accept the outbound control stream), requests can still be processed.
+        var connectCalledTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var allowConnectTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        Http3Api.MultiplexedConnectionContext = new BlockingConnectMultiplexedConnectionContext(
+            Http3Api, connectCalledTcs, allowConnectTcs, connectionClosedTcs);
+
+        // Start connection - this will call ConnectAsync for the outbound control stream
+        // but ConnectAsync will block until we signal allowConnectTcs
+        var initTask = Http3Api.InitializeConnectionAsync(_echoApplication);
+
+        // Wait for ConnectAsync to be called (server is trying to open outbound control stream)
+        await connectCalledTcs.Task.DefaultTimeout();
+
+        // At this point, ConnectAsync is blocked. The server should still be able to accept
+        // and process requests because we don't wait for the control stream before allowing requests.
+        // https://datatracker.ietf.org/doc/html/rfc9114#section-7.2.4.2
+        // "Clients SHOULD NOT wait indefinitely for SETTINGS to arrive before sending requests"
+
+        // Create the client's control stream and send settings
+        await Http3Api.CreateControlStream();
+
+        // Process a request while ConnectAsync is still blocked
+        var requestStream = await Http3Api.CreateRequestStream(Headers, endStream: true);
+        var responseHeaders = await requestStream.ExpectHeadersAsync();
+
+        Assert.Equal("200", responseHeaders[InternalHeaderNames.Status]);
+
+        await requestStream.ExpectReceiveEndOfStream();
+        await requestStream.OnDisposedTask.DefaultTimeout();
+
+        // Now allow ConnectAsync to complete
+        allowConnectTcs.SetResult();
+
+        // Wait for initialization to complete (it was waiting on GetInboundControlStream)
+        await initTask.DefaultTimeout();
+
+        // Read the settings from the now-accepted outbound control stream
+        var inboundControlStream = await Http3Api.GetInboundControlStream();
+        await inboundControlStream.ExpectSettingsAsync();
+
+        // Gracefully close
+        Http3Api.CloseServerGracefully();
+
+        await Http3Api.WaitForConnectionStopAsync(4, false, expectedErrorCode: Http3ErrorCode.NoError);
+        MetricsAssert.NoError(Http3Api.ConnectionTags);
+    }
+
+    [Fact]
+    public async Task OutboundControlStream_BlockedConnect_GracefulShutdownCompletes()
+    {
+        // Test that graceful shutdown completes even when ConnectAsync is blocked
+        // (simulating client never accepting the outbound control stream).
+        var connectCalledTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var allowConnectTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        Http3Api.MultiplexedConnectionContext = new BlockingConnectMultiplexedConnectionContext(
+            Http3Api, connectCalledTcs, allowConnectTcs, connectionClosedTcs);
+
+        // Start connection initialization on a background task since it will block
+        // waiting for GetInboundControlStream which we won't complete
+        var initTask = Task.Run(async () =>
+        {
+            try
+            {
+                await Http3Api.InitializeConnectionAsync(_noopApplication);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when connection is aborted
+            }
+        });
+
+        // Wait for ConnectAsync to be called
+        await connectCalledTcs.Task.DefaultTimeout();
+
+        // Create the client's control stream
+        await Http3Api.CreateControlStream();
+
+        // Trigger graceful shutdown while ConnectAsync is still blocked
+        Http3Api.CloseServerGracefully();
+
+        // Allow ConnectAsync to complete so the connection can finish shutting down
+        allowConnectTcs.SetResult();
+
+        // Connection should close
+        await connectionClosedTcs.Task.DefaultTimeout();
+    }
+
+    [Fact]
+    public async Task OutboundControlStream_BlockedConnect_AbortCompletes()
+    {
+        // Test that abort completes even when ConnectAsync is blocked.
+        var connectCalledTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var allowConnectTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        Http3Api.MultiplexedConnectionContext = new BlockingConnectMultiplexedConnectionContext(
+            Http3Api, connectCalledTcs, allowConnectTcs, connectionClosedTcs);
+
+        // Start connection initialization
+        var initTask = Task.Run(async () =>
+        {
+            try
+            {
+                await Http3Api.InitializeConnectionAsync(_noopApplication);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when connection is aborted
+            }
+        });
+
+        // Wait for ConnectAsync to be called
+        await connectCalledTcs.Task.DefaultTimeout();
+
+        // Create the client's control stream
+        await Http3Api.CreateControlStream();
+
+        // Abort while ConnectAsync is blocked
+        Http3Api.MultiplexedConnectionContext.Abort(new ConnectionAbortedException("Test abort"));
+
+        // Allow ConnectAsync to complete (it will throw due to abort)
+        allowConnectTcs.SetException(new OperationCanceledException());
+
+        // Connection should close
+        await connectionClosedTcs.Task.DefaultTimeout();
+    }
+
+    private sealed class BlockingConnectMultiplexedConnectionContext : TestMultiplexedConnectionContext
+    {
+        private readonly TaskCompletionSource _connectCalledTcs;
+        private readonly TaskCompletionSource _allowConnectTcs;
+        private readonly TaskCompletionSource _connectionClosedTcs;
+
+        public BlockingConnectMultiplexedConnectionContext(
+            Http3InMemory testBase,
+            TaskCompletionSource connectCalledTcs,
+            TaskCompletionSource allowConnectTcs,
+            TaskCompletionSource connectionClosedTcs)
+            : base(testBase)
+        {
+            _connectCalledTcs = connectCalledTcs;
+            _allowConnectTcs = allowConnectTcs;
+            _connectionClosedTcs = connectionClosedTcs;
+        }
+
+        public override async ValueTask<ConnectionContext> ConnectAsync(IFeatureCollection features = null, CancellationToken cancellationToken = default)
+        {
+            // Signal that ConnectAsync was called
+            _connectCalledTcs.TrySetResult();
+
+            // Block until allowed to proceed
+            await _allowConnectTcs.Task;
+
+            // Now proceed with normal ConnectAsync behavior
+            return await base.ConnectAsync(features, cancellationToken);
+        }
+
+        public override void Abort(ConnectionAbortedException abortReason)
+        {
+            base.Abort(abortReason);
+            _connectionClosedTcs.TrySetResult();
+        }
     }
 }

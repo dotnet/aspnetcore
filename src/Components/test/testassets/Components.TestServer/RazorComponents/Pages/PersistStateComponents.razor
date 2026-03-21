@@ -5,20 +5,38 @@
 
 @if (Server.GetValueOrDefault()) {
     <strong>Server Persist State Component</strong>
-    <TestContentPackage.PersistStateComponent KeyName="server" @rendermode="@RenderMode.InteractiveServer" />
-    <hr />
+    @if (!Declarative)
+    {
+        <TestContentPackage.PersistStateComponent KeyName="server" @rendermode="@RenderMode.InteractiveServer" />
+        <hr />
+    } else {
+        <TestContentPackage.DeclarativePersistStateComponent InitialValue="restored" KeyName="server" @rendermode="@RenderMode.InteractiveServer" />
+        <hr />
+    }
 }
 
 @if (WebAssembly.GetValueOrDefault()) {
     <strong>WebAssembly Persist State Component</strong>
-    <TestContentPackage.PersistStateComponent KeyName="wasm" @rendermode="@RenderMode.InteractiveWebAssembly" />
-    <hr />
+    @if (!Declarative)
+    {
+        <TestContentPackage.PersistStateComponent KeyName="wasm" @rendermode="@RenderMode.InteractiveWebAssembly" />
+        <hr />
+    } else {
+        <TestContentPackage.DeclarativePersistStateComponent InitialValue="restored" KeyName="wasm" @rendermode="@RenderMode.InteractiveWebAssembly" />
+        <hr />
+    }
 }
 
 @if (Auto.GetValueOrDefault()) {
     <strong>Auto Persist State Component</strong>
-    <TestContentPackage.PersistStateComponent KeyName="auto" @rendermode="@RenderMode.InteractiveAuto" />
-    <hr />
+    @if (!Declarative)
+    {
+        <TestContentPackage.PersistStateComponent KeyName="auto" @rendermode="@RenderMode.InteractiveAuto" />
+        <hr />
+    } else {
+        <TestContentPackage.DeclarativePersistStateComponent InitialValue="restored" KeyName="auto" @rendermode="@RenderMode.InteractiveAuto" />
+        <hr />
+    }
 }
 
 @code {
@@ -30,4 +48,7 @@
 
     [Parameter, SupplyParameterFromQuery(Name = "auto")]
     public bool? Auto { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "declarative")]
+    public bool Declarative { get; set; }
 }

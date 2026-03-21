@@ -83,7 +83,7 @@ public class EmbeddedFileProviderTests
         Assert.False(fileInfo.Exists);
     }
 
-    public static TheoryData GetFileInfo_LocatesFilesUnderSpecifiedNamespaceData
+    public static TheoryData<string> GetFileInfo_LocatesFilesUnderSpecifiedNamespaceData
     {
         get
         {
@@ -121,7 +121,7 @@ public class EmbeddedFileProviderTests
         Assert.Equal("File3.txt", fileInfo.Name);
     }
 
-    public static TheoryData GetFileInfo_LocatesFilesUnderSubDirectoriesData
+    public static TheoryData<string> GetFileInfo_LocatesFilesUnderSubDirectoriesData
     {
         get
         {
@@ -159,7 +159,7 @@ public class EmbeddedFileProviderTests
         Assert.Equal("File.txt", fileInfo.Name);
     }
 
-    public static TheoryData GetFileInfo_LocatesFilesUnderSubDirectories_IfDirectoriesContainsInvalidEverettCharData
+    public static TheoryData<string> GetFileInfo_LocatesFilesUnderSubDirectories_IfDirectoriesContainsInvalidEverettCharData
     {
         get
         {

@@ -53,7 +53,10 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         await _application.Output.WriteAsync(extendedAsciiEncoding.GetBytes("\r\n\r\n"));
         var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
-        var exception = Assert.Throws<InvalidOperationException>(() => TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined));
+#pragma warning disable CS0618 // Type or member is obsolete
+        var exception = Assert.Throws<BadHttpRequestException>(() => TakeMessageHeaders(readableBuffer, trailers: false, out _consumed, out _examined));
+#pragma warning restore CS0618 // Type or member is obsolete
+        Assert.Equal(RequestRejectionReason.MalformedRequestInvalidHeaders, exception.Reason);
     }
 
     [Fact]
@@ -130,7 +133,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
 
         _transport.Input.AdvanceTo(TakeStartLineAndMessageHeaders());
 
-        Assert.Equal(0, _http1Connection.RequestHeaders.Count);
+        Assert.Empty(_http1Connection.RequestHeaders);
 
         await _application.Output.WriteAsync(Encoding.ASCII.GetBytes($"{headerLine}\r\n"));
         readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
@@ -144,7 +147,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
 
         _transport.Input.AdvanceTo(TakeMessageHeaders());
 
-        Assert.Equal(1, _http1Connection.RequestHeaders.Count);
+        Assert.Single(_http1Connection.RequestHeaders);
         Assert.Equal("makethislargerthanthestartline", _http1Connection.RequestHeaders["Header"]);
     }
 
@@ -246,7 +249,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         }
         Assert.Equal($"{connectionId}:{count:X8}", feature.TraceIdentifier);
 
-        _http1Connection.StopProcessingNextRequest();
+        _http1Connection.StopProcessingNextRequest(ConnectionEndReason.AppShutdownTimeout);
         await requestProcessingTask.DefaultTimeout();
     }
 
@@ -277,7 +280,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         _transport.Input.AdvanceTo(_consumed, _examined);
 
         Assert.True(takeMessageHeaders);
-        Assert.Equal(1, _http1Connection.RequestHeaders.Count);
+        Assert.Single(_http1Connection.RequestHeaders);
         Assert.Equal("value1", _http1Connection.RequestHeaders["Header-1"]);
 
         _http1Connection.Reset();
@@ -289,7 +292,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         _transport.Input.AdvanceTo(_consumed, _examined);
 
         Assert.True(takeMessageHeaders);
-        Assert.Equal(1, _http1Connection.RequestHeaders.Count);
+        Assert.Single(_http1Connection.RequestHeaders);
         Assert.Equal("value2", _http1Connection.RequestHeaders["Header-2"]);
     }
 
@@ -313,6 +316,32 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         // Assert
         Assert.True(_http1Connection.HasResponseStarted);
         Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)_http1Connection).ReasonPhrase = "Reason phrase");
+    }
+
+    [Theory]
+    [InlineData("Injected\r\nHeader: value")]
+    [InlineData("Has\rCarriageReturn")]
+    [InlineData("Has\nLineFeed")]
+    [InlineData("Has\0Null")]
+    [InlineData("Control\u001FChar")]
+    [InlineData("Del\u007FChar")]
+    [InlineData("Non-ASCII\u0080Char")]
+    [InlineData("Caf\u00E9")]
+    public void ThrowsWhenReasonPhraseContainsControlCharacters(string reasonPhrase)
+    {
+        Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)_http1Connection).ReasonPhrase = reasonPhrase);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("OK")]
+    [InlineData("Custom Reason")]
+    [InlineData("Includes\tHTAB")]
+    public void AcceptsValidReasonPhrase(string reasonPhrase)
+    {
+        ((IHttpResponseFeature)_http1Connection).ReasonPhrase = reasonPhrase;
+        Assert.Equal(reasonPhrase, ((IHttpResponseFeature)_http1Connection).ReasonPhrase);
     }
 
     [Fact]
@@ -443,17 +472,6 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     }
 
     [Fact]
-    public async Task ParseRequestStartsRequestHeadersTimeoutOnFirstByteAvailable()
-    {
-        await _application.Output.WriteAsync(Encoding.ASCII.GetBytes("G"));
-
-        ParseRequest((await _transport.Input.ReadAsync()).Buffer, out _consumed, out _examined);
-        _transport.Input.AdvanceTo(_consumed, _examined);
-
-        _timeoutControl.Verify(cc => cc.ResetTimeout(_serviceContext.ServerOptions.Limits.RequestHeadersTimeout, TimeoutReason.RequestHeaders));
-    }
-
-    [Fact]
     public async Task TakeStartLineThrowsWhenTooLong()
     {
         _serviceContext.ServerOptions.Limits.MaxRequestLineSize = "GET / HTTP/1.1\r\n".Length;
@@ -494,7 +512,8 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         TakeStartLine(readableBuffer, out _consumed, out _examined));
         _transport.Input.AdvanceTo(_consumed, _examined);
 
-        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(target.EscapeNonPrintable()), exception.Message);
+        var partialTarget = target.AsSpan(0, target.IndexOf('\0') + 1).ToString();
+        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail($"GET {partialTarget.EscapeNonPrintable()}"), exception.Message);
     }
 
     [Theory]
@@ -510,7 +529,8 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         TakeStartLine(readableBuffer, out _consumed, out _examined));
         _transport.Input.AdvanceTo(_consumed, _examined);
 
-        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(requestLine[..^1].EscapeNonPrintable()), exception.Message);
+        var partialRequestLine = requestLine.AsSpan(0, requestLine.IndexOf('\0') + 1).ToString();
+        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail(partialRequestLine.EscapeNonPrintable()), exception.Message);
     }
 
     [Theory]
@@ -526,7 +546,8 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
          TakeStartLine(readableBuffer, out _consumed, out _examined));
         _transport.Input.AdvanceTo(_consumed, _examined);
 
-        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestTarget_Detail(target.EscapeNonPrintable()), exception.Message);
+        var partialTarget = target.AsSpan(0, target.IndexOf('\0') + 1).ToString();
+        Assert.Equal(CoreStrings.FormatBadRequest_InvalidRequestLine_Detail($"GET {partialTarget.EscapeNonPrintable()}"), exception.Message);
     }
 
     [Theory]
@@ -572,7 +593,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         var expectedKeepAliveTimeout = _serviceContext.ServerOptions.Limits.KeepAliveTimeout;
         _timeoutControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutReason.KeepAlive));
 
-        _http1Connection.StopProcessingNextRequest();
+        _http1Connection.StopProcessingNextRequest(ConnectionEndReason.AppShutdownTimeout);
         _application.Output.Complete();
 
         await requestProcessingTask.DefaultTimeout();
@@ -657,7 +678,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         var data = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
         await _application.Output.WriteAsync(data);
 
-        _http1Connection.StopProcessingNextRequest();
+        _http1Connection.StopProcessingNextRequest(ConnectionEndReason.AppShutdownTimeout);
         Assert.IsNotType<Task<Task>>(requestProcessingTask);
 
         await requestProcessingTask.DefaultTimeout();
@@ -680,7 +701,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         await _http1Connection.WriteAsync(new ArraySegment<byte>(new[] { (byte)'d' }));
         Assert.NotEqual(original, _http1Connection.RequestAborted);
 
-        _http1Connection.Abort(new ConnectionAbortedException());
+        _http1Connection.Abort(new ConnectionAbortedException(), ConnectionEndReason.AbortedByApp);
 
         Assert.False(original.IsCancellationRequested);
         Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
@@ -702,14 +723,14 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         await _http1Connection.WriteAsync(new ArraySegment<byte>(new[] { (byte)'d' }), default(CancellationToken));
         Assert.NotEqual(original, _http1Connection.RequestAborted);
 
-        _http1Connection.Abort(new ConnectionAbortedException());
+        _http1Connection.Abort(new ConnectionAbortedException(), ConnectionEndReason.AbortedByApp);
 
         Assert.False(original.IsCancellationRequested);
         Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
     }
 
     [Fact]
-    public async void BodyWriter_OnAbortedConnection_ReturnsFlushResultWithIsCompletedTrue()
+    public async Task BodyWriter_OnAbortedConnection_ReturnsFlushResultWithIsCompletedTrue()
     {
         var payload = Encoding.UTF8.GetBytes("hello, web browser" + new string(' ', 512) + "\n");
         var writer = _application.Output;
@@ -717,13 +738,13 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         var successResult = await writer.WriteAsync(payload);
         Assert.False(successResult.IsCompleted);
 
-        _http1Connection.Abort(new ConnectionAbortedException());
+        _http1Connection.Abort(new ConnectionAbortedException(), ConnectionEndReason.AbortedByApp);
         var failResult = await _http1Connection.FlushPipeAsync(new CancellationToken());
         Assert.True(failResult.IsCompleted);
     }
 
     [Fact]
-    public async void BodyWriter_OnConnectionWithCanceledPendingFlush_ReturnsFlushResultWithIsCanceledTrue()
+    public async Task BodyWriter_OnConnectionWithCanceledPendingFlush_ReturnsFlushResultWithIsCanceledTrue()
     {
         var payload = Encoding.UTF8.GetBytes("hello, web browser" + new string(' ', 512) + "\n");
         var writer = _application.Output;
@@ -762,7 +783,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         await _http1Connection.WriteAsync(new ArraySegment<byte>(new[] { (byte)'d' }), default(CancellationToken));
         Assert.NotEqual(original, _http1Connection.RequestAborted);
 
-        _http1Connection.Abort(new ConnectionAbortedException());
+        _http1Connection.Abort(new ConnectionAbortedException(), ConnectionEndReason.AbortedByApp);
 
         Assert.False(original.IsCancellationRequested);
         Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
@@ -780,7 +801,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         await _http1Connection.ProduceEndAsync();
         Assert.NotEqual(original, _http1Connection.RequestAborted);
 
-        _http1Connection.Abort(new ConnectionAbortedException());
+        _http1Connection.Abort(new ConnectionAbortedException(), ConnectionEndReason.AbortedByApp);
 
         Assert.False(original.IsCancellationRequested);
         Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
@@ -792,7 +813,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         var originalToken = _http1Connection.RequestAborted;
         var originalRegistration = originalToken.Register(() => { });
 
-        _http1Connection.Abort(new ConnectionAbortedException());
+        _http1Connection.Abort(new ConnectionAbortedException(), ConnectionEndReason.AbortedByApp);
 
         Assert.True(originalToken.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
         Assert.True(_http1Connection.RequestAborted.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
@@ -806,7 +827,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         var originalToken = _http1Connection.RequestAborted;
         var originalRegistration = originalToken.Register(() => { });
 
-        _http1Connection.Abort(new ConnectionAbortedException());
+        _http1Connection.Abort(new ConnectionAbortedException(), ConnectionEndReason.AbortedByApp);
 
         // The following line will throw an ODE because the original CTS backing the token has been diposed.
         // See https://github.com/dotnet/aspnetcore/pull/4447 for the history behind this test.
@@ -873,7 +894,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
 
         await _application.Output.WriteAsync(Encoding.ASCII.GetBytes("GET / HTTP/1.0\r\n"));
         await WaitForCondition(TestConstants.DefaultTimeout, () => _http1Connection.RequestHeaders != null);
-        Assert.Equal(0, _http1Connection.RequestHeaders.Count);
+        Assert.Empty(_http1Connection.RequestHeaders);
 
         await _application.Output.WriteAsync(Encoding.ASCII.GetBytes(headers0));
         await WaitForCondition(TestConstants.DefaultTimeout, () => _http1Connection.RequestHeaders.Count >= header0Count);
@@ -905,7 +926,7 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
 
         await _application.Output.WriteAsync(Encoding.ASCII.GetBytes("GET / HTTP/1.0\r\n"));
         await WaitForCondition(TestConstants.DefaultTimeout, () => _http1Connection.RequestHeaders != null);
-        Assert.Equal(0, _http1Connection.RequestHeaders.Count);
+        Assert.Empty(_http1Connection.RequestHeaders);
 
         var newRequestHeaders = new RequestHeadersWrapper(_http1Connection.RequestHeaders);
         _http1Connection.RequestHeaders = newRequestHeaders;
@@ -1034,6 +1055,27 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.False(_http1Connection.RequestHeaders.ContainsKey(HeaderNames.ContentLength));
     }
 
+    [Fact]
+    public void ContentLengthShouldBeRemovedWhenBothTransferEncodingAndContentLengthAndXContentLengthRequestHeadersExist()
+    {
+        // Arrange
+        string contentLength = "1024";
+        string userXContentLength = "123";
+        _http1Connection.RequestHeaders.Add(HeaderNames.ContentLength, contentLength);
+        _http1Connection.RequestHeaders.Add(HeaderNames.TransferEncoding, "chunked");
+        _http1Connection.RequestHeaders.Add("X-Content-Length", userXContentLength); // user passed this explicitly
+
+        // Act
+        Http1MessageBody.For(Kestrel.Core.Internal.Http.HttpVersion.Http11, (HttpRequestHeaders)_http1Connection.RequestHeaders, _http1Connection);
+
+        // Assert
+        Assert.True(_http1Connection.RequestHeaders.ContainsKey("X-Content-Length"));
+        Assert.Equal(userXContentLength, _http1Connection.RequestHeaders["X-Content-Length"]);
+        Assert.True(_http1Connection.RequestHeaders.ContainsKey(HeaderNames.TransferEncoding));
+        Assert.Equal("chunked", _http1Connection.RequestHeaders[HeaderNames.TransferEncoding]);
+        Assert.False(_http1Connection.RequestHeaders.ContainsKey(HeaderNames.ContentLength));
+    }
+
     private bool TakeMessageHeaders(ReadOnlySequence<byte> readableBuffer, bool trailers, out SequencePosition consumed, out SequencePosition examined)
     {
         var reader = new SequenceReader<byte>(readableBuffer);
@@ -1055,23 +1097,6 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
     {
         var reader = new SequenceReader<byte>(readableBuffer);
         if (_http1Connection.TakeStartLine(ref reader))
-        {
-            consumed = reader.Position;
-            examined = reader.Position;
-            return true;
-        }
-        else
-        {
-            consumed = reader.Position;
-            examined = readableBuffer.End;
-            return false;
-        }
-    }
-
-    private bool ParseRequest(ReadOnlySequence<byte> readableBuffer, out SequencePosition consumed, out SequencePosition examined)
-    {
-        var reader = new SequenceReader<byte>(readableBuffer);
-        if (_http1Connection.ParseRequest(ref reader))
         {
             consumed = reader.Position;
             examined = reader.Position;

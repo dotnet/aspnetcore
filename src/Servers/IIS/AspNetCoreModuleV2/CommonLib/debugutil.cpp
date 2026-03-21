@@ -73,7 +73,7 @@ GetVersionInfoString()
     {
         DWORD  verHandle = 0;
         UINT   size = 0;
-        LPVOID lpBuffer = NULL;
+        LPVOID lpBuffer = nullptr;
 
         auto path = GetModuleName();
 
@@ -92,7 +92,7 @@ GetVersionInfoString()
             RETURN_IF_FAILED(E_FAIL);
         }
 
-        LPVOID pvProductName = NULL;
+        LPVOID pvProductName = nullptr;
         unsigned int iProductNameLen = 0;
         RETURN_LAST_ERROR_IF(!VerQueryValue(verData.data(), _T("\\StringFileInfo\\040904b0\\FileDescription"), &pvProductName, &iProductNameLen));
 
@@ -114,7 +114,7 @@ std::wstring
 GetModuleName()
 {
     WCHAR path[MAX_PATH];
-    LOG_LAST_ERROR_IF(!GetModuleFileName(g_hModule, path, sizeof(path)));
+    LOG_LAST_ERROR_IF(!GetModuleFileName(g_hModule, path, _countof(path)));
     return path;
 }
 
@@ -211,14 +211,14 @@ DebugInitialize(HMODULE hModule)
             KEY_READ,
             &hKey) == NO_ERROR)
     {
-        DWORD dwType;
-        DWORD dwData;
-        DWORD cbData;
+        DWORD dwType{0};
+        DWORD dwData{0};
+        DWORD cbData{0};
 
         cbData = sizeof(dwData);
         if ((RegQueryValueEx(hKey,
             L"DebugFlags",
-            NULL,
+            nullptr,
             &dwType,
             (LPBYTE)&dwData,
             &cbData) == NO_ERROR) &&
@@ -373,7 +373,7 @@ DebugPrintW(
 
         if (IsEnabled(ASPNETCORE_DEBUG_FLAG_EVENTLOG))
         {
-            WORD eventType;
+            WORD eventType = EVENTLOG_INFORMATION_TYPE;
             switch (dwFlag)
             {
                 case ASPNETCORE_DEBUG_FLAG_ERROR:
@@ -409,7 +409,10 @@ DebugPrintfW(
 
         hr = strCooked.SafeVsnwprintf(szFormat, args );
 
+#pragma warning(push)
+#pragma warning(disable: 26477) // va_end uses 0
         va_end( args );
+#pragma warning(pop)
 
         if (FAILED (hr))
         {
@@ -453,7 +456,10 @@ DebugPrintf(
 
         hr = strCooked.SafeVsnprintf(szFormat, args );
 
+#pragma warning(push)
+#pragma warning(disable: 26477) // va_end uses 0
         va_end( args );
+#pragma warning(pop)
 
         if (FAILED (hr))
         {

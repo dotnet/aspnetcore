@@ -302,7 +302,7 @@ describe("hubConnection", () => {
                 // client side method names are case insensitive
                 let methodName = "message";
                 const idx = Math.floor(Math.random() * (methodName.length - 1));
-                methodName = methodName.substr(0, idx) + methodName[idx].toUpperCase() + methodName.substr(idx + 1);
+                methodName = methodName.substring(0, idx) + methodName[idx].toUpperCase() + methodName.substring(idx + 1);
 
                 const receivePromise = new PromiseSource<string>();
                 hubConnection.on(methodName, (msg) => {
@@ -328,7 +328,7 @@ describe("hubConnection", () => {
                 // client side method names are case insensitive
                 let methodName = "message";
                 const idx = Math.floor(Math.random() * (methodName.length - 1));
-                methodName = methodName.substr(0, idx) + methodName[idx].toUpperCase() + methodName.substr(idx + 1);
+                methodName = methodName.substring(0, idx) + methodName[idx].toUpperCase() + methodName.substring(idx + 1);
 
                 let closeCount = 0;
                 let invocationCount = 0;

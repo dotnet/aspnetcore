@@ -4,9 +4,11 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -19,20 +21,30 @@ public class TestServerTests : VerifiableLoggedTest
     {
         using (StartVerifiableLog())
         {
-            var builder = new WebHostBuilder().ConfigureServices(s =>
-            {
-                s.AddLogging();
-                s.AddSingleton(LoggerFactory);
-                s.AddSignalR();
-            }).Configure(app =>
-            {
-                app.UseRouting();
-                app.UseEndpoints(endpoints =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    endpoints.MapHub<EchoHub>("/echo");
-                });
-            });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                        .UseTestServer()
+                        .ConfigureServices(s =>
+                        {
+                            s.AddLogging();
+                            s.AddSingleton(LoggerFactory);
+                            s.AddSignalR();
+                        })
+                        .Configure(app =>
+                        {
+                            app.UseRouting();
+                            app.UseEndpoints(endpoints =>
+                            {
+                                endpoints.MapHub<EchoHub>("/echo");
+                            });
+                        });
+                })
+                .Build();
+
+            await host.StartAsync();
+            var server = host.GetTestServer();
 
             var webSocketFactoryCalled = false;
             var connectionBuilder = new HubConnectionBuilder()
@@ -52,7 +64,7 @@ public class TestServerTests : VerifiableLoggedTest
                 });
             connectionBuilder.Services.AddLogging();
             connectionBuilder.Services.AddSingleton(LoggerFactory);
-            var connection = connectionBuilder.Build();
+            await using var connection = connectionBuilder.Build();
 
             var originalMessage = "message";
             connection.On<string>("Echo", (receivedMessage) =>
@@ -67,24 +79,35 @@ public class TestServerTests : VerifiableLoggedTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65702")]
     public async Task LongPollingWorks()
     {
         using (StartVerifiableLog())
         {
-            var builder = new WebHostBuilder().ConfigureServices(s =>
-            {
-                s.AddLogging();
-                s.AddSingleton(LoggerFactory);
-                s.AddSignalR();
-            }).Configure(app =>
-            {
-                app.UseRouting();
-                app.UseEndpoints(endpoints =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    endpoints.MapHub<EchoHub>("/echo");
-                });
-            });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                        .UseTestServer()
+                        .ConfigureServices(s =>
+                        {
+                            s.AddLogging();
+                            s.AddSingleton(LoggerFactory);
+                            s.AddSignalR();
+                        })
+                        .Configure(app =>
+                        {
+                            app.UseRouting();
+                            app.UseEndpoints(endpoints =>
+                            {
+                                endpoints.MapHub<EchoHub>("/echo");
+                            });
+                        });
+                })
+                .Build();
+
+            await host.StartAsync();
+            var server = host.GetTestServer();
 
             var connectionBuilder = new HubConnectionBuilder()
                 .WithUrl(server.BaseAddress + "echo", options =>
@@ -97,7 +120,7 @@ public class TestServerTests : VerifiableLoggedTest
                 });
             connectionBuilder.Services.AddLogging();
             connectionBuilder.Services.AddSingleton(LoggerFactory);
-            var connection = connectionBuilder.Build();
+            await using var connection = connectionBuilder.Build();
 
             var originalMessage = "message";
             connection.On<string>("Echo", (receivedMessage) =>

@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using System.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client;
 
@@ -41,7 +42,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     private bool _disposed;
     private bool _hasInherentKeepAlive;
 
-    private readonly HttpClient? _httpClient;
+    private readonly HttpClient _httpClient;
     private readonly HttpConnectionOptions _httpConnectionOptions;
     private ITransport? _transport;
     private readonly ITransportFactory _transportFactory;
@@ -147,10 +148,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
         _url = _httpConnectionOptions.Url;
 
-        if (!httpConnectionOptions.SkipNegotiation || httpConnectionOptions.Transports != HttpTransportType.WebSockets)
-        {
-            _httpClient = CreateHttpClient();
-        }
+        _httpClient = CreateHttpClient();
 
         if (httpConnectionOptions.Transports == HttpTransportType.ServerSentEvents && OperatingSystem.IsBrowser())
         {
@@ -286,7 +284,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                 Log.SkippingDispose(_logger);
             }
 
-            _httpClient?.Dispose();
+            _httpClient.Dispose();
         }
         finally
         {
@@ -350,6 +348,9 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                 throw new InvalidOperationException("Negotiate redirection limit exceeded.");
             }
 
+            // Set the final negotiated URI as the endpoint.
+            RemoteEndPoint = new UriEndPoint(Utils.CreateEndPointUri(uri));
+
             // This should only need to happen once
             var connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionToken);
 
@@ -402,6 +403,9 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                             _httpConnectionOptions.UseStatefulReconnect = transportType == HttpTransportType.WebSockets ? _httpConnectionOptions.UseStatefulReconnect : false;
                             negotiationResponse = await GetNegotiationResponseAsync(uri, cancellationToken).ConfigureAwait(false);
                             connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionToken);
+
+                            // Set the final negotiated URI as the endpoint.
+                            RemoteEndPoint = new UriEndPoint(Utils.CreateEndPointUri(uri));
                         }
 
                         Log.StartingTransport(_logger, transportType, uri);
@@ -469,6 +473,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 #else
                 request.Properties.Add("IsNegotiate", true);
 #endif
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
 
                 // ResponseHeadersRead instructs SendAsync to return once headers are read
                 // rather than buffer the entire response. This gives a small perf boost.
@@ -706,7 +711,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
     private async Task<NegotiationResponse> GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
     {
-        var negotiationResponse = await NegotiateAsync(uri, _httpClient!, _logger, cancellationToken).ConfigureAwait(false);
+        var negotiationResponse = await NegotiateAsync(uri, _httpClient, _logger, cancellationToken).ConfigureAwait(false);
         // If the negotiationVersion is greater than zero then we know that the negotiation response contains a
         // connectionToken that will be required to conenct. Otherwise we just set the connectionId and the
         // connectionToken on the client to the same value.

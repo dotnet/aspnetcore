@@ -26,6 +26,12 @@ internal sealed class ParameterBindingMethodCache
     private static readonly MethodInfo BindAsyncMethod = typeof(ParameterBindingMethodCache).GetMethod(nameof(BindAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo UriTryCreateMethod = typeof(Uri).GetMethod(nameof(Uri.TryCreate), BindingFlags.Public | BindingFlags.Static, new[] { typeof(string), typeof(UriKind), typeof(Uri).MakeByRefType() })!;
 
+    // Thread-safe singletons for ParameterBindingMethodCache
+    private static readonly Lazy<ParameterBindingMethodCache> _instance = new(() => new ParameterBindingMethodCache());
+    public static ParameterBindingMethodCache Instance = _instance.Value;
+    private static readonly Lazy<ParameterBindingMethodCache> _nonThrowingInstance = new(() => new ParameterBindingMethodCache(throwOnInvalidMethod: false));
+    public static ParameterBindingMethodCache NonThrowingInstance = _nonThrowingInstance.Value;
+
     // work around https://github.com/dotnet/runtime/issues/81864 by splitting these into a separate class.
     internal static class SharedExpressions
     {

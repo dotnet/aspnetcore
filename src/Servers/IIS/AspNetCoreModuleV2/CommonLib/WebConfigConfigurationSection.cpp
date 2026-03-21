@@ -65,7 +65,7 @@ std::optional<std::shared_ptr<ConfigurationSection>> WebConfigConfigurationSecti
 std::vector<std::shared_ptr<ConfigurationSection>> WebConfigConfigurationSection::GetCollection() const
 {
     std::vector<std::shared_ptr<ConfigurationSection>> elements;
-    HRESULT findElementResult;
+    HRESULT findElementResult = S_OK;
     CComPtr<IAppHostElementCollection> elementCollection = nullptr;
     CComPtr<IAppHostElement>           collectionEntry = nullptr;
     ENUM_INDEX                         index{};

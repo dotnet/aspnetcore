@@ -83,8 +83,8 @@ public sealed class FormMappingScope : ICascadingValueSupplier, IComponent
     bool ICascadingValueSupplier.CanSupplyValue(in CascadingParameterInfo parameterInfo)
         => _cascadingValueSupplier!.CanSupplyValue(parameterInfo);
 
-    object? ICascadingValueSupplier.GetCurrentValue(in CascadingParameterInfo parameterInfo)
-        => _cascadingValueSupplier!.GetCurrentValue(in parameterInfo);
+    object? ICascadingValueSupplier.GetCurrentValue(object? key, in CascadingParameterInfo parameterInfo)
+        => _cascadingValueSupplier!.GetCurrentValue(key, in parameterInfo);
 
     void ICascadingValueSupplier.Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
         => throw new NotSupportedException();

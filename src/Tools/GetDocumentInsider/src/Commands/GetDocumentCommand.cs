@@ -17,6 +17,9 @@ internal sealed class GetDocumentCommand : ProjectCommandBase
 {
     private CommandOption _fileListPath;
     private CommandOption _output;
+    private CommandOption _openApiVersion;
+    private CommandOption _documentName;
+    private CommandOption _fileName;
 
     public GetDocumentCommand(IConsole console) : base(console)
     {
@@ -28,6 +31,9 @@ internal sealed class GetDocumentCommand : ProjectCommandBase
 
         _fileListPath = command.Option("--file-list <Path>", Resources.FileListDescription);
         _output = command.Option("--output <Directory>", Resources.OutputDescription);
+        _openApiVersion = command.Option("--openapi-version <Version>", Resources.OpenApiVersionDescription);
+        _documentName = command.Option("--document-name <Name>", Resources.DocumentNameDescription);
+        _fileName = command.Option("--file-name <Name>", Resources.FileNameDescription);
     }
 
     protected override void Validate()
@@ -43,6 +49,12 @@ internal sealed class GetDocumentCommand : ProjectCommandBase
         {
             throw new CommandException(Resources.FormatMissingOption(_output.LongName));
         }
+
+        // No need to validate --openapi-version, we'll fallback to whatever is configured by
+        // the runtime in the event that none is provided.
+
+        // No need to validate --document-name, we'll fallback to generating OpenAPI files for
+        // documents registered in the application in the event that none is provided.
     }
 
     protected override int Execute()
@@ -52,7 +64,7 @@ internal sealed class GetDocumentCommand : ProjectCommandBase
         var toolsDirectory = ToolsDirectory.Value();
         var packagedAssemblies = Directory
             .EnumerateFiles(toolsDirectory, "*.dll")
-            .Except(new[] { Path.GetFullPath(thisAssembly.Location) })
+            .Except([Path.GetFullPath(thisAssembly.Location)])
             .ToDictionary(Path.GetFileNameWithoutExtension, path => new AssemblyInfo(path));
 
         // Explicitly load all assemblies we need first to preserve target project as much as possible. This
@@ -128,8 +140,11 @@ internal sealed class GetDocumentCommand : ProjectCommandBase
                 AssemblyName = Path.GetFileNameWithoutExtension(assemblyPath),
                 FileListPath = _fileListPath.Value(),
                 OutputDirectory = _output.Value(),
+                OpenApiVersion = _openApiVersion.Value(),
+                DocumentName = _documentName.Value(),
                 ProjectName = ProjectName.Value(),
                 Reporter = Reporter,
+                FileName = _fileName.Value()
             };
 
             return new GetDocumentCommandWorker(context).Process();
