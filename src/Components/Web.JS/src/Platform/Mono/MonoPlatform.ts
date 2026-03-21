@@ -136,8 +136,9 @@ async function importDotnetJs(startOptions: Partial<WebAssemblyStartOptions>): P
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore: This dynamic import is handled at runtime and does not need a type declaration.
-  return await import(/* webpackIgnore: true */ "./dotnet.js");
+  return await import(/* webpackIgnore: true */ './dotnet.js');
 }
 
 function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, onConfigLoadedCallback?: (loadedConfig: MonoConfig) => void): DotnetModuleConfig {
