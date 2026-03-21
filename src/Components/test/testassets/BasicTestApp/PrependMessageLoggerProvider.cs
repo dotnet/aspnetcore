@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
-using Microsoft.JSInterop;
 
 namespace BasicTestApp;
 
@@ -14,10 +13,10 @@ internal class PrependMessageLoggerProvider : ILoggerProvider
     readonly ILogger _defaultLogger;
     private bool _disposed = false;
 
-    public PrependMessageLoggerProvider(string message, IJSRuntime runtime)
+    public PrependMessageLoggerProvider(string message)
     {
         _message = message;
-        _defaultLogger = new WebAssemblyConsoleLogger<object>(runtime);
+        _defaultLogger = new WebAssemblyConsoleLogger<object>();
     }
 
     public ILogger CreateLogger(string categoryName)
