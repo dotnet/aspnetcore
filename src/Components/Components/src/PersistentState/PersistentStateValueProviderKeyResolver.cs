@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
+using System.Reflection.Metadata;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Components.HotReload;
@@ -18,7 +19,7 @@ internal static class PersistentStateValueProviderKeyResolver
 
     static PersistentStateValueProviderKeyResolver()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (MetadataUpdater.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += ClearCaches;
         }

@@ -4,7 +4,7 @@
 #nullable disable warnings
 
 using System.Diagnostics;
-using Microsoft.AspNetCore.Components.HotReload;
+using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.RenderTree;
@@ -684,7 +684,7 @@ internal static class RenderTreeDiffBuilder
                         var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, oldTree, oldFrameIndex);
                         var newParametersLifetime = new ParameterViewLifetime(diffContext.BatchBuilder);
                         var newParameters = new ParameterView(newParametersLifetime, newTree, newFrameIndex);
-                        var isHotReload = HotReloadManager.Default.MetadataUpdateSupported && diffContext.Renderer.IsRenderingOnMetadataUpdate;
+                        var isHotReload = MetadataUpdater.IsSupported && diffContext.Renderer.IsRenderingOnMetadataUpdate;
 
                         if (isHotReload && newParameters.HasRemovedDirectParameters(oldParameters))
                         {

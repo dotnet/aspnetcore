@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Runtime.Serialization;
 using Microsoft.AspNetCore.Components.HotReload;
 
@@ -14,7 +15,7 @@ internal static class ExpressionFormatter
 {
     static ExpressionFormatter()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (MetadataUpdater.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += ClearCache;
         }

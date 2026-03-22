@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.HotReload;
 
 namespace Microsoft.AspNetCore.Components;
@@ -12,7 +13,7 @@ internal sealed class ChangeDetection
 
     static ChangeDetection()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (MetadataUpdater.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += _immutableObjectTypesCache.Clear;
         }

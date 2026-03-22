@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.HotReload;
@@ -1670,7 +1671,7 @@ public static class BindConverter
 
         static FormatterDelegateCache()
         {
-            if (HotReloadManager.Default.MetadataUpdateSupported)
+            if (MetadataUpdater.IsSupported)
             {
                 HotReloadManager.Default.OnDeltaApplied += _cache.Clear;
             }
@@ -1867,7 +1868,7 @@ public static class BindConverter
 
         static ParserDelegateCache()
         {
-            if (HotReloadManager.Default.MetadataUpdateSupported)
+            if (MetadataUpdater.IsSupported)
             {
                 HotReloadManager.Default.OnDeltaApplied += _cache.Clear;
             }

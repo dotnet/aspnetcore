@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,7 +21,7 @@ internal sealed class DefaultComponentPropertyActivator : IComponentPropertyActi
 
     static DefaultComponentPropertyActivator()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (MetadataUpdater.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += ClearCache;
         }

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Components.HotReload;
@@ -27,7 +28,7 @@ internal sealed class PersistentServicesRegistry
 
     static PersistentServicesRegistry()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (MetadataUpdater.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += _cachedAccessorsByType.Clear;
         }

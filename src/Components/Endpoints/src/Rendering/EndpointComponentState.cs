@@ -6,8 +6,8 @@ using System.Reflection;
 using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.HotReload;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Rendering;
 
 [assembly: MetadataUpdateHandler(typeof(EndpointComponentState))]
 
@@ -19,7 +19,7 @@ internal sealed class EndpointComponentState : ComponentState
 
     static EndpointComponentState()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (MetadataUpdater.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += _streamRenderingAttributeByComponentType.Clear;
         }

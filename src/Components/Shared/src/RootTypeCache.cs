@@ -1,10 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components.HotReload;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Reflection.Metadata;
+using Microsoft.AspNetCore.Components.HotReload;
 
 #if COMPONENTS
 namespace Microsoft.AspNetCore.Components.Infrastructure;
@@ -19,7 +20,7 @@ internal sealed class RootTypeCache : IDisposable
 
     public RootTypeCache()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (MetadataUpdater.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += ClearCache;
         }
@@ -29,7 +30,7 @@ internal sealed class RootTypeCache : IDisposable
 
     public void Dispose()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (MetadataUpdater.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied -= ClearCache;
         }

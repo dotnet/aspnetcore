@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components;
@@ -49,7 +48,7 @@ public readonly struct RenderHandle
     /// <summary>
     /// Gets a value that determines if the <see cref="Renderer"/> is triggering a render in response to a metadata update (hot-reload) change.
     /// </summary>
-    public bool IsRenderingOnMetadataUpdate => HotReloadManager.Default.MetadataUpdateSupported && (_renderer?.IsRenderingOnMetadataUpdate ?? false);
+    public bool IsRenderingOnMetadataUpdate => _renderer is { } renderer && renderer.HotReloadManager.MetadataUpdateSupported && renderer.IsRenderingOnMetadataUpdate;
 
     internal bool IsRendererDisposed => _renderer?.Disposed
         ?? throw new InvalidOperationException("No renderer has been initialized.");

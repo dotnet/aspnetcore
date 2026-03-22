@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.HotReload;
 
@@ -20,7 +21,7 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
 
     static FieldIdentifier()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (MetadataUpdater.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += ClearCache;
         }

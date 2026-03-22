@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.HotReload;
 
 namespace Microsoft.AspNetCore.Components.RenderTree;
@@ -13,7 +14,7 @@ internal static class EventArgsTypeCache
 
     static EventArgsTypeCache()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (MetadataUpdater.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += Cache.Clear;
         }

@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Routing.Tree;
 
@@ -16,7 +17,7 @@ internal sealed class RouteTable(TreeRouter treeRouter)
 
     static RouteTable()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (MetadataUpdater.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += _routeEntryCache.Clear;
         }
