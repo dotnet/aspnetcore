@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.Components.Rendering;
 /// feature switch. Since single-threaded WASM has no concurrent threads, lock/Monitor
 /// operations are pure overhead and can safely be skipped.
 /// </remarks>
-internal ref struct SingleThreadedLockScope : IDisposable
+internal ref struct SingleThreadedLockScope
 {
-    private readonly object? _lockObject;
+    private readonly object _lockObject;
 #pragma warning disable IDE0044 // _lockTaken is set by Monitor.Enter via ref parameter
     private bool _lockTaken;
 #pragma warning restore IDE0044
@@ -24,9 +24,9 @@ internal ref struct SingleThreadedLockScope : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SingleThreadedLockScope(object lockObject)
     {
+        _lockObject = lockObject;
         if (!OperatingSystem.IsBrowser())
         {
-            _lockObject = lockObject;
             Monitor.Enter(lockObject, ref _lockTaken);
         }
     }
@@ -36,7 +36,7 @@ internal ref struct SingleThreadedLockScope : IDisposable
     {
         if (_lockTaken)
         {
-            Monitor.Exit(_lockObject!);
+            Monitor.Exit(_lockObject);
         }
     }
 }
