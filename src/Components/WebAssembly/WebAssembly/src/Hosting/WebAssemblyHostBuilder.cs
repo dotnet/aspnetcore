@@ -341,12 +341,12 @@ public sealed class WebAssemblyHostBuilder
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<ResourceCollectionProvider>(Services, RenderMode.InteractiveWebAssembly);
         Services.AddLogging(builder =>
         {
-            builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
+            builder.AddProvider(new WebAssemblyConsoleLoggerProvider());
         });
         Services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AntiforgeryStateProvider>(Services, RenderMode.InteractiveWebAssembly);
         Services.AddSupplyValueFromQueryProvider();
-        
+
         // Register metrics and tracing when explicitly enabled (opt-in via feature switch)
         var isTelemetryEnabled = AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out var switchValue) && switchValue == true;
         if (isTelemetryEnabled)
