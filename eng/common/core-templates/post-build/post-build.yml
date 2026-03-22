@@ -206,7 +206,7 @@ stages:
         displayName: Validate
         inputs:
           filePath: eng\common\sdk-task.ps1
-          arguments: -task SigningValidation -restore -msbuildEngine vs
+          arguments: -task SigningValidation -restore
             /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts'
             /p:SignCheckExclusionsFile='$(System.DefaultWorkingDirectory)/eng/SignCheckExclusionsFile.txt'
             ${{ parameters.signingValidationAdditionalParameters }}
