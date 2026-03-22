@@ -1,14 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Components.HotReload;
 
 namespace Microsoft.AspNetCore.Components;
 
 internal sealed class ChangeDetection
 {
-    private static readonly ConcurrentDictionary<Type, bool> _immutableObjectTypesCache = new();
+    private static readonly IMaybeConcurrentDictionary<Type, bool> _immutableObjectTypesCache = MaybeConcurrentDictionary.Create<Type, bool>();
 
     static ChangeDetection()
     {

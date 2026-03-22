@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -15,7 +14,7 @@ namespace Microsoft.AspNetCore.Components;
 internal readonly struct CascadingParameterState
     (in CascadingParameterInfo parameterInfo, ICascadingValueSupplier valueSupplier, object? key)
 {
-    private static readonly ConcurrentDictionary<Type, CascadingParameterInfo[]> _cachedInfos = new();
+    private static readonly IMaybeConcurrentDictionary<Type, CascadingParameterInfo[]> _cachedInfos = MaybeConcurrentDictionary.Create<Type, CascadingParameterInfo[]>();
 
     public CascadingParameterInfo ParameterInfo { get; } = parameterInfo;
     public ICascadingValueSupplier ValueSupplier { get; } = valueSupplier;

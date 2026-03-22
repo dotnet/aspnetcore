@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -25,8 +24,8 @@ internal static class ComponentProperties
     // Right now it's not possible for a component to define a Parameter and a Cascading Parameter with
     // the same name. We don't give you a way to express this in code (would create duplicate properties),
     // and we don't have the ability to represent it in our data structures.
-    private static readonly ConcurrentDictionary<Type, WritersForType> _cachedWritersByType
-        = new ConcurrentDictionary<Type, WritersForType>();
+    private static readonly IMaybeConcurrentDictionary<Type, WritersForType> _cachedWritersByType
+        = MaybeConcurrentDictionary.Create<Type, WritersForType>();
 
     public static void ClearCache() => _cachedWritersByType.Clear();
 
@@ -277,12 +276,12 @@ internal static class ComponentProperties
     {
         private const int MaxCachedWriterLookups = 100;
         private readonly Dictionary<string, PropertySetter> _underlyingWriters;
-        private readonly ConcurrentDictionary<string, PropertySetter?> _referenceEqualityWritersCache;
+        private readonly IMaybeConcurrentDictionary<string, PropertySetter?> _referenceEqualityWritersCache;
 
         public WritersForType([DynamicallyAccessedMembers(Component)] Type targetType)
         {
             _underlyingWriters = new Dictionary<string, PropertySetter>(StringComparer.OrdinalIgnoreCase);
-            _referenceEqualityWritersCache = new ConcurrentDictionary<string, PropertySetter?>(ReferenceEqualityComparer.Instance);
+            _referenceEqualityWritersCache = MaybeConcurrentDictionary.Create<string, PropertySetter?>(ReferenceEqualityComparer.Instance);
 
             foreach (var propertyInfo in GetCandidateBindableProperties(targetType))
             {

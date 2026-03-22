@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.HotReload;
@@ -12,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Routing;
 internal sealed class RouteTable(TreeRouter treeRouter)
 {
     private readonly TreeRouter _router = treeRouter;
-    private static readonly ConcurrentDictionary<(Type, string), InboundRouteEntry> _routeEntryCache = new();
+    private static readonly IMaybeConcurrentDictionary<(Type, string), InboundRouteEntry> _routeEntryCache = MaybeConcurrentDictionary.Create<(Type, string), InboundRouteEntry>();
 
     static RouteTable()
     {

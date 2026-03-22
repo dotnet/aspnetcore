@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -16,7 +15,7 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
     // By *not* making this sealed, people who want to deal with value disposal can subclass this,
     // add IDisposable, and then do what they want during shutdown
 
-    private readonly ConcurrentDictionary<Dispatcher, List<ComponentState>>? _subscribers;
+    private readonly IMaybeConcurrentDictionary<Dispatcher, List<ComponentState>>? _subscribers;
     private readonly bool _isFixed;
     private readonly string? _name;
 
@@ -74,7 +73,7 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
 
         if (!_isFixed)
         {
-            _subscribers = new();
+            _subscribers = MaybeConcurrentDictionary.Create<Dispatcher, List<ComponentState>>();
         }
     }
 
@@ -180,7 +179,7 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
             subscribersForDispatcher.Remove(subscriber);
             if (subscribersForDispatcher.Count == 0)
             {
-                _subscribers.Remove(dispatcher, out _);
+                _subscribers.TryRemove(dispatcher, out _);
             }
         }
     }

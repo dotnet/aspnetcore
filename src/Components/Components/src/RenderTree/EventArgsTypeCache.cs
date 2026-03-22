@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.HotReload;
 
@@ -9,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree;
 
 internal static class EventArgsTypeCache
 {
-    private static readonly ConcurrentDictionary<MethodInfo, Type> Cache = new ConcurrentDictionary<MethodInfo, Type>();
+    private static readonly IMaybeConcurrentDictionary<MethodInfo, Type> Cache = MaybeConcurrentDictionary.Create<MethodInfo, Type>();
 
     static EventArgsTypeCache()
     {

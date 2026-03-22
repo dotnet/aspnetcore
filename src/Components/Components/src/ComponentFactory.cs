@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.HotReload;
@@ -17,7 +16,7 @@ internal sealed class ComponentFactory
         AppContext.TryGetSwitch("Microsoft.AspNetCore.Components.Unsupported.DisablePropertyInjection", out var isDisabled) &&
         isDisabled;
 
-    private static readonly ConcurrentDictionary<Type, IComponentRenderMode?> _cachedComponentTypeRenderModes = new();
+    private static readonly IMaybeConcurrentDictionary<Type, IComponentRenderMode?> _cachedComponentTypeRenderModes = MaybeConcurrentDictionary.Create<Type, IComponentRenderMode?>();
 
     static ComponentFactory()
     {
