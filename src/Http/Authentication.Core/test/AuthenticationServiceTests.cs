@@ -49,6 +49,66 @@ public class AuthenticationServiceTests
     }
 
     [Fact]
+    public async Task MultipleClaimsTransformationsAreComposed()
+    {
+        var transform1 = new ClaimsAdder("role", "admin");
+        var transform2 = new ClaimsAdder("role", "user");
+        var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+        {
+            o.AddScheme<BaseHandler>("base", "whatever");
+        })
+            .AddTransient<IClaimsTransformation>(_ => transform1)
+            .AddTransient<IClaimsTransformation>(_ => transform2)
+            .BuildServiceProvider();
+        var context = new DefaultHttpContext();
+        context.RequestServices = services;
+
+        var result = await context.AuthenticateAsync("base");
+        Assert.True(result.Succeeded);
+        Assert.Contains(result.Principal!.Claims, c => c.Type == "role" && c.Value == "admin");
+        Assert.Contains(result.Principal!.Claims, c => c.Type == "role" && c.Value == "user");
+    }
+
+    [Fact]
+    public async Task MultipleClaimsTransformationsRunInRegistrationOrder()
+    {
+        var order = new List<int>();
+        var transform1 = new OrderTracker(order, 1);
+        var transform2 = new OrderTracker(order, 2);
+        var transform3 = new OrderTracker(order, 3);
+        var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+        {
+            o.AddScheme<BaseHandler>("base", "whatever");
+        })
+            .AddTransient<IClaimsTransformation>(_ => transform1)
+            .AddTransient<IClaimsTransformation>(_ => transform2)
+            .AddTransient<IClaimsTransformation>(_ => transform3)
+            .BuildServiceProvider();
+        var context = new DefaultHttpContext();
+        context.RequestServices = services;
+
+        await context.AuthenticateAsync("base");
+        Assert.Equal(new[] { 1, 2, 3 }, order);
+    }
+
+    [Fact]
+    public async Task SingleClaimsTransformationStillWorks()
+    {
+        var transform = new RunOnce();
+        var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+        {
+            o.AddScheme<BaseHandler>("base", "whatever");
+        })
+            .AddTransient<IClaimsTransformation>(_ => transform)
+            .BuildServiceProvider();
+        var context = new DefaultHttpContext();
+        context.RequestServices = services;
+
+        await context.AuthenticateAsync("base");
+        Assert.Equal(1, transform.Ran);
+    }
+
+    [Fact]
     public async Task ChallengeThrowsForSchemeMismatch()
     {
         var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
@@ -411,6 +471,51 @@ public class AuthenticationServiceTests
         public Task SignOutAsync(AuthenticationProperties? properties)
         {
             throw new NotImplementedException();
+        }
+    }
+
+    private class ClaimsAdder : IClaimsTransformation
+    {
+        private readonly string _type;
+        private readonly string _value;
+
+        public ClaimsAdder(string type, string value)
+        {
+            _type = type;
+            _value = value;
+        }
+
+        public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
+        {
+            if (principal.Identity is ClaimsIdentity claimsIdentity)
+            {
+                claimsIdentity.AddClaim(new Claim(_type, _value));
+                return Task.FromResult(principal);
+            }
+
+            var newIdentity = new ClaimsIdentity();
+            newIdentity.AddClaim(new Claim(_type, _value));
+            principal.AddIdentity(newIdentity);
+
+            return Task.FromResult(principal);
+        }
+    }
+
+    private class OrderTracker : IClaimsTransformation
+    {
+        private readonly List<int> _order;
+        private readonly int _id;
+
+        public OrderTracker(List<int> order, int id)
+        {
+            _order = order;
+            _id = id;
+        }
+
+        public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
+        {
+            _order.Add(_id);
+            return Task.FromResult(principal);
         }
     }
 
