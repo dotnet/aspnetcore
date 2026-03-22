@@ -158,7 +158,7 @@ internal static class MaybeConcurrentDictionary
         public TValue GetOrAdd<TArg>(TKey key, Func<TKey, TArg, TValue> valueFactory, TArg factoryArgument) => _inner.GetOrAdd(key, valueFactory, factoryArgument);
         public bool TryAdd(TKey key, TValue value) => _inner.TryAdd(key, value);
         public bool TryRemove(TKey key, [MaybeNullWhen(false)] out TValue value) => _inner.TryRemove(key, out value);
-        public void Add(TKey key, TValue value) => _inner.TryAdd(key, value);
+        public void Add(TKey key, TValue value) => ((IDictionary<TKey, TValue>)_inner).Add(key, value);
         public bool ContainsKey(TKey key) => _inner.ContainsKey(key);
         public bool Remove(TKey key) => _inner.TryRemove(key, out _);
         public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value) => _inner.TryGetValue(key, out value);
