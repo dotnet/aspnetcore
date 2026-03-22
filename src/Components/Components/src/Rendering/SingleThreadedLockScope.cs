@@ -25,6 +25,7 @@ internal ref struct SingleThreadedLockScope
     public SingleThreadedLockScope(object lockObject)
     {
         _lockObject = lockObject;
+        // TODO use RuntimeFeature.IsMultithreadingSupported when available (dotnet/runtime#124603)
         if (!OperatingSystem.IsBrowser())
         {
             Monitor.Enter(lockObject, ref _lockTaken);
