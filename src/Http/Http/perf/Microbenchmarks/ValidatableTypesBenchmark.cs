@@ -245,6 +245,8 @@ public class ValidatableTypeInfoBenchmark
     private class MockValidatableTypeInfo(Type type, ValidatablePropertyInfo[] members) : ValidatableTypeInfo(type, members)
     {
         protected override ValidationAttribute[] GetValidationAttributes() => [];
+
+        protected override string GetDisplayName() => null;
     }
 
     private class MockValidatablePropertyInfo(
@@ -252,9 +254,12 @@ public class ValidatableTypeInfoBenchmark
         Type propertyType,
         string name,
         string displayName,
-        ValidationAttribute[] validationAttributes) : ValidatablePropertyInfo(containingType, propertyType, name, displayName)
+        ValidationAttribute[] validationAttributes) : ValidatablePropertyInfo(containingType, propertyType, name)
     {
         private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
+        private readonly string _displayName = displayName;
+
+        protected override string GetDisplayName() => _displayName;
 
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
     }

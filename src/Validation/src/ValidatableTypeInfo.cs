@@ -32,12 +32,6 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     }
 
     /// <summary>
-    /// Gets the validation attributes for this member.
-    /// </summary>
-    /// <returns>An array of validation attributes to apply to this member.</returns>
-    protected abstract ValidationAttribute[] GetValidationAttributes();
-
-    /// <summary>
     /// The type being validated.
     /// </summary>
     internal Type Type { get; }
@@ -46,6 +40,22 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     /// The members that can be validated.
     /// </summary>
     internal IReadOnlyList<ValidatablePropertyInfo> Members { get; }
+
+    /// <summary>
+    /// Gets the validation attributes for this member.
+    /// </summary>
+    /// <returns>An array of validation attributes to apply to this member.</returns>
+    protected abstract ValidationAttribute[] GetValidationAttributes();
+
+    /// <summary>
+    /// Gets the display name for this type resolved from display-related attributes
+    /// such as <see cref="DisplayAttribute"/> and <c>DisplayNameAttribute</c>.
+    /// </summary>
+    /// <returns>
+    /// The resolved display name, or <see langword="null"/> if no display name attribute
+    /// is present on the type, indicating that the caller should fall back to the type name.
+    /// </returns>
+    protected abstract string? GetDisplayName();
 
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
@@ -127,6 +137,9 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         var validationAttributes = GetValidationAttributes();
         var errorPrefix = context.CurrentValidationPath;
 
+        context.ValidationContext.DisplayName = GetDisplayName() ?? Type.Name;
+        context.ValidationContext.MemberName = null;
+
         for (var i = 0; i < validationAttributes.Length; i++)
         {
             var attribute = validationAttributes[i];
@@ -160,7 +173,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             var errorPrefix = context.CurrentValidationPath;
 
             // Set the display name to the class name for IValidatableObject validation
-            context.ValidationContext.DisplayName = Type.Name;
+            context.ValidationContext.DisplayName = GetDisplayName() ?? Type.Name;
             context.ValidationContext.MemberName = null;
 
             var validationResults = validatable.Validate(context.ValidationContext);
