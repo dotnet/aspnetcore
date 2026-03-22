@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.DataProtection.StackExchangeRedis;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
 namespace Microsoft.AspNetCore.DataProtection;
@@ -28,7 +29,7 @@ public static class StackExchangeRedisDataProtectionBuilderExtensions
     {
         ArgumentNullThrowHelper.ThrowIfNull(builder);
         ArgumentNullThrowHelper.ThrowIfNull(databaseFactory);
-        return PersistKeysToStackExchangeRedisInternal(builder, databaseFactory, key);
+        return PersistKeysToStackExchangeRedisInternal(builder, _ => databaseFactory(), key);
     }
 
     /// <summary>
@@ -53,15 +54,44 @@ public static class StackExchangeRedisDataProtectionBuilderExtensions
     {
         ArgumentNullThrowHelper.ThrowIfNull(builder);
         ArgumentNullThrowHelper.ThrowIfNull(connectionMultiplexer);
-        return PersistKeysToStackExchangeRedisInternal(builder, () => connectionMultiplexer.GetDatabase(), key);
+        return PersistKeysToStackExchangeRedisInternal(builder, _ => connectionMultiplexer.GetDatabase(), key);
     }
 
-    private static IDataProtectionBuilder PersistKeysToStackExchangeRedisInternal(IDataProtectionBuilder builder, Func<IDatabase> databaseFactory, RedisKey key)
+    /// <summary>
+    /// Configures the data protection system to persist keys to the default key ('DataProtection-Keys') in Redis database
+    /// </summary>
+    /// <param name="builder">The builder instance to modify.</param>
+    /// <param name="databaseFactory">A factory function that uses <see cref="IServiceProvider"/> to create an <see cref="IDatabase"/> instance.</param>
+    /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
+    public static IDataProtectionBuilder PersistKeysToStackExchangeRedis(this IDataProtectionBuilder builder, Func<IServiceProvider, IDatabase> databaseFactory)
     {
-        builder.Services.Configure<KeyManagementOptions>(options =>
+        return PersistKeysToStackExchangeRedis(builder, databaseFactory, DataProtectionKeysName);
+    }
+
+    /// <summary>
+    /// Configures the data protection system to persist keys to the specified key in Redis database
+    /// </summary>
+    /// <param name="builder">The builder instance to modify.</param>
+    /// <param name="databaseFactory">A factory function that uses <see cref="IServiceProvider"/> to create an <see cref="IDatabase"/> instance.</param>
+    /// <param name="key">The <see cref="RedisKey"/> used to store key list.</param>
+    /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
+    public static IDataProtectionBuilder PersistKeysToStackExchangeRedis(this IDataProtectionBuilder builder, Func<IServiceProvider, IDatabase> databaseFactory, RedisKey key)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(builder);
+        ArgumentNullThrowHelper.ThrowIfNull(databaseFactory);
+        return PersistKeysToStackExchangeRedisInternal(builder, databaseFactory, key);
+    }
+
+    private static IDataProtectionBuilder PersistKeysToStackExchangeRedisInternal(IDataProtectionBuilder builder, Func<IServiceProvider, IDatabase> databaseFactory, RedisKey key)
+    {
+        builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
         {
-            options.XmlRepository = new RedisXmlRepository(databaseFactory, key);
+            return new ConfigureOptions<KeyManagementOptions>(options =>
+            {
+                options.XmlRepository = new RedisXmlRepository(() => databaseFactory(services), key);
+            });
         });
+
         return builder;
     }
 }
