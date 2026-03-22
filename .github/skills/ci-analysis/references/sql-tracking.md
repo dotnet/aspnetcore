@@ -63,7 +63,7 @@ For deep-dive analysis — especially across a chain of related PRs (e.g., depen
 ```sql
 CREATE TABLE IF NOT EXISTS pr_comments (
   pr_number INT,
-  repo TEXT DEFAULT 'dotnet/aspnetcore',
+  repo TEXT DEFAULT 'dotnet/runtime',
   comment_id INT PRIMARY KEY,
   author TEXT,
   created_at TEXT,

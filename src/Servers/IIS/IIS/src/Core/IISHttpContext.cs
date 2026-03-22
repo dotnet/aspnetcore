@@ -360,6 +360,19 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
             {
                 ThrowResponseAlreadyStartedException(nameof(ReasonPhrase));
             }
+
+            if (value is not null)
+            {
+                // Reject non-ASCII (> 0x7E), CR/LF, and other control characters
+                // to prevent HTTP response splitting. Only HTAB, SP, and VCHAR
+                // (0x21-0x7E) are allowed per RFC 9112 Section 4.
+                var invalid = HttpCharacters.IndexOfInvalidFieldValueChar(value);
+                if (invalid >= 0)
+                {
+                    ThrowInvalidReasonPhraseCharacter(value[invalid]);
+                }
+            }
+
             _reasonPhrase = value;
         }
     }
@@ -864,6 +877,12 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     private static void ThrowResponseAlreadyStartedException(string name)
     {
         throw new InvalidOperationException(CoreStrings.FormatParameterReadOnlyAfterResponseStarted(name));
+    }
+
+    private static void ThrowInvalidReasonPhraseCharacter(char ch)
+    {
+        throw new InvalidOperationException(CoreStrings.FormatInvalidReasonPhraseCharacter(
+            string.Format(System.Globalization.CultureInfo.InvariantCulture, "0x{0:X4}", (ushort)ch)));
     }
 
     private WindowsPrincipal? GetWindowsPrincipal()
