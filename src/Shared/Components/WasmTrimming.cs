@@ -110,7 +110,7 @@ internal static class MaybeConcurrentDictionary
             return value;
         }
 
-        public bool TryAdd(TKey key, TValue value)
+        public new bool TryAdd(TKey key, TValue value)
         {
             if (ContainsKey(key))
             {
