@@ -1214,7 +1214,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // (and not require being called only from the sync context)
         // because other classes many need to dispose a Renderer during their own Dispose (rather than DisposeAsync)
         // and we don't want to force that other code to deal with calling InvokeAsync from a synchronous method.
-        lock (_lockObject)
+        using (new SingleThreadedLockScope(_lockObject))
         {
             if (_rendererIsDisposed)
             {
@@ -1242,7 +1242,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             return;
         }
 
-        lock (_lockObject)
+        using (new SingleThreadedLockScope(_lockObject))
         {
             _rendererIsDisposed = true;
         }
@@ -1358,7 +1358,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        lock (_lockObject)
+        using (new SingleThreadedLockScope(_lockObject))
         {
             if (_rendererIsDisposed)
             {
