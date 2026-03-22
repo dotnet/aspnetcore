@@ -1,7 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Components.Web.Virtualization
 
 <div id="@Id" class="@(_isInteractive ? "interactive" : "ssr")" style="height: 200px; overflow-y: scroll;">
-    <Virtualize Items="Items">
+    <Virtualize Items="Items" OverscanCount="3">
         <p class="virtualize-item">@context</p>
     </Virtualize>
 </div>
