@@ -30,6 +30,8 @@ tools:
   bash: ["cat", "head", "tail", "grep", "wc", "jq"]
 
 safe-outputs:
+  noop:
+    report-as-issue: false
   add-labels:
     allowed:
       - area-auth
