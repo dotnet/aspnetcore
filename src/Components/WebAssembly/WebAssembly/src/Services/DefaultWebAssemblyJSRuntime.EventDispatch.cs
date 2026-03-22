@@ -519,4 +519,47 @@ internal sealed partial class DefaultWebAssemblyJSRuntime
 
         return (EventArgs)JsonSerializer.Deserialize(eventArgsJson, eventArgsType, options)!;
     }
+
+    [JSExport]
+    [SupportedOSPlatform("browser")]
+    internal static Task DispatchLocationChanged(string uri, string? state, bool isInterceptedLink)
+    {
+        var tcs = new TaskCompletionSource();
+        WebAssemblyCallQueue.Schedule((tcs, uri, state, isInterceptedLink), static s =>
+        {
+            try
+            {
+                WebAssemblyNavigationManager.Instance.SetLocation(s.uri, s.state, s.isInterceptedLink);
+                s.tcs.TrySetResult();
+            }
+            catch (Exception ex)
+            {
+                s.tcs.TrySetException(ex);
+            }
+        });
+
+        return tcs.Task;
+    }
+
+    [JSExport]
+    [SupportedOSPlatform("browser")]
+    internal static Task<bool> DispatchLocationChanging(string uri, string? state, bool isInterceptedLink)
+    {
+        var tcs = new TaskCompletionSource<bool>();
+        WebAssemblyCallQueue.Schedule((tcs, uri, state, isInterceptedLink), static async s =>
+        {
+            try
+            {
+                var shouldContinueNavigation = await WebAssemblyNavigationManager.Instance.HandleLocationChangingAsync(
+                    s.uri, s.state, s.isInterceptedLink);
+                s.tcs.TrySetResult(shouldContinueNavigation);
+            }
+            catch (Exception ex)
+            {
+                s.tcs.TrySetException(ex);
+            }
+        });
+
+        return tcs.Task;
+    }
 }

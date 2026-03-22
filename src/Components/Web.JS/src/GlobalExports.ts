@@ -110,6 +110,8 @@ export interface IBlazor {
       DispatchErrorEvent: (eventHandlerId: number, fieldComponentId: number, fieldValueString: string | null, fieldValueBool: boolean, message: string | null, filename: string | null, lineno: number, colno: number, type: string | null) => void;
       DispatchEmptyEvent: (eventHandlerId: number, fieldComponentId: number, fieldValueString: string | null, fieldValueBool: boolean) => void;
       DispatchEventJson: (eventHandlerId: number, fieldComponentId: number, fieldValueString: string | null, fieldValueBool: boolean, eventName: string, eventArgsJson: string) => void;
+      DispatchLocationChanged: (uri: string, state: string | null, isInterceptedLink: boolean) => Promise<void>;
+      DispatchLocationChanging: (uri: string, state: string | null, isInterceptedLink: boolean) => Promise<boolean>;
     }
 
     // APIs invoked by hot reload

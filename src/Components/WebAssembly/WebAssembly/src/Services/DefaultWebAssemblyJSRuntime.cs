@@ -46,6 +46,8 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     [DynamicDependency(nameof(DispatchErrorEvent))]
     [DynamicDependency(nameof(DispatchEmptyEvent))]
     [DynamicDependency(nameof(DispatchEventJson))]
+    [DynamicDependency(nameof(DispatchLocationChanged))]
+    [DynamicDependency(nameof(DispatchLocationChanging))]
     [DynamicDependency(JsonSerialized, typeof(KeyValuePair<,>))]
     private DefaultWebAssemblyJSRuntime()
     {
