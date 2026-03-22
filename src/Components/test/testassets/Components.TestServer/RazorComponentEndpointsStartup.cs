@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using TestContentPackage;
 using TestContentPackage.Services;
@@ -31,9 +32,10 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
+        services.AddControllers();
         services.AddValidation();
 
-        services.AddRazorComponents(options =>
+        var razorComponentsBuilder = services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;
             options.MaxFormMappingRecursionDepth = 5;
@@ -42,7 +44,6 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             .RegisterPersistentService<InteractiveServerService>(RenderMode.InteractiveServer)
             .RegisterPersistentService<InteractiveAutoService>(RenderMode.InteractiveAuto)
             .RegisterPersistentService<InteractiveWebAssemblyService>(RenderMode.InteractiveWebAssembly)
-            .AddInteractiveWebAssemblyComponents()
             .AddInteractiveServerComponents(options =>
             {
                 if (Configuration.GetValue<bool>("DisableReconnectionCache"))
@@ -74,6 +75,15 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 bool.TryParse(Configuration["SerializeAllClaims"], out var serializeAllClaims);
                 options.SerializeAllClaims = serializeAllClaims;
             });
+
+        if (Configuration.GetValue<bool>("EnforceServerCultureOnClient"))
+        {
+            razorComponentsBuilder.AddInteractiveWebAssemblyComponents();
+        }
+        else
+        {
+            razorComponentsBuilder.AddInteractiveWebAssemblyComponents(persistCultureFromServer: false);
+        }
 
         if (Configuration.GetValue<bool>("UseHybridCache"))
         {
@@ -143,6 +153,15 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     {
         WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
 
+        app.UseRequestLocalization(options =>
+        {
+            options.AddSupportedCultures("en-US", "fr-FR");
+            options.AddSupportedUICultures("en-US", "fr-FR");
+            options.RequestCultureProviders.Clear();
+            options.RequestCultureProviders.Add(new CookieRequestCultureProvider());
+            options.SetDefaultCulture("en-US");
+        });
+
         if (!env.IsDevelopment())
         {
             app.UseExceptionHandler("/Error", createScopeForErrors: true);
@@ -167,6 +186,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     {
         _ = app.UseEndpoints(endpoints =>
         {
+            endpoints.MapControllers();
+            
             var contentRootStaticAssetsPath = Path.Combine(env.ContentRootPath, "Components.TestServer.staticwebassets.endpoints.json");
             if (File.Exists(contentRootStaticAssetsPath))
             {
