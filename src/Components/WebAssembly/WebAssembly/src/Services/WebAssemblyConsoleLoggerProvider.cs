@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop.WebAssembly;
 
@@ -11,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 /// </summary>
 internal sealed class WebAssemblyConsoleLoggerProvider : ILoggerProvider
 {
-    private readonly IMaybeConcurrentDictionary<string, WebAssemblyConsoleLogger<object>> _loggers;
+    private readonly ConcurrentDictionary<string, WebAssemblyConsoleLogger<object>> _loggers;
     private readonly WebAssemblyJSRuntime _jsRuntime;
 
     /// <summary>
@@ -19,7 +20,7 @@ internal sealed class WebAssemblyConsoleLoggerProvider : ILoggerProvider
     /// </summary>
     public WebAssemblyConsoleLoggerProvider(WebAssemblyJSRuntime jsRuntime)
     {
-        _loggers = MaybeConcurrentDictionary.Create<string, WebAssemblyConsoleLogger<object>>();
+        _loggers = new ConcurrentDictionary<string, WebAssemblyConsoleLogger<object>>();
         _jsRuntime = jsRuntime;
     }
 
