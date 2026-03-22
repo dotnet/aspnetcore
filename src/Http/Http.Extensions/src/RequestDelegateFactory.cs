@@ -1798,9 +1798,16 @@ public static partial class RequestDelegateFactory
                     Expression.Assign(parameter.ParameterType.IsArray ? Expression.ArrayAccess(argument, index) : argument, Expression.Convert(parsedValue, targetParseType)),
                     failBlock));
 
+        // For nullable value types, treat empty strings as null (don't attempt to parse them).
+        // This matches controller behavior and avoids parse failures on ?param= (empty value).
+        var isNullableValueType = Nullable.GetUnderlyingType(parameter.ParameterType) != null;
+        var sourceCheckExpr = (Expression)(isNullableValueType
+            ? TempSourceStringIsNotNullOrEmptyExpr
+            : TempSourceStringNotNullExpr);
+
         var ifNotNullTryParse = !parameter.HasDefaultValue
-            ? Expression.IfThen(TempSourceStringNotNullExpr, tryParseExpression)
-            : Expression.IfThenElse(TempSourceStringNotNullExpr, tryParseExpression,
+            ? Expression.IfThen(sourceCheckExpr, tryParseExpression)
+            : Expression.IfThenElse(sourceCheckExpr, tryParseExpression,
                 Expression.Assign(argument,
                 CreateDefaultValueExpression(parameter.DefaultValue, parameter.ParameterType)));
 
