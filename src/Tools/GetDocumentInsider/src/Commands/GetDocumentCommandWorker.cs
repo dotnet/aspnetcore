@@ -29,7 +29,13 @@ internal sealed class GetDocumentCommandWorker
     private const string InvalidFilenameString = "..";
     private const string JsonExtension = ".json";
     private const string UnderscoreString = "_";
-    private static readonly char[] _invalidFilenameCharacters = Path.GetInvalidFileNameChars();
+    // Note: Path.GetInvalidFileNameChars() is OS-specific. We also explicitly treat directory separators as invalid
+    // so document names can't be interpreted as subpaths on any platform.
+    private static readonly char[] _invalidFilenameCharacters = Path.GetInvalidFileNameChars()
+        // Treat both common separators as invalid regardless of OS to avoid platform-specific behavior.
+        .Concat([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar, '\\'])
+        .Distinct()
+        .ToArray();
     private static readonly Encoding _utf8EncodingWithoutBOM
         = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
@@ -415,7 +421,8 @@ internal sealed class GetDocumentCommandWorker
                 sanitizedDocumentName = sanitizedDocumentName.Replace(InvalidFilenameString, DotString);
             }
 
-            path = $"{fileName}_{documentName}{JsonExtension}";
+            // Use the sanitized name to ensure the output path is a file name, not a user-controlled path.
+            path = $"{fileName}_{sanitizedDocumentName}{JsonExtension}";
         }
 
         if (!string.IsNullOrEmpty(outputDirectory))
