@@ -31,8 +31,6 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     [DynamicDependency(nameof(BeginInvokeDotNet))]
     [DynamicDependency(nameof(ReceiveByteArrayFromJS))]
     [DynamicDependency(nameof(UpdateRootComponentsCore))]
-    [DynamicDependency(nameof(NotifyLocationChanged))]
-    [DynamicDependency(nameof(NotifyLocationChangingAsync))]
     [DynamicDependency(JsonSerialized, typeof(KeyValuePair<,>))]
     private DefaultWebAssemblyJSRuntime()
     {
@@ -93,21 +91,6 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
             // exceptions into a failure on the JS Promise object.
             DotNetDispatcher.BeginInvokeDotNet(Instance, state.callInfo, state.argsJson);
         });
-    }
-
-    [JSExport]
-    [SupportedOSPlatform("browser")]
-    public static void NotifyLocationChanged(string uri, string? state, bool isInterceptedLink)
-    {
-        WebAssemblyNavigationManager.Instance.SetLocation(uri, state, isInterceptedLink);
-    }
-
-    [JSExport]
-    [SupportedOSPlatform("browser")]
-    [return: JSMarshalAs<JSType.Promise<JSType.Boolean>>]
-    public static async Task<bool> NotifyLocationChangingAsync(string uri, string? state, bool isInterceptedLink)
-    {
-        return await WebAssemblyNavigationManager.Instance.HandleLocationChangingAsync(uri, state, isInterceptedLink);
     }
 
     [SupportedOSPlatform("browser")]

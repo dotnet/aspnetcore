@@ -121,10 +121,22 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
     }
   };
 
-  Blazor._internal.navigationManager.listenForNavigationEvents(WebRendererId.WebAssembly, (uri: string, state: string | undefined, intercepted: boolean): void => {
-    Blazor._internal.dotNetExports!.NotifyLocationChanged(uri, state ?? null, intercepted);
+  Blazor._internal.navigationManager.listenForNavigationEvents(WebRendererId.WebAssembly, async (uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
+    await dispatcher.invokeDotNetStaticMethodAsync(
+      'Microsoft.AspNetCore.Components.WebAssembly',
+      'NotifyLocationChanged',
+      uri,
+      state,
+      intercepted
+    );
   }, async (callId: number, uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
-    const shouldContinueNavigation = await Blazor._internal.dotNetExports!.NotifyLocationChangingAsync(uri, state ?? null, intercepted);
+    const shouldContinueNavigation = await dispatcher.invokeDotNetStaticMethodAsync<boolean>(
+      'Microsoft.AspNetCore.Components.WebAssembly',
+      'NotifyLocationChangingAsync',
+      uri,
+      state,
+      intercepted
+    );
 
     Blazor._internal.navigationManager.endLocationChanging(callId, shouldContinueNavigation);
   });

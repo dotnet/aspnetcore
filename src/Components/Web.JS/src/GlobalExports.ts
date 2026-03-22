@@ -93,8 +93,6 @@ export interface IBlazor {
       BeginInvokeDotNet: (callId: string | null, assemblyNameOrDotNetObjectId: string, methodIdentifier: string, argsJson: string) => void;
       ReceiveByteArrayFromJS: (id: number, data: Uint8Array) => void;
       UpdateRootComponentsCore: (operationsJson: string, appState: string) => void;
-      NotifyLocationChanged: (uri: string, state: string | null, isInterceptedLink: boolean) => void;
-      NotifyLocationChangingAsync: (uri: string, state: string | null, isInterceptedLink: boolean) => Promise<boolean>;
     }
 
     // APIs invoked by hot reload
