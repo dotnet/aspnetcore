@@ -42,8 +42,15 @@ internal sealed partial class DefaultWebAssemblyJSRuntime
     {
         return ScheduleOnCallQueue((operationsJson, appState), static s =>
         {
-            var operations = DeserializeOperations(s.operationsJson);
-            Instance.OnUpdateRootComponents?.Invoke(operations, s.appState);
+            try
+            {
+                var operations = DeserializeOperations(s.operationsJson);
+                Instance.OnUpdateRootComponents?.Invoke(operations, s.appState);
+            }
+            catch (Exception ex)
+            {
+                System.Console.Error.WriteLine($"Error in {nameof(UpdateRootComponents)}: {ex}");
+            }
         });
     }
 
