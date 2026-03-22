@@ -435,6 +435,7 @@ public class KestrelConfigurationLoaderTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65851")]
     public void LoadDevelopmentCertificate_LoadBeforeUseHttps()
     {
         try
@@ -482,6 +483,7 @@ public class KestrelConfigurationLoaderTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65851")]
     public void LoadDevelopmentCertificate_UseHttpsBeforeLoad()
     {
         try

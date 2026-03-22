@@ -36,9 +36,20 @@ $logContent = Invoke-RestMethod -Uri "https://dev.azure.com/dnceng-public/cbb182
 $logContent | Select-String -Pattern "error|FAIL" -Context 2,5
 ```
 
+## Search Helix Logs and Artifacts Remotely
+
+> 💡 Search logs remotely before downloading.
+
+Use your Helix MCP tools to:
+- **Search a work item's console log** for error patterns (with context lines)
+- **Search an uploaded file** (e.g., testResults.xml) for specific text like "Failed"
+- **Find which work items have specific file types** (e.g., `*.binlog`, `*.trx`, `*.dmp`)
+
+These return matching lines with context — much faster than downloading full logs and grepping locally.
+
 ## Query Helix APIs
 
-> 💡 **Prefer MCP tools when available** — they handle most Helix queries without manual curl commands. Use the APIs below only as fallback.
+> 💡 **Prefer MCP tools when available** — your Helix MCP tools handle job status, log search, file listing, and artifact download without manual curl commands. Use the APIs below only as fallback when MCP tools are unavailable.
 
 ```bash
 # Get job details
