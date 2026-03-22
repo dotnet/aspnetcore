@@ -132,8 +132,11 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     /// <inheritdoc />
     protected override void Dispose(bool disposing)
     {
-        DefaultWebAssemblyJSRuntime.Instance.OnUpdateRootComponents -= OnUpdateRootComponents;
-        DefaultWebAssemblyJSRuntime.Instance.Renderer = null;
+        if (disposing)
+        {
+            DefaultWebAssemblyJSRuntime.Instance.OnUpdateRootComponents -= OnUpdateRootComponents;
+            DefaultWebAssemblyJSRuntime.Instance.Renderer = null;
+        }
         base.Dispose(disposing);
     }
 
