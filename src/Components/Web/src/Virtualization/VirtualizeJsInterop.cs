@@ -31,15 +31,25 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
     }
 
     [JSInvokable]
-    public void OnSpacerBeforeVisible(float spacerSize, float spacerSeparation, float containerSize)
+    public void OnSpacerBeforeVisible(float spacerSize, float spacerSeparation, float containerSize, float measuredItemHeightSum, int measuredItemCount)
     {
-        _owner.OnBeforeSpacerVisible(spacerSize, spacerSeparation, containerSize);
+        _owner.OnBeforeSpacerVisible(spacerSize, spacerSeparation, containerSize, measuredItemHeightSum, measuredItemCount);
     }
 
     [JSInvokable]
-    public void OnSpacerAfterVisible(float spacerSize, float spacerSeparation, float containerSize)
+    public void OnSpacerAfterVisible(float spacerSize, float spacerSeparation, float containerSize, float measuredItemHeightSum, int measuredItemCount)
     {
-        _owner.OnAfterSpacerVisible(spacerSize, spacerSeparation, containerSize);
+        _owner.OnAfterSpacerVisible(spacerSize, spacerSeparation, containerSize, measuredItemHeightSum, measuredItemCount);
+    }
+
+    public ValueTask ScrollToBottomAsync()
+    {
+        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.scrollToBottom", _selfReference);
+    }
+
+    public ValueTask RefreshObserversAsync()
+    {
+        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.refreshObservers", _selfReference);
     }
 
     public async ValueTask DisposeAsync()
