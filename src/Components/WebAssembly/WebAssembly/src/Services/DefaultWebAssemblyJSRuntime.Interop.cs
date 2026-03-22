@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 internal sealed partial class DefaultWebAssemblyJSRuntime
 {
+
     [JSExport]
     [SupportedOSPlatform("browser")]
     public static string? InvokeDotNet(
@@ -64,17 +65,21 @@ internal sealed partial class DefaultWebAssemblyJSRuntime
         });
     }
 
-    [SupportedOSPlatform("browser")]
     [JSExport]
-    public static Task UpdateRootComponents(string operationsJson, string appState)
+    [SupportedOSPlatform("browser")]
+    private static void ReceiveByteArrayFromJS(int id, byte[] data)
+    {
+        DotNetDispatcher.ReceiveByteArray(Instance, id, data);
+    }
+
+    private static Task ScheduleOnCallQueue<TState>(TState state, Action<TState> action)
     {
         var tcs = new TaskCompletionSource();
-        WebAssemblyCallQueue.Schedule((tcs, operationsJson, appState), static s =>
+        WebAssemblyCallQueue.Schedule((tcs, state, action), static s =>
         {
             try
             {
-                var operations = DeserializeOperations(s.operationsJson);
-                Instance.OnUpdateRootComponents?.Invoke(operations, s.appState);
+                s.action(s.state);
                 s.tcs.TrySetResult();
             }
             catch (Exception ex)
@@ -86,10 +91,22 @@ internal sealed partial class DefaultWebAssemblyJSRuntime
         return tcs.Task;
     }
 
-    [JSExport]
-    [SupportedOSPlatform("browser")]
-    private static void ReceiveByteArrayFromJS(int id, byte[] data)
+    private static Task<TResult> ScheduleOnCallQueue<TState, TResult>(TState state, Func<TState, Task<TResult>> action)
     {
-        DotNetDispatcher.ReceiveByteArray(Instance, id, data);
+        var tcs = new TaskCompletionSource<TResult>();
+        WebAssemblyCallQueue.Schedule((tcs, state, action), static async s =>
+        {
+            try
+            {
+                var result = await s.action(s.state);
+                s.tcs.TrySetResult(result);
+            }
+            catch (Exception ex)
+            {
+                s.tcs.TrySetException(ex);
+            }
+        });
+
+        return tcs.Task;
     }
 }

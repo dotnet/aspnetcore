@@ -18,57 +18,33 @@ internal sealed partial class DefaultWebAssemblyJSRuntime
 
     internal Renderer? Renderer { get; set; }
 
-    internal static EventFieldInfo? CreateFieldInfo(int fieldComponentId, string? fieldValueString, bool fieldValueBool)
+    [JSExport]
+    [SupportedOSPlatform("browser")]
+    internal static Task DispatchLocationChanged(string uri, string? state, bool isInterceptedLink)
     {
-        if (fieldComponentId < 0)
-        {
-            return null;
-        }
-
-        return new EventFieldInfo
-        {
-            ComponentId = fieldComponentId,
-            FieldValue = fieldValueString is not null ? fieldValueString : (fieldValueBool ? BoxedTrue : BoxedFalse),
-        };
+        return ScheduleOnCallQueue(
+            (uri, state, isInterceptedLink),
+            static s => WebAssemblyNavigationManager.Instance.SetLocation(s.uri, s.state, s.isInterceptedLink));
     }
 
-    private static void DispatchEventCore(long eventHandlerId, EventFieldInfo? fieldInfo, EventArgs eventArgs)
+    [JSExport]
+    [SupportedOSPlatform("browser")]
+    internal static Task<bool> DispatchLocationChanging(string uri, string? state, bool isInterceptedLink)
     {
-        WebAssemblyCallQueue.Schedule((eventHandlerId, fieldInfo, eventArgs), static state =>
+        return ScheduleOnCallQueue<(string uri, string? state, bool isInterceptedLink), bool>(
+            (uri, state, isInterceptedLink),
+            static s => WebAssemblyNavigationManager.Instance.HandleLocationChangingAsync(s.uri, s.state, s.isInterceptedLink).AsTask());
+    }
+
+    [SupportedOSPlatform("browser")]
+    [JSExport]
+    public static Task UpdateRootComponents(string operationsJson, string appState)
+    {
+        return ScheduleOnCallQueue((operationsJson, appState), static s =>
         {
-            var renderer = Instance.Renderer;
-            if (renderer is not null)
-            {
-                _ = renderer.DispatchEventAsync((ulong)state.eventHandlerId, state.fieldInfo, state.eventArgs);
-            }
+            var operations = DeserializeOperations(s.operationsJson);
+            Instance.OnUpdateRootComponents?.Invoke(operations, s.appState);
         });
-    }
-
-    internal static TouchPoint[] UnflattenTouchPoints(double[]? flat)
-    {
-        if (flat is null || flat.Length == 0)
-        {
-            return [];
-        }
-
-        var count = flat.Length / 7;
-        var result = new TouchPoint[count];
-        for (var i = 0; i < count; i++)
-        {
-            var offset = i * 7;
-            result[i] = new TouchPoint
-            {
-                Identifier = (long)flat[offset],
-                ScreenX = flat[offset + 1],
-                ScreenY = flat[offset + 2],
-                ClientX = flat[offset + 3],
-                ClientY = flat[offset + 4],
-                PageX = flat[offset + 5],
-                PageY = flat[offset + 6],
-            };
-        }
-
-        return result;
     }
 
     [JSExport]
@@ -150,27 +126,6 @@ internal sealed partial class DefaultWebAssemblyJSRuntime
             },
         };
         DispatchEventCore(eventHandlerId, fieldInfo, eventArgs);
-    }
-
-    internal static DataTransferItem[] UnflattenDataTransferItems(string[]? kinds, string[]? types)
-    {
-        if (kinds is null || kinds.Length == 0)
-        {
-            return [];
-        }
-
-        var count = kinds.Length;
-        var result = new DataTransferItem[count];
-        for (var i = 0; i < count; i++)
-        {
-            result[i] = new DataTransferItem
-            {
-                Kind = kinds[i],
-                Type = types is not null && i < types.Length ? types[i] : string.Empty,
-            };
-        }
-
-        return result;
     }
 
     [JSExport]
@@ -481,6 +436,27 @@ internal sealed partial class DefaultWebAssemblyJSRuntime
         };
     }
 
+    internal static DataTransferItem[] UnflattenDataTransferItems(string[]? kinds, string[]? types)
+    {
+        if (kinds is null || kinds.Length == 0)
+        {
+            return [];
+        }
+
+        var count = kinds.Length;
+        var result = new DataTransferItem[count];
+        for (var i = 0; i < count; i++)
+        {
+            result[i] = new DataTransferItem
+            {
+                Kind = kinds[i],
+                Type = types is not null && i < types.Length ? types[i] : string.Empty,
+            };
+        }
+
+        return result;
+    }
+
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode",
         Justification = "ChangeEventArgs is a well-known type that is preserved.")]
     private static ChangeEventArgs ParseChangeEventArgs(string json, JsonSerializerOptions options)
@@ -520,46 +496,56 @@ internal sealed partial class DefaultWebAssemblyJSRuntime
         return (EventArgs)JsonSerializer.Deserialize(eventArgsJson, eventArgsType, options)!;
     }
 
-    [JSExport]
-    [SupportedOSPlatform("browser")]
-    internal static Task DispatchLocationChanged(string uri, string? state, bool isInterceptedLink)
+    internal static TouchPoint[] UnflattenTouchPoints(double[]? flat)
     {
-        var tcs = new TaskCompletionSource();
-        WebAssemblyCallQueue.Schedule((tcs, uri, state, isInterceptedLink), static s =>
+        if (flat is null || flat.Length == 0)
         {
-            try
-            {
-                WebAssemblyNavigationManager.Instance.SetLocation(s.uri, s.state, s.isInterceptedLink);
-                s.tcs.TrySetResult();
-            }
-            catch (Exception ex)
-            {
-                s.tcs.TrySetException(ex);
-            }
-        });
+            return [];
+        }
 
-        return tcs.Task;
+        var count = flat.Length / 7;
+        var result = new TouchPoint[count];
+        for (var i = 0; i < count; i++)
+        {
+            var offset = i * 7;
+            result[i] = new TouchPoint
+            {
+                Identifier = (long)flat[offset],
+                ScreenX = flat[offset + 1],
+                ScreenY = flat[offset + 2],
+                ClientX = flat[offset + 3],
+                ClientY = flat[offset + 4],
+                PageX = flat[offset + 5],
+                PageY = flat[offset + 6],
+            };
+        }
+
+        return result;
     }
 
-    [JSExport]
-    [SupportedOSPlatform("browser")]
-    internal static Task<bool> DispatchLocationChanging(string uri, string? state, bool isInterceptedLink)
+    internal static EventFieldInfo? CreateFieldInfo(int fieldComponentId, string? fieldValueString, bool fieldValueBool)
     {
-        var tcs = new TaskCompletionSource<bool>();
-        WebAssemblyCallQueue.Schedule((tcs, uri, state, isInterceptedLink), static async s =>
+        if (fieldComponentId < 0)
         {
-            try
+            return null;
+        }
+
+        return new EventFieldInfo
+        {
+            ComponentId = fieldComponentId,
+            FieldValue = fieldValueString is not null ? fieldValueString : (fieldValueBool ? BoxedTrue : BoxedFalse),
+        };
+    }
+
+    private static void DispatchEventCore(long eventHandlerId, EventFieldInfo? fieldInfo, EventArgs eventArgs)
+    {
+        WebAssemblyCallQueue.Schedule((eventHandlerId, fieldInfo, eventArgs), static state =>
+        {
+            var renderer = Instance.Renderer;
+            if (renderer is not null)
             {
-                var shouldContinueNavigation = await WebAssemblyNavigationManager.Instance.HandleLocationChangingAsync(
-                    s.uri, s.state, s.isInterceptedLink);
-                s.tcs.TrySetResult(shouldContinueNavigation);
-            }
-            catch (Exception ex)
-            {
-                s.tcs.TrySetException(ex);
+                _ = renderer.DispatchEventAsync((ulong)state.eventHandlerId, state.fieldInfo, state.eventArgs);
             }
         });
-
-        return tcs.Task;
     }
 }

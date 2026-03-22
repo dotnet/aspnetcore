@@ -38,6 +38,7 @@
 ~static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestMode(this System.Net.Http.HttpRequestMessage requestMessage, Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode requestMode) -> System.Net.Http.HttpRequestMessage
 ~static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestOption(this System.Net.Http.HttpRequestMessage requestMessage, string name, object value) -> System.Net.Http.HttpRequestMessage
 ~static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserResponseStreamingEnabled(this System.Net.Http.HttpRequestMessage requestMessage, bool streamingEnabled) -> System.Net.Http.HttpRequestMessage
+~static Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods.NotifyLocationChanged(string uri, bool isInterceptedLink) -> void
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment.BaseAddress.get -> string!
 Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment.Environment.get -> string!
@@ -98,6 +99,7 @@ Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode.Navigate = 3
 Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode.NoCors = 1 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode
 Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode.SameOrigin = 0 -> Microsoft.AspNetCore.Components.WebAssembly.Http.BrowserRequestMode
 Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions
+Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods
 Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader
 Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader.LazyAssemblyLoader(Microsoft.JSInterop.IJSRuntime! jsRuntime) -> void
 Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader.LoadAssembliesAsync(System.Collections.Generic.IEnumerable<string!>! assembliesToLoad) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<System.Reflection.Assembly!>!>!
@@ -115,3 +117,6 @@ static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMe
 static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestOption(this System.Net.Http.HttpRequestMessage! requestMessage, string! name, object! value) -> System.Net.Http.HttpRequestMessage!
 static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestStreamingEnabled(this System.Net.Http.HttpRequestMessage! requestMessage, bool streamingEnabled) -> System.Net.Http.HttpRequestMessage!
 static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserResponseStreamingEnabled(this System.Net.Http.HttpRequestMessage! requestMessage, bool streamingEnabled) -> System.Net.Http.HttpRequestMessage!
+static Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods.NotifyLocationChanged(string! uri, bool isInterceptedLink) -> void
+static Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods.NotifyLocationChanged(string! uri, string? state, bool isInterceptedLink) -> void
+static Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods.NotifyLocationChangingAsync(string! uri, string? state, bool isInterceptedLink) -> System.Threading.Tasks.ValueTask<bool>
