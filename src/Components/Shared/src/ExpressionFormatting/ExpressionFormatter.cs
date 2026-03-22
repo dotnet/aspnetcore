@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -24,8 +23,8 @@ internal static class ExpressionFormatter
 
     private delegate void CapturedValueFormatter(object closure, ref ReverseStringBuilder builder);
 
-    private static readonly ConcurrentDictionary<MemberInfo, CapturedValueFormatter> s_capturedValueFormatterCache = new();
-    private static readonly ConcurrentDictionary<MethodInfo, MethodInfoData> s_methodInfoDataCache = new();
+    private static readonly IMaybeConcurrentDictionary<MemberInfo, CapturedValueFormatter> s_capturedValueFormatterCache = MaybeConcurrentDictionary.Create<MemberInfo, CapturedValueFormatter>();
+    private static readonly IMaybeConcurrentDictionary<MethodInfo, MethodInfoData> s_methodInfoDataCache = MaybeConcurrentDictionary.Create<MethodInfo, MethodInfoData>();
 
     public static void ClearCache()
     {

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.HotReload;
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
@@ -15,7 +14,7 @@ namespace Microsoft.AspNetCore.Components;
 // A cache for root component types
 internal sealed class RootTypeCache : IDisposable
 {
-    private readonly ConcurrentDictionary<Key, Type?> _typeToKeyLookUp = new();
+    private readonly IMaybeConcurrentDictionary<Key, Type?> _typeToKeyLookUp = MaybeConcurrentDictionary.Create<Key, Type?>();
 
     public RootTypeCache()
     {

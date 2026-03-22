@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -1666,7 +1665,7 @@ public static class BindConverter
 
     private static class FormatterDelegateCache
     {
-        private static readonly ConcurrentDictionary<Type, Delegate> _cache = new ConcurrentDictionary<Type, Delegate>();
+        private static readonly IMaybeConcurrentDictionary<Type, Delegate> _cache = MaybeConcurrentDictionary.Create<Type, Delegate>();
 
         static FormatterDelegateCache()
         {
@@ -1863,7 +1862,7 @@ public static class BindConverter
 
     internal static class ParserDelegateCache
     {
-        private static readonly ConcurrentDictionary<Type, Delegate> _cache = new ConcurrentDictionary<Type, Delegate>();
+        private static readonly IMaybeConcurrentDictionary<Type, Delegate> _cache = MaybeConcurrentDictionary.Create<Type, Delegate>();
 
         static ParserDelegateCache()
         {
