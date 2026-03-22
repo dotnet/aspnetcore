@@ -30,7 +30,25 @@ class DotnetWebWorkerClient {
                     }
                 }
             });
+
+            const dotnetJsUrl = DotnetWebWorkerClient.#resolveDotnetJsUrl();
+            worker.postMessage({ type: 'init', dotnetJsUrl });
         });
+    }
+
+    static #resolveDotnetJsUrl() {
+        let resolvedPath = '_framework/dotnet.js';
+        const importMapEl = document.querySelector('script[type="importmap"]');
+        const importMapText = importMapEl?.textContent?.trim();
+        if (importMapText) {
+            const map = JSON.parse(importMapText);
+            const imports = map.imports || {};
+            const url = imports['./_framework/dotnet.js'] || imports['_framework/dotnet.js'] || imports['./dotnet.js'];
+            if (url) {
+                resolvedPath = url.replace(/^\.\//, '');
+            }
+        }
+        return new URL(resolvedPath, document.baseURI).href;
     }
 
     invoke(method, args) {

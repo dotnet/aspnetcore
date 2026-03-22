@@ -85,6 +85,39 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await TestWebWorkerDisposal(browserKind, aspNetProcess.ListeningUri.AbsoluteUri + "webworker-test");
     }
 
+    [Theory]
+    [InlineData(BrowserKind.Chromium)]
+    public async Task WebWorkerTemplate_CanInvokeMethodsAfterPublish(BrowserKind browserKind)
+    {
+        await using var testRun = await SetupWorkerLibAndPublish(_sharedHostProject);
+
+        using var aspNetProcess = _sharedHostProject.StartPublishedProjectAsync(noHttps: true);
+        Assert.False(
+            aspNetProcess.Process.HasExited,
+            ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", _sharedHostProject, aspNetProcess.Process));
+
+        await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+        await TestWebWorkerInteraction(browserKind, aspNetProcess.ListeningUri.AbsoluteUri + "webworker-test");
+    }
+
+    private async Task<WorkerLibTestRun> SetupWorkerLibAndPublish(Project hostProject)
+    {
+        var parentDir = Path.GetDirectoryName(hostProject.TemplateOutputDir);
+        var workerLibDir = Path.Combine(parentDir, "WorkerLib");
+
+        if (Directory.Exists(workerLibDir))
+        {
+            Directory.Delete(workerLibDir, recursive: true);
+        }
+        Directory.CreateDirectory(workerLibDir);
+
+        await CreateWebWorkerLibrary(workerLibDir);
+        await AddWorkerLibReferenceAsync(hostProject);
+        await hostProject.RunDotNetPublishAsync(noRestore: false);
+
+        return new WorkerLibTestRun(workerLibDir, hostProject, Output);
+    }
+
     private async Task<WorkerLibTestRun> SetupWorkerLibAndBuild(Project hostProject)
     {
         var parentDir = Path.GetDirectoryName(hostProject.TemplateOutputDir);
