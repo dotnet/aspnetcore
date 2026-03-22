@@ -79,12 +79,15 @@ else
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
+    [CascadingParameter]
+    private ITempData TempData { get; set; } = default!;
+
     protected override async Task OnInitializedAsync()
     {
         var user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext.User, TempData);
             return;
         }
 
@@ -101,6 +104,6 @@ else
 
         RedirectManager.RedirectToCurrentPageWithStatus(
             "The current browser has been forgotten. When you login again from this browser you will be prompted for your 2fa code.",
-            HttpContext);
+            TempData);
     }
 }

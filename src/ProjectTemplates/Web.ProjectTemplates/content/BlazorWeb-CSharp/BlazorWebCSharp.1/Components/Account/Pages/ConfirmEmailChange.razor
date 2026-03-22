@@ -21,6 +21,9 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
+    [CascadingParameter]
+    private ITempData TempData { get; set; } = default!;
+
     [SupplyParameterFromQuery]
     private string? UserId { get; set; }
 
@@ -35,14 +38,14 @@
         if (UserId is null || Email is null || Code is null)
         {
             RedirectManager.RedirectToWithStatus(
-                "Account/Login", "Error: Invalid email change confirmation link.", HttpContext);
+                "Account/Login", "Error: Invalid email change confirmation link.", TempData);
             return;
         }
 
         var user = await UserManager.FindByIdAsync(UserId);
         if (user is null)
         {
-            message = "Unable to find user with Id '{userId}'";
+            message = $"Unable to find user with Id '{UserId}'";
             return;
         }
 

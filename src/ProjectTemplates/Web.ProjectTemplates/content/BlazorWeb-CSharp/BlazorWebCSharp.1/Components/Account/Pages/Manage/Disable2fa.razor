@@ -35,12 +35,15 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
+    [CascadingParameter]
+    private ITempData TempData { get; set; } = default!;
+
     protected override async Task OnInitializedAsync()
     {
         user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext.User, TempData);
             return;
         }
 
@@ -54,7 +57,7 @@
     {
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext.User, TempData);
             return;
         }
 
@@ -69,6 +72,6 @@
         RedirectManager.RedirectToWithStatus(
             "Account/Manage/TwoFactorAuthentication",
             "2fa has been disabled. You can reenable 2fa when you setup an authenticator app",
-            HttpContext);
+            TempData);
     }
 }
