@@ -266,6 +266,70 @@ public class PartialTagHelperTest
     }
 
     [Fact]
+    public async Task ProcessAsync_ViewDataPrefixAttributes_WorkWithoutExplicitViewData()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/9736
+        var expected = "PrefixValue";
+        var bufferScope = new TestViewBufferScope();
+        var partialName = "_Partial";
+        var viewContext = GetViewContext();
+
+        var view = new Mock<IView>();
+        view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
+            .Callback((ViewContext v) =>
+            {
+                v.Writer.Write(v.ViewData["key"]);
+            })
+            .Returns(Task.CompletedTask);
+
+        var viewEngine = new Mock<ICompositeViewEngine>();
+        viewEngine.Setup(v => v.GetView(It.IsAny<string>(), partialName, false))
+            .Returns(ViewEngineResult.NotFound(partialName, new[] { partialName }));
+
+        viewEngine.Setup(v => v.FindView(viewContext, partialName, false))
+            .Returns(ViewEngineResult.Found(partialName, view.Object));
+
+        var tagHelper = new PartialTagHelper(viewEngine.Object, bufferScope)
+        {
+            Name = partialName,
+            ViewContext = viewContext,
+        };
+
+        // Simulate the Razor runtime setting view-data-* prefix attributes.
+        // After ViewContext is set, ViewData should be auto-initialized.
+        Assert.NotNull(tagHelper.ViewData);
+        tagHelper.ViewData["key"] = expected;
+
+        var tagHelperContext = GetTagHelperContext();
+        var output = GetTagHelperOutput();
+
+        await tagHelper.ProcessAsync(tagHelperContext, output);
+
+        var content = HtmlContentUtilities.HtmlContentToString(output.Content, new HtmlTestEncoder());
+        Assert.Equal(expected, content);
+    }
+
+    [Fact]
+    public void ViewData_IsInitializedFromViewContext_WhenNull()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/9736
+        var viewContext = GetViewContext();
+        viewContext.ViewData["parentKey"] = "parentValue";
+
+        var tagHelper = new PartialTagHelper(Mock.Of<ICompositeViewEngine>(), Mock.Of<IViewBufferScope>())
+        {
+            ViewContext = viewContext,
+        };
+
+        Assert.NotNull(tagHelper.ViewData);
+        Assert.Equal("parentValue", tagHelper.ViewData["parentKey"]);
+
+        // Modifying the auto-initialized ViewData should not affect the parent
+        tagHelper.ViewData["newKey"] = "newValue";
+        Assert.False(viewContext.ViewData.ContainsKey("newKey"));
+    }
+
+    [Fact]
     public async Task ProcessAsync_UsesPassedInViewData_WhenNotNull()
     {
         // Arrange
