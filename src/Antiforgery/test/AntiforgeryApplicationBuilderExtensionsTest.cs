@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Antiforgery.CrossOrigin;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +17,7 @@ public class AntiforgeryApplicationBuilderExtensionsTest
         var antiforgeryService = new Mock<IAntiforgery>();
         var services = CreateServices(antiforgeryService.Object);
         var builder = new ApplicationBuilder(services);
-        var httpContext = AntiforgeryMiddlewareTest.GetHttpContext();
+        var httpContext = TokenBasedAntiforgeryMiddlewareTest.GetHttpContext();
 
         Assert.False(builder.Properties.ContainsKey("__AntiforgeryMiddlewareSet"));
 
@@ -53,6 +54,9 @@ public class AntiforgeryApplicationBuilderExtensionsTest
         if (antiforgeryService is not null)
         {
             services.AddSingleton(antiforgeryService);
+            var crossOriginMock = new Mock<ICrossOriginAntiforgery>();
+            crossOriginMock.Setup(c => c.Validate(It.IsAny<HttpContext>())).Returns(CrossOriginValidationResult.Unknown);
+            services.AddSingleton(crossOriginMock.Object);
         }
         var serviceProvider = services.BuildServiceProvider();
         return serviceProvider;

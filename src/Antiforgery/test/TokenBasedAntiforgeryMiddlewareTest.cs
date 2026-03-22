@@ -7,7 +7,7 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Antiforgery.Internal;
 
-public class AntiforgeryMiddlewareTest
+public class TokenBasedAntiforgeryMiddlewareTest
 {
     [Theory]
     [InlineData("POST")]
@@ -17,13 +17,13 @@ public class AntiforgeryMiddlewareTest
     {
         var antiforgeryService = new Mock<IAntiforgery>();
         antiforgeryService.Setup(af => af.ValidateRequestAsync(It.IsAny<HttpContext>())).Returns(Task.FromResult(true));
-        var antiforgeryMiddleware = new AntiforgeryMiddleware(antiforgeryService.Object, hc => Task.CompletedTask);
+        var antiforgeryMiddleware = new TokenBasedAntiforgeryMiddleware(antiforgeryService.Object, hc => Task.CompletedTask);
         var httpContext = GetHttpContext();
         httpContext.Request.Method = method;
 
         await antiforgeryMiddleware.Invoke(httpContext);
 
-        antiforgeryService.Verify(antiforgeryService => antiforgeryService.ValidateRequestAsync(httpContext), Times.AtMostOnce());
+        antiforgeryService.Verify(af => af.ValidateRequestAsync(httpContext), Times.AtMostOnce());
         Assert.True(httpContext.Features.Get<IAntiforgeryValidationFeature>()?.IsValid);
     }
 
@@ -31,12 +31,12 @@ public class AntiforgeryMiddlewareTest
     public async Task RespectsIgnoreAntiforgeryMetadata()
     {
         var antiforgeryService = new Mock<IAntiforgery>();
-        var antiforgeryMiddleware = new AntiforgeryMiddleware(antiforgeryService.Object, hc => Task.CompletedTask);
+        var antiforgeryMiddleware = new TokenBasedAntiforgeryMiddleware(antiforgeryService.Object, hc => Task.CompletedTask);
         var httpContext = GetHttpContext(hasIgnoreMetadata: true);
 
         await antiforgeryMiddleware.Invoke(httpContext);
 
-        antiforgeryService.Verify(antiforgeryService => antiforgeryService.ValidateRequestAsync(httpContext), Times.Never());
+        antiforgeryService.Verify(af => af.ValidateRequestAsync(httpContext), Times.Never());
     }
 
     [Theory]
@@ -49,13 +49,13 @@ public class AntiforgeryMiddlewareTest
     public async Task IgnoresUnsupportedHttpMethods(string method)
     {
         var antiforgeryService = new Mock<IAntiforgery>();
-        var antiforgeryMiddleware = new AntiforgeryMiddleware(antiforgeryService.Object, hc => Task.CompletedTask);
+        var antiforgeryMiddleware = new TokenBasedAntiforgeryMiddleware(antiforgeryService.Object, hc => Task.CompletedTask);
         var httpContext = GetHttpContext();
         httpContext.Request.Method = method;
 
         await antiforgeryMiddleware.Invoke(httpContext);
 
-        antiforgeryService.Verify(antiforgeryService => antiforgeryService.ValidateRequestAsync(httpContext), Times.Never());
+        antiforgeryService.Verify(af => af.ValidateRequestAsync(httpContext), Times.Never());
     }
 
     [Theory]
@@ -65,7 +65,7 @@ public class AntiforgeryMiddlewareTest
     {
         var antiforgeryService = new Mock<IAntiforgery>();
         antiforgeryService.Setup(af => af.ValidateRequestAsync(It.IsAny<HttpContext>())).Returns(Task.FromResult(true));
-        var antiforgeryMiddleware = new AntiforgeryMiddleware(antiforgeryService.Object, hc => Task.CompletedTask);
+        var antiforgeryMiddleware = new TokenBasedAntiforgeryMiddleware(antiforgeryService.Object, hc => Task.CompletedTask);
         var httpContext = GetHttpContext(hasIgnoreMetadata);
 
         await antiforgeryMiddleware.Invoke(httpContext);
