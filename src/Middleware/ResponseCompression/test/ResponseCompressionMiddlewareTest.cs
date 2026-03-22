@@ -1271,7 +1271,7 @@ public class ResponseCompressionMiddlewareTest
         Assert.True(read > 0);
     }
 
-    private async Task<(HttpResponseMessage, List<WriteContext>)> InvokeMiddleware(
+    private static async Task<(HttpResponseMessage, List<WriteContext>)> InvokeMiddleware(
         int uncompressedBodyLength,
         string[] requestAcceptEncodings,
         string responseType,
