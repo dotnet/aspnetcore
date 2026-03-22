@@ -5,6 +5,7 @@ import { DotNet } from '@microsoft/dotnet-js-interop';
 import { EventDescriptor } from './Events/EventDelegator';
 import { enableJSRootComponents, JSComponentParametersByIdentifier, JSComponentIdentifiersByInitializer } from './JSRootComponents';
 import { Blazor } from '../GlobalExports';
+import { WebRendererId } from './WebRendererId';
 
 const interopMethodsByRenderer = new Map<number, DotNet.DotNetObject>();
 const rendererAttachedListeners: ((browserRendererId: number) => void)[] = [];
@@ -67,7 +68,7 @@ function invokeRendererAttachedListeners(browserRendererId: number) {
 export function dispatchEvent(browserRendererId: number, eventDescriptor: EventDescriptor, eventArgs: any): void {
   return dispatchEventMiddleware(browserRendererId, eventDescriptor.eventHandlerId, () => {
     const exports = Blazor._internal.dotNetExports;
-    if (exports) {
+    if (exports && browserRendererId === WebRendererId.WebAssembly) {
       dispatchEventDirect(exports, eventDescriptor, eventArgs);
       return;
     }
@@ -218,7 +219,20 @@ function dispatchEventDirect(
   }
 
   // Fallback: serialize remaining event types as JSON via JSExport
-  exports.DispatchEventJson(eventHandlerId, fieldComponentId, fieldValueString, fieldValueBool, eventDescriptor.eventName, JSON.stringify(eventArgs));
+  // Use interop-aware serializer so DotNetObjectReference, Uint8Array, etc. are properly encoded
+  let nextByteArrayId = 0;
+  const json = JSON.stringify(eventArgs, (_key, value) => {
+    if (value instanceof DotNet.DotNetObject) {
+      return value.serializeAsArg();
+    }
+    if (value instanceof Uint8Array) {
+      const id = nextByteArrayId++;
+      exports.ReceiveByteArrayFromJS(id, value);
+      return { ['__byte[]']: id };
+    }
+    return value;
+  });
+  exports.DispatchEventJson(eventHandlerId, fieldComponentId, fieldValueString, fieldValueBool, eventDescriptor.eventName, json);
 }
 
 function flattenTouchList(touchPoints: any[] | undefined): number[] | null {
@@ -243,7 +257,7 @@ function flattenTouchList(touchPoints: any[] | undefined): number[] | null {
 
 export function updateRootComponents(browserRendererId: number, operationsJson: string): void {
   const exports = Blazor._internal.dotNetExports;
-  if (exports) {
+  if (exports && browserRendererId === WebRendererId.WebAssembly) {
     exports.UpdateRootComponentsCore(operationsJson, '');
     return;
   }
