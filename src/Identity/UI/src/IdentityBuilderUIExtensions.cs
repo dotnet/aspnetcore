@@ -117,7 +117,9 @@ public static class IdentityBuilderUIExtensions
                 {
                     switch (_framework)
                     {
+#pragma warning disable CS0618 // Type or member is obsolete
                         case UIFramework.Bootstrap4:
+#pragma warning restore CS0618 // Type or member is obsolete
                             if (descriptor.Type?.FullName?.Contains("V5", StringComparison.Ordinal) is true)
                             {
                                 // Remove V5 views
