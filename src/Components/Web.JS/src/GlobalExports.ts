@@ -92,7 +92,7 @@ export interface IBlazor {
       EndInvokeJS: (argsJson: string) => void;
       BeginInvokeDotNet: (callId: string | null, assemblyNameOrDotNetObjectId: string, methodIdentifier: string, argsJson: string) => void;
       ReceiveByteArrayFromJS: (id: number, data: Uint8Array) => void;
-      UpdateRootComponentsCore: (operationsJson: string, appState: string) => void;
+      UpdateRootComponents: (operationsJson: string, appState: string) => Promise<void>;
 
       // Event dispatch fast paths (bypass JSON serialization + DotNetDispatcher)
       DispatchMouseEvent: (eventHandlerId: number, fieldComponentId: number, fieldValueString: string | null, fieldValueBool: boolean, detail: number, screenX: number, screenY: number, clientX: number, clientY: number, offsetX: number, offsetY: number, pageX: number, pageY: number, movementX: number, movementY: number, button: number, buttons: number, ctrlKey: boolean, shiftKey: boolean, altKey: boolean, metaKey: boolean, type: string) => void;

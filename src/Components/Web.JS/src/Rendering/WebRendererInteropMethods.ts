@@ -258,7 +258,7 @@ function flattenTouchList(touchPoints: any[] | undefined): number[] | null {
 export function updateRootComponents(browserRendererId: number, operationsJson: string): void {
   const exports = Blazor._internal.dotNetExports;
   if (exports && browserRendererId === WebRendererId.WebAssembly) {
-    exports.UpdateRootComponentsCore(operationsJson, '');
+    exports.UpdateRootComponents(operationsJson, '');
     return;
   }
   const interopMethods = getInteropMethods(browserRendererId);
