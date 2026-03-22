@@ -46,10 +46,9 @@ public class ResponseCompressionMiddlewareTest
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: null, responseType: TextPlain);
 
         CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: true);
-        Assert.Equal(3, logMessages.Count);
-        AssertLog(logMessages.First(), LogLevel.Trace, "This request accepts compression.");
+        Assert.Equal(2, logMessages.Count);
+        AssertLog(logMessages.First(), LogLevel.Debug, "No response compression available, the Accept-Encoding header is missing or invalid.");
         AssertLog(logMessages.Skip(1).First(), LogLevel.Trace, "Response compression is available for this Content-Type.");
-        AssertLog(logMessages.Skip(2).First(), LogLevel.Debug, "No response compression available, the Accept-Encoding header is missing or invalid.");
     }
 
     [Fact]
@@ -140,10 +139,9 @@ public class ResponseCompressionMiddlewareTest
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: null, responseType: TextPlain, httpMethod: HttpMethods.Head);
 
         CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: true);
-        Assert.Equal(3, logMessages.Count);
-        AssertLog(logMessages.First(), LogLevel.Trace, "This request accepts compression.");
+        Assert.Equal(2, logMessages.Count);
+        AssertLog(logMessages.First(), LogLevel.Debug, "No response compression available, the Accept-Encoding header is missing or invalid.");
         AssertLog(logMessages.Skip(1).First(), LogLevel.Trace, "Response compression is available for this Content-Type.");
-        AssertLog(logMessages.Skip(2).First(), LogLevel.Debug, "No response compression available, the Accept-Encoding header is missing or invalid.");
     }
 
     [Fact]
@@ -1273,7 +1271,7 @@ public class ResponseCompressionMiddlewareTest
         Assert.True(read > 0);
     }
 
-    private static async Task<(HttpResponseMessage, List<WriteContext>)> InvokeMiddleware(
+    private async Task<(HttpResponseMessage, List<WriteContext>)> InvokeMiddleware(
         int uncompressedBodyLength,
         string[] requestAcceptEncodings,
         string responseType,
