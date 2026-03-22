@@ -141,6 +141,13 @@ internal sealed class InvokeCommand : HelpCommandBase
             args.Add("--tools-directory");
             args.Add(toolsDirectory);
 
+            var environment = _projectOptions.Environment.Value();
+            if (!string.IsNullOrEmpty(environment))
+            {
+                args.Add("--environment");
+                args.Add(environment);
+            }
+
             if (ReporterExtensions.PrefixOutput)
             {
                 args.Add("--prefix-output");
