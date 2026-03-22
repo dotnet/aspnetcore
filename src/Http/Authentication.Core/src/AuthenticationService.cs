@@ -20,8 +20,28 @@ public class AuthenticationService : IAuthenticationService
     /// </summary>
     /// <param name="schemes">The <see cref="IAuthenticationSchemeProvider"/>.</param>
     /// <param name="handlers">The <see cref="IAuthenticationHandlerProvider"/>.</param>
+    /// <param name="transforms">The <see cref="IClaimsTransformation"/>.</param>
+    /// <param name="options">The <see cref="AuthenticationOptions"/>.</param>
+    public AuthenticationService(
+        IAuthenticationSchemeProvider schemes,
+        IAuthenticationHandlerProvider handlers,
+        IEnumerable<IClaimsTransformation> transforms,
+        IOptions<AuthenticationOptions> options)
+    {
+        Schemes = schemes;
+        Handlers = handlers;
+        Transforms = transforms;
+        Options = options.Value;
+    }
+
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="schemes">The <see cref="IAuthenticationSchemeProvider"/>.</param>
+    /// <param name="handlers">The <see cref="IAuthenticationHandlerProvider"/>.</param>
     /// <param name="transform">The <see cref="IClaimsTransformation"/>.</param>
     /// <param name="options">The <see cref="AuthenticationOptions"/>.</param>
+    [Obsolete("This constructor is obsolet and will be removed in a future version. Use the constructor that takes IEnumerable<IClaimsTransformation> for multiple claim transformations.")]
     public AuthenticationService(
         IAuthenticationSchemeProvider schemes,
         IAuthenticationHandlerProvider handlers,
@@ -30,7 +50,7 @@ public class AuthenticationService : IAuthenticationService
     {
         Schemes = schemes;
         Handlers = handlers;
-        Transform = transform;
+        Transforms = [transform];
         Options = options.Value;
     }
 
@@ -46,8 +66,15 @@ public class AuthenticationService : IAuthenticationService
 
     /// <summary>
     /// Used for claims transformation.
+    /// This property currently returns the last registered transformation, so it reflects the current behavior of the <see cref="IServiceProvider"/>.
     /// </summary>
-    public IClaimsTransformation Transform { get; }
+    [Obsolete("Use Transforms property for multiple claim transformations.")]
+    public IClaimsTransformation Transform => Transforms.Last();
+
+    /// <summary>
+    /// Used for claims transformations.
+    /// </summary>
+    public IEnumerable<IClaimsTransformation> Transforms { get; }
 
     /// <summary>
     /// The <see cref="AuthenticationOptions"/>.
@@ -89,7 +116,11 @@ public class AuthenticationService : IAuthenticationService
 
             if (doTransform)
             {
-                principal = await Transform.TransformAsync(principal);
+                foreach (var transform in Transforms)
+                {
+                    principal = await transform.TransformAsync(principal);
+                }
+
                 _transformCache.Add(principal);
             }
             return AuthenticateResult.Success(new AuthenticationTicket(principal, result.Properties, result.Ticket!.AuthenticationScheme));
