@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.CompilerServices;
 using Microsoft.AspNetCore.Components.HotReload;
@@ -5006,6 +5007,12 @@ public class RendererTest
     [Fact]
     public async Task DisposingRenderer_UnsubsribesFromHotReloadManager()
     {
+        if (!MetadataUpdater.IsSupported)
+        {
+            // Hot reload infrastructure is disabled when the runtime does not support metadata updates.
+            return;
+        }
+
         // Arrange
         var renderer = new TestRenderer();
         var hotReloadManager = new HotReloadManager { MetadataUpdateSupported = true };
@@ -5031,6 +5038,12 @@ public class RendererTest
     [Fact]
     public async Task HotReload_ReRenderPreservesAsyncLocalValues()
     {
+        if (!MetadataUpdater.IsSupported)
+        {
+            // Hot reload infrastructure is disabled when the runtime does not support metadata updates.
+            return;
+        }
+
         await using var renderer = new TestRenderer();
 
         var hotReloadManager = new HotReloadManager { MetadataUpdateSupported = true };
