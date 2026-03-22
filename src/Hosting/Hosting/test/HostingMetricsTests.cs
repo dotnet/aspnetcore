@@ -288,7 +288,8 @@ public class HostingMetricsTests
             DistributedContextPropagator.CreateDefaultPropagator(),
             httpContextFactory,
             HostingEventSource.Log,
-            new HostingMetrics(meterFactory ?? new TestMeterFactory()));
+            new HostingMetrics(meterFactory ?? new TestMeterFactory()),
+            new UrlQueryRedactionOptions());
 
         return hostingApplication;
     }
