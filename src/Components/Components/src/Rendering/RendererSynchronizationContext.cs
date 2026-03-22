@@ -43,7 +43,7 @@ internal sealed class RendererSynchronizationContext : SynchronizationContext
         var completion = AsyncTaskMethodBuilder.Create();
         var t = completion.Task; // lazy initialize before passing around the struct
 
-        lock (_lock)
+        using (new SingleThreadedLockScope(_lock))
         {
             if (!_taskQueue.IsCompleted)
             {
@@ -82,7 +82,7 @@ internal sealed class RendererSynchronizationContext : SynchronizationContext
         var completion = AsyncTaskMethodBuilder<TResult>.Create();
         var t = completion.Task; // lazy initialize before passing around the struct
 
-        lock (_lock)
+        using (new SingleThreadedLockScope(_lock))
         {
             if (!_taskQueue.IsCompleted)
             {
@@ -159,7 +159,7 @@ internal sealed class RendererSynchronizationContext : SynchronizationContext
     /// <inheritdoc/>
     public override void Post(SendOrPostCallback d, object? state)
     {
-        lock (_lock)
+        using (new SingleThreadedLockScope(_lock))
         {
             _taskQueue = PostAsync(_taskQueue, static s => s.d(s.state), (d, state));
         }
@@ -171,7 +171,7 @@ internal sealed class RendererSynchronizationContext : SynchronizationContext
         Task antecedent;
         var completion = AsyncTaskMethodBuilder.Create();
 
-        lock (_lock)
+        using (new SingleThreadedLockScope(_lock))
         {
             antecedent = _taskQueue;
             _taskQueue = completion.Task;
@@ -211,7 +211,7 @@ internal sealed class RendererSynchronizationContext : SynchronizationContext
     private void SendIfQuiescedOrElsePost<TState>(Action<TState> callback, TState state)
     {
         AsyncTaskMethodBuilder completion;
-        lock (_lock)
+        using (new SingleThreadedLockScope(_lock))
         {
             if (!_taskQueue.IsCompleted)
             {
