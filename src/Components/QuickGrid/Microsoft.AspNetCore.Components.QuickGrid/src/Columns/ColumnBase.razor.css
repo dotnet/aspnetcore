@@ -6,12 +6,14 @@
     padding: 0;
 }
 
-/* If the column is sortable, its title is rendered as a button element for accessibility and to support navigation by tab */
-button.col-title {
+/* If the column is sortable, its title is rendered as a link element for accessibility and to support navigation by tab */
+a.col-title {
     border: none;
     background: none;
     position: relative;
     cursor: pointer;
+    text-decoration: none;
+    color: inherit;
 }
 
 .col-justify-center .col-title {
