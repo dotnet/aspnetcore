@@ -237,7 +237,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         if (!_hotReloadInitialized)
         {
             _hotReloadInitialized = true;
-            if (HotReload.HotReloadManager.IsSupported && HotReloadManager.MetadataUpdateSupported)
+            if (HotReloadManager.MetadataUpdateSupported)
             {
                 // Capture the current ExecutionContext so AsyncLocal values present during initial root component
                 // registration flow through to hot reload re-renders. Without this, hot reload callbacks execute
@@ -302,7 +302,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         _pendingTasks ??= new();
 
         var componentState = GetRequiredRootComponentState(componentId);
-        if (HotReload.HotReloadManager.IsSupported && HotReloadManager.MetadataUpdateSupported)
+        if (HotReloadManager.MetadataUpdateSupported)
         {
             // When we're doing hot-reload, stash away the parameters used while rendering root components.
             // We'll use this to trigger re-renders on hot reload updates.
@@ -332,7 +332,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // Currently there's no known scenario where we need to support calling RemoveRootComponentAsync
         // during a batch, but if a scenario emerges we can add support.
         _batchBuilder.ComponentDisposalQueue.Enqueue(componentId);
-        if (HotReload.HotReloadManager.IsSupported && HotReloadManager.MetadataUpdateSupported)
+        if (HotReloadManager.MetadataUpdateSupported)
         {
             _rootComponentsLatestParameters?.Remove(componentId);
         }
@@ -1247,7 +1247,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             _rendererIsDisposed = true;
         }
 
-        if (_hotReloadInitialized && HotReload.HotReloadManager.IsSupported && HotReloadManager.MetadataUpdateSupported && _hotReloadRenderHandler is not null)
+        if (_hotReloadInitialized && HotReloadManager.MetadataUpdateSupported && _hotReloadRenderHandler is not null)
         {
             HotReloadManager.OnDeltaApplied -= _hotReloadRenderHandler.RerenderOnHotReload;
         }
