@@ -95,7 +95,7 @@ public sealed class EditContext
     /// <param name="fieldIdentifier">Identifies the field whose modification flag (if any) should be cleared.</param>
     public void MarkAsUnmodified(in FieldIdentifier fieldIdentifier)
     {
-        if (_fieldStates.TryGetValue(fieldIdentifier, out var state))
+        if (GetFieldState(fieldIdentifier) is { } state)
         {
             state.IsModified = false;
         }
@@ -159,7 +159,7 @@ public sealed class EditContext
     /// <returns>The current validation messages for the specified field.</returns>
     public IEnumerable<string> GetValidationMessages(FieldIdentifier fieldIdentifier)
     {
-        if (_fieldStates.TryGetValue(fieldIdentifier, out var state))
+        if (GetFieldState(fieldIdentifier) is { } state)
         {
             foreach (var message in state.GetValidationMessages())
             {
@@ -183,9 +183,7 @@ public sealed class EditContext
     /// </summary>
     /// <returns>True if the field has been modified; otherwise false.</returns>
     public bool IsModified(in FieldIdentifier fieldIdentifier)
-        => _fieldStates.TryGetValue(fieldIdentifier, out var state)
-        ? state.IsModified
-        : false;
+        => GetFieldState(fieldIdentifier)?.IsModified ?? false;
 
     /// <summary>
     /// Determines whether the specified fields in this <see cref="EditContext"/> has been modified.
@@ -222,12 +220,14 @@ public sealed class EditContext
 
     internal FieldState? GetFieldState(in FieldIdentifier fieldIdentifier)
     {
+        ValidateFieldIdentifier(fieldIdentifier);
         _fieldStates.TryGetValue(fieldIdentifier, out var state);
         return state;
     }
 
     internal FieldState GetOrAddFieldState(in FieldIdentifier fieldIdentifier)
     {
+        ValidateFieldIdentifier(fieldIdentifier);
         if (!_fieldStates.TryGetValue(fieldIdentifier, out var state))
         {
             state = new FieldState(fieldIdentifier);
@@ -235,5 +235,15 @@ public sealed class EditContext
         }
 
         return state;
+    }
+    
+    private static void ValidateFieldIdentifier(in FieldIdentifier fieldIdentifier)
+    {
+        if (fieldIdentifier.Model is null || fieldIdentifier.FieldName is null)
+        {
+            throw new ArgumentException(
+                "The supplied FieldIdentifier is invalid. It must have a non-null Model and FieldName. This can happen when a component is not bound using @bind or the ValueExpression parameter is not supplied.",
+                nameof(fieldIdentifier));
+        }
     }
 }
