@@ -4,6 +4,8 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCompression;
 
@@ -34,13 +36,52 @@ public class ResponseCompressionMiddleware
     /// </summary>
     /// <param name="context">The <see cref="HttpContext"/>.</param>
     /// <returns>A task that represents the execution of this middleware.</returns>
-    public Task Invoke(HttpContext context)
+    public async Task Invoke(HttpContext context)
     {
         if (!_provider.CheckRequestAcceptsCompression(context))
         {
-            return _next(context);
+            var originalResponseFeature = context.Features.Get<IHttpResponseFeature>();
+            Debug.Assert(originalResponseFeature != null);
+            originalResponseFeature.OnStarting(OnStartingResponseHandler, context);
+
+            try
+            {
+                await _next(context);
+            }
+            finally
+            {
+                context.Features.Set(originalResponseFeature);
+            }
+            return;
         }
-        return InvokeCore(context);
+
+        await InvokeCore(context);
+    }
+
+    private async Task OnStartingResponseHandler(object state)
+    {
+        HttpContext context = (HttpContext)state;
+
+        if (_provider.ShouldCompressResponse(context))
+        {
+            var headers = context.Response.Headers;
+            var varyValues = headers.GetCommaSeparatedValues(HeaderNames.Vary);
+            var varyByAcceptEncoding = false;
+
+            for (var i = 0; i < varyValues.Length; i++)
+            {
+                if (string.Equals(varyValues[i], HeaderNames.AcceptEncoding, StringComparison.OrdinalIgnoreCase))
+                {
+                    varyByAcceptEncoding = true;
+                    break;
+                }
+            }
+
+            if (!varyByAcceptEncoding)
+            {
+                headers.Vary = StringValues.Concat(headers.Vary, HeaderNames.AcceptEncoding);
+            }
+        }
     }
 
     private async Task InvokeCore(HttpContext context)
