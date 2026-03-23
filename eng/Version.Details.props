@@ -5,7 +5,7 @@ This file should be imported by eng/Versions.props
 -->
 <Project>
   <PropertyGroup>
-    <!-- dotnet/dotnet dependencies -->
+    <!-- dotnet-dotnet dependencies -->
     <dotnetefPackageVersion>11.0.0-preview.3.26153.117</dotnetefPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>11.0.0-preview.3.26153.117</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftBclTimeProviderPackageVersion>11.0.0-preview.3.26153.117</MicrosoftBclTimeProviderPackageVersion>
@@ -98,30 +98,30 @@ This file should be imported by eng/Versions.props
     <SystemThreadingAccessControlPackageVersion>11.0.0-preview.3.26153.117</SystemThreadingAccessControlPackageVersion>
     <SystemThreadingChannelsPackageVersion>11.0.0-preview.3.26153.117</SystemThreadingChannelsPackageVersion>
     <SystemThreadingRateLimitingPackageVersion>11.0.0-preview.3.26153.117</SystemThreadingRateLimitingPackageVersion>
-    <!-- dotnet/roslyn dependencies -->
-    <MicrosoftCodeAnalysisCommonPackageVersion>4.13.0-3.24613.7</MicrosoftCodeAnalysisCommonPackageVersion>
-    <MicrosoftCodeAnalysisCSharpPackageVersion>4.13.0-3.24613.7</MicrosoftCodeAnalysisCSharpPackageVersion>
-    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>4.13.0-3.24613.7</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
-    <MicrosoftCodeAnalysisExternalAccessAspNetCorePackageVersion>4.13.0-3.24613.7</MicrosoftCodeAnalysisExternalAccessAspNetCorePackageVersion>
-    <!-- dotnet/extensions dependencies -->
-    <MicrosoftExtensionsCachingHybridPackageVersion>10.4.0-preview.1.26127.4</MicrosoftExtensionsCachingHybridPackageVersion>
-    <MicrosoftExtensionsDiagnosticsTestingPackageVersion>10.4.0-preview.1.26127.4</MicrosoftExtensionsDiagnosticsTestingPackageVersion>
-    <MicrosoftExtensionsTimeProviderTestingPackageVersion>10.4.0-preview.1.26127.4</MicrosoftExtensionsTimeProviderTestingPackageVersion>
-    <!-- _git/dotnet-optimization dependencies -->
+    <!-- dotnet-extensions dependencies -->
+    <MicrosoftExtensionsCachingHybridPackageVersion>10.5.0-preview.1.26170.2</MicrosoftExtensionsCachingHybridPackageVersion>
+    <MicrosoftExtensionsDiagnosticsTestingPackageVersion>10.5.0-preview.1.26170.2</MicrosoftExtensionsDiagnosticsTestingPackageVersion>
+    <MicrosoftExtensionsTimeProviderTestingPackageVersion>10.5.0-preview.1.26170.2</MicrosoftExtensionsTimeProviderTestingPackageVersion>
+    <!-- dotnet-msbuild dependencies -->
+    <MicrosoftBuildPackageVersion>17.12.50</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildFrameworkPackageVersion>17.12.50</MicrosoftBuildFrameworkPackageVersion>
+    <MicrosoftBuildTasksCorePackageVersion>17.12.50</MicrosoftBuildTasksCorePackageVersion>
+    <MicrosoftBuildUtilitiesCorePackageVersion>17.12.50</MicrosoftBuildUtilitiesCorePackageVersion>
+    <!-- dotnet-optimization dependencies -->
     <optimizationlinuxarm64MIBCRuntimePackageVersion>1.0.0-prerelease.26153.1</optimizationlinuxarm64MIBCRuntimePackageVersion>
     <optimizationlinuxx64MIBCRuntimePackageVersion>1.0.0-prerelease.26153.1</optimizationlinuxx64MIBCRuntimePackageVersion>
     <optimizationwindows_ntarm64MIBCRuntimePackageVersion>1.0.0-prerelease.26153.1</optimizationwindows_ntarm64MIBCRuntimePackageVersion>
     <optimizationwindows_ntx64MIBCRuntimePackageVersion>1.0.0-prerelease.26153.1</optimizationwindows_ntx64MIBCRuntimePackageVersion>
     <optimizationwindows_ntx86MIBCRuntimePackageVersion>1.0.0-prerelease.26153.1</optimizationwindows_ntx86MIBCRuntimePackageVersion>
-    <!-- dotnet/msbuild dependencies -->
-    <MicrosoftBuildPackageVersion>17.12.50</MicrosoftBuildPackageVersion>
-    <MicrosoftBuildFrameworkPackageVersion>17.12.50</MicrosoftBuildFrameworkPackageVersion>
-    <MicrosoftBuildTasksCorePackageVersion>17.12.50</MicrosoftBuildTasksCorePackageVersion>
-    <MicrosoftBuildUtilitiesCorePackageVersion>17.12.50</MicrosoftBuildUtilitiesCorePackageVersion>
+    <!-- dotnet-roslyn dependencies -->
+    <MicrosoftCodeAnalysisCommonPackageVersion>4.13.0-3.24613.7</MicrosoftCodeAnalysisCommonPackageVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>4.13.0-3.24613.7</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>4.13.0-3.24613.7</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftCodeAnalysisExternalAccessAspNetCorePackageVersion>4.13.0-3.24613.7</MicrosoftCodeAnalysisExternalAccessAspNetCorePackageVersion>
   </PropertyGroup>
   <!--Property group for alternate package version names-->
   <PropertyGroup>
-    <!-- dotnet/dotnet dependencies -->
+    <!-- dotnet-dotnet dependencies -->
     <dotnetefVersion>$(dotnetefPackageVersion)</dotnetefVersion>
     <MicrosoftBclAsyncInterfacesVersion>$(MicrosoftBclAsyncInterfacesPackageVersion)</MicrosoftBclAsyncInterfacesVersion>
     <MicrosoftBclTimeProviderVersion>$(MicrosoftBclTimeProviderPackageVersion)</MicrosoftBclTimeProviderVersion>
@@ -214,25 +214,25 @@ This file should be imported by eng/Versions.props
     <SystemThreadingAccessControlVersion>$(SystemThreadingAccessControlPackageVersion)</SystemThreadingAccessControlVersion>
     <SystemThreadingChannelsVersion>$(SystemThreadingChannelsPackageVersion)</SystemThreadingChannelsVersion>
     <SystemThreadingRateLimitingVersion>$(SystemThreadingRateLimitingPackageVersion)</SystemThreadingRateLimitingVersion>
-    <!-- dotnet/roslyn dependencies -->
-    <MicrosoftCodeAnalysisCommonVersion>$(MicrosoftCodeAnalysisCommonPackageVersion)</MicrosoftCodeAnalysisCommonVersion>
-    <MicrosoftCodeAnalysisCSharpVersion>$(MicrosoftCodeAnalysisCSharpPackageVersion)</MicrosoftCodeAnalysisCSharpVersion>
-    <MicrosoftCodeAnalysisCSharpWorkspacesVersion>$(MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)</MicrosoftCodeAnalysisCSharpWorkspacesVersion>
-    <MicrosoftCodeAnalysisExternalAccessAspNetCoreVersion>$(MicrosoftCodeAnalysisExternalAccessAspNetCorePackageVersion)</MicrosoftCodeAnalysisExternalAccessAspNetCoreVersion>
-    <!-- dotnet/extensions dependencies -->
+    <!-- dotnet-extensions dependencies -->
     <MicrosoftExtensionsCachingHybridVersion>$(MicrosoftExtensionsCachingHybridPackageVersion)</MicrosoftExtensionsCachingHybridVersion>
     <MicrosoftExtensionsDiagnosticsTestingVersion>$(MicrosoftExtensionsDiagnosticsTestingPackageVersion)</MicrosoftExtensionsDiagnosticsTestingVersion>
     <MicrosoftExtensionsTimeProviderTestingVersion>$(MicrosoftExtensionsTimeProviderTestingPackageVersion)</MicrosoftExtensionsTimeProviderTestingVersion>
-    <!-- _git/dotnet-optimization dependencies -->
+    <!-- dotnet-msbuild dependencies -->
+    <MicrosoftBuildVersion>$(MicrosoftBuildPackageVersion)</MicrosoftBuildVersion>
+    <MicrosoftBuildFrameworkVersion>$(MicrosoftBuildFrameworkPackageVersion)</MicrosoftBuildFrameworkVersion>
+    <MicrosoftBuildTasksCoreVersion>$(MicrosoftBuildTasksCorePackageVersion)</MicrosoftBuildTasksCoreVersion>
+    <MicrosoftBuildUtilitiesCoreVersion>$(MicrosoftBuildUtilitiesCorePackageVersion)</MicrosoftBuildUtilitiesCoreVersion>
+    <!-- dotnet-optimization dependencies -->
     <optimizationlinuxarm64MIBCRuntimeVersion>$(optimizationlinuxarm64MIBCRuntimePackageVersion)</optimizationlinuxarm64MIBCRuntimeVersion>
     <optimizationlinuxx64MIBCRuntimeVersion>$(optimizationlinuxx64MIBCRuntimePackageVersion)</optimizationlinuxx64MIBCRuntimeVersion>
     <optimizationwindows_ntarm64MIBCRuntimeVersion>$(optimizationwindows_ntarm64MIBCRuntimePackageVersion)</optimizationwindows_ntarm64MIBCRuntimeVersion>
     <optimizationwindows_ntx64MIBCRuntimeVersion>$(optimizationwindows_ntx64MIBCRuntimePackageVersion)</optimizationwindows_ntx64MIBCRuntimeVersion>
     <optimizationwindows_ntx86MIBCRuntimeVersion>$(optimizationwindows_ntx86MIBCRuntimePackageVersion)</optimizationwindows_ntx86MIBCRuntimeVersion>
-    <!-- dotnet/msbuild dependencies -->
-    <MicrosoftBuildVersion>$(MicrosoftBuildPackageVersion)</MicrosoftBuildVersion>
-    <MicrosoftBuildFrameworkVersion>$(MicrosoftBuildFrameworkPackageVersion)</MicrosoftBuildFrameworkVersion>
-    <MicrosoftBuildTasksCoreVersion>$(MicrosoftBuildTasksCorePackageVersion)</MicrosoftBuildTasksCoreVersion>
-    <MicrosoftBuildUtilitiesCoreVersion>$(MicrosoftBuildUtilitiesCorePackageVersion)</MicrosoftBuildUtilitiesCoreVersion>
+    <!-- dotnet-roslyn dependencies -->
+    <MicrosoftCodeAnalysisCommonVersion>$(MicrosoftCodeAnalysisCommonPackageVersion)</MicrosoftCodeAnalysisCommonVersion>
+    <MicrosoftCodeAnalysisCSharpVersion>$(MicrosoftCodeAnalysisCSharpPackageVersion)</MicrosoftCodeAnalysisCSharpVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesVersion>$(MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)</MicrosoftCodeAnalysisCSharpWorkspacesVersion>
+    <MicrosoftCodeAnalysisExternalAccessAspNetCoreVersion>$(MicrosoftCodeAnalysisExternalAccessAspNetCorePackageVersion)</MicrosoftCodeAnalysisExternalAccessAspNetCoreVersion>
   </PropertyGroup>
 </Project>
