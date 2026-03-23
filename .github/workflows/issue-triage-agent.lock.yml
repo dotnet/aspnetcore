@@ -22,7 +22,7 @@
 #
 # Triage newly opened issues in dotnet/aspnetcore. Classifies the area label, issue type, and searches for potential duplicates. Posts a summary comment and applies labels automatically.
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"7d7efa4969d2b81f4b6f98386bbaf6de13342f87957b3c0a7d9fd4279953a773","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"0db15eb9d40d42f79674369d8d6c7666cfbba11eae0085b590d078d48c58102c","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot"}
 
 name: "Issue Triage Agent for dotnet/aspnetcore"
 "on":
@@ -333,16 +333,6 @@ jobs:
           GH_HOST: github.com
       - name: Install AWF binary
         run: bash ${RUNNER_TEMP}/gh-aw/actions/install_awf_binary.sh v0.24.5
-      - name: Determine automatic lockdown mode for GitHub MCP Server
-        id: determine-automatic-lockdown
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        env:
-          GH_AW_GITHUB_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}
-          GH_AW_GITHUB_MCP_SERVER_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN }}
-        with:
-          script: |
-            const determineAutomaticLockdown = require('${{ runner.temp }}/gh-aw/actions/determine_automatic_lockdown.cjs');
-            await determineAutomaticLockdown(github, context, core);
       - name: Download container images
         run: bash ${RUNNER_TEMP}/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.24.5 ghcr.io/github/gh-aw-firewall/api-proxy:0.24.5 ghcr.io/github/gh-aw-firewall/squid:0.24.5 ghcr.io/github/gh-aw-mcpg:v0.1.20 ghcr.io/github/github-mcp-server:v0.32.0 node:lts-alpine
       - name: Write Safe Outputs Config
@@ -528,9 +518,7 @@ jobs:
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_SAFE_OUTPUTS_API_KEY: ${{ steps.safe-outputs-start.outputs.api_key }}
           GH_AW_SAFE_OUTPUTS_PORT: ${{ steps.safe-outputs-start.outputs.port }}
-          GITHUB_MCP_GUARD_MIN_INTEGRITY: ${{ steps.determine-automatic-lockdown.outputs.min_integrity }}
-          GITHUB_MCP_GUARD_REPOS: ${{ steps.determine-automatic-lockdown.outputs.repos }}
-          GITHUB_MCP_SERVER_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          GITHUB_MCP_SERVER_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           set -eo pipefail
           mkdir -p /tmp/gh-aw/mcp-config
@@ -564,8 +552,8 @@ jobs:
                 },
                 "guard-policies": {
                   "allow-only": {
-                    "min-integrity": "$GITHUB_MCP_GUARD_MIN_INTEGRITY",
-                    "repos": "$GITHUB_MCP_GUARD_REPOS"
+                    "min-integrity": "none",
+                    "repos": "all"
                   }
                 }
               },
@@ -638,7 +626,7 @@ jobs:
           GITHUB_API_URL: ${{ github.api_url }}
           GITHUB_AW: true
           GITHUB_HEAD_REF: ${{ github.head_ref }}
-          GITHUB_MCP_SERVER_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          GITHUB_MCP_SERVER_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_STEP_SUMMARY: /tmp/gh-aw/agent-step-summary.md
