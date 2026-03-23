@@ -489,6 +489,45 @@ public class VirtualizeTest
     }
 
     [Fact]
+    public async Task Virtualize_ScrollToBottom_NotSetWhenMeasurementsNotApplied()
+    {
+        Virtualize<int> renderedVirtualize = null;
+
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualizeWithContent(50f, Enumerable.Range(1, 100).ToList(),
+                captureRenderedVirtualize: v => renderedVirtualize = v)
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+        Assert.NotNull(renderedVirtualize);
+
+        var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
+
+        // First call: real measurements at the bottom — should set pending
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+
+        Assert.True(renderedVirtualize._lastRenderedItemCount > 0,
+            "Items should have rendered");
+        renderedVirtualize._pendingScrollToBottom = false;
+
+        // Second call: spacerSeparation=0 at the bottom — no new measurements,
+        // so _pendingScrollToBottom must NOT be set
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 0f, 500f));
+
+        Assert.False(renderedVirtualize._pendingScrollToBottom,
+            "scrollToBottom should not be set when ProcessMeasurements did not apply new measurements");
+    }
+
+    [Fact]
     public async Task Virtualize_FirstRender_DoesNotShiftStartIndexAwayFromZero()
     {
         var requests = new List<ItemsProviderRequest>();

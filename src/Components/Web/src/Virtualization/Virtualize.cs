@@ -337,26 +337,26 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private float GetItemHeight()
         => _measuredItemCount > 0 ? _totalMeasuredHeight / _measuredItemCount : _itemSize;
 
-    private void ProcessMeasurements(float spacerSeparation)
+    private bool ProcessMeasurements(float spacerSeparation)
     {
-        // Derive item height measurements from spacerSeparation (total content height
-        // between spacers) and the server-known rendered item count. This avoids
-        // any new JS→.NET inputs — spacerSeparation was already sent, and
-        // _lastRenderedItemCount is server-side state.
-        if (_lastRenderedItemCount <= 0)
+        // Accumulate item height measurements only when no placeholders are rendered,
+        // so spacerSeparation directly represents real item heights. This avoids a
+        // feedback loop: subtracting (placeholderCount * _itemSize) makes the accumulated
+        // measurements depend on _itemSize, which itself depends on those measurements.
+        // Under CSS zoom, rounding errors in that loop compound and diverge from reality.
+        if (_lastRenderedItemCount <= 0 || _lastRenderedPlaceholderCount > 0)
         {
-            return;
+            return false;
         }
 
-        // Subtract placeholder height contribution to isolate real item heights.
-        var placeholderHeight = _lastRenderedPlaceholderCount * _itemSize;
-        var realItemHeight = spacerSeparation - placeholderHeight;
-
-        if (realItemHeight > 0)
+        if (spacerSeparation > 0)
         {
-            _totalMeasuredHeight += realItemHeight;
+            _totalMeasuredHeight += spacerSeparation;
             _measuredItemCount += _lastRenderedItemCount;
+            return true;
         }
+
+        return false;
     }
 
     void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
@@ -376,8 +376,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
     {
-        var hadMeasurements = _lastRenderedItemCount > 0;
-        ProcessMeasurements(spacerSeparation);
+        var hadNewMeasurements = ProcessMeasurements(spacerSeparation);
 
         CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
 
@@ -391,7 +390,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         // When we're at the very bottom and new measurements arrived,
         // scroll to bottom so the viewport stays pinned while items converge.
-        if (itemsAfter == 0 && hadMeasurements)
+        if (itemsAfter == 0 && hadNewMeasurements)
         {
             _pendingScrollToBottom = true;
         }
