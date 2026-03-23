@@ -772,7 +772,6 @@ public class MapIdentityApiTests : LoggedTest
         AssertOk(await client.PostAsJsonAsync("/identity/login", new { Email, Password }));
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54840")]
     [Fact]
     public async Task CanResetSharedKey()
     {
