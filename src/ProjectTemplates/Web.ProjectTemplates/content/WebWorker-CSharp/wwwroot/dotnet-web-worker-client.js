@@ -37,18 +37,10 @@ class DotnetWebWorkerClient {
     }
 
     static #resolveDotnetJsUrl() {
-        let resolvedPath = '_framework/dotnet.js';
-        const importMapEl = document.querySelector('script[type="importmap"]');
-        const importMapText = importMapEl?.textContent?.trim();
-        if (importMapText) {
-            const map = JSON.parse(importMapText);
-            const imports = map.imports || {};
-            const url = imports['./_framework/dotnet.js'] || imports['_framework/dotnet.js'] || imports['./dotnet.js'];
-            if (url) {
-                resolvedPath = url.replace(/^\.\//, '');
-            }
-        }
-        return new URL(resolvedPath, document.baseURI).href;
+        // Resolve using the browser's import map (handles fingerprinted URLs in published apps).
+        // Workers don't inherit the page's import map, so we resolve on the main thread and pass the URL.
+        const dotnetJsUrl = new URL('_framework/dotnet.js', document.baseURI).href;
+        return import.meta.resolve?.(dotnetJsUrl) ?? dotnetJsUrl;
     }
 
     invoke(method, args) {
