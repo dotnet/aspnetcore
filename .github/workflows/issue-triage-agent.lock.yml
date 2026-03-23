@@ -22,7 +22,7 @@
 #
 # Triage newly opened issues in dotnet/aspnetcore. Classifies the area label, issue type, and searches for potential duplicates. Posts a summary comment and applies labels automatically.
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"fcb4e2da18f7427dd34f4c4477003337390f4ba02ba794097c27f39fdfca8d0d","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"b7a492913acfde0c298babde1f2a3d910a7bd187add5cb0d68e1cd92ddc299ec","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot"}
 
 name: "Issue Triage Agent for dotnet/aspnetcore"
 "on":

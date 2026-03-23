@@ -31,7 +31,7 @@ tools:
     toolsets: [context, repos, issues, pull_requests, search] # context: agent identity; repos: read files; issues: fetch/comment; pull_requests: cross-ref PRs; search: duplicate detection
     repos: "public" # restrict MCP access to public repos only
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }} # satisfies MCP gateway secrecy policy so issue reads aren't blocked
-    min-integrity: none # disable integrity filtering so triage bot can read all issues: https://github.github.com/gh-aw/reference/glossary/#integrity-filtering
+    min-integrity: none # disable integrity filtering so triage bot can read all issues
   bash: ["cat", "head", "tail", "grep", "wc", "jq"] # text processing utilities for parsing issue content
 
 network:
@@ -100,6 +100,7 @@ Triage the issue that triggered this workflow.
 Read the full issue title and body using the GitHub MCP Server tools:
 
 - Use the `get_issue` tool from the **github** MCP server, providing the repository owner, repository name, and issue number.
+- **If `get_issue` returns an empty result or a `[DIFC]` integrity-policy warning, call `get_issue` again with the same parameters.** The MCP gateway may block the first request but allow retries. Only call `missing_data` if the issue content is still empty after retrying.
 
 ## Security Concerns Are Out of Scope
 
