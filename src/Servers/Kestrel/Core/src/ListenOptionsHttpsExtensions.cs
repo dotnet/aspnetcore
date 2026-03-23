@@ -296,7 +296,12 @@ public static class ListenOptionsHttpsExtensions
     /// <returns>The <see cref="ListenOptions"/>.</returns>
     public static ListenOptions UseTlsClientHelloListener(this ListenOptions listenOptions, Action<ConnectionContext, ReadOnlySequence<byte>> tlsClientHelloBytesCallback, TimeSpan? timeout = null)
     {
+        ArgumentNullException.ThrowIfNull(listenOptions);
         ArgumentNullException.ThrowIfNull(tlsClientHelloBytesCallback);
+        if (timeout.HasValue)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(timeout.Value, TimeSpan.Zero, nameof(timeout));
+        }
 
         var effectiveTimeout = timeout ?? DefaultTlsClientHelloListenerTimeout;
         var tlsListener = new TlsListener(tlsClientHelloBytesCallback);
@@ -305,10 +310,11 @@ public static class ListenOptionsHttpsExtensions
         {
             return async context =>
             {
-                using var timeoutCts = new CancellationTokenSource(effectiveTimeout);
-                using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(timeoutCts.Token, context.ConnectionClosed);
-
-                await tlsListener.OnTlsClientHelloAsync(context, linkedCts.Token);
+                using (var timeoutCts = new CancellationTokenSource(effectiveTimeout))
+                using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(timeoutCts.Token, context.ConnectionClosed))
+                {
+                    await tlsListener.OnTlsClientHelloAsync(context, linkedCts.Token);
+                }
                 await next(context);
             };
         });
