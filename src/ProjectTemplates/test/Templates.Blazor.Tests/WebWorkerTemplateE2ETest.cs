@@ -91,13 +91,11 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
     {
         await using var testRun = await SetupWorkerLibAndPublish(_sharedHostProject);
 
-        using var aspNetProcess = _sharedHostProject.StartPublishedProjectAsync(noHttps: true);
-        Assert.False(
-            aspNetProcess.Process.HasExited,
-            ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", _sharedHostProject, aspNetProcess.Process));
-
-        await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-        await TestWebWorkerInteraction(browserKind, aspNetProcess.ListeningUri.AbsoluteUri + "webworker-test");
+        var (serveProcess, listeningUri) = _sharedHostProject.ServePublishedStandaloneApp(Output);
+        using (serveProcess)
+        {
+            await TestWebWorkerInteraction(browserKind, listeningUri, clientRoute: "webworker-test");
+        }
     }
 
     private async Task<WorkerLibTestRun> SetupWorkerLibAndPublish(Project hostProject)
@@ -233,7 +231,7 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         File.Copy(workerMethodsSource, Path.Combine(hostProject.TemplateOutputDir, "TestWorkerMethods.cs"), overwrite: true);
     }
 
-    private async Task TestWebWorkerInteraction(BrowserKind browserKind, string baseUri)
+    private async Task TestWebWorkerInteraction(BrowserKind browserKind, string baseUri, string clientRoute = null)
     {
         if (!BrowserManager.IsAvailable(browserKind))
         {
@@ -244,7 +242,13 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
         var page = await browser.NewPageAsync();
 
-        await page.GotoAsync(baseUri);
+        await page.GotoAsync(baseUri, new() { WaitUntil = WaitUntilState.NetworkIdle });
+        if (clientRoute != null)
+        {
+            // Static file servers (e.g., dotnet serve) don't support SPA fallback,
+            // so use Blazor's client-side navigation instead of a full page navigation.
+            await page.EvaluateAsync($"Blazor.navigateTo('{clientRoute}')");
+        }
         await page.WaitForSelectorAsync("#webworker-test", new() { Timeout = 15000 });
 
         await page.ClickAsync("#btn-init");
