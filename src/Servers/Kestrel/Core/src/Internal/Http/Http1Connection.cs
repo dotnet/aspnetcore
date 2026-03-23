@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
@@ -667,7 +668,20 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             }
 
             _absoluteRequestTarget = _parsedAbsoluteRequestTarget = uri;
-            Path = _parsedPath = uri.LocalPath;
+
+            // Use the same path decoding as origin-form to ensure consistent
+            // canonicalization behavior. uri.LocalPath decodes %2F to '/' which
+            // differs from the origin-form path handling that preserves %2F.
+            // uri.AbsolutePath preserves percent-encoding, so we convert it to
+            // bytes and run it through PathDecoder.DecodePath for consistency.
+            var absolutePath = uri!.AbsolutePath;
+            var absolutePathLength = absolutePath.Length;
+            Span<byte> pathBuffer = absolutePathLength <= 256
+                ? stackalloc byte[absolutePathLength]
+                : new byte[absolutePathLength];
+            Encoding.ASCII.GetBytes(absolutePath, pathBuffer);
+            Path = _parsedPath = PathDecoder.DecodePath(pathBuffer, targetPath.IsEncoded, absolutePath, query.Length);
+
             // don't use uri.Query because we need the unescaped version
             previousValue = _parsedQueryString;
             if (disableStringReuse ||
