@@ -671,13 +671,27 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 
             // Use PathDecoder.DecodePath (same as origin-form and HTTP/2/3) instead of
             // uri.LocalPath, which decodes %2F to '/' breaking path canonicalization.
-            var absolutePath = uri!.AbsolutePath;
             const int MaxPathBufferStackAllocSize = 256;
+
+            var absolutePath = uri!.AbsolutePath;
+            byte[] rentedBuffer = null!;
             Span<byte> pathBuffer = absolutePath.Length <= MaxPathBufferStackAllocSize
-                ? stackalloc byte[MaxPathBufferStackAllocSize].Slice(0, absolutePath.Length)
-                : new byte[absolutePath.Length];
-            Encoding.ASCII.GetBytes(absolutePath, pathBuffer);
-            Path = _parsedPath = PathDecoder.DecodePath(pathBuffer, targetPath.IsEncoded, absolutePath, query.Length);
+                ? (stackalloc byte[MaxPathBufferStackAllocSize])
+                : (rentedBuffer = ArrayPool<byte>.Shared.Rent(absolutePath.Length));
+            var pathBufferSliced = pathBuffer[..absolutePath.Length];
+
+            try
+            {
+                Encoding.ASCII.GetBytes(absolutePath, pathBufferSliced);
+                Path = _parsedPath = PathDecoder.DecodePath(pathBufferSliced, targetPath.IsEncoded, absolutePath, query.Length);
+            }
+            finally
+            {
+                if (rentedBuffer is not null)
+                {
+                    ArrayPool<byte>.Shared.Return(rentedBuffer);
+                }
+            }
 
             // don't use uri.Query because we need the unescaped version
             previousValue = _parsedQueryString;
