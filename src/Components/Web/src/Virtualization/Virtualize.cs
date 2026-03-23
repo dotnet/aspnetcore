@@ -37,9 +37,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private int _loadedItemsStartIndex;
 
-    private int _lastRenderedItemCount;
+    internal int _lastRenderedItemCount;
 
-    private int _lastRenderedPlaceholderCount;
+    internal int _lastRenderedPlaceholderCount;
 
     private float _itemSize;
 
@@ -290,17 +290,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
             builder.OpenRegion(5);
 
-            // Render items with comment delimiters for JS height measurement (N+1 fence pattern).
             foreach (var item in itemsToShow)
             {
-                builder.AddMarkupContent(0, "<!--virtualize:item-->");
                 _itemTemplate(item)(builder);
                 _lastRenderedItemCount++;
-            }
-
-            if (_lastRenderedItemCount > 0)
-            {
-                builder.AddMarkupContent(1, "<!--virtualize:item-->");
             }
 
             renderIndex += _lastRenderedItemCount;
@@ -344,21 +337,31 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private float GetItemHeight()
         => _measuredItemCount > 0 ? _totalMeasuredHeight / _measuredItemCount : _itemSize;
 
-    private bool ProcessMeasurements(float measuredItemHeightSum, int measuredItemCount)
+    private void ProcessMeasurements(float spacerSeparation)
     {
-        if (measuredItemCount <= 0)
+        // Derive item height measurements from spacerSeparation (total content height
+        // between spacers) and the server-known rendered item count. This avoids
+        // any new JS→.NET inputs — spacerSeparation was already sent, and
+        // _lastRenderedItemCount is server-side state.
+        if (_lastRenderedItemCount <= 0)
         {
-            return false;
+            return;
         }
 
-        _totalMeasuredHeight += measuredItemHeightSum;
-        _measuredItemCount += measuredItemCount;
-        return true;
+        // Subtract placeholder height contribution to isolate real item heights.
+        var placeholderHeight = _lastRenderedPlaceholderCount * _itemSize;
+        var realItemHeight = spacerSeparation - placeholderHeight;
+
+        if (realItemHeight > 0)
+        {
+            _totalMeasuredHeight += realItemHeight;
+            _measuredItemCount += _lastRenderedItemCount;
+        }
     }
 
-    void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, float measuredItemHeightSum, int measuredItemCount)
+    void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
     {
-        ProcessMeasurements(measuredItemHeightSum, measuredItemCount);
+        ProcessMeasurements(spacerSeparation);
 
         CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
 
@@ -371,9 +374,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
     }
 
-    void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, float measuredItemHeightSum, int measuredItemCount)
+    void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
     {
-        var hadNewMeasurements = ProcessMeasurements(measuredItemHeightSum, measuredItemCount);
+        var hadMeasurements = _lastRenderedItemCount > 0;
+        ProcessMeasurements(spacerSeparation);
 
         CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
 
@@ -387,7 +391,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         // When we're at the very bottom and new measurements arrived,
         // scroll to bottom so the viewport stays pinned while items converge.
-        if (itemsAfter == 0 && hadNewMeasurements)
+        if (itemsAfter == 0 && hadMeasurements)
         {
             _pendingScrollToBottom = true;
         }
