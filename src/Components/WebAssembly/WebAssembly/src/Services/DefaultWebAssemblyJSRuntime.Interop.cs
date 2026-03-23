@@ -1,0 +1,112 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Globalization;
+using System.Runtime.InteropServices.JavaScript;
+using System.Runtime.Versioning;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.JSInterop.Infrastructure;
+
+namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
+
+internal sealed partial class DefaultWebAssemblyJSRuntime
+{
+
+    [JSExport]
+    [SupportedOSPlatform("browser")]
+    public static string? InvokeDotNet(
+        string? assemblyName,
+        string methodIdentifier,
+        [JSMarshalAs<JSType.Number>] long dotNetObjectId,
+        string argsJson)
+    {
+        var callInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId, callId: null);
+        return DotNetDispatcher.Invoke(Instance, callInfo, argsJson);
+    }
+
+    [JSExport]
+    [SupportedOSPlatform("browser")]
+    public static void EndInvokeJS(string argsJson)
+    {
+        WebAssemblyCallQueue.Schedule(argsJson, static argsJson =>
+        {
+            // This is not expected to throw, as it takes care of converting any unhandled user code
+            // exceptions into a failure on the Task that was returned when calling InvokeAsync.
+            DotNetDispatcher.EndInvokeJS(Instance, argsJson);
+        });
+    }
+
+    [JSExport]
+    [SupportedOSPlatform("browser")]
+    public static void BeginInvokeDotNet(string? callId, string assemblyNameOrDotNetObjectId, string methodIdentifier, string argsJson)
+    {
+        // Figure out whether 'assemblyNameOrDotNetObjectId' is the assembly name or the instance ID
+        // We only need one for any given call. This helps to work around the limitation that we can
+        // only pass a maximum of 4 args in a call from JS to Mono WebAssembly.
+        string? assemblyName;
+        long dotNetObjectId;
+        if (char.IsDigit(assemblyNameOrDotNetObjectId[0]))
+        {
+            dotNetObjectId = long.Parse(assemblyNameOrDotNetObjectId, CultureInfo.InvariantCulture);
+            assemblyName = null;
+        }
+        else
+        {
+            dotNetObjectId = default;
+            assemblyName = assemblyNameOrDotNetObjectId;
+        }
+
+        var callInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId, callId);
+        WebAssemblyCallQueue.Schedule((callInfo, argsJson), static state =>
+        {
+            // This is not expected to throw, as it takes care of converting any unhandled user code
+            // exceptions into a failure on the JS Promise object.
+            DotNetDispatcher.BeginInvokeDotNet(Instance, state.callInfo, state.argsJson);
+        });
+    }
+
+    [JSExport]
+    [SupportedOSPlatform("browser")]
+    private static void ReceiveByteArrayFromJS(int id, byte[] data)
+    {
+        DotNetDispatcher.ReceiveByteArray(Instance, id, data);
+    }
+
+    private static Task ScheduleOnCallQueue<TState>(TState state, Action<TState> action)
+    {
+        var tcs = new TaskCompletionSource();
+        WebAssemblyCallQueue.Schedule((tcs, state, action), static s =>
+        {
+            try
+            {
+                s.action(s.state);
+                s.tcs.TrySetResult();
+            }
+            catch (Exception ex)
+            {
+                s.tcs.TrySetException(ex);
+            }
+        });
+
+        return tcs.Task;
+    }
+
+    private static Task<TResult> ScheduleOnCallQueue<TState, TResult>(TState state, Func<TState, Task<TResult>> action)
+    {
+        var tcs = new TaskCompletionSource<TResult>();
+        WebAssemblyCallQueue.Schedule((tcs, state, action), static async s =>
+        {
+            try
+            {
+                var result = await s.action(s.state);
+                s.tcs.TrySetResult(result);
+            }
+            catch (Exception ex)
+            {
+                s.tcs.TrySetException(ex);
+            }
+        });
+
+        return tcs.Task;
+    }
+}
