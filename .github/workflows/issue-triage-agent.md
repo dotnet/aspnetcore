@@ -27,7 +27,15 @@ permissions:
   issues: read
 
 tools:
+  github:
+    min-integrity: none # Integrity filter for triage-bot to `min`: https://github.github.com/gh-aw/reference/glossary/#integrity-filtering
   bash: ["cat", "head", "tail", "grep", "wc", "jq"]
+
+network:
+  allowed:
+    - defaults
+    - "learn.microsoft.com"
+    - "pkgs.dev.azure.com"
 
 safe-outputs:
   noop:
