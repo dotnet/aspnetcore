@@ -29,9 +29,7 @@ permissions:
 tools:
   github:
     toolsets: [context, repos, issues, pull_requests, search] # context: agent identity; repos: read files; issues: fetch/comment; pull_requests: cross-ref PRs; search: duplicate detection
-    repos: "public" # restrict MCP access to public repos only
-    github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }} # satisfies MCP gateway secrecy policy so issue reads aren't blocked
-    min-integrity: none # disable integrity filtering so triage bot can read all issues
+    # github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }} # satisfies MCP gateway secrecy policy so issue reads aren't blocked
   bash: ["cat", "head", "tail", "grep", "wc", "jq"] # text processing utilities for parsing issue content
 
 network:
