@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -86,40 +87,35 @@ internal static class MaybeConcurrentDictionary
 
         public TValue GetOrAdd(TKey key, Func<TKey, TValue> valueFactory)
         {
-            if (TryGetValue(key, out var value))
+            ref var value = ref CollectionsMarshal.GetValueRefOrAddDefault(this, key, out bool exists);
+            if (!exists)
             {
-                return value;
+                value = valueFactory(key);
             }
 
-            value = valueFactory(key);
-            this[key] = value;
-
-            return value;
+            return value!;
         }
 
         public TValue GetOrAdd<TArg>(TKey key, Func<TKey, TArg, TValue> valueFactory, TArg factoryArgument)
         {
-            if (TryGetValue(key, out var value))
+            ref var value = ref CollectionsMarshal.GetValueRefOrAddDefault(this, key, out bool exists);
+            if (!exists)
             {
-                return value;
+                value = valueFactory(key, factoryArgument);
             }
 
-            value = valueFactory(key, factoryArgument);
-            this[key] = value;
-
-            return value;
+            return value!;
         }
 
         public new bool TryAdd(TKey key, TValue value)
         {
-            if (ContainsKey(key))
+            ref var existingValue = ref CollectionsMarshal.GetValueRefOrAddDefault(this, key, out bool exists);
+            if (!exists)
             {
-                return false;
+                existingValue = value;
             }
 
-            this[key] = value;
-
-            return true;
+            return !exists;
         }
 
         public bool TryRemove(TKey key, [MaybeNullWhen(false)] out TValue value)
