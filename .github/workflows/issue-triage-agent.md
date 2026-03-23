@@ -30,7 +30,7 @@ tools:
   github:
     repos: "public"
     github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }} # lookup for COPILOT_GITHUB_TOKEN to get github MCP searches approved
-    min-integrity: none # Integrity filter for triage-bot to `min`: https://github.github.com/gh-aw/reference/glossary/#integrity-filtering
+    min-integrity: none # Disable integrity filtering for triage-bot: https://github.github.com/gh-aw/reference/glossary/#integrity-filtering
   bash: ["cat", "head", "tail", "grep", "wc", "jq"]
 
 network:
