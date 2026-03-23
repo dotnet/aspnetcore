@@ -495,9 +495,15 @@ T", null, null, false, null, null, null));
                 }
                 if (methodComment.Parameters is { Count: > 0})
                 {
+                    var requestBodyParameterName = context.Description.ParameterDescriptions
+                        .FirstOrDefault(parameterDescription =>
+                            parameterDescription.Source == Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource.Body ||
+                            parameterDescription.Source == Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource.FormFile ||
+                            parameterDescription.Source == Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource.Form)
+                        ?.ParameterDescriptor?.Name;
+
                     foreach (var parameterComment in methodComment.Parameters)
                     {
-                        var parameterInfo = methodInfo.GetParameters().SingleOrDefault(info => info.Name == parameterComment.Name);
                         var operationParameter = operation.Parameters?.SingleOrDefault(parameter => parameter.Name == parameterComment.Name);
                         if (operationParameter is not null)
                         {
@@ -509,12 +515,12 @@ T", null, null, false, null, null, null));
                             }
                             targetOperationParameter.Deprecated = parameterComment.Deprecated;
                         }
-                        else
+                        else if (requestBodyParameterName is not null && string.Equals(parameterComment.Name, requestBodyParameterName, StringComparison.Ordinal))
                         {
                             var requestBody = operation.RequestBody;
                             if (requestBody is not null)
                             {
-                                requestBody.Description = parameterComment.Description;
+                                requestBody.Description ??= parameterComment.Description;
                                 if (parameterComment.Example is { } jsonString)
                                 {
                                     var content = requestBody?.Content?.Values;
