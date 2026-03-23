@@ -22,7 +22,7 @@
 #
 # Triage newly opened issues in dotnet/aspnetcore. Classifies the area label, issue type, and searches for potential duplicates. Posts a summary comment and applies labels automatically.
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"af38ec3d876f2379dee45919fe0f642f1d177992c8c68b037045ab5435574359","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"abee19b848a47afe131112a4a97ecd51a0ed665385317a2e1b19ed7c16ef07b9","compiler_version":"v0.62.5","strict":true,"agent_id":"copilot"}
 
 name: "Issue Triage Agent for dotnet/aspnetcore"
 "on":
@@ -518,7 +518,7 @@ jobs:
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_SAFE_OUTPUTS_API_KEY: ${{ steps.safe-outputs-start.outputs.api_key }}
           GH_AW_SAFE_OUTPUTS_PORT: ${{ steps.safe-outputs-start.outputs.port }}
-          GITHUB_MCP_SERVER_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          GITHUB_MCP_SERVER_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
         run: |
           set -eo pipefail
           mkdir -p /tmp/gh-aw/mcp-config
@@ -553,7 +553,7 @@ jobs:
                 "guard-policies": {
                   "allow-only": {
                     "min-integrity": "none",
-                    "repos": "all"
+                    "repos": "public"
                   }
                 }
               },
@@ -626,7 +626,7 @@ jobs:
           GITHUB_API_URL: ${{ github.api_url }}
           GITHUB_AW: true
           GITHUB_HEAD_REF: ${{ github.head_ref }}
-          GITHUB_MCP_SERVER_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          GITHUB_MCP_SERVER_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_STEP_SUMMARY: /tmp/gh-aw/agent-step-summary.md
