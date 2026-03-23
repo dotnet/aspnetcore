@@ -674,7 +674,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             const int MaxPathBufferStackAllocSize = 256;
 
             var absolutePath = uri!.AbsolutePath;
-            byte[] rentedBuffer = null!;
+            byte[]? rentedBuffer = null;
             Span<byte> pathBuffer = absolutePath.Length <= MaxPathBufferStackAllocSize
                 ? (stackalloc byte[MaxPathBufferStackAllocSize])
                 : (rentedBuffer = ArrayPool<byte>.Shared.Rent(absolutePath.Length));
@@ -684,6 +684,10 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             {
                 Encoding.ASCII.GetBytes(absolutePath, pathBufferSliced);
                 Path = _parsedPath = PathDecoder.DecodePath(pathBufferSliced, targetPath.IsEncoded, absolutePath, query.Length);
+            }
+            catch (InvalidOperationException)
+            {
+                ThrowRequestTargetRejected(target);
             }
             finally
             {
