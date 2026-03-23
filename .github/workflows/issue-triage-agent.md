@@ -29,7 +29,7 @@ permissions:
 tools:
   github:
     toolsets: [context, repos, issues, pull_requests, search] # context: agent identity; repos: read files; issues: fetch/comment; pull_requests: cross-ref PRs; search: duplicate detection
-    # github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }} # satisfies MCP gateway secrecy policy so issue reads aren't blocked
+    github-token: ${{ secrets.COPILOT_GITHUB_TOKEN }} # provides PAT for MCP server API calls
   bash: ["cat", "head", "tail", "grep", "wc", "jq"] # text processing utilities for parsing issue content
 
 network:
