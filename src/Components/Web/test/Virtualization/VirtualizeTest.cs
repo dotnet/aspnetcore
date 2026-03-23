@@ -714,6 +714,44 @@ public class VirtualizeTest
         }
     }
 
+    [Fact]
+    public async Task MaxItemCount_ClampsVisibleItemCapacity()
+    {
+        var requests = new List<ItemsProviderRequest>();
+
+        ValueTask<ItemsProviderResult<int>> trackingProvider(ItemsProviderRequest request)
+        {
+            requests.Add(request);
+            return ValueTask.FromResult(new ItemsProviderResult<int>(
+                Enumerable.Range(request.StartIndex, Math.Min(request.Count, 1000 - request.StartIndex)),
+                1000));
+        }
+
+        Virtualize<int> renderedVirtualize = null;
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualizeWithMaxItemCount(10f, trackingProvider, maxItemCount: 20, captureRenderedVirtualize: v => renderedVirtualize = v)
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+        Assert.NotNull(renderedVirtualize);
+
+        var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
+
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+
+        var lastRequest = requests.Last();
+        Assert.True(lastRequest.Count <= 50,
+            $"Expected request count <= 50 (MaxItemCount=20 + 2*OverscanCount=30), but got {lastRequest.Count}");
+    }
+
     private async Task<(Virtualize<int> virtualize, TestRenderer renderer)> CreateRenderedVirtualize(
         float itemSize,
         int totalItems,
@@ -792,6 +830,26 @@ public class VirtualizeTest
         {
             builder.AddComponentReferenceCapture(5, component =>
                 captureRenderedVirtualize(component as Virtualize<int>));
+        }
+
+        builder.CloseComponent();
+    };
+
+    private RenderFragment BuildVirtualizeWithMaxItemCount(
+        float itemSize,
+        ItemsProviderDelegate<int> itemsProvider,
+        int maxItemCount,
+        Action<Virtualize<int>> captureRenderedVirtualize = null)
+        => builder =>
+    {
+        builder.OpenComponent<Virtualize<int>>(0);
+        builder.AddComponentParameter(1, "ItemSize", itemSize);
+        builder.AddComponentParameter(2, "ItemsProvider", itemsProvider);
+        builder.AddComponentParameter(3, "MaxItemCount", maxItemCount);
+
+        if (captureRenderedVirtualize != null)
+        {
+            builder.AddComponentReferenceCapture(4, component => captureRenderedVirtualize(component as Virtualize<int>));
         }
 
         builder.CloseComponent();
