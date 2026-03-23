@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
-using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
@@ -46,9 +45,6 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         AsyncServiceScope scope,
         string? persistedState)
     {
-        // To ensure JS-invoked methods don't get linked out, have a reference to their enclosing types
-        GC.KeepAlive(typeof(JSInteropMethods));
-
         _services = services;
         _scope = scope;
         _configuration = builder.Configuration;
