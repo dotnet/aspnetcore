@@ -1000,8 +1000,34 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         js.ExecuteScript("arguments[0].scrollTop = 2000", container);
         Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) >= 2000);
 
-        // Confirm item 2 is truly not in the DOM (virtualized away)
-        Browser.True(() => container.FindElements(By.CssSelector("[data-index='2']")).Count == 0);
+        // Wait a moment for virtualization to process the scroll
+        Thread.Sleep(2000);
+
+        // Diagnostic: capture full state to understand CI failures
+        var debugInfo = (string)js.ExecuteScript(@"
+            var c = arguments[0];
+            var items = c.querySelectorAll('[data-index]');
+            var indices = Array.from(items).map(i => i.getAttribute('data-index'));
+            var children = Array.from(c.children);
+            var childInfo = children.map(ch => ch.tagName + '(' + ch.style.height + ')' + (ch.dataset.index || ''));
+            return JSON.stringify({
+                scrollTop: c.scrollTop,
+                scrollHeight: c.scrollHeight,
+                clientHeight: c.clientHeight,
+                offsetHeight: c.offsetHeight,
+                itemCount: items.length,
+                firstIdx: indices[0],
+                lastIdx: indices[indices.length - 1],
+                item2: c.querySelector('[data-index=""2""]') !== null,
+                childCount: c.children.length,
+                firstChildH: children[0] ? children[0].style.height : 'none',
+                lastChildH: children[children.length-1] ? children[children.length-1].style.height : 'none'
+            });
+        ", container);
+
+        Assert.True(
+            container.FindElements(By.CssSelector("[data-index='2']")).Count == 0,
+            $"Item 2 should not be in DOM after scrolling. State: {debugInfo}");
 
         // Get the position of a visible item before expanding the off-screen item
         var visibleItems = container.FindElements(By.CssSelector(".item"));
