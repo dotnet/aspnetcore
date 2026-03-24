@@ -12,6 +12,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddSingleton<WeatherForecastService>();
+builder.Services.AddValidation();
 
 var app = builder.Build();
 

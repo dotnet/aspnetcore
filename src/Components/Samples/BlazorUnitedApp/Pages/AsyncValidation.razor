@@ -7,9 +7,10 @@
 <h1>Async Form Validation Demo</h1>
 
 <p>
-    This page demonstrates async validation in Blazor forms. The <strong>Email</strong> and
-    <strong>Username</strong> fields perform simulated server-side uniqueness checks that take
-    1.5–2 seconds. Try the following:
+    This page demonstrates async validation in Blazor forms using <code>AsyncValidationAttribute</code>
+    and the standard <code>DataAnnotationsValidator</code> component. The <strong>Email</strong> and
+    <strong>Username</strong> fields use custom async validation attributes that simulate 1.5–2 second
+    database round-trips. Try the following:
 </p>
 
 <ul>
@@ -23,7 +24,7 @@
 <hr />
 
 <EditForm EditContext="_editContext" OnSubmit="HandleSubmit" FormName="registration">
-    <AsyncSimulatedValidator />
+    <DataAnnotationsValidator />
 
     <div class="mb-3">
         <label class="form-label">Email</label>
