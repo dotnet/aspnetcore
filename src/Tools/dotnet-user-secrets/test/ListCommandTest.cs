@@ -75,6 +75,36 @@ public class ListCommandTest
     }
 
     [Fact]
+    public void List_NonJson_OutputIsProperlyFormatted()
+    {
+        var secretStore = new TestSecretsStore(_output);
+        secretStore.Set("key1", "value1");
+        secretStore.Set("AzureAd:ClientSecret", "someSecret");
+        var testConsole = new TestConsole(_output);
+        var reporter = new ConsoleReporter(testConsole);
+        var command = new ListCommand(jsonOutput: false);
+
+        command.Execute(new CommandContext(secretStore, reporter, testConsole));
+
+        var output = testConsole.GetOutput();
+        Assert.Contains("key1 = value1", output);
+        Assert.Contains("AzureAd:ClientSecret = someSecret", output);
+    }
+
+    [Fact]
+    public void List_NonJson_EmptyStore()
+    {
+        var secretStore = new TestSecretsStore(_output);
+        var testConsole = new TestConsole(_output);
+        var reporter = new ConsoleReporter(testConsole);
+        var command = new ListCommand(jsonOutput: false);
+
+        command.Execute(new CommandContext(secretStore, reporter, testConsole));
+
+        Assert.Contains(Resources.Error_No_Secrets_Found, testConsole.GetOutput());
+    }
+
+    [Fact]
     public void List_Json_EmptyStore()
     {
         var secretStore = new TestSecretsStore(_output);
