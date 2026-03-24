@@ -129,7 +129,8 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         }
 
         // Validate any other attributes
-        ValidateValue(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value);
+        await ValidateValueAsync(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value,
+            displayName, errorMessageProvider, context, cancellationToken);
 
         // Check if we've reached the maximum depth before validating complex properties
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
@@ -186,38 +187,60 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             context.CurrentDepth--;
             context.CurrentValidationPath = originalPrefix;
         }
+    }
 
-        void ValidateValue(object? val, string name, string errorPrefix, ValidationAttribute[] validationAttributes, object? container)
+    private async Task ValidateValueAsync(
+        object? val,
+        string name,
+        string errorPrefix,
+        ValidationAttribute[] validationAttributes,
+        object? container,
+        string displayName,
+        Func<Localization.ErrorMessageProviderContext, string?>? errorMessageProvider,
+        ValidateContext context,
+        CancellationToken cancellationToken)
+    {
+        for (var i = 0; i < validationAttributes.Length; i++)
         {
-            for (var i = 0; i < validationAttributes.Length; i++)
+            var attribute = validationAttributes[i];
+            try
             {
-                var attribute = validationAttributes[i];
-                try
+                ValidationResult? result;
+                if (attribute is AsyncValidationAttribute asyncAttribute)
                 {
-                    var result = attribute.GetValidationResult(val, context.ValidationContext);
-                    if (result is not null && result != ValidationResult.Success)
+                    result = await asyncAttribute.GetValidationResultAsync(val, context.ValidationContext, cancellationToken);
+                }
+                else
+                {
+                    result = attribute.GetValidationResult(val, context.ValidationContext);
+                }
+
+                if (result is not null && result != ValidationResult.Success)
+                {
+                    var customMessage = Localization.LocalizationHelper.TryResolveErrorMessage(
+                        attribute,
+                        DeclaringType,
+                        displayName,
+                        errorMessageProvider,
+                        context.ValidationContext);
+
+                    var errorMessage = customMessage ?? result.ErrorMessage;
+
+                    if (errorMessage is not null)
                     {
-                        var customMessage = LocalizationHelper.TryResolveErrorMessage(
-                            attribute,
-                            DeclaringType,
-                            displayName,
-                            errorMessageProvider,
-                            context.ValidationContext);
-
-                        var errorMessage = customMessage ?? result.ErrorMessage;
-
-                        if (errorMessage is not null)
-                        {
-                            var key = errorPrefix.TrimStart('.');
-                            context.AddOrExtendValidationErrors(name, key, [errorMessage], container);
-                        }
+                        var key = errorPrefix.TrimStart('.');
+                        context.AddOrExtendValidationErrors(name, key, [errorMessage], container);
                     }
                 }
-                catch (Exception ex)
-                {
-                    var key = errorPrefix.TrimStart('.');
-                    context.AddOrExtendValidationErrors(name, key, [ex.Message], container);
-                }
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                var key = errorPrefix.TrimStart('.');
+                context.AddOrExtendValidationErrors(name, key, [ex.Message], container);
             }
         }
     }

@@ -28,3 +28,11 @@ Microsoft.Extensions.Validation.ValidationOptions.DisplayNameProvider.get -> Sys
 Microsoft.Extensions.Validation.ValidationOptions.DisplayNameProvider.set -> void
 Microsoft.Extensions.Validation.ValidationOptions.ErrorMessageProvider.get -> System.Func<Microsoft.Extensions.Validation.Localization.ErrorMessageProviderContext, string?>?
 Microsoft.Extensions.Validation.ValidationOptions.ErrorMessageProvider.set -> void
+Microsoft.Extensions.Validation.AsyncValidationAttribute
+Microsoft.Extensions.Validation.AsyncValidationAttribute.AsyncValidationAttribute() -> void
+Microsoft.Extensions.Validation.AsyncValidationAttribute.AsyncValidationAttribute(string! errorMessage) -> void
+Microsoft.Extensions.Validation.AsyncValidationAttribute.AsyncValidationAttribute(System.Func<string!>! errorMessageAccessor) -> void
+abstract Microsoft.Extensions.Validation.AsyncValidationAttribute.IsValidAsync(object? value, System.ComponentModel.DataAnnotations.ValidationContext! validationContext, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.ComponentModel.DataAnnotations.ValidationResult?>!
+override sealed Microsoft.Extensions.Validation.AsyncValidationAttribute.IsValid(object? value, System.ComponentModel.DataAnnotations.ValidationContext! validationContext) -> System.ComponentModel.DataAnnotations.ValidationResult?
+Microsoft.Extensions.Validation.IAsyncValidatableObject
+Microsoft.Extensions.Validation.IAsyncValidatableObject.ValidateAsync(System.ComponentModel.DataAnnotations.ValidationContext! validationContext, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult!>!>!
