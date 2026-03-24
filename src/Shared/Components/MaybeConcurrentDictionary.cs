@@ -66,6 +66,7 @@ internal static class MaybeConcurrentDictionary
     public static IMaybeConcurrentDictionary<TKey, TValue> Create<TKey, TValue>(IEqualityComparer<TKey> comparer)
         where TKey : notnull
     {
+        // TODO use RuntimeFeature.IsMultithreadingSupported when available (dotnet/runtime#124603)
         if (OperatingSystem.IsBrowser())
         {
             return new SingleThreadedDictionary<TKey, TValue>(comparer);
