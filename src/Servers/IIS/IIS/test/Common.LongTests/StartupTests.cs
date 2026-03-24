@@ -985,7 +985,6 @@ public class StartupTests : IISFunctionalTestBase
     }
 
     [ConditionalTheory]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52734")]
     [InlineData("CheckLargeStdErrWrites")]
     [InlineData("CheckLargeStdOutWrites")]
     [InlineData("CheckOversizedStdErrWrites")]
