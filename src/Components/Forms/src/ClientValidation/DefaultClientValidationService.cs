@@ -99,13 +99,14 @@ internal sealed class DefaultClientValidationService : IClientValidationService
     {
         var displayAttribute = property.GetCustomAttribute<DisplayAttribute>();
 
-        // If the DisplayAttribute has a resource-based name, use it directly.
-        if (displayAttribute?.GetName() is string resourceName)
+        // If the DisplayAttribute uses compile-time resource localization (ResourceType is set),
+        // GetName() returns the translated string — use it directly.
+        if (displayAttribute?.ResourceType is not null)
         {
-            return resourceName;
+            return displayAttribute.GetName() ?? fieldName;
         }
 
-        // Try the localization provider (e.g. AddValidationLocalization<T>()).
+        // Try the runtime localization provider (e.g. AddValidationLocalization<T>()).
         var displayName = displayAttribute?.Name;
         if (displayName is not null && _validationOptions.DisplayNameProvider is { } displayNameProvider)
         {

@@ -9,6 +9,7 @@
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Components.Forms" />
+    <Reference Include="Microsoft.Extensions.Validation.Localization" />
   </ItemGroup>
 
   <ItemGroup>
