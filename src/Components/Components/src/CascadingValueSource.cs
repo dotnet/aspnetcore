@@ -92,7 +92,14 @@ public class CascadingValueSource<TValue> : ICascadingValueSupplier
         {
             var tasks = new List<Task>();
 
-            foreach (var (dispatcher, subscribers) in _subscribers)
+            // Snapshot the entries before iterating because Dispatcher.InvokeAsync
+            // may execute inline (when CheckAccess() is true), and the callback can
+            // trigger Unsubscribe → TryRemove, mutating the dictionary during
+            // enumeration. ConcurrentDictionary tolerates this but Dictionary does not.
+            var subscribersSnapshot = new KeyValuePair<Dispatcher, List<ComponentState>>[_subscribers.Count];
+            _subscribers.CopyTo(subscribersSnapshot, 0);
+
+            foreach (var (dispatcher, subscribers) in subscribersSnapshot)
             {
                 tasks.Add(dispatcher.InvokeAsync(() =>
                 {

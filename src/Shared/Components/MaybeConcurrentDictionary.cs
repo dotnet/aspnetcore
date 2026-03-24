@@ -88,24 +88,42 @@ internal static class MaybeConcurrentDictionary
 
         public TValue GetOrAdd(TKey key, Func<TKey, TValue> valueFactory)
         {
-            ref var value = ref CollectionsMarshal.GetValueRefOrAddDefault(this, key, out bool exists);
-            if (!exists)
+            if (TryGetValue(key, out var existingValue))
             {
-                value = valueFactory(key);
+                return existingValue;
             }
 
-            return value!;
+            var newValue = valueFactory(key);
+
+            // Re-check in case the factory added the same key (re-entrancy).
+            if (TryGetValue(key, out existingValue))
+            {
+                return existingValue;
+            }
+
+            this[key] = newValue;
+
+            return newValue;
         }
 
         public TValue GetOrAdd<TArg>(TKey key, Func<TKey, TArg, TValue> valueFactory, TArg factoryArgument)
         {
-            ref var value = ref CollectionsMarshal.GetValueRefOrAddDefault(this, key, out bool exists);
-            if (!exists)
+            if (TryGetValue(key, out var existingValue))
             {
-                value = valueFactory(key, factoryArgument);
+                return existingValue;
             }
 
-            return value!;
+            var newValue = valueFactory(key, factoryArgument);
+
+            // Re-check in case the factory added the same key (re-entrancy).
+            if (TryGetValue(key, out existingValue))
+            {
+                return existingValue;
+            }
+
+            this[key] = newValue;
+
+            return newValue;
         }
 
         public new bool TryAdd(TKey key, TValue value)
