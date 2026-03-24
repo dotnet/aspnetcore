@@ -673,7 +673,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             // uri.LocalPath, which decodes %2F to '/' breaking path canonicalization.
             const int MaxPathBufferStackAllocSize = 256;
 
-            var absolutePath = uri!.AbsolutePath;
+            var absolutePath = uri.AbsolutePath;
             byte[]? rentedBuffer = null;
             Span<byte> pathBuffer = absolutePath.Length <= MaxPathBufferStackAllocSize
                 ? (stackalloc byte[MaxPathBufferStackAllocSize])
@@ -683,7 +683,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             try
             {
                 Encoding.ASCII.GetBytes(absolutePath, pathBufferSliced);
-                Path = _parsedPath = PathDecoder.DecodePath(pathBufferSliced, targetPath.IsEncoded, absolutePath, query.Length);
+                Path = _parsedPath = PathDecoder.DecodePath(pathBufferSliced, targetPath.IsEncoded, absolutePath, queryLength: 0);
             }
             catch (InvalidOperationException)
             {
