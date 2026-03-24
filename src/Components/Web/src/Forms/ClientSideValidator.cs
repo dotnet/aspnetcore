@@ -27,10 +27,20 @@ public sealed class ClientSideValidator : ComponentBase, IDisposable
 
     /// <summary>
     /// Gets or sets whether to automatically render a <c>&lt;script&gt;</c>
-    /// tag referencing the validation library. Defaults to <see langword="true"/>.
+    /// tag referencing the validation library. Defaults to <see langword="false"/>.
+    /// Set to <see langword="true"/> and provide <see cref="ScriptPath"/> if you want
+    /// the component to emit the script tag automatically.
     /// </summary>
     [Parameter]
-    public bool IncludeScript { get; set; } = true;
+    public bool IncludeScript { get; set; }
+
+    /// <summary>
+    /// Gets or sets the path to the client-side validation script.
+    /// Only used when <see cref="IncludeScript"/> is <see langword="true"/>.
+    /// Defaults to <c>"js/aspnet-core-validation.js"</c>.
+    /// </summary>
+    [Parameter]
+    public string ScriptPath { get; set; } = "js/aspnet-core-validation.js";
 
     [CascadingParameter]
     private EditContext? CurrentEditContext { get; set; }
@@ -57,7 +67,7 @@ public sealed class ClientSideValidator : ComponentBase, IDisposable
         if (IncludeScript)
         {
             builder.OpenElement(0, "script");
-            builder.AddAttribute(1, "src", "_content/Microsoft.AspNetCore.Components.Web/aspnet-validation.js");
+            builder.AddAttribute(1, "src", ScriptPath);
             builder.CloseElement();
         }
     }
