@@ -46,6 +46,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
 
         ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
         DefaultWebAssemblyJSRuntime.Instance.OnUpdateRootComponents += OnUpdateRootComponents;
+        DefaultWebAssemblyJSRuntime.Instance.Renderer = this;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
@@ -131,6 +132,11 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     /// <inheritdoc />
     protected override void Dispose(bool disposing)
     {
+        if (disposing)
+        {
+            DefaultWebAssemblyJSRuntime.Instance.OnUpdateRootComponents -= OnUpdateRootComponents;
+            DefaultWebAssemblyJSRuntime.Instance.Renderer = null;
+        }
         base.Dispose(disposing);
     }
 
