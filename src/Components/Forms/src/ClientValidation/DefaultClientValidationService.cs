@@ -6,7 +6,11 @@ using System.Collections.Immutable;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Reflection;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -14,24 +18,36 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// Default implementation of <see cref="IClientValidationService"/> that discovers
 /// <see cref="ValidationAttribute"/>s on model properties via reflection, maps them
 /// to <c>data-val-*</c> HTML attributes using registered adapters, and caches results.
+/// When <see cref="ValidationOptions"/> is configured with localization providers,
+/// error messages and display names are resolved using the current request culture.
 /// </summary>
 internal sealed class DefaultClientValidationService : IClientValidationService
 {
     private readonly ClientValidationAdapterRegistry _adapterRegistry;
+    private readonly ValidationOptions _validationOptions;
+    private readonly IServiceProvider _serviceProvider;
 
-    private readonly ConcurrentDictionary<(Type ModelType, string FieldName), IReadOnlyDictionary<string, string>> _cache = new();
+    private readonly ConcurrentDictionary<(Type ModelType, string FieldName, string CultureName), IReadOnlyDictionary<string, string>> _cache = new();
 
-    public DefaultClientValidationService(ClientValidationAdapterRegistry adapterRegistry)
+    public DefaultClientValidationService(
+        ClientValidationAdapterRegistry adapterRegistry,
+        IOptions<ValidationOptions> validationOptions,
+        IServiceProvider serviceProvider)
     {
         ArgumentNullException.ThrowIfNull(adapterRegistry);
+        ArgumentNullException.ThrowIfNull(validationOptions);
+        ArgumentNullException.ThrowIfNull(serviceProvider);
         _adapterRegistry = adapterRegistry;
+        _validationOptions = validationOptions.Value;
+        _serviceProvider = serviceProvider;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2077",
         Justification = "Model types used with EditForm are expected to preserve public properties.")]
     public IReadOnlyDictionary<string, string> GetValidationAttributes(FieldIdentifier fieldIdentifier)
     {
-        var key = (fieldIdentifier.Model.GetType(), fieldIdentifier.FieldName);
+        var cultureName = CultureInfo.CurrentUICulture.Name;
+        var key = (fieldIdentifier.Model.GetType(), fieldIdentifier.FieldName, cultureName);
 
         if (_cache.TryGetValue(key, out var cached))
         {
@@ -55,7 +71,7 @@ internal sealed class DefaultClientValidationService : IClientValidationService
         }
 
         var validationAttributes = property.GetCustomAttributes<ValidationAttribute>(inherit: true);
-        var displayName = ResolveDisplayName(property, fieldName);
+        var displayName = ResolveDisplayName(property, fieldName, modelType);
         var attributes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var context = new ClientValidationContext(attributes);
 
@@ -66,7 +82,7 @@ internal sealed class DefaultClientValidationService : IClientValidationService
             var adapter = _adapterRegistry.GetAdapter(validationAttribute);
             if (adapter is not null)
             {
-                var errorMessage = validationAttribute.FormatErrorMessage(displayName);
+                var errorMessage = ResolveErrorMessage(validationAttribute, modelType, displayName);
                 adapter.AddClientValidation(in context, errorMessage);
             }
         }
@@ -79,25 +95,67 @@ internal sealed class DefaultClientValidationService : IClientValidationService
         return attributes;
     }
 
-    private static string ResolveDisplayName(PropertyInfo property, string fieldName)
+    private string ResolveDisplayName(PropertyInfo property, string fieldName, Type modelType)
     {
         var displayAttribute = property.GetCustomAttribute<DisplayAttribute>();
-        if (displayAttribute is not null)
+
+        // If the DisplayAttribute has a resource-based name, use it directly.
+        if (displayAttribute?.GetName() is string resourceName)
         {
-            var name = displayAttribute.GetName();
-            if (name is not null)
-            {
-                return name;
-            }
+            return resourceName;
         }
 
+        // Try the localization provider (e.g. AddValidationLocalization<T>()).
+        var displayName = displayAttribute?.Name;
+        if (displayName is not null && _validationOptions.DisplayNameProvider is { } displayNameProvider)
+        {
+            var displayNameContext = new DisplayNameProviderContext
+            {
+                DeclaringType = modelType,
+                Name = displayName,
+                Services = _serviceProvider
+            };
+
+            return displayNameProvider(displayNameContext) ?? displayName;
+        }
+
+        // Fall back to DisplayNameAttribute or field name.
         var displayNameAttribute = property.GetCustomAttribute<DisplayNameAttribute>();
         if (displayNameAttribute?.DisplayName is not null)
         {
             return displayNameAttribute.DisplayName;
         }
 
-        return fieldName;
+        return displayName ?? fieldName;
+    }
+
+    private string ResolveErrorMessage(ValidationAttribute attribute, Type modelType, string displayName)
+    {
+        // Skip if the attribute handles its own resource-based localization.
+        if (attribute.ErrorMessageResourceType is not null)
+        {
+            return attribute.FormatErrorMessage(displayName);
+        }
+
+        // Try the localization provider (e.g. AddValidationLocalization<T>()).
+        if (_validationOptions.ErrorMessageProvider is { } errorMessageProvider)
+        {
+            var errorMessageContext = new ErrorMessageProviderContext
+            {
+                Attribute = attribute,
+                DisplayName = displayName,
+                DeclaringType = modelType,
+                Services = _serviceProvider
+            };
+
+            var localizedMessage = errorMessageProvider(errorMessageContext);
+            if (localizedMessage is not null)
+            {
+                return localizedMessage;
+            }
+        }
+
+        return attribute.FormatErrorMessage(displayName);
     }
 
     /// <summary>

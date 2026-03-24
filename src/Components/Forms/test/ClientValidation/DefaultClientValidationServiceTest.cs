@@ -5,6 +5,8 @@
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Validation;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -29,10 +31,13 @@ public class DefaultClientValidationServiceTest
     }
 
     private static DefaultClientValidationService CreateService(
-        ClientValidationAdapterRegistry? registry = null)
+        ClientValidationAdapterRegistry? registry = null,
+        ValidationOptions? validationOptions = null)
     {
         registry ??= CreateRegistryWithBuiltIns();
-        return new DefaultClientValidationService(registry);
+        var options = Options.Create(validationOptions ?? new ValidationOptions());
+        var serviceProvider = new TestServiceProvider();
+        return new DefaultClientValidationService(registry, options, serviceProvider);
     }
 
     private static FieldIdentifier CreateFieldIdentifier<T>(T model, string fieldName) where T : class
@@ -324,5 +329,10 @@ public class DefaultClientValidationServiceTest
     {
         [Microsoft.AspNetCore.Mvc.FakeRemoteAttribute]
         public string Username { get; set; } = "";
+    }
+
+    private sealed class TestServiceProvider : IServiceProvider
+    {
+        public object? GetService(Type serviceType) => null;
     }
 }
