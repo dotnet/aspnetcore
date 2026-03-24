@@ -1,0 +1,65 @@
+@page "/contact"
+
+<PageTitle>Contact</PageTitle>
+
+<h2>Contact Us</h2>
+<p>Fill out the form below. Client-side validation runs in the browser; server-side validation runs on submit.</p>
+
+<EditForm Model="contact" Enhance OnValidSubmit="HandleSubmit" FormName="ContactForm">
+    <DataAnnotationsValidator />
+    <ClientSideValidator />
+
+    <div class="form-group">
+        <label for="name">Name</label>
+        <InputText id="name" @bind-Value="contact.Name" />
+        <ValidationMessage For="() => contact.Name" />
+    </div>
+
+    <div class="form-group">
+        <label for="email">Email</label>
+        <InputText id="email" @bind-Value="contact.Email" />
+        <ValidationMessage For="() => contact.Email" />
+    </div>
+
+    <div class="form-group">
+        <label for="phone">Phone</label>
+        <InputText id="phone" @bind-Value="contact.Phone" />
+        <ValidationMessage For="() => contact.Phone" />
+    </div>
+
+    <div class="form-group">
+        <label for="age">Age</label>
+        <InputNumber id="age" @bind-Value="contact.Age" />
+        <ValidationMessage For="() => contact.Age" />
+    </div>
+
+    <div class="form-group">
+        <label for="message">Message</label>
+        <InputTextArea id="message" @bind-Value="contact.Message" />
+        <ValidationMessage For="() => contact.Message" />
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn">Send Message</button>
+    </div>
+</EditForm>
+
+@if (submitted)
+{
+    <div class="success-message">
+        <h3>Thank you, @contact.Name!</h3>
+        <p>Your message has been received successfully.</p>
+    </div>
+}
+
+@code {
+    [SupplyParameterFromForm]
+    private ContactModel contact { get; set; } = new();
+
+    private bool submitted;
+
+    private void HandleSubmit()
+    {
+        submitted = true;
+    }
+}

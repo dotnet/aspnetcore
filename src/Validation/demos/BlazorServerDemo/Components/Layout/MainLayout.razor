@@ -1,0 +1,37 @@
+@inherits LayoutComponentBase
+@inject IStringLocalizerFactory LocalizerFactory
+@inject NavigationManager Navigation
+
+@{
+    var localizer = LocalizerFactory.Create("Validation", "BlazorServerDemo");
+}
+
+<div class="page">
+    <header class="top-bar">
+        <div class="top-bar-inner">
+            <h1 class="top-bar-title">Blazor Server — Async Validation Demo</h1>
+            <div class="language-picker">
+                <span class="language-label">@localizer["LanguageLabel"]:</span>
+                <a href="@GetCultureUrl("en")" class="lang-link">English</a>
+                <span class="lang-sep">|</span>
+                <a href="@GetCultureUrl("es")" class="lang-link">Español</a>
+            </div>
+        </div>
+    </header>
+    <main class="main-content">
+        @Body
+    </main>
+</div>
+
+@code {
+    private string GetCultureUrl(string culture)
+    {
+        var currentUri = Navigation.Uri;
+        var baseUri = Navigation.BaseUri;
+        var relativePath = currentUri.StartsWith(baseUri, StringComparison.OrdinalIgnoreCase)
+            ? "/" + currentUri[baseUri.Length..]
+            : "/";
+
+        return $"/Culture/Set?culture={culture}&redirectUri={Uri.EscapeDataString(relativePath)}";
+    }
+}

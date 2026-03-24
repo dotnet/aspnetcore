@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MVC Validation Demo</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<!-- No jQuery needed! Using aspnet-validation.js instead -->
+<body>
+    <header>
+        <div class="container">
+            <h1>MVC &mdash; Client-Side Validation Demo</h1>
+            <nav>
+                <a asp-controller="Home" asp-action="Index">Home</a>
+                <a asp-controller="Home" asp-action="Contact">Contact</a>
+            </nav>
+        </div>
+    </header>
+    <main class="container">
+        @RenderBody()
+    </main>
+    <footer>
+        <div class="container">
+            <p>&copy; @DateTime.Now.Year - MVC Validation Demo &mdash; No jQuery required</p>
+        </div>
+    </footer>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

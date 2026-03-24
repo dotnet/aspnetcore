@@ -1,0 +1,67 @@
+@model ContactModel
+@{
+    ViewData["Title"] = "Contact";
+}
+
+<h2>Contact Us</h2>
+
+@if (TempData["Success"] is string successMessage)
+{
+    <div class="alert-success">@successMessage</div>
+}
+
+<form asp-action="Contact" method="post" novalidate>
+    <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+    <div class="form-group">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="field-validation-error"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Email"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="field-validation-error"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Phone"></label>
+        <input asp-for="Phone" class="form-control" />
+        <span asp-validation-for="Phone" class="field-validation-error"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Website"></label>
+        <input asp-for="Website" class="form-control" />
+        <span asp-validation-for="Website" class="field-validation-error"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Age"></label>
+        <input asp-for="Age" class="form-control" type="number" />
+        <span asp-validation-for="Age" class="field-validation-error"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Password"></label>
+        <input asp-for="Password" class="form-control" />
+        <span asp-validation-for="Password" class="field-validation-error"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="ConfirmPassword"></label>
+        <input asp-for="ConfirmPassword" class="form-control" />
+        <span asp-validation-for="ConfirmPassword" class="field-validation-error"></span>
+    </div>
+
+    <button type="submit" class="btn">Send Message</button>
+</form>
+
+@section Scripts {
+    <script src="~/js/aspnet-validation.js"></script>
+    <script>
+        const service = new aspnetValidation.ValidationService();
+        service.bootstrap();
+    </script>
+}

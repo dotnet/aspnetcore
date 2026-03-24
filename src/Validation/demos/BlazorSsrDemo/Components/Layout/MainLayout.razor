@@ -1,0 +1,22 @@
+@inherits LayoutComponentBase
+
+<header>
+    <div class="header-content">
+        <h1>Blazor SSR — Client-Side Validation Demo</h1>
+        <nav>
+            <NavLink href="/" Match="NavLinkMatch.All">Home</NavLink>
+            <NavLink href="/contact">Contact</NavLink>
+            <span class="separator">|</span>
+            <a href="/Culture/Set?culture=en&redirectUri=/">EN</a>
+            <a href="/Culture/Set?culture=es&redirectUri=/">ES</a>
+        </nav>
+    </div>
+</header>
+
+<main>
+    @Body
+</main>
+
+<footer>
+    <p>&copy; @DateTime.Now.Year — Blazor SSR Validation Demo</p>
+</footer>

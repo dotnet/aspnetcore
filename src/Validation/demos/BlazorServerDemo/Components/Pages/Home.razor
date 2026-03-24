@@ -1,0 +1,14 @@
+@page "/"
+@inject IStringLocalizerFactory LocalizerFactory
+
+@{
+    var localizer = LocalizerFactory.Create("Validation", "BlazorServerDemo");
+}
+
+<PageTitle>@localizer["HomeTitle"]</PageTitle>
+
+<div class="home-container">
+    <h2>@localizer["HomeTitle"]</h2>
+    <p>@localizer["HomeDescription"]</p>
+    <a href="/register" class="btn-primary">@localizer["GoToRegister"]</a>
+</div>

@@ -1,0 +1,134 @@
+@page "/register"
+@rendermode InteractiveServer
+@inject IStringLocalizerFactory LocalizerFactory
+@inject NavigationManager Navigation
+
+@{
+    var L = LocalizerFactory.Create("Validation", "BlazorServerDemo");
+}
+
+<PageTitle>@L["PageTitle"]</PageTitle>
+
+<div class="form-container">
+    <h2 class="form-title">@L["FormTitle"]</h2>
+
+    <EditForm EditContext="_editContext" OnSubmit="HandleSubmit" FormName="registration">
+        <DataAnnotationsValidator />
+
+        <div class="form-group">
+            <label class="form-label" for="email">@L["Email"]</label>
+            <InputText id="email" class="form-input" @bind-Value="_model.Email" placeholder="@L["EmailPlaceholder"]" />
+            @if (_editContext.IsValidationPending(_editContext.Field(nameof(RegistrationModel.Email))))
+            {
+                <div class="field-status pending">@L["CheckingMessage"]</div>
+            }
+            else if (_editContext.IsValidationFaulted(_editContext.Field(nameof(RegistrationModel.Email))))
+            {
+                <div class="field-status faulted">@L["FaultedMessage"]</div>
+            }
+            else
+            {
+                <ValidationMessage For="() => _model.Email" />
+            }
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="username">@L["Username"]</label>
+            <InputText id="username" class="form-input" @bind-Value="_model.Username" placeholder="@L["UsernamePlaceholder"]" />
+            @if (_editContext.IsValidationPending(_editContext.Field(nameof(RegistrationModel.Username))))
+            {
+                <div class="field-status pending">@L["CheckingMessage"]</div>
+            }
+            else if (_editContext.IsValidationFaulted(_editContext.Field(nameof(RegistrationModel.Username))))
+            {
+                <div class="field-status faulted">@L["FaultedMessage"]</div>
+            }
+            else
+            {
+                <ValidationMessage For="() => _model.Username" />
+            }
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="displayname">@L["DisplayName"]</label>
+            <InputText id="displayname" class="form-input" @bind-Value="_model.DisplayName" placeholder="@L["DisplayNamePlaceholder"]" />
+            <ValidationMessage For="() => _model.DisplayName" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="age">@L["Age"]</label>
+            <InputNumber id="age" class="form-input" @bind-Value="_model.Age" placeholder="@L["AgePlaceholder"]" />
+            <ValidationMessage For="() => _model.Age" />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="website">
+                @L["Website"] <span class="optional-label">@L["OptionalLabel"]</span>
+            </label>
+            <InputText id="website" class="form-input" @bind-Value="_model.Website" placeholder="@L["WebsitePlaceholder"]" />
+            <ValidationMessage For="() => _model.Website" />
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary"
+                    disabled="@(_editContext.IsValidationPending() || _submitted)">
+                @if (_editContext.IsValidationPending())
+                {
+                    <span>@L["SubmittingButton"]</span>
+                }
+                else
+                {
+                    <span>@L["SubmitButton"]</span>
+                }
+            </button>
+
+            @if (_submitted)
+            {
+                <div class="submit-message success">@L["SuccessMessage"]</div>
+            }
+            else if (_submitFailed)
+            {
+                <div class="submit-message failure">@L["FailureMessage"]</div>
+            }
+        </div>
+
+        <div class="validation-summary-container">
+            <ValidationSummary />
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    private RegistrationModel _model = new();
+    private EditContext _editContext = default!;
+    private bool _submitted;
+    private bool _submitFailed;
+
+    protected override void OnInitialized()
+    {
+        _editContext = new EditContext(_model);
+        _editContext.OnValidationStateChanged += OnValidationStateChanged;
+    }
+
+    private void OnValidationStateChanged(object? sender, ValidationStateChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleSubmit()
+    {
+        _submitted = false;
+        _submitFailed = false;
+
+        var isValid = await _editContext.ValidateAsync();
+
+        if (isValid)
+        {
+            _submitted = true;
+        }
+        else
+        {
+            _submitFailed = true;
+        }
+    }
+}
