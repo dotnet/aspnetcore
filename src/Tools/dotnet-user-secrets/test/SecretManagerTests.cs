@@ -260,7 +260,7 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         secretManager.RunInternal("list", "--id", id, "--json");
         var stdout = _console.GetOutput();
         Assert.Contains("//BEGIN", stdout);
-        Assert.Contains(@"""AzureAd:ClientSecret"": ""abcdéƒ©˙î""", stdout);
+        Assert.Contains(@"""AzureAd:ClientSecret"": ""abcd\u00E9\u0192\u00A9\u02D9\u00EE""", stdout);
         Assert.Contains("//END", stdout);
     }
 
@@ -279,7 +279,7 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         Assert.Contains("AzureAd:ClientSecret = ¡™£¢∞", _console.GetOutput());
         var fileContents = File.ReadAllText(secretsFile, Encoding.UTF8);
         Assert.Equal(@"{
-    ""AzureAd:ClientSecret"": ""¡™£¢∞""
+    ""AzureAd:ClientSecret"": ""\u00A1\u2122\u00A3\u00A2\u221E""
 }",
             fileContents, ignoreLineEndingDifferences: true, ignoreWhiteSpaceDifferences: true);
     }

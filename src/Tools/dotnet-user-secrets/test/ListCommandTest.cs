@@ -37,7 +37,7 @@ public class ListCommandTest
     }
 
     [Fact]
-    public void List_Json_PreservesNonAsciiCharacters()
+    public void List_Json_EscapesNonAsciiCharacters()
     {
         var secretStore = new TestSecretsStore(_output);
         secretStore.Set("AzureAd:ClientSecret", "abcdéƒ©˙î");
@@ -50,8 +50,8 @@ public class ListCommandTest
         var output = testConsole.GetOutput();
         var jsonContent = ExtractJsonContent(output);
 
-        // Non-ASCII characters should NOT be escaped (e.g., "é" should appear literally, not as "\u00e9")
-        Assert.Equal("{\n  \"AzureAd:ClientSecret\": \"abcdéƒ©˙î\"\n}", jsonContent, ignoreLineEndingDifferences: true);
+        // Non-ASCII characters are Unicode-escaped using the default System.Text.Json encoding
+        Assert.Equal("{\n  \"AzureAd:ClientSecret\": \"abcd\\u00E9\\u0192\\u00A9\\u02D9\\u00EE\"\n}", jsonContent, ignoreLineEndingDifferences: true);
     }
 
     [Fact]
