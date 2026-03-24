@@ -1089,8 +1089,6 @@ public class Http2TimeoutTests : Http2TestBase
     {
         // Verifies that sending trailer HEADERS without END_HEADERS followed by
         // empty CONTINUATION frames (also without END_HEADERS) still triggers the timeout.
-        // This mirrors HEADERS_ReceivedWithoutAllCONTINUATIONs_WithinRequestHeadersTimeout_AbortsConnection
-        // but for trailers instead of initial request headers.
         var limits = _serviceContext.ServerOptions.Limits;
 
         await InitializeConnectionAsync(async context =>
