@@ -38,7 +38,10 @@ public class WebAssemblyTrimmingTest : ServerTestBase<BlazorWasmTestAppFixture<P
 
         var appElement = Browser.MountTestComponent<MetricsTrimmingCheck>();
 
-        // Verify that MetricsManager type has been trimmed away
+        // Verify that ComponentsMetrics type has been trimmed away
         Browser.Equal("false", () => appElement.FindElement(By.Id("metrics-found")).Text);
+
+        // Verify that ComponentsActivitySource type has been trimmed away
+        Browser.Equal("false", () => appElement.FindElement(By.Id("activity-source-found")).Text);
     }
 }
