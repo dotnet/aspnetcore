@@ -41,7 +41,7 @@ public class BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory) : Blaz
         }
 
         // Test the published project
-        var (serveProcess, listeningUri) = RunPublishedStandaloneBlazorProject(project);
+        var (serveProcess, listeningUri) = project.ServePublishedStandaloneApp(Output);
         using (serveProcess)
         {
             await TestBasicInteractionInNewPageAsync(browserKind, listeningUri, appName);
@@ -71,7 +71,7 @@ public class BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory) : Blaz
         // Test the published project
         if (BrowserManager.IsAvailable(browserKind))
         {
-            var (serveProcess, listeningUri) = RunPublishedStandaloneBlazorProject(project);
+            var (serveProcess, listeningUri) = project.ServePublishedStandaloneApp(Output);
             await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
             Output.WriteLine($"Opening browser at {listeningUri}...");
             var page = await browser.NewPageAsync();
@@ -159,52 +159,5 @@ public class BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory) : Blaz
 
         public string Name { get; }
         public string[] Arguments { get; }
-    }
-
-    private (ProcessEx, string url) RunPublishedStandaloneBlazorProject(Project project)
-    {
-        var publishDir = Path.Combine(project.TemplatePublishDir, "wwwroot");
-
-        Output.WriteLine("Running dotnet serve on published output...");
-        var command = DotNetMuxer.MuxerPathOrDefault();
-        string args;
-        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX_DIR")))
-        {
-            args = $"serve ";
-        }
-        else
-        {
-            command = "dotnet-serve";
-            args = "--roll-forward LatestMajor"; // dotnet-serve targets net5.0 by default
-        }
-
-        var serveProcess = ProcessEx.Run(TestOutputHelper, publishDir, command, args);
-        var listeningUri = ResolveListeningUrl(serveProcess);
-        return (serveProcess, listeningUri);
-
-        static string ResolveListeningUrl(ProcessEx process)
-        {
-            var buffer = new List<string>();
-            try
-            {
-                foreach (var line in process.OutputLinesAsEnumerable)
-                {
-                    if (line != null)
-                    {
-                        buffer.Add(line);
-                        if (line.Trim().Contains("https://", StringComparison.Ordinal) || line.Trim().Contains("http://", StringComparison.Ordinal))
-                        {
-                            return line.Trim();
-                        }
-                    }
-                }
-            }
-            catch (OperationCanceledException)
-            {
-            }
-
-            throw new InvalidOperationException(
-                $"Couldn't find listening url:\n{string.Join(Environment.NewLine, buffer.Append(process.Error))}");
-        }
     }
 }
