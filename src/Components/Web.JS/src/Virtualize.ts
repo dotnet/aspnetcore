@@ -157,8 +157,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         anchoredItems.set(el, newHeight);
 
         if (oldHeight !== undefined && oldHeight !== newHeight) {
-          // Compensate only if the element is entirely above the viewport.
-          if (el.getBoundingClientRect().bottom <= containerTop) {
+          // Compensate if the element starts above the viewport (fully or partially above).
+          if (el.getBoundingClientRect().top < containerTop) {
             scrollDelta += (newHeight - oldHeight);
           }
         }
