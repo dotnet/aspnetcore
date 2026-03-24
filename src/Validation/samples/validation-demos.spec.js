@@ -220,9 +220,9 @@ test.describe('Blazor SSR Demo', () => {
         expect(hasSuccess).toBeTruthy();
     });
 
-    test('aspnet-validation.js script is loaded', async ({ page }) => {
+    test('aspnet-core-validation.js script is loaded', async ({ page }) => {
         await page.goto(`${BASE}/contact`);
-        const script = page.locator('script[src*="aspnet-validation"]');
+        const script = page.locator('script[src*="aspnet-core-validation"]');
         expect(await script.count()).toBeGreaterThanOrEqual(1);
     });
 });
@@ -313,9 +313,9 @@ test.describe('MVC Demo', () => {
         expect(hasJquery).toBe(false);
     });
 
-    test('aspnet-validation.js script is loaded', async ({ page }) => {
+    test('aspnet-core-validation.js script is loaded', async ({ page }) => {
         await page.goto(`${BASE}/Home/Contact`);
-        const script = page.locator('script[src*="aspnet-validation"]');
+        const script = page.locator('script[src*="aspnet-core-validation"]');
         expect(await script.count()).toBeGreaterThanOrEqual(1);
     });
 

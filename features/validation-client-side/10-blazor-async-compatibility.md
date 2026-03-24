@@ -387,9 +387,9 @@ This is the always-async architecture with Blazor compatibility. The sync-first 
 
 If we want a working prototype without adding a public Blazor API, we can import `performEnhancedPageLoad` directly since our validation library is in the same repository and could be bundled with Blazor's JS.
 
-However, for the standalone `aspnet-validation.js` bundle (used by MVC and loaded separately), this wouldn't work. The standalone bundle can't import Blazor internals.
+However, for the standalone `aspnet-core-validation.js` bundle (used by MVC and loaded separately), this wouldn't work. The standalone bundle can't import Blazor internals.
 
-**Hybrid approach:** The validation code that ships inside `blazor.web.js` could use the direct import. The standalone `aspnet-validation.js` would use `requestSubmit()` for MVC.
+**Hybrid approach:** The validation code that ships inside `blazor.web.js` could use the direct import. The standalone `aspnet-core-validation.js` would use `requestSubmit()` for MVC.
 
 ---
 

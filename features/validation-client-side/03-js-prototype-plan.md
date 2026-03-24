@@ -900,7 +900,7 @@ src/Components/Samples/BlazorSSR/Pages/
 
 ```html
 <!-- After blazor.web.js -->
-<script src="js/aspnet-validation.js"></script>
+<script src="js/aspnet-core-validation.js"></script>
 <script>
     // Initialize after Blazor is ready
     document.addEventListener('DOMContentLoaded', () => {

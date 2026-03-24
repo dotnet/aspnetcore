@@ -25,7 +25,7 @@ jquery-validation-unobtrusive is purely a bridge — it has NO validation logic.
 ### Our Library (Self-Contained)
 
 ```
-aspnet-validation.js (~2.5 KB Brotli)
+aspnet-core-validation.js (~2.5 KB Brotli)
   ├── DirectiveParser     — Parses data-val-* attributes
   ├── ValidationEngine    — Provider registry
   ├── BuiltInProviders    — 12 validation providers
@@ -223,9 +223,9 @@ if (typeof Blazor !== 'undefined' && Blazor?.addEventListener) {
 ```
 
 Or, build two entry points:
-- `aspnet-validation.blazor.js` — includes BlazorWiring
-- `aspnet-validation.mvc.js` — includes MvcWiring
-- `aspnet-validation.js` — includes both, auto-detects
+- `aspnet-core-validation.blazor.js` — includes BlazorWiring
+- `aspnet-core-validation.mvc.js` — includes MvcWiring
+- `aspnet-core-validation.js` — includes both, auto-detects
 
 ### MvcWiring.ts (New Module)
 
@@ -352,7 +352,7 @@ Where `_ValidationScriptsPartial.cshtml` loads:
 ```
 
 **For migration to our library:**
-- Replace both `<script>` tags with a single `<script src="~/lib/aspnet-validation.min.js"></script>`
+- Replace both `<script>` tags with a single `<script src="~/lib/aspnet-core-validation.min.js"></script>`
 - No changes to Razor views — all `asp-validation-for` / `asp-validation-summary` tag helpers generate the same HTML
 - No changes to models — same DataAnnotations attributes
 - Remove jQuery dependency (if no other jQuery usage)

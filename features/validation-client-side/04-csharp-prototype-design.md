@@ -661,7 +661,7 @@ public sealed class ClientSideValidator : ComponentBase, IDisposable
         if (IncludeScript)
         {
             builder.OpenElement(4, "script");
-            builder.AddAttribute(5, "src", "_content/Microsoft.AspNetCore.Components.Web/aspnet-validation.js");
+            builder.AddAttribute(5, "src", "_content/Microsoft.AspNetCore.Components.Web/aspnet-core-validation.js");
             builder.CloseElement();
         }
     }
@@ -1050,7 +1050,7 @@ builder.Services.AddClientValidationAdapter<ClassicMovieAttribute>(
 And on the JS side, register a matching provider:
 
 ```typescript
-import { validationService } from './aspnet-validation';
+import { validationService } from './aspnet-core-validation';
 
 validationService.engine.registerProvider({
     name: 'classicmovie',
@@ -1211,7 +1211,7 @@ public class ContactModel
 
 ```html
 <form method="post" data-enhance>
-    <script src="_content/Microsoft.AspNetCore.Components.Web/aspnet-validation.js"></script>
+    <script src="_content/Microsoft.AspNetCore.Components.Web/aspnet-core-validation.js"></script>
 
     <input id="Contact.Name"
            name="Contact.Name"
@@ -1316,6 +1316,6 @@ This section records the design choices that were considered during the creation
 
 | # | Variant | Description |
 |---|---------|-------------|
-| 1 | **Separate script (developer adds manually)** | Developer adds `<script src="aspnet-validation.js">` to their layout, like `blazor.web.js`. Full control but easy to forget. |
+| 1 | **Separate script (developer adds manually)** | Developer adds `<script src="aspnet-core-validation.js">` to their layout, like `blazor.web.js`. Full control but easy to forget. |
 | 2 | **`ClientSideValidator` emits script tag automatically** | The component renders a `<script>` tag in its `BuildRenderTree`. Zero-ceremony but less control. |
 | 3 | **Both: auto-emit by default, opt-out available** ✅ | `<ClientSideValidator IncludeScript="true" />` (default). Developers can set `IncludeScript="false"` if they manage the script themselves or want to place it elsewhere. |

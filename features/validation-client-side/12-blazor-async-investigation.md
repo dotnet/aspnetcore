@@ -151,7 +151,7 @@ This enables the validation library (when loaded as a standalone `<script>`) to 
 
 ### Option C: Both (Recommended)
 
-Use the direct import when the validation code is bundled with Blazor's JS (inside `blazor.web.js`). Use the `_internal` API when loaded as a standalone script (`aspnet-validation.js`). The standalone script detects the API at runtime:
+Use the direct import when the validation code is bundled with Blazor's JS (inside `blazor.web.js`). Use the `_internal` API when loaded as a standalone script (`aspnet-core-validation.js`). The standalone script detects the API at runtime:
 
 ```typescript
 // In EventManager.ts

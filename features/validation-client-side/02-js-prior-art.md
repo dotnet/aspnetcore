@@ -5,7 +5,7 @@
 **Language:** TypeScript (single file: `src/index.ts`, ~1,565 lines)
 **Bundle size:** 10.6 KB raw, ~4 KB gzipped
 **License:** MIT
-**Origin:** Fork of [ryanelian/aspnet-validation](https://github.com/ryanelian/aspnet-validation)
+**Origin:** Fork of [ryanelian/aspnet-core-validation](https://github.com/ryanelian/aspnet-core-validation)
 
 ---
 

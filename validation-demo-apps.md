@@ -56,7 +56,7 @@ In ./src/Validation/demos, create a new solution ValidationDemos.sln and in it t
 
 &#x20;   - Form has model with standard sync validation attributes that support client-side validation
 
-&#x20;   - The app should include aspnet-validation.js via <script> tag and remove the jQuery validation scripts (or similar mechanism that ensures the new JS library is used)
+&#x20;   - The app should include aspnet-core-validation.js via <script> tag and remove the jQuery validation scripts (or similar mechanism that ensures the new JS library is used)
 
 &#x20;   - The goal is to show that existing MVC app with client validation can use the new JS validation library as drop-in replacement for the jQuery-based library, i.e. MVC generates data- attributes exactly the same as before (using the existing MVC pipeline) and the new JS library picks these up and validates the rules before letting the form submit to the server
 
@@ -70,5 +70,5 @@ See the project file for ./src/Components/Samples/BlazorUnitedApp on how to make
 
 
 
-The SSR and MVC app need the aspnet-validation.js file. Build the Web.JS project and copy it to their wwwroot/js manually
+The SSR and MVC app need the aspnet-core-validation.js file. Build the Web.JS project and copy it to their wwwroot/js manually
 

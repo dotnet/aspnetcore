@@ -306,7 +306,7 @@ For teams migrating from jquery-validation + jquery-validation-unobtrusive to ou
 <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
 
 <!-- NEW -->
-<script src="~/lib/aspnet-validation/aspnet-validation.min.js"></script>
+<script src="~/lib/aspnet-core-validation/aspnet-core-validation.min.js"></script>
 ```
 
 ### Step 2: No C# Changes Needed

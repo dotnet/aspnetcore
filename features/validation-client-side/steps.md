@@ -147,9 +147,9 @@ Planned file structure under `src/Components/Web.JS/src/Validation/`:
 
 ### Build integration
 
-- Added `'aspnet-validation': './src/Validation/index.ts'` entry to `rollup.config.mjs`
-- Rollup produces `dist/Debug/aspnet-validation.js` (~7 KB raw, IIFE format with sourcemap)
-- Copied to `src/Components/Samples/BlazorSSR/wwwroot/js/aspnet-validation.js`
+- Added `'aspnet-core-validation': './src/Validation/index.ts'` entry to `rollup.config.mjs`
+- Rollup produces `dist/Debug/aspnet-core-validation.js` (~7 KB raw, IIFE format with sourcemap)
+- Copied to `src/Components/Samples/BlazorSSR/wwwroot/js/aspnet-core-validation.js`
 
 ### Sample app changes
 
@@ -158,7 +158,7 @@ Planned file structure under `src/Components/Web.JS/src/Validation/`:
 | `Pages/ContactManual.razor` | **NEW** — Copy of Contact.razor at `/contact-manual` with hardcoded `data-val-*` attributes, `data-valmsg-for` spans, validation summary container, and `formnovalidate` bypass button |
 | `Pages/Contact.razor` | **UNCHANGED** — Baseline server-only validation |
 | `Pages/Index.razor` | Updated with links to both form pages |
-| `App.razor` | Added `<script src="js/aspnet-validation.js">` after `blazor.web.js` |
+| `App.razor` | Added `<script src="js/aspnet-core-validation.js">` after `blazor.web.js` |
 | `wwwroot/css/site.css` | Added MVC-compatible validation CSS classes (`input-validation-error`, `field-validation-error`, `validation-summary-errors`, etc.) |
 
 ### Verification (jsdom tests — all pass)
@@ -313,7 +313,7 @@ Added a `directiveFingerprint` field to `ElementState` (in `Types.ts`) — a sor
 **Files changed:**
 - `src/Components/Web.JS/src/Validation/Types.ts` — Added `directiveFingerprint: string` to `ElementState`
 - `src/Components/Web.JS/src/Validation/DomScanner.ts` — Added `getDirectiveFingerprint()` method, changed `scan()` to compare fingerprints and re-register on mismatch
-- Rebuilt `aspnet-validation.js` (~7.4 KB)
+- Rebuilt `aspnet-core-validation.js` (~7.4 KB)
 
 **Verified with Playwright:** Enhanced nav from `/contact-manual` → `/contact-manual-extra`, submit subscribe form → Email correctly shows "Email address is required." and Name shows "Your name is required."
 
@@ -627,7 +627,7 @@ Added a Contact form to `src/Mvc/samples/MvcFormSample` that uses our new JS lib
 |------|---------|
 | `src/Mvc/samples/MvcFormSample/Models/ContactModel.cs` | Model with Required, Email, Phone, Url, Range, StringLength, Regex, Compare |
 | `src/Mvc/samples/MvcFormSample/Views/Home/Contact.cshtml` | Form view using tag helpers + our JS library |
-| `src/Mvc/samples/MvcFormSample/wwwroot/js/aspnet-validation.js` | Built validation bundle |
+| `src/Mvc/samples/MvcFormSample/wwwroot/js/aspnet-core-validation.js` | Built validation bundle |
 | `src/Mvc/samples/MvcFormSample/Controllers/HomeController.cs` | Added Contact GET/POST actions |
 
 ### Playwright Test Results
