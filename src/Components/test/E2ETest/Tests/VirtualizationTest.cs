@@ -997,8 +997,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => GetElementCount(container, ".item") > 0);
 
         // Scroll down so item 2 is not visible
-        js.ExecuteScript("arguments[0].scrollTop = 200", container);
-        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) >= 200);
+        js.ExecuteScript("arguments[0].scrollTop = 2000", container);
+        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) >= 2000);
+
+        // Confirm item 2 is truly not in the DOM (virtualized away)
+        Browser.True(() => container.FindElements(By.CssSelector("[data-index='2']")).Count == 0);
 
         // Get the position of a visible item before expanding the off-screen item
         var visibleItems = container.FindElements(By.CssSelector(".item"));
