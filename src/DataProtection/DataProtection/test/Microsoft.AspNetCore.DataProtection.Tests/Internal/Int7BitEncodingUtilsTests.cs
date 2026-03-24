@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.AspNetCore.Shared;
+using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.Tests.Internal;
 
