@@ -21,6 +21,16 @@ public class FieldCssClassProvider
     /// <returns>A CSS class name string.</returns>
     public virtual string GetFieldCssClass(EditContext editContext, in FieldIdentifier fieldIdentifier)
     {
+        if (editContext.IsValidationPending(fieldIdentifier))
+        {
+            return editContext.IsModified(fieldIdentifier) ? "modified pending" : "pending";
+        }
+
+        if (editContext.IsValidationFaulted(fieldIdentifier))
+        {
+            return editContext.IsModified(fieldIdentifier) ? "modified faulted" : "faulted";
+        }
+
         var isValid = !editContext.GetValidationMessages(fieldIdentifier).Any();
         if (editContext.IsModified(fieldIdentifier))
         {

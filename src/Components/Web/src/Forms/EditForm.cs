@@ -201,7 +201,7 @@ public class EditForm : ComponentBase
         else
         {
             // Otherwise, the system implicitly runs validation on form submission
-            var isValid = _editContext.Validate(); // This will likely become ValidateAsync later
+            var isValid = await _editContext.ValidateAsync();
 
             if (isValid && OnValidSubmit.HasDelegate)
             {

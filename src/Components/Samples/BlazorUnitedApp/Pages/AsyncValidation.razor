@@ -1,0 +1,151 @@
+@page "/async-validation"
+@rendermode InteractiveServer
+@using BlazorUnitedApp.Data
+
+<PageTitle>Async Validation Demo</PageTitle>
+
+<h1>Async Form Validation Demo</h1>
+
+<p>
+    This page demonstrates async validation in Blazor forms. The <strong>Email</strong> and
+    <strong>Username</strong> fields perform simulated server-side uniqueness checks that take
+    1.5–2 seconds. Try the following:
+</p>
+
+<ul>
+    <li><strong>Per-field async:</strong> Tab out of Email or Username — observe the "Checking…" state and then the result.</li>
+    <li><strong>Taken values:</strong> Use <code>admin@example.com</code>, <code>test@example.com</code> (email) or <code>admin</code>, <code>root</code>, <code>blazor</code> (username).</li>
+    <li><strong>Cancellation:</strong> Start typing in a field, tab out, then quickly tab back and change the value — the previous check is cancelled.</li>
+    <li><strong>Form submit:</strong> Click Register — all async validators run as part of submit, blocking until complete.</li>
+    <li><strong>Faulted state:</strong> Try usernames starting with "blaz" — there's a ~20% chance of a simulated server error to demonstrate the faulted state.</li>
+</ul>
+
+<hr />
+
+<EditForm EditContext="_editContext" OnSubmit="HandleSubmit" FormName="registration">
+    <AsyncSimulatedValidator />
+
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <InputText class="form-control" @bind-Value="_model.Email" />
+        @if (_editContext.IsValidationPending(_editContext.Field(nameof(Registration.Email))))
+        {
+            <div class="text-info"><em>⏳ Checking email availability…</em></div>
+        }
+        else if (_editContext.IsValidationFaulted(_editContext.Field(nameof(Registration.Email))))
+        {
+            <div class="text-warning">⚠️ An error occurred while validating email.</div>
+        }
+        else
+        {
+            <ValidationMessage For="() => _model.Email" />
+        }
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Username</label>
+        <InputText class="form-control" @bind-Value="_model.Username" />
+        @if (_editContext.IsValidationPending(_editContext.Field(nameof(Registration.Username))))
+        {
+            <div class="text-info"><em>⏳ Checking username availability…</em></div>
+        }
+        else if (_editContext.IsValidationFaulted(_editContext.Field(nameof(Registration.Username))))
+        {
+            <div class="text-warning">⚠️ An error occurred while checking username. Please try again.</div>
+        }
+        else
+        {
+            <ValidationMessage For="() => _model.Username" />
+        }
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Display Name</label>
+        <InputText class="form-control" @bind-Value="_model.DisplayName" />
+        <ValidationMessage For="() => _model.DisplayName" />
+        <small class="text-muted">This field uses only sync validation — no async check.</small>
+    </div>
+
+    <div class="d-flex align-items-center gap-3">
+        <button type="submit" class="btn btn-primary"
+                disabled="@(_editContext.IsValidationPending() || _submitted)">
+            @if (_editContext.IsValidationPending())
+            {
+                <span>⏳ Validating…</span>
+            }
+            else
+            {
+                <span>Register</span>
+            }
+        </button>
+
+        @if (_submitted)
+        {
+            <span class="text-success fw-bold">✅ Form submitted successfully!</span>
+        }
+        else if (_submitFailed)
+        {
+            <span class="text-danger fw-bold">❌ Validation failed — see errors above.</span>
+        }
+    </div>
+
+    <div class="mt-3">
+        <ValidationSummary />
+    </div>
+</EditForm>
+
+<hr />
+
+<h4>Async Validation State</h4>
+<table class="table table-sm table-bordered" style="max-width: 500px;">
+    <thead>
+        <tr><th>Field</th><th>Pending</th><th>Faulted</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Email</td>
+            <td>@_editContext.IsValidationPending(_editContext.Field(nameof(Registration.Email)))</td>
+            <td>@_editContext.IsValidationFaulted(_editContext.Field(nameof(Registration.Email)))</td>
+        </tr>
+        <tr>
+            <td>Username</td>
+            <td>@_editContext.IsValidationPending(_editContext.Field(nameof(Registration.Username)))</td>
+            <td>@_editContext.IsValidationFaulted(_editContext.Field(nameof(Registration.Username)))</td>
+        </tr>
+        <tr class="fw-bold">
+            <td>Any</td>
+            <td>@_editContext.IsValidationPending()</td>
+            <td>@_editContext.IsValidationFaulted()</td>
+        </tr>
+    </tbody>
+</table>
+
+@code {
+    private Registration _model = new();
+    private EditContext _editContext = default!;
+    private bool _submitted;
+    private bool _submitFailed;
+
+    protected override void OnInitialized()
+    {
+        _editContext = new EditContext(_model);
+        _editContext.OnValidationStateChanged += (_, _) => InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleSubmit()
+    {
+        _submitted = false;
+        _submitFailed = false;
+
+        var isValid = await _editContext.ValidateAsync();
+
+        if (isValid)
+        {
+            _submitted = true;
+        }
+        else
+        {
+            _submitFailed = true;
+        }
+    }
+}
