@@ -104,4 +104,9 @@
       <_Parameter2 Condition="'$(IsHelixJob)' == 'true'">..\BasicTestApp</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
+
+  <PropertyGroup Condition="'$(TestTrimmedOrMultithreadingApps)' == 'true'">
+    <!-- We trim metrics by default -->
+    <MetricsSupport>true</MetricsSupport>
+  </PropertyGroup>
 </Project>

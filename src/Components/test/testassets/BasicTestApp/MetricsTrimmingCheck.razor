@@ -1,0 +1,34 @@
+@using System.Diagnostics.CodeAnalysis
+
+<h2>Hot Reload Trimming Check</h2>
+<p>
+    Metrics type found:
+    <span id="metrics-found">@MetricsFound</span>
+</p>
+
+@code {
+#nullable enable
+    string ComponentsMetricsFound { get; set; } = "unknown";
+    string ComponentsActivitySourceFound { get; set; } = "unknown";
+
+    protected override void OnInitialized()
+    {
+        ComponentsMetricsFound = GetComponentsMetricsType() is not null ? "true" : "false";
+        ComponentsActivitySourceFound = GetComponentsActivitySourceType() is not null ? "true" : "false";
+    }
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2057:UnrecognizedReflectionPattern",
+        Justification = "Returning null when the type is trimmed is the expected and desired behavior.")]
+    private static Type? GetComponentsMetricsType()
+    {
+        return Type.GetType("Microsoft.AspNetCore.Components.ComponentsMetrics, Microsoft.AspNetCore.Components");
+    }
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2057:UnrecognizedReflectionPattern",
+        Justification = "Returning null when the type is trimmed is the expected and desired behavior.")]
+    private static Type? GetComponentsActivitySourceType()
+    {
+        return Type.GetType("Microsoft.AspNetCore.Components.ComponentsActivitySource, Microsoft.AspNetCore.Components");
+    }
+#nullable restore
+}

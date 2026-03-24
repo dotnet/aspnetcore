@@ -301,18 +301,21 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 NavigationManager.NavigateTo(_locationAbsolute, forceLoad: true);
             }
         }
-        _renderHandle.ComponentActivitySource?.StopNavigateActivity(activityHandle, null);
+        if (ComponentsActivitySource.IsSupported && _renderHandle.ComponentActivitySource != null)
+        {
+            _renderHandle.ComponentActivitySource.StopNavigateActivity(activityHandle, null);
+        }
     }
 
     private ComponentsActivityHandle RecordDiagnostics(string componentType, string template)
     {
         ComponentsActivityHandle activityHandle = default;
-        if (_renderHandle.ComponentActivitySource != null)
+        if (ComponentsActivitySource.IsSupported && _renderHandle.ComponentActivitySource != null)
         {
             activityHandle = _renderHandle.ComponentActivitySource.StartNavigateActivity(componentType, template);
         }
 
-        if (_renderHandle.ComponentMetrics != null && _renderHandle.ComponentMetrics.IsNavigationEnabled)
+        if (ComponentsMetrics.IsSupported && _renderHandle.ComponentMetrics != null && _renderHandle.ComponentMetrics.IsNavigationEnabled)
         {
             _renderHandle.ComponentMetrics.Navigation(componentType, template);
         }
