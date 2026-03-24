@@ -8,7 +8,9 @@
       2. Configuring the demo application to consume those packages.
       3. Publishing the demo app as a fully self-contained executable.
       4. Creating a portable source bundle so the presenter can open the project
-         in VS Code without red squiggles (NuGet packages + global.json included).
+         in VS Code without red squiggles. The bundle includes a local .dotnet/
+         directory with the custom shared framework — no admin rights required
+         and no modifications to the system-wide .NET installation.
 
     The output folder can be copied to another machine and run directly — no .NET SDK
     or runtime installation is required on the target machine.
@@ -467,7 +469,7 @@ if (Test-Path $bundlePath) {
 New-Item -ItemType Directory -Path $bundlePath -Force | Out-Null
 
 # --- Copy project source files (exclude build artifacts and publish output) ---
-$excludeDirs = @('bin', 'obj', 'publish', 'source-bundle', 'local-packages')
+$excludeDirs = @('bin', 'obj', 'publish', '.dotnet', '.dotnet-overlay', '.vscode', 'local-packages')
 Get-ChildItem $ProjectDir -Force | Where-Object {
     $excludeDirs -notcontains $_.Name
 } | ForEach-Object {
@@ -536,109 +538,277 @@ $bundleGlobalJson = @"
 Set-Content -Path (Join-Path $bundlePath "global.json") -Value $bundleGlobalJson -Encoding utf8
 Write-Detail "Created global.json (SDK $sdkVersion with rollForward)."
 
-# --- Create setup.ps1 that installs the custom shared framework into the SDK ---
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 9 — Install custom shared framework into local .dotnet/ directory
+# ─────────────────────────────────────────────────────────────────────────────
+
+Write-Step "Installing custom shared framework into bundle"
+
+$bundleDotnetDir = Join-Path $bundlePath ".dotnet"
+$fxDestDir       = Join-Path $bundleDotnetDir "shared" "Microsoft.AspNetCore.App" $customVersion
+New-Item -ItemType Directory -Path $fxDestDir -Force | Out-Null
+
+# Extract runtime assemblies from the runtime pack .nupkg.
+$runtimePkg = Get-ChildItem $localPkgDir -Filter "Microsoft.AspNetCore.App.Runtime.$rid.*.nupkg" |
+    Where-Object { $_.Name -notmatch '\.symbols\.' } |
+    Select-Object -First 1
+
+$tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "aspnetcore-runtime-extract-$([System.Guid]::NewGuid().ToString('N').Substring(0,8))"
+try {
+    Expand-Archive -Path $runtimePkg.FullName -DestinationPath $tempDir
+
+    $libDir = Get-ChildItem (Join-Path $tempDir "runtimes" $rid "lib") -Directory | Select-Object -First 1
+    if ($libDir) {
+        Copy-Item (Join-Path $libDir.FullName "*") $fxDestDir -Recurse -Force
+    }
+
+    $nativeDir = Join-Path $tempDir "runtimes" $rid "native"
+    if (Test-Path $nativeDir) {
+        Copy-Item (Join-Path $nativeDir "*") $fxDestDir -Recurse -Force
+    }
+}
+finally {
+    if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
+}
+
+$fxFileCount = (Get-ChildItem $fxDestDir -File).Count
+Write-Detail "Extracted $fxFileCount assemblies to .dotnet/shared/Microsoft.AspNetCore.App/$customVersion/"
+
+# --- Create run.ps1 that sets DOTNET_ROOT and launches the app ---
+$runScript = @'
+<#
+.SYNOPSIS
+    Runs the demo app using the bundled custom ASP.NET Core shared framework.
+    No admin rights or system-wide .NET modifications required.
+#>
+[CmdletBinding()]
+param(
+    [Parameter(ValueFromRemainingArguments)]
+    [string[]]$DotnetArgs
+)
+
+$ErrorActionPreference = 'Stop'
+$scriptDir = $PSScriptRoot
+
+# Locate the system dotnet.
+$systemDotnet = Get-Command dotnet -ErrorAction SilentlyContinue
+if (-not $systemDotnet) {
+    throw "Cannot find 'dotnet' on PATH. Install .NET 11 Preview SDK from https://dotnet.microsoft.com/download/dotnet/11.0"
+}
+$systemDotnetRoot = Split-Path (Resolve-Path $systemDotnet.Source) -Parent
+
+# Create a merged view: local .dotnet overlays the system SDK.
+# DOTNET_ROOT tells the host where to find the SDK.
+# DOTNET_ADDITIONAL_DEPS is not needed — we overlay the shared framework directly.
+# We use DOTNET_ROOT_ENV so the host finds the system SDK for everything EXCEPT
+# the custom shared framework, which lives in our local .dotnet/.
+
+# Strategy: copy the custom shared framework into a temporary overlay that
+# mirrors the system SDK structure. This avoids modifying Program Files.
+$overlayDir = Join-Path $scriptDir ".dotnet-overlay"
+$overlayFxDir = Join-Path $overlayDir "shared" "Microsoft.AspNetCore.App"
+if (-not (Test-Path $overlayFxDir)) {
+    New-Item -ItemType Directory -Path $overlayFxDir -Force | Out-Null
+}
+
+# Link/copy the custom framework version into the overlay.
+$localFxDir = Join-Path $scriptDir ".dotnet" "shared" "Microsoft.AspNetCore.App"
+$customVersionDirs = Get-ChildItem $localFxDir -Directory -ErrorAction SilentlyContinue
+foreach ($versionDir in $customVersionDirs) {
+    $dest = Join-Path $overlayFxDir $versionDir.Name
+    if (-not (Test-Path $dest)) {
+        Copy-Item $versionDir.FullName $dest -Recurse
+    }
+}
+
+# Link all existing system shared frameworks into the overlay so they're visible too.
+$systemFxRoots = @(
+    (Join-Path $systemDotnetRoot "shared")
+)
+foreach ($systemFxRoot in $systemFxRoots) {
+    if (Test-Path $systemFxRoot) {
+        foreach ($fxFamily in (Get-ChildItem $systemFxRoot -Directory)) {
+            $overlayFamily = Join-Path $overlayDir "shared" $fxFamily.Name
+            if (-not (Test-Path $overlayFamily)) {
+                New-Item -ItemType Directory -Path $overlayFamily -Force | Out-Null
+            }
+            foreach ($fxVersion in (Get-ChildItem $fxFamily.FullName -Directory)) {
+                $overlayVersion = Join-Path $overlayFamily $fxVersion.Name
+                if (-not (Test-Path $overlayVersion)) {
+                    # Use directory junction (no admin needed, instant, no disk space)
+                    cmd /c mklink /J "$overlayVersion" "$($fxVersion.FullName)" | Out-Null
+                }
+            }
+        }
+    }
+}
+
+# Also junction the SDK, host, and packs directories.
+foreach ($dirName in @('sdk', 'host', 'packs', 'templates')) {
+    $src = Join-Path $systemDotnetRoot $dirName
+    $dst = Join-Path $overlayDir $dirName
+    if ((Test-Path $src) -and -not (Test-Path $dst)) {
+        cmd /c mklink /J "$dst" "$src" | Out-Null
+    }
+}
+
+# Copy the dotnet.exe host into the overlay so DOTNET_ROOT is self-contained.
+$dotnetExeName = if ($env:OS -eq 'Windows_NT' -or $IsWindows) { 'dotnet.exe' } else { 'dotnet' }
+$overlayDotnet = Join-Path $overlayDir $dotnetExeName
+if (-not (Test-Path $overlayDotnet)) {
+    Copy-Item (Join-Path $systemDotnetRoot $dotnetExeName) $overlayDotnet
+    # Also copy the .dll if present (dotnet host may need it).
+    $dotnetDll = Join-Path $systemDotnetRoot 'dotnet.dll'
+    if (Test-Path $dotnetDll) { Copy-Item $dotnetDll $overlayDir }
+}
+
+$env:DOTNET_ROOT = $overlayDir
+$env:PATH = "$overlayDir$([System.IO.Path]::PathSeparator)$env:PATH"
+
+Write-Host "Using custom ASP.NET Core framework from .dotnet/" -ForegroundColor Cyan
+Write-Host "DOTNET_ROOT = $overlayDir" -ForegroundColor DarkGray
+Write-Host ""
+
+if ($DotnetArgs) {
+    & $overlayDotnet @DotnetArgs
+}
+else {
+    & $overlayDotnet run
+}
+'@
+Set-Content -Path (Join-Path $bundlePath "run.ps1") -Value $runScript -Encoding utf8
+Write-Detail "Created run.ps1 (launcher with DOTNET_ROOT overlay)."
+
+# --- Create .vscode/settings.json for VS Code IntelliSense ---
+$vscodeDir = Join-Path $bundlePath ".vscode"
+New-Item -ItemType Directory -Path $vscodeDir -Force | Out-Null
+
+# VS Code C# extension: use the overlay dotnet so OmniSharp/Roslyn sees the custom framework.
+$vscodeSettings = @"
+{
+    "dotnet.dotnetPath": ".dotnet-overlay",
+    "omnisharp.dotnetPath": ".dotnet-overlay"
+}
+"@
+Set-Content -Path (Join-Path $vscodeDir "settings.json") -Value $vscodeSettings -Encoding utf8
+Write-Detail "Created .vscode/settings.json pointing to local overlay."
+
+# --- Create setup.ps1 for first-time initialization ---
 $setupScript = @'
 <#
 .SYNOPSIS
-    Installs the custom-built ASP.NET Core shared framework into your local .NET SDK.
-
-.DESCRIPTION
-    This script extracts the ASP.NET Core runtime pack from local-packages/ and
-    overlays it into your .NET SDK's shared framework directory. Run this ONCE
-    before using 'dotnet run' or debugging in VS Code.
-
-    This is non-destructive — it creates a new version directory alongside your
-    existing framework versions (the same approach the ASP.NET Core repo uses
-    for remote test execution on Helix machines).
+    First-time setup: creates the .dotnet-overlay directory by junctioning the
+    system .NET SDK directories and overlaying the custom shared framework.
+    No admin rights required. Run this once before opening in VS Code.
 #>
 [CmdletBinding()]
 param()
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-
 $scriptDir = $PSScriptRoot
 
-# Determine .NET root
-$dotnetCmd = Get-Command dotnet -ErrorAction SilentlyContinue
-if ($env:DOTNET_ROOT -and (Test-Path $env:DOTNET_ROOT)) {
-    $dotnetRoot = $env:DOTNET_ROOT
+Write-Host "Setting up .dotnet-overlay..." -ForegroundColor Cyan
+
+$systemDotnet = Get-Command dotnet -ErrorAction SilentlyContinue
+if (-not $systemDotnet) {
+    throw "Cannot find 'dotnet' on PATH. Install .NET 11 Preview SDK from https://dotnet.microsoft.com/download/dotnet/11.0"
 }
-elseif ($dotnetCmd) {
-    $dotnetRoot = Split-Path (Resolve-Path $dotnetCmd.Source) -Parent
+$systemDotnetRoot = Split-Path (Resolve-Path $systemDotnet.Source) -Parent
+Write-Host "  System SDK: $systemDotnetRoot" -ForegroundColor DarkGray
+
+$overlayDir = Join-Path $scriptDir ".dotnet-overlay"
+if (Test-Path $overlayDir) {
+    Write-Host "  Overlay already exists — recreating..." -ForegroundColor Yellow
+    # Remove junctions carefully (don't recurse into them).
+    Get-ChildItem $overlayDir -Directory | ForEach-Object {
+        if ($_.Attributes -band [System.IO.FileAttributes]::ReparsePoint) {
+            cmd /c rmdir "$($_.FullName)" | Out-Null
+        }
+        else {
+            # Check nested dirs for junctions too.
+            Get-ChildItem $_.FullName -Directory -Recurse | Where-Object {
+                $_.Attributes -band [System.IO.FileAttributes]::ReparsePoint
+            } | ForEach-Object {
+                cmd /c rmdir "$($_.FullName)" | Out-Null
+            }
+            Remove-Item $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+    Get-ChildItem $overlayDir -File | Remove-Item -Force
 }
-else {
-    throw "Cannot find .NET SDK. Install from https://dotnet.microsoft.com/download/dotnet/11.0"
-}
-Write-Host "Using .NET root: $dotnetRoot" -ForegroundColor Cyan
+New-Item -ItemType Directory -Path $overlayDir -Force | Out-Null
 
-# Detect RID
-$arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
-$rid = if ($env:OS -eq 'Windows_NT' -or $IsWindows) { "win-$arch" }
-       elseif ($IsMacOS)                              { "osx-$arch" }
-       else                                           { "linux-$arch" }
-
-# Find the runtime pack .nupkg
-$localPkgs = Join-Path $scriptDir "local-packages"
-$runtimePkg = Get-ChildItem $localPkgs -Filter "Microsoft.AspNetCore.App.Runtime.$rid.*.nupkg" |
-    Where-Object { $_.Name -notmatch '\.symbols\.' } |
-    Select-Object -First 1
-
-if (-not $runtimePkg) {
-    throw "Runtime pack not found for RID '$rid' in $localPkgs"
-}
-
-# Extract version from filename
-$runtimeVersion = $runtimePkg.BaseName -replace "^Microsoft\.AspNetCore\.App\.Runtime\.$([regex]::Escape($rid))\.", ''
-
-$destDir = Join-Path $dotnetRoot "shared" "Microsoft.AspNetCore.App" $runtimeVersion
-if (Test-Path $destDir) {
-    Write-Host "Shared framework $runtimeVersion already installed at:" -ForegroundColor Green
-    Write-Host "  $destDir" -ForegroundColor Green
-    Write-Host "Nothing to do." -ForegroundColor Green
-    exit 0
-}
-
-Write-Host "Installing Microsoft.AspNetCore.App $runtimeVersion for $rid..." -ForegroundColor Cyan
-
-# Extract .nupkg (it's a zip)
-$tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "aspnetcore-runtime-$runtimeVersion"
-if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force }
-Expand-Archive -Path $runtimePkg.FullName -DestinationPath $tempDir
-
-# Copy runtime assemblies to shared framework directory
-New-Item -ItemType Directory -Path $destDir -Force | Out-Null
-
-$libDir = Get-ChildItem (Join-Path $tempDir "runtimes" $rid "lib") -Directory | Select-Object -First 1
-if ($libDir) {
-    Copy-Item (Join-Path $libDir.FullName "*") $destDir -Recurse -Force
-    Write-Host "  Copied runtime assemblies." -ForegroundColor DarkGray
+# Junction SDK, host, packs, templates from the system SDK.
+foreach ($dirName in @('sdk', 'host', 'packs', 'templates')) {
+    $src = Join-Path $systemDotnetRoot $dirName
+    $dst = Join-Path $overlayDir $dirName
+    if (Test-Path $src) {
+        cmd /c mklink /J "$dst" "$src" | Out-Null
+        Write-Host "  Linked $dirName/" -ForegroundColor DarkGray
+    }
 }
 
-$nativeDir = Join-Path $tempDir "runtimes" $rid "native"
-if (Test-Path $nativeDir) {
-    Copy-Item (Join-Path $nativeDir "*") $destDir -Recurse -Force
-    Write-Host "  Copied native binaries." -ForegroundColor DarkGray
+# Junction all system shared framework families and versions.
+$overlaySharedDir = Join-Path $overlayDir "shared"
+New-Item -ItemType Directory -Path $overlaySharedDir -Force | Out-Null
+$systemSharedDir = Join-Path $systemDotnetRoot "shared"
+if (Test-Path $systemSharedDir) {
+    foreach ($fxFamily in (Get-ChildItem $systemSharedDir -Directory)) {
+        $overlayFamily = Join-Path $overlaySharedDir $fxFamily.Name
+        New-Item -ItemType Directory -Path $overlayFamily -Force | Out-Null
+        foreach ($fxVersion in (Get-ChildItem $fxFamily.FullName -Directory)) {
+            $overlayVersion = Join-Path $overlayFamily $fxVersion.Name
+            cmd /c mklink /J "$overlayVersion" "$($fxVersion.FullName)" | Out-Null
+        }
+        Write-Host "  Linked shared/$($fxFamily.Name)/ ($(@(Get-ChildItem $fxFamily.FullName -Directory).Count) versions)" -ForegroundColor DarkGray
+    }
 }
 
-# Clean up temp
-Remove-Item $tempDir -Recurse -Force
+# Overlay the custom ASP.NET Core shared framework (real copy, not junction).
+$localFxDir = Join-Path $scriptDir ".dotnet" "shared" "Microsoft.AspNetCore.App"
+foreach ($versionDir in (Get-ChildItem $localFxDir -Directory -ErrorAction SilentlyContinue)) {
+    $dest = Join-Path $overlaySharedDir "Microsoft.AspNetCore.App" $versionDir.Name
+    # Remove any junction to the system version with the same name.
+    if (Test-Path $dest) {
+        if ((Get-Item $dest).Attributes -band [System.IO.FileAttributes]::ReparsePoint) {
+            cmd /c rmdir "$dest" | Out-Null
+        }
+        else {
+            Remove-Item $dest -Recurse -Force
+        }
+    }
+    Copy-Item $versionDir.FullName $dest -Recurse
+    Write-Host "  Installed custom Microsoft.AspNetCore.App/$($versionDir.Name)" -ForegroundColor Green
+}
+
+# Copy the dotnet host executable.
+$dotnetExeName = if ($env:OS -eq 'Windows_NT' -or $IsWindows) { 'dotnet.exe' } else { 'dotnet' }
+Copy-Item (Join-Path $systemDotnetRoot $dotnetExeName) $overlayDir
+$dotnetDll = Join-Path $systemDotnetRoot 'dotnet.dll'
+if (Test-Path $dotnetDll) { Copy-Item $dotnetDll $overlayDir }
+Write-Host "  Copied dotnet host." -ForegroundColor DarkGray
 
 Write-Host ""
-Write-Host "Installed successfully to:" -ForegroundColor Green
-Write-Host "  $destDir" -ForegroundColor Green
+Write-Host "Setup complete!" -ForegroundColor Green
+Write-Host "  Overlay: $overlayDir" -ForegroundColor Green
 Write-Host ""
-Write-Host "You can now use 'dotnet run' and debug in VS Code." -ForegroundColor Green
+Write-Host "You can now:" -ForegroundColor White
+Write-Host "  - Open this folder in VS Code (IntelliSense will work)" -ForegroundColor White
+Write-Host "  - Run the app:  pwsh ./run.ps1" -ForegroundColor White
+Write-Host "  - Or directly:  .dotnet-overlay/dotnet run" -ForegroundColor White
 '@
 Set-Content -Path (Join-Path $bundlePath "setup.ps1") -Value $setupScript -Encoding utf8
-Write-Detail "Created setup.ps1 (shared framework installer)."
+Write-Detail "Created setup.ps1 (first-time overlay builder)."
 
 # --- Create a README for the presenter ---
 $readmeContent = @"
 # Demo App — Source Bundle
 
 This folder contains the full source code and all dependencies needed to open,
-build, and edit this project in VS Code (or any IDE) on another machine.
+build, edit, and run this project on another machine.
+
+No admin rights are required. The system .NET SDK is not modified.
 
 ## Prerequisites
 
@@ -647,30 +817,31 @@ Install a **.NET 11 Preview SDK** (or later) from:
 
 ## First-time setup
 
-Run the setup script **once** to install the custom ASP.NET Core shared framework
-into your local .NET SDK (this is non-destructive — it adds a new version
-alongside your existing frameworks):
+Run the setup script **once** to create a local ``.dotnet-overlay/`` directory.
+This junctions your system SDK directories and overlays the custom shared
+framework — no files are copied into Program Files:
 
     pwsh ./setup.ps1
 
 ## Open in VS Code
 
 1. Open this folder in VS Code.
-2. The C# extension will restore packages from the included ``local-packages/`` folder.
-3. No internet connection is required for NuGet restore.
+2. ``.vscode/settings.json`` is pre-configured to use the local overlay.
+3. The C# extension will see the custom framework — no red squiggles.
+4. NuGet packages restore from the included ``local-packages/`` folder.
 
 ## Run the app
 
-    dotnet run
+    pwsh ./run.ps1
+
+Or directly:
+
+    .dotnet-overlay/dotnet run
 
 ## Framework version
 
 This project uses a custom-built ASP.NET Core framework:
   **$customVersion** (targeting $tfm)
-
-The ``setup.ps1`` script installs the runtime assemblies so ``dotnet run`` works.
-The ``Directory.Build.targets`` file overrides the SDK's framework version so that
-compilation uses the custom targeting pack from ``local-packages/``.
 "@
 Set-Content -Path (Join-Path $bundlePath "README.md") -Value $readmeContent -Encoding utf8
 
@@ -694,8 +865,8 @@ Write-OK "Source bundle:   $bundlePath  (${bundleSizeMB} MB, for VS Code editing
 Write-OK "Framework:       Microsoft.AspNetCore.App $customVersion"
 Write-Host ""
 Write-Host "  Published app  — copy to the target machine and run the executable directly." -ForegroundColor White
-Write-Host "  Source bundle  — open in VS Code on a machine with .NET 11 Preview SDK." -ForegroundColor White
-Write-Host "                   No internet needed for NuGet restore." -ForegroundColor White
+Write-Host "  Source bundle  — run 'pwsh ./setup.ps1' once, then open in VS Code." -ForegroundColor White
+Write-Host "                   No admin rights or system modifications needed." -ForegroundColor White
 Write-Host ""
 
 }
