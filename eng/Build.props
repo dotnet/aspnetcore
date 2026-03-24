@@ -99,6 +99,10 @@
           <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
         </ProjectToBuild>
       </ItemGroup>
+      <!-- Disable parallel restore for all pass-2 projects to mitigate https://github.com/dotnet/dotnet/issues/4558 -->
+      <ItemGroup>
+        <ProjectToBuild Update="@(ProjectToBuild)" RestoreInParallel="false" />
+      </ItemGroup>
     </When>
     <Otherwise>
       <!-- BuildNative -->
