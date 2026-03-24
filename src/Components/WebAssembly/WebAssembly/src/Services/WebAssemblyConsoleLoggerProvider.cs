@@ -3,7 +3,6 @@
 
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop.WebAssembly;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 
@@ -12,22 +11,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 /// </summary>
 internal sealed class WebAssemblyConsoleLoggerProvider : ILoggerProvider
 {
-    private readonly ConcurrentDictionary<string, WebAssemblyConsoleLogger<object>> _loggers;
-    private readonly WebAssemblyJSRuntime _jsRuntime;
-
-    /// <summary>
-    /// Creates an instance of <see cref="WebAssemblyConsoleLoggerProvider"/>.
-    /// </summary>
-    public WebAssemblyConsoleLoggerProvider(WebAssemblyJSRuntime jsRuntime)
-    {
-        _loggers = new ConcurrentDictionary<string, WebAssemblyConsoleLogger<object>>();
-        _jsRuntime = jsRuntime;
-    }
+    private readonly ConcurrentDictionary<string, WebAssemblyConsoleLogger<object>> _loggers = new();
 
     /// <inheritdoc />
     public ILogger CreateLogger(string name)
     {
-        return _loggers.GetOrAdd(name, loggerName => new WebAssemblyConsoleLogger<object>(name, _jsRuntime));
+        return _loggers.GetOrAdd(name, static loggerName => new WebAssemblyConsoleLogger<object>(loggerName));
     }
 
     /// <inheritdoc />
