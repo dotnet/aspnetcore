@@ -6,9 +6,13 @@ import { DotNet } from '@microsoft/dotnet-js-interop';
 export const Virtualize = {
   init,
   dispose,
+  scrollToBottom,
+  measureRenderedItems,
+  refreshObservers,
 };
 
 const dispatcherObserversByDotNetIdPropname = Symbol();
+const THROTTLE_MS = 50;
 
 function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | null {
   // If we recurse up as far as body or the document root, return null so that the
@@ -21,19 +25,69 @@ function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | 
 
   const style = getComputedStyle(element);
 
-  if (style.overflowY !== 'visible') {
+  if (style.overflowY !== 'visible' && style.overflowY !== 'hidden' && style.overflowY !== 'clip') {
     return element;
   }
 
   return findClosestScrollContainer(element.parentElement);
 }
 
+function getScaleFactor(spacerBefore: HTMLElement, spacerAfter: HTMLElement): number {
+  const el = spacerBefore.offsetHeight > 0 ? spacerBefore
+    : spacerAfter.offsetHeight > 0 ? spacerAfter
+    : null;
+  if (!el) {
+    return 1;
+  }
+  const scale = el.getBoundingClientRect().height / el.offsetHeight;
+  return (Number.isFinite(scale) && scale > 0) ? scale : 1;
+}
+
+interface MeasurementResult {
+  heightSum: number;
+  heightCount: number;
+  scaleFactor: number;
+}
+
+function measureRenderedItems(spacerBefore: HTMLElement, spacerAfter: HTMLElement): MeasurementResult {
+  const scaleFactor = getScaleFactor(spacerBefore, spacerAfter);
+
+  // Collect <!--virtualize:item--> comment delimiters between spacers (N+1 fence for N items).
+  const delimiters: Comment[] = [];
+  for (let node: Node | null = spacerBefore.nextSibling; node && node !== spacerAfter; node = node.nextSibling) {
+    if (node.nodeType === Node.COMMENT_NODE && node.textContent === 'virtualize:item') {
+      delimiters.push(node as Comment);
+    }
+  }
+
+  if (delimiters.length < 2) {
+    return { heightSum: 0, heightCount: 0, scaleFactor };
+  }
+
+  // Measure total height from first to last delimiter. Using a single Range
+  // naturally includes any table border-spacing between rows.
+  const heightCount = delimiters.length - 1;
+  const range = document.createRange();
+  range.setStartAfter(delimiters[0]);
+  range.setEndBefore(delimiters[delimiters.length - 1]);
+  const heightSum = range.getBoundingClientRect().height / scaleFactor;
+
+  return { heightSum, heightCount, scaleFactor };
+}
+
 function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spacerAfter: HTMLElement, rootMargin = 50): void {
+  // If the component was disposed before the JS interop call completed, the element references may be null
+  // or the elements may have been disconnected from the DOM. Return early to avoid errors.
+  if (!spacerBefore || !spacerAfter || !spacerBefore.isConnected || !spacerAfter.isConnected) {
+    return;
+  }
+
   // Overflow anchoring can cause an ongoing scroll loop, because when we resize the spacers, the browser
   // would update the scroll position to compensate. Then the spacer would remain visible and we'd keep on
   // trying to resize it.
   const scrollContainer = findClosestScrollContainer(spacerBefore);
-  (scrollContainer || document.documentElement).style.overflowAnchor = 'none';
+  const scrollElement = scrollContainer || document.documentElement;
+  scrollElement.style.overflowAnchor = 'none';
 
   const rangeBetweenSpacers = document.createRange();
 
@@ -50,60 +104,239 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   intersectionObserver.observe(spacerBefore);
   intersectionObserver.observe(spacerAfter);
 
-  const mutationObserverBefore = createSpacerMutationObserver(spacerBefore);
-  const mutationObserverAfter = createSpacerMutationObserver(spacerAfter);
+  let convergingElements = false;
+  let convergenceItems: Set<Element> = new Set();
+
+ // ResizeObserver roles:
+  //  1. Always observes both spacers so that when a spacer resizes we re-trigger the
+  //     IntersectionObserver — which otherwise won't fire again for an element that is already visible.
+  //  2. For convergence (sticky-top/bottom) - observes elements for geometry changes, drives the scroll position.
+  const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]): void => {
+    for (const entry of entries) {
+      if (entry.target === spacerBefore || entry.target === spacerAfter) {
+        const spacer = entry.target as HTMLElement;
+        if (spacer.isConnected) {
+          intersectionObserver.unobserve(spacer);
+          intersectionObserver.observe(spacer);
+        }
+      }
+    }
+
+    // Convergence logic: keep scroll pinned to top/bottom while items load.
+    if (convergingToBottom || convergingToTop) {
+      scrollElement.scrollTop = convergingToBottom ? scrollElement.scrollHeight : 0;
+      const spacer = convergingToBottom ? spacerAfter : spacerBefore;
+      if (spacer.offsetHeight === 0) {
+        convergingToBottom = convergingToTop = false;
+        stopConvergenceObserving();
+      }
+    } else if (convergingElements) {
+      stopConvergenceObserving();
+    }
+  });
+
+  // Always observe both spacers for the IntersectionObserver re-trigger.
+  resizeObserver.observe(spacerBefore);
+  resizeObserver.observe(spacerAfter);
+
+  function refreshObservedElements(): void {
+    // C# style updates overwrite the entire style attribute, losing display: table-row.
+    // Re-apply it so spacers participate in table layout alongside bare <tr> items.
+    if (isValidTableElement(spacerAfter.parentElement)) {
+      spacerBefore.style.display = 'table-row';
+      spacerAfter.style.display = 'table-row';
+    }
+
+    // Ensure spacers are always observed (idempotent).
+    resizeObserver.observe(spacerBefore);
+    resizeObserver.observe(spacerAfter);
+
+    // During convergence, keep the observed element set in sync with the DOM.
+    if (convergingElements) {
+      const currentItems: Set<Element> = new Set();
+      for (let el = spacerBefore.nextElementSibling; el && el !== spacerAfter; el = el.nextElementSibling) {
+        resizeObserver.observe(el);
+        currentItems.add(el);
+      }
+      // Unobserve items removed during re-render.
+      for (const el of convergenceItems) {
+        if (!currentItems.has(el)) {
+          resizeObserver.unobserve(el);
+        }
+      }
+      convergenceItems = currentItems;
+    }
+
+    // Don't re-trigger IntersectionObserver here — ResizeObserver handles that
+    // when spacers actually resize. Doing it on every render causes feedback loops.
+  }
+
+  function startConvergenceObserving(): void {
+    if (convergingElements) return;
+    convergingElements = true;
+    for (let el = spacerBefore.nextElementSibling; el && el !== spacerAfter; el = el.nextElementSibling) {
+      resizeObserver.observe(el);
+      convergenceItems.add(el);
+    }
+  }
+
+  function stopConvergenceObserving(): void {
+    if (!convergingElements) return;
+    convergingElements = false;
+    for (const el of convergenceItems) {
+      resizeObserver.unobserve(el);
+    }
+    convergenceItems.clear();
+  }
+
+  let convergingToBottom = false;
+  let convergingToTop = false;
+
+  let pendingJumpToEnd = false;
+  let pendingJumpToStart = false;
+
+  const keydownTarget: EventTarget = scrollContainer || document;
+  function handleJumpKeys(e: Event): void {
+    const ke = e as KeyboardEvent;
+    if (ke.key === 'End') {
+      pendingJumpToEnd = true;
+      pendingJumpToStart = false;
+    } else if (ke.key === 'Home') {
+      pendingJumpToStart = true;
+      pendingJumpToEnd = false;
+    }
+  }
+  keydownTarget.addEventListener('keydown', handleJumpKeys);
 
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
+  let pendingCallbacks: Map<Element, IntersectionObserverEntry> = new Map();
+  let callbackTimeout: ReturnType<typeof setTimeout> | null = null;
+
   observersByDotNetObjectId[id] = {
     intersectionObserver,
-    mutationObserverBefore,
-    mutationObserverAfter,
+    resizeObserver,
+    refreshObservedElements,
+    scrollElement,
+    startConvergenceObserving,
+    onDispose: () => {
+      stopConvergenceObserving();
+      resizeObserver.disconnect();
+      keydownTarget.removeEventListener('keydown', handleJumpKeys);
+      if (callbackTimeout) {
+        clearTimeout(callbackTimeout);
+        callbackTimeout = null;
+      }
+      pendingCallbacks.clear();
+    },
   };
 
-  function createSpacerMutationObserver(spacer: HTMLElement): MutationObserver {
-    // Without the use of thresholds, IntersectionObserver only detects binary changes in visibility,
-    // so if a spacer gets resized but remains visible, no additional callbacks will occur. By unobserving
-    // and reobserving spacers when they get resized, the intersection callback will re-run if they remain visible.
-    const observerOptions = { attributes: true };
-    const mutationObserver = new MutationObserver((mutations: MutationRecord[], observer: MutationObserver): void => {
-      if (isValidTableElement(spacer.parentElement)) {
-        observer.disconnect();
-        spacer.style.display = 'table-row';
-        observer.observe(spacer, observerOptions);
-      }
-
-      intersectionObserver.unobserve(spacer);
-      intersectionObserver.observe(spacer);
-    });
-
-    mutationObserver.observe(spacer, observerOptions);
-
-    return mutationObserver;
+  function flushPendingCallbacks(): void {
+    if (pendingCallbacks.size === 0) return;
+    const entries = Array.from(pendingCallbacks.values());
+    pendingCallbacks.clear();
+    processIntersectionEntries(entries);
   }
 
   function intersectionCallback(entries: IntersectionObserverEntry[]): void {
-    entries.forEach((entry): void => {
-      if (!entry.isIntersecting) {
-        return;
-      }
+    entries.forEach(entry => pendingCallbacks.set(entry.target, entry));
 
-      // To compute the ItemSize, work out the separation between the two spacers. We can't just measure an individual element
-      // because each conceptual item could be made from multiple elements. Using getBoundingClientRect allows for the size to be
-      // a fractional value. It's important not to add or subtract any such fractional values (e.g., to subtract the 'top' of
-      // one item from the 'bottom' of another to get the distance between them) because floating point errors would cause
-      // scrolling glitches.
-      rangeBetweenSpacers.setStartAfter(spacerBefore);
-      rangeBetweenSpacers.setEndBefore(spacerAfter);
-      const spacerSeparation = rangeBetweenSpacers.getBoundingClientRect().height;
-      const containerSize = entry.rootBounds?.height;
+    if (!callbackTimeout) {
+      flushPendingCallbacks();
+
+      callbackTimeout = setTimeout(() => {
+        callbackTimeout = null;
+        flushPendingCallbacks();
+      }, THROTTLE_MS);
+    }
+  }
+
+  function onSpacerAfterVisible(): void {
+    if (spacerAfter.offsetHeight === 0) {
+      if (convergingToBottom) {
+        convergingToBottom = false;
+        stopConvergenceObserving();
+      }
+      return;
+    }
+    if (convergingToBottom) return;
+
+    const atBottom = scrollElement.scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 1;
+    if (!atBottom && !pendingJumpToEnd) return;
+
+    convergingToBottom = true;
+    startConvergenceObserving();
+    if (pendingJumpToEnd) {
+      scrollElement.scrollTop = scrollElement.scrollHeight;
+      pendingJumpToEnd = false;
+    }
+  }
+
+  function onSpacerBeforeVisible(): void {
+    if (spacerBefore.offsetHeight === 0) {
+      if (convergingToTop) {
+        convergingToTop = false;
+        stopConvergenceObserving();
+      }
+      return;
+    }
+    if (convergingToTop) return;
+
+    const atTop = scrollElement.scrollTop < 1;
+    if (!atTop && !pendingJumpToStart) return;
+
+    convergingToTop = true;
+    startConvergenceObserving();
+    if (pendingJumpToStart) {
+      scrollElement.scrollTop = 0;
+      pendingJumpToStart = false;
+    }
+  }
+
+  function processIntersectionEntries(entries: IntersectionObserverEntry[]): void {
+    // Check if the spacers are still in the DOM. They may have been removed if the component was disposed.
+    if (!spacerBefore.isConnected || !spacerAfter.isConnected) {
+      return;
+    }
+
+    const intersectingEntries = entries.filter(entry => {
+      if (entry.isIntersecting) {
+        if (entry.target === spacerAfter) {
+          onSpacerAfterVisible();
+        } else if (entry.target === spacerBefore) {
+          onSpacerBeforeVisible();
+        }
+        return true;
+      }
+      if (entry.target === spacerAfter && convergingToBottom && spacerAfter.offsetHeight > 0) {
+        scrollElement.scrollTop = scrollElement.scrollHeight;
+      } else if (entry.target === spacerBefore && convergingToTop && spacerBefore.offsetHeight > 0) {
+        scrollElement.scrollTop = 0;
+      }
+      return false;
+    });
+
+    if (intersectingEntries.length === 0) {
+      return;
+    }
+
+    const { heightSum: measurementSum, heightCount: measurementCount, scaleFactor } = measureRenderedItems(spacerBefore, spacerAfter);
+
+    rangeBetweenSpacers.setStartAfter(spacerBefore);
+    rangeBetweenSpacers.setEndBefore(spacerAfter);
+    const spacerSeparation = rangeBetweenSpacers.getBoundingClientRect().height / scaleFactor;
+
+    intersectingEntries.forEach((entry): void => {
+      const containerSize = (entry.rootBounds?.height ?? 0) / scaleFactor;
 
       if (entry.target === spacerBefore) {
-        dotNetHelper.invokeMethodAsync('OnSpacerBeforeVisible', entry.intersectionRect.top - entry.boundingClientRect.top, spacerSeparation, containerSize);
+        const spacerSize = (entry.intersectionRect.top - entry.boundingClientRect.top) / scaleFactor;
+        dotNetHelper.invokeMethodAsync('OnSpacerBeforeVisible', spacerSize, spacerSeparation, containerSize, measurementSum, measurementCount);
       } else if (entry.target === spacerAfter && spacerAfter.offsetHeight > 0) {
         // When we first start up, both the "before" and "after" spacers will be visible, but it's only relevant to raise a
         // single event to load the initial data. To avoid raising two events, skip the one for the "after" spacer if we know
         // it's meaningless to talk about any overlap into it.
-        dotNetHelper.invokeMethodAsync('OnSpacerAfterVisible', entry.boundingClientRect.bottom - entry.intersectionRect.bottom, spacerSeparation, containerSize);
+        const spacerSize = (entry.boundingClientRect.bottom - entry.intersectionRect.bottom) / scaleFactor;
+        dotNetHelper.invokeMethodAsync('OnSpacerAfterVisible', spacerSize, spacerSeparation, containerSize, measurementSum, measurementCount);
       }
     });
   }
@@ -116,6 +349,21 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     return ((element instanceof HTMLTableElement && element.style.display === '') || element.style.display === 'table')
       || ((element instanceof HTMLTableSectionElement && element.style.display === '') || element.style.display === 'table-row-group');
   }
+}
+
+function scrollToBottom(dotNetHelper: DotNet.DotNetObject): void {
+  const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
+  const entry = observersByDotNetObjectId[id];
+  if (entry) {
+    entry.scrollElement.scrollTop = entry.scrollElement.scrollHeight;
+    entry.startConvergenceObserving?.();
+  }
+}
+
+function refreshObservers(dotNetHelper: DotNet.DotNetObject): void {
+  const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
+  const entry = observersByDotNetObjectId[id];
+  entry?.refreshObservedElements?.();
 }
 
 function getObserversMapEntry(dotNetHelper: DotNet.DotNetObject): { observersByDotNetObjectId: {[id: number]: any }, id: number } {
@@ -135,11 +383,13 @@ function dispose(dotNetHelper: DotNet.DotNetObject): void {
 
   if (observers) {
     observers.intersectionObserver.disconnect();
-    observers.mutationObserverBefore.disconnect();
-    observers.mutationObserverAfter.disconnect();
-
-    dotNetHelper.dispose();
+    observers.resizeObserver?.disconnect();
+    observers.onDispose?.();
 
     delete observersByDotNetObjectId[id];
   }
+
+  // Always dispose the dotNetHelper to release the DotNetObjectReference,
+  // even if init() returned early and no observers were created.
+  dotNetHelper.dispose();
 }

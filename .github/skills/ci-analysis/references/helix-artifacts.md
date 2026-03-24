@@ -30,8 +30,6 @@ The `Files` array contains artifacts with `FileName` and `Uri` properties.
 - **Standard unit tests** → Console logs only, no binlogs
 - **Crash failures** (exit code 134) → Core dumps may be present
 
-Always query the specific work item to see what's available rather than assuming a fixed structure.
-
 ## Common Artifact Patterns
 
 | File Pattern | Purpose | When Useful |
@@ -190,13 +188,13 @@ When you download artifacts via MCP tools or manually, the directory structure c
 
 ### Helix Work Item Downloads
 
-MCP tools for downloading Helix artifacts:
-- **`hlx_download`** — downloads multiple files from a work item. Returns local file paths.
-- **`hlx_download_url`** — downloads a single file by direct URI (from `hlx_files` output). Use when you know exactly which file you need.
+Use your Helix MCP tools to download artifacts:
+- **Download from a work item** — downloads multiple files (supports glob patterns like `*.binlog`). Returns local file paths.
+- **Download by direct URL** — downloads a single file by blob storage URI (from the file listing output). Use when you know exactly which file you need.
 
 > 💡 **Prefer remote investigation first**: search file contents, parse test results, and search logs remotely before downloading. Only download when you need to load binlogs or do offline analysis.
 
-`hlx_download` saves files to a temp directory. The structure is **flat** — all files from the work item land in one directory:
+Downloading from a work item saves files to a temp directory. The structure is **flat** — all files land in one directory:
 
 ```
 C:\...\Temp\helix-{hash}\
@@ -278,7 +276,7 @@ Use this whenever you're juggling artifacts from 2+ Helix jobs (especially durin
 - **Multiple binlogs ≠ multiple builds.** A single work item can produce several binlogs if the test suite runs multiple `dotnet build`/`dotnet publish` commands.
 - **Helix and AzDO binlogs can overlap.** Helix binlogs are *usually* from test execution and AzDO binlogs from the build phase, but SDK/Blazor tests invoke MSBuild inside Helix (producing build-like binlogs), and some repos run tests directly on the build agent (producing test binlogs in AzDO). Check both sources if you can't find what you need.
 - **Not all work items have binlogs.** Standard unit tests only produce `testResults.xml` and console logs.
-- **Use `hlx_download` with `pattern:"*.binlog"`** to filter downloads and avoid pulling large console logs.
+- **Filter downloads with `*.binlog` pattern** to avoid pulling large console logs.
 
 ## Artifact Retention
 

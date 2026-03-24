@@ -100,8 +100,8 @@ export function renderBatch(browserRendererId: number, batch: RenderBatch): void
 
 export function scheduleScrollReset(timing: ScrollResetSchedule): void {
   if (timing !== ScrollResetSchedule.AfterBatch) {
-      pendingScrollResetTiming = timing;
-      return;
+    pendingScrollResetTiming = timing;
+    return;
   }
 
   if (pendingScrollResetTiming !== ScrollResetSchedule.AfterDocumentUpdate) {
