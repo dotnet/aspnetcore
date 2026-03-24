@@ -35,8 +35,8 @@
 
     protected override void OnInitialized()
     {
-        // Create 30 items with initial height of 50px
-        items = Enumerable.Range(0, 30)
+        // 75 items with initial height of 50px (enough for true off-screen virtualization)
+        items = Enumerable.Range(0, 75)
             .Select(i => new DynamicItem { Index = i, Height = 50, IsExpanded = false })
             .ToList();
     }

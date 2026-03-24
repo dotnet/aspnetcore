@@ -1844,4 +1844,97 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var lastElement = Browser.Exists(By.Id("horizontal-overflow-row-999"));
         Browser.True(() => lastElement.Displayed);
     }
+
+    [Fact]
+    public void ViewportAnchoring_ExpandAboveViewport_VisibleItemStaysInPlace()
+    {
+        Browser.MountTestComponent<VirtualizationDynamicContent>();
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        // Scroll down so item 5 is above the viewport but still in DOM an verify its position
+        js.ExecuteScript("arguments[0].scrollTop = 500", container);
+        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) >= 500);
+        Browser.True(() => container.FindElements(By.CssSelector("[data-index='5']")).Count > 0);
+
+        // Record the first visible item and its position relative to the container.
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        var scrollTopBefore = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+
+        Browser.Exists(By.Id("expand-item-5")).Click();
+        Browser.Contains("Item 5 expanded via button", () => Browser.Exists(By.Id("status")).Text);
+
+        // Wait for the expanded the 5th item content to appear in DOM
+        Browser.True(() => container.FindElements(By.CssSelector("[data-index='5'] .expanded-content")).Count > 0);
+
+        var (_, relTopAfter, scrollTopAfter) = GetItemPositionInContainer(js, container, ".item", indexBefore);
+
+        Assert.True(Math.Abs(relTopAfter - relTopBefore) < 5,
+            $"Visible item '{indexBefore}' should not have moved when off-screen item expanded. " +
+            $"RelTop Before: {relTopBefore:F1}, After: {relTopAfter:F1}, Delta: {relTopAfter - relTopBefore:F1}px. " +
+            $"scrollTop: {scrollTopBefore}->{scrollTopAfter}.");
+    }
+
+    [Fact]
+    public void ViewportAnchoring_CollapseAboveViewport_VisibleItemStaysInPlace()
+    {
+        Browser.MountTestComponent<VirtualizationDynamicContent>();
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        // Expand item 5 while it's visible (at the top)
+        Browser.Exists(By.Id("expand-item-5")).Click();
+        Browser.Contains("Item 5 expanded via button", () => Browser.Exists(By.Id("status")).Text);
+
+        // Scroll down past item 5 so it's in overscan above viewport
+        js.ExecuteScript("arguments[0].scrollTop = 600", container);
+        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) >= 600);
+
+        // Record first visible item position relative to container
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("collapse-all")).Click();
+        Browser.Contains("All items collapsed", () => Browser.Exists(By.Id("status")).Text);
+
+        var (_, relTopAfter, _) = GetItemPositionInContainer(js, container, ".item", indexBefore);
+
+        Assert.True(Math.Abs(relTopAfter - relTopBefore) < 5,
+            $"Visible item '{indexBefore}' should not have moved when off-screen item collapsed. " +
+            $"RelTop Before: {relTopBefore:F1}, After: {relTopAfter:F1}, Delta: {relTopAfter - relTopBefore:F1}px");
+    }
+
+    private static (string index, double relTop, long scrollTop) GetItemPositionInContainer(
+        IJavaScriptExecutor js, IWebElement container, string itemSelector, string dataIndex = null)
+    {
+        var result = js.ExecuteScript(@"
+            var container = arguments[0];
+            var selector = arguments[1];
+            var targetIndex = arguments[2];
+            var containerRect = container.getBoundingClientRect();
+            var items = container.querySelectorAll(selector);
+            for (var i = 0; i < items.length; i++) {
+                var item = items[i];
+                var itemRect = item.getBoundingClientRect();
+                if (targetIndex != null) {
+                    if (item.getAttribute('data-index') === targetIndex) {
+                        return { index: targetIndex, relTop: itemRect.top - containerRect.top, scrollTop: container.scrollTop };
+                    }
+                } else if (itemRect.top >= containerRect.top - 1 && itemRect.top < containerRect.bottom) {
+                    return { index: item.getAttribute('data-index'), relTop: itemRect.top - containerRect.top, scrollTop: container.scrollTop };
+                }
+            }
+            return null;
+        ", container, itemSelector, dataIndex) as Dictionary<string, object>;
+
+        Assert.NotNull(result);
+        return (
+            result["index"].ToString(),
+            Convert.ToDouble(result["relTop"], CultureInfo.InvariantCulture),
+            Convert.ToInt64(result["scrollTop"], CultureInfo.InvariantCulture));
+    }
 }

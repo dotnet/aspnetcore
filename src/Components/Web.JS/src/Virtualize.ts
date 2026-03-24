@@ -104,14 +104,19 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   intersectionObserver.observe(spacerBefore);
   intersectionObserver.observe(spacerAfter);
 
-  let convergingElements = false;
-  let convergenceItems: Set<Element> = new Set();
+  const anchoredItems: Map<Element, number> = new Map();
 
- // ResizeObserver roles:
+  function getObservedHeight(entry: ResizeObserverEntry): number {
+    return entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
+  }
+
+  // ResizeObserver roles:
   //  1. Always observes both spacers so that when a spacer resizes we re-trigger the
   //     IntersectionObserver — which otherwise won't fire again for an element that is already visible.
-  //  2. For convergence (sticky-top/bottom) - observes elements for geometry changes, drives the scroll position.
+  //  2. For convergence (sticky-top/bottom) - drives the scroll position to top/bottom.
+  //  3. Viewport anchoring - compensates scroll position when content above the viewport resizes.
   const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]): void => {
+    // 1. Re-trigger IntersectionObserver for spacer resizes.
     for (const entry of entries) {
       if (entry.target === spacerBefore || entry.target === spacerAfter) {
         const spacer = entry.target as HTMLElement;
@@ -122,16 +127,46 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       }
     }
 
-    // Convergence logic: keep scroll pinned to top/bottom while items load.
+    // 2. Convergence: pin scroll to top/bottom while items load.
     if (convergingToBottom || convergingToTop) {
       scrollElement.scrollTop = convergingToBottom ? scrollElement.scrollHeight : 0;
       const spacer = convergingToBottom ? spacerAfter : spacerBefore;
       if (spacer.offsetHeight === 0) {
         convergingToBottom = convergingToTop = false;
-        stopConvergenceObserving();
       }
-    } else if (convergingElements) {
-      stopConvergenceObserving();
+      return; // Skip scroll compensation during convergence.
+    }
+
+    // 3. Viewport anchoring: compensate scroll for above-viewport item changes.
+    let scrollDelta = 0;
+    const containerTop = scrollContainer
+      ? scrollContainer.getBoundingClientRect().top
+      : 0;
+
+    for (const entry of entries) {
+      if (entry.target === spacerBefore || entry.target === spacerAfter) {
+        // Skip spacer entries — spacers resize during normal scroll-driven
+        // rendering. Compensating here would undo normal scrolling.
+        continue;
+      }
+
+      if (entry.target.isConnected) {
+        const el = entry.target as HTMLElement;
+        const oldHeight = anchoredItems.get(el);
+        const newHeight = getObservedHeight(entry);
+        anchoredItems.set(el, newHeight);
+
+        if (oldHeight !== undefined && oldHeight !== newHeight) {
+          // Compensate only if the element is entirely above the viewport.
+          if (el.getBoundingClientRect().bottom <= containerTop) {
+            scrollDelta += (newHeight - oldHeight);
+          }
+        }
+      }
+    }
+
+    if (scrollDelta !== 0 && scrollElement.scrollTop > 0) {
+      scrollElement.scrollTop += scrollDelta;
     }
   });
 
@@ -151,42 +186,27 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     resizeObserver.observe(spacerBefore);
     resizeObserver.observe(spacerAfter);
 
-    // During convergence, keep the observed element set in sync with the DOM.
-    if (convergingElements) {
-      const currentItems: Set<Element> = new Set();
-      for (let el = spacerBefore.nextElementSibling; el && el !== spacerAfter; el = el.nextElementSibling) {
-        resizeObserver.observe(el);
-        currentItems.add(el);
+    // Always observe all rendered items for viewport anchoring. When an item
+    // resizes above the viewport, the ResizeObserver callback compensates scrollTop.
+    const currentItems = new Set<Element>();
+    for (let el = spacerBefore.nextElementSibling; el && el !== spacerAfter; el = el.nextElementSibling) {
+      resizeObserver.observe(el);
+      currentItems.add(el);
+      if (!anchoredItems.has(el)) {
+        anchoredItems.set(el, (el as HTMLElement).offsetHeight);
       }
-      // Unobserve items removed during re-render.
-      for (const el of convergenceItems) {
-        if (!currentItems.has(el)) {
-          resizeObserver.unobserve(el);
-        }
+    }
+
+    // Unobserve items removed during re-render and clean up height tracking.
+    for (const [el] of anchoredItems) {
+      if (!currentItems.has(el)) {
+        resizeObserver.unobserve(el);
+        anchoredItems.delete(el);
       }
-      convergenceItems = currentItems;
     }
 
     // Don't re-trigger IntersectionObserver here — ResizeObserver handles that
     // when spacers actually resize. Doing it on every render causes feedback loops.
-  }
-
-  function startConvergenceObserving(): void {
-    if (convergingElements) return;
-    convergingElements = true;
-    for (let el = spacerBefore.nextElementSibling; el && el !== spacerAfter; el = el.nextElementSibling) {
-      resizeObserver.observe(el);
-      convergenceItems.add(el);
-    }
-  }
-
-  function stopConvergenceObserving(): void {
-    if (!convergingElements) return;
-    convergingElements = false;
-    for (const el of convergenceItems) {
-      resizeObserver.unobserve(el);
-    }
-    convergenceItems.clear();
   }
 
   let convergingToBottom = false;
@@ -217,9 +237,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     resizeObserver,
     refreshObservedElements,
     scrollElement,
-    startConvergenceObserving,
     onDispose: () => {
-      stopConvergenceObserving();
+      anchoredItems.clear();
       resizeObserver.disconnect();
       keydownTarget.removeEventListener('keydown', handleJumpKeys);
       if (callbackTimeout) {
@@ -254,7 +273,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     if (spacerAfter.offsetHeight === 0) {
       if (convergingToBottom) {
         convergingToBottom = false;
-        stopConvergenceObserving();
       }
       return;
     }
@@ -264,7 +282,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     if (!atBottom && !pendingJumpToEnd) return;
 
     convergingToBottom = true;
-    startConvergenceObserving();
     if (pendingJumpToEnd) {
       scrollElement.scrollTop = scrollElement.scrollHeight;
       pendingJumpToEnd = false;
@@ -275,7 +292,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     if (spacerBefore.offsetHeight === 0) {
       if (convergingToTop) {
         convergingToTop = false;
-        stopConvergenceObserving();
       }
       return;
     }
@@ -285,7 +301,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     if (!atTop && !pendingJumpToStart) return;
 
     convergingToTop = true;
-    startConvergenceObserving();
     if (pendingJumpToStart) {
       scrollElement.scrollTop = 0;
       pendingJumpToStart = false;
@@ -356,7 +371,6 @@ function scrollToBottom(dotNetHelper: DotNet.DotNetObject): void {
   const entry = observersByDotNetObjectId[id];
   if (entry) {
     entry.scrollElement.scrollTop = entry.scrollElement.scrollHeight;
-    entry.startConvergenceObserving?.();
   }
 }
 
