@@ -1,0 +1,19 @@
+<!--
+  Microsoft.AspNetCore.Components.Testing.props
+  =========================
+  Default property values for E2E test projects that reference Microsoft.AspNetCore.Components.Testing.
+  Imported automatically via NuGet (buildTransitive) or via direct Import in dev scenarios.
+-->
+<Project>
+
+  <PropertyGroup>
+    <!-- Controls whether app projects are published at build time for faster startup.
+         Set to true to use published executables instead of 'dotnet run'. -->
+    <UsePublishedApp Condition="'$(UsePublishedApp)' == ''">false</UsePublishedApp>
+
+    <!-- Workaround for .NET 10 SDK ApplyCompressionNegotiation bug.
+         Disabling compression avoids build failures when publishing Blazor apps. -->
+    <CompressionEnabled Condition="'$(CompressionEnabled)' == ''">false</CompressionEnabled>
+  </PropertyGroup>
+
+</Project>

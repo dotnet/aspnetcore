@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <!-- Use xUnit v3 instead of the Arcade SDK's auto-included xUnit v2 -->
+    <UsingToolXUnit>false</UsingToolXUnit>
+    <!-- Disable InternalTesting assembly attribute generation (uses xUnit v2 attributes) -->
+    <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
+    <!-- xunit.v3 requires xunit.analyzers >= 1.27.0 but the repo pins 1.15.0 -->
+    <!-- NU1903: Transitive Newtonsoft.Json vulnerability from nuget.org packages -->
+    <!-- CA1310: String comparisons in test assertions don't need StringComparison -->
+    <NoWarn>$(NoWarn);NU1605;NU1903;CA1310</NoWarn>
+  </PropertyGroup>
+
+  <!-- Remove auto-added test infra references from CSharp.Common.props that conflict with xUnit v3 -->
+  <ItemGroup>
+    <Reference Remove="Microsoft.AspNetCore.InternalTesting" />
+    <Reference Remove="Moq" />
+    <Compile Remove="$(SharedSourceRoot)test\SuccessfulTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="xunit.v3" />
+    <Reference Include="NSubstitute" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\Microsoft.AspNetCore.Components.Testing.csproj" />
+    <ProjectReference Include="..\gen\Microsoft.AspNetCore.Components.Testing.Generators.csproj" />
+  </ItemGroup>
+
+</Project>
