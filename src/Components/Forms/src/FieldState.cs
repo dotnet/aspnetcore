@@ -20,6 +20,12 @@ internal sealed class FieldState
 
     public bool IsModified { get; set; }
 
+    // Async validation tracking: the currently-tracked async validation task for this field,
+    // the CancellationTokenSource that can cancel it, and whether the last task faulted.
+    internal Task? PendingValidationTask { get; set; }
+    internal CancellationTokenSource? PendingValidationCts { get; set; }
+    internal bool IsValidationFaulted { get; set; }
+
     public IEnumerable<string> GetValidationMessages()
     {
         if (_validationMessageStores != null)

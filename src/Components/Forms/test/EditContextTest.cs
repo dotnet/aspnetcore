@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable CS0618 // Validate() is obsolete — existing tests exercise backward compat
+
 namespace Microsoft.AspNetCore.Components.Forms;
 
 public class EditContextTest
@@ -349,5 +351,299 @@ public class EditContextTest
         {
             return StringComparer.Ordinal.GetHashCode(Property);
         }
+    }
+
+    // --- Async validation tests ---
+
+    [Fact]
+    public async Task ValidateAsync_InvokesSyncAndAsyncHandlers()
+    {
+        var editContext = new EditContext(new object());
+        var messages = new ValidationMessageStore(editContext);
+
+        editContext.OnValidationRequested += (sender, _) =>
+        {
+            messages.Add(editContext.Field("field1"), "sync error");
+        };
+
+        editContext.OnValidationRequestedAsync += async (sender, _) =>
+        {
+            await Task.Yield();
+            messages.Add(editContext.Field("field2"), "async error");
+        };
+
+        var isValid = await editContext.ValidateAsync();
+
+        Assert.False(isValid);
+        Assert.Equal(new[] { "async error", "sync error" },
+            editContext.GetValidationMessages().OrderBy(x => x));
+    }
+
+    [Fact]
+    public async Task ValidateAsync_ReturnsTrueWhenNoMessages()
+    {
+        var editContext = new EditContext(new object());
+        var syncHandlerCalled = false;
+        var asyncHandlerCalled = false;
+
+        editContext.OnValidationRequested += (_, _) => syncHandlerCalled = true;
+        editContext.OnValidationRequestedAsync += async (_, _) =>
+        {
+            await Task.Yield();
+            asyncHandlerCalled = true;
+        };
+
+        var isValid = await editContext.ValidateAsync();
+
+        Assert.True(isValid);
+        Assert.True(syncHandlerCalled);
+        Assert.True(asyncHandlerCalled);
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WorksWithNoHandlers()
+    {
+        var editContext = new EditContext(new object());
+
+        var isValid = await editContext.ValidateAsync();
+
+        Assert.True(isValid);
+    }
+
+    [Fact]
+    public async Task ValidateAsync_CancelsPendingFieldTasksBeforeRunning()
+    {
+        var editContext = new EditContext(new object());
+        var field = editContext.Field("field1");
+        var cts = new CancellationTokenSource();
+        var tcs = new TaskCompletionSource();
+
+        editContext.AddValidationTask(field, tcs.Task, cts);
+        Assert.True(editContext.IsValidationPending(field));
+
+        await editContext.ValidateAsync();
+
+        Assert.True(cts.IsCancellationRequested);
+        Assert.False(editContext.IsValidationPending(field));
+    }
+
+    [Fact]
+    public async Task AddValidationTask_TracksPendingState()
+    {
+        var editContext = new EditContext(new object());
+        var field = editContext.Field("field1");
+        var otherField = editContext.Field("field2");
+        var tcs = new TaskCompletionSource();
+        var cts = new CancellationTokenSource();
+
+        Assert.False(editContext.IsValidationPending());
+        Assert.False(editContext.IsValidationPending(field));
+
+        editContext.AddValidationTask(field, tcs.Task, cts);
+
+        Assert.True(editContext.IsValidationPending());
+        Assert.True(editContext.IsValidationPending(field));
+        Assert.False(editContext.IsValidationPending(otherField));
+
+        tcs.SetResult();
+        await tcs.Task;
+        // Allow the ObserveValidationTaskAsync continuation to run
+        await Task.Yield();
+
+        Assert.False(editContext.IsValidationPending());
+        Assert.False(editContext.IsValidationPending(field));
+    }
+
+    [Fact]
+    public async Task AddValidationTask_CancelsPreviousTaskForSameField()
+    {
+        var editContext = new EditContext(new object());
+        var field = editContext.Field("field1");
+
+        var cts1 = new CancellationTokenSource();
+        var tcs1 = new TaskCompletionSource();
+        editContext.AddValidationTask(field, tcs1.Task, cts1);
+
+        var cts2 = new CancellationTokenSource();
+        var tcs2 = new TaskCompletionSource();
+        editContext.AddValidationTask(field, tcs2.Task, cts2);
+
+        Assert.True(cts1.IsCancellationRequested);
+        Assert.False(cts2.IsCancellationRequested);
+        Assert.True(editContext.IsValidationPending(field));
+
+        tcs2.SetResult();
+        await Task.Yield();
+
+        Assert.False(editContext.IsValidationPending(field));
+    }
+
+    [Fact]
+    public async Task AddValidationTask_FaultedTaskSetsFaultedState()
+    {
+        var editContext = new EditContext(new object());
+        var field = editContext.Field("field1");
+        var cts = new CancellationTokenSource();
+        var tcs = new TaskCompletionSource();
+
+        editContext.AddValidationTask(field, tcs.Task, cts);
+
+        Assert.False(editContext.IsValidationFaulted(field));
+        Assert.False(editContext.IsValidationFaulted());
+
+        tcs.SetException(new InvalidOperationException("Network error"));
+        await Task.Delay(50); // Allow continuation to run
+
+        Assert.True(editContext.IsValidationFaulted(field));
+        Assert.True(editContext.IsValidationFaulted());
+        Assert.False(editContext.IsValidationPending(field));
+    }
+
+    [Fact]
+    public async Task AddValidationTask_CancelledTaskDoesNotFault()
+    {
+        var editContext = new EditContext(new object());
+        var field = editContext.Field("field1");
+        var cts = new CancellationTokenSource();
+        var tcs = new TaskCompletionSource();
+
+        editContext.AddValidationTask(field, tcs.Task, cts);
+
+        tcs.SetCanceled();
+        await Task.Delay(50); // Allow continuation to run
+
+        Assert.False(editContext.IsValidationFaulted(field));
+        Assert.False(editContext.IsValidationPending(field));
+    }
+
+    [Fact]
+    public async Task AddValidationTask_StaleTaskDoesNotOverwriteNewTask()
+    {
+        var editContext = new EditContext(new object());
+        var field = editContext.Field("field1");
+
+        var cts1 = new CancellationTokenSource();
+        var tcs1 = new TaskCompletionSource();
+        editContext.AddValidationTask(field, tcs1.Task, cts1);
+
+        var cts2 = new CancellationTokenSource();
+        var tcs2 = new TaskCompletionSource();
+        editContext.AddValidationTask(field, tcs2.Task, cts2);
+
+        // Complete the OLD (stale) task — it should not affect state since a newer task replaced it
+        tcs1.SetException(new InvalidOperationException("stale failure"));
+        await Task.Delay(50);
+
+        // The field should still be pending (tracking the new task), not faulted
+        Assert.True(editContext.IsValidationPending(field));
+        Assert.False(editContext.IsValidationFaulted(field));
+
+        tcs2.SetResult();
+        await Task.Delay(50);
+
+        Assert.False(editContext.IsValidationPending(field));
+        Assert.False(editContext.IsValidationFaulted(field));
+    }
+
+    [Fact]
+    public async Task AddValidationTask_ClearsFaultedStateOnNewTask()
+    {
+        var editContext = new EditContext(new object());
+        var field = editContext.Field("field1");
+
+        // First task faults
+        var cts1 = new CancellationTokenSource();
+        var tcs1 = new TaskCompletionSource();
+        editContext.AddValidationTask(field, tcs1.Task, cts1);
+        tcs1.SetException(new InvalidOperationException("fail"));
+        await Task.Delay(50);
+        Assert.True(editContext.IsValidationFaulted(field));
+
+        // Adding a new task clears faulted state
+        var cts2 = new CancellationTokenSource();
+        var tcs2 = new TaskCompletionSource();
+        editContext.AddValidationTask(field, tcs2.Task, cts2);
+
+        Assert.False(editContext.IsValidationFaulted(field));
+        Assert.True(editContext.IsValidationPending(field));
+
+        tcs2.SetResult();
+        await Task.Yield();
+    }
+
+    [Fact]
+    public void AddValidationTask_NotifiesValidationStateChanged()
+    {
+        var editContext = new EditContext(new object());
+        var field = editContext.Field("field1");
+        var notificationCount = 0;
+        editContext.OnValidationStateChanged += (_, _) => notificationCount++;
+
+        var tcs = new TaskCompletionSource();
+        var cts = new CancellationTokenSource();
+        editContext.AddValidationTask(field, tcs.Task, cts);
+
+        Assert.Equal(1, notificationCount);
+    }
+
+    [Fact]
+    public async Task AddValidationTask_NotifiesValidationStateChangedOnCompletion()
+    {
+        var editContext = new EditContext(new object());
+        var field = editContext.Field("field1");
+        var notificationCount = 0;
+        editContext.OnValidationStateChanged += (_, _) => notificationCount++;
+
+        var tcs = new TaskCompletionSource();
+        var cts = new CancellationTokenSource();
+        editContext.AddValidationTask(field, tcs.Task, cts);
+        Assert.Equal(1, notificationCount); // From AddValidationTask
+
+        tcs.SetResult();
+        await Task.Delay(50);
+
+        Assert.Equal(2, notificationCount); // From ObserveValidationTaskAsync completion
+    }
+
+    [Fact]
+    public void AddValidationTask_RejectsNullArguments()
+    {
+        var editContext = new EditContext(new object());
+        var field = editContext.Field("field1");
+
+        Assert.Throws<ArgumentNullException>(() =>
+            editContext.AddValidationTask(field, null!, new CancellationTokenSource()));
+
+        Assert.Throws<ArgumentNullException>(() =>
+            editContext.AddValidationTask(field, Task.CompletedTask, null!));
+    }
+
+    [Fact]
+    public async Task ValidateAsync_InvokesMultipleAsyncHandlers()
+    {
+        var editContext = new EditContext(new object());
+        var messages = new ValidationMessageStore(editContext);
+        var handler1Called = false;
+        var handler2Called = false;
+
+        editContext.OnValidationRequestedAsync += async (_, _) =>
+        {
+            await Task.Yield();
+            handler1Called = true;
+            messages.Add(editContext.Field("f1"), "error1");
+        };
+
+        editContext.OnValidationRequestedAsync += async (_, _) =>
+        {
+            await Task.Yield();
+            handler2Called = true;
+            messages.Add(editContext.Field("f2"), "error2");
+        };
+
+        var isValid = await editContext.ValidateAsync();
+
+        Assert.False(isValid);
+        Assert.True(handler1Called);
+        Assert.True(handler2Called);
     }
 }
