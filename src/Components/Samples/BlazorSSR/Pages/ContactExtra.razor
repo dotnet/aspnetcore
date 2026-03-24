@@ -1,4 +1,4 @@
-@page "/contact-extra"
+﻿@page "/contact-extra"
 
 <PageTitle>Contact + Subscribe</PageTitle>
 
@@ -11,7 +11,7 @@
 
 <EditForm Model="ContactFormModel" OnValidSubmit="HandleContactSubmit" Enhance FormName="contact-extra">
     <DataAnnotationsValidator />
-    <ClientSideValidator />
+    <ClientSideValidator IncludeScript="true" />
     <ValidationSummary />
 
     <div class="form-group">
@@ -74,7 +74,7 @@
 
 <EditForm Model="SubscribeFormModel" OnValidSubmit="HandleSubscribeSubmit" Enhance FormName="subscribe-extra">
     <DataAnnotationsValidator />
-    <ClientSideValidator />
+    <ClientSideValidator IncludeScript="true" />
     <ValidationSummary />
 
     <div class="form-group">
