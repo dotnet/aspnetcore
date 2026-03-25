@@ -54,6 +54,9 @@ network:
     - "*.vssps.visualstudio.com"
     - "*.blob.core.windows.net"
 
+checkout:
+  fetch-depth: 0
+
 timeout-minutes: 90
 ---
 
