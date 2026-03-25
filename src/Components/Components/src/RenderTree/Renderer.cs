@@ -100,9 +100,15 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // logger name in here as a string literal.
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
         _componentFactory = new ComponentFactory(componentActivator, GetComponentPropertyActivatorOrDefault(serviceProvider), this);
-        _componentsMetrics = serviceProvider.GetService<ComponentsMetrics>();
-        _componentsActivitySource = serviceProvider.GetService<ComponentsActivitySource>();
-        _componentsActivitySource?.Init(new ComponentsActivityLinkStore(this));
+        if (ComponentsMetrics.IsSupported)
+        {
+            _componentsMetrics = serviceProvider.GetService<ComponentsMetrics>();
+        }
+        if (ComponentsActivitySource.IsSupported)
+        {
+            _componentsActivitySource = serviceProvider.GetService<ComponentsActivitySource>();
+            _componentsActivitySource?.Init(new ComponentsActivityLinkStore(this));
+        }
 
         ServiceProviderCascadingValueSuppliers = serviceProvider.GetService<ICascadingValueSupplier>() is null
             ? Array.Empty<ICascadingValueSupplier>()
