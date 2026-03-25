@@ -1,4 +1,4 @@
-@page "/register"
+﻿@page "/register"
 @rendermode InteractiveServer
 @inject IStringLocalizerFactory LocalizerFactory
 @inject NavigationManager Navigation
@@ -64,12 +64,17 @@
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="btn-primary"
-                    disabled="@(_submitting || _submitted)">
+            <button type="submit" class="btn-primary @(_submittedSuccessfully ? "submitted" : "")"
+                    disabled="@(_submitting || _submittedSuccessfully)">
                 @if (_submitting)
                 {
                     <span class="spinner"></span>
                     <span>@L["SubmittingButton"]</span>
+                }
+                else if (_submittedSuccessfully)
+                {
+                    <span class="checkmark"></span>
+                    <span>@L["SubmittedSuccessfullyButton"]</span>
                 }
                 else
                 {
@@ -77,13 +82,9 @@
                 }
             </button>
 
-            @if (_submitted)
+            @if (_submittedSuccessfully)
             {
                 <div class="submit-message success">@L["SuccessMessage"]</div>
-            }
-            else if (_submitFailed)
-            {
-                <div class="submit-message failure">@L["FailureMessage"]</div>
             }
         </div>
 
@@ -97,8 +98,7 @@
     private RegistrationModel _model = new();
     private EditContext _editContext = default!;
     private bool _submitting;
-    private bool _submitted;
-    private bool _submitFailed;
+    private bool _submittedSuccessfully;
 
     protected override void OnInitialized()
     {
@@ -114,21 +114,11 @@
     private async Task HandleSubmit()
     {
         _submitting = true;
-        _submitted = false;
-        _submitFailed = false;
+        _submittedSuccessfully = false;
         StateHasChanged();
 
-        var isValid = await _editContext.ValidateAsync();
+        _submittedSuccessfully = await _editContext.ValidateAsync();
 
         _submitting = false;
-
-        if (isValid)
-        {
-            _submitted = true;
-        }
-        else
-        {
-            _submitFailed = true;
-        }
     }
 }

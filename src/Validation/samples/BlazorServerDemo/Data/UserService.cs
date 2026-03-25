@@ -42,8 +42,8 @@ public sealed class UserService
     {
         await Task.Delay(2000, cancellationToken);
 
-        // Simulate a random infrastructure failure ~20% of the time for "blaz" prefix
-        if (username.StartsWith("blaz", StringComparison.OrdinalIgnoreCase) && Random.Shared.Next(5) == 0)
+        // Simulate a random infrastructure failure for "f" prefix
+        if (username.StartsWith("f", StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException("Simulated server error checking username availability.");
         }
