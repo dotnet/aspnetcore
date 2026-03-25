@@ -14,6 +14,7 @@
 
     <EditForm EditContext="_editContext" OnSubmit="HandleSubmit">
         <DataAnnotationsValidator />
+        <fieldset disabled="@(_submitting || _submittedSuccessfully)">
 
         <div class="form-group">
             <label class="form-label" for="email">@L["Email"]</label>
@@ -64,8 +65,7 @@
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="btn-primary"
-                    disabled="@(_submitting || _submittedSuccessfully)">
+            <button type="submit" class="btn-primary">
                 @if (_submitting)
                 {
                     <span class="spinner"></span>
@@ -90,6 +90,8 @@
         <div class="validation-summary-container">
             <ValidationSummary />
         </div>
+
+        </fieldset>
     </EditForm>
 </div>
 

@@ -507,3 +507,19 @@ ul.validation-errors {
     cursor: not-allowed;
     box-shadow: none;
 }
+
+fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+fieldset:disabled .form-input {
+    background: #f1f5f9;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+fieldset:disabled .form-label {
+    color: #94a3b8;
+}

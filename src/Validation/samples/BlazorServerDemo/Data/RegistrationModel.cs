@@ -31,7 +31,8 @@ public class RegistrationModel
     /// <summary>
     /// Gets or sets the user's age.
     /// </summary>
-    [Range(18, 120, ErrorMessage = "RangeError")]
+    [Required(ErrorMessage = "RequiredError")]
+    [Range(13, 120, ErrorMessage = "RangeError")]
     [Display(Name = "Age")]
     public int? Age { get; set; }
 
