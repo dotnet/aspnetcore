@@ -89,6 +89,11 @@ public static partial class EditContextDataAnnotationsExtensions
                 var propertyInfo = typeInfo.GetProperty(fieldIdentifier.FieldName);
                 if (propertyInfo is not null)
                 {
+                    // Clear stale messages immediately so the field shows neutral state
+                    // while async validation is in progress.
+                    _messages.Clear(fieldIdentifier);
+                    _editContext.NotifyValidationStateChanged();
+
                     var cts = new CancellationTokenSource();
                     var task = ValidateFieldWithMevAsync(fieldIdentifier, propertyInfo, cts.Token);
 
@@ -151,7 +156,18 @@ public static partial class EditContextDataAnnotationsExtensions
                 ValidationContext = validationContext,
             };
 
-            await propertyInfo.ValidateAsync(fieldIdentifier.Model, validateContext, cancellationToken);
+            try
+            {
+                await propertyInfo.ValidateAsync(fieldIdentifier.Model, validateContext, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // Task was cancelled (user re-edited field or form is submitting).
+                // Clear stale messages so the field shows a neutral state, not old results.
+                _messages.Clear(fieldIdentifier);
+                _editContext.NotifyValidationStateChanged();
+                return;
+            }
 
             // Transfer results to the ValidationMessageStore
             _messages.Clear(fieldIdentifier);
