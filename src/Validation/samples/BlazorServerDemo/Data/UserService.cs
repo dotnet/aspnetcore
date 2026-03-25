@@ -45,7 +45,7 @@ public sealed class UserService
         // Simulate a random infrastructure failure for "f" prefix
         if (username.StartsWith("f", StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException("Simulated server error checking username availability.");
+            throw new InvalidOperationException("An error occurred while checking username availability.");
         }
 
         return RegisteredUsernames.Contains(username);

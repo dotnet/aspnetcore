@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable ASP0029 // ValidatableTypeAttribute is experimental
-
 using System.ComponentModel.DataAnnotations;
-using Microsoft.Extensions.Validation;
 
 namespace BlazorSsrDemo.Models;
 

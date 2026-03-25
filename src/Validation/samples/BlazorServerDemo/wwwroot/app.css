@@ -8,24 +8,24 @@
 }
 
 :root {
-    --color-primary: #0d9488;
-    --color-primary-hover: #0f766e;
-    --color-primary-subtle: rgba(13, 148, 136, 0.08);
-    --color-primary-ring: rgba(13, 148, 136, 0.25);
-    --color-primary-dark: #115e59;
-    --text: #1e293b;
+    --color-primary: #3b82f6;
+    --color-primary-hover: #2563eb;
+    --color-primary-subtle: rgba(59, 130, 246, 0.08);
+    --color-primary-ring: rgba(59, 130, 246, 0.25);
+    --color-primary-dark: #1d4ed8;
+    --text: #0f172a;
     --text-muted: #64748b;
     --bg: #f8fafc;
     --surface: #ffffff;
     --border: #e2e8f0;
-    --error: #dc2626;
+    --error: #ef4444;
     --error-bg: #fef2f2;
-    --success: #16a34a;
-    --success-bg: #f0fdf4;
-    --warning: #d97706;
+    --success: #10b981;
+    --success-bg: #ecfdf5;
+    --warning: #f59e0b;
     --warning-bg: #fffbeb;
-    --info: #0d9488;
-    --info-bg: #f0fdfa;
+    --info: #3b82f6;
+    --info-bg: #eff6ff;
     --radius: 12px;
     --radius-sm: 8px;
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -316,7 +316,7 @@ input.form-input {
     box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
 }
 
-/* Pending state — teal pulsing border */
+/* Pending state — blue pulsing border */
 .form-input.modified.pending {
     border-color: var(--color-primary);
     animation: pulse-border 1.5s ease-in-out infinite;
@@ -324,7 +324,7 @@ input.form-input {
 
 @keyframes pulse-border {
     0%, 100% { box-shadow: 0 0 0 3px var(--color-primary-ring); }
-    50% { box-shadow: 0 0 0 5px rgba(13, 148, 136, 0.1); }
+    50% { box-shadow: 0 0 0 5px rgba(59, 130, 246, 0.1); }
 }
 
 .form-input::placeholder {
