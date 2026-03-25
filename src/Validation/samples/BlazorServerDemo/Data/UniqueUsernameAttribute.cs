@@ -9,18 +9,10 @@ namespace BlazorServerDemo.Data;
 
 /// <summary>
 /// Validates that a username is not already taken.
-/// Simulates a 2-second database round-trip with occasional failures.
+/// Resolves <see cref="UserService"/> from DI to perform the check.
 /// </summary>
 public sealed class UniqueUsernameAttribute : AsyncValidationAttribute
 {
-    private static readonly HashSet<string> TakenUsernames = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "admin",
-        "root",
-        "blazor",
-        "danroth",
-    };
-
     public UniqueUsernameAttribute()
     {
         ErrorMessage = "UniqueUsernameError";
@@ -36,16 +28,9 @@ public sealed class UniqueUsernameAttribute : AsyncValidationAttribute
             return ValidationResult.Success;
         }
 
-        // Simulate a database round-trip
-        await Task.Delay(2000, cancellationToken);
+        var userService = validationContext.GetRequiredService<UserService>();
 
-        // Simulate a random infrastructure failure ~20% of the time for "blaz" prefix
-        if (username.StartsWith("blaz", StringComparison.OrdinalIgnoreCase) && Random.Shared.Next(5) == 0)
-        {
-            throw new InvalidOperationException("Simulated server error checking username availability.");
-        }
-
-        if (TakenUsernames.Contains(username))
+        if (await userService.IsUsernameTakenAsync(username, cancellationToken))
         {
             return new ValidationResult(
                 string.Format(CultureInfo.CurrentCulture, ErrorMessageString, username),

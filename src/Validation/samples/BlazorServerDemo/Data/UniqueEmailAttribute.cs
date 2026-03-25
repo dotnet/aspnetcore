@@ -9,17 +9,10 @@ namespace BlazorServerDemo.Data;
 
 /// <summary>
 /// Validates that an email address is not already registered.
-/// Simulates a 1.5-second database round-trip.
+/// Resolves <see cref="UserService"/> from DI to perform the check.
 /// </summary>
 public sealed class UniqueEmailAttribute : AsyncValidationAttribute
 {
-    private static readonly HashSet<string> TakenEmails = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "admin@example.com",
-        "test@example.com",
-        "user@example.com",
-    };
-
     public UniqueEmailAttribute()
     {
         ErrorMessage = "UniqueEmailError";
@@ -35,10 +28,9 @@ public sealed class UniqueEmailAttribute : AsyncValidationAttribute
             return ValidationResult.Success;
         }
 
-        // Simulate a database round-trip
-        await Task.Delay(1500, cancellationToken);
+        var userService = validationContext.GetRequiredService<UserService>();
 
-        if (TakenEmails.Contains(email))
+        if (await userService.IsEmailTakenAsync(email, cancellationToken))
         {
             return new ValidationResult(
                 string.Format(CultureInfo.CurrentCulture, ErrorMessageString, email),

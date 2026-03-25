@@ -13,6 +13,7 @@ builder.Services.AddRazorComponents()
 
 // Register JSON-based localizer
 builder.Services.AddSingleton<IStringLocalizerFactory, JsonStringLocalizerFactory>();
+builder.Services.AddSingleton<BlazorServerDemo.Data.UserService>();
 
 // Configure request localization
 builder.Services.Configure<RequestLocalizationOptions>(options =>
