@@ -304,6 +304,29 @@ input.form-input {
     box-shadow: 0 0 0 3px var(--color-primary-ring);
 }
 
+/* Valid state — green border after successful validation */
+.form-input.modified.valid {
+    border-color: var(--success);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+/* Invalid state — red border */
+.form-input.modified.invalid {
+    border-color: var(--error);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+/* Pending state — teal pulsing border */
+.form-input.modified.pending {
+    border-color: var(--color-primary);
+    animation: pulse-border 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-border {
+    0%, 100% { box-shadow: 0 0 0 3px var(--color-primary-ring); }
+    50% { box-shadow: 0 0 0 5px rgba(13, 148, 136, 0.1); }
+}
+
 .form-input::placeholder {
     color: #94a3b8;
 }
@@ -466,4 +489,24 @@ ul.validation-errors {
     .brand-text {
         font-size: 0.95rem;
     }
+}
+
+/* ===== Spinner ===== */
+.spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.btn-primary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
 }

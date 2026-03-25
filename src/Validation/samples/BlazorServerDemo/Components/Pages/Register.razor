@@ -12,7 +12,7 @@
 <div class="form-container">
     <h2 class="form-title">@L["FormTitle"]</h2>
 
-    <EditForm EditContext="_editContext" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+    <EditForm EditContext="_editContext" OnSubmit="HandleSubmit">
         <DataAnnotationsValidator />
 
         <div class="form-group">
@@ -50,12 +50,6 @@
         </div>
 
         <div class="form-group">
-            <label class="form-label" for="displayname">@L["DisplayName"]</label>
-            <InputText id="displayname" class="form-input" @bind-Value="_model.DisplayName" placeholder="@L["DisplayNamePlaceholder"]" />
-            <ValidationMessage For="() => _model.DisplayName" />
-        </div>
-
-        <div class="form-group">
             <label class="form-label" for="age">@L["Age"]</label>
             <InputNumber id="age" class="form-input" @bind-Value="_model.Age" placeholder="@L["AgePlaceholder"]" />
             <ValidationMessage For="() => _model.Age" />
@@ -71,9 +65,10 @@
 
         <div class="form-actions">
             <button type="submit" class="btn-primary"
-                    disabled="@(_editContext.IsValidationPending() || _submitted)">
-                @if (_editContext.IsValidationPending())
+                    disabled="@(_submitting || _submitted)">
+                @if (_submitting)
                 {
+                    <span class="spinner"></span>
                     <span>@L["SubmittingButton"]</span>
                 }
                 else
@@ -101,6 +96,7 @@
 @code {
     private RegistrationModel _model = new();
     private EditContext _editContext = default!;
+    private bool _submitting;
     private bool _submitted;
     private bool _submitFailed;
 
@@ -115,15 +111,24 @@
         InvokeAsync(StateHasChanged);
     }
 
-    private void HandleValidSubmit()
+    private async Task HandleSubmit()
     {
-        _submitted = true;
-        _submitFailed = false;
-    }
-
-    private void HandleInvalidSubmit()
-    {
+        _submitting = true;
         _submitted = false;
-        _submitFailed = true;
+        _submitFailed = false;
+        StateHasChanged();
+
+        var isValid = await _editContext.ValidateAsync();
+
+        _submitting = false;
+
+        if (isValid)
+        {
+            _submitted = true;
+        }
+        else
+        {
+            _submitFailed = true;
+        }
     }
 }

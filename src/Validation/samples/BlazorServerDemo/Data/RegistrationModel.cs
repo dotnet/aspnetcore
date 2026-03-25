@@ -29,13 +29,6 @@ public class RegistrationModel
     public string Username { get; set; } = "";
 
     /// <summary>
-    /// Gets or sets the user's display name.
-    /// </summary>
-    [Required(ErrorMessage = "RequiredError")]
-    [Display(Name = "DisplayName")]
-    public string DisplayName { get; set; } = "";
-
-    /// <summary>
     /// Gets or sets the user's age.
     /// </summary>
     [Range(18, 120, ErrorMessage = "RangeError")]
