@@ -13,7 +13,6 @@ public class OpenApiAddURLTests : OpenApiTestBase
     public OpenApiAddURLTests(ITestOutputHelper output) : base(output) { }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61225")]
     public async Task OpenApi_Add_Url_WithContentDisposition()
     {
         var project = CreateBasicProject(withOpenApi: false);

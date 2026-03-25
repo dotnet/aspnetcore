@@ -7,7 +7,6 @@ export const Virtualize = {
   init,
   dispose,
   scrollToBottom,
-  measureRenderedItems,
   refreshObservers,
 };
 
@@ -41,38 +40,6 @@ function getScaleFactor(spacerBefore: HTMLElement, spacerAfter: HTMLElement): nu
   }
   const scale = el.getBoundingClientRect().height / el.offsetHeight;
   return (Number.isFinite(scale) && scale > 0) ? scale : 1;
-}
-
-interface MeasurementResult {
-  heightSum: number;
-  heightCount: number;
-  scaleFactor: number;
-}
-
-function measureRenderedItems(spacerBefore: HTMLElement, spacerAfter: HTMLElement): MeasurementResult {
-  const scaleFactor = getScaleFactor(spacerBefore, spacerAfter);
-
-  // Collect <!--virtualize:item--> comment delimiters between spacers (N+1 fence for N items).
-  const delimiters: Comment[] = [];
-  for (let node: Node | null = spacerBefore.nextSibling; node && node !== spacerAfter; node = node.nextSibling) {
-    if (node.nodeType === Node.COMMENT_NODE && node.textContent === 'virtualize:item') {
-      delimiters.push(node as Comment);
-    }
-  }
-
-  if (delimiters.length < 2) {
-    return { heightSum: 0, heightCount: 0, scaleFactor };
-  }
-
-  // Measure total height from first to last delimiter. Using a single Range
-  // naturally includes any table border-spacing between rows.
-  const heightCount = delimiters.length - 1;
-  const range = document.createRange();
-  range.setStartAfter(delimiters[0]);
-  range.setEndBefore(delimiters[delimiters.length - 1]);
-  const heightSum = range.getBoundingClientRect().height / scaleFactor;
-
-  return { heightSum, heightCount, scaleFactor };
 }
 
 function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spacerAfter: HTMLElement, rootMargin = 50): void {
@@ -319,7 +286,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       return;
     }
 
-    const { heightSum: measurementSum, heightCount: measurementCount, scaleFactor } = measureRenderedItems(spacerBefore, spacerAfter);
+    const scaleFactor = getScaleFactor(spacerBefore, spacerAfter);
 
     rangeBetweenSpacers.setStartAfter(spacerBefore);
     rangeBetweenSpacers.setEndBefore(spacerAfter);
@@ -330,13 +297,13 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
       if (entry.target === spacerBefore) {
         const spacerSize = (entry.intersectionRect.top - entry.boundingClientRect.top) / scaleFactor;
-        dotNetHelper.invokeMethodAsync('OnSpacerBeforeVisible', spacerSize, spacerSeparation, containerSize, measurementSum, measurementCount);
+        dotNetHelper.invokeMethodAsync('OnSpacerBeforeVisible', spacerSize, spacerSeparation, containerSize);
       } else if (entry.target === spacerAfter && spacerAfter.offsetHeight > 0) {
         // When we first start up, both the "before" and "after" spacers will be visible, but it's only relevant to raise a
         // single event to load the initial data. To avoid raising two events, skip the one for the "after" spacer if we know
         // it's meaningless to talk about any overlap into it.
         const spacerSize = (entry.boundingClientRect.bottom - entry.intersectionRect.bottom) / scaleFactor;
-        dotNetHelper.invokeMethodAsync('OnSpacerAfterVisible', spacerSize, spacerSeparation, containerSize, measurementSum, measurementCount);
+        dotNetHelper.invokeMethodAsync('OnSpacerAfterVisible', spacerSize, spacerSeparation, containerSize);
       }
     });
   }

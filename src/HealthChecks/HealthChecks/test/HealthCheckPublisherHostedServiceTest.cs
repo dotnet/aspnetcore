@@ -497,7 +497,6 @@ public class HealthCheckPublisherHostedServiceTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/56245")]
     public async Task RunAsync_CanFilterHealthChecks()
     {
         // Arrange
