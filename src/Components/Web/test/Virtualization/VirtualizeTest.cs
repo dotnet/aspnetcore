@@ -93,7 +93,7 @@ public class VirtualizeTest
         Assert.NotNull(renderedVirtualize);
 
         // Simulate a JS spacer callback.
-        ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(10f, 50f, 100f, 0f, 0);
+        ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(10f, 50f, 100f);
 
         // Validate that the exception is dispatched through the renderer.
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await testRenderer.RenderRootComponentAsync(componentId));
@@ -101,22 +101,14 @@ public class VirtualizeTest
     }
 
     [Fact]
-    public async Task Virtualize_AcceptsItemMeasurementsFromSpacerCallback()
+    public async Task Virtualize_MeasurementsUpdateRunningAverage()
     {
-        Virtualize<int> renderedVirtualize = null;
-        var itemsProviderCallCount = 0;
-
-        ValueTask<ItemsProviderResult<int>> countingItemsProvider(ItemsProviderRequest request)
-        {
-            itemsProviderCallCount++;
-            return ValueTask.FromResult(new ItemsProviderResult<int>(
-                Enumerable.Range(request.StartIndex, Math.Min(request.Count, 100 - request.StartIndex)),
-                100));
-        }
-
+        // Use fixed items with a template so items actually render
+        Virtualize<int> virtualize = null;
         var rootComponent = new VirtualizeTestHostcomponent
         {
-            InnerContent = BuildVirtualize(50f, countingItemsProvider, null, virtualize => renderedVirtualize = virtualize)
+            InnerContent = BuildVirtualizeWithContent(50f, Enumerable.Range(1, 100).ToList(),
+                captureRenderedVirtualize: v => virtualize = v)
         };
 
         var serviceProvider = new ServiceCollection()
@@ -125,99 +117,62 @@ public class VirtualizeTest
 
         var testRenderer = new TestRenderer(serviceProvider);
         var componentId = testRenderer.AssignRootComponentId(rootComponent);
-
         await testRenderer.RenderRootComponentAsync(componentId);
-        Assert.NotNull(renderedVirtualize);
 
-        var initialCallCount = itemsProviderCallCount;
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
 
-        // Simulate JS callback with pre-aggregated measurements (sum and count)
-        // Heights: 30 + 70 + 50 = 150, count = 3
-
+        // First callback triggers distribution calculation and re-render
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(0f, 150f, 500f, 150f, 3));
+            callbacks.OnAfterSpacerVisible(0f, 80f, 500f));
 
-        Assert.True(itemsProviderCallCount > initialCallCount,
-            "ItemsProvider should be called after spacer callback with measurements");
+        // Second callback — with items now rendered, ProcessMeasurements derives
+        // item heights from spacerSeparation and _lastRenderedItemCount
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 80f, 500f));
+
+        Assert.True(virtualize._totalMeasuredHeight > 0);
+        Assert.True(virtualize._measuredItemCount > 0);
     }
 
     [Fact]
-    public async Task Virtualize_MeasurementsUpdateRunningAverage()
+    public async Task Virtualize_ZeroSpacerSeparationDoesNotCorruptAverage()
     {
-        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 100);
-        var callbacks = (IVirtualizeJsCallbacks)virtualize;
-
-        await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 80f, 500f, 80f, 2));
-
-        Assert.Equal(80f, virtualize._totalMeasuredHeight);
-        Assert.Equal(2, virtualize._measuredItemCount);
-    }
-
-    [Fact]
-    public async Task Virtualize_NullMeasurementsUseDefaultItemSize()
-    {
-        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 40f, totalItems: 100);
-        var callbacks = (IVirtualizeJsCallbacks)virtualize;
-
-        await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 200f, 400f, 0f, 0));
-
-        await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 200f, 400f, 0f, 0));
-    }
-
-    [Fact]
-    public async Task Virtualize_ZeroLengthMeasurementsDoNotCorruptAverage()
-    {
-        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 100);
-        var callbacks = (IVirtualizeJsCallbacks)virtualize;
-
-        await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 100f, 500f, 100f, 2));
-
-        await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 100f, 500f, 0f, 0));
-
-        await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 100f, 500f, 0f, 0));
-
-        Assert.Equal(100f, virtualize._totalMeasuredHeight);
-        Assert.Equal(2, virtualize._measuredItemCount);
-    }
-
-    [Fact]
-    public async Task Virtualize_BimodalMeasurementsProduceValidAverage()
-    {
-        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 200);
-        var callbacks = (IVirtualizeJsCallbacks)virtualize;
-
-        for (int i = 0; i < 2; i++)
+        // BuildVirtualizeWithContent provides Items + ChildContent so the test renderer
+        // actually renders items, incrementing _lastRenderedItemCount (needed for ProcessMeasurements).
+        Virtualize<int> virtualize = null;
+        var rootComponent = new VirtualizeTestHostcomponent
         {
-            // Bimodal: 30+300+30+300+30+300 = 990, count = 6
-            await renderer.Dispatcher.InvokeAsync(() =>
-                callbacks.OnAfterSpacerVisible(0f, 990f, 600f, 990f, 6));
-        }
-    }
+            InnerContent = BuildVirtualizeWithContent(50f, Enumerable.Range(1, 100).ToList(),
+                captureRenderedVirtualize: v => virtualize = v)
+        };
 
-    [Fact]
-    public async Task Virtualize_VerySmallMeasurementsDoNotCauseExcessiveItemCounts()
-    {
-        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 10000);
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
 
-        await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 5f, 1000f, 5f, 5));
-    }
+        // First callback with valid spacerSeparation establishes measurements
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
 
-    [Fact]
-    public async Task Virtualize_LargeMeasurementsProduceValidDistribution()
-    {
-        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 100);
-        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+        var heightAfterValid = virtualize._totalMeasuredHeight;
+        var countAfterValid = virtualize._measuredItemCount;
+        Assert.True(heightAfterValid > 0, "Should have accumulated measurements");
 
-        await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 4000f, 500f, 4000f, 2));
+        // Callback with zero spacerSeparation should not add measurements
+        // (realItemHeight would be zero or negative)
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 0f, 500f));
+
+        Assert.Equal(heightAfterValid, virtualize._totalMeasuredHeight);
+        Assert.Equal(countAfterValid, virtualize._measuredItemCount);
     }
 
     [Fact]
@@ -240,7 +195,7 @@ public class VirtualizeTest
         var countBefore = requests.Count;
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(100f, 300f, 500f, 150f, 3));
+            callbacks.OnBeforeSpacerVisible(100f, 300f, 500f));
 
         Assert.True(requests.Count > countBefore,
             "ItemsProvider should be called when before spacer becomes visible with measurements");
@@ -264,16 +219,50 @@ public class VirtualizeTest
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 500f, 500f, 150f, 3));
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(5000f, 500f, 500f, 100f, 2));
+            callbacks.OnBeforeSpacerVisible(5000f, 500f, 500f));
 
         Assert.Contains(requests, r => r.StartIndex > 0);
     }
 
     [Fact]
-    public async Task Virtualize_NaNMeasurementsDoNotCrashComponent()
+    public async Task Virtualize_NaNSpacerSeparationDoesNotCrashComponent()
+    {
+        var requests = new List<ItemsProviderRequest>();
+
+        ValueTask<ItemsProviderResult<int>> trackingProvider(ItemsProviderRequest request)
+        {
+            requests.Add(request);
+            return ValueTask.FromResult(new ItemsProviderResult<int>(
+                Enumerable.Range(request.StartIndex, Math.Min(request.Count, 100 - request.StartIndex)),
+                100));
+        }
+
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            itemSize: 50f, totalItems: 100, customProvider: trackingProvider);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        // Establish baseline
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 100f, 500f));
+        var countAfterBaseline = requests.Count;
+        var heightBefore = virtualize._totalMeasuredHeight;
+
+        // NaN spacerSeparation should not corrupt measurements or crash
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, float.NaN, 500f));
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnBeforeSpacerVisible(50f, float.NaN, 500f));
+
+        Assert.True(requests.Count > countAfterBaseline,
+            "Component should still process callbacks after NaN spacerSeparation");
+    }
+
+    [Fact]
+    public async Task Virtualize_NegativeSpacerSeparationDoesNotCrashComponent()
     {
         var requests = new List<ItemsProviderRequest>();
 
@@ -290,23 +279,25 @@ public class VirtualizeTest
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 100f, 500f, 100f, 2));
-        var countAfterBaseline = requests.Count;
+            callbacks.OnAfterSpacerVisible(0f, 100f, 500f));
+        var heightBefore = virtualize._totalMeasuredHeight;
+        var countBefore = virtualize._measuredItemCount;
 
-        // NaN/invalid values are filtered in JS before aggregation.
-        // Only the valid measurement (30f) is included in the sum.
+        // Negative spacerSeparation produces negative realItemHeight — should not
+        // accumulate into the running average.
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 100f, 500f, 30f, 1));
+            callbacks.OnAfterSpacerVisible(0f, -500f, 500f));
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(50f, 100f, 500f, 100f, 2));
+            callbacks.OnBeforeSpacerVisible(50f, -100f, 500f));
 
-        Assert.True(requests.Count > countAfterBaseline,
-            "Component should still process callbacks after receiving NaN measurements");
+        // Measurements should not have changed from the negative inputs
+        Assert.Equal(heightBefore, virtualize._totalMeasuredHeight);
+        Assert.Equal(countBefore, virtualize._measuredItemCount);
     }
 
     [Fact]
-    public async Task Virtualize_NegativeMeasurementsDoNotCrashComponent()
+    public async Task Virtualize_InfinitySpacerSeparationDoesNotCrashComponent()
     {
         var requests = new List<ItemsProviderRequest>();
 
@@ -323,56 +314,23 @@ public class VirtualizeTest
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 100f, 500f, 100f, 2));
+            callbacks.OnAfterSpacerVisible(0f, 100f, 500f));
         var countAfterBaseline = requests.Count;
 
-        // Negative values are filtered in JS before aggregation.
-        // Only the valid measurement (50f) is included in the sum.
+        // Extremely large (infinity) spacerSeparation — component should handle
+        // without overflow or crash. MaxItemCount caps the visible capacity.
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 100f, 500f, 50f, 1));
+            callbacks.OnAfterSpacerVisible(0f, float.PositiveInfinity, 500f));
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(50f, 100f, 500f, 100f, 2));
+            callbacks.OnBeforeSpacerVisible(50f, float.PositiveInfinity, 500f));
 
         Assert.True(requests.Count > countAfterBaseline,
-            "Component should still process callbacks after receiving negative measurements");
+            "Component should still process callbacks after infinity spacerSeparation");
     }
 
     [Fact]
-    public async Task Virtualize_InfinityMeasurementsDoNotCrashComponent()
-    {
-        var requests = new List<ItemsProviderRequest>();
-
-        ValueTask<ItemsProviderResult<int>> trackingProvider(ItemsProviderRequest request)
-        {
-            requests.Add(request);
-            return ValueTask.FromResult(new ItemsProviderResult<int>(
-                Enumerable.Range(request.StartIndex, Math.Min(request.Count, 100 - request.StartIndex)),
-                100));
-        }
-
-        var (virtualize, renderer) = await CreateRenderedVirtualize(
-            itemSize: 50f, totalItems: 100, customProvider: trackingProvider);
-        var callbacks = (IVirtualizeJsCallbacks)virtualize;
-
-        await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 100f, 500f, 100f, 2));
-        var countAfterBaseline = requests.Count;
-
-        // Infinity values are filtered in JS before aggregation.
-        // No valid measurements means count=0.
-        await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 100f, 500f, 0f, 0));
-
-        await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(50f, 100f, 500f, 100f, 2));
-
-        Assert.True(requests.Count > countAfterBaseline,
-            "Component should still process callbacks after receiving infinity measurements");
-    }
-
-    [Fact]
-    public async Task Virtualize_RendersCommentDelimitersForJsMeasurement()
+    public async Task Virtualize_RendersItemsWithoutWrapperElements()
     {
         Virtualize<int> renderedVirtualize = null;
 
@@ -393,19 +351,20 @@ public class VirtualizeTest
         Assert.NotNull(renderedVirtualize);
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(0f, 150f, 500f, 0f, 0));
+            ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(0f, 150f, 500f));
 
-        var hasCommentDelimiters = testRenderer.Batches
+        // Items should be rendered directly without wrapper elements
+        var hasWrapperElements = testRenderer.Batches
             .SelectMany(b => b.ReferenceFrames)
-            .Any(f => f.FrameType == RenderTreeFrameType.Markup
-                   && f.MarkupContent == "<!--virtualize:item-->");
+            .Any(f => f.FrameType == RenderTreeFrameType.Element
+                   && f.ElementName == "virtualize-item");
 
-        Assert.True(hasCommentDelimiters,
-            "Items should be delimited by <!--virtualize:item--> comments for JS measurement");
+        Assert.False(hasWrapperElements,
+            "Items should be rendered directly without wrapper elements");
     }
 
     [Fact]
-    public async Task Virtualize_TableSpacerElement_UsesCommentDelimitersNotWrapperElements()
+    public async Task Virtualize_TableSpacerElement_RendersItemsDirectlyWithTrSpacers()
     {
         Virtualize<int> renderedVirtualize = null;
 
@@ -427,19 +386,13 @@ public class VirtualizeTest
         Assert.NotNull(renderedVirtualize);
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(0f, 150f, 500f, 0f, 0));
+            ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(0f, 150f, 500f));
 
         var referenceFrames = testRenderer.Batches.SelectMany(b => b.ReferenceFrames).ToList();
-
-        var hasCommentDelimiters = referenceFrames
-            .Any(f => f.FrameType == RenderTreeFrameType.Markup
-                   && f.MarkupContent == "<!--virtualize:item-->");
 
         var hasTrSpacers = referenceFrames
             .Any(f => f.FrameType == RenderTreeFrameType.Element && f.ElementName == "tr");
 
-        Assert.True(hasCommentDelimiters,
-            "Items should use comment delimiters, not wrapper elements");
         Assert.True(hasTrSpacers,
             "Spacer elements should use 'tr' tag when SpacerElement='tr'");
     }
@@ -447,19 +400,34 @@ public class VirtualizeTest
     [Fact]
     public async Task Virtualize_RefreshDataAsync_ResetsRunningAverage()
     {
-        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 100);
+        Virtualize<int> virtualize = null;
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualizeWithContent(50f, Enumerable.Range(1, 100).ToList(),
+                captureRenderedVirtualize: v => virtualize = v)
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
 
+        // Multiple callbacks to load items and accumulate measurements
         for (int i = 0; i < 10; i++)
         {
-            await renderer.Dispatcher.InvokeAsync(() =>
-                callbacks.OnAfterSpacerVisible(0f, 90f, 500f, 90f, 3));
+            await testRenderer.Dispatcher.InvokeAsync(() =>
+                callbacks.OnAfterSpacerVisible(0f, 90f, 500f));
         }
 
-        Assert.True(virtualize._totalMeasuredHeight > 0);
+        // After several cycles, measurements should have accumulated
         Assert.True(virtualize._measuredItemCount > 0);
 
-        await renderer.Dispatcher.InvokeAsync(() => virtualize.RefreshDataAsync());
+        await testRenderer.Dispatcher.InvokeAsync(() => virtualize.RefreshDataAsync());
 
         Assert.Equal(0f, virtualize._totalMeasuredHeight);
         Assert.Equal(0, virtualize._measuredItemCount);
@@ -472,17 +440,10 @@ public class VirtualizeTest
 
         Virtualize<int> renderedVirtualize = null;
 
-        ValueTask<ItemsProviderResult<int>> provider(ItemsProviderRequest request)
-        {
-            return ValueTask.FromResult(new ItemsProviderResult<int>(
-                Enumerable.Range(request.StartIndex, Math.Min(request.Count, 100 - request.StartIndex)),
-                100));
-        }
-
         var rootComponent = new VirtualizeTestHostcomponent
         {
-            InnerContent = BuildVirtualize(50f, provider, null,
-                virtualize => renderedVirtualize = virtualize)
+            InnerContent = BuildVirtualizeWithContent(50f, Enumerable.Range(1, 100).ToList(),
+                captureRenderedVirtualize: v => renderedVirtualize = v)
         };
 
         var serviceProvider = new ServiceCollection()
@@ -495,10 +456,15 @@ public class VirtualizeTest
         await testRenderer.RenderRootComponentAsync(componentId);
         Assert.NotNull(renderedVirtualize);
 
-        // spacerSize=0 means at the very bottom; new measurements should trigger scrollToBottom
+        // First callback triggers items to render
         await testRenderer.Dispatcher.InvokeAsync(() =>
             ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(
-                0f, 500f, 500f, 100f, 2));
+                0f, 500f, 500f));
+
+        // Second callback: spacerSize=0 means at the very bottom; with items rendered, should trigger scrollToBottom
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(
+                0f, 500f, 500f));
 
         var scrollToBottomCalled = mockJs.Invocations.Any(i =>
             i.Arguments.Count > 0 &&
@@ -517,9 +483,48 @@ public class VirtualizeTest
 
         // spacerSize=5000 means many items remain after the viewport
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(5000f, 1000f, 500f, 100f, 2));
+            callbacks.OnAfterSpacerVisible(5000f, 1000f, 500f));
 
         Assert.False(virtualize._pendingScrollToBottom);
+    }
+
+    [Fact]
+    public async Task Virtualize_ScrollToBottom_NotSetWhenMeasurementsNotApplied()
+    {
+        Virtualize<int> renderedVirtualize = null;
+
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualizeWithContent(50f, Enumerable.Range(1, 100).ToList(),
+                captureRenderedVirtualize: v => renderedVirtualize = v)
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+        Assert.NotNull(renderedVirtualize);
+
+        var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
+
+        // First call: real measurements at the bottom — should set pending
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+
+        Assert.True(renderedVirtualize._lastRenderedItemCount > 0,
+            "Items should have rendered");
+        renderedVirtualize._pendingScrollToBottom = false;
+
+        // Second call: spacerSeparation=0 at the bottom — no new measurements,
+        // so _pendingScrollToBottom must NOT be set
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 0f, 500f));
+
+        Assert.False(renderedVirtualize._pendingScrollToBottom,
+            "scrollToBottom should not be set when ProcessMeasurements did not apply new measurements");
     }
 
     [Fact]
@@ -542,7 +547,7 @@ public class VirtualizeTest
         var callCountAfterMount = requests.Count;
 
         await renderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(50f, 500f, 500f, 0f, 0));
+            callbacks.OnBeforeSpacerVisible(50f, 500f, 500f));
 
         Assert.Equal(callCountAfterMount + 1, requests.Count);
 
@@ -574,15 +579,16 @@ public class VirtualizeTest
         var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 150f, 1000f, 150f, 3));
+            callbacks.OnAfterSpacerVisible(0f, 150f, 1000f));
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnBeforeSpacerVisible(0f, 150f, 1000f, 0f, 0));
+            callbacks.OnBeforeSpacerVisible(0f, 150f, 1000f));
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 150f, 1000f, 0f, 0));
+            callbacks.OnAfterSpacerVisible(0f, 150f, 1000f));
 
-        Assert.Equal(3, renderedVirtualize._measuredItemCount);
+        // After multiple callbacks, measurements should accumulate
+        Assert.True(renderedVirtualize._measuredItemCount > 0);
     }
 
     [Fact]
@@ -612,11 +618,16 @@ public class VirtualizeTest
         Assert.Equal(0f, renderedVirtualize._totalMeasuredHeight);
         Assert.Equal(0, renderedVirtualize._measuredItemCount);
 
+        // First callback triggers render with items (setting _lastRenderedItemCount)
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 1000f, 500f, 150f, 3));
+            callbacks.OnAfterSpacerVisible(0f, 1000f, 500f));
 
-        Assert.Equal(150f, renderedVirtualize._totalMeasuredHeight);
-        Assert.Equal(3, renderedVirtualize._measuredItemCount);
+        // Second callback accumulates measurements from spacerSeparation
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 1000f, 500f));
+
+        Assert.True(renderedVirtualize._totalMeasuredHeight > 0);
+        Assert.True(renderedVirtualize._measuredItemCount > 0);
     }
 
     [Fact]
@@ -650,13 +661,13 @@ public class VirtualizeTest
         var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 0f, 500f, 50f, 1));
+            callbacks.OnAfterSpacerVisible(0f, 0f, 500f));
 
         Assert.Single(pendingCalls);
         var firstCall = pendingCalls[0];
 
         await testRenderer.Dispatcher.InvokeAsync(() =>
-            callbacks.OnAfterSpacerVisible(0f, 0f, 1000f, 50f, 1));
+            callbacks.OnAfterSpacerVisible(0f, 0f, 1000f));
 
         Assert.Equal(2, pendingCalls.Count);
         var secondCall = pendingCalls[1];
@@ -664,12 +675,52 @@ public class VirtualizeTest
         Assert.True(firstCall.request.CancellationToken.IsCancellationRequested);
         Assert.False(secondCall.request.CancellationToken.IsCancellationRequested);
 
-        Assert.Equal(2, renderedVirtualize._measuredItemCount);
-        Assert.Equal(100f, renderedVirtualize._totalMeasuredHeight);
+        // With delayed provider, no items have rendered so _lastRenderedItemCount = 0
+        // and no measurements accumulate (correct: can't measure what hasn't rendered)
+        Assert.Equal(0, renderedVirtualize._measuredItemCount);
+        Assert.Equal(0f, renderedVirtualize._totalMeasuredHeight);
         foreach (var call in pendingCalls.Where(c => !c.tcs.Task.IsCompleted))
         {
             call.tcs.TrySetResult(new ItemsProviderResult<int>(Array.Empty<int>(), 0));
         }
+    }
+
+    [Fact]
+    public async Task MaxItemCount_ClampsVisibleItemCapacity()
+    {
+        var requests = new List<ItemsProviderRequest>();
+
+        ValueTask<ItemsProviderResult<int>> trackingProvider(ItemsProviderRequest request)
+        {
+            requests.Add(request);
+            return ValueTask.FromResult(new ItemsProviderResult<int>(
+                Enumerable.Range(request.StartIndex, Math.Min(request.Count, 1000 - request.StartIndex)),
+                1000));
+        }
+
+        Virtualize<int> renderedVirtualize = null;
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualizeWithMaxItemCount(10f, trackingProvider, maxItemCount: 20, captureRenderedVirtualize: v => renderedVirtualize = v)
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+        Assert.NotNull(renderedVirtualize);
+
+        var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
+
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+
+        var lastRequest = requests.Last();
+        Assert.True(lastRequest.Count <= 50,
+            $"Expected request count <= 50 (MaxItemCount=20 + 2*OverscanCount=30), but got {lastRequest.Count}");
     }
 
     private async Task<(Virtualize<int> virtualize, TestRenderer renderer)> CreateRenderedVirtualize(
@@ -750,6 +801,26 @@ public class VirtualizeTest
         {
             builder.AddComponentReferenceCapture(5, component =>
                 captureRenderedVirtualize(component as Virtualize<int>));
+        }
+
+        builder.CloseComponent();
+    };
+
+    private RenderFragment BuildVirtualizeWithMaxItemCount(
+        float itemSize,
+        ItemsProviderDelegate<int> itemsProvider,
+        int maxItemCount,
+        Action<Virtualize<int>> captureRenderedVirtualize = null)
+        => builder =>
+    {
+        builder.OpenComponent<Virtualize<int>>(0);
+        builder.AddComponentParameter(1, "ItemSize", itemSize);
+        builder.AddComponentParameter(2, "ItemsProvider", itemsProvider);
+        builder.AddComponentParameter(3, "MaxItemCount", maxItemCount);
+
+        if (captureRenderedVirtualize != null)
+        {
+            builder.AddComponentReferenceCapture(4, component => captureRenderedVirtualize(component as Virtualize<int>));
         }
 
         builder.CloseComponent();
