@@ -12,7 +12,7 @@
 <div class="form-container">
     <h2 class="form-title">@L["FormTitle"]</h2>
 
-    <EditForm EditContext="_editContext" OnSubmit="HandleSubmit">
+    <EditForm EditContext="_editContext" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
         <DataAnnotationsValidator />
 
         <div class="form-group">
@@ -115,20 +115,15 @@
         InvokeAsync(StateHasChanged);
     }
 
-    private async Task HandleSubmit()
+    private void HandleValidSubmit()
+    {
+        _submitted = true;
+        _submitFailed = false;
+    }
+
+    private void HandleInvalidSubmit()
     {
         _submitted = false;
-        _submitFailed = false;
-
-        var isValid = await _editContext.ValidateAsync();
-
-        if (isValid)
-        {
-            _submitted = true;
-        }
-        else
-        {
-            _submitFailed = true;
-        }
+        _submitFailed = true;
     }
 }
