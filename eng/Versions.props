@@ -195,6 +195,7 @@
     <MicrosoftPlaywrightXunitV3Version>1.58.0</MicrosoftPlaywrightXunitV3Version>
     <!-- Components.Testing dependencies -->
     <YarpReverseProxyVersion>2.3.0</YarpReverseProxyVersion>
+    <MicrosoftExtensionsServiceDiscoveryYarpVersion>$(MicrosoftExtensionsServiceDiscoveryVersion)</MicrosoftExtensionsServiceDiscoveryYarpVersion>
     <MicrosoftDataSqlClientVersion>7.0.0</MicrosoftDataSqlClientVersion>
     <MicrosoftDataSqlClientExtensionsAzureVersion>1.0.0</MicrosoftDataSqlClientExtensionsAzureVersion>
     <MicrosoftOpenApiVersion>3.3.1</MicrosoftOpenApiVersion>

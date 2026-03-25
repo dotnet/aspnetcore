@@ -23,9 +23,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Yarp.ReverseProxy" Version="2.3.0" />
-    <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="9.2.0" />
-    <PackageReference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" Version="9.2.0" />
+    <Reference Include="Yarp.ReverseProxy" />
+    <Reference Include="Microsoft.Extensions.ServiceDiscovery" />
+    <Reference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" />
   </ItemGroup>
 
   <!-- Pack settings -->

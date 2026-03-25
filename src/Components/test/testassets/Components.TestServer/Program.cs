@@ -6,8 +6,6 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Logging.Testing;
-using DevServerProgram = Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server.Program;
-
 namespace TestServer;
 
 public class Program
@@ -73,7 +71,7 @@ public class Program
             finalArgs.Add("--apply-cop-headers");
         }
 
-        var host = DevServerProgram.BuildWebHost(finalArgs.ToArray());
+        var host = BlazorGateway.BuildWebHost(finalArgs.ToArray());
         return (host, "/subdir");
     }
 

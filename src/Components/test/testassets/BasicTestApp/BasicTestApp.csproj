@@ -63,6 +63,8 @@
     <BlazorWebAssemblyLazyLoad Include="LazyTestContentPackage.wasm" />
   </ItemGroup>
 
+  <Import Project="$(RepoRoot)src\Components\WebAssembly\testassets\SpaFallback.targets" />
+
   <!-- Workaround for https://github.com/dotnet/aspnetcore/issues/30791 -->
   <Target Name="_FixupPublishBug" AfterTargets="_ProcessPublishFilesForBlazor" BeforeTargets="_BlazorCompressPublishFiles" Condition="'$(TestTrimmedOrMultithreadingApps)' == 'true'">
     <ItemGroup>

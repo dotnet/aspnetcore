@@ -10,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TestServer;
-using DevHostServerProgram = Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server.Program;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 
@@ -68,7 +67,7 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
             args.Add("--apply-cop-headers");
         }
 
-        return DevHostServerProgram.BuildWebHost(args.ToArray());
+        return BlazorGateway.BuildWebHost(args.ToArray());
     }
 
     private IHost CreateStaticWebHost(string contentRoot)
