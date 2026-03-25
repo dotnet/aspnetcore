@@ -89,7 +89,7 @@
     <value>El campo {0} debe estar entre {1} y {2}.</value>
   </data>
   <data name="BrandText" xml:space="preserve">
-    <value>Demo de Validación SSR</value>
+    <value>Blazor SSR Demo de Validación</value>
   </data>
   <data name="NavHome" xml:space="preserve">
     <value>Inicio</value>
@@ -98,7 +98,7 @@
     <value>Contacto</value>
   </data>
   <data name="FooterText" xml:space="preserve">
-    <value>Demo de Validación Blazor SSR</value>
+    <value>Blazor SSR</value>
   </data>
   <data name="HomeBadge" xml:space="preserve">
     <value>Sin interactividad JavaScript</value>
