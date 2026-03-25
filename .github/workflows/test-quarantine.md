@@ -216,7 +216,7 @@ Additionally, check for **class-level quarantine** candidates. If a **test class
 3. If the errors are similar (e.g., all show the same exception type or share a common stack frame), quarantine the entire class instead of individual methods.
 4. If the errors are unrelated, treat each method as an independent candidate using the individual 2-failure threshold.
 
-### Step 2.3 — Group related failures and file issues
+### Step 2.3 — Group related failures
 
 Before creating issues and PRs, group related failures together:
 
