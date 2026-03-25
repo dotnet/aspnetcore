@@ -1,12 +1,12 @@
-@inherits LayoutComponentBase
+﻿@inherits LayoutComponentBase
 @inject IStringLocalizer<ValidationMessages> L
 @inject NavigationManager Navigation
 
 <header>
     <div class="header-inner">
         <a class="brand" href="/">
-            <span class="brand-icon">V</span>
-            <span class="brand-text">@L["BrandText"]</span>
+            <span class="brand-icon">B</span>
+            <span class="brand-text">Blazor SSR Client-side Validation</span>
         </a>
         <nav>
             <NavLink href="/" Match="NavLinkMatch.All">@L["NavHome"]</NavLink>
@@ -23,7 +23,7 @@
 </main>
 
 <footer>
-    <p>&copy; @DateTime.Now.Year — @L["FooterText"]</p>
+    <p>Blazor SSR Client-side Validation</p>
 </footer>
 
 @code {

@@ -20,8 +20,6 @@
         <div class="form-group">
             <label class="form-label" for="email">@L["Email"]</label>
             <InputText id="email" class="form-input" @bind-Value="_model.Email" placeholder="@L["EmailPlaceholder"]" />
-
-            @* DEMO: Show async validation status *@
             @if (_editContext.IsValidationPending(() => _model.Email))
             {
                 <div class="field-status pending">@L["CheckingMessage"]</div>
@@ -29,6 +27,10 @@
             else if (_editContext.IsValidationFaulted(() => _model.Email))
             {
                 <div class="field-status faulted">@L["FaultedMessage"]</div>
+            }
+            else if (IsFieldValidAfterAsync(() => _model.Email))
+            {
+                <div class="field-status valid">@L["AvailableMessage"]</div>
             }
             else
             {
@@ -46,6 +48,10 @@
             else if (_editContext.IsValidationFaulted(() => _model.Username))
             {
                 <div class="field-status faulted">@L["FaultedMessage"]</div>
+            }
+            else if (IsFieldValidAfterAsync(() => _model.Username))
+            {
+                <div class="field-status valid">@L["AvailableMessage"]</div>
             }
             else
             {
@@ -124,5 +130,14 @@
         _submittedSuccessfully = await _editContext.ValidateAsync();
 
         _submitting = false;
+    }
+
+    private bool IsFieldValidAfterAsync<TField>(Expression<Func<TField>> accessor)
+    {
+        var field = FieldIdentifier.Create(accessor);
+        return _editContext.IsModified(field)
+            && !_editContext.IsValidationPending(field)
+            && !_editContext.IsValidationFaulted(field)
+            && !_editContext.GetValidationMessages(field).Any();
     }
 }

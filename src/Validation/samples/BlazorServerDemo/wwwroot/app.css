@@ -374,6 +374,15 @@ input.form-input {
     font-size: 0.85rem;
 }
 
+.field-status.valid {
+    color: var(--success);
+}
+
+.field-status.valid::before {
+    content: "✓";
+    font-weight: 700;
+}
+
 /* ===== Form Actions ===== */
 .form-actions {
     margin-top: 2rem;
