@@ -29,7 +29,7 @@ public class ContactModel
     public string? Phone { get; set; }
 
     [Required(ErrorMessage = "RequiredError")]
-    [Range(18, 120, ErrorMessage = "RangeError")]
+    [Range(13, 120, ErrorMessage = "RangeError")]
     [Display(Name = "ContactAge")]
     public int? Age { get; set; }
 

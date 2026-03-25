@@ -13,11 +13,6 @@ namespace BlazorServerDemo.Data;
 /// </summary>
 public sealed class UniqueEmailAttribute : AsyncValidationAttribute
 {
-    public UniqueEmailAttribute()
-    {
-        ErrorMessage = "UniqueEmailError";
-    }
-
     protected override async Task<ValidationResult?> IsValidAsync(
         object? value,
         ValidationContext validationContext,
@@ -33,7 +28,7 @@ public sealed class UniqueEmailAttribute : AsyncValidationAttribute
         if (await userService.IsEmailTakenAsync(email, cancellationToken))
         {
             return new ValidationResult(
-                string.Format(CultureInfo.CurrentCulture, ErrorMessageString, email),
+                string.Format(CultureInfo.CurrentCulture, ErrorMessageString, validationContext.DisplayName),
                 [validationContext.MemberName!]);
         }
 

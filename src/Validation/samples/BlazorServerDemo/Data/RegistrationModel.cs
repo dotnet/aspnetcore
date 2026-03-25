@@ -15,7 +15,7 @@ public class RegistrationModel
     /// </summary>
     [Required(ErrorMessage = "RequiredError")]
     [EmailAddress(ErrorMessage = "EmailError")]
-    [UniqueEmail]
+    [UniqueEmail(ErrorMessage = "UniqueEmailError")]
     [Display(Name = "Email")]
     public string Email { get; set; } = "";
 
@@ -24,7 +24,7 @@ public class RegistrationModel
     /// </summary>
     [Required(ErrorMessage = "RequiredError")]
     [StringLength(20, MinimumLength = 3, ErrorMessage = "StringLengthError")]
-    [UniqueUsername]
+    [UniqueUsername(ErrorMessage = "UniqueUsernameError")]
     [Display(Name = "Username")]
     public string Username { get; set; } = "";
 

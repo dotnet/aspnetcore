@@ -13,11 +13,6 @@ namespace BlazorServerDemo.Data;
 /// </summary>
 public sealed class UniqueUsernameAttribute : AsyncValidationAttribute
 {
-    public UniqueUsernameAttribute()
-    {
-        ErrorMessage = "UniqueUsernameError";
-    }
-
     protected override async Task<ValidationResult?> IsValidAsync(
         object? value,
         ValidationContext validationContext,
@@ -33,7 +28,7 @@ public sealed class UniqueUsernameAttribute : AsyncValidationAttribute
         if (await userService.IsUsernameTakenAsync(username, cancellationToken))
         {
             return new ValidationResult(
-                string.Format(CultureInfo.CurrentCulture, ErrorMessageString, username),
+                FormatErrorMessage(CultureInfo.CurrentCulture, ErrorMessageString, validationContext.DisplayName),
                 [validationContext.MemberName!]);
         }
 

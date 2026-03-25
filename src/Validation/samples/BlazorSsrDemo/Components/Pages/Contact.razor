@@ -9,6 +9,7 @@
 <EditForm Model="contact" Enhance OnValidSubmit="HandleSubmit" FormName="ContactForm">
     <DataAnnotationsValidator />
     <ClientSideValidator />
+    <fieldset disabled="@submitted">
 
     <div class="form-group">
         <label for="name">@L["LabelName"]</label>
@@ -43,6 +44,8 @@
     <div class="form-actions">
         <button type="submit" class="btn">@L["SubmitButton"]</button>
     </div>
+
+    </fieldset>
 </EditForm>
 
 @if (submitted)

@@ -254,6 +254,20 @@ h2 {
     box-shadow: 0 0 0 3px var(--color-primary-ring);
 }
 
+/* Valid state — green border after successful validation */
+.form-group input.modified.valid,
+.form-group textarea.modified.valid {
+    border-color: var(--color-success);
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+}
+
+/* Invalid state — red border (Blazor class) */
+.form-group input.modified.invalid,
+.form-group textarea.modified.invalid {
+    border-color: var(--color-error);
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
 .form-group input::placeholder,
 .form-group textarea::placeholder {
     color: #94a3b8;
@@ -342,6 +356,30 @@ h2 {
     margin: 0;
     color: var(--color-text-muted);
     font-size: 0.9rem;
+}
+
+/* ===== Fieldset / Disabled State ===== */
+fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+fieldset:disabled input,
+fieldset:disabled textarea {
+    background: #f1f5f9;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+fieldset:disabled label {
+    color: #94a3b8;
+}
+
+fieldset:disabled .btn {
+    background: #94a3b8;
+    cursor: not-allowed;
+    box-shadow: none;
 }
 
 /* ===== Footer ===== */
