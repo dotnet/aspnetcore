@@ -253,6 +253,21 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
     }
 
     [Fact]
+    public void List_Flattens_Nested_Objects()
+    {
+        string secretId;
+        var projectPath = _fixture.GetTempSecretProject(out secretId);
+        var secretsFile = PathHelper.GetSecretsPathFromSecretsId(secretId);
+        Directory.CreateDirectory(Path.GetDirectoryName(secretsFile));
+        File.WriteAllText(secretsFile, @"{ ""AzureAd"": { ""ClientSecret"": ""abc"" } }", Encoding.UTF8);
+        var secretManager = CreateProgram();
+
+        secretManager.RunInternal("list", "-p", projectPath);
+
+        Assert.Contains("AzureAd:ClientSecret = abc", _console.GetOutput());
+    }
+
+    [Fact]
     public void Set_Flattens_Nested_Objects()
     {
         string secretId;
