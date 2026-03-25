@@ -14,11 +14,14 @@
 
     <EditForm EditContext="_editContext" OnSubmit="HandleSubmit">
         <DataAnnotationsValidator />
+
         <fieldset disabled="@(_submitting || _submittedSuccessfully)">
 
         <div class="form-group">
             <label class="form-label" for="email">@L["Email"]</label>
             <InputText id="email" class="form-input" @bind-Value="_model.Email" placeholder="@L["EmailPlaceholder"]" />
+
+            @* DEMO: Show async validation status *@
             @if (_editContext.IsValidationPending(() => _model.Email))
             {
                 <div class="field-status pending">@L["CheckingMessage"]</div>
