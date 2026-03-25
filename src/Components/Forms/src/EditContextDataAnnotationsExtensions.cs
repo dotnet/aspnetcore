@@ -158,8 +158,15 @@ public static partial class EditContextDataAnnotationsExtensions
                 {
                     foreach (var (fieldKey, messages) in validationErrors)
                     {
-                        var fieldIdentifier = _validationPathToFieldIdentifierMapping[fieldKey];
-                        _messages.Add(fieldIdentifier, messages);
+                        if (_validationPathToFieldIdentifierMapping.TryGetValue(fieldKey, out var fieldIdentifier))
+                        {
+                            _messages.Add(fieldIdentifier, messages);
+                        }
+                        else
+                        {
+                            // Fallback: use the field key as the field name on the model
+                            _messages.Add(_editContext.Field(fieldKey), messages);
+                        }
                     }
                 }
             }

@@ -18,6 +18,7 @@ public sealed class UniqueUsernameAttribute : AsyncValidationAttribute
         "admin",
         "root",
         "blazor",
+        "danroth",
     };
 
     public UniqueUsernameAttribute()
