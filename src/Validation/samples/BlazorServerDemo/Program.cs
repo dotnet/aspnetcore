@@ -2,32 +2,30 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using BlazorServerDemo.Data;
 using BlazorServerDemo.Localization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Localization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddSingleton<UserService>();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// Register JSON-based localizer
-builder.Services.AddSingleton<IStringLocalizerFactory, JsonStringLocalizerFactory>();
-builder.Services.AddSingleton<BlazorServerDemo.Data.UserService>();
+// DEMO: Add validation services and localization
+builder.Services.AddValidation();
+builder.Services.AddValidationLocalization();
 
-// Configure request localization
+// DEMO: Register JSON-based localizer
+builder.Services.AddSingleton<IStringLocalizerFactory, JsonStringLocalizerFactory>();
+
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
     var supportedCultures = new[] { new CultureInfo("en"), new CultureInfo("es") };
     options.DefaultRequestCulture = new RequestCulture("en");
     options.SupportedCultures = supportedCultures;
     options.SupportedUICultures = supportedCultures;
-});
-
-builder.Services.AddValidation();
-builder.Services.AddValidationLocalization(options =>
-{
-    options.LocalizerProvider = (type, factory) => factory.Create("Validation", "BlazorServerDemo");
 });
 
 var app = builder.Build();

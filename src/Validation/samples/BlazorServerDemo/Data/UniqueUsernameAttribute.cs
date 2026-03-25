@@ -7,12 +7,9 @@ using Microsoft.Extensions.Validation;
 
 namespace BlazorServerDemo.Data;
 
-/// <summary>
-/// Validates that a username is not already taken.
-/// Resolves <see cref="UserService"/> from DI to perform the check.
-/// </summary>
 public sealed class UniqueUsernameAttribute : AsyncValidationAttribute
 {
+    // DEMO: Async validation with injected services
     protected override async Task<ValidationResult?> IsValidAsync(
         object? value,
         ValidationContext validationContext,

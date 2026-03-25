@@ -1,4 +1,4 @@
-@page "/contact"
+﻿@page "/contact"
 @inject IStringLocalizer<ValidationMessages> L
 
 <PageTitle>@L["NavContact"]</PageTitle>
@@ -21,18 +21,6 @@
         <label for="email">@L["LabelEmail"]</label>
         <InputText id="email" @bind-Value="contact.Email" />
         <ValidationMessage For="() => contact.Email" />
-    </div>
-
-    <div class="form-group">
-        <label for="phone">@L["LabelPhone"]</label>
-        <InputText id="phone" @bind-Value="contact.Phone" />
-        <ValidationMessage For="() => contact.Phone" />
-    </div>
-
-    <div class="form-group">
-        <label for="age">@L["LabelAge"]</label>
-        <InputNumber id="age" @bind-Value="contact.Age" />
-        <ValidationMessage For="() => contact.Age" />
     </div>
 
     <div class="form-group">
