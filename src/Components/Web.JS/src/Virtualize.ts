@@ -159,9 +159,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     for (let el = spacerBefore.nextElementSibling; el && el !== spacerAfter; el = el.nextElementSibling) {
       resizeObserver.observe(el);
       currentItems.add(el);
-      if (!anchoredItems.has(el)) {
-        anchoredItems.set(el, (el as HTMLElement).offsetHeight);
-      }
     }
 
     // Unobserve items removed during re-render and clean up height tracking.
