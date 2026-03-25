@@ -11,7 +11,6 @@ public class W3CLoggerTests
     readonly DateTime _timestampOne = new DateTime(2021, 01, 02, 03, 04, 05);
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61614")]
     public async Task WritesDateTime()
     {
         var path = Path.GetTempFileName() + "_";

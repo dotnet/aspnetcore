@@ -2,12 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Runtime.InteropServices.JavaScript;
-using System.Runtime.Versioning;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Web.Internal;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
@@ -30,7 +26,24 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     [DynamicDependency(nameof(EndInvokeJS))]
     [DynamicDependency(nameof(BeginInvokeDotNet))]
     [DynamicDependency(nameof(ReceiveByteArrayFromJS))]
-    [DynamicDependency(nameof(UpdateRootComponentsCore))]
+    [DynamicDependency(nameof(UpdateRootComponents))]
+    [DynamicDependency(nameof(DispatchMouseEvent))]
+    [DynamicDependency(nameof(DispatchDragEvent))]
+    [DynamicDependency(nameof(DispatchKeyboardEvent))]
+    [DynamicDependency(nameof(DispatchChangeEventString))]
+    [DynamicDependency(nameof(DispatchChangeEventBool))]
+    [DynamicDependency(nameof(DispatchChangeEventStringArray))]
+    [DynamicDependency(nameof(DispatchFocusEvent))]
+    [DynamicDependency(nameof(DispatchClipboardEvent))]
+    [DynamicDependency(nameof(DispatchPointerEvent))]
+    [DynamicDependency(nameof(DispatchWheelEvent))]
+    [DynamicDependency(nameof(DispatchTouchEvent))]
+    [DynamicDependency(nameof(DispatchProgressEvent))]
+    [DynamicDependency(nameof(DispatchErrorEvent))]
+    [DynamicDependency(nameof(DispatchEmptyEvent))]
+    [DynamicDependency(nameof(DispatchEventJson))]
+    [DynamicDependency(nameof(DispatchLocationChanged))]
+    [DynamicDependency(nameof(DispatchLocationChanging))]
     [DynamicDependency(JsonSerialized, typeof(KeyValuePair<,>))]
     private DefaultWebAssemblyJSRuntime()
     {
@@ -39,74 +52,6 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     }
 
     public JsonSerializerOptions ReadJsonSerializerOptions() => JsonSerializerOptions;
-
-    [JSExport]
-    [SupportedOSPlatform("browser")]
-    public static string? InvokeDotNet(
-        string? assemblyName,
-        string methodIdentifier,
-        [JSMarshalAs<JSType.Number>] long dotNetObjectId,
-        string argsJson)
-    {
-        var callInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId, callId: null);
-        return DotNetDispatcher.Invoke(Instance, callInfo, argsJson);
-    }
-
-    [JSExport]
-    [SupportedOSPlatform("browser")]
-    public static void EndInvokeJS(string argsJson)
-    {
-        WebAssemblyCallQueue.Schedule(argsJson, static argsJson =>
-        {
-            // This is not expected to throw, as it takes care of converting any unhandled user code
-            // exceptions into a failure on the Task that was returned when calling InvokeAsync.
-            DotNetDispatcher.EndInvokeJS(Instance, argsJson);
-        });
-    }
-
-    [JSExport]
-    [SupportedOSPlatform("browser")]
-    public static void BeginInvokeDotNet(string? callId, string assemblyNameOrDotNetObjectId, string methodIdentifier, string argsJson)
-    {
-        // Figure out whether 'assemblyNameOrDotNetObjectId' is the assembly name or the instance ID
-        // We only need one for any given call. This helps to work around the limitation that we can
-        // only pass a maximum of 4 args in a call from JS to Mono WebAssembly.
-        string? assemblyName;
-        long dotNetObjectId;
-        if (char.IsDigit(assemblyNameOrDotNetObjectId[0]))
-        {
-            dotNetObjectId = long.Parse(assemblyNameOrDotNetObjectId, CultureInfo.InvariantCulture);
-            assemblyName = null;
-        }
-        else
-        {
-            dotNetObjectId = default;
-            assemblyName = assemblyNameOrDotNetObjectId;
-        }
-
-        var callInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId, callId);
-        WebAssemblyCallQueue.Schedule((callInfo, argsJson), static state =>
-        {
-            // This is not expected to throw, as it takes care of converting any unhandled user code
-            // exceptions into a failure on the JS Promise object.
-            DotNetDispatcher.BeginInvokeDotNet(Instance, state.callInfo, state.argsJson);
-        });
-    }
-
-    [SupportedOSPlatform("browser")]
-    [JSExport]
-    public static void UpdateRootComponentsCore(string operationsJson, string appState)
-    {
-        try
-        {
-            var operations = DeserializeOperations(operationsJson);
-            Instance.OnUpdateRootComponents?.Invoke(operations, appState);
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error deserializing root component operations: {ex}");
-        }
-    }
 
     [DynamicDependency(JsonSerialized, typeof(RootComponentOperation))]
     [DynamicDependency(JsonSerialized, typeof(RootComponentOperationBatch))]
@@ -148,13 +93,6 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
         var parameters = componentDeserializer.DeserializeParameters(definitions, values);
 
         return new(parameters, definitions, values.AsReadOnly());
-    }
-
-    [JSExport]
-    [SupportedOSPlatform("browser")]
-    private static void ReceiveByteArrayFromJS(int id, byte[] data)
-    {
-        DotNetDispatcher.ReceiveByteArray(Instance, id, data);
     }
 
     /// <inheritdoc />

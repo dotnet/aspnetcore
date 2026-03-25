@@ -7,7 +7,7 @@
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { attachDebuggerHotkey } from './MonoDebugger';
 import { showErrorNotification } from '../../BootErrors';
-import { Platform, System_Array, Pointer, System_Object, System_String, HeapLock, PlatformApi } from '../Platform';
+import { Platform, System_Array, Pointer, System_Object, HeapLock, PlatformApi } from '../Platform';
 import { WebAssemblyBootResourceType, WebAssemblyStartOptions } from '../WebAssemblyStartOptions';
 import { Blazor } from '../../GlobalExports';
 import { DotnetModuleConfig, MonoConfig, ModuleAPI, RuntimeAPI, GlobalizationMode } from '@microsoft/dotnet-runtime';
@@ -17,10 +17,12 @@ import { JSInitializer } from '../../JSInitializers/JSInitializers';
 // initially undefined and only fully initialized after createEmscriptenModuleInstance()
 export let dispatcher: DotNet.ICallDispatcher = undefined as any;
 let MONO_INTERNAL: any = undefined as any;
+let isMonoRuntime = true;
 let runtime: RuntimeAPI = undefined as any;
 let jsInitializer: JSInitializer;
 
 let currentHeapLock: MonoHeapLock | null = null;
+let textDecoderUtf16: TextDecoder = null as any;
 
 export function getInitializer() {
   return jsInitializer;
@@ -45,14 +47,16 @@ export const monoPlatform: Platform = {
   },
 
   getArrayEntryPtr: function getArrayEntryPtr<TPtr extends Pointer>(array: System_Array<TPtr>, index: number, itemSize: number): TPtr {
-    // First byte is array length, followed by entries
-    const address = getArrayDataPointer(array) + 4 + index * itemSize;
+    const address = isMonoRuntime
+      ? getArrayDataPointer(array) + 4 + index * itemSize
+      : getArrayDataPointer(array) + (index * itemSize);
     return address as any as TPtr;
   },
 
   getObjectFieldsBaseAddress: function getObjectFieldsBaseAddress(referenceTypedObject: System_Object): Pointer {
-    // The first two int32 values are internal Mono data
-    return (referenceTypedObject as any + 8) as any as Pointer;
+    return (isMonoRuntime
+      ? (referenceTypedObject as any + 8)
+      : (referenceTypedObject as any + 4)) as any as Pointer;
   },
 
   readInt16Field: function readHeapInt16(baseAddress: Pointer, fieldOffset?: number): number {
@@ -71,23 +75,25 @@ export const monoPlatform: Platform = {
     return runtime.getHeapU32((baseAddress as any) + (fieldOffset || 0)) as any as T;
   },
 
-  readStringField: function readStringField(baseAddress: Pointer, fieldOffset?: number, readBoolValueAsString?: boolean): string | null {
+  readStringField: function readStringField(baseAddress: Pointer, fieldOffset?: number): string | null {
     const fieldValue = runtime.getHeapU32((baseAddress as any) + (fieldOffset || 0));
     if (fieldValue === 0) {
       return null;
     }
 
-    if (readBoolValueAsString) {
-      // Some fields are stored as a union of bool | string | null values, but need to read as a string.
-      // If the stored value is a bool, the behavior we want is empty string ('') for true, or null for false.
-
-      const unboxedValue = MONO_INTERNAL.monoObjectAsBoolOrNullUnsafe(fieldValue as any as System_Object);
-      if (typeof (unboxedValue) === 'boolean') {
-        return unboxedValue ? '' : null;
+    if (!isMonoRuntime) {
+      if (!textDecoderUtf16) {
+        textDecoderUtf16 = new TextDecoder('utf-16le');
       }
+      // TODO-WASM cache interned strings
+      // https://github.com/dotnet/runtime/issues/121415
+      const length = runtime.getHeapU32(fieldValue as any + 4);
+      const ptr = fieldValue + 8;
+      const view = runtime.localHeapViewU8();
+      return textDecoderUtf16.decode(view.subarray(ptr, ptr + length * 2));
     }
 
-    return MONO_INTERNAL.monoStringToStringUnsafe(fieldValue as any as System_String);
+    return MONO_INTERNAL.monoStringToStringUnsafe(fieldValue);
   },
 
   readStructField: function readStructField<T extends Pointer>(baseAddress: Pointer, fieldOffset?: number): T {
@@ -130,8 +136,9 @@ async function importDotnetJs(startOptions: Partial<WebAssemblyStartOptions>): P
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore: This dynamic import is handled at runtime and does not need a type declaration.
-  return await import(/* webpackIgnore: true */ "./dotnet.js");
+  return await import(/* webpackIgnore: true */ './dotnet.js');
 }
 
 function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, onConfigLoadedCallback?: (loadedConfig: MonoConfig) => void): DotnetModuleConfig {
@@ -207,6 +214,7 @@ async function configureRuntimeInstance(): Promise<PlatformApi> {
 
   const { setModuleImports, INTERNAL: mono_internal, getConfig, invokeLibraryInitializers } = runtime;
   MONO_INTERNAL = mono_internal;
+  isMonoRuntime = typeof MONO_INTERNAL.monoStringToStringUnsafe === 'function';
 
   attachDebuggerHotkey(getConfig());
 
@@ -245,7 +253,11 @@ export const printErr = line => {
 };
 
 function getArrayDataPointer<T>(array: System_Array<T>): number {
-  return <number><any>array + 12; // First byte from here is length, then following bytes are entries
+  if (isMonoRuntime) {
+    return <number><any>array + 12;
+  } else {
+    return <number><any>array + 8;
+  }
 }
 
 function attachInteropInvoker(): void {
@@ -310,7 +322,9 @@ class MonoHeapLock implements HeapLock {
       throw new Error('Trying to release a lock which isn\'t current');
     }
 
-    MONO_INTERNAL.mono_wasm_gc_unlock();
+    if (isMonoRuntime) {
+      MONO_INTERNAL.mono_wasm_gc_unlock();
+    }
 
     currentHeapLock = null;
 
@@ -326,7 +340,9 @@ class MonoHeapLock implements HeapLock {
   }
 
   static create(): MonoHeapLock {
-    MONO_INTERNAL.mono_wasm_gc_lock();
+    if (isMonoRuntime) {
+      MONO_INTERNAL.mono_wasm_gc_lock();
+    }
     return new MonoHeapLock();
   }
 }
