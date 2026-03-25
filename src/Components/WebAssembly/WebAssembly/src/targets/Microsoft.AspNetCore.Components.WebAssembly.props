@@ -1,8 +1,64 @@
 <Project>
   <PropertyGroup>
-    <BlazorWebAssemblyJSPath>$(MSBuildThisFileDirectory)blazor.webassembly.js</BlazorWebAssemblyJSPath>
+    <BlazorWebAssemblyJSPath>$(MSBuildThisFileDirectory)..\..\staticwebassets\blazor.webassembly.js</BlazorWebAssemblyJSPath>
     <BlazorRoutingEnableRegexConstraint Condition="'$(BlazorRoutingEnableRegexConstraint)' == ''">false</BlazorRoutingEnableRegexConstraint>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <_BlazorWebAssemblyAssetsBasePath Condition="'$(_BlazorWebAssemblyAssetsBasePath)' == ''">$(MSBuildThisFileDirectory)..\..\staticwebassets\</_BlazorWebAssemblyAssetsBasePath>
+    <ResolveStaticWebAssetsInputsDependsOn>
+      $(ResolveStaticWebAssetsInputsDependsOn);
+      _AddBlazorWebAssemblyFrameworkStaticWebAsset;
+    </ResolveStaticWebAssetsInputsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_AddBlazorWebAssemblyFrameworkStaticWebAsset">
+    <ItemGroup>
+      <_BlazorWebAssemblyJSCandidates Include="$(_BlazorWebAssemblyAssetsBasePath)blazor.webassembly.js">
+        <RelativePath>_framework/blazor.webassembly.js</RelativePath>
+      </_BlazorWebAssemblyJSCandidates>
+      <_BlazorWebAssemblyJSCandidates Include="$(_BlazorWebAssemblyAssetsBasePath)blazor.webassembly.js.map" Condition="Exists('$(_BlazorWebAssemblyAssetsBasePath)blazor.webassembly.js.map')">
+        <RelativePath>_framework/blazor.webassembly.js.map</RelativePath>
+      </_BlazorWebAssemblyJSCandidates>
+
+      <_MissingBlazorWebAssemblyJSCandidates
+        Include="@(_BlazorWebAssemblyJSCandidates)"
+        Condition="!Exists('%(Identity)')" />
+      <_BlazorWebAssemblyJSCandidates Remove="@(_MissingBlazorWebAssemblyJSCandidates)" />
+    </ItemGroup>
+
+    <Message
+      Importance="High"
+      Condition="'@(_MissingBlazorWebAssemblyJSCandidates->Count())' != '0'"
+      Text="WebAssembly framework asset '%(_MissingBlazorWebAssemblyJSCandidates.Identity)' could not be found and won't be included in the project." />
+
+    <DefineStaticWebAssets
+      Condition="'@(_BlazorWebAssemblyJSCandidates->Count())' != '0'"
+      CandidateAssets="@(_BlazorWebAssemblyJSCandidates)"
+      ContentRoot="$(_BlazorWebAssemblyAssetsBasePath)"
+      SourceId="Microsoft.AspNetCore.Components.WebAssembly"
+      SourceType="Discovered"
+      AssetKind="All"
+      AssetMode="CurrentProject"
+      AssetRole="Primary"
+      FingerprintCandidates="true"
+      BasePath="$(StaticWebAssetBasePath)">
+      <Output TaskParameter="Assets" ItemName="_BlazorWebAssemblyJSStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      Condition="'@(_BlazorWebAssemblyJSStaticWebAsset)' != ''"
+      CandidateAssets="@(_BlazorWebAssemblyJSStaticWebAsset)"
+      ExistingEndpoints=""
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+      <Output TaskParameter="Endpoints" ItemName="_BlazorWebAssemblyJSStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_BlazorWebAssemblyJSStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_BlazorWebAssemblyJSStaticWebAssetEndpoint)" />
+    </ItemGroup>
+  </Target>
 
   <ItemGroup>
     <RuntimeHostConfigurationOption Include="Microsoft.AspNetCore.Components.Routing.RegexConstraintSupport"

@@ -62,7 +62,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="$(BlazorWebAssemblyJSFile)" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\" LinkBase="build\$(DefaultNetCoreTargetFramework)\" />
+    <Content Include="$(BlazorWebAssemblyJSFile)" Pack="true" PackagePath="staticwebassets\" />
+    <Content Include="$(BlazorWebAssemblyJSFile).map" Pack="true" PackagePath="staticwebassets\" Condition="Exists('$(BlazorWebAssemblyJSFile).map')" />
     <Content Include="targets\*.props" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\" />
   </ItemGroup>
 
