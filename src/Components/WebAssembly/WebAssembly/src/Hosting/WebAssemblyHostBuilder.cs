@@ -34,7 +34,7 @@ public sealed class WebAssemblyHostBuilder
 
     [FeatureSwitchDefinition("System.Diagnostics.Metrics.Meter.IsSupported")]
     internal static bool IsMeterSupported { get; } =
-        AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out var isSupported) ? isSupported : true;
+        AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out var isSupported) ? isSupported : false;
 
     internal static bool IsMeterEnabled { get; set; } = IsMeterSupported;
 

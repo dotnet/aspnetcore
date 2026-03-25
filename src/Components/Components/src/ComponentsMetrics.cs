@@ -13,7 +13,7 @@ internal sealed class ComponentsMetrics : IDisposable
 {
     [FeatureSwitchDefinition("System.Diagnostics.Metrics.Meter.IsSupported")]
     internal static bool IsSupported { get; } =
-        AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out bool isSupported) ? isSupported : true;
+        AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out bool isSupported) ? isSupported : false;
 
     public const string MeterName = "Microsoft.AspNetCore.Components";
     public const string LifecycleMeterName = "Microsoft.AspNetCore.Components.Lifecycle";
