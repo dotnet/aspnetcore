@@ -16,7 +16,8 @@
 
   <PropertyGroup>
     <ANCMDepProviderKey Condition="'$(Platform)' == 'x86'">IIS_AspNetCore_Module_V2,x86</ANCMDepProviderKey>
-    <ANCMDepProviderKey Condition="'$(Platform)' != 'x86'">IIS_AspNetCore_Module_V2,x64</ANCMDepProviderKey>
+    <ANCMDepProviderKey Condition="'$(Platform)' == 'x64'">IIS_AspNetCore_Module_V2,x64</ANCMDepProviderKey>
+    <ANCMDepProviderKey Condition="'$(Platform)' == 'arm64'">IIS_AspNetCore_Module_V2,arm64</ANCMDepProviderKey>
     <DefineConstants>$(DefineConstants);ANCMDepProviderKey=$(ANCMDepProviderKey)</DefineConstants>
   </PropertyGroup>
 
