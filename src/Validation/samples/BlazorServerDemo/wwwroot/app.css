@@ -407,11 +407,6 @@ input.form-input {
     border: 1px solid #bbf7d0;
 }
 
-.submit-message.success::before {
-    content: "✓";
-    font-weight: 700;
-}
-
 .submit-message.failure {
     color: var(--error);
     background: var(--error-bg);
@@ -506,27 +501,9 @@ ul.validation-errors {
     to { transform: rotate(360deg); }
 }
 
-/* ===== Checkmark ===== */
-.checkmark {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    position: relative;
-}
-
-.checkmark::after {
-    content: '✓';
-    font-size: 1rem;
-    font-weight: 700;
-    line-height: 1;
-}
-
-.btn-primary.submitted {
-    background: var(--success);
-    cursor: default;
-}
-
 .btn-primary:disabled {
-    opacity: 0.7;
+    background: #94a3b8;
+    opacity: 0.8;
     cursor: not-allowed;
+    box-shadow: none;
 }

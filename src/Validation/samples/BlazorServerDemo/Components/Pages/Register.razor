@@ -64,7 +64,7 @@
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="btn-primary @(_submittedSuccessfully ? "submitted" : "")"
+            <button type="submit" class="btn-primary"
                     disabled="@(_submitting || _submittedSuccessfully)">
                 @if (_submitting)
                 {
@@ -73,7 +73,6 @@
                 }
                 else if (_submittedSuccessfully)
                 {
-                    <span class="checkmark"></span>
                     <span>@L["SubmittedSuccessfullyButton"]</span>
                 }
                 else
