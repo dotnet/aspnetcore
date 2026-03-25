@@ -267,7 +267,6 @@ public class KestrelConfigurationLoaderTests
 
     [Fact]
     // inherently flaky (writes to a well-known path)
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/48736")]
     public void ConfigureEndpointDevelopmentCertificateGetsLoadedWhenPresent()
     {
         try
@@ -435,6 +434,7 @@ public class KestrelConfigurationLoaderTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65851")]
     public void LoadDevelopmentCertificate_LoadBeforeUseHttps()
     {
         try
@@ -482,6 +482,7 @@ public class KestrelConfigurationLoaderTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65851")]
     public void LoadDevelopmentCertificate_UseHttpsBeforeLoad()
     {
         try
