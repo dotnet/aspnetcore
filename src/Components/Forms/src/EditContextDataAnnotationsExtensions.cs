@@ -89,7 +89,16 @@ public static partial class EditContextDataAnnotationsExtensions
                 };
                 var results = new List<ValidationResult>();
 
-                Validator.TryValidateProperty(propertyValue, validationContext, results);
+                try
+                {
+                    Validator.TryValidateProperty(propertyValue, validationContext, results);
+                }
+                catch (NotSupportedException)
+                {
+                    // AsyncValidationAttribute throws NotSupportedException from the sync IsValid() path.
+                    // Skip it here — async attributes are validated on form submit via the M.E.V async pipeline.
+                }
+
                 _messages.Clear(fieldIdentifier);
                 foreach (var result in CollectionsMarshal.AsSpan(results))
                 {

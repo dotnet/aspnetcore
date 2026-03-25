@@ -1,13 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable ASP0029
+
 using System.ComponentModel.DataAnnotations;
 
 namespace BlazorServerDemo.Data;
 
-#pragma warning disable ASP0029
 [Microsoft.Extensions.Validation.ValidatableType]
-#pragma warning restore ASP0029
 public class RegistrationModel
 {
     /// <summary>
