@@ -17,7 +17,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddValidation();
 builder.Services.AddValidationLocalization();
 
-// DEMO: Register JSON-based localizer
+// DEMO: Register JSON-based localizer (see wwwroot/translations.json)
 builder.Services.AddSingleton<IStringLocalizerFactory, JsonStringLocalizerFactory>();
 
 builder.Services.Configure<RequestLocalizationOptions>(options =>
