@@ -88,4 +88,58 @@
   <data name="RangeError" xml:space="preserve">
     <value>El campo {0} debe estar entre {1} y {2}.</value>
   </data>
+  <data name="BrandText" xml:space="preserve">
+    <value>Demo de Validación SSR</value>
+  </data>
+  <data name="NavHome" xml:space="preserve">
+    <value>Inicio</value>
+  </data>
+  <data name="NavContact" xml:space="preserve">
+    <value>Contacto</value>
+  </data>
+  <data name="FooterText" xml:space="preserve">
+    <value>Demo de Validación Blazor SSR</value>
+  </data>
+  <data name="HomeBadge" xml:space="preserve">
+    <value>Sin interactividad JavaScript</value>
+  </data>
+  <data name="HomeTitle" xml:space="preserve">
+    <value>Bienvenido</value>
+  </data>
+  <data name="HomeDescription" xml:space="preserve">
+    <value>Esta demo muestra la validación del lado del cliente en una aplicación Blazor renderizada estáticamente en el servidor (SSR) — sin SignalR, sin interactividad, solo formularios mejorados con atributos data-val-*.</value>
+  </data>
+  <data name="HomeButton" xml:space="preserve">
+    <value>Ir al formulario de contacto</value>
+  </data>
+  <data name="ContactTitle" xml:space="preserve">
+    <value>Contáctenos</value>
+  </data>
+  <data name="ContactSubtitle" xml:space="preserve">
+    <value>La validación del lado del cliente se ejecuta en el navegador antes de enviar el formulario.</value>
+  </data>
+  <data name="LabelName" xml:space="preserve">
+    <value>Nombre</value>
+  </data>
+  <data name="LabelEmail" xml:space="preserve">
+    <value>Correo electrónico</value>
+  </data>
+  <data name="LabelPhone" xml:space="preserve">
+    <value>Teléfono</value>
+  </data>
+  <data name="LabelAge" xml:space="preserve">
+    <value>Edad</value>
+  </data>
+  <data name="LabelMessage" xml:space="preserve">
+    <value>Mensaje</value>
+  </data>
+  <data name="SubmitButton" xml:space="preserve">
+    <value>Enviar mensaje</value>
+  </data>
+  <data name="SuccessTitle" xml:space="preserve">
+    <value>¡Gracias, {0}!</value>
+  </data>
+  <data name="SuccessMessage" xml:space="preserve">
+    <value>Su mensaje ha sido recibido exitosamente.</value>
+  </data>
 </root>

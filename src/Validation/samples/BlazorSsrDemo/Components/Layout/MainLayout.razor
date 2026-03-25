@@ -1,17 +1,19 @@
 @inherits LayoutComponentBase
+@inject IStringLocalizer<ValidationMessages> L
+@inject NavigationManager Navigation
 
 <header>
     <div class="header-inner">
         <a class="brand" href="/">
             <span class="brand-icon">V</span>
-            <span class="brand-text">SSR Validation Demo</span>
+            <span class="brand-text">@L["BrandText"]</span>
         </a>
         <nav>
-            <NavLink href="/" Match="NavLinkMatch.All">Home</NavLink>
-            <NavLink href="/contact">Contact</NavLink>
+            <NavLink href="/" Match="NavLinkMatch.All">@L["NavHome"]</NavLink>
+            <NavLink href="/contact">@L["NavContact"]</NavLink>
             <span class="nav-sep">|</span>
-            <a href="/Culture/Set?culture=en&redirectUri=/">EN</a>
-            <a href="/Culture/Set?culture=es&redirectUri=/">ES</a>
+            <a href="@GetCultureUrl("en")">EN</a>
+            <a href="@GetCultureUrl("es")">ES</a>
         </nav>
     </div>
 </header>
@@ -21,5 +23,18 @@
 </main>
 
 <footer>
-    <p>&copy; @DateTime.Now.Year — Blazor SSR Validation Demo</p>
+    <p>&copy; @DateTime.Now.Year — @L["FooterText"]</p>
 </footer>
+
+@code {
+    private string GetCultureUrl(string culture)
+    {
+        var currentUri = Navigation.Uri;
+        var baseUri = Navigation.BaseUri;
+        var relativePath = currentUri.StartsWith(baseUri, StringComparison.OrdinalIgnoreCase)
+            ? "/" + currentUri[baseUri.Length..]
+            : "/";
+
+        return $"/Culture/Set?culture={culture}&redirectUri={Uri.EscapeDataString(relativePath)}";
+    }
+}

@@ -1,14 +1,11 @@
 @page "/"
+@inject IStringLocalizer<ValidationMessages> L
 
-<PageTitle>Home</PageTitle>
+<PageTitle>@L["HomeTitle"]</PageTitle>
 
 <section class="hero">
-    <div class="badge">Zero JavaScript interactivity</div>
-    <h2>Welcome</h2>
-    <p>
-        This demo shows <strong>client-side validation</strong> in a Blazor
-        <strong>static server-rendered (SSR)</strong> application — no SignalR, no
-        interactivity, just enhanced form handling with <code>data-val-*</code> attributes.
-    </p>
-    <a class="btn" href="/contact">Go to Contact Form</a>
+    <div class="badge">@L["HomeBadge"]</div>
+    <h2>@L["HomeTitle"]</h2>
+    <p>@L["HomeDescription"]</p>
+    <a class="btn" href="/contact">@L["HomeButton"]</a>
 </section>

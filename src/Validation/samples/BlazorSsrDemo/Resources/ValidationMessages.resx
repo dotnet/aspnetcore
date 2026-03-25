@@ -88,4 +88,58 @@
   <data name="RangeError" xml:space="preserve">
     <value>The field {0} must be between {1} and {2}.</value>
   </data>
+  <data name="BrandText" xml:space="preserve">
+    <value>SSR Validation Demo</value>
+  </data>
+  <data name="NavHome" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="NavContact" xml:space="preserve">
+    <value>Contact</value>
+  </data>
+  <data name="FooterText" xml:space="preserve">
+    <value>Blazor SSR Validation Demo</value>
+  </data>
+  <data name="HomeBadge" xml:space="preserve">
+    <value>Zero JavaScript interactivity</value>
+  </data>
+  <data name="HomeTitle" xml:space="preserve">
+    <value>Welcome</value>
+  </data>
+  <data name="HomeDescription" xml:space="preserve">
+    <value>This demo shows client-side validation in a Blazor static server-rendered (SSR) application — no SignalR, no interactivity, just enhanced form handling with data-val-* attributes.</value>
+  </data>
+  <data name="HomeButton" xml:space="preserve">
+    <value>Go to Contact Form</value>
+  </data>
+  <data name="ContactTitle" xml:space="preserve">
+    <value>Contact Us</value>
+  </data>
+  <data name="ContactSubtitle" xml:space="preserve">
+    <value>Client-side validation runs in the browser before the form is submitted.</value>
+  </data>
+  <data name="LabelName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="LabelEmail" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="LabelPhone" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="LabelAge" xml:space="preserve">
+    <value>Age</value>
+  </data>
+  <data name="LabelMessage" xml:space="preserve">
+    <value>Message</value>
+  </data>
+  <data name="SubmitButton" xml:space="preserve">
+    <value>Send Message</value>
+  </data>
+  <data name="SuccessTitle" xml:space="preserve">
+    <value>Thank you, {0}!</value>
+  </data>
+  <data name="SuccessMessage" xml:space="preserve">
+    <value>Your message has been received successfully.</value>
+  </data>
 </root>

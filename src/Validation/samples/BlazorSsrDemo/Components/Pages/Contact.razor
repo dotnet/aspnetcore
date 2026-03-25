@@ -1,54 +1,55 @@
 @page "/contact"
+@inject IStringLocalizer<ValidationMessages> L
 
-<PageTitle>Contact</PageTitle>
+<PageTitle>@L["NavContact"]</PageTitle>
 
-<h2>Contact Us</h2>
-<p class="subtitle">Client-side validation runs in the browser before the form is submitted.</p>
+<h2>@L["ContactTitle"]</h2>
+<p class="subtitle">@L["ContactSubtitle"]</p>
 
 <EditForm Model="contact" Enhance OnValidSubmit="HandleSubmit" FormName="ContactForm">
     <DataAnnotationsValidator />
     <ClientSideValidator />
 
     <div class="form-group">
-        <label for="name">Name</label>
+        <label for="name">@L["LabelName"]</label>
         <InputText id="name" @bind-Value="contact.Name" />
         <ValidationMessage For="() => contact.Name" />
     </div>
 
     <div class="form-group">
-        <label for="email">Email</label>
+        <label for="email">@L["LabelEmail"]</label>
         <InputText id="email" @bind-Value="contact.Email" />
         <ValidationMessage For="() => contact.Email" />
     </div>
 
     <div class="form-group">
-        <label for="phone">Phone</label>
+        <label for="phone">@L["LabelPhone"]</label>
         <InputText id="phone" @bind-Value="contact.Phone" />
         <ValidationMessage For="() => contact.Phone" />
     </div>
 
     <div class="form-group">
-        <label for="age">Age</label>
+        <label for="age">@L["LabelAge"]</label>
         <InputNumber id="age" @bind-Value="contact.Age" />
         <ValidationMessage For="() => contact.Age" />
     </div>
 
     <div class="form-group">
-        <label for="message">Message</label>
+        <label for="message">@L["LabelMessage"]</label>
         <InputTextArea id="message" @bind-Value="contact.Message" />
         <ValidationMessage For="() => contact.Message" />
     </div>
 
     <div class="form-actions">
-        <button type="submit" class="btn">Send Message</button>
+        <button type="submit" class="btn">@L["SubmitButton"]</button>
     </div>
 </EditForm>
 
 @if (submitted)
 {
     <div class="success-message">
-        <h3>Thank you, @contact.Name!</h3>
-        <p>Your message has been received successfully.</p>
+        <h3>@string.Format(L["SuccessTitle"], contact.Name)</h3>
+        <p>@L["SuccessMessage"]</p>
     </div>
 }
 
