@@ -28,7 +28,7 @@ public sealed class UniqueUsernameAttribute : AsyncValidationAttribute
         if (await userService.IsUsernameTakenAsync(username, cancellationToken))
         {
             return new ValidationResult(
-                FormatErrorMessage(CultureInfo.CurrentCulture, ErrorMessageString, validationContext.DisplayName),
+                string.Format(CultureInfo.CurrentCulture, ErrorMessageString, validationContext.DisplayName),
                 [validationContext.MemberName!]);
         }
 
