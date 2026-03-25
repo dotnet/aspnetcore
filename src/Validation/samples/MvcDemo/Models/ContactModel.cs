@@ -15,20 +15,12 @@ public class ContactModel
     [EmailAddress]
     public string Email { get; set; } = default!;
 
-    [Phone]
-    [Display(Name = "Phone")]
-    public string? Phone { get; set; }
-
-    [Url]
-    [Display(Name = "Website")]
-    public string? Website { get; set; }
-
     [Required]
     [Range(18, 120)]
     public int? Age { get; set; }
 
     [Required]
-    [MinLength(8)]
+    [MinLength(4, ErrorMessage = "Password must be at least 4 characters long.")]
     [DataType(DataType.Password)]
     public string Password { get; set; } = default!;
 

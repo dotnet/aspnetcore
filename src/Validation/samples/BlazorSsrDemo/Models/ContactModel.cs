@@ -23,6 +23,7 @@ public class ContactModel
     [Display(Name = "ContactEmail")]
     public string? Email { get; set; }
 
+    [Required(ErrorMessage = "RequiredError")]
     [Phone(ErrorMessage = "PhoneError")]
     [Display(Name = "ContactPhone")]
     public string? Phone { get; set; }

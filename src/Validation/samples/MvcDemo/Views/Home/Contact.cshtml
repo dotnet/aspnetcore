@@ -1,4 +1,4 @@
-@model ContactModel
+﻿@model ContactModel
 @{
     ViewData["Title"] = "Contact";
 }
@@ -26,18 +26,6 @@
     </div>
 
     <div class="form-group">
-        <label asp-for="Phone"></label>
-        <input asp-for="Phone" class="form-control" />
-        <span asp-validation-for="Phone" class="field-validation-error"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="Website"></label>
-        <input asp-for="Website" class="form-control" />
-        <span asp-validation-for="Website" class="field-validation-error"></span>
-    </div>
-
-    <div class="form-group">
         <label asp-for="Age"></label>
         <input asp-for="Age" class="form-control" type="number" />
         <span asp-validation-for="Age" class="field-validation-error"></span>
@@ -60,8 +48,4 @@
 
 @section Scripts {
     <script src="~/js/aspnet-core-validation.js"></script>
-    <script>
-        const service = new aspnetValidation.ValidationService();
-        service.bootstrap();
-    </script>
 }
