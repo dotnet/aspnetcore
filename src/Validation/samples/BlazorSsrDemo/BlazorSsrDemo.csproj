@@ -57,4 +57,23 @@
     <EmbeddedResource Update="Resources\ValidationMessages.resx" GenerateSource="false" />
     <EmbeddedResource Update="Resources\ValidationMessages.*.resx" GenerateSource="false" />
   </ItemGroup>
+
+  <!-- blazor.web.js is needed for enhanced navigation; copy from Web.JS dist -->
+  <Target Name="CopyBlazorScript" BeforeTargets="Build"
+          Condition="Exists('$(RepoRoot)src\Components\Web.JS\dist\Debug\blazor.web.js')">
+    <MakeDir Directories="$(ProjectDir)wwwroot\_framework" />
+    <Copy
+      SourceFiles="$(RepoRoot)src\Components\Web.JS\dist\Debug\blazor.web.js"
+      DestinationFolder="$(ProjectDir)wwwroot\_framework\"
+      SkipUnchangedFiles="true" />
+  </Target>
+
+  <!-- aspnet-core-validation.js is built by Web.JS rollup -->
+  <Target Name="CopyValidationScript" BeforeTargets="Build"
+          Condition="Exists('$(RepoRoot)src\Components\Web.JS\dist\Release\aspnet-core-validation.js')">
+    <Copy
+      SourceFiles="$(RepoRoot)src\Components\Web.JS\dist\Release\aspnet-core-validation.js"
+      DestinationFolder="$(ProjectDir)wwwroot\js\"
+      SkipUnchangedFiles="true" />
+  </Target>
 </Project>
