@@ -1671,7 +1671,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var js = (IJavaScriptExecutor)Browser;
         Browser.True(() => GetElementCount(container, ".item") > 0);
 
-        // Scroll down so item 5 is above the viewport but still in DOM an verify its position
+        // Scroll down so item 5 is above the viewport but still in DOM and verify its position
         js.ExecuteScript("arguments[0].scrollTop = 500", container);
         Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) >= 500);
         Browser.True(() => container.FindElements(By.CssSelector("[data-index='5']")).Count > 0);
@@ -1684,7 +1684,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Exists(By.Id("expand-item-5")).Click();
         Browser.Contains("Item 5 expanded via button", () => Browser.Exists(By.Id("status")).Text);
 
-        // Wait for the expanded the 5th item content to appear in DOM
+        // Wait for the expanded content for item 5 to appear in the DOM
         Browser.True(() => container.FindElements(By.CssSelector("[data-index='5'] .expanded-content")).Count > 0);
 
         var (_, relTopAfter, scrollTopAfter) = GetItemPositionInContainer(js, container, ".item", indexBefore);
