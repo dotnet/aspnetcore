@@ -36,3 +36,4 @@ abstract Microsoft.Extensions.Validation.AsyncValidationAttribute.IsValidAsync(o
 override sealed Microsoft.Extensions.Validation.AsyncValidationAttribute.IsValid(object? value, System.ComponentModel.DataAnnotations.ValidationContext! validationContext) -> System.ComponentModel.DataAnnotations.ValidationResult?
 Microsoft.Extensions.Validation.IAsyncValidatableObject
 Microsoft.Extensions.Validation.IAsyncValidatableObject.ValidateAsync(System.ComponentModel.DataAnnotations.ValidationContext! validationContext, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult!>!>!
+Microsoft.Extensions.Validation.ValidatableTypeInfo.GetProperty(string! propertyName) -> Microsoft.Extensions.Validation.ValidatablePropertyInfo?

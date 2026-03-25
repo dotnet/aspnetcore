@@ -200,37 +200,52 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         ValidateContext context,
         CancellationToken cancellationToken)
     {
+        var originalErrorCount = context.ValidationErrors?.Count ?? 0;
+
+        // Phase 1: Run all sync validation attributes.
         for (var i = 0; i < validationAttributes.Length; i++)
         {
             var attribute = validationAttributes[i];
+            if (attribute is AsyncValidationAttribute)
+            {
+                continue;
+            }
+
             try
             {
-                ValidationResult? result;
-                if (attribute is AsyncValidationAttribute asyncAttribute)
-                {
-                    result = await asyncAttribute.GetValidationResultAsync(val, context.ValidationContext, cancellationToken);
-                }
-                else
-                {
-                    result = attribute.GetValidationResult(val, context.ValidationContext);
-                }
-
+                var result = attribute.GetValidationResult(val, context.ValidationContext);
                 if (result is not null && result != ValidationResult.Success)
                 {
-                    var customMessage = Localization.LocalizationHelper.TryResolveErrorMessage(
-                        attribute,
-                        DeclaringType,
-                        displayName,
-                        errorMessageProvider,
-                        context.ValidationContext);
+                    ReportError(attribute, result, name, errorPrefix, displayName, errorMessageProvider, context, container);
+                }
+            }
+            catch (Exception ex)
+            {
+                var key = errorPrefix.TrimStart('.');
+                context.AddOrExtendValidationErrors(name, key, [ex.Message], container);
+            }
+        }
 
-                    var errorMessage = customMessage ?? result.ErrorMessage;
+        // Phase 2: Run async attributes only if no sync errors were found for this property.
+        var currentErrorCount = context.ValidationErrors?.Count ?? 0;
+        if (currentErrorCount > originalErrorCount)
+        {
+            return;
+        }
 
-                    if (errorMessage is not null)
-                    {
-                        var key = errorPrefix.TrimStart('.');
-                        context.AddOrExtendValidationErrors(name, key, [errorMessage], container);
-                    }
+        for (var i = 0; i < validationAttributes.Length; i++)
+        {
+            if (validationAttributes[i] is not AsyncValidationAttribute asyncAttribute)
+            {
+                continue;
+            }
+
+            try
+            {
+                var result = await asyncAttribute.GetValidationResultAsync(val, context.ValidationContext, cancellationToken);
+                if (result is not null && result != ValidationResult.Success)
+                {
+                    ReportError(asyncAttribute, result, name, errorPrefix, displayName, errorMessageProvider, context, container);
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -242,6 +257,32 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                 var key = errorPrefix.TrimStart('.');
                 context.AddOrExtendValidationErrors(name, key, [ex.Message], container);
             }
+        }
+    }
+
+    private void ReportError(
+        ValidationAttribute attribute,
+        ValidationResult result,
+        string name,
+        string errorPrefix,
+        string displayName,
+        Func<Localization.ErrorMessageProviderContext, string?>? errorMessageProvider,
+        ValidateContext context,
+        object? container)
+    {
+        var customMessage = Localization.LocalizationHelper.TryResolveErrorMessage(
+            attribute,
+            DeclaringType,
+            displayName,
+            errorMessageProvider,
+            context.ValidationContext);
+
+        var errorMessage = customMessage ?? result.ErrorMessage;
+
+        if (errorMessage is not null)
+        {
+            var key = errorPrefix.TrimStart('.');
+            context.AddOrExtendValidationErrors(name, key, [errorMessage], container);
         }
     }
 }
