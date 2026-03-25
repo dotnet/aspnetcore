@@ -236,6 +236,23 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
     }
 
     [Fact]
+    public void List_Json_OptionIsWired()
+    {
+        string id;
+        var projectPath = _fixture.GetTempSecretProject(out id);
+        var secretManager = CreateProgram();
+        secretManager.RunInternal("set", "key1", "value1", "-p", projectPath);
+
+        _console.ClearOutput();
+        secretManager.RunInternal("list", "--id", id, "--json");
+
+        var stdout = _console.GetOutput();
+        Assert.Contains("//BEGIN", stdout);
+        Assert.Contains("\"key1\": \"value1\"", stdout);
+        Assert.Contains("//END", stdout);
+    }
+
+    [Fact]
     public void Set_Flattens_Nested_Objects()
     {
         string secretId;
