@@ -246,7 +246,10 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             endpointRouteData = RouteTable.ProcessParameters(endpointRouteData);
             _renderHandle.Render(Found(endpointRouteData));
 
-            _renderHandle.ComponentActivitySource?.StopNavigateActivity(activityHandle, null);
+            if (ComponentsActivitySource.IsSupported && _renderHandle.ComponentActivitySource != null)
+            {
+                _renderHandle.ComponentActivitySource.StopNavigateActivity(activityHandle, null);
+            }
             return;
         }
 
