@@ -7,8 +7,11 @@
 <p class="subtitle">@L["ContactSubtitle"]</p>
 
 <EditForm Model="contact" Enhance OnValidSubmit="HandleSubmit" FormName="ContactForm">
+
+    @* DEMO: Opt-into client-side validation for the form *@
     <DataAnnotationsValidator />
     <ClientSideValidator />
+
     <fieldset disabled="@submitted">
 
     <div class="form-group">

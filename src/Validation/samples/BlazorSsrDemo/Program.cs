@@ -11,12 +11,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents();
 
-// DEMO: Add validation services and localization
 builder.Services.AddValidation();
 builder.Services.AddValidationLocalization<ValidationMessages>();
 
-// DEMO: Add client-side validation support (uncomment to enable)
-// builder.Services.AddClientSideValidation();
+// DEMO: Add client-side validation support
+builder.Services.AddClientSideValidation();
 
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
