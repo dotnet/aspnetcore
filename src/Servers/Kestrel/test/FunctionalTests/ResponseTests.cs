@@ -467,7 +467,6 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/49974")]
     public async Task ConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate(bool fin)
     {
         var logger = LoggerFactory.CreateLogger($"{ typeof(ResponseTests).FullName}.{ nameof(ConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate)}");
