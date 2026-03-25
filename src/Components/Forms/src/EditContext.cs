@@ -302,6 +302,16 @@ public sealed class EditContext
         => _fieldStates.TryGetValue(fieldIdentifier, out var state) && state.PendingValidationTask is { IsCompleted: false };
 
     /// <summary>
+    /// Returns <c>true</c> if the field identified by the <paramref name="accessor"/> expression
+    /// has a pending async validation task.
+    /// </summary>
+    /// <typeparam name="TField">The type of the field.</typeparam>
+    /// <param name="accessor">An expression that identifies the field, e.g. <c>() =&gt; model.Email</c>.</param>
+    /// <returns><c>true</c> if async validation is in progress for the field; otherwise <c>false</c>.</returns>
+    public bool IsValidationPending<TField>(Expression<Func<TField>> accessor)
+        => IsValidationPending(FieldIdentifier.Create(accessor));
+
+    /// <summary>
     /// Returns <c>true</c> if any field has a pending async validation task.
     /// </summary>
     /// <returns><c>true</c> if any field has async validation in progress; otherwise <c>false</c>.</returns>
@@ -326,6 +336,16 @@ public sealed class EditContext
     /// <returns><c>true</c> if the field's last async validation faulted; otherwise <c>false</c>.</returns>
     public bool IsValidationFaulted(in FieldIdentifier fieldIdentifier)
         => _fieldStates.TryGetValue(fieldIdentifier, out var state) && state.IsValidationFaulted;
+
+    /// <summary>
+    /// Returns <c>true</c> if the field identified by the <paramref name="accessor"/> expression's
+    /// last async validation faulted (threw a non-cancellation exception).
+    /// </summary>
+    /// <typeparam name="TField">The type of the field.</typeparam>
+    /// <param name="accessor">An expression that identifies the field, e.g. <c>() =&gt; model.Email</c>.</param>
+    /// <returns><c>true</c> if the field's last async validation faulted; otherwise <c>false</c>.</returns>
+    public bool IsValidationFaulted<TField>(Expression<Func<TField>> accessor)
+        => IsValidationFaulted(FieldIdentifier.Create(accessor));
 
     /// <summary>
     /// Returns <c>true</c> if any field's last async validation faulted.

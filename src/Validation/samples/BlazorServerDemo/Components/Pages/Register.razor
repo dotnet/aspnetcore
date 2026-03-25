@@ -19,11 +19,11 @@
         <div class="form-group">
             <label class="form-label" for="email">@L["Email"]</label>
             <InputText id="email" class="form-input" @bind-Value="_model.Email" placeholder="@L["EmailPlaceholder"]" />
-            @if (_editContext.IsValidationPending(_editContext.Field(nameof(RegistrationModel.Email))))
+            @if (_editContext.IsValidationPending(() => _model.Email))
             {
                 <div class="field-status pending">@L["CheckingMessage"]</div>
             }
-            else if (_editContext.IsValidationFaulted(_editContext.Field(nameof(RegistrationModel.Email))))
+            else if (_editContext.IsValidationFaulted(() => _model.Email))
             {
                 <div class="field-status faulted">@L["FaultedMessage"]</div>
             }
@@ -36,11 +36,11 @@
         <div class="form-group">
             <label class="form-label" for="username">@L["Username"]</label>
             <InputText id="username" class="form-input" @bind-Value="_model.Username" placeholder="@L["UsernamePlaceholder"]" />
-            @if (_editContext.IsValidationPending(_editContext.Field(nameof(RegistrationModel.Username))))
+            @if (_editContext.IsValidationPending(() => _model.Username))
             {
                 <div class="field-status pending">@L["CheckingMessage"]</div>
             }
-            else if (_editContext.IsValidationFaulted(_editContext.Field(nameof(RegistrationModel.Username))))
+            else if (_editContext.IsValidationFaulted(() => _model.Username))
             {
                 <div class="field-status faulted">@L["FaultedMessage"]</div>
             }
