@@ -1,6 +1,6 @@
 # Subagent Delegation Patterns
 
-CI investigations involve repetitive, mechanical work that burns main conversation context. Delegate data gathering to subagents; keep interpretation in the main agent.
+Delegate data gathering to subagents; keep interpretation in main.
 
 ## Pattern 1: Scanning Multiple Console Logs
 
@@ -84,9 +84,11 @@ Return JSON: { "buildId": N, "project": "...", "args": ["..."] }
 Check if canceled job "{JOB_NAME}" from build {BUILD_ID} has recoverable Helix results.
 
 Steps:
-1. Check if TRX test results are available for the work item. Parse them for pass/fail counts.
-2. If no structured results, check for testResults.xml
-3. Parse the XML for pass/fail counts on the <assembly> element
+1. Parse TRX test results from the work item for pass/fail counts.
+   NOTE: TRX parsing may error if no TRX files were uploaded (common for non-.NET-test work items like mobile device tests). If it errors, proceed to step 2.
+2. If no structured results, search the work item's uploaded testResults.xml file for "total" to get pass/fail counts
+3. If found, parse the XML for pass/fail counts on the <assembly> element
+4. If neither is available, search the console log for test summary lines containing "passed"
 
 Return JSON: { "jobName": "...", "hasResults": true, "passed": N, "failed": N }
 Or: { "jobName": "...", "hasResults": false, "reason": "no testResults.xml uploaded" }

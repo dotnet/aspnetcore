@@ -129,7 +129,20 @@
   <Target Name="Test" DependsOnTargets="ExecuteApplications" />
   <Target Name="VSTest" DependsOnTargets="Test" />
 
-  <!-- define Restore/Build to do nothing, for this project only Test does the testing -->
-  <Target Name="Restore" />
+  <!--
+    The Restore target generates and restores the trimming test projects. BuildAfterTargetingPack.csproj calls
+    Restore on all delayed-build .proj files with BuildInParallel="false", which serializes these restores and
+    avoids a NuGet file-move race on Windows where concurrent static-graph restores race when committing
+    project.assets.json for shared ProjectReference targets (https://github.com/dotnet/aspnetcore/issues/61178).
+    PublishTrimmedProjects also restores as a fallback for local dev where Restore may not be called separately;
+    after the serialized Restore phase in CI those calls are fast no-ops.
+  -->
+  <Target Name="Restore" DependsOnTargets="GenerateProjects">
+    <MSBuild Projects="@(TestConsoleApps)"
+             BuildInParallel="false"
+             Targets="Restore"
+             Condition="'$(SkipTrimmingProjectsRestore)' != 'true'"
+             Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid());Configuration=$(Configuration);RestoreDisableParallel=true" />
+  </Target>
   <Target Name="Build" />
 </Project>

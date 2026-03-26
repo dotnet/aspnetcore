@@ -94,6 +94,50 @@ public class ResponseTests : LoggedTest
         }
     }
 
+    [ConditionalTheory]
+    [InlineData("Injected\r\nHeader: value")]
+    [InlineData("Has\rCarriageReturn")]
+    [InlineData("Has\nLineFeed")]
+    [InlineData("Has\0Null")]
+    [InlineData("Control\u001FChar")]
+    [InlineData("Del\u007FChar")]
+    [InlineData("Non-ASCII\u0080Char")]
+    [InlineData("Caf\u00E9")]
+    public async Task Response_ReasonPhraseWithControlCharacters_Throws(string reasonPhrase)
+    {
+        string address;
+        using (Utilities.CreateHttpServer(out address, httpContext =>
+        {
+            Assert.Throws<InvalidOperationException>(() =>
+                httpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = reasonPhrase);
+            return Task.FromResult(0);
+        }, LoggerFactory))
+        {
+            HttpResponseMessage response = await SendRequestAsync(address);
+            Assert.Equal(200, (int)response.StatusCode);
+        }
+    }
+
+    [ConditionalTheory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("OK")]
+    [InlineData("Custom Reason")]
+    [InlineData("Includes\tHTAB")]
+    public async Task Response_ValidReasonPhrase_Accepted(string reasonPhrase)
+    {
+        string address;
+        using (Utilities.CreateHttpServer(out address, httpContext =>
+        {
+            httpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = reasonPhrase;
+            return Task.FromResult(0);
+        }, LoggerFactory))
+        {
+            HttpResponseMessage response = await SendRequestAsync(address);
+            Assert.Equal(200, (int)response.StatusCode);
+        }
+    }
+
     [ConditionalFact]
     public async Task Response_StatusCode100_Throws()
     {

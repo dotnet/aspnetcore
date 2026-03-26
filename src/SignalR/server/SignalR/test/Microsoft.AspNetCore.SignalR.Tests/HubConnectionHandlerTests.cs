@@ -5286,6 +5286,103 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         }
     }
 
+    public enum CloseScenario
+    {
+        PingTimeout,
+        Abort,
+    }
+
+    [Theory]
+    [InlineData(CloseScenario.PingTimeout)]
+    [InlineData(CloseScenario.Abort)]
+    public async Task StatefulReconnectWithMessageBufferBackpressureIsCancelable(CloseScenario scenario)
+    {
+        using (StartVerifiableLog(write => write.EventId.Name == "FailedWritingMessage"))
+        {
+            var timeout = TimeSpan.FromMilliseconds(100);
+            var timeProvider = new FakeTimeProvider();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                services.Configure<HubOptions>(options =>
+                {
+                    options.ClientTimeoutInterval = timeout;
+                    options.StatefulReconnectBufferSize = 100;
+                }), LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+            connectionHandler.TimeProvider = timeProvider;
+
+            using var client1 = new TestClient();
+            using var client2 = new TestClient();
+            var reconnectFeature = new TestReconnectFeature();
+#pragma warning disable CA2252 // This API requires opting into preview features
+            client1.Connection.Features.Set<IStatefulReconnectFeature>(reconnectFeature);
+#pragma warning restore CA2252 // This API requires opting into preview features
+
+            var connection1HandlerTask = await client1.ConnectAsync(connectionHandler);
+            var connection2HandlerTask = await client2.ConnectAsync(connectionHandler);
+
+            await client1.Connected.DefaultTimeout();
+            await client1.SendHubMessageAsync(PingMessage.Instance);
+
+            await client2.SendHubMessageAsync(new InvocationMessage(nameof(MethodHub.BroadcastMethod), [new string('a', 100)]));
+
+            switch (scenario)
+            {
+                case CloseScenario.PingTimeout:
+                {
+                    // We go over the 100 ms timeout interval multiple times
+                    for (var i = 0; i < 3; i++)
+                    {
+                        timeProvider.Advance(timeout + TimeSpan.FromMilliseconds(1));
+                        client1.TickHeartbeat();
+                    }
+                    break;
+                }
+                case CloseScenario.Abort:
+                {
+                    client1.Connection.Abort();
+                    break;
+                }
+            }
+
+            Assert.IsType<InvocationMessage>(await client2.ReadAsync().DefaultTimeout());
+
+            await client2.SendHubMessageAsync(new InvocationMessage(nameof(MethodHub.BroadcastMethod), [new string('a', 100)]));
+
+            // This one might not be blocked on client1 if the server sends to client2 first during Broadcast
+            Assert.IsType<InvocationMessage>(await client2.ReadAsync().DefaultTimeout());
+
+            // Send 3rd message to ensure client2 would be blocked if client1 was still blocking the server
+            // Which it shouldn't be as it has timed out
+            await client2.SendHubMessageAsync(new InvocationMessage(nameof(MethodHub.BroadcastMethod), [new string('a', 100)]));
+
+            // Don't await this task as it's possible the CloseMessage is blocking the client1's MessageBuffer.WriteAsync call on the 5 second token
+            // So we need to advance the TimeProvider to make sure the timeout occurs before making sure client2 got the final broadcast message
+            var readTask = client2.ReadAsync().DefaultTimeout();
+
+            var closeTask = connection1HandlerTask.DefaultTimeout(30_000);
+
+            // We don't know when the server will create the CTS to cancel the client trying to send the CloseMessage
+            // Let's do a small spin wait here to have a better chance of the CTS being created and us timing it out via TimeProvider
+            var maxWait = TimeSpan.FromSeconds(10);
+            for (var i = 0; i < 10; i++)
+            {
+                timeProvider.Advance(TimeSpan.FromSeconds(6));
+                if (closeTask.IsCompleted && readTask.IsCompleted)
+                {
+                    break;
+                }
+                await Task.Delay(maxWait / 10);
+            }
+
+            Assert.IsType<InvocationMessage>(await readTask);
+
+            await client2.DisposeAsync();
+
+            await closeTask;
+            await connection2HandlerTask.DefaultTimeout(30_000);
+        }
+    }
+
     public struct DuplexPipePair
     {
         public IDuplexPipe Transport { get; set; }

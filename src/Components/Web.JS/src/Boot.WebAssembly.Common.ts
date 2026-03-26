@@ -121,25 +121,16 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
     }
   };
 
-  Blazor._internal.navigationManager.listenForNavigationEvents(WebRendererId.WebAssembly, async (uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
-    await dispatcher.invokeDotNetStaticMethodAsync(
-      'Microsoft.AspNetCore.Components.WebAssembly',
-      'NotifyLocationChanged',
-      uri,
-      state,
-      intercepted
-    );
-  }, async (callId: number, uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
-    const shouldContinueNavigation = await dispatcher.invokeDotNetStaticMethodAsync<boolean>(
-      'Microsoft.AspNetCore.Components.WebAssembly',
-      'NotifyLocationChangingAsync',
-      uri,
-      state,
-      intercepted
-    );
+  function dispatchLocationChanged(uri: string, state: string | undefined, intercepted: boolean): Promise<void> {
+    return Blazor._internal.dotNetExports!.DispatchLocationChanged(uri, state ?? null, intercepted);
+  }
 
+  async function dispatchLocationChanging(callId: number, uri: string, state: string | undefined, intercepted: boolean): Promise<void> {
+    const shouldContinueNavigation = await Blazor._internal.dotNetExports!.DispatchLocationChanging(uri, state ?? null, intercepted);
     Blazor._internal.navigationManager.endLocationChanging(callId, shouldContinueNavigation);
-  });
+  }
+
+  Blazor._internal.navigationManager.listenForNavigationEvents(WebRendererId.WebAssembly, dispatchLocationChanged, dispatchLocationChanging);
 
   // Leverage the time while we are loading boot.config.json from the network to discover any potentially registered component on
   // the document.
@@ -157,7 +148,7 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
   Blazor._internal.getInitialComponentsUpdate = () => initialUpdatePromise;
 
   Blazor._internal.updateRootComponents = (operations: string, webAssemblyState: string) => {
-    Blazor._internal.dotNetExports?.UpdateRootComponentsCore(operations, webAssemblyState);
+    Blazor._internal.dotNetExports?.UpdateRootComponents(operations, webAssemblyState);
   };
 
   Blazor._internal.endUpdateRootComponents = (batchId: number) =>
