@@ -12,7 +12,7 @@ public class HotReloadStartup
 {
     public HotReloadStartup()
     {
-        HotReloadManager.Default.MetadataUpdateSupported = true;
+        HotReloadManager.Default.IsEnabled = true;
     }
 
     public void ConfigureServices(IServiceCollection services)

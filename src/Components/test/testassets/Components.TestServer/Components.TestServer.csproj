@@ -104,4 +104,10 @@
       <_Parameter2 Condition="'$(IsHelixJob)' == 'true'">..\BasicTestApp</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
+
+  <PropertyGroup>
+    <!-- Tests need hot reload support enabled even in Release to test HotReloadManager behavior -->
+    <MetadataUpdaterSupport>true</MetadataUpdaterSupport>
+  </PropertyGroup>
+
 </Project>

@@ -1,0 +1,37 @@
+@using System.Diagnostics.CodeAnalysis
+
+<h2>Hot Reload Trimming Check</h2>
+<p>
+    HotReloadManager type found:
+    <span id="hot-reload-manager-found">@HotReloadManagerFound</span>
+</p>
+<p>
+    UpdateApplication method found:
+    <span id="update-application-found">@UpdateApplicationFound</span>
+</p>
+
+@code {
+#nullable enable
+    string HotReloadManagerFound { get; set; } = "unknown";
+    string UpdateApplicationFound { get; set; } = "unknown";
+
+    protected override void OnInitialized()
+    {
+        var hotReloadManagerType = GetHotReloadManagerType();
+        HotReloadManagerFound = hotReloadManagerType is not null ? "true" : "false";
+
+        if (hotReloadManagerType is not null)
+        {
+            var method = hotReloadManagerType.GetMethod("UpdateApplication", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            UpdateApplicationFound = method is not null ? "true" : "false";
+        }
+    }
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2057:UnrecognizedReflectionPattern",
+        Justification = "Returning null when the type is trimmed is the expected and desired behavior.")]
+    private static Type? GetHotReloadManagerType()
+    {
+        return Type.GetType("Microsoft.AspNetCore.Components.HotReload.HotReloadManager, Microsoft.AspNetCore.Components");
+    }
+#nullable restore
+}

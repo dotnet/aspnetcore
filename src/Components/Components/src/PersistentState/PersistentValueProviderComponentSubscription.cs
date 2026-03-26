@@ -21,7 +21,7 @@ internal partial class PersistentValueProviderComponentSubscription : IDisposabl
 
     static PersistentValueProviderComponentSubscription()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (HotReloadManager.IsSupported && HotReloadManager.Default.IsEnabled)
         {
             HotReloadManager.Default.OnDeltaApplied += ClearCaches;
         }
