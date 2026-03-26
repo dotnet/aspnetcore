@@ -1,23 +1,30 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { dotnet } from '../../_framework/dotnet.js'
-
 let workerExports = null;
 let startupError = null;
 
-try {
-    const { getAssemblyExports, getConfig } = await dotnet.create();
-    const assemblyName = getConfig().mainAssemblyName;
-    workerExports = await getAssemblyExports(assemblyName);
-    self.postMessage({ type: "ready" });
-} catch (err) {
-    startupError = err.message;
-    console.error("[Worker] Failed to initialize .NET:", err);
-    self.postMessage({ type: "ready", error: err.message });
+async function initialize(dotnetJsUrl) {
+    try {
+        const { dotnet } = await import(dotnetJsUrl);
+        const { getAssemblyExports, getConfig } = await dotnet.create();
+        const assemblyName = getConfig().mainAssemblyName;
+        workerExports = await getAssemblyExports(assemblyName);
+        self.postMessage({ type: "ready" });
+    } catch (err) {
+        const errorMessage = err?.message ?? String(err);
+        startupError = errorMessage;
+        console.error("[Worker] Failed to initialize .NET:", err);
+        self.postMessage({ type: "ready", error: errorMessage });
+    }
 }
 
 self.addEventListener('message', async (e) => {
+    if (e.data.type === 'init') {
+        await initialize(e.data.dotnetJsUrl);
+        return;
+    }
+
     const { method, args, requestId } = e.data;
 
     try {
