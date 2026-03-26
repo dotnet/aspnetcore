@@ -39,7 +39,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         Browser.MountTestComponent<VirtualizationComponent>();
         var topSpacer = Browser.Exists(By.Id("sync-container")).FindElement(By.TagName("div"));
-        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0;";
+        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0; overflow-anchor: none;";
 
         int initialItemCount = 0;
 
@@ -202,7 +202,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     public void CanUseViewportAsContainer()
     {
         Browser.MountTestComponent<VirtualizationComponent>();
-        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0;";
+        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0; overflow-anchor: none;";
         var topSpacer = Browser.Exists(By.Id("viewport-as-root")).FindElement(By.TagName("div"));
 
         Browser.ExecuteJavaScript("const element = document.getElementById('viewport-as-root'); element.scrollIntoView();");
@@ -226,7 +226,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         Browser.MountTestComponent<VirtualizationComponent>();
         var topSpacer = Browser.Exists(By.Id("incorrect-size-container")).FindElement(By.TagName("div"));
-        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0;";
+        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0; overflow-anchor: none;";
 
         // Wait until items have been rendered.
         Browser.True(() => GetItemCount() > 0);
@@ -1725,6 +1725,39 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             $"RelTop Before: {relTopBefore:F1}, After: {relTopAfter:F1}, Delta: {relTopAfter - relTopBefore:F1}px");
     }
 
+    [Fact]
+    public void Table_VariableHeight_IncrementalScrollDoesNotCauseWildJumps()
+    {
+        // Guards against a browser-level CSS Scroll Anchoring bug with <table> layout.
+        // When overflow-anchor is allowed on <tr> elements, the anchoring algorithm
+        // miscalculates row positions causing 3000-8000px jumps per 300px scroll.
+        // The fix disables browser anchoring for tables and uses manual JS compensation.
+        Browser.MountTestComponent<VirtualizationVariableHeightTable>();
+
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.Equal("Total items: 500", () => Browser.Exists(By.Id("vht-total-items")).Text);
+        Browser.True(() => Browser.Exists(By.Id("vht-row-0")).Displayed);
+
+        // Scroll to initial offset and wait deterministically for re-render
+        js.ExecuteScript("window.scrollTo(0, 1000)");
+        Browser.True(() => Browser.FindElements(By.Id("vht-row-10")).Count > 0);
+
+        var result = ExecuteViewportScrollJumpDetectionScript("variable-height-table");
+
+        var maxJump = Convert.ToInt64(result["maxJump"], CultureInfo.InvariantCulture);
+        var totalDelta = Convert.ToInt64(result["totalDelta"], CultureInfo.InvariantCulture);
+        var expectedDelta = Convert.ToInt64(result["expected"], CultureInfo.InvariantCulture);
+
+        // Without the fix: individual jumps of 3000-8000px, total drift 30,000+.
+        // With the fix: ~300px per step, total ~4500px.
+        Assert.True(maxJump < 1500,
+            $"Table scroll should not produce wild jumps. " +
+            $"Max single jump was {maxJump}px (expected ~300px each). " +
+            $"Total: {result["startY"]}->{result["endY"]} = {totalDelta}px (expected ~{expectedDelta}px). " +
+            $"Jumps: [{result["jumps"]}]. " +
+            $"Large jumps indicate CSS scroll anchoring is miscalculating on <tr> elements.");
+    }
+
     private static (string index, double relTop, long scrollTop) GetItemPositionInContainer(
         IJavaScriptExecutor js, IWebElement container, string itemSelector, string dataIndex = null)
     {
@@ -1973,6 +2006,79 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                     maxBackwardJump: maxBackwardJump,
                     finalScrollTop: container.scrollTop,
                     finalItemCount: container.querySelectorAll('{itemSelector}').length
+                }});
+            }})();";
+
+        return (Dictionary<string, object>)((IJavaScriptExecutor)Browser).ExecuteAsyncScript(script);
+    }
+
+    /// <summary>
+    /// Performs incremental viewport-level scrolls (window.scrollBy) on a table element,
+    /// using MutationObserver + requestAnimationFrame to deterministically wait for each
+    /// render cycle to settle. Measures per-step scroll jumps to detect CSS Scroll Anchoring
+    /// miscalculations on &lt;tr&gt; elements.
+    /// Returns startY, endY, totalDelta, expected, maxJump, and comma-separated jumps.
+    /// </summary>
+    private Dictionary<string, object> ExecuteViewportScrollJumpDetectionScript(
+        string tableId, int scrollCount = 15, int scrollDelta = 300)
+    {
+        var script = $@"
+            var done = arguments[0];
+            (async () => {{
+                const tbody = document.querySelector('#{tableId} > tbody');
+
+                // Event-driven wait: watches for DOM mutations from C# re-renders,
+                // then waits 3 animation frames with no new mutations (layout settled).
+                // Falls back after 30 frames if no mutations occur.
+                const waitForRenderSettle = () => new Promise(resolve => {{
+                    let mutationSeen = false;
+                    let framesSinceLastMutation = 0;
+                    let totalFrames = 0;
+
+                    const mo = new MutationObserver(() => {{
+                        mutationSeen = true;
+                        framesSinceLastMutation = 0;
+                    }});
+                    mo.observe(tbody, {{ childList: true, subtree: true }});
+
+                    const checkSettle = () => {{
+                        totalFrames++;
+                        framesSinceLastMutation++;
+                        if ((mutationSeen && framesSinceLastMutation >= 3) || totalFrames >= 30) {{
+                            mo.disconnect();
+                            resolve();
+                        }} else {{
+                            requestAnimationFrame(checkSettle);
+                        }}
+                    }};
+                    requestAnimationFrame(checkSettle);
+                }});
+
+                const scrollCount = {scrollCount};
+                const scrollDelta = {scrollDelta};
+                const startY = Math.round(window.scrollY);
+                let maxJump = 0;
+                let prevY = startY;
+                const jumps = [];
+
+                for (let i = 0; i < scrollCount; i++) {{
+                    window.scrollBy(0, scrollDelta);
+                    await waitForRenderSettle();
+
+                    const currentY = Math.round(window.scrollY);
+                    const jump = currentY - prevY;
+                    jumps.push(jump);
+                    if (Math.abs(jump) > Math.abs(maxJump)) maxJump = jump;
+                    prevY = currentY;
+                }}
+
+                done({{
+                    startY: startY,
+                    endY: Math.round(window.scrollY),
+                    totalDelta: Math.round(window.scrollY) - startY,
+                    expected: scrollCount * scrollDelta,
+                    maxJump: maxJump,
+                    jumps: jumps.join(',')
                 }});
             }})();";
 
