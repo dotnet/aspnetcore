@@ -5,8 +5,6 @@ using System.Diagnostics;
 using System.Runtime.InteropServices.JavaScript;
 using System.Text;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
-using Microsoft.JSInterop.WebAssembly;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 
@@ -18,17 +16,15 @@ internal sealed class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
     private static readonly StringBuilder _logBuilder = new StringBuilder();
 
     private readonly string _name;
-    private readonly WebAssemblyJSRuntime _jsRuntime;
 
-    public WebAssemblyConsoleLogger(IJSRuntime jsRuntime)
-        : this(string.Empty, (WebAssemblyJSRuntime)jsRuntime) // Cast for DI
+    public WebAssemblyConsoleLogger()
+        : this(string.Empty)
     {
     }
 
-    public WebAssemblyConsoleLogger(string name, WebAssemblyJSRuntime jsRuntime)
+    public WebAssemblyConsoleLogger(string name)
     {
         _name = name ?? throw new ArgumentNullException(nameof(name));
-        _jsRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
     }
 
     public IDisposable? BeginScope<TState>(TState state) where TState : notnull
@@ -58,7 +54,7 @@ internal sealed class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
         }
     }
 
-    private void WriteMessage(LogLevel logLevel, string logName, int eventId, string message, Exception? exception)
+    private static void WriteMessage(LogLevel logLevel, string logName, int eventId, string message, Exception? exception)
     {
         lock (_logBuilder)
         {
@@ -93,7 +89,7 @@ internal sealed class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
                         break;
                     default: // invalid enum values
                         Debug.Assert(logLevel != LogLevel.None, "This method is never called with LogLevel.None.");
-                        _jsRuntime.InvokeVoid("console.log", formattedMessage);
+                        ConsoleLoggerInterop.ConsoleLog(formattedMessage);
                         break;
                 }
             }
@@ -166,6 +162,8 @@ internal sealed class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
 
 internal static partial class ConsoleLoggerInterop
 {
+    [JSImport("globalThis.console.log")]
+    public static partial void ConsoleLog(string message);
     [JSImport("globalThis.console.debug")]
     public static partial void ConsoleDebug(string message);
     [JSImport("globalThis.console.info")]
