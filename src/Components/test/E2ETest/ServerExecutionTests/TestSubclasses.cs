@@ -5,6 +5,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.E2ETest.Tests;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests;
@@ -42,6 +43,10 @@ public class ServerRoutingTest : RoutingTest
         : base(browserFixture, serverFixture.WithServerExecution(), output)
     {
     }
+
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61080")]
+    public override void NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation()
+        => base.NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation();
 }
 
 public class ServerCascadingValueTest : CascadingValueTest
@@ -90,6 +95,14 @@ public class ServerVirtualizationTest : VirtualizationTest
         : base(browserFixture, serverFixture.WithServerExecution(), output)
     {
     }
+
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65852")]
+    public override void CanRenderHtmlTable()
+        => base.CanRenderHtmlTable();
+
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65852")]
+    public override void CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax()
+        => base.CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax();
 }
 
 public class ServerDynamicComponentRenderingTest : DynamicComponentRenderingTest
