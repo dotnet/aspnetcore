@@ -17,7 +17,7 @@ public sealed class OpenApiDocumentTransformerContext
     /// </summary>
     /// <remarks>
     /// This corresponds to the document name provided when calling
-    /// <c>AddOpenApi</c> during service registration. The default document name is <c>"v1"</c>.
+    /// <see cref="OpenApiServiceCollectionExtensions.AddOpenApi(IServiceCollection)">AddOpenApi</see> during service registration. The default document name is <c>"v1"</c>.
     /// </remarks>
     public required string DocumentName { get; init; }
 
@@ -57,7 +57,7 @@ public sealed class OpenApiDocumentTransformerContext
     /// <remarks>
     /// This is the <see cref="IServiceProvider"/> used when generating the OpenAPI document and can
     /// be used to resolve application services within a document transformer. It is typically a
-    /// scoped provider, such as <c>HttpContext.RequestServices</c> or a scope created specifically
+    /// scoped provider, such as <see cref="Http.HttpContext.RequestServices">HttpContext.RequestServices</see> or a scope created specifically
     /// for document generation, but the exact lifetime of resolved services depends on how the
     /// OpenAPI document generation was invoked.
     /// </remarks>
