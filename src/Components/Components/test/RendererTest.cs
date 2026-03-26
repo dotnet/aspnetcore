@@ -4985,23 +4985,31 @@ public class RendererTest
     public async Task NoHotReloadListenersAreRegistered_WhenHotReloadIsDisabled()
     {
         // Arrange
-        await using var renderer = new TestRenderer();
-        var hotReloadManager = new HotReloadManager { IsEnabled = false };
-        HotReloadManager.Default.IsEnabled = false;
-        renderer.HotReloadManager = hotReloadManager;
-        var component = new TestComponent(builder =>
+        try
         {
-            builder.OpenElement(0, "h2");
-            builder.AddContent(1, "some text");
-            builder.CloseElement();
-        });
+            await using var renderer = new TestRenderer();
+            var hotReloadManager = new HotReloadManager { IsEnabled = false };
+            HotReloadManager.Default.IsEnabled = false;
+            renderer.HotReloadManager = hotReloadManager;
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenElement(0, "h2");
+                builder.AddContent(1, "some text");
+                builder.CloseElement();
+            });
 
-        // Act
-        var componentId = renderer.AssignRootComponentId(component);
-        component.TriggerRender();
-        Assert.False(hotReloadManager.IsSubscribedTo);
+            // Act
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+            Assert.False(hotReloadManager.IsSubscribedTo);
 
-        await renderer.DisposeAsync();
+            await renderer.DisposeAsync();
+        }
+        finally
+        {
+            // Ensure we don't affect other tests by leaving hot reload disabled
+            HotReloadManager.Default.IsEnabled = HotReloadManager.IsSupported;
+        }
     }
 
     [Fact]

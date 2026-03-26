@@ -20,6 +20,11 @@
     <!-- Avoid spending time brotli compression publish output.-->
     <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(TestTrimmedOrMultithreadingApps)' != 'true'">
+    <!-- Tests need hot reload support supported even -->
+    <MetadataUpdaterSupport>true</MetadataUpdaterSupport>
+  </PropertyGroup>
+
 
   <!--
     Allow publishing to be skipped when building via Microsoft.AspNetCore.Components.E2ETests.csproj.
