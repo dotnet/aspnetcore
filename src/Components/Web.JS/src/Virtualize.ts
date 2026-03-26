@@ -49,18 +49,26 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     return;
   }
 
-  // Overflow anchoring can cause an ongoing scroll loop, because when we resize the spacers, the browser
-  // would update the scroll position to compensate. Then the spacer would remain visible and we'd keep on
-  // trying to resize it.
   const scrollContainer = findClosestScrollContainer(spacerBefore);
   const scrollElement = scrollContainer || document.documentElement;
-  scrollElement.style.overflowAnchor = 'none';
+  const isTable = isValidTableElement(spacerAfter.parentElement);
+  const supportsAnchor = CSS.supports('overflow-anchor', 'auto');
+  const useNativeAnchoring = !isTable && supportsAnchor;
 
   const rangeBetweenSpacers = document.createRange();
 
-  if (isValidTableElement(spacerAfter.parentElement)) {
+  if (isTable) {
     spacerBefore.style.display = 'table-row';
     spacerAfter.style.display = 'table-row';
+  }
+
+  if (useNativeAnchoring) {
+    // Applied to rendered items - keeps viewport stable when spacer heights change.
+    spacerBefore.style.overflowAnchor = 'none';
+    spacerAfter.style.overflowAnchor = 'none';
+  } else {
+    // Manual compensation path for tables and browsers without native anchoring.
+    scrollElement.style.overflowAnchor = 'none';
   }
 
   const intersectionObserver = new IntersectionObserver(intersectionCallback, {
@@ -73,6 +81,12 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   const anchoredItems: Map<Element, number> = new Map();
 
+  // Track whether the current render was triggered by scrolling (IntersectionObserver
+  // → C# recalculates → render). During scroll-triggered renders, observing table items
+  // with ResizeObserver causes layout interference that creates scroll drift. We only
+  // observe items during data-triggered renders (dynamic content changes).
+  let scrollTriggeredRender = false;
+
   function getObservedHeight(entry: ResizeObserverEntry): number {
     return entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
   }
@@ -80,8 +94,9 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   // ResizeObserver roles:
   //  1. Always observes both spacers so that when a spacer resizes we re-trigger the
   //     IntersectionObserver — which otherwise won't fire again for an element that is already visible.
-  //  2. For convergence (sticky-top/bottom) - drives the scroll position to top/bottom.
-  //  3. Viewport anchoring - compensates scroll position when content above the viewport resizes.
+  //  2. Viewport anchoring — compensates scroll position when content above the viewport resizes.
+  //     When native anchoring is available (non-table + supported browser), the browser handles this.
+  //     Otherwise (tables, Safari), we use manual compensation via item height tracking.
   const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]): void => {
     // 1. Re-trigger IntersectionObserver for spacer resizes.
     for (const entry of entries) {
@@ -94,17 +109,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       }
     }
 
-    // 2. Convergence: pin scroll to top/bottom while items load.
-    if (convergingToBottom || convergingToTop) {
-      scrollElement.scrollTop = convergingToBottom ? scrollElement.scrollHeight : 0;
-      const spacer = convergingToBottom ? spacerAfter : spacerBefore;
-      if (spacer.offsetHeight === 0) {
-        convergingToBottom = convergingToTop = false;
-      }
-      return; // Skip scroll compensation during convergence.
-    }
-
-    // 3. Viewport anchoring: compensate scroll for above-viewport item changes.
+    // 2. Viewport anchoring: compensate scroll for above-viewport item resizes.
     let scrollDelta = 0;
     const containerTop = scrollContainer
       ? scrollContainer.getBoundingClientRect().top
@@ -124,7 +129,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         anchoredItems.set(el, newHeight);
 
         if (oldHeight !== undefined && oldHeight !== newHeight) {
-          // Compensate if the element starts above the viewport (fully or partially above).
+          // Compensate if the element is above the viewport (fully or partially).
           if (el.getBoundingClientRect().top < containerTop) {
             scrollDelta += (newHeight - oldHeight);
           }
@@ -142,18 +147,35 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   resizeObserver.observe(spacerAfter);
 
   function refreshObservedElements(): void {
-    // C# style updates overwrite the entire style attribute, losing display: table-row.
-    // Re-apply it so spacers participate in table layout alongside bare <tr> items.
-    if (isValidTableElement(spacerAfter.parentElement)) {
+    // C# style updates overwrite the entire style attribute. Re-apply what we need.
+    if (isTable) {
       spacerBefore.style.display = 'table-row';
       spacerAfter.style.display = 'table-row';
+    }
+
+    if (useNativeAnchoring) {
+      // Re-apply overflow-anchor: none on spacers after C# re-renders.
+      spacerBefore.style.overflowAnchor = 'none';
+      spacerAfter.style.overflowAnchor = 'none';
     }
 
     // Ensure spacers are always observed (idempotent).
     resizeObserver.observe(spacerBefore);
     resizeObserver.observe(spacerAfter);
 
-    // Always observe all rendered items for viewport anchoring. When an item
+    // Item observation for manual scroll compensation:
+    // - When using native anchoring: browser handles above-viewport resizes
+    //   automatically. Observing items here would cause double compensation.
+    // - When using manual compensation (tables + unsupported browsers): observe items
+    //   so the ResizeObserver can compensate scrollTop. But only during data-triggered
+    //   renders — observing during scroll-triggered renders causes layout interference.
+    if (useNativeAnchoring || scrollTriggeredRender) {
+      scrollTriggeredRender = false;
+      return;
+    }
+    scrollTriggeredRender = false;
+
+    // Observe all rendered items for viewport anchoring. When an item
     // resizes above the viewport, the ResizeObserver callback compensates scrollTop.
     const currentItems = new Set<Element>();
     for (let el = spacerBefore.nextElementSibling; el && el !== spacerAfter; el = el.nextElementSibling) {
@@ -168,29 +190,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         anchoredItems.delete(el);
       }
     }
-
-    // Don't re-trigger IntersectionObserver here — ResizeObserver handles that
-    // when spacers actually resize. Doing it on every render causes feedback loops.
   }
-
-  let convergingToBottom = false;
-  let convergingToTop = false;
-
-  let pendingJumpToEnd = false;
-  let pendingJumpToStart = false;
-
-  const keydownTarget: EventTarget = scrollContainer || document;
-  function handleJumpKeys(e: Event): void {
-    const ke = e as KeyboardEvent;
-    if (ke.key === 'End') {
-      pendingJumpToEnd = true;
-      pendingJumpToStart = false;
-    } else if (ke.key === 'Home') {
-      pendingJumpToStart = true;
-      pendingJumpToEnd = false;
-    }
-  }
-  keydownTarget.addEventListener('keydown', handleJumpKeys);
 
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   let pendingCallbacks: Map<Element, IntersectionObserverEntry> = new Map();
@@ -204,7 +204,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     onDispose: () => {
       anchoredItems.clear();
       resizeObserver.disconnect();
-      keydownTarget.removeEventListener('keydown', handleJumpKeys);
       if (callbackTimeout) {
         clearTimeout(callbackTimeout);
         callbackTimeout = null;
@@ -233,66 +232,13 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
   }
 
-  function onSpacerAfterVisible(): void {
-    if (spacerAfter.offsetHeight === 0) {
-      if (convergingToBottom) {
-        convergingToBottom = false;
-      }
-      return;
-    }
-    if (convergingToBottom) return;
-
-    const atBottom = scrollElement.scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 1;
-    if (!atBottom && !pendingJumpToEnd) return;
-
-    convergingToBottom = true;
-    if (pendingJumpToEnd) {
-      scrollElement.scrollTop = scrollElement.scrollHeight;
-      pendingJumpToEnd = false;
-    }
-  }
-
-  function onSpacerBeforeVisible(): void {
-    if (spacerBefore.offsetHeight === 0) {
-      if (convergingToTop) {
-        convergingToTop = false;
-      }
-      return;
-    }
-    if (convergingToTop) return;
-
-    const atTop = scrollElement.scrollTop < 1;
-    if (!atTop && !pendingJumpToStart) return;
-
-    convergingToTop = true;
-    if (pendingJumpToStart) {
-      scrollElement.scrollTop = 0;
-      pendingJumpToStart = false;
-    }
-  }
-
   function processIntersectionEntries(entries: IntersectionObserverEntry[]): void {
     // Check if the spacers are still in the DOM. They may have been removed if the component was disposed.
     if (!spacerBefore.isConnected || !spacerAfter.isConnected) {
       return;
     }
 
-    const intersectingEntries = entries.filter(entry => {
-      if (entry.isIntersecting) {
-        if (entry.target === spacerAfter) {
-          onSpacerAfterVisible();
-        } else if (entry.target === spacerBefore) {
-          onSpacerBeforeVisible();
-        }
-        return true;
-      }
-      if (entry.target === spacerAfter && convergingToBottom && spacerAfter.offsetHeight > 0) {
-        scrollElement.scrollTop = scrollElement.scrollHeight;
-      } else if (entry.target === spacerBefore && convergingToTop && spacerBefore.offsetHeight > 0) {
-        scrollElement.scrollTop = 0;
-      }
-      return false;
-    });
+    const intersectingEntries = entries.filter(entry => entry.isIntersecting);
 
     if (intersectingEntries.length === 0) {
       return;
@@ -306,6 +252,10 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
     intersectingEntries.forEach((entry): void => {
       const containerSize = (entry.rootBounds?.height ?? 0) / scaleFactor;
+
+      // Mark the upcoming render as scroll-triggered so refreshObservedElements
+      // skips item observation for tables (avoids layout interference drift).
+      scrollTriggeredRender = true;
 
       if (entry.target === spacerBefore) {
         const spacerSize = (entry.intersectionRect.top - entry.boundingClientRect.top) / scaleFactor;
