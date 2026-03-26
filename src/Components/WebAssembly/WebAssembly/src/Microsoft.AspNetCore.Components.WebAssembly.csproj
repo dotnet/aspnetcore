@@ -65,8 +65,9 @@
     <BlazorWebAssemblyJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\..\Web.JS\dist\Release\blazor.webassembly.js</BlazorWebAssemblyJSFile>
   </PropertyGroup>
 
-  <!-- Include blazor.webassembly.js as if it were under wwwroot/_framework/ so the SWA pipeline discovers it -->
-  <ItemGroup>
+  <!-- Include blazor.webassembly.js as if it were under wwwroot/_framework/ so the SWA pipeline discovers it.
+       Condition on BuildNodeJS since the file won't exist during No-NodeJS CI builds. -->
+  <ItemGroup Condition="'$(BuildNodeJS)' != 'false'">
     <Content Include="$(BlazorWebAssemblyJSFile)" Link="wwwroot\_framework\blazor.webassembly.js" />
   </ItemGroup>
 
