@@ -134,7 +134,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       }
     }
 
-    if (scrollDelta !== 0 && scrollElement.scrollTop > 0) {
+    if (scrollDelta !== 0 && scrollElement.scrollTop > 0 && !isConverging) {
       scrollElement.scrollTop += scrollDelta;
     }
   });
