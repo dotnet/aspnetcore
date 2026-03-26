@@ -80,11 +80,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   intersectionObserver.observe(spacerAfter);
 
   const anchoredItems: Map<Element, number> = new Map();
-
-  // Track whether the current render was triggered by scrolling (IntersectionObserver
-  // → C# recalculates → render). During scroll-triggered renders, observing table items
-  // with ResizeObserver causes layout interference that creates scroll drift. We only
-  // observe items during data-triggered renders (dynamic content changes).
   let scrollTriggeredRender = false;
 
   function getObservedHeight(entry: ResizeObserverEntry): number {
@@ -163,12 +158,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     resizeObserver.observe(spacerBefore);
     resizeObserver.observe(spacerAfter);
 
-    // Item observation for manual scroll compensation:
-    // - When using native anchoring: browser handles above-viewport resizes
-    //   automatically. Observing items here would cause double compensation.
-    // - When using manual compensation (tables + unsupported browsers): observe items
-    //   so the ResizeObserver can compensate scrollTop. But only during data-triggered
-    //   renders — observing during scroll-triggered renders causes layout interference.
+    // - Native anchoring: browser handles above-viewport resizes automatically.
+    // - Manual compensation: observe items on data-triggered renders to compensate.
     if (useNativeAnchoring || scrollTriggeredRender) {
       scrollTriggeredRender = false;
       return;
