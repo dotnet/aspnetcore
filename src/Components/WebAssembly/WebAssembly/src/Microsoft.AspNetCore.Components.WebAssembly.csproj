@@ -1,4 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Sdk Name="Microsoft.NET.Sdk.StaticWebAssets" />
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
