@@ -1,5 +1,0 @@
-<Project>
-  <!-- Import SWA-generated props files for static web asset declarations -->
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.StaticWebAssets.props" Condition="Exists('$(MSBuildThisFileDirectory)Microsoft.AspNetCore.StaticWebAssets.props')" />
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.StaticWebAssetEndpoints.props" Condition="Exists('$(MSBuildThisFileDirectory)Microsoft.AspNetCore.StaticWebAssetEndpoints.props')" />
-</Project>
