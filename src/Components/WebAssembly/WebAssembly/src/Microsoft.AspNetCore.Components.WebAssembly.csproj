@@ -17,7 +17,6 @@
     <StaticWebAssetFrameworkPattern>**/*.js</StaticWebAssetFrameworkPattern>
     <!-- We ship a custom build props file that imports the SWA-generated props -->
     <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
-    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
   <ItemGroup>
