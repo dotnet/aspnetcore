@@ -1030,6 +1030,116 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    public void DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace()
+    {
+        Browser.MountTestComponent<VirtualizationDynamicContent>();
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        // Scroll past the overscan window to force true virtualization.
+        js.ExecuteScript("arguments[0].scrollTop = 5000", container);
+        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) >= 5000);
+
+        Browser.True(() =>
+        {
+            var items = container.FindElements(By.CssSelector(".item"));
+            if (items.Count == 0)
+            {
+                return false;
+            }
+
+            var idx = items.First().GetDomAttribute("data-index");
+            return idx != null && int.Parse(idx, CultureInfo.InvariantCulture) > 10;
+        });
+
+        // Record the first visible item and its Y position.
+        var containerRect = container.Location;
+        var containerHeight = container.Size.Height;
+        var visibleItems = container.FindElements(By.CssSelector(".item"));
+        string firstVisibleIndex = null;
+        int firstVisibleTopBefore = 0;
+        foreach (var item in visibleItems)
+        {
+            var relativeY = item.Location.Y - containerRect.Y;
+            if (relativeY >= 0 && relativeY < containerHeight)
+            {
+                firstVisibleIndex = item.GetDomAttribute("data-index");
+                firstVisibleTopBefore = item.Location.Y;
+                break;
+            }
+        }
+        Assert.NotNull(firstVisibleIndex);
+
+        Browser.Exists(By.Id("prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+
+        // The visible item should stay in place after prepend.
+        var sameItem = container.FindElement(By.CssSelector($"[data-index='{firstVisibleIndex}']"));
+        var firstVisibleTopAfter = sameItem.Location.Y;
+
+        Assert.True(Math.Abs(firstVisibleTopAfter - firstVisibleTopBefore) < 5,
+            $"Visible item {firstVisibleIndex} should not move when items are prepended above. " +
+            $"Before Y: {firstVisibleTopBefore}, After Y: {firstVisibleTopAfter}");
+
+        Browser.True(() => container.FindElements(By.CssSelector(".item")).Count > 0);
+
+        // Verify prepended items are reachable at the top.
+        js.ExecuteScript("arguments[0].scrollTop = 0", container);
+        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) == 0);
+        Browser.True(() => container.FindElements(By.CssSelector("[data-index='-10']")).Count > 0);
+        var topItems = container.FindElements(By.CssSelector(".item"));
+        Assert.True(topItems.Count > 0, "Should render items after scrolling back to top.");
+    }
+
+    [Fact]
+    public void DynamicContent_AppendItemsWhileScrolledToMiddle_VisibleItemsStayInPlace()
+    {
+        Browser.MountTestComponent<VirtualizationDynamicContent>();
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        // Scroll past the overscan window to force true virtualization.
+        js.ExecuteScript("arguments[0].scrollTop = 5000", container);
+        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) >= 5000);
+
+        Browser.True(() =>
+        {
+            var items = container.FindElements(By.CssSelector(".item"));
+            if (items.Count == 0)
+            {
+                return false;
+            }
+
+            var idx = items.First().GetDomAttribute("data-index");
+            return idx != null && int.Parse(idx, CultureInfo.InvariantCulture) > 10;
+        });
+        var visibleItems = container.FindElements(By.CssSelector(".item"));
+        var firstVisible = visibleItems.First();
+        var firstVisibleIndex = firstVisible.GetDomAttribute("data-index");
+        var firstVisibleTopBefore = firstVisible.Location.Y;
+        var scrollTopBefore = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+
+        Browser.Exists(By.Id("append-items")).Click();
+        Browser.Contains("Appended 10 items", () => Browser.Exists(By.Id("status")).Text);
+
+        // Appending below the viewport should not affect visible items.
+        var sameItem = container.FindElement(By.CssSelector($"[data-index='{firstVisibleIndex}']"));
+        var firstVisibleTopAfter = sameItem.Location.Y;
+        var scrollTopAfter = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+
+        Assert.True(Math.Abs(firstVisibleTopAfter - firstVisibleTopBefore) < 5,
+            $"Visible item {firstVisibleIndex} should not move when items are appended below. " +
+            $"Before: {firstVisibleTopBefore}, After: {firstVisibleTopAfter}");
+        Assert.True(Math.Abs(scrollTopAfter - scrollTopBefore) < 5,
+            $"scrollTop should not change when appending below viewport. " +
+            $"Before: {scrollTopBefore}, After: {scrollTopAfter}");
+    }
+
+    [Fact]
     public void VariableHeight_ContainerResizeWorks()
     {
         Browser.MountTestComponent<VirtualizationVariableHeight>();
