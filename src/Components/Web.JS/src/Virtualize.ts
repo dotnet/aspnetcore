@@ -81,6 +81,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   const anchoredItems: Map<Element, number> = new Map();
   let scrollTriggeredRender = false;
+  let isConverging = false;
+  let scrollToBottomPending = false;
 
   function getObservedHeight(entry: ResizeObserverEntry): number {
     return entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
@@ -149,9 +151,16 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
 
     if (useNativeAnchoring) {
-      // Re-apply overflow-anchor: none on spacers after C# re-renders.
       spacerBefore.style.overflowAnchor = 'none';
       spacerAfter.style.overflowAnchor = 'none';
+
+      if (isConverging && !scrollToBottomPending) {
+        isConverging = false;
+      }
+      scrollToBottomPending = false;
+
+      // Prevent browser anchoring fighting with convergence.
+      scrollElement.style.overflowAnchor = isConverging ? 'none' : '';
     }
 
     // Ensure spacers are always observed (idempotent).
@@ -192,6 +201,10 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     resizeObserver,
     refreshObservedElements,
     scrollElement,
+    setConverging(converging: boolean, pending: boolean) {
+      isConverging = converging;
+      scrollToBottomPending = pending;
+    },
     onDispose: () => {
       anchoredItems.clear();
       resizeObserver.disconnect();
@@ -275,6 +288,7 @@ function scrollToBottom(dotNetHelper: DotNet.DotNetObject): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   const entry = observersByDotNetObjectId[id];
   if (entry) {
+    entry.setConverging(true, true);
     entry.scrollElement.scrollTop = entry.scrollElement.scrollHeight;
   }
 }
