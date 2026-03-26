@@ -48,12 +48,15 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
             host = E2ETestOptions.Instance.Sauce.HostName;
         }
 
+        var assemblyLocation = typeof(TProgram).Assembly.Location;
         var args = new List<string>
             {
                 "--urls", $"http://{host}:0",
                 "--contentroot", ContentRoot,
                 "--pathbase", PathBase,
-                "--applicationpath", typeof(TProgram).Assembly.Location,
+                "--staticWebAssets", Path.ChangeExtension(assemblyLocation, ".staticwebassets.runtime.json"),
+                "--ClientApps:app:EndpointsManifest", Path.ChangeExtension(assemblyLocation, ".staticwebassets.endpoints.json"),
+                "--ClientApps:app:PathPrefix", "",
             };
 
         if (!string.IsNullOrEmpty(Environment))
