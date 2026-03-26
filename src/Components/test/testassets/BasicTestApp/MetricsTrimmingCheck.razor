@@ -39,13 +39,13 @@
         AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out var isSupported);
         IsSupported = isSupported ? "true" : "false";
 
-        if (metricsType is not null && isSupported)
+        if (metricsType is not null)
         {
             var method = metricsType.GetMethod("FailEventSync", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             FailEventSyncFound = method is not null ? "true" : "false";
         }
 
-        if (activitySourceType is not null && isSupported)
+        if (activitySourceType is not null)
         {
             var method = activitySourceType.GetMethod("StartHandleEventActivity", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
             StartHandleEventActivityFound = method is not null ? "true" : "false";
