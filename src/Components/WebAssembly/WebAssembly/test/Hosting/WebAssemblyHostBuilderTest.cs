@@ -364,6 +364,7 @@ public class WebAssemblyHostBuilderTest
     [Fact]
     public void Constructor_RegistersMetricsAndTracingWhenEnabled()
     {
+        WebAssemblyHostBuilder.IsMeterEnabled = WebAssemblyHostBuilder.IsMeterSupported;
         var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
         var host = builder.Build();
 
