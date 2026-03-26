@@ -17,8 +17,6 @@
     <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
     <!-- SWA Framework Assets: mark all JS files as Framework type during pack -->
     <StaticWebAssetFrameworkPattern>**/*.js</StaticWebAssetFrameworkPattern>
-    <!-- We ship a custom build props file that imports the SWA-generated props -->
-    <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
   </PropertyGroup>
 
   <ItemGroup>
@@ -66,11 +64,6 @@
     <BlazorWebAssemblyJSFile Condition=" '$(Configuration)' == 'Debug' ">..\..\..\Web.JS\dist\Debug\blazor.webassembly.js</BlazorWebAssemblyJSFile>
     <BlazorWebAssemblyJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\..\Web.JS\dist\Release\blazor.webassembly.js</BlazorWebAssemblyJSFile>
   </PropertyGroup>
-
-  <!-- Pack custom props (routing config etc.) to build/ directory -->
-  <ItemGroup>
-    <Content Include="targets\*.props" Pack="true" PackagePath="build\" />
-  </ItemGroup>
 
   <!-- Include blazor.webassembly.js as if it were under wwwroot/_framework/ so the SWA pipeline discovers it -->
   <ItemGroup>
