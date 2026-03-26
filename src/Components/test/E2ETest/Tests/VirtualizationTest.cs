@@ -252,7 +252,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     [Fact]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65852")]
-    public void CanRenderHtmlTable()
+    public virtual void CanRenderHtmlTable()
     {
         Browser.MountTestComponent<VirtualizationTable>();
         var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0;";
@@ -612,7 +612,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     [Fact]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65852")]
-    public void CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax()
+    public virtual void CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax()
     {
         Browser.MountTestComponent<VirtualizationLargeOverscan>();
         var container = Browser.Exists(By.Id("virtualize-large-overscan"));
