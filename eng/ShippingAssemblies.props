@@ -163,6 +163,5 @@
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.OpenApi" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Grpc.Swagger" />
-    <AspNetCoreShippingAssembly Include="LinkabilityChecker" />
   </ItemGroup>
 </Project>

@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsPackable>false</IsPackable>
+    <IsShipping>false</IsShipping>
     <OutputType>Exe</OutputType>
     <PublishTrimmed>true</PublishTrimmed>
     <!-- ILLinkTrimProjects needs the trimmable project assemblies to exist on disk.
