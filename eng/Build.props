@@ -38,13 +38,6 @@
                $(RepoRoot)src\Security\Authentication\Negotiate\test\testassets\Negotiate.Server\*.*proj;
                " />
 
-    <!--
-      BuildAfterTargetingPack runs delayed builds (e.g. LinkabilityChecker) that depend on trimmable
-      project outputs. It must build after all other managed projects, so exclude it from @(DotNetProjects)
-      and add it separately with a later BuildStep.
-    -->
-    <ProjectToExclude Include="$(RepoRoot)src\BuildAfterTargetingPack\*.csproj" />
-
     <!-- These projects are not meant to be built in this repo. In the Installers case, must explicitly opt in. -->
     <ProjectToExclude Include="
                       $(RepoRoot)src\submodules\googletest\**\*.*proj;
@@ -182,7 +175,6 @@
                           $(RepoRoot)src\Framework\App.Runtime\src\aspnetcore-base-runtime.proj;
                           $(RepoRoot)src\Framework\App.Runtime\bundle\aspnetcore-runtime-bundle.bundleproj;
                           $(RepoRoot)eng\tools\HelixTestRunner\HelixTestRunner.csproj;
-                          $(RepoRoot)src\BuildAfterTargetingPack\*.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);
@@ -227,7 +219,6 @@
                           $(RepoRoot)src\HealthChecks\**\src\*.csproj;
                           $(RepoRoot)src\Testing\**\src\*.csproj;
                           $(RepoRoot)src\Extensions\**\src\*.csproj;
-                          $(RepoRoot)src\BuildAfterTargetingPack\*.csproj;
                           $(RepoRoot)src\OpenApi\**\src\*.csproj;
                           $(RepoRoot)src\Validation\**\src\*.csproj;
                           "
