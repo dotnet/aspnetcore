@@ -42,6 +42,7 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]
     public async Task WebWorkerTemplate_CanInvokeMethods(BrowserKind browserKind)
     {
         await using var testRun = await SetupWorkerLibAndBuild(_sharedHostProject);
@@ -57,6 +58,7 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]
     public async Task WebWorkerTemplate_HandlesErrors(BrowserKind browserKind)
     {
         await using var testRun = await SetupWorkerLibAndBuild(_sharedHostProject);
@@ -72,6 +74,7 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]
     public async Task WebWorkerTemplate_CanDisposeWorker(BrowserKind browserKind)
     {
         await using var testRun = await SetupWorkerLibAndBuild(_sharedHostProject);
@@ -87,6 +90,7 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]
     public async Task WebWorkerTemplate_CanInvokeMethodsAfterPublish(BrowserKind browserKind)
     {
         await using var testRun = await SetupWorkerLibAndPublish(_sharedHostProject);
