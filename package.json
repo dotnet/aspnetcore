@@ -31,7 +31,10 @@
     "brace-expansion": ">=2.0.3",
     "tar": ">=7.5.11",
     "serialize-javascript": ">=7.0.5",
-    "@tootallnate/once": ">=3.0.1"
+    "@tootallnate/once": ">=3.0.1",
+    "oidc-client": {
+      "serialize-javascript": ">=7.0.5"
+    }
   },
   "engines": {
     "node": ">=20.9.0",
