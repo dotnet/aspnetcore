@@ -82,13 +82,41 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   let convergingElements = false;
   let convergenceItems: Set<Element> = new Set();
 
-  // Manual scroll compensation state — tracks item heights so we can adjust scrollTop
-  // when above-viewport items resize. Only used when native anchoring is unavailable.
   const anchoredItems: Map<Element, number> = new Map();
   let scrollTriggeredRender = false;
 
   function getObservedHeight(entry: ResizeObserverEntry): number {
     return entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
+  }
+
+  function compensateScrollForItemResizes(entries: ResizeObserverEntry[]): void {
+    let scrollDelta = 0;
+    const containerTop = scrollContainer
+      ? scrollContainer.getBoundingClientRect().top
+      : 0;
+
+    for (const entry of entries) {
+      if (entry.target === spacerBefore || entry.target === spacerAfter) {
+        continue;
+      }
+
+      if (entry.target.isConnected) {
+        const el = entry.target as HTMLElement;
+        const oldHeight = anchoredItems.get(el);
+        const newHeight = getObservedHeight(entry);
+        anchoredItems.set(el, newHeight);
+
+        if (oldHeight !== undefined && oldHeight !== newHeight) {
+          if (el.getBoundingClientRect().top < containerTop) {
+            scrollDelta += (newHeight - oldHeight);
+          }
+        }
+      }
+    }
+
+    if (scrollDelta !== 0 && scrollElement.scrollTop > 0) {
+      scrollElement.scrollTop += scrollDelta;
+    }
   }
 
   // ResizeObserver roles:
@@ -115,41 +143,13 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         convergingToBottom = convergingToTop = false;
         stopConvergenceObserving();
       }
-      return;
     } else if (convergingElements) {
       stopConvergenceObserving();
     }
 
-    // Manual scroll compensation: adjust scrollTop for above-viewport item resizes.
-    // When native anchoring is available, the browser handles this automatically.
+    // Manual scroll compensation: adjust scrollTop for above-viewport resizes.
     if (!useNativeAnchoring) {
-      let scrollDelta = 0;
-      const containerTop = scrollContainer
-        ? scrollContainer.getBoundingClientRect().top
-        : 0;
-
-      for (const entry of entries) {
-        if (entry.target === spacerBefore || entry.target === spacerAfter) {
-          continue;
-        }
-
-        if (entry.target.isConnected) {
-          const el = entry.target as HTMLElement;
-          const oldHeight = anchoredItems.get(el);
-          const newHeight = getObservedHeight(entry);
-          anchoredItems.set(el, newHeight);
-
-          if (oldHeight !== undefined && oldHeight !== newHeight) {
-            if (el.getBoundingClientRect().top < containerTop) {
-              scrollDelta += (newHeight - oldHeight);
-            }
-          }
-        }
-      }
-
-      if (scrollDelta !== 0 && scrollElement.scrollTop > 0) {
-        scrollElement.scrollTop += scrollDelta;
-      }
+      compensateScrollForItemResizes(entries);
     }
   });
 
@@ -216,6 +216,9 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   function startConvergenceObserving(): void {
     if (convergingElements) return;
     convergingElements = true;
+    if (useNativeAnchoring) {
+      scrollElement.style.overflowAnchor = 'none';
+    }
     for (let el = spacerBefore.nextElementSibling; el && el !== spacerAfter; el = el.nextElementSibling) {
       resizeObserver.observe(el);
       convergenceItems.add(el);
@@ -241,35 +244,23 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   let pendingJumpToEnd = false;
   let pendingJumpToStart = false;
 
-  function startConvergence(toBottom: boolean): void {
-    if (toBottom) {
-      if (convergingToBottom || spacerAfter.offsetHeight === 0) return;
-      convergingToBottom = true;
-    } else {
-      if (convergingToTop || spacerBefore.offsetHeight === 0) return;
-      convergingToTop = true;
-    }
-    startConvergenceObserving();
-    if (useNativeAnchoring) {
-      scrollElement.style.overflowAnchor = 'none';
-    }
-  }
-
-  // Detect End/Home key presses to begin convergence immediately, before the
-  // browser's scroll position updates. With native CSS scroll anchoring enabled,
-  // the browser may prevent scrollTop from reaching the absolute extremity, so
-  // the IO-based detection in onSpacerAfterVisible alone is not sufficient.
   const keydownTarget: EventTarget = scrollContainer || document;
   function handleJumpKeys(e: Event): void {
     const ke = e as KeyboardEvent;
     if (ke.key === 'End') {
       pendingJumpToEnd = true;
       pendingJumpToStart = false;
-      startConvergence(true);
+      if (!convergingToBottom && spacerAfter.offsetHeight > 0) {
+        convergingToBottom = true;
+        startConvergenceObserving();
+      }
     } else if (ke.key === 'Home') {
       pendingJumpToStart = true;
       pendingJumpToEnd = false;
-      startConvergence(false);
+      if (!convergingToTop && spacerBefore.offsetHeight > 0) {
+        convergingToTop = true;
+        startConvergenceObserving();
+      }
     }
   }
   keydownTarget.addEventListener('keydown', handleJumpKeys);
@@ -283,7 +274,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     resizeObserver,
     refreshObservedElements,
     scrollElement,
-    startConvergence,
+    startConvergenceObserving,
+    setConvergingToBottom: () => { convergingToBottom = true; },
     onDispose: () => {
       stopConvergenceObserving();
       anchoredItems.clear();
@@ -330,7 +322,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     const atBottom = scrollElement.scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 1;
     if (!atBottom && !pendingJumpToEnd) return;
 
-    startConvergence(true);
+    convergingToBottom = true;
+    startConvergenceObserving();
     if (pendingJumpToEnd) {
       scrollElement.scrollTop = scrollElement.scrollHeight;
       pendingJumpToEnd = false;
@@ -350,7 +343,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     const atTop = scrollElement.scrollTop < 1;
     if (!atTop && !pendingJumpToStart) return;
 
-    startConvergence(false);
+    convergingToTop = true;
+    startConvergenceObserving();
     if (pendingJumpToStart) {
       scrollElement.scrollTop = 0;
       pendingJumpToStart = false;
@@ -393,8 +387,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     intersectingEntries.forEach((entry): void => {
       const containerSize = (entry.rootBounds?.height ?? 0) / scaleFactor;
 
-      // Mark the upcoming render as scroll-triggered so refreshObservedElements
-      // skips item observation (avoids layout interference drift).
+      // So that RefreshObservedElements can skip item observation (avoids layout interference drift).
       scrollTriggeredRender = true;
 
       if (entry.target === spacerBefore) {
@@ -424,8 +417,9 @@ function scrollToBottom(dotNetHelper: DotNet.DotNetObject): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   const entry = observersByDotNetObjectId[id];
   if (entry) {
-    entry.startConvergence?.(true);
+    entry.setConvergingToBottom?.();
     entry.scrollElement.scrollTop = entry.scrollElement.scrollHeight;
+    entry.startConvergenceObserving?.();
   }
 }
 
