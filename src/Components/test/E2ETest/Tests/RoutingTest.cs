@@ -1157,6 +1157,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/57153")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66024")]
     public void NavigationLock_CanBlockExternalNavigation()
     {
         SetUrlViaPushState("/");
