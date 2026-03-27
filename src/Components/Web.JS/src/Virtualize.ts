@@ -86,15 +86,39 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   let convergingToEnd = false;
   let convergingToStart = false;
 
+  // Detect End/Home key presses to begin convergence immediately, before the
+  // browser's scroll position even updates. This mirrors the old code's keydown
+  // listener. Without this, CSS scroll anchoring can prevent scrollTop from
+  // reaching the absolute bottom, so the scroll-event-based detection below
+  // would never fire.
+  const keyTarget = scrollContainer || document;
+  keyTarget.addEventListener('keydown', (e: Event) => {
+    const ke = e as KeyboardEvent;
+    if (ke.key === 'End' && !convergingToEnd && spacerAfter.offsetHeight > 0) {
+      console.log(`[Virtualize:keydown] End key → convergingToEnd=true, spacerAfter=${spacerAfter.offsetHeight}`);
+      convergingToEnd = true;
+      scrollElement.style.overflowAnchor = 'none';
+    }
+    if (ke.key === 'Home' && !convergingToStart && spacerBefore.offsetHeight > 0) {
+      console.log(`[Virtualize:keydown] Home key → convergingToStart=true, spacerBefore=${spacerBefore.offsetHeight}`);
+      convergingToStart = true;
+      scrollElement.style.overflowAnchor = 'none';
+    }
+  });
+
+  // Also detect via scroll events — catches programmatic scrollToBottom
+  // and any other path that reaches the extremity.
   scrollElement.addEventListener('scroll', () => {
     const remaining = scrollElement.scrollHeight - scrollElement.scrollTop - scrollElement.clientHeight;
-    if (remaining < 1 && spacerAfter.offsetHeight > 0) {
+    if (remaining < 1 && spacerAfter.offsetHeight > 0 && !convergingToEnd) {
       console.log(`[Virtualize:scroll] At bottom, spacerAfter=${spacerAfter.offsetHeight} → convergingToEnd=true`);
       convergingToEnd = true;
+      scrollElement.style.overflowAnchor = 'none';
     }
-    if (scrollElement.scrollTop < 1 && spacerBefore.offsetHeight > 0) {
+    if (scrollElement.scrollTop < 1 && spacerBefore.offsetHeight > 0 && !convergingToStart) {
       console.log(`[Virtualize:scroll] At top, spacerBefore=${spacerBefore.offsetHeight} → convergingToStart=true`);
       convergingToStart = true;
+      scrollElement.style.overflowAnchor = 'none';
     }
   }, { passive: true });
 
@@ -252,6 +276,13 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     resizeObserver,
     refreshObservedElements,
     scrollElement,
+    startConvergingToEnd: () => {
+      if (!convergingToEnd && spacerAfter.offsetHeight > 0) {
+        console.log(`[Virtualize:scrollToBottom] → convergingToEnd=true, spacerAfter=${spacerAfter.offsetHeight}`);
+        convergingToEnd = true;
+        scrollElement.style.overflowAnchor = 'none';
+      }
+    },
     onDispose: () => {
       anchoredItems.clear();
       resizeObserver.disconnect();
@@ -335,6 +366,7 @@ function scrollToBottom(dotNetHelper: DotNet.DotNetObject): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   const entry = observersByDotNetObjectId[id];
   if (entry) {
+    entry.startConvergingToEnd?.();
     entry.scrollElement.scrollTop = entry.scrollElement.scrollHeight;
   }
 }
