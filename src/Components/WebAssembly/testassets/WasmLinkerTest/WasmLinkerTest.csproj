@@ -7,6 +7,7 @@
     <UsingMicrosoftNETSdkBlazorWebAssembly>true</UsingMicrosoftNETSdkBlazorWebAssembly>
     <UsingMicrosoftNETSdkWebAssembly>true</UsingMicrosoftNETSdkWebAssembly>
     <PublishTrimmed>true</PublishTrimmed>
+    <RequiresDelayedBuild>true</RequiresDelayedBuild>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Metadata" />
