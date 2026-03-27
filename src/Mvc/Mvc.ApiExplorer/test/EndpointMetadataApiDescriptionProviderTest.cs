@@ -20,6 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -1095,6 +1096,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66033")]
     public void RespectsProducesWithGroupNameExtensionMethod()
     {
         // Arrange
@@ -1143,6 +1145,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66033")]
     public void HandlesProducesWithProducesProblem()
     {
         // Arrange
@@ -1195,6 +1198,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66033")]
     public void HandleMultipleProduces()
     {
         // Arrange
@@ -1296,6 +1300,7 @@ public class EndpointMetadataApiDescriptionProviderTest
 #nullable enable
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66033")]
     public void FavorsProducesMetadataOverAttribute()
     {
         // Arrange
