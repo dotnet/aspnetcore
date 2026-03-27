@@ -24,20 +24,6 @@ tools:
   bash: ["curl", "grep", "sed", "jq", "git", "cat", "ls", "find", "bash", "head", "tail", "dotnet", "source", "chmod"]
   web-fetch:
 
-safe-inputs:
-  get-nuget-version:
-    description: "Get the latest stable version of a NuGet package from api.nuget.org"
-    inputs:
-      package_id:
-        type: string
-        required: true
-        description: "The NuGet package ID (e.g. Microsoft.Windows.CsWin32)"
-    run: |
-      PACKAGE_ID_LOWER=$(echo "$INPUT_PACKAGE_ID" | tr '[:upper:]' '[:lower:]')
-      VERSIONS=$(curl -s "https://api.nuget.org/v3-flatcontainer/${PACKAGE_ID_LOWER}/index.json")
-      LATEST=$(echo "$VERSIONS" | jq -r '.versions[]' | grep -v '-' | tail -1)
-      echo "{\"package\": \"$INPUT_PACKAGE_ID\", \"latest_version\": \"$LATEST\"}"
-
 safe-outputs:
   create-pull-request:
     title-prefix: "[package] "
@@ -91,7 +77,14 @@ Perform these checks and apply changes:
 
 ### Step 1: Check for a newer CsWin32 version
 
-Use the `get-nuget-version` tool with `package_id: "Microsoft.Windows.CsWin32"` to fetch the latest stable version.
+Fetch the latest stable version of Microsoft.Windows.CsWin32 from NuGet:
+
+```bash
+PACKAGE_ID_LOWER=$(echo "Microsoft.Windows.CsWin32" | tr '[:upper:]' '[:lower:]')
+VERSIONS=$(curl -s "https://api.nuget.org/v3-flatcontainer/${PACKAGE_ID_LOWER}/index.json")
+LATEST=$(echo "$VERSIONS" | jq -r '.versions[]' | grep -v '-' | tail -1)
+echo "Latest stable version: $LATEST"
+```
 
 Compare with the current version in `eng/Versions.props` under `<MicrosoftWindowsCsWin32Version>`.
 
