@@ -133,6 +133,11 @@
     <!-- xUnit1004 = warns about skipped tests. Make this a non-fatal build warning. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1004</WarningsNotAsErrors>
 
+    <!-- MSB3026 is logged at error level for each copy-retry attempt during parallel builds, even when the
+         retry succeeds. This can fail CI despite the build completing successfully. Suppress to message level;
+         genuine copy failures still surface as MSB3021 when all retries are exhausted. -->
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);MSB3026</MSBuildWarningsAsMessages>
+
     <!-- don't warn about calling ConfigureAwait in test methods. we already commonly get off the xunit threads because they cause issues. -->
     <NoWarn>$(NoWarn);xUnit1030</NoWarn>
 
@@ -173,7 +178,7 @@
 
     <!-- This defines the list of RIDs supported by the ASP.NET Core shared framework.
          The list is a semicolon separated list of RIDs. Whitespace may not be added to the property. -->
-    <SupportedRuntimeIdentifiers>win-x64;win-x86;win-arm;win-arm64;osx-x64;osx-arm64;linux-musl-x64;linux-musl-arm;linux-musl-arm64;linux-x64;linux-arm;linux-arm64;freebsd-x64</SupportedRuntimeIdentifiers>
+    <SupportedRuntimeIdentifiers>win-x64;win-x86;win-arm;win-arm64;osx-x64;osx-arm64;linux-musl-x64;linux-musl-arm;linux-musl-arm64;linux-x64;linux-arm;linux-arm64;linux-riscv64;linux-musl-riscv64;linux-loongarch64;linux-musl-loongarch64;freebsd-x64;freebsd-arm64;openbsd-x64;openbsd-arm64;illumos-x64;solaris-x64;haiku-x64;</SupportedRuntimeIdentifiers>
     <SupportedRuntimeIdentifiers Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(SupportedRuntimeIdentifiers);$(TargetRuntimeIdentifier)</SupportedRuntimeIdentifiers>
 
     <!-- Playwright provides binaries for Windows (x86 and x64), macOS (x64) and Linux (x64, non musl). We can't use it on other architectures. -->

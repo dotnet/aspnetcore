@@ -26,7 +26,7 @@ export module DotNet {
 
   class JSObject {
       // We cache resolved members. Note that this means we can return stale values if the object has been modified since then.
-      _cachedHandlers: InvocationHandlerCache;;
+      _cachedHandlers: InvocationHandlerCache;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       constructor(private _jsObject: any) {
@@ -40,7 +40,10 @@ export module DotNet {
               return cachedFunction;
           }
 
-          const [parent, memberName] = findObjectMember(this._jsObject, identifier);
+          const [
+              parent,
+              memberName
+          ] = findObjectMember(this._jsObject, identifier);
           const func = wrapJSCallAsFunction(parent, memberName, callType, identifier);
           this.addHandlerToCache(identifier, func, callType);
 
@@ -55,9 +58,9 @@ export module DotNet {
           const cachedIdentifier = this._cachedHandlers.get(identifier);
 
           if (cachedIdentifier) {
-            cachedIdentifier[callType] = func;
+              cachedIdentifier[callType] = func;
           } else {
-            this._cachedHandlers.set(identifier, { [callType]: func });
+              this._cachedHandlers.set(identifier, { [callType]: func });
           }
       }
   }
@@ -417,29 +420,29 @@ export module DotNet {
 
       async beginInvokeJSFromDotNet(asyncHandle: number, identifier: string, argsJson: string | null, resultType: JSCallResultType, targetInstanceId: number, callType: JSCallType): Promise<any> {
           try {
-            const valueOrPromise = this.processJSCall(targetInstanceId, identifier, callType, argsJson);
+              const valueOrPromise = this.processJSCall(targetInstanceId, identifier, callType, argsJson);
 
-            // We only await the result if the caller wants to be notified about it
-            if (asyncHandle) {
-                const result = await valueOrPromise;
-                const serializedResult = stringifyArgs(this, [
-                    asyncHandle,
-                    true,
-                    createJSCallResult(result, resultType)
-                ]);
-                // On success, dispatch result back to .NET
-                this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, true, serializedResult);
-            }
-          } catch(error: any) {
-            if (asyncHandle) {
-                const serializedError = JSON.stringify([
-                    asyncHandle,
-                    false,
-                    formatError(error)
-                ]);
-                // On failure, dispatch error back to .NET
-                this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, false, serializedError);
-            }
+              // We only await the result if the caller wants to be notified about it
+              if (asyncHandle) {
+                  const result = await valueOrPromise;
+                  const serializedResult = stringifyArgs(this, [
+                      asyncHandle,
+                      true,
+                      createJSCallResult(result, resultType)
+                  ]);
+                  // On success, dispatch result back to .NET
+                  this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, true, serializedResult);
+              }
+          } catch (error: any) {
+              if (asyncHandle) {
+                  const serializedError = JSON.stringify([
+                      asyncHandle,
+                      false,
+                      formatError(error)
+                  ]);
+                  // On failure, dispatch error back to .NET
+                  this._dotNetCallDispatcher.endInvokeJSFromDotNet(asyncHandle, false, serializedError);
+              }
           }
       }
 
@@ -465,14 +468,14 @@ export module DotNet {
       }
 
       invokeDotNetMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): T | null {
-        if (this._dotNetCallDispatcher.invokeDotNetFromJS) {
-            const argsJson = stringifyArgs(this, args);
-            const resultJson = this._dotNetCallDispatcher.invokeDotNetFromJS(assemblyName, methodIdentifier, dotNetObjectId, argsJson);
-            return resultJson ? parseJsonWithRevivers(this, resultJson) : null;
-        }
+          if (this._dotNetCallDispatcher.invokeDotNetFromJS) {
+              const argsJson = stringifyArgs(this, args);
+              const resultJson = this._dotNetCallDispatcher.invokeDotNetFromJS(assemblyName, methodIdentifier, dotNetObjectId, argsJson);
+              return resultJson ? parseJsonWithRevivers(this, resultJson) : null;
+          }
 
-        throw new Error("The current dispatcher does not support synchronous calls from JS to .NET. Use invokeDotNetMethodAsync instead.");
-    }
+          throw new Error("The current dispatcher does not support synchronous calls from JS to .NET. Use invokeDotNetMethodAsync instead.");
+      }
 
       invokeDotNetMethodAsync<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): Promise<T> {
           if (assemblyName && dotNetObjectId) {
@@ -579,7 +582,8 @@ export module DotNet {
       delete cachedJSObjectsById[id];
   }
 
-  /** Traverses the object hierarchy to find an object member specified by the identifier.
+  /**
+   * Traverses the object hierarchy to find an object member specified by the identifier.
    *
    * @param obj Root object to search in.
    * @param identifier Complete identifier of the member to find, e.g. "document.location.href".
@@ -591,54 +595,57 @@ export module DotNet {
 
       // First, we iterate over all but the last key. We throw error for missing intermediate keys.
       // Error handling in case of undefined last key depends on the type of operation.
-      for (let i = 0; i < keys.length - 1; i++) {
-          const key = keys[i];
+      for (let index = 0; index < keys.length - 1; index++) {
+          const key = keys[index];
 
-          if (current && typeof current === 'object' && key in current) {
+          if (current && typeof current === "object" && key in current) {
               current = current[key];
           } else {
               throw new Error(`Could not find '${identifier}' ('${key}' was undefined).`);
           }
       }
 
-      return [current, keys[keys.length - 1]];
+      return [
+          current,
+          keys[keys.length - 1]
+      ];
   }
 
-  /** Takes an object member and a call type and returns a function that performs the operation specified by the call type on the member.
-   *
-   * @param parent Immediate parent of the accessed object member.
-   * @param memberName Name (key) of the accessed member.
-   * @param callType The type of the operation to perform on the member.
-   * @param identifier The full member identifier. Only used for error messages.
-   * @returns A function that performs the operation on the member.
-   */
+  // Takes an object member and a call type and returns a function that performs the operation specified by the call type on the member.
+  //
+  // @param parent Immediate parent of the accessed object member.
+  // @param memberName Name (key) of the accessed member.
+  // @param callType The type of the operation to perform on the member.
+  // @param identifier The full member identifier. Only used for error messages.
+  // @returns A function that performs the operation on the member.
+  //
   function wrapJSCallAsFunction(parent: any, memberName: string, callType: JSCallType, identifier: string): Function {
       switch (callType) {
-          case JSCallType.FunctionCall:
-              const func = parent[memberName];
-              if (func instanceof Function) {
-                  return func.bind(parent);
-              } else {
-                  throw new Error(`The value '${identifier}' is not a function.`);
-              }
-          case JSCallType.ConstructorCall:
-              const ctor = parent[memberName];
-              if (ctor instanceof Function) {
-                  const bound = ctor.bind(parent);
-                  return (...args: any[]) => new bound(...args);
-              } else {
-                  throw new Error(`The value '${identifier}' is not a function.`);
-              }
-          case JSCallType.GetValue:
-              if (!isReadableProperty(parent, memberName)) {
-                  throw new Error(`The property '${identifier}' is not defined or is not readable.`);
-              }
-              return () => parent[memberName];
-          case JSCallType.SetValue:
-              if (!isWritableProperty(parent, memberName)) {
-                  throw new Error(`The property '${identifier}' is not writable.`);
-              }
-              return (...args: any[]) => parent[memberName] = args[0];
+      case JSCallType.FunctionCall:
+          const func = parent[memberName];
+          if (func instanceof Function) {
+              return func.bind(parent);
+          }
+          throw new Error(`The value '${identifier}' is not a function.`);
+
+      case JSCallType.ConstructorCall:
+          const ctor = parent[memberName];
+          if (ctor instanceof Function) {
+              const bound = ctor.bind(parent);
+              return (...args: any[]) => new bound(...args);
+          }
+          throw new Error(`The value '${identifier}' is not a function.`);
+
+      case JSCallType.GetValue:
+          if (!isReadableProperty(parent, memberName)) {
+              throw new Error(`The property '${identifier}' is not defined or is not readable.`);
+          }
+          return () => parent[memberName];
+      case JSCallType.SetValue:
+          if (!isWritableProperty(parent, memberName)) {
+              throw new Error(`The property '${identifier}' is not writable.`);
+          }
+          return (...args: any[]) => parent[memberName] = args[0];
       }
   }
 
@@ -654,12 +661,12 @@ export module DotNet {
 
           if (descriptor) {
               // Return true for data property
-              if (descriptor.hasOwnProperty('value')) {
-                  return true
+              if (descriptor.hasOwnProperty("value")) {
+                  return true;
               }
 
               // Return true for accessor property with defined getter.
-              return descriptor.hasOwnProperty('get') && typeof descriptor.get === 'function';
+              return descriptor.hasOwnProperty("get") && typeof descriptor.get === "function";
           }
 
           obj = Object.getPrototypeOf(obj);
@@ -680,12 +687,12 @@ export module DotNet {
 
           if (descriptor) {
               // Return true for writable data property.
-              if (descriptor.hasOwnProperty('value') && descriptor.writable) {
+              if (descriptor.hasOwnProperty("value") && descriptor.writable) {
                   return true;
               }
 
               // Return true for accessor property with defined setter.
-              return descriptor.hasOwnProperty('set') && typeof descriptor.set === 'function';
+              return descriptor.hasOwnProperty("set") && typeof descriptor.set === "function";
           }
 
           obj = Object.getPrototypeOf(obj);
@@ -809,14 +816,14 @@ export module DotNet {
   }
 
   function getCaptureIdFromElement(element: Element): string | null {
-    for (let i = 0; i < element.attributes.length; i++) {
-      const attr = element.attributes[i];
-      if (attr.name.startsWith('_bl_')) {
-        return attr.name.substring(4);
+      for (let i = 0; i < element.attributes.length; i++) {
+          const attr = element.attributes[i];
+          if (attr.name.startsWith("_bl_")) {
+              return attr.name.substring(4);
+          }
       }
-    }
-    return null;
-}
+      return null;
+  }
 
   function argReplacer(key: string, value: any) {
       if (value instanceof Element) {
