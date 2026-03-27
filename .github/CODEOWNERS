@@ -17,7 +17,7 @@
 /src/Caching/                                                                     @captainsafia @halter73 @mgravell
 /src/Components/                                                                  @dotnet/aspnet-blazor-eng
 /src/DefaultBuilder/                                                              @halter73
-/src/Grpc/                                                                        @JamesNK @captainsafia @mgravell
+/src/Grpc/                                                                        @captainsafia @mgravell
 /src/Hosting/                                                                     @halter73
 /src/Http/                                                                        @BrennanConroy @halter73 @captainsafia
 /src/Http/Routing/                                                                @halter73
@@ -31,7 +31,7 @@
 /src/ProjectTemplates/Web.ProjectTemplates/content/BlazorServerWeb-CSharp/        @dotnet/aspnet-blazor-eng
 /src/ProjectTemplates/Web.ProjectTemplates/content/ComponentsWebAssembly-CSharp/  @dotnet/aspnet-blazor-eng
 /src/Security/                                                                    @halter73
-/src/Servers/                                                                     @halter73 @BrennanConroy @JamesNK @mgravell
+/src/Servers/                                                                     @halter73 @BrennanConroy @mgravell
 /src/SignalR/                                                                     @BrennanConroy @halter73
 /src/submodules                                                                   @dotnet/aspnet-build @wtgodbe
 /**/PublicAPI.*Shipped.txt                                                        @dotnet/aspnet-api-review @Rick-Anderson @tdykstra

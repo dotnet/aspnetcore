@@ -30,7 +30,17 @@ class DotnetWebWorkerClient {
                     }
                 }
             });
+
+            const dotnetJsUrl = DotnetWebWorkerClient.#resolveDotnetJsUrl();
+            worker.postMessage({ type: 'init', dotnetJsUrl });
         });
+    }
+
+    static #resolveDotnetJsUrl() {
+        // Resolve using the browser's import map (handles fingerprinted URLs in published apps).
+        // Workers don't inherit the page's import map, so we resolve on the main thread and pass the URL.
+        const dotnetJsUrl = new URL('_framework/dotnet.js', document.baseURI).href;
+        return import.meta.resolve?.(dotnetJsUrl) ?? dotnetJsUrl;
     }
 
     invoke(method, args) {

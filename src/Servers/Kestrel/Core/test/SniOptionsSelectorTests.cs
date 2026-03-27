@@ -523,6 +523,7 @@ public class SniOptionsSelectorTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65851")]
     public void FallsBackToHttpsConnectionAdapterCertificate()
     {
         var sniDictionary = new Dictionary<string, SniConfig>

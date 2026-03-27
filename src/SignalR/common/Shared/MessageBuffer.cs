@@ -132,6 +132,9 @@ internal sealed class MessageBuffer : IDisposable
 
     private async ValueTask<FlushResult> WriteAsyncCore(Type hubMessageType, ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
     {
+        // If backpressure is being observed a cancelable token is needed to make sure we can break out of waiting when the connection is closed
+        Debug.Assert(cancellationToken.CanBeCanceled);
+
         // TODO: Add backpressure based on message count
         if (_bufferedByteCount > _bufferLimit)
         {

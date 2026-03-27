@@ -13,6 +13,7 @@ permissions:
 jobs:
   update-selenium-and-playwright:
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.repository_owner == 'dotnet'
 
     steps:
       - name: Checkout code
