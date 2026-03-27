@@ -21,7 +21,6 @@
     <Reference Include="Microsoft.Authentication.WebAssembly.Msal" />
     <Reference Include="Microsoft.JSInterop" />
     <Reference Include="Microsoft.JSInterop.WebAssembly" />
-    <Reference Include="LinkabilityChecker" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <Target Name="ILLinkTrimWasmProjects" DependsOnTargets="ResolveReferences" AfterTargets="Build" Condition=" ('$(DotNetBuild)' != true OR '$(DotNetBuildTests)' == 'true') AND '$(SkipTestBuild)' != 'true' ">
     <PropertyGroup>
