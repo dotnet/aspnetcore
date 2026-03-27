@@ -25,20 +25,6 @@ tools:
   web-fetch:
   web-search:
 
-safe-inputs:
-  get-nuget-version:
-    description: "Get the latest stable version of a NuGet package from api.nuget.org"
-    inputs:
-      package_id:
-        type: string
-        required: true
-        description: "The NuGet package ID (e.g. Selenium.WebDriver)"
-    run: |
-      PACKAGE_ID_LOWER=$(echo "$INPUT_PACKAGE_ID" | tr '[:upper:]' '[:lower:]')
-      VERSIONS=$(curl -s "https://api.nuget.org/v3-flatcontainer/${PACKAGE_ID_LOWER}/index.json")
-      LATEST=$(echo "$VERSIONS" | jq -r '.versions[]' | grep -v '-' | tail -1)
-      echo "{\"package\": \"$INPUT_PACKAGE_ID\", \"latest_version\": \"$LATEST\"}"
-
 safe-outputs:
   create-pull-request:
     title-prefix: "[build-ops] "
@@ -81,13 +67,16 @@ Then update:
 
 ### How to look up latest NuGet versions
 
-Use the `get-nuget-version` tool to fetch the latest stable version of a NuGet package. Call it once for each package:
+Fetch the latest stable version of each NuGet package using the NuGet API:
 
-- `get-nuget-version` with `package_id: "Selenium.WebDriver"`
-- `get-nuget-version` with `package_id: "Selenium.Support"`
-- `get-nuget-version` with `package_id: "Microsoft.Playwright"`
-
-The tool returns the latest stable (non-prerelease) version.
+```bash
+for PACKAGE in Selenium.WebDriver Selenium.Support Microsoft.Playwright; do
+  PACKAGE_LOWER=$(echo "$PACKAGE" | tr '[:upper:]' '[:lower:]')
+  VERSIONS=$(curl -s "https://api.nuget.org/v3-flatcontainer/${PACKAGE_LOWER}/index.json")
+  LATEST=$(echo "$VERSIONS" | jq -r '.versions[]' | grep -v '-' | tail -1)
+  echo "$PACKAGE: $LATEST"
+done
+```
 
 ## Guidelines
 
