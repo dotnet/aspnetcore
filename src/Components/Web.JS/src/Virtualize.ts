@@ -63,14 +63,13 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   }
 
   if (useNativeAnchoring) {
-    // Applied to rendered items - keeps viewport stable when spacer heights change.
+    // Prevent spacers from being used as scroll anchors — only rendered items should anchor.
     spacerBefore.style.overflowAnchor = 'none';
     spacerAfter.style.overflowAnchor = 'none';
   } else {
     // Manual compensation path for tables and browsers without native anchoring.
     scrollElement.style.overflowAnchor = 'none';
   }
-  console.log(`[Virtualize:init] useNativeAnchoring=${useNativeAnchoring}, isTable=${isTable}, supportsAnchor=${supportsAnchor}`);
 
   const intersectionObserver = new IntersectionObserver(intersectionCallback, {
     root: scrollContainer,
@@ -80,47 +79,13 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   intersectionObserver.observe(spacerBefore);
   intersectionObserver.observe(spacerAfter);
 
+  let convergingElements = false;
+  let convergenceItems: Set<Element> = new Set();
+
+  // Manual scroll compensation state — tracks item heights so we can adjust scrollTop
+  // when above-viewport items resize. Only used when native anchoring is unavailable.
   const anchoredItems: Map<Element, number> = new Map();
   let scrollTriggeredRender = false;
-
-  let convergingToEnd = false;
-  let convergingToStart = false;
-
-  // Detect End/Home key presses to begin convergence immediately, before the
-  // browser's scroll position even updates. This mirrors the old code's keydown
-  // listener. Without this, CSS scroll anchoring can prevent scrollTop from
-  // reaching the absolute bottom, so the scroll-event-based detection below
-  // would never fire.
-  const keyTarget = scrollContainer || document;
-  keyTarget.addEventListener('keydown', (e: Event) => {
-    const ke = e as KeyboardEvent;
-    if (ke.key === 'End' && !convergingToEnd && spacerAfter.offsetHeight > 0) {
-      console.log(`[Virtualize:keydown] End key → convergingToEnd=true, spacerAfter=${spacerAfter.offsetHeight}`);
-      convergingToEnd = true;
-      scrollElement.style.overflowAnchor = 'none';
-    }
-    if (ke.key === 'Home' && !convergingToStart && spacerBefore.offsetHeight > 0) {
-      console.log(`[Virtualize:keydown] Home key → convergingToStart=true, spacerBefore=${spacerBefore.offsetHeight}`);
-      convergingToStart = true;
-      scrollElement.style.overflowAnchor = 'none';
-    }
-  });
-
-  // Also detect via scroll events — catches programmatic scrollToBottom
-  // and any other path that reaches the extremity.
-  scrollElement.addEventListener('scroll', () => {
-    const remaining = scrollElement.scrollHeight - scrollElement.scrollTop - scrollElement.clientHeight;
-    if (remaining < 1 && spacerAfter.offsetHeight > 0 && !convergingToEnd) {
-      console.log(`[Virtualize:scroll] At bottom, spacerAfter=${spacerAfter.offsetHeight} → convergingToEnd=true`);
-      convergingToEnd = true;
-      scrollElement.style.overflowAnchor = 'none';
-    }
-    if (scrollElement.scrollTop < 1 && spacerBefore.offsetHeight > 0 && !convergingToStart) {
-      console.log(`[Virtualize:scroll] At top, spacerBefore=${spacerBefore.offsetHeight} → convergingToStart=true`);
-      convergingToStart = true;
-      scrollElement.style.overflowAnchor = 'none';
-    }
-  }, { passive: true });
 
   function getObservedHeight(entry: ResizeObserverEntry): number {
     return entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
@@ -129,11 +94,9 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   // ResizeObserver roles:
   //  1. Always observes both spacers so that when a spacer resizes we re-trigger the
   //     IntersectionObserver — which otherwise won't fire again for an element that is already visible.
-  //  2. Viewport anchoring — compensates scroll position when content above the viewport resizes.
-  //     When native anchoring is available (non-table + supported browser), the browser handles this.
-  //     Otherwise (tables, Safari), we use manual compensation via item height tracking.
+  //  2. For convergence (sticky-top/bottom) - observes elements for geometry changes, drives the scroll position.
+  //  3. Manual scroll compensation (tables/Safari) — adjusts scrollTop when above-viewport items resize.
   const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]): void => {
-    // 1. Re-trigger IntersectionObserver for spacer resizes.
     for (const entry of entries) {
       if (entry.target === spacerBefore || entry.target === spacerAfter) {
         const spacer = entry.target as HTMLElement;
@@ -144,54 +107,49 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       }
     }
 
-    // During convergence, any item resize should re-scroll to the target
-    // extremity. This mirrors what the old code did — the ResizeObserver drives
-    // convergence by keeping scrollTop pinned while items load and resize.
-    if (convergingToEnd || convergingToStart) {
-      if (convergingToEnd) {
-        scrollElement.scrollTop = scrollElement.scrollHeight;
-      } else {
-        scrollElement.scrollTop = 0;
-      }
-      const spacer = convergingToEnd ? spacerAfter : spacerBefore;
-      if (spacer.offsetHeight < 1) {
-        console.log(`[Virtualize:ResizeObs] convergence complete — spacer height=0`);
-        convergingToEnd = convergingToStart = false;
+    // Convergence logic: keep scroll pinned to top/bottom while items load.
+    if (convergingToBottom || convergingToTop) {
+      scrollElement.scrollTop = convergingToBottom ? scrollElement.scrollHeight : 0;
+      const spacer = convergingToBottom ? spacerAfter : spacerBefore;
+      if (spacer.offsetHeight === 0) {
+        convergingToBottom = convergingToTop = false;
+        stopConvergenceObserving();
       }
       return;
+    } else if (convergingElements) {
+      stopConvergenceObserving();
     }
 
-    // 2. Viewport anchoring: compensate scroll for above-viewport item resizes.
-    let scrollDelta = 0;
-    const containerTop = scrollContainer
-      ? scrollContainer.getBoundingClientRect().top
-      : 0;
+    // Manual scroll compensation: adjust scrollTop for above-viewport item resizes.
+    // When native anchoring is available, the browser handles this automatically.
+    if (!useNativeAnchoring) {
+      let scrollDelta = 0;
+      const containerTop = scrollContainer
+        ? scrollContainer.getBoundingClientRect().top
+        : 0;
 
-    for (const entry of entries) {
-      if (entry.target === spacerBefore || entry.target === spacerAfter) {
-        // Skip spacer entries — spacers resize during normal scroll-driven
-        // rendering. Compensating here would undo normal scrolling.
-        continue;
-      }
+      for (const entry of entries) {
+        if (entry.target === spacerBefore || entry.target === spacerAfter) {
+          continue;
+        }
 
-      if (entry.target.isConnected) {
-        const el = entry.target as HTMLElement;
-        const oldHeight = anchoredItems.get(el);
-        const newHeight = getObservedHeight(entry);
-        anchoredItems.set(el, newHeight);
+        if (entry.target.isConnected) {
+          const el = entry.target as HTMLElement;
+          const oldHeight = anchoredItems.get(el);
+          const newHeight = getObservedHeight(entry);
+          anchoredItems.set(el, newHeight);
 
-        if (oldHeight !== undefined && oldHeight !== newHeight) {
-          // Compensate if the element is above the viewport (fully or partially).
-          if (el.getBoundingClientRect().top < containerTop) {
-            scrollDelta += (newHeight - oldHeight);
+          if (oldHeight !== undefined && oldHeight !== newHeight) {
+            if (el.getBoundingClientRect().top < containerTop) {
+              scrollDelta += (newHeight - oldHeight);
+            }
           }
         }
       }
-    }
 
-    if (scrollDelta !== 0 && scrollElement.scrollTop > 0 && !convergingToEnd && !convergingToStart) {
-      console.log(`[Virtualize:ResizeObs] scrollDelta=${scrollDelta}, scrollTop=${scrollElement.scrollTop}`);
-      scrollElement.scrollTop += scrollDelta;
+      if (scrollDelta !== 0 && scrollElement.scrollTop > 0) {
+        scrollElement.scrollTop += scrollDelta;
+      }
     }
   });
 
@@ -209,63 +167,112 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     if (useNativeAnchoring) {
       spacerBefore.style.overflowAnchor = 'none';
       spacerAfter.style.overflowAnchor = 'none';
-
-      // Clear convergence flags once the target spacer reaches zero height.
-      if (convergingToEnd && spacerAfter.offsetHeight < 1) {
-        console.log('[Virtualize:refresh] convergingToEnd complete — spacerAfter=0');
-        convergingToEnd = false;
-      }
-      if (convergingToStart && spacerBefore.offsetHeight < 1) {
-        console.log('[Virtualize:refresh] convergingToStart complete — spacerBefore=0');
-        convergingToStart = false;
-      }
-
-      const isConverging = convergingToEnd || convergingToStart;
-      scrollElement.style.overflowAnchor = isConverging ? 'none' : '';
-
-      if (convergingToEnd) {
-        console.log(`[Virtualize:refresh] convergingToEnd: scrolling to bottom (scrollTop ${scrollElement.scrollTop} → ${scrollElement.scrollHeight})`);
-        scrollElement.scrollTop = scrollElement.scrollHeight;
-      }
-      if (convergingToStart) {
-        console.log(`[Virtualize:refresh] convergingToStart: scrolling to top (scrollTop ${scrollElement.scrollTop} → 0)`);
-        scrollElement.scrollTop = 0;
-      }
-
-      console.log(`[Virtualize:refresh] convergingToEnd=${convergingToEnd}, convergingToStart=${convergingToStart}, overflowAnchor=${scrollElement.style.overflowAnchor}, scrollTop=${scrollElement.scrollTop}, scrollHeight=${scrollElement.scrollHeight}, clientHeight=${scrollElement.clientHeight}, spacerAfter.h=${spacerAfter.offsetHeight}, spacerBefore.h=${spacerBefore.offsetHeight}`);
     }
 
     // Ensure spacers are always observed (idempotent).
     resizeObserver.observe(spacerBefore);
     resizeObserver.observe(spacerAfter);
 
-    // - Native anchoring: browser handles above-viewport resizes automatically.
-    // - Manual compensation: observe items on data-triggered renders to compensate.
-    // - During convergence: observe items so ResizeObserver can drive re-scrolling.
-    const isConvergingNow = convergingToEnd || convergingToStart;
-    if ((useNativeAnchoring && !isConvergingNow) || scrollTriggeredRender) {
-      scrollTriggeredRender = false;
+    // During convergence, keep the observed element set in sync with the DOM.
+    if (convergingElements) {
+      const currentItems: Set<Element> = new Set();
+      for (let el = spacerBefore.nextElementSibling; el && el !== spacerAfter; el = el.nextElementSibling) {
+        resizeObserver.observe(el);
+        currentItems.add(el);
+      }
+      // Unobserve items removed during re-render.
+      for (const el of convergenceItems) {
+        if (!currentItems.has(el)) {
+          resizeObserver.unobserve(el);
+        }
+      }
+      convergenceItems = currentItems;
       return;
+    }
+
+    // Manual compensation: observe items so ResizeObserver can compensate scrollTop.
+    // Skip for native anchoring (browser handles it) and scroll-triggered renders
+    // (avoids layout interference drift).
+    if (!useNativeAnchoring && !scrollTriggeredRender) {
+      const currentItems = new Set<Element>();
+      for (let el = spacerBefore.nextElementSibling; el && el !== spacerAfter; el = el.nextElementSibling) {
+        resizeObserver.observe(el);
+        currentItems.add(el);
+      }
+
+      for (const [el] of anchoredItems) {
+        if (!currentItems.has(el)) {
+          resizeObserver.unobserve(el);
+          anchoredItems.delete(el);
+        }
+      }
     }
     scrollTriggeredRender = false;
 
-    // Observe all rendered items. During normal manual-compensation mode, the
-    // ResizeObserver callback compensates scrollTop. During convergence, it
-    // re-scrolls to the target extremity.
-    const currentItems = new Set<Element>();
+    // Don't re-trigger IntersectionObserver here — ResizeObserver handles that
+    // when spacers actually resize. Doing it on every render causes feedback loops.
+  }
+
+  function startConvergenceObserving(): void {
+    if (convergingElements) return;
+    convergingElements = true;
     for (let el = spacerBefore.nextElementSibling; el && el !== spacerAfter; el = el.nextElementSibling) {
       resizeObserver.observe(el);
-      currentItems.add(el);
-    }
-
-    // Unobserve items removed during re-render and clean up height tracking.
-    for (const [el] of anchoredItems) {
-      if (!currentItems.has(el)) {
-        resizeObserver.unobserve(el);
-        anchoredItems.delete(el);
-      }
+      convergenceItems.add(el);
     }
   }
+
+  function stopConvergenceObserving(): void {
+    if (!convergingElements) return;
+    convergingElements = false;
+    for (const el of convergenceItems) {
+      resizeObserver.unobserve(el);
+    }
+    convergenceItems.clear();
+    if (useNativeAnchoring) {
+      scrollElement.style.overflowAnchor = '';
+    }
+    anchoredItems.clear();
+  }
+
+  let convergingToBottom = false;
+  let convergingToTop = false;
+
+  let pendingJumpToEnd = false;
+  let pendingJumpToStart = false;
+
+  function startConvergence(toBottom: boolean): void {
+    if (toBottom) {
+      if (convergingToBottom || spacerAfter.offsetHeight === 0) return;
+      convergingToBottom = true;
+    } else {
+      if (convergingToTop || spacerBefore.offsetHeight === 0) return;
+      convergingToTop = true;
+    }
+    startConvergenceObserving();
+    if (useNativeAnchoring) {
+      scrollElement.style.overflowAnchor = 'none';
+    }
+  }
+
+  // Detect End/Home key presses to begin convergence immediately, before the
+  // browser's scroll position updates. With native CSS scroll anchoring enabled,
+  // the browser may prevent scrollTop from reaching the absolute extremity, so
+  // the IO-based detection in onSpacerAfterVisible alone is not sufficient.
+  const keydownTarget: EventTarget = scrollContainer || document;
+  function handleJumpKeys(e: Event): void {
+    const ke = e as KeyboardEvent;
+    if (ke.key === 'End') {
+      pendingJumpToEnd = true;
+      pendingJumpToStart = false;
+      startConvergence(true);
+    } else if (ke.key === 'Home') {
+      pendingJumpToStart = true;
+      pendingJumpToEnd = false;
+      startConvergence(false);
+    }
+  }
+  keydownTarget.addEventListener('keydown', handleJumpKeys);
 
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   let pendingCallbacks: Map<Element, IntersectionObserverEntry> = new Map();
@@ -276,16 +283,12 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     resizeObserver,
     refreshObservedElements,
     scrollElement,
-    startConvergingToEnd: () => {
-      if (!convergingToEnd && spacerAfter.offsetHeight > 0) {
-        console.log(`[Virtualize:scrollToBottom] → convergingToEnd=true, spacerAfter=${spacerAfter.offsetHeight}`);
-        convergingToEnd = true;
-        scrollElement.style.overflowAnchor = 'none';
-      }
-    },
+    startConvergence,
     onDispose: () => {
+      stopConvergenceObserving();
       anchoredItems.clear();
       resizeObserver.disconnect();
+      keydownTarget.removeEventListener('keydown', handleJumpKeys);
       if (callbackTimeout) {
         clearTimeout(callbackTimeout);
         callbackTimeout = null;
@@ -314,13 +317,68 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
   }
 
+  function onSpacerAfterVisible(): void {
+    if (spacerAfter.offsetHeight === 0) {
+      if (convergingToBottom) {
+        convergingToBottom = false;
+        stopConvergenceObserving();
+      }
+      return;
+    }
+    if (convergingToBottom) return;
+
+    const atBottom = scrollElement.scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 1;
+    if (!atBottom && !pendingJumpToEnd) return;
+
+    startConvergence(true);
+    if (pendingJumpToEnd) {
+      scrollElement.scrollTop = scrollElement.scrollHeight;
+      pendingJumpToEnd = false;
+    }
+  }
+
+  function onSpacerBeforeVisible(): void {
+    if (spacerBefore.offsetHeight === 0) {
+      if (convergingToTop) {
+        convergingToTop = false;
+        stopConvergenceObserving();
+      }
+      return;
+    }
+    if (convergingToTop) return;
+
+    const atTop = scrollElement.scrollTop < 1;
+    if (!atTop && !pendingJumpToStart) return;
+
+    startConvergence(false);
+    if (pendingJumpToStart) {
+      scrollElement.scrollTop = 0;
+      pendingJumpToStart = false;
+    }
+  }
+
   function processIntersectionEntries(entries: IntersectionObserverEntry[]): void {
     // Check if the spacers are still in the DOM. They may have been removed if the component was disposed.
     if (!spacerBefore.isConnected || !spacerAfter.isConnected) {
       return;
     }
 
-    const intersectingEntries = entries.filter(entry => entry.isIntersecting);
+    const intersectingEntries = entries.filter(entry => {
+      if (entry.isIntersecting) {
+        if (entry.target === spacerAfter) {
+          onSpacerAfterVisible();
+        } else if (entry.target === spacerBefore) {
+          onSpacerBeforeVisible();
+        }
+        return true;
+      }
+      if (entry.target === spacerAfter && convergingToBottom && spacerAfter.offsetHeight > 0) {
+        scrollElement.scrollTop = scrollElement.scrollHeight;
+      } else if (entry.target === spacerBefore && convergingToTop && spacerBefore.offsetHeight > 0) {
+        scrollElement.scrollTop = 0;
+      }
+      return false;
+    });
 
     if (intersectingEntries.length === 0) {
       return;
@@ -336,7 +394,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       const containerSize = (entry.rootBounds?.height ?? 0) / scaleFactor;
 
       // Mark the upcoming render as scroll-triggered so refreshObservedElements
-      // skips item observation for tables (avoids layout interference drift).
+      // skips item observation (avoids layout interference drift).
       scrollTriggeredRender = true;
 
       if (entry.target === spacerBefore) {
@@ -366,7 +424,7 @@ function scrollToBottom(dotNetHelper: DotNet.DotNetObject): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   const entry = observersByDotNetObjectId[id];
   if (entry) {
-    entry.startConvergingToEnd?.();
+    entry.startConvergence?.(true);
     entry.scrollElement.scrollTop = entry.scrollElement.scrollHeight;
   }
 }
