@@ -120,6 +120,23 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       }
     }
 
+    // During convergence, any item resize should re-scroll to the target
+    // extremity. This mirrors what the old code did — the ResizeObserver drives
+    // convergence by keeping scrollTop pinned while items load and resize.
+    if (convergingToEnd || convergingToStart) {
+      if (convergingToEnd) {
+        scrollElement.scrollTop = scrollElement.scrollHeight;
+      } else {
+        scrollElement.scrollTop = 0;
+      }
+      const spacer = convergingToEnd ? spacerAfter : spacerBefore;
+      if (spacer.offsetHeight < 1) {
+        console.log(`[Virtualize:ResizeObs] convergence complete — spacer height=0`);
+        convergingToEnd = convergingToStart = false;
+      }
+      return;
+    }
+
     // 2. Viewport anchoring: compensate scroll for above-viewport item resizes.
     let scrollDelta = 0;
     const containerTop = scrollContainer
@@ -181,6 +198,16 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
       const isConverging = convergingToEnd || convergingToStart;
       scrollElement.style.overflowAnchor = isConverging ? 'none' : '';
+
+      if (convergingToEnd) {
+        console.log(`[Virtualize:refresh] convergingToEnd: scrolling to bottom (scrollTop ${scrollElement.scrollTop} → ${scrollElement.scrollHeight})`);
+        scrollElement.scrollTop = scrollElement.scrollHeight;
+      }
+      if (convergingToStart) {
+        console.log(`[Virtualize:refresh] convergingToStart: scrolling to top (scrollTop ${scrollElement.scrollTop} → 0)`);
+        scrollElement.scrollTop = 0;
+      }
+
       console.log(`[Virtualize:refresh] convergingToEnd=${convergingToEnd}, convergingToStart=${convergingToStart}, overflowAnchor=${scrollElement.style.overflowAnchor}, scrollTop=${scrollElement.scrollTop}, scrollHeight=${scrollElement.scrollHeight}, clientHeight=${scrollElement.clientHeight}, spacerAfter.h=${spacerAfter.offsetHeight}, spacerBefore.h=${spacerBefore.offsetHeight}`);
     }
 
@@ -190,14 +217,17 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
     // - Native anchoring: browser handles above-viewport resizes automatically.
     // - Manual compensation: observe items on data-triggered renders to compensate.
-    if (useNativeAnchoring || scrollTriggeredRender) {
+    // - During convergence: observe items so ResizeObserver can drive re-scrolling.
+    const isConvergingNow = convergingToEnd || convergingToStart;
+    if ((useNativeAnchoring && !isConvergingNow) || scrollTriggeredRender) {
       scrollTriggeredRender = false;
       return;
     }
     scrollTriggeredRender = false;
 
-    // Observe all rendered items for viewport anchoring. When an item
-    // resizes above the viewport, the ResizeObserver callback compensates scrollTop.
+    // Observe all rendered items. During normal manual-compensation mode, the
+    // ResizeObserver callback compensates scrollTop. During convergence, it
+    // re-scrolls to the target extremity.
     const currentItems = new Set<Element>();
     for (let el = spacerBefore.nextElementSibling; el && el !== spacerAfter; el = el.nextElementSibling) {
       resizeObserver.observe(el);
