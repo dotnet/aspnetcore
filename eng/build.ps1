@@ -462,6 +462,24 @@ try {
 
     $restore = $tmpRestore
 
+    # TEMPORARY: Overlay custom MSBuild bootstrap for investigating dotnet/msbuild#12927
+    $bootstrapDir = Join-Path $RepoRoot "eng" "msbuild-bootstrap"
+    $bootstrapDll = Join-Path $bootstrapDir "Microsoft.Build.Tasks.Core.dll"
+    if (Test-Path $bootstrapDll) {
+        $sdkVersion = (Get-Content (Join-Path $RepoRoot "global.json") | ConvertFrom-Json).sdk.version
+        $targetDll = Join-Path $env:DOTNET_INSTALL_DIR "sdk" $sdkVersion "Microsoft.Build.Tasks.Core.dll"
+        if (Test-Path $targetDll) {
+            Write-Host "=== MSBuild Bootstrap Overlay (dotnet/msbuild#12927) ==="
+            Write-Host "Original: $((Get-FileHash $targetDll -Algorithm SHA256).Hash) $targetDll"
+            Copy-Item $bootstrapDll $targetDll -Force
+            Write-Host "Replaced: $((Get-FileHash $targetDll -Algorithm SHA256).Hash) $targetDll"
+            Write-Host "Source:   $((Get-FileHash $bootstrapDll -Algorithm SHA256).Hash) $bootstrapDll"
+            Write-Host "=== Overlay complete ==="
+        } else {
+            Write-Host "WARNING: SDK target not found at $targetDll - skipping MSBuild overlay"
+        }
+    }
+
     if ($ci) {
         $global:VerbosePreference = 'Continue'
     }
