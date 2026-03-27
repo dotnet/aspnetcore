@@ -233,7 +233,7 @@ Before creating issues and PRs, group related failures together:
 ## Important Rules
 
 - **Always exclude** `AlwaysTestTests.SuccessfulTests.GuaranteedQuarantinedTest` from all analysis. This test must never be unquarantined.
-- **Always exclude** tests under `Microsoft.AspNetCore.SignalR.Specification.Tests` from all analysis. These are abstract base classes inherited by other test projects — there is no good way to quarantine them, so they must be ignored entirely.
+- **Always exclude** tests under `Microsoft.AspNetCore.SignalR.Specification.Tests` from all analysis. These are abstract base classes inherited by other test projects — there is no good way to quarantine them, so they must be ignored entirely. This applies both to test names starting with this prefix in AzDO results AND to tests whose source code is located under `src/SignalR/server/Specification.Tests/`. A test may appear in AzDO under a different namespace (e.g., `StackExchangeRedis.Tests`) but still be defined in `Specification.Tests` — check the actual source file before quarantining.
 - **Check for existing PRs** before creating new ones. Search all open PRs for any that modify the same test file. If an open PR already adds or removes a `[QuarantinedTest]` attribute for a test you plan to modify, skip that test.
 - **One PR per issue** for unquarantining. Group tests by their quarantine issue.
 - **One issue + one PR per test** (or per related group) for quarantining.
