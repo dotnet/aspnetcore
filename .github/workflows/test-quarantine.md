@@ -165,14 +165,15 @@ Get all completed builds on `refs/heads/main` from the last 30 days. For each bu
 GET https://vstmr.dev.azure.com/dnceng-public/public/_apis/testresults/resultsbyBuild?buildId={BUILD_ID}&outcomes=Failed&$top=1000&api-version=7.1-preview.1
 ```
 
-#### Source B: PR retry failures
-Get all PR builds (`reasonFilter=pullRequest`) from the last 30 days. Group by PR number and `pr.sourceSha` (from `triggerInfo`). Find groups where:
-- Multiple builds exist for the same PR + source SHA
-- At least one build failed and a subsequent one succeeded
+#### Source B: Merged PR failures
+Get all PR builds (`reasonFilter=pullRequest`) from the last 30 days. Group by PR number and `pr.sourceSha` (from `triggerInfo`). A group qualifies if:
 - This was the **final commit** for the PR (the last `pr.sourceSha` seen for that PR)
 - The PR was **merged** (check via GitHub MCP `pull_request_read` with method `get` and verify the `merged` field is `true`)
+- At least one build in the group **failed** or **partially succeeded**
 
-For qualifying builds, get the failed test results.
+This captures two scenarios: (1) a PR that was retried and eventually passed, indicating flaky test failures on the earlier attempt, and (2) a PR that was merged on red because the only failures were flaky tests — engineers sometimes do this when the failures are clearly unrelated to their changes.
+
+For qualifying groups, get the failed test results from the failed/partially-succeeded builds.
 
 #### Source C: Work item crash investigation
 For work items (names ending in `.WorkItemExecution`) that failed 2+ times, investigate the Helix console logs to find the individual test(s) that caused the crash:
@@ -232,7 +233,7 @@ Before creating issues and PRs, group related failures together:
 ## Important Rules
 
 - **Always exclude** `AlwaysTestTests.SuccessfulTests.GuaranteedQuarantinedTest` from all analysis. This test must never be unquarantined.
-- **Always exclude** tests under `Microsoft.AspNetCore.SignalR.Specification.Tests` from all analysis. These are abstract base classes inherited by other test projects — there is no good way to quarantine them, so they must be ignored entirely.
+- **Always exclude** tests under `Microsoft.AspNetCore.SignalR.Specification.Tests` from all analysis. These are abstract base classes inherited by other test projects — there is no good way to quarantine them, so they must be ignored entirely. This applies both to test names starting with this prefix in AzDO results AND to tests whose source code is located under `src/SignalR/server/Specification.Tests/`. A test may appear in AzDO under a different namespace (e.g., `StackExchangeRedis.Tests`) but still be defined in `Specification.Tests` — check the actual source file before quarantining.
 - **Check for existing PRs** before creating new ones. Search all open PRs for any that modify the same test file. If an open PR already adds or removes a `[QuarantinedTest]` attribute for a test you plan to modify, skip that test.
 - **One PR per issue** for unquarantining. Group tests by their quarantine issue.
 - **One issue + one PR per test** (or per related group) for quarantining.
