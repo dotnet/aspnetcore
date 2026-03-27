@@ -1,65 +1,70 @@
 # Summary
 
-This document proposes adding **first-party, zero-dependency client-side form validation** to **ASP.NET Core** that works for both **Blazor Web Apps** (static SSR + enhanced navigation) and **MVC / Razor Pages**, closing a long-standing gap where Blazor static-SSR forms require a SignalR circuit for client validation and MVC relies on jQuery + jquery-validate + jquery-validation-unobtrusive (118 KB combined).
+This document proposes adding **first-party, zero-dependency client-side form validation** to **ASP.NET Core** that works for **Blazor Web Apps** (static SSR with both enhanced and non-enhanced forms) and **MVC / Razor Pages**, closing a long-standing gap where Blazor static-SSR forms require a SignalR circuit for client validation and MVC relies on jQuery + jquery-validate + jquery-validation-unobtrusive (118 KB combined).
 
-The feature delivers a **standalone JavaScript validation library** (target: ≤ 4 KB Brotli-compressed, no dependencies) that understands the existing `data-val-*` attribute protocol and uses the browser-native **Constraint Validation API** as its validation state mechanism. For Blazor, a new **C# service layer** enables existing input components to automatically emit `data-val-*` attributes from `DataAnnotations`. For MVC, the library is a **drop-in replacement** for the jQuery validation stack—same attributes, same CSS classes, no C# changes. The library ships as a standalone file that can be referenced by any ASP.NET Core app.
+The feature delivers a **JavaScript validation library** (target: ≤ 4 KB Brotli-compressed, no dependencies) that understands the existing `data-val-*` attribute protocol and uses the browser-native **Constraint Validation API** as its validation state mechanism. For Blazor, the validation JS is **bundled into `blazor.web.js`** and the C# service layer is **enabled by default via `AddRazorComponents()`** — existing input components automatically emit `data-val-*` attributes from `DataAnnotations` on statically-rendered forms. For MVC, the JS library is compatible with MVC-generated HTML and can serve as a **drop-in replacement** for the jQuery validation stack; the MVC team owns distribution and testing for MVC scenarios.
 
 ## Goals
 
-- **Enable client-side validation for Blazor SSR without a circuit.** Today, Blazor Web Apps rendered via static SSR have no client-side validation—every validation check requires a full server round-trip. This feature adds immediate, in-browser validation feedback using standard `DataAnnotations`, without requiring Blazor Server interactivity or WebAssembly. Developers add a `<ClientSideValidator />` component inside their `<EditForm>` and call `builder.Services.AddClientSideValidation()` in `Program.cs`; all existing `<InputText>`, `<InputNumber>`, etc. components then automatically emit `data-val-*` attributes and the bundled JS library validates on the client.
+- **Enable client-side validation for Blazor SSR without a circuit.** Today, Blazor Web Apps rendered via static SSR have no client-side validation—every validation check requires a full server round-trip. This feature adds immediate, in-browser validation feedback using standard `DataAnnotations`, without requiring Blazor Server interactivity or WebAssembly. Client-side validation is **enabled by default** when `AddRazorComponents()` is called—all existing `<InputText>`, `<InputNumber>`, etc. components automatically emit `data-val-*` attributes on statically-rendered forms, and the validation JS (bundled into `blazor.web.js`) validates on the client. This works for both enhanced (`Enhance`) and non-enhanced SSR forms.
 
-- **Provide a zero-dependency JavaScript validation library (≤ 4 KB Brotli).** The current MVC client-side validation stack depends on jQuery (87 KB), jquery-validate (23 KB), and jquery-validation-unobtrusive (8 KB). This feature delivers a standalone JavaScript library with no external dependencies that understands the same `data-val-*` attribute protocol. It uses the browser-native Constraint Validation API (`setCustomValidity`, `ValidityState`, `checkValidity`) as the validation state mechanism and extensibility surface, enabling third-party libraries to read standardized validity state without coupling to our internals.
-
-- **Be a drop-in replacement for jQuery unobtrusive validation in ASP.NET Core MVC / Razor Pages.** Existing ASP.NET Core MVC apps can swap out the three jQuery-based script references for a single `<script>` tag. No C# code changes are required—the library reads the same `data-val-*` attributes that MVC tag helpers already emit and uses the same CSS class names (`input-validation-error`, `field-validation-error`, `validation-summary-errors`, etc.) and `data-valmsg-for` / `data-valmsg-summary` conventions.
+- **Provide a zero-dependency JavaScript validation library (≤ 5 KB Brotli).** The current MVC client-side validation stack depends on jQuery (87 KB), jquery-validate (23 KB), and jquery-validation-unobtrusive (8 KB). This feature delivers a JavaScript validation library with no external dependencies that understands the same `data-val-*` attribute protocol. It uses the browser-native Constraint Validation API (`setCustomValidity`, `ValidityState`, `checkValidity`) as the validation state mechanism and extensibility surface, enabling third-party libraries to read standardized validity state without coupling to our internals. For Blazor, the JS library is bundled into `blazor.web.js`.
 
 - **Work across the Blazor enhanced navigation lifecycle.** Blazor's enhanced navigation patches the DOM without full page loads. The validation library automatically re-scans for new or changed forms after each navigation, handles DOM element reuse, and intercepts form submission so validation runs before the enhanced navigation fetch. No developer action is required beyond the initial setup.
 
 - **Support extensibility for custom validators.** Developers can register custom validation providers on the JavaScript side and custom adapters on the C# side, enabling the same custom-attribute-to-client-rule pipeline that MVC provides but with fewer layers of indirection.
 
+- **Be compatible with ASP.NET Core MVC / Razor Pages as a drop-in replacement for jQuery unobtrusive validation.** The JS library reads the same `data-val-*` attributes that MVC tag helpers already emit and uses the same CSS class names (`input-validation-error`, `field-validation-error`, `validation-summary-errors`, etc.) and `data-valmsg-for` / `data-valmsg-summary` conventions. We build the JS library and ensure MVC compatibility; the MVC team owns distribution, integration, and testing for MVC scenarios.
+
 ## Non-goals
 
 - **Full parity with the jQuery unobtrusive validation rule ecosystem.** The feature targets a focused subset of validators aligned with core `System.ComponentModel.DataAnnotations` attributes (Required, StringLength, MinLength, MaxLength, Range, RegularExpression, Email, Url, Phone, CreditCard, Compare, FileExtensions). Niche MVC-specific validators and any third-party jquery-validation plugins are not replicated. Custom validators can be added via the extensibility API.
 
-- **Remote / async server-backed validation in Blazor SSR.** MVC's `[Remote]` attribute pattern (where the server is queried via AJAX during client-side validation) is supported only when used from MVC apps. In Blazor SSR, `RemoteAttribute` is explicitly unsupported and will throw `NotSupportedException`. Async form submission in Blazor requires a public `Blazor.submitForm()` API that does not yet exist; remote validation for Blazor is deferred to a future release. See [Open Question 1](#open-question-1-blazor-async-form-submission-api).
+- **Remote / async server-backed validation in Blazor SSR.** MVC's `[Remote]` attribute pattern (where the server is queried via AJAX during client-side validation) is supported only when used from MVC apps. In Blazor SSR, async and remote validation is **not supported in this release**. `RemoteAttribute` on Blazor models will throw `NotSupportedException` at render time. Custom async JavaScript providers registered in Blazor mode will throw at registration time. This is a deliberate constraint — async validation in Blazor conflicts with the mechanism through which enhanced navigation intercepts form submission. Making these compatible would require more extensive changes which are out-of-scope here.
+
+- **Client-side validation for interactive render modes.** This feature targets static SSR forms only. When a form is rendered interactively (Blazor Server or Blazor WebAssembly), validation is handled by the existing Blazor interactive validation pipeline (via `EditContext` and C# validation logic running on the circuit or in WebAssembly). The `data-val-*` attributes should not be emitted on interactive forms, and the JS validation code must not run or modify the DOM in interactive rendering contexts. This ensures no conflicts between the two validation approaches.
 
 - **Replacing browser-native validation UI.** The library suppresses native browser validation tooltips and manages its own error display via CSS classes and message target elements. However, it does not attempt to provide a rich validation UI framework (tooltips, animations, etc.). Richer UI is left to application CSS and/or third-party libraries that can read the Constraint Validation API state.
 
 - **Source generator or compile-time validation metadata.** All C# attribute discovery is reflection-based (with per-field caching). A source-generator approach for trimming-friendly or AOT-compatible metadata emission is a potential future optimization but is not part of this feature. The reflection-based approach is not trimming-safe or Native AOT compatible; applications using PublishTrimmed or PublishAot may need the future source-generator approach.
 
-- **Custom element for validation targets.** The original proposal included an optional custom element using `ElementInternals` for message rendering. This has been deferred in favor of the simpler `data-valmsg-for` span-based approach that is already compatible with both MVC and Blazor conventions.
+- **Custom element for validation targets.** The original proposal included an optional custom element (e.g., `<asp-validation-message>`) using `ElementInternals` for message rendering and built-in ARIA semantics. This has been deferred in favor of the simpler approach: plain `<span data-valmsg-for>` elements (compatible with both MVC and Blazor conventions) with ARIA attributes managed directly by the JS library. The custom element approach may be revisited in a future release if there is demand for a more standards-based abstraction.
 
 - **Legacy ASP.NET MVC 5 support.** The drop-in replacement targets ASP.NET Core MVC only. While the `data-val-*` protocol is largely the same across ASP.NET MVC 5 and ASP.NET Core MVC, differences in anti-forgery token handling, remote validation URL generation, and other details mean that legacy MVC 5 apps are not a tested or supported scenario.
 
 ## Proposed solution
 
-The solution consists of two main parts that can be consumed independently:
+The solution consists of two main parts:
 
-1. **A standalone JavaScript validation library** (`aspnet-validation.js`) that scans the DOM for `data-val-*` attributes, validates form fields on user interaction and submission, displays error messages, and integrates with the Constraint Validation API. The library auto-detects whether it's running in a Blazor or MVC context and adapts accordingly (e.g., re-scanning after Blazor enhanced navigation, or providing a `parse()` API for MVC dynamic content). It ships as a static web asset and can be referenced by any ASP.NET Core app.
+1. **A JavaScript validation library** bundled into `blazor.web.js` (and also available as a standalone file for MVC) that scans the DOM for `data-val-*` attributes, validates form fields on user interaction and submission, displays error messages, and integrates with the Constraint Validation API. The library auto-detects whether it's running in a Blazor or MVC context and adapts accordingly (e.g., re-scanning after Blazor enhanced navigation, or providing a `parse()` API for MVC dynamic content).
 
-2. **A Blazor C# service layer** that enables existing Blazor input components (`InputText`, `InputNumber`, `InputSelect`, etc.) to automatically emit `data-val-*` attributes derived from `DataAnnotations` on the model. A new `<ClientSideValidator />` component activates this behavior per-form, following the same opt-in pattern as `<DataAnnotationsValidator />`.
+2. **A Blazor C# service layer**, enabled by default via `AddRazorComponents()`, that causes existing Blazor input components (`InputText`, `InputNumber`, `InputSelect`, etc.) to automatically emit `data-val-*` attributes derived from `DataAnnotations` on the model when rendering in a static SSR context. The feature is active only for statically-rendered forms — interactive render modes are not affected. Per-form opt-out is available via a parameter on `DataAnnotationsValidator`.
 
 Client-side validation is a **progressive enhancement**: forms are fully functional before the script loads, and server-side validation always remains authoritative. The client library improves UX by providing immediate feedback without a round-trip.
 
+**Supported modes:**
+- Blazor SSR with enhanced forms (`<EditForm Enhance>`)
+- Blazor SSR with non-enhanced forms (`<EditForm>` without `Enhance`)
+- MVC / Razor Pages forms
+
 ### Scenario 1: Basic Blazor SSR form with client-side validation
 
-The simplest and most common scenario. A statically-rendered Blazor form gets immediate client-side validation without enabling interactive render modes.
+The simplest and most common scenario. A statically-rendered Blazor form gets immediate client-side validation without enabling interactive render modes. **No additional setup is required** — client-side validation is enabled by default when using `AddRazorComponents()`.
 
-**Program.cs — one-time service registration:**
+**Program.cs — standard Blazor setup (no extra calls needed):**
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddRazorComponents();
-builder.Services.AddClientSideValidation();
+builder.Services.AddRazorComponents();  // Client-side validation is included
 
 var app = builder.Build();
 app.MapRazorComponents<App>();
 app.Run();
 ```
 
-**Register.razor — opt-in per form:**
+**Register.razor:**
 ```razor
 <EditForm Model="model" Enhance FormName="register">
     <DataAnnotationsValidator />
-    <ClientSideValidator />
     <ValidationSummary />
 
     <div>
@@ -94,11 +99,10 @@ app.Run();
 ```
 
 **What happens:**
-- `AddClientSideValidation()` registers the validation service. `<ClientSideValidator />` activates it for this form and emits the JS library `<script>` tag.
-- All `InputBase<T>`-derived components (`InputText`, `InputNumber`, `InputSelect`, `InputDate`, `InputTextArea`, `InputCheckbox`, `InputRadioGroup`) automatically emit `data-val-*` attributes based on the model's `DataAnnotations`.
+- Because `AddRazorComponents()` registers the client validation service, all `InputBase<T>`-derived components (`InputText`, `InputNumber`, `InputSelect`, `InputDate`, `InputTextArea`, `InputCheckbox`, `InputRadioGroup`) automatically emit `data-val-*` attributes based on the model's `DataAnnotations` when rendering in a static SSR context.
 - `<ValidationMessage>` renders a `<span data-valmsg-for="...">` target for per-field errors.
 - `<ValidationSummary>` renders a `<div data-valmsg-summary="true">` container for the error list.
-- The JS library scans the DOM, finds the annotated elements, and wires validation.
+- The validation JS (bundled in `blazor.web.js`) scans the DOM, finds the annotated elements, and wires validation.
 - **On blur/change:** the field is validated and errors are shown or cleared.
 - **On typing:** existing errors are cleared in real-time (but new errors are not shown until blur, to avoid flashing red while the user types).
 - **On submit:** all fields are validated. If any are invalid, submission is blocked and errors are displayed. If all are valid, the form submits normally via enhanced navigation.
@@ -124,12 +128,73 @@ The following `DataAnnotations` attributes are supported out of the box. The map
 | `[CreditCard]` | `creditcard` | — |
 | `[Compare]` | `equalto` | `other` (e.g., `*.ConfirmPassword`) |
 | `[FileExtensions]` | `fileextensions` | `extensions` |
+| *(numeric types)* | `number` | — |
 
-**Error messages** are resolved using `ValidationAttribute.FormatErrorMessage()` with the display name derived from `[Display(Name = "...")]`, `[DisplayName("...")]`, or the property name as fallback. Localized error messages work through the standard DataAnnotations localization mechanisms (resource files, `IStringLocalizer`). Messages are resolved on the server at render time and embedded in the `data-val-*` attributes.
+The `number` rule is a special case: it is not driven by a `DataAnnotation` attribute. MVC's `NumericClientModelValidatorProvider` automatically emits `data-val-number` for `float`, `double`, and `decimal` properties. The JS library includes a `number` provider for MVC compatibility. Blazor does not emit `data-val-number` — `InputNumber<T>` renders `type="number"` which provides browser-native numeric enforcement.
+
+**Error messages** are resolved on the server at render time and embedded in the `data-val-*` attributes as static strings. By default, `ValidationAttribute.FormatErrorMessage()` is used with the display name derived from `[Display(Name = "...")]`, `[DisplayName("...")]`, or the property name as fallback. When validation localization is enabled, the same localization providers are used for both client-side and server-side messages — see [Scenario 3: Localized error messages](#scenario-3-localized-error-messages).
 
 **Nested models** are fully supported. A property like `model.Address.Street` produces validation attributes with the correct dotted-path field name, and `<ValidationMessage For="@(() => model.Address.Street)" />` renders the matching `data-valmsg-for` target.
 
-### Scenario 3: Validation timing and UX behavior
+### Scenario 3: Localized error messages
+
+When validation localization is enabled in the app (via the `Microsoft.Extensions.Validation.Localization` package, see [#65539](https://github.com/dotnet/aspnetcore/issues/65539)), client-side validation displays the **same localized messages** as server-side validation. This ensures a consistent user experience regardless of whether a validation error is caught on the client or the server.
+
+**How it works:** Error messages and display names are resolved on the server at render time—before the HTML is sent to the browser. The client validation service uses `ValidationOptions.ErrorMessageProvider` and `ValidationOptions.DisplayNameProvider` (the same delegates used by server-side validation) to produce localized, formatted error messages. These messages are then embedded in the `data-val-*` attributes as static strings. No localization happens in the browser; the JS library simply displays whatever message is in the attribute.
+
+**Setup — enable validation localization with a shared resource file:**
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddRazorComponents();     // Includes client-side validation
+builder.Services.AddValidation();
+builder.Services.AddValidationLocalization<SharedValidationMessages>();
+```
+
+**Model — no per-attribute resource annotations needed:**
+```csharp
+public class RegisterModel
+{
+    [Required]                                   // Uses localized "required" template
+    [EmailAddress]                               // Uses localized "email" template
+    [Display(Name = "EmailAddress")]             // Display name key for localization
+    public string Email { get; set; } = "";
+
+    [Required]
+    [StringLength(100, MinimumLength = 8)]
+    [Display(Name = "Password")]
+    public string Password { get; set; } = "";
+}
+```
+
+**Resource file (`SharedValidationMessages.fr.resx`):**
+```
+EmailAddress       → Adresse e-mail
+Password           → Mot de passe
+RequiredAttribute  → Le champ {0} est obligatoire.
+StringLengthAttribute → Le champ {0} doit contenir entre {2} et {1} caractères.
+EmailAddressAttribute → Le champ {0} n'est pas une adresse e-mail valide.
+```
+
+**Rendered HTML (for a French-language request):**
+```html
+<input type="text" name="model.Email"
+       data-val="true"
+       data-val-required="Le champ Adresse e-mail est obligatoire."
+       data-val-email="Le champ Adresse e-mail n'est pas une adresse e-mail valide." />
+<span data-valmsg-for="model.Email" class="field-validation-valid"></span>
+```
+
+**Result:** When the user submits the form with an empty email field:
+- **Client-side** (JS library reads `data-val-required`): displays "Le champ Adresse e-mail est obligatoire."
+- **Server-side** (validation pipeline uses the same `ErrorMessageProvider`): returns "Le champ Adresse e-mail est obligatoire."
+- Both messages are identical because they come from the same localization provider and resource file.
+
+This works because the client validation service resolves messages through the same `ValidationOptions` pipeline as server-side validation:
+1. If `ValidationOptions.ErrorMessageProvider` is configured (by `AddValidationLocalization()`), it is used to produce the localized, formatted message.
+2. If `ValidationOptions.DisplayNameProvider` is configured, it resolves localized display names (e.g., "Adresse e-mail" instead of "Email").
+3. If neither is configured (no localization enabled), the service falls back to `ValidationAttribute.FormatErrorMessage()` with the default display name, exactly as in the non-localized scenario.
+
+### Scenario 4: Validation timing and UX behavior
 
 The library uses a smart validation timing strategy to avoid poor "everything is red immediately" UX:
 
@@ -138,22 +203,37 @@ The library uses a smart validation timing strategy to avoid poor "everything is
 | **Typing** (`input` event) | Only **clears** existing errors. Does **not** show new errors while the user is actively typing. |
 | **Leaving a field** (`change`/`blur` event) | **Shows or clears** errors. This is the primary trigger for displaying validation errors. |
 | **Submitting the form** | **Validates all fields.** Blocks submission if any field is invalid. Updates the validation summary. |
+| **Resetting the form** | **Clears all validation state.** CSS classes, error messages, validation summary, ARIA attributes, and the "has been invalid" flag are all reset. Fields return to their pristine state (typing does not trigger validation until the next blur/submit). |
 
 Once a field has been marked invalid, subsequent keystrokes will clear the error in real-time as soon as the input becomes valid—providing immediate feedback as the user corrects the issue.
 
-### Scenario 4: Enhanced navigation and streaming (Blazor)
+**Form reset** is handled by listening for the `reset` event on forms. This provides MVC parity (jquery-validation-unobtrusive supports reset) and works for Blazor SSR forms. Note that Blazor's broader form-reset story (resetting `EditContext` modification/validation state in interactive modes) is a separate gap outside the scope of this feature.
+
+### Scenario 5: Enhanced navigation and streaming (Blazor)
 
 Forms that appear after a Blazor enhanced navigation or streaming rendering update are **automatically wired for validation** with no developer action required.
 
-**How it works for the developer:** The `<ClientSideValidator />` component renders the `<script>` tag once. The library subscribes to Blazor's `enhancedload` event and re-scans the DOM after each navigation or streaming update. New form fields are discovered and wired automatically. Existing fields whose validation attributes changed (e.g., because the server re-rendered with different rules) are detected and re-registered.
+**How it works for the developer:** The validation JS (bundled in `blazor.web.js`) subscribes to Blazor's `enhancedload` event and re-scans the DOM after each navigation or streaming update. New form fields are discovered and wired automatically. Existing fields whose validation attributes changed (e.g., because the server re-rendered with different rules) are detected and re-registered.
 
 **Multiple forms on a page** are supported. Each form is validated independently—submitting one form does not trigger validation on another.
 
-### Scenario 5: Opt-in and opt-out
+### Scenario 6: Enabled by default, per-form opt-out
 
-**Blazor opt-in:** Client-side validation is enabled per-form by placing `<ClientSideValidator />` inside `<EditForm>`. Forms without it behave exactly as they do today. The feature is completely additive.
+**Blazor — enabled by default:** Client-side validation is automatically enabled for all statically-rendered forms when `AddRazorComponents()` is called. No additional service registration or component is needed. Existing apps that upgrade to .NET 10 get client-side validation automatically.
 
-**MVC opt-in:** Include the `aspnet-validation.js` script. The library auto-scans all forms on page load.
+**Per-form opt-out:** To disable client-side validation on a specific form, use a parameter on `DataAnnotationsValidator`:
+
+```razor
+<EditForm Model="model" Enhance FormName="admin-form">
+    <DataAnnotationsValidator EnableClientValidation="false" />
+    <!-- This form uses server-side validation only -->
+    ...
+</EditForm>
+```
+
+When `EnableClientValidation="false"`, input components do not emit `data-val-*` attributes and `ValidationMessage`/`ValidationSummary` use the standard Blazor rendering (no `data-valmsg-for` / `data-valmsg-summary`). The JS library has nothing to find and the form behaves exactly as it does today.
+
+**MVC — include the script:** MVC apps reference the standalone `aspnet-validation.js` file. The library auto-scans all forms on page load. MVC distribution and integration is owned by the MVC team.
 
 **Per-button opt-out:** The standard `formnovalidate` HTML attribute skips validation for that submit action:
 ```html
@@ -163,25 +243,48 @@ Forms that appear after a Blazor enhanced navigation or streaming rendering upda
 
 **Per-field opt-out:** Fields without `DataAnnotations` attributes will not have `data-val` emitted and are ignored by the library.
 
-**Script tag control (Blazor):** `<ClientSideValidator IncludeScript="false" />` suppresses the automatic `<script>` tag, letting the developer place it in a layout or use a custom bundler:
+### Scenario 7: Interactive render modes are not affected
+
+Client-side validation targets static SSR only. When components render interactively (Blazor Server or Blazor WebAssembly), the existing Blazor validation pipeline handles validation through the live `EditContext` and C# logic running on the circuit or in WebAssembly.
+
+**Behavior in interactive contexts:**
+- **`data-val-*` attributes are not emitted.** The C# service layer detects that the form is rendering interactively and does not merge `data-val-*` attributes into input components. `ValidationMessage` and `ValidationSummary` use their standard interactive rendering (per-message `<div>` elements, no `data-valmsg-for`).
+- **The JS validation code does not run.** The validation JS does not scan or modify the DOM for forms in interactive rendering contexts. This ensures no conflicts between the JS-based client validation and Blazor's interactive validation (which uses C# `EditContext.Validate()` via the circuit or WebAssembly).
+- **Mixed pages work correctly.** On pages with both statically-rendered and interactive forms, client-side JS validation applies only to the static forms. Interactive forms continue to use the existing Blazor validation pipeline.
 
 ```razor
-<!-- In a layout or _Host.cshtml -->
-<script src="_content/Microsoft.AspNetCore.Components.Web/aspnet-validation.js"></script>
+@* This page has both static and interactive forms *@
 
-<!-- In individual forms — no duplicate script tags -->
-<EditForm Model="model" Enhance FormName="profile">
+@* Static SSR form — gets data-val-* attributes and JS validation *@
+<EditForm Model="contactModel" Enhance FormName="contact">
     <DataAnnotationsValidator />
-    <ClientSideValidator IncludeScript="false" />
-    ...
+    <InputText @bind-Value="contactModel.Name" />
+    <ValidationMessage For="@(() => contactModel.Name)" />
+    <button type="submit">Send</button>
+</EditForm>
+
+@* Interactive form — uses Blazor's EditContext validation, no data-val-* *@
+<EditForm Model="chatModel" @rendermode="InteractiveServer">
+    <DataAnnotationsValidator />
+    <InputText @bind-Value="chatModel.Message" />
+    <ValidationMessage For="@(() => chatModel.Message)" />
+    <button type="submit">Send</button>
 </EditForm>
 ```
 
-### Scenario 6: Suppressed browser validation and Constraint Validation API extensibility
+### Scenario 8: Suppressed browser validation, Constraint Validation API, and accessibility
 
 The library sets `novalidate` on all participating forms at runtime (after the JS loads), preventing browsers from showing their native validation tooltips. Instead, the library uses `setCustomValidity()` to set validation state on each element, which means the browser-standard Constraint Validation API is populated with the current validation state.
 
-**For third-party library authors and advanced scenarios**, this means any validated element exposes standard properties:
+**Accessibility (ARIA).** The library automatically manages ARIA attributes for screen reader support:
+
+- **On the input:** `aria-invalid="true"` is set when a field has an error and removed when the error is cleared. `aria-describedby` is set to point to the associated validation message element (auto-generating an `id` on the message element if one is not already present).
+- **On message elements:** `role="alert"` and `aria-live="assertive"` are set when the element is first discovered during DOM scanning. This causes screen readers to announce error messages as they appear.
+- **Cleanup:** When a field error is cleared, `aria-invalid` and `aria-describedby` are removed from the input.
+
+These ARIA attributes are set by the JS library at runtime, not server-rendered. Developer-specified ARIA attributes on inputs (via `AdditionalAttributes` in Blazor or HTML attributes in MVC) take precedence and are not overwritten.
+
+**For third-party library authors and advanced scenarios**, any validated element exposes standard Constraint Validation API properties:
 
 ```javascript
 const input = document.querySelector('input[name="Email"]');
@@ -193,7 +296,7 @@ input.willValidate;            // true
 
 Third-party libraries can listen for the standard `invalid` event, read `ValidityState`, and build custom UI without depending on our library's internals.
 
-### Scenario 7: Custom validation attributes with client-side support
+### Scenario 9: Custom validation attributes with client-side support
 
 Custom `ValidationAttribute` subclasses can have client-side validation in both Blazor and MVC. The pattern has two parts: a **server-side adapter** (different API per framework) that emits `data-val-*` attributes, and a **JavaScript provider** (shared, same API for both frameworks) that runs the validation logic in the browser.
 
@@ -298,7 +401,7 @@ public class NotEqualToAttribute : ValidationAttribute,
 
 Both paths emit the same `data-val-*` attributes, so the same JavaScript provider works for both.
 
-### Scenario 8: Drop-in replacement for jQuery unobtrusive validation in MVC
+### Scenario 10: Drop-in replacement for jQuery unobtrusive validation in MVC
 
 An existing ASP.NET Core MVC app removes the jQuery validation stack and replaces it with the new library. **No C# changes required.**
 
@@ -324,7 +427,7 @@ An existing ASP.NET Core MVC app removes the jQuery validation stack and replace
 
 **Size reduction:** 118 KB (jQuery + validation libs, minified) → ≤ 4 KB (Brotli-compressed).
 
-> **Distribution:** The library will be available as a static web asset in the ASP.NET Core shared framework. MVC apps that don't use Blazor can reference it via `_content/Microsoft.AspNetCore.Components.Web/aspnet-validation.js` or copy the standalone file into their `wwwroot`. See [Open Question 2](#open-question-2-mvc-script-distribution) for the final distribution mechanism.
+> **Distribution:** We build the JS library and ensure MVC compatibility. The MVC team owns distribution, integration, and testing for MVC scenarios. MVC apps reference the standalone `aspnet-validation.js` file (delivery mechanism TBD by MVC team).
 
 #### Migrating custom validators from jQuery unobtrusive
 
@@ -375,7 +478,7 @@ window.__aspnetValidation.parse('#dynamic-container');
 window.__aspnetValidation.parse(document.getElementById('dynamic-container'));
 ```
 
-### Scenario 9: MVC remote validation
+### Scenario 11: MVC remote validation
 
 In MVC mode, the `[Remote]` attribute works out of the box:
 
@@ -389,59 +492,51 @@ public class RegisterModel
 
 The library sends a `fetch()` request to the specified URL, supports GET (default) and POST, caches results per-element to avoid redundant requests, and interprets the response (`true`/`"true"` = valid, `false` = invalid, any other string = custom error message). On network error, the field is treated as valid to avoid blocking the user.
 
-> ⚠️ **Blazor SSR:** Remote validation is **not supported**. Using `[Remote]` on a model validated by `<ClientSideValidator />` throws `NotSupportedException` at render time. See [Open Question 1](#open-question-1-blazor-async-form-submission-api).
+> ⚠️ **Blazor SSR:** Remote validation is **not supported**. Using `[Remote]` on a model in a Blazor SSR form throws `NotSupportedException` at render time. Custom async JavaScript providers in Blazor mode throw at registration time.
 
 ## Open questions
 
-<a id="open-question-1-blazor-async-form-submission-api"></a>
-### Open Question 1: Blazor async form submission API
+### Open Question 1: Interactive mode detection mechanism
 
-**Context:** When validation includes async providers (e.g., remote validation), the submit handler must block the default submission, await validation, and then re-submit the form if valid. Re-submission via `requestSubmit()` may not reliably trigger Blazor's enhanced navigation.
+**Context:** The C# service layer needs to detect whether a form is rendering in a static SSR context vs. an interactive context to decide whether to emit `data-val-*` attributes. This must work correctly for apps with islands of interactivity — a single page may contain both static SSR forms and interactive forms, and each must behave independently.
 
-**Impact:** For the initial release, all built-in Blazor validators are synchronous, so this does not affect any built-in scenario. It matters only for future remote validation support in Blazor and for developers who register custom async providers.
+**Research findings:** The Blazor component model provides several signals for detecting SSR vs. interactive context:
 
-**Decision needed:** Whether to expose a public `Blazor.submitForm()` API, use a custom DOM event, or defer async provider support for Blazor entirely.
+| Signal | SSR (static) | Interactive | Prerendering of interactive component |
+|---|---|---|---|
+| `ComponentBase.AssignedRenderMode` | `null` | `InteractiveServerRenderMode` / `InteractiveWebAssemblyRenderMode` / `InteractiveAutoRenderMode` | Same as interactive (the mode instance has `Prerender = true`) |
+| `ComponentBase.RendererInfo.IsInteractive` | `false` | `true` | `false` (during prerender pass), `true` (after activation) |
+| `EditForm`'s cascaded `FormMappingContext` | non-null (SSR form handling) | `null` | non-null (during prerender pass) |
 
-<a id="open-question-2-mvc-script-distribution"></a>
-### Open Question 2: Script distribution for MVC apps
+**Key nuances for islands of interactivity:**
+- Render modes do not cascade globally — they create **render mode boundaries**. An SSR page can contain `<EditForm @rendermode="InteractiveServer">`, and all children inside that boundary (including `InputText`, `ValidationMessage`, etc.) see `AssignedRenderMode = InteractiveServerRenderMode`.
+- A component cannot have *both* a caller-specified and a class-level `@rendermode` — Blazor throws at runtime if both are set.
+- During **prerendering** of an interactive component, `AssignedRenderMode` is already set to the interactive mode, but `RendererInfo.IsInteractive` is `false`. After the circuit/WebAssembly activates, `RendererInfo.IsInteractive` becomes `true` and the component re-renders.
 
-**Context:** The JS library ships as a static web asset in `Microsoft.AspNetCore.Components.Web`. MVC apps that don't reference this package need an alternative way to obtain the script.
+**Recommended approach — C# layer (emit `data-val-*` only for SSR):**
 
-**Options:**
-1. Ship the JS file as part of the ASP.NET Core shared framework (available to all apps).
-2. Publish as a standalone NuGet package (e.g., `Microsoft.AspNetCore.ClientValidation`).
-3. Document manual file copy from the Components.Web package.
+The check should go in `InputBase<T>.MergeClientValidationAttributes()` (or its caller), gating on whether the component is rendering in a static SSR context. The cleanest signal is:
 
-**Decision needed:** What is the distribution mechanism for MVC apps?
+```
+Do NOT emit data-val-* if AssignedRenderMode is not null
+```
 
-### Open Question 3: Script deduplication for multiple forms
+This covers all interactive cases including prerendering: when an interactive component prerenders, it will soon be replaced by the live interactive version, so emitting `data-val-*` during the brief prerender pass would be wasteful and potentially conflicting. `AssignedRenderMode == null` precisely means "this component is purely static SSR, with no interactive activation coming."
 
-**Context:** If multiple forms on a page each have `<ClientSideValidator />`, multiple `<script>` tags are emitted. The JS is idempotent, but duplicate loads are wasteful.
+This approach works correctly for islands:
+- A static `<EditForm>` on an SSR page → `AssignedRenderMode` is `null` on `InputBase` children → `data-val-*` emitted ✓
+- An `<EditForm @rendermode="InteractiveServer">` on the same page → `AssignedRenderMode` is `InteractiveServerRenderMode` on `InputBase` children → `data-val-*` NOT emitted ✓
+- A global `@rendermode InteractiveServer` on a page → all components see the mode → no `data-val-*` emitted ✓
 
-**Options:**
-1. Keep current approach with guidance to use `IncludeScript="false"` and a single script tag in the layout.
-2. Use `HeadContent` or a persistent component to deduplicate automatically.
-3. Accept the duplication — browsers cache the file after the first load.
+The same check should apply in `ValidationMessage<T>` and `ValidationSummary` to decide whether to render `data-valmsg-for` / `data-valmsg-summary` or the standard interactive rendering.
 
-**Decision needed:** Whether to address deduplication in this release or document the workaround.
+Existing precedent: `FocusOnNavigate` uses exactly this pattern — `if (AssignedRenderMode is not null) return;` to skip SSR-specific rendering in interactive mode.
 
-### Open Question 4: Accessibility (ARIA) attributes
+**JS layer — no special detection needed:**
 
-**Context:** The library toggles CSS classes and updates message text, but does not explicitly set ARIA attributes (`aria-invalid`, `aria-describedby`, `aria-live`). Some browsers auto-set `aria-invalid` when `setCustomValidity()` is called, but this is not universal.
+If the C# layer correctly gates `data-val-*` emission, the JS library naturally ignores interactive forms because they have no `data-val="true"` elements to discover. The JS scans for `[data-val="true"]` — if there are none, it does nothing. This is the simplest and most robust approach: the C# layer is the single point of control.
 
-**Decision needed:** Should the library explicitly manage ARIA attributes for accessibility compliance?
-
-### Open Question 5: Numeric type validation for MVC compatibility
-
-**Context:** MVC includes a `NumericClientModelValidator` that adds `data-val-number` for `float`, `double`, and `decimal` properties without any explicit annotation. The JS library currently has no `number` provider. MVC apps that switch to this library would lose that validation.
-
-**Decision needed:** Add a `number` provider for MVC compatibility, or treat this as an accepted gap in the initial release?
-
-### Open Question 6: Form reset behavior
-
-**Context:** The library does not currently listen for the `reset` event on forms. After `form.reset()` or a `<button type="reset">`, element values revert to defaults but validation CSS classes and error messages persist in the DOM.
-
-**Decision needed:** Should the library clear all validation state on form reset, or is this an accepted limitation?
+**Decision needed:** Confirm `AssignedRenderMode is not null` as the gating condition, or discuss alternatives if prerendering of interactive components needs different treatment.
 
 ## Assumptions
 
@@ -455,6 +550,7 @@ The library sends a `fetch()` request to the specified URL, supports GET (defaul
 ## References
 
 - **GitHub issue:** [dotnet/aspnetcore#51040 — Create server rendered forms with client validation using Blazor without a circuit](https://github.com/dotnet/aspnetcore/issues/51040)
+- **Validation localization proposal:** [dotnet/aspnetcore#65539 — Validation localization support for Microsoft.Extensions.Validation](https://github.com/dotnet/aspnetcore/issues/65539) — Design for `ErrorMessageProvider` and `DisplayNameProvider` delegates used by the client validation service for localized messages.
 - **Original proposal (javiercn):** [dotnet/aspnetcore#51040 (comment)](https://github.com/dotnet/aspnetcore/issues/51040#issuecomment-3706000376) — Detailed proposal for core validation library, unobtrusive adapter, Blazor wiring layer, and Constraint Validation API integration.
 - **Prior art — aspnet-client-validation:** [github.com/haacked/aspnet-client-validation](https://github.com/haacked/aspnet-client-validation) — Community library providing jQuery-free unobtrusive validation. Informed the provider pattern and validation timing design.
 - **Prior art — WasmClientValidation:** [github.com/DamianEdwards/WasmClientValidation](https://github.com/DamianEdwards/WasmClientValidation) — Experiment exploring WebAssembly-based client validation (community feedback favored JS approach).
