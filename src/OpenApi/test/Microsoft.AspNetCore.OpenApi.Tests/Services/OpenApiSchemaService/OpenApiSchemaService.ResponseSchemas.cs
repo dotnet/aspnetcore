@@ -1072,7 +1072,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    public async Task GetOpenApiResponse_MvcController_SupportsOneOfForSameContentType()
+    public async Task GetOpenApiResponse_MvcController_SupportsAnyOfForSameContentType()
     {
         var actionDescriptor = CreateActionDescriptor(nameof(MultiProducesController.GetOneOf), typeof(MultiProducesController));
 
@@ -1083,8 +1083,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.Equal("200", response.Key);
             var content = Assert.Single(response.Value.Content);
             Assert.Equal("application/json", content.Key);
-            Assert.NotNull(content.Value.Schema.OneOf);
-            Assert.Equal(2, content.Value.Schema.OneOf.Count);
+            Assert.NotNull(content.Value.Schema.AnyOf);
+            Assert.Equal(2, content.Value.Schema.AnyOf.Count);
         });
     }
 

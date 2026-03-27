@@ -428,7 +428,7 @@ internal sealed class OpenApiDocumentService(
 
         // Collect schemas per content-type across all ApiResponseType entries in this group.
         // When multiple entries contribute different schemas for the same content-type, they
-        // will be merged into a oneOf composite schema.
+        // will be merged into an anyOf composite schema.
         var schemasByContentType = new Dictionary<string, List<IOpenApiSchema>>();
 
         foreach (var apiResponseType in apiResponseTypes)
@@ -466,7 +466,7 @@ internal sealed class OpenApiDocumentService(
         {
             IOpenApiSchema finalSchema = schemas.Count == 1
                 ? schemas[0]
-                : new OpenApiSchema { OneOf = [.. schemas] };
+                : new OpenApiSchema { AnyOf = [.. schemas] };
             response.Content[contentType] = new OpenApiMediaType { Schema = finalSchema };
         }
 

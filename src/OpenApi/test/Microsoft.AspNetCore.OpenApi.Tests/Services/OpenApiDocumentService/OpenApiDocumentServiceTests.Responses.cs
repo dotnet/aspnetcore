@@ -107,8 +107,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             var content = Assert.Single(response.Value.Content);
             Assert.Equal("application/json", content.Key);
             var schema = content.Value.Schema;
-            Assert.NotNull(schema.OneOf);
-            Assert.Equal(2, schema.OneOf.Count);
+            Assert.NotNull(schema.AnyOf);
+            Assert.Equal(2, schema.AnyOf.Count);
         });
     }
 
@@ -466,19 +466,19 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Equal("200", response.Key);
             Assert.Equal(2, response.Value.Content.Count);
 
-            // application/json should have a oneOf schema since two types share the same content-type
+            // application/json should have an anyOf schema since two types share the same content-type
             Assert.True(response.Value.Content.TryGetValue("application/json", out var jsonContent));
-            Assert.NotNull(jsonContent.Schema.OneOf);
-            Assert.Equal(2, jsonContent.Schema.OneOf.Count);
+            Assert.NotNull(jsonContent.Schema.AnyOf);
+            Assert.Equal(2, jsonContent.Schema.AnyOf.Count);
 
-            // text/plain should have its own schema without oneOf
+            // text/plain should have its own schema without anyOf
             Assert.True(response.Value.Content.TryGetValue("text/plain", out var textContent));
-            Assert.Null(textContent.Schema.OneOf);
+            Assert.Null(textContent.Schema.AnyOf);
         });
     }
 
     [Fact]
-    public async Task GetOpenApiResponse_SupportsThreeTypesForSameContentTypeWithOneOf()
+    public async Task GetOpenApiResponse_SupportsThreeTypesForSameContentTypeWithAnyOf()
     {
         // Arrange
         var builder = CreateBuilder();
@@ -497,8 +497,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Equal("200", response.Key);
             var content = Assert.Single(response.Value.Content);
             Assert.Equal("application/json", content.Key);
-            Assert.NotNull(content.Value.Schema.OneOf);
-            Assert.Equal(3, content.Value.Schema.OneOf.Count);
+            Assert.NotNull(content.Value.Schema.AnyOf);
+            Assert.Equal(3, content.Value.Schema.AnyOf.Count);
         });
     }
 
@@ -557,7 +557,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
     }
 
     [Fact]
-    public async Task GetOpenApiResponse_ProducesExtensionMethod_SupportsOneOfForSameContentType()
+    public async Task GetOpenApiResponse_ProducesExtensionMethod_SupportsAnyOfForSameContentType()
     {
         // Arrange
         var builder = CreateBuilder();
@@ -575,8 +575,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Equal("200", response.Key);
             var content = Assert.Single(response.Value.Content);
             Assert.Equal("application/json", content.Key);
-            Assert.NotNull(content.Value.Schema.OneOf);
-            Assert.Equal(2, content.Value.Schema.OneOf.Count);
+            Assert.NotNull(content.Value.Schema.AnyOf);
+            Assert.Equal(2, content.Value.Schema.AnyOf.Count);
         });
     }
 }
