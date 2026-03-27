@@ -463,11 +463,10 @@ try {
     $restore = $tmpRestore
 
     # TEMPORARY: Overlay custom MSBuild bootstrap for investigating dotnet/msbuild#12927
-    $bootstrapDir = Join-Path $RepoRoot "eng" "msbuild-bootstrap"
-    $bootstrapDll = Join-Path $bootstrapDir "Microsoft.Build.Tasks.Core.dll"
+    $bootstrapDll = Join-Path (Join-Path (Join-Path $RepoRoot "eng") "msbuild-bootstrap") "Microsoft.Build.Tasks.Core.dll"
     if (Test-Path $bootstrapDll) {
         $sdkVersion = (Get-Content (Join-Path $RepoRoot "global.json") | ConvertFrom-Json).sdk.version
-        $targetDll = Join-Path $env:DOTNET_INSTALL_DIR "sdk" $sdkVersion "Microsoft.Build.Tasks.Core.dll"
+        $targetDll = Join-Path (Join-Path (Join-Path $env:DOTNET_INSTALL_DIR "sdk") $sdkVersion) "Microsoft.Build.Tasks.Core.dll"
         if (Test-Path $targetDll) {
             Write-Host "=== MSBuild Bootstrap Overlay (dotnet/msbuild#12927) ==="
             Write-Host "Original: $((Get-FileHash $targetDll -Algorithm SHA256).Hash) $targetDll"
