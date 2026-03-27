@@ -1,0 +1,15 @@
+@rendermode RenderMode.InteractiveAuto
+
+<p id="layout-counter">
+    Layout counter: <span id="layout-counter-value">@currentCount</span>
+</p>
+<button id="layout-counter-button" class="btn btn-primary" @onclick="IncrementCount">Increment layout counter</button>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+}

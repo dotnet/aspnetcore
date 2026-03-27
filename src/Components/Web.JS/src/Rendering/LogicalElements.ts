@@ -183,7 +183,11 @@ export function insertLogicalChild(child: Node, parent: LogicalElement, childInd
   if (childIndex < newSiblings.length) {
     // Insert
     const nextSibling = newSiblings[childIndex] as any as Node;
-    nextSibling.parentNode!.insertBefore(nodeToInsert, nextSibling);
+    if (nextSibling.parentNode) {
+      nextSibling.parentNode.insertBefore(nodeToInsert, nextSibling);
+    } else {
+      appendDomNode(nodeToInsert, parent);
+    }
     newSiblings.splice(childIndex, 0, childAsLogicalElement);
   } else {
     // Append

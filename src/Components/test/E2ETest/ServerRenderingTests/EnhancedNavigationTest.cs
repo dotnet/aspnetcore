@@ -916,6 +916,38 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         AssertScrollPositionCorrect(useEnhancedNavigation, landingPagePos2);
     }
 
+    [Fact]
+    public void CanNavigateBetweenPagesWhenLayoutContainsInteractiveComponent()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/64722
+        // When an interactive component (InteractiveAuto) is placed in the layout,
+        // navigating between pages should not cause a JS error from orphaned
+        // metadata comments in the logical children array.
+        Navigate($"{ServerPathBase}/nav/interactive-in-layout");
+
+        var h1Elem = Browser.Exists(By.Id("interactive-layout-home"));
+        Browser.Equal("Hello from interactive layout", () => h1Elem.Text);
+
+        // Navigate to the other page
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Other (interactive layout)")).Click();
+        Browser.Equal("Other page with interactive layout", () => Browser.Exists(By.Id("interactive-layout-other")).Text);
+
+        // Navigate back to home - this is the step that triggered the crash
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Home (interactive layout)")).Click();
+        Browser.Equal("Hello from interactive layout", () => Browser.Exists(By.Id("interactive-layout-home")).Text);
+
+        // Verify the page is still functional by checking the interactive counter in the layout
+        var counterValue = Browser.Exists(By.Id("layout-counter-value"));
+        Browser.Equal("0", () => counterValue.Text);
+
+        // Verify no JavaScript errors occurred by checking the error UI is not visible
+        var errorUi = Browser.FindElements(By.Id("blazor-error-ui"));
+        if (errorUi.Count > 0)
+        {
+            Assert.DoesNotContain("block", errorUi[0].GetCssValue("display"));
+        }
+    }
+
     private void AssertScrollPositionCorrect(bool useEnhancedNavigation, long previousScrollPosition)
     {
         // from some reason, scroll position sometimes differs by 1 pixel between enhanced and browser's navigation
