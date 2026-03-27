@@ -70,6 +70,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     // Manual compensation path for tables and browsers without native anchoring.
     scrollElement.style.overflowAnchor = 'none';
   }
+  console.log(`[Virtualize:init] useNativeAnchoring=${useNativeAnchoring}, isTable=${isTable}, supportsAnchor=${supportsAnchor}`);
 
   const intersectionObserver = new IntersectionObserver(intersectionCallback, {
     root: scrollContainer,
@@ -135,6 +136,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
 
     if (scrollDelta !== 0 && scrollElement.scrollTop > 0 && !isConverging) {
+      console.log(`[Virtualize:ResizeObs] scrollDelta=${scrollDelta}, scrollTop=${scrollElement.scrollTop}, isConverging=${isConverging}`);
       scrollElement.scrollTop += scrollDelta;
     }
   });
@@ -161,6 +163,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
       // Prevent browser anchoring fighting with convergence.
       scrollElement.style.overflowAnchor = isConverging ? 'none' : '';
+      console.log(`[Virtualize:refresh] isConverging=${isConverging}, scrollTop=${scrollElement.scrollTop}, scrollHeight=${scrollElement.scrollHeight}, clientHeight=${scrollElement.clientHeight}, spacerAfter.h=${spacerAfter.offsetHeight}, spacerBefore.h=${spacerBefore.offsetHeight}, anchor=${scrollElement.style.overflowAnchor}`);
     }
 
     // Ensure spacers are always observed (idempotent).
@@ -263,12 +266,14 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
       if (entry.target === spacerBefore) {
         const spacerSize = (entry.intersectionRect.top - entry.boundingClientRect.top) / scaleFactor;
+        console.log(`[Virtualize:IO] spacerBefore visible, spacerSize=${spacerSize.toFixed(1)}, scrollTop=${scrollElement.scrollTop}`);
         dotNetHelper.invokeMethodAsync('OnSpacerBeforeVisible', spacerSize, spacerSeparation, containerSize);
       } else if (entry.target === spacerAfter && spacerAfter.offsetHeight > 0) {
         // When we first start up, both the "before" and "after" spacers will be visible, but it's only relevant to raise a
         // single event to load the initial data. To avoid raising two events, skip the one for the "after" spacer if we know
         // it's meaningless to talk about any overlap into it.
         const spacerSize = (entry.boundingClientRect.bottom - entry.intersectionRect.bottom) / scaleFactor;
+        console.log(`[Virtualize:IO] spacerAfter visible, spacerSize=${spacerSize.toFixed(1)}, offsetHeight=${spacerAfter.offsetHeight}, scrollTop=${scrollElement.scrollTop}`);
         dotNetHelper.invokeMethodAsync('OnSpacerAfterVisible', spacerSize, spacerSeparation, containerSize);
       }
     });
@@ -288,8 +293,11 @@ function scrollToBottom(dotNetHelper: DotNet.DotNetObject): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   const entry = observersByDotNetObjectId[id];
   if (entry) {
+    const el = entry.scrollElement;
+    console.log(`[Virtualize:scrollToBottom] before: scrollTop=${el.scrollTop}, scrollHeight=${el.scrollHeight}`);
     entry.setConverging(true, true);
     entry.scrollElement.scrollTop = entry.scrollElement.scrollHeight;
+    console.log(`[Virtualize:scrollToBottom] after: scrollTop=${el.scrollTop}`);
   }
 }
 

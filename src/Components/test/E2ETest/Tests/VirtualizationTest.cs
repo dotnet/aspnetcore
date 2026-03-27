@@ -777,14 +777,18 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 var metrics = (IReadOnlyDictionary<string, object>)js.ExecuteScript(
                     "var c = arguments[0]; var spacers = c.querySelectorAll('[aria-hidden]');" +
                     "return { spacerAfterHeight: spacers.length >= 2 ? spacers[spacers.length - 1].offsetHeight : 999," +
+                    "  spacerBeforeHeight: spacers.length >= 1 ? spacers[0].offsetHeight : -1," +
+                    "  overflowAnchor: getComputedStyle(c).overflowAnchor || 'N/A'," +
                     "  scrollTop: c.scrollTop, scrollHeight: c.scrollHeight, clientHeight: c.clientHeight };",
                     container);
                 var spacerAfterHeight = Convert.ToDouble(metrics["spacerAfterHeight"], CultureInfo.InvariantCulture);
+                var spacerBeforeHeight = Convert.ToDouble(metrics["spacerBeforeHeight"], CultureInfo.InvariantCulture);
+                var overflowAnchor = metrics["overflowAnchor"]?.ToString() ?? "N/A";
                 var scrollTop = Convert.ToDouble(metrics["scrollTop"], CultureInfo.InvariantCulture);
                 var scrollHeight = Convert.ToDouble(metrics["scrollHeight"], CultureInfo.InvariantCulture);
                 var clientHeight = Convert.ToDouble(metrics["clientHeight"], CultureInfo.InvariantCulture);
                 var remaining = scrollHeight - scrollTop - clientHeight;
-                endDiagnostics.AppendLine(CultureInfo.InvariantCulture, $"  poll #{endPollCount}: spacerAfter={spacerAfterHeight:F1}, scrollTop={scrollTop:F1}, scrollHeight={scrollHeight:F1}, clientHeight={clientHeight:F1}, remaining={remaining:F1}");
+                endDiagnostics.AppendLine(CultureInfo.InvariantCulture, $"  poll #{endPollCount}: spacerAfter={spacerAfterHeight:F1}, spacerBefore={spacerBeforeHeight:F1}, scrollTop={scrollTop:F1}, scrollHeight={scrollHeight:F1}, clientHeight={clientHeight:F1}, remaining={remaining:F1}, overflowAnchor={overflowAnchor}");
 
                 return spacerAfterHeight < 1;
             });
