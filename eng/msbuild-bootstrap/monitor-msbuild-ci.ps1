@@ -219,8 +219,39 @@ if ($foundMSB3030) {
     Write-Log "=== MSB3030/MSB3026 ERROR DETECTED! ===" "ALERT"
     Write-Log "Build: $buildUrl" "ALERT"
     foreach ($err in $msbErrors) { Write-Log "  $err" "ALERT" }
-    Write-Log "ACTION REQUIRED: Collect binlog and share with MSBuild team (@OvesN)" "ALERT"
-    Write-Log "DO NOT retrigger - this is the repro we need!" "ALERT"
+
+    # Post comment on the PR
+    $errorList = ($msbErrors | ForEach-Object { "- ``$_``" }) -join "`n"
+    $comment = @"
+## :rotating_light: MSB3030/MSB3026 Error Detected (Automated)
+
+**Build:** [#$buildId]($buildUrl)
+
+**Errors found:**
+$errorList
+
+**Action required:** Collect binlog from this build and share with MSBuild team (@OvesN on [dotnet/msbuild#12927](https://github.com/dotnet/msbuild/issues/12927)).
+
+_This comment was posted automatically by the CI monitor script._
+"@
+    try {
+        Push-Location $RepoPath
+        gh pr comment $PRNumber --repo "$GHOwner/$GHRepo" --body $comment
+        Write-Log "Posted comment on PR #$PRNumber" "ALERT"
+        Pop-Location
+    } catch {
+        Write-Log "Failed to post PR comment: $_" "ERROR"
+    }
+
+    # Disable the scheduled task so it stops running
+    try {
+        Disable-ScheduledTask -TaskName "MSBuild-CI-Monitor" -ErrorAction SilentlyContinue
+        Write-Log "Disabled scheduled task MSBuild-CI-Monitor"
+    } catch {
+        schtasks /Change /TN "MSBuild-CI-Monitor" /DISABLE 2>&1 | Out-Null
+        Write-Log "Disabled scheduled task via schtasks"
+    }
+
     exit 0
 } else {
     Write-Log "Build failed but NOT due to MSB3030. Unrelated failure."
