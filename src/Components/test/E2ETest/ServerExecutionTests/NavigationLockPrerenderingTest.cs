@@ -11,6 +11,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests;
 
+[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66022")]
 public class NavigationLockPrerenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<LockedNavigationStartup>>
 {
     public NavigationLockPrerenderingTest(
