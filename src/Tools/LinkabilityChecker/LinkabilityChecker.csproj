@@ -5,12 +5,18 @@
     <IsShipping>false</IsShipping>
     <OutputType>Exe</OutputType>
     <PublishTrimmed>true</PublishTrimmed>
-    <!-- ILLinkTrimProjects needs the trimmable project assemblies to exist on disk.
-         Delay this project so it builds after all reference-providing projects are done. -->
-    <RequiresDelayedBuild>true</RequiresDelayedBuild>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)eng\TrimmableProjects.props" />
+
+  <!-- Ensure all shared framework assemblies are built before this project.
+       App.Ref depends on all of them, so referencing it transitively orders us last. -->
+  <ItemGroup Condition="'$(MSBuildRestoreSessionId)' == ''">
+    <ProjectReference Include="$(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="@(TrimmableProject)" />
