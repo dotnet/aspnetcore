@@ -31,8 +31,6 @@
     <ItemGroup>
       <_ProjectReferencePaths Include="@(ReferencePath->HasMetadata('ProjectPath'))" />
       <RootAssemblies Include="@(_ProjectReferencePaths->'%(Filename)')" RootMode="visible" />
-      <!-- Strip metadata to avoid external task host serialization issues -->
-      <_ILLinkAssemblyPaths Include="@(_ProjectReferencePaths->'%(FullPath)')" />
       <_ILLinkSuppressionFile Include="$([System.IO.Path]::GetDirectoryName($([System.String]::new('%(RootAssemblies.ProjectPath)'))))\%(FileName).WarningSuppressions.xml"
         SuppressionFileName="%(FileName).WarningSuppressions" />
       <ILLinkSuppressionFile Condition="Exists(%(_ILLinkSuppressionFile.Identity))" Include="%(_ILLinkSuppressionFile.Identity)" />
@@ -40,6 +38,10 @@
 
     <PropertyGroup>
       <ILLinkArgs Condition="'$(GenerateLinkerWarningSuppressions)' != 'true' AND '@(ILLinkSuppressionFile->Count())' != '0'">$(ILLinkArgs) --link-attributes @(ILLinkSuppressionFile->'%(FullPath)', ' --link-attributes ')</ILLinkArgs>
+      <!-- Pass root assembly directories via -d flags so ILLink can resolve assembly names.
+           The AssemblyPaths task parameter doesn't work reliably with the external task host,
+           so we pass these through ExtraArgs instead. -->
+      <_ILLinkDirectoryArgs>@(_ProjectReferencePaths->'-d "%(RootDir)%(Directory)"', ' ')</_ILLinkDirectoryArgs>
     </PropertyGroup>
 
     <!--
@@ -52,11 +54,11 @@
       <_DotNetHostFileName>$([System.IO.Path]::GetFileName('$(DotNetTool)'))</_DotNetHostFileName>
     </PropertyGroup>
     <ILLink
-        AssemblyPaths="@(_ILLinkAssemblyPaths)"
+        AssemblyPaths=""
         RootAssemblyNames="@(RootAssemblies)"
         OutputDirectory="$(LibrariesTrimmedArtifactsPath)"
         ReferenceAssemblyPaths="@(RuntimePackAsset);@(ReferencePath->WithMetadataValue('ExternallyResolved', 'true'))"
-        ExtraArgs="$(ILLinkArgs)"
+        ExtraArgs="$(ILLinkArgs) $(_ILLinkDirectoryArgs)"
         NoWarn="$(NoWarn)"
         TrimMode="link"
         ToolExe="$(_DotNetHostFileName)"
