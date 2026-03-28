@@ -4,8 +4,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCompression;
 
@@ -61,27 +59,7 @@ public class ResponseCompressionMiddleware
     private async Task OnStartingResponseHandler(object state)
     {
         HttpContext context = (HttpContext)state;
-
-        if (_provider.ShouldCompressResponse(context))
-        {
-            var headers = context.Response.Headers;
-            var varyValues = headers.GetCommaSeparatedValues(HeaderNames.Vary);
-            var varyByAcceptEncoding = false;
-
-            for (var i = 0; i < varyValues.Length; i++)
-            {
-                if (string.Equals(varyValues[i], HeaderNames.AcceptEncoding, StringComparison.OrdinalIgnoreCase))
-                {
-                    varyByAcceptEncoding = true;
-                    break;
-                }
-            }
-
-            if (!varyByAcceptEncoding)
-            {
-                headers.Vary = StringValues.Concat(headers.Vary, HeaderNames.AcceptEncoding);
-            }
-        }
+        _provider.ShouldCompressResponseCommon(context);
     }
 
     private async Task InvokeCore(HttpContext context)

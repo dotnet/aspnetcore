@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCompression.Tests;
 
@@ -107,6 +109,34 @@ public class ResponseCompressionBodyTest
         public bool ShouldCompressResponse(HttpContext context)
         {
             return true;
+        }
+
+        public bool ShouldCompressResponseCommon(HttpContext context)
+        {
+            var result = ShouldCompressResponse(context);
+
+            if (result)
+            {
+                var headers = context.Response.Headers;
+                var varyValues = headers.GetCommaSeparatedValues(HeaderNames.Vary);
+                var varyByAcceptEncoding = false;
+
+                for (var i = 0; i < varyValues.Length; i++)
+                {
+                    if (string.Equals(varyValues[i], HeaderNames.AcceptEncoding, StringComparison.OrdinalIgnoreCase))
+                    {
+                        varyByAcceptEncoding = true;
+                        break;
+                    }
+                }
+
+                if (!varyByAcceptEncoding)
+                {
+                    headers.Vary = StringValues.Concat(headers.Vary, HeaderNames.AcceptEncoding);
+                }
+            }
+
+            return result;
         }
 
         public bool CheckRequestAcceptsCompression(HttpContext context)

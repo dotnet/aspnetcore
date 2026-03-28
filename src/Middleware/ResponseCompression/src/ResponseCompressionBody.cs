@@ -5,7 +5,6 @@ using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCompression;
 
@@ -201,28 +200,9 @@ internal sealed class ResponseCompressionBody : Stream, IHttpResponseBodyFeature
     /// <returns>The compression provider to use if compression is enabled, otherwise null.</returns>
     private ICompressionProvider? InitializeCompressionHeaders()
     {
-        if (_provider.ShouldCompressResponse(_context))
+        if (_provider.ShouldCompressResponseCommon(_context))
         {
             var headers = _context.Response.Headers;
-            // If the MIME type indicates that the response could be compressed, caches will need to vary by the Accept-Encoding header
-            var varyValues = headers.GetCommaSeparatedValues(HeaderNames.Vary);
-            var varyByAcceptEncoding = false;
-
-            for (var i = 0; i < varyValues.Length; i++)
-            {
-                if (string.Equals(varyValues[i], HeaderNames.AcceptEncoding, StringComparison.OrdinalIgnoreCase))
-                {
-                    varyByAcceptEncoding = true;
-                    break;
-                }
-            }
-
-            if (!varyByAcceptEncoding)
-            {
-                // Can't use += as StringValues does not override operator+
-                // and the implict conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
-                headers.Vary = StringValues.Concat(headers.Vary, HeaderNames.AcceptEncoding);
-            }
 
             var compressionProvider = ResolveCompressionProvider();
             if (compressionProvider != null)

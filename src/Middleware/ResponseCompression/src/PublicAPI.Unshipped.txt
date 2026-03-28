@@ -8,3 +8,5 @@ Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProviderOptions
 Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProviderOptions.CompressionOptions.get -> System.IO.Compression.ZstandardCompressionOptions!
 Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProviderOptions.CompressionOptions.set -> void
 Microsoft.AspNetCore.ResponseCompression.ZstandardCompressionProviderOptions.ZstandardCompressionProviderOptions() -> void
+Microsoft.AspNetCore.ResponseCompression.IResponseCompressionProvider.ShouldCompressResponseCommon(Microsoft.AspNetCore.Http.HttpContext! context) -> bool
+Microsoft.AspNetCore.ResponseCompression.ResponseCompressionProvider.ShouldCompressResponseCommon(Microsoft.AspNetCore.Http.HttpContext! context) -> bool
