@@ -81,6 +81,27 @@ public abstract class ContentEncodingNegotiationMatcherPolicyIntegrationTestBase
     }
 
     [Fact]
+    public async Task Match_ContentEncoding_AcceptQualityWins_WhenBothAcceptAndEndpointQualityDiffer()
+    {
+        // Arrange — Accept quality takes precedence over endpoint quality (the tie-breaker).
+        // Both endpoints have the same endpoint quality (equal server preference).
+        // The client's Accept-Encoding header assigns different qualities to each encoding.
+        // Even though endpoint quality would be used as a tie-breaker when Accept qualities are equal,
+        // here the Accept quality difference dictates the selection.
+        var gzipEndpoint = CreateEndpoint("/hello", contentEncoding: "gzip", quality: 0.9);
+        var brEndpoint = CreateEndpoint("/hello", contentEncoding: "br", quality: 0.9);
+
+        var matcher = CreateMatcher(gzipEndpoint, brEndpoint);
+        var httpContext = CreateContext("/hello", "gzip;q=0.3, br;q=0.9");
+
+        // Act
+        await matcher.MatchAsync(httpContext);
+
+        // Assert — br has higher Accept quality (0.9 > 0.3), so br is selected.
+        MatcherAssert.AssertMatch(httpContext, brEndpoint);
+    }
+
+    [Fact]
     public async Task Match_LiteralEndpointPreserved_WhenCatchAllHasEncodingMetadata()
     {
         // Arrange - This is the core scenario for the priority fix:

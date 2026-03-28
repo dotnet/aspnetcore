@@ -97,9 +97,12 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
         var bestQualitySoFar = 0.0;
         var bestEndpointQualitySoFar = 0.0;
         // Track where the current score tier starts. Since candidates are sorted by ascending score,
-        // all candidates in [0, scoreTierStart) have a strictly lower score than candidates[scoreTierStart].
+        // all candidates in [0, scoreTierStart) have a strictly lower score than candidates in the current tier.
         // This lets us bound backward sweeps in EvaluateCandidate without per-element score comparisons.
+        // currentTierScore tracks the score value in a separate variable because SetValidity bitwise-negates
+        // the Score field, which would corrupt a tier-boundary check that reads candidates[scoreTierStart].Score.
         var scoreTierStart = 0;
+        var currentTierScore = int.MinValue;
         for (var i = 0; i < candidates.Count; i++)
         {
             if (!candidates.IsValidCandidate(i))
@@ -110,11 +113,13 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
 
             sawValidCandidate = true;
 
-            // Update score tier boundary. Since candidates are sorted by ascending score,
-            // once we see a higher score, everything before this index is in a lower tier.
-            if (candidates[i].Score != candidates[scoreTierStart].Score)
+            // candidates[i].Score is always non-negative here (candidate is valid).
+            // Since candidates are sorted by ascending score, a new score value means a new tier.
+            var candidateScore = candidates[i].Score;
+            if (candidateScore != currentTierScore)
             {
                 scoreTierStart = i;
+                currentTierScore = candidateScore;
             }
 
             ref var candidate = ref candidates[i];
