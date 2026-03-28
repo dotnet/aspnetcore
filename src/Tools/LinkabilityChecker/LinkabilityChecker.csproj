@@ -35,10 +35,6 @@
 
     <PropertyGroup>
       <ILLinkArgs Condition="'$(GenerateLinkerWarningSuppressions)' != 'true' AND '@(ILLinkSuppressionFile->Count())' != '0'">$(ILLinkArgs) --link-attributes @(ILLinkSuppressionFile->'%(FullPath)', ' --link-attributes ')</ILLinkArgs>
-      <!-- Pass root assembly directories via -d flags so ILLink can resolve assembly names.
-           The AssemblyPaths task parameter doesn't work reliably with the external task host,
-           so we pass these through ExtraArgs instead. -->
-      <_ILLinkDirectoryArgs>@(_ProjectReferencePaths->'-d "%(RootDir)%(Directory)"', ' ')</_ILLinkDirectoryArgs>
     </PropertyGroup>
 
     <!--
@@ -54,8 +50,8 @@
         AssemblyPaths=""
         RootAssemblyNames="@(RootAssemblies)"
         OutputDirectory="$(LibrariesTrimmedArtifactsPath)"
-        ReferenceAssemblyPaths="@(RuntimePackAsset);@(ReferencePath->WithMetadataValue('ExternallyResolved', 'true'))"
-        ExtraArgs="$(ILLinkArgs) $(_ILLinkDirectoryArgs)"
+        ReferenceAssemblyPaths="@(RuntimePackAsset);@(ReferencePath->WithMetadataValue('ExternallyResolved', 'true'));@(_ProjectReferencePaths)"
+        ExtraArgs="$(ILLinkArgs)"
         NoWarn="$(NoWarn)"
         TrimMode="link"
         ToolExe="$(_DotNetHostFileName)"
