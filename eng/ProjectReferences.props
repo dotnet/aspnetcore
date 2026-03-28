@@ -166,9 +166,9 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.Diagnostics.HealthChecks" ProjectPath="$(RepoRoot)src\HealthChecks\HealthChecks\src\Microsoft.Extensions.Diagnostics.HealthChecks.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.InternalTesting" ProjectPath="$(RepoRoot)src\Testing\src\Microsoft.AspNetCore.InternalTesting.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Features" ProjectPath="$(RepoRoot)src\Extensions\Features\src\Microsoft.Extensions.Features.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.OpenApi" ProjectPath="$(RepoRoot)src\OpenApi\src\Microsoft.AspNetCore.OpenApi.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.Extensions.Validation" ProjectPath="$(RepoRoot)src\Validation\src\Microsoft.Extensions.Validation.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" ProjectPath="$(RepoRoot)src\Grpc\JsonTranscoding\src\Microsoft.AspNetCore.Grpc.JsonTranscoding\Microsoft.AspNetCore.Grpc.JsonTranscoding.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Grpc.Swagger" ProjectPath="$(RepoRoot)src\Grpc\JsonTranscoding\src\Microsoft.AspNetCore.Grpc.Swagger\Microsoft.AspNetCore.Grpc.Swagger.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.OpenApi" ProjectPath="$(RepoRoot)src\OpenApi\src\Microsoft.AspNetCore.OpenApi.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Validation" ProjectPath="$(RepoRoot)src\Validation\src\Microsoft.Extensions.Validation.csproj" />
   </ItemGroup>
 </Project>

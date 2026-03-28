@@ -9,15 +9,6 @@
 
   <Import Project="$(RepoRoot)eng\TrimmableProjects.props" />
 
-  <!-- Ensure all shared framework assemblies are built before this project.
-       App.Ref depends on all of them, so referencing it transitively orders us last. -->
-  <ItemGroup Condition="'$(MSBuildRestoreSessionId)' == ''">
-    <ProjectReference Include="$(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj"
-      Private="false"
-      ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true" />
-  </ItemGroup>
-
   <ItemGroup>
     <Reference Include="@(TrimmableProject)" />
   </ItemGroup>
@@ -35,7 +26,7 @@
       <ILLinkArgs Condition="'$(GenerateLinkerWarningSuppressions)' == 'true'">$(ILLinkArgs) --generate-warning-suppressions xml</ILLinkArgs>
     </PropertyGroup>
     <ItemGroup>
-      <RootAssemblies Include="@(ReferencePath->HasMetadata('ProjectPath'))" RootMode="visible" />
+      <RootAssemblies Include="@(ReferencePath->HasMetadata('ProjectPath')->'%(Filename)')" RootMode="visible" />
       <_ILLinkSuppressionFile Include="$([System.IO.Path]::GetDirectoryName($([System.String]::new('%(RootAssemblies.ProjectPath)'))))\%(FileName).WarningSuppressions.xml"
         SuppressionFileName="%(FileName).WarningSuppressions" />
       <ILLinkSuppressionFile Condition="Exists(%(_ILLinkSuppressionFile.Identity))" Include="%(_ILLinkSuppressionFile.Identity)" />

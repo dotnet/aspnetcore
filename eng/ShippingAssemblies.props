@@ -160,8 +160,8 @@
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.WebView" />
-    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.OpenApi" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Grpc.Swagger" />
+    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.OpenApi" />
   </ItemGroup>
 </Project>
