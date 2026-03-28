@@ -31,6 +31,10 @@
     <ItemGroup>
       <_ProjectReferencePaths Include="@(ReferencePath->HasMetadata('ProjectPath'))" />
       <RootAssemblies Include="@(_ProjectReferencePaths->'%(Filename)')" RootMode="visible" />
+      <!-- Create clean items for AssemblyPaths (ITaskItem[] that flows to external task host).
+           Using Remove+Include pattern to strip all inherited metadata. -->
+      <_CleanAssemblyPaths Remove="@(_CleanAssemblyPaths)" />
+      <_CleanAssemblyPaths Include="@(_ProjectReferencePaths->'%(FullPath)')" />
       <_ILLinkSuppressionFile Include="$([System.IO.Path]::GetDirectoryName($([System.String]::new('%(RootAssemblies.ProjectPath)'))))\%(FileName).WarningSuppressions.xml"
         SuppressionFileName="%(FileName).WarningSuppressions" />
       <ILLinkSuppressionFile Condition="Exists(%(_ILLinkSuppressionFile.Identity))" Include="%(_ILLinkSuppressionFile.Identity)" />
@@ -50,10 +54,10 @@
       <_DotNetHostFileName>$([System.IO.Path]::GetFileName('$(DotNetTool)'))</_DotNetHostFileName>
     </PropertyGroup>
     <ILLink
-        AssemblyPaths=""
+        AssemblyPaths="@(_CleanAssemblyPaths)"
         RootAssemblyNames="@(RootAssemblies)"
         OutputDirectory="$(LibrariesTrimmedArtifactsPath)"
-        ReferenceAssemblyPaths="@(RuntimePackAsset);@(ReferencePath->WithMetadataValue('ExternallyResolved', 'true'));@(_ProjectReferencePaths)"
+        ReferenceAssemblyPaths="@(RuntimePackAsset);@(ReferencePath->WithMetadataValue('ExternallyResolved', 'true'))"
         ExtraArgs="$(ILLinkArgs)"
         NoWarn="$(NoWarn)"
         TrimMode="link"
