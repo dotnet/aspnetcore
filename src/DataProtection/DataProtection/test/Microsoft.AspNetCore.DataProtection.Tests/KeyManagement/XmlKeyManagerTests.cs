@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.InternalTesting;
 using Moq;
 using Xunit;
 
@@ -933,6 +934,7 @@ public class XmlKeyManagerTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66029")]
     public void DeleteKeys()
     {
         var repository = new EphemeralXmlRepository(NullLoggerFactory.Instance);
