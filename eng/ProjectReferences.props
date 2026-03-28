@@ -170,6 +170,5 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.Validation" ProjectPath="$(RepoRoot)src\Validation\src\Microsoft.Extensions.Validation.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" ProjectPath="$(RepoRoot)src\Grpc\JsonTranscoding\src\Microsoft.AspNetCore.Grpc.JsonTranscoding\Microsoft.AspNetCore.Grpc.JsonTranscoding.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Grpc.Swagger" ProjectPath="$(RepoRoot)src\Grpc\JsonTranscoding\src\Microsoft.AspNetCore.Grpc.Swagger\Microsoft.AspNetCore.Grpc.Swagger.csproj" />
-    <ProjectReferenceProvider Include="LinkabilityChecker" ProjectPath="$(RepoRoot)src\Tools\LinkabilityChecker\LinkabilityChecker.csproj" />
   </ItemGroup>
 </Project>
