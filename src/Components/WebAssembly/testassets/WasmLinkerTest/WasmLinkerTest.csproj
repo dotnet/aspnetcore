@@ -30,6 +30,7 @@
     </PropertyGroup>
     <ItemGroup>
       <RootAssemblies Include="@(ReferencePath->HasMetadata('ProjectPath')->'%(Filename)')" RootMode="visible" />
+      <_RootAssemblyPaths Include="@(ReferencePath->HasMetadata('ProjectPath')->'%(RootDir)%(Directory)')" />
       <_ILLinkSuppressionFile Include="$([System.IO.Path]::GetDirectoryName($([System.String]::new('%(RootAssemblies.ProjectPath)'))))\%(FileName).WarningSuppressions.xml"
         SuppressionFileName="%(FileName).WarningSuppressions" />
       <ILLinkSuppressionFile Condition="Exists(%(_ILLinkSuppressionFile.Identity))" Include="%(_ILLinkSuppressionFile.Identity)" />
@@ -49,7 +50,7 @@
       <_DotNetHostFileName>$([System.IO.Path]::GetFileName('$(DotNetTool)'))</_DotNetHostFileName>
     </PropertyGroup>
     <ILLink
-        AssemblyPaths=""
+        AssemblyPaths="@(_RootAssemblyPaths->Distinct())"
         RootAssemblyNames="@(RootAssemblies)"
         OutputDirectory="$(LibrariesTrimmedArtifactsPath)"
         ReferenceAssemblyPaths="@(RuntimePackAsset);@(ReferencePath->WithMetadataValue('ExternallyResolved', 'true'))"
