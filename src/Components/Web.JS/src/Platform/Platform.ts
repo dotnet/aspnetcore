@@ -38,5 +38,5 @@ export interface HeapLock {
 // use the original 'number' instances without any boxing. The definitions are just
 // for compile-time checking, since TypeScript doesn't support nominal types.
 export interface Pointer { Pointer__DO_NOT_IMPLEMENT: unknown }
-export interface System_Object { System_Object__DO_NOT_IMPLEMENT: unknown };
+export interface System_Object { System_Object__DO_NOT_IMPLEMENT: unknown }
 export interface System_Array<T> extends System_Object { System_Array__DO_NOT_IMPLEMENT: unknown; length: number; }
