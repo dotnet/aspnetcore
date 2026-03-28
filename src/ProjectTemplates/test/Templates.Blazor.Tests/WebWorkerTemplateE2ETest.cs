@@ -42,6 +42,7 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]
     public async Task WebWorkerTemplate_CanInvokeMethods(BrowserKind browserKind)
     {
         await using var testRun = await SetupWorkerLibAndBuild(_sharedHostProject);
@@ -57,6 +58,7 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]
     public async Task WebWorkerTemplate_HandlesErrors(BrowserKind browserKind)
     {
         await using var testRun = await SetupWorkerLibAndBuild(_sharedHostProject);
@@ -72,6 +74,7 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]
     public async Task WebWorkerTemplate_CanDisposeWorker(BrowserKind browserKind)
     {
         await using var testRun = await SetupWorkerLibAndBuild(_sharedHostProject);
@@ -83,6 +86,38 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
         await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
         await TestWebWorkerDisposal(browserKind, aspNetProcess.ListeningUri.AbsoluteUri + "webworker-test");
+    }
+
+    [Theory]
+    [InlineData(BrowserKind.Chromium)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]
+    public async Task WebWorkerTemplate_CanInvokeMethodsAfterPublish(BrowserKind browserKind)
+    {
+        await using var testRun = await SetupWorkerLibAndPublish(_sharedHostProject);
+
+        var (serveProcess, listeningUri) = _sharedHostProject.ServePublishedStandaloneApp(Output);
+        using (serveProcess)
+        {
+            await TestWebWorkerInteraction(browserKind, listeningUri, clientRoute: "webworker-test");
+        }
+    }
+
+    private async Task<WorkerLibTestRun> SetupWorkerLibAndPublish(Project hostProject)
+    {
+        var parentDir = Path.GetDirectoryName(hostProject.TemplateOutputDir);
+        var workerLibDir = Path.Combine(parentDir, "WorkerLib");
+
+        if (Directory.Exists(workerLibDir))
+        {
+            Directory.Delete(workerLibDir, recursive: true);
+        }
+        Directory.CreateDirectory(workerLibDir);
+
+        await CreateWebWorkerLibrary(workerLibDir);
+        await AddWorkerLibReferenceAsync(hostProject);
+        await hostProject.RunDotNetPublishAsync(noRestore: false);
+
+        return new WorkerLibTestRun(workerLibDir, hostProject, Output);
     }
 
     private async Task<WorkerLibTestRun> SetupWorkerLibAndBuild(Project hostProject)
@@ -200,7 +235,7 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         File.Copy(workerMethodsSource, Path.Combine(hostProject.TemplateOutputDir, "TestWorkerMethods.cs"), overwrite: true);
     }
 
-    private async Task TestWebWorkerInteraction(BrowserKind browserKind, string baseUri)
+    private async Task TestWebWorkerInteraction(BrowserKind browserKind, string baseUri, string clientRoute = null)
     {
         if (!BrowserManager.IsAvailable(browserKind))
         {
@@ -211,7 +246,13 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
         var page = await browser.NewPageAsync();
 
-        await page.GotoAsync(baseUri);
+        await page.GotoAsync(baseUri, new() { WaitUntil = WaitUntilState.NetworkIdle });
+        if (clientRoute != null)
+        {
+            // Static file servers (e.g., dotnet serve) don't support SPA fallback,
+            // so use Blazor's client-side navigation instead of a full page navigation.
+            await page.EvaluateAsync($"Blazor.navigateTo('{clientRoute}')");
+        }
         await page.WaitForSelectorAsync("#webworker-test", new() { Timeout = 15000 });
 
         await page.ClickAsync("#btn-init");

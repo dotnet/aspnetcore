@@ -377,7 +377,6 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewShim]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52889")]
     public async Task WrongApplicationPath_FailedToRun()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -985,7 +984,6 @@ public class StartupTests : IISFunctionalTestBase
     }
 
     [ConditionalTheory]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52734")]
     [InlineData("CheckLargeStdErrWrites")]
     [InlineData("CheckLargeStdOutWrites")]
     [InlineData("CheckOversizedStdErrWrites")]

@@ -15,6 +15,8 @@ on:
         type: boolean
         default: false
 
+  roles: all
+
 description: >
   Triage newly opened issues in dotnet/aspnetcore. Classifies the area label,
   issue type, and searches for potential duplicates. Posts a summary comment
@@ -28,6 +30,8 @@ tools:
   bash: ["cat", "head", "tail", "grep", "wc", "jq"]
 
 safe-outputs:
+  noop:
+    report-as-issue: false
   add-labels:
     allowed:
       - area-auth
