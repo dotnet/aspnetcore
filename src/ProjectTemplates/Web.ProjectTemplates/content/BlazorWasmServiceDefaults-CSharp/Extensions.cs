@@ -1,7 +1,8 @@
+using System.Diagnostics;
+using BlazorWasm.ServiceDefaults1.Telemetry;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using OpenTelemetry;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -9,23 +10,16 @@ using OpenTelemetry.Trace;
 
 namespace Microsoft.Extensions.Hosting;
 
-/// <summary>
-/// Extension methods for configuring service defaults for Blazor WebAssembly clients.
-/// Adds OpenTelemetry, service discovery, and resilience support.
-/// </summary>
 public static class BlazorClientExtensions
 {
-    private const string DefaultServiceName = "blazor-webassembly-client";
 
-    /// <summary>
-    /// Adds common service defaults for Blazor WebAssembly clients including
-    /// OpenTelemetry, service discovery, and resilience.
-    /// </summary>
-    /// <param name="builder">The <see cref="WebAssemblyHostBuilder"/> to configure.</param>
-    /// <returns>The configured <see cref="WebAssemblyHostBuilder"/>.</returns>
     public static WebAssemblyHostBuilder AddBlazorClientServiceDefaults(this WebAssemblyHostBuilder builder)
     {
-        builder.ConfigureBlazorClientOpenTelemetry();
+        // Use OTEL_SERVICE_NAME from configuration (set by Aspire hosting via the gateway)
+        // to identify this app in the dashboard. Falls back to a default if not set.
+        var serviceName = builder.Configuration["OTEL_SERVICE_NAME"] ?? "BlazorWasm.ServiceDefaults1";
+
+        builder.ConfigureBlazorClientOpenTelemetry(serviceName);
 
         builder.Services.AddServiceDiscovery();
 
@@ -41,15 +35,8 @@ public static class BlazorClientExtensions
         return builder;
     }
 
-    /// <summary>
-    /// Configures OpenTelemetry for Blazor WebAssembly clients with logging, metrics, and tracing.
-    /// </summary>
-    /// <param name="builder">The <see cref="WebAssemblyHostBuilder"/> to configure.</param>
-    /// <returns>The configured <see cref="WebAssemblyHostBuilder"/>.</returns>
-    public static WebAssemblyHostBuilder ConfigureBlazorClientOpenTelemetry(this WebAssemblyHostBuilder builder)
+    private static WebAssemblyHostBuilder ConfigureBlazorClientOpenTelemetry(this WebAssemblyHostBuilder builder, string serviceName)
     {
-        var serviceName = builder.Configuration["OTEL_SERVICE_NAME"] ?? DefaultServiceName;
-
         builder.Logging.AddOpenTelemetry(logging =>
         {
             logging.IncludeFormattedMessage = true;
@@ -61,53 +48,149 @@ public static class BlazorClientExtensions
             .WithMetrics(metrics =>
             {
                 metrics.AddHttpClientInstrumentation()
-                    .AddRuntimeInstrumentation();
+                    .AddRuntimeInstrumentation()
+                    // Add Blazor component metrics (this only works on 10.0 and onwards)
+                    // See: https://learn.microsoft.com/aspnet/core/blazor/performance#metrics-and-tracing
+                    .AddMeter("Microsoft.AspNetCore.Components")
+                    .AddMeter("Microsoft.AspNetCore.Components.Lifecycle");
             })
             .WithTracing(tracing =>
             {
                 tracing.AddSource(serviceName)
-                    .AddHttpClientInstrumentation();
+                    .AddHttpClientInstrumentation(options =>
+                    {
+                        // Filter out OTLP export requests to avoid a feedback loop.
+                        // Without this, every telemetry export POST (v1/traces, v1/metrics,
+                        // v1/logs) generates a new trace, which then gets exported, creating
+                        // an ever-growing cycle that floods the dashboard.
+                        options.FilterHttpRequestMessage = request =>
+                            request.RequestUri is null
+                            || (!request.RequestUri.AbsolutePath.Contains("/v1/traces")
+                                && !request.RequestUri.AbsolutePath.Contains("/v1/metrics")
+                                && !request.RequestUri.AbsolutePath.Contains("/v1/logs"));
+                    })
+                    // Add Blazor component tracing
+                    .AddSource("Microsoft.AspNetCore.Components");
             });
 
-        builder.AddBlazorClientOpenTelemetryExporters();
+        builder.AddBlazorClientOpenTelemetryExporters(serviceName);
 
         return builder;
     }
 
-    private static WebAssemblyHostBuilder AddBlazorClientOpenTelemetryExporters(this WebAssemblyHostBuilder builder)
+    private static WebAssemblyHostBuilder AddBlazorClientOpenTelemetryExporters(this WebAssemblyHostBuilder builder, string serviceName)
     {
-        var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
+        var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
+        var otlpHeaders = builder.Configuration["OTEL_EXPORTER_OTLP_HEADERS"];
 
-        if (useOtlpExporter)
+        // Parse OTLP headers (format: "key1=value1,key2=value2" or "key1=value1")
+        var headers = ParseOtlpHeaders(otlpHeaders);
+
+        if (!string.IsNullOrWhiteSpace(otlpEndpoint))
         {
-            builder.Services.AddOpenTelemetry().UseOtlpExporter();
+            // The endpoint may be relative (/_otlp) or absolute (https://localhost:21187)
+            // For relative URLs, construct the full URL using the app's base address
+            Uri endpoint;
+            if (otlpEndpoint.StartsWith("/"))
+            {
+                // Relative URL - combine with app's base address
+                var baseUri = new Uri(builder.HostEnvironment.BaseAddress);
+                endpoint = new Uri(baseUri, otlpEndpoint);
+            }
+            else
+            {
+                endpoint = new Uri(otlpEndpoint);
+            }
+
+            // Configure tracing with WebAssembly-compatible exporter.
+            // We create HttpClient directly instead of using IHttpClientFactory to avoid
+            // Lazy<T> reentrancy: TracerProvider (Lazy) → AddProcessor factory → IHttpClientFactory
+            // → CreateClient → HTTP instrumentation handler → resolves TracerProvider → crash.
+            var traceHttpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+            builder.Services.AddOpenTelemetry()
+                .WithTracing(tracing =>
+                {
+                    tracing.AddProcessor(sp =>
+                    {
+                        var exporter = new WebAssemblyOtlpTraceExporter(
+                            new Uri(endpoint, "v1/traces"),
+                            serviceName,
+                            headers,
+                            traceHttpClient);
+
+                        return new TaskBasedBatchExportProcessor<Activity>(
+                            exporter,
+                            maxQueueSize: 2048,
+                            scheduledDelayMilliseconds: 5000,
+                            exporterTimeoutMilliseconds: 30000,
+                            maxExportBatchSize: 512);
+                    });
+                });
+
+            // Configure metrics with WebAssembly-compatible exporter.
+            // Uses MeterListener (a .NET runtime feature) instead of MeterProvider,
+            // which works in the single-threaded WebAssembly environment.
+            var metricsHttpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+            builder.Services.AddSingleton(sp =>
+            {
+                return new WebAssemblyOtlpMetricExporter(
+                    new Uri(endpoint, "v1/metrics"),
+                    serviceName,
+                    headers,
+                    httpClient: metricsHttpClient);
+            });
+
+            // Configure logging with WebAssembly-compatible exporter.
+            var logsHttpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+            builder.Services.AddOpenTelemetry()
+                .WithLogging(logging =>
+                {
+                    logging.AddProcessor(sp =>
+                    {
+                        var exporter = new WebAssemblyOtlpLogExporter(
+                            new Uri(endpoint, "v1/logs"),
+                            serviceName,
+                            headers,
+                            logsHttpClient);
+
+                        return new TaskBasedBatchExportProcessor<LogRecord>(
+                            exporter,
+                            maxQueueSize: 2048,
+                            scheduledDelayMilliseconds: 5000,
+                            exporterTimeoutMilliseconds: 30000,
+                            maxExportBatchSize: 512);
+                    });
+                });
         }
 
         return builder;
     }
-}
-#if (!hosted)
 
-/// <summary>
-/// Extension methods for configuring the server-side host to pass configuration
-/// to a standalone Blazor WebAssembly client via the configuration endpoint.
-/// </summary>
-public static class BlazorClientServerExtensions
-{
-    /// <summary>
-    /// Adds the Blazor WebAssembly client configuration endpoint that serves
-    /// environment variables and service URLs to the standalone client.
-    /// The client's JS initializer fetches this endpoint during boot.
-    /// </summary>
-    /// <param name="app">The <see cref="IApplicationBuilder"/> to configure.</param>
-    /// <returns>The configured <see cref="IApplicationBuilder"/>.</returns>
-    public static IApplicationBuilder UseBlazorClientConfiguration(this IApplicationBuilder app)
+    private static Dictionary<string, string>? ParseOtlpHeaders(string? headersString)
     {
-        // TODO: Implement configuration endpoint for standalone scenario
-        // This endpoint serves configuration (OTEL endpoints, service URLs, etc.)
-        // to the standalone Blazor WebAssembly client via /_blazor/_configuration.
-        // The client's JS initializer (onRuntimeConfigLoaded) fetches this endpoint.
-        return app;
+        if (string.IsNullOrWhiteSpace(headersString))
+        {
+            return null;
+        }
+
+        var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        // OTLP headers format: "key1=value1,key2=value2" or just "key1=value1"
+        var pairs = headersString.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        foreach (var pair in pairs)
+        {
+            var separatorIndex = pair.IndexOf('=');
+            if (separatorIndex > 0)
+            {
+                var key = pair.Substring(0, separatorIndex).Trim();
+                var value = pair.Substring(separatorIndex + 1).Trim();
+                if (!string.IsNullOrEmpty(key))
+                {
+                    headers[key] = value;
+                }
+            }
+        }
+
+        return headers.Count > 0 ? headers : null;
     }
 }
-#endif

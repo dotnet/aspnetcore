@@ -48,6 +48,18 @@
       "defaultValue": "false"
     }
   },
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "condition": "(hosted)",
+          "exclude": [
+            "wwwroot/**"
+          ]
+        }
+      ]
+    }
+  ],
   "primaryOutputs": [
     {
       "path": "BlazorWasm.ServiceDefaults1.csproj"
