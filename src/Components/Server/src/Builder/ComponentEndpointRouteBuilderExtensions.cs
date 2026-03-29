@@ -94,8 +94,14 @@ public static class ComponentEndpointRouteBuilderExtensions
         return new ComponentEndpointConventionBuilder(hubEndpoint, disconnectEndpoint, jsInitializersEndpoint, blazorEndpoint);
     }
 
-    private static IEndpointConventionBuilder GetBlazorEndpoint(IEndpointRouteBuilder endpoints)
+    private static IEndpointConventionBuilder? GetBlazorEndpoint(IEndpointRouteBuilder endpoints)
     {
+        // TODO: Is this how we want to check? If so, do we want to add the necessary reference to Microsoft.AspNetCore.StaticAssets?
+        if (false /*StaticAssetsEndpointDataSourceHelper.HasStaticAssetsDataSource(endpoints)*/)
+        {
+            return null;
+        }
+
         var webHostEnvironment = endpoints.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
 
         var options = new StaticFileOptions

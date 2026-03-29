@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.StaticAssets.Infrastructure;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
@@ -208,6 +209,12 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
 
     private static IEnumerable<EndpointBuilder> GetBlazorWebJsEndpoint(IEndpointRouteBuilder endpoints)
     {
+        // TODO: Is this how we want to check?
+        if (StaticAssetsEndpointDataSourceHelper.HasStaticAssetsDataSource(endpoints))
+        {
+            return [];
+        }
+
         var app = endpoints.CreateApplicationBuilder();
 
         var webHostEnvironment = endpoints.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
