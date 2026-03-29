@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http.Tests;
@@ -19,11 +20,11 @@ public class QueryCollectionTests
         // Test the null-dictionary code path too.
         Assert.Same(Array.Empty<string>(), (string[])QueryCollection.Empty["query1"]);
     }
-    
+
     [Fact]
     public void EnumeratorResetsCorrectly()
     {
-        var cookies = new QueryCollection(
+        var query = new QueryCollection(
             new Dictionary<string, StringValues>
             {
                 { "Query1", "Value1" },
@@ -31,7 +32,7 @@ public class QueryCollectionTests
                 { "Query3", "Value3" }
             });
 
-        var enumerator = cookies.GetEnumerator();
+        var enumerator = query.GetEnumerator();
         var initial = enumerator.Current;
 
         Assert.True(enumerator.MoveNext());
