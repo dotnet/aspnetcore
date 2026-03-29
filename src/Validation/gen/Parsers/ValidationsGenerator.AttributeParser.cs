@@ -16,12 +16,17 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         return syntaxNode is ClassDeclarationSyntax or RecordDeclarationSyntax;
     }
 
-    internal ImmutableArray<ValidatableType> TransformValidatableTypeWithAttribute(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
+    internal TypeSymbolExtraction ExtractValidatableTypeWithAttributeSymbol(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
+    {
+        var wellKnownTypes = WellKnownTypes.GetOrCreate(context.SemanticModel.Compilation);
+        return new((ITypeSymbol)context.TargetSymbol, wellKnownTypes);
+    }
+
+    internal ImmutableArray<ValidatableType> RetriveValidatableTypes((TypeSymbolExtraction extraction, GeneratorConfiguration configuration) input, CancellationToken cancellationToken)
     {
         var validatableTypes = new HashSet<ValidatableType>(ValidatableTypeComparer.Instance);
         List<ITypeSymbol> visitedTypes = [];
-        var wellKnownTypes = WellKnownTypes.GetOrCreate(context.SemanticModel.Compilation);
-        if (TryExtractValidatableType((ITypeSymbol)context.TargetSymbol, wellKnownTypes, ref validatableTypes, ref visitedTypes))
+        if (TryExtractValidatableType(input.extraction.symbol, input.extraction.wellKnownTypes, ref validatableTypes, ref visitedTypes, input.configuration))
         {
             return [.. validatableTypes];
         }

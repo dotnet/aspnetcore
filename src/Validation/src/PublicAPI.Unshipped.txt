@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.Extensions.Validation.ValidationOptions.IncludeInternalTypes() -> void

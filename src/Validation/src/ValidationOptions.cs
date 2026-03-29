@@ -76,4 +76,17 @@ public class ValidationOptions
         validatableInfo = null;
         return false;
     }
+
+    /// <summary>
+    /// Configures the validation system to include internal types and members when discovering types to validate.
+    /// By default, only public types and members are included.
+    /// </summary>
+    /// <remarks>
+    /// Call this method to enable validation for internal types and members in addition to public ones.
+    /// This is useful when your application uses internal DTOs or models that need validation.
+    /// </remarks>
+    [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
+    public void IncludeInternalTypes()
+    {
+    }
 }

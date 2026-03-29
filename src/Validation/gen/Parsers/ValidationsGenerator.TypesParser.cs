@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 using Microsoft.CodeAnalysis;
@@ -20,7 +19,10 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Included,
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
 
-    internal ImmutableArray<ValidatableType> ExtractValidatableTypes(IInvocationOperation operation, WellKnownTypes wellKnownTypes)
+    internal ImmutableArray<ValidatableType> ExtractValidatableTypes(
+        IInvocationOperation operation,
+        WellKnownTypes wellKnownTypes,
+        GeneratorConfiguration configuration)
     {
         AnalyzerDebug.Assert(operation.SemanticModel != null, "SemanticModel should not be null.");
         var parameters = operation.TryGetRouteHandlerMethod(operation.SemanticModel, out var method)
@@ -51,12 +53,17 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 continue;
             }
 
-            _ = TryExtractValidatableType(parameter.Type, wellKnownTypes, ref validatableTypes, ref visitedTypes);
+            _ = TryExtractValidatableType(parameter.Type, wellKnownTypes, ref validatableTypes, ref visitedTypes, configuration);
         }
         return [.. validatableTypes];
     }
 
-    internal bool TryExtractValidatableType(ITypeSymbol incomingTypeSymbol, WellKnownTypes wellKnownTypes, ref HashSet<ValidatableType> validatableTypes, ref List<ITypeSymbol> visitedTypes)
+    internal bool TryExtractValidatableType(
+        ITypeSymbol incomingTypeSymbol,
+        WellKnownTypes wellKnownTypes,
+        ref HashSet<ValidatableType> validatableTypes,
+        ref List<ITypeSymbol> visitedTypes,
+        GeneratorConfiguration configuration)
     {
         var typeSymbol = incomingTypeSymbol.UnwrapType(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Collections_IEnumerable));
         if (typeSymbol.SpecialType != SpecialType.None)
@@ -74,8 +81,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             return false;
         }
 
-        // Skip types that are not accessible from generated code
-        if (typeSymbol.DeclaredAccessibility is not Accessibility.Public)
+        // Skip types that don't match the accessibility filter
+        if (!configuration.AccessibilityFilter.Match(typeSymbol.DeclaredAccessibility))
         {
             return false;
         }
@@ -89,7 +96,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         var hasValidatableBaseType = false;
         while (current != null && current.SpecialType != SpecialType.System_Object)
         {
-            hasValidatableBaseType |= TryExtractValidatableType(current, wellKnownTypes, ref validatableTypes, ref visitedTypes);
+            hasValidatableBaseType |= TryExtractValidatableType(current, wellKnownTypes, ref validatableTypes, ref visitedTypes, configuration);
             current = current.BaseType;
         }
 
@@ -97,7 +104,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         ImmutableArray<ValidatableProperty> members = [];
         if (ParsabilityHelper.GetParsability(typeSymbol, wellKnownTypes) is Parsability.NotParsable)
         {
-            members = ExtractValidatableMembers(typeSymbol, wellKnownTypes, ref validatableTypes, ref visitedTypes);
+            members = ExtractValidatableMembers(typeSymbol, wellKnownTypes, ref validatableTypes, ref visitedTypes, configuration);
         }
 
         // Extract the validatable types discovered in the JsonDerivedTypeAttributes of this type and add them to the top-level list.
@@ -105,7 +112,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         var hasValidatableDerivedTypes = false;
         foreach (var derivedType in derivedTypes ?? [])
         {
-            hasValidatableDerivedTypes |= TryExtractValidatableType(derivedType, wellKnownTypes, ref validatableTypes, ref visitedTypes);
+            hasValidatableDerivedTypes |= TryExtractValidatableType(derivedType, wellKnownTypes, ref validatableTypes, ref visitedTypes, configuration);
         }
 
         // No validatable members or derived types found, so we don't need to add this type.
@@ -115,14 +122,17 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         }
 
         // Add the type itself as a validatable type itself.
-        validatableTypes.Add(new ValidatableType(
-            Type: typeSymbol,
-            Members: members));
+        validatableTypes.Add(new ValidatableType(typeSymbol, members));
 
         return true;
     }
 
-    internal ImmutableArray<ValidatableProperty> ExtractValidatableMembers(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, ref HashSet<ValidatableType> validatableTypes, ref List<ITypeSymbol> visitedTypes)
+    internal ImmutableArray<ValidatableProperty> ExtractValidatableMembers(
+        ITypeSymbol typeSymbol,
+        WellKnownTypes wellKnownTypes,
+        ref HashSet<ValidatableType> validatableTypes,
+        ref List<ITypeSymbol> visitedTypes,
+        GeneratorConfiguration configuration)
     {
         var members = new List<ValidatableProperty>();
         var resolvedRecordProperty = new List<IPropertySymbol>();
@@ -175,8 +185,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                             continue;
                         }
 
-                        // Skip properties that are not accessible from generated code
-                        if (correspondingProperty.DeclaredAccessibility is not Accessibility.Public)
+                        // Skip properties that don't match the accessibility filter
+                        if (!configuration.AccessibilityFilter.Match(correspondingProperty.DeclaredAccessibility))
                         {
                             continue;
                         }
@@ -193,7 +203,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                             correspondingProperty.Type,
                             wellKnownTypes,
                             ref validatableTypes,
-                            ref visitedTypes);
+                            ref visitedTypes,
+                            configuration);
 
                         members.Add(new ValidatableProperty(
                             ContainingType: correspondingProperty.ContainingType,
@@ -211,13 +222,12 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         foreach (var member in typeSymbol.GetMembers().OfType<IPropertySymbol>())
         {
             // Skip compiler generated properties, indexers, static properties, properties without
-            // a public getter, and properties already processed via the record processing logic above.
+            // a getter, and properties already processed via the record processing logic above.
             if (member.IsImplicitlyDeclared
                 || member.IsIndexer
                 || member.IsStatic
                 || member.IsWriteOnly
                 || member.GetMethod is null
-                || member.GetMethod.DeclaredAccessibility is not Accessibility.Public
                 || member.IsEqualityContract(wellKnownTypes)
                 || resolvedRecordProperty.Contains(member, SymbolEqualityComparer.Default))
             {
@@ -230,8 +240,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 continue;
             }
 
-            // Skip properties that are not accessible from generated code
-            if (member.DeclaredAccessibility is not Accessibility.Public)
+            // Skip properties that don't match the accessibility filter
+            if (!configuration.AccessibilityFilter.Match(member.DeclaredAccessibility))
             {
                 continue;
             }
@@ -248,7 +258,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 continue;
             }
 
-            var hasValidatableType = TryExtractValidatableType(member.Type, wellKnownTypes, ref validatableTypes, ref visitedTypes);
+            var hasValidatableType = TryExtractValidatableType(member.Type, wellKnownTypes, ref validatableTypes, ref visitedTypes, configuration);
             var attributes = ExtractValidationAttributes(member, wellKnownTypes, out var isRequired);
 
             // If the member has no validation attributes or validatable types and is not required, skip it.

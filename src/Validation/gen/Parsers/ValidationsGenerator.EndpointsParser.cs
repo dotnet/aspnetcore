@@ -40,11 +40,13 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
     }
 
     internal ImmutableArray<ValidatableType> ExtractValidatableEndpoint(IInvocationOperation? operation, CancellationToken cancellationToken)
+        => ExtractValidatableEndpoint((operation, configuration: GeneratorConfiguration.Default), cancellationToken);
+    internal ImmutableArray<ValidatableType> ExtractValidatableEndpoint((IInvocationOperation? operation, GeneratorConfiguration configuration) input, CancellationToken cancellationToken)
     {
-        AnalyzerDebug.Assert(operation != null, "Operation should not be null.");
-        AnalyzerDebug.Assert(operation.SemanticModel != null, "Operation should have a semantic model.");
-        var wellKnownTypes = WellKnownTypes.GetOrCreate(operation.SemanticModel.Compilation);
-        var validatableTypes = ExtractValidatableTypes(operation, wellKnownTypes);
+        AnalyzerDebug.Assert(input.operation != null, "Operation should not be null.");
+        AnalyzerDebug.Assert(input.operation.SemanticModel != null, "Operation should have a semantic model.");
+        var wellKnownTypes = WellKnownTypes.GetOrCreate(input.operation.SemanticModel.Compilation);
+        var validatableTypes = ExtractValidatableTypes(input.operation, wellKnownTypes, input.configuration);
         return validatableTypes;
     }
 }
