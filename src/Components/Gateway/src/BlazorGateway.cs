@@ -52,16 +52,14 @@ public static class BlazorGateway
 
             if (!string.IsNullOrEmpty(appConfig.EndpointsManifest))
             {
-                app.MapGroup(appConfig.PathPrefix ?? "").MapStaticAssets(appConfig.EndpointsManifest)
-                    .Add(ep =>
-                    {
-                        if (ep is RouteEndpointBuilder reb && reb.RoutePattern.RawText?.Contains("{**path") == true)
-                        {
-                            reb.Order = int.MaxValue;
-                        }
-                    });
+                app.MapGroup(appConfig.PathPrefix ?? "").MapStaticAssets(appConfig.EndpointsManifest);
             }
         }
+
+        // SPA fallback: serve index.html for any non-file URL path, similar to
+        // the old DevServer's MapFallbackToFile("index.html"). This is registered
+        // after MapStaticAssets so that specific static file routes take precedence.
+        app.MapFallbackToFile("index.html");
 
         return app;
     }
