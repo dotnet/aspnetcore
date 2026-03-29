@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <!-- Point to the locally-built Gateway DLL -->
-    <_BlazorGatewayDll>$(RepoRoot)artifacts\bin\Microsoft.AspNetCore.Components.Gateway\Debug\$(DefaultNetCoreTargetFramework)\blazor-gateway.dll</_BlazorGatewayDll>
+    <_BlazorGatewayDll>$(RepoRoot)artifacts\bin\Microsoft.AspNetCore.Components.Gateway\$(Configuration)\$(DefaultNetCoreTargetFramework)\blazor-gateway.dll</_BlazorGatewayDll>
   </PropertyGroup>
 
   <ItemGroup>

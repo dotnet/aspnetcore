@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using Components.TestServer.RazorComponents;
+using Microsoft.AspNetCore.Components.Gateway;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Logging.Testing;

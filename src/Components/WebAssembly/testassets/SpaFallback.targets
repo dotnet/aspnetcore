@@ -21,7 +21,7 @@
         Selectors="%(_SpaFallbackCandidate.Selectors)"
         EndpointProperties="%(_SpaFallbackCandidate.EndpointProperties)"
         ResponseHeaders="%(_SpaFallbackCandidate.ResponseHeaders)"
-        Order="2147483647" />
+        Order="$([System.Int32]::MaxValue)" />
     </ItemGroup>
   </Target>
 </Project>
