@@ -23,6 +23,7 @@ internal partial class EndpointHtmlRenderer
     private string? _ssrFramingCommentMarkup;
     private bool _isHandlingErrors;
     private bool _isReExecuted;
+    private bool _browserConfigurationEmitted;
 
     public void InitializeStreamingRenderingFraming(HttpContext httpContext, bool isErrorHandler, bool isReExecuted)
     {
@@ -284,13 +285,10 @@ internal partial class EndpointHtmlRenderer
                 _httpContext.Response.Headers.CacheControl = "no-cache, no-store, max-age=0";
             }
 
-            if (marker.Type is ComponentMarker.WebAssemblyMarkerType or ComponentMarker.AutoMarkerType)
+            if (marker.Type is ComponentMarker.WebAssemblyMarkerType or ComponentMarker.AutoMarkerType
+                or ComponentMarker.ServerMarkerType)
             {
-                if (_httpContext.RequestServices.GetRequiredService<WebAssemblySettingsEmitter>().TryGetSettingsOnce(out var settings))
-                {
-                    var settingsJson = JsonSerializer.Serialize(settings, ServerComponentSerializationSettings.JsonSerializationOptions);
-                    output.Write($"<!--Blazor-WebAssembly:{settingsJson}-->");
-                }
+                EmitBrowserConfigurationOnce(output);
             }
 
             var serializedStartRecord = JsonSerializer.Serialize(marker, ServerComponentSerializationSettings.JsonSerializationOptions);
@@ -331,6 +329,49 @@ internal partial class EndpointHtmlRenderer
         return accept.Count == 1 && string.Equals(accept[0]!, "text/html; blazor-enhanced-nav=on", StringComparison.Ordinal);
     }
 
+    private static readonly JsonSerializerOptions s_browserConfigurationSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+    };
+
+    private static readonly string? s_dotnetModifiableAssemblies =
+        Environment.GetEnvironmentVariable("DOTNET_MODIFIABLE_ASSEMBLIES") is { Length: > 0 } v1 ? v1 : null;
+
+    private static readonly string? s_aspnetcoreBrowserTools =
+        Environment.GetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS") is { Length: > 0 } v2 ? v2 : null;
+
+    private void EmitBrowserConfigurationOnce(TextWriter output)
+    {
+        if (_browserConfigurationEmitted)
+        {
+            return;
+        }
+
+        _browserConfigurationEmitted = true;
+
+        var config = _httpContext.GetBrowserConfiguration();
+
+        // Default environment name from the host environment
+        var hostEnvironment = _httpContext.RequestServices.GetRequiredService<IHostEnvironment>();
+        config.WebAssembly.EnvironmentName ??= hostEnvironment.EnvironmentName;
+
+        // Merge tooling environment variables (hot-reload, browser tools)
+        if (s_dotnetModifiableAssemblies != null)
+        {
+            config.WebAssembly.EnvironmentVariables.TryAdd("DOTNET_MODIFIABLE_ASSEMBLIES", s_dotnetModifiableAssemblies);
+        }
+
+        if (s_aspnetcoreBrowserTools != null)
+        {
+            config.WebAssembly.EnvironmentVariables.TryAdd("__ASPNETCORE_BROWSER_TOOLS", s_aspnetcoreBrowserTools);
+        }
+
+        var configJson = JsonSerializer.Serialize(config, s_browserConfigurationSerializerOptions);
+        output.Write("<!--Blazor-Configuration:");
+        output.Write(configJson);
+        output.Write("-->");
+    }
     private readonly struct ComponentIdAndDepth
     {
         public int ComponentId { get; }
