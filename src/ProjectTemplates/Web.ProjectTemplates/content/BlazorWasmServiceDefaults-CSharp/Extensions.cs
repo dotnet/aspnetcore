@@ -60,19 +60,11 @@ public static class BlazorClientExtensions
             .ConfigureResource(resource => resource.AddService(serviceName))
             .WithMetrics(metrics =>
             {
-                // Uncomment the following lines to enable Blazor component metrics
-                // See: https://learn.microsoft.com/aspnet/core/blazor/performance#metrics-and-tracing
-                //metrics.AddMeter("Microsoft.AspNetCore.Components");
-                //metrics.AddMeter("Microsoft.AspNetCore.Components.Lifecycle");
-
                 metrics.AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation();
             })
             .WithTracing(tracing =>
             {
-                // Uncomment the following line to enable Blazor component tracing
-                //tracing.AddSource("Microsoft.AspNetCore.Components");
-
                 tracing.AddSource(serviceName)
                     .AddHttpClientInstrumentation();
             });
@@ -94,3 +86,28 @@ public static class BlazorClientExtensions
         return builder;
     }
 }
+#if (!hosted)
+
+/// <summary>
+/// Extension methods for configuring the server-side host to pass configuration
+/// to a standalone Blazor WebAssembly client via the configuration endpoint.
+/// </summary>
+public static class BlazorClientServerExtensions
+{
+    /// <summary>
+    /// Adds the Blazor WebAssembly client configuration endpoint that serves
+    /// environment variables and service URLs to the standalone client.
+    /// The client's JS initializer fetches this endpoint during boot.
+    /// </summary>
+    /// <param name="app">The <see cref="IApplicationBuilder"/> to configure.</param>
+    /// <returns>The configured <see cref="IApplicationBuilder"/>.</returns>
+    public static IApplicationBuilder UseBlazorClientConfiguration(this IApplicationBuilder app)
+    {
+        // TODO: Implement configuration endpoint for standalone scenario
+        // This endpoint serves configuration (OTEL endpoints, service URLs, etc.)
+        // to the standalone Blazor WebAssembly client via /_blazor/_configuration.
+        // The client's JS initializer (onRuntimeConfigLoaded) fetches this endpoint.
+        return app;
+    }
+}
+#endif

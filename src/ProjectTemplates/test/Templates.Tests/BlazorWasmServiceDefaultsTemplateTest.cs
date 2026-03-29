@@ -43,4 +43,16 @@ public class BlazorWasmServiceDefaultsTemplateTest : LoggedTest
 
         await project.RunDotNetBuildAsync();
     }
+
+    [Fact]
+    public async Task BlazorWasmServiceDefaultsTemplate_HostedAsync()
+    {
+        var project = await ProjectFactory.CreateProject(Output);
+
+        await project.RunDotNetNewAsync("blazor-wasm-servicedefaults", args: new[] { "--hosted" });
+
+        await project.RunDotNetPublishAsync();
+
+        await project.RunDotNetBuildAsync();
+    }
 }

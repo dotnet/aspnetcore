@@ -35,6 +35,12 @@
       "replaces": "net10.0",
       "defaultValue": "net10.0"
     },
+    "hosted": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "Configure for a hosted Blazor Web scenario where configuration flows from the server via a DOM comment. When false (default), configures for a standalone scenario with a configuration endpoint and JS initializer.",
+      "defaultValue": "false"
+    },
     "skipRestore": {
       "type": "parameter",
       "datatype": "bool",
