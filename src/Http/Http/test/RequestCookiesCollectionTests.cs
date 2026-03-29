@@ -79,4 +79,38 @@ public class RequestCookiesCollectionTests
             }
         }
     }
+    
+    [Fact]
+    public void EnumeratorResetsCorrectly()
+    {
+        var cookies = new RequestCookieCollection(
+            new Dictionary<string, string>
+            {
+                { "Cookie1", "Value1" },
+                { "Cookie2", "Value2" },
+                { "Cookie3", "Value3" }
+            });
+
+        var enumerator = cookies.GetEnumerator();
+        var initial = enumerator.Current;
+
+        Assert.True(enumerator.MoveNext());
+
+        var first = enumerator.Current;
+        var last = enumerator.Current;
+
+        while (enumerator.MoveNext())
+        {
+            last = enumerator.Current;
+        }
+
+        Assert.NotEqual(first, initial);
+        Assert.NotEqual(first, last);
+
+        ((IEnumerator)enumerator).Reset();
+
+        Assert.Equal(enumerator.Current, initial);
+        Assert.True(enumerator.MoveNext());
+        Assert.Equal(enumerator.Current, first);
+    }
 }
