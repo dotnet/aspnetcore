@@ -2,13 +2,13 @@
 
 This document proposes adding **first-party, zero-dependency client-side form validation** to ASP.NET Core that works for **Blazor Web Apps** (static SSR with both enhanced and non-enhanced forms) and **MVC / Razor Pages**, closing a long-standing gap where Blazor forms require interactivity for client validation and MVC relies on a large and hard-to-maintain jQuery-based library bundle.
 
-We propose creating a new minimal **JavaScript validation library** (target: ≤ 5 KB Brotli-compressed, no dependencies) that understands the existing `data-val-*` attribute protocol and uses the browser-native **Constraint Validation API** as its validation state mechanism. For Blazor, the validation JS is **bundled into `blazor.web.js`** and the C# service layer is **enabled by default via `AddRazorComponents()`**. For MVC and Razor Pages, the JS library is compatible with the existing HTML generation and can serve as a **drop-in replacement** for the jQuery validation stack.
+We propose creating a new minimal **JavaScript validation library** that understands the existing `data-val-*` attribute protocol and uses the browser-native **Constraint Validation API** as its validation state mechanism. For Blazor, the validation JS is **bundled into `blazor.web.js`** and the C# service layer is **enabled by default via `AddRazorComponents()`**. For MVC and Razor Pages, the JS library is compatible with the existing HTML generation and can serve as a **drop-in replacement** for the jQuery validation stack.
 
 ## Goals
 
 - **Enable client-side validation for Blazor SSR without interactivity.** Today, Blazor Web Apps rendered via static SSR have no client-side validation — every validation check requires a full .NET invocation. This feature adds immediate, in-browser validation feedback using standard `DataAnnotations`, without requiring Blazor Server interactivity or WebAssembly. Client-side validation is **enabled by default** when `AddRazorComponents()` is called. Standard form input components  (`<InputText>`, `<InputNumber>`, etc.) automatically emit `data-val-*` attributes on statically-rendered forms, and the validation JS validates on the client.
 
-- **Provide a zero-dependency JavaScript validation library (≤ 5 KB Brotli).** The current MVC client-side validation stack depends on the combination of `jQuery`, `jquery-validate`, and `jquery-validation-unobtrusive`, totalling more than 40 KB (Brotli). This feature delivers a JavaScript validation library with no external dependencies that understands the same `data-val-*` attribute protocol. It uses the browser-native Constraint Validation API (`setCustomValidity`, `ValidityState`, `checkValidity`) as the validation state mechanism and extensibility surface, enabling third-party libraries to read standardized validity state without coupling to our internals. For Blazor, the JS library is bundled into `blazor.web.js`.
+- **Provide a zero-dependency JavaScript validation library.** The current MVC client-side validation stack depends on the combination of `jQuery`, `jquery-validate`, and `jquery-validation-unobtrusive`, totalling more than 40 KB (gzip). This feature delivers a JavaScript validation library with no external dependencies that understands the same `data-val-*` attribute protocol. It uses the browser-native Constraint Validation API (`setCustomValidity`, `ValidityState`, `checkValidity`) as the validation state mechanism and extensibility surface, enabling third-party libraries to read standardized validity state without coupling to our internals. For Blazor, the JS library is bundled into `blazor.web.js`. The target size is ≤ 5 KB gzip-compressed.
 
 - **Work across the Blazor enhanced navigation lifecycle.** The client-side validation supports both enhanced and non-enhanced SSR forms. Blazor's enhanced navigation patches the DOM without full page loads. The validation library automatically re-scans for new or changed forms after each navigation, handles DOM element reuse, and intercepts form submission so validation runs before the enhanced navigation fetch. No developer action is required beyond the initial setup.
 
@@ -36,7 +36,7 @@ We propose creating a new minimal **JavaScript validation library** (target: ≤
 
 The solution consists of two main parts:
 
-1. **A JavaScript validation library** bundled into `blazor.web.js` (and also available as a standalone file for MVC) that scans the DOM for `data-val-*` attributes, validates form fields on user interaction and submission, displays error messages, and integrates with the Constraint Validation API. The library auto-detects whether it's running in a Blazor or MVC context and adapts accordingly (e.g., re-scanning after Blazor enhanced navigation, or providing a `parse()` API for MVC dynamic content).
+1. **A JavaScript validation library** bundled into `blazor.web.js` (and also available as a standalone file for MVC) that scans the DOM for `data-val-*` attributes, validates form fields on user interaction and submission, displays error messages, and integrates with the Constraint Validation API. For Blazor, it hooks into enhanced navigation to re-scan after DOM patching. For MVC, it initializes on page load and provides a `parse()` API for dynamic content.
 
 2. **A Blazor C# service layer**, enabled by default via `AddRazorComponents()`, that causes standard Blazor input components (`InputText`, `InputNumber`, `InputSelect`, etc.) to automatically emit `data-val-*` attributes derived from `DataAnnotations` on the model when rendering in a static SSR context. The feature is active only for statically-rendered forms — interactive render modes are not affected. Per-form opt-out is available via a parameter on `DataAnnotationsValidator`.
 
@@ -219,7 +219,7 @@ Forms that appear after a Blazor enhanced navigation or streaming rendering upda
 
 When `EnableClientValidation="false"`, input components do not emit `data-val-*` attributes and `ValidationMessage`/`ValidationSummary` use the standard Blazor rendering (no `data-valmsg-for` / `data-valmsg-summary`). The JS library has nothing to find and the form behaves exactly as it does today.
 
-**MVC — include the script:** MVC apps reference the standalone `aspnet-validation.js` file. The library auto-scans all forms on page load. MVC distribution and integration is owned by the MVC team.
+**MVC — include the script:** MVC apps reference the standalone `aspnet-core-validation.js` file. The library auto-scans all forms on page load. MVC distribution and integration is owned by the MVC team.
 
 **Per-button opt-out:** The standard `formnovalidate` HTML attribute skips validation for that submit action:
 
@@ -334,61 +334,6 @@ builder.Services.AddClientValidationAdapter<NotEqualToAttribute>(
     attr => new NotEqualToClientAdapter(attr));
 ```
 
-#### Server-side: MVC adapter
-
-In MVC, the attribute emits `data-val-*` attributes via the existing `IClientModelValidator` interface. This is unchanged from current MVC:
-
-```csharp
-public class NotEqualToAttribute : ValidationAttribute, IClientModelValidator
-{
-    public string OtherProperty { get; }
-    public NotEqualToAttribute(string otherProperty) => OtherProperty = otherProperty;
-
-    protected override ValidationResult? IsValid(object? value, ValidationContext context) { /* server logic */ }
-
-    public void AddValidation(ClientModelValidationContext context)
-    {
-        MergeAttribute(context.Attributes, "data-val", "true");
-        MergeAttribute(context.Attributes, "data-val-notequalto", GetErrorMessage(context));
-        MergeAttribute(context.Attributes, "data-val-notequalto-other", "*." + OtherProperty);
-    }
-}
-```
-
-#### Dual-framework support (shared libraries)
-
-For library authors who need the same attribute to work in both Blazor and MVC apps, the attribute can implement both interfaces:
-
-```csharp
-public class NotEqualToAttribute : ValidationAttribute,
-    IClientValidationAdapter,    // Blazor
-    IClientModelValidator        // MVC
-{
-    public string OtherProperty { get; }
-    public NotEqualToAttribute(string otherProperty) => OtherProperty = otherProperty;
-
-    protected override ValidationResult? IsValid(object? value, ValidationContext context) { /* ... */ }
-
-    // Blazor path
-    public void AddClientValidation(in ClientValidationContext context, string errorMessage)
-    {
-        context.MergeAttribute("data-val", "true");
-        context.MergeAttribute("data-val-notequalto", errorMessage);
-        context.MergeAttribute("data-val-notequalto-other", "*." + OtherProperty);
-    }
-
-    // MVC path
-    public void AddValidation(ClientModelValidationContext context)
-    {
-        MergeAttribute(context.Attributes, "data-val", "true");
-        MergeAttribute(context.Attributes, "data-val-notequalto", GetErrorMessage(context));
-        MergeAttribute(context.Attributes, "data-val-notequalto-other", "*." + OtherProperty);
-    }
-}
-```
-
-Both paths emit the same `data-val-*` attributes, so the same JavaScript provider works for both.
-
 ### Scenario 10: Drop-in replacement for jQuery unobtrusive validation in MVC
 
 An existing ASP.NET Core MVC app removes the jQuery validation stack and replaces it with the new library. **No C# changes required.**
@@ -404,21 +349,19 @@ An existing ASP.NET Core MVC app removes the jQuery validation stack and replace
 **After:**
 
 ```html
-<script src="~/lib/aspnet-validation/aspnet-validation.js"></script>
+<script src="~/lib/aspnet-core-validation/aspnet-core-validation.js"></script>
 ```
 
 **What happens:**
 
-- The library auto-detects MVC mode and scans the DOM on page load.
+- Including the script is all that's needed. The library scans the DOM on page load and wires validation automatically.
 - All `data-val-*` attributes generated by MVC tag helpers (`asp-for`, `asp-validation-for`, `asp-validation-summary`) are consumed identically.
 - The same CSS classes are toggled (`input-validation-error`, `field-validation-error`, `validation-summary-errors`).
 - `data-valmsg-replace="true|false"` is respected.
 - `formnovalidate` on submit buttons is honored.
-- `[Remote]` attribute validation works out of the box (the MVC wiring registers the remote provider automatically).
+- `[Remote]` attribute validation works out of the box — the library uses the modern `fetch` API (instead of jQuery's `$.ajax`) to send requests, with per-element caching.
 
-**Size reduction:** 118 KB (jQuery + validation libs, minified) → ≤ 4 KB (Brotli-compressed).
-
-> **Distribution:** We build the JS library and ensure MVC compatibility. The MVC team owns distribution, integration, and testing for MVC scenarios. MVC apps reference the standalone `aspnet-validation.js` file (delivery mechanism TBD by MVC team).
+> ⚠️ **Blazor SSR:** Remote validation is **not supported**. Using `[Remote]` on a model in a Blazor SSR form throws `NotSupportedException` at render time. Custom async JavaScript providers in Blazor mode throw at registration time.
 
 #### Migrating custom validators from jQuery unobtrusive
 
@@ -471,22 +414,6 @@ window.__aspnetValidation.parse('#dynamic-container');
 // Also accepts an Element or ParentNode:
 window.__aspnetValidation.parse(document.getElementById('dynamic-container'));
 ```
-
-### Scenario 11: MVC remote validation
-
-In MVC mode, the `[Remote]` attribute works out of the box:
-
-```csharp
-public class RegisterModel
-{
-    [Remote(action: "VerifyEmail", controller: "Account")]
-    public string Email { get; set; }
-}
-```
-
-The library sends a `fetch()` request to the specified URL, supports GET (default) and POST, caches results per-element to avoid redundant requests, and interprets the response (`true`/`"true"` = valid, `false` = invalid, any other string = custom error message). On network error, the field is treated as valid to avoid blocking the user.
-
-> ⚠️ **Blazor SSR:** Remote validation is **not supported**. Using `[Remote]` on a model in a Blazor SSR form throws `NotSupportedException` at render time. Custom async JavaScript providers in Blazor mode throw at registration time.
 
 ## Assumptions
 
