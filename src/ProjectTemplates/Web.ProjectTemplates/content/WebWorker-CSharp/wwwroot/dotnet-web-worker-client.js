@@ -66,7 +66,10 @@ class DotnetWebWorkerClient {
     #parseIfJson(value) {
         if (typeof value === 'string') {
             try {
-                return JSON.parse(value);
+                const parsed = JSON.parse(value);
+                if (typeof parsed === 'object' && parsed !== null) {
+                    return parsed;
+                }
             } catch {
                 // not JSON, return as-is
             }
