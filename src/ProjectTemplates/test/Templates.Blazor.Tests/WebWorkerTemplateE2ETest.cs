@@ -42,7 +42,6 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]
     public async Task WebWorkerTemplate_CanInvokeMethods(BrowserKind browserKind)
     {
         await using var testRun = await SetupWorkerLibAndBuild(_sharedHostProject);
@@ -58,7 +57,6 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]
     public async Task WebWorkerTemplate_HandlesErrors(BrowserKind browserKind)
     {
         await using var testRun = await SetupWorkerLibAndBuild(_sharedHostProject);
@@ -74,7 +72,6 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]
     public async Task WebWorkerTemplate_CanDisposeWorker(BrowserKind browserKind)
     {
         await using var testRun = await SetupWorkerLibAndBuild(_sharedHostProject);
@@ -90,7 +87,6 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]
     public async Task WebWorkerTemplate_CanInvokeMethodsAfterPublish(BrowserKind browserKind)
     {
         await using var testRun = await SetupWorkerLibAndPublish(_sharedHostProject);
@@ -117,6 +113,8 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await AddWorkerLibReferenceAsync(hostProject);
         await hostProject.RunDotNetPublishAsync(noRestore: false);
 
+        LogBuildDiagnostics(hostProject, "publish");
+
         return new WorkerLibTestRun(workerLibDir, hostProject, Output);
     }
 
@@ -134,6 +132,8 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         await CreateWebWorkerLibrary(workerLibDir);
         await AddWorkerLibReferenceAsync(hostProject);
         await hostProject.RunDotNetBuildAsync();
+
+        LogBuildDiagnostics(hostProject, "build");
 
         return new WorkerLibTestRun(workerLibDir, hostProject, Output);
     }
@@ -233,6 +233,79 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
         var workerMethodsSource = Path.Combine(TestAssetsPath, "TestWorkerMethods.cs");
         File.Copy(workerMethodsSource, Path.Combine(hostProject.TemplateOutputDir, "TestWorkerMethods.cs"), overwrite: true);
+    }
+
+    private void LogBuildDiagnostics(Project hostProject, string buildKind)
+    {
+        // Log the processed index.html to check if fingerprints resolved correctly.
+        // The #[.{fingerprint}] placeholder should be replaced with an actual hash.
+        // If it resolves to empty, the script tag will reference the unfingerprinted
+        // 'blazor.webassembly.js' which returns 404 from the dev server.
+        var processedHtmlFiles = Directory.GetFiles(
+            Path.Combine(hostProject.TemplateOutputDir, "obj"),
+            "*.html",
+            SearchOption.AllDirectories);
+
+        Output.WriteLine($"[Diagnostics:{buildKind}] Processed HTML files found: {processedHtmlFiles.Length}");
+        foreach (var htmlFile in processedHtmlFiles)
+        {
+            var html = File.ReadAllText(htmlFile);
+            var scriptLines = html.Split('\n')
+                .Where(l => l.Contains("blazor.webassembly", StringComparison.OrdinalIgnoreCase))
+                .Select(l => l.Trim());
+            Output.WriteLine($"[Diagnostics:{buildKind}] {htmlFile}");
+            foreach (var line in scriptLines)
+            {
+                Output.WriteLine($"[Diagnostics:{buildKind}]   {line}");
+            }
+        }
+
+        // Log endpoints manifest routes for blazor.webassembly to verify route registration.
+        var endpointsManifest = Path.Combine(
+            hostProject.TemplateOutputDir,
+            "bin", "Debug", "net11.0",
+            $"{hostProject.ProjectName}.staticwebassets.endpoints.json");
+        if (File.Exists(endpointsManifest))
+        {
+            try
+            {
+                using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(endpointsManifest));
+                var endpoints = doc.RootElement.GetProperty("Endpoints");
+                Output.WriteLine($"[Diagnostics:{buildKind}] Endpoints manifest blazor.webassembly routes:");
+                foreach (var endpoint in endpoints.EnumerateArray())
+                {
+                    var route = endpoint.GetProperty("Route").GetString();
+                    if (route?.Contains("blazor.webassembly", StringComparison.OrdinalIgnoreCase) == true)
+                    {
+                        var assetFile = endpoint.GetProperty("AssetFile").GetString();
+                        Output.WriteLine($"[Diagnostics:{buildKind}]   Route: {route} -> AssetFile: {assetFile}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Output.WriteLine($"[Diagnostics:{buildKind}] Failed to parse endpoints manifest: {ex.Message}");
+            }
+        }
+        else
+        {
+            Output.WriteLine($"[Diagnostics:{buildKind}] WARNING: Endpoints manifest not found at {endpointsManifest}");
+        }
+
+        // Log the original index.html to check the raw source state.
+        var sourceHtml = Path.Combine(hostProject.TemplateOutputDir, "wwwroot", "index.html");
+        if (File.Exists(sourceHtml))
+        {
+            var html = File.ReadAllText(sourceHtml);
+            var scriptLines = html.Split('\n')
+                .Where(l => l.Contains("blazor.webassembly", StringComparison.OrdinalIgnoreCase))
+                .Select(l => l.Trim());
+            Output.WriteLine($"[Diagnostics:{buildKind}] Source wwwroot/index.html blazor.webassembly references:");
+            foreach (var line in scriptLines)
+            {
+                Output.WriteLine($"[Diagnostics:{buildKind}]   {line}");
+            }
+        }
     }
 
     private async Task TestWebWorkerInteraction(BrowserKind browserKind, string baseUri, string clientRoute = null)
