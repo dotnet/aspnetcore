@@ -1,10 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.InteropServices.JavaScript;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Routing;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
+using Interop = Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInterop;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services;
 
@@ -48,6 +49,7 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
     }
 
     /// <inheritdoc />
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties, typeof(NavigationOptions))]
     protected override void NavigateToCore(string uri, NavigationOptions options)
     {
         ArgumentNullException.ThrowIfNull(uri);
@@ -66,7 +68,7 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
                     return;
                 }
 
-                NavigationManagerInterop.NavigateTo(uri, options.ForceLoad, options.ReplaceHistoryEntry, options.HistoryEntryState);
+                DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.NavigateTo, uri, options);
             }
             catch (Exception ex)
             {
@@ -80,7 +82,7 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
     /// <inheritdoc />
     public override void Refresh(bool forceReload = false)
     {
-        NavigationManagerInterop.Refresh(forceReload);
+        DefaultWebAssemblyJSRuntime.Instance.InvokeVoid(Interop.Refresh, forceReload);
     }
 
     protected override void HandleLocationChangingHandlerException(Exception ex, LocationChangingContext context)
@@ -99,13 +101,4 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
         [LoggerMessage(2, LogLevel.Error, "Navigation failed when changing the location to {Uri}", EventName = "NavigationFailed")]
         public static partial void NavigationFailed(ILogger logger, string uri, Exception exception);
     }
-}
-
-internal static partial class NavigationManagerInterop
-{
-    [JSImport(BrowserNavigationManagerInterop.NavigateToWithArgs, "blazor-internal")]
-    public static partial void NavigateTo(string uri, bool forceLoad, bool replaceHistoryEntry, string? historyEntryState);
-
-    [JSImport(BrowserNavigationManagerInterop.Refresh, "blazor-internal")]
-    public static partial void Refresh(bool forceReload);
 }
