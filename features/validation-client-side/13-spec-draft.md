@@ -26,7 +26,7 @@ We propose creating a new minimal **JavaScript validation library** (target: ≤
 
 - **Replacing browser-native validation UI.** The library suppresses native browser validation tooltips and manages its own error display via CSS classes and message target elements. However, it does not attempt to provide a rich validation UI framework (tooltips, animations, etc.). Richer UI is left to application CSS and/or third-party libraries that can read the Constraint Validation API state.
 
-- **Source generator or compile-time validation metadata.** All C# attribute discovery is reflection-based (with per-field caching). A source-generator approach for trimming-friendly or AOT-compatible metadata emission is a potential future optimization but is not part of this feature. The reflection-based approach is not trimming-safe or Native AOT compatible; applications using PublishTrimmed or PublishAot may need the future source-generator approach.
+- **Source generator for validation metadata.** The C# attribute discovery uses reflection (`Type.GetProperty`, `GetCustomAttributes<ValidationAttribute>`) with per-field caching. This is trimming-compatible using the same `[DynamicallyAccessedMembers]` annotations and `[UnconditionalSuppressMessage]` suppressions as the existing `DataAnnotationsValidator` — model types are application code and are not trimmed by default. A source-generator approach that avoids reflection entirely is a potential future optimization but is not part of this feature.
 
 - **Custom element for validation targets.** The original proposal included an optional custom element (e.g., `<asp-validation-message>`) using `ElementInternals` for message rendering and built-in ARIA semantics. This has been deferred in favor of the simpler approach: plain `<span data-valmsg-for>` elements (compatible with both MVC and Blazor conventions) with ARIA attributes managed directly by the JS library. The custom element approach may be revisited in a future release if there is demand for a more standards-based abstraction.
 
@@ -545,7 +545,6 @@ If the C# layer correctly gates `data-val-*` emission, the JS library naturally 
 - **Enhanced navigation event contract:** Blazor's `enhancedload` event will continue to fire after DOM patching, and streaming rendering completion fires the same event.
 - **Progressive enhancement:** Client-side validation is a UX enhancement. Server-side validation always remains authoritative. There is a brief window between page load and script initialization where the browser's native validation (or no validation) is active; any submission during that window is handled by server-side validation.
 - **`RemoteAttribute` is MVC-specific:** `[Remote]` belongs to the `Microsoft.AspNetCore.Mvc` namespace and is not expected on Blazor models.
-- **Trimming and AOT:** The reflection-based C# service (`GetProperty`, `GetCustomAttributes`) is **not** trimming-safe or Native AOT compatible. This is an accepted limitation for the initial release, with a source-generator approach as a future path.
 
 ## References
 
