@@ -32,8 +32,8 @@
            Using Remove+Include pattern to strip all inherited metadata. -->
       <_CleanAssemblyPaths Remove="@(_CleanAssemblyPaths)" />
       <_CleanAssemblyPaths Include="@(_ProjectReferencePaths->'%(FullPath)')" />
-      <_ILLinkSuppressionFile Include="$([System.IO.Path]::GetDirectoryName($([System.String]::new('%(RootAssemblies.ProjectPath)'))))\%(FileName).WarningSuppressions.xml"
-        SuppressionFileName="%(FileName).WarningSuppressions" />
+      <_ILLinkSuppressionFile Include="$([System.IO.Path]::GetDirectoryName($([System.String]::new('%(RootAssemblies.ProjectPath)'))))\%(RootAssemblies.Identity).WarningSuppressions.xml"
+        SuppressionFileName="%(RootAssemblies.Identity).WarningSuppressions" />
       <ILLinkSuppressionFile Condition="Exists(%(_ILLinkSuppressionFile.Identity))" Include="%(_ILLinkSuppressionFile.Identity)" />
     </ItemGroup>
 
