@@ -151,6 +151,14 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     public int MaxItemCount { get; set; } = 100;
 
     /// <summary>
+    /// Gets or sets the anchor mode that controls how the viewport behaves at the edges
+    /// of the list when new items arrive. The default is <see cref="VirtualizeAnchorMode.Beginning"/>,
+    /// which preserves backward-compatible behavior.
+    /// </summary>
+    [Parameter]
+    public VirtualizeAnchorMode AnchorMode { get; set; } = VirtualizeAnchorMode.Beginning;
+
+    /// <summary>
     /// Instructs the component to re-request data from its <see cref="ItemsProvider"/>.
     /// This is useful if external data may have changed. There is no need to call this
     /// when using <see cref="Items"/>.
@@ -230,7 +238,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         if (firstRender)
         {
             _jsInterop = new VirtualizeJsInterop(this, JSRuntime);
-            await _jsInterop.InitializeAsync(_spacerBefore, _spacerAfter);
+            await _jsInterop.InitializeAsync(_spacerBefore, _spacerAfter, (int)AnchorMode);
         }
 
         if (_pendingScrollToBottom && _jsInterop is not null)
