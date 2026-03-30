@@ -85,6 +85,19 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   const anchoredItems: Map<Element, number> = new Map();
   let scrollTriggeredRender = false;
 
+  // None-mode prepend compensation: suppress spacerBefore IO callbacks until the
+  // user scrolls. Without this, the stale IO callback (computed before the scroll
+  // compensation) would reset _itemsBefore to 0, undoing the compensation.
+  let suppressSpacerBeforeCallbacks = false;
+  let scrollUnlockHandler: (() => void) | null = null;
+
+  function cleanupScrollUnlock(): void {
+    if (scrollUnlockHandler) {
+      scrollElement.removeEventListener('scroll', scrollUnlockHandler);
+      scrollUnlockHandler = null;
+    }
+  }
+
   function getObservedHeight(entry: ResizeObserverEntry): number {
     return entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
   }
@@ -125,6 +138,28 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   //  2. For convergence (sticky-top/bottom) - observes elements for geometry changes, drives the scroll position.
   //  3. Manual scroll compensation (tables/Safari) — adjusts scrollTop when above-viewport items resize.
   const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]): void => {
+    // None-mode prepend compensation: C# detected items prepended at the top,
+    // shifted _itemsBefore, and marked spacerBefore with data-scroll-compensate.
+    // Set scrollTop to push new items above the viewport so the user keeps seeing
+    // the same content. Suppress spacerBefore IO callbacks until the user scrolls
+    // to prevent stale IO entries from resetting _itemsBefore back to 0.
+    if (spacerBefore.hasAttribute('data-scroll-compensate')) {
+      scrollElement.scrollTop = spacerBefore.offsetHeight;
+      spacerBefore.removeAttribute('data-scroll-compensate');
+      suppressSpacerBeforeCallbacks = true;
+      cleanupScrollUnlock();
+
+      // Use rAF to skip the compensation-triggered scroll event (fires in
+      // the same frame), then listen for the next user-initiated scroll.
+      requestAnimationFrame(() => {
+        scrollUnlockHandler = () => {
+          suppressSpacerBeforeCallbacks = false;
+          scrollUnlockHandler = null;
+        };
+        scrollElement.addEventListener('scroll', scrollUnlockHandler, { once: true });
+      });
+    }
+
     for (const entry of entries) {
       if (entry.target === spacerBefore || entry.target === spacerAfter) {
         const spacer = entry.target as HTMLElement;
@@ -281,6 +316,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       anchoredItems.clear();
       resizeObserver.disconnect();
       keydownTarget.removeEventListener('keydown', handleJumpKeys);
+      cleanupScrollUnlock();
       if (callbackTimeout) {
         clearTimeout(callbackTimeout);
         callbackTimeout = null;
@@ -319,15 +355,23 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
     if (convergingToBottom) return;
 
+    // pendingJumpToEnd is user-initiated (End key) — always honor it.
+    // Data-driven convergence only fires when End anchoring is enabled.
+    if (pendingJumpToEnd) {
+      convergingToBottom = true;
+      startConvergenceObserving();
+      scrollElement.scrollTop = scrollElement.scrollHeight;
+      pendingJumpToEnd = false;
+      return;
+    }
+
+    if (!(anchorMode & 2)) return;
+
     const atBottom = scrollElement.scrollTop + scrollElement.clientHeight >= scrollElement.scrollHeight - 1;
-    if (!atBottom && !pendingJumpToEnd) return;
+    if (!atBottom) return;
 
     convergingToBottom = true;
     startConvergenceObserving();
-    if (pendingJumpToEnd) {
-      scrollElement.scrollTop = scrollElement.scrollHeight;
-      pendingJumpToEnd = false;
-    }
   }
 
   function onSpacerBeforeVisible(): void {
@@ -340,15 +384,23 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
     if (convergingToTop) return;
 
+    // pendingJumpToStart is user-initiated (Home key) — always honor it.
+    // Data-driven convergence only fires when Beginning anchoring is enabled.
+    if (pendingJumpToStart) {
+      convergingToTop = true;
+      startConvergenceObserving();
+      scrollElement.scrollTop = 0;
+      pendingJumpToStart = false;
+      return;
+    }
+
+    if (!(anchorMode & 1)) return;
+
     const atTop = scrollElement.scrollTop < 1;
-    if (!atTop && !pendingJumpToStart) return;
+    if (!atTop) return;
 
     convergingToTop = true;
     startConvergenceObserving();
-    if (pendingJumpToStart) {
-      scrollElement.scrollTop = 0;
-      pendingJumpToStart = false;
-    }
   }
 
   function processIntersectionEntries(entries: IntersectionObserverEntry[]): void {
@@ -358,6 +410,12 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
 
     const intersectingEntries = entries.filter(entry => {
+      // During None-mode prepend compensation, suppress spacerBefore callbacks
+      // to prevent stale IO data from undoing the scroll compensation.
+      if (suppressSpacerBeforeCallbacks && entry.target === spacerBefore) {
+        return false;
+      }
+
       if (entry.isIntersecting) {
         if (entry.target === spacerAfter) {
           onSpacerAfterVisible();

@@ -72,6 +72,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     internal bool _pendingScrollToBottom;
 
+    private bool _pendingScrollToSpacerBefore;
+
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -250,6 +252,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // After render the set of items could change. Tell JS to refresh ResizeObserver.
         if (!firstRender && _jsInterop is not null)
         {
+            _pendingScrollToSpacerBefore = false;
             await _jsInterop.RefreshObserversAsync();
         }
     }
@@ -268,7 +271,13 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         builder.OpenElement(0, SpacerElement);
         builder.AddAttribute(1, "style", GetSpacerStyle(_itemsBefore));
         builder.AddAttribute(2, "aria-hidden", "true");
-        builder.AddElementReferenceCapture(3, elementReference => _spacerBefore = elementReference);
+        // Signal to JS that scrollTop should be set to spacerBefore.offsetHeight after this render.
+        // Embedded in the render diff so the ResizeObserver acts on it before the IO fires.
+        if (_pendingScrollToSpacerBefore)
+        {
+            builder.AddAttribute(3, "data-scroll-compensate", "1");
+        }
+        builder.AddElementReferenceCapture(4, elementReference => _spacerBefore = elementReference);
         builder.CloseElement();
 
         var lastItemIndex = Math.Min(_itemsBefore + _visibleItemCapacity, _itemCount);
@@ -401,7 +410,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         // When we're at the very bottom and new measurements arrived,
         // scroll to bottom so the viewport stays pinned while items converge.
-        if (itemsAfter == 0 && hadNewMeasurements)
+        // Suppress this when AnchorMode is explicitly None.
+        if (itemsAfter == 0 && hadNewMeasurements && AnchorMode != VirtualizeAnchorMode.None)
         {
             _pendingScrollToBottom = true;
         }
@@ -530,13 +540,26 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 var countDelta = result.TotalItemCount - previousItemCount;
 
                 // Detect if items were prepended above the current viewport position.
-                if (countDelta > 0 && _itemsBefore > 0 && _previousFirstLoadedItem != null
+                if (countDelta > 0 && _previousFirstLoadedItem != null
                     && _itemsProvider == DefaultItemsProvider)
                 {
                     var newFirstItem = Items!.ElementAtOrDefault(_itemsBefore);
                     if (newFirstItem != null && !ReferenceEquals(_previousFirstLoadedItem, newFirstItem))
                     {
-                        _itemsBefore = Math.Min(_itemsBefore + countDelta, Math.Max(0, result.TotalItemCount - _visibleItemCapacity));
+                        if (_itemsBefore > 0)
+                        {
+                            // Mid-list: adjust itemsBefore to keep the same items visible.
+                            _itemsBefore = Math.Min(_itemsBefore + countDelta, Math.Max(0, result.TotalItemCount - _visibleItemCapacity));
+                        }
+                        else if (AnchorMode == VirtualizeAnchorMode.None)
+                        {
+                            // At the top edge in None mode: native scroll anchoring can't
+                            // compensate because Blazor reuses DOM elements in-place.
+                            // Shift the window past the prepended items and let JS set
+                            // scrollTop to the actual spacerBefore height after render.
+                            _itemsBefore = Math.Min(countDelta, Math.Max(0, result.TotalItemCount - _visibleItemCapacity));
+                            _pendingScrollToSpacerBefore = true;
+                        }
 
                         var adjustedRequest = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
                         result = await _itemsProvider(adjustedRequest);
