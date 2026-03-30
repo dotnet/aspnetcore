@@ -1,67 +1,32 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
 using Microsoft.JSInterop;
 
 namespace Company.WebWorker1;
 
-/// <summary>
-/// Client for communicating with a Web Worker running .NET code.
-/// </summary>
-/// <remarks>
-/// <para>
-/// Worker methods are static methods marked with <c>[JSExport]</c> in a <c>static partial class</c>.
-/// By default, they should be defined in the main application. The assembly name in
-/// <c>dotnet-web-worker.js</c> must match the assembly containing the worker methods.
-/// The project requires <c>&lt;AllowUnsafeBlocks&gt;true&lt;/AllowUnsafeBlocks&gt;</c> in the .csproj file.
-/// </para>
-/// <para>
-/// Due to <c>[JSExport]</c> limitations, worker methods can only return primitives or strings.
-/// For complex types, serialize to JSON before returning—it will be automatically deserialized.
-/// </para>
-/// <para>
-/// Example worker class (add this to your main app):
-/// <code>
-/// [SupportedOSPlatform("browser")]
-/// public static partial class MyWorker
-/// {
-///     [JSExport]
-///     public static string Process(string input) => $"Processed: {input}";
-/// }
-/// </code>
-/// </para>
-/// <para>
-/// Example usage:
-/// <code>
-/// @inject IJSRuntime JSRuntime
-///
-/// private WebWorkerClient? _worker;
-///
-/// protected override async Task OnAfterRenderAsync(bool firstRender)
-/// {
-///     if (firstRender)
-///     {
-///         _worker = await WebWorkerClient.CreateAsync(JSRuntime);
-///     }
-/// }
-///
-/// async Task CallWorker()
-/// {
-///     var result = await _worker!.InvokeAsync&lt;string&gt;("MyApp.MyWorker.Process", ["Hello"]);
-/// }
-///
-/// public async ValueTask DisposeAsync() => await (_worker?.DisposeAsync() ?? ValueTask.CompletedTask);
-/// </code>
-/// </para>
-/// </remarks>
+// This class provides a client for communicating with a Web Worker running
+// .NET code. The associated JavaScript module is loaded on demand when the
+// worker is created.
+//
+// Worker methods are static methods marked with [JSExport] in a static partial
+// class. Due to [JSExport] limitations, worker methods can only return primitives
+// or strings. For complex types, serialize to JSON before returning — it will be
+// automatically deserialized.
+//
+// Example worker class:
+//
+//     [SupportedOSPlatform("browser")]
+//     public static partial class MyWorker
+//     {
+//         [JSExport]
+//         public static string Process(string input) => $"Processed: {input}";
+//     }
+//
+// Example usage:
+//
+//     var worker = await WebWorkerClient.CreateAsync(JSRuntime);
+//     var result = await worker.InvokeAsync<string>("MyApp.MyWorker.Process", ["Hello"]);
+
 public sealed class WebWorkerClient(IJSObjectReference worker) : IAsyncDisposable
 {
-    /// <summary>
-    /// Creates and initializes a new .NET Web Worker client instance.
-    /// </summary>
-    /// <param name="jsRuntime">The JS runtime instance.</param>
-    /// <returns>A ready-to-use WebWorkerClient instance.</returns>
-    /// <exception cref="JSException">Thrown if the worker fails to initialize.</exception>
     public static async Task<WebWorkerClient> CreateAsync(IJSRuntime jsRuntime)
     {
         await using var module = await jsRuntime.InvokeAsync<IJSObjectReference>(
@@ -72,24 +37,11 @@ public sealed class WebWorkerClient(IJSObjectReference worker) : IAsyncDisposabl
         return new WebWorkerClient(workerRef);
     }
 
-    /// <summary>
-    /// Invokes a method on the worker and returns the result.
-    /// </summary>
-    /// <typeparam name="TResult">The type of the result.</typeparam>
-    /// <param name="method">Full method path: "Namespace.ClassName.MethodName"</param>
-    /// <param name="args">Arguments to pass to the method.</param>
-    /// <param name="cancellationToken">Token to cancel the operation.</param>
-    /// <returns>The result from the worker method.</returns>
-    /// <exception cref="OperationCanceledException">Thrown if the operation is canceled.</exception>
-    /// <exception cref="JSException">Thrown if the worker method throws an exception.</exception>
     public async Task<TResult> InvokeAsync<TResult>(string method, object[] args, CancellationToken cancellationToken = default)
     {
         return await worker.InvokeAsync<TResult>("invoke", cancellationToken, [method, args]);
     }
 
-    /// <summary>
-    /// Terminates the worker and releases resources.
-    /// </summary>
     public async ValueTask DisposeAsync()
     {
         try
@@ -98,7 +50,7 @@ public sealed class WebWorkerClient(IJSObjectReference worker) : IAsyncDisposabl
         }
         catch (JSDisconnectedException)
         {
-            // Circuit disconnected, worker is already gone
+            // JS interop disconnected, worker is already gone
         }
 
         await worker.DisposeAsync();
