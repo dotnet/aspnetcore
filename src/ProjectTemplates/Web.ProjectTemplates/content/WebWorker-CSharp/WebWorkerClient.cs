@@ -27,19 +27,21 @@ namespace Company.WebWorker1;
 
 public sealed class WebWorkerClient(IJSObjectReference worker) : IAsyncDisposable
 {
-    public static async Task<WebWorkerClient> CreateAsync(IJSRuntime jsRuntime)
+    private const int DefaultTimeoutMs = 60000;
+
+    public static async Task<WebWorkerClient> CreateAsync(IJSRuntime jsRuntime, int timeoutMs = DefaultTimeoutMs, CancellationToken cancellationToken = default)
     {
         await using var module = await jsRuntime.InvokeAsync<IJSObjectReference>(
-            "import", "./_content/Company.WebWorker1/dotnet-web-worker-client.js");
+            "import", cancellationToken, "./_content/Company.WebWorker1/dotnet-web-worker-client.js");
 
-        var workerRef = await module.InvokeAsync<IJSObjectReference>("create");
+        var workerRef = await module.InvokeAsync<IJSObjectReference>("create", cancellationToken, timeoutMs);
 
         return new WebWorkerClient(workerRef);
     }
 
-    public async Task<TResult> InvokeAsync<TResult>(string method, object[] args, CancellationToken cancellationToken = default)
+    public async Task<TResult> InvokeAsync<TResult>(string method, object[] args, int timeoutMs = DefaultTimeoutMs, CancellationToken cancellationToken = default)
     {
-        return await worker.InvokeAsync<TResult>("invoke", cancellationToken, [method, args]);
+        return await worker.InvokeAsync<TResult>("invoke", cancellationToken, [method, args, timeoutMs]);
     }
 
     public async ValueTask DisposeAsync()
