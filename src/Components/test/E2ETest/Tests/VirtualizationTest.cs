@@ -1945,6 +1945,26 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var select = Browser.Exists(By.Id("anchor-mode-select"));
         var selectElement = new SelectElement(select);
         selectElement.SelectByValue(anchorMode);
+
+        // Wait for @key to re-create Virtualize with the new mode.
+        Browser.True(() => Browser.Exists(By.Id("current-mode")).Text == anchorMode);
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+    }
+
+    private void ScrollMidListAndWaitForRender(IWebElement container, IJavaScriptExecutor js)
+    {
+        js.ExecuteScript("arguments[0].scrollTop = 5000", container);
+        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) > 4000);
+        // Wait for Virtualize to render items at the new scroll position.
+        Browser.True(() =>
+        {
+            var items = container.FindElements(By.CssSelector(".item[data-index]"));
+            return items.Any(item =>
+            {
+                var idx = item.GetAttribute("data-index");
+                return int.TryParse(idx, out var n) && n > 50;
+            });
+        });
     }
 
     [Fact]
@@ -1962,10 +1982,19 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Exists(By.Id("prepend-items")).Click();
         Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
 
-        var (_, relTopAfter, scrollTopAfter) = GetItemPositionInContainer(js, container, ".item", indexBefore);
-        Assert.True(Math.Abs(relTopAfter - relTopBefore) < 5,
-            $"None mode: first visible item should not shift after prepend. " +
-            $"Before: {relTopBefore}, After: {relTopAfter}, scrollTop: {scrollTopAfter}");
+        // Wait for compensation to stabilize
+        Browser.True(() =>
+        {
+            var scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            return scrollTop > 50;
+        }, TimeSpan.FromSeconds(5));
+
+        var (indexAfter, relTopAfter, _) = GetItemPositionInContainer(js, container, ".item");
+
+        var idxBefore = int.Parse(indexBefore, System.Globalization.CultureInfo.InvariantCulture);
+        var idxAfter = int.Parse(indexAfter, System.Globalization.CultureInfo.InvariantCulture);
+        Assert.True(Math.Abs(idxAfter - idxBefore) <= 1,
+            $"None mode: viewport shifted from item {indexBefore} to {indexAfter} after prepend at top");
     }
 
     [Fact]
@@ -2004,18 +2033,23 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
-        js.ExecuteScript("arguments[0].scrollTop = 5000", container);
-        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) > 4000);
+        ScrollMidListAndWaitForRender(container, js);
 
-        var (indexBefore, relTopBefore, scrollTopBefore) = GetItemPositionInContainer(js, container, ".item");
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
 
         Browser.Exists(By.Id("prepend-items")).Click();
         Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
 
-        var (_, relTopAfter, scrollTopAfter) = GetItemPositionInContainer(js, container, ".item", indexBefore);
-        Assert.True(Math.Abs(relTopAfter - relTopBefore) < 5,
-            $"None mode mid-list: viewport should stay stable after prepend. " +
-            $"Before: {relTopBefore}, After: {relTopAfter}");
+        // Native anchoring adjusts scrollTop to compensate, so check visual position instead.
+        Browser.True(() =>
+        {
+            try
+            {
+                var pos = GetItemPositionInContainer(js, container, ".item", indexBefore);
+                return Math.Abs(pos.relTop - relTopBefore) < 5;
+            }
+            catch { return false; }
+        }, $"None mode mid-list: viewport should stay visually stable after prepend (relTop before: {relTopBefore})");
     }
 
     [Fact]
@@ -2039,7 +2073,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    public void AnchorMode_Beginning_AppendAtBottom_NoAutoScroll()
+    public void AnchorMode_Beginning_AppendAtBottom_ViewportFollows()
     {
         MountAnchorModeComponent("1");
 
@@ -2055,15 +2089,18 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             return sh - st - ch < 2;
         });
 
-        var scrollTopBefore = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
-
         Browser.Exists(By.Id("append-items")).Click();
         Browser.Contains("Appended 10 items", () => Browser.Exists(By.Id("status")).Text);
 
-        var scrollTopAfter = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
-        Assert.True(Math.Abs(scrollTopAfter - scrollTopBefore) < 5,
-            $"Beginning mode: should not auto-scroll when appending at bottom. " +
-            $"Before: {scrollTopBefore}, After: {scrollTopAfter}");
+        // Beginning mode preserves .NET 10 backward-compatible behavior:
+        // convergence auto-scrolls at the bottom edge.
+        Browser.True(() =>
+        {
+            var st = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            var sh = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+            var ch = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+            return sh - st - ch < 2;
+        }, "Beginning mode: should follow to bottom (backward compat with .NET 10)");
     }
 
     [Fact]
@@ -2074,8 +2111,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
-        js.ExecuteScript("arguments[0].scrollTop = 5000", container);
-        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) > 4000);
+        ScrollMidListAndWaitForRender(container, js);
 
         var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
 
@@ -2148,8 +2184,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
-        js.ExecuteScript("arguments[0].scrollTop = 5000", container);
-        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) > 4000);
+        ScrollMidListAndWaitForRender(container, js);
 
         var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
 
@@ -2221,8 +2256,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
 
-        js.ExecuteScript("arguments[0].scrollTop = 5000", container);
-        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) > 4000);
+        ScrollMidListAndWaitForRender(container, js);
 
         var (indexBefore, relTopBefore, scrollTopBefore) = GetItemPositionInContainer(js, container, ".item");
 

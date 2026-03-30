@@ -13,7 +13,8 @@
 </div>
 
 <div id="scroll-container" style="height: 300px; overflow-y: auto; border: 1px solid black;">
-    <Virtualize Items="@items" ItemSize="50" AnchorMode="@anchorMode" Context="item">
+    @* @key forces Virtualize to re-create (and re-init JS) when anchorMode changes *@
+    <Virtualize @key="anchorMode" Items="@items" ItemSize="50" AnchorMode="@anchorMode" Context="item">
         <div class="item"
              data-index="@item.Index"
              style="border: 1px solid gray; padding: 5px; min-height: @(item.Height)px;">
@@ -30,6 +31,7 @@
 </div>
 
 <p id="status">@statusMessage</p>
+<p id="current-mode">@((int)anchorMode)</p>
 
 @code {
     private List<DynamicItem> items = new();
