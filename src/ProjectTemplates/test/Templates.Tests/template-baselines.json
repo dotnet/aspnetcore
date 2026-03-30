@@ -3776,7 +3776,7 @@
         "Telemetry/Serializer/OtlpTraceSerializer.cs",
         "Telemetry/Serializer/ProtobufSerializer.cs",
         "Telemetry/Serializer/ProtobufWireType.cs",
-        "wwwroot/BlazorWasm.ServiceDefaults1.lib.module.js"
+        "wwwroot/{ProjectName}.lib.module.js"
       ]
     }
   }
