@@ -44,6 +44,11 @@ public sealed class WebWorkerClient(IJSObjectReference worker) : IAsyncDisposabl
         return await worker.InvokeAsync<TResult>("invoke", cancellationToken, [method, args, timeoutMs]);
     }
 
+    public async Task InvokeVoidAsync(string method, object[] args, int timeoutMs = DefaultTimeoutMs, CancellationToken cancellationToken = default)
+    {
+        await worker.InvokeVoidAsync("invoke", cancellationToken, [method, args, timeoutMs]);
+    }
+
     public async ValueTask DisposeAsync()
     {
         try
