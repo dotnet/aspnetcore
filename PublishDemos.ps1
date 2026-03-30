@@ -1,0 +1,3 @@
+dotnet publish C:\code\ValidationDemos\BlazorServerDemo\BlazorServerDemo.csproj -c Release -r win-x64 --self-contained -o C:\code\ValidationDemos\publish\BlazorServerDemo
+dotnet publish C:\code\ValidationDemos\BlazorSsrDemo\BlazorSsrDemo.csproj -c Release -r win-x64 --self-contained -o C:\code\ValidationDemos\publish\BlazorSsrDemo
+dotnet publish C:\code\ValidationDemos\MvcDemo\MvcDemo.csproj -c Release -o C:\code\ValidationDemos\publish\MvcDemo
