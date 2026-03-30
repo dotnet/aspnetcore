@@ -1,8 +1,8 @@
 # Summary
 
-This document proposes adding **first-party, zero-dependency client-side form validation** to **ASP.NET Core** that works for **Blazor Web Apps** (static SSR with both enhanced and non-enhanced forms) and **MVC / Razor Pages**, closing a long-standing gap where Blazor static-SSR forms require a SignalR circuit for client validation and MVC relies on jQuery + jquery-validate + jquery-validation-unobtrusive (118 KB combined).
+This document proposes adding **first-party, zero-dependency client-side form validation** to ASP.NET Core that works for **Blazor Web Apps** (static SSR with both enhanced and non-enhanced forms) and **MVC / Razor Pages**, closing a long-standing gap where Blazor forms require interactivity for client validation and MVC relies on a large and hard-to-maintain jQuery-based library bundle.
 
-The feature delivers a **JavaScript validation library** (target: ≤ 4 KB Brotli-compressed, no dependencies) that understands the existing `data-val-*` attribute protocol and uses the browser-native **Constraint Validation API** as its validation state mechanism. For Blazor, the validation JS is **bundled into `blazor.web.js`** and the C# service layer is **enabled by default via `AddRazorComponents()`** — existing input components automatically emit `data-val-*` attributes from `DataAnnotations` on statically-rendered forms. For MVC, the JS library is compatible with MVC-generated HTML and can serve as a **drop-in replacement** for the jQuery validation stack; the MVC team owns distribution and testing for MVC scenarios.
+We propose creating a new minimal **JavaScript validation library** (target: ≤ 5 KB Brotli-compressed, no dependencies) that understands the existing `data-val-*` attribute protocol and uses the browser-native **Constraint Validation API** as its validation state mechanism. For Blazor, the validation JS is **bundled into `blazor.web.js`** and the C# service layer is **enabled by default via `AddRazorComponents()`**. For MVC and Razor Pages, the JS library is compatible with the existing HTML generation and can serve as a **drop-in replacement** for the jQuery validation stack.
 
 ## Goals
 
