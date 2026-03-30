@@ -241,29 +241,38 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         // The #[.{fingerprint}] placeholder should be replaced with an actual hash.
         // If it resolves to empty, the script tag will reference the unfingerprinted
         // 'blazor.webassembly.js' which returns 404 from the dev server.
-        var processedHtmlFiles = Directory.GetFiles(
-            Path.Combine(hostProject.TemplateOutputDir, "obj"),
-            "*.html",
-            SearchOption.AllDirectories);
+        var objDirectory = Path.Combine(hostProject.TemplateOutputDir, "obj");
+        var processedHtmlFiles = Array.Empty<string>();
+        if (!Directory.Exists(objDirectory))
+        {
+            Output.WriteLine($"[Diagnostics:{buildKind}] WARNING: Build obj directory not found at {objDirectory}");
+        }
+        else
+        {
+            processedHtmlFiles = Directory.GetFiles(objDirectory, "*.html", SearchOption.AllDirectories);
+        }
 
         Output.WriteLine($"[Diagnostics:{buildKind}] Processed HTML files found: {processedHtmlFiles.Length}");
         foreach (var htmlFile in processedHtmlFiles)
         {
-            var html = File.ReadAllText(htmlFile);
-            var scriptLines = html.Split('\n')
+            var scriptLines = File.ReadLines(htmlFile)
                 .Where(l => l.Contains("blazor.webassembly", StringComparison.OrdinalIgnoreCase))
-                .Select(l => l.Trim());
-            Output.WriteLine($"[Diagnostics:{buildKind}] {htmlFile}");
-            foreach (var line in scriptLines)
+                .Select(l => l.Trim())
+                .ToList();
+            if (scriptLines.Count > 0)
             {
-                Output.WriteLine($"[Diagnostics:{buildKind}]   {line}");
+                Output.WriteLine($"[Diagnostics:{buildKind}] {htmlFile}");
+                foreach (var line in scriptLines)
+                {
+                    Output.WriteLine($"[Diagnostics:{buildKind}]   {line}");
+                }
             }
         }
 
         // Log endpoints manifest routes for blazor.webassembly to verify route registration.
-        var endpointsManifest = Path.Combine(
-            hostProject.TemplateOutputDir,
-            "bin", "Debug", "net11.0",
+        // Use TemplateBuildDir for build, TemplatePublishDir for publish to match actual output paths.
+        var outputDir = buildKind == "publish" ? hostProject.TemplatePublishDir : hostProject.TemplateBuildDir;
+        var endpointsManifest = Path.Combine(outputDir,
             $"{hostProject.ProjectName}.staticwebassets.endpoints.json");
         if (File.Exists(endpointsManifest))
         {
@@ -284,7 +293,7 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
             }
             catch (Exception ex)
             {
-                Output.WriteLine($"[Diagnostics:{buildKind}] Failed to parse endpoints manifest: {ex.Message}");
+                Output.WriteLine($"[Diagnostics:{buildKind}] Failed to parse endpoints manifest: {ex}");
             }
         }
         else
@@ -296,10 +305,10 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         var sourceHtml = Path.Combine(hostProject.TemplateOutputDir, "wwwroot", "index.html");
         if (File.Exists(sourceHtml))
         {
-            var html = File.ReadAllText(sourceHtml);
-            var scriptLines = html.Split('\n')
+            var scriptLines = File.ReadLines(sourceHtml)
                 .Where(l => l.Contains("blazor.webassembly", StringComparison.OrdinalIgnoreCase))
-                .Select(l => l.Trim());
+                .Select(l => l.Trim())
+                .ToList();
             Output.WriteLine($"[Diagnostics:{buildKind}] Source wwwroot/index.html blazor.webassembly references:");
             foreach (var line in scriptLines)
             {
