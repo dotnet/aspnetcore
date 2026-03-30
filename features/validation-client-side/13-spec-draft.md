@@ -50,9 +50,9 @@ Client-side validation is a **progressive enhancement**: forms are fully functio
 
 ### Scenario 1: Basic Blazor SSR form with client-side validation
 
-The simplest and most common scenario. A statically-rendered Blazor form gets immediate client-side validation without enabling interactive render modes. **No additional setup is required** — client-side validation is enabled by default when using `AddRazorComponents()`.
+A statically-rendered Blazor form gets immediate client-side validation without enabling interactive render modes. **No additional setup is required** — client-side validation is enabled by default when using `AddRazorComponents()`.
 
-**Program.cs — standard Blazor setup (no extra calls needed):**
+**Program.cs — standard Blazor SSR setup:**
 
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
@@ -112,11 +112,11 @@ app.Run();
 - **On submit:** all fields are validated. If any are invalid, submission is blocked and errors are displayed. If all are valid, the form submits normally via enhanced navigation.
 - **Server-side validation** via `DataAnnotationsValidator` always runs on the server and remains authoritative.
 
-> **Note:** `InputFile` and `InputRadio` do not extend `InputBase<T>` and do not automatically emit `data-val-*` attributes. `InputRadio` is validated through its parent `InputRadioGroup<T>` which does extend `InputBase<T>`. File validation is server-side only.
+> **Note:** `InputFile` does not extend `InputBase<T>` and does not automatically emit `data-val-*` attributes. File validation is server-side only. This is consistent with how `InputFile` already doesn't participate in `EditContext` validation today — it's a special component for streaming file uploads, not a standard form input.
 
 ### Scenario 2: Supported validation rules
 
-The following `DataAnnotations` attributes are supported out of the box. The mapping uses the same `data-val-*` attribute protocol as MVC, ensuring full compatibility:
+The following `DataAnnotations` attributes are supported out of the box for Blazor SSR. The mapping uses the same `data-val-*` attribute protocol as MVC, ensuring full compatibility:
 
 | DataAnnotation | Validation Rule | Parameters |
 |---|---|---|
@@ -132,54 +132,42 @@ The following `DataAnnotations` attributes are supported out of the box. The map
 | `[CreditCard]` | `creditcard` | — |
 | `[Compare]` | `equalto` | `other` (e.g., `*.ConfirmPassword`) |
 | `[FileExtensions]` | `fileextensions` | `extensions` |
-| *(numeric types)* | `number` | — |
 
-The `number` rule is a special case: it is not driven by a `DataAnnotation` attribute. MVC's `NumericClientModelValidatorProvider` automatically emits `data-val-number` for `float`, `double`, and `decimal` properties. The JS library includes a `number` provider for MVC compatibility. Blazor does not emit `data-val-number` — `InputNumber<T>` renders `type="number"` which provides browser-native numeric enforcement.
-
-**Error messages** are resolved on the server at render time and embedded in the `data-val-*` attributes as static strings. By default, `ValidationAttribute.FormatErrorMessage()` is used with the display name derived from `[Display(Name = "...")]`, `[DisplayName("...")]`, or the property name as fallback. When validation localization is enabled, the same localization providers are used for both client-side and server-side messages — see [Scenario 3: Localized error messages](#scenario-3-localized-error-messages).
+Additionaly, MVC's `NumericClientModelValidatorProvider` automatically emits `data-val-number` for `float`, `double`, and `decimal` properties. The JS library includes a `number` provider for MVC compatibility. Blazor does not emit `data-val-number` — `InputNumber<T>` renders `type="number"` which provides browser-native numeric enforcement.
 
 **Nested models** are fully supported. A property like `model.Address.Street` produces validation attributes with the correct dotted-path field name, and `<ValidationMessage For="@(() => model.Address.Street)" />` renders the matching `data-valmsg-for` target.
 
 ### Scenario 3: Localized error messages
 
-When validation localization is enabled in the app (via the `Microsoft.Extensions.Validation.Localization` package, see [#65539](https://github.com/dotnet/aspnetcore/issues/65539)), client-side validation displays the **same localized messages** as server-side validation. This ensures a consistent user experience regardless of whether a validation error is caught on the client or the server.
+Error messages are resolved on the server at render time and embedded in the `data-val-*` attributes as static strings. By default, `ValidationAttribute.FormatErrorMessage()` is used with the display name derived from `[Display(Name = "...")]`, `[DisplayName("...")]`, or the property name as fallback.
 
-**How it works:** Error messages and display names are resolved on the server at render time—before the HTML is sent to the browser. The client validation service uses `ValidationOptions.ErrorMessageProvider` and `ValidationOptions.DisplayNameProvider` (the same delegates used by server-side validation) to produce localized, formatted error messages. These messages are then embedded in the `data-val-*` attributes as static strings. No localization happens in the browser; the JS library simply displays whatever message is in the attribute.
+When validation localization is enabled in the app (see [#65539](https://github.com/dotnet/aspnetcore/issues/65539)), client-side validation displays the **same localized messages** as server-side validation. This ensures a consistent user experience regardless of whether a validation error is caught on the client or the server.
 
 **Setup — enable validation localization with a shared resource file:**
 
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddRazorComponents();     // Includes client-side validation
+builder.Services.AddRazorComponents();
+
 builder.Services.AddValidation();
-builder.Services.AddValidationLocalization<SharedValidationMessages>();
+builder.Services.AddValidationLocalization<ValidationMessages>(); // TBD API
 ```
 
-**Model — no per-attribute resource annotations needed:**
+**Model — uses `ErrorMessage` as localization key:**
 
 ```csharp
 public class RegisterModel
 {
-    [Required]                                   // Uses localized "required" template
-    [EmailAddress]                               // Uses localized "email" template
-    [Display(Name = "EmailAddress")]             // Display name key for localization
+    [Required(ErrorMessage = "RequiredError")]
+    [EmailAddress(ErrorMessage = "EmailError")]
+    [Display(Name = "EmailAddress")]
     public string Email { get; set; } = "";
 
-    [Required]
-    [StringLength(100, MinimumLength = 8)]
+    [Required(ErrorMessage = "RequiredError")]
+    [StringLength(100, MinimumLength = 8, ErrorMessage = "StringLengthError")]
     [Display(Name = "Password")]
     public string Password { get; set; } = "";
 }
-```
-
-**Resource file (`SharedValidationMessages.fr.resx`):**
-
-```
-EmailAddress       → Adresse e-mail
-Password           → Mot de passe
-RequiredAttribute  → Le champ {0} est obligatoire.
-StringLengthAttribute → Le champ {0} doit contenir entre {2} et {1} caractères.
-EmailAddressAttribute → Le champ {0} n'est pas une adresse e-mail valide.
 ```
 
 **Rendered HTML (for a French-language request):**
@@ -191,18 +179,6 @@ EmailAddressAttribute → Le champ {0} n'est pas une adresse e-mail valide.
        data-val-email="Le champ Adresse e-mail n'est pas une adresse e-mail valide." />
 <span data-valmsg-for="model.Email" class="field-validation-valid"></span>
 ```
-
-**Result:** When the user submits the form with an empty email field:
-
-- **Client-side** (JS library reads `data-val-required`): displays "Le champ Adresse e-mail est obligatoire."
-- **Server-side** (validation pipeline uses the same `ErrorMessageProvider`): returns "Le champ Adresse e-mail est obligatoire."
-- Both messages are identical because they come from the same localization provider and resource file.
-
-This works because the client validation service resolves messages through the same `ValidationOptions` pipeline as server-side validation:
-
-1. If `ValidationOptions.ErrorMessageProvider` is configured (by `AddValidationLocalization()`), it is used to produce the localized, formatted message.
-2. If `ValidationOptions.DisplayNameProvider` is configured, it resolves localized display names (e.g., "Adresse e-mail" instead of "Email").
-3. If neither is configured (no localization enabled), the service falls back to `ValidationAttribute.FormatErrorMessage()` with the default display name, exactly as in the non-localized scenario.
 
 ### Scenario 4: Validation timing and UX behavior
 
@@ -511,52 +487,6 @@ public class RegisterModel
 The library sends a `fetch()` request to the specified URL, supports GET (default) and POST, caches results per-element to avoid redundant requests, and interprets the response (`true`/`"true"` = valid, `false` = invalid, any other string = custom error message). On network error, the field is treated as valid to avoid blocking the user.
 
 > ⚠️ **Blazor SSR:** Remote validation is **not supported**. Using `[Remote]` on a model in a Blazor SSR form throws `NotSupportedException` at render time. Custom async JavaScript providers in Blazor mode throw at registration time.
-
-## Open questions
-
-### Open Question 1: Interactive mode detection mechanism
-
-**Context:** The C# service layer needs to detect whether a form is rendering in a static SSR context vs. an interactive context to decide whether to emit `data-val-*` attributes. This must work correctly for apps with islands of interactivity — a single page may contain both static SSR forms and interactive forms, and each must behave independently.
-
-**Research findings:** The Blazor component model provides several signals for detecting SSR vs. interactive context:
-
-| Signal | SSR (static) | Interactive | Prerendering of interactive component |
-|---|---|---|---|
-| `ComponentBase.AssignedRenderMode` | `null` | `InteractiveServerRenderMode` / `InteractiveWebAssemblyRenderMode` / `InteractiveAutoRenderMode` | Same as interactive (the mode instance has `Prerender = true`) |
-| `ComponentBase.RendererInfo.IsInteractive` | `false` | `true` | `false` (during prerender pass), `true` (after activation) |
-| `EditForm`'s cascaded `FormMappingContext` | non-null (SSR form handling) | `null` | non-null (during prerender pass) |
-
-**Key nuances for islands of interactivity:**
-
-- Render modes do not cascade globally — they create **render mode boundaries**. An SSR page can contain `<EditForm @rendermode="InteractiveServer">`, and all children inside that boundary (including `InputText`, `ValidationMessage`, etc.) see `AssignedRenderMode = InteractiveServerRenderMode`.
-- A component cannot have *both* a caller-specified and a class-level `@rendermode` — Blazor throws at runtime if both are set.
-- During **prerendering** of an interactive component, `AssignedRenderMode` is already set to the interactive mode, but `RendererInfo.IsInteractive` is `false`. After the circuit/WebAssembly activates, `RendererInfo.IsInteractive` becomes `true` and the component re-renders.
-
-**Recommended approach — C# layer (emit `data-val-*` only for SSR):**
-
-The check should go in `InputBase<T>.MergeClientValidationAttributes()` (or its caller), gating on whether the component is rendering in a static SSR context. The cleanest signal is:
-
-```
-Do NOT emit data-val-* if AssignedRenderMode is not null
-```
-
-This covers all interactive cases including prerendering: when an interactive component prerenders, it will soon be replaced by the live interactive version, so emitting `data-val-*` during the brief prerender pass would be wasteful and potentially conflicting. `AssignedRenderMode == null` precisely means "this component is purely static SSR, with no interactive activation coming."
-
-This approach works correctly for islands:
-
-- A static `<EditForm>` on an SSR page → `AssignedRenderMode` is `null` on `InputBase` children → `data-val-*` emitted ✓
-- An `<EditForm @rendermode="InteractiveServer">` on the same page → `AssignedRenderMode` is `InteractiveServerRenderMode` on `InputBase` children → `data-val-*` NOT emitted ✓
-- A global `@rendermode InteractiveServer` on a page → all components see the mode → no `data-val-*` emitted ✓
-
-The same check should apply in `ValidationMessage<T>` and `ValidationSummary` to decide whether to render `data-valmsg-for` / `data-valmsg-summary` or the standard interactive rendering.
-
-Existing precedent: `FocusOnNavigate` uses exactly this pattern — `if (AssignedRenderMode is not null) return;` to skip SSR-specific rendering in interactive mode.
-
-**JS layer — no special detection needed:**
-
-If the C# layer correctly gates `data-val-*` emission, the JS library naturally ignores interactive forms because they have no `data-val="true"` elements to discover. The JS scans for `[data-val="true"]` — if there are none, it does nothing. This is the simplest and most robust approach: the C# layer is the single point of control.
-
-**Decision needed:** Confirm `AssignedRenderMode is not null` as the gating condition, or discuss alternatives if prerendering of interactive components needs different treatment.
 
 ## Assumptions
 
