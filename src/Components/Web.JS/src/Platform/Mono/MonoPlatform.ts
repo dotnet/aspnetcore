@@ -263,25 +263,13 @@ function getArrayDataPointer<T>(array: System_Array<T>): number {
 function attachInteropInvoker(): void {
   dispatcher = DotNet.attachDispatcher({
     beginInvokeDotNetFromJS: (callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: any | null, argsJson: string): void => {
-      assertHeapIsNotLocked();
-      if (!dotNetObjectId && !assemblyName) {
-        throw new Error('Either assemblyName or dotNetObjectId must have a non null value.');
-      }
-      // As a current limitation, we can only pass 4 args. Fortunately we only need one of
-      // 'assemblyName' or 'dotNetObjectId', so overload them in a single slot
-      const assemblyNameOrDotNetObjectId: string = dotNetObjectId
-        ? dotNetObjectId.toString()
-        : assemblyName;
-
-      Blazor._internal.dotNetExports!.BeginInvokeDotNet!(
-        callId ? callId.toString() : null,
-        assemblyNameOrDotNetObjectId,
-        methodIdentifier,
-        argsJson,
-      );
+      // This method exists to satisfy the DotNetCallDispatcher interface but should not be called
+      // when invokeDotNetFromJSAsync is available. The async path uses InvokeDotNetAsync (JSExport)
+      // which returns a Promise directly, bypassing the begin/end callback pattern.
+      throw new Error('beginInvokeDotNetFromJS should not be called when invokeDotNetFromJSAsync is available.');
     },
-    endInvokeJSFromDotNet: (asyncHandle, succeeded, serializedArgs): void => {
-      Blazor._internal.dotNetExports!.EndInvokeJS(serializedArgs);
+    endInvokeJSFromDotNet: (_asyncHandle, _succeeded, _serializedArgs): void => {
+      // No-op: .NET→JS async results now flow via Promise→Task (InvokeJSJsonAsync).
     },
     sendByteArray: (id: number, data: Uint8Array): void => {
       Blazor._internal.dotNetExports!.ReceiveByteArrayFromJS(id, data);
@@ -294,6 +282,15 @@ function attachInteropInvoker(): void {
         dotNetObjectId ?? 0,
         argsJson,
       ) as string;
+    },
+    invokeDotNetFromJSAsync: (assemblyName, methodIdentifier, dotNetObjectId, argsJson) => {
+      assertHeapIsNotLocked();
+      return Blazor._internal.dotNetExports!.InvokeDotNetAsync(
+        assemblyName ? assemblyName : null,
+        methodIdentifier,
+        dotNetObjectId ?? 0,
+        argsJson,
+      );
     },
   });
 }

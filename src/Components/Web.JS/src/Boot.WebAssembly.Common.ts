@@ -100,7 +100,7 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
 
   // Configure JS interop
   Blazor._internal.invokeJSJson = invokeJSJson;
-  Blazor._internal.endInvokeDotNetFromJS = endInvokeDotNetFromJS;
+  Blazor._internal.invokeJSJsonAsync = invokeJSJsonAsync;
   Blazor._internal.receiveWebAssemblyDotNetDataStream = receiveWebAssemblyDotNetDataStream;
   Blazor._internal.receiveByteArray = receiveByteArray;
 
@@ -254,17 +254,12 @@ async function scheduleAfterStarted(operations: string, webAssemblyState: string
   Blazor._internal.updateRootComponents(operations, webAssemblyState);
 }
 
-function invokeJSJson(identifier: string, targetInstanceId: number, resultType: number, argsJson: string, asyncHandle: number, callType: number): string | null {
-  if (asyncHandle !== 0) {
-    dispatcher.beginInvokeJSFromDotNet(asyncHandle, identifier, argsJson, resultType, targetInstanceId, callType);
-    return null;
-  } else {
-    return dispatcher.invokeJSFromDotNet(identifier, argsJson, resultType, targetInstanceId, callType);
-  }
+function invokeJSJson(identifier: string, targetInstanceId: number, resultType: number, argsJson: string, callType: number): string | null {
+  return dispatcher.invokeJSFromDotNet(identifier, argsJson, resultType, targetInstanceId, callType);
 }
 
-function endInvokeDotNetFromJS(callId: string, success: boolean, resultJsonOrErrorMessage: string): void {
-  dispatcher.endInvokeDotNetFromJS(callId, success, resultJsonOrErrorMessage);
+function invokeJSJsonAsync(identifier: string, targetInstanceId: number, resultType: number, argsJson: string, callType: number): Promise<string | null> {
+  return dispatcher.invokeJSFromDotNetAsync(identifier, argsJson, resultType, targetInstanceId, callType);
 }
 
 function receiveWebAssemblyDotNetDataStream(streamId: number, data: Uint8Array, bytesRead: number, errorMessage: string): void {

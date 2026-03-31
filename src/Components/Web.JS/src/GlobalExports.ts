@@ -57,8 +57,8 @@ export interface IBlazor {
     forceCloseConnection?: () => Promise<void>;
     InputFile?: typeof InputFile;
     NavigationLock: typeof NavigationLock;
-    invokeJSJson?: (identifier: string, targetInstanceId: number, resultType: number, argsJson: string, asyncHandle: number, callType: number) => string | null;
-    endInvokeDotNetFromJS?: (callId: string, success: boolean, resultJsonOrErrorMessage: string) => void;
+    invokeJSJson?: (identifier: string, targetInstanceId: number, resultType: number, argsJson: string, callType: number) => string | null;
+    invokeJSJsonAsync?: (identifier: string, targetInstanceId: number, resultType: number, argsJson: string, callType: number) => Promise<string | null>;
     receiveByteArray?: (id: number, data: Uint8Array) => void;
     getPersistedState?: () => string;
     getInitialComponentsUpdate?: () => Promise<string>;
@@ -89,8 +89,8 @@ export interface IBlazor {
     // JSExport APIs
     dotNetExports?: {
       InvokeDotNet: (assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number, argsJson: string) => string | null;
+      InvokeDotNetAsync: (assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number, argsJson: string) => Promise<string | null>;
       EndInvokeJS: (argsJson: string) => void;
-      BeginInvokeDotNet: (callId: string | null, assemblyNameOrDotNetObjectId: string, methodIdentifier: string, argsJson: string) => void;
       ReceiveByteArrayFromJS: (id: number, data: Uint8Array) => void;
       UpdateRootComponentsCore: (operationsJson: string, appState: string) => void;
     }

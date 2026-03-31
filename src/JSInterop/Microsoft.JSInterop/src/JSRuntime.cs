@@ -128,6 +128,28 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         CancellationToken cancellationToken,
         object?[]? args)
     {
+        var argsJson = args is not null && args.Length != 0 ? JsonSerializer.Serialize(args, JsonSerializerOptions) : "[]";
+        var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
+
+        if (OperatingSystem.IsBrowser())
+        {
+            return InvokeJSAsyncWasm<TValue>(targetInstanceId, identifier, callType, resultType, argsJson, cancellationToken);
+        }
+        else
+        {
+            return BeginInvokeJSAsync<TValue>(targetInstanceId, identifier, callType, resultType, argsJson, cancellationToken);
+        }
+    }
+
+    private ValueTask<TValue> BeginInvokeJSAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(
+        long targetInstanceId,
+        string identifier,
+        JSCallType callType,
+        JSCallResultType resultType,
+        string argsJson,
+        CancellationToken cancellationToken)
+    {
+        // Fall back to the begin/end callback pattern (Server, WebView)
         var taskId = Interlocked.Increment(ref _nextPendingTaskId);
         var tcs = new TaskCompletionSource<TValue>();
         if (cancellationToken.CanBeCanceled)
@@ -150,8 +172,6 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                 return new ValueTask<TValue>(tcs.Task);
             }
 
-            var argsJson = args is not null && args.Length != 0 ? JsonSerializer.Serialize(args, JsonSerializerOptions) : "[]";
-            var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
             var invocationInfo = new JSInvocationInfo
             {
                 AsyncHandle = taskId,
@@ -170,6 +190,54 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         {
             CleanupTasksAndRegistrations(taskId);
             throw;
+        }
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure JS interop arguments are linker friendly.")]
+    private async ValueTask<TValue> InvokeJSAsyncWasm<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(
+        long targetInstanceId,
+        string identifier,
+        JSCallType callType,
+        JSCallResultType resultType,
+        string argsJson,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        try
+        {
+            var invocationInfo = new JSInvocationInfo
+            {
+                AsyncHandle = 0,
+                TargetInstanceId = targetInstanceId,
+                Identifier = identifier,
+                CallType = callType,
+                ResultType = resultType,
+                ArgsJson = argsJson,
+            };
+
+            var json = await InvokeJSAsync(invocationInfo)!;
+            if (json is null)
+            {
+                return default!;
+            }
+
+            return JsonSerializer.Deserialize<TValue>(json, JsonSerializerOptions)!;
+        }
+        catch (JSException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            // The JSImport marshaller may prefix JS error messages with "Error: ".
+            // Strip this prefix to match the format produced by the begin/end callback path.
+            var message = ex.Message;
+            if (message.StartsWith("Error: ", StringComparison.Ordinal))
+            {
+                message = message["Error: ".Length..];
+            }
+
+            throw new JSException(message, ex);
         }
     }
 
@@ -210,6 +278,23 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     {
         BeginInvokeJS(invocationInfo.AsyncHandle, invocationInfo.Identifier, invocationInfo.ArgsJson, invocationInfo.ResultType, invocationInfo.TargetInstanceId);
     }
+
+    /// <summary>
+    /// Invokes the specified JavaScript function asynchronously, returning the JSON-serialized result
+    /// directly as a <see cref="Task{TResult}"/> instead of using the begin/end callback pattern.
+    /// </summary>
+    /// <param name="invocationInfo">Configuration of the interop call from .NET to JavaScript.</param>
+    /// <returns>
+    /// A <see cref="Task{TResult}"/> representing the JSON-serialized result of the JS function call,
+    /// or <c>null</c> to fall back to the <see cref="BeginInvokeJS(in JSInvocationInfo)"/> callback pattern.
+    /// </returns>
+    /// <remarks>
+    /// The default implementation returns <c>null</c>, which causes the base class to use the
+    /// begin/end callback pattern with <see cref="BeginInvokeJS(in JSInvocationInfo)"/>.
+    /// Runtimes that support direct Promise-to-Task marshalling (e.g., WebAssembly via JSImport)
+    /// can override this to eliminate the callback round-trip.
+    /// </remarks>
+    protected virtual Task<string?>? InvokeJSAsync(in JSInvocationInfo invocationInfo) => null;
 
     /// <summary>
     /// Completes an async JS interop call from JavaScript to .NET

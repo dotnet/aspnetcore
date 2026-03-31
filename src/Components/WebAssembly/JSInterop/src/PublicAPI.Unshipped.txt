@@ -1,1 +1,3 @@
 #nullable enable
+*REMOVED*override Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.BeginInvokeJS(in Microsoft.JSInterop.Infrastructure.JSInvocationInfo invocationInfo) -> void
+override Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeJSAsync(in Microsoft.JSInterop.Infrastructure.JSInvocationInfo invocationInfo) -> System.Threading.Tasks.Task<string?>?

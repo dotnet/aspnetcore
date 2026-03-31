@@ -1,1 +1,3 @@
 #nullable enable
+static Microsoft.JSInterop.Infrastructure.DotNetDispatcher.InvokeAsync(Microsoft.JSInterop.JSRuntime! jsRuntime, in Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo invocationInfo, string! argsJson) -> System.Threading.Tasks.Task<string?>!
+virtual Microsoft.JSInterop.JSRuntime.InvokeJSAsync(in Microsoft.JSInterop.Infrastructure.JSInvocationInfo invocationInfo) -> System.Threading.Tasks.Task<string?>?

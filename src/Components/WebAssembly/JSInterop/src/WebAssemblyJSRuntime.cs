@@ -30,7 +30,6 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime
             targetInstanceId,
             (int)resultType,
             argsJson ?? "[]",
-            0,
             (int)JSCallType.FunctionCall
         );
     }
@@ -45,7 +44,6 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime
                 invocationInfo.TargetInstanceId,
                 (int)invocationInfo.ResultType,
                 invocationInfo.ArgsJson,
-                invocationInfo.AsyncHandle,
                 (int)invocationInfo.CallType
             );
         }
@@ -58,37 +56,28 @@ public abstract class WebAssemblyJSRuntime : JSInProcessRuntime
     /// <inheritdoc />
     protected override void BeginInvokeJS(long asyncHandle, string identifier, [StringSyntax(StringSyntaxAttribute.Json)] string? argsJson, JSCallResultType resultType, long targetInstanceId)
     {
-        InternalCalls.InvokeJSJson(
-            identifier,
-            targetInstanceId,
-            (int)resultType,
-            argsJson ?? "[]",
-            asyncHandle,
-            (int)JSCallType.FunctionCall
-        );
+        // Dead code: async JS calls now use InvokeJSAsync (direct Promise→Task path).
+        // This override is only retained because the base class declares it as abstract.
+        throw new NotSupportedException();
     }
 
     /// <inheritdoc />
-    protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
+    protected override Task<string?>? InvokeJSAsync(in JSInvocationInfo invocationInfo)
     {
-        InternalCalls.InvokeJSJson(
+        return InternalCalls.InvokeJSJsonAsync(
             invocationInfo.Identifier,
             invocationInfo.TargetInstanceId,
             (int)invocationInfo.ResultType,
             invocationInfo.ArgsJson,
-            invocationInfo.AsyncHandle,
-            (int)invocationInfo.CallType
-        );
+            (int)invocationInfo.CallType);
     }
 
     /// <inheritdoc />
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "TODO: This should be in the xml suppressions file, but can't be because https://github.com/mono/linker/issues/2006")]
     protected override void EndInvokeDotNet(DotNetInvocationInfo callInfo, in DotNetInvocationResult dispatchResult)
     {
-        var resultJsonOrErrorMessage = dispatchResult.Success
-            ? dispatchResult.ResultJson!
-            : dispatchResult.Exception!.ToString();
-        InternalCalls.EndInvokeDotNetFromJS(callInfo.CallId, dispatchResult.Success, resultJsonOrErrorMessage);
+        // This is intentionally a no-op for WebAssembly. The JS→.NET async invocation path uses
+        // InvokeDotNetAsync (JSExport returning Task<string?>) which completes via Promise resolution,
+        // bypassing the begin/end callback pattern.
     }
 
     /// <inheritdoc />

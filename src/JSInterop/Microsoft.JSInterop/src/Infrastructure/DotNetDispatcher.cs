@@ -65,6 +65,60 @@ public static class DotNetDispatcher
     }
 
     /// <summary>
+    /// Receives a call from JS to .NET, locating and invoking the specified method.
+    /// If the target method returns a <see cref="Task"/> or <see cref="ValueTask"/>,
+    /// the result is awaited and the serialized result is returned asynchronously.
+    /// </summary>
+    /// <param name="jsRuntime">The <see cref="JSRuntime"/>.</param>
+    /// <param name="invocationInfo">The <see cref="DotNetInvocationInfo"/>.</param>
+    /// <param name="argsJson">A JSON representation of the parameters.</param>
+    /// <returns>A task representing the JSON-serialized return value, or null.</returns>
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure return types of JSInvokable methods are retained.")]
+    public static Task<string?> InvokeAsync(JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo, [StringSyntax(StringSyntaxAttribute.Json)] string argsJson)
+    {
+        IDotNetObjectReference? targetInstance = default;
+        if (invocationInfo.DotNetObjectId != default)
+        {
+            targetInstance = jsRuntime.GetObjectReference(invocationInfo.DotNetObjectId);
+        }
+
+        var syncResult = InvokeSynchronously(jsRuntime, invocationInfo, targetInstance, argsJson);
+
+        if (syncResult is null)
+        {
+            return Task.FromResult<string?>(null);
+        }
+
+        if (syncResult is Task task)
+        {
+            return AwaitAndSerializeTaskResult(task, jsRuntime);
+        }
+
+        if (syncResult is ValueTask valueTask)
+        {
+            return AwaitAndSerializeTaskResult(valueTask.AsTask(), jsRuntime);
+        }
+
+        if (syncResult.GetType() is { IsGenericType: true } resultType
+            && resultType.GetGenericTypeDefinition() == typeof(ValueTask<>))
+        {
+            var innerTask = GetTaskByType(resultType.GenericTypeArguments[0], syncResult);
+            return AwaitAndSerializeTaskResult(innerTask!, jsRuntime);
+        }
+
+        return Task.FromResult<string?>(JsonSerializer.Serialize(syncResult, jsRuntime.JsonSerializerOptions));
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure return types of JSInvokable methods are retained.")]
+    private static async Task<string?> AwaitAndSerializeTaskResult(Task task, JSRuntime jsRuntime)
+    {
+        await task;
+        var result = TaskGenericsUtil.GetTaskResult(task);
+
+        return result is null ? null : JsonSerializer.Serialize(result, jsRuntime.JsonSerializerOptions);
+    }
+
+    /// <summary>
     /// Receives a call from JS to .NET, locating and invoking the specified method asynchronously.
     /// </summary>
     /// <param name="jsRuntime">The <see cref="JSRuntime"/>.</param>
@@ -141,11 +195,19 @@ public static class DotNetDispatcher
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure return types of JSInvokable methods are retained.")]
     private static void EndInvokeDotNetAfterTask(Task task, JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo)
     {
-        if (task.Exception != null)
+        if (task.IsFaulted)
         {
-            var exceptionDispatchInfo = ExceptionDispatchInfo.Capture(task.Exception.GetBaseException());
+            var exceptionDispatchInfo = ExceptionDispatchInfo.Capture(task.Exception!.GetBaseException());
             var dispatchResult = new DotNetInvocationResult(exceptionDispatchInfo.SourceException, "InvocationFailure");
             jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
+            return;
+        }
+
+        if (task.IsCanceled)
+        {
+            var dispatchResult = new DotNetInvocationResult(new TaskCanceledException(task), "InvocationFailure");
+            jsRuntime.EndInvokeDotNet(invocationInfo, dispatchResult);
+            return;
         }
 
         var result = TaskGenericsUtil.GetTaskResult(task);

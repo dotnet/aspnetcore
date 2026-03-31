@@ -65,14 +65,14 @@ export module DotNet {
       }
   }
 
-   /**
-   * Represents the type of operation that should be performed in JS.
-   */
+  /**
+  * Represents the type of operation that should be performed in JS.
+  */
   export enum JSCallType {
-      FunctionCall = 1,
-      ConstructorCall = 2,
-      GetValue = 3,
-      SetValue = 4
+    FunctionCall = 1,
+    ConstructorCall = 2,
+    GetValue = 3,
+    SetValue = 4
   }
 
   const windowJSObjectId = 0;
@@ -81,16 +81,18 @@ export module DotNet {
   };
 
   const windowObject = cachedJSObjectsById[windowJSObjectId];
-  windowObject._cachedHandlers.set("import", { [JSCallType.FunctionCall]: (url: any) => {
+  windowObject._cachedHandlers.set("import", {
+      [JSCallType.FunctionCall]: (url: any) => {
       // In most cases developers will want to resolve dynamic imports relative to the base HREF.
       // However since we're the one calling the import keyword, they would be resolved relative to
       // this framework bundle URL. Fix this by providing an absolute URL.
-      if (typeof url === "string" && url.startsWith("./")) {
-          url = new URL(url.substring(2), document.baseURI).toString();
-      }
+          if (typeof url === "string" && url.startsWith("./")) {
+              url = new URL(url.substring(2), document.baseURI).toString();
+          }
 
-      return import(/* webpackIgnore: true */ url);
-  }});
+          return import(/* webpackIgnore: true */ url);
+      }
+  });
 
   let nextJsObjectId = 1; // Start at 1 because zero is reserved for "window"
 
@@ -312,6 +314,18 @@ export module DotNet {
     endInvokeJSFromDotNet(callId: number, succeeded: boolean, resultOrError: any): void;
 
     /**
+     * Optional. If implemented, invoked by the runtime to perform an asynchronous call to a .NET method,
+     * returning the result directly as a Promise instead of using the begin/end callback pattern.
+     *
+     * @param assemblyName The short name (without key/version or .dll extension) of the .NET assembly holding the method to invoke. The value may be null when invoking instance methods.
+     * @param methodIdentifier The identifier of the method to invoke. The method must have a [JSInvokable] attribute specifying this identifier.
+     * @param dotNetObjectId If given, the call will be to an instance method on the specified DotNetObject. Pass null or undefined to call static methods.
+     * @param argsJson JSON representation of arguments to pass to the method.
+     * @returns A promise containing the JSON representation of the result of the invocation.
+     */
+    invokeDotNetFromJSAsync?(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): Promise<string | null>;
+
+    /**
      * Invoked by the runtime to transfer a byte array from JS to .NET.
      * @param id The identifier for the byte array used during revival.
      * @param data The byte array being transferred for eventual revival.
@@ -346,6 +360,19 @@ export module DotNet {
      * @param callType The type of operation that should be performed in JS.
      */
     beginInvokeJSFromDotNet(asyncHandle: number, identifier: string, argsJson: string | null, resultType: JSCallResultType, targetInstanceId: number, callType: JSCallType): Promise<any>;
+
+    /**
+     * Invokes the specified asynchronous JavaScript function, returning the serialized
+     * result directly as a Promise instead of using the begin/end callback pattern.
+     *
+     * @param identifier Identifies the globally-reachable function to invoke.
+     * @param argsJson JSON representation of arguments to be passed to the function.
+     * @param resultType The type of result expected from the JS interop call.
+     * @param targetInstanceId The instance ID of the target JS object.
+     * @param callType The type of operation that should be performed in JS.
+     * @returns A Promise containing the JSON serialized result of the invocation.
+     */
+    invokeJSFromDotNetAsync(identifier: string, argsJson: string | null, resultType: JSCallResultType, targetInstanceId: number, callType: JSCallType): Promise<string | null>;
 
     /**
      * Receives notification that an async call from JS to .NET has completed.
@@ -446,6 +473,16 @@ export module DotNet {
           }
       }
 
+      // this is WASM fast path called by JSImport
+      async invokeJSFromDotNetAsync(identifier: string, argsJson: string | null, resultType: JSCallResultType, targetInstanceId: number, callType: JSCallType): Promise<string | null> {
+          const result = await this.processJSCall(targetInstanceId, identifier, callType, argsJson);
+          const jsCallResult = createJSCallResult(result, resultType);
+
+          return jsCallResult === null || jsCallResult === undefined
+              ? null
+              : stringifyArgs(this, jsCallResult);
+      }
+
       processJSCall(targetInstanceId: number, identifier: string, callType: JSCallType, argsJson: string | null) {
           const args = parseJsonWithRevivers(this, argsJson) ?? [];
           const func = findJSFunction(identifier, targetInstanceId, callType);
@@ -482,13 +519,20 @@ export module DotNet {
               throw new Error(`For instance method calls, assemblyName should be null. Received '${assemblyName}'.`);
           }
 
+          const argsJson = stringifyArgs(this, args);
+
+          // this is WASM fast path calling into JSExport
+          if (this._dotNetCallDispatcher.invokeDotNetFromJSAsync) {
+              return this._dotNetCallDispatcher.invokeDotNetFromJSAsync(assemblyName, methodIdentifier, dotNetObjectId, argsJson)
+                  .then(resultJson => (resultJson ? parseJsonWithRevivers(this, resultJson) as T : null as unknown as T));
+          }
+
           const asyncCallId = this._nextAsyncCallId++;
           const resultPromise = new Promise<T>((resolve, reject) => {
               this._pendingAsyncCalls[asyncCallId] = { resolve, reject };
           });
 
           try {
-              const argsJson = stringifyArgs(this, args);
               this._dotNetCallDispatcher.beginInvokeDotNetFromJS(asyncCallId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
           } catch (ex) {
               // Synchronous failure

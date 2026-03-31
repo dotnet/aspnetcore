@@ -13,14 +13,15 @@ internal static partial class InternalCalls
         [JSMarshalAs<JSType.Number>] long targetInstanceId,
         int resultType,
         string argsJson,
-        [JSMarshalAs<JSType.Number>] long asyncHandle,
         int callType);
 
-    [JSImport("Blazor._internal.endInvokeDotNetFromJS", "blazor-internal")]
-    public static partial void EndInvokeDotNetFromJS(
-        string? id,
-        bool success,
-        string jsonOrError);
+    [JSImport("Blazor._internal.invokeJSJsonAsync", "blazor-internal")]
+    public static partial Task<string?> InvokeJSJsonAsync(
+        string identifier,
+        [JSMarshalAs<JSType.Number>] long targetInstanceId,
+        int resultType,
+        string argsJson,
+        int callType);
 
     [JSImport("Blazor._internal.receiveByteArray", "blazor-internal")]
     public static partial void ReceiveByteArray(

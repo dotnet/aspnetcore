@@ -27,8 +27,8 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     public event Action<RootComponentOperationBatch, string>? OnUpdateRootComponents;
 
     [DynamicDependency(nameof(InvokeDotNet))]
+    [DynamicDependency(nameof(InvokeDotNetAsync))]
     [DynamicDependency(nameof(EndInvokeJS))]
-    [DynamicDependency(nameof(BeginInvokeDotNet))]
     [DynamicDependency(nameof(ReceiveByteArrayFromJS))]
     [DynamicDependency(nameof(UpdateRootComponentsCore))]
     [DynamicDependency(JsonSerialized, typeof(KeyValuePair<,>))]
@@ -66,31 +66,54 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 
     [JSExport]
     [SupportedOSPlatform("browser")]
-    public static void BeginInvokeDotNet(string? callId, string assemblyNameOrDotNetObjectId, string methodIdentifier, string argsJson)
+    public static Task<string?> InvokeDotNetAsync(
+        string? assemblyName,
+        string methodIdentifier,
+        [JSMarshalAs<JSType.Number>] long dotNetObjectId,
+        string argsJson)
     {
-        // Figure out whether 'assemblyNameOrDotNetObjectId' is the assembly name or the instance ID
-        // We only need one for any given call. This helps to work around the limitation that we can
-        // only pass a maximum of 4 args in a call from JS to Mono WebAssembly.
-        string? assemblyName;
-        long dotNetObjectId;
-        if (char.IsDigit(assemblyNameOrDotNetObjectId[0]))
+        var tcs = new TaskCompletionSource<string?>();
+        WebAssemblyCallQueue.Schedule((tcs, assemblyName, methodIdentifier, dotNetObjectId, argsJson), static s =>
         {
-            dotNetObjectId = long.Parse(assemblyNameOrDotNetObjectId, CultureInfo.InvariantCulture);
-            assemblyName = null;
-        }
-        else
-        {
-            dotNetObjectId = default;
-            assemblyName = assemblyNameOrDotNetObjectId;
-        }
+            try
+            {
+                var callInfo = new DotNetInvocationInfo(s.assemblyName, s.methodIdentifier, s.dotNetObjectId, callId: null);
+                var task = DotNetDispatcher.InvokeAsync(Instance, callInfo, s.argsJson);
 
-        var callInfo = new DotNetInvocationInfo(assemblyName, methodIdentifier, dotNetObjectId, callId);
-        WebAssemblyCallQueue.Schedule((callInfo, argsJson), static state =>
-        {
-            // This is not expected to throw, as it takes care of converting any unhandled user code
-            // exceptions into a failure on the JS Promise object.
-            DotNetDispatcher.BeginInvokeDotNet(Instance, state.callInfo, state.argsJson);
+                if (task.IsCompletedSuccessfully)
+                {
+                    s.tcs.TrySetResult(task.Result);
+                }
+                else
+                {
+                    task.ContinueWith(static (t, state) =>
+                    {
+                        var tcs = (TaskCompletionSource<string?>)state!;
+                        if (t.IsFaulted)
+                        {
+                            // Use ToString() as the message so the JSExport marshaller includes
+                            // the exception type name, matching the old BeginInvokeDotNet error format.
+                            var baseEx = t.Exception!.GetBaseException();
+                            tcs.TrySetException(new InvalidOperationException(baseEx.ToString()));
+                        }
+                        else if (t.IsCanceled)
+                        {
+                            tcs.TrySetCanceled();
+                        }
+                        else
+                        {
+                            tcs.TrySetResult(t.Result);
+                        }
+                    }, s.tcs, TaskScheduler.Current);
+                }
+            }
+            catch (Exception ex)
+            {
+                s.tcs.TrySetException(new InvalidOperationException(ex.ToString()));
+            }
         });
+
+        return tcs.Task;
     }
 
     [SupportedOSPlatform("browser")]
