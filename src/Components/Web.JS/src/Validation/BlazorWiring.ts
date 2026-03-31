@@ -82,7 +82,8 @@ export function initializeBlazorValidation(cssOverrides?: Partial<CssClassConfig
     Blazor.addEventListener('enhancedload', () => api.scan());
   }
 
-  // Expose public API for extensibility
+  // Expose public API on the Blazor global object and window for extensibility
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).Blazor && ((window as any).Blazor.validation = api);
   (window as any).__aspnetValidation = api;
 }

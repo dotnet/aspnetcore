@@ -3,12 +3,11 @@
 <PageTitle>Contact</PageTitle>
 
 <h1>Contact Form</h1>
-<p>This form uses static SSR with DataAnnotations validation and client-side validation via <code>&lt;ClientSideValidator /&gt;</code>.</p>
+<p>This form uses static SSR with DataAnnotations validation and automatic client-side validation.</p>
 <p><a href="/contact-extra">Load page with second form</a> — tests enhanced navigation adding a new form to the DOM.</p>
 
 <EditForm Model="Model" OnValidSubmit="HandleValidSubmit" Enhance FormName="contact">
     <DataAnnotationsValidator />
-    <ClientSideValidator />
     <ValidationSummary />
 
     <div class="form-group">

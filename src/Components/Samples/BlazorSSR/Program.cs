@@ -6,7 +6,6 @@ using BlazorSSR;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents();
-builder.Services.AddClientSideValidation();
 
 var app = builder.Build();
 

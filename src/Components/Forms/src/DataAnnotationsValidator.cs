@@ -5,6 +5,8 @@ namespace Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>
 /// Adds Data Annotations validation support to an <see cref="EditContext"/>.
+/// When rendering in a static SSR context, also activates client-side validation
+/// by storing an <see cref="IClientValidationService"/> on the <see cref="EditContext.Properties"/>.
 /// </summary>
 public class DataAnnotationsValidator : ComponentBase, IDisposable
 {
@@ -14,6 +16,16 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
     [CascadingParameter] EditContext? CurrentEditContext { get; set; }
 
     [Inject] private IServiceProvider ServiceProvider { get; set; } = default!;
+
+    [Inject] private IClientValidationService? ClientValidationService { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether client-side validation is enabled for the form.
+    /// Defaults to <see langword="true"/>. Set to <see langword="false"/> to disable
+    /// client-side validation while keeping server-side DataAnnotations validation active.
+    /// </summary>
+    [Parameter]
+    public bool EnableClientValidation { get; set; } = true;
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -27,6 +39,11 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
 
         _subscriptions = CurrentEditContext.EnableDataAnnotationsValidation(ServiceProvider);
         _originalEditContext = CurrentEditContext;
+
+        if (EnableClientValidation && ClientValidationService is not null && AssignedRenderMode is null)
+        {
+            CurrentEditContext.Properties[typeof(IClientValidationService)] = ClientValidationService;
+        }
     }
 
     /// <inheritdoc />
@@ -34,8 +51,6 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
     {
         if (CurrentEditContext != _originalEditContext)
         {
-            // While we could support this, there's no known use case presently. Since InputBase doesn't support it,
-            // it's more understandable to have the same restriction.
             throw new InvalidOperationException($"{GetType()} does not support changing the " +
                 $"{nameof(EditContext)} dynamically.");
         }
@@ -50,6 +65,8 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
     {
         _subscriptions?.Dispose();
         _subscriptions = null;
+
+        CurrentEditContext?.Properties.Remove(typeof(IClientValidationService));
 
         Dispose(disposing: true);
     }

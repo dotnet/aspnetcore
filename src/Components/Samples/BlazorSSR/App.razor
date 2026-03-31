@@ -11,14 +11,11 @@
 <body>
     <Routes />
     <script src="@Assets["_framework/blazor.web.js"]"></script>
-    <script src="js/aspnet-core-validation.js"></script>
     <script>
         // Custom 'noprofanity' validation provider — matches the NoProfanityAttribute (C#).
-        // Register after DOMContentLoaded (when __aspnetValidation is available),
-        // then re-scan so the new provider is active for already-scanned elements.
         function registerCustomProviders() {
-            if (window.__aspnetValidation) {
-                window.__aspnetValidation.addProvider('noprofanity', function (value, element, params) {
+            if (Blazor.validation) {
+                Blazor.validation.addProvider('noprofanity', function (value, element, params) {
                     if (!value) return true;
                     var words = (params.words || '').split(',');
                     for (var i = 0; i < words.length; i++) {

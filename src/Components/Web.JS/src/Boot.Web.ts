@@ -28,6 +28,7 @@ import { resolveOptions } from './Platform/Circuits/CircuitStartOptions';
 import { JSInitializer } from './JSInitializers/JSInitializers';
 import { enableFocusOnNavigate } from './Rendering/FocusOnNavigate';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
+import { initializeBlazorValidation } from './Validation/BlazorWiring';
 
 let started = false;
 let rootComponentManager: WebRootComponentManager;
@@ -103,6 +104,9 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
 
   registerAllComponentDescriptors(document);
   rootComponentManager.onDocumentUpdated();
+
+  // Initialize client-side validation (scans DOM for data-val attributes, hooks enhanced navigation)
+  initializeBlazorValidation();
 
   callAfterStartedCallbacks(initializersPromise);
 }

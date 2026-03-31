@@ -69,7 +69,7 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         var hasClientValidation = CurrentEditContext.Properties.TryGetValue(
-            ClientSideValidator.ServiceKey, out _);
+            typeof(IClientValidationService), out _);
 
         if (hasClientValidation)
         {

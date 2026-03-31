@@ -9,8 +9,7 @@
     <h2>1. Basic Validation (Required, Email, StringLength)</h2>
     <EditForm Model="BasicModel" OnValidSubmit="HandleBasicSubmit" Enhance FormName="basic-form">
         <DataAnnotationsValidator />
-        <ClientSideValidator />
-        <ValidationSummary />
+            <ValidationSummary />
 
         <div class="form-group">
             <label for="basic-name">Name</label>
@@ -39,8 +38,7 @@
     <h2>2. Validation Timing (data-val-event)</h2>
     <EditForm Model="TimingModel" OnValidSubmit="HandleTimingSubmit" Enhance FormName="timing-form">
         <DataAnnotationsValidator />
-        <ClientSideValidator />
-
+    
         <div class="form-group">
             <label for="timing-default">Default timing (input + change)</label>
             <InputText id="timing-default" @bind-Value="TimingModel.DefaultField" />
@@ -69,8 +67,7 @@
     <h2>3. Hidden Fields</h2>
     <EditForm Model="HiddenModel" OnValidSubmit="HandleHiddenSubmit" Enhance FormName="hidden-form">
         <DataAnnotationsValidator />
-        <ClientSideValidator />
-        <ValidationSummary />
+            <ValidationSummary />
 
         <div class="form-group">
             <label for="hidden-visible">Visible field</label>
@@ -95,8 +92,7 @@
     <h2>4. All Validation Rules</h2>
     <EditForm Model="AllRulesModel" Enhance FormName="allrules-form">
         <DataAnnotationsValidator />
-        <ClientSideValidator />
-
+    
         <div class="form-group">
             <label for="rules-required">Required</label>
             <InputText id="rules-required" @bind-Value="AllRulesModel.RequiredField" />

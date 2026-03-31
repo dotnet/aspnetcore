@@ -361,7 +361,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
 
     private void MergeClientValidationAttributes()
     {
-        if (EditContext?.Properties.TryGetValue(ClientSideValidator.ServiceKey, out var serviceObj) != true
+        if (EditContext?.Properties.TryGetValue(typeof(IClientValidationService), out var serviceObj) != true
             || serviceObj is not IClientValidationService service)
         {
             return;

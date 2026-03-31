@@ -69,13 +69,4 @@
     <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 
-  <!-- aspnet-core-validation.js is always built to dist/Release by rollup (regardless of configuration) -->
-  <Target Name="CopyValidationScript" BeforeTargets="Build"
-          Condition="Exists('$(RepoRoot)src\Components\Web.JS\dist\Release\aspnet-core-validation.js')">
-    <Copy
-      SourceFiles="$(RepoRoot)src\Components\Web.JS\dist\Release\aspnet-core-validation.js"
-      DestinationFolder="$(ProjectDir)wwwroot\js\"
-      SkipUnchangedFiles="true" />
-  </Target>
-
 </Project>
