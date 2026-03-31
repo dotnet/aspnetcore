@@ -32,7 +32,6 @@ export const internalFunctions = {
   setHasLocationChangingListeners,
   endLocationChanging,
   navigateTo: navigateToFromDotNet,
-  navigateToWithArgs: navigateToFromDotNetWithArgs,
   refresh,
   getBaseURI: (): string => document.baseURI,
   getLocationHref: (): string => location.href,
@@ -114,10 +113,6 @@ function navigateToFromDotNet(uri: string, options: NavigationOptions): void {
   // The location changing callback is called from .NET for programmatic navigations originating from .NET.
   // In this case, we shouldn't invoke the callback again from the JS side.
   navigateToCore(uri, options, /* skipLocationChangingCallback */ true);
-}
-
-function navigateToFromDotNetWithArgs(uri: string, forceLoad: boolean, replaceHistoryEntry: boolean, historyEntryState: string | null): void {
-  navigateToCore(uri, { forceLoad, replaceHistoryEntry, historyEntryState: historyEntryState ?? undefined }, /* skipLocationChangingCallback */ true);
 }
 
 function navigateToCore(uri: string, options: NavigationOptions, skipLocationChangingCallback = false): void {
