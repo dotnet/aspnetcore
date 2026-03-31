@@ -1,0 +1,242 @@
+@page "/validation-test"
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Validation Feature Test</PageTitle>
+
+<h1>Client-Side Validation — Feature Test Page</h1>
+
+<section id="section-basic">
+    <h2>1. Basic Validation (Required, Email, StringLength)</h2>
+    <EditForm Model="BasicModel" OnValidSubmit="HandleBasicSubmit" Enhance FormName="basic-form">
+        <DataAnnotationsValidator />
+        <ClientSideValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="basic-name">Name</label>
+            <InputText id="basic-name" @bind-Value="BasicModel.Name" />
+            <ValidationMessage For="@(() => BasicModel.Name)" />
+        </div>
+
+        <div class="form-group">
+            <label for="basic-email">Email</label>
+            <InputText id="basic-email" @bind-Value="BasicModel.Email" />
+            <ValidationMessage For="@(() => BasicModel.Email)" />
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" id="basic-submit">Submit</button>
+            <button type="submit" formnovalidate id="basic-skip">Submit without validation</button>
+            <button type="reset" id="basic-reset">Reset</button>
+        </div>
+    </EditForm>
+    @if (_basicSubmitted) { <p id="basic-success">Basic form submitted!</p> }
+</section>
+
+<hr />
+
+<section id="section-timing">
+    <h2>2. Validation Timing (data-val-event)</h2>
+    <EditForm Model="TimingModel" OnValidSubmit="HandleTimingSubmit" Enhance FormName="timing-form">
+        <DataAnnotationsValidator />
+        <ClientSideValidator />
+
+        <div class="form-group">
+            <label for="timing-default">Default timing (input + change)</label>
+            <InputText id="timing-default" @bind-Value="TimingModel.DefaultField" />
+            <ValidationMessage For="@(() => TimingModel.DefaultField)" />
+        </div>
+
+        <div class="form-group">
+            <label for="timing-blur">Blur only (data-val-event="change")</label>
+            <InputText id="timing-blur" @bind-Value="TimingModel.BlurOnlyField" data-val-event="change" />
+            <ValidationMessage For="@(() => TimingModel.BlurOnlyField)" />
+        </div>
+
+        <div class="form-group">
+            <label for="timing-submitonly">Submit only (data-val-event="none")</label>
+            <InputText id="timing-submitonly" @bind-Value="TimingModel.SubmitOnlyField" data-val-event="none" />
+            <ValidationMessage For="@(() => TimingModel.SubmitOnlyField)" />
+        </div>
+
+        <button type="submit" id="timing-submit">Submit</button>
+    </EditForm>
+</section>
+
+<hr />
+
+<section id="section-hidden">
+    <h2>3. Hidden Fields</h2>
+    <EditForm Model="HiddenModel" OnValidSubmit="HandleHiddenSubmit" Enhance FormName="hidden-form">
+        <DataAnnotationsValidator />
+        <ClientSideValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="hidden-visible">Visible field</label>
+            <InputText id="hidden-visible" @bind-Value="HiddenModel.VisibleField" />
+            <ValidationMessage For="@(() => HiddenModel.VisibleField)" />
+        </div>
+
+        <div class="form-group" style="display: none" id="hidden-container">
+            <label for="hidden-hidden">Hidden field (should be skipped)</label>
+            <InputText id="hidden-hidden" @bind-Value="HiddenModel.HiddenField" />
+            <ValidationMessage For="@(() => HiddenModel.HiddenField)" />
+        </div>
+
+        <button type="submit" id="hidden-submit">Submit</button>
+    </EditForm>
+    @if (_hiddenSubmitted) { <p id="hidden-success">Hidden form submitted!</p> }
+</section>
+
+<hr />
+
+<section id="section-all-rules">
+    <h2>4. All Validation Rules</h2>
+    <EditForm Model="AllRulesModel" Enhance FormName="allrules-form">
+        <DataAnnotationsValidator />
+        <ClientSideValidator />
+
+        <div class="form-group">
+            <label for="rules-required">Required</label>
+            <InputText id="rules-required" @bind-Value="AllRulesModel.RequiredField" />
+            <ValidationMessage For="@(() => AllRulesModel.RequiredField)" />
+        </div>
+
+        <div class="form-group">
+            <label for="rules-email">Email</label>
+            <InputText id="rules-email" @bind-Value="AllRulesModel.EmailField" />
+            <ValidationMessage For="@(() => AllRulesModel.EmailField)" />
+        </div>
+
+        <div class="form-group">
+            <label for="rules-url">URL</label>
+            <InputText id="rules-url" @bind-Value="AllRulesModel.UrlField" />
+            <ValidationMessage For="@(() => AllRulesModel.UrlField)" />
+        </div>
+
+        <div class="form-group">
+            <label for="rules-phone">Phone</label>
+            <InputText id="rules-phone" @bind-Value="AllRulesModel.PhoneField" />
+            <ValidationMessage For="@(() => AllRulesModel.PhoneField)" />
+        </div>
+
+        <div class="form-group">
+            <label for="rules-range">Range (1-100)</label>
+            <InputNumber id="rules-range" @bind-Value="AllRulesModel.RangeField" />
+            <ValidationMessage For="@(() => AllRulesModel.RangeField)" />
+        </div>
+
+        <div class="form-group">
+            <label for="rules-regex">Regex (XX-0000)</label>
+            <InputText id="rules-regex" @bind-Value="AllRulesModel.RegexField" />
+            <ValidationMessage For="@(() => AllRulesModel.RegexField)" />
+        </div>
+
+        <div class="form-group">
+            <label for="rules-minlength">MinLength (5)</label>
+            <InputText id="rules-minlength" @bind-Value="AllRulesModel.MinLengthField" />
+            <ValidationMessage For="@(() => AllRulesModel.MinLengthField)" />
+        </div>
+
+        <div class="form-group">
+            <label for="rules-maxlength">MaxLength (10)</label>
+            <InputText id="rules-maxlength" @bind-Value="AllRulesModel.MaxLengthField" />
+            <ValidationMessage For="@(() => AllRulesModel.MaxLengthField)" />
+        </div>
+
+        <div class="form-group">
+            <label for="rules-stringlength">StringLength (2-50)</label>
+            <InputText id="rules-stringlength" @bind-Value="AllRulesModel.StringLengthField" />
+            <ValidationMessage For="@(() => AllRulesModel.StringLengthField)" />
+        </div>
+
+        <button type="submit" id="allrules-submit">Submit</button>
+    </EditForm>
+</section>
+
+@code {
+    // Basic form
+    [SupplyParameterFromForm(FormName = "basic-form")]
+    private BasicFormModel BasicModel { get; set; } = new();
+    private bool _basicSubmitted;
+    private void HandleBasicSubmit() { _basicSubmitted = true; }
+
+    // Timing form
+    [SupplyParameterFromForm(FormName = "timing-form")]
+    private TimingFormModel TimingModel { get; set; } = new();
+    private void HandleTimingSubmit() { }
+
+    // Hidden form
+    [SupplyParameterFromForm(FormName = "hidden-form")]
+    private HiddenFormModel HiddenModel { get; set; } = new();
+    private bool _hiddenSubmitted;
+    private void HandleHiddenSubmit() { _hiddenSubmitted = true; }
+
+    // All rules form
+    [SupplyParameterFromForm(FormName = "allrules-form")]
+    private AllRulesFormModel AllRulesModel { get; set; } = new();
+
+    // Models
+    public class BasicFormModel
+    {
+        [Required(ErrorMessage = "Name is required.")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "Name must be 2-50 characters.")]
+        public string Name { get; set; } = "";
+
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Invalid email.")]
+        public string Email { get; set; } = "";
+    }
+
+    public class TimingFormModel
+    {
+        [Required(ErrorMessage = "Default field is required.")]
+        public string DefaultField { get; set; } = "";
+
+        [Required(ErrorMessage = "Blur-only field is required.")]
+        public string BlurOnlyField { get; set; } = "";
+
+        [Required(ErrorMessage = "Submit-only field is required.")]
+        public string SubmitOnlyField { get; set; } = "";
+    }
+
+    public class HiddenFormModel
+    {
+        [Required(ErrorMessage = "Visible field is required.")]
+        public string VisibleField { get; set; } = "";
+
+        [Required(ErrorMessage = "Hidden field is required.")]
+        public string HiddenField { get; set; } = "";
+    }
+
+    public class AllRulesFormModel
+    {
+        [Required(ErrorMessage = "Required field is required.")]
+        public string RequiredField { get; set; } = "";
+
+        [EmailAddress(ErrorMessage = "Invalid email format.")]
+        public string? EmailField { get; set; }
+
+        [Url(ErrorMessage = "Invalid URL format.")]
+        public string? UrlField { get; set; }
+
+        [Phone(ErrorMessage = "Invalid phone format.")]
+        public string? PhoneField { get; set; }
+
+        [Range(1, 100, ErrorMessage = "Must be 1-100.")]
+        public int? RangeField { get; set; }
+
+        [RegularExpression(@"^[A-Z]{2}-\d{4}$", ErrorMessage = "Must match XX-0000.")]
+        public string? RegexField { get; set; }
+
+        [MinLength(5, ErrorMessage = "Min 5 characters.")]
+        public string? MinLengthField { get; set; }
+
+        [MaxLength(10, ErrorMessage = "Max 10 characters.")]
+        public string? MaxLengthField { get; set; }
+
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "Must be 2-50 characters.")]
+        public string? StringLengthField { get; set; }
+    }
+}

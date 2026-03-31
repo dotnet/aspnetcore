@@ -40,6 +40,7 @@ export function initializeMvcValidation(cssOverrides?: Partial<CssClassConfig>):
   const scanner = new DomScanner(coordinator, eventManager);
 
   eventManager.attachSubmitInterception();
+  eventManager.attachResetInterception();
 
   // Initial scan
   scanner.scan(document);

@@ -114,7 +114,7 @@ app.Run();
 
 > **Note:** `InputFile` does not extend `InputBase<T>` and does not automatically emit `data-val-*` attributes. File validation is server-side only. This is consistent with how `InputFile` already doesn't participate in `EditContext` validation today — it's a special component for streaming file uploads, not a standard form input.
 
-### Scenario 2: Supported validation rules
+### Scenario 2: Supported validation rules (Blazor)
 
 The following `DataAnnotations` attributes are supported out of the box for Blazor SSR. The mapping uses the same `data-val-*` attribute protocol as MVC, ensuring full compatibility:
 
@@ -137,7 +137,7 @@ Additionaly, MVC's `NumericClientModelValidatorProvider` automatically emits `da
 
 **Nested models** are fully supported. A property like `model.Address.Street` produces validation attributes with the correct dotted-path field name, and `<ValidationMessage For="@(() => model.Address.Street)" />` renders the matching `data-valmsg-for` target.
 
-### Scenario 3: Localized error messages
+### Scenario 3: Localized error messages (Blazor)
 
 Error messages are resolved on the server at render time and embedded in the `data-val-*` attributes as static strings. By default, `ValidationAttribute.FormatErrorMessage()` is used with the display name derived from `[Display(Name = "...")]`, `[DisplayName("...")]`, or the property name as fallback.
 
@@ -235,7 +235,7 @@ Forms that appear after a Blazor enhanced navigation or streaming rendering upda
 
 ### Scenario 6: Enabled by default, per-form opt-out
 
-**Blazor — enabled by default:** Client-side validation is automatically enabled for all statically-rendered forms when `AddRazorComponents()` is called. No additional service registration or component is needed. Existing apps that upgrade to .NET 10 get client-side validation automatically.
+**Blazor — enabled by default:** Client-side validation is automatically enabled for all statically-rendered forms when `AddRazorComponents()` is called. No additional service registration or component is needed. Existing apps that upgrade to .NET 11 get client-side validation automatically.
 
 **Per-form opt-out:** To disable client-side validation on a specific form, use a parameter on `DataAnnotationsValidator`:
 
@@ -249,7 +249,7 @@ Forms that appear after a Blazor enhanced navigation or streaming rendering upda
 
 When `EnableClientValidation="false"`, input components do not emit `data-val-*` attributes and `ValidationMessage`/`ValidationSummary` use the standard Blazor rendering (no `data-valmsg-for` / `data-valmsg-summary`). The JS library has nothing to find and the form behaves exactly as it does today.
 
-**MVC — include the script:** MVC apps reference the standalone `aspnet-core-validation.js` file. The library auto-scans all forms on page load. MVC distribution and integration is owned by the MVC team.
+**MVC — include the script:** MVC apps reference the standalone `aspnet-core-validation.js` file. The library auto-scans all forms on page load.
 
 **Per-button opt-out:** The standard `formnovalidate` HTML attribute skips validation for that submit action:
 
@@ -260,7 +260,7 @@ When `EnableClientValidation="false"`, input components do not emit `data-val-*`
 
 **Per-field opt-out:** Fields without `DataAnnotations` attributes will not have `data-val` emitted and are ignored by the library.
 
-### Scenario 7: Interactive render modes are not affected
+### Scenario 7: Interactive render modes are not affected (Blazor)
 
 Client-side validation targets static SSR only. When components render interactively (Blazor Server or Blazor WebAssembly), the existing Blazor validation pipeline handles validation through the live `EditContext` and C# logic running on the circuit or in WebAssembly.
 
@@ -364,7 +364,7 @@ builder.Services.AddClientValidationAdapter<NotEqualToAttribute>(
     attr => new NotEqualToClientAdapter(attr));
 ```
 
-### Scenario 10: Drop-in replacement for jQuery unobtrusive validation in MVC
+### Scenario 10: Drop-in replacement for jQuery unobtrusive validation (MVC)
 
 An existing ASP.NET Core MVC app removes the jQuery validation stack and replaces it with the new library. **No C# changes required.**
 

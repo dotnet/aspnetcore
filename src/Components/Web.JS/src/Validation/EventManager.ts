@@ -6,9 +6,19 @@ import { ValidationCoordinator } from './ValidationCoordinator';
 
 export class EventManager {
   private submitHandler: ((e: SubmitEvent) => void) | null = null;
+  private resetHandler: ((e: Event) => void) | null = null;
   private resubmitting = false;
+  private submittedForms = new WeakSet<HTMLFormElement>();
 
   constructor(private coordinator: ValidationCoordinator) {}
+
+  /**
+   * Returns true if the given form has been submitted at least once.
+   * Used by input handlers to decide whether to validate on typing.
+   */
+  isFormSubmitted(form: HTMLFormElement): boolean {
+    return this.submittedForms.has(form);
+  }
 
   /**
    * Attach a document-level submit handler in the CAPTURE phase.
@@ -48,6 +58,9 @@ export class EventManager {
         return;
       }
 
+      // Mark this form as submitted — enables eager input validation
+      this.submittedForms.add(form);
+
       // Try synchronous validation first
       const syncResult = this.coordinator.validateFormSync(form);
 
@@ -81,6 +94,30 @@ export class EventManager {
     document.addEventListener('submit', this.submitHandler, true);
   }
 
+  /**
+   * Attach a document-level reset handler in the CAPTURE phase.
+   * Clears all validation state and submitted tracking for the form.
+   * Uses setTimeout(0) because the reset event fires before the browser
+   * resets field values — we need to clear state after values are reset.
+   */
+  attachResetInterception(): void {
+    this.resetHandler = (event: Event) => {
+      const form = event.target;
+      if (!(form instanceof HTMLFormElement)) {
+        return;
+      }
+
+      if (!form.querySelector('[data-val="true"]')) {
+        return;
+      }
+
+      this.submittedForms.delete(form);
+      setTimeout(() => this.coordinator.clearForm(form), 0);
+    };
+
+    document.addEventListener('reset', this.resetHandler, true);
+  }
+
   detachSubmitInterception(): void {
     if (this.submitHandler) {
       document.removeEventListener('submit', this.submitHandler, true);
@@ -88,11 +125,28 @@ export class EventManager {
     }
   }
 
+  detachResetInterception(): void {
+    if (this.resetHandler) {
+      document.removeEventListener('reset', this.resetHandler, true);
+      this.resetHandler = null;
+    }
+  }
+
   /**
-   * Attach input/change event listeners to an element with smart validation timing.
+   * Attach input/change event listeners to an element with smart validation timing
+   * that matches MVC's jQuery validation defaults.
    *
-   * - 'input' events only CLEAR existing errors (prevents "red while typing")
-   * - 'change' events can SET new errors (fires on blur/commit)
+   * Timing behavior:
+   * - 'input' events: validate only if the form has been submitted or the field
+   *   is currently invalid. This prevents "red while typing" on pristine forms
+   *   while providing immediate feedback after first submit or first error.
+   * - 'change' events: always validate (fires on blur/commit).
+   *
+   * The data-val-event attribute can override which events trigger validation:
+   * - "change"       — validate only on blur (no typing validation)
+   * - "none"         — no real-time validation (submit-only)
+   * - "input change" — explicit default for text inputs
+   * - Any space-separated list of DOM event names
    */
   attachInputListeners(element: ValidatableElement): void {
     const state = this.coordinator.getState(element);
@@ -100,12 +154,23 @@ export class EventManager {
       return;
     }
 
+    const customEvent = element.getAttribute('data-val-event');
+
+    // "none" means submit-only — no real-time validation listeners
+    if (customEvent === 'none') {
+      return;
+    }
+
     const inputHandler = () => {
-      // Only validate on input if field has been shown invalid before
-      if (state.hasBeenInvalid && state.currentError) {
+      const form = element.closest('form');
+      // Validate on input if: form was submitted OR field is currently invalid
+      // This matches jQuery validation's onkeyup default behavior:
+      // element.name in this.submitted || element.name in this.invalid
+      const shouldValidate = state.currentError ||
+        (form instanceof HTMLFormElement && this.isFormSubmitted(form));
+      if (shouldValidate) {
         this.coordinator.validateAndUpdate(element).then(() => {
-          const form = element.closest('form');
-          if (form) {
+          if (form instanceof HTMLFormElement) {
             this.coordinator.updateFormSummary(form);
           }
         });
@@ -115,22 +180,24 @@ export class EventManager {
     const changeHandler = () => {
       this.coordinator.validateAndUpdate(element).then(() => {
         const form = element.closest('form');
-        if (form) {
+        if (form instanceof HTMLFormElement) {
           this.coordinator.updateFormSummary(form);
         }
       });
     };
 
-    if (element instanceof HTMLSelectElement) {
-      element.addEventListener('change', changeHandler);
-      state.listeners.push({ event: 'change', handler: changeHandler });
-    } else {
-      element.addEventListener('input', inputHandler);
-      element.addEventListener('change', changeHandler);
-      state.listeners.push(
-        { event: 'input', handler: inputHandler },
-        { event: 'change', handler: changeHandler }
-      );
+    // Determine which events to listen to
+    const events = customEvent
+      ? customEvent.split(/\s+/)
+      : (element instanceof HTMLSelectElement
+        ? ['change']
+        : ['input', 'change']);
+
+    for (const eventName of events) {
+      // 'input' uses the gated handler; all other events use the change (always-validate) handler
+      const handler = eventName === 'input' ? inputHandler : changeHandler;
+      element.addEventListener(eventName, handler);
+      state.listeners.push({ event: eventName, handler });
     }
   }
 }

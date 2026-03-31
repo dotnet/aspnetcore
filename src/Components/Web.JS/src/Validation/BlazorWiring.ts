@@ -33,6 +33,7 @@ export function initializeBlazorValidation(cssOverrides?: Partial<CssClassConfig
   const scanner = new DomScanner(coordinator, eventManager);
 
   eventManager.attachSubmitInterception();
+  eventManager.attachResetInterception();
 
   const api: BlazorValidationApi = {
     addProvider: (name, provider) => {

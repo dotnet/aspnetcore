@@ -18,12 +18,20 @@ export class DomScanner {
      * If an element is already tracked but its data-val-* attributes have changed
      * (e.g., after enhanced navigation DOM patching), it is re-registered with
      * fresh directives and message elements.
+     *
+     * Hidden elements (not visible to the user) are skipped, matching the
+     * jQuery validation default behavior. They will be picked up if they
+     * become visible and the DOM is re-scanned.
      */
   scan(root: ParentNode): void {
     const inputs = root.querySelectorAll<ValidatableElement>('input[data-val="true"], select[data-val="true"], textarea[data-val="true"]');
     const initializedForms = new Set<HTMLFormElement>();
 
     for (const input of Array.from(inputs)) {
+      if (isHidden(input)) {
+        continue;
+      }
+
       const existingState = this.coordinator.getState(input);
       if (existingState) {
         // Element already tracked — check if its attributes have changed
@@ -89,4 +97,36 @@ export class DomScanner {
     parts.sort();
     return parts.join('|');
   }
+}
+
+/**
+ * Check if an element is hidden from the user.
+ * An element is considered hidden if:
+ * - It has the `hidden` HTML attribute
+ * - It or an ancestor has inline `display: none`
+ * - It is an `<input type="hidden">`
+ *
+ * In real browsers, `offsetParent === null` when the element or any ancestor
+ * has `display: none`. In JSDOM (no layout engine), `offsetParent` is always
+ * null, so we also walk up the DOM to check for inline `display: none`.
+ */
+export function isHidden(element: HTMLElement): boolean {
+  if (element.hidden) {
+    return true;
+  }
+
+  if (element instanceof HTMLInputElement && element.type === 'hidden') {
+    return true;
+  }
+
+  // Walk up the DOM to check for display:none on the element or any ancestor
+  let current: HTMLElement | null = element;
+  while (current) {
+    if (current.style.display === 'none') {
+      return true;
+    }
+    current = current.parentElement;
+  }
+
+  return false;
 }

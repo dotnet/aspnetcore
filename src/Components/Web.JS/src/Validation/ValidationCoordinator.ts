@@ -4,6 +4,7 @@
 import { ValidatableElement, ElementState, ValidationProviderResult } from './Types';
 import { ValidationEngine } from './ValidationEngine';
 import { ErrorDisplay } from './ErrorDisplay';
+import { isHidden } from './DomScanner';
 
 const validatableSelector = 'input[data-val="true"], select[data-val="true"], textarea[data-val="true"]';
 
@@ -88,17 +89,30 @@ export class ValidationCoordinator {
 
   /**
    * Validate all tracked inputs within a form in parallel.
+   * Hidden fields are skipped, matching jQuery validation's default behavior.
    */
   async validateForm(form: HTMLFormElement): Promise<boolean> {
     const inputs = Array.from(form.querySelectorAll<ValidatableElement>(validatableSelector));
+    const visibleInputs = inputs.filter(input => !isHidden(input));
+
+    // Clear errors on hidden inputs so they don't block submission
+    for (const input of inputs) {
+      if (isHidden(input)) {
+        const state = this.elementState.get(input);
+        if (state?.currentError) {
+          this.markValid(input, state);
+        }
+      }
+    }
+
     const results = await Promise.all(
-      inputs.map(input => this.validateAndUpdate(input))
+      visibleInputs.map(input => this.validateAndUpdate(input))
     );
 
     const allValid = results.every(v => v);
     const firstInvalidIndex = results.findIndex(v => !v);
     if (firstInvalidIndex >= 0) {
-      inputs[firstInvalidIndex].focus();
+      visibleInputs[firstInvalidIndex].focus();
     }
 
     this.updateFormSummary(form);
@@ -109,6 +123,7 @@ export class ValidationCoordinator {
    * Synchronous form validation attempt. Runs all providers synchronously.
    * If any provider returns a Promise, aborts and returns 'async' to signal
    * that the caller must use the async path.
+   * Hidden fields are skipped, matching jQuery validation's default behavior.
    *
    * Returns: true (all valid), false (validation failed), or 'async' (needs async).
    */
@@ -118,6 +133,15 @@ export class ValidationCoordinator {
     let firstInvalid: ValidatableElement | null = null;
 
     for (const input of inputs) {
+      // Skip hidden fields — they shouldn't block form submission
+      if (isHidden(input)) {
+        const state = this.elementState.get(input);
+        if (state?.currentError) {
+          this.markValid(input, state);
+        }
+        continue;
+      }
+
       const state = this.elementState.get(input);
       if (!state) {
         continue;
@@ -163,6 +187,22 @@ export class ValidationCoordinator {
 
     this.updateFormSummary(form);
     return allValid;
+  }
+
+  /**
+   * Clear all validation state for a form, returning it to pristine condition.
+   * Used when the form is reset.
+   */
+  clearForm(form: HTMLFormElement): void {
+    const inputs = form.querySelectorAll<ValidatableElement>(validatableSelector);
+    for (const input of Array.from(inputs)) {
+      const state = this.elementState.get(input);
+      if (state) {
+        this.markValid(input, state);
+        state.hasBeenInvalid = false;
+      }
+    }
+    this.updateFormSummary(form);
   }
 
   /**

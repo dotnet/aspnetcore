@@ -32,11 +32,17 @@ export class ErrorDisplay {
       el.classList.remove(this.css.messageValid);
     }
 
-    // ARIA extension point:
-    // input.setAttribute('aria-invalid', 'true');
-    // if (messageElements.length > 0 && messageElements[0].id) {
-    //     input.setAttribute('aria-describedby', messageElements[0].id);
-    // }
+    // ARIA: mark the input as invalid for screen readers
+    input.setAttribute('aria-invalid', 'true');
+    if (messageElements.length > 0) {
+      const el = messageElements[0];
+      if (el instanceof HTMLElement) {
+        if (!el.id) {
+          el.id = `val-msg-${CSS.escape(input.getAttribute('name') || input.id)}`;
+        }
+        input.setAttribute('aria-describedby', el.id);
+      }
+    }
   }
 
   clearFieldError(input: ValidatableElement, messageElements: Element[]): void {
@@ -51,8 +57,9 @@ export class ErrorDisplay {
       el.classList.add(this.css.messageValid);
     }
 
-    // ARIA extension point:
-    // input.removeAttribute('aria-invalid');
+    // ARIA: clear invalid state
+    input.removeAttribute('aria-invalid');
+    input.removeAttribute('aria-describedby');
   }
 
   updateSummary(form: HTMLFormElement, errors: Map<string, string>): void {
