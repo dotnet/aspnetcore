@@ -6,7 +6,7 @@ We propose creating a new minimal **JavaScript validation library** that underst
 
 ## Goals
 
-- **Enable client-side validation for Blazor SSR without interactivity.** Today, Blazor Web Apps rendered via static SSR have no client-side validation — every validation check requires a full .NET invocation. This feature adds immediate, in-browser validation feedback using standard `DataAnnotations`, without requiring Blazor Server interactivity or WebAssembly. Client-side validation is **enabled by default** when `AddRazorComponents()` is called. Standard form input components  (`<InputText>`, `<InputNumber>`, etc.) automatically emit `data-val-*` attributes on statically-rendered forms, and the validation JS validates on the client.
+- **Enable client-side validation for Blazor SSR without interactivity.** Today, Blazor Web Apps rendered via static SSR have no client-side validation — every validation check requires a full .NET invocation. This feature adds immediate, in-browser validation feedback using standard `DataAnnotations`, without requiring Blazor Server interactivity or WebAssembly. Client-side validation is activated by including `<DataAnnotationsValidator />` in the form — the same component that already enables server-side validation. Standard form input components (`<InputText>`, `<InputNumber>`, etc.) automatically emit `data-val-*` attributes on statically-rendered forms, and the validation JS validates on the client.
 
 - **Provide a zero-dependency JavaScript validation library.** The current MVC client-side validation stack depends on the combination of `jQuery`, `jquery-validate`, and `jquery-validation-unobtrusive`, totalling more than 40 KB (gzip). This feature delivers a JavaScript validation library with no external dependencies that understands the same `data-val-*` attribute protocol. It uses the browser-native Constraint Validation API (`setCustomValidity`, `ValidityState`, `checkValidity`) as the validation state mechanism and extensibility surface, enabling third-party libraries to read standardized validity state without coupling to our internals. For Blazor, the JS library is bundled into `blazor.web.js`. The target size is ≤ 5 KB gzip-compressed.
 
@@ -36,9 +36,9 @@ We propose creating a new minimal **JavaScript validation library** that underst
 
 The solution consists of two main parts:
 
-1. **A JavaScript validation library** bundled into `blazor.web.js` (and also available as a standalone file for MVC) that scans the DOM for `data-val-*` attributes, validates form fields on user interaction and submission, displays error messages, and integrates with the Constraint Validation API. For Blazor, it hooks into enhanced navigation to re-scan after DOM patching. For MVC, it initializes on page load and provides a `parse()` API for dynamic content.
+1. **A JavaScript validation library** bundled into `blazor.web.js` (and also available as a standalone file for MVC) that scans the DOM for `data-val-*` attributes, validates form fields on user interaction and submission, displays error messages, and integrates with the Constraint Validation API. For Blazor, it hooks into enhanced navigation to re-scan after DOM patching and exposes its API as `Blazor.validation` (on the global Blazor object). For MVC, it initializes on page load and exposes the same API as `window.__aspnetValidation`.
 
-2. **A Blazor C# service layer**, enabled by default via `AddRazorComponents()`, that causes standard Blazor input components (`InputText`, `InputNumber`, `InputSelect`, etc.) to automatically emit `data-val-*` attributes derived from `DataAnnotations` on the model when rendering in a static SSR context. The feature is active only for statically-rendered forms — interactive render modes are not affected. Per-form opt-out is available via a parameter on `DataAnnotationsValidator`.
+2. **A Blazor C# service layer**, enabled by default via `AddRazorComponents()`, that causes standard Blazor input components (`InputText`, `InputNumber`, `InputSelect`, etc.) to automatically emit `data-val-*` attributes derived from `DataAnnotations` on the model when rendering in a static SSR context. Client-side validation is activated per-form by including `<DataAnnotationsValidator />` — the same component that already enables DataAnnotations-based server-side validation. Without `<DataAnnotationsValidator />`, no `data-val-*` attributes are emitted and no client-side validation occurs. Opt-out is available via a parameter on `DataAnnotationsValidator`.
 
 Client-side validation is a **progressive enhancement**: forms are fully functional before the script loads, and server-side validation always remains authoritative. The client library improves UX by providing immediate feedback without a round-trip.
 
@@ -50,7 +50,7 @@ Client-side validation is a **progressive enhancement**: forms are fully functio
 
 ### Scenario 1: Basic Blazor SSR form with client-side validation
 
-A statically-rendered Blazor form gets immediate client-side validation without enabling interactive render modes. **No additional setup is required** — client-side validation is enabled by default when using `AddRazorComponents()`.
+A statically-rendered Blazor form gets immediate client-side validation without enabling interactive render modes. Client-side validation is activated by including `<DataAnnotationsValidator />` in the form — the same component that already enables server-side DataAnnotations validation.
 
 **Program.cs — standard Blazor SSR setup:**
 
@@ -103,7 +103,7 @@ app.Run();
 
 **What happens:**
 
-- Because `AddRazorComponents()` registers the client validation service, all `InputBase<T>`-derived components (`InputText`, `InputNumber`, `InputSelect`, `InputDate`, `InputTextArea`, `InputCheckbox`, `InputRadioGroup`) automatically emit `data-val-*` attributes based on the model's `DataAnnotations` when rendering in a static SSR context.
+- Because the form includes `<DataAnnotationsValidator />` and the form is rendering in a static SSR context, all `InputBase<T>`-derived components (`InputText`, `InputNumber`, `InputSelect`, `InputDate`, `InputTextArea`, `InputCheckbox`, `InputRadioGroup`) automatically emit `data-val-*` attributes based on the model's `DataAnnotations`.
 - `<ValidationMessage>` renders a `<span data-valmsg-for="...">` target for per-field errors.
 - `<ValidationSummary>` renders a `<div data-valmsg-summary="true">` container for the error list.
 - The validation JS (bundled in `blazor.web.js`) scans the DOM, finds the annotated elements, and wires validation.
@@ -233,11 +233,11 @@ Forms that appear after a Blazor enhanced navigation or streaming rendering upda
 
 **Multiple forms on a page** are supported. Each form is validated independently—submitting one form does not trigger validation on another.
 
-### Scenario 6: Enabled by default, per-form opt-out
+### Scenario 6: Opt-in via DataAnnotationsValidator, per-form opt-out
 
-**Blazor — enabled by default:** Client-side validation is automatically enabled for all statically-rendered forms when `AddRazorComponents()` is called. No additional service registration or component is needed. Existing apps that upgrade to .NET 11 get client-side validation automatically.
+**Blazor — opt-in via `<DataAnnotationsValidator />`:** Client-side validation is activated for a form by including `<DataAnnotationsValidator />`, the same component that already enables server-side DataAnnotations validation. In a static SSR context, `DataAnnotationsValidator` enables both server-side and client-side validation. Forms without `<DataAnnotationsValidator />` have no DataAnnotations validation at all (neither server nor client).
 
-**Per-form opt-out:** To disable client-side validation on a specific form, use a parameter on `DataAnnotationsValidator`:
+**Per-form opt-out:** To keep server-side DataAnnotations validation but disable client-side validation on a specific form, use the `EnableClientValidation` parameter:
 
 ```razor
 <EditForm Model="model" Enhance FormName="admin-form">
@@ -267,8 +267,8 @@ Client-side validation targets static SSR only. When components render interacti
 **Behavior in interactive contexts:**
 
 - **`data-val-*` attributes are not emitted.** The C# service layer detects that the form is rendering interactively and does not merge `data-val-*` attributes into input components. `ValidationMessage` and `ValidationSummary` use their standard interactive rendering (per-message `<div>` elements, no `data-valmsg-for`).
-- **The JS validation code does not run.** The validation JS does not scan or modify the DOM for forms in interactive rendering contexts. This ensures no conflicts between the JS-based client validation and Blazor's interactive validation (which uses C# `EditContext.Validate()` via the circuit or WebAssembly).
-- **Mixed pages work correctly.** On pages with both statically-rendered and interactive forms, client-side JS validation applies only to the static forms. Interactive forms continue to use the existing Blazor validation pipeline.
+- **The JS validation library has no effect.** The library scans the DOM for `[data-val="true"]` elements. Since interactive forms have no `data-val-*` attributes, the scan finds nothing and no validation behavior is attached. No special detection of interactive mode is needed on the JS side — the C# layer is the single point of control.
+- **Mixed pages work correctly.** On pages with both statically-rendered and interactive forms, the JS validation applies only to elements with `data-val-*` attributes (the static ones). Interactive forms continue to use the existing Blazor validation pipeline.
 
 ```razor
 @* This page has both static and interactive forms *@
@@ -318,12 +318,22 @@ Third-party libraries can listen for the standard `invalid` event, read `Validit
 
 Custom `ValidationAttribute` subclasses can have client-side validation in both Blazor and MVC. The pattern has two parts: a **server-side adapter** (different API per framework) that emits `data-val-*` attributes, and a **JavaScript provider** (shared, same API for both frameworks) that runs the validation logic in the browser.
 
-#### JavaScript provider registration (shared by Blazor and MVC)
+#### JavaScript provider registration
 
-Regardless of server framework, custom client-side validators are registered the same way:
+Custom client-side validators are registered via the validation API object. In Blazor, this is exposed as `Blazor.validation`; in MVC (standalone script), it's available as `window.__aspnetValidation`:
 
 ```javascript
+// Blazor
+Blazor.validation.addProvider('notequalto', (value, element, params) => {
+    const otherName = params.other.replace('*.', '');
+    const form = element.closest('form');
+    const otherField = form?.querySelector(`[name$=".${otherName}"], [name="${otherName}"]`);
+    return !otherField || value !== otherField.value;
+});
+
+// MVC (standalone script)
 window.__aspnetValidation.addProvider('notequalto', (value, element, params) => {
+    // Same provider function — identical for both frameworks
     const otherName = params.other.replace('*.', '');
     const form = element.closest('form');
     const otherField = form?.querySelector(`[name$=".${otherName}"], [name="${otherName}"]`);
