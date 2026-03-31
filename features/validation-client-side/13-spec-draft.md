@@ -182,18 +182,48 @@ public class RegisterModel
 
 ### Scenario 4: Validation timing and UX behavior
 
-The library uses a smart validation timing strategy to avoid poor "everything is red immediately" UX:
+The library follows the same validation timing strategy as MVC's jQuery validation stack, designed to avoid the "everything is red immediately" problem while providing responsive feedback:
+
+**Before first submit** (pristine form):
 
 | User action | Behavior |
 |---|---|
-| **Typing** (`input` event) | Only **clears** existing errors. Does **not** show new errors while the user is actively typing. |
-| **Leaving a field** (`change`/`blur` event) | **Shows or clears** errors. This is the primary trigger for displaying validation errors. |
-| **Submitting the form** | **Validates all fields.** Blocks submission if any field is invalid. Updates the validation summary. |
-| **Resetting the form** | **Clears all validation state.** CSS classes, error messages, validation summary, ARIA attributes, and the "has been invalid" flag are all reset. Fields return to their pristine state (typing does not trigger validation until the next blur/submit). |
+| **Typing** (`input` event) | **No validation.** Fields are pristine — errors are not shown while the user fills out the form for the first time. |
+| **Leaving a field** (`change`/`blur` event) | **Full validation.** Shows or clears errors. This is the primary trigger for displaying validation errors before the first submit. |
+| **Submitting the form** | **Validates all fields.** Blocks submission if any field is invalid. Updates the validation summary. Marks the form as "submitted" — after this point, typing validation becomes active (see below). |
+| **Resetting the form** | **Clears all validation state.** CSS classes, error messages, validation summary, ARIA attributes, and the submitted/invalid tracking are all reset. The form returns to its pristine state. |
 
-Once a field has been marked invalid, subsequent keystrokes will clear the error in real-time as soon as the input becomes valid—providing immediate feedback as the user corrects the issue.
+**After first submit** (or after a field has been shown invalid):
+
+| User action | Behavior |
+|---|---|
+| **Typing** (`input` event) | **Full validation.** Once the form has been submitted or a field has been marked invalid, typing triggers real-time validation — errors can be shown, cleared, or replaced as the user types. This provides immediate feedback as the user corrects issues. |
+| **Leaving a field** | **Full validation** (same as before submit). |
+
+**Hidden fields** are skipped. Fields that are not visible (e.g., in a hidden step of a multi-step form) are excluded from validation, matching the jQuery validation default.
 
 **Form reset** is handled by listening for the `reset` event on forms. This provides MVC parity (jquery-validation-unobtrusive supports reset) and works for Blazor SSR forms. Note that Blazor's broader form-reset story (resetting `EditContext` modification/validation state in interactive modes) is a separate gap outside the scope of this feature.
+
+#### Per-field validation event override (`data-val-event`)
+
+Individual fields can override the default validation events using the `data-val-event` attribute. This is useful for fields that need different timing (e.g., a field that should only validate on submit, or a select that should validate immediately on change):
+
+```html
+<!-- Default: validates on input (after submit) and change/blur -->
+<input data-val="true" data-val-required="Required." />
+
+<!-- Only validate on blur, not while typing (even after submit) -->
+<input data-val="true" data-val-required="Required." data-val-event="change" />
+
+<!-- Only validate on form submit, skip real-time validation entirely -->
+<input data-val="true" data-val-required="Required." data-val-event="none" />
+```
+
+In Blazor, the `data-val-event` attribute can be set via `AdditionalAttributes`:
+
+```razor
+<InputText @bind-Value="model.Name" data-val-event="change" />
+```
 
 ### Scenario 5: Enhanced navigation and streaming (Blazor)
 
