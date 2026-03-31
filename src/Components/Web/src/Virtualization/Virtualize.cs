@@ -47,6 +47,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private IEnumerable<TItem>? _loadedItems;
 
+    // For in-memory Items where objects have stable identity
+    private TItem? _previousFirstLoadedItem;
+
     private CancellationTokenSource? _refreshCts;
 
     private bool _skipNextDistributionRefresh;
@@ -515,9 +518,34 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             // Only apply result if the task was not canceled.
             if (!cancellationToken.IsCancellationRequested)
             {
+                var previousItemCount = _itemCount;
+                var countDelta = result.TotalItemCount - previousItemCount;
+
+                // Detect if items were prepended above the current viewport position.
+                if (countDelta > 0 && _itemsBefore > 0 && _previousFirstLoadedItem != null
+                    && _itemsProvider == DefaultItemsProvider)
+                {
+                    var newFirstItem = Items!.ElementAtOrDefault(_itemsBefore);
+                    if (newFirstItem != null && !ReferenceEquals(_previousFirstLoadedItem, newFirstItem))
+                    {
+                        _itemsBefore = Math.Min(_itemsBefore + countDelta, Math.Max(0, result.TotalItemCount - _visibleItemCapacity));
+
+                        var adjustedRequest = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
+                        result = await _itemsProvider(adjustedRequest);
+                    }
+                }
+
                 _itemCount = result.TotalItemCount;
                 _loadedItems = result.Items;
-                _loadedItemsStartIndex = request.StartIndex;
+                _loadedItemsStartIndex = _itemsBefore;
+
+                // Only needed for DefaultItemsProvider; custom providers return new instances
+                // per request, making ReferenceEquals unreliable.
+                _previousFirstLoadedItem = _itemsProvider == DefaultItemsProvider
+                    && Items != null && _itemsBefore < Items.Count
+                    ? Items.ElementAtOrDefault(_itemsBefore)
+                    : default;
+
                 _loading = false;
                 _skipNextDistributionRefresh = request.Count > 0;
 

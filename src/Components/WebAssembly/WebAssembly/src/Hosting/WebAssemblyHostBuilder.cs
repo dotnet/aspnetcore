@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
@@ -38,6 +39,8 @@ public sealed class WebAssemblyHostBuilder
     /// </summary>
     /// <param name="args">The argument passed to the application's main method.</param>
     /// <returns>A <see cref="WebAssemblyHostBuilder"/>.</returns>
+    [DynamicDependency(nameof(JSInteropMethods.NotifyLocationChanged), typeof(JSInteropMethods))]
+    [DynamicDependency(nameof(JSInteropMethods.NotifyLocationChangingAsync), typeof(JSInteropMethods))]
     [DynamicDependency(JsonSerialized, typeof(WebEventDescriptor))]
     // The following dependency prevents HeadOutlet from getting trimmed away in
     // WebAssembly prerendered apps.
@@ -338,12 +341,12 @@ public sealed class WebAssemblyHostBuilder
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<ResourceCollectionProvider>(Services, RenderMode.InteractiveWebAssembly);
         Services.AddLogging(builder =>
         {
-            builder.AddProvider(new WebAssemblyConsoleLoggerProvider());
+            builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
         });
         Services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AntiforgeryStateProvider>(Services, RenderMode.InteractiveWebAssembly);
         Services.AddSupplyValueFromQueryProvider();
-
+        
         // Register metrics and tracing when explicitly enabled (opt-in via feature switch)
         var isTelemetryEnabled = AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out var switchValue) && switchValue == true;
         if (isTelemetryEnabled)
