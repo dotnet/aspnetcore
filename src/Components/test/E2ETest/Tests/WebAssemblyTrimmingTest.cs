@@ -44,4 +44,28 @@ public class WebAssemblyTrimmingTest : ServerTestBase<BlazorWasmTestAppFixture<P
         // Verify that UpdateApplication method has been trimmed away
         Browser.Equal("false", () => appElement.FindElement(By.Id("update-application-found")).Text);
     }
+
+    [Fact]
+    public void MetricsTypesAreTrimmed_WhenPublishedWithTrimming()
+    {
+        if (!_serverFixture.TestTrimmedOrMultithreadingApps)
+        {
+            // In dev mode, metrics types are expected to be present
+            return;
+        }
+
+        var appElement = Browser.MountTestComponent<MetricsTrimmingCheck>();
+
+        // There is trimmed empty type ComponentsMetrics
+        Browser.Equal("true", () => appElement.FindElement(By.Id("metrics-found")).Text);
+
+        // Verify that FailEventSync method has been trimmed away
+        Browser.Equal("false", () => appElement.FindElement(By.Id("fail-event-sync-found")).Text);
+
+        // There is trimmed empty type ComponentsActivitySource
+        Browser.Equal("true", () => appElement.FindElement(By.Id("activity-source-found")).Text);
+
+        // Verify that StartHandleEventActivity method has been trimmed away
+        Browser.Equal("false", () => appElement.FindElement(By.Id("start-handle-event-activity-found")).Text);
+    }
 }
