@@ -206,6 +206,35 @@ export class ValidationCoordinator {
   }
 
   /**
+   * Programmatically set a validation error on a field.
+   * The error is cleared automatically when the field is next validated.
+   */
+  setError(input: ValidatableElement, message: string): void {
+    const state = this.elementState.get(input);
+    if (state) {
+      this.markInvalid(input, state, message);
+      const form = input.closest('form');
+      if (form instanceof HTMLFormElement) {
+        this.updateFormSummary(form);
+      }
+    }
+  }
+
+  /**
+   * Programmatically clear a validation error from a field.
+   */
+  clearError(input: ValidatableElement): void {
+    const state = this.elementState.get(input);
+    if (state) {
+      this.markValid(input, state);
+      const form = input.closest('form');
+      if (form instanceof HTMLFormElement) {
+        this.updateFormSummary(form);
+      }
+    }
+  }
+
+  /**
    * Collect current errors and update the validation summary for a form.
    */
   updateFormSummary(form: HTMLFormElement): void {

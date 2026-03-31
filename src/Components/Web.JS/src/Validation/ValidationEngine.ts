@@ -7,12 +7,6 @@ export class ValidationEngine {
   private providers: Map<string, ValidationProvider> = new Map();
 
   addProvider(name: string, provider: ValidationProvider): void {
-    if (!this.providers.has(name)) {
-      this.providers.set(name, provider);
-    }
-  }
-
-  setProvider(name: string, provider: ValidationProvider): void {
     this.providers.set(name, provider);
   }
 

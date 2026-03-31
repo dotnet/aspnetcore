@@ -100,7 +100,7 @@ describe('ValidationCoordinator async', () => {
     const { engine, coordinator, scanner } = createStack();
 
     const asyncProvider: ValidationProvider = () => Promise.resolve(true);
-    engine.setProvider('email', asyncProvider);
+    engine.addProvider('email', asyncProvider);
 
     const { form, inputs } = createForm([
       { name: 'email', value: 'test', rules: { 'data-val-email': 'Invalid' } },
@@ -116,7 +116,7 @@ describe('ValidationCoordinator async', () => {
     const { engine, coordinator, scanner } = createStack();
 
     const asyncProvider: ValidationProvider = () => Promise.resolve(false);
-    engine.setProvider('email', asyncProvider);
+    engine.addProvider('email', asyncProvider);
 
     const { form, inputs } = createForm([
       { name: 'email', value: 'test', rules: { 'data-val-email': 'Async error' } },
@@ -132,7 +132,7 @@ describe('ValidationCoordinator async', () => {
     const { engine, coordinator, scanner } = createStack();
 
     const asyncProvider: ValidationProvider = () => Promise.resolve('Server says no');
-    engine.setProvider('email', asyncProvider);
+    engine.addProvider('email', asyncProvider);
 
     const { form, inputs } = createForm([
       { name: 'email', value: 'test', rules: { 'data-val-email': 'Default msg' } },

@@ -314,7 +314,28 @@ input.willValidate;            // true
 
 Third-party libraries can listen for the standard `invalid` event, read `ValidityState`, and build custom UI without depending on our library's internals.
 
-### Scenario 9: Custom validation attributes with client-side support
+### Scenario 9: Programmatic error management from JavaScript
+
+Developers can set and clear validation errors on individual fields from JavaScript, outside of the normal validation pipeline. This is useful for displaying server-returned errors after an API call (e.g., "this username is already taken") or integrating with custom validation logic.
+
+```javascript
+// Blazor
+const input = document.querySelector('input[name="Username"]');
+Blazor.validation.setError(input, 'This username is already taken.');
+// Later, after the user changes the value:
+Blazor.validation.clearError(input);
+
+// MVC
+const input = document.querySelector('input[name="Username"]');
+window.__aspnetValidation.setError(input, 'This username is already taken.');
+window.__aspnetValidation.clearError(input);
+```
+
+`setError(input, message)` applies the error CSS classes, updates the associated `data-valmsg-for` message element, sets `setCustomValidity(message)` on the input, and manages ARIA attributes — the same visual result as if the field had failed validation. `clearError(input)` reverses all of this.
+
+These errors are cleared automatically when the field is next validated (e.g., on blur or submit), so they integrate naturally with the validation lifecycle.
+
+### Scenario 10: Custom validation attributes with client-side support
 
 Custom `ValidationAttribute` subclasses can have client-side validation in both Blazor and MVC. The pattern has two parts: a **server-side adapter** (different API per framework) that emits `data-val-*` attributes, and a **JavaScript provider** (shared, same API for both frameworks) that runs the validation logic in the browser.
 
@@ -342,6 +363,8 @@ window.__aspnetValidation.addProvider('notequalto', (value, element, params) => 
 ```
 
 The provider function receives the field value, the DOM element, and the parsed parameters from `data-val-notequalto-*` attributes. It returns `true` (valid), `false` (invalid, uses the default error message from the `data-val-notequalto` attribute), or a `string` (invalid, with a custom error message).
+
+`addProvider` has **overriding semantics** — calling it with a name that already exists replaces the previous provider. This allows developers to override built-in providers (e.g., to customize the `email` regex) by registering their own provider with the same name.
 
 #### Server-side: Blazor adapter
 
@@ -374,7 +397,7 @@ builder.Services.AddClientValidationAdapter<NotEqualToAttribute>(
     attr => new NotEqualToClientAdapter(attr));
 ```
 
-### Scenario 10: Drop-in replacement for jQuery unobtrusive validation (MVC)
+### Scenario 11: Drop-in replacement for jQuery unobtrusive validation (MVC)
 
 An existing ASP.NET Core MVC app removes the jQuery validation stack and replaces it with the new library. **No C# changes required.**
 
@@ -443,17 +466,18 @@ Key differences:
 
 #### Dynamic content: replacing `$.validator.unobtrusive.parse()`
 
-MVC apps that dynamically inject form content (e.g., via AJAX partial views) use `$.validator.unobtrusive.parse()` to wire validation on new elements. The replacement is:
+MVC apps that dynamically inject form content (e.g., via AJAX partial views) use `$.validator.unobtrusive.parse()` to wire validation on new elements. The replacement is `scan()`, which is available on both the Blazor and MVC APIs:
 
 ```javascript
-// Before
-$.validator.unobtrusive.parse('#dynamic-container');
+// MVC
+window.__aspnetValidation.scan('#dynamic-container');
+window.__aspnetValidation.scan(document.getElementById('dynamic-container'));
 
-// After
-window.__aspnetValidation.parse('#dynamic-container');
-// Also accepts an Element or ParentNode:
-window.__aspnetValidation.parse(document.getElementById('dynamic-container'));
+// Blazor (called automatically on enhancedload, but can also be called manually)
+Blazor.validation.scan(document.getElementById('dynamic-container'));
 ```
+
+`scan()` accepts a CSS selector string, an `Element`, or a `ParentNode`. When called with no arguments, it scans the entire document.
 
 ## Assumptions
 

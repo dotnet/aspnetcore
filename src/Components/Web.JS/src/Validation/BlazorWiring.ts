@@ -12,14 +12,18 @@ import { DomScanner } from './DomScanner';
 declare const Blazor: { addEventListener?: (name: string, callback: () => void) => void } | undefined;
 
 export interface BlazorValidationApi {
-  /** Register a synchronous validation provider. Async providers are not supported in Blazor mode. */
+  /** Register a synchronous validation provider. Replaces any existing provider with the same name. */
   addProvider(name: string, provider: SyncValidationProvider): void;
-  /** Re-scan the DOM for validatable elements (called automatically on enhanced navigation). */
-  scan(root?: ParentNode): void;
+  /** Scan a DOM subtree for new validatable elements (called automatically on enhanced navigation). */
+  scan(selectorOrElement?: string | Element | ParentNode): void;
   /** Validate an entire form. */
   validateForm(form: HTMLFormElement): Promise<boolean>;
   /** Validate a single field. */
   validateField(input: ValidatableElement): Promise<boolean>;
+  /** Programmatically set a validation error on a field. */
+  setError(input: ValidatableElement, message: string): void;
+  /** Programmatically clear a validation error from a field. */
+  clearError(input: ValidatableElement): void;
 }
 
 export function initializeBlazorValidation(cssOverrides?: Partial<CssClassConfig>): void {
@@ -52,17 +56,30 @@ export function initializeBlazorValidation(cssOverrides?: Partial<CssClassConfig
         return result as boolean | string;
       });
     },
-    scan: (root) => scanner.scan(root || document),
+    scan: (selectorOrElement?) => {
+      if (!selectorOrElement) {
+        scanner.scan(document);
+      } else if (typeof selectorOrElement === 'string') {
+        const root = document.querySelector(selectorOrElement);
+        if (root) {
+          scanner.scan(root);
+        }
+      } else {
+        scanner.scan(selectorOrElement as ParentNode);
+      }
+    },
     validateForm: (form) => coordinator.validateForm(form),
     validateField: (input) => coordinator.validateAndUpdate(input),
+    setError: (input, message) => coordinator.setError(input, message),
+    clearError: (input) => coordinator.clearError(input),
   };
 
   // Initial DOM scan
-  api.scan(document);
+  api.scan();
 
   // Re-scan after Blazor enhanced navigation patches the DOM
   if (typeof Blazor !== 'undefined' && Blazor?.addEventListener) {
-    Blazor.addEventListener('enhancedload', () => api.scan(document));
+    Blazor.addEventListener('enhancedload', () => api.scan());
   }
 
   // Expose public API for extensibility

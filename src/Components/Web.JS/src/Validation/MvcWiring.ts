@@ -11,7 +11,7 @@ import { EventManager } from './EventManager';
 import { DomScanner } from './DomScanner';
 
 export interface MvcValidationApi {
-  /** Register a custom validation provider (sync or async). */
+  /** Register a custom validation provider (sync or async). Replaces any existing provider with the same name. */
   addProvider(name: string, provider: ValidationProvider): void;
   /**
    * Scan a DOM subtree for new validatable elements.
@@ -19,11 +19,15 @@ export interface MvcValidationApi {
    * Accepts a CSS selector string, an Element, or a ParentNode.
    * When called with no arguments, scans the entire document.
    */
-  parse(selectorOrElement?: string | Element | ParentNode): void;
+  scan(selectorOrElement?: string | Element | ParentNode): void;
   /** Validate an entire form. */
   validateForm(form: HTMLFormElement): Promise<boolean>;
   /** Validate a single field. */
   validateField(input: ValidatableElement): Promise<boolean>;
+  /** Programmatically set a validation error on a field. */
+  setError(input: ValidatableElement, message: string): void;
+  /** Programmatically clear a validation error from a field. */
+  clearError(input: ValidatableElement): void;
 }
 
 export function initializeMvcValidation(cssOverrides?: Partial<CssClassConfig>): void {
@@ -48,7 +52,7 @@ export function initializeMvcValidation(cssOverrides?: Partial<CssClassConfig>):
   // Expose MVC-compatible API
   const api: MvcValidationApi = {
     addProvider: (name, provider) => engine.addProvider(name, provider),
-    parse: (selectorOrElement?) => {
+    scan: (selectorOrElement?) => {
       if (!selectorOrElement) {
         scanner.scan(document);
       } else if (typeof selectorOrElement === 'string') {
@@ -62,6 +66,8 @@ export function initializeMvcValidation(cssOverrides?: Partial<CssClassConfig>):
     },
     validateForm: (form) => coordinator.validateForm(form),
     validateField: (input) => coordinator.validateAndUpdate(input),
+    setError: (input, message) => coordinator.setError(input, message),
+    clearError: (input) => coordinator.clearError(input),
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
