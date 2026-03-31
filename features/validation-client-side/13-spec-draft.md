@@ -314,6 +314,23 @@ input.willValidate;            // true
 
 Third-party libraries can listen for the standard `invalid` event, read `ValidityState`, and build custom UI without depending on our library's internals.
 
+**Form validation event.** After a full form validation completes (triggered by form submission), the library dispatches a `validationcomplete` custom event on the form element:
+
+```javascript
+document.addEventListener('validationcomplete', (e) => {
+    console.log('Form:', e.target);           // The <form> element
+    console.log('Valid:', e.detail.valid);     // true or false
+});
+```
+
+This enables integration with CSS frameworks that need a class on the form after validation (e.g., Bootstrap's `.was-validated`):
+
+```javascript
+document.addEventListener('validationcomplete', (e) => {
+    e.target.classList.add('was-validated');
+});
+```
+
 ### Scenario 9: Programmatic error management from JavaScript
 
 Developers can set and clear validation errors on individual fields from JavaScript, outside of the normal validation pipeline. This is useful for displaying server-returned errors after an API call (e.g., "this username is already taken") or integrating with custom validation logic.

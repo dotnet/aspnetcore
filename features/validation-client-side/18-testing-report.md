@@ -135,5 +135,5 @@ The following implementation changes were tested end-to-end:
 
 | Metric | Value |
 |---|---|
-| **aspnet-validation.js** (standalone) | 12.86 KB (raw), 3.61 KB (Brotli) |
+| **aspnet-core-validation.js** (standalone) | 12.86 KB (raw), 3.61 KB (Brotli) |
 | **blazor.web.js** (includes validation) | 212.7 KB (raw), 50.34 KB (Brotli) |

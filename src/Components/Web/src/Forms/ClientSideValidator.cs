@@ -57,7 +57,7 @@ public sealed class ClientSideValidator : ComponentBase, IDisposable
         if (IncludeScript)
         {
             builder.OpenElement(0, "script");
-            builder.AddAttribute(1, "src", "_content/Microsoft.AspNetCore.Components.Web/aspnet-validation.js");
+            builder.AddAttribute(1, "src", "_content/Microsoft.AspNetCore.Components.Web/aspnet-core-validation.js");
             builder.CloseElement();
         }
     }

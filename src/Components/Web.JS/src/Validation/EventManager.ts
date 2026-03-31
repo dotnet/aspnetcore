@@ -66,11 +66,13 @@ export class EventManager {
 
       if (syncResult === true) {
         // All providers returned synchronously and form is valid — let the event through
+        this.dispatchValidationComplete(form, true);
         return;
       }
 
       if (syncResult === false) {
         // All providers returned synchronously and form is invalid — block
+        this.dispatchValidationComplete(form, false);
         event.preventDefault();
         event.stopPropagation();
         return;
@@ -83,6 +85,7 @@ export class EventManager {
 
       const submitter = event.submitter;
       this.coordinator.validateForm(form).then(isValid => {
+        this.dispatchValidationComplete(form, isValid);
         if (isValid) {
           this.resubmitting = true;
           form.requestSubmit(submitter as HTMLElement | undefined);
@@ -123,6 +126,17 @@ export class EventManager {
       document.removeEventListener('submit', this.submitHandler, true);
       this.submitHandler = null;
     }
+  }
+
+  /**
+   * Dispatch a 'validationcomplete' custom event on the form after full form validation.
+   * Allows external code to react to validation results (e.g., adding CSS classes).
+   */
+  private dispatchValidationComplete(form: HTMLFormElement, valid: boolean): void {
+    form.dispatchEvent(new CustomEvent('validationcomplete', {
+      bubbles: true,
+      detail: { valid },
+    }));
   }
 
   detachResetInterception(): void {

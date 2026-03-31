@@ -327,3 +327,64 @@ class TestARIA:
         # aria-invalid should be removed (check via JS since Playwright needs a value arg)
         has_aria = page.evaluate("document.querySelector('#basic-name').hasAttribute('aria-invalid')")
         assert has_aria is False
+
+
+# ===== SECTION 8: validationcomplete event =====
+
+class TestValidationCompleteEvent:
+    def test_event_fires_on_invalid_submit(self, page: Page):
+        """validationcomplete event fires with valid=false on invalid submit."""
+        # Set up listener before submitting
+        page.evaluate("""
+            window._lastValidationEvent = null;
+            document.addEventListener('validationcomplete', (e) => {
+                window._lastValidationEvent = { valid: e.detail.valid, formId: e.target.id };
+            });
+        """)
+        # Give the basic form an id for tracking
+        page.evaluate("document.querySelector('#section-basic form').id = 'basic-form-test'")
+        page.click("#basic-submit")
+        result = page.evaluate("window._lastValidationEvent")
+        assert result is not None
+        assert result["valid"] is False
+        assert result["formId"] == "basic-form-test"
+
+    def test_event_fires_on_valid_submit(self, page: Page):
+        """validationcomplete event fires with valid=true on valid submit."""
+        page.evaluate("""
+            window._lastValidationEvent = null;
+            document.addEventListener('validationcomplete', (e) => {
+                window._lastValidationEvent = { valid: e.detail.valid };
+            });
+        """)
+        page.locator("#basic-name").fill("John Doe")
+        page.locator("#basic-email").fill("john@example.com")
+        page.click("#basic-submit")
+        page.wait_for_timeout(200)  # Allow event to fire
+        result = page.evaluate("window._lastValidationEvent")
+        assert result is not None
+        assert result["valid"] is True
+
+    def test_event_bubbles(self, page: Page):
+        """validationcomplete event bubbles to document."""
+        page.evaluate("""
+            window._eventBubbled = false;
+            document.addEventListener('validationcomplete', () => {
+                window._eventBubbled = true;
+            });
+        """)
+        page.click("#basic-submit")
+        bubbled = page.evaluate("window._eventBubbled")
+        assert bubbled is True
+
+    def test_bootstrap_was_validated_pattern(self, page: Page):
+        """Can use validationcomplete to add .was-validated class (Bootstrap pattern)."""
+        page.evaluate("""
+            document.addEventListener('validationcomplete', (e) => {
+                e.target.classList.add('was-validated');
+            });
+        """)
+        form = page.locator("#section-basic form")
+        expect(form).not_to_have_class(re.compile(r"was-validated"))
+        page.click("#basic-submit")
+        expect(form).to_have_class(re.compile(r"was-validated"))
