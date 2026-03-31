@@ -104,4 +104,9 @@
       <_Parameter2 Condition="'$(IsHelixJob)' == 'true'">..\BasicTestApp</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
+
+  <PropertyGroup>
+    <!-- Keep metrics support enabled on the test server (not the trimmed WASM client) -->
+    <MetricsSupport>true</MetricsSupport>
+  </PropertyGroup>
 </Project>
