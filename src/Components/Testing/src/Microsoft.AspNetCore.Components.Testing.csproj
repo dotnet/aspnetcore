@@ -52,7 +52,7 @@
   <!-- Pack the source generator into analyzers/ folder -->
   <Target Name="_IncludeGeneratorInPackage" BeforeTargets="_GetPackageFiles">
     <ItemGroup>
-      <None Include="../gen/bin/$(Configuration)/netstandard2.0/Microsoft.AspNetCore.Components.Testing.Generators.dll"
+      <None Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Generators\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Generators.dll"
             Pack="true"
             PackagePath="analyzers/dotnet/cs"
             Visible="false" />
@@ -62,7 +62,7 @@
   <!-- Pack the MSBuild task assembly into tasks/ folder -->
   <Target Name="_IncludeTasksInPackage" BeforeTargets="_GetPackageFiles">
     <ItemGroup>
-      <None Include="../tasks/bin/$(Configuration)/netstandard2.0/Microsoft.AspNetCore.Components.Testing.Tasks.dll"
+      <None Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll"
             Pack="true"
             PackagePath="tasks/netstandard2.0"
             Visible="false" />
