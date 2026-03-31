@@ -199,7 +199,7 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
         });
     }
 
-    [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/58619")]
+    [Fact]
     public async Task HandlesDuplicateSchemaReferenceIdsGeneratedByOverload()
     {
         var builder = CreateBuilder();
@@ -249,7 +249,7 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("dueDate", property.Key);
-                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
                     Assert.Equal("date-time", property.Value.Format);
                 },
                 property =>
@@ -270,7 +270,7 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("createdAt", property.Key);
-                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
                     Assert.Equal("date-time", property.Value.Format);
                 });
 
@@ -295,10 +295,52 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
                 property =>
                 {
                     Assert.Equal("createdAt", property.Key);
-                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
+                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
                     Assert.Equal("date-time", property.Value.Format);
                 });
         });
+    }
+
+    [Fact]
+    public async Task DedupesSchemaReferenceIds_WhenTypesShareName()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/a", (NamespaceA.Widget widget) => { });
+        builder.MapPost("/b", (NamespaceB.Widget widget) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var opA = document.Paths["/a"].Operations[HttpMethod.Post];
+            var schemaARef = Assert.IsType<OpenApiSchemaReference>(opA.RequestBody.Content["application/json"].Schema);
+
+            var opB = document.Paths["/b"].Operations[HttpMethod.Post];
+            var schemaBRef = Assert.IsType<OpenApiSchemaReference>(opB.RequestBody.Content["application/json"].Schema);
+
+            Assert.NotEqual(schemaARef.Reference.Id, schemaBRef.Reference.Id);
+
+            var schemaA = document.Components.Schemas[schemaARef.Reference.Id];
+            var schemaB = document.Components.Schemas[schemaBRef.Reference.Id];
+
+            Assert.Contains("aValue", schemaA.Properties.Keys);
+            Assert.Contains("bValue", schemaB.Properties.Keys);
+        });
+    }
+
+    private static class NamespaceA
+    {
+        public class Widget
+        {
+            public string AValue { get; set; } = string.Empty;
+        }
+    }
+
+    private static class NamespaceB
+    {
+        public class Widget
+        {
+            public int BValue { get; set; }
+        }
     }
 
 }
