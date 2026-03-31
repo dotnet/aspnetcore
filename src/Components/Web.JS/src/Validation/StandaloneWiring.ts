@@ -10,7 +10,7 @@ import { ValidationCoordinator } from './ValidationCoordinator';
 import { EventManager } from './EventManager';
 import { DomScanner } from './DomScanner';
 
-export interface MvcValidationApi {
+export interface StandaloneValidationApi {
   /** Register a custom validation provider (sync or async). Replaces any existing provider with the same name. */
   addProvider(name: string, provider: ValidationProvider): void;
   /**
@@ -30,12 +30,12 @@ export interface MvcValidationApi {
   clearError(input: ValidatableElement): void;
 }
 
-export function initializeMvcValidation(cssOverrides?: Partial<CssClassConfig>): void {
+export function initializeStandaloneValidation(cssOverrides?: Partial<CssClassConfig>): void {
   const css: CssClassConfig = { ...defaultCssClasses, ...cssOverrides };
   const engine = new ValidationEngine();
   registerBuiltInProviders(engine);
 
-  // Register remote provider (MVC-only)
+  // Register remote provider (supported in standalone mode, not in Blazor mode)
   engine.addProvider('remote', remoteProvider);
 
   const display = new ErrorDisplay(css);
@@ -49,8 +49,7 @@ export function initializeMvcValidation(cssOverrides?: Partial<CssClassConfig>):
   // Initial scan
   scanner.scan(document);
 
-  // Expose MVC-compatible API
-  const api: MvcValidationApi = {
+  const api: StandaloneValidationApi = {
     addProvider: (name, provider) => engine.addProvider(name, provider),
     scan: (selectorOrElement?) => {
       if (!selectorOrElement) {
