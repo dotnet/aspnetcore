@@ -100,9 +100,15 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // logger name in here as a string literal.
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
         _componentFactory = new ComponentFactory(componentActivator, GetComponentPropertyActivatorOrDefault(serviceProvider), this);
-        _componentsMetrics = serviceProvider.GetService<ComponentsMetrics>();
-        _componentsActivitySource = serviceProvider.GetService<ComponentsActivitySource>();
-        _componentsActivitySource?.Init(new ComponentsActivityLinkStore(this));
+        if (ComponentsMetrics.IsSupported)
+        {
+            _componentsMetrics = serviceProvider.GetService<ComponentsMetrics>();
+        }
+        if (ComponentsActivitySource.IsSupported)
+        {
+            _componentsActivitySource = serviceProvider.GetService<ComponentsActivitySource>();
+            _componentsActivitySource?.Init(new ComponentsActivityLinkStore(this));
+        }
 
         ServiceProviderCascadingValueSuppliers = serviceProvider.GetService<ICascadingValueSupplier>() is null
             ? Array.Empty<ICascadingValueSupplier>()
@@ -470,14 +476,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         ComponentsActivityHandle activityHandle = default;
         string receiverName = null;
         string methodName = null;
-        if (ComponentActivitySource != null)
+        if (ComponentsActivitySource.IsSupported && ComponentActivitySource != null)
         {
             receiverName ??= (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
             methodName ??= callback.Delegate.Method?.Name;
             activityHandle = ComponentsActivitySource.StartHandleEventActivity(receiverName, methodName, attributeName);
         }
 
-        var eventStartTimestamp = ComponentMetrics != null && ComponentMetrics.IsEventEnabled ? Stopwatch.GetTimestamp() : 0;
+        var eventStartTimestamp = ComponentsMetrics.IsSupported && ComponentMetrics != null && ComponentMetrics.IsEventEnabled ? Stopwatch.GetTimestamp() : 0;
 
         // If this event attribute was rendered by a component that's since been disposed, don't dispatch the event at all.
         // This can occur because event handler disposal is deferred, so event handler IDs can outlive their components.
@@ -521,7 +527,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             task = callback.InvokeAsync(eventArgs);
 
             // collect metrics
-            if (ComponentMetrics != null && ComponentMetrics.IsEventEnabled)
+            if (ComponentsMetrics.IsSupported && ComponentMetrics != null && ComponentMetrics.IsEventEnabled)
             {
                 receiverName ??= (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
                 methodName ??= callback.Delegate.Method?.Name;
@@ -529,21 +535,21 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             }
 
             // stop activity/trace
-            if (ComponentActivitySource != null && activityHandle.Activity != null)
+            if (ComponentsActivitySource.IsSupported && ComponentActivitySource != null && activityHandle.Activity != null)
             {
                 _ = ComponentActivitySource.CaptureHandleEventStopAsync(task, activityHandle);
             }
         }
         catch (Exception e)
         {
-            if (ComponentMetrics != null && ComponentMetrics.IsEventEnabled)
+            if (ComponentsMetrics.IsSupported && ComponentMetrics != null && ComponentMetrics.IsEventEnabled)
             {
                 receiverName ??= (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
                 methodName ??= callback.Delegate.Method?.Name;
                 ComponentMetrics.FailEventSync(e, eventStartTimestamp, receiverName, methodName, attributeName);
             }
 
-            if (ComponentActivitySource != null && activityHandle.Activity != null)
+            if (ComponentsActivitySource.IsSupported && ComponentActivitySource != null && activityHandle.Activity != null)
             {
                 ComponentActivitySource.StopHandleEventActivity(activityHandle, e);
             }
@@ -817,7 +823,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
         _isBatchInProgress = true;
         var updateDisplayTask = Task.CompletedTask;
-        var batchStartTimestamp = ComponentMetrics != null && ComponentMetrics.IsBatchEnabled ? Stopwatch.GetTimestamp() : 0;
+        var batchStartTimestamp = ComponentsMetrics.IsSupported && ComponentMetrics != null && ComponentMetrics.IsBatchEnabled ? Stopwatch.GetTimestamp() : 0;
 
         try
         {
@@ -850,14 +856,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             // if there is async work to be done.
             _ = InvokeRenderCompletedCalls(batch.UpdatedComponents, updateDisplayTask);
 
-            if (ComponentMetrics != null && ComponentMetrics.IsBatchEnabled)
+            if (ComponentsMetrics.IsSupported && ComponentMetrics != null && ComponentMetrics.IsBatchEnabled)
             {
                 _ = ComponentMetrics.CaptureBatchDuration(updateDisplayTask, batchStartTimestamp, batch.UpdatedComponents.Count);
             }
         }
         catch (Exception e)
         {
-            if (ComponentMetrics != null && ComponentMetrics.IsBatchEnabled)
+            if (ComponentsMetrics.IsSupported && ComponentMetrics != null && ComponentMetrics.IsBatchEnabled)
             {
                 ComponentMetrics.FailBatchSync(e, batchStartTimestamp);
             }
