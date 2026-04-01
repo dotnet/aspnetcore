@@ -65,6 +65,12 @@
     <Message Importance="high" Text="%0AGenerateOpenApiDocuments:" />
     <Message Importance="high" Text="  $(_DotNetGetDocumentCommand)" />
     <Exec Command="$(_DotNetGetDocumentCommand)" LogStandardErrorAsError="true" />
+
+    <!-- Surface generated documents via MSBuild Message so Terminal Logger shows them -->
+    <ReadLinesFromFile File="$(_OpenApiDocumentsCache)">
+      <Output TaskParameter="Lines" ItemName="_GeneratedOpenApiDocuments" />
+    </ReadLinesFromFile>
+    <Message Importance="high" Text="Generated OpenAPI document: %(_GeneratedOpenApiDocuments.Identity)" />
   </Target>
 
   <!-- Unless this is an inner build or default timing is disabled, tie document retrieval into the build. -->
