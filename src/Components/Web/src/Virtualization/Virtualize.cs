@@ -419,8 +419,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         // When we're at the very bottom and new measurements arrived,
         // scroll to bottom so the viewport stays pinned while items converge.
-        // Suppress this when AnchorMode is explicitly None.
-        if (itemsAfter == 0 && hadNewMeasurements && AnchorMode != VirtualizeAnchorMode.None)
+        // Only activate when AnchorMode includes the End flag.
+        if (itemsAfter == 0 && hadNewMeasurements && (AnchorMode & VirtualizeAnchorMode.End) != 0)
         {
             _pendingScrollToBottom = true;
         }
