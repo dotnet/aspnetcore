@@ -344,31 +344,41 @@ public class WebAssemblyHostBuilderTest
     }
 
     [Fact]
-    public void Constructor_DoesNotRegisterMetricsAndTracingWhenDisabled()
+    public void Constructor_DoesNotRegisterMetricsAndTracingByDefault()
     {
-        try
-        {
-            WebAssemblyHostBuilder.IsMeterEnabled = false;
-            var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
-            var host = builder.Build();
+        // Arrange & Act
+        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+        var host = builder.Build();
 
-            var meterFactory = host.Services.GetService<IMeterFactory>();
-            Assert.Null(meterFactory);
-        }
-        finally
-        {
-            WebAssemblyHostBuilder.IsMeterEnabled = WebAssemblyHostBuilder.IsMeterSupported;
-        }
+        // Assert - Verify that IMeterFactory is NOT registered when the feature switch is not enabled
+        // (telemetry is opt-in)
+        var meterFactory = host.Services.GetService<IMeterFactory>();
+        Assert.Null(meterFactory);
     }
 
     [Fact]
     public void Constructor_RegistersMetricsAndTracingWhenEnabled()
     {
-        WebAssemblyHostBuilder.IsMeterEnabled = WebAssemblyHostBuilder.IsMeterSupported;
-        var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
-        var host = builder.Build();
+        // Arrange
+        AppContext.SetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", true);
+        try
+        {
+            // Act
+            var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+            var host = builder.Build();
 
-        var meterFactory = host.Services.GetService<IMeterFactory>();
-        Assert.NotNull(meterFactory);
+            // Assert - Verify that IMeterFactory is registered when the feature switch is enabled
+            var meterFactory = host.Services.GetService<IMeterFactory>();
+            Assert.NotNull(meterFactory);
+            
+            // Note: ComponentsActivitySource is scoped and internal, so we can't directly
+            // test for it here, but both AddComponentsMetrics and AddComponentsTracing
+            // are called together when the switch is enabled.
+        }
+        finally
+        {
+            // Clean up the AppContext switch
+            AppContext.SetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", false);
+        }
     }
 }

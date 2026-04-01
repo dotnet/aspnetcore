@@ -160,12 +160,12 @@ public class FormReaderTests
 
         var reader = new FormReader(body);
 
-        var pair = (await ReadPair(reader))!.Value;
+        var pair = (KeyValuePair<string, string>)await ReadPair(reader);
 
         Assert.Equal("foo", pair.Key);
         Assert.Equal("", pair.Value);
 
-        pair = (await ReadPair(reader))!.Value;
+        pair = (KeyValuePair<string, string>)await ReadPair(reader);
 
         Assert.Equal("baz", pair.Key);
         Assert.Equal("2", pair.Value);

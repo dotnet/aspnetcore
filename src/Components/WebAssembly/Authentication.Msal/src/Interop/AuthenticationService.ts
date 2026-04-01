@@ -144,10 +144,6 @@ class MsalAuthorizeService implements AuthorizeService {
         this._msalApplication = new Msal.PublicClientApplication(this._settings);
     }
 
-    async initialize(): Promise<void> {
-        await this._msalApplication.initialize();
-    }
-
     getAccount() {
         if (this._account) {
             return this._account;
@@ -287,7 +283,7 @@ class MsalAuthorizeService implements AuthorizeService {
             return await this._msalApplication.loginPopup(request);
         } catch (e) {
             // If the user explicitly cancelled the pop-up, avoid performing a redirect.
-            if (this.isMsalError(e) && e.errorCode !== Msal.BrowserAuthErrorCodes.userCancelled) {
+            if (this.isMsalError(e) && e.errorCode !== Msal.BrowserAuthErrorMessage.userCancelledError.code) {
                 this.debug('User canceled sign-in pop-up');
                 this.signInWithRedirect(request);
             } else {
@@ -470,7 +466,6 @@ export class AuthenticationService {
     public static async init(settings: AuthorizeServiceConfiguration, jsLoggingOptions: JavaScriptLoggingOptions) {
         if (!AuthenticationService._initialized) {
             AuthenticationService.instance = new MsalAuthorizeService(settings, new Logger(jsLoggingOptions));
-            await AuthenticationService.instance.initialize();
             AuthenticationService.instance.initializeMsalHandler();
             AuthenticationService._initialized = true;
         }

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
@@ -11,10 +10,6 @@ namespace Microsoft.AspNetCore.Components;
 
 internal sealed class ComponentsMetrics : IDisposable
 {
-    [FeatureSwitchDefinition("System.Diagnostics.Metrics.Meter.IsSupported")]
-    internal static bool IsSupported { get; } =
-        AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out bool isSupported) ? isSupported : false;
-
     public const string MeterName = "Microsoft.AspNetCore.Components";
     public const string LifecycleMeterName = "Microsoft.AspNetCore.Components.Lifecycle";
     private readonly Meter _meter;
@@ -107,7 +102,7 @@ internal sealed class ComponentsMetrics : IDisposable
         AddMethodNameTag(ref tags, methodName);
         AddAttributeNameTag(ref tags, attributeName);
         AddErrorTag(ref tags, ex);
-
+        
         var duration = Stopwatch.GetElapsedTime(startTimestamp);
         _eventDuration.Record(duration.TotalSeconds, tags);
     }
@@ -135,7 +130,7 @@ internal sealed class ComponentsMetrics : IDisposable
         var tags = new TagList();
         AddComponentTypeTag(ref tags, componentType);
         AddErrorTag(ref tags, ex);
-
+        
         _parametersDuration.Record(duration.TotalSeconds, tags);
     }
 
@@ -161,7 +156,7 @@ internal sealed class ComponentsMetrics : IDisposable
         var duration = Stopwatch.GetElapsedTime(startTimestamp);
         var tags = new TagList();
         AddErrorTag(ref tags, ex);
-
+        
         _batchDuration.Record(duration.TotalSeconds, tags);
     }
 

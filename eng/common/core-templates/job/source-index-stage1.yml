@@ -15,8 +15,6 @@ jobs:
   variables:
   - name: BinlogPath
     value: ${{ parameters.binlogPath }}
-  - name: skipComponentGovernanceDetection
-    value: true
   - template: /eng/common/core-templates/variables/pool-providers.yml
     parameters:
       is1ESPipeline: ${{ parameters.is1ESPipeline }}
