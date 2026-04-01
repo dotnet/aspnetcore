@@ -201,8 +201,6 @@ The library follows the same validation timing strategy as MVC's jQuery validati
 
 **Hidden fields** are skipped. Fields that are not visible (e.g., in a hidden step of a multi-step form) are excluded from validation, matching the jQuery validation default.
 
-**Form reset** is handled by listening for the `reset` event on forms, clearing all validation state and returning the form to its pristine state.
-
 #### Per-field validation event override (`data-val-event`)
 
 Individual fields can override the default validation events using the `data-val-event` attribute. This is useful for fields that need different timing (e.g., a field that should only validate on submit, or a select that should validate immediately on change):
@@ -443,10 +441,11 @@ $.validator.unobtrusive.adapters.add('notequalto', ['other'], function (options)
 });
 ```
 
-**After (new library — one JS registration):**
+**After (new library — one registration using the same provider as Scenario 9):**
 
 ```javascript
 window.__aspnetValidation.addProvider('notequalto', (value, element, params) => {
+    // Same provider function as shown in Scenario 9
     const otherName = params.other.replace('*.', '');
     const form = element.closest('form');
     const otherField = form?.querySelector(`[name$=".${otherName}"], [name="${otherName}"]`);
@@ -491,7 +490,6 @@ Blazor.validation.scan(document.getElementById('dynamic-container'));
 
 - **Browser support:** The library targets the same browsers as ASP.NET Core Blazor — current versions of Chrome, Edge, Firefox, and Safari (see [Blazor supported platforms](https://learn.microsoft.com/aspnet/core/blazor/supported-platforms)). No IE11 or legacy browser support is provided. All required browser APIs (Constraint Validation API, `WeakMap`, `CSS.escape()`, `CustomEvent`) are available in these browsers.
 - **`data-val-*` protocol stability:** The `data-val-*` attribute protocol used by MVC's unobtrusive validation is stable and will not change in a breaking way.
-- **Enhanced navigation event contract:** Blazor's `enhancedload` event will continue to fire after DOM patching, and streaming rendering completion fires the same event.
 - **Progressive enhancement:** Client-side validation is a UX enhancement. Server-side validation always remains authoritative. There is a brief window between page load and script initialization where the browser's native validation (or no validation) is active; any submission during that window is handled by server-side validation.
 - **`RemoteAttribute` is MVC-specific:** `[Remote]` belongs to the `Microsoft.AspNetCore.Mvc` namespace and is not expected on Blazor models.
 
