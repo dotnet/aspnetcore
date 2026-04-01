@@ -222,6 +222,16 @@ export function registerBuiltInProviders(engine: ValidationEngine): void {
     return value === otherValue;
   });
 
+  // Matches MVC's NumericClientModelValidatorProvider — validates that value is a parseable number.
+  // MVC emits data-val-number for float, double, and decimal properties.
+  // Blazor does not emit this — InputNumber<T> uses type="number" for browser-native enforcement.
+  engine.addProvider('number', (value) => {
+    if (!value) {
+      return true;
+    }
+    return !isNaN(parseFloat(value)) && isFinite(Number(value));
+  });
+
   // Matches FileExtensionsAttribute.IsValid() — validates that file extension is in allowed list.
   // Extensions param is comma-separated (default: "png,jpg,jpeg,gif").
   engine.addProvider('fileextensions', (value, _element, params) => {

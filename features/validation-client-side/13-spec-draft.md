@@ -26,7 +26,7 @@ We propose creating a new minimal **JavaScript validation library** that underst
 
 - **Replacing browser-native validation UI.** The library suppresses native browser validation tooltips and manages its own error display via CSS classes and message target elements. However, it does not attempt to provide a rich validation UI framework (tooltips, animations, etc.). Richer UI is left to application CSS and/or third-party libraries that can read the Constraint Validation API state.
 
-- **Source generator for validation metadata.** The C# attribute discovery uses reflection (`Type.GetProperty`, `GetCustomAttributes<ValidationAttribute>`) with per-field caching. This is trimming-compatible using the same `[DynamicallyAccessedMembers]` annotations and `[UnconditionalSuppressMessage]` suppressions as the existing `DataAnnotationsValidator` — model types are application code and are not trimmed by default. A source-generator approach that avoids reflection entirely is a potential future optimization but is not part of this feature.
+- **Source generator for validation metadata.** The C# attribute discovery uses reflection (`Type.GetProperty`, `GetCustomAttributes<ValidationAttribute>`) with per-field caching. This is trimming-compatible using the same `[DynamicallyAccessedMembers]` annotations and `[UnconditionalSuppressMessage]` suppressions as the existing `DataAnnotationsValidator` — model types are application code and are not trimmed by default. Native AOT compatibility follows the same baseline as existing DataAnnotations validation; applications that already use `DataAnnotationsValidator` with AOT will see no additional warnings from the client validation service. A source-generator approach that avoids reflection entirely is a potential future optimization but is not part of this feature.
 
 - **Custom element for validation targets.** The original proposal included an optional custom element (e.g., `<asp-validation-message>`) using `ElementInternals` for message rendering and built-in ARIA semantics. This has been deferred in favor of the simpler approach: plain `<span data-valmsg-for>` elements (compatible with both MVC and Blazor conventions) with ARIA attributes managed directly by the JS library. The custom element approach may be revisited in a future release if there is demand for a more standards-based abstraction.
 
@@ -112,8 +112,6 @@ app.Run();
 - **On submit:** all fields are validated. If any are invalid, submission is blocked and errors are displayed. If all are valid, the form submits normally via enhanced navigation.
 - **Server-side validation** via `DataAnnotationsValidator` always runs on the server and remains authoritative.
 
-> **Note:** `InputFile` does not extend `InputBase<T>` and does not automatically emit `data-val-*` attributes. File validation is server-side only. This is consistent with how `InputFile` already doesn't participate in `EditContext` validation today — it's a special component for streaming file uploads, not a standard form input.
-
 ### Scenario 2: Supported validation rules (Blazor)
 
 The following `DataAnnotations` attributes are supported out of the box for Blazor SSR. The mapping uses the same `data-val-*` attribute protocol as MVC, ensuring full compatibility:
@@ -132,10 +130,14 @@ The following `DataAnnotations` attributes are supported out of the box for Blaz
 | `[CreditCard]` | `creditcard` | — |
 | `[Compare]` | `equalto` | `other` (e.g., `*.ConfirmPassword`) |
 | `[FileExtensions]` | `fileextensions` | `extensions` |
+| *(numeric types)* | `number` | — | *(MVC only — emitted by `NumericClientModelValidatorProvider`)* |
 
-Additionaly, MVC's `NumericClientModelValidatorProvider` automatically emits `data-val-number` for `float`, `double`, and `decimal` properties. The JS library includes a `number` provider for MVC compatibility. Blazor does not emit `data-val-number` — `InputNumber<T>` renders `type="number"` which provides browser-native numeric enforcement.
+**Notes:**
 
-**Nested models** are fully supported. A property like `model.Address.Street` produces validation attributes with the correct dotted-path field name, and `<ValidationMessage For="@(() => model.Address.Street)" />` renders the matching `data-valmsg-for` target.
+- MVC's `NumericClientModelValidatorProvider` automatically emits `data-val-number` for `float`, `double`, and `decimal` properties. The JS library includes a `number` provider that validates the value is a parseable number, providing MVC compatibility. Blazor does not emit `data-val-number` — `InputNumber<T>` renders `type="number"` which provides browser-native numeric enforcement.
+- `InputFile` does not extend `InputBase<T>` and does not participate in the client-side validation framework. Validation attributes such as `[Required]` or `[FileExtensions]` on `InputFile`-bound properties will not produce `data-val-*` attributes. File validation is server-side only.
+- `InputRadioGroup<T>` extends `InputBase<T>` and emits `data-val-*` attributes on its container element. Individual `<InputRadio>` components do not emit validation attributes. The JS library's `required` provider detects radio inputs and validates that at least one radio with the same `name` attribute is checked within the form.
+- Nested models are fully supported. A property like `model.Address.Street` produces validation attributes with the correct dotted-path field name, and `<ValidationMessage For="@(() => model.Address.Street)" />` renders the matching `data-valmsg-for` target.
 
 ### Scenario 3: Localized error messages (Blazor)
 
@@ -290,9 +292,9 @@ Client-side validation targets static SSR only. When components render interacti
 </EditForm>
 ```
 
-### Scenario 8: Suppressed browser validation, Constraint Validation API, and accessibility
+### Scenario 8: Browser standards interoperability
 
-The library sets `novalidate` on all participating forms at runtime (after the JS loads), preventing browsers from showing their native validation tooltips. Instead, the library uses `setCustomValidity()` to set validation state on each element, which means the browser-standard Constraint Validation API is populated with the current validation state.
+The library sets `novalidate` on all participating forms at runtime (after the JS loads), preventing browsers from showing their native validation tooltips. Instead, the library uses `setCustomValidity()` to set validation state on each element, which means the browser-standard **Constraint Validation API** is populated with the current validation state.
 
 **Accessibility (ARIA).** The library automatically manages ARIA attributes for screen reader support:
 
@@ -301,6 +303,8 @@ The library sets `novalidate` on all participating forms at runtime (after the J
 - **Cleanup:** When a field error is cleared, `aria-invalid` and `aria-describedby` are removed from the input.
 
 These ARIA attributes are set by the JS library at runtime, not server-rendered. Developer-specified ARIA attributes on inputs (via `AdditionalAttributes` in Blazor or HTML attributes in MVC) take precedence and are not overwritten.
+
+**Validation message replacement.** When `data-valmsg-replace` is not present on a validation message element, the library defaults to replacing the element's text content with the error message (equivalent to `data-valmsg-replace="true"`). Setting `data-valmsg-replace="false"` preserves the existing content and only toggles CSS classes. Blazor's `ValidationMessage` does not emit this attribute; MVC's `asp-validation-for` tag helper emits `data-valmsg-replace="true"` by default. Both result in the same replacement behavior.
 
 **For third-party library authors and advanced scenarios**, any validated element exposes standard Constraint Validation API properties:
 
@@ -314,7 +318,7 @@ input.willValidate;            // true
 
 Third-party libraries can listen for the standard `invalid` event, read `ValidityState`, and build custom UI without depending on our library's internals.
 
-**Form validation event.** After a full form validation completes (triggered by form submission), the library dispatches a `validationcomplete` custom event on the form element:
+**Form validation event.** After a full form validation completes (triggered by form submission), the library dispatches a `validationcomplete` custom event on the form element. The event is a `CustomEvent` with `bubbles: true` (propagates up the DOM, enabling document-level listeners), `cancelable: false` (cannot prevent submission after validation passes), and `composed: false` (does not cross Shadow DOM boundaries). The `detail` object contains `{ valid: boolean }`:
 
 ```javascript
 document.addEventListener('validationcomplete', (e) => {
@@ -331,28 +335,7 @@ document.addEventListener('validationcomplete', (e) => {
 });
 ```
 
-### Scenario 9: Programmatic error management from JavaScript
-
-Developers can set and clear validation errors on individual fields from JavaScript, outside of the normal validation pipeline. This is useful for displaying server-returned errors after an API call (e.g., "this username is already taken") or integrating with custom validation logic.
-
-```javascript
-// Blazor
-const input = document.querySelector('input[name="Username"]');
-Blazor.validation.setError(input, 'This username is already taken.');
-// Later, after the user changes the value:
-Blazor.validation.clearError(input);
-
-// MVC
-const input = document.querySelector('input[name="Username"]');
-window.__aspnetValidation.setError(input, 'This username is already taken.');
-window.__aspnetValidation.clearError(input);
-```
-
-`setError(input, message)` applies the error CSS classes, updates the associated `data-valmsg-for` message element, sets `setCustomValidity(message)` on the input, and manages ARIA attributes — the same visual result as if the field had failed validation. `clearError(input)` reverses all of this.
-
-These errors are cleared automatically when the field is next validated (e.g., on blur or submit), so they integrate naturally with the validation lifecycle.
-
-### Scenario 10: Custom validation attributes with client-side support
+### Scenario 9: Custom validation attributes with client-side support
 
 Custom `ValidationAttribute` subclasses can have client-side validation in both Blazor and MVC. The pattern has two parts: a **server-side adapter** (different API per framework) that emits `data-val-*` attributes, and a **JavaScript provider** (shared, same API for both frameworks) that runs the validation logic in the browser.
 
@@ -414,7 +397,9 @@ builder.Services.AddClientValidationAdapter<NotEqualToAttribute>(
     attr => new NotEqualToClientAdapter(attr));
 ```
 
-### Scenario 11: Drop-in replacement for jQuery unobtrusive validation (MVC)
+`ClientValidationContext.MergeAttribute()` uses **first-wins** semantics: if a `data-val-*` key already exists, subsequent writes are ignored. This matches MVC's `TagBuilder.MergeAttribute()` behavior. Custom adapters should use unique rule name prefixes to avoid collisions with built-in rules.
+
+### Scenario 10: Drop-in replacement for jQuery unobtrusive validation (MVC)
 
 An existing ASP.NET Core MVC app removes the jQuery validation stack and replaces it with the new library. **No C# changes required.**
 
@@ -496,9 +481,20 @@ Blazor.validation.scan(document.getElementById('dynamic-container'));
 
 `scan()` accepts a CSS selector string, an `Element`, or a `ParentNode`. When called with no arguments, it scans the entire document.
 
+#### Common jQuery API equivalents
+
+| jQuery Validation API | New Library Equivalent |
+|---|---|
+| `$('form').valid()` | `window.__aspnetValidation.validateForm(form)` |
+| `$('form').validate().element(input)` | `window.__aspnetValidation.validateField(input)` |
+| `$.validator.unobtrusive.parse(selector)` | `window.__aspnetValidation.scan(selector)` |
+| `$.validator.unobtrusive.adapters.add(...)` | `window.__aspnetValidation.addProvider(name, fn)` |
+| `$.validator.addMethod(...)` | `window.__aspnetValidation.addProvider(name, fn)` |
+| `$.validator.defaults.ignore` | Hidden fields are auto-skipped; no configuration needed |
+
 ## Assumptions
 
-- **Browser support:** The Constraint Validation API is supported in all modern browsers (Chrome, Firefox, Safari, Edge). No IE11 support is needed.
+- **Browser support:** The library targets the same browsers as ASP.NET Core Blazor — current versions of Chrome, Edge, Firefox, and Safari (see [Blazor supported platforms](https://learn.microsoft.com/aspnet/core/blazor/supported-platforms)). No IE11 or legacy browser support is provided. All required browser APIs (Constraint Validation API, `WeakMap`, `CSS.escape()`, `CustomEvent`) are available in these browsers.
 - **`data-val-*` protocol stability:** The `data-val-*` attribute protocol used by MVC's unobtrusive validation is stable and will not change in a breaking way.
 - **Enhanced navigation event contract:** Blazor's `enhancedload` event will continue to fire after DOM patching, and streaming rendering completion fires the same event.
 - **Progressive enhancement:** Client-side validation is a UX enhancement. Server-side validation always remains authoritative. There is a brief window between page load and script initialization where the browser's native validation (or no validation) is active; any submission during that window is handled by server-side validation.
