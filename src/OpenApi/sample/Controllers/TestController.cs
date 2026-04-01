@@ -54,6 +54,11 @@ public class TestController : ControllerBase
     public ActionResult<CurrentWeather> UnsupportedHttpMethod()
         => Ok(new CurrentWeather(100));
 
+    [HttpQuery]
+    [Route("/query-with-body")]
+    public ActionResult<MvcTodo> HttpQueryWithBodyMethod([FromBody] MvcTodo todo)
+        => Ok(todo);
+
     public class HttpQuery() : HttpMethodAttribute(["QUERY"]);
 
     public class HttpFoo() : HttpMethodAttribute(["FOO"]);
