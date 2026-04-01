@@ -2,28 +2,6 @@ using Microsoft.JSInterop;
 
 namespace Company.WebWorker1;
 
-// This class provides a client for communicating with a Web Worker running
-// .NET code. The associated JavaScript module is loaded on demand when the
-// worker is created.
-//
-// Worker methods are static methods marked with [JSExport] in a static partial
-// class. [JSExport] methods can only accept and return primitives or strings.
-// For complex types, serialize/deserialize manually with JsonSerializer.
-//
-// Example worker class:
-//
-//     [SupportedOSPlatform("browser")]
-//     public static partial class MyWorker
-//     {
-//         [JSExport]
-//         public static string Process(string input) => $"Processed: {input}";
-//     }
-//
-// Example usage:
-//
-//     var worker = await WebWorkerClient.CreateAsync(JSRuntime);
-//     var result = await worker.InvokeAsync<string>("MyApp.MyWorker.Process", ["Hello"]);
-
 public sealed class WebWorkerClient(IJSObjectReference worker) : IAsyncDisposable
 {
     private const int DefaultTimeoutMs = 60000;
@@ -38,6 +16,9 @@ public sealed class WebWorkerClient(IJSObjectReference worker) : IAsyncDisposabl
         return new WebWorkerClient(workerRef);
     }
 
+    // Invokes a [JSExport] method from the web worker.
+    // The method string is the fully qualified path: "AssemblyName.ClassName.MethodName".
+    // Arguments and return values must be primitive types or strings.
     public async Task<TResult> InvokeAsync<TResult>(string method, object[] args, int timeoutMs = DefaultTimeoutMs, CancellationToken cancellationToken = default)
     {
         return await worker.InvokeAsync<TResult>("invoke", cancellationToken, [method, args, timeoutMs]);
