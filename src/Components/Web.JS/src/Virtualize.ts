@@ -8,6 +8,7 @@ export const Virtualize = {
   dispose,
   scrollToBottom,
   refreshObservers,
+  setAnchorMode,
 };
 
 const dispatcherObserversByDotNetIdPropname = Symbol();
@@ -90,10 +91,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   // compensation) would reset _itemsBefore to 0, undoing the compensation.
   let suppressSpacerBeforeCallbacks = false;
   let scrollUnlockHandler: (() => void) | null = null;
+  const scrollEventTarget: EventTarget = scrollContainer ?? window;
 
   function cleanupScrollUnlock(): void {
     if (scrollUnlockHandler) {
-      scrollElement.removeEventListener('scroll', scrollUnlockHandler);
+      scrollEventTarget.removeEventListener('scroll', scrollUnlockHandler);
       scrollUnlockHandler = null;
     }
   }
@@ -144,7 +146,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     // the same content. Suppress spacerBefore IO callbacks until the user scrolls
     // to prevent stale IO entries from resetting _itemsBefore back to 0.
     if (spacerBefore.hasAttribute('data-scroll-compensate')) {
-      scrollElement.scrollTop = spacerBefore.offsetHeight;
+      scrollElement.scrollTop += spacerBefore.offsetHeight;
       spacerBefore.removeAttribute('data-scroll-compensate');
       suppressSpacerBeforeCallbacks = true;
       cleanupScrollUnlock();
@@ -156,7 +158,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
           suppressSpacerBeforeCallbacks = false;
           scrollUnlockHandler = null;
         };
-        scrollElement.addEventListener('scroll', scrollUnlockHandler, { once: true });
+        scrollEventTarget.addEventListener('scroll', scrollUnlockHandler, { once: true });
       });
     }
 
@@ -311,6 +313,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     scrollElement,
     startConvergenceObserving,
     setConvergingToBottom: () => { convergingToBottom = true; },
+    setAnchorMode: (mode: number) => { anchorMode = mode; },
     onDispose: () => {
       stopConvergenceObserving();
       anchoredItems.clear();
@@ -485,6 +488,12 @@ function refreshObservers(dotNetHelper: DotNet.DotNetObject): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   const entry = observersByDotNetObjectId[id];
   entry?.refreshObservedElements?.();
+}
+
+function setAnchorMode(dotNetHelper: DotNet.DotNetObject, mode: number): void {
+  const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
+  const entry = observersByDotNetObjectId[id];
+  entry?.setAnchorMode?.(mode);
 }
 
 function getObserversMapEntry(dotNetHelper: DotNet.DotNetObject): { observersByDotNetObjectId: {[id: number]: any }, id: number } {

@@ -74,6 +74,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private bool _pendingScrollToSpacerBefore;
 
+    private VirtualizeAnchorMode _lastRenderedAnchorMode;
+
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -241,6 +243,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         {
             _jsInterop = new VirtualizeJsInterop(this, JSRuntime);
             await _jsInterop.InitializeAsync(_spacerBefore, _spacerAfter, (int)AnchorMode);
+            _lastRenderedAnchorMode = AnchorMode;
         }
 
         if (_pendingScrollToBottom && _jsInterop is not null)
@@ -252,6 +255,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // After render the set of items could change. Tell JS to refresh ResizeObserver.
         if (!firstRender && _jsInterop is not null)
         {
+            if (_lastRenderedAnchorMode != AnchorMode)
+            {
+                _lastRenderedAnchorMode = AnchorMode;
+                await _jsInterop.SetAnchorModeAsync((int)AnchorMode);
+            }
+
             _pendingScrollToSpacerBefore = false;
             await _jsInterop.RefreshObserversAsync();
         }

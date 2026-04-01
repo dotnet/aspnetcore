@@ -1,6 +1,13 @@
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 
-<h1>Virtualization Anchor Mode</h1>
+<style>
+    html, body {
+        overflow-y: scroll;
+        height: auto;
+    }
+</style>
+
+<h1>Virtualization Anchor Mode (Window Scroll)</h1>
 
 <div style="margin-bottom: 10px;">
     <label>Anchor Mode:
@@ -12,7 +19,17 @@
     </label>
 </div>
 
-<div id="scroll-container" style="height: 300px; overflow-y: auto; border: 1px solid black;">
+@* Buttons placed ABOVE content so clicking doesn't scroll the page *@
+<div style="margin-bottom: 10px;">
+    <button id="prepend-items" @onclick="PrependItems">Prepend 10 Items</button>
+    <button id="append-items" @onclick="AppendItems">Append 10 Items</button>
+</div>
+
+<p id="status">@statusMessage</p>
+<p id="current-mode">@((int)anchorMode)</p>
+
+<div id="virtualize-root">
+    @* No scroll container — uses window/document as the scroll root *@
     <Virtualize Items="@items" ItemSize="50" AnchorMode="@anchorMode" Context="item">
         <div class="item"
              data-index="@item.Index"
@@ -21,16 +38,6 @@
         </div>
     </Virtualize>
 </div>
-
-<div style="margin-top: 10px;">
-    <button id="prepend-items" @onclick="PrependItems">Prepend 10 Items</button>
-    <button id="prepend-many-items" @onclick="PrependManyItems">Prepend 1000 Items</button>
-    <button id="append-items" @onclick="AppendItems">Append 10 Items</button>
-    <button id="append-many-items" @onclick="AppendManyItems">Append 1000 Items</button>
-</div>
-
-<p id="status">@statusMessage</p>
-<p id="current-mode">@((int)anchorMode)</p>
 
 @code {
     private List<DynamicItem> items = new();
@@ -66,16 +73,6 @@
         statusMessage = $"Prepended 10 items (indices {newItems.Last().Index}..{newItems.First().Index})";
     }
 
-    private void PrependManyItems()
-    {
-        var newItems = Enumerable.Range(0, 1000)
-            .Select(i => new DynamicItem { Index = nextPrependIndex - i, Height = 50 })
-            .ToList();
-        items.InsertRange(0, newItems);
-        nextPrependIndex -= 1000;
-        statusMessage = $"Prepended 1000 items (indices {newItems.Last().Index}..{newItems.First().Index})";
-    }
-
     private void AppendItems()
     {
         var startIndex = nextAppendIndex;
@@ -85,17 +82,6 @@
         items.AddRange(newItems);
         nextAppendIndex += 10;
         statusMessage = $"Appended 10 items (indices {startIndex}..{startIndex + 9})";
-    }
-
-    private void AppendManyItems()
-    {
-        var startIndex = nextAppendIndex;
-        var newItems = Enumerable.Range(startIndex, 1000)
-            .Select(i => new DynamicItem { Index = i, Height = 50 })
-            .ToList();
-        items.AddRange(newItems);
-        nextAppendIndex += 1000;
-        statusMessage = $"Appended 1000 items (indices {startIndex}..{startIndex + 999})";
     }
 
     private class DynamicItem

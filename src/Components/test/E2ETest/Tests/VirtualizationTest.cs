@@ -1159,9 +1159,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
 
         // At scrollTop=0, the natural floor prevents native anchoring from compensating — new items
-        // appear at the top and old items shift down. This documents the default Beginning-like behavior.
-        // When AnchorMode is implemented, AnchorMode.None would differ here: native anchoring would
-        // compensate scrollTop upward, keeping old items in view.
+        // appear at the top and old items shift down. This is the default AnchorMode.Beginning behavior.
+        // In contrast, AnchorMode.None compensates scrollTop so old items stay in view.
         var scrollTopAfter = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
         Assert.True(scrollTopAfter < 50,
             $"scrollTop should stay near 0 at the natural floor, but was {scrollTopAfter}");
@@ -1194,9 +1193,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // When at the bottom and items are appended, the component's IO-based convergence
         // detects spacerAfter becoming visible and scrolls to follow the new content.
-        // This documents the default End-like behavior for small appends at the bottom edge.
-        // When AnchorMode is implemented, AnchorMode.None would differ here: no auto-scroll,
-        // the user would stay at their current position.
+        // This is the default AnchorMode.Beginning|End behavior for small appends at the bottom edge.
+        // In contrast, AnchorMode.None does not auto-scroll; the user stays at their current position.
         Browser.True(() =>
         {
             var scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
@@ -1946,8 +1944,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var selectElement = new SelectElement(select);
         selectElement.SelectByValue(anchorMode);
 
-        // Wait for @key to re-create Virtualize with the new mode.
-        Browser.True(() => Browser.Exists(By.Id("current-mode")).Text == anchorMode);
+        Browser.True(() =>
+            container.FindElements(By.CssSelector($"[data-anchor-mode='{anchorMode}']")).Count > 0);
         Browser.True(() => GetElementCount(container, ".item") > 0);
     }
 
@@ -1995,6 +1993,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var idxAfter = int.Parse(indexAfter, System.Globalization.CultureInfo.InvariantCulture);
         Assert.True(Math.Abs(idxAfter - idxBefore) <= 1,
             $"None mode: viewport shifted from item {indexBefore} to {indexAfter} after prepend at top");
+        Assert.True(Math.Abs(relTopAfter - relTopBefore) < 5,
+            $"None mode: item position shifted by {Math.Abs(relTopAfter - relTopBefore)}px after prepend");
     }
 
     [Fact]
@@ -2341,6 +2341,61 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Assert.True(scrollTopAfter > 2000,
             $"Beginning mode: should not pull user back to top after leaving. " +
             $"scrollTop before: {scrollTopBefore}, after: {scrollTopAfter} (expected >2000, not near 0)");
+    }
+
+    private void MountWindowScrollAnchorModeComponent(string anchorMode)
+    {
+        Browser.MountTestComponent<VirtualizationAnchorModeWindowScroll>();
+        var root = Browser.Exists(By.Id("virtualize-root"));
+        Browser.True(() => GetElementCount(root, ".item") > 0);
+
+        var select = Browser.Exists(By.Id("anchor-mode-select"));
+        var selectElement = new SelectElement(select);
+        selectElement.SelectByValue(anchorMode);
+
+        Browser.True(() =>
+            root.FindElements(By.CssSelector($"[data-anchor-mode='{anchorMode}']")).Count > 0);
+        Browser.True(() => GetElementCount(root, ".item") > 0);
+    }
+
+    [Fact]
+    public void AnchorMode_WindowScroll_None_PrependAtTop_ViewportStaysStable()
+    {
+        MountWindowScrollAnchorModeComponent("0");
+
+        var js = (IJavaScriptExecutor)Browser;
+        var root = Browser.Exists(By.Id("virtualize-root"));
+
+        // Start at the top of the page — buttons are above the Virtualize content
+        // so clicking them won't change scroll position.
+        js.ExecuteScript("window.scrollTo(0, 0)");
+        Browser.True(() => (long)js.ExecuteScript("return window.scrollY") == 0);
+
+        // Find the first visible item at the top.
+        Browser.True(() => root.FindElements(By.CssSelector(".item[data-index]")).Count > 0);
+        var itemsBefore = root.FindElements(By.CssSelector(".item[data-index]"));
+        var firstIndexBefore = itemsBefore
+            .Select(e => int.Parse(e.GetAttribute("data-index"), CultureInfo.InvariantCulture))
+            .Min();
+
+        Browser.Exists(By.Id("prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+
+        // Compensation should increase scrollY by the height of the prepended items.
+        Browser.True(() =>
+        {
+            var scrollY = (long)js.ExecuteScript("return window.scrollY");
+            return scrollY > 100;
+        }, TimeSpan.FromSeconds(5));
+
+        // The same items should still be visible after compensation.
+        var itemsAfter = root.FindElements(By.CssSelector(".item[data-index]"));
+        var firstIndexAfter = itemsAfter
+            .Select(e => int.Parse(e.GetAttribute("data-index"), CultureInfo.InvariantCulture))
+            .Min();
+
+        Assert.True(Math.Abs(firstIndexAfter - firstIndexBefore) <= 1,
+            $"Window-scroll None mode: viewport shifted from item {firstIndexBefore} to {firstIndexAfter} after prepend at top");
     }
 
     private static (string index, double relTop, long scrollTop) GetItemPositionInContainer(
