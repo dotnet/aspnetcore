@@ -50,7 +50,7 @@ class DotnetWebWorkerClient {
     invoke(method, args, timeoutMs) {
         const invoke = new Promise((resolve, reject) => {
             const id = ++this.#requestId;
-            this.#pendingRequests[id] = { resolve: r => resolve(this.#parseIfJson(r)), reject };
+            this.#pendingRequests[id] = { resolve, reject };
             this.#worker.postMessage({ method, args, requestId: id });
         });
 
@@ -61,20 +61,6 @@ class DotnetWebWorkerClient {
             }
             throw err;
         });
-    }
-
-    #parseIfJson(value) {
-        if (typeof value === 'string') {
-            try {
-                const parsed = JSON.parse(value);
-                if (typeof parsed === 'object' && parsed !== null) {
-                    return parsed;
-                }
-            } catch {
-                // not JSON, return as-is
-            }
-        }
-        return value;
     }
 
     terminate() {

@@ -7,9 +7,8 @@ namespace Company.WebWorker1;
 // worker is created.
 //
 // Worker methods are static methods marked with [JSExport] in a static partial
-// class. Due to [JSExport] limitations, worker methods can only return primitives
-// or strings. For complex types, serialize to JSON before returning — it will be
-// automatically deserialized.
+// class. [JSExport] methods can only accept and return primitives or strings.
+// For complex types, serialize/deserialize manually with JsonSerializer.
 //
 // Example worker class:
 //
