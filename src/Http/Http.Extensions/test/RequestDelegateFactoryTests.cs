@@ -1850,6 +1850,66 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Theory]
+    [InlineData(true, "Id: a0e1f2b3-c4d5-4e6f-7a8b-9c0d1e2f3a4b")]
+    [InlineData(false, "Id: 00000000-0000-0000-0000-000000000000")]
+    public async Task CanSetGuidParamAsOptionalWithDefaultValue(bool provideValue, string expectedResponse)
+    {
+        string optionalQueryParam(Guid id = default) => $"Id: {id}";
+
+        var httpContext = CreateHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        if (provideValue)
+        {
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = "a0e1f2b3-c4d5-4e6f-7a8b-9c0d1e2f3a4b"
+            });
+        }
+
+        var factoryResult = RequestDelegateFactory.Create(optionalQueryParam);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+        var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal(expectedResponse, decodedResponseBody);
+    }
+
+    [Theory]
+    [InlineData(true, "Date: 2024-01-15T00:00:00.0000000")]
+    [InlineData(false, "Date: 0001-01-01T00:00:00.0000000")]
+    public async Task CanSetDateTimeParamAsOptionalWithDefaultValue(bool provideValue, string expectedResponse)
+    {
+        string optionalQueryParam(DateTime date = default) => $"Date: {date:O}";
+
+        var httpContext = CreateHttpContext();
+        var responseBodyStream = new MemoryStream();
+        httpContext.Response.Body = responseBodyStream;
+
+        if (provideValue)
+        {
+            httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["date"] = "2024-01-15"
+            });
+        }
+
+        var factoryResult = RequestDelegateFactory.Create(optionalQueryParam);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.False(httpContext.RequestAborted.IsCancellationRequested);
+        var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal(expectedResponse, decodedResponseBody);
+    }
+
+    [Theory]
     [InlineData(true, "Age: 42")]
     [InlineData(false, "Age: ")]
     public async Task TreatsUnknownNullabilityAsOptionalForReferenceType(bool provideValue, string expectedResponse)
