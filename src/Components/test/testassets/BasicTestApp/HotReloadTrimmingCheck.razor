@@ -15,23 +15,27 @@
     string HotReloadManagerFound { get; set; } = "unknown";
     string UpdateApplicationFound { get; set; } = "unknown";
 
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode",
+        Justification = "This is a test component that intentionally uses reflection to check trimming behavior.")]
     protected override void OnInitialized()
     {
-        var hotReloadManagerType = GetHotReloadManagerType();
-        HotReloadManagerFound = hotReloadManagerType is not null ? "true" : "false";
+        HotReloadManagerFound = "false";
+        UpdateApplicationFound = "false";
 
-        if (hotReloadManagerType is not null)
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
         {
-            var method = hotReloadManagerType.GetMethod("UpdateApplication", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-            UpdateApplicationFound = method is not null ? "true" : "false";
+            var hotReloadManagerType = assembly.GetType("Microsoft.AspNetCore.Components.HotReload.HotReloadManager");
+            if (hotReloadManagerType is not null)
+            {
+                HotReloadManagerFound = "true";
+                var method = hotReloadManagerType.GetMethod("UpdateApplication", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+                if (method is not null)
+                {
+                    UpdateApplicationFound = "true";
+                }
+                break;
+            }
         }
-    }
-
-    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2057:UnrecognizedReflectionPattern",
-        Justification = "Returning null when the type is trimmed is the expected and desired behavior.")]
-    private static Type? GetHotReloadManagerType()
-    {
-        return Type.GetType("Microsoft.AspNetCore.Components.HotReload.HotReloadManager, Microsoft.AspNetCore.Components");
     }
 #nullable restore
 }

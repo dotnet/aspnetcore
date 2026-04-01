@@ -4987,9 +4987,9 @@ public class RendererTest
         // Arrange
         try
         {
+            AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", false);
             await using var renderer = new TestRenderer();
             var hotReloadManager = new HotReloadManager { IsEnabled = false };
-            HotReloadManager.Default.IsEnabled = false;
             renderer.HotReloadManager = hotReloadManager;
             var component = new TestComponent(builder =>
             {
@@ -5007,8 +5007,7 @@ public class RendererTest
         }
         finally
         {
-            // Ensure we don't affect other tests by leaving hot reload disabled
-            HotReloadManager.Default.IsEnabled = HotReloadManager.IsSupported;
+            AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", true);
         }
     }
 
@@ -5016,9 +5015,9 @@ public class RendererTest
     public async Task DisposingRenderer_UnsubsribesFromHotReloadManager()
     {
         // Arrange
+        AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", true);
         var renderer = new TestRenderer();
         var hotReloadManager = new HotReloadManager { IsEnabled = true };
-        HotReloadManager.Default.IsEnabled = true;
         renderer.HotReloadManager = hotReloadManager;
         var component = new TestComponent(builder =>
         {
@@ -5041,11 +5040,12 @@ public class RendererTest
     [Fact]
     public async Task HotReload_ReRenderPreservesAsyncLocalValues()
     {
+        AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", true);
+
         await using var renderer = new TestRenderer();
 
         var hotReloadManager = new HotReloadManager { IsEnabled = true };
         renderer.HotReloadManager = hotReloadManager;
-        HotReloadManager.Default.IsEnabled = true;
 
         var component = new AsyncLocalCaptureComponent();
 

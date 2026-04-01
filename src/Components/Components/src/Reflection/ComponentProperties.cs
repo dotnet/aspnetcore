@@ -14,7 +14,7 @@ internal static class ComponentProperties
 {
     static ComponentProperties()
     {
-        if (HotReloadManager.IsSupported && HotReloadManager.Default.IsEnabled)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += ClearCache;
         }

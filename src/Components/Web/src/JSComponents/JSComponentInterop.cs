@@ -27,7 +27,7 @@ public class JSComponentInterop
 
     static JSComponentInterop()
     {
-        if (HotReloadManager.IsSupported && HotReloadManager.Default.IsEnabled)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += ParameterTypeCaches.Clear;
         }

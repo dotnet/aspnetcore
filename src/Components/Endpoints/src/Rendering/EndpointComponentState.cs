@@ -19,7 +19,7 @@ internal sealed class EndpointComponentState : ComponentState
 
     static EndpointComponentState()
     {
-        if (HotReloadManager.IsSupported && HotReloadManager.Default.IsEnabled)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += _streamRenderingAttributeByComponentType.Clear;
         }

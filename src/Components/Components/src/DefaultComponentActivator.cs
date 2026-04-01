@@ -14,7 +14,7 @@ internal sealed class DefaultComponentActivator(IServiceProvider serviceProvider
 
     static DefaultComponentActivator()
     {
-        if (HotReloadManager.IsSupported && HotReloadManager.Default.IsEnabled)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += ClearCache;
         }

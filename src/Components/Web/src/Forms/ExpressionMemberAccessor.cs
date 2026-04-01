@@ -17,7 +17,7 @@ internal static class ExpressionMemberAccessor
 
     static ExpressionMemberAccessor()
     {
-        if (HotReloadManager.IsSupported && HotReloadManager.Default.IsEnabled)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += ClearCache;
         }

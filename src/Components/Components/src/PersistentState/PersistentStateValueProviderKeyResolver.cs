@@ -18,7 +18,7 @@ internal static class PersistentStateValueProviderKeyResolver
 
     static PersistentStateValueProviderKeyResolver()
     {
-        if (HotReloadManager.IsSupported && HotReloadManager.Default.IsEnabled)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += ClearCaches;
         }

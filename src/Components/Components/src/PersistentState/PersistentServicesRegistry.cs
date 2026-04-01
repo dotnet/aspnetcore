@@ -27,7 +27,7 @@ internal sealed class PersistentServicesRegistry
 
     static PersistentServicesRegistry()
     {
-        if (HotReloadManager.IsSupported && HotReloadManager.Default.IsEnabled)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += _cachedAccessorsByType.Clear;
         }

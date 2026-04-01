@@ -684,7 +684,7 @@ internal static class RenderTreeDiffBuilder
                         var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, oldTree, oldFrameIndex);
                         var newParametersLifetime = new ParameterViewLifetime(diffContext.BatchBuilder);
                         var newParameters = new ParameterView(newParametersLifetime, newTree, newFrameIndex);
-                        var isHotReload = HotReloadManager.IsSupported && HotReloadManager.Default.IsEnabled && diffContext.Renderer.IsRenderingOnMetadataUpdate;
+                        var isHotReload = HotReloadManager.IsSupported && diffContext.Renderer.IsRenderingOnMetadataUpdate;
 
                         if (isHotReload && newParameters.HasRemovedDirectParameters(oldParameters))
                         {
