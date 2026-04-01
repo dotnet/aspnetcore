@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.InternalTesting;
 using Moq;
 using Xunit;
 
@@ -933,6 +934,7 @@ public class XmlKeyManagerTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66029")]
     public void DeleteKeys()
     {
         var repository = new EphemeralXmlRepository(NullLoggerFactory.Instance);
@@ -947,14 +949,16 @@ public class XmlKeyManagerTests
             SimpleActivator.DefaultWithoutServices,
             NullLoggerFactory.Instance);
 
-        var activationTime = DateTimeOffset.UtcNow.AddHours(1);
+        // Use past dates so that key creation dates are deterministic
+        // (CreateNewKey sets creationDate = min(activationDate, UtcNow), so past activationDates become the creationDates)
+        var epoch = new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
-        var key1 = keyManager.CreateNewKey(activationTime, activationTime.AddMinutes(10));
-        keyManager.RevokeAllKeys(DateTimeOffset.UtcNow, "Revoking all keys"); // This should revoke key1
-        var key2 = keyManager.CreateNewKey(activationTime, activationTime.AddMinutes(10));
-        keyManager.RevokeAllKeys(DateTimeOffset.UtcNow, "Revoking all keys"); // This should revoke key1 and key2
-        var key3 = keyManager.CreateNewKey(activationTime, activationTime.AddMinutes(10));
-        var key4 = keyManager.CreateNewKey(activationTime, activationTime.AddMinutes(10));
+        var key1 = keyManager.CreateNewKey(epoch, epoch.AddMinutes(10));
+        keyManager.RevokeAllKeys(epoch.AddMinutes(20), "Revoking all keys"); // This should revoke key1
+        var key2 = keyManager.CreateNewKey(epoch.AddMinutes(30), epoch.AddMinutes(40));
+        keyManager.RevokeAllKeys(epoch.AddMinutes(50), "Revoking all keys"); // This should revoke key1 and key2
+        var key3 = keyManager.CreateNewKey(epoch.AddHours(1), epoch.AddHours(2));
+        var key4 = keyManager.CreateNewKey(epoch.AddHours(3), epoch.AddHours(4));
 
         keyManager.RevokeKey(key2.KeyId); // Revoked by time, but also individually
         keyManager.RevokeKey(key3.KeyId);
