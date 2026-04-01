@@ -4989,7 +4989,7 @@ public class RendererTest
         {
             AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", false);
             await using var renderer = new TestRenderer();
-            var hotReloadManager = new HotReloadManager { IsEnabled = false };
+            var hotReloadManager = new HotReloadManager();
             renderer.HotReloadManager = hotReloadManager;
             var component = new TestComponent(builder =>
             {
@@ -5017,7 +5017,7 @@ public class RendererTest
         // Arrange
         AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", true);
         var renderer = new TestRenderer();
-        var hotReloadManager = new HotReloadManager { IsEnabled = true };
+        var hotReloadManager = new HotReloadManager();
         renderer.HotReloadManager = hotReloadManager;
         var component = new TestComponent(builder =>
         {
@@ -5044,7 +5044,7 @@ public class RendererTest
 
         await using var renderer = new TestRenderer();
 
-        var hotReloadManager = new HotReloadManager { IsEnabled = true };
+        var hotReloadManager = new HotReloadManager();
         renderer.HotReloadManager = hotReloadManager;
 
         var component = new AsyncLocalCaptureComponent();

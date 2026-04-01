@@ -14,7 +14,7 @@ internal sealed class HotReloadManager
     public static readonly HotReloadManager Default = new();
 
     [FeatureSwitchDefinition("System.Reflection.Metadata.MetadataUpdater.IsSupported")]
-    internal static bool IsSupported { get; } =>
+    internal static bool IsSupported =>
         AppContext.TryGetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", out bool isSupported) ? isSupported : true;
 
     /// <summary>
