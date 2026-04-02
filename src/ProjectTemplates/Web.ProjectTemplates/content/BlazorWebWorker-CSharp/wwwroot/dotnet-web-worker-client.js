@@ -13,7 +13,7 @@ class DotnetWebWorkerClient {
         this.#worker = worker;
     }
 
-    static create(initTimeoutMs) {
+    static create(initTimeoutMs, options = {}) {
         const worker = new Worker('_content/Company.WebWorker1/dotnet-web-worker.js', { type: "module" });
 
         const initWorker = new Promise((resolve, reject) => {
@@ -28,7 +28,8 @@ class DotnetWebWorkerClient {
         });
 
         const dotnetJsUrl = DotnetWebWorkerClient.#resolveDotnetJsUrl();
-        worker.postMessage({ type: 'init', dotnetJsUrl });
+        const assemblyName = options?.assemblyName ?? null;
+        worker.postMessage({ type: 'init', dotnetJsUrl, assemblyName });
 
         return withTimeout(initWorker, initTimeoutMs, 'Worker initialization timed out').then(() => {
             const client = new DotnetWebWorkerClient(worker);
@@ -97,6 +98,6 @@ class DotnetWebWorkerClient {
     }
 }
 
-export function create(initTimeoutMs) {
-    return DotnetWebWorkerClient.create(initTimeoutMs);
+export function create(initTimeoutMs, options) {
+    return DotnetWebWorkerClient.create(initTimeoutMs, options);
 }

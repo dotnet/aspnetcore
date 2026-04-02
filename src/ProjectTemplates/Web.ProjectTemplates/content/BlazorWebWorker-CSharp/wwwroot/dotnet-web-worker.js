@@ -1,12 +1,12 @@
 let workerExports = null;
 let startupError = null;
 
-async function initialize(dotnetJsUrl) {
+async function initialize(dotnetJsUrl, assemblyName) {
     try {
         const { dotnet } = await import(dotnetJsUrl);
         const { getAssemblyExports, getConfig } = await dotnet.create();
-        const assemblyName = getConfig().mainAssemblyName;
-        workerExports = await getAssemblyExports(assemblyName);
+        const resolvedAssemblyName = assemblyName ?? getConfig().mainAssemblyName;
+        workerExports = await getAssemblyExports(resolvedAssemblyName);
         self.postMessage({ type: "ready" });
     } catch (err) {
         const errorMessage = err?.message ?? String(err);
@@ -18,7 +18,7 @@ async function initialize(dotnetJsUrl) {
 
 self.addEventListener('message', async (e) => {
     if (e.data.type === 'init') {
-        await initialize(e.data.dotnetJsUrl);
+        await initialize(e.data.dotnetJsUrl, e.data.assemblyName);
         return;
     }
 
