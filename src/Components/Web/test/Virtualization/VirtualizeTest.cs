@@ -456,6 +456,9 @@ public class VirtualizeTest
         await testRenderer.RenderRootComponentAsync(componentId);
         Assert.NotNull(renderedVirtualize);
 
+        // scrollToBottom only fires when AnchorMode includes the End flag.
+        renderedVirtualize.AnchorMode = VirtualizeAnchorMode.End;
+
         // First callback triggers items to render
         await testRenderer.Dispatcher.InvokeAsync(() =>
             ((IVirtualizeJsCallbacks)renderedVirtualize).OnAfterSpacerVisible(
@@ -473,6 +476,24 @@ public class VirtualizeTest
 
         Assert.True(scrollToBottomCalled || renderedVirtualize._pendingScrollToBottom,
             "scrollToBottom should either be called via JS interop or be pending");
+    }
+
+    [Fact]
+    public async Task Virtualize_ScrollToBottom_NotSetForBeginningMode()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 100);
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+
+        // Default AnchorMode is Beginning, which does NOT include the End flag.
+        // At the bottom with new measurements, _pendingScrollToBottom should NOT be set.
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+
+        Assert.False(virtualize._pendingScrollToBottom,
+            "Beginning mode should not trigger scrollToBottom");
     }
 
     [Fact]
@@ -507,6 +528,9 @@ public class VirtualizeTest
         var componentId = testRenderer.AssignRootComponentId(rootComponent);
         await testRenderer.RenderRootComponentAsync(componentId);
         Assert.NotNull(renderedVirtualize);
+
+        // scrollToBottom only fires when AnchorMode includes the End flag.
+        renderedVirtualize.AnchorMode = VirtualizeAnchorMode.End;
 
         var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
 
