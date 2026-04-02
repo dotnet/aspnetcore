@@ -59,7 +59,7 @@ public class ResponseCompressionMiddleware
     private async Task OnStartingResponseHandler(object state)
     {
         HttpContext context = (HttpContext)state;
-        _provider.ShouldCompressResponseCommon(context);
+        ResponseCompressionBody.ShouldCompressResponseCommon(_provider, context);
     }
 
     private async Task InvokeCore(HttpContext context)

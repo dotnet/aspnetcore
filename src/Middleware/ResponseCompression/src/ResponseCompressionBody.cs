@@ -5,6 +5,7 @@ using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCompression;
 
@@ -195,12 +196,46 @@ internal sealed class ResponseCompressionBody : Stream, IHttpResponseBodyFeature
     }
 
     /// <summary>
+    /// Examines the response on first write to see if compression should be used and if true sets the Vary Accept-Encoding header.
+    /// </summary>
+    /// <param name="provider">current response compression provider</param>
+    /// <param name="context">The <see cref="HttpContext"/>.</param>
+    /// <returns><see langword="true" /> if the response should be compressed, otherwise <see langword="false" />.</returns>
+    internal static bool ShouldCompressResponseCommon(IResponseCompressionProvider provider, HttpContext context)
+    {
+        var result = provider.ShouldCompressResponse(context);
+
+        if (result)
+        {
+            var headers = context.Response.Headers;
+            var varyValues = headers.GetCommaSeparatedValues(HeaderNames.Vary);
+            var varyByAcceptEncoding = false;
+
+            for (var i = 0; i < varyValues.Length; i++)
+            {
+                if (string.Equals(varyValues[i], HeaderNames.AcceptEncoding, StringComparison.OrdinalIgnoreCase))
+                {
+                    varyByAcceptEncoding = true;
+                    break;
+                }
+            }
+
+            if (!varyByAcceptEncoding)
+            {
+                headers.Vary = StringValues.Concat(headers.Vary, HeaderNames.AcceptEncoding);
+            }
+        }
+
+        return result;
+    }
+
+    /// <summary>
     /// Checks if the response should be compressed and sets the response headers.
     /// </summary>
     /// <returns>The compression provider to use if compression is enabled, otherwise null.</returns>
     private ICompressionProvider? InitializeCompressionHeaders()
     {
-        if (_provider.ShouldCompressResponseCommon(_context))
+        if (ShouldCompressResponseCommon(_provider, _context))
         {
             var headers = _context.Response.Headers;
 

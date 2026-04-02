@@ -30,11 +30,4 @@ public interface IResponseCompressionProvider
     /// <param name="context">The <see cref="HttpContext"/>.</param>
     /// <returns><see langword="true" /> if the request accepts compression, otherwise <see langword="false" />.</returns>
     bool CheckRequestAcceptsCompression(HttpContext context);
-
-    /// <summary>
-    /// Examines the response on first write to see if compression should be used and if true sets the Vary Accept-Encoding header.
-    /// </summary>
-    /// <param name="context">The <see cref="HttpContext"/>.</param>
-    /// <returns><see langword="true" /> if the response should be compressed, otherwise <see langword="false" />.</returns>
-    bool ShouldCompressResponseCommon(HttpContext context);
 }

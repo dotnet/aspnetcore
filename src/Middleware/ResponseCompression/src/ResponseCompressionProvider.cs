@@ -161,35 +161,6 @@ public class ResponseCompressionProvider : IResponseCompressionProvider
     }
 
     /// <inheritdoc />
-    public bool ShouldCompressResponseCommon(HttpContext context)
-    {
-        var result = ShouldCompressResponse(context);
-
-        if (result)
-        {
-            var headers = context.Response.Headers;
-            var varyValues = headers.GetCommaSeparatedValues(HeaderNames.Vary);
-            var varyByAcceptEncoding = false;
-
-            for (var i = 0; i < varyValues.Length; i++)
-            {
-                if (string.Equals(varyValues[i], HeaderNames.AcceptEncoding, StringComparison.OrdinalIgnoreCase))
-                {
-                    varyByAcceptEncoding = true;
-                    break;
-                }
-            }
-
-            if (!varyByAcceptEncoding)
-            {
-                headers.Vary = StringValues.Concat(headers.Vary, HeaderNames.AcceptEncoding);
-            }
-        }
-
-        return result;
-    }
-
-    /// <inheritdoc />
     public virtual bool ShouldCompressResponse(HttpContext context)
     {
         var httpsMode = context.Features.Get<IHttpsCompressionFeature>()?.Mode ?? HttpsCompressionMode.Default;
