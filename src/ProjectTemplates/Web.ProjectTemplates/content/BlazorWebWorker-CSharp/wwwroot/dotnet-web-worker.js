@@ -1,12 +1,18 @@
-let workerExports = null;
+let workerExports = {};
 let startupError = null;
 
 async function initialize(dotnetJsUrl, assemblyName) {
     try {
         const { dotnet } = await import(dotnetJsUrl);
         const { getAssemblyExports, getConfig } = await dotnet.create();
-        const resolvedAssemblyName = assemblyName ?? getConfig().mainAssemblyName;
-        workerExports = await getAssemblyExports(resolvedAssemblyName);
+        const mainAssemblyName = getConfig().mainAssemblyName;
+
+        workerExports = { ...await getAssemblyExports(mainAssemblyName) };
+
+        if (assemblyName && assemblyName !== mainAssemblyName) {
+            workerExports = { ...workerExports, ...await getAssemblyExports(assemblyName) };
+        }
+
         self.postMessage({ type: "ready" });
     } catch (err) {
         const errorMessage = err?.message ?? String(err);
@@ -25,7 +31,7 @@ self.addEventListener('message', async (e) => {
     const { method, args, requestId } = e.data;
 
     try {
-        if (!workerExports) {
+        if (Object.keys(workerExports).length === 0) {
             throw new Error(startupError || "Worker .NET runtime not loaded");
         }
 
