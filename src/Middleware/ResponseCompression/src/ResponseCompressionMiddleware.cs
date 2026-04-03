@@ -34,26 +34,16 @@ public class ResponseCompressionMiddleware
     /// </summary>
     /// <param name="context">The <see cref="HttpContext"/>.</param>
     /// <returns>A task that represents the execution of this middleware.</returns>
-    public async Task Invoke(HttpContext context)
+    public Task Invoke(HttpContext context)
     {
         if (!_provider.CheckRequestAcceptsCompression(context))
         {
-            var originalResponseFeature = context.Features.Get<IHttpResponseFeature>();
-            Debug.Assert(originalResponseFeature != null);
+            var originalResponseFeature = context.Features.GetRequiredFeature<IHttpResponseFeature>();
             originalResponseFeature.OnStarting(OnStartingResponseHandler, context);
-
-            try
-            {
-                await _next(context);
-            }
-            finally
-            {
-                context.Features.Set(originalResponseFeature);
-            }
-            return;
+            return _next(context);
         }
 
-        await InvokeCore(context);
+        return InvokeCore(context);
     }
 
     private async Task OnStartingResponseHandler(object state)
