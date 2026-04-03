@@ -103,6 +103,14 @@ public class ServerVirtualizationTest : VirtualizationTest
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65852")]
     public override void CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax()
         => base.CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax();
+
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/TODO")]
+    public override void NonZeroStartIndex_ScrollToMiddleThenMeasure()
+        => base.NonZeroStartIndex_ScrollToMiddleThenMeasure();
+
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/TODO")]
+    public override void CancelsOutdatedRefreshes_Async()
+        => base.CancelsOutdatedRefreshes_Async();
 }
 
 public class ServerDynamicComponentRenderingTest : DynamicComponentRenderingTest

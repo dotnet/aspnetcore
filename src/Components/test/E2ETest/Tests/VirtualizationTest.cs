@@ -175,7 +175,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    public void CancelsOutdatedRefreshes_Async()
+    public virtual void CancelsOutdatedRefreshes_Async()
     {
         Browser.MountTestComponent<VirtualizationComponent>();
         var cancellationCount = Browser.Exists(By.Id("cancellation-count"));
@@ -1597,7 +1597,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    public void NonZeroStartIndex_ScrollToMiddleThenMeasure()
+    public virtual void NonZeroStartIndex_ScrollToMiddleThenMeasure()
     {
         Browser.MountTestComponent<VirtualizationScrollBehavior>();
 
