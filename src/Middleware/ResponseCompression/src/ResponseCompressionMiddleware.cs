@@ -42,7 +42,6 @@ public class ResponseCompressionMiddleware
             originalResponseFeature.OnStarting(OnStartingResponseHandler, context);
             return _next(context);
         }
-
         return InvokeCore(context);
     }
 
