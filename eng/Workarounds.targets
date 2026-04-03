@@ -20,20 +20,6 @@
       '$(GenerateRazorAssemblyInfo)' == 'true'" />
   </ItemGroup>
 
-  <!-- Workaround for netstandard2.1 projects until we can get a preview 8 SDK containing https://github.com/dotnet/sdk/pull/3463 fix. -->
-  <ItemGroup>
-    <KnownFrameworkReference Update="NETStandard.Library">
-      <RuntimeFrameworkName>NETStandard.Library</RuntimeFrameworkName>
-    </KnownFrameworkReference>
-  </ItemGroup>
-
-  <!-- Work around https://github.com/dotnet/cli/issues/11378. -->
-  <Target Name="_WorkaroundNetStandard" AfterTargets="ResolvePackageAssets">
-    <ItemGroup>
-      <TransitiveFrameworkReference Remove="NETStandard.Library" />
-    </ItemGroup>
-  </Target>
-
   <!-- Work around https://github.com/dotnet/aspnetcore/issues/18393 -->
   <Target Name="_UpdateRazorGenerateAssemblyReferences"
           AfterTargets="ResolveAssemblyReferenceRazorGenerateInputs"
