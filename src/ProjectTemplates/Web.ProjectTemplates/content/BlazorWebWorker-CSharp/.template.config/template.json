@@ -10,7 +10,7 @@
   ],
   "name": "Blazor Web Worker",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project for creating a Blazor class library that runs .NET code in a Web Worker.",
+  "description": "A project for creating a class library that runs .NET code on a web worker from a Blazor WebAssembly or Blazor Web app.",
   "groupIdentity": "Microsoft.Web.Blazor.WebWorker",
   "precedence": "10000",
   "identity": "Microsoft.Web.Blazor.WebWorker.Library.CSharp.11.0",
