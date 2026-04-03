@@ -234,6 +234,8 @@ Before creating issues and PRs, group related failures together:
 
 - **Always exclude** `AlwaysTestTests.SuccessfulTests.GuaranteedQuarantinedTest` from all analysis. This test must never be unquarantined.
 - **Always exclude** tests under `Microsoft.AspNetCore.SignalR.Specification.Tests` from all analysis. These are abstract base classes inherited by other test projects — there is no good way to quarantine them, so they must be ignored entirely. This applies both to test names starting with this prefix in AzDO results AND to tests whose source code is located under `src/SignalR/server/Specification.Tests/`. A test may appear in AzDO under a different namespace (e.g., `StackExchangeRedis.Tests`) but still be defined in `Specification.Tests` — check the actual source file before quarantining.
+- **`[QuarantinedTest]` attributes must reference a real GitHub issue URL** with a numeric issue number (e.g., `https://github.com/dotnet/aspnetcore/issues/12345`). Never use placeholder strings, descriptive text, or non-numeric identifiers. The issue must be created BEFORE the PR that adds the attribute.
+- **When checking the 30-day quarantine age**, verify that the `[QuarantinedTest]` attribute contains a valid numeric issue URL. If it contains a non-numeric placeholder, skip the test — it was quarantined incorrectly and should not be unquarantined until the issue URL is fixed.
 - **Check for existing PRs** before creating new ones. Search all open PRs for any that modify the same test file. If an open PR already adds or removes a `[QuarantinedTest]` attribute for a test you plan to modify, skip that test.
 - **One PR per issue** for unquarantining. Group tests by their quarantine issue.
 - **One issue + one PR per test** (or per related group) for quarantining.
@@ -311,7 +313,7 @@ For each quarantine/re-quarantine candidate, in priority order:
    - Do not include potentially sensitive information such as access tokens.
 
 3. **Create a PR** that:
-   - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/{ISSUE_NUMBER}")]` to the test method (or class)
+   - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/{ISSUE_NUMBER}")]` to the test method (or class). The `{ISSUE_NUMBER}` **must** be the actual numeric issue number from the issue created in step 1 — never use placeholder text like `TODO`, `TBD`, or descriptive strings. Verify the URL is correct before committing.
    - Adds `using Microsoft.AspNetCore.InternalTesting;` if not already present in the file
    - References the issue in the PR body with `Associated issue: #{ISSUE_NUMBER}`. Do **not** use the word `Fixes` or `Closes` — quarantine PRs open tracking issues, they do not fix them, and GitHub would auto-close the issue when the PR merges.
    - If the test matched **Case B** (re-quarantine of a recently unquarantined test), add the `re-quarantine` label to the PR.
