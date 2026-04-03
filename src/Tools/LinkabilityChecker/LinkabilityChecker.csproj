@@ -4,6 +4,9 @@
     <IsPackable>false</IsPackable>
     <OutputType>Exe</OutputType>
     <PublishTrimmed>true</PublishTrimmed>
+    <!-- ILLinkTrimProjects needs the trimmable project assemblies to exist on disk.
+         Delay this project so it builds after all reference-providing projects are done. -->
+    <RequiresDelayedBuild>true</RequiresDelayedBuild>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)eng\TrimmableProjects.props" />
