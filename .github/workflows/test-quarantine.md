@@ -319,6 +319,7 @@ For each quarantine/re-quarantine candidate, in priority order:
    - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#{TEMPORARY_ID}")]` to the test method (or class), where `{TEMPORARY_ID}` is the `temporary_id` you used when calling `create_issue` in step 1 (e.g., `aw_http2ign`). The framework will resolve `#{TEMPORARY_ID}` to the actual numeric issue number before creating the PR. For example, if you called `create_issue(temporary_id: "aw_http2ign", ...)`, use `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_http2ign")]`. **Never** use placeholder text like `TODO`, `TBD`, or descriptive strings.
    - Adds `using Microsoft.AspNetCore.InternalTesting;` if not already present in the file
    - References the issue in the PR body with `Associated issue: #{TEMPORARY_ID}` (using the same `temporary_id` from `create_issue`, e.g., `Associated issue: #aw_http2ign`). Do **not** use the word `Fixes` or `Closes` — quarantine PRs open tracking issues, they do not fix them, and GitHub would auto-close the issue when the PR merges.
+   - When referencing build IDs in the PR body, always use full clickable URLs: `https://dev.azure.com/dnceng-public/public/_build/results?buildId={BUILD_ID}&view=results`. Never reference build IDs as plain numbers.
    - If the test matched **Case B** (re-quarantine of a recently unquarantined test), add the `re-quarantine` label to the PR.
 
 ### Step 3.2 — Unquarantine (only after all quarantine work is done)
