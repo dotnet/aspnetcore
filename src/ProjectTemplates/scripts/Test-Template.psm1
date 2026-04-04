@@ -15,7 +15,7 @@ function Test-Template {
         [ValidateSet("Debug", "Release")]
         [string] $Configuration = "Release",
         [ValidatePattern("net\d+\.\d+")]
-        [string] $TargetFramework = "net10.0"
+        [string] $TargetFramework = "net11.0"
     )
 
     if(-not (Test-Path "$PSScriptRoot/.dotnet")){

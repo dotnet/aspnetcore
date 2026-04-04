@@ -22,5 +22,6 @@ public interface IInternalWebJSInProcessRuntime
     /// <summary>
     /// For internal framework use only.
     /// </summary>
-    string InvokeJS(in JSInvocationInfo invocationInfo);
+    string InvokeJS(in JSInvocationInfo invocationInfo)
+        => throw new NotImplementedException();
 }

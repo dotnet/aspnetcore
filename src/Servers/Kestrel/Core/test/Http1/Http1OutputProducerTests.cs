@@ -22,7 +22,7 @@ public class Http1OutputProducerTests : IDisposable
 
     public Http1OutputProducerTests()
     {
-        _memoryPool = PinnedBlockMemoryPoolFactory.Create();
+        _memoryPool = TestMemoryPoolFactory.Create();
     }
 
     public void Dispose()

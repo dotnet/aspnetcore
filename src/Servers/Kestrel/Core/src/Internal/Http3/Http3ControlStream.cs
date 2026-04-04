@@ -65,6 +65,12 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
             context.ClientPeerSettings,
             this);
         _frameWriter.Reset(context.Transport.Output, context.ConnectionId);
+
+        _streamClosedFeature.OnClosed(static state =>
+        {
+            var stream = (Http3ControlStream)state!;
+            stream.OnStreamClosed();
+        }, this);
     }
 
     private void OnStreamClosed()
@@ -135,12 +141,6 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
 
     internal async ValueTask ProcessOutboundSendsAsync(long id)
     {
-        _streamClosedFeature.OnClosed(static state =>
-        {
-            var stream = (Http3ControlStream)state!;
-            stream.OnStreamClosed();
-        }, this);
-
         await _frameWriter.WriteStreamIdAsync(id);
         await _frameWriter.WriteSettingsAsync(_serverPeerSettings.GetNonProtocolDefaults());
     }
@@ -311,18 +311,13 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
         }
     }
 
-    private async ValueTask HandleEncodingDecodingTask()
+    private Task HandleEncodingDecodingTask()
     {
         // Noop encoding and decoding task. Settings make it so we don't need to read content of encoder and decoder.
         // An endpoint MUST allow its peer to create an encoder stream and a
         // decoder stream even if the connection's settings prevent their use.
 
-        while (_isClosed == 0)
-        {
-            var result = await Input.ReadAsync();
-            var readableBuffer = result.Buffer;
-            Input.AdvanceTo(readableBuffer.End);
-        }
+        return Input.CopyToAsync(Stream.Null);
     }
 
     private ValueTask ProcessHttp3ControlStream(Http3RawFrame incomingFrame, bool isContinuedFrame, in ReadOnlySequence<byte> payload, out SequencePosition consumed)
@@ -372,11 +367,6 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
             }
 
             _haveReceivedSettingsFrame = true;
-            _streamClosedFeature.OnClosed(static state =>
-            {
-                var stream = (Http3ControlStream)state!;
-                stream.OnStreamClosed();
-            }, this);
         }
 
         while (true)

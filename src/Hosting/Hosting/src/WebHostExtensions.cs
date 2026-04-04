@@ -4,6 +4,7 @@
 #nullable enable
 
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -12,6 +13,7 @@ namespace Microsoft.AspNetCore.Hosting;
 /// <summary>
 /// Contains extensions for managing the lifecycle of an <see cref="IWebHost"/>.
 /// </summary>
+[Obsolete("WebHostExtensions is obsolete. Use Host.CreateDefaultBuilder or WebApplication.CreateBuilder instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008", UrlFormat = Obsoletions.AspNetCoreDeprecate008Url)]
 public static class WebHostExtensions
 {
     /// <summary>
@@ -52,7 +54,6 @@ public static class WebHostExtensions
                 try
                 {
                     await host.WaitForTokenShutdownAsync(cts.Token);
-                    lifetime.SetExitedGracefully();
                 }
                 finally
                 {
@@ -95,7 +96,6 @@ public static class WebHostExtensions
                 try
                 {
                     await host.RunAsync(cts.Token, "Application started. Press Ctrl+C to shut down.");
-                    lifetime.SetExitedGracefully();
                 }
                 finally
                 {

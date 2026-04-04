@@ -23,26 +23,25 @@ run_tests=false
 run_sign=false
 build_all=false
 build_deps=true
-only_build_repo_tasks=false
-build_repo_tasks=true
 build_managed=''
 build_native=''
 build_nodejs=''
 build_java=''
 build_installers=''
 build_projects=''
-target_arch='x64'
 configuration=''
 runtime_source_feed=''
 runtime_source_feed_key=''
+source_build=''
+product_build=''
+from_vmr=''
+warn_as_error=true
+from_vmr=''
 
-if [ "$(uname)" = "Darwin" ]; then
-    target_os_name='osx'
-elif [ "$(uname)" = "FreeBSD" ]; then
-    target_os_name='freebsd'
-else
-    target_os_name='linux'
-fi
+source "$DIR/common/native/init-os-and-arch.sh"
+
+target_os_name="$os"
+target_arch="$arch"
 
 msbuild_args=()
 
@@ -70,8 +69,6 @@ Options:
     --projects                        A list of projects to build. (Must be an absolute path.)
                                       Globbing patterns are supported, such as \"$(pwd)/**/*.csproj\".
     --no-build-deps                   Do not build project-to-project references and only build the specified project.
-    --no-build-repo-tasks             Suppress building RepoTasks.
-    --only-build-repo-tasks           Only build RepoTasks.
 
     --all                             Build all project types.
     --[no-]build-native               Build native projects (C, C++). Ignored in most cases i.e. with `dotnet msbuild`.
@@ -84,9 +81,14 @@ Options:
     --binarylog|-bl                   Use a binary logger
     --excludeCIBinarylog              Don't output binary log by default in CI builds (short: -nobl).
     --verbosity|-v                    MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
+    --warnAsError                     Sets warnaserror msbuild parameter: 'true' or 'false'
 
     --runtime-source-feed             Additional feed that can be used when downloading .NET runtimes and SDKs
     --runtime-source-feed-key         Key for feed that can be used when downloading .NET runtimes and SDKs
+
+    --sourceBuild|-sb                 Build the repository in source-only mode.
+    --productBuild|-pb                Build the repository in product-build mode.
+    --fromVMR                         Set when building from within the VMR.
 
 Description:
     This build script installs required tools and runs an MSBuild command on this repository
@@ -212,12 +214,6 @@ while [[ $# -gt 0 ]]; do
         -no-build-installers|-nobuildinstallers)
             build_installers=false
             ;;
-        -no-build-repo-tasks|-nobuildrepotasks)
-            build_repo_tasks=false
-            ;;
-        -only-build-repo-tasks|-onlybuildrepotasks)
-            only_build_repo_tasks=true
-            ;;
         -arch)
             shift
             target_arch="${1:-}"
@@ -246,6 +242,21 @@ while [[ $# -gt 0 ]]; do
             shift
             [ -z "${1:-}" ] && __error "Missing value for parameter --runtime-source-feed-key" && __usage
             runtime_source_feed_key="${1:-}"
+            ;;
+        -sourcebuild|-source-build|-sb)
+            source_build=true
+            product_build=true
+            ;;
+        -productbuild|-product-build|-pb)
+            product_build=true
+            ;;
+        -fromvmr|-from-vmr)
+            from_vmr=true
+            ;;
+        -warnaserror)
+            shift
+            [ -z "${1:-}" ] && __error "Missing value for parameter --warnaserror" && __usage
+            warn_as_error="${1:-}"
             ;;
         *)
             msbuild_args[${#msbuild_args[*]}]="$1"
@@ -304,6 +315,9 @@ fi
 [ ! -z "$build_nodejs" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildNodeJSUnlessSourcebuild=$build_nodejs"
 [ ! -z "$build_managed" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildManaged=$build_managed"
 [ ! -z "$build_installers" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildInstallers=$build_installers"
+[ ! -z "$product_build" ] && msbuild_args[${#msbuild_args[*]}]="-p:DotNetBuild=$product_build"
+[ ! -z "$source_build" ] && msbuild_args[${#msbuild_args[*]}]="-p:DotNetBuildSourceOnly=$source_build"
+[ ! -z "$from_vmr" ] && msbuild_args[${#msbuild_args[*]}]="-p:DotNetBuildFromVMR=$from_vmr"
 
 # Run restore by default unless --no-restore or --no-build was specified.
 [ -z "$run_restore" ] && run_restore=true
@@ -331,14 +345,11 @@ fi
 msbuild_args[${#msbuild_args[*]}]="-p:Configuration=$configuration"
 
 # Set up additional runtime args
-toolset_build_args=()
 if [ ! -z "$runtime_source_feed$runtime_source_feed_key" ]; then
-    runtimeFeedArg="/p:DotNetRuntimeSourceFeed=$runtime_source_feed"
-    runtimeFeedKeyArg="/p:DotNetRuntimeSourceFeedKey=$runtime_source_feed_key"
+    runtimeFeedArg="-p:DotNetRuntimeSourceFeed=$runtime_source_feed"
+    runtimeFeedKeyArg="-p:DotNetRuntimeSourceFeedKey=$runtime_source_feed_key"
     msbuild_args[${#msbuild_args[*]}]=$runtimeFeedArg
     msbuild_args[${#msbuild_args[*]}]=$runtimeFeedKeyArg
-    toolset_build_args[${#toolset_build_args[*]}]=$runtimeFeedArg
-    toolset_build_args[${#toolset_build_args[*]}]=$runtimeFeedKeyArg
 fi
 
 # Initialize global variables need to be set before the import of Arcade is imported
@@ -359,10 +370,6 @@ if [ "$(uname)" = "Darwin" ]; then
     ulimit -n 10000
 fi
 
-# tools.sh expects the remaining arguments to be available via the $properties string array variable
-# TODO: Remove when https://github.com/dotnet/source-build/issues/4337 is implemented.
-properties=$msbuild_args
-
 # Import Arcade
 . "$DIR/common/tools.sh"
 
@@ -380,7 +387,6 @@ if [[ "$binary_log" == true ]]; then
     if [[ "$found" == false ]]; then
         msbuild_args[${#msbuild_args[*]}]="/bl:$log_dir/Build.binlog"
     fi
-    toolset_build_args[${#toolset_build_args[*]}]="/bl:$log_dir/Build.repotasks.binlog"
 elif [[ "$ci" == true ]]; then
     # Ensure the artifacts/log directory isn't empty to avoid warnings.
     touch "$log_dir/empty.log"
@@ -399,25 +405,5 @@ InitializeToolset
 
 restore=$_tmp_restore=
 
-if [ ${#commandline_args[@]} -gt 0 ]; then
-  toolset_build_args+=("${commandline_args[@]}")
-fi
-
-if [ "$build_repo_tasks" = true ]; then
-    MSBuild $_InitializeToolset \
-        -p:RepoRoot="$repo_root" \
-        -p:Projects="$DIR/tools/RepoTasks/RepoTasks.csproj" \
-        -p:Configuration=Release \
-        -p:Restore=$run_restore \
-        -p:Build=true \
-        -clp:NoSummary \
-        ${toolset_build_args[@]+"${toolset_build_args[@]}"}
-fi
-
-if [ "$only_build_repo_tasks" != true ]; then
-    # This incantation avoids unbound variable issues if msbuild_args is empty
-    # https://stackoverflow.com/questions/7577052/bash-empty-array-expansion-with-set-u
-    MSBuild $_InitializeToolset -p:RepoRoot="$repo_root" ${msbuild_args[@]+"${msbuild_args[@]}"}
-fi
-
+MSBuild $_InitializeToolset -p:RepoRoot="$repo_root" ${msbuild_args[@]+"${msbuild_args[@]}"}
 ExitWithExitCode 0

@@ -31,7 +31,7 @@ export function attachWebRendererInterop(
 
   if (jsComponentParameters && jsComponentInitializers && Object.keys(jsComponentParameters).length > 0) {
     const manager = getInteropMethods(rendererId);
-    enableJSRootComponents(manager, jsComponentParameters, jsComponentInitializers);
+    enableJSRootComponents(rendererId, manager, jsComponentParameters, jsComponentInitializers);
   }
 
   rendererByIdResolverMap.get(rendererId)?.[0]?.();

@@ -27,6 +27,8 @@ parameters:
   #   Specifies the build script to invoke to perform the build in the repo. The default
   #   './build.sh' should work for typical Arcade repositories, but this is customizable for
   #   difficult situations.
+  # buildArguments: ''
+  #   Specifies additional build arguments to pass to the build script.
   # jobProperties: {}
   #   A list of job properties to inject at the top level, for potential extensibility beyond
   #   container and pool.
@@ -58,19 +60,19 @@ jobs:
       pool:
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           name: $[replace(replace(eq(contains(coalesce(variables['System.PullRequest.TargetBranch'], variables['Build.SourceBranch'], 'refs/heads/main'), 'release'), 'true'), True, 'NetCore-Svc-Public' ), False, 'NetCore-Public')]
-          demands: ImageOverride -equals build.ubuntu.2004.amd64
+          demands: ImageOverride -equals build.azurelinux.3.amd64.open
         ${{ if eq(variables['System.TeamProject'], 'internal') }}:
           name: $[replace(replace(eq(contains(coalesce(variables['System.PullRequest.TargetBranch'], variables['Build.SourceBranch'], 'refs/heads/main'), 'release'), 'true'), True, 'NetCore1ESPool-Svc-Internal'), False, 'NetCore1ESPool-Internal')]
-          image: 1es-mariner-2
+          image: build.azurelinux.3.amd64
           os: linux
     ${{ else }}:
       pool:
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           name: $[replace(replace(eq(contains(coalesce(variables['System.PullRequest.TargetBranch'], variables['Build.SourceBranch'], 'refs/heads/main'), 'release'), 'true'), True, 'NetCore-Svc-Public' ), False, 'NetCore-Public')]
-          demands: ImageOverride -equals Build.Ubuntu.2204.Amd64.Open
+          demands: ImageOverride -equals build.azurelinux.3.amd64.open
         ${{ if eq(variables['System.TeamProject'], 'internal') }}:
           name: $[replace(replace(eq(contains(coalesce(variables['System.PullRequest.TargetBranch'], variables['Build.SourceBranch'], 'refs/heads/main'), 'release'), 'true'), True, 'NetCore1ESPool-Svc-Internal'), False, 'NetCore1ESPool-Internal')]
-          demands: ImageOverride -equals Build.Ubuntu.2204.Amd64
+          demands: ImageOverride -equals build.azurelinux.3.amd64
   ${{ if ne(parameters.platform.pool, '') }}:
     pool: ${{ parameters.platform.pool }}
 

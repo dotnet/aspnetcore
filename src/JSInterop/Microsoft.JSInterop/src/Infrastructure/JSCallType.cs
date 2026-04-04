@@ -16,7 +16,7 @@ public enum JSCallType : int
     /// <summary>
     /// Represents a constructor function invocation with the <c>new</c> operator.
     /// </summary>
-    NewCall = 2,
+    ConstructorCall = 2,
 
     /// <summary>
     /// Represents reading a property value.

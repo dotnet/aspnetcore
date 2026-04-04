@@ -19,6 +19,12 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
         _fixture = fixture;
     }
 
+    public class UserStoreTestDbContext : IdentityDbContext
+    {
+        public UserStoreTestDbContext(DbContextOptions<UserStoreTestDbContext> options) : base(options)
+        { }
+    }
+
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
@@ -38,9 +44,9 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
         }
     }
 
-    private IdentityDbContext CreateContext()
+    private UserStoreTestDbContext CreateContext()
     {
-        var db = DbUtil.Create<IdentityDbContext>(_fixture.Connection);
+        var db = DbUtil.Create<UserStoreTestDbContext>(_fixture.Connection);
         db.Database.EnsureCreated();
         return db;
     }
@@ -52,18 +58,18 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
 
     protected override void AddUserStore(IServiceCollection services, object context = null)
     {
-        services.AddSingleton<IUserStore<IdentityUser>>(new UserStore<IdentityUser, IdentityRole, IdentityDbContext>((IdentityDbContext)context));
+        services.AddSingleton<IUserStore<IdentityUser>>(new UserStore<IdentityUser, IdentityRole, UserStoreTestDbContext>((UserStoreTestDbContext)context));
     }
 
     protected override void AddRoleStore(IServiceCollection services, object context = null)
     {
-        services.AddSingleton<IRoleStore<IdentityRole>>(new RoleStore<IdentityRole, IdentityDbContext>((IdentityDbContext)context));
+        services.AddSingleton<IRoleStore<IdentityRole>>(new RoleStore<IdentityRole, UserStoreTestDbContext>((UserStoreTestDbContext)context));
     }
 
     [Fact]
     public async Task SqlUserStoreMethodsThrowWhenDisposedTest()
     {
-        var store = new UserStore(new IdentityDbContext(new DbContextOptionsBuilder<IdentityDbContext>().Options));
+        var store = new UserStore(new UserStoreTestDbContext(new DbContextOptionsBuilder<UserStoreTestDbContext>().Options));
         store.Dispose();
         await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.AddClaimsAsync(null, null));
         await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.AddLoginAsync(null, null));
@@ -97,7 +103,7 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
     public async Task UserStorePublicNullCheckTest()
     {
         Assert.Throws<ArgumentNullException>("context", () => new UserStore(null));
-        var store = new UserStore(new IdentityDbContext(new DbContextOptionsBuilder<IdentityDbContext>().Options));
+        var store = new UserStore(new UserStoreTestDbContext(new DbContextOptionsBuilder<UserStoreTestDbContext>().Options));
         await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetUserIdAsync(null));
         await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetUserNameAsync(null));
         await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.SetUserNameAsync(null, null));
@@ -144,6 +150,9 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
         await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetTwoFactorEnabledAsync(null));
         await Assert.ThrowsAsync<ArgumentNullException>("user",
             async () => await store.SetTwoFactorEnabledAsync(null, true));
+        await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.RedeemCodeAsync(user: null, code: "fake", default));
+        await Assert.ThrowsAsync<ArgumentNullException>("code", async () => await store.RedeemCodeAsync(new IdentityUser("fake"), code: null, default));
+        await Assert.ThrowsAsync<ArgumentException>("code", async () => await store.RedeemCodeAsync(new IdentityUser("fake"), code: "", default));
         await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetAccessFailedCountAsync(null));
         await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetLockoutEnabledAsync(null));
         await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.SetLockoutEnabledAsync(null, false));
@@ -192,7 +201,6 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
         userB.Email = "dupe@dupe.com";
         IdentityResultAssert.IsSuccess(await manager.CreateAsync(userB, "password"));
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await manager.FindByEmailAsync("dupe@dupe.com"));
-
     }
 
     [ConditionalFact]
@@ -208,17 +216,17 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
     [ConditionalFact]
     public async Task ConcurrentUpdatesWillFail()
     {
-        var options = new DbContextOptionsBuilder().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
+        var options = new DbContextOptionsBuilder<UserStoreTestDbContext>().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
         var user = CreateTestUser();
-        using (var db = new IdentityDbContext(options))
+        using (var db = new UserStoreTestDbContext(options))
         {
             db.Database.EnsureCreated();
 
             var manager = CreateManager(db);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
         }
-        using (var db = new IdentityDbContext(options))
-        using (var db2 = new IdentityDbContext(options))
+        using (var db = new UserStoreTestDbContext(options))
+        using (var db2 = new UserStoreTestDbContext(options))
         {
             var manager1 = CreateManager(db);
             var manager2 = CreateManager(db2);
@@ -239,17 +247,17 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
     [ConditionalFact]
     public async Task ConcurrentUpdatesWillFailWithDetachedUser()
     {
-        var options = new DbContextOptionsBuilder().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
+        var options = new DbContextOptionsBuilder<UserStoreTestDbContext>().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
         var user = CreateTestUser();
-        using (var db = new IdentityDbContext(options))
+        using (var db = new UserStoreTestDbContext(options))
         {
             db.Database.EnsureCreated();
 
             var manager = CreateManager(db);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
         }
-        using (var db = new IdentityDbContext(options))
-        using (var db2 = new IdentityDbContext(options))
+        using (var db = new UserStoreTestDbContext(options))
+        using (var db2 = new UserStoreTestDbContext(options))
         {
             var manager1 = CreateManager(db);
             var manager2 = CreateManager(db2);
@@ -268,17 +276,17 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
     [ConditionalFact]
     public async Task DeleteAModifiedUserWillFail()
     {
-        var options = new DbContextOptionsBuilder().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
+        var options = new DbContextOptionsBuilder<UserStoreTestDbContext>().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
         var user = CreateTestUser();
-        using (var db = new IdentityDbContext(options))
+        using (var db = new UserStoreTestDbContext(options))
         {
             db.Database.EnsureCreated();
 
             var manager = CreateManager(db);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
         }
-        using (var db = new IdentityDbContext(options))
-        using (var db2 = new IdentityDbContext(options))
+        using (var db = new UserStoreTestDbContext(options))
+        using (var db2 = new UserStoreTestDbContext(options))
         {
             var manager1 = CreateManager(db);
             var manager2 = CreateManager(db2);
@@ -298,17 +306,17 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
     [ConditionalFact]
     public async Task ConcurrentRoleUpdatesWillFail()
     {
-        var options = new DbContextOptionsBuilder().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
+        var options = new DbContextOptionsBuilder<UserStoreTestDbContext>().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
         var role = new IdentityRole(Guid.NewGuid().ToString());
-        using (var db = new IdentityDbContext(options))
+        using (var db = new UserStoreTestDbContext(options))
         {
             db.Database.EnsureCreated();
 
             var manager = CreateRoleManager(db);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
         }
-        using (var db = new IdentityDbContext(options))
-        using (var db2 = new IdentityDbContext(options))
+        using (var db = new UserStoreTestDbContext(options))
+        using (var db2 = new UserStoreTestDbContext(options))
         {
             var manager1 = CreateRoleManager(db);
             var manager2 = CreateRoleManager(db2);
@@ -329,17 +337,17 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
     [ConditionalFact]
     public async Task ConcurrentRoleUpdatesWillFailWithDetachedRole()
     {
-        var options = new DbContextOptionsBuilder().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
+        var options = new DbContextOptionsBuilder<UserStoreTestDbContext>().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
         var role = new IdentityRole(Guid.NewGuid().ToString());
-        using (var db = new IdentityDbContext(options))
+        using (var db = new UserStoreTestDbContext(options))
         {
             db.Database.EnsureCreated();
 
             var manager = CreateRoleManager(db);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
         }
-        using (var db = new IdentityDbContext(options))
-        using (var db2 = new IdentityDbContext(options))
+        using (var db = new UserStoreTestDbContext(options))
+        using (var db2 = new UserStoreTestDbContext(options))
         {
             var manager1 = CreateRoleManager(db);
             var manager2 = CreateRoleManager(db2);
@@ -359,17 +367,17 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
     [ConditionalFact]
     public async Task DeleteAModifiedRoleWillFail()
     {
-        var options = new DbContextOptionsBuilder().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
+        var options = new DbContextOptionsBuilder<UserStoreTestDbContext>().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
         var role = new IdentityRole(Guid.NewGuid().ToString());
-        using (var db = new IdentityDbContext(options))
+        using (var db = new UserStoreTestDbContext(options))
         {
             db.Database.EnsureCreated();
 
             var manager = CreateRoleManager(db);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
         }
-        using (var db = new IdentityDbContext(options))
-        using (var db2 = new IdentityDbContext(options))
+        using (var db = new UserStoreTestDbContext(options))
+        using (var db2 = new UserStoreTestDbContext(options))
         {
             var manager1 = CreateRoleManager(db);
             var manager2 = CreateRoleManager(db2);

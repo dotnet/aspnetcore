@@ -4,8 +4,6 @@ This file contains a list of all the external dependencies used in ASP.NET Core.
 are expressed as `<LatestPackageReference>`. These are used as inputs reference resolution, and
 may be turned into `<PackageReference>` items in projects.
 
-`<BaselinePackageReference>` items should not be in this file. Those items appear in Baseline.Designer.props
-and are generated based on the last package release.
 -->
 <Project>
   <PropertyGroup>
@@ -27,6 +25,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.CSharp" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Memory" />
+    <LatestPackageReference Include="Microsoft.Extensions.Caching.Hybrid" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration.CommandLine" />
@@ -80,6 +79,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Diagnostics.DiagnosticSource" />
     <LatestPackageReference Include="System.Diagnostics.EventLog" />
     <LatestPackageReference Include="System.DirectoryServices.Protocols" />
+    <LatestPackageReference Include="System.Formats.Cbor" />
     <LatestPackageReference Include="System.IdentityModel.Tokens.Jwt" />
     <LatestPackageReference Include="System.IO.Pipelines" />
     <LatestPackageReference Include="System.Memory" />
@@ -117,6 +117,11 @@ and are generated based on the last package release.
     <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-arm64" />
     <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.freebsd-x64" />
     <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.freebsd-arm64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.openbsd-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.openbsd-arm64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.illumos-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.solaris-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.haiku-x64" />
     <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.$(TargetRuntimeIdentifier)" Condition=" '$(DotNetBuildSourceOnly)' == 'true'" />
 
     <!-- Crossgen2 compiler -->
@@ -134,6 +139,11 @@ and are generated based on the last package release.
     <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-musl-arm64" />
     <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.freebsd-x64" />
     <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.freebsd-arm64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.openbsd-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.openbsd-arm64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.illumos-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.solaris-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.haiku-x64" />
     <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.$(TargetRuntimeIdentifier)" Condition=" '$(DotNetBuildSourceOnly)' == 'true' " />
 
     <!-- Remove duplicates potentially introduced by the 'unknown' target runtime identifier in source-only modes. -->
@@ -253,7 +263,26 @@ and are generated based on the last package release.
     -->
     <LatestPackageReference Update="@(LatestPackageReference->WithMetadataValue('Version', ''))">
       <Version
-          Condition=" $([System.String]::new('%(Identity)').StartsWith('Microsoft.NETCore.App.Runtime.')) or $([System.String]::new('%(Identity)').StartsWith('Microsoft.NETCore.App.Crossgen2.'))">$(MicrosoftNETCoreAppRuntimeVersion)</Version>
+          Condition=" $([System.String]::new('%(Identity)').StartsWith('Microsoft.NETCore.App.Runtime.')) or $([System.String]::new('%(Identity)').StartsWith('Microsoft.NETCore.App.Crossgen2.'))">$(MicrosoftNETCoreAppRefVersion)</Version>
+    </LatestPackageReference>
+  </ItemGroup>
+
+  <!-- Replicates the same overriding of versions that occurs on Roslyn package versions for source only builds -->
+  <ItemGroup Label="Source only build overrides" Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <LatestPackageReference Update="Microsoft.CodeAnalysis.Common">
+      <Version>$(MicrosoftCodeAnalysisVersion_LatestVS)</Version>
+    </LatestPackageReference>
+    <LatestPackageReference Update="Microsoft.CodeAnalysis.CSharp">
+      <Version>$(MicrosoftCodeAnalysisVersion_LatestVS)</Version>
+    </LatestPackageReference>
+    <LatestPackageReference Update="Microsoft.CodeAnalysis.CSharp.Workspaces">
+      <Version>$(MicrosoftCodeAnalysisVersion_LatestVS)</Version>
+    </LatestPackageReference>
+    <LatestPackageReference Update="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore">
+      <Version>$(MicrosoftCodeAnalysisVersion_LatestVS)</Version>
+    </LatestPackageReference>
+    <LatestPackageReference Update="Microsoft.CodeAnalysis.Razor">
+      <Version>$(MicrosoftCodeAnalysisVersion_LatestVS)</Version>
     </LatestPackageReference>
   </ItemGroup>
 </Project>

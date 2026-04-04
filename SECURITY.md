@@ -6,9 +6,9 @@ The .NET Core and ASP.NET Core support policy, including supported versions can 
 
 ## Reporting a Vulnerability
 
-Security issues and bugs should be reported privately, via email, to the Microsoft Security Response Center (MSRC) through https://msrc.microsoft.com or by emailing secure@microsoft.com. 
-You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your 
-original message. Further information, including the MSRC PGP key, can be found in the [MSRC Report an Issue FAQ](https://www.microsoft.com/en-us/msrc/faqs-report-an-issue).
+Security issues and bugs should be reported privately to the Microsoft Security Response Center (MSRC), via the [MSRC Researcher Portal](https://msrc.microsoft.com/report/vulnerability/new).
+You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your
+original message. Further information can be found in the [MSRC Report an Issue FAQ](https://www.microsoft.com/msrc/faqs-report-an-issue).
 
 Reports via MSRC may qualify for the .NET Core Bug Bounty. Details of the .NET Core Bug Bounty including terms and conditions are at [https://aka.ms/corebounty](https://aka.ms/corebounty).
 

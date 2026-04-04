@@ -3,8 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions;
@@ -18,7 +21,7 @@ namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 // documents for cases where there's no class/DTO to work on. Typical use case: backend not built in
 // .NET or architecture doesn't contain a shared DTO layer.
 [JsonConverter(typeof(JsonPatchDocumentConverter))]
-public class JsonPatchDocument : IJsonPatchDocument
+public class JsonPatchDocument : IJsonPatchDocument, IEndpointParameterMetadataProvider
 {
     public List<Operation> Operations { get; private set; }
 
@@ -27,7 +30,7 @@ public class JsonPatchDocument : IJsonPatchDocument
 
     public JsonPatchDocument()
     {
-        Operations = new List<Operation>();
+        Operations = [];
         SerializerOptions = JsonSerializerOptions.Default;
     }
 
@@ -205,17 +208,27 @@ public class JsonPatchDocument : IJsonPatchDocument
         {
             foreach (var op in Operations)
             {
-                var untypedOp = new Operation();
-
-                untypedOp.op = op.op;
-                untypedOp.value = op.value;
-                untypedOp.path = op.path;
-                untypedOp.from = op.from;
+                var untypedOp = new Operation
+                {
+                    op = op.op,
+                    value = op.value,
+                    path = op.path,
+                    from = op.from
+                };
 
                 allOps.Add(untypedOp);
             }
         }
 
         return allOps;
+    }
+
+    /// <inheritdoc/>
+    static void IEndpointParameterMetadataProvider.PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(parameter);
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Metadata.Add(new AcceptsMetadata(["application/json-patch+json"], parameter.ParameterType));
     }
 }

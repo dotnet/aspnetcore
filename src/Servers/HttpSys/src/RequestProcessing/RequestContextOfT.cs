@@ -42,18 +42,11 @@ internal sealed partial class RequestContext<TContext> : RequestContext where TC
 
             TContext? context = default;
             Exception? applicationException = null;
-            messagePump.IncrementOutstandingRequest();
             try
             {
                 context = application.CreateContext(Features);
                 try
                 {
-                    if (Server.Options.TlsClientHelloBytesCallback is not null && Server.TlsListener is not null
-                        && Request.IsHttps)
-                    {
-                        Server.TlsListener.InvokeTlsClientHelloCallback(Request.RawConnectionId, Features, Request.GetAndInvokeTlsClientHelloCallback);
-                    }
-
                     await application.ProcessRequestAsync(context);
                     await CompleteAsync();
                 }
@@ -113,15 +106,9 @@ internal sealed partial class RequestContext<TContext> : RequestContext where TC
             }
             finally
             {
-                if (context != null)
+                if (context is not null)
                 {
                     application.DisposeContext(context, applicationException);
-                }
-
-                if (messagePump.DecrementOutstandingRequest() == 0 && messagePump.Stopping)
-                {
-                    Log.RequestsDrained(Logger);
-                    messagePump.SetShutdownSignal();
                 }
 
                 Dispose();

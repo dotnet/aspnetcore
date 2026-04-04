@@ -419,11 +419,8 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         {
             _pipeWriter.Abort();
 
-            if (_fakeMemoryOwner != null)
-            {
-                _fakeMemoryOwner.Dispose();
-                _fakeMemoryOwner = null;
-            }
+            _fakeMemoryOwner?.Dispose();
+            _fakeMemoryOwner = null;
 
             if (_fakeMemory != null)
             {

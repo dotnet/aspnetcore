@@ -97,7 +97,7 @@ internal sealed class HubMethodDescriptor
                         {
                             if (keyedServiceProvider.IsKeyedService(GetServiceType(p.ParameterType), keyedServicesAttribute.Key))
                             {
-                                KeyedServiceKeys ??= new List<(int, object)>();
+                                KeyedServiceKeys ??= new List<(int, object?)>();
                                 KeyedServiceKeys.Add((index, keyedServicesAttribute.Key));
                                 MarkServiceParameter(index);
                             }
@@ -158,7 +158,7 @@ internal sealed class HubMethodDescriptor
 
     public List<Type>? StreamingParameters { get; private set; }
 
-    public List<(int, object)>? KeyedServiceKeys { get; private set; }
+    public List<(int, object?)>? KeyedServiceKeys { get; private set; }
 
     public ObjectMethodExecutor MethodExecutor { get; }
 

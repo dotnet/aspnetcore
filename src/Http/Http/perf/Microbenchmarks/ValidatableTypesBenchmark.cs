@@ -1,3 +1,5 @@
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
@@ -5,9 +7,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using BenchmarkDotNet.Attributes;
-using Microsoft.AspNetCore.Http.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Validation;
 
 namespace Microsoft.AspNetCore.Http.Microbenchmarks;
 
@@ -242,6 +244,7 @@ public class ValidatableTypeInfoBenchmark
 
     private class MockValidatableTypeInfo(Type type, ValidatablePropertyInfo[] members) : ValidatableTypeInfo(type, members)
     {
+        protected override ValidationAttribute[] GetValidationAttributes() => [];
     }
 
     private class MockValidatablePropertyInfo(

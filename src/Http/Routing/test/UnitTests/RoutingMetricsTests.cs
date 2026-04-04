@@ -48,6 +48,34 @@ public class RoutingMetricsTests
             m => AssertSuccess(m, "/{hi}", fallback: false));
     }
 
+    [Fact]
+    public async Task Match_EmptyRoute_ResolveForwardSlash()
+    {
+        // Arrange
+        var routeEndpointBuilder = new RouteEndpointBuilder(c => Task.CompletedTask, RoutePatternFactory.Parse(string.Empty), order: 0);
+        var meterFactory = new TestMeterFactory();
+        var middleware = CreateMiddleware(
+            matcherFactory: new TestMatcherFactory(true, c =>
+            {
+                c.SetEndpoint(routeEndpointBuilder.Build());
+            }),
+            meterFactory: meterFactory);
+        var httpContext = CreateHttpContext();
+        var meter = meterFactory.Meters.Single();
+
+        using var routingMatchAttemptsCollector = new MetricCollector<long>(meterFactory, RoutingMetrics.MeterName, "aspnetcore.routing.match_attempts");
+
+        // Act
+        await middleware.Invoke(httpContext);
+
+        // Assert
+        Assert.Equal(RoutingMetrics.MeterName, meter.Name);
+        Assert.Null(meter.Version);
+
+        Assert.Collection(routingMatchAttemptsCollector.GetMeasurementSnapshot(),
+            m => AssertSuccess(m, "/", fallback: false));
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

@@ -97,7 +97,7 @@ An entire test project can be configured to skip specific platforms using the `<
 
 ```xml
 <SkipHelixQueues>
-    $(HelixQueueArmDebian12);
+    $(HelixQueueArmDebian);
 </SkipHelixQueues>
 ```
 
@@ -109,7 +109,7 @@ When tests are run as part of the CI infrastructure, a number of different timeo
 
 ##### Helix job timeout
 
-When queuing test jobs to the Helix infrastructure, a timeout value is passed that the entire Helix job must complete within, i.e. that job running on a single queue. This default value is set in [eng\targets\Helix.props](/eng/targets/Helix.props): 
+When queuing test jobs to the Helix infrastructure, a timeout value is passed that the entire Helix job must complete within, i.e. that job running on a single queue. This default value is set in [eng\targets\Helix.props](/eng/targets/Helix.props):
 
 ```xml
 <HelixTimeout>00:45:00</HelixTimeout>

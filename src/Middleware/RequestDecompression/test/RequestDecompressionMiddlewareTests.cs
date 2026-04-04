@@ -75,6 +75,14 @@ public class RequestDecompressionMiddlewareTests
         return await GetCompressedContent(compressorDelegate, uncompressedBytes);
     }
 
+    private static async Task<byte[]> GetZstdCompressedContent(byte[] uncompressedBytes)
+    {
+        static Stream compressorDelegate(Stream compressedContent) =>
+            new ZstandardStream(compressedContent, CompressionMode.Compress);
+
+        return await GetCompressedContent(compressorDelegate, uncompressedBytes);
+    }
+
     [Fact]
     public async Task Request_ContentEncodingBrotli_Decompressed()
     {
@@ -130,6 +138,22 @@ public class RequestDecompressionMiddlewareTests
         var contentEncoding = "gzip";
         var uncompressedBytes = GetUncompressedContent();
         var compressedBytes = await GetGZipCompressedContent(uncompressedBytes);
+
+        // Act
+        var (logMessages, decompressedBytes) = await InvokeMiddleware(compressedBytes, new[] { contentEncoding });
+
+        // Assert
+        AssertDecompressedWithLog(logMessages, contentEncoding.ToLowerInvariant());
+        Assert.Equal(uncompressedBytes, decompressedBytes);
+    }
+
+    [Fact]
+    public async Task Request_ContentEncodingZstd_Decompressed()
+    {
+        // Arrange
+        var contentEncoding = "zstd";
+        var uncompressedBytes = GetUncompressedContent();
+        var compressedBytes = await GetZstdCompressedContent(uncompressedBytes);
 
         // Act
         var (logMessages, decompressedBytes) = await InvokeMiddleware(compressedBytes, new[] { contentEncoding });
@@ -499,8 +523,8 @@ public class RequestDecompressionMiddlewareTests
         if (exceedsLimit)
         {
             Assert.NotNull(exception);
-            Assert.IsAssignableFrom<InvalidOperationException>(exception);
-            Assert.Equal("The maximum number of bytes have been read.", exception.Message);
+            Assert.IsAssignableFrom<BadHttpRequestException>(exception);
+            Assert.Equal(StatusCodes.Status413PayloadTooLarge, ((BadHttpRequestException)exception).StatusCode);
         }
         else
         {
@@ -583,8 +607,8 @@ public class RequestDecompressionMiddlewareTests
         if (exceedsLimit)
         {
             Assert.NotNull(exception);
-            Assert.IsAssignableFrom<InvalidOperationException>(exception);
-            Assert.Equal("The maximum number of bytes have been read.", exception.Message);
+            Assert.IsAssignableFrom<BadHttpRequestException>(exception);
+            Assert.Equal(StatusCodes.Status413PayloadTooLarge, ((BadHttpRequestException)exception).StatusCode);
         }
         else
         {

@@ -234,7 +234,8 @@ const testObject = {
     },
     set setOnlyProperty(value) {
         this.num = value;
-    }
+    },
+    nullProperty: null
 }
 
 window.jsInteropTests = {
@@ -253,6 +254,7 @@ window.jsInteropTests = {
   receiveDotNetObjectByRefAsync: receiveDotNetObjectByRefAsync,
   receiveDotNetStreamReference: receiveDotNetStreamReference,
   receiveDotNetStreamWrapperReference: receiveDotNetStreamWrapperReference,
+  returnElementReference: returnElementReference,
   TestClass: TestClass,
   nonConstructorFunction: () => { return 42; },
   testObject: testObject,
@@ -370,6 +372,10 @@ function returnJSObjectReference() {
       DotNet.disposeJSObjectReference(this);
     },
   };
+}
+
+function returnElementReference(element) {
+  return element;
 }
 
 function addViaJSObjectReference(jsObjectReference, a, b) {

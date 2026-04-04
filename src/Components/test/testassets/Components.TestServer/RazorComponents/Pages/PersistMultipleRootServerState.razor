@@ -1,0 +1,46 @@
+﻿@page "/persist-multiple-root-component-state-declaratively"
+@using Microsoft.AspNetCore.Components.Web
+@using TestContentPackage
+
+<h1>Persist multiple State Components declaratively</h1>
+
+@if (Server.GetValueOrDefault())
+{
+    <strong>Server Persist State Component 1</strong>
+    <DeclarativePersistStateComponent @rendermode="@RenderMode.InteractiveServer" @key="1" InitialValue="restored 1" KeyName="server-1" />
+    <hr />
+    <strong>Server Persist State Component 2</strong>
+    <DeclarativePersistStateComponent @rendermode="@RenderMode.InteractiveServer" @key="2" InitialValue="restored 2" KeyName="server-2" />
+    <hr />
+}
+
+@if (WebAssembly.GetValueOrDefault())
+{
+    <strong>WebAssembly Persist State Component 1</strong>
+    <DeclarativePersistStateComponent @rendermode="@RenderMode.InteractiveWebAssembly" @key="1" InitialValue="restored 1" KeyName="wasm-1" />
+    <hr />
+    <strong>WebAssembly Persist State Component 2</strong>
+    <DeclarativePersistStateComponent @rendermode="@RenderMode.InteractiveWebAssembly" @key="2" InitialValue="restored 2" KeyName="wasm-2" />
+    <hr />
+}
+
+@if (Auto.GetValueOrDefault())
+{
+    <strong>Auto Persist State Component 1</strong>
+    <DeclarativePersistStateComponent @rendermode="@RenderMode.InteractiveAuto" @key="1" InitialValue="restored 1" KeyName="auto-1" />
+    <hr />
+    <strong>Auto Persist State Component 2</strong>
+    <DeclarativePersistStateComponent @rendermode="@RenderMode.InteractiveAuto" @key="2" InitialValue="restored 2" KeyName="auto-2" />
+    <hr />
+}
+
+@code {
+    [Parameter, SupplyParameterFromQuery(Name = "server")]
+    public bool? Server { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "wasm")]
+    public bool? WebAssembly { get; set; }
+
+    [Parameter, SupplyParameterFromQuery(Name = "auto")]
+    public bool? Auto { get; set; }
+}

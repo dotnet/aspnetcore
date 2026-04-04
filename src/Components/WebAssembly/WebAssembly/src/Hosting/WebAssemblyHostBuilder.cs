@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
@@ -30,6 +31,13 @@ public sealed class WebAssemblyHostBuilder
     private Func<IServiceProvider> _createServiceProvider;
     private RootTypeCache? _rootComponentCache;
     private string? _persistedState;
+    private ServiceProviderOptions? _serviceProviderOptions;
+
+    [FeatureSwitchDefinition("System.Diagnostics.Metrics.Meter.IsSupported")]
+    internal static bool IsMeterSupported { get; } =
+        AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out var isSupported) ? isSupported : false;
+
+    internal static bool IsMeterEnabled { get; set; } = IsMeterSupported;
 
     /// <summary>
     /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> using the most common
@@ -50,6 +58,11 @@ public sealed class WebAssemblyHostBuilder
         var builder = new WebAssemblyHostBuilder(InternalJSImportMethods.Instance);
 
         WebAssemblyCultureProvider.Initialize();
+
+        // Add environment variables to configuration by default.
+        // This aligns WebAssembly behavior with server-side ASP.NET Core applications
+        // where environment variables are automatically included in IConfiguration.
+        builder.Configuration.AddEnvironmentVariables();
 
         // Right now we don't have conventions or behaviors that are specific to this method
         // however, making this the default for the template allows us to add things like that
@@ -91,7 +104,16 @@ public sealed class WebAssemblyHostBuilder
 
         _createServiceProvider = () =>
         {
-            return Services.BuildServiceProvider(validateScopes: WebAssemblyHostEnvironmentExtensions.IsDevelopment(hostEnvironment));
+            var isDevelopment = WebAssemblyHostEnvironmentExtensions.IsDevelopment(hostEnvironment);
+
+            // Use custom options if provided, otherwise use defaults
+            var options = _serviceProviderOptions ?? new ServiceProviderOptions
+            {
+                ValidateScopes = isDevelopment,
+                ValidateOnBuild = isDevelopment
+            };
+
+            return Services.BuildServiceProvider(options);
         };
     }
 
@@ -175,6 +197,7 @@ public sealed class WebAssemblyHostBuilder
         var hostEnvironment = new WebAssemblyHostEnvironment(applicationEnvironment, WebAssemblyNavigationManager.Instance.BaseUri);
 
         Services.AddSingleton<IWebAssemblyHostEnvironment>(hostEnvironment);
+        Services.AddSingleton<IHostEnvironment>(sp => new WebAssemblyHostEnvironmentAdapter(sp.GetRequiredService<IWebAssemblyHostEnvironment>()));
 
         var configFiles = new[]
         {
@@ -276,6 +299,17 @@ public sealed class WebAssemblyHostBuilder
         };
     }
 
+    // In WebAssemblyHostBuilder class:
+    /// <summary>
+    /// Configures the service provider options for this host builder.
+    /// </summary>
+    /// <param name="options">The service provider options to use.</param>
+    public WebAssemblyHostBuilder UseServiceProviderOptions(ServiceProviderOptions options)
+    {
+        _serviceProviderOptions = options ?? throw new ArgumentNullException(nameof(options));
+        return this;
+    }
+
     /// <summary>
     /// Builds a <see cref="WebAssemblyHost"/> instance based on the configuration of this builder.
     /// </summary>
@@ -294,6 +328,8 @@ public sealed class WebAssemblyHostBuilder
         return new WebAssemblyHost(this, services, scope, _persistedState);
     }
 
+    [DynamicDependency(JsonSerialized, typeof(DefaultAntiforgeryStateProvider))]
+    [DynamicDependency(JsonSerialized, typeof(AntiforgeryRequestToken))]
     internal void InitializeDefaultServices()
     {
         Services.AddSingleton<IJSRuntime>(DefaultWebAssemblyJSRuntime.Instance);
@@ -308,6 +344,7 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSupplyValueFromPersistentComponentStateProvider();
         Services.AddSingleton<IErrorBoundaryLogger, WebAssemblyErrorBoundaryLogger>();
         Services.AddSingleton<ResourceCollectionProvider>();
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<ResourceCollectionProvider>(Services, RenderMode.InteractiveWebAssembly);
         Services.AddLogging(builder =>
         {
             builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
@@ -315,5 +352,13 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AntiforgeryStateProvider>(Services, RenderMode.InteractiveWebAssembly);
         Services.AddSupplyValueFromQueryProvider();
+        
+        // Register metrics and tracing when explicitly enabled (opt-in via feature switch)
+        if (IsMeterSupported && IsMeterEnabled)
+        {
+            ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(Services);
+            ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(Services);
+        }
+        Services.AddSingleton<HostedServiceExecutor>();
     }
 }

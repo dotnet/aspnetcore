@@ -34,7 +34,9 @@ internal sealed class FileProviderRazorProjectFileSystem : RazorProjectFileSyste
         path = NormalizeAndEnsureValidPath(path);
         var fileInfo = FileProvider.GetFileInfo(path);
 
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
         return new FileProviderRazorProjectItem(fileInfo, basePath: string.Empty, filePath: path, root: _hostingEnvironment.ContentRootPath, fileKind);
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
     }
 
     public override IEnumerable<RazorProjectItem> EnumerateItems(string path)
@@ -63,7 +65,9 @@ internal sealed class FileProviderRazorProjectFileSystem : RazorProjectFileSyste
                 {
                     var filePath = prefix + "/" + fileInfo.Name;
 
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
                     yield return new FileProviderRazorProjectItem(fileInfo, basePath, filePath: filePath, root: _hostingEnvironment.ContentRootPath);
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
                 }
             }
         }

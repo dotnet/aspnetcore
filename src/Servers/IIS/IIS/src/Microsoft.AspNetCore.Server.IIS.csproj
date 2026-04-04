@@ -45,7 +45,7 @@
   </Target>
 
   <ItemGroup Condition=" '$(UseIisNativeAssets)' == 'true' ">
-    <!-- Only build the target platform for product build (DotNetBuild=true). -->
+    <!-- Only build the target platform in .NET product build mode. -->
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj" Platform="x64" Condition="'$(DotNetBuild)' != 'true'" />
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj" Platform="Win32" Condition="'$(DotNetBuild)' != 'true'" />
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj" Platform="ARM64" Condition="'$(DotNetBuild)' != 'true'" />
@@ -55,9 +55,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />

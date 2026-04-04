@@ -9,6 +9,9 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Razor" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Views\Microsoft.AspNetCore.Mvc.Views.Microbenchmarks.csproj" />
     <Reference Include="BenchmarkDotNet" />
 

@@ -21,6 +21,7 @@ Microsoft.AspNetCore.Routing.RouteData</Description>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Features" />
   </ItemGroup>
 
   <ItemGroup>

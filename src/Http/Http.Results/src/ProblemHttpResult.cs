@@ -4,6 +4,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Reflection;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Metadata;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
@@ -11,7 +14,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// An <see cref="IResult"/> that on execution will write Problem Details
 /// HTTP API responses based on <see href="https://tools.ietf.org/html/rfc7807"/>
 /// </summary>
-public sealed class ProblemHttpResult : IResult, IStatusCodeHttpResult, IContentTypeHttpResult, IValueHttpResult, IValueHttpResult<ProblemDetails>
+public sealed class ProblemHttpResult : IResult, IEndpointMetadataProvider, IStatusCodeHttpResult, IContentTypeHttpResult, IValueHttpResult, IValueHttpResult<ProblemDetails>
 {
     /// <summary>
     /// Creates a new <see cref="ProblemHttpResult"/> instance with
@@ -68,5 +71,14 @@ public sealed class ProblemHttpResult : IResult, IStatusCodeHttpResult, IContent
                 value: ProblemDetails,
                 ContentType);
         }
+    }
+
+    /// <inheritdoc/>
+    static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(method);
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
     }
 }

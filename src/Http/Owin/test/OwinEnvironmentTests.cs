@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.Net.Http;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 
@@ -157,6 +158,63 @@ public class OwinEnvironmentTests
 
         var orderedEnvironment = owinEnvironment.OrderBy(kv => kv.Key).ToList();
         Assert.NotNull(orderedEnvironment);
+    }
+
+    [Fact]
+    public void OwinEnvironmentRemoveCorrectlyRemovesEntryAndDoesNotImpactNextOwinEnvironment()
+    {
+        var httpContext1 = CreateContext();
+        IDictionary<string, object> env1 = new OwinEnvironment(httpContext1);
+        var initialEnv1Count = env1.Count;
+
+        Assert.True(env1.Remove("owin.RequestProtocol"));
+        Assert.Equal(initialEnv1Count, env1.Count + 1);
+        Assert.False(env1.ContainsKey("owin.RequestProtocol"));
+        foreach (var key in env1.Keys)
+        {
+            Assert.NotEqual("owin.RequestProtocol", key);
+        }
+
+        var httpContext2 = CreateContext();
+        IDictionary<string, object> env2 = new OwinEnvironment(httpContext2);
+        Assert.True(env2.ContainsKey("owin.RequestProtocol"));
+    }
+
+    [Fact]
+    public void OwinEnvironmentFeatureMapsRemoveDoesNotImpactNextOwinEnvironment()
+    {
+        var httpContext1 = CreateContext();
+        var httpContext2 = CreateContext();
+
+        var owinEnvironment1 = new OwinEnvironment(httpContext1);
+        owinEnvironment1.FeatureMaps.Remove("owin.RequestProtocol");
+
+        var owinEnvironment2 = new OwinEnvironment(httpContext2);
+        Assert.True(owinEnvironment2.FeatureMaps.ContainsKey("owin.RequestProtocol"));
+        Assert.Equal(owinEnvironment1.ToList().Count + 1, owinEnvironment2.ToList().Count);
+    }
+
+    [Fact]
+    public void OwinEnvironmentClearBehavesCorrectlyAndDoesNotImpactNextOwinEnvironment()
+    {
+        var httpContext1 = CreateContext();
+        IDictionary<string, object> owinEnvironment1 = new OwinEnvironment(httpContext1);
+        owinEnvironment1.Clear();
+        Assert.Empty(owinEnvironment1);
+
+        var httpContext2 = CreateContext();
+        IDictionary<string, object> owinEnvironment2 = new OwinEnvironment(httpContext2);
+        Assert.True(owinEnvironment2.Count != 0);
+    }
+
+    [Fact]
+    public void OwinEnvironmentAccessContextDependentFeatureBehavesCorrectly()
+    {
+        var httpContext = CreateContext();
+        IDictionary<string, object> owinEnvironment = new OwinEnvironment(httpContext);
+
+        Assert.True(owinEnvironment.TryGetValue("owin.ResponseBody", out var responseBody));
+        responseBody.Equals(httpContext.Response.Body);
     }
 
     private HttpContext CreateContext()

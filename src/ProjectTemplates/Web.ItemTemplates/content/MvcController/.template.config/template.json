@@ -10,8 +10,8 @@
     "type": "item"
   },
   "groupIdentity": "Microsoft.AspNetCore.Mvc.MvcController",
-  "precedence": "10000",
-  "identity": "Microsoft.AspNetCore.Mvc.MvcController.10.0",
+  "precedence": "11000",
+  "identity": "Microsoft.AspNetCore.Mvc.MvcController.11.0",
   "shortName": "mvccontroller",
   "sourceName": "HomeController",
   "primaryOutputs": [

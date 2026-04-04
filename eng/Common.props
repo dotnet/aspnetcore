@@ -4,6 +4,10 @@
     <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</TargetOsName>
     <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('Linux'))">linux</TargetOsName>
     <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('FreeBSD'))">freebsd</TargetOsName>
+    <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('OPENBSD'))">openbsd</TargetOsName>
+    <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('ILLUMOS'))">illumos</TargetOsName>
+    <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('SOLARIS'))">solaris</TargetOsName>
+    <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('HAIKU'))">haiku</TargetOsName>
 
     <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">x64</TargetArchitecture>
     <NativePlatform>$(TargetArchitecture)</NativePlatform>
@@ -11,7 +15,7 @@
 
     <TargetRuntimeIdentifier Condition="'$(TargetRuntimeIdentifier)' == ''">$(TargetOsName)-$(TargetArchitecture)</TargetRuntimeIdentifier>
     <PortableBuild Condition="'$(PortableBuild)' == ''">true</PortableBuild>
-    <DefaultAppHostRuntimeIdentifier Condition=" '$(DotNetBuild)' == 'true' ">$(TargetRuntimeIdentifier)</DefaultAppHostRuntimeIdentifier>
+    <DefaultAppHostRuntimeIdentifier Condition="'$(DotNetBuild)' == 'true'">$(TargetRuntimeIdentifier)</DefaultAppHostRuntimeIdentifier>
 
     <BuildNodeJS>$(BuildNodeJSUnlessSourcebuild)</BuildNodeJS>
     <BuildNodeJS Condition="'$(DotNetBuildSourceOnly)' == 'true'">false</BuildNodeJS>
@@ -44,8 +48,9 @@
       - If we're building outside of the VMR, publish these assets from the Windows job.
       - If we're building inside the VMR, publish these assets from whichever job is producing non-RID-specific artifacts.
     -->
-    <PublishAllBuildsAssetsInThisJob Condition="('$(OS)' == 'Windows_NT' and '$(DotNetBuildOrchestrator)' != 'true')
-                                                or ('$(DotNetBuildOrchestrator)' == 'true' and '$(EnableDefaultRidSpecificArtifacts)' != 'true'
+    <PublishAllBuildsAssetsInThisJob Condition="('$(OS)' == 'Windows_NT' and '$(DotNetBuildFromVMR)' != 'true')
+                                                or ('$(DotNetBuildFromVMR)' == 'true' and '$(EnableDefaultRidSpecificArtifacts)' != 'true'
                                                     and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1'))">true</PublishAllBuildsAssetsInThisJob>
+    <PublishInstallerBaseVersion Condition="'$(PublishInstallerBaseVersion)' == ''">$(PublishAllBuildsAssetsInThisJob)</PublishInstallerBaseVersion>
   </PropertyGroup>
 </Project>

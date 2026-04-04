@@ -19,7 +19,10 @@ parameters:
   # publishing defaults
   artifacts: ''
   enableMicrobuild: false
+  enablePreviewMicrobuild: false
+  microbuildPluginVersion: 'latest'
   enableMicrobuildForMacAndLinux: false
+  microbuildUseESRP: true
   enablePublishBuildArtifacts: false
   enablePublishBuildAssets: false
   enablePublishTestResults: false
@@ -70,6 +73,8 @@ jobs:
     templateContext: ${{ parameters.templateContext }}
 
   variables:
+  - name: AllowPtrToDetectTestRunRetryFiles
+    value: true
   - ${{ if ne(parameters.enableTelemetry, 'false') }}:
     - name: DOTNET_CLI_TELEMETRY_PROFILE
       value: '$(Build.Repository.Uri)'
@@ -127,7 +132,10 @@ jobs:
     - template: /eng/common/core-templates/steps/install-microbuild.yml
       parameters:
         enableMicrobuild: ${{ parameters.enableMicrobuild }}
+        enablePreviewMicrobuild: ${{ parameters.enablePreviewMicrobuild }}
+        microbuildPluginVersion: ${{ parameters.microbuildPluginVersion }}
         enableMicrobuildForMacAndLinux: ${{ parameters.enableMicrobuildForMacAndLinux }}
+        microbuildUseESRP: ${{ parameters.microbuildUseESRP }}
         continueOnError: ${{ parameters.continueOnError }}
 
   - ${{ if and(eq(parameters.runAsPublic, 'false'), eq(variables['System.TeamProject'], 'internal')) }}:
@@ -151,6 +159,8 @@ jobs:
     - template: /eng/common/core-templates/steps/cleanup-microbuild.yml
       parameters:
         enableMicrobuild: ${{ parameters.enableMicrobuild }}
+        enablePreviewMicrobuild: ${{ parameters.enablePreviewMicrobuild }}
+        microbuildPluginVersion: ${{ parameters.microbuildPluginVersion }}
         enableMicrobuildForMacAndLinux: ${{ parameters.enableMicrobuildForMacAndLinux }}
         continueOnError: ${{ parameters.continueOnError }}
 
@@ -161,7 +171,7 @@ jobs:
       inputs:
         testResultsFormat: 'xUnit'
         testResultsFiles: '*.xml'
-        searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
+        searchFolder: '$(System.DefaultWorkingDirectory)/artifacts/TestResults/$(_BuildConfig)'
         testRunTitle: ${{ coalesce(parameters.testRunTitle, parameters.name, '$(System.JobName)') }}-xunit
         mergeTestResults: ${{ parameters.mergeTestResults }}
       continueOnError: true
@@ -172,7 +182,7 @@ jobs:
       inputs:
         testResultsFormat: 'VSTest'
         testResultsFiles: '*.trx'
-        searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
+        searchFolder: '$(System.DefaultWorkingDirectory)/artifacts/TestResults/$(_BuildConfig)'
         testRunTitle: ${{ coalesce(parameters.testRunTitle, parameters.name, '$(System.JobName)') }}-trx
         mergeTestResults: ${{ parameters.mergeTestResults }}
       continueOnError: true
@@ -216,7 +226,7 @@ jobs:
     - task: CopyFiles@2
       displayName: Gather buildconfiguration for build retry
       inputs:
-        SourceFolder: '$(Build.SourcesDirectory)/eng/common/BuildConfiguration'
+        SourceFolder: '$(System.DefaultWorkingDirectory)/eng/common/BuildConfiguration'
         Contents: '**'
         TargetFolder: '$(Build.ArtifactStagingDirectory)/eng/common/BuildConfiguration'
       continueOnError: true
