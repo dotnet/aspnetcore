@@ -564,39 +564,42 @@ public partial class HubConnectionHandlerTests
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
                 var connectActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
-                
+
                 // Verify that endpoint tags are included in the activity
+                // Note: Activity.Tags only includes string-valued tags; integer-valued tags (like server.port) use TagObjects.
                 var tags = connectActivity.Tags.ToArray();
-                
-                // Should have the standard 3 rpc tags plus endpoint tags
+                var tagObjects = connectActivity.TagObjects.ToArray();
+
+                // Should have the standard 3 rpc tags plus string endpoint tags (server.address, network.type, network.transport)
                 Assert.True(tags.Length >= 3, $"Expected at least 3 tags, but found {tags.Length}");
-                
+
                 // Verify the standard SignalR tags are present
                 var rpcMethodTag = tags.FirstOrDefault(t => t.Key == "rpc.method");
                 Assert.NotNull(rpcMethodTag.Key);
                 Assert.Equal(nameof(MethodHub.OnConnectedAsync), rpcMethodTag.Value);
-                
+
                 var rpcSystemTag = tags.FirstOrDefault(t => t.Key == "rpc.system");
                 Assert.NotNull(rpcSystemTag.Key);
                 Assert.Equal("signalr", rpcSystemTag.Value);
-                
+
                 var rpcServiceTag = tags.FirstOrDefault(t => t.Key == "rpc.service");
                 Assert.NotNull(rpcServiceTag.Key);
                 Assert.Equal(typeof(MethodHub).FullName, rpcServiceTag.Value);
-                
+
                 // Verify endpoint tags are present
                 var serverAddressTag = tags.FirstOrDefault(t => t.Key == "server.address");
                 Assert.NotNull(serverAddressTag.Key);
                 Assert.Equal("127.0.0.1", serverAddressTag.Value);
-                
-                var serverPortTag = tags.FirstOrDefault(t => t.Key == "server.port");
+
+                // server.port is stored as int per OTel semantic conventions, so use TagObjects
+                var serverPortTag = tagObjects.FirstOrDefault(t => t.Key == "server.port");
                 Assert.NotNull(serverPortTag.Key);
                 Assert.Equal(5000, serverPortTag.Value);
-                
+
                 var networkTypeTag = tags.FirstOrDefault(t => t.Key == "network.type");
                 Assert.NotNull(networkTypeTag.Key);
                 Assert.Equal("ipv4", networkTypeTag.Value);
-                
+
                 var networkTransportTag = tags.FirstOrDefault(t => t.Key == "network.transport");
                 Assert.NotNull(networkTransportTag.Key);
                 Assert.Equal("tcp", networkTransportTag.Value);
