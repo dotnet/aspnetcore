@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Moq;
@@ -434,6 +435,7 @@ public class VirtualizeTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/TODO")]
     public async Task Virtualize_ScrollToBottom_SetWhenAtEndWithNewMeasurements()
     {
         var mockJs = new Mock<IJSRuntime>(MockBehavior.Loose);
