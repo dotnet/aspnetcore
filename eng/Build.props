@@ -38,13 +38,6 @@
                $(RepoRoot)src\Security\Authentication\Negotiate\test\testassets\Negotiate.Server\*.*proj;
                " />
 
-    <!--
-      BuildAfterTargetingPack runs delayed builds (e.g. LinkabilityChecker) that depend on trimmable
-      project outputs. It must build after all other managed projects, so exclude it from @(DotNetProjects)
-      and add it separately with a later BuildStep.
-    -->
-    <ProjectToExclude Include="$(RepoRoot)src\BuildAfterTargetingPack\*.csproj" />
-
     <!-- These projects are not meant to be built in this repo. In the Installers case, must explicitly opt in. -->
     <ProjectToExclude Include="
                       $(RepoRoot)src\submodules\googletest\**\*.*proj;
@@ -305,13 +298,6 @@
 
         <ProjectToBuild Condition=" '$(BuildManaged)' == 'true'" Include="@(DotNetProjects)" Exclude="@(ProjectToExclude)" BuildStep="managed" />
         <ProjectToExclude Condition=" '$(BuildManaged)' != 'true'" Include="@(DotNetProjects)" />
-
-        <!-- BuildAfterTargetingPack runs delayed builds that need all managed projects to be built first.
-             Use a separate BuildStep so Arcade batching guarantees it runs after the "managed" batch. -->
-        <ProjectToBuild Condition=" '$(BuildManaged)' == 'true'"
-          Include="$(RepoRoot)src\BuildAfterTargetingPack\*.csproj"
-          Exclude="@(ProjectToExclude)"
-          BuildStep="post-managed" />
       </ItemGroup>
 
       <!-- BuildInstallers -->
