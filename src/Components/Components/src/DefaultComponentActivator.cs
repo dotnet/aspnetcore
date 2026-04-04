@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components;
@@ -10,6 +11,14 @@ namespace Microsoft.AspNetCore.Components;
 internal sealed class DefaultComponentActivator(IServiceProvider serviceProvider) : IComponentActivator
 {
     private static readonly ConcurrentDictionary<Type, ObjectFactory> _cachedComponentTypeInfo = new();
+
+    static DefaultComponentActivator()
+    {
+        if (HotReloadManager.Default.MetadataUpdateSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += ClearCache;
+        }
+    }
 
     public static void ClearCache() => _cachedComponentTypeInfo.Clear();
 

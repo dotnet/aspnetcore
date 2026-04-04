@@ -1,0 +1,33 @@
+@page "/tempdata/read"
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager NavigationManager
+
+<h1>TempData Read Test</h1>
+
+<p id="message">@_message</p>
+<p id="peeked-value">@_peekedValue</p>
+<p id="kept-value">@_keptValue</p>
+
+
+@code {
+    [CascadingParameter]
+    public ITempData? TempData { get; set; }
+
+    private string? _message;
+    private string? _peekedValue;
+    private string? _keptValue;
+
+    protected override void OnInitialized()
+    {
+        if (TempData is null)
+        {
+            return;
+        }
+        _message = TempData.Get("Message") as string;
+        _message ??= "No message";
+        _peekedValue = TempData.Get("PeekedValue") as string;
+        _peekedValue ??= "No peeked value";
+        _keptValue = TempData.Get("KeptValue") as string;
+        _keptValue ??= "No kept value";
+    }
+}

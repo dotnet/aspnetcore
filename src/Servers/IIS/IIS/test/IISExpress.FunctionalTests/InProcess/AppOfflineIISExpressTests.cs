@@ -11,7 +11,6 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.IIS.IISExpress.FunctionalTests;
 
 [Collection(PublishedSitesCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class AppOfflineIISExpressTests : IISFunctionalTestBase
 {
     public AppOfflineIISExpressTests(PublishedSitesFixture fixture) : base(fixture)
@@ -19,7 +18,6 @@ public class AppOfflineIISExpressTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60482")]
     public async Task AppOfflineDroppedWhileSiteStarting_SiteShutsDown_InProcess()
     {
         // This test often hits a race between debug logging and stdout redirection closing the handle

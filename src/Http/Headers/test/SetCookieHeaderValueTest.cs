@@ -486,4 +486,30 @@ public class SetCookieHeaderValueTest
         Assert.Null(results);
         Assert.False(result);
     }
+
+    [Theory]
+    [InlineData("name=value; max-age=922337203686")] // One more than TimeSpan.MaxValue.TotalSeconds
+    [InlineData("name=value; max-age=999999999999999999999")] // Much larger value
+    [InlineData("name=value; max-age=-922337203686")] // Negative overflow
+    public void SetCookieHeaderValue_TryParse_MaxAgeOverflow_ReturnsFalse(string value)
+    {
+        // Should return false instead of throwing ArgumentOutOfRangeException
+        bool result = SetCookieHeaderValue.TryParse(value, out var parsedValue);
+        Assert.False(result);
+        Assert.Null(parsedValue);
+    }
+
+    [Theory]
+    [InlineData("name=value; max-age=922337203685")] // Max valid value
+    [InlineData("name=value; max-age=-922337203685")] // Min valid value
+    [InlineData("name=value; max-age=0")] // Zero
+    [InlineData("name=value; max-age=86400")] // One day in seconds
+    public void SetCookieHeaderValue_TryParse_MaxAgeValid_ReturnsTrue(string value)
+    {
+        // Should successfully parse valid max-age values
+        bool result = SetCookieHeaderValue.TryParse(value, out var parsedValue);
+        Assert.True(result);
+        Assert.NotNull(parsedValue);
+        Assert.NotNull(parsedValue!.MaxAge);
+    }
 }

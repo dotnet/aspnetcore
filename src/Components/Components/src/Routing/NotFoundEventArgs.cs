@@ -9,8 +9,7 @@ namespace Microsoft.AspNetCore.Components.Routing;
 public sealed class NotFoundEventArgs : EventArgs
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="NotFoundEventArgs" />.
+    /// Gets the path of NotFoundPage. If the path is set, it indicates that a subscriber has handled the rendering of the NotFound contents.
     /// </summary>
-    public NotFoundEventArgs()
-    { }
+    public string? Path { get; set; }
 }

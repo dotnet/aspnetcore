@@ -66,6 +66,14 @@ internal static class JsonTypeInfoExtensions
             return simpleName;
         }
 
+        // Use the same JSON Patch schema for all JSON Patch document types (JsonPatchDocument,
+        // JsonPatchDocument<T>, derived types, etc.) as otherwise we'll generate a schema
+        // per unique type which are otherwise identical to each other.
+        if (type.IsJsonPatchDocument())
+        {
+            return "JsonPatchDocument";
+        }
+
         // Although arrays are enumerable types they are not encoded correctly
         // with JsonTypeInfoKind.Enumerable so we handle the Enumerable type
         // case here.
@@ -98,6 +106,12 @@ internal static class JsonTypeInfoExtensions
             var anonymousTypeProperties = type.GetGenericArguments();
             var propertyNames = string.Join("And", anonymousTypeProperties.Select(p => p.GetSchemaReferenceId(options)));
             return $"{typeName}Of{propertyNames}";
+        }
+
+        // Special handling for nullable value types
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+        {
+            return type.GetGenericArguments()[0].GetSchemaReferenceId(options);
         }
 
         // Special handling for generic types that are collections

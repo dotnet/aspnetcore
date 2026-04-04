@@ -1,6 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.DataProtection.Repositories;
@@ -8,6 +12,7 @@ using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.Internal;
 
@@ -81,7 +86,8 @@ public class KeyManagementOptionsPostSetupTest
 
         IPostConfigureOptions<KeyManagementOptions> setup = new KeyManagementOptionsPostSetup(config, NullLoggerFactory.Instance);
 
-        var xmlDir = Directory.CreateTempSubdirectory();
+        var xmlDir = new DirectoryInfo(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()));
+        xmlDir.Create();
         try
         {
             var options = new KeyManagementOptions()

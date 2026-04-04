@@ -5,7 +5,6 @@ using System.Globalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
 
 public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
 {

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Components;
@@ -22,6 +24,7 @@ internal sealed class RootComponentOperation
     public WebRootComponentDescriptor? Descriptor { get; set; }
 }
 
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 internal sealed class WebRootComponentDescriptor(
     Type componentType,
     WebRootComponentParameters parameters)
@@ -29,4 +32,10 @@ internal sealed class WebRootComponentDescriptor(
     public Type ComponentType { get; } = componentType;
 
     public WebRootComponentParameters Parameters { get; } = parameters;
+
+    private string GetDebuggerDisplay()
+    {
+        var parameters = string.Join(", ", Parameters.Parameters.ToDictionary().Select(p => $"{p.Key}: {p.Value}"));
+        return $"{ComponentType.FullName}({parameters})";
+    }
 }

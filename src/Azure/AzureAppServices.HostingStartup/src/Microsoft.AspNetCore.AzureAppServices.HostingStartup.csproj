@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
   </ItemGroup>
 

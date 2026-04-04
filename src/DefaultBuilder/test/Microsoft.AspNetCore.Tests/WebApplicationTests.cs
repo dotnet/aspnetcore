@@ -377,7 +377,9 @@ public class WebApplicationTests
     [MemberData(nameof(CreateBuilderFuncs))]
     public void WebApplicationBuilderWebHost_ThrowsWhenBuiltDirectly(CreateBuilderFunc createBuilder)
     {
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
         Assert.Throws<NotSupportedException>(() => ((IWebHostBuilder)createBuilder().WebHost).Build());
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
     }
 
     [Theory]

@@ -16,7 +16,7 @@
     public bool? NavigateProgrammatically { get; set; }
 
     [Parameter]
-    public bool StartStreaming { get; set; } = false;
+    public bool DoAsyncOperationBeforeRedirection { get; set; } = false;
 
     [Parameter]
     public bool WaitForInteractivity { get; set; } = false;
@@ -25,7 +25,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (StartStreaming)
+        if (DoAsyncOperationBeforeRedirection)
         {
             await Task.Yield();
         }

@@ -6,4 +6,15 @@
     <!-- This sets an option which prevents the tests from rolling forward into a newer shared framework. -->
     <UserRuntimeConfig Condition="'$(PublishAot)' != 'true'">$(MSBuildThisFileDirectory)runtimeconfig.norollforward.json</UserRuntimeConfig>
   </PropertyGroup>
+
+  <!--
+    Pin the DevServer package to the exact locally-built version so that stable versions from
+    darc feeds (which outrank prerelease in SemVer) don't cause NU1603 with TreatWarningsAsErrors.
+    PackageReference Update must be in .targets (not .props) so it runs after the project's items.
+    See https://github.com/dotnet/aspnetcore/issues/65701
+  -->
+  <ItemGroup Condition="'${MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion}' != ''">
+    <PackageReference Update="Microsoft.AspNetCore.Components.WebAssembly.DevServer"
+                      Version="[${MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion}]" />
+  </ItemGroup>
 </Project>

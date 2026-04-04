@@ -8,8 +8,8 @@
 #include <filesystem>
 #include <optional>
 #include <string>
-
 #include "ErrorContext.h"
+#include "ProcessorArchitecture.h"
 
 #define READ_BUFFER_SIZE 4096
 
@@ -74,7 +74,7 @@ private:
         const std::filesystem::path & requestedPath
     );
 
-    static BOOL IsX64(const WCHAR* dotnetPath);
+    static ProcessorArchitecture GetFileProcessorArchitecture(const WCHAR* binaryPath);
 
     struct LocalFreeDeleter
     {

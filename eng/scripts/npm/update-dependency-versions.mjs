@@ -45,6 +45,13 @@ function applyPackageVersion(packagesToPack, defaultPackageVersion) {
     const packageName = packageJson.name;
     const packageVersion = defaultPackageVersion;
     const packageDir = path.dirname(packagePath);
+
+    // Check if the version is already correct
+    if (packageJson.version === packageVersion) {
+      console.log(`Skipping ${packageName} - version ${packageVersion} already applied.`);
+      continue;
+    }
+
     // Run npm version packageVersion --no-git-tag-version
     // This will update the package.json version to the specified version without creating a git tag
     // Make a backup of the package.json
@@ -52,9 +59,18 @@ function applyPackageVersion(packagesToPack, defaultPackageVersion) {
     renames.push([`${packagePath}.bak`, packagePath]);
 
     process.chdir(packageDir);
-    execSync(`npm version ${packageVersion} --no-git-tag-version --allow-same-version`, { stdio: 'inherit' });
+    try {
+      execSync(`npm version ${packageVersion} --no-git-tag-version --allow-same-version`, { stdio: 'inherit' });
+      console.log(`Applied version ${packageVersion} to ${packageName} in ${packageDir}...`);
+    } catch (error) {
+      console.warn(`Failed to run npm version command for ${packageName}, falling back to manual version update...`);
+      // Fallback: manually update the version in package.json
+      const packageJson = fs.readJsonSync(packagePath);
+      packageJson.version = packageVersion;
+      fs.writeJsonSync(packagePath, packageJson, { spaces: 2 });
+      console.log(`Manually applied version ${packageVersion} to ${packageName} in ${packageDir}...`);
+    }
     process.chdir(currentDir);
-    console.log(`Applied version ${packageVersion} to ${packageName} in ${packageDir}...`);
   }
 
   return renames;
@@ -81,11 +97,16 @@ function updateDependencyVersions(packagesToPack) {
         // Find the dependency in packagesToPack, load the package.json and update the dependency version
         const dependencyPackage = seenPackagesAndVersions.find(([_, packageJson]) => packageJson.name === dependency);
         if (dependencyPackage) {
-          modified = true;
           const dependencyPackagePath = dependencyPackage[0];
           const dependencyPackageJson = JSON.parse(fs.readFileSync(dependencyPackagePath, 'utf-8'));
-          dependencies[dependency] = `>=${dependencyPackageJson.version}`;
-          console.log(`Updated dependency ${dependency} to ${dependencyPackageJson.version} in ${packageJson.name}.`);
+          const newDependencyVersion = `>=${dependencyPackageJson.version}`;
+
+          // Only update if the dependency version is actually different
+          if (dependencies[dependency] !== newDependencyVersion) {
+            modified = true;
+            dependencies[dependency] = newDependencyVersion;
+            console.log(`Updated dependency ${dependency} to ${dependencyPackageJson.version} in ${packageJson.name}.`);
+          }
         }
       }
       if (modified) {

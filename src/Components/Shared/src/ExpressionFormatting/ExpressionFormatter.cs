@@ -14,7 +14,10 @@ internal static class ExpressionFormatter
 {
     static ExpressionFormatter()
     {
-        HotReloadManager.Default.OnDeltaApplied += ClearCache;
+        if (HotReloadManager.Default.MetadataUpdateSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += ClearCache;
+        }
     }
 
     internal const int StackAllocBufferSize = 128;

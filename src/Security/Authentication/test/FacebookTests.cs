@@ -43,6 +43,13 @@ public class FacebookTests : RemoteAuthenticationTests<FacebookOptions>
     }
 
     [Fact]
+    public void EventsPropertyIsInitializedOnConstruction()
+    {
+        var options = new FacebookOptions();
+        Assert.NotNull(options.Events);
+    }
+
+    [Fact]
     public async Task ThrowsIfAppIdMissing()
     {
         using var host = await CreateHost(

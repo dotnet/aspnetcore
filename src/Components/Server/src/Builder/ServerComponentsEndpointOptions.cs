@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Connections;
 
 namespace Microsoft.AspNetCore.Components.Server;
 
@@ -53,4 +54,13 @@ public class ServerComponentsEndpointOptions
     /// defined in <see cref="ContentSecurityFrameAncestorsPolicy"/> will be applied.
     /// </remarks>
     public Func<HttpContext, WebSocketAcceptContext, Task>? ConfigureWebSocketAcceptContext { get; set; }
+
+    /// <summary>
+    /// Gets or sets a callback to configure the <see cref="HttpConnectionDispatcherOptions"/> used by the SignalR connection.
+    /// </summary>
+    /// <remarks>
+    /// This allows configuring options such as <see cref="HttpConnectionDispatcherOptions.CloseOnAuthenticationExpiration"/>,
+    /// transport options, authorization data, and other connection-level settings.
+    /// </remarks>
+    public Action<HttpConnectionDispatcherOptions>? ConfigureConnection { get; set; }
 }

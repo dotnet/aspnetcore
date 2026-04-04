@@ -168,7 +168,7 @@ public class ShutdownTests : TestApplicationErrorLoggerLoggedTest
 
         var testContext = new TestServiceContext(LoggerFactory)
         {
-            MemoryPoolFactory = () => new PinnedBlockMemoryPool()
+            MemoryPoolFactory = new TestServiceContext.WrappingMemoryPoolFactory(() => TestMemoryPoolFactory.CreatePinnedBlockMemoryPool()),
         };
 
         ThrowOnUngracefulShutdown = false;

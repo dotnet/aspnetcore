@@ -1,20 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
-using System.Text;
-using Microsoft.Extensions.Primitives;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal class ResourcePreloadCollection
 {
-    private readonly Dictionary<string, StringValues> _storage = new();
+    private readonly Dictionary<string, List<PreloadAsset>> _storage = new();
 
     public ResourcePreloadCollection(ResourceAssetCollection assets)
     {
-        var headerBuilder = new StringBuilder();
-        var headers = new Dictionary<string, List<(int Order, string Value)>>();
         foreach (var asset in assets)
         {
             if (asset.Properties == null)
@@ -38,63 +34,81 @@ internal class ResourcePreloadCollection
                 continue;
             }
 
-            var header = CreateHeader(headerBuilder, asset.Url, asset.Properties);
-            if (!headers.TryGetValue(group, out var groupHeaders))
+            var preloadAsset = CreateAsset(asset.Url, asset.Properties);
+            if (!_storage.TryGetValue(group, out var groupHeaders))
             {
-                groupHeaders = headers[group] = new List<(int Order, string Value)>();
+                groupHeaders = _storage[group] = new List<PreloadAsset>();
             }
 
-            groupHeaders.Add(header);
+            groupHeaders.Add(preloadAsset);
         }
 
-        foreach (var group in headers)
+        foreach (var group in _storage)
         {
-            _storage[group.Key ?? string.Empty] = group.Value.OrderBy(h => h.Order).Select(h => h.Value).ToArray();
+            group.Value.Sort((a, b) => a.PreloadOrder.CompareTo(b.PreloadOrder));
         }
     }
 
-    private static (int order, string header) CreateHeader(StringBuilder headerBuilder, string url, IEnumerable<ResourceAssetProperty> properties)
+    private static PreloadAsset CreateAsset(string url, IEnumerable<ResourceAssetProperty> properties)
     {
-        headerBuilder.Clear();
-        headerBuilder.Append('<');
-        headerBuilder.Append(url);
-        headerBuilder.Append('>');
-
-        int order = 0;
+        var resourceAsset = new PreloadAsset(url);
         foreach (var property in properties)
         {
-            if (property.Name.Equals("preloadrel", StringComparison.OrdinalIgnoreCase))
+            if (property.Name.Equals("label", StringComparison.OrdinalIgnoreCase))
             {
-                headerBuilder.Append("; rel=").Append(property.Value);
-            }
-            else if (property.Name.Equals("preloadas", StringComparison.OrdinalIgnoreCase))
-            {
-                headerBuilder.Append("; as=").Append(property.Value);
-            }
-            else if (property.Name.Equals("preloadpriority", StringComparison.OrdinalIgnoreCase))
-            {
-                headerBuilder.Append("; fetchpriority=").Append(property.Value);
-            }
-            else if (property.Name.Equals("preloadcrossorigin", StringComparison.OrdinalIgnoreCase))
-            {
-                headerBuilder.Append("; crossorigin=").Append(property.Value);
+                resourceAsset.Label = property.Value;
             }
             else if (property.Name.Equals("integrity", StringComparison.OrdinalIgnoreCase))
             {
-                headerBuilder.Append("; integrity=\"").Append(property.Value).Append('"');
+                resourceAsset.Integrity = property.Value;
+            }
+            else if (property.Name.Equals("preloadgroup", StringComparison.OrdinalIgnoreCase))
+            {
+                resourceAsset.PreloadGroup = property.Value;
+            }
+            else if (property.Name.Equals("preloadrel", StringComparison.OrdinalIgnoreCase))
+            {
+                resourceAsset.PreloadRel = property.Value;
+            }
+            else if (property.Name.Equals("preloadas", StringComparison.OrdinalIgnoreCase))
+            {
+                resourceAsset.PreloadAs = property.Value;
+            }
+            else if (property.Name.Equals("preloadpriority", StringComparison.OrdinalIgnoreCase))
+            {
+                resourceAsset.PreloadPriority = property.Value;
+            }
+            else if (property.Name.Equals("preloadcrossorigin", StringComparison.OrdinalIgnoreCase))
+            {
+                resourceAsset.PreloadCrossorigin = property.Value;
             }
             else if (property.Name.Equals("preloadorder", StringComparison.OrdinalIgnoreCase))
             {
-                if (!int.TryParse(property.Value, out order))
+                if (!int.TryParse(property.Value, out int order))
                 {
                     order = 0;
                 }
+
+                resourceAsset.PreloadOrder = order;
             }
         }
 
-        return (order, headerBuilder.ToString());
+        return resourceAsset;
     }
 
-    public bool TryGetLinkHeaders(string group, out StringValues linkHeaders)
-        => _storage.TryGetValue(group, out linkHeaders);
+    public bool TryGetAssets(string group, [MaybeNullWhen(false)] out List<PreloadAsset> assets)
+        => _storage.TryGetValue(group, out assets);
+}
+
+internal sealed class PreloadAsset(string url)
+{
+    public string Url { get; } = url;
+    public string? Label { get; set; }
+    public string? Integrity { get; set; }
+    public string? PreloadGroup { get; set; }
+    public string? PreloadRel { get; set; }
+    public string? PreloadAs { get; set; }
+    public string? PreloadPriority { get; set; }
+    public string? PreloadCrossorigin { get; set; }
+    public int PreloadOrder { get; set; }
 }

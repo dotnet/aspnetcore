@@ -16,6 +16,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
+
 [assembly: HostingStartup(typeof(WebHostBuilderTests.TestHostingStartup))]
 
 namespace Microsoft.AspNetCore.Hosting;
@@ -429,6 +431,7 @@ public class WebHostBuilderTests
     public void ServiceProviderDisposedOnBuildException()
     {
         var service = new DisposableService();
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
         var hostBuilder = new WebHostBuilder()
             .UseServer(new TestServer())
             .ConfigureServices(services =>
@@ -437,6 +440,7 @@ public class WebHostBuilderTests
                 services.AddSingleton(sp => service);
             })
             .UseStartup<StartupWithResolvedDisposableThatThrows>();
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
 
         Assert.Throws<InvalidOperationException>(() => hostBuilder.Build());
         Assert.True(service.Disposed);
@@ -1483,14 +1487,18 @@ public class WebHostBuilderTests
             .AddInMemoryCollection(vals);
         var config = builder.Build();
 
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
         return new WebHostBuilder().UseConfiguration(config);
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
     }
 
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
     public static TheoryData<IWebHostBuilder> DefaultWebHostBuilders => new TheoryData<IWebHostBuilder>
         {
             new WebHostBuilder(),
             new GenericWebHostBuilderWrapper(new HostBuilder())
         };
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
 
     public static TheoryData<IWebHostBuilder> DefaultWebHostBuildersWithConfig
     {
@@ -1506,10 +1514,12 @@ public class WebHostBuilderTests
                 .AddInMemoryCollection(vals);
             var config = builder.Build();
 
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
             return new TheoryData<IWebHostBuilder> {
                     new WebHostBuilder().UseConfiguration(config),
                     new GenericWebHostBuilderWrapper(new HostBuilder()).UseConfiguration(config)
                 };
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
         }
     }
 
@@ -1681,11 +1691,11 @@ public class WebHostBuilderTests
                        // This check is required because MVC still uses the
                        // IWebHostEnvironment instance before the container is baked
 #pragma warning disable CS0618 // Type or member is obsolete
-                       var heDescriptor = services.SingleOrDefault(s => s.ServiceType == typeof(IHostingEnvironment));
+                       var heDescriptor = services.LastOrDefault(s => s.ServiceType == typeof(IHostingEnvironment));
                        Assert.NotNull(heDescriptor);
                        Assert.NotNull(heDescriptor.ImplementationInstance);
 #pragma warning restore CS0618 // Type or member is obsolete
-                       var wheDescriptor = services.SingleOrDefault(s => s.ServiceType == typeof(IWebHostEnvironment));
+                       var wheDescriptor = services.LastOrDefault(s => s.ServiceType == typeof(IWebHostEnvironment));
                        Assert.NotNull(wheDescriptor);
                        Assert.NotNull(wheDescriptor.ImplementationInstance);
                    })

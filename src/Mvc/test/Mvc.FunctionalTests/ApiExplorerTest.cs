@@ -1566,7 +1566,7 @@ public class ApiExplorerTest : LoggedTest
         // Assert
         Assert.Contains(TestSink.Writes, w => w.EventId.Name?.Equals("ApiDescriptionProviderExecuting", StringComparison.Ordinal) == true);
         Assert.Contains(TestSink.Writes, w => w.LoggerName.Equals("Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionGroupCollectionProvider", StringComparison.Ordinal));
-        Assert.Contains(TestSink.Writes, w => w.Message.Equals("Executing API description provider 'DefaultApiDescriptionProvider' from assembly Microsoft.AspNetCore.Mvc.ApiExplorer v10.0.0.0.", StringComparison.Ordinal));
+        Assert.Contains(TestSink.Writes, w => w.Message.Equals("Executing API description provider 'DefaultApiDescriptionProvider' from assembly Microsoft.AspNetCore.Mvc.ApiExplorer v11.0.0.0.", StringComparison.Ordinal));
         Assert.Contains(TestSink.Writes, w => w.Message.Equals("Executing API description provider 'JsonPatchOperationsArrayProvider' from assembly Microsoft.AspNetCore.Mvc.NewtonsoftJson v42.42.42.42.", StringComparison.Ordinal));
     }
 

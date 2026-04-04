@@ -15,7 +15,9 @@ internal abstract partial class ResourceInvoker
 {
     protected readonly DiagnosticListener _diagnosticListener;
     protected readonly ILogger _logger;
+#pragma warning disable ASPDEPR006 // Type or member is obsolete
     protected readonly IActionContextAccessor _actionContextAccessor;
+#pragma warning restore ASPDEPR006 // Type or member is obsolete
     protected readonly IActionResultTypeMapper _mapper;
     protected readonly ActionContext _actionContext;
     protected readonly IFilterMetadata[] _filters;
@@ -37,7 +39,9 @@ internal abstract partial class ResourceInvoker
     public ResourceInvoker(
         DiagnosticListener diagnosticListener,
         ILogger logger,
+#pragma warning disable ASPDEPR006 // Type or member is obsolete
         IActionContextAccessor actionContextAccessor,
+#pragma warning restore ASPDEPR006 // Type or member is obsolete
         IActionResultTypeMapper mapper,
         ActionContext actionContext,
         IFilterMetadata[] filters,

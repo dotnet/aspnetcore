@@ -1,14 +1,14 @@
 #nullable enable
 ~const Microsoft.AspNetCore.Authentication.Google.GoogleDefaults.AuthenticationScheme = "Google" -> string
-~Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.GoogleChallengeProperties(System.Collections.Generic.IDictionary<string, string> items) -> void
 ~Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.GoogleChallengeProperties(System.Collections.Generic.IDictionary<string, string> items, System.Collections.Generic.IDictionary<string, object> parameters) -> void
+~Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.GoogleChallengeProperties(System.Collections.Generic.IDictionary<string, string> items) -> void
 ~Microsoft.AspNetCore.Authentication.Google.GoogleHandler.GoogleHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Google.GoogleOptions> options, Microsoft.Extensions.Logging.ILoggerFactory logger, System.Text.Encodings.Web.UrlEncoder encoder, Microsoft.AspNetCore.Authentication.ISystemClock clock) -> void
 ~override Microsoft.AspNetCore.Authentication.Google.GoogleHandler.BuildChallengeUrl(Microsoft.AspNetCore.Authentication.AuthenticationProperties properties, string redirectUri) -> string
 ~override Microsoft.AspNetCore.Authentication.Google.GoogleHandler.CreateTicketAsync(System.Security.Claims.ClaimsIdentity identity, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties, Microsoft.AspNetCore.Authentication.OAuth.OAuthTokenResponse tokens) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationTicket>
-~static Microsoft.Extensions.DependencyInjection.GoogleExtensions.AddGoogle(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder
 ~static Microsoft.Extensions.DependencyInjection.GoogleExtensions.AddGoogle(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder, string authenticationScheme, string displayName, System.Action<Microsoft.AspNetCore.Authentication.Google.GoogleOptions> configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder
 ~static Microsoft.Extensions.DependencyInjection.GoogleExtensions.AddGoogle(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder, string authenticationScheme, System.Action<Microsoft.AspNetCore.Authentication.Google.GoogleOptions> configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder
 ~static Microsoft.Extensions.DependencyInjection.GoogleExtensions.AddGoogle(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder, System.Action<Microsoft.AspNetCore.Authentication.Google.GoogleOptions> configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder
+~static Microsoft.Extensions.DependencyInjection.GoogleExtensions.AddGoogle(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder builder) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder
 ~static readonly Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.AccessTypeKey -> string
 ~static readonly Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.ApprovalPromptKey -> string
 ~static readonly Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.IncludeGrantedScopesKey -> string
@@ -25,8 +25,8 @@ Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.AccessType.
 Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.ApprovalPrompt.get -> string?
 Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.ApprovalPrompt.set -> void
 Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.GoogleChallengeProperties() -> void
-Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.GoogleChallengeProperties(System.Collections.Generic.IDictionary<string!, string?>! items) -> void
 Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.GoogleChallengeProperties(System.Collections.Generic.IDictionary<string!, string?>! items, System.Collections.Generic.IDictionary<string!, object?>! parameters) -> void
+Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.GoogleChallengeProperties(System.Collections.Generic.IDictionary<string!, string?>! items) -> void
 Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.IncludeGrantedScopes.get -> bool?
 Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.IncludeGrantedScopes.set -> void
 Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.LoginHint.get -> string?
@@ -35,8 +35,8 @@ Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.Prompt.get 
 Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.Prompt.set -> void
 Microsoft.AspNetCore.Authentication.Google.GoogleDefaults
 Microsoft.AspNetCore.Authentication.Google.GoogleHandler
-Microsoft.AspNetCore.Authentication.Google.GoogleHandler.GoogleHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Google.GoogleOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.Google.GoogleHandler.GoogleHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Google.GoogleOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
+Microsoft.AspNetCore.Authentication.Google.GoogleHandler.GoogleHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Google.GoogleOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.Google.GoogleOptions
 Microsoft.AspNetCore.Authentication.Google.GoogleOptions.AccessType.get -> string?
 Microsoft.AspNetCore.Authentication.Google.GoogleOptions.AccessType.set -> void
@@ -44,10 +44,10 @@ Microsoft.AspNetCore.Authentication.Google.GoogleOptions.GoogleOptions() -> void
 Microsoft.Extensions.DependencyInjection.GoogleExtensions
 override Microsoft.AspNetCore.Authentication.Google.GoogleHandler.BuildChallengeUrl(Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties, string! redirectUri) -> string!
 override Microsoft.AspNetCore.Authentication.Google.GoogleHandler.CreateTicketAsync(System.Security.Claims.ClaimsIdentity! identity, Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties, Microsoft.AspNetCore.Authentication.OAuth.OAuthTokenResponse! tokens) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticationTicket!>!
-static Microsoft.Extensions.DependencyInjection.GoogleExtensions.AddGoogle(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static Microsoft.Extensions.DependencyInjection.GoogleExtensions.AddGoogle(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme, string! displayName, System.Action<Microsoft.AspNetCore.Authentication.Google.GoogleOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static Microsoft.Extensions.DependencyInjection.GoogleExtensions.AddGoogle(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme, System.Action<Microsoft.AspNetCore.Authentication.Google.GoogleOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static Microsoft.Extensions.DependencyInjection.GoogleExtensions.AddGoogle(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, System.Action<Microsoft.AspNetCore.Authentication.Google.GoogleOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static Microsoft.Extensions.DependencyInjection.GoogleExtensions.AddGoogle(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
 static readonly Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.AccessTypeKey -> string!
 static readonly Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.ApprovalPromptKey -> string!
 static readonly Microsoft.AspNetCore.Authentication.Google.GoogleChallengeProperties.IncludeGrantedScopesKey -> string!

@@ -3,9 +3,6 @@
 
 using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.OpenApi.Extensions;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Models.References;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {

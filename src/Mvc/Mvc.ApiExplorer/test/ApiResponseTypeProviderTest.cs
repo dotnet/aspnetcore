@@ -811,7 +811,7 @@ public class ApiResponseTypeProviderTest
     }
 
     [Fact]
-    public void GetApiResponseTypes_ReturnNoResponseTypes_IfActionWithIResultReturnType()
+    public void GetApiResponseTypes_ReturnNoResponseTypes_IfActionWithBuiltIResultReturnType()
     {
         // Arrange
         var actionDescriptor = GetControllerActionDescriptor(typeof(TestController), nameof(TestController.GetIResult));
@@ -822,6 +822,23 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.False(result.Any());
+    }
+
+    [Fact]
+    public void GetApiResponseTypes_ReturnResponseType_IfActionHasCustomIResultReturnTypeInMetadata()
+    {
+        // Arrange
+        var actionDescriptor = GetControllerActionDescriptor(typeof(TestController), nameof(TestController.GetCustomIResult));
+        actionDescriptor.EndpointMetadata = [new ProducesResponseTypeMetadata(200, typeof(MyResponse))];
+        var provider = new ApiResponseTypeProvider(new EmptyModelMetadataProvider(), new ActionResultTypeMapper(), new MvcOptions());
+
+        // Act
+        var result = provider.GetApiResponseTypes(actionDescriptor);
+
+        // Assert
+        var response = Assert.Single(result);
+        Assert.Equal(typeof(MyResponse), response.Type);
+        Assert.Equal(200, response.StatusCode);
     }
 
     private static ApiResponseTypeProvider GetProvider()
@@ -871,6 +888,18 @@ public class ApiResponseTypeProviderTest
         public ActionResult<DerivedModel> PutModel(string userId, DerivedModel model) => null;
 
         public IResult GetIResult(int id) => null;
+
+        public MyResponse GetCustomIResult() => new MyResponse { Content = "Test Content" };
+    }
+
+    public class MyResponse : IResult
+    {
+        public required string Content { get; set; }
+
+        public Task ExecuteAsync(HttpContext httpContext)
+        {
+            return httpContext.Response.WriteAsJsonAsync(this);
+        }
     }
 
     private class TestOutputFormatter : OutputFormatter

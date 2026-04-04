@@ -199,8 +199,8 @@ internal sealed class DefaultPageApplicationModelPartsProvider : IPageApplicatio
             return false;
         }
 
-        // Exclude methods declared on PageModel
-        if (declaringType == typeof(PageModel))
+        // Exclude methods declared on PageModel (including overrides)
+        if (methodInfo.GetBaseDefinition().DeclaringType == typeof(PageModel))
         {
             return false;
         }

@@ -24,8 +24,8 @@ public class RazorBuildTest : LoggedTest
     protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
         base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+#pragma warning disable ASPDEPR003 // Type or member is obsolete
         Factory = new MvcTestFixture<RazorBuildWebSite.Startup>(LoggerFactory)
-            .WithWebHostBuilder(b => b.UseStartup<RazorBuildWebSite.Startup>())
             .WithWebHostBuilder(b => b.ConfigureTestServices(serviceCollection => serviceCollection.Configure<MvcRazorRuntimeCompilationOptions>(ConfigureRuntimeCompilationOptions)));
 
         static void ConfigureRuntimeCompilationOptions(MvcRazorRuntimeCompilationOptions options)
@@ -37,6 +37,7 @@ public class RazorBuildTest : LoggedTest
                 options.AdditionalReferencePaths.Add(path);
             }
         }
+#pragma warning restore ASPDEPR003 // Type or member is obsolete
         Client = Factory.CreateDefaultClient();
     }
 
@@ -100,8 +101,8 @@ public class RazorBuildTest : LoggedTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/56553")]
     [LogLevel(LogLevel.Trace)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/56553")]
     public async Task RazorViews_AreUpdatedOnChange()
     {
         // Arrange
@@ -139,8 +140,8 @@ public class RazorBuildTest : LoggedTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/56553")]
     [LogLevel(LogLevel.Trace)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/56553")]
     public async Task RazorPages_AreUpdatedOnChange()
     {
         // Arrange

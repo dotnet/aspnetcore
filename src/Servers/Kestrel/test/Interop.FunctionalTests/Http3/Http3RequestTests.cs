@@ -6,8 +6,10 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Net;
 using System.Net.Http;
+using System.Net.Quic;
 using System.Net.Security;
 using System.Text;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
@@ -17,7 +19,6 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Hosting;
@@ -701,7 +702,6 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/57373")]
     public async Task POST_Expect100Continue_Get100Continue()
     {
         // Arrange
@@ -880,6 +880,160 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    public async Task GET_RequestAbortedByClient_StateNotReused()
+    {
+        // Arrange
+        object persistedState = null;
+        var requestCount = 0;
+        var abortedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var builder = CreateHostBuilder(async context =>
+        {
+            requestCount++;
+            var persistentStateCollection = context.Features.Get<IPersistentStateFeature>().State;
+            if (persistentStateCollection.TryGetValue("Counter", out var value))
+            {
+                persistedState = value;
+            }
+            persistentStateCollection["Counter"] = requestCount;
+
+            if (requestCount == 1)
+            {
+                // For the first request, wait for RequestAborted to fire before returning
+                context.RequestAborted.Register(() =>
+                {
+                    Logger.LogInformation("Server received cancellation");
+                    abortedTcs.SetResult();
+                });
+
+                // Signal that the request has started and is ready to be cancelled
+                requestStartedTcs.SetResult();
+
+                // Wait for the request to be aborted
+                await abortedTcs.Task;
+            }
+        });
+
+        using (var host = builder.Build())
+        using (var client = HttpHelpers.CreateClient())
+        {
+            await host.StartAsync();
+
+            // Act - Send first request and cancel it
+            var cts1 = new CancellationTokenSource();
+            var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+            request1.Version = HttpVersion.Version30;
+            request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            var responseTask1 = client.SendAsync(request1, cts1.Token);
+
+            // Wait for the server to start processing the request
+            await requestStartedTcs.Task.DefaultTimeout();
+
+            // Cancel the first request
+            cts1.Cancel();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask1).DefaultTimeout();
+
+            // Wait for the server to process the abort
+            await abortedTcs.Task.DefaultTimeout();
+
+            // Store the state from the first (aborted) request
+            var firstRequestState = persistedState;
+
+            // Delay to ensure the stream has enough time to return to pool
+            await Task.Delay(100);
+
+            // Send second request (should not reuse state from aborted request)
+            var request2 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+            request2.Version = HttpVersion.Version30;
+            request2.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            var response2 = await client.SendAsync(request2, CancellationToken.None);
+            response2.EnsureSuccessStatusCode();
+            var secondRequestState = persistedState;
+
+            // Assert
+            // First request has no persisted state (it was aborted)
+            Assert.Null(firstRequestState);
+
+            // Second request should also have no persisted state since the first request was aborted
+            // and state should not be reused from aborted requests
+            Assert.Null(secondRequestState);
+
+            await host.StopAsync();
+        }
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task GET_RequestAbortedByServer_StateNotReused()
+    {
+        // Arrange
+        object persistedState = null;
+        var requestCount = 0;
+
+        var builder = CreateHostBuilder(context =>
+        {
+            requestCount++;
+            var persistentStateCollection = context.Features.Get<IPersistentStateFeature>().State;
+            if (persistentStateCollection.TryGetValue("Counter", out var value))
+            {
+                persistedState = value;
+            }
+            persistentStateCollection["Counter"] = requestCount;
+
+            if (requestCount == 1)
+            {
+                context.Abort();
+            }
+
+            return Task.CompletedTask;
+        });
+
+        using (var host = builder.Build())
+        using (var client = HttpHelpers.CreateClient())
+        {
+            await host.StartAsync();
+
+            var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+            request1.Version = HttpVersion.Version30;
+            request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            var responseTask1 = client.SendAsync(request1, CancellationToken.None);
+            var ex = await Assert.ThrowsAnyAsync<HttpRequestException>(() => responseTask1).DefaultTimeout();
+            var innerEx = Assert.IsType<HttpProtocolException>(ex.InnerException);
+            Assert.Equal(Http3ErrorCode.InternalError, (Http3ErrorCode)innerEx.ErrorCode);
+
+            // Store the state from the first (aborted) request
+            var firstRequestState = persistedState;
+
+            // Delay to ensure the stream has enough time to return to pool
+            await Task.Delay(100);
+
+            // Send second request (should not reuse state from aborted request)
+            var request2 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+            request2.Version = HttpVersion.Version30;
+            request2.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            var response2 = await client.SendAsync(request2, CancellationToken.None);
+            response2.EnsureSuccessStatusCode();
+            var secondRequestState = persistedState;
+
+            // Assert
+            // First request has no persisted state (it was aborted)
+            Assert.Null(firstRequestState);
+
+            // Second request should also have no persisted state since the first request was aborted
+            // and state should not be reused from aborted requests
+            Assert.Null(secondRequestState);
+
+            await host.StopAsync();
+        }
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
     public async Task GET_MultipleRequests_RequestVersionOrHigher_UpgradeToHttp3()
     {
         // Arrange
@@ -961,7 +1115,6 @@ public class Http3RequestTests : LoggedTest
     [MsQuicSupported]
     [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38008")]
     public async Task POST_ClientCancellationBidirectional_RequestAbortRaised(HttpProtocols protocol)
     {
         // Arrange
@@ -2105,7 +2258,6 @@ public class Http3RequestTests : LoggedTest
     [MsQuicSupported]
     [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35070")]
     public async Task GET_GracefulServerShutdown_RequestCompleteSuccessfullyInsideHostTimeout(HttpProtocols protocol)
     {
         // Arrange
@@ -2200,8 +2352,141 @@ public class Http3RequestTests : LoggedTest
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task OutboundControlStream_ClientNeverAccepts_GracefulShutdownCompletes()
+    {
+        // Test that the server can gracefully shut down even when the client never
+        // accepts/reads the server's outbound control stream.
+        //
+        // This tests the scenario where a misbehaving client connects, sends its control
+        // stream, but never reads from the connection. The server should still be able
+        // to shut down gracefully without hanging.
+
+        var builder = CreateHostBuilder(context =>
+        {
+            context.Response.StatusCode = 200;
+            return Task.CompletedTask;
+        });
+
+        using var host = builder.Build();
+        await host.StartAsync();
+
+        var port = host.GetPort();
+
+        await using var connection = await QuicConnection.ConnectAsync(new QuicClientConnectionOptions
+        {
+            RemoteEndPoint = new IPEndPoint(IPAddress.Loopback, port),
+            DefaultCloseErrorCode = 0,
+            DefaultStreamErrorCode = 0,
+            MaxInboundBidirectionalStreams = 0,
+            MaxInboundUnidirectionalStreams = 0,
+            ClientAuthenticationOptions = new SslClientAuthenticationOptions
+            {
+                ApplicationProtocols = [new SslApplicationProtocol("h3")],
+                RemoteCertificateValidationCallback = static (_, _, _, _) => true,
+                TargetHost = "localhost"
+            }
+        });
+
+        // Open client control stream - this is required by HTTP/3
+        await using var clientControlStream = await connection.OpenOutboundStreamAsync(QuicStreamType.Unidirectional);
+        await clientControlStream.WriteAsync(EncodeVarInt(0x0)); // ControlStream type
+        await clientControlStream.WriteAsync(EncodeVarInt(0x4)); // Settings frame
+        await clientControlStream.WriteAsync(EncodeVarInt(0));
+
+        // The server will open its outbound control stream to send us settings.
+        // We intentionally never call AcceptInboundStreamAsync() or read from it.
+        // This simulates a client that doesn't read the server's control stream.
+
+        // Trigger graceful shutdown - this should complete even though
+        // the client never accepted/read the control stream
+        await host.StopAsync().DefaultTimeout();
+
+        // If we get here without timeout, the server successfully shut down
+        // even with the unread control stream
+
+        // Verify that the server logged an error about the outbound control stream
+        await WaitForLogAsync(logs =>
+        {
+            return logs.Any(w => w.EventId.Name == "Http3OutboundControlStreamError");
+        }, "Check for Http3OutboundControlStreamError log.");
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task OutboundControlStream_ClientNeverAccepts_ClosesConnection()
+    {
+        // Test that the server can gracefully shut down even when the client never
+        // accepts/reads the server's outbound control stream.
+        //
+        // This tests the scenario where a misbehaving client connects, sends its control
+        // stream, but never reads from the connection. The server should still be able
+        // to shut down gracefully without hanging.
+
+        var builder = CreateHostBuilder(context =>
+        {
+            context.Response.StatusCode = 200;
+            return Task.CompletedTask;
+        });
+
+        using var host = builder.Build();
+        await host.StartAsync();
+
+        var port = host.GetPort();
+
+        await using var connection = await QuicConnection.ConnectAsync(new QuicClientConnectionOptions
+        {
+            RemoteEndPoint = new IPEndPoint(IPAddress.Loopback, port),
+            DefaultCloseErrorCode = 0,
+            DefaultStreamErrorCode = 0,
+            MaxInboundBidirectionalStreams = 0,
+            MaxInboundUnidirectionalStreams = 0,
+            ClientAuthenticationOptions = new SslClientAuthenticationOptions
+            {
+                ApplicationProtocols = [new SslApplicationProtocol("h3")],
+                RemoteCertificateValidationCallback = static (_, _, _, _) => true,
+                TargetHost = "localhost"
+            }
+        });
+
+        // Open client control stream - this is required by HTTP/3
+        await using var clientControlStream = await connection.OpenOutboundStreamAsync(QuicStreamType.Unidirectional);
+        await clientControlStream.WriteAsync(EncodeVarInt(0x0)); // ControlStream type
+        await clientControlStream.WriteAsync(EncodeVarInt(0x4)); // Settings frame
+        await clientControlStream.WriteAsync(EncodeVarInt(0));
+
+        var stream = await connection.OpenOutboundStreamAsync(QuicStreamType.Bidirectional);
+
+        await connection.CloseAsync(0);
+
+        // The server will open its outbound control stream to send us settings.
+        // We intentionally never call AcceptInboundStreamAsync() or read from it.
+        // This simulates a client that doesn't read the server's control stream.
+
+        // Verify that the server logged an error about the outbound control stream
+        await WaitForLogAsync(logs =>
+        {
+            return logs.Any(w => w.EventId.Name == "Http3OutboundControlStreamError");
+        }, "Check for Http3OutboundControlStreamError log.");
+
+        // Trigger graceful shutdown - this should complete even though
+        // the client never accepted/read the control stream
+        await host.StopAsync().DefaultTimeout();
+
+        // If we get here without timeout, the server successfully shut down
+        // even with the unread control stream
+    }
+
     private IHostBuilder CreateHostBuilder(RequestDelegate requestDelegate, HttpProtocols? protocol = null, Action<KestrelServerOptions> configureKestrel = null, TimeSpan? shutdownTimeout = null)
     {
         return HttpHelpers.CreateHostBuilder(AddTestLogging, requestDelegate, protocol, configureKestrel, shutdownTimeout: shutdownTimeout);
+    }
+
+    private static byte[] EncodeVarInt(ulong value)
+    {
+        var buffer = new byte[VariableLengthIntegerHelper.MaximumEncodedLength];
+        var length = VariableLengthIntegerHelper.WriteInteger(buffer, (long)value);
+        return buffer[..length];
     }
 }

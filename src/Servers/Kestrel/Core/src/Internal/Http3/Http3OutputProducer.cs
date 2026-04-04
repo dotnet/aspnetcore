@@ -78,11 +78,9 @@ internal sealed class Http3OutputProducer : IHttpOutputProducer, IHttpOutputAbor
 
             _pipeWriter.Complete();
 
-            if (_fakeMemoryOwner != null)
-            {
-                _fakeMemoryOwner.Dispose();
-                _fakeMemoryOwner = null;
-            }
+            _fakeMemoryOwner?.Dispose();
+            _fakeMemoryOwner = null;
+
             if (_fakeMemory != null)
             {
                 ArrayPool<byte>.Shared.Return(_fakeMemory);

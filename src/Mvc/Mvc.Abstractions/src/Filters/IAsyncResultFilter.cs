@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters;
 /// <para>
 /// <see cref="IResultFilter"/> and <see cref="IAsyncResultFilter"/> instances are not executed in cases where
 /// an authorization filter or resource filter short-circuits the request to prevent execution of the action.
-/// <see cref="IResultFilter"/>. <see cref="IResultFilter"/> and <see cref="IAsyncResultFilter"/> implementations
+/// <see cref="IResultFilter"/> and <see cref="IAsyncResultFilter"/> implementations
 /// are also not executed in cases where an exception filter handles an exception by producing an action result.
 /// </para>
 /// <para>

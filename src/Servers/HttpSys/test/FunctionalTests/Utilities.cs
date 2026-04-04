@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,10 +53,10 @@ internal static class Utilities
         return CreateDynamicHttpServer(string.Empty, out root, out baseAddress, configureOptions, app, loggerFactory);
     }
 
-    internal static IServer CreateHttpServerReturnRoot(string path, out string root, RequestDelegate app, ILoggerFactory loggerFactory)
+    internal static IServer CreateHttpServerReturnRoot(string path, out string root, RequestDelegate app, Action<HttpSysOptions> configureOptions, ILoggerFactory loggerFactory)
     {
         string baseAddress;
-        return CreateDynamicHttpServer(path, out root, out baseAddress, options => { }, app, loggerFactory);
+        return CreateDynamicHttpServer(path, out root, out baseAddress, configureOptions, app, loggerFactory);
     }
 
     internal static IServer CreateHttpAuthServer(AuthenticationSchemes authType, bool allowAnonymous, out string baseAddress, RequestDelegate app, ILoggerFactory loggerFactory)
@@ -112,13 +113,13 @@ internal static class Utilities
     }
 
     internal static MessagePump CreatePump(ILoggerFactory loggerFactory)
-        => new MessagePump(Options.Create(new HttpSysOptions()), loggerFactory ?? new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
+        => new MessagePump(Options.Create(new HttpSysOptions()), new DefaultMemoryPoolFactory(), loggerFactory ?? new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
 
     internal static MessagePump CreatePump(Action<HttpSysOptions> configureOptions, ILoggerFactory loggerFactory)
     {
         var options = new HttpSysOptions();
         configureOptions(options);
-        return new MessagePump(Options.Create(options), loggerFactory ?? new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
+        return new MessagePump(Options.Create(options), new DefaultMemoryPoolFactory(), loggerFactory ?? new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
     }
 
     internal static IServer CreateDynamicHttpServer(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app, ILoggerFactory loggerFactory)
