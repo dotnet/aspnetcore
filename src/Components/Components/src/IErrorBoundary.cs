@@ -17,4 +17,8 @@ namespace Microsoft.AspNetCore.Components;
 internal interface IErrorBoundary
 {
     void HandleException(Exception error);
+    /// <summary>
+    /// Setting this to true will stop Renderer requeue rendering of the candidate component 
+    /// </summary>
+    bool RenderOnException { get; }
 }

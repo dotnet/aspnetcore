@@ -43,6 +43,11 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     }
 
     /// <summary>
+    /// Nearest ErrorBoundaryBase component
+    /// </summary>
+    [CascadingParameter] internal IErrorBoundary? ErrorBoundary { get; set; }
+
+    /// <summary>
     /// Gets the <see cref="Components.RendererInfo"/> the component is running on.
     /// </summary>
     protected RendererInfo RendererInfo => _renderHandle.RendererInfo;
@@ -273,7 +278,23 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
 
     private async Task RunInitAndSetParametersAsync()
     {
-        OnInitialized();
+        try
+        {
+            OnInitialized();
+        }
+        catch(Exception err)
+        {
+            // If we are guarded by ErrorBoundary that should render ChildContent,
+            // even there was thrown one or more exceptions
+            if (ErrorBoundary?.RenderOnException == true)
+            {
+                _ = _renderHandle.DispatchExceptionAsync(err);
+            }
+            else
+            {
+                throw;
+            }
+        }
         var task = OnInitializedAsync();
 
         if (task.Status != TaskStatus.RanToCompletion && task.Status != TaskStatus.Canceled)
@@ -283,7 +304,7 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
             // to defer calling StateHasChanged up until the first bit of async code happens or until
             // the end. Additionally, we want to avoid calling StateHasChanged if no
             // async work is to be performed.
-            if (task.Status != TaskStatus.Faulted)
+            if (task.Status != TaskStatus.Faulted || ErrorBoundary?.RenderOnException == true)
             {
                 StateHasChanged();
             }
@@ -312,7 +333,24 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
 
     private Task CallOnParametersSetAsync()
     {
-        OnParametersSet();
+        try
+        {
+            OnParametersSet();
+        }
+        catch (Exception err)
+        {
+            // If we are guarded by ErrorBoundary that should render ChildContent,
+            // even there was thrown one or more exceptions
+            if (ErrorBoundary?.RenderOnException == true)
+            {
+                _ = _renderHandle.DispatchExceptionAsync(err);
+            }
+            else
+            {
+                throw;
+            }
+        }
+
         var task = OnParametersSetAsync();
         // If no async work is to be performed, i.e. the task has already ran to completion
         // or was canceled by the time we got to inspect it, avoid going async and re-invoking
@@ -322,7 +360,7 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
 
         // We always call StateHasChanged here as we want to trigger a rerender after OnParametersSet and
         // the synchronous part of OnParametersSetAsync has run.
-        if (task.Status != TaskStatus.Faulted)
+        if (task.Status != TaskStatus.Faulted || ErrorBoundary?.RenderOnException == true)
         {
             StateHasChanged();
         }

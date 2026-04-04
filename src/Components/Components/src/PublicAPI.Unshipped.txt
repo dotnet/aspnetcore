@@ -1,4 +1,7 @@
 #nullable enable
+Microsoft.AspNetCore.Components.ComponentBase.ErrorBoundary.get -> Microsoft.AspNetCore.Components.ErrorBoundaryBase?
+Microsoft.AspNetCore.Components.ComponentBase.ErrorBoundary.set -> void
+override Microsoft.AspNetCore.Components.ErrorBoundaryBase.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithHash(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! hash) -> string!
 Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.get -> bool
 Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.init -> void
@@ -7,3 +10,5 @@ Microsoft.AspNetCore.Components.IComponentPropertyActivator.GetActivator(System.
 *REMOVED*Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void
 *REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
 *REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void
+virtual Microsoft.AspNetCore.Components.ErrorBoundaryBase.RenderOnException.get -> bool
+virtual Microsoft.AspNetCore.Components.ErrorBoundaryBase.RenderOnException.set -> void
