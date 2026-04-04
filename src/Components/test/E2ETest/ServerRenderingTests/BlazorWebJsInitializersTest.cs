@@ -29,7 +29,7 @@ public class BlazorWebJsInitializersTest : ServerTestBase<BasicTestAppServerSite
 
     [Theory]
     [MemberData(nameof(InitializerTestData))]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/TODO")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66140")]
     public void InitializersRunsModernCallbacksByDefaultWhenPresent(bool streaming, bool webassembly, bool server, string[] expectedInvokedCallbacks)
     {
         var url = $"{ServerPathBase}/initializers?streaming={streaming}&wasm={webassembly}&server={server}";
