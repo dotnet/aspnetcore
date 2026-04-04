@@ -166,10 +166,13 @@ GET https://vstmr.dev.azure.com/dnceng-public/public/_apis/testresults/resultsby
 ```
 
 #### Source B: Merged PR failures
-Get all PR builds (`reasonFilter=pullRequest`) from the last 30 days. Group by PR number and `pr.sourceSha` (from `triggerInfo`). A group qualifies if:
-- This was the **final commit** for the PR (the last `pr.sourceSha` seen for that PR)
-- The PR was **merged** (check via GitHub MCP `pull_request_read` with method `get` and verify the `merged` field is `true`)
-- At least one build in the group **failed** or **partially succeeded**
+Get all PR builds (`reasonFilter=pullRequest`) from the last 30 days. Group by PR number and `pr.sourceSha` (from `triggerInfo`). **Every criterion below is mandatory — do not skip or approximate any of them.** A group is included ONLY if ALL of the following are true:
+- **(B1)** This was the **final commit** for the PR (the last `pr.sourceSha` seen for that PR).
+- **(B2)** The PR **targets the `main` branch** — call `pull_request_read` (method `get`) and verify `base.ref` is `main`. Exclude PR builds targeting release branches or any other non-main branch.
+- **(B3)** The PR was **merged** — in the same `pull_request_read` response, verify the `merged` field is `true`. Exclude builds from open, draft, or abandoned PRs.
+- **(B4)** At least one build in the group **failed** or **partially succeeded**.
+
+**You MUST call `pull_request_read` for every PR** to verify B2 and B3. Do not assume a PR is merged or targets main based on build data alone. If you cannot verify a PR's status (e.g., rate limits), exclude it — never default to including it.
 
 This captures two scenarios: (1) a PR that was retried and eventually passed, indicating flaky test failures on the earlier attempt, and (2) a PR that was merged on red because the only failures were flaky tests — engineers sometimes do this when the failures are clearly unrelated to their changes.
 
@@ -234,7 +237,7 @@ Before creating issues and PRs, group related failures together:
 
 - **Always exclude** `AlwaysTestTests.SuccessfulTests.GuaranteedQuarantinedTest` from all analysis. This test must never be unquarantined.
 - **Always exclude** tests under `Microsoft.AspNetCore.SignalR.Specification.Tests` from all analysis. These are abstract base classes inherited by other test projects — there is no good way to quarantine them, so they must be ignored entirely. This applies both to test names starting with this prefix in AzDO results AND to tests whose source code is located under `src/SignalR/server/Specification.Tests/`. A test may appear in AzDO under a different namespace (e.g., `StackExchangeRedis.Tests`) but still be defined in `Specification.Tests` — check the actual source file before quarantining.
-- **`[QuarantinedTest]` attributes must reference a real GitHub issue URL** with a numeric issue number (e.g., `https://github.com/dotnet/aspnetcore/issues/12345`). Never use placeholder strings, descriptive text, or non-numeric identifiers. The issue must be created BEFORE the PR that adds the attribute.
+- **`[QuarantinedTest]` attributes must reference a real GitHub issue URL** with a numeric issue number (e.g., `https://github.com/dotnet/aspnetcore/issues/12345`). Never use placeholder strings, descriptive text, or non-numeric identifiers. Since issues are created via the `create_issue` safe-output tool (which uses deferred creation), use the `#aw_<temporary_id>` reference syntax in the URL — e.g., `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_myid")]` where `myid` is the `temporary_id` you passed to `create_issue`. The framework will resolve `#aw_myid` to the actual issue number when creating the PR. **Never** use placeholder text like `TODO`, `TBD`, or descriptive strings — always use the `#aw_` temporary ID reference.
 - **When checking the 30-day quarantine age**, verify that the `[QuarantinedTest]` attribute contains a valid numeric issue URL. If it contains a non-numeric placeholder, skip the test — it was quarantined incorrectly and should not be unquarantined until the issue URL is fixed.
 - **Check for existing PRs** before creating new ones. Search all open PRs for any that modify the same test file. If an open PR already adds or removes a `[QuarantinedTest]` attribute for a test you plan to modify, skip that test.
 - **One PR per issue** for unquarantining. Group tests by their quarantine issue.
@@ -313,9 +316,9 @@ For each quarantine/re-quarantine candidate, in priority order:
    - Do not include potentially sensitive information such as access tokens.
 
 3. **Create a PR** that:
-   - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/{ISSUE_NUMBER}")]` to the test method (or class). The `{ISSUE_NUMBER}` **must** be the actual numeric issue number from the issue created in step 1 — never use placeholder text like `TODO`, `TBD`, or descriptive strings. Verify the URL is correct before committing.
+   - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_{TEMPORARY_ID}")]` to the test method (or class), where `{TEMPORARY_ID}` is the `temporary_id` you used when calling `create_issue` in step 1. The framework will resolve `#aw_{TEMPORARY_ID}` to the actual numeric issue number when creating the PR. For example, if you called `create_issue(temporary_id: "aw_http2ign", ...)`, use `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_http2ign")]`. **Never** use placeholder text like `TODO`, `TBD`, or descriptive strings.
    - Adds `using Microsoft.AspNetCore.InternalTesting;` if not already present in the file
-   - References the issue in the PR body with `Associated issue: #{ISSUE_NUMBER}`. Do **not** use the word `Fixes` or `Closes` — quarantine PRs open tracking issues, they do not fix them, and GitHub would auto-close the issue when the PR merges.
+   - References the issue in the PR body with `Associated issue: #aw_{TEMPORARY_ID}` (using the same `temporary_id` from `create_issue`). Do **not** use the word `Fixes` or `Closes` — quarantine PRs open tracking issues, they do not fix them, and GitHub would auto-close the issue when the PR merges.
    - If the test matched **Case B** (re-quarantine of a recently unquarantined test), add the `re-quarantine` label to the PR.
 
 ### Step 3.2 — Unquarantine (only after all quarantine work is done)
