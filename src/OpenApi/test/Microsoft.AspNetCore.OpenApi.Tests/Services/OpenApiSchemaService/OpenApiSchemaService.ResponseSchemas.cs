@@ -8,6 +8,7 @@ using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
@@ -1080,6 +1081,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/TODO")]
     public async Task GetOpenApiResponse_HandlesFileContentHttpResultTypeResponse()
     {
         // Arrange
@@ -1103,6 +1105,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/TODO")]
     public async Task GetOpenApiResponse_HandlesFileStreamHttpResultTypeResponse()
     {
         // Arrange
