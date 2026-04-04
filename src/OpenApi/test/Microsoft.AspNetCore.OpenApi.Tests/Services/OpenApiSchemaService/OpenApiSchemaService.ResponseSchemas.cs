@@ -1081,7 +1081,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/TODO")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66147")]
     public async Task GetOpenApiResponse_HandlesFileContentHttpResultTypeResponse()
     {
         // Arrange
@@ -1105,7 +1105,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/TODO")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66147")]
     public async Task GetOpenApiResponse_HandlesFileStreamHttpResultTypeResponse()
     {
         // Arrange
