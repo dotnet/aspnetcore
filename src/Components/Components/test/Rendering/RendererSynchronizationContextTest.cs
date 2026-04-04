@@ -157,7 +157,6 @@ public class RendererSynchronizationContextTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61639")]
     public async Task Post_CanRunAsynchronously_WhenBusy_Exception()
     {
         // Arrange

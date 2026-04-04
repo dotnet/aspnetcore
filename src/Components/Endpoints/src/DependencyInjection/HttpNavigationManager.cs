@@ -8,11 +8,11 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal sealed class HttpNavigationManager : NavigationManager, IHostEnvironmentNavigationManager
 {
-    private const string _enableThrowNavigationException = "Microsoft.AspNetCore.Components.Endpoints.NavigationManager.EnableThrowNavigationException";
+    private const string _disableThrowNavigationException = "Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException";
 
-    [FeatureSwitchDefinition(_enableThrowNavigationException)]
+    [FeatureSwitchDefinition(_disableThrowNavigationException)]
     private static bool _throwNavigationException =>
-        AppContext.TryGetSwitch(_enableThrowNavigationException, out var switchValue) && switchValue;
+        !AppContext.TryGetSwitch(_disableThrowNavigationException, out var switchValue) || !switchValue;
 
     private Func<string, Task>? _onNavigateTo;
 

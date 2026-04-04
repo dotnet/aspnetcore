@@ -14,6 +14,7 @@
       DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
       GrpcAspNetCoreVersion=$(GrpcAspNetCoreVersion);
       MicrosoftAspNetCoreMvcRazorRuntimeCompilationVersion=$(MicrosoftAspNetCoreMvcRazorRuntimeCompilationVersion);
+      MicrosoftEntityFrameworkCoreDesignVersion=$(MicrosoftEntityFrameworkCoreDesignVersion);
       MicrosoftEntityFrameworkCoreSqliteVersion=$(MicrosoftEntityFrameworkCoreSqliteVersion);
       MicrosoftEntityFrameworkCoreSqlServerVersion=$(MicrosoftEntityFrameworkCoreSqlServerVersion);
       MicrosoftEntityFrameworkCoreToolsVersion=$(MicrosoftEntityFrameworkCoreToolsVersion);
@@ -60,9 +61,10 @@
     <GeneratedContent Include="WebApi-FSharp.fsproj.in" OutputPath="content/WebApi-FSharp/Company.WebApplication1.fsproj" />
     <GeneratedContent Include="Worker-CSharp.csproj.in" OutputPath="content/Worker-CSharp/Company.Application1.csproj" />
     <GeneratedContent Include="Worker-FSharp.fsproj.in" OutputPath="content/Worker-FSharp/Company.Application1.fsproj" />
-    <GeneratedContent Include="BlazorWeb-CSharp.csproj.in" OutputPath="content/BlazorWeb-CSharp/BlazorWeb-CSharp/BlazorWeb-CSharp.csproj" />
-    <GeneratedContent Include="BlazorWeb-CSharp.Client.csproj.in" OutputPath="content/BlazorWeb-CSharp/BlazorWeb-CSharp.Client/BlazorWeb-CSharp.Client.csproj" />
+    <GeneratedContent Include="BlazorWebCSharp.csproj.in" OutputPath="content/BlazorWeb-CSharp/BlazorWebCSharp.1/BlazorWebCSharp.1.csproj" />
+    <GeneratedContent Include="BlazorWebCSharp.Client.csproj.in" OutputPath="content/BlazorWeb-CSharp/BlazorWebCSharp.1.Client/BlazorWebCSharp.1.Client.csproj" />
     <GeneratedContent Include="ComponentsWebAssembly-CSharp.csproj.in" OutputPath="content/ComponentsWebAssembly-CSharp/ComponentsWebAssembly-CSharp.csproj" />
+    <GeneratedContent Include="WebWorker-CSharp.csproj.in" OutputPath="content/WebWorker-CSharp/Company.WebWorker1.csproj" />
   </ItemGroup>
 
 </Project>

@@ -8,7 +8,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
-using Microsoft.OpenApi.Models;
 
 public class OpenApiServiceCollectionExtensions
 {

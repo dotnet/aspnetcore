@@ -135,21 +135,35 @@ internal sealed class CertificateAuthenticationHandler : AuthenticationHandler<C
         }
 
         var chainPolicy = BuildChainPolicy(clientCertificate, isCertificateSelfSigned);
-        using var chain = new X509Chain
+        var chain = new X509Chain
         {
             ChainPolicy = chainPolicy
         };
 
-        var certificateIsValid = chain.Build(clientCertificate);
-        if (!certificateIsValid)
+        try
         {
-            var chainErrors = new List<string>(chain.ChainStatus.Length);
-            foreach (var validationFailure in chain.ChainStatus)
+            var certificateIsValid = chain.Build(clientCertificate);
+            if (!certificateIsValid)
             {
-                chainErrors.Add($"{validationFailure.Status} {validationFailure.StatusInformation}");
+                var chainErrors = new List<string>(chain.ChainStatus.Length);
+                foreach (var validationFailure in chain.ChainStatus)
+                {
+                    chainErrors.Add($"{validationFailure.Status} {validationFailure.StatusInformation}");
+                }
+                Logger.CertificateFailedValidation(clientCertificate.Subject, chainErrors);
+                return AuthenticateResults.InvalidClientCertificate;
             }
-            Logger.CertificateFailedValidation(clientCertificate.Subject, chainErrors);
-            return AuthenticateResults.InvalidClientCertificate;
+        }
+        finally
+        {
+            // Disposing the chain does not dispose the elements we potentially built.
+            // Do the full walk manually to dispose.
+            for (var i = 0; i < chain.ChainElements.Count; i++)
+            {
+                chain.ChainElements[i].Certificate.Dispose();
+            }
+
+            chain.Dispose();
         }
 
         var certificateValidatedContext = new CertificateValidatedContext(Context, Scheme, Options)

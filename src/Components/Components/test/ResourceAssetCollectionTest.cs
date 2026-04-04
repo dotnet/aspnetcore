@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 namespace Microsoft.AspNetCore.Components;
 
 public class ResourceAssetCollectionTest
@@ -84,5 +87,69 @@ public class ResourceAssetCollectionTest
         // Assert
         Assert.False(isContentSpecificUrl1);
         Assert.True(isContentSpecificUrl2);
+    }
+
+    [Fact]
+    public void ResourceAsset_CanSerializeAndDeserialize_WithoutRespectRequiredConstructorParameters()
+    {
+        // Arrange
+        var originalAsset = new ResourceAsset("test-url", null);
+        var options = new JsonSerializerOptions { WriteIndented = true };
+
+        // Act
+        var json = JsonSerializer.Serialize(originalAsset, options);
+        var deserializedAsset = JsonSerializer.Deserialize<ResourceAsset>(json, options);
+
+        // Assert
+        Assert.NotNull(deserializedAsset);
+        Assert.Equal("test-url", deserializedAsset.Url);
+        Assert.Null(deserializedAsset.Properties);
+    }
+
+    [Fact]
+    public void ResourceAsset_CanSerializeAndDeserialize_WithRespectRequiredConstructorParameters()
+    {
+        // Arrange
+        var originalAsset = new ResourceAsset("test-url", null);
+        var options = new JsonSerializerOptions 
+        { 
+            WriteIndented = true,
+            RespectRequiredConstructorParameters = true
+        };
+
+        // Act
+        var json = JsonSerializer.Serialize(originalAsset, options);
+        var deserializedAsset = JsonSerializer.Deserialize<ResourceAsset>(json, options);
+
+        // Assert
+        Assert.NotNull(deserializedAsset);
+        Assert.Equal("test-url", deserializedAsset.Url);
+        Assert.Null(deserializedAsset.Properties);
+    }
+
+    [Fact] 
+    public void ResourceAsset_WithSourceGenerationContext_CanSerializeAndDeserializeWithRespectRequiredConstructorParameters()
+    {
+        // Arrange - this test simulates the context from ResourceCollectionUrlEndpoint
+        var originalAsset = new ResourceAsset("test-url", null);
+        var assets = new List<ResourceAsset> { originalAsset };
+        
+        // Use a custom JsonSerializerOptions that mimics the source-generated context behavior
+        var options = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+            WriteIndented = false,
+            RespectRequiredConstructorParameters = true
+        };
+
+        // Act
+        var json = JsonSerializer.Serialize<IReadOnlyList<ResourceAsset>>(assets, options);
+        var deserializedAssets = JsonSerializer.Deserialize<IReadOnlyList<ResourceAsset>>(json, options);
+
+        // Assert
+        Assert.NotNull(deserializedAssets);
+        Assert.Single(deserializedAssets);
+        Assert.Equal("test-url", deserializedAssets[0].Url);
+        Assert.Null(deserializedAssets[0].Properties);
     }
 }

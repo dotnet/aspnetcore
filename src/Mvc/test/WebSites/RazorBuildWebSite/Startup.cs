@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Hosting;
+
 namespace RazorBuildWebSite;
 
 public class Startup
@@ -25,10 +27,14 @@ public class Startup
         });
     }
 
-    public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-        new WebHostBuilder()
-        .UseContentRoot(Directory.GetCurrentDirectory())
-        .UseStartup<Startup>()
-        .UseKestrel()
-        .UseIISIntegration();
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseContentRoot(Directory.GetCurrentDirectory())
+                    .UseStartup<Startup>()
+                    .UseKestrel()
+                    .UseIISIntegration();
+            });
 }

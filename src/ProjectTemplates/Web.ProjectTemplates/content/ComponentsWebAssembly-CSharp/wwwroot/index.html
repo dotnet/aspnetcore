@@ -48,7 +48,7 @@
 <!--#endif  -->
     <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
     <!--#if PWA -->
-    <script>navigator.serviceWorker.register('service-worker.js');</script>
+    <script>navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' });</script>
     <!--#endif -->
 </body>
 

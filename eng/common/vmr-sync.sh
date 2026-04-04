@@ -164,9 +164,9 @@ set -e
 highlight 'Installing .NET, preparing the tooling..'
 source "./eng/common/tools.sh"
 InitializeDotNetCli true
+GetDarc
 dotnetDir=$( cd ./.dotnet/; pwd -P )
 dotnet=$dotnetDir/dotnet
-"$dotnet" tool restore
 
 highlight "Starting the synchronization of VMR.."
 set +e
@@ -186,7 +186,16 @@ fi
 
 # Synchronize the VMR
 
-"$dotnet" darc vmr forwardflow \
+version_details_path=$(cd "$scriptroot/.."; pwd -P)/Version.Details.xml
+repo_name=$(grep -m 1 '<Source ' "$version_details_path" | sed -n 's/.*Mapping="\([^"]*\)".*/\1/p')
+if [[ -z "$repo_name" ]]; then
+  fail "Failed to resolve repo mapping from $version_details_path"
+  exit 1
+fi
+
+export DOTNET_ROOT="$dotnetDir"
+
+"$darc_tool" vmr forwardflow \
   --tmp "$tmp_dir"             \
   $azdev_pat                   \
   --$verbosity                 \
@@ -197,9 +206,22 @@ fi
 if [[ $? == 0 ]]; then
   highlight "Synchronization succeeded"
 else
-  fail "Synchronization of repo to VMR failed!"
-  fail "'$vmr_dir' is left in its last state (re-run of this script will reset it)."
-  fail "Please inspect the logs which contain path to the failing patch file (use --debug to get all the details)."
-  fail "Once you make changes to the conflicting VMR patch, commit it locally and re-run this script."
-  exit 1
+  highlight "Failed to flow code into the local VMR. Falling back to resetting the VMR to match repo contents..."
+  git -C "$vmr_dir" reset --hard
+
+  "$darc_tool" vmr reset \
+    "$repo_name:HEAD"                              \
+    --vmr "$vmr_dir"                               \
+    --tmp "$tmp_dir"                               \
+    --additional-remotes "$repo_name:$repo_root"
+
+  if [[ $? == 0 ]]; then
+    highlight "Successfully reset the VMR using 'darc vmr reset'"
+  else
+    fail "Synchronization of repo to VMR failed!"
+    fail "'$vmr_dir' is left in its last state (re-run of this script will reset it)."
+    fail "Please inspect the logs which contain path to the failing patch file (use --debug to get all the details)."
+    fail "Once you make changes to the conflicting VMR patch, commit it locally and re-run this script."
+    exit 1
+  fi
 fi

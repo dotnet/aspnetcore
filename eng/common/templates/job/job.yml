@@ -6,7 +6,7 @@ parameters:
   enableSbom: true
   runAsPublic: false
   PackageVersion: 9.0.0
-  BuildDropPath: '$(Build.SourcesDirectory)/artifacts'
+  BuildDropPath: '$(System.DefaultWorkingDirectory)/artifacts'
 
 jobs:
 - template: /eng/common/core-templates/job/job.yml
@@ -61,23 +61,23 @@ jobs:
               sbomEnabled: false  # we don't need SBOM for logs
 
     - ${{ if ne(parameters.enablePublishBuildArtifacts, 'false') }}:
-      - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
+      - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
         parameters:
           is1ESPipeline: false
           args:
             displayName: Publish Logs
-            pathToPublish: '$(Build.ArtifactStagingDirectory)/artifacts/log/$(_BuildConfig)'
-            publishLocation: Container
+            targetPath: '$(Build.ArtifactStagingDirectory)/artifacts/log/$(_BuildConfig)'
             artifactName: ${{ coalesce(parameters.enablePublishBuildArtifacts.artifactName, '$(Agent.Os)_$(Agent.JobName)_Attempt$(System.JobAttempt)' ) }}
             continueOnError: true
             condition: always()
+            sbomEnabled: false
 
     - ${{ if eq(parameters.enableBuildRetry, 'true') }}:
       - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
         parameters:
           is1ESPipeline: false
           args:
-            targetPath: '$(Build.SourcesDirectory)\eng\common\BuildConfiguration'
+            targetPath: '$(System.DefaultWorkingDirectory)\eng\common\BuildConfiguration'
             artifactName: 'BuildConfiguration'
             displayName: 'Publish build retry configuration'
             continueOnError: true

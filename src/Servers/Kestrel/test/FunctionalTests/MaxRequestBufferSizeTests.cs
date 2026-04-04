@@ -1,23 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Xunit;
 
 #if SOCKETS
 namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests;
@@ -132,7 +126,7 @@ public class MaxRequestBufferSizeTests : LoggedTest
 
         var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
 
-        using (var host = await StartHost(maxRequestBufferSize, data, connectionAdapter, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
+        using (var host = await StartHost(maxRequestBufferSize, data, connectionAdapter, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory))
         {
             var port = host.GetPort();
             using (var socket = CreateSocket(port))
@@ -225,7 +219,7 @@ public class MaxRequestBufferSizeTests : LoggedTest
 
         var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
 
-        using (var host = await StartHost(16 * 1024, data, false, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
+        using (var host = await StartHost(16 * 1024, data, false, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory))
         {
             var port = host.GetPort();
             using (var socket = CreateSocket(port))
@@ -306,9 +300,9 @@ public class MaxRequestBufferSizeTests : LoggedTest
         bool useConnectionAdapter,
         TaskCompletionSource startReadingRequestBody,
         TaskCompletionSource clientFinishedSendingRequestBody,
-        Func<MemoryPool<byte>> memoryPoolFactory = null)
+        IMemoryPoolFactory<byte> memoryPoolFactory = null)
     {
-        var host = TransportSelector.GetHostBuilder(memoryPoolFactory, maxRequestBufferSize)
+        var host = TransportSelector.GetHostBuilder(maxRequestBufferSize)
             .ConfigureWebHost(webHostBuilder =>
             {
                 webHostBuilder
@@ -341,6 +335,13 @@ public class MaxRequestBufferSizeTests : LoggedTest
                         options.Limits.MaxRequestBodySize = _dataLength;
                     })
                     .UseContentRoot(Directory.GetCurrentDirectory())
+                    .ConfigureServices(services =>
+                    {
+                        if (memoryPoolFactory != null)
+                        {
+                            services.AddSingleton<IMemoryPoolFactory<byte>>(memoryPoolFactory);
+                        }
+                    })
                     .Configure(app => app.Run(async context =>
                     {
                         await startReadingRequestBody.Task.TimeoutAfter(TimeSpan.FromSeconds(120));

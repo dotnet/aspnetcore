@@ -1,0 +1,23 @@
+﻿@inherits LayoutComponentBase
+
+<div class="page">
+    <header class="top-bar">
+        <a id="about-link" href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+    </header>
+    <main>
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+<style>
+    .top-bar {
+        background-color: #0078d4;
+        color: white;
+        padding: 10px;
+        text-align: center;
+        width: 100%;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+    }
+</style>

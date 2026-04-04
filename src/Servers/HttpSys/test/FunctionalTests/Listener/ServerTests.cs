@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -132,7 +133,7 @@ public class ServerTests
 
         var options = new HttpSysOptions();
         options.UrlPrefixes.Add(address1);
-        using var listener = new HttpSysListener(options, new LoggerFactory());
+        using var listener = new HttpSysListener(options, new DefaultMemoryPoolFactory(), new LoggerFactory());
 
         var exception = Assert.Throws<HttpSysException>(() => listener.Start());
 

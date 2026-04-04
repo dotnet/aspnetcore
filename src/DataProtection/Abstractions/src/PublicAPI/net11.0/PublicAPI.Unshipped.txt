@@ -1,0 +1,4 @@
+#nullable enable
+Microsoft.AspNetCore.DataProtection.ISpanDataProtector
+Microsoft.AspNetCore.DataProtection.ISpanDataProtector.Protect<TWriter>(System.ReadOnlySpan<byte> plaintext, ref TWriter destination) -> void
+Microsoft.AspNetCore.DataProtection.ISpanDataProtector.Unprotect<TWriter>(System.ReadOnlySpan<byte> protectedData, ref TWriter destination) -> void

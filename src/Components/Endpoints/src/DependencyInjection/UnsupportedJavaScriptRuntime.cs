@@ -17,10 +17,10 @@ internal sealed class UnsupportedJavaScriptRuntime : IJSRuntime
     ValueTask<TValue> IJSRuntime.InvokeAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, object?[]? args)
         => throw new InvalidOperationException(Message);
 
-    public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object?[]? args)
+    public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object?[]? args)
         => throw new InvalidOperationException(Message);
 
-    public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
+    public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
         => throw new InvalidOperationException(Message);
 
     public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier)

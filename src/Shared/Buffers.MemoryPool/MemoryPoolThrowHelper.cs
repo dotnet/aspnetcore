@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace System.Buffers;
+namespace Microsoft.AspNetCore;
 
 internal sealed class MemoryPoolThrowHelper
 {

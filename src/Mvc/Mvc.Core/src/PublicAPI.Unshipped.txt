@@ -1,8 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Mvc.ApiExplorer.IApiResponseMetadataProvider.Description.get -> string?
-Microsoft.AspNetCore.Mvc.ProducesAttribute.Description.get -> string?
-Microsoft.AspNetCore.Mvc.ProducesAttribute.Description.set -> void
-Microsoft.AspNetCore.Mvc.ProducesDefaultResponseTypeAttribute.Description.get -> string?
-Microsoft.AspNetCore.Mvc.ProducesDefaultResponseTypeAttribute.Description.set -> void
-Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute.Description.get -> string?
-Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute.Description.set -> void

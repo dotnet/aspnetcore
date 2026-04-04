@@ -20,6 +20,9 @@ public interface IHttpRequestBodyDetectionFeature
     /// <item><description>
     /// It's an HTTP/2 request that did not set the END_STREAM flag on the initial headers frame.
     /// </description></item>
+    /// <item><description>
+    /// It's an HTTP/3 request that did not set the END_STREAM flag on the initial headers frame.
+    /// </description></item>
     /// </list>
     /// The final request body length may still be zero for the chunked or HTTP/2 scenarios.
     /// <para>
@@ -34,6 +37,9 @@ public interface IHttpRequestBodyDetectionFeature
     /// </description></item>
     /// <item><description>
     /// It's an HTTP/2 request that set END_STREAM on the initial headers frame.
+    /// </description></item>
+    /// <item><description>
+    /// It's an HTTP/3 request that set END_STREAM on the initial headers frame.
     /// </description></item>
     /// </list>
     /// </para>

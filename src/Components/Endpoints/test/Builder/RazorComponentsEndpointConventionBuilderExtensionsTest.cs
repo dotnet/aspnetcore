@@ -245,7 +245,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
     private RazorComponentsEndpointConventionBuilder CreateRazorComponentsAppBuilder(IEndpointRouteBuilder endpointBuilder)
     {
         var builder = endpointBuilder.MapRazorComponents<App>();
-        builder.ApplicationBuilder.AddLibrary(new AssemblyComponentLibraryDescriptor(
+        builder.ComponentApplicationBuilderActions.Add(b => b.AddLibrary(new AssemblyComponentLibraryDescriptor(
             "App",
             [new PageComponentBuilder {
                 PageType = typeof(App),
@@ -253,7 +253,7 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
                 AssemblyName = "App",
             }],
             []
-        ));
+        )));
         return builder;
     }
 

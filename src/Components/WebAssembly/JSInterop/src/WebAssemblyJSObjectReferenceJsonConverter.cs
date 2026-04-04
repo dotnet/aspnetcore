@@ -26,6 +26,12 @@ internal sealed class WebAssemblyJSObjectReferenceJsonConverter : JsonConverter<
     public override IJSObjectReference? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var id = JSObjectReferenceJsonWorker.ReadJSObjectReferenceIdentifier(ref reader);
+
+        if (id == -1)
+        {
+            return null;
+        }
+
         return new WebAssemblyJSObjectReference(_jsRuntime, id);
     }
 

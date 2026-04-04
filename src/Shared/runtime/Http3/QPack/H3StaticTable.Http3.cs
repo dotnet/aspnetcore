@@ -1,24 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.Text;
 
 namespace System.Net.Http.QPack
 {
     internal static partial class H3StaticTable
     {
-        private static readonly Dictionary<HttpMethod, int> s_methodIndex = new Dictionary<HttpMethod, int>
-        {
-            // TODO connect is internal to system.net.http
-            [HttpMethod.Delete] = 16,
-            [HttpMethod.Get] = 17,
-            [HttpMethod.Head] = 18,
-            [HttpMethod.Options] = 19,
-            [HttpMethod.Post] = 20,
-            [HttpMethod.Put] = 21,
-        };
-
         public static bool TryGetStatusIndex(int status, out int index)
         {
             index = status switch
@@ -44,9 +32,6 @@ namespace System.Net.Http.QPack
         }
 
         public static int Count => s_staticTable.Length;
-
-        // TODO: just use Dictionary directly to avoid interface dispatch.
-        public static IReadOnlyDictionary<HttpMethod, int> MethodIndex => s_methodIndex;
 
         public static ref readonly HeaderField Get(int index) => ref s_staticTable[index];
 

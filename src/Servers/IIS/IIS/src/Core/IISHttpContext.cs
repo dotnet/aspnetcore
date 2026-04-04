@@ -360,6 +360,19 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
             {
                 ThrowResponseAlreadyStartedException(nameof(ReasonPhrase));
             }
+
+            if (value is not null)
+            {
+                // Reject non-ASCII (> 0x7E), CR/LF, and other control characters
+                // to prevent HTTP response splitting. Only HTAB, SP, and VCHAR
+                // (0x21-0x7E) are allowed per RFC 9112 Section 4.
+                var invalid = HttpCharacters.IndexOfInvalidFieldValueChar(value);
+                if (invalid >= 0)
+                {
+                    ThrowInvalidReasonPhraseCharacter(value[invalid]);
+                }
+            }
+
             _reasonPhrase = value;
         }
     }
@@ -389,7 +402,8 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
             // reasons, include X-Content-Length so that the original Content-Length is still available.
             if (RequestHeaders.ContentLength.HasValue)
             {
-                RequestHeaders.Add("X-Content-Length", RequestHeaders[HeaderNames.ContentLength]);
+                // if user already passed X-Content-Length, we won't overwrite it
+                _ = RequestHeaders.TryAdd("X-Content-Length", RequestHeaders[HeaderNames.ContentLength]);
                 RequestHeaders.ContentLength = null;
             }
             return true;
@@ -402,6 +416,8 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     {
         var handshake = GetTlsHandshake();
         Protocol = (SslProtocols)handshake.Protocol;
+
+        NegotiatedCipherSuite = GetTlsCipherSuite();
 #pragma warning disable SYSLIB0058 // Type or member is obsolete
         CipherAlgorithm = (CipherAlgorithmType)handshake.CipherType;
         CipherStrength = (int)handshake.CipherStrength;
@@ -413,6 +429,28 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
         var sni = GetClientSni();
         SniHostName = sni.Hostname.ToString();
+    }
+
+    private unsafe TlsCipherSuite? GetTlsCipherSuite()
+    {
+        SecPkgContext_CipherInfo cipherInfo = default;
+
+        var statusCode = NativeMethods.HttpQueryRequestProperty(
+            RequestId,
+            (HTTP_REQUEST_PROPERTY)14 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo */,
+            qualifier: null,
+            qualifierSize: 0,
+            output: &cipherInfo,
+            outputSize: (uint)sizeof(SecPkgContext_CipherInfo),
+            bytesReturned: null,
+            overlapped: IntPtr.Zero);
+
+        if (statusCode == NativeMethods.HR_OK)
+        {
+            return checked((TlsCipherSuite)cipherInfo.dwCipherSuite);
+        }
+
+        return default;
     }
 
     private unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()
@@ -839,6 +877,12 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     private static void ThrowResponseAlreadyStartedException(string name)
     {
         throw new InvalidOperationException(CoreStrings.FormatParameterReadOnlyAfterResponseStarted(name));
+    }
+
+    private static void ThrowInvalidReasonPhraseCharacter(char ch)
+    {
+        throw new InvalidOperationException(CoreStrings.FormatInvalidReasonPhraseCharacter(
+            string.Format(System.Globalization.CultureInfo.InvariantCulture, "0x{0:X4}", (ushort)ch)));
     }
 
     private WindowsPrincipal? GetWindowsPrincipal()

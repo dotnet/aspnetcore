@@ -66,5 +66,6 @@ public sealed class BadRequest<TValue> : IResult, IEndpointMetadataProvider, ISt
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(typeof(TValue), StatusCodes.Status400BadRequest, ContentTypeConstants.ApplicationJsonContentTypes));
+        builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
     }
 }

@@ -9,6 +9,7 @@
   <ItemGroup>
     <Reference Include="Newtonsoft.Json" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
 
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
   </ItemGroup>

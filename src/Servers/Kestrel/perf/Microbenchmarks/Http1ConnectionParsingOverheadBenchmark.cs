@@ -23,7 +23,7 @@ public class Http1ConnectionParsingOverheadBenchmark
     [IterationSetup]
     public void Setup()
     {
-        var memoryPool = PinnedBlockMemoryPoolFactory.Create();
+        var memoryPool = TestMemoryPoolFactory.Create();
         var options = new PipeOptions(memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
         var pair = DuplexPipe.CreateConnectionPair(options, options);
 

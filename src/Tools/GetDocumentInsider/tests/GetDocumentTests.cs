@@ -7,7 +7,6 @@ using Microsoft.Extensions.ApiDescription.Tool.Commands;
 using System.Reflection;
 using System.Runtime.Versioning;
 using Microsoft.OpenApi;
-using Microsoft.OpenApi.Models;
 
 namespace Microsoft.Extensions.ApiDescription.Tool.Tests;
 
@@ -90,7 +89,7 @@ public class GetDocumentTests(ITestOutputHelper output)
         ], new GetDocumentCommand(_console), throwOnUnexpectedArg: false);
 
         // Assert that error was produced and files were generated with v3.
-        Assert.Contains("Invalid OpenAPI spec version 'OpenApi4_0' provided. Falling back to default: v3.0.", _console.GetOutput());
+        Assert.Contains("Invalid OpenAPI spec version 'OpenApi4_0' provided. Falling back to default: v3.1.", _console.GetOutput());
         using var stream = new MemoryStream(File.ReadAllBytes(Path.Combine(outputPath.FullName, "Sample.json")));
         var result = OpenApiDocument.Load(stream, "json");
         Assert.Empty(result.Diagnostic.Errors);

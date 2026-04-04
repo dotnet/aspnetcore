@@ -200,6 +200,10 @@ internal sealed class SniOptionsSelector
             ServerCertificateSelectionCallback = sslOptions.ServerCertificateSelectionCallback,
             CertificateChainPolicy = sslOptions.CertificateChainPolicy,
             AllowTlsResume = sslOptions.AllowTlsResume,
+#pragma warning disable CA1416 // Ignore SupportedOSPlatform checks, we're just copying the value
+            AllowRsaPssPadding = sslOptions.AllowRsaPssPadding,
+            AllowRsaPkcs1Padding = sslOptions.AllowRsaPkcs1Padding,
+#pragma warning restore CA1416
         };
 
     private sealed class SniOptions
