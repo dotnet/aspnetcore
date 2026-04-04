@@ -2258,7 +2258,7 @@ public class Http3RequestTests : LoggedTest
     [MsQuicSupported]
     [InlineData(HttpProtocols.Http3)]
     [InlineData(HttpProtocols.Http2)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/TODO")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66149")]
     public async Task GET_GracefulServerShutdown_RequestCompleteSuccessfullyInsideHostTimeout(HttpProtocols protocol)
     {
         // Arrange
