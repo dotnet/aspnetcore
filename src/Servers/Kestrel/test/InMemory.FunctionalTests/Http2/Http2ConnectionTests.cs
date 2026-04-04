@@ -579,7 +579,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/TODO")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66142")]
     public async Task StreamPool_StreamIsInvalidState_DontReturnedToPool()
     {
         // Add (or don't add) stream to Http2Connection._completedStreams inline with SetResult().
