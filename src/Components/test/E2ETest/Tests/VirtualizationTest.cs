@@ -1034,7 +1034,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    public void DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace()
+    public virtual void DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace()
     {
         Browser.MountTestComponent<VirtualizationDynamicContent>();
 
