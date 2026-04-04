@@ -435,7 +435,7 @@ public class VirtualizeTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/TODO")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66143")]
     public async Task Virtualize_ScrollToBottom_SetWhenAtEndWithNewMeasurements()
     {
         var mockJs = new Mock<IJSRuntime>(MockBehavior.Loose);
