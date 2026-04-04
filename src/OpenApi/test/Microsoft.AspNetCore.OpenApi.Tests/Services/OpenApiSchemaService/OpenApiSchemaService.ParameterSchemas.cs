@@ -198,6 +198,55 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 #nullable restore
 
+    // Static helper methods used by DefaultParameterValue tests below.
+    // DefaultParameterValue(10) stores an int32 literal for a uint64 parameter,
+    // matching what F# produces when the literal type doesn't match the parameter type.
+    private static void HandlerWithInt32DefaultForUInt64(
+        [System.Runtime.InteropServices.Optional, System.Runtime.InteropServices.DefaultParameterValue(10)] ulong id) { }
+    private static void HandlerWithUInt32DefaultForUInt64(
+        [System.Runtime.InteropServices.Optional, System.Runtime.InteropServices.DefaultParameterValue((uint)10)] ulong id) { }
+
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesDefaultParameterValueWithInt32LiteralOnUInt64Parameter()
+    {
+        // Arrange - int32 literal (10) stored via DefaultParameterValue on a uint64 parameter;
+        // this is the type mismatch that F# produces and previously caused InvalidCastException.
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api", HandlerWithInt32DefaultForUInt64);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            var openApiDefault = parameter.Schema!.Default;
+            Assert.NotNull(openApiDefault);
+            Assert.Equal(10ul, openApiDefault.GetValue<ulong>());
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesDefaultParameterValueWithUInt32LiteralOnUInt64Parameter()
+    {
+        // Arrange - uint32 literal (10u) stored via DefaultParameterValue on a uint64 parameter.
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api", HandlerWithUInt32DefaultForUInt64);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            var openApiDefault = parameter.Schema!.Default;
+            Assert.NotNull(openApiDefault);
+            Assert.Equal(10ul, openApiDefault.GetValue<ulong>());
+        });
+    }
+
     [Fact]
     public async Task GetOpenApiParameters_HandlesEnumParameterWithoutConverter()
     {
