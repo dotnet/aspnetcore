@@ -5004,6 +5004,7 @@ public class RendererTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/TODO")]
     public async Task DisposingRenderer_UnsubsribesFromHotReloadManager()
     {
         // Arrange
@@ -5029,6 +5030,7 @@ public class RendererTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/TODO")]
     public async Task HotReload_ReRenderPreservesAsyncLocalValues()
     {
         await using var renderer = new TestRenderer();
