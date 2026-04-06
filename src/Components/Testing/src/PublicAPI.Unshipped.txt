@@ -1,7 +1,7 @@
 #nullable enable
-Microsoft.AspNetCore.Components.Testing.Infrastructure.AsyncLock
-Microsoft.AspNetCore.Components.Testing.Infrastructure.AsyncLock.DisposeAsync() -> System.Threading.Tasks.ValueTask
-Microsoft.AspNetCore.Components.Testing.Infrastructure.AsyncLock.ReleaseAsync() -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Testing.Infrastructure.RemoteLock
+Microsoft.AspNetCore.Components.Testing.Infrastructure.RemoteLock.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Testing.Infrastructure.RemoteLock.ReleaseAsync() -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Testing.Infrastructure.IE2EServiceOverrideResolver
 Microsoft.AspNetCore.Components.Testing.Infrastructure.IE2EServiceOverrideResolver.TryResolve(string! assemblyQualifiedTypeName, string! methodName) -> System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection!>?
 Microsoft.AspNetCore.Components.Testing.Infrastructure.PlaywrightExtensions
@@ -31,7 +31,7 @@ Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerStartOptions.Readin
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerStartOptions.ReadinessTimeoutMs.set -> void
 Microsoft.AspNetCore.Components.Testing.Infrastructure.ServerStartOptions.ServerStartOptions() -> void
 Microsoft.AspNetCore.Components.Testing.Infrastructure.TestLockClient
-Microsoft.AspNetCore.Components.Testing.Infrastructure.TestLockClient.Lock(string! name) -> Microsoft.AspNetCore.Components.Testing.Infrastructure.AsyncLock!
+Microsoft.AspNetCore.Components.Testing.Infrastructure.TestLockClient.Lock(string! name) -> Microsoft.AspNetCore.Components.Testing.Infrastructure.RemoteLock!
 Microsoft.AspNetCore.Components.Testing.Infrastructure.TestLockProvider
 Microsoft.AspNetCore.Components.Testing.Infrastructure.TestLockProvider.Release(string! key) -> bool
 Microsoft.AspNetCore.Components.Testing.Infrastructure.TestLockProvider.TestLockProvider() -> void

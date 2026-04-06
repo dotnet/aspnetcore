@@ -41,30 +41,12 @@
 <Project>
 
   <!--
-    Source generator: emit StartupHook + HostingStartupAttribute into test assemblies.
-    When consumed via NuGet, the generator is auto-included from analyzers/dotnet/cs/.
-    When consumed via ProjectReference (development), this adds the generator explicitly.
-  -->
-  <PropertyGroup>
-    <_E2EGeneratorProject>$(MSBuildThisFileDirectory)..\..\gen\Microsoft.AspNetCore.Components.Testing.Generators.csproj</_E2EGeneratorProject>
-  </PropertyGroup>
-  <ItemGroup Condition="Exists('$(_E2EGeneratorProject)')">
-    <ProjectReference Include="$(_E2EGeneratorProject)"
-                      OutputItemType="Analyzer"
-                      ReferenceOutputAssembly="false" />
-  </ItemGroup>
-
-  <!--
     MSBuild task: GenerateE2EManifest (from compiled task assembly).
-    When consumed via NuGet, the task DLL is in the tasks/ folder.
-    When consumed via ProjectReference (development), use the build output directly.
+    When consumed via NuGet, the task DLL is in the tasks/ folder of the package.
+    Set _E2ETasksAssembly before importing this file to use a different location
+    (e.g., set it to the development build output in testassets/Directory.Build.props).
   -->
   <PropertyGroup>
-    <!-- Development (ProjectReference): tasks DLL in local bin (standalone repo) -->
-    <_E2ETasksAssembly Condition="Exists('$(MSBuildThisFileDirectory)..\..\tasks\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll')">$(MSBuildThisFileDirectory)..\..\tasks\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll</_E2ETasksAssembly>
-    <!-- Development (ProjectReference): tasks DLL in artifacts bin (aspnetcore repo) -->
-    <_E2ETasksAssembly Condition="'$(_E2ETasksAssembly)' == '' and Exists('$(ArtifactsBinDir)\Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll')">$(ArtifactsBinDir)\Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll</_E2ETasksAssembly>
-    <!-- NuGet package: tasks DLL in package tasks/ folder -->
     <_E2ETasksAssembly Condition="'$(_E2ETasksAssembly)' == '' and Exists('$(MSBuildThisFileDirectory)tasks\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll')">$(MSBuildThisFileDirectory)tasks\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll</_E2ETasksAssembly>
   </PropertyGroup>
 
@@ -96,16 +78,11 @@
     </ItemGroup>
 
     <!-- Publish each E2E app project (only when UsePublishedApp=true) -->
-    <Message
-      Text="Publishing E2E app: %(_E2EAppProjects.Filename) → $([System.IO.Path]::Combine('$(_E2EAppsOutputDir)', '%(_E2EAppProjects.Filename)'))"
-      Importance="high"
-      Condition="'$(UsePublishedApp)' == 'true' and '@(_E2EAppProjects)' != ''" />
-
     <MSBuild
+      Condition="'$(UsePublishedApp)' == 'true' and '@(_E2EAppProjects)' != ''"
       Projects="@(_E2EAppProjects)"
       Targets="Publish"
-      Properties="PublishDir=$([System.IO.Path]::Combine('$(_E2EAppsOutputDir)', '%(_E2EAppProjects.Filename)'))/;Configuration=$(Configuration)"
-      Condition="'$(UsePublishedApp)' == 'true' and '@(_E2EAppProjects)' != ''" />
+      Properties="PublishDir=$([System.IO.Path]::Combine('$(_E2EAppsOutputDir)', '%(_E2EAppProjects.Filename)'))/;Configuration=$(Configuration)" />
 
     <!-- Generate manifest (always — includes project paths, optionally published info) -->
     <GenerateE2EManifest

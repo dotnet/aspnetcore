@@ -13,6 +13,15 @@ namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 /// </summary>
 public static class PlaywrightExtensions
 {
+    // Cross-platform invalid file name characters. Path.GetInvalidFileNameChars()
+    // is OS-dependent (Linux only returns '/' and '\0'), so we use a fixed set
+    // covering Windows, macOS, and Linux to ensure consistent sanitization.
+    private static readonly HashSet<char> s_invalidFileNameChars =
+    [
+        '\\', '/', ':', '*', '?', '"', '<', '>', '|', '\0',
+        .. Enumerable.Range(1, 31).Select(i => (char)i)
+    ];
+
     // Toggle video recording via environment variable.
     // Set PLAYWRIGHT_RECORD_VIDEO=1 to enable video capture for all tests.
     private static readonly bool s_recordVideo =
@@ -20,6 +29,12 @@ public static class PlaywrightExtensions
             Environment.GetEnvironmentVariable("PLAYWRIGHT_RECORD_VIDEO"),
             "1",
             StringComparison.Ordinal);
+
+    // Override the default artifact root directory via E2E_ARTIFACTS_DIR environment variable.
+    // Defaults to a test-artifacts/ subdirectory next to the test assembly.
+    private static readonly string s_artifactsRoot =
+        Environment.GetEnvironmentVariable("E2E_ARTIFACTS_DIR")
+        ?? Path.Combine(AppContext.BaseDirectory, "test-artifacts");
 
     /// <summary>
     /// Sets the <c>X-Test-Backend</c> header on browser context options
@@ -89,8 +104,7 @@ public static class PlaywrightExtensions
     {
         var testName = TestContext.Current.Test?.TestDisplayName ?? "unknown";
         var sanitized = SanitizeFileName(testName);
-        var artifactDir = Path.Combine(
-            AppContext.BaseDirectory, "test-artifacts", sanitized);
+        var artifactDir = Path.Combine(s_artifactsRoot, sanitized);
 
         options ??= new BrowserNewContextOptions();
         options = options
@@ -173,15 +187,6 @@ public static class PlaywrightExtensions
         await navigationAction().ConfigureAwait(false);
         await navTask.ConfigureAwait(false);
     }
-
-    // Cross-platform invalid file name characters. Path.GetInvalidFileNameChars()
-    // is OS-dependent (Linux only returns '/' and '\0'), so we use a fixed set
-    // covering Windows, macOS, and Linux to ensure consistent sanitization.
-    private static readonly HashSet<char> s_invalidFileNameChars =
-    [
-        '\\', '/', ':', '*', '?', '"', '<', '>', '|', '\0',
-        .. Enumerable.Range(1, 31).Select(i => (char)i)
-    ];
 
     /// <summary>
     /// Replaces characters that are invalid in file names with underscores.

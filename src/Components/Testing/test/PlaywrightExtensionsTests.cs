@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
 using Microsoft.Playwright;
-using NSubstitute;
 
 namespace Microsoft.AspNetCore.Components.Testing.Tests;
 

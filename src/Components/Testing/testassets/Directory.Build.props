@@ -26,4 +26,24 @@
     <Reference Include="@(AspNetCoreAppReference)" />
     <Reference Include="@(AspNetCoreAppReferenceAndPackage)" />
   </ItemGroup>
+
+  <!--
+    Development layout: point the tasks assembly to the artifacts bin output so that
+    Microsoft.AspNetCore.Components.Testing.targets (which only handles the NuGet package
+    layout) can find it when building inside the aspnetcore repo.
+  -->
+  <PropertyGroup Condition=" $(IsTestProject) ">
+    <_E2ETasksAssembly Condition="'$(_E2ETasksAssembly)' == '' and Exists('$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll')">$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll</_E2ETasksAssembly>
+  </PropertyGroup>
+
+  <!--
+    Development layout: add the source generator as an analyzer from the local project.
+    When the library is consumed via NuGet the generator is picked up from analyzers/dotnet/cs/.
+  -->
+  <ItemGroup Condition=" $(IsTestProject) ">
+    <ProjectReference
+      Include="$(MSBuildThisFileDirectory)..\gen\Microsoft.AspNetCore.Components.Testing.Generators.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false" />
+  </ItemGroup>
 </Project>

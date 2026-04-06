@@ -13,13 +13,13 @@ namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 /// Uses <see cref="HttpClient"/> directly (not page JavaScript execution) because
 /// JS execution is blocked during Blazor streaming navigation.
 /// </remarks>
-public sealed class AsyncLock : IAsyncDisposable
+public sealed class RemoteLock : IAsyncDisposable
 {
     private readonly ServerInstance _server;
     private readonly string _key;
     private bool _released;
 
-    internal AsyncLock(ServerInstance server, string key)
+    internal RemoteLock(ServerInstance server, string key)
     {
         _server = server;
         _key = key;

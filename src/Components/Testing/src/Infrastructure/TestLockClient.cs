@@ -49,10 +49,10 @@ public class TestLockClient
     /// <summary>
     /// Creates a lock handle for the given name. The server-side lock key
     /// is <c>{sessionId}:{name}</c>. The lock is released when the handle is
-    /// disposed or when <see cref="AsyncLock.ReleaseAsync"/> is called explicitly.
+    /// disposed or when <see cref="RemoteLock.ReleaseAsync"/> is called explicitly.
     /// </summary>
     /// <param name="name">The lock name (combined with the session ID to form the full key).</param>
-    /// <returns>An <see cref="AsyncLock"/> that releases the named gate on disposal.</returns>
-    public AsyncLock Lock(string name)
+    /// <returns>A <see cref="RemoteLock"/> that releases the named gate on disposal.</returns>
+    public RemoteLock Lock(string name)
         => new(_server, $"{_sessionId}:{name}");
 }

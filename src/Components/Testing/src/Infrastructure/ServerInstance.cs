@@ -78,62 +78,51 @@ public class ServerInstance : IAsyncDisposable
         AppUrl = $"http://localhost:{port}";
         PublicUrl = appEntry.PublicUrl;
 
-        ProcessStartInfo startInfo;
+        var startInfo = BuildProcessStartInfo(appEntry);
 
-        if (appEntry.Published is not null)
-        {
-            startInfo = CreatePublishedStartInfo(appEntry);
-        }
-        else if (appEntry.ProjectPath is not null)
-        {
-            startInfo = new ProcessStartInfo("dotnet",
-                $"run --no-launch-profile --project \"{appEntry.ProjectPath}\"")
-            {
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true,
-            };
-        }
-        else
-        {
-            throw new InvalidOperationException(
-                $"App '{AppName}' has no projectPath or published info in the manifest.");
-        }
+        // Build unified environment: infrastructure, then manifest, then options.
+        // Each layer can override the previous one. Environment variables already
+        // set in the current process (e.g., CI variables) take precedence over
+        // defaults but can themselves be overridden by explicit option values.
+        var environment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-        // Inject E2E test infrastructure
-        startInfo.Environment["ASPNETCORE_URLS"] = AppUrl;
-        startInfo.Environment["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = testAssemblyName;
-        startInfo.Environment["DOTNET_STARTUP_HOOKS"] = testAssemblyLocation;
-        startInfo.Environment["TEST_PARENT_PID"] = Environment.ProcessId.ToString(CultureInfo.InvariantCulture);
-        startInfo.Environment["ASPNETCORE_ENVIRONMENT"] = "Development";
+        // Infrastructure variables (always set)
+        environment["ASPNETCORE_URLS"] = AppUrl;
+        environment["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = testAssemblyName;
+        environment["DOTNET_STARTUP_HOOKS"] = testAssemblyLocation;
+        environment["TEST_PARENT_PID"] = Environment.ProcessId.ToString(CultureInfo.InvariantCulture);
+        environment["ASPNETCORE_ENVIRONMENT"] = "Development";
+        environment["E2E_READY_URL"] = readyUrl;
 
         // Propagate DOTNET_ROOT so published app hosts can find the correct runtime
         // (e.g. when building against a preview SDK that isn't globally installed).
         var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
         if (!string.IsNullOrEmpty(dotnetRoot))
         {
-            startInfo.Environment["DOTNET_ROOT"] = dotnetRoot;
+            environment["DOTNET_ROOT"] = dotnetRoot;
         }
-
-        // Readiness callback: the app POSTs to this URL when ApplicationStarted fires
-        startInfo.Environment["E2E_READY_URL"] = readyUrl;
 
         // Service override: static method pattern (WAF-like)
         if (options.ServiceOverrideTypeName is not null)
         {
-            startInfo.Environment["E2E_TEST_SERVICES_TYPE"] = options.ServiceOverrideTypeName;
-            startInfo.Environment["E2E_TEST_SERVICES_METHOD"] = options.ServiceOverrideMethodName;
+            environment["E2E_TEST_SERVICES_TYPE"] = options.ServiceOverrideTypeName;
+            environment["E2E_TEST_SERVICES_METHOD"] = options.ServiceOverrideMethodName!;
         }
 
         // Manifest-defined environment variables
         foreach (var (key, value) in appEntry.EnvironmentVariables)
         {
-            startInfo.Environment[key] = value;
+            environment[key] = value;
         }
 
-        // User-specified environment variables (override manifest ones)
+        // User-specified environment variables override all previous values
         foreach (var (key, value) in options.EnvironmentVariables)
+        {
+            environment[key] = value;
+        }
+
+        // Apply collected environment to the process
+        foreach (var (key, value) in environment)
         {
             startInfo.Environment[key] = value;
         }
@@ -204,24 +193,48 @@ public class ServerInstance : IAsyncDisposable
         return sb.ToString();
     }
 
-    static ProcessStartInfo CreatePublishedStartInfo(E2EAppEntry appEntry)
+    static ProcessStartInfo BuildProcessStartInfo(E2EAppEntry appEntry)
     {
-        var published = appEntry.Published!;
-        var e2eAppsDir = Path.Combine(AppContext.BaseDirectory, "e2e-apps");
-        var workingDir = Path.Combine(e2eAppsDir, published.WorkingDirectory);
+        string executable;
+        string args;
+        string? workingDir = null;
 
-        var fileName = published.Executable == "dotnet"
-            ? "dotnet"
-            : Path.Combine(workingDir, published.Executable);
-
-        return new ProcessStartInfo(fileName, published.Args)
+        if (appEntry.Published is not null)
         {
-            WorkingDirectory = workingDir,
+            var published = appEntry.Published;
+            var e2eAppsDir = Path.Combine(AppContext.BaseDirectory, "e2e-apps");
+            workingDir = Path.Combine(e2eAppsDir, published.WorkingDirectory);
+
+            executable = published.Executable == "dotnet"
+                ? "dotnet"
+                : Path.Combine(workingDir, published.Executable);
+            args = published.Args;
+        }
+        else if (appEntry.ProjectPath is not null)
+        {
+            executable = "dotnet";
+            args = $"run --no-launch-profile --project \"{appEntry.ProjectPath}\"";
+        }
+        else
+        {
+            throw new InvalidOperationException(
+                $"App entry has no projectPath or published info in the manifest.");
+        }
+
+        var startInfo = new ProcessStartInfo(executable, args)
+        {
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             CreateNoWindow = true,
         };
+
+        if (workingDir is not null)
+        {
+            startInfo.WorkingDirectory = workingDir;
+        }
+
+        return startInfo;
     }
 
     static int GetAvailablePort()

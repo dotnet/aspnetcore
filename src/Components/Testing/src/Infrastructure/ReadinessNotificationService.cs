@@ -41,14 +41,31 @@ internal class ReadinessNotificationService : IHostedService
 
     private static async Task NotifyReadyAsync(string url)
     {
-        try
+        const int maxAttempts = 5;
+        var delay = TimeSpan.FromMilliseconds(200);
+
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
         {
-            using var client = new HttpClient();
-            await client.PostAsync(url, content: null).ConfigureAwait(false);
-        }
-        catch
-        {
-            // Best-effort: if the callback fails, the test fixture will time out.
+            try
+            {
+                using var client = new HttpClient();
+                client.Timeout = TimeSpan.FromSeconds(5);
+                var response = await client.PostAsync(url, content: null).ConfigureAwait(false);
+                if (response.IsSuccessStatusCode)
+                {
+                    return;
+                }
+            }
+            catch
+            {
+                // Retry on any error
+            }
+
+            if (attempt < maxAttempts)
+            {
+                await Task.Delay(delay).ConfigureAwait(false);
+                delay = TimeSpan.FromMilliseconds(delay.TotalMilliseconds * 2);
+            }
         }
     }
 }

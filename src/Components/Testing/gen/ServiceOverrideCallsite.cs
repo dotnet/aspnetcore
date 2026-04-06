@@ -27,7 +27,7 @@ internal sealed class ServiceOverrideCallsite : IEquatable<ServiceOverrideCallsi
         MethodName = methodName;
     }
 
-    public bool Equals(ServiceOverrideCallsite other)
+    public bool Equals(ServiceOverrideCallsite? other)
     {
         if (other is null)
         {
@@ -38,7 +38,7 @@ internal sealed class ServiceOverrideCallsite : IEquatable<ServiceOverrideCallsi
                MethodName == other.MethodName;
     }
 
-    public override bool Equals(object obj) => Equals(obj as ServiceOverrideCallsite);
+    public override bool Equals(object? obj) => Equals(obj as ServiceOverrideCallsite);
 
     public override int GetHashCode()
     {

@@ -60,8 +60,8 @@ internal class ServiceOverrideAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        ITypeSymbol overrideType = null;
-        ExpressionSyntax methodNameExpr = null;
+        ITypeSymbol? overrideType = null;
+        ExpressionSyntax? methodNameExpr = null;
 
         if (method.IsGenericMethod && method.TypeArguments.Length == 1)
         {

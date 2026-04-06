@@ -65,7 +65,7 @@ internal class StartupHookGenerator : IIncrementalGenerator
         }
     }
 
-    static ServiceOverrideCallsite ExtractCallsite(
+    static ServiceOverrideCallsite? ExtractCallsite(
         GeneratorSyntaxContext context, CancellationToken ct)
     {
         var invocation = (InvocationExpressionSyntax)context.Node;
@@ -94,8 +94,8 @@ internal class StartupHookGenerator : IIncrementalGenerator
             return null;
         }
 
-        ITypeSymbol overrideType = null;
-        ExpressionSyntax methodNameExpr = null;
+        ITypeSymbol? overrideType = null;
+        ExpressionSyntax? methodNameExpr = null;
 
         if (method.IsGenericMethod && method.TypeArguments.Length == 1)
         {
@@ -160,10 +160,11 @@ internal class StartupHookGenerator : IIncrementalGenerator
 
     static void EmitServiceOverrideResolver(
         SourceProductionContext context,
-        ImmutableArray<ServiceOverrideCallsite> callsites)
+        ImmutableArray<ServiceOverrideCallsite?> callsites)
     {
         var distinct = callsites
             .Where(c => c is not null)
+            .Cast<ServiceOverrideCallsite>()
             .Distinct()
             .ToList();
 

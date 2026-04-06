@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <Reference Include="xunit.v3" />
-    <Reference Include="NSubstitute" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp" />
   </ItemGroup>
 
