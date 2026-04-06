@@ -211,7 +211,7 @@ All of the following are true:
 
 All of the following are true:
 - The test was **recently unquarantined** (had its `[QuarantinedTest]` attribute removed within the past 14 days, detectable via `git log --since="14 days ago" -G 'QuarantinedTest' -- '*.cs'`)
-- It has **at least one failure that occurred AFTER the unquarantine commit was merged**. Use `git log` to find the merge date of the commit that removed the `[QuarantinedTest]` attribute, and only count failures from builds that started after that date. Failures from before the unquarantine do not count — they are from when the test was still quarantined. For these tests, search for the original closed quarantine issue (title prefix "Quarantine" referencing the test name) and **reopen** it rather than creating a new one in Step&nbsp;2.4.
+- It has **at least one failure that occurred AFTER the unquarantine change landed on `main`**. Use the PR merge time when available, or otherwise use the **committer date of the first-parent commit on `main`** that introduced the removal of the `[QuarantinedTest]` attribute. Do **not** use the timestamp of the underlying topic-branch commit if it differs. Only count failures from builds that started after that `main`-branch landing time. Failures from before the unquarantine do not count — they are from when the test was still quarantined. For these tests, search for the original closed quarantine issue (title prefix "Quarantine" referencing the test name) and **reopen** it rather than creating a new one in Step&nbsp;2.4.
 
 **Class-level quarantine (applies to both Case A and Case B)**
 
