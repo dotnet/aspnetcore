@@ -55,7 +55,11 @@ public class AgentBoundary : ComponentBase, IDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.CompletedTask;
+        var thread = Agent.Options.Thread;
+        if (thread is not null && thread.GetUpdates().Count > 0)
+        {
+            await _context.RestoreAsync();
+        }
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
