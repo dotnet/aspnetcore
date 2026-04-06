@@ -36,8 +36,8 @@
     }
   },
   "engines": {
-    "node": ">=20.9.0",
-    "npm": ">=9.3.1"
+    "node": ">=24.14.1",
+    "npm": ">=11.11.0"
   },
   "devDependencies": {
     "karma-sauce-launcher": "^4.3.6",
