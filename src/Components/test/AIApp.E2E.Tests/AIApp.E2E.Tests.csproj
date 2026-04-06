@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="../../Testing/eng/targets/Microsoft.AspNetCore.Components.Testing.props" />
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <!-- Use xUnit v3 instead of the Arcade SDK's auto-included xUnit v2 -->
+    <UsingToolXUnit>false</UsingToolXUnit>
+    <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
+    <NoWarn>$(NoWarn);NU1903</NoWarn>
+  </PropertyGroup>
+
+  <!-- Remove auto-added xUnit v2 test infra from CSharp.Common.props -->
+  <ItemGroup>
+    <Reference Remove="Microsoft.AspNetCore.InternalTesting" />
+    <Reference Remove="Moq" />
+    <Compile Remove="$(SharedSourceRoot)test\SuccessfulTests.cs" />
+  </ItemGroup>
+
+  <!-- Full ASP.NET Core shared framework references for in-process YARP proxy -->
+  <ItemGroup>
+    <Reference Include="@(AspNetCoreAppReference)" />
+    <Reference Include="@(AspNetCoreAppReferenceAndPackage)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Playwright.Xunit.v3" />
+    <Reference Include="xunit.v3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.AI" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Testing" />
+    <ProjectReference Include="../testassets/AIApp/AIApp.csproj">
+      <E2EApp>true</E2EApp>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Baselines\**\*.recording.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Import Project="../../Testing/eng/targets/Microsoft.AspNetCore.Components.Testing.targets" />
+
+</Project>
