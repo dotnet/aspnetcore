@@ -211,9 +211,11 @@ All of the following are true:
 
 All of the following are true:
 - The test was **recently unquarantined** (had its `[QuarantinedTest]` attribute removed within the past 14 days, detectable via `git log --since="14 days ago" -G 'QuarantinedTest' -- '*.cs'`)
-- It has **at least one failure** in the observation window. Failing so soon after unquarantining means it was unquarantined too early. For these tests, search for the original closed quarantine issue (title prefix "Quarantine" referencing the test name) and **reopen** it rather than creating a new one in Step&nbsp;2.4.
+- It has **at least one failure that occurred AFTER the unquarantine change landed on `main`**. Use the PR merge time when available, or otherwise use the **committer date of the first-parent commit on `main`** that introduced the removal of the `[QuarantinedTest]` attribute. Do **not** use the timestamp of the underlying topic-branch commit if it differs. Only count failures from builds that started after that `main`-branch landing time. Failures from before the unquarantine do not count — they are from when the test was still quarantined. For these tests, search for the original closed quarantine issue (title prefix "Quarantine" referencing the test name) and **reopen** it rather than creating a new one in Step&nbsp;2.4.
 
-Additionally, check for **class-level quarantine** candidates. If a **test class** has more than 3 total failures across multiple methods, you **must** investigate the error messages before deciding:
+**Class-level quarantine (applies to both Case A and Case B)**
+
+After identifying individual quarantine candidates from either case above, also check for **class-level quarantine** opportunities. If a **test class** has more than 3 total failures across multiple methods, you **must** investigate the error messages before deciding:
 
 1. For each failure in the class, extract the error message and stack trace from the Helix console log. When searching the console log for `[FAIL]`, also capture the lines immediately following it — these contain the `Error Message:` and `Stack Trace:` sections.
 2. Compare the error messages and stack traces across all failing methods in the class. Look for the same exception type, similar call chains, or a shared root cause.
