@@ -51,6 +51,38 @@ public class AgentContext : IDisposable
         await StreamIntoTurnAsync(message, turn, _streamingCts.Token);
     }
 
+    public async Task RestoreAsync(CancellationToken cancellationToken = default)
+    {
+        if (Status == ConversationStatus.Streaming)
+        {
+            throw new InvalidOperationException("A message is already being processed.");
+        }
+
+        var blocks = await _agent.RestoreAsync(cancellationToken);
+
+        ConversationTurn? currentTurn = null;
+
+        foreach (var block in blocks)
+        {
+            if (block.Role == ChatRole.User)
+            {
+                currentTurn = new ConversationTurn();
+                _turns.Add(currentTurn);
+                currentTurn.AddRequestBlock(block);
+            }
+            else
+            {
+                if (currentTurn is null)
+                {
+                    currentTurn = new ConversationTurn();
+                    _turns.Add(currentTurn);
+                }
+
+                currentTurn.AddResponseBlock(block);
+            }
+        }
+    }
+
     private async Task StreamIntoTurnAsync(
         ChatMessage message,
         ConversationTurn turn,
