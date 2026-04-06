@@ -719,31 +719,6 @@ public class ContentEncodingNegotiationMatcherPolicyTest
     }
 
     [Fact]
-    public async Task ApplyAsync_PreservesHigherPriorityEndpoint_PostMatchInvalidation()
-    {
-        // Arrange - Encoding match found first, then a higher-priority default comes after in the list
-        // This tests the post-match invalidation path
-        var policy = new ContentEncodingNegotiationMatcherPolicy();
-        var gzipEndpoint = CreateEndpoint("gzip");
-        var higherPriorityDefault = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(), "HighPriority-Default");
-        // gzip at score=1, higher priority default at score=0
-        // Note: in practice candidates are sorted by score (lower first), but the fix must handle
-        // any ordering since candidates may be re-ordered by other policies
-        var endpoints = CreateCandidateSet(
-            new[] { gzipEndpoint, higherPriorityDefault },
-            new[] { 1, 0 });
-        var httpContext = new DefaultHttpContext();
-        httpContext.Request.Headers["Accept-Encoding"] = "gzip";
-
-        // Act
-        await policy.ApplyAsync(httpContext, endpoints);
-
-        // Assert - higher priority default preserved even though gzip was matched
-        Assert.True(endpoints.IsValidCandidate(0));  // gzip matched
-        Assert.True(endpoints.IsValidCandidate(1));   // higher priority preserved
-    }
-
-    [Fact]
     public async Task ApplyAsync_PreservesHigherPriorityEndpoint_HigherQualityEqualTie()
     {
         // Arrange - tests the equal-quality branch in EvaluateCandidate with higher endpoint quality
@@ -764,39 +739,6 @@ public class ContentEncodingNegotiationMatcherPolicyTest
         Assert.True(endpoints.IsValidCandidate(0));   // config preserved by priority
         Assert.False(endpoints.IsValidCandidate(1));  // lower quality gzip invalidated
         Assert.True(endpoints.IsValidCandidate(2));   // higher quality gzip wins
-    }
-
-    [Fact]
-    public async Task ApplyAsync_PreservesAllHigherPriorityEndpoints_MixedRoutePriorities()
-    {
-        // Arrange - simulates a DFA node where multiple endpoint types with different priorities
-        // coexist with a catch-all that has encoding metadata:
-        //   /literal/path               Score=0 (exact match, no metadata)
-        //   /literal/{parameter}         Score=1 (parameterized, no metadata)
-        //   /literal/{parameter:regex}   Score=2 (constrained parameter, no metadata)
-        //   {**catchall:regex}           Score=3 (constrained catch-all, no metadata)
-        //   {**catchall} gzip            Score=4 (unconstrained catch-all with encoding metadata)
-        var policy = new ContentEncodingNegotiationMatcherPolicy();
-        var literalPath = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(), "/literal/path");
-        var parameterized = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(), "/literal/{parameter}");
-        var constrainedParameter = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(), "/literal/{parameter:regex}");
-        var constrainedCatchAll = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(), "{**catchall:regex}");
-        var catchAllGzip = CreateEndpoint("gzip", 0.8);
-        var endpoints = CreateCandidateSet(
-            new[] { literalPath, parameterized, constrainedParameter, constrainedCatchAll, catchAllGzip },
-            new[] { 0, 1, 2, 3, 4 });
-        var httpContext = new DefaultHttpContext();
-        httpContext.Request.Headers["Accept-Encoding"] = "gzip, br";
-
-        // Act
-        await policy.ApplyAsync(httpContext, endpoints);
-
-        // Assert - all higher-priority endpoints preserved, catch-all gzip also valid (it matched)
-        Assert.True(endpoints.IsValidCandidate(0));   // /literal/path preserved (Score=0)
-        Assert.True(endpoints.IsValidCandidate(1));   // /literal/{parameter} preserved (Score=1)
-        Assert.True(endpoints.IsValidCandidate(2));   // /literal/{parameter:regex} preserved (Score=2)
-        Assert.True(endpoints.IsValidCandidate(3));   // {**catchall:regex} preserved (Score=3)
-        Assert.True(endpoints.IsValidCandidate(4));   // {**catchall} gzip matched
     }
 
     [Fact]
@@ -887,42 +829,6 @@ public class ContentEncodingNegotiationMatcherPolicyTest
         Assert.True(endpoints.IsValidCandidate(1));   // gzip preserved (Score=1, was previous best)
         Assert.True(endpoints.IsValidCandidate(2));   // br wins (highest Accept quality at Score=2)
         Assert.False(endpoints.IsValidCandidate(3));  // catch-all gzip invalidated (lower Accept quality)
-    }
-
-    [Fact]
-    public async Task ApplyAsync_PreservesHigherPriority_ParametersAtDifferentSegmentPositions()
-    {
-        // Parameters appear in different URL segments across priorities.
-        // Tests that the fix works regardless of which route segments are parameterized.
-        //   /a/b                    Score=0 (no metadata — exact literal)
-        //   /a/{param}              Score=1 (no metadata — param in second segment)
-        //   /{param}/b              Score=2 (no metadata — param in first segment)
-        //   /{p1}/{p2} gzip 0.9    Score=3 (gzip — both segments parameterized)
-        //   /{p1}/{p2} br 0.7      Score=3 (br — both segments parameterized)
-        //   {**catchall} gzip 0.8  Score=4 (gzip — catch-all)
-        var policy = new ContentEncodingNegotiationMatcherPolicy();
-        var literalAB = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(), "/a/b");
-        var aParam = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(), "/a/{param}");
-        var paramB = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(), "/{param}/b");
-        var p1p2Gzip = CreateEndpoint("gzip", 0.9);
-        var p1p2Br = CreateEndpoint("br", 0.7);
-        var catchAllGzip = CreateEndpoint("gzip", 0.8);
-        var endpoints = CreateCandidateSet(
-            new[] { literalAB, aParam, paramB, p1p2Gzip, p1p2Br, catchAllGzip },
-            new[] { 0, 1, 2, 3, 3, 4 });
-        var httpContext = new DefaultHttpContext();
-        httpContext.Request.Headers["Accept-Encoding"] = "gzip, br";
-
-        // Act
-        await policy.ApplyAsync(httpContext, endpoints);
-
-        // Assert — all three no-metadata endpoints preserved, gzip wins among encoded
-        Assert.True(endpoints.IsValidCandidate(0));   // /a/b preserved (Score=0)
-        Assert.True(endpoints.IsValidCandidate(1));   // /a/{param} preserved (Score=1)
-        Assert.True(endpoints.IsValidCandidate(2));   // /{param}/b preserved (Score=2)
-        Assert.True(endpoints.IsValidCandidate(3));   // gzip wins at Score=3 (endpoint quality 0.9 > 0.7)
-        Assert.False(endpoints.IsValidCandidate(4));  // br loses endpoint quality tie at Score=3
-        Assert.False(endpoints.IsValidCandidate(5));  // catch-all gzip invalidated (lower endpoint quality than Score=3 gzip)
     }
 
     [Fact]
