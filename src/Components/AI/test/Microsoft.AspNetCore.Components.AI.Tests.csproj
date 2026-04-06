@@ -21,6 +21,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\gen\Microsoft.AspNetCore.Components.AI.SourceGenerators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="Baselines\**\*.recording.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
