@@ -1,0 +1,26 @@
+[
+  [
+    {
+      "role": "Assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": "{\"recipe\":{\"title\":\"Classic Spaghetti Carbonara\",\"cuisine\":\"Italian\",\"ingredients\":[\"400g spaghetti\",\"200g guanciale or pancetta\",\"4 large egg yolks\",\"100g Pecorino Romano cheese, grated\",\"Freshly ground black pepper\",\"Salt for pasta water\"],\"steps\":[\"Bring a large pot of salted water to boil and cook spaghetti until al dente.\",\"While pasta cooks, cut guanciale into small strips and cook in a dry pan over medium heat until crispy.\",\"In a bowl, whisk together egg yolks and grated Pecorino Romano.\",\"Drain pasta, reserving 1 cup of pasta water.\",\"Toss hot pasta with guanciale, then remove from heat.\",\"Add egg and cheese mixture, tossing quickly to create a creamy sauce. Add pasta water as needed.\",\"Season generously with black pepper and serve immediately.\"],\"prep_time_minutes\":10,\"cook_time_minutes\":20,\"skill_level\":\"intermediate\"}}"
+        }
+      ],
+      "modelId": "gpt-4o-mini"
+    }
+  ],
+  [
+    {
+      "role": "Assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": "Here's a Classic Spaghetti Carbonara recipe — an intermediate Italian dish with guanciale, egg yolks, and Pecorino Romano. It takes about 30 minutes total to prepare and cook."
+        }
+      ],
+      "modelId": "gpt-4o-mini"
+    }
+  ]
+]
