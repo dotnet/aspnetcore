@@ -1,0 +1,32 @@
+[
+  [
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": "Hello! How can I help you?"
+        }
+      ],
+      "responseId": "e2e-multi-001",
+      "messageId": "e2e-multi-001",
+      "createdAt": "2026-01-01T00:00:00+00:00",
+      "modelId": "e2e-test"
+    }
+  ],
+  [
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": "You're welcome! Let me know if you need anything else."
+        }
+      ],
+      "responseId": "e2e-multi-002",
+      "messageId": "e2e-multi-002",
+      "createdAt": "2026-01-01T00:00:01+00:00",
+      "modelId": "e2e-test"
+    }
+  ]
+]
