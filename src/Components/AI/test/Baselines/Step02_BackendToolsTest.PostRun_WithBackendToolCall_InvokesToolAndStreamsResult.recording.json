@@ -1,0 +1,83 @@
+[
+  [
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "functionCall",
+          "name": "SearchRestaurants",
+          "arguments": {
+            "request": {
+              "location": "Seattle",
+              "cuisine": "Italian"
+            }
+          },
+          "informationalOnly": false,
+          "callId": "call_abc123"
+        }
+      ],
+      "messageId": "chatcmpl-tool1",
+      "finishReason": "toolCalls"
+    },
+    {
+      "contents": [
+        {
+          "$type": "functionResult",
+          "result": "{\"location\":\"Seattle\",\"cuisine\":\"Italian\",\"results\":[{\"name\":\"The Golden Fork\",\"cuisine\":\"Italian\",\"rating\":4.5,\"address\":\"123 Main St, Seattle\"},{\"name\":\"Spice Haven\",\"cuisine\":\"Indian\",\"rating\":4.7,\"address\":\"456 Oak Ave, Seattle\"},{\"name\":\"Green Leaf\",\"cuisine\":\"Vegetarian\",\"rating\":4.3,\"address\":\"789 Elm Rd, Seattle\"}]}",
+          "callId": "call_abc123"
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": "I found some great Italian restaurants in Seattle for you!\n\n"
+        }
+      ],
+      "messageId": "chatcmpl-text1"
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": "1. **The Golden Fork** - Italian cuisine, rated 4.5/5, located at 123 Main St, Seattle\n"
+        }
+      ],
+      "messageId": "chatcmpl-text1"
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": "2. **Spice Haven** - Indian cuisine, rated 4.7/5, located at 456 Oak Ave, Seattle\n"
+        }
+      ],
+      "messageId": "chatcmpl-text1"
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": "3. **Green Leaf** - Vegetarian cuisine, rated 4.3/5, located at 789 Elm Rd, Seattle"
+        }
+      ],
+      "messageId": "chatcmpl-text1"
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": ""
+        }
+      ],
+      "messageId": "chatcmpl-text1",
+      "finishReason": "stop"
+    }
+  ]
+]

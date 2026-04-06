@@ -7,12 +7,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Exclude Azure-dependent integration tests that need Azure.AI.OpenAI -->
+    <Compile Remove="Engine\UIAgentRecordedTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.AI" />
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.AI" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Baselines\**\*.recording.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

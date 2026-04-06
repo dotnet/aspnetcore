@@ -1,0 +1,281 @@
+[
+  [
+    {
+      "contents": [],
+      "responseId": "",
+      "messageId": "",
+      "createdAt": "1970-01-01T00:00:00+00:00",
+      "modelId": ""
+    },
+    {
+      "role": "assistant",
+      "contents": [],
+      "responseId": "chatcmpl-DP9gmCztP9RTJdetFqkdXyBuRpM2l",
+      "messageId": "chatcmpl-DP9gmCztP9RTJdetFqkdXyBuRpM2l",
+      "createdAt": "2026-03-30T16:23:36+00:00",
+      "modelId": ""
+    },
+    {
+      "role": "assistant",
+      "contents": [],
+      "responseId": "chatcmpl-DP9gmCztP9RTJdetFqkdXyBuRpM2l",
+      "messageId": "chatcmpl-DP9gmCztP9RTJdetFqkdXyBuRpM2l",
+      "createdAt": "2026-03-30T16:23:36+00:00",
+      "modelId": ""
+    },
+    {
+      "role": "assistant",
+      "contents": [],
+      "responseId": "chatcmpl-DP9gmCztP9RTJdetFqkdXyBuRpM2l",
+      "messageId": "chatcmpl-DP9gmCztP9RTJdetFqkdXyBuRpM2l",
+      "createdAt": "2026-03-30T16:23:36+00:00",
+      "modelId": ""
+    },
+    {
+      "role": "assistant",
+      "contents": [],
+      "responseId": "chatcmpl-DP9gmCztP9RTJdetFqkdXyBuRpM2l",
+      "messageId": "chatcmpl-DP9gmCztP9RTJdetFqkdXyBuRpM2l",
+      "createdAt": "2026-03-30T16:23:36+00:00",
+      "modelId": ""
+    },
+    {
+      "role": "assistant",
+      "contents": [],
+      "responseId": "chatcmpl-DP9gmCztP9RTJdetFqkdXyBuRpM2l",
+      "messageId": "chatcmpl-DP9gmCztP9RTJdetFqkdXyBuRpM2l",
+      "createdAt": "2026-03-30T16:23:36+00:00",
+      "modelId": ""
+    },
+    {
+      "role": "assistant",
+      "contents": [],
+      "responseId": "chatcmpl-DP9gmCztP9RTJdetFqkdXyBuRpM2l",
+      "messageId": "chatcmpl-DP9gmCztP9RTJdetFqkdXyBuRpM2l",
+      "createdAt": "2026-03-30T16:23:36+00:00",
+      "modelId": ""
+    },
+    {
+      "role": "assistant",
+      "contents": [],
+      "responseId": "chatcmpl-DP9gmCztP9RTJdetFqkdXyBuRpM2l",
+      "messageId": "chatcmpl-DP9gmCztP9RTJdetFqkdXyBuRpM2l",
+      "createdAt": "2026-03-30T16:23:36+00:00",
+      "modelId": ""
+    },
+    {
+      "role": "assistant",
+      "contents": [],
+      "responseId": "chatcmpl-DP9gmCztP9RTJdetFqkdXyBuRpM2l",
+      "messageId": "chatcmpl-DP9gmCztP9RTJdetFqkdXyBuRpM2l",
+      "createdAt": "2026-03-30T16:23:36+00:00",
+      "modelId": ""
+    },
+    {
+      "role": "assistant",
+      "contents": [],
+      "responseId": "chatcmpl-DP9gmCztP9RTJdetFqkdXyBuRpM2l",
+      "messageId": "chatcmpl-DP9gmCztP9RTJdetFqkdXyBuRpM2l",
+      "createdAt": "2026-03-30T16:23:36+00:00",
+      "finishReason": "tool_calls",
+      "modelId": ""
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "usage",
+          "details": {
+            "inputTokenCount": 138,
+            "outputTokenCount": 90,
+            "totalTokenCount": 228,
+            "cachedInputTokenCount": 0,
+            "reasoningTokenCount": 64,
+            "additionalCounts": {
+              "InputTokenDetails.AudioTokenCount": 0,
+              "OutputTokenDetails.AudioTokenCount": 0,
+              "OutputTokenDetails.AcceptedPredictionTokenCount": 0,
+              "OutputTokenDetails.RejectedPredictionTokenCount": 0
+            }
+          }
+        }
+      ],
+      "responseId": "chatcmpl-DP9gmCztP9RTJdetFqkdXyBuRpM2l",
+      "messageId": "chatcmpl-DP9gmCztP9RTJdetFqkdXyBuRpM2l",
+      "createdAt": "2026-03-30T16:23:36+00:00",
+      "finishReason": "tool_calls",
+      "modelId": ""
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "toolApprovalRequest",
+          "toolCall": {
+            "$type": "functionCall",
+            "name": "DeleteFile",
+            "arguments": {
+              "fileName": "test.txt"
+            },
+            "informationalOnly": false,
+            "callId": "call_K2gGVaWM6bo9vVD5ncDAMlEl"
+          },
+          "requestId": "ficc_call_K2gGVaWM6bo9vVD5ncDAMlEl"
+        }
+      ],
+      "responseId": "",
+      "messageId": "",
+      "createdAt": "1970-01-01T00:00:00+00:00",
+      "finishReason": "tool_calls",
+      "modelId": ""
+    }
+  ],
+  [
+    {
+      "contents": [],
+      "responseId": "",
+      "messageId": "",
+      "createdAt": "1970-01-01T00:00:00+00:00",
+      "modelId": ""
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": ""
+        }
+      ],
+      "responseId": "chatcmpl-DP9gpaYj7kLUNvousC32jpxgcVxic",
+      "messageId": "chatcmpl-DP9gpaYj7kLUNvousC32jpxgcVxic",
+      "createdAt": "2026-03-30T16:23:39+00:00",
+      "modelId": ""
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": "Done"
+        }
+      ],
+      "responseId": "chatcmpl-DP9gpaYj7kLUNvousC32jpxgcVxic",
+      "messageId": "chatcmpl-DP9gpaYj7kLUNvousC32jpxgcVxic",
+      "createdAt": "2026-03-30T16:23:39+00:00",
+      "modelId": ""
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": " —"
+        }
+      ],
+      "responseId": "chatcmpl-DP9gpaYj7kLUNvousC32jpxgcVxic",
+      "messageId": "chatcmpl-DP9gpaYj7kLUNvousC32jpxgcVxic",
+      "createdAt": "2026-03-30T16:23:39+00:00",
+      "modelId": ""
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": " I"
+        }
+      ],
+      "responseId": "chatcmpl-DP9gpaYj7kLUNvousC32jpxgcVxic",
+      "messageId": "chatcmpl-DP9gpaYj7kLUNvousC32jpxgcVxic",
+      "createdAt": "2026-03-30T16:23:39+00:00",
+      "modelId": ""
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": " deleted"
+        }
+      ],
+      "responseId": "chatcmpl-DP9gpaYj7kLUNvousC32jpxgcVxic",
+      "messageId": "chatcmpl-DP9gpaYj7kLUNvousC32jpxgcVxic",
+      "createdAt": "2026-03-30T16:23:39+00:00",
+      "modelId": ""
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": " test"
+        }
+      ],
+      "responseId": "chatcmpl-DP9gpaYj7kLUNvousC32jpxgcVxic",
+      "messageId": "chatcmpl-DP9gpaYj7kLUNvousC32jpxgcVxic",
+      "createdAt": "2026-03-30T16:23:39+00:00",
+      "modelId": ""
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": ".txt"
+        }
+      ],
+      "responseId": "chatcmpl-DP9gpaYj7kLUNvousC32jpxgcVxic",
+      "messageId": "chatcmpl-DP9gpaYj7kLUNvousC32jpxgcVxic",
+      "createdAt": "2026-03-30T16:23:39+00:00",
+      "modelId": ""
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": "."
+        }
+      ],
+      "responseId": "chatcmpl-DP9gpaYj7kLUNvousC32jpxgcVxic",
+      "messageId": "chatcmpl-DP9gpaYj7kLUNvousC32jpxgcVxic",
+      "createdAt": "2026-03-30T16:23:39+00:00",
+      "modelId": ""
+    },
+    {
+      "role": "assistant",
+      "contents": [],
+      "responseId": "chatcmpl-DP9gpaYj7kLUNvousC32jpxgcVxic",
+      "messageId": "chatcmpl-DP9gpaYj7kLUNvousC32jpxgcVxic",
+      "createdAt": "2026-03-30T16:23:39+00:00",
+      "finishReason": "stop",
+      "modelId": ""
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "usage",
+          "details": {
+            "inputTokenCount": 178,
+            "outputTokenCount": 11,
+            "totalTokenCount": 189,
+            "cachedInputTokenCount": 0,
+            "reasoningTokenCount": 0,
+            "additionalCounts": {
+              "InputTokenDetails.AudioTokenCount": 0,
+              "OutputTokenDetails.AudioTokenCount": 0,
+              "OutputTokenDetails.AcceptedPredictionTokenCount": 0,
+              "OutputTokenDetails.RejectedPredictionTokenCount": 0
+            }
+          }
+        }
+      ],
+      "responseId": "chatcmpl-DP9gpaYj7kLUNvousC32jpxgcVxic",
+      "messageId": "chatcmpl-DP9gpaYj7kLUNvousC32jpxgcVxic",
+      "createdAt": "2026-03-30T16:23:39+00:00",
+      "finishReason": "stop",
+      "modelId": ""
+    }
+  ]
+]
