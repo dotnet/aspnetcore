@@ -33,8 +33,10 @@ public static class StatusCodePagesExtensions
     }
 
     /// <summary>
-    /// Adds a StatusCodePages middleware with a default response handler that checks for responses with status codes
-    /// between 400 and 599 that do not have a body.
+    /// Adds a <see cref="StatusCodePagesMiddleware"/> with the default response handler.
+    /// The middleware checks for responses with status codes between 400 and 599 that do not have a body and,
+    /// when an <see cref="IProblemDetailsService"/> is available, generates a <see cref="ProblemDetails"/>
+    /// response. Otherwise, it generates a plain text response that includes the status code.
     /// </summary>
     /// <param name="app"></param>
     /// <returns></returns>
