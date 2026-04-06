@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Description>Blazor component library for building AI conversational UIs on top of Microsoft.Extensions.AI.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsShippingPackage>true</IsShippingPackage>
+    <IsPackable>true</IsPackable>
+    <!-- TODO: Generate PublicAPI.txt files for public API tracking -->
+    <!-- TODO: Add XML documentation comments to all public APIs -->
+    <NoWarn>$(NoWarn);RS0016;RS0017;RS0026;RS0037;CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.AI.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.AI.Abstractions" />
+  </ItemGroup>
+
+</Project>

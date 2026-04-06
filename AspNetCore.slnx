@@ -106,6 +106,10 @@
     <Project Path="src/Components/Testing/testassets/TestApp.Client/TestApp.Client.csproj" />
     <Project Path="src/Components/Testing/testassets/TestApp.E2E.Tests/TestApp.E2E.Tests.csproj" />
   </Folder>
+  <Folder Name="/src/Components/AI/">
+    <Project Path="src/Components/AI/src/Microsoft.AspNetCore.Components.AI.csproj" />
+    <Project Path="src/Components/AI/test/Microsoft.AspNetCore.Components.AI.Tests.csproj" />
+  </Folder>
   <Folder Name="/src/Components/Web/">
     <Project Path="src/Components/Web/src/Microsoft.AspNetCore.Components.Web.csproj" />
     <Project Path="src/Components/Web/test/Microsoft.AspNetCore.Components.Web.Tests.csproj" />
