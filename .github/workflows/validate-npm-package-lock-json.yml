@@ -1,5 +1,8 @@
 name: Validate package-lock.json against source feeds
 
+permissions:
+  contents: read
+
 on:
   # Manual run
   workflow_dispatch:
