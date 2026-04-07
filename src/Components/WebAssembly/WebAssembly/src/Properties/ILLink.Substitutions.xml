@@ -1,5 +1,8 @@
 <linker>
   <assembly fullname="Microsoft.AspNetCore.Components.WebAssembly">
+    <type fullname="Microsoft.AspNetCore.Components.HotReload.HotReloadManager" feature="System.Reflection.Metadata.MetadataUpdater.IsSupported" featurevalue="false">
+      <method signature="System.Boolean get_IsSupported()" body="stub" value="false"  />
+    </type>
     <type fullname="Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder" feature="System.Diagnostics.Metrics.Meter.IsSupported" featurevalue="false">
       <method signature="System.Boolean get_IsMeterSupported()" body="stub" value="false"  />
     </type>

@@ -49,3 +49,6 @@ UpgradeLog.htm
 .idea
 mono_crash.*.json
 mono_crash.*.blob
+
+# Agentic workflow log artifacts
+.github/workflows/.github/aw/logs/

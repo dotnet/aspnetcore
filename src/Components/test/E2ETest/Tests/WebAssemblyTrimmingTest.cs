@@ -28,6 +28,24 @@ public class WebAssemblyTrimmingTest : ServerTestBase<BlazorWasmTestAppFixture<P
     }
 
     [Fact]
+    public void HotReloadTypesAreTrimmed_WhenPublishedWithTrimming()
+    {
+        if (!_serverFixture.TestTrimmedOrMultithreadingApps)
+        {
+            // In dev mode, hot reload types are expected to be present
+            return;
+        }
+
+        var appElement = Browser.MountTestComponent<HotReloadTrimmingCheck>();
+
+        // Hot reload manager type is present, but shallow type
+        Browser.Equal("true", () => appElement.FindElement(By.Id("hot-reload-manager-found")).Text);
+
+        // Verify that UpdateApplication method has been trimmed away
+        Browser.Equal("false", () => appElement.FindElement(By.Id("update-application-found")).Text);
+    }
+
+    [Fact]
     public void MetricsTypesAreTrimmed_WhenPublishedWithTrimming()
     {
         if (!_serverFixture.TestTrimmedOrMultithreadingApps)
