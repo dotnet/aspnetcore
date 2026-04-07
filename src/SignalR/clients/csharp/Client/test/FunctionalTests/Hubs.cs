@@ -13,16 +13,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 
-// Polyfill: RuntimeAsyncMethodGenerationAttribute is not yet public API
-namespace System.Runtime.CompilerServices
-{
-    [AttributeUsage(AttributeTargets.Method)]
-    internal sealed class RuntimeAsyncMethodGenerationAttribute(bool runtimeAsync) : Attribute
-    {
-        public bool RuntimeAsync { get; } = runtimeAsync;
-    }
-}
-
 namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests;
 
 public class TestHub : Hub
