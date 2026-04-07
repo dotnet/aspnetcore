@@ -30,7 +30,7 @@ const blazorServerStateCommentRegularExpression = /^\s*Blazor-Server-Component-S
 const blazorWebAssemblyStateCommentRegularExpression = /^\s*Blazor-WebAssembly-Component-State:(?<state>[a-zA-Z0-9+/=]+)$/;
 const blazorWebInitializerCommentRegularExpression = /^\s*Blazor-Web-Initializers:(?<initializers>[a-zA-Z0-9+/=]+)$/;
 const blazorWebAssemblyOptionsCommentRegularExpression = /^\s*Blazor-WebAssembly:[^{]*(?<options>.*)$/;
-const blazorConfigurationCommentRegularExpression = /^\s*Blazor-Configuration:[^{]*(?<options>.*)$/;
+const blazorConfigurationCommentRegularExpression = /^\s*Blazor-Configuration:(?<options>[a-zA-Z0-9+/=]+)$/;
 
 export function discoverWebAssemblyOptions(root: Node): WebAssemblyServerOptions | undefined {
   const optionsJson = discoverBlazorComment(root, blazorWebAssemblyOptionsCommentRegularExpression, 'options');
@@ -42,10 +42,11 @@ export function discoverWebAssemblyOptions(root: Node): WebAssemblyServerOptions
 }
 
 export function discoverBrowserConfiguration(root: Node): BrowserConfigurationOptions | undefined {
-  const configJson = discoverBlazorComment(root, blazorConfigurationCommentRegularExpression, 'options');
-  if (!configJson) {
+  const configBase64 = discoverBlazorComment(root, blazorConfigurationCommentRegularExpression, 'options');
+  if (!configBase64) {
     return undefined;
   }
+  const configJson = atob(configBase64);
   return JSON.parse(configJson);
 }
 

@@ -136,16 +136,17 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
   setCircuitOptions(resolveConfiguredOptions(initializersPromise, initialCircuitOptions));
   setWebAssemblyOptions(resolveConfiguredOptions(initializersPromise, options.webAssembly));
 
-  registerAllComponentDescriptors(document);
-
   // If BrowserConfiguration had WebAssembly server options, apply them
-  // (overrides legacy <!--Blazor-WebAssembly:--> discovery)
+  // before registering component descriptors, since registration triggers
+  // WebAssembly platform loading which captures these options.
   if (browserConfig?.webAssembly) {
     rootComponentManager.setWebAssemblyOptions({
       environmentName: browserConfig.webAssembly.environmentName ?? '',
       environmentVariables: browserConfig.webAssembly.environmentVariables ?? {},
     });
   }
+
+  registerAllComponentDescriptors(document);
 
   rootComponentManager.onDocumentUpdated();
 

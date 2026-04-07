@@ -368,8 +368,9 @@ internal partial class EndpointHtmlRenderer
         }
 
         var configJson = JsonSerializer.Serialize(config, s_browserConfigurationSerializerOptions);
+        var configBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(configJson));
         output.Write("<!--Blazor-Configuration:");
-        output.Write(configJson);
+        output.Write(configBase64);
         output.Write("-->");
     }
     private readonly struct ComponentIdAndDepth

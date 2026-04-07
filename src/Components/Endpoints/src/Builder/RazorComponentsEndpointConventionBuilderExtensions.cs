@@ -4,6 +4,8 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -86,6 +88,19 @@ public static class RazorComponentsEndpointConventionBuilderExtensions
             endpointBuilder.Metadata.Add(config);
         });
 
+        EnsureBrowserConfigurationConvention(builder);
+
         return builder;
+    }
+
+    internal static void EnsureBrowserConfigurationConvention(RazorComponentsEndpointConventionBuilder builder)
+    {
+        if (!builder.BrowserConfigurationConventionRegistered)
+        {
+            builder.BrowserConfigurationConventionRegistered = true;
+            var hostEnvironment = builder.EndpointRouteBuilder.ServiceProvider.GetRequiredService<IHostEnvironment>();
+            var convention = new BrowserConfigurationConvention(hostEnvironment);
+            builder.Finally(convention.ApplyConvention);
+        }
     }
 }
