@@ -86,17 +86,6 @@ public static class RazorComponentsEndpointConventionBuilderExtensions
             endpointBuilder.Metadata.Add(config);
         });
 
-        EnsureBrowserConfigurationConvention(builder);
-
         return builder;
-    }
-
-    internal static void EnsureBrowserConfigurationConvention(RazorComponentsEndpointConventionBuilder builder)
-    {
-        if (!builder.BrowserConfigurationConventionRegistered)
-        {
-            builder.BrowserConfigurationConventionRegistered = true;
-            builder.Finally(BrowserConfigurationConvention.ApplyConvention);
-        }
     }
 }

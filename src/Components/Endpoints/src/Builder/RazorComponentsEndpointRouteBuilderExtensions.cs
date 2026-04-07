@@ -36,11 +36,6 @@ public static class RazorComponentsEndpointRouteBuilderExtensions
         // to use for the resource collection in case more than one has been mapped.
         result.WithStaticAssets();
 
-        // Register the BrowserConfiguration convention so every endpoint gets
-        // framework defaults (environment name, tooling env vars) in metadata.
-        // The user can call WithBrowserConfiguration to override these defaults.
-        RazorComponentsEndpointConventionBuilderExtensions.EnsureBrowserConfigurationConvention(result);
-
         return result;
     }
 

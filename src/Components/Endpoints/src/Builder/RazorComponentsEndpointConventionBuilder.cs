@@ -42,8 +42,6 @@ public sealed class RazorComponentsEndpointConventionBuilder : IEndpointConventi
 
     internal bool ResourceCollectionConventionRegistered { get; set; }
 
-    internal bool BrowserConfigurationConventionRegistered { get; set; }
-
     internal IEndpointRouteBuilder EndpointRouteBuilder { get; }
 
     internal event Action<RazorComponentEndpointUpdateContext>? BeforeCreateEndpoints;
