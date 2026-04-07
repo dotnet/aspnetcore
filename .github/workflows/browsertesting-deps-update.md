@@ -86,4 +86,9 @@ Do NOT use `curl`, `web-fetch`, or any direct HTTP requests to the NuGet API —
 - Keep Selenium.WebDriver and Selenium.Support on the same major version if possible.
 - Make sure the Playwright Docker image tag in the dockerfile is consistent with the `PlaywrightVersion` in `eng/Versions.props`.
 - Use the `edit` tool to modify files directly. Do NOT use `git commit`, `git push`, or `git config` commands — the `create-pull-request` safe output handles committing and pushing automatically.
-- When all edits are done, use the `create-pull-request` safe output to open the PR. Include a summary of what was updated in the PR body.
+
+## Output
+
+When all edits are done, use the `create-pull-request` safe output to open the PR. Include a summary of what was updated in the PR body.
+
+Add the note for the reviewer in the PR description / comment: "**Note:** After merging, push all packages to dotnet-public repo by queuing a build from [dotnet-migrate-package](https://dev.azure.com/dnceng/internal/_build?definitionId=931&_a=summary)."
