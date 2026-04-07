@@ -62,7 +62,7 @@ Look up the latest stable version of the Playwright package:
 
 Then update:
 
-- The `PlaywrightVersion` variable in `eng/Versions.props`
+- The `MicrosoftPlaywrightVersion` variable in `eng/Versions.props`
 - The Playwright Docker image tag in `src/Components/benchmarkapps/Wasm.Performance/dockerfile` — the image reference starts with `mcr.microsoft.com` and should use the matching version.
 
 ### How to look up latest NuGet versions
