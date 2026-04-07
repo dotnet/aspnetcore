@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { registerBuiltInValidators } from './BuiltInValidators';
-import { Scanner } from './Scanner';
+import { DomScanner } from './DomScanner';
 import { ValidationEngine } from './ValidationEngine';
 import { ValidatableElement, Validator, ValidatorRegistry } from './Validator';
 
@@ -18,7 +18,7 @@ export function initializeStandaloneValidation(): void {
   registerBuiltInValidators(registry);
 
   const engine = new ValidationEngine(registry);
-  const scanner = new Scanner(engine);
+  const scanner = new DomScanner(engine);
 
   const api: StandaloneValidationService = {
     addValidator: (name: string, validator: Validator) => registry.set(name, validator),
