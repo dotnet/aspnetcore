@@ -17,14 +17,17 @@ network:
     - defaults
     - dotnet
     - containers
-    - api.nuget.org
 
 tools:
   github:
   edit:
-  bash: ["curl", "grep", "sed", "jq", "git"]
+  bash: ["grep", "sed", "jq", "git"]
   web-fetch:
   web-search:
+  nuget:
+    command: "dnx"
+    args: ["NuGet.Mcp.Server", "--source", "https://api.nuget.org/v3/index.json", "--yes"]
+    allowed: ["get-latest-package-version"]
 
 safe-outputs:
   create-pull-request:
@@ -68,16 +71,10 @@ Then update:
 
 ### How to look up latest NuGet versions
 
-Fetch the latest stable version of each NuGet package using the NuGet API:
-
-```bash
-for PACKAGE in Selenium.WebDriver Selenium.Support Microsoft.Playwright; do
-  PACKAGE_LOWER=$(echo "$PACKAGE" | tr '[:upper:]' '[:lower:]')
-  VERSIONS=$(curl -s "https://api.nuget.org/v3-flatcontainer/${PACKAGE_LOWER}/index.json")
-  LATEST=$(echo "$VERSIONS" | jq -r '.versions[]' | grep -v '-' | tail -1)
-  echo "$PACKAGE: $LATEST"
-done
-```
+Use the NuGet MCP server's `get-latest-package-version` tool to look up each package:
+- `Selenium.WebDriver`
+- `Selenium.Support`
+- `Microsoft.Playwright`
 
 ## Guidelines
 
