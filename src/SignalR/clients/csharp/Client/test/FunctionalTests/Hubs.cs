@@ -15,6 +15,16 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests;
 
+// Polyfill: RuntimeAsyncMethodGenerationAttribute is not yet public API
+namespace System.Runtime.CompilerServices
+{
+    [AttributeUsage(AttributeTargets.Method)]
+    internal sealed class RuntimeAsyncMethodGenerationAttribute(bool runtimeAsync) : Attribute
+    {
+        public bool RuntimeAsync { get; } = runtimeAsync;
+    }
+}
+
 public class TestHub : Hub
 {
     public string HelloWorld() => TestHubMethodsImpl.HelloWorld();
