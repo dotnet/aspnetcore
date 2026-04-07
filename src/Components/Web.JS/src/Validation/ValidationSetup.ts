@@ -3,33 +3,35 @@
 
 import { registerBuiltInValidators } from './BuiltInValidators';
 import { DomScanner } from './DomScanner';
+import { ErrorDisplay } from './ErrorDisplay';
 import { ValidationEngine } from './ValidationEngine';
 import { ValidatableElement, Validator, ValidatorRegistry } from './Validator';
 
 export interface StandaloneValidationService {
   addValidator(name: string, validator: Validator): void;
   scan(): void;
-  validateField(element: ValidatableElement): Promise<boolean>;
-  validateForm(form: HTMLFormElement): Promise<boolean>;
+  validateField(element: ValidatableElement): boolean;
+  validateForm(form: HTMLFormElement): boolean;
 }
 
 export function initializeStandaloneValidation(): void {
   const registry = new ValidatorRegistry();
   registerBuiltInValidators(registry);
 
-  const engine = new ValidationEngine(registry);
+  const errorDisplay = new ErrorDisplay();
+  const engine = new ValidationEngine(registry, errorDisplay);
   const scanner = new DomScanner(engine);
 
-  const api: StandaloneValidationService = {
+  const service: StandaloneValidationService = {
     addValidator: (name: string, validator: Validator) => registry.set(name, validator),
     scan: () => {
       // TODO: Add support for scanning subtrees.
       scanner.scan(document);
     },
-    validateField: (element: ValidatableElement) => engine.validateField(element),
+    validateField: (element: ValidatableElement) => engine.validateElement(element),
     validateForm: (form: HTMLFormElement) => engine.validateForm(form),
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).__aspnetValidation = api;
+  (window as any).__aspnetValidation = service;
 }

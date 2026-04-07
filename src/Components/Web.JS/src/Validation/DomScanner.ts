@@ -1,14 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { validatableElementSelector, ValidationEngine } from './ValidationEngine';
+import { isHiddenElement } from './Utils';
+import { validatableElementSelector, ValidationEngine, ValidationRule } from './ValidationEngine';
 import { ValidatableElement } from './Validator';
-
-export type ValidationRule = {
-  ruleName: string;
-  errorMessage: string;
-  params: Record<string, string>;
-}
 
 export class DomScanner {
   constructor(private engine: ValidationEngine) { }
@@ -92,26 +87,4 @@ function findMessageElements(input: ValidatableElement, form: HTMLFormElement): 
   // TODO: Support message elements outside the form.
   const messageElements = form.querySelectorAll<HTMLElement>(`[data-valmsg-for="${CSS.escape(name)}"]`);
   return Array.from(messageElements);
-}
-
-function isHiddenElement(element: HTMLElement): boolean {
-  // TODO: Add allowHiddenFields option?
-  if (element.hidden) {
-    return true;
-  }
-
-  if (element instanceof HTMLInputElement && element.type === 'hidden') {
-    return true;
-  }
-
-  // TODO: More robust check? Consider `input.offsetWidth || input.offsetHeight || input.getClientRects().length`
-  let current: HTMLElement | null = element;
-  while (current) {
-    if (current.style.display === 'none') {
-      return true;
-    }
-    current = current.parentElement;
-  }
-
-  return false;
 }
