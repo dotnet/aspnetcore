@@ -13,8 +13,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests;
-
 // Polyfill: RuntimeAsyncMethodGenerationAttribute is not yet public API
 namespace System.Runtime.CompilerServices
 {
@@ -24,6 +22,8 @@ namespace System.Runtime.CompilerServices
         public bool RuntimeAsync { get; } = runtimeAsync;
     }
 }
+
+namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests;
 
 public class TestHub : Hub
 {
