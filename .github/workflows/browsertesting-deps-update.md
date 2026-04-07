@@ -36,6 +36,9 @@ safe-outputs:
     labels: [build-ops]
     draft: false
     base-branch: main
+  add-comment:
+    target: "*"
+    max: 1
 ---
 
 # Update Browser-Testing Dependencies (Selenium & Playwright)
@@ -91,4 +94,6 @@ Do NOT use `curl`, `web-fetch`, or any direct HTTP requests to the NuGet API —
 
 When all edits are done, use the `create-pull-request` safe output to open the PR. Include a summary of what was updated in the PR body.
 
-Add the note for the reviewer in the PR description / comment: "**Note:** After merging, push all packages to dotnet-public repo by queuing a build from [dotnet-migrate-package](https://dev.azure.com/dnceng/internal/_build?definitionId=931&_a=summary)."
+After the PR is created, use the `add-comment` safe output to post the following note on the created PR:
+
+> **Note:** After merging, push all packages to dotnet-public repo by queuing a build from [dotnet-migrate-package](https://dev.azure.com/dnceng/internal/_build?definitionId=931&_a=summary).
