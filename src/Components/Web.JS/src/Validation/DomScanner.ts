@@ -4,14 +4,14 @@
 import { validatableElementSelector, ValidationEngine } from './ValidationEngine';
 import { ValidatableElement } from './Validator';
 
-export type ValidationDirective = {
+export type ValidationRule = {
   ruleName: string;
   errorMessage: string;
   params: Record<string, string>;
 }
 
-export class Scanner {
-  constructor(private engine: ValidationEngine) {}
+export class DomScanner {
+  constructor(private engine: ValidationEngine) { }
 
   scan(root: ParentNode): void {
     // TODO: Filter disabled elements?
@@ -23,8 +23,8 @@ export class Scanner {
     for (const element of validatableElements) {
       // TODO: Check existing state
 
-      const directives = parseDirectives(element);
-      if (!directives) {
+      const rules = parseRules(element);
+      if (!rules) {
         continue;
       }
 
@@ -47,12 +47,40 @@ export class Scanner {
   }
 }
 
-function parseDirectives(element: ValidatableElement): ValidationDirective[] {
-  const attributes: Record<string, string> = {};
+const ruleAttributePrefix = 'data-val-';
+const ruleAttributePrefixLength = ruleAttributePrefix.length;
 
-  const directives: ValidationDirective[] = [];
+export function parseRules(element: ValidatableElement): ValidationRule[] {
+  const ruleMap: Record<string, ValidationRule> = {};
 
-  return directives;
+  for (const attr of element.attributes) {
+    if (!attr.name.startsWith(ruleAttributePrefix)) {
+      continue;
+    }
+
+    const ruleAndParamName = attr.name.substring(ruleAttributePrefixLength);
+    const dashIndex = ruleAndParamName.indexOf('-');
+    const ruleName = dashIndex === -1 ? ruleAndParamName : ruleAndParamName.substring(0, dashIndex);
+    const paramName = dashIndex === -1 ? undefined : ruleAndParamName.substring(dashIndex + 1);
+
+    if (!ruleName) {
+      continue;
+    }
+
+    const rule = ruleMap[ruleName] ?? { ruleName, errorMessage: '', params: {} };
+
+    if (!paramName) {
+      // Attribute shape: data-val-range="Value must be between 10 and 50."
+      rule.errorMessage = attr.value;
+    } else {
+      // Attribute shape: data-val-range-min="10"
+      rule.params[paramName] = attr.value;
+    }
+
+    ruleMap[ruleName] = rule;
+  }
+
+  return Object.values(ruleMap);
 }
 
 function findMessageElements(input: ValidatableElement, form: HTMLFormElement): HTMLElement[] {
