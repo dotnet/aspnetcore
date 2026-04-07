@@ -17,6 +17,7 @@ network:
     - defaults
     - dotnet
     - containers
+    - api.nuget.org
 
 tools:
   github:
