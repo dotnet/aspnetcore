@@ -304,6 +304,7 @@ The PR body MUST include:
 - A list of each workaround that was fixed, with the file and a brief description
 - A list of workarounds that remain and why they couldn't be fixed yet (e.g., symbol not found in generated code)
 - Build output summary confirming compilation success
+- A note for the reviewer: "**Note:** After merging, push all packages to dotnet-public repo by queuing a build from [dotnet-migrate-package](https://dev.azure.com/dnceng/internal/_build?definitionId=931&_a=summary)."
 
 **Call `noop`** ONLY if ALL of these are true:
 - The CsWin32 version is already the latest stable release
