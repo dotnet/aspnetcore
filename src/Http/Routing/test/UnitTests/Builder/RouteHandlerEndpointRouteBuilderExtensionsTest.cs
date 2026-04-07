@@ -1102,6 +1102,39 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     }
 
     [Fact]
+    public async Task ParameterBindingFailure_WithEndpointFilterFactory_HandlerReturningValueTaskOfObject_DoesNotExecuteHandler()
+    {
+        // Arrange - handler returns ValueTask<object?> which matches the filter pipeline return type
+        var services = new ServiceCollection().AddSingleton(LoggerFactory);
+        var serviceProvider = services.BuildServiceProvider();
+
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        var handlerExecuted = false;
+
+        builder.MapGet("/test/{id}", ValueTask<object?> (HttpContext httpContext, Guid id) =>
+        {
+            handlerExecuted = true;
+            return new(id.ToString());
+        }).AddEndpointFilterFactory((_, next) => next);
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = serviceProvider
+        };
+        httpContext.Request.RouteValues["id"] = "invalid-guid";
+
+        // Act
+        await endpoint.RequestDelegate!(httpContext);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
+        Assert.False(handlerExecuted, "Handler should not have been executed when parameter binding fails");
+    }
+
+    [Fact]
     public async Task ParameterBindingFailure_WithoutFilter_DoesNotExecuteHandler()
     {
         // Arrange
