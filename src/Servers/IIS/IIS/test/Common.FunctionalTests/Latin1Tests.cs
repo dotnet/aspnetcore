@@ -35,7 +35,6 @@ public class Latin1Tests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewHandler]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61055")]
     public async Task Latin1Works()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
