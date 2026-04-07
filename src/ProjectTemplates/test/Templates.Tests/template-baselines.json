@@ -3762,20 +3762,8 @@
       "Template": "blazor-wasm-servicedefaults",
       "Arguments": "new blazor-wasm-servicedefaults",
       "Files": [
+        "BackgroundExportHandler.cs",
         "Extensions.cs",
-        "Telemetry/CircularBuffer.cs",
-        "Telemetry/TaskBasedBatchExportProcessor.cs",
-        "Telemetry/WebAssemblyOtlpLogExporter.cs",
-        "Telemetry/WebAssemblyOtlpMetricExporter.cs",
-        "Telemetry/WebAssemblyOtlpTraceExporter.cs",
-        "Telemetry/Serializer/OtlpLogFieldNumbers.cs",
-        "Telemetry/Serializer/OtlpLogSerializer.cs",
-        "Telemetry/Serializer/OtlpMetricFieldNumbers.cs",
-        "Telemetry/Serializer/OtlpMetricSerializer.cs",
-        "Telemetry/Serializer/OtlpTraceFieldNumbers.cs",
-        "Telemetry/Serializer/OtlpTraceSerializer.cs",
-        "Telemetry/Serializer/ProtobufSerializer.cs",
-        "Telemetry/Serializer/ProtobufWireType.cs",
         "wwwroot/{ProjectName}.lib.module.js"
       ]
     }

@@ -39,4 +39,3 @@ Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions.EnvironmentName.get ->
 Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions.EnvironmentName.set -> void
 Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions.EnvironmentVariables.get -> System.Collections.Generic.Dictionary<string!, string!>!
 Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions.EnvironmentVariables.set -> void
-Microsoft.AspNetCore.Components.BrowserConfiguration.Clone() -> Microsoft.AspNetCore.Components.BrowserConfiguration!

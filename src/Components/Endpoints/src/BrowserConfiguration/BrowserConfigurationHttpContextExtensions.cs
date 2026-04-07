@@ -24,7 +24,7 @@ public static class BrowserConfigurationHttpContextExtensions
         {
             // Seed from endpoint metadata if available
             var metadataConfig = context.GetEndpoint()?.Metadata.GetMetadata<BrowserConfiguration>();
-            var config = metadataConfig?.Clone() ?? new BrowserConfiguration();
+            var config = metadataConfig ?? new BrowserConfiguration();
             context.Items[Key] = config;
             return config;
         }

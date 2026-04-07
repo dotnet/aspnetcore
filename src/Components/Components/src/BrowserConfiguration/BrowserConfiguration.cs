@@ -23,30 +23,4 @@ public sealed class BrowserConfiguration
 
     /// <summary>SSR-specific options.</summary>
     public SsrBrowserOptions Ssr { get; set; } = new();
-
-    /// <summary>Creates a deep copy of this configuration.</summary>
-    public BrowserConfiguration Clone()
-    {
-        return new BrowserConfiguration
-        {
-            LogLevel = LogLevel,
-            WebAssembly = new WebAssemblyBrowserOptions
-            {
-                EnvironmentName = WebAssembly.EnvironmentName,
-                ApplicationCulture = WebAssembly.ApplicationCulture,
-                EnvironmentVariables = new Dictionary<string, string>(WebAssembly.EnvironmentVariables),
-            },
-            Server = new ServerBrowserOptions
-            {
-                ReconnectionMaxRetries = Server.ReconnectionMaxRetries,
-                ReconnectionRetryIntervalMilliseconds = Server.ReconnectionRetryIntervalMilliseconds,
-                ReconnectionDialogId = Server.ReconnectionDialogId,
-            },
-            Ssr = new SsrBrowserOptions
-            {
-                DisableDomPreservation = Ssr.DisableDomPreservation,
-                CircuitInactivityTimeoutMs = Ssr.CircuitInactivityTimeoutMs,
-            },
-        };
-    }
 }

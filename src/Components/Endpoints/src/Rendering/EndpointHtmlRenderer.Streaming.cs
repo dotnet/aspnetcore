@@ -329,12 +329,6 @@ internal partial class EndpointHtmlRenderer
         return accept.Count == 1 && string.Equals(accept[0]!, "text/html; blazor-enhanced-nav=on", StringComparison.Ordinal);
     }
 
-    private static readonly JsonSerializerOptions s_browserConfigurationSerializerOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-    };
-
     private static readonly string? s_dotnetModifiableAssemblies =
         Environment.GetEnvironmentVariable("DOTNET_MODIFIABLE_ASSEMBLIES") is { Length: > 0 } v1 ? v1 : null;
 
@@ -352,11 +346,10 @@ internal partial class EndpointHtmlRenderer
 
         var config = _httpContext.GetBrowserConfiguration();
 
-        // Default environment name from the host environment
+        // Apply framework defaults: environment name and tooling env vars
         var hostEnvironment = _httpContext.RequestServices.GetRequiredService<IHostEnvironment>();
         config.WebAssembly.EnvironmentName ??= hostEnvironment.EnvironmentName;
 
-        // Merge tooling environment variables (hot-reload, browser tools)
         if (s_dotnetModifiableAssemblies != null)
         {
             config.WebAssembly.EnvironmentVariables.TryAdd("DOTNET_MODIFIABLE_ASSEMBLIES", s_dotnetModifiableAssemblies);
@@ -367,7 +360,7 @@ internal partial class EndpointHtmlRenderer
             config.WebAssembly.EnvironmentVariables.TryAdd("__ASPNETCORE_BROWSER_TOOLS", s_aspnetcoreBrowserTools);
         }
 
-        var configJson = JsonSerializer.Serialize(config, s_browserConfigurationSerializerOptions);
+        var configJson = JsonSerializer.Serialize(config, BrowserConfigurationJsonContext.Default.BrowserConfiguration);
         var configBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(configJson));
         output.Write("<!--Blazor-Configuration:");
         output.Write(configBase64);
