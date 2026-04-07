@@ -22,11 +22,12 @@ tools:
   github:
   edit:
   bash: ["grep", "sed", "jq", "git"]
-  web-fetch:
-  web-search:
+
+mcp-servers:
   nuget:
-    command: "dnx"
-    args: ["NuGet.Mcp.Server", "--source", "https://api.nuget.org/v3/index.json", "--yes"]
+    container: "mcr.microsoft.com/dotnet/sdk:10.0"
+    entrypoint: "dnx"
+    entrypointArgs: ["NuGet.Mcp.Server", "--source", "https://api.nuget.org/v3/index.json", "--yes"]
     allowed: ["get-latest-package-version"]
 
 safe-outputs:
@@ -75,6 +76,8 @@ Use the NuGet MCP server's `get-latest-package-version` tool to look up each pac
 - `Selenium.WebDriver`
 - `Selenium.Support`
 - `Microsoft.Playwright`
+
+Do NOT use `curl`, `web-fetch`, or any direct HTTP requests to the NuGet API — they are blocked by the network firewall.
 
 ## Guidelines
 
