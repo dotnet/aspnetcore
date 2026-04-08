@@ -68,6 +68,12 @@
       "replaces": "net11.0",
       "defaultValue": "net11.0"
     },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "defaultValue": "false"
+    },
     "httpsPort": {
       "type": "parameter",
       "datatype": "integer",
@@ -152,6 +158,21 @@
     }
   ],
   "postActions": [
+    {
+      "id": "restore",
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore'"
+        }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "args": {
+        "files": ["**/*.csproj"]
+      },
+      "continueOnError": true
+    },
     {
       "condition": "(hostIdentifier != \"dotnetcli\" && hostIdentifier != \"dotnetcli-preview\")",
       "description": "Opens README file in the editor",
