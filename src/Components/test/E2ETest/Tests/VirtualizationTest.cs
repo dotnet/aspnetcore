@@ -1028,7 +1028,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var sameItem = container.FindElement(By.CssSelector($"[data-index='{firstVisibleIndex}']"));
         var firstVisibleTopAfter = sameItem.Location.Y;
 
-        // The visible items should stay in place (or very close, allowing for minor reflow)
+        // The visible items should stay in place
         Assert.Equal(firstVisibleTopBefore, firstVisibleTopAfter);
     }
 

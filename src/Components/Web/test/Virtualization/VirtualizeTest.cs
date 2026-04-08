@@ -456,7 +456,6 @@ public class VirtualizeTest
         await testRenderer.RenderRootComponentAsync(componentId);
         Assert.NotNull(renderedVirtualize);
 
-        // scrollToBottom only fires when AnchorMode includes the End flag.
         renderedVirtualize.AnchorMode = VirtualizeAnchorMode.End;
 
         // First callback triggers items to render
@@ -529,7 +528,6 @@ public class VirtualizeTest
         await testRenderer.RenderRootComponentAsync(componentId);
         Assert.NotNull(renderedVirtualize);
 
-        // scrollToBottom only fires when AnchorMode includes the End flag.
         renderedVirtualize.AnchorMode = VirtualizeAnchorMode.End;
 
         var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
