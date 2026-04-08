@@ -244,11 +244,8 @@ may be turned into `<PackageReference>` items in projects.
     <!-- Components.Testing (xUnit V3 + Playwright + YARP) -->
     <LatestPackageReference Include="xunit.v3" Version="$(XunitV3Version)" />
     <LatestPackageReference Include="xunit.v3.extensibility.core" Version="$(XunitV3ExtensibilityCoreVersion)" />
-    <LatestPackageReference Include="xunit.runner.visualstudio" />
-    <LatestPackageReference Include="Microsoft.NET.Test.Sdk" />
     <LatestPackageReference Include="Microsoft.Playwright.Xunit.v3" Version="$(MicrosoftPlaywrightXunitV3Version)" />
     <LatestPackageReference Include="Yarp.ReverseProxy" Version="$(YarpReverseProxyVersion)" />
-    <LatestPackageReference Include="NSubstitute" Version="$(NSubstituteVersion)" />
   </ItemGroup>
 
   <ItemGroup Label="Dependencies with versions.">
