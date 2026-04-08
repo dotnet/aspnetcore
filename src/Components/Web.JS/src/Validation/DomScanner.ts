@@ -1,12 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+import { EventManager } from './EventManager';
 import { isHiddenElement } from './Utils';
-import { validatableElementSelector, ValidationEngine, ValidationRule } from './ValidationEngine';
+import { ElementState, validatableElementSelector, ValidationEngine, ValidationRule } from './ValidationEngine';
 import { ValidatableElement } from './Validator';
 
 export class DomScanner {
-  constructor(private engine: ValidationEngine) { }
+  constructor(
+    private engine: ValidationEngine,
+    private eventManager: EventManager
+  ) { }
 
   scan(elementOrSelector?: ParentNode | string): void {
     if (!elementOrSelector) {
@@ -22,6 +26,7 @@ export class DomScanner {
   }
 
   private scanSubtree(root: ParentNode): void {
+    // Hidden elements are skipped. They will be picked up if the become visible and the DOM is re-scanned.
     // TODO: Filter disabled elements?
     const candidates = root.querySelectorAll<ValidatableElement>(validatableElementSelector);
     const validatableElements = Array.from(candidates).filter(e => !isHiddenElement(e));
@@ -29,7 +34,19 @@ export class DomScanner {
     console.log(`Found ${validatableElements.length} validatable elements.`);
 
     for (const element of validatableElements) {
-      // TODO: Check existing state
+      const previousState = this.engine.getElementState(element);
+      const fingerprint = computeElementFingerprint(element);
+
+      if (previousState) {
+        // Element is already tracked.
+        // Check if its attributes has changed.
+        if (fingerprint === previousState.fingerprint) {
+          continue;
+        }
+
+        // Unregister the element so we can re-register with the current state.
+        this.engine.unregisterElement(element);
+      }
 
       const rules = parseRules(element);
       if (!rules) {
@@ -43,11 +60,18 @@ export class DomScanner {
 
       const messageElements = findMessageElements(element, form);
 
-      // TODO: Register element to ValidationEngine
+      const state: ElementState = {
+        rules: rules,
+        triggerEvents: 'change', // TODO: Support different trigger events
+        messageElements: messageElements,
+        listeners: [],
+        fingerprint: fingerprint,
+      };
 
-      // TODO: Attach event listeners via EventManager
+      this.engine.registerElement(element, state);
+      this.eventManager.attachInputListeners(element);
 
-      // Suppress native browser validation UI — we handle it ourselves
+      // Suppress native browser validation UI, we handle it ourselves
       if (!form.hasAttribute('novalidate')) {
         form.setAttribute('novalidate', '');
       }
@@ -100,4 +124,16 @@ function findMessageElements(input: ValidatableElement, form: HTMLFormElement): 
   // TODO: Support message elements outside the form.
   const messageElements = form.querySelectorAll<HTMLElement>(`[data-valmsg-for="${CSS.escape(name)}"]`);
   return Array.from(messageElements);
+}
+
+function computeElementFingerprint(element: ValidatableElement): string {
+  const parts: string[] = [];
+  for (let i = 0; i < element.attributes.length; i++) {
+    const attr = element.attributes[i];
+    if (attr.name.startsWith('data-val')) {
+      parts.push(`${attr.name}=${attr.value}`);
+    }
+  }
+  parts.sort();
+  return parts.join('|');
 }

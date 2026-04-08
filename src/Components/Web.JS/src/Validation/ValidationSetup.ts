@@ -22,7 +22,7 @@ export function initializeStandaloneValidation(): void {
   const errorDisplay = new ErrorDisplay();
   const engine = new ValidationEngine(registry, errorDisplay);
   const eventManager = new EventManager(engine);
-  const scanner = new DomScanner(engine);
+  const scanner = new DomScanner(engine, eventManager);
 
   eventManager.attachSubmitInterception();
 

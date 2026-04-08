@@ -26,7 +26,29 @@ export class EventManager {
   }
 
   attachInputListeners(element: ValidatableElement): void {
+    const state = this.engine.getElementState(element);
+    if (!state) {
+      return;
+    }
 
+    if (state.triggerEvents === 'submit') {
+      // No listeners for fields that are only validated on submit.
+      return;
+    }
+
+    // TODO: Add gating logic for input event?
+    const handler = () => {
+      this.engine.validateElement(element);
+      const form = element.closest('form');
+      if (form instanceof HTMLFormElement) {
+        this.engine.updateValidationSummary(form);
+      }
+    };
+
+    for (const eventType of state.triggerEvents.split(' ')) {
+      element.addEventListener(eventType, handler);
+      state.listeners.push({ event: eventType, handler });
+    }
   }
 
   private handleSubmit(event: SubmitEvent): void {
