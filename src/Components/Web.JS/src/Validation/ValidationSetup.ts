@@ -4,6 +4,7 @@
 import { registerBuiltInValidators } from './BuiltInValidators';
 import { DomScanner } from './DomScanner';
 import { ErrorDisplay } from './ErrorDisplay';
+import { EventManager } from './EventManager';
 import { ValidationEngine } from './ValidationEngine';
 import { ValidatableElement, Validator, ValidatorRegistry } from './Validator';
 
@@ -20,14 +21,17 @@ export function initializeStandaloneValidation(): void {
 
   const errorDisplay = new ErrorDisplay();
   const engine = new ValidationEngine(registry, errorDisplay);
+  const eventManager = new EventManager(engine);
   const scanner = new DomScanner(engine);
+
+  eventManager.attachSubmitInterception();
+
+  // Initial scan
+  scanner.scan(document);
 
   const service: StandaloneValidationService = {
     addValidator: (name: string, validator: Validator) => registry.set(name, validator),
-    scan: () => {
-      // TODO: Add support for scanning subtrees.
-      scanner.scan(document);
-    },
+    scan: (elementOrSelector?: ParentNode | string) => scanner.scan(elementOrSelector),
     validateField: (element: ValidatableElement) => engine.validateElement(element),
     validateForm: (form: HTMLFormElement) => engine.validateForm(form),
   };

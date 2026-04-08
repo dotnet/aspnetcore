@@ -8,7 +8,20 @@ import { ValidatableElement } from './Validator';
 export class DomScanner {
   constructor(private engine: ValidationEngine) { }
 
-  scan(root: ParentNode): void {
+  scan(elementOrSelector?: ParentNode | string): void {
+    if (!elementOrSelector) {
+      this.scanSubtree(document);
+    } else {
+      const root = typeof elementOrSelector === 'string'
+        ? document.querySelector(elementOrSelector)
+        : elementOrSelector;
+      if (root) {
+        this.scanSubtree(root);
+      }
+    }
+  }
+
+  private scanSubtree(root: ParentNode): void {
     // TODO: Filter disabled elements?
     const candidates = root.querySelectorAll<ValidatableElement>(validatableElementSelector);
     const validatableElements = Array.from(candidates).filter(e => !isHiddenElement(e));
