@@ -17,6 +17,7 @@
       MicrosoftEntityFrameworkCoreDesignVersion=$(MicrosoftEntityFrameworkCoreDesignVersion);
       MicrosoftEntityFrameworkCoreSqliteVersion=$(MicrosoftEntityFrameworkCoreSqliteVersion);
       MicrosoftEntityFrameworkCoreSqlServerVersion=$(MicrosoftEntityFrameworkCoreSqlServerVersion);
+      MicrosoftDataSqlClientExtensionsAzureVersion=$(MicrosoftDataSqlClientExtensionsAzureVersion);
       MicrosoftEntityFrameworkCoreToolsVersion=$(MicrosoftEntityFrameworkCoreToolsVersion);
       MicrosoftExtensionsHostingVersion=$(MicrosoftExtensionsHostingVersion);
       MicrosoftExtensionsHttpVersion=$(MicrosoftExtensionsHttpVersion);
