@@ -404,7 +404,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Connections.Client-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Client' ">
-    <BaselinePackageVersion>1.2.8</BaselinePackageVersion>
+    <BaselinePackageVersion>1.2.9</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Client' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[1.2.0, )" />
@@ -412,7 +412,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Connections.Common-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Common' ">
-    <BaselinePackageVersion>1.2.8</BaselinePackageVersion>
+    <BaselinePackageVersion>1.2.9</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Common' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[2.3.9, )" />
@@ -422,7 +422,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Connections-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections' ">
-    <BaselinePackageVersion>1.2.8</BaselinePackageVersion>
+    <BaselinePackageVersion>1.2.9</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization.Policy" Version="[2.3.9, )" />
@@ -967,7 +967,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Client.Core-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client.Core' ">
-    <BaselinePackageVersion>1.2.8</BaselinePackageVersion>
+    <BaselinePackageVersion>1.2.9</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[1.2.0, )" />
@@ -979,7 +979,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Client-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client' ">
-    <BaselinePackageVersion>1.2.8</BaselinePackageVersion>
+    <BaselinePackageVersion>1.2.9</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Client" Version="[1.2.0, )" />
@@ -988,7 +988,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Common-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Common' ">
-    <BaselinePackageVersion>1.2.8</BaselinePackageVersion>
+    <BaselinePackageVersion>1.2.9</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Common' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[2.3.9, )" />
@@ -998,7 +998,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Core-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Core' ">
-    <BaselinePackageVersion>1.2.8</BaselinePackageVersion>
+    <BaselinePackageVersion>1.2.9</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization" Version="[2.3.9, )" />
@@ -1012,7 +1012,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Protocols.Json-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.Json' ">
-    <BaselinePackageVersion>1.2.8</BaselinePackageVersion>
+    <BaselinePackageVersion>1.2.9</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.Json' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[1.2.0, )" />
@@ -1021,7 +1021,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Protocols.MessagePack-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.MessagePack' ">
-    <BaselinePackageVersion>1.2.8</BaselinePackageVersion>
+    <BaselinePackageVersion>1.2.9</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.MessagePack' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="MessagePack" Version="[1.7.3.7, )" />
@@ -1030,7 +1030,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR.Redis-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Redis' ">
-    <BaselinePackageVersion>1.2.8</BaselinePackageVersion>
+    <BaselinePackageVersion>1.2.9</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Redis' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="MessagePack" Version="[1.7.3.7, )" />
@@ -1041,7 +1041,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SignalR-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR' ">
-    <BaselinePackageVersion>1.2.8</BaselinePackageVersion>
+    <BaselinePackageVersion>1.2.9</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections" Version="[1.2.0, )" />
