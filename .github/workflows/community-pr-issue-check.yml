@@ -1,0 +1,59 @@
+name: Community PR issue check
+
+on:
+  pull_request_target:
+    types:
+      - labeled
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  check-associated-issue:
+    if: >-
+      ${{
+        github.repository_owner == 'dotnet' &&
+        github.event.label.name == 'community-contribution' &&
+        github.event.pull_request.user.type != 'Bot'
+      }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check for an associated issue
+        id: check-issue
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          if printf '%s' "$PR_BODY" | grep -qiE '(fix|fixes|fixed|fixing|close|closes|closed|closing|resolve|resolves|resolved|resolving|ref|refs|related to|relates to)\s*:?\s*#[0-9]+|https://github\.com/dotnet/aspnetcore/issues/[0-9]+|#[0-9]+'; then
+            echo "has_issue=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "has_issue=false" >> "$GITHUB_OUTPUT"
+
+      - name: Comment when no associated issue is linked
+        if: steps.check-issue.outputs.has_issue == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          gh pr comment "$PR_NUMBER" --repo "$REPOSITORY" --body "$(cat <<EOF
+          👋 Hi @$AUTHOR, thanks for your contribution!
+
+          Community pull requests in \`dotnet/aspnetcore\` need to have an associated issue before we can review them.
+
+          Please update the pull request description to link the issue using this format:
+
+          \`Fixes #<issue-number>\`
+
+          If an issue does not exist yet, please open one first: https://github.com/$REPOSITORY/issues/new/choose
+
+          For more details, see:
+          - https://github.com/$REPOSITORY/blob/$BASE_REF/CONTRIBUTING.md
+          - https://github.com/$REPOSITORY/blob/$BASE_REF/.github/pull_request_template.md
+          EOF
+          )"
