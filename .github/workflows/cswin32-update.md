@@ -33,6 +33,8 @@ safe-outputs:
   add-comment:
     max: 1
     target: "*"
+
+timeout-minutes: 90
 ---
 
 # Update CsWin32 Package
