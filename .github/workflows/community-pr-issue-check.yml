@@ -23,21 +23,33 @@ jobs:
       - name: Check for an associated issue
         id: check-issue
         env:
+          GH_TOKEN: ${{ github.token }}
           ISSUE_KEYWORD_PATTERN: >-
             (fix|fixes|fixed|fixing|close|closes|closed|closing|resolve|resolves|resolved|resolving|ref|refs|related to|relates to)\s*:?\s*#[0-9]+
           ISSUE_URL_PATTERN: >-
             https://github\.com/dotnet/aspnetcore/issues/[0-9]+
           PR_BODY: ${{ github.event.pull_request.body }}
+          REPOSITORY: ${{ github.repository }}
         run: |
-          if printf '%s' "$PR_BODY" | grep -qiE "$ISSUE_KEYWORD_PATTERN"; then
-            echo "has_issue=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+          issue_numbers="$(
+            {
+              printf '%s' "$PR_BODY" | grep -oiE "$ISSUE_KEYWORD_PATTERN" | grep -oE '[0-9]+'
+              printf '%s' "$PR_BODY" | grep -oiE "$ISSUE_URL_PATTERN" | grep -oE '[0-9]+'
+            } | sort -u
+          )"
 
-          if printf '%s' "$PR_BODY" | grep -qiE "$ISSUE_URL_PATTERN"; then
-            echo "has_issue=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+          while IFS= read -r issue_number; do
+            if [ -z "$issue_number" ]; then
+              continue
+            fi
+
+            if gh api "repos/$REPOSITORY/issues/$issue_number" --jq '(.pull_request == null) and (.state == "open")' 2>/dev/null | grep -qx 'true'; then
+              echo "has_issue=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done <<EOF
+          $issue_numbers
+          EOF
 
           echo "has_issue=false" >> "$GITHUB_OUTPUT"
 
