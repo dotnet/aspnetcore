@@ -26,17 +26,18 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           # Supported issue references include keyword-based links like
           # "Fixes #123" or "Related to #123".
-          ISSUE_KEYWORD_PATTERN: >-
-            (fix|fixes|fixed|fixing|close|closes|closed|closing|resolve|resolves|resolved|resolving|ref|refs|related to|relates to)[[:space:]]*:?[[:space:]]*#[0-9]+
+          ISSUE_KEYWORDS: >-
+            fix|fixes|fixed|fixing|close|closes|closed|closing|resolve|resolves|resolved|resolving|ref|refs|related to|relates to
           PR_BODY: ${{ github.event.pull_request.body }}
           REPOSITORY: ${{ github.repository }}
         run: |
           normalized_pr_body=$(printf '%s' "$PR_BODY" | tr '\n' ' ')
+          issue_keyword_pattern="($ISSUE_KEYWORDS)[[:space:]]*:?[[:space:]]*#[0-9]+"
           issue_url_pattern="https://github\\.com/${REPOSITORY//\//\\/}/issues/[0-9]+"
 
           issue_numbers="$(
             {
-              printf '%s' "$normalized_pr_body" | grep -oiE "$ISSUE_KEYWORD_PATTERN" | grep -oE '[0-9]+'
+              printf '%s' "$normalized_pr_body" | grep -oiE "$issue_keyword_pattern" | grep -oE '[0-9]+'
               printf '%s' "$normalized_pr_body" | grep -oiE "$issue_url_pattern" | grep -oE '[0-9]+'
             } | sort -u
           )"
@@ -47,11 +48,11 @@ jobs:
             fi
 
             if ! issue_check_result=$(gh api "repos/$REPOSITORY/issues/$issue_number" --jq '(.pull_request == null) and (.state == "open")' 2>&1); then
-              echo "::error::Failed to validate issue #$issue_number in $REPOSITORY: $issue_check_result"
+              echo "::error::Failed to fetch or validate issue #$issue_number in $REPOSITORY."
               exit 1
             fi
 
-            if printf '%s' "$issue_check_result" | grep -qx 'true'; then
+            if [ "$issue_check_result" = "true" ]; then
               echo "has_issue=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
