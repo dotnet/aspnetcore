@@ -10,7 +10,7 @@ using Xunit.Sdk;
 namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests;
 
 [Collection(PublishedSitesCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
+[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Open;")]
 public class NewShimTests : IISFunctionalTestBase
 {
     public NewShimTests(PublishedSitesFixture fixture) : base(fixture)
