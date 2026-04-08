@@ -25,7 +25,7 @@ jobs:
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
-          if printf '%s' "$PR_BODY" | grep -qiE '(fix|fixes|fixed|fixing|close|closes|closed|closing|resolve|resolves|resolved|resolving|ref|refs|related to|relates to)\s*:?\s*#[0-9]+|https://github\.com/dotnet/aspnetcore/issues/[0-9]+|#[0-9]+'; then
+          if printf '%s' "$PR_BODY" | grep -qiE '(fix|fixes|fixed|fixing|close|closes|closed|closing|resolve|resolves|resolved|resolving|ref|refs|related to|relates to)\s*:?\s*#[0-9]+|https://github\.com/dotnet/aspnetcore/issues/[0-9]+'; then
             echo "has_issue=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
