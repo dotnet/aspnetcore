@@ -45,6 +45,7 @@
                       $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
                       $(RepoRoot)src\Installers\**\*.*proj;
                       $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.*proj;
+                      $(RepoRoot)src\ProjectTemplates\McpServer.ProjectTemplates\content\**\*.*proj;
                       $(RepoRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
                       " />
 

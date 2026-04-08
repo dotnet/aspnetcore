@@ -30,31 +30,45 @@ public class McpServerTemplateTest : LoggedTest
         }
     }
 
-    [ConditionalTheory]
-    [InlineData("local", null)]
-    [InlineData("remote", null)]
-    public async Task McpServerTemplate_CanCreateBuildPublish(string transport, string[] args)
+    [ConditionalFact]
+    public async Task McpServerTemplate_Local()
     {
-        await McpServerTemplateCoreAsync(transport, args);
+        await McpServerTemplateCoreAsync("local");
     }
 
-    [ConditionalTheory]
-    [InlineData("local")]
-    [InlineData("remote")]
-    public async Task McpServerTemplate_SelfContainedFalse(string transport)
+    [ConditionalFact]
+    public async Task McpServerTemplate_Remote()
     {
-        await McpServerTemplateCoreAsync(transport, args: new[] { "--SelfContained", "false" });
+        await McpServerTemplateCoreAsync("remote");
     }
 
-    [ConditionalTheory(Skip = "Unskip when Helix supports native AOT. https://github.com/dotnet/aspnetcore/pull/47247/")]
-    [InlineData("local")]
-    [InlineData("remote")]
-    public async Task McpServerTemplate_NativeAot(string transport)
+    [ConditionalFact]
+    public async Task McpServerTemplate_Local_SelfContainedFalse()
     {
-        await McpServerTemplateCoreAsync(transport, args: new[] { ArgConstants.PublishNativeAot });
+        await McpServerTemplateCoreAsync("local", args: new[] { "--self-contained", "false" });
     }
 
-    private async Task McpServerTemplateCoreAsync(string transport, string[] args)
+    [ConditionalFact]
+    public async Task McpServerTemplate_Remote_SelfContainedFalse()
+    {
+        await McpServerTemplateCoreAsync("remote", args: new[] { "--self-contained", "false" });
+    }
+
+    [ConditionalFact]
+    [SkipOnHelix("Not supported queues", Queues = HelixConstants.NativeAotNotSupportedHelixQueues)]
+    public async Task McpServerTemplate_Local_NativeAot()
+    {
+        await McpServerTemplateCoreAsync("local", args: new[] { ArgConstants.PublishNativeAot });
+    }
+
+    [ConditionalFact]
+    [SkipOnHelix("Not supported queues", Queues = HelixConstants.NativeAotNotSupportedHelixQueues)]
+    public async Task McpServerTemplate_Remote_NativeAot()
+    {
+        await McpServerTemplateCoreAsync("remote", args: new[] { ArgConstants.PublishNativeAot });
+    }
+
+    private async Task McpServerTemplateCoreAsync(string transport, string[] args = null)
     {
         var nativeAot = args?.Contains(ArgConstants.PublishNativeAot) ?? false;
 
@@ -71,6 +85,12 @@ public class McpServerTemplateTest : LoggedTest
         }
 
         await project.RunDotNetNewAsync("mcpserver", args: allArgs.ToArray());
+
+        if (transport == "remote")
+        {
+            var expectedLaunchProfileNames = new[] { "http", "https" };
+            await project.VerifyLaunchSettings(expectedLaunchProfileNames);
+        }
 
         if (nativeAot)
         {
@@ -95,6 +115,22 @@ public class McpServerTemplateTest : LoggedTest
             }
 
             using (var aspNetProcess = project.StartPublishedProjectAsync(hasListeningUri: false, usePublishedAppHost: nativeAot))
+            {
+                Assert.False(
+                    aspNetProcess.Process.HasExited,
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", project, aspNetProcess.Process));
+            }
+        }
+        else
+        {
+            using (var aspNetProcess = project.StartBuiltProjectAsync(hasListeningUri: true))
+            {
+                Assert.False(
+                    aspNetProcess.Process.HasExited,
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
+            }
+
+            using (var aspNetProcess = project.StartPublishedProjectAsync(hasListeningUri: true, usePublishedAppHost: nativeAot))
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
