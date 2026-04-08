@@ -732,6 +732,43 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     private Status GetItemStatus([FromQuery] Status status) => status;
 
     [Fact]
+    public async Task GetOpenApiParameters_EnumWithGlobalNamingPolicy_UsesOriginalMemberNames()
+    {
+        // Arrange - configure a global JsonStringEnumConverter with KebabCaseLower naming policy
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.KebabCaseLower));
+        });
+        var builder = CreateBuilder(serviceCollection);
+
+        // Act - map an endpoint with an enum query parameter (no [JsonConverter] attribute on the enum)
+        builder.MapGet("/api", (Priority priority) => { });
+
+        // Assert - the OpenAPI schema should use the original C# member names (PascalCase),
+        // NOT the naming-policy-transformed values (kebab-case), because query parameter
+        // binding uses Enum.TryParse which only accepts the original member names.
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Collection(parameter.Schema.Enum,
+            value =>
+            {
+                Assert.Equal("HighPriority", value.GetValue<string>());
+            },
+            value =>
+            {
+                Assert.Equal("MediumPriority", value.GetValue<string>());
+            },
+            value =>
+            {
+                Assert.Equal("LowPriority", value.GetValue<string>());
+            });
+        });
+    }
+
+    [Fact]
     public async Task SupportsMvcActionWithAmbientRouteParameter()
     {
         // Arrange

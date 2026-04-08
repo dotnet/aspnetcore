@@ -219,3 +219,15 @@ internal class Product
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
 }
+
+/// <summary>
+/// An enum without a [JsonConverter] attribute — relies on global JsonStringEnumConverter configuration.
+/// Used to test that the OpenAPI schema emits C# member names (not naming-policy-transformed values)
+/// for non-body parameters when a global naming policy is configured.
+/// </summary>
+internal enum Priority
+{
+    HighPriority,
+    MediumPriority,
+    LowPriority,
+}
