@@ -24,6 +24,8 @@ jobs:
         id: check-issue
         env:
           GH_TOKEN: ${{ github.token }}
+          # Supported issue references include keyword-based links like
+          # "Fixes #123" or "Related to #123".
           ISSUE_KEYWORD_PATTERN: >-
             (fix|fixes|fixed|fixing|close|closes|closed|closing|resolve|resolves|resolved|resolving|ref|refs|related to|relates to)[[:space:]]*:?[[:space:]]*#[0-9]+
           PR_BODY: ${{ github.event.pull_request.body }}
@@ -44,8 +46,8 @@ jobs:
               continue
             fi
 
-            if ! issue_check_result=$(gh api "repos/$REPOSITORY/issues/$issue_number" --jq '(.pull_request == null) and (.state == "open")'); then
-              echo "::error::Failed to validate issue #$issue_number in $REPOSITORY."
+            if ! issue_check_result=$(gh api "repos/$REPOSITORY/issues/$issue_number" --jq '(.pull_request == null) and (.state == "open")' 2>&1); then
+              echo "::error::Failed to validate issue #$issue_number in $REPOSITORY: $issue_check_result"
               exit 1
             fi
 
@@ -74,9 +76,7 @@ jobs:
 
           Community pull requests in `dotnet/aspnetcore` need to have an associated issue before we can review them.
 
-          Please update the pull request description to link the issue using this format:
-
-          `Fixes #<issue-number>`
+          Please update the pull request description to link the issue. For example: Fixes #123
 
           If an issue does not exist yet, please open one first: https://github.com/__REPOSITORY__/issues/new/choose
 
