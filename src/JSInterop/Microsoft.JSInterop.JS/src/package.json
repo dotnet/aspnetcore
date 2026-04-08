@@ -26,8 +26,8 @@
     "dist/**"
   ],
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^6.15.0",
-    "@typescript-eslint/parser": "^6.15.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^8.56.0",
     "eslint-plugin-jsdoc": "^46.9.1",
     "eslint-plugin-prefer-arrow": "^1.2.3",
