@@ -769,6 +769,45 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task GetOpenApiParameters_EnumWithGlobalNamingPolicy_HandlesQueryAndBodyUsage()
+    {
+        // Arrange - configure a global JsonStringEnumConverter with KebabCaseLower naming policy
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.KebabCaseLower));
+        });
+        var builder = CreateBuilder(serviceCollection);
+
+        // Act - map an endpoint where the same enum type is used as both a query parameter
+        // and a response body (return value). This tests that schema sharing/componentization
+        // does not cause one context to corrupt the other.
+        builder.MapGet("/api", (Priority priority) => priority);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
+
+            // The query parameter schema should use the original C# member names
+            // because query binding uses Enum.TryParse.
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Collection(parameter.Schema.Enum,
+            value => Assert.Equal("HighPriority", value.GetValue<string>()),
+            value => Assert.Equal("MediumPriority", value.GetValue<string>()),
+            value => Assert.Equal("LowPriority", value.GetValue<string>()));
+
+            // The response body schema should use the naming-policy-transformed values
+            // because body serialization honors the JsonStringEnumConverter.
+            var response = Assert.Single(operation.Responses).Value.Content["application/json"].Schema;
+            Assert.Collection(response.Enum,
+            value => Assert.Equal("high-priority", value.GetValue<string>()),
+            value => Assert.Equal("medium-priority", value.GetValue<string>()),
+            value => Assert.Equal("low-priority", value.GetValue<string>()));
+        });
+    }
+
+    [Fact]
     public async Task SupportsMvcActionWithAmbientRouteParameter()
     {
         // Arrange
