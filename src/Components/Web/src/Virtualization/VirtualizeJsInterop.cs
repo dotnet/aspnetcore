@@ -47,9 +47,9 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
         return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.scrollToBottom", _selfReference);
     }
 
-    public ValueTask RefreshObserversAsync()
+    public ValueTask RefreshObserversAsync(float prependCompensationPx = 0)
     {
-        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.refreshObservers", _selfReference);
+        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.refreshObservers", _selfReference, prependCompensationPx);
     }
 
     public ValueTask SetAnchorModeAsync(int anchorMode)

@@ -72,7 +72,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     internal bool _pendingScrollToBottom;
 
-    private bool _pendingScrollToSpacerBefore;
+    private float _pendingPrependCompensationPx;
 
     private VirtualizeAnchorMode _lastRenderedAnchorMode;
 
@@ -261,8 +261,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 await _jsInterop.SetAnchorModeAsync((int)AnchorMode);
             }
 
-            _pendingScrollToSpacerBefore = false;
-            await _jsInterop.RefreshObserversAsync();
+            var pendingPrependCompensationPx = _pendingPrependCompensationPx;
+            _pendingPrependCompensationPx = 0;
+            await _jsInterop.RefreshObserversAsync(pendingPrependCompensationPx);
         }
     }
 
@@ -280,12 +281,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         builder.OpenElement(0, SpacerElement);
         builder.AddAttribute(1, "style", GetSpacerStyle(_itemsBefore));
         builder.AddAttribute(2, "aria-hidden", "true");
-        // Signal to JS that scrollTop should be set to spacerBefore.offsetHeight after this render.
-        // Embedded in the render diff so the ResizeObserver acts on it before the IO fires.
-        if (_pendingScrollToSpacerBefore)
-        {
-            builder.AddAttribute(3, "data-scroll-compensate", "1");
-        }
         builder.AddElementReferenceCapture(4, elementReference => _spacerBefore = elementReference);
         builder.CloseElement();
 
@@ -562,12 +557,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                         }
                         else if (AnchorMode == VirtualizeAnchorMode.None)
                         {
-                            // At the top edge in None mode: native scroll anchoring can't
-                            // compensate because Blazor reuses DOM elements in-place.
-                            // Shift the window past the prepended items and let JS set
-                            // scrollTop to the actual spacerBefore height after render.
+                            // At the top edge in None mode, apply an explicit post-render
+                            // scroll compensation using the current item-size estimate.
                             _itemsBefore = Math.Min(countDelta, Math.Max(0, result.TotalItemCount - _visibleItemCapacity));
-                            _pendingScrollToSpacerBefore = true;
+                            _pendingPrependCompensationPx = countDelta * _itemSize;
                         }
 
                         var adjustedRequest = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);

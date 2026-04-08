@@ -51,7 +51,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   }
 
   const scrollContainer = findClosestScrollContainer(spacerBefore);
-  const scrollElement = scrollContainer || document.documentElement;
+  const scrollElement = (scrollContainer || document.scrollingElement || document.documentElement) as HTMLElement;
   const isTable = isValidTableElement(spacerAfter.parentElement);
   const supportsAnchor = CSS.supports('overflow-anchor', 'auto');
   const useNativeAnchoring = !isTable && supportsAnchor;
@@ -86,18 +86,29 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   const anchoredItems: Map<Element, number> = new Map();
   let scrollTriggeredRender = false;
 
-  // None-mode prepend compensation: suppress spacerBefore IO callbacks until the
-  // user scrolls. Without this, the stale IO callback (computed before the scroll
-  // compensation) would reset _itemsBefore to 0, undoing the compensation.
-  let suppressSpacerBeforeCallbacks = false;
-  let scrollUnlockHandler: (() => void) | null = null;
-  const scrollEventTarget: EventTarget = scrollContainer ?? window;
+  // None-mode top-prepend compensation is applied explicitly after render using the
+  // current item-size estimate. Ignore the next stale spacerBefore IO callback, and
+  // allow one follow-up measured correction if spacerBefore's actual height differs.
+  let skipNextSpacerBeforeCallback = false;
+  let pendingSpacerBeforeCompensationHeight: number | null = null;
 
-  function cleanupScrollUnlock(): void {
-    if (scrollUnlockHandler) {
-      scrollEventTarget.removeEventListener('scroll', scrollUnlockHandler);
-      scrollUnlockHandler = null;
+  function reobserveSpacerBefore(): void {
+    if (spacerBefore.isConnected) {
+      intersectionObserver.unobserve(spacerBefore);
+      intersectionObserver.observe(spacerBefore);
     }
+  }
+
+  function applyPrependCompensation(expectedHeight: number): void {
+    if (expectedHeight <= 0) {
+      return;
+    }
+
+    scrollElement.scrollTop += expectedHeight;
+    pendingSpacerBeforeCompensationHeight = expectedHeight;
+    skipNextSpacerBeforeCallback = true;
+
+    queueMicrotask(reobserveSpacerBefore);
   }
 
   function getObservedHeight(entry: ResizeObserverEntry): number {
@@ -140,26 +151,15 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   //  2. For convergence (sticky-top/bottom) - observes elements for geometry changes, drives the scroll position.
   //  3. Manual scroll compensation (tables/Safari) — adjusts scrollTop when above-viewport items resize.
   const resizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]): void => {
-    // None-mode prepend compensation: C# detected items prepended at the top,
-    // shifted _itemsBefore, and marked spacerBefore with data-scroll-compensate.
-    // Set scrollTop to push new items above the viewport so the user keeps seeing
-    // the same content. Suppress spacerBefore IO callbacks until the user scrolls
-    // to prevent stale IO entries from resetting _itemsBefore back to 0.
-    if (spacerBefore.hasAttribute('data-scroll-compensate')) {
-      scrollElement.scrollTop += spacerBefore.offsetHeight;
-      spacerBefore.removeAttribute('data-scroll-compensate');
-      suppressSpacerBeforeCallbacks = true;
-      cleanupScrollUnlock();
+    if (pendingSpacerBeforeCompensationHeight !== null) {
+      const remainingHeightDifference = spacerBefore.offsetHeight - pendingSpacerBeforeCompensationHeight;
+      pendingSpacerBeforeCompensationHeight = null;
 
-      // Use rAF to skip the compensation-triggered scroll event (fires in
-      // the same frame), then listen for the next user-initiated scroll.
-      requestAnimationFrame(() => {
-        scrollUnlockHandler = () => {
-          suppressSpacerBeforeCallbacks = false;
-          scrollUnlockHandler = null;
-        };
-        scrollEventTarget.addEventListener('scroll', scrollUnlockHandler, { once: true });
-      });
+      if (remainingHeightDifference !== 0) {
+        scrollElement.scrollTop += remainingHeightDifference;
+        skipNextSpacerBeforeCallback = true;
+        queueMicrotask(reobserveSpacerBefore);
+      }
     }
 
     for (const entry of entries) {
@@ -194,7 +194,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   resizeObserver.observe(spacerBefore);
   resizeObserver.observe(spacerAfter);
 
-  function refreshObservedElements(): void {
+  function refreshObservedElements(prependCompensation = 0): void {
     // C# style updates overwrite the entire style attribute. Re-apply what we need.
     if (isTable) {
       spacerBefore.style.display = 'table-row';
@@ -209,6 +209,10 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     // Ensure spacers are always observed (idempotent).
     resizeObserver.observe(spacerBefore);
     resizeObserver.observe(spacerAfter);
+
+    if (prependCompensation > 0) {
+      applyPrependCompensation(prependCompensation);
+    }
 
     // During convergence, keep the observed element set in sync with the DOM.
     if (convergingElements) {
@@ -319,7 +323,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       anchoredItems.clear();
       resizeObserver.disconnect();
       keydownTarget.removeEventListener('keydown', handleJumpKeys);
-      cleanupScrollUnlock();
       if (callbackTimeout) {
         clearTimeout(callbackTimeout);
         callbackTimeout = null;
@@ -413,9 +416,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
 
     const intersectingEntries = entries.filter(entry => {
-      // During None-mode prepend compensation, suppress spacerBefore callbacks
-      // to prevent stale IO data from undoing the scroll compensation.
-      if (suppressSpacerBeforeCallbacks && entry.target === spacerBefore) {
+      // During None-mode prepend compensation, skip the stale spacerBefore
+      // callback that was computed before scrollTop was explicitly adjusted.
+      if (skipNextSpacerBeforeCallback && entry.target === spacerBefore) {
+        skipNextSpacerBeforeCallback = false;
+        queueMicrotask(reobserveSpacerBefore);
         return false;
       }
 
@@ -484,10 +489,10 @@ function scrollToBottom(dotNetHelper: DotNet.DotNetObject): void {
   }
 }
 
-function refreshObservers(dotNetHelper: DotNet.DotNetObject): void {
+function refreshObservers(dotNetHelper: DotNet.DotNetObject, prependCompensation = 0): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   const entry = observersByDotNetObjectId[id];
-  entry?.refreshObservedElements?.();
+  entry?.refreshObservedElements?.(prependCompensation);
 }
 
 function setAnchorMode(dotNetHelper: DotNet.DotNetObject, mode: number): void {
