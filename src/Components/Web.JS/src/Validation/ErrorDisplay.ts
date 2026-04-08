@@ -72,6 +72,8 @@ export class ErrorDisplay {
   }
 
   updateSummary(form: HTMLFormElement, errors: Map<string, string>): void {
+    // TODO: Support multiple summary elements?
+    // TODO: Support summary elements outside the form?
     const summaryElement = form.querySelector<HTMLElement>('[data-valmsg-summary]');
     if (!summaryElement) {
       return;

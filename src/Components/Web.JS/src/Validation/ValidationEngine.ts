@@ -13,7 +13,11 @@ export type ValidationRule = {
 
 export interface ElementState {
   rules: ValidationRule[];
+  triggerEvents: string;
   messageElements: HTMLElement[];
+  listeners: { event: string; handler: EventListener }[];
+  fingerprint: string; // TODO: Does the fingerprint need to include other data?
+  currentError?: string;
 }
 
 export const validatableElementSelector = 'input[data-val="true"], select[data-val="true"], textarea[data-val="true"]';
@@ -26,6 +30,26 @@ export class ValidationEngine {
     private errorDisplay: ErrorDisplay,
   ) { }
 
+  registerElement(element: ValidatableElement, state: ElementState): void {
+    this.elementState.set(element, state);
+  }
+
+  unregisterElement(element: ValidatableElement): void {
+    const state = this.elementState.get(element);
+    if (state) {
+      for (const { event, handler } of state.listeners) {
+        element.removeEventListener(event, handler);
+      }
+      element.setCustomValidity('');
+      this.errorDisplay.clearFieldError(element, state.messageElements);
+      this.elementState.delete(element);
+    }
+  }
+
+  getElementState(element: ValidatableElement): ElementState | undefined {
+    return this.elementState.get(element);
+  }
+
   validateForm(form: HTMLFormElement): boolean {
     const summaryErrors = new Map<string, string>();
     const inputs = form.querySelectorAll<ValidatableElement>(validatableElementSelector);
@@ -34,7 +58,7 @@ export class ValidationEngine {
     for (const input of inputs) {
       if (isHiddenElement(input)) {
         // Skip hidden fields but mark them as valid to clear previous errors
-        const state = this.elementState.get(input);
+        const state = this.getElementState(input);
         if (state) {
           this.markValid(input, state);
         }
@@ -58,7 +82,7 @@ export class ValidationEngine {
   }
 
   validateElement(element: ValidatableElement): boolean {
-    const state = this.elementState.get(element);
+    const state = this.getElementState(element);
 
     if (!state) {
       // No validation rules for this element, so consider it valid.
@@ -74,6 +98,21 @@ export class ValidationEngine {
       this.markValid(element, state);
       return true;
     }
+  }
+
+  updateValidationSummary(form: HTMLFormElement): void {
+    const errors = new Map<string, string>();
+    const inputs = form.querySelectorAll<ValidatableElement>(validatableElementSelector);
+
+    for (const input of Array.from(inputs)) {
+      const state = this.elementState.get(input);
+      if (state?.currentError) {
+        const name = input.getAttribute('name') || input.id || '';
+        errors.set(name, state.currentError);
+      }
+    }
+
+    this.errorDisplay.updateSummary(form, errors);
   }
 
   private validateElementInternal(element: ValidatableElement, state: ElementState): string {
@@ -105,11 +144,13 @@ export class ValidationEngine {
   }
 
   private markInvalid(element: ValidatableElement, state: ElementState, errorMessage: string): void {
+    state.currentError = errorMessage;
     element.setCustomValidity(errorMessage);
     this.errorDisplay.showFieldError(element, state.messageElements, errorMessage);
   }
 
   private markValid(element: ValidatableElement, state: ElementState): void {
+    state.currentError = '';
     element.setCustomValidity('');
     this.errorDisplay.clearFieldError(element, state.messageElements);
   }
