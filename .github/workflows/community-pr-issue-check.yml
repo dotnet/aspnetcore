@@ -25,16 +25,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           ISSUE_KEYWORD_PATTERN: >-
-            (fix|fixes|fixed|fixing|close|closes|closed|closing|resolve|resolves|resolved|resolving|ref|refs|related to|relates to)\s*:?\s*#[0-9]+
-          ISSUE_URL_PATTERN: >-
-            https://github\.com/dotnet/aspnetcore/issues/[0-9]+
+            (fix|fixes|fixed|fixing|close|closes|closed|closing|resolve|resolves|resolved|resolving|ref|refs|related to|relates to)[[:space:]]*:?[[:space:]]*#[0-9]+
           PR_BODY: ${{ github.event.pull_request.body }}
           REPOSITORY: ${{ github.repository }}
         run: |
+          normalized_pr_body=$(printf '%s' "$PR_BODY" | tr '\n' ' ')
+          issue_url_pattern="https://github\\.com/${REPOSITORY//\//\\/}/issues/[0-9]+"
+
           issue_numbers="$(
             {
-              printf '%s' "$PR_BODY" | grep -oiE "$ISSUE_KEYWORD_PATTERN" | grep -oE '[0-9]+'
-              printf '%s' "$PR_BODY" | grep -oiE "$ISSUE_URL_PATTERN" | grep -oE '[0-9]+'
+              printf '%s' "$normalized_pr_body" | grep -oiE "$ISSUE_KEYWORD_PATTERN" | grep -oE '[0-9]+'
+              printf '%s' "$normalized_pr_body" | grep -oiE "$issue_url_pattern" | grep -oE '[0-9]+'
             } | sort -u
           )"
 
@@ -43,7 +44,12 @@ jobs:
               continue
             fi
 
-            if gh api "repos/$REPOSITORY/issues/$issue_number" --jq '(.pull_request == null) and (.state == "open")' 2>/dev/null | grep -qx 'true'; then
+            if ! issue_check_result=$(gh api "repos/$REPOSITORY/issues/$issue_number" --jq '(.pull_request == null) and (.state == "open")'); then
+              echo "::error::Failed to validate issue #$issue_number in $REPOSITORY."
+              exit 1
+            fi
+
+            if printf '%s' "$issue_check_result" | grep -qx 'true'; then
               echo "has_issue=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
