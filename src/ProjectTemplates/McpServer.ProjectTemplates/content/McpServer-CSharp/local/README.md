@@ -24,8 +24,6 @@ Consider building the MCP server as a self-contained application if you want to 
 
 See [aka.ms/nuget/mcp/guide](https://aka.ms/nuget/mcp/guide) for the full guide.
 
-Please note that this template is currently in an early preview stage. If you have feedback, please take a [brief survey](http://aka.ms/dotnet-mcp-template-survey).
-
 ## Checklist before publishing to NuGet.org
 
 - Test the MCP server locally using the steps below.
@@ -58,8 +56,8 @@ To test this MCP server from source code (locally) without using a built MCP ser
 
 Refer to the VS Code or Visual Studio documentation for more information on configuring and using MCP servers:
 
-- [Use MCP servers in VS Code (Preview)](https://code.visualstudio.com/docs/copilot/chat/mcp-servers)
-- [Use MCP servers in Visual Studio (Preview)](https://learn.microsoft.com/visualstudio/ide/mcp-servers)
+- [Use MCP servers in VS Code](https://code.visualstudio.com/docs/copilot/chat/mcp-servers)
+- [Use MCP servers in Visual Studio](https://learn.microsoft.com/visualstudio/ide/mcp-servers)
 
 ## Testing the MCP Server
 
@@ -103,4 +101,4 @@ For both VS Code and Visual Studio, the configuration file uses the following se
 - [Official Documentation](https://modelcontextprotocol.io/)
 - [Protocol Specification](https://spec.modelcontextprotocol.io/)
 - [GitHub Organization](https://github.com/modelcontextprotocol)
-- [MCP C# SDK](https://modelcontextprotocol.github.io/csharp-sdk)
+- [MCP C# SDK](https://csharp.sdk.modelcontextprotocol.io/)

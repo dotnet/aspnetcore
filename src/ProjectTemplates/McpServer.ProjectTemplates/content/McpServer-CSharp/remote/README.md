@@ -22,8 +22,6 @@ If an applicable .NET runtime is not available, the MCP server will not start.
 Consider building the MCP server as a self-contained application if you want to avoid this dependency.
 #### ---#endif
 
-Please note that this template is currently in an early preview stage. If you have feedback, please take a [brief survey](http://aka.ms/dotnet-mcp-template-survey).
-
 ## Developing locally
 
 To test this MCP server from source code (locally), you can configure your IDE to connect to the server using localhost.
@@ -54,8 +52,8 @@ To test this MCP server from source code (locally), you can configure your IDE t
 
 Refer to the VS Code or Visual Studio documentation for more information on configuring and using MCP servers:
 
-- [Use MCP servers in VS Code (Preview)](https://code.visualstudio.com/docs/copilot/chat/mcp-servers)
-- [Use MCP servers in Visual Studio (Preview)](https://learn.microsoft.com/visualstudio/ide/mcp-servers)
+- [Use MCP servers in VS Code](https://code.visualstudio.com/docs/copilot/chat/mcp-servers)
+- [Use MCP servers in Visual Studio](https://learn.microsoft.com/visualstudio/ide/mcp-servers)
 
 ## Testing the MCP Server
 
@@ -75,4 +73,4 @@ ASP.NET Core MCP servers use the [ModelContextProtocol.AspNetCore](https://www.n
 - [Official Documentation](https://modelcontextprotocol.io/)
 - [Protocol Specification](https://spec.modelcontextprotocol.io/)
 - [GitHub Organization](https://github.com/modelcontextprotocol)
-- [MCP C# SDK](https://modelcontextprotocol.github.io/csharp-sdk)
+- [MCP C# SDK](https://csharp.sdk.modelcontextprotocol.io/)
