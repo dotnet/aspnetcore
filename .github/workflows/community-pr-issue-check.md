@@ -61,7 +61,7 @@ in this repository. This is required by the repository's contribution policy.
 
    👋 Hi @${{ github.event.pull_request.user.login }}, thanks for your contribution!
 
-   Community pull requests in `dotnet/aspnetcore` need to have an associated issue before we can review them.
+   Community pull requests in `${{ github.repository }}` need to have an associated issue before we can review them.
 
    Please update the pull request description to link the issue. For example: Fixes #123
 
