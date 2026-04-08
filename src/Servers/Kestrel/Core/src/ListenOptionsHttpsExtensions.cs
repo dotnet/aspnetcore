@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Middleware;
@@ -293,6 +294,12 @@ public static class ListenOptionsHttpsExtensions
     /// <param name="timeout">
     /// The maximum time to wait for the TLS Client Hello message. Defaults to 8 seconds if not specified.
     /// </param>
+    /// <remarks>
+    /// Note that this timeout is additive with the TLS handshake timeout (default 10 seconds).
+    /// A slow client could take up to the sum of both timeouts (e.g. 8 + 10 = 18 seconds by default)
+    /// before the connection is aborted. Consider reducing each timeout accordingly
+    /// (e.g. 5 seconds for the Client Hello and 5 seconds for the handshake) to keep the total time bounded.
+    /// </remarks>
     /// <returns>The <see cref="ListenOptions"/>.</returns>
     public static ListenOptions UseTlsClientHelloListener(this ListenOptions listenOptions, Action<ConnectionContext, ReadOnlySequence<byte>> tlsClientHelloBytesCallback, TimeSpan? timeout = null)
     {
@@ -305,16 +312,16 @@ public static class ListenOptionsHttpsExtensions
 
         var effectiveTimeout = timeout ?? DefaultTlsClientHelloListenerTimeout;
         var tlsListener = new TlsListener(tlsClientHelloBytesCallback);
+        var ctsPool = new CancellationTokenSourcePool();
 
         listenOptions.Use(next =>
         {
             return async context =>
             {
-                using (var timeoutCts = new CancellationTokenSource(effectiveTimeout))
-                using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(timeoutCts.Token, context.ConnectionClosed))
-                {
-                    await tlsListener.OnTlsClientHelloAsync(context, linkedCts.Token);
-                }
+                using var timeoutCts = ctsPool.Rent();
+                timeoutCts.CancelAfter(effectiveTimeout);
+
+                await tlsListener.OnTlsClientHelloAsync(context, timeoutCts.Token);
                 await next(context);
             };
         });
