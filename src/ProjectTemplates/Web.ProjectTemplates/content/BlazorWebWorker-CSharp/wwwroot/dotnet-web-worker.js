@@ -1,15 +1,18 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
-let workerExports = null;
+let workerExports = {};
 let startupError = null;
 
-async function initialize(dotnetJsUrl) {
+async function initialize(dotnetJsUrl, assemblyName) {
     try {
         const { dotnet } = await import(dotnetJsUrl);
         const { getAssemblyExports, getConfig } = await dotnet.create();
-        const assemblyName = getConfig().mainAssemblyName;
-        workerExports = await getAssemblyExports(assemblyName);
+        const mainAssemblyName = getConfig().mainAssemblyName;
+
+        workerExports = { ...await getAssemblyExports(mainAssemblyName) };
+
+        if (assemblyName && assemblyName !== mainAssemblyName) {
+            workerExports = { ...workerExports, ...await getAssemblyExports(assemblyName) };
+        }
+
         self.postMessage({ type: "ready" });
     } catch (err) {
         const errorMessage = err?.message ?? String(err);
@@ -21,14 +24,14 @@ async function initialize(dotnetJsUrl) {
 
 self.addEventListener('message', async (e) => {
     if (e.data.type === 'init') {
-        await initialize(e.data.dotnetJsUrl);
+        await initialize(e.data.dotnetJsUrl, e.data.assemblyName);
         return;
     }
 
     const { method, args, requestId } = e.data;
 
     try {
-        if (!workerExports) {
+        if (Object.keys(workerExports).length === 0) {
             throw new Error(startupError || "Worker .NET runtime not loaded");
         }
 

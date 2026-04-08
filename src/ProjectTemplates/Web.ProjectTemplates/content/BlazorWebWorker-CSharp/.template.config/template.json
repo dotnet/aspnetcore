@@ -3,17 +3,18 @@
   "author": "Microsoft",
   "classifications": [
     "Web",
+    "Blazor",
     "WebAssembly",
     "Worker",
     "Library"
   ],
-  "name": ".NET Web Worker",
+  "name": "Blazor Web Worker",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project for creating a class library that runs .NET code in a Web Worker.",
-  "groupIdentity": "Microsoft.Web.Worker",
+  "description": "A project for creating a class library that runs .NET code on a web worker from a Blazor WebAssembly or Blazor Web app.",
+  "groupIdentity": "Microsoft.Web.Blazor.WebWorker",
   "precedence": "10000",
-  "identity": "Microsoft.Web.Worker.Library.CSharp.10.0",
-  "shortName": "webworker",
+  "identity": "Microsoft.Web.Blazor.WebWorker.Library.CSharp.11.0",
+  "shortName": "blazorwebworker",
   "tags": {
     "language": "C#",
     "type": "project"
