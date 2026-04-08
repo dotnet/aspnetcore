@@ -23,9 +23,18 @@ jobs:
       - name: Check for an associated issue
         id: check-issue
         env:
+          ISSUE_KEYWORD_PATTERN: >-
+            (fix|fixes|fixed|fixing|close|closes|closed|closing|resolve|resolves|resolved|resolving|ref|refs|related to|relates to)\s*:?\s*#[0-9]+
+          ISSUE_URL_PATTERN: >-
+            https://github\.com/dotnet/aspnetcore/issues/[0-9]+
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
-          if printf '%s' "$PR_BODY" | grep -qiE '(fix|fixes|fixed|fixing|close|closes|closed|closing|resolve|resolves|resolved|resolving|ref|refs|related to|relates to)\s*:?\s*#[0-9]+|https://github\.com/dotnet/aspnetcore/issues/[0-9]+'; then
+          if printf '%s' "$PR_BODY" | grep -qiE "$ISSUE_KEYWORD_PATTERN"; then
+            echo "has_issue=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if printf '%s' "$PR_BODY" | grep -qiE "$ISSUE_URL_PATTERN"; then
             echo "has_issue=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -41,19 +50,25 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPOSITORY: ${{ github.repository }}
         run: |
-          gh pr comment "$PR_NUMBER" --repo "$REPOSITORY" --body "$(cat <<EOF
-          👋 Hi @$AUTHOR, thanks for your contribution!
+          COMMENT_BODY="$(
+            cat <<'EOF'
+          👋 Hi @__AUTHOR__, thanks for your contribution!
 
-          Community pull requests in \`dotnet/aspnetcore\` need to have an associated issue before we can review them.
+          Community pull requests in `dotnet/aspnetcore` need to have an associated issue before we can review them.
 
           Please update the pull request description to link the issue using this format:
 
-          \`Fixes #<issue-number>\`
+          `Fixes #<issue-number>`
 
-          If an issue does not exist yet, please open one first: https://github.com/$REPOSITORY/issues/new/choose
+          If an issue does not exist yet, please open one first: https://github.com/__REPOSITORY__/issues/new/choose
 
           For more details, see:
-          - https://github.com/$REPOSITORY/blob/$BASE_REF/CONTRIBUTING.md
-          - https://github.com/$REPOSITORY/blob/$BASE_REF/.github/pull_request_template.md
+          - https://github.com/__REPOSITORY__/blob/__BASE_REF__/CONTRIBUTING.md
+          - https://github.com/__REPOSITORY__/blob/__BASE_REF__/.github/pull_request_template.md
           EOF
           )"
+          COMMENT_BODY="${COMMENT_BODY//__AUTHOR__/$AUTHOR}"
+          COMMENT_BODY="${COMMENT_BODY//__REPOSITORY__/$REPOSITORY}"
+          COMMENT_BODY="${COMMENT_BODY//__BASE_REF__/$BASE_REF}"
+
+          gh pr comment "$PR_NUMBER" --repo "$REPOSITORY" --body "$COMMENT_BODY"
