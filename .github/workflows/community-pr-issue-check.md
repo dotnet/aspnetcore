@@ -59,7 +59,7 @@ in this repository. This is required by the repository's contribution policy.
 5. If no valid repository issue reference exists, use the `add-comment` safe
    output to post this exact comment on the pull request:
 
-   👋 Hi @${{ github.event.pull_request.user.login }}, thanks for your contribution!
+   👋 Hi there, thanks for your contribution!
 
    Community pull requests in `${{ github.repository }}` need to have an associated issue before we can review them.
 
@@ -68,8 +68,8 @@ in this repository. This is required by the repository's contribution policy.
    If an issue does not exist yet, please open one first: https://github.com/${{ github.repository }}/issues/new/choose
 
    For more details, see:
-   - https://github.com/${{ github.repository }}/blob/${{ github.event.pull_request.base.ref }}/CONTRIBUTING.md
-   - https://github.com/${{ github.repository }}/blob/${{ github.event.pull_request.base.ref }}/.github/pull_request_template.md
+   - https://github.com/${{ github.repository }}/blob/main/CONTRIBUTING.md
+   - https://github.com/${{ github.repository }}/blob/main/.github/pull_request_template.md
 
 6. Do not modify labels, do not edit the pull request body, and do not analyze
    code changes. Only determine whether there is an associated issue reference
