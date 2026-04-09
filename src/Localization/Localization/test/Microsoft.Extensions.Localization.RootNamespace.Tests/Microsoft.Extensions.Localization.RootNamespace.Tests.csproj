@@ -13,8 +13,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Localization.Abstractions" />
     <Reference Include="Microsoft.Extensions.Localization" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,5 +20,10 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>ValuesController.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0'))">
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 </Project>
