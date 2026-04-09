@@ -160,31 +160,17 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
     private async Task CreateWebWorkerLibrary(string workerLibDir)
     {
         var hiveArg = $"--debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
-        var args = $"new webworker {hiveArg} -n WorkerLib -o \"{workerLibDir}\"";
+        var args = $"new blazorwebworker {hiveArg} -n WorkerLib -o \"{workerLibDir}\"";
 
         using var result = ProcessEx.Run(Output, AppContext.BaseDirectory, DotNetMuxer.MuxerPathOrDefault(), args);
         await result.Exited;
-        Assert.True(result.ExitCode == 0, $"Failed to create webworker template: {result.Output}\n{result.Error}");
+        Assert.True(result.ExitCode == 0, $"Failed to create blazorwebworker template: {result.Output}\n{result.Error}");
 
-        ModifyWorkerLibProjectFile(workerLibDir);
+        CopyWorkerMethods(workerLibDir);
 
-        using var restoreResult = ProcessEx.Run(Output, workerLibDir, DotNetMuxer.MuxerPathOrDefault(), "restore");
+        using var restoreResult= ProcessEx.Run(Output, workerLibDir, DotNetMuxer.MuxerPathOrDefault(), "restore");
         await restoreResult.Exited;
-        Assert.True(restoreResult.ExitCode == 0, $"Failed to restore webworker library: {restoreResult.Output}\n{restoreResult.Error}");
-    }
-
-    private static void ModifyWorkerLibProjectFile(string workerLibDir)
-    {
-        var csprojPath = Path.Combine(workerLibDir, "WorkerLib.csproj");
-        var content = File.ReadAllText(csprojPath);
-
-        if (!content.Contains("AllowUnsafeBlocks"))
-        {
-            content = content.Replace(
-                "</PropertyGroup>",
-                "    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>\n  </PropertyGroup>");
-            File.WriteAllText(csprojPath, content);
-        }
+        Assert.True(restoreResult.ExitCode == 0, $"Failed to restore blazorwebworker library: {restoreResult.Output}\n{restoreResult.Error}");
     }
 
     private static void AddHostProjectSettings(Project hostProject)
@@ -194,13 +180,8 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
 
         var settings = @"
   <PropertyGroup>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
   </PropertyGroup>
-
-  <ItemGroup>
-    <SupportedPlatform Include=""browser"" />
-  </ItemGroup>
 ";
         content = content.Replace("</Project>", settings + "</Project>");
         File.WriteAllText(csprojPath, content);
@@ -230,9 +211,12 @@ public class WebWorkerTemplateE2ETest(ProjectFactoryFixture projectFactory) : Bl
         File.WriteAllText(
             Path.Combine(pagesDir, "WebWorkerTest.razor"),
             testComponentContent);
+    }
 
+    private static void CopyWorkerMethods(string workerLibDir)
+    {
         var workerMethodsSource = Path.Combine(TestAssetsPath, "TestWorkerMethods.cs");
-        File.Copy(workerMethodsSource, Path.Combine(hostProject.TemplateOutputDir, "TestWorkerMethods.cs"), overwrite: true);
+        File.Copy(workerMethodsSource, Path.Combine(workerLibDir, "TestWorkerMethods.cs"), overwrite: true);
     }
 
     private void LogBuildDiagnostics(Project hostProject, string buildKind)

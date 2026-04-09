@@ -38,7 +38,7 @@ safe-outputs:
 
 tools:
   edit:
-  bash: ["git:*", "grep", "cat", "head", "tail", "wc", "curl", "python3", "echo", "date", "sort", "uniq"]
+  bash: ["git:*", "grep", "cat", "head", "tail", "wc", "curl:*", "python3", "echo", "date", "sort", "uniq"]
   github:
     toolsets: [repos, issues, pull_requests, search]
   web-fetch:
@@ -166,10 +166,13 @@ GET https://vstmr.dev.azure.com/dnceng-public/public/_apis/testresults/resultsby
 ```
 
 #### Source B: Merged PR failures
-Get all PR builds (`reasonFilter=pullRequest`) from the last 30 days. Group by PR number and `pr.sourceSha` (from `triggerInfo`). A group qualifies if:
-- This was the **final commit** for the PR (the last `pr.sourceSha` seen for that PR)
-- The PR was **merged** (check via GitHub MCP `pull_request_read` with method `get` and verify the `merged` field is `true`)
-- At least one build in the group **failed** or **partially succeeded**
+Get all PR builds (`reasonFilter=pullRequest`) from the last 30 days. Group by PR number and `pr.sourceSha` (from `triggerInfo`). **Every criterion below is mandatory — do not skip or approximate any of them.** A group is included ONLY if ALL of the following are true:
+- **(B1)** This was the **final commit** for the PR (the last `pr.sourceSha` seen for that PR).
+- **(B2)** The PR **targets the `main` branch** — call `pull_request_read` (method `get`) and verify `base.ref` is `main`. Exclude PR builds targeting release branches or any other non-main branch.
+- **(B3)** The PR was **merged** — in the same `pull_request_read` response, verify the `merged` field is `true`. Exclude builds from open, draft, or abandoned PRs.
+- **(B4)** At least one build in the group **failed** or **partially succeeded**.
+
+**You MUST call `pull_request_read` for every PR** to verify B2 and B3. Do not assume a PR is merged or targets main based on build data alone. If you cannot verify a PR's status (e.g., rate limits), exclude it — never default to including it.
 
 This captures two scenarios: (1) a PR that was retried and eventually passed, indicating flaky test failures on the earlier attempt, and (2) a PR that was merged on red because the only failures were flaky tests — engineers sometimes do this when the failures are clearly unrelated to their changes.
 
@@ -208,9 +211,11 @@ All of the following are true:
 
 All of the following are true:
 - The test was **recently unquarantined** (had its `[QuarantinedTest]` attribute removed within the past 14 days, detectable via `git log --since="14 days ago" -G 'QuarantinedTest' -- '*.cs'`)
-- It has **at least one failure** in the observation window. Failing so soon after unquarantining means it was unquarantined too early. For these tests, search for the original closed quarantine issue (title prefix "Quarantine" referencing the test name) and **reopen** it rather than creating a new one in Step&nbsp;2.4.
+- It has **at least one failure that occurred AFTER the unquarantine change landed on `main`**. Use the PR merge time when available, or otherwise use the **committer date of the first-parent commit on `main`** that introduced the removal of the `[QuarantinedTest]` attribute. Do **not** use the timestamp of the underlying topic-branch commit if it differs. Only count failures from builds that started after that `main`-branch landing time. Failures from before the unquarantine do not count — they are from when the test was still quarantined. For these tests, search for the original closed quarantine issue (title prefix "Quarantine" referencing the test name) and **reopen** it rather than creating a new one in Step&nbsp;2.4.
 
-Additionally, check for **class-level quarantine** candidates. If a **test class** has more than 3 total failures across multiple methods, you **must** investigate the error messages before deciding:
+**Class-level quarantine (applies to both Case A and Case B)**
+
+After identifying individual quarantine candidates from either case above, also check for **class-level quarantine** opportunities. If a **test class** has more than 3 total failures across multiple methods, you **must** investigate the error messages before deciding:
 
 1. For each failure in the class, extract the error message and stack trace from the Helix console log. When searching the console log for `[FAIL]`, also capture the lines immediately following it — these contain the `Error Message:` and `Stack Trace:` sections.
 2. Compare the error messages and stack traces across all failing methods in the class. Look for the same exception type, similar call chains, or a shared root cause.
@@ -234,8 +239,8 @@ Before creating issues and PRs, group related failures together:
 
 - **Always exclude** `AlwaysTestTests.SuccessfulTests.GuaranteedQuarantinedTest` from all analysis. This test must never be unquarantined.
 - **Always exclude** tests under `Microsoft.AspNetCore.SignalR.Specification.Tests` from all analysis. These are abstract base classes inherited by other test projects — there is no good way to quarantine them, so they must be ignored entirely. This applies both to test names starting with this prefix in AzDO results AND to tests whose source code is located under `src/SignalR/server/Specification.Tests/`. A test may appear in AzDO under a different namespace (e.g., `StackExchangeRedis.Tests`) but still be defined in `Specification.Tests` — check the actual source file before quarantining.
-- **`[QuarantinedTest]` attributes must reference a real GitHub issue URL** with a numeric issue number (e.g., `https://github.com/dotnet/aspnetcore/issues/12345`). Never use placeholder strings, descriptive text, or non-numeric identifiers. The issue must be created BEFORE the PR that adds the attribute.
-- **When checking the 30-day quarantine age**, verify that the `[QuarantinedTest]` attribute contains a valid numeric issue URL. If it contains a non-numeric placeholder, skip the test — it was quarantined incorrectly and should not be unquarantined until the issue URL is fixed.
+- **`[QuarantinedTest]` attributes in final committed code must reference a real GitHub issue URL** with a numeric issue number (e.g., `https://github.com/dotnet/aspnetcore/issues/12345`). Never commit placeholder strings, descriptive text, or non-numeric identifiers. Since issues are created via the `create_issue` safe-output tool (which uses deferred creation), you may use the `#aw_<temporary_id>` reference syntax as an intermediate placeholder while preparing the change — e.g., `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_myid")]` where `myid` is the `temporary_id` you passed to `create_issue`. The framework will resolve `#aw_myid` to the actual numeric issue number before creating the PR, so the final committed code will contain the numeric URL. **Never** use placeholder text like `TODO`, `TBD`, or descriptive strings.
+- **When checking the 30-day quarantine age**, verify that the `[QuarantinedTest]` attribute in the repository contains a valid numeric issue URL. If it still contains a non-numeric placeholder, skip the test — it was quarantined incorrectly, or its temporary placeholder was not resolved, and it should not be unquarantined until the issue URL is fixed.
 - **Check for existing PRs** before creating new ones. Search all open PRs for any that modify the same test file. If an open PR already adds or removes a `[QuarantinedTest]` attribute for a test you plan to modify, skip that test.
 - **One PR per issue** for unquarantining. Group tests by their quarantine issue.
 - **One issue + one PR per test** (or per related group) for quarantining.
@@ -313,9 +318,10 @@ For each quarantine/re-quarantine candidate, in priority order:
    - Do not include potentially sensitive information such as access tokens.
 
 3. **Create a PR** that:
-   - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/{ISSUE_NUMBER}")]` to the test method (or class). The `{ISSUE_NUMBER}` **must** be the actual numeric issue number from the issue created in step 1 — never use placeholder text like `TODO`, `TBD`, or descriptive strings. Verify the URL is correct before committing.
+   - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#{TEMPORARY_ID}")]` to the test method (or class), where `{TEMPORARY_ID}` is the `temporary_id` you used when calling `create_issue` in step 1 (e.g., `aw_http2ign`). The framework will resolve `#{TEMPORARY_ID}` to the actual numeric issue number before creating the PR. For example, if you called `create_issue(temporary_id: "aw_http2ign", ...)`, use `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_http2ign")]`. **Never** use placeholder text like `TODO`, `TBD`, or descriptive strings.
    - Adds `using Microsoft.AspNetCore.InternalTesting;` if not already present in the file
-   - References the issue in the PR body with `Associated issue: #{ISSUE_NUMBER}`. Do **not** use the word `Fixes` or `Closes` — quarantine PRs open tracking issues, they do not fix them, and GitHub would auto-close the issue when the PR merges.
+   - References the issue in the PR body with `Associated issue: #{TEMPORARY_ID}` (using the same `temporary_id` from `create_issue`, e.g., `Associated issue: #aw_http2ign`). Do **not** use the word `Fixes` or `Closes` — quarantine PRs open tracking issues, they do not fix them, and GitHub would auto-close the issue when the PR merges.
+   - When referencing build IDs in the PR body, always use full clickable URLs: `https://dev.azure.com/dnceng-public/public/_build/results?buildId={BUILD_ID}&view=results`. Never reference build IDs as plain numbers.
    - If the test matched **Case B** (re-quarantine of a recently unquarantined test), add the `re-quarantine` label to the PR.
 
 ### Step 3.2 — Unquarantine (only after all quarantine work is done)
