@@ -82,4 +82,12 @@ public interface ITlsHandshakeFeature
     [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
 #endif
     int KeyExchangeStrength { get; }
+
+#if NET11_0_OR_GREATER
+    /// <summary>
+    /// Gets the exception that occurred during the TLS handshake, if any.
+    /// <see langword="null"/> if the handshake succeeded or has not yet completed.
+    /// </summary>
+    Exception? Exception => null;
+#endif
 }

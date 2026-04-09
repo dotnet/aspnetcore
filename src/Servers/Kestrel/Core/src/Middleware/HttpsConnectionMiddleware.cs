@@ -189,6 +189,8 @@ internal sealed class HttpsConnectionMiddleware
         }
         catch (OperationCanceledException ex)
         {
+            feature.Exception = ex;
+            feature.Snapshot();
             RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, metricsTagsFeature, ex);
 
             _logger.AuthenticationTimedOut();
@@ -197,6 +199,8 @@ internal sealed class HttpsConnectionMiddleware
         }
         catch (IOException ex)
         {
+            feature.Exception = ex;
+            feature.Snapshot();
             RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, metricsTagsFeature, ex);
 
             _logger.AuthenticationFailed(ex);
@@ -205,6 +209,8 @@ internal sealed class HttpsConnectionMiddleware
         }
         catch (AuthenticationException ex)
         {
+            feature.Exception = ex;
+            feature.Snapshot();
             RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, metricsTagsFeature, ex);
 
             _logger.AuthenticationFailed(ex);
@@ -240,7 +246,16 @@ internal sealed class HttpsConnectionMiddleware
             await using (sslStream)
             await using (sslDuplexPipe)
             {
-                await _next(context);
+                try
+                {
+                    await _next(context);
+                }
+                finally
+                {
+                    // Snapshot SslStream-backed properties before disposal so outer middleware
+                    // can still read ITlsHandshakeFeature after the connection completes.
+                    feature.Snapshot();
+                }
                 // Dispose the inner stream (SslDuplexPipe) before disposing the SslStream
                 // as the duplex pipe can hit an ODE as it still may be writing.
             }

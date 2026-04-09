@@ -38,7 +38,7 @@ safe-outputs:
 
 tools:
   edit:
-  bash: ["git:*", "grep", "cat", "head", "tail", "wc", "curl", "python3", "echo", "date", "sort", "uniq"]
+  bash: ["git:*", "grep", "cat", "head", "tail", "wc", "curl:*", "python3", "echo", "date", "sort", "uniq"]
   github:
     toolsets: [repos, issues, pull_requests, search]
   web-fetch:
@@ -53,6 +53,9 @@ network:
     - "*.vsblob.vsassets.io"
     - "*.vssps.visualstudio.com"
     - "*.blob.core.windows.net"
+
+checkout:
+  fetch-depth: 0
 
 timeout-minutes: 90
 ---
@@ -137,18 +140,11 @@ For each unquarantine candidate from Step 1.2, find the corresponding `[Quaranti
 
 Extract the **issue URL** from the `QuarantinedTest` attribute argument (e.g., `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/12345")]`).
 
-### Step 1.4 — Group by issue and create PRs
+### Step 1.4 — Group candidates by issue
 
-Group the candidates by their associated GitHub issue number. For each group:
+Group the unquarantine candidates by their associated GitHub issue number. Extract the **issue URL** from each `QuarantinedTest` attribute argument (e.g., `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/12345")]`).
 
-1. **Create a PR** that removes the `[QuarantinedTest(...)]` attribute(s) from the test method(s) or class. Do NOT remove the `using Microsoft.AspNetCore.InternalTesting;` statement — it may be used by other attributes.
-
-2. In the PR body, explain that the test(s) have been passing 100% for 30+ days in the quarantined pipeline and are being unquarantined.
-
-3. For each issue referenced:
-   - Search the entire repository for any **remaining** `[QuarantinedTest]` attributes that reference that issue URL.
-   - If **no other** quarantined tests reference that issue, **close the issue** with a comment explaining all associated tests have been unquarantined.
-   - If other tests still reference the issue, do **not** close it.
+**Do not create any PRs or issues yet.** Record the grouped candidates for later — they will be actioned in Part 3 after budget planning.
 
 ---
 
@@ -169,14 +165,18 @@ Get all completed builds on `refs/heads/main` from the last 30 days. For each bu
 GET https://vstmr.dev.azure.com/dnceng-public/public/_apis/testresults/resultsbyBuild?buildId={BUILD_ID}&outcomes=Failed&$top=1000&api-version=7.1-preview.1
 ```
 
-#### Source B: PR retry failures
-Get all PR builds (`reasonFilter=pullRequest`) from the last 30 days. Group by PR number and `pr.sourceSha` (from `triggerInfo`). Find groups where:
-- Multiple builds exist for the same PR + source SHA
-- At least one build failed and a subsequent one succeeded
-- This was the **final commit** for the PR (the last `pr.sourceSha` seen for that PR)
-- The PR was **merged** (check via GitHub MCP `pull_request_read` with method `get` and verify the `merged` field is `true`)
+#### Source B: Merged PR failures
+Get all PR builds (`reasonFilter=pullRequest`) from the last 30 days. Group by PR number and `pr.sourceSha` (from `triggerInfo`). **Every criterion below is mandatory — do not skip or approximate any of them.** A group is included ONLY if ALL of the following are true:
+- **(B1)** This was the **final commit** for the PR (the last `pr.sourceSha` seen for that PR).
+- **(B2)** The PR **targets the `main` branch** — call `pull_request_read` (method `get`) and verify `base.ref` is `main`. Exclude PR builds targeting release branches or any other non-main branch.
+- **(B3)** The PR was **merged** — in the same `pull_request_read` response, verify the `merged` field is `true`. Exclude builds from open, draft, or abandoned PRs.
+- **(B4)** At least one build in the group **failed** or **partially succeeded**.
 
-For qualifying builds, get the failed test results.
+**You MUST call `pull_request_read` for every PR** to verify B2 and B3. Do not assume a PR is merged or targets main based on build data alone. If you cannot verify a PR's status (e.g., rate limits), exclude it — never default to including it.
+
+This captures two scenarios: (1) a PR that was retried and eventually passed, indicating flaky test failures on the earlier attempt, and (2) a PR that was merged on red because the only failures were flaky tests — engineers sometimes do this when the failures are clearly unrelated to their changes.
+
+For qualifying groups, get the failed test results from the failed/partially-succeeded builds.
 
 #### Source C: Work item crash investigation
 For work items (names ending in `.WorkItemExecution`) that failed 2+ times, investigate the Helix console logs to find the individual test(s) that caused the crash:
@@ -211,55 +211,36 @@ All of the following are true:
 
 All of the following are true:
 - The test was **recently unquarantined** (had its `[QuarantinedTest]` attribute removed within the past 14 days, detectable via `git log --since="14 days ago" -G 'QuarantinedTest' -- '*.cs'`)
-- It has **at least one failure** in the observation window. Failing so soon after unquarantining means it was unquarantined too early. For these tests, search for the original closed quarantine issue (title prefix "Quarantine" referencing the test name) and **reopen** it rather than creating a new one in Step&nbsp;2.4.
+- It has **at least one failure that occurred AFTER the unquarantine change landed on `main`**. Use the PR merge time when available, or otherwise use the **committer date of the first-parent commit on `main`** that introduced the removal of the `[QuarantinedTest]` attribute. Do **not** use the timestamp of the underlying topic-branch commit if it differs. Only count failures from builds that started after that `main`-branch landing time. Failures from before the unquarantine do not count — they are from when the test was still quarantined. For these tests, search for the original closed quarantine issue (title prefix "Quarantine" referencing the test name) and **reopen** it rather than creating a new one in Step&nbsp;2.4.
 
-Additionally, check for **class-level quarantine** candidates. If a **test class** has more than 3 total failures across multiple methods, you **must** investigate the error messages before deciding:
+**Class-level quarantine (applies to both Case A and Case B)**
+
+After identifying individual quarantine candidates from either case above, also check for **class-level quarantine** opportunities. If a **test class** has more than 3 total failures across multiple methods, you **must** investigate the error messages before deciding:
 
 1. For each failure in the class, extract the error message and stack trace from the Helix console log. When searching the console log for `[FAIL]`, also capture the lines immediately following it — these contain the `Error Message:` and `Stack Trace:` sections.
 2. Compare the error messages and stack traces across all failing methods in the class. Look for the same exception type, similar call chains, or a shared root cause.
 3. If the errors are similar (e.g., all show the same exception type or share a common stack frame), quarantine the entire class instead of individual methods.
 4. If the errors are unrelated, treat each method as an independent candidate using the individual 2-failure threshold.
 
-### Step 2.3 — Group related failures and file issues
+### Step 2.3 — Group related failures
 
 Before creating issues and PRs, group related failures together:
 
 - If **multiple test methods within the same test class** are failing with the **same error message or similar stack traces** (e.g., the same exception type and call chain), they should be treated as a single group caused by the same underlying problem.
-- File **one issue** for the entire group, listing all affected test names under `## Failing Test(s)`.
+- Plan to file **one issue** for the entire group, listing all affected test names under `## Failing Test(s)`.
 - In the quarantine PR, all tests in the group should reference the **same issue URL** in their `[QuarantinedTest]` attribute.
 - If the entire class qualifies for class-level quarantine (>3 failures, multiple methods, similar errors), apply the `[QuarantinedTest]` attribute to the class instead of individual methods.
 
-### Step 2.4 — File issues and create PRs
-
-For each test or group of tests to quarantine:
-
-1. **Create a test-failure issue** with this exact structure:
-   - **Title**: `Quarantine {FULLY_QUALIFIED_TEST_NAME}`
-   - **Body**: Use the `50_test_failure.md` template format:
-     - `## Failing Test(s)` — fully qualified test name(s)
-     - `## Error Message` — from the most recent failure's console log, in a ` ```text ``` ` block
-     - `## Stacktrace` — in a `<details>` block with ` ```text ``` `
-     - `## Logs` — console log content from the most recent failure, in a `<details>` block with ` ```text ``` `. Get this from the Helix work item files API: find the file named `{TestClassName}_{TestMethodName}.log` for the specific test. Prefer to include the full, verbatim log when it fits within GitHub issue size limits. If the log is very large or would exceed those limits, include a representative head and tail of the log in the issue and provide a direct link to the full Helix log file (and/or attach it as an artifact) so the complete output is still accessible.
-     - `## Build` — link to the most recent failing build: `https://dev.azure.com/dnceng-public/public/_build/results?buildId={BUILD_ID}`
-
-2. **Post an investigation comment** on the new issue. Examine all available failure logs for the test. Be concise but thorough:
-   - If you can identify a root cause, explain it and suggest a fix if one is obvious.
-   - If you cannot determine the root cause, say so.
-   - You may reference Microsoft official docs or issues in other repos within the `dotnet` GitHub org if relevant, but do not include any other external links.
-   - Do not include potentially sensitive information such as access tokens.
-
-3. **Create a PR** that:
-   - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/{ISSUE_NUMBER}")]` to the test method (or class)
-   - Adds `using Microsoft.AspNetCore.InternalTesting;` if not already present in the file
-   - References the issue in the PR body with `Associated issue: #{ISSUE_NUMBER}`. Do **not** use the word `Fixes` or `Closes` — quarantine PRs open tracking issues, they do not fix them, and GitHub would auto-close the issue when the PR merges.
-   - If the test matched **Case B** (re-quarantine of a recently unquarantined test), add the `re-quarantine` label to the PR.
+**Do not create any PRs or issues yet.** Record the grouped candidates for later — they will be actioned in Part 3 after budget planning.
 
 ---
 
 ## Important Rules
 
 - **Always exclude** `AlwaysTestTests.SuccessfulTests.GuaranteedQuarantinedTest` from all analysis. This test must never be unquarantined.
-- **Always exclude** tests under `Microsoft.AspNetCore.SignalR.Specification.Tests` from all analysis. These are abstract base classes inherited by other test projects — there is no good way to quarantine them, so they must be ignored entirely.
+- **Always exclude** tests under `Microsoft.AspNetCore.SignalR.Specification.Tests` from all analysis. These are abstract base classes inherited by other test projects — there is no good way to quarantine them, so they must be ignored entirely. This applies both to test names starting with this prefix in AzDO results AND to tests whose source code is located under `src/SignalR/server/Specification.Tests/`. A test may appear in AzDO under a different namespace (e.g., `StackExchangeRedis.Tests`) but still be defined in `Specification.Tests` — check the actual source file before quarantining.
+- **`[QuarantinedTest]` attributes in final committed code must reference a real GitHub issue URL** with a numeric issue number (e.g., `https://github.com/dotnet/aspnetcore/issues/12345`). Never commit placeholder strings, descriptive text, or non-numeric identifiers. Since issues are created via the `create_issue` safe-output tool (which uses deferred creation), you may use the `#aw_<temporary_id>` reference syntax as an intermediate placeholder while preparing the change — e.g., `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_myid")]` where `myid` is the `temporary_id` you passed to `create_issue`. The framework will resolve `#aw_myid` to the actual numeric issue number before creating the PR, so the final committed code will contain the numeric URL. **Never** use placeholder text like `TODO`, `TBD`, or descriptive strings.
+- **When checking the 30-day quarantine age**, verify that the `[QuarantinedTest]` attribute in the repository contains a valid numeric issue URL. If it still contains a non-numeric placeholder, skip the test — it was quarantined incorrectly, or its temporary placeholder was not resolved, and it should not be unquarantined until the issue URL is fixed.
 - **Check for existing PRs** before creating new ones. Search all open PRs for any that modify the same test file. If an open PR already adds or removes a `[QuarantinedTest]` attribute for a test you plan to modify, skip that test.
 - **One PR per issue** for unquarantining. Group tests by their quarantine issue.
 - **One issue + one PR per test** (or per related group) for quarantining.
@@ -295,10 +276,13 @@ If the total planned actions exceed any output limit, **trim from the bottom of 
 
 ### Priority order
 
-Process items in this order:
+**CRITICAL: Quarantining and re-quarantining MUST be done before any unquarantining.** Flaky tests actively break CI and block other developers. Unquarantining is just cleanup — it can always wait until the next run. You must complete ALL quarantine and re-quarantine actions before spending any budget on unquarantine actions.
 
-1. **Quarantine** tests first, sorted by total failure count (most failures first). Flaky tests actively harm CI, so fixing them is higher priority than unquarantining stable tests.
-2. **Unquarantine** tests second, sorted by total pass count (most runs first). These tests are already stable and just need cleanup.
+Process items in this strict order:
+
+1. **Re-quarantine** recently unquarantined tests that are failing again (Case B). These are the highest priority because a known-flaky test is actively breaking CI after being prematurely unquarantined.
+2. **Quarantine** newly flaky tests (Case A), sorted by total failure count (most failures first).
+3. **Unquarantine** tests only after all quarantine and re-quarantine actions are complete, sorted by total pass count (most runs first). These tests are already stable and just need cleanup.
 
 ### Atomicity rules
 
@@ -307,6 +291,53 @@ Process items in this order:
 - **Never create a quarantine issue without its investigation comment.** If you've hit the comment limit, stop creating quarantine issues and PRs too.
 - **Unquarantine PRs do not require issues or comments**, so they can fill remaining PR budget after quarantine actions are complete.
 - **Issue closures are best-effort.** If you run out of close-issue budget, the issue simply stays open until the next run — this is harmless.
+
+---
+
+## Part 3: Execute Actions
+
+Now that you have identified all candidates (Parts 1 and 2) and planned your budget (above), create the PRs and issues in priority order.
+
+### Step 3.1 — Quarantine and re-quarantine (highest priority)
+
+For each quarantine/re-quarantine candidate, in priority order:
+
+1. **Create a test-failure issue** (or **reopen** the original issue for Case B re-quarantines) with this exact structure:
+   - **Title**: `Quarantine {FULLY_QUALIFIED_TEST_NAME}`
+   - **Body**: Use the `50_test_failure.md` template format:
+     - `## Failing Test(s)` — fully qualified test name(s)
+     - `## Error Message` — from the most recent failure's console log, in a ` ```text ``` ` block
+     - `## Stacktrace` — in a `<details>` block with ` ```text ``` `
+     - `## Logs` — console log content from the most recent failure, in a `<details>` block with ` ```text ``` `. Get this from the Helix work item files API: find the file named `{TestClassName}_{TestMethodName}.log` for the specific test. Prefer to include the full, verbatim log when it fits within GitHub issue size limits. If the log is very large or would exceed those limits, include a representative head and tail of the log in the issue and provide a direct link to the full Helix log file (and/or attach it as an artifact) so the complete output is still accessible.
+     - `## Build` — link to the most recent failing build: `https://dev.azure.com/dnceng-public/public/_build/results?buildId={BUILD_ID}`
+
+2. **Post an investigation comment** on the issue. Examine all available failure logs for the test. Be concise but thorough:
+   - If you can identify a root cause, explain it and suggest a fix if one is obvious.
+   - If you cannot determine the root cause, say so.
+   - You may reference Microsoft official docs or issues in other repos within the `dotnet` GitHub org if relevant, but do not include any other external links.
+   - Do not include potentially sensitive information such as access tokens.
+
+3. **Create a PR** that:
+   - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#{TEMPORARY_ID}")]` to the test method (or class), where `{TEMPORARY_ID}` is the `temporary_id` you used when calling `create_issue` in step 1 (e.g., `aw_http2ign`). The framework will resolve `#{TEMPORARY_ID}` to the actual numeric issue number before creating the PR. For example, if you called `create_issue(temporary_id: "aw_http2ign", ...)`, use `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_http2ign")]`. **Never** use placeholder text like `TODO`, `TBD`, or descriptive strings.
+   - Adds `using Microsoft.AspNetCore.InternalTesting;` if not already present in the file
+   - References the issue in the PR body with `Associated issue: #{TEMPORARY_ID}` (using the same `temporary_id` from `create_issue`, e.g., `Associated issue: #aw_http2ign`). Do **not** use the word `Fixes` or `Closes` — quarantine PRs open tracking issues, they do not fix them, and GitHub would auto-close the issue when the PR merges.
+   - When referencing build IDs in the PR body, always use full clickable URLs: `https://dev.azure.com/dnceng-public/public/_build/results?buildId={BUILD_ID}&view=results`. Never reference build IDs as plain numbers.
+   - If the test matched **Case B** (re-quarantine of a recently unquarantined test), add the `re-quarantine` label to the PR.
+
+### Step 3.2 — Unquarantine (only after all quarantine work is done)
+
+For each unquarantine candidate group (from Step 1.4), using remaining budget:
+
+1. **Create a PR** that removes the `[QuarantinedTest(...)]` attribute(s) from the test method(s) or class. Do NOT remove the `using Microsoft.AspNetCore.InternalTesting;` statement — it may be used by other attributes.
+
+2. In the PR body, explain that the test(s) have been passing 100% for 30+ days in the quarantined pipeline and are being unquarantined.
+
+3. For each issue referenced:
+   - Search the entire repository for any **remaining** `[QuarantinedTest]` attributes that reference that issue URL.
+   - If **no other** quarantined tests reference that issue, **close the issue** with a comment explaining all associated tests have been unquarantined.
+   - If other tests still reference the issue, do **not** close it.
+
+---
 
 ## API Reference (Azure DevOps & Helix)
 
