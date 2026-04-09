@@ -60,7 +60,26 @@ internal sealed class RoutePatternMatcher
 
     public RoutePattern RoutePattern { get; }
 
+#if !COMPONENTS
+    public bool TryMatch(HttpContext httpContext, RouteValueDictionary values)
+    {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
+        if (httpContext.Request.Path.Value?.Contains('%') != true)
+        {
+            return TryMatch(httpContext.Request.Path, values, httpContext: null);
+        }
+
+        return TryMatch(httpContext.Request.Path, values, httpContext);
+    }
+#endif
+
     public bool TryMatch(PathString path, RouteValueDictionary values)
+    {
+        return TryMatch(path, values, httpContext: null);
+    }
+
+    private bool TryMatch(PathString path, RouteValueDictionary values, HttpContext httpContext)
     {
         ArgumentNullException.ThrowIfNull(values);
 
@@ -144,10 +163,20 @@ internal sealed class RoutePatternMatcher
 
         // At this point we've very likely got a match, so start capturing values for real.
         i = 0;
+        PathTokenizer rawPathTokenizer = default;
+        var rawSegmentIndex = 0;
+        var useRawText = httpContext != null && Matching.RawTargetRouteValueDecoder.TryGetPathTokenizer(httpContext, out rawPathTokenizer, out rawSegmentIndex);
         foreach (var requestSegment in pathTokenizer)
         {
             var pathSegment = RoutePattern.PathSegments[i++];
-            if (SavePathSegmentsAsValues(i, values, requestSegment, pathSegment))
+            var rawRequestSegment = default(StringSegment);
+            var hasRawRequestSegment = useRawText && (uint)rawSegmentIndex < (uint)rawPathTokenizer.Count;
+            if (hasRawRequestSegment)
+            {
+                rawRequestSegment = rawPathTokenizer[rawSegmentIndex++];
+            }
+
+            if (SavePathSegmentsAsValues(i, values, requestSegment, rawRequestSegment, hasRawRequestSegment, pathSegment))
             {
                 break;
             }
@@ -244,12 +273,23 @@ internal sealed class RoutePatternMatcher
         return true;
     }
 
-    private bool SavePathSegmentsAsValues(int index, RouteValueDictionary values, StringSegment requestSegment, RoutePatternPathSegment pathSegment)
+    private bool SavePathSegmentsAsValues(
+        int index,
+        RouteValueDictionary values,
+        StringSegment requestSegment,
+        StringSegment rawRequestSegment,
+        bool useRawText,
+        RoutePatternPathSegment pathSegment)
     {
         if (pathSegment.IsSimple && pathSegment.Parts[0] is RoutePatternParameterPart parameter && parameter.IsCatchAll)
         {
             // A catch-all captures til the end of the string.
-            var captured = requestSegment.Buffer.Substring(requestSegment.Offset);
+            var captured = useRawText
+                ? Matching.RawTargetRouteValueDecoder.Decode(new StringSegment(
+                    rawRequestSegment.Buffer,
+                    rawRequestSegment.Offset,
+                    rawRequestSegment.Buffer.Length - rawRequestSegment.Offset))
+                : requestSegment.Buffer.Substring(requestSegment.Offset);
             if (captured.Length > 0)
             {
                 values[parameter.Name] = captured;
@@ -270,7 +310,9 @@ internal sealed class RoutePatternMatcher
             parameter = (RoutePatternParameterPart)pathSegment.Parts[0];
             if (requestSegment.Length > 0)
             {
-                values[parameter.Name] = requestSegment.ToString();
+                values[parameter.Name] = useRawText
+                    ? Matching.RawTargetRouteValueDecoder.Decode(rawRequestSegment)
+                    : requestSegment.ToString();
             }
             else
             {

@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing.Matching;
 
@@ -109,6 +110,10 @@ internal sealed partial class DfaMatcher : Matcher
         var candidateState = useFastPath && candidateCount <= CandidateSetStackSize
             ? ((Span<CandidateState>)candidateStateStackArray)[..candidateCount]
             : (candidateStateArray = new CandidateState[candidateCount]);
+        PathTokenizer rawPathTokenizer = default;
+        var rawSegmentOffset = 0;
+        var useRawText = path.Contains('%') &&
+            RawTargetRouteValueDecoder.TryGetPathTokenizer(httpContext, out rawPathTokenizer, out rawSegmentOffset);
 
         for (var i = 0; i < candidateCount; i++)
         {
@@ -140,12 +145,12 @@ internal sealed partial class DfaMatcher : Matcher
 
                 if ((flags & Candidate.CandidateFlags.HasCaptures) != 0)
                 {
-                    ProcessCaptures(slots, candidate.Captures, path, segments);
+                    ProcessCaptures(slots, candidate.Captures, path, segments, rawPathTokenizer, rawSegmentOffset, useRawText);
                 }
 
                 if ((flags & Candidate.CandidateFlags.HasCatchAll) != 0)
                 {
-                    ProcessCatchAll(slots, candidate.CatchAll, path, segments);
+                    ProcessCatchAll(slots, candidate.CatchAll, path, segments, rawPathTokenizer, rawSegmentOffset, useRawText);
                 }
 
                 state.Values = RouteValueDictionary.FromArray(slots);
@@ -235,7 +240,10 @@ internal sealed partial class DfaMatcher : Matcher
         KeyValuePair<string, object?>[] slots,
         (string parameterName, int segmentIndex, int slotIndex)[] captures,
         string path,
-        ReadOnlySpan<PathSegment> segments)
+        ReadOnlySpan<PathSegment> segments,
+        PathTokenizer rawPathTokenizer,
+        int rawSegmentOffset,
+        bool useRawText)
     {
         for (var i = 0; i < captures.Length; i++)
         {
@@ -246,9 +254,19 @@ internal sealed partial class DfaMatcher : Matcher
                 var segment = segments[segmentIndex];
                 if (parameterName != null && segment.Length > 0)
                 {
+                    var value = path.Substring(segment.Start, segment.Length);
+                    if (useRawText)
+                    {
+                        var rawSegmentIndex = segmentIndex + rawSegmentOffset;
+                        if ((uint)rawSegmentIndex < (uint)rawPathTokenizer.Count)
+                        {
+                            value = RawTargetRouteValueDecoder.Decode(rawPathTokenizer[rawSegmentIndex]);
+                        }
+                    }
+
                     slots[slotIndex] = new KeyValuePair<string, object?>(
                         parameterName,
-                        path.Substring(segment.Start, segment.Length));
+                        value);
                 }
             }
         }
@@ -258,7 +276,10 @@ internal sealed partial class DfaMatcher : Matcher
         KeyValuePair<string, object?>[] slots,
         in (string parameterName, int segmentIndex, int slotIndex) catchAll,
         string path,
-        ReadOnlySpan<PathSegment> segments)
+        ReadOnlySpan<PathSegment> segments,
+        PathTokenizer rawPathTokenizer,
+        int rawSegmentOffset,
+        bool useRawText)
     {
         // Read segmentIndex to local both to skip double read from stack value
         // and to use the same in-bounds validated variable to access the array.
@@ -266,9 +287,23 @@ internal sealed partial class DfaMatcher : Matcher
         if ((uint)segmentIndex < (uint)segments.Length)
         {
             var segment = segments[segmentIndex];
+            var value = path.Substring(segment.Start);
+            if (useRawText)
+            {
+                var rawSegmentIndex = segmentIndex + rawSegmentOffset;
+                if ((uint)rawSegmentIndex < (uint)rawPathTokenizer.Count)
+                {
+                    var rawSegment = rawPathTokenizer[rawSegmentIndex];
+                    value = RawTargetRouteValueDecoder.Decode(new StringSegment(
+                        rawSegment.Buffer!,
+                        rawSegment.Offset,
+                        rawSegment.Buffer!.Length - rawSegment.Offset));
+                }
+            }
+
             slots[catchAll.slotIndex] = new KeyValuePair<string, object?>(
                 catchAll.parameterName,
-                path.Substring(segment.Start));
+                value);
         }
     }
 

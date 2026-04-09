@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.DependencyInjection;
@@ -98,6 +99,56 @@ public class DfaMatcherTest
 
         // Assert
         Assert.Null(httpContext.GetEndpoint());
+    }
+
+    [Theory]
+    [InlineData("/foo%2Fbar", "/foo%2Fbar", "foo/bar")]
+    [InlineData("/foo%2Fbar", "/foo%252Fbar", "foo%2Fbar")]
+    [InlineData("/http:%2F%2Fexample.com", "/http:%2F%2Fexample.com", "http://example.com")]
+    public async Task MatchAsync_UsesRawTargetToDecodeRouteValues(string path, string rawTarget, string expected)
+    {
+        // Arrange
+        var endpointDataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                CreateEndpoint("/{value}", 0)
+            });
+
+        var matcher = CreateDfaMatcher(endpointDataSource);
+
+        var httpContext = CreateContext();
+        httpContext.Request.Path = path;
+        httpContext.Features.Get<IHttpRequestFeature>()!.RawTarget = rawTarget;
+
+        // Act
+        await matcher.MatchAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(httpContext.GetEndpoint());
+        Assert.Equal(expected, httpContext.Request.RouteValues["value"]);
+    }
+
+    [Fact]
+    public async Task MatchAsync_UsesRawTargetToDecodeRouteValues_AfterPathBase()
+    {
+        // Arrange
+        var endpointDataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                CreateEndpoint("/{value}", 0)
+            });
+
+        var matcher = CreateDfaMatcher(endpointDataSource);
+
+        var httpContext = CreateContext();
+        httpContext.Request.PathBase = "/base";
+        httpContext.Request.Path = "/foo%2Fbar";
+        httpContext.Features.Get<IHttpRequestFeature>()!.RawTarget = "/base/foo%2Fbar";
+
+        // Act
+        await matcher.MatchAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(httpContext.GetEndpoint());
+        Assert.Equal("foo/bar", httpContext.Request.RouteValues["value"]);
     }
 
     [Theory]
