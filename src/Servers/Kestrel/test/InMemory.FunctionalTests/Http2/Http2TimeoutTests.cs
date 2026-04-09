@@ -1005,14 +1005,12 @@ public class Http2TimeoutTests : Http2TestBase
         // Verifies that fragmented trailer HEADERS (without END_HEADERS) arm RequestHeadersTimeout,
         // preventing connection indefinitely waiting for the final CONTINUATION.
         var limits = _serviceContext.ServerOptions.Limits;
-        var requestBodyReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         await InitializeConnectionAsync(async context =>
         {
             var buffer = new byte[1024];
             // Read all request body data to keep the stream alive
             while (await context.Request.Body.ReadAsync(buffer) > 0) { }
-            requestBodyReceived.TrySetResult();
         });
 
         // Start a POST stream with headers complete
