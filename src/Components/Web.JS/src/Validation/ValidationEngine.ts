@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { ErrorDisplay } from './ErrorDisplay';
-import { isHiddenElement } from './Utils';
+import { getElementForm, shouldSkipElement } from './Utils';
 import { ValidatableElement, ValidationContext, ValidationResult, ValidatorRegistry } from './Validator';
 
 export type ValidationRule = {
@@ -14,49 +14,87 @@ export type ValidationRule = {
 export interface ElementState {
   rules: ValidationRule[];
   triggerEvents: string;
-  messageElements: HTMLElement[];
-  listeners: { event: string; handler: EventListener }[];
   fingerprint: string; // TODO: Does the fingerprint need to include other data?
+  listenerController: AbortController;
   currentError?: string;
+  hasBeenInvalid: boolean;
+}
+
+export interface FormState {
+  trackedElements: Set<ValidatableElement>;
+  hasBeenSubmitted: boolean;
 }
 
 export const validatableElementSelector = 'input[data-val="true"], select[data-val="true"], textarea[data-val="true"]';
 
 export class ValidationEngine {
-  private elementState: WeakMap<ValidatableElement, ElementState> = new WeakMap();
+  private trackedForms: Map<HTMLFormElement, FormState> = new Map();
+
+  private trackedElements: WeakMap<ValidatableElement, ElementState> = new WeakMap();
+
 
   constructor(
     private validatorRegistry: ValidatorRegistry,
     private errorDisplay: ErrorDisplay,
   ) { }
 
-  registerElement(element: ValidatableElement, state: ElementState): void {
-    this.elementState.set(element, state);
+  registerElement(element: ValidatableElement, form: HTMLFormElement, state: ElementState): void {
+    this.trackedElements.set(element, state);
+
+    let formState = this.trackedForms.get(form);
+    if (!formState) {
+      formState = { trackedElements: new Set(), hasBeenSubmitted: false };
+      this.trackedForms.set(form, formState);
+    }
+    formState.trackedElements.add(element);
   }
 
   unregisterElement(element: ValidatableElement): void {
-    const state = this.elementState.get(element);
+    const state = this.trackedElements.get(element);
     if (state) {
-      for (const { event, handler } of state.listeners) {
-        element.removeEventListener(event, handler);
-      }
+      // Abort active listeners for this element.
+      state.listenerController.abort();
       element.setCustomValidity('');
-      this.errorDisplay.clearFieldError(element, state.messageElements);
-      this.elementState.delete(element);
+      this.errorDisplay.clearFieldError(element);
+      this.trackedElements.delete(element);
+    }
+
+    const form = getElementForm(element);
+    if (form) {
+      const formState = this.trackedForms.get(form);
+      if (formState) {
+        formState.trackedElements.delete(element);
+        if (formState.trackedElements.size === 0) {
+          this.trackedForms.delete(form);
+        }
+      }
     }
   }
 
   getElementState(element: ValidatableElement): ElementState | undefined {
-    return this.elementState.get(element);
+    return this.trackedElements.get(element);
+  }
+
+  getFormState(form: HTMLFormElement): FormState | undefined {
+    return this.trackedForms.get(form);
+  }
+
+  getTrackedForms(): Map<HTMLFormElement, FormState> {
+    return this.trackedForms;
   }
 
   validateForm(form: HTMLFormElement): boolean {
+    const formState = this.trackedForms.get(form);
+    if (!formState) {
+      // The form is not being tracked, so consider it valid.
+      return true;
+    }
+
     const summaryErrors = new Map<string, string>();
-    const inputs = form.querySelectorAll<ValidatableElement>(validatableElementSelector);
     let firstInvalidElement: ValidatableElement | null = null;
 
-    for (const input of inputs) {
-      if (isHiddenElement(input)) {
+    for (const input of formState.trackedElements) {
+      if (shouldSkipElement(input)) {
         // Skip hidden fields but mark them as valid to clear previous errors
         const state = this.getElementState(input);
         if (state) {
@@ -101,13 +139,17 @@ export class ValidationEngine {
   }
 
   updateValidationSummary(form: HTMLFormElement): void {
-    const errors = new Map<string, string>();
-    const inputs = form.querySelectorAll<ValidatableElement>(validatableElementSelector);
+    const formState = this.trackedForms.get(form);
+    if (!formState) {
+      return;
+    }
 
-    for (const input of Array.from(inputs)) {
-      const state = this.elementState.get(input);
+    const errors = new Map<string, string>();
+
+    for (const element of formState.trackedElements) {
+      const state = this.trackedElements.get(element);
       if (state?.currentError) {
-        const name = input.getAttribute('name') || input.id || '';
+        const name = element.getAttribute('name') || element.id || '';
         errors.set(name, state.currentError);
       }
     }
@@ -145,14 +187,15 @@ export class ValidationEngine {
 
   private markInvalid(element: ValidatableElement, state: ElementState, errorMessage: string): void {
     state.currentError = errorMessage;
+    state.hasBeenInvalid = true;
     element.setCustomValidity(errorMessage);
-    this.errorDisplay.showFieldError(element, state.messageElements, errorMessage);
+    this.errorDisplay.showFieldError(element, errorMessage);
   }
 
   private markValid(element: ValidatableElement, state: ElementState): void {
     state.currentError = '';
     element.setCustomValidity('');
-    this.errorDisplay.clearFieldError(element, state.messageElements);
+    this.errorDisplay.clearFieldError(element);
   }
 }
 

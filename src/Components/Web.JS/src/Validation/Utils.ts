@@ -1,8 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-export function isHiddenElement(element: HTMLElement): boolean {
-  // TODO: Add allowHiddenFields option?
+export function getElementForm(element: HTMLElement): HTMLFormElement | null {
+  return element.closest('form');
+}
+
+export function shouldSkipElement(element: HTMLElement): boolean {
+  if ((element as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).disabled) {
+    return true;
+  }
+
   if (element.hidden) {
     return true;
   }
@@ -11,7 +18,6 @@ export function isHiddenElement(element: HTMLElement): boolean {
     return true;
   }
 
-  // TODO: More robust check? Consider `input.offsetWidth || input.offsetHeight || input.getClientRects().length`
   let current: HTMLElement | null = element;
   while (current) {
     if (current.style.display === 'none') {
