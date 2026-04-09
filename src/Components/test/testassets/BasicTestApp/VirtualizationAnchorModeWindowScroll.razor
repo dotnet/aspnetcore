@@ -1,0 +1,93 @@
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+<style>
+    html, body {
+        overflow-y: scroll;
+        height: auto;
+    }
+</style>
+
+<h1>Virtualization Anchor Mode (Window Scroll)</h1>
+
+<div style="margin-bottom: 10px;">
+    <label>Anchor Mode:
+        <select id="anchor-mode-select" @onchange="OnAnchorModeChanged">
+            <option value="0" selected="@(anchorMode == VirtualizeAnchorMode.None)">None</option>
+            <option value="1" selected="@(anchorMode == VirtualizeAnchorMode.Beginning)">Beginning</option>
+            <option value="2" selected="@(anchorMode == VirtualizeAnchorMode.End)">End</option>
+        </select>
+    </label>
+</div>
+
+@* Buttons placed ABOVE content so clicking doesn't scroll the page *@
+<div style="margin-bottom: 10px;">
+    <button id="prepend-items" @onclick="PrependItems">Prepend 10 Items</button>
+    <button id="append-items" @onclick="AppendItems">Append 10 Items</button>
+</div>
+
+<p id="status">@statusMessage</p>
+<p id="current-mode">@((int)anchorMode)</p>
+
+<div id="virtualize-root">
+    @* No scroll container — uses window/document as the scroll root *@
+    <Virtualize Items="@items" ItemSize="50" AnchorMode="@anchorMode" Context="item">
+        <div class="item"
+             data-index="@item.Index"
+             data-anchor-mode="@((int)anchorMode)"
+             style="border: 1px solid gray; padding: 5px; min-height: @(item.Height)px;">
+            <div>Item @item.Index</div>
+        </div>
+    </Virtualize>
+</div>
+
+@code {
+    private List<DynamicItem> items = new();
+    private string statusMessage = "Ready";
+    private VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Beginning;
+
+    protected override void OnInitialized()
+    {
+        items = Enumerable.Range(0, 500)
+            .Select(i => new DynamicItem { Index = i, Height = 50 })
+            .ToList();
+    }
+
+    private void OnAnchorModeChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var value))
+        {
+            anchorMode = (VirtualizeAnchorMode)value;
+            statusMessage = $"AnchorMode changed to {anchorMode}";
+        }
+    }
+
+    private int nextPrependIndex = -1;
+    private int nextAppendIndex = 500;
+
+    private void PrependItems()
+    {
+        var newItems = Enumerable.Range(0, 10)
+            .Select(i => new DynamicItem { Index = nextPrependIndex - i, Height = 50 })
+            .ToList();
+        items.InsertRange(0, newItems);
+        nextPrependIndex -= 10;
+        statusMessage = $"Prepended 10 items (indices {newItems.Last().Index}..{newItems.First().Index})";
+    }
+
+    private void AppendItems()
+    {
+        var startIndex = nextAppendIndex;
+        var newItems = Enumerable.Range(startIndex, 10)
+            .Select(i => new DynamicItem { Index = i, Height = 50 })
+            .ToList();
+        items.AddRange(newItems);
+        nextAppendIndex += 10;
+        statusMessage = $"Appended 10 items (indices {startIndex}..{startIndex + 9})";
+    }
+
+    private class DynamicItem
+    {
+        public int Index { get; set; }
+        public int Height { get; set; }
+    }
+}

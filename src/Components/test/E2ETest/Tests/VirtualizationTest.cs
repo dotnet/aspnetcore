@@ -1172,6 +1172,68 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    public void DynamicContent_PrependItemsWhileAtTop_NewItemsAppearAtTop()
+    {
+        Browser.MountTestComponent<VirtualizationDynamicContent>();
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        // Verify we're at the top.
+        Assert.Equal(0, (long)js.ExecuteScript("return arguments[0].scrollTop", container));
+
+        Browser.Exists(By.Id("prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+
+        // At scrollTop=0, the natural floor prevents native anchoring from compensating — new items
+        // appear at the top and old items shift down. This is the default AnchorMode.Beginning behavior.
+        // In contrast, AnchorMode.None compensates scrollTop so old items stay in view.
+        var scrollTopAfter = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        Assert.True(scrollTopAfter < 50,
+            $"scrollTop should stay near 0 at the natural floor, but was {scrollTopAfter}");
+
+        // The prepended items should become visible after the IO callback triggers re-render.
+        Browser.True(() => container.FindElements(By.CssSelector("[data-index='-1']")).Count > 0);
+    }
+
+    [Fact]
+    public void DynamicContent_AppendItemsWhileAtBottom_ViewportFollowsBottom()
+    {
+        Browser.MountTestComponent<VirtualizationDynamicContent>();
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        // Scroll to the bottom edge.
+        js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", container);
+        Browser.True(() =>
+        {
+            var scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            var scrollHeight = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+            var clientHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+            return scrollHeight - scrollTop - clientHeight < 2;
+        });
+
+        Browser.Exists(By.Id("append-items")).Click();
+        Browser.Contains("Appended 10 items", () => Browser.Exists(By.Id("status")).Text);
+
+        // When at the bottom and items are appended, the component's IO-based convergence
+        // detects spacerAfter becoming visible and scrolls to follow the new content.
+        // This is the default AnchorMode.Beginning|End behavior for small appends at the bottom edge.
+        // In contrast, AnchorMode.None does not auto-scroll; the user stays at their current position.
+        Browser.True(() =>
+        {
+            var scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            var scrollHeight = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+            var clientHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+            var remaining = scrollHeight - scrollTop - clientHeight;
+            return remaining < 2;
+        }, "After appending at the bottom, the viewport should follow the new content to the bottom");
+    }
+
+    [Fact]
     public void VariableHeight_ContainerResizeWorks()
     {
         Browser.MountTestComponent<VirtualizationVariableHeight>();
@@ -1910,6 +1972,564 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             $"Large jumps indicate CSS scroll anchoring is miscalculating on <tr> elements.");
     }
 
+    private void MountAnchorModeComponent(string anchorMode, bool variableHeight = false)
+    {
+        Browser.MountTestComponent<VirtualizationAnchorMode>();
+        var container = Browser.Exists(By.Id("scroll-container"));
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        if (variableHeight)
+        {
+            Browser.Exists(By.Id("toggle-height")).Click();
+            Browser.True(() => GetElementCount(container, ".item") > 0);
+        }
+
+        var select = Browser.Exists(By.Id("anchor-mode-select"));
+        var selectElement = new SelectElement(select);
+        selectElement.SelectByValue(anchorMode);
+
+        Browser.True(() => Browser.Exists(By.Id("current-mode")).Text == anchorMode);
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+    }
+
+    private void ScrollToBottomAndWait(IWebElement container, IJavaScriptExecutor js)
+    {
+        // With variable-height items, scrollHeight may shift as Virtualize re-measures.
+        // Retry the scroll-to-bottom until the viewport is truly at the bottom.
+        Browser.True(() =>
+        {
+            js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", container);
+            var st = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            var sh = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+            var ch = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+            return sh - st - ch < 2;
+        }, TimeSpan.FromSeconds(10));
+    }
+
+    private void ScrollMidListAndWaitForRender(IWebElement container, IJavaScriptExecutor js)
+    {
+        js.ExecuteScript("arguments[0].scrollTop = 5000", container);
+        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) > 4000);
+        // Wait for Virtualize to render items at the new scroll position.
+        Browser.True(() =>
+        {
+            var result = js.ExecuteScript(@"
+                var container = arguments[0];
+                var containerRect = container.getBoundingClientRect();
+                var items = container.querySelectorAll('.item[data-index]');
+
+                for (var i = 0; i < items.length; i++) {
+                    var item = items[i];
+                    var idx = parseInt(item.getAttribute('data-index'), 10);
+                    var itemRect = item.getBoundingClientRect();
+
+                    if (!Number.isNaN(idx)
+                        && idx > 50
+                        && itemRect.bottom > containerRect.top + 1
+                        && itemRect.top < containerRect.bottom - 1) {
+                        return true;
+                    }
+                }
+
+                return false;
+            ", container);
+
+            return result is bool isVisible && isVisible;
+        });
+    }
+
+    // --- None mode ---
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnchorMode_None_PrependAtTop_ViewportStaysStable(bool variableHeight)
+    {
+        MountAnchorModeComponent("0", variableHeight);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        Assert.Equal(0, (long)js.ExecuteScript("return arguments[0].scrollTop", container));
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+
+        // Wait for compensation to stabilize
+        Browser.True(() =>
+        {
+            var scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            return scrollTop > 50;
+        }, TimeSpan.FromSeconds(5));
+
+        var (indexAfter, relTopAfter, _) = GetItemPositionInContainer(js, container, ".item");
+
+        var idxBefore = int.Parse(indexBefore, System.Globalization.CultureInfo.InvariantCulture);
+        var idxAfter = int.Parse(indexAfter, System.Globalization.CultureInfo.InvariantCulture);
+        Assert.True(Math.Abs(idxAfter - idxBefore) <= 1,
+            $"None mode: viewport shifted from item {indexBefore} to {indexAfter} after prepend at top");
+        Assert.True(Math.Abs(relTopAfter - relTopBefore) == 0,
+            $"None mode: item position shifted by {Math.Abs(relTopAfter - relTopBefore)}px after prepend");
+
+        // Scroll up and verify prepended items are actually reachable.
+        js.ExecuteScript("arguments[0].scrollTop = 0", container);
+        Browser.True(() =>
+        {
+            return container.FindElements(By.CssSelector("[data-index='-1']")).Count > 0;
+        }, TimeSpan.FromSeconds(5), "None mode: prepended items should be reachable after scrolling up");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnchorMode_None_LargeAppendAtBottom_DoesNotFollowToBottom(bool variableHeight)
+    {
+        MountAnchorModeComponent("0", variableHeight);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        ScrollToBottomAndWait(container, js);
+
+        Browser.Exists(By.Id("append-many-items")).Click();
+        Browser.Contains("Appended 100 items", () => Browser.Exists(By.Id("status")).Text);
+        // The viewport should NOT end up at the very bottom of 600 items.
+        var st2 = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        var sh2 = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+        var ch2 = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+        var gap = sh2 - st2 - ch2;
+        Assert.True(gap > 2000,
+            $"None mode: should not converge to bottom after large append. " +
+            $"scrollTop: {st2}, scrollHeight: {sh2}, gap: {gap}");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnchorMode_None_AppendAtBottom_NoAutoScroll(bool variableHeight)
+    {
+        MountAnchorModeComponent("0", variableHeight);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        ScrollToBottomAndWait(container, js);
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("append-items")).Click();
+        Browser.Contains("Appended 10 items", () => Browser.Exists(By.Id("status")).Text);
+
+        // In None mode, the viewport should not auto-scroll to show appended items.
+        // scrollTop may change due to spacer height recalculation (native scroll
+        // anchoring compensates for spacer growth), but the same items stay visible.
+        AssertViewportStaysStable(
+            js,
+            By.Id("scroll-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            "None mode: visible item should not shift after append at bottom",
+            driftTolerance: variableHeight ? 5 : 0);
+    }
+
+    // Variable-height mid-list prepend requires a per-item height cache to prevent
+    // the IO redistribution cycle from fighting the anchor restore (see proposal Option B).
+    [Fact]
+    public void AnchorMode_None_MidList_ViewportStable()
+    {
+        MountAnchorModeComponent("0");
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        ScrollMidListAndWaitForRender(container, js);
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+
+        AssertViewportStaysStable(
+            js,
+            By.Id("scroll-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            "None mode mid-list: viewport should stay visually stable after prepend",
+            compareWholePixels: true);
+    }
+
+    // --- Beginning mode ---
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnchorMode_Beginning_PrependAtTop_NewItemsVisible(bool variableHeight)
+    {
+        MountAnchorModeComponent("1", variableHeight);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        Assert.Equal(0, (long)js.ExecuteScript("return arguments[0].scrollTop", container));
+
+        Browser.Exists(By.Id("prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+
+        var scrollTopAfter = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        Assert.True(scrollTopAfter < 50,
+            $"Beginning mode: should stay near top after prepend, but scrollTop was {scrollTopAfter}");
+
+        Browser.True(() => container.FindElements(By.CssSelector("[data-index='-1']")).Count > 0);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnchorMode_Beginning_AppendAtBottom_ViewportFollows(bool variableHeight)
+    {
+        MountAnchorModeComponent("1", variableHeight);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        ScrollToBottomAndWait(container, js);
+
+        Browser.Exists(By.Id("append-items")).Click();
+        Browser.Contains("Appended 10 items", () => Browser.Exists(By.Id("status")).Text);
+
+        // Beginning mode: bottom convergence is preserved for backward compatibility
+        // with .NET 10 behavior. Only None mode suppresses auto-scroll at bottom.
+        Browser.True(() =>
+        {
+            var st = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            var sh = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+            var ch = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+            return sh - st - ch < 2;
+        }, "Beginning mode: viewport should follow new content to the bottom after append");
+    }
+
+    // Variable-height mid-list prepend requires a per-item height cache to prevent
+    // the IO redistribution cycle from fighting the anchor restore (see proposal Option B).
+    [Fact]
+    public void AnchorMode_Beginning_MidList_ViewportStable()
+    {
+        MountAnchorModeComponent("1");
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        ScrollMidListAndWaitForRender(container, js);
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+
+        AssertViewportStaysStable(
+            js,
+            By.Id("scroll-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            "Beginning mode mid-list: viewport should stay stable after prepend");
+    }
+
+    // --- End mode ---
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnchorMode_End_PrependAtTop_ViewportStaysStable(bool variableHeight)
+    {
+        MountAnchorModeComponent("2", variableHeight);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        Assert.Equal(0, (long)js.ExecuteScript("return arguments[0].scrollTop", container));
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+
+        var (_, relTopAfter, scrollTopAfter) = GetItemPositionInContainer(js, container, ".item", indexBefore);
+        Assert.True(scrollTopAfter < 50,
+            $"End mode at top: scrollTop should stay near 0 (floor constraint), but was {scrollTopAfter}");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnchorMode_End_AppendAtBottom_ViewportFollows(bool variableHeight)
+    {
+        MountAnchorModeComponent("2", variableHeight);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        ScrollToBottomAndWait(container, js);
+
+        Browser.Exists(By.Id("append-items")).Click();
+        Browser.Contains("Appended 10 items", () => Browser.Exists(By.Id("status")).Text);
+
+        Browser.True(() =>
+        {
+            var st = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            var sh = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+            var ch = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+            return sh - st - ch < 2;
+        }, "End mode: viewport should follow new content to the bottom after append");
+    }
+
+    // Variable-height mid-list prepend requires a per-item height cache to prevent
+    // the IO redistribution cycle from fighting the anchor restore (see proposal Option B).
+    [Fact]
+    public void AnchorMode_End_MidList_ViewportStable()
+    {
+        MountAnchorModeComponent("2");
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        ScrollMidListAndWaitForRender(container, js);
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+
+        AssertViewportStaysStable(
+            js,
+            By.Id("scroll-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            "End mode mid-list: viewport should stay stable after prepend");
+    }
+
+    // Variable-height mid-list append requires a per-item height cache to prevent
+    // spacer recalculation from shifting the view (see proposal Option B).
+    [Fact]
+    public void AnchorMode_End_AppendAtMidList_DoesNotAutoScroll()
+    {
+        MountAnchorModeComponent("2");
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        ScrollMidListAndWaitForRender(container, js);
+
+        var (indexBefore, relTopBefore, scrollTopBefore) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("append-items")).Click();
+        Browser.Contains("Appended 10 items", () => Browser.Exists(By.Id("status")).Text);
+
+        var (_, relTopAfter, scrollTopAfter) = GetItemPositionInContainer(js, container, ".item", indexBefore);
+        Assert.Equal(scrollTopBefore, scrollTopAfter);
+        Assert.True(Math.Abs(relTopAfter - relTopBefore) <= 0,
+            $"End mode mid-list: visible item should not shift on append. " +
+            $"relTop before: {relTopBefore}, after: {relTopAfter}");
+    }
+
+    // --- Large batch tests ---
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnchorMode_End_LargeAppendAtBottom_StillFollows(bool variableHeight)
+    {
+        MountAnchorModeComponent("2", variableHeight);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        ScrollToBottomAndWait(container, js);
+
+        Browser.Exists(By.Id("append-many-items")).Click();
+        Browser.Contains("Appended 100 items", () => Browser.Exists(By.Id("status")).Text);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnchorMode_Beginning_LargePrependAtTop_StillShowsNewItems(bool variableHeight)
+    {
+        MountAnchorModeComponent("1", variableHeight);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        Assert.Equal(0, (long)js.ExecuteScript("return arguments[0].scrollTop", container));
+
+        Browser.Exists(By.Id("prepend-many-items")).Click();
+        Browser.Contains("Prepended 100 items", () => Browser.Exists(By.Id("status")).Text);
+
+        var scrollTopAfter = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        Assert.True(scrollTopAfter < 50,
+            $"Beginning mode: large prepend should still pin to top, but scrollTop was {scrollTopAfter}");
+
+        Browser.True(() => container.FindElements(By.CssSelector("[data-index='-1']")).Count > 0);
+    }
+
+    // --- Disengage tests ---
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnchorMode_End_AppendAfterLeavingBottom_DoesNotReengage(bool variableHeight)
+    {
+        MountAnchorModeComponent("2", variableHeight);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        ScrollToBottomAndWait(container, js);
+
+        Browser.Exists(By.Id("append-items")).Click();
+        Browser.Contains("Appended 10 items", () => Browser.Exists(By.Id("status")).Text);
+        Browser.True(() =>
+        {
+            var st = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            var sh = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+            var ch = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+            return sh - st - ch < 2;
+        }, "End mode: first append should follow to bottom");
+
+        js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollTop - 500", container);
+
+        var scrollTopBeforeSecondAppend = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+
+        Browser.Exists(By.Id("append-items")).Click();
+        Browser.Contains("Appended 10 items", () => Browser.Exists(By.Id("status")).Text);
+
+        var scrollTopAfterSecondAppend = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        Assert.Equal(scrollTopBeforeSecondAppend, scrollTopAfterSecondAppend);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnchorMode_Beginning_PrependAfterLeavingTop_DoesNotReengage(bool variableHeight)
+    {
+        MountAnchorModeComponent("1", variableHeight);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        Assert.Equal(0, (long)js.ExecuteScript("return arguments[0].scrollTop", container));
+
+        Browser.Exists(By.Id("prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+        Browser.True(() => container.FindElements(By.CssSelector("[data-index='-1']")).Count > 0);
+
+        js.ExecuteScript("arguments[0].scrollTop = 3000", container);
+        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) > 2000);
+
+        var scrollTopBefore = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+
+        Browser.Exists(By.Id("prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+
+        var scrollTopAfter = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+
+        // Native anchoring adjusts scrollTop to compensate for inserted items.
+        // The key check is that the viewport did NOT jump back to 0.
+        Assert.True(scrollTopAfter > 2000,
+            $"Beginning mode: should not pull user back to top after leaving. " +
+            $"scrollTop before: {scrollTopBefore}, after: {scrollTopAfter} (expected >2000, not near 0)");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnchorMode_Beginning_LargeAppendAtBottom_DoesNotFollowToBottom(bool variableHeight)
+    {
+        MountAnchorModeComponent("1", variableHeight);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        ScrollToBottomAndWait(container, js);
+
+        Browser.Exists(By.Id("append-many-items")).Click();
+        Browser.Contains("Appended 100 items", () => Browser.Exists(By.Id("status")).Text);
+        // Beginning mode: no convergence to chase the new bottom.
+        var st2 = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        var sh2 = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+        var ch2 = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+        var gap = sh2 - st2 - ch2;
+        Assert.True(gap > 2000,
+            $"Beginning mode: should not converge to bottom after large append. " +
+            $"scrollTop: {st2}, scrollHeight: {sh2}, gap: {gap}");
+    }
+
+    // --- Window scroll ---
+
+    private void MountWindowScrollAnchorModeComponent(string anchorMode)
+    {
+        Browser.MountTestComponent<VirtualizationAnchorModeWindowScroll>();
+        var root = Browser.Exists(By.Id("virtualize-root"));
+        Browser.True(() => GetElementCount(root, ".item") > 0);
+
+        var select = Browser.Exists(By.Id("anchor-mode-select"));
+        var selectElement = new SelectElement(select);
+        selectElement.SelectByValue(anchorMode);
+
+        Browser.True(() => Browser.Exists(By.Id("current-mode")).Text == anchorMode);
+        Browser.True(() => GetElementCount(root, ".item") > 0);
+    }
+
+    [Fact]
+    public void AnchorMode_WindowScroll_None_PrependAtTop_ViewportStaysStable()
+    {
+        MountWindowScrollAnchorModeComponent("0");
+
+        var js = (IJavaScriptExecutor)Browser;
+        var root = Browser.Exists(By.Id("virtualize-root"));
+
+        js.ExecuteScript("window.scrollTo(0, 0)");
+        Browser.True(() => (long)js.ExecuteScript("return window.scrollY") < 2);
+
+        // Wait for items to render at the top position before capturing the anchor.
+        Browser.True(() => root.FindElements(By.CssSelector(".item[data-index]")).Count > 0);
+        var (firstIndexBefore, firstTopBefore) = GetItemPositionInViewport(js, root, ".item[data-index]");
+
+        Browser.Exists(By.Id("prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+
+        // Wait for anchor restore to compensate scrollY.
+        Browser.True(() =>
+        {
+            var scrollY = (long)js.ExecuteScript("return window.scrollY");
+            return scrollY > 50;
+        }, TimeSpan.FromSeconds(10));
+
+        // The same item should stay at approximately the same viewport position.
+        Browser.True(() =>
+        {
+            try
+            {
+                var (_, currentTop) = GetItemPositionInViewport(js, root, ".item[data-index]", firstIndexBefore);
+                return Math.Abs(currentTop - firstTopBefore) <= 5;
+            }
+            catch
+            {
+                return false;
+            }
+        }, TimeSpan.FromSeconds(10));
+
+        var (_, firstTopAfter) = GetItemPositionInViewport(js, root, ".item[data-index]", firstIndexBefore);
+        Assert.True(Math.Abs(firstTopAfter - firstTopBefore) <= 5,
+            $"Window-scroll None mode: item {firstIndexBefore} moved from {firstTopBefore} to {firstTopAfter} after prepend at top");
+    }
+
+    // --- Helpers ---
+
     private static (string index, double relTop, long scrollTop) GetItemPositionInContainer(
         IJavaScriptExecutor js, IWebElement container, string itemSelector, string dataIndex = null)
     {
@@ -1926,7 +2546,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                     if (item.getAttribute('data-index') === targetIndex) {
                         return { index: targetIndex, relTop: itemRect.top - containerRect.top, scrollTop: container.scrollTop };
                     }
-                } else if (itemRect.top >= containerRect.top - 1 && itemRect.top < containerRect.bottom) {
+                } else if (itemRect.bottom > containerRect.top + 1 && itemRect.top < containerRect.bottom - 1) {
                     return { index: item.getAttribute('data-index'), relTop: itemRect.top - containerRect.top, scrollTop: container.scrollTop };
                 }
             }
@@ -1938,6 +2558,65 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             result["index"].ToString(),
             Convert.ToDouble(result["relTop"], CultureInfo.InvariantCulture),
             Convert.ToInt64(result["scrollTop"], CultureInfo.InvariantCulture));
+    }
+
+    private void AssertViewportStaysStable(
+        IJavaScriptExecutor js,
+        By containerSelector,
+        string itemSelector,
+        string indexBefore,
+        double relTopBefore,
+        string message,
+        double driftTolerance = 0,
+        bool compareWholePixels = false)
+    {
+        (string index, double relTop, long scrollTop) lastPos = default;
+
+        Browser.True(() =>
+        {
+            try
+            {
+                var container = Browser.Exists(containerSelector);
+                lastPos = GetItemPositionInContainer(js, container, itemSelector, indexBefore);
+                var drift = compareWholePixels
+                    ? Math.Abs((int)Math.Round(lastPos.relTop) - (int)Math.Round(relTopBefore))
+                    : Math.Abs(lastPos.relTop - relTopBefore);
+
+                return drift <= driftTolerance;
+            }
+            catch
+            {
+                return false;
+            }
+        }, $"{message} (index before: {indexBefore}, last index: {lastPos.index}, relTop before: {relTopBefore}, last relTop: {lastPos.relTop}, last scrollTop: {lastPos.scrollTop}, tolerance: {driftTolerance})");
+    }
+
+    private static (string index, double top) GetItemPositionInViewport(
+        IJavaScriptExecutor js, IWebElement root, string itemSelector, string dataIndex = null)
+    {
+        var result = js.ExecuteScript(@"
+            var root = arguments[0];
+            var selector = arguments[1];
+            var targetIndex = arguments[2];
+            var items = root.querySelectorAll(selector);
+            for (var i = 0; i < items.length; i++) {
+                var item = items[i];
+                var itemRect = item.getBoundingClientRect();
+                if (targetIndex != null) {
+                    if (item.getAttribute('data-index') === targetIndex) {
+                        return { index: targetIndex, top: itemRect.top };
+                    }
+                } else if (itemRect.bottom > 1 && itemRect.top < window.innerHeight - 1) {
+                    return { index: item.getAttribute('data-index'), top: itemRect.top };
+                }
+            }
+            return null;
+        ", root, itemSelector, dataIndex) as Dictionary<string, object>;
+
+        Assert.NotNull(result);
+        return (
+            result["index"].ToString(),
+            Convert.ToDouble(result["top"], CultureInfo.InvariantCulture));
     }
 
     /// <summary>
