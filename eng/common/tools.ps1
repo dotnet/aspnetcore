@@ -842,7 +842,7 @@ function MSBuild-Core() {
     $cmdArgs += ' /p:TreatWarningsAsErrors=false'
   }
 
-  if ($warnNotAsError) {
+  if ($warnAsError -and $warnNotAsError) {
     $cmdArgs += " /warnnotaserror:$warnNotAsError /p:AdditionalWarningsNotAsErrors=$warnNotAsError"
   }
 

@@ -534,7 +534,7 @@ function MSBuild-Core {
   fi
 
   local warnnotaserror_switch=""
-  if [[ -n "$warn_not_as_error" ]]; then
+  if [[ -n "$warn_not_as_error" && "$warn_as_error" == true ]]; then
     warnnotaserror_switch="/warnnotaserror:$warn_not_as_error /p:AdditionalWarningsNotAsErrors=$warn_not_as_error"
   fi
 
