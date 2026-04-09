@@ -394,7 +394,9 @@ internal static class JsonNodeSchemaExtensions
 
         static bool IsNonBodyBindingSource(BindingSource bindingSource) => bindingSource == BindingSource.Header
             || bindingSource == BindingSource.Query
-            || bindingSource == BindingSource.Path;
+            || bindingSource == BindingSource.Path
+            || bindingSource == BindingSource.Form
+            || bindingSource == BindingSource.FormFile;
     }
 
     /// <summary>

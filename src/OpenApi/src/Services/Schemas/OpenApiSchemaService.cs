@@ -293,7 +293,9 @@ internal sealed class OpenApiSchemaService(
 
     private static bool IsNonBodyBindingSource(BindingSource bindingSource) => bindingSource == BindingSource.Header
         || bindingSource == BindingSource.Query
-        || bindingSource == BindingSource.Path;
+        || bindingSource == BindingSource.Path
+        || bindingSource == BindingSource.Form
+        || bindingSource == BindingSource.FormFile;
 
     internal static IOpenApiSchema ResolveReferenceForSchema(OpenApiDocument document, IOpenApiSchema inputSchema, string? rootSchemaId, string? baseSchemaId = null)
     {
