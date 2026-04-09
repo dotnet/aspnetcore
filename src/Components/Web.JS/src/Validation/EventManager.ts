@@ -46,8 +46,7 @@ export class EventManager {
     };
 
     for (const eventType of state.triggerEvents.split(' ')) {
-      element.addEventListener(eventType, handler);
-      state.listeners.push({ event: eventType, handler });
+      element.addEventListener(eventType, handler, { signal: state.listenerController.signal });
     }
   }
 
@@ -58,12 +57,12 @@ export class EventManager {
       return;
     }
 
-    // Only intercept forms that have validation attributes
-    if (!form.querySelector('[data-val="true"]')) {
+    // Only intercept tracked forms.
+    if (!this.engine.getFormState(form)) {
       return;
     }
 
-    // Respect formnovalidate on the submit button (HTML spec)
+    // Respect formnovalidate on the submit button (HTML spec).
     if (event.submitter?.hasAttribute('formnovalidate')) {
       return;
     }

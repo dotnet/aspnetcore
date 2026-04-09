@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { EventManager } from './EventManager';
-import { isHiddenElement } from './Utils';
+import { getElementForm, shouldSkipElement } from './Utils';
 import { ElementState, validatableElementSelector, ValidationEngine, ValidationRule } from './ValidationEngine';
 import { ValidatableElement } from './Validator';
 
@@ -26,14 +26,20 @@ export class DomScanner {
   }
 
   private scanSubtree(root: ParentNode): void {
-    // Hidden elements are skipped. They will be picked up if the become visible and the DOM is re-scanned.
-    // TODO: Filter disabled elements?
+    // Phase 1: Reconcile - clean up elements that are no longer valid candidates
+    this.reconcile(root);
+
+    // Phase 2: Discover — find and register new/changed elements
     const candidates = root.querySelectorAll<ValidatableElement>(validatableElementSelector);
-    const validatableElements = Array.from(candidates).filter(e => !isHiddenElement(e));
 
-    console.log(`Found ${validatableElements.length} validatable elements.`);
+    // TODOL: Remove debug log
+    console.log(`Found ${candidates.length} validatable elements.`);
 
-    for (const element of validatableElements) {
+    for (const element of candidates) {
+      if (shouldSkipElement(element)) {
+        continue;
+      }
+
       const previousState = this.engine.getElementState(element);
       const fingerprint = computeElementFingerprint(element);
 
@@ -49,31 +55,63 @@ export class DomScanner {
       }
 
       const rules = parseRules(element);
-      if (!rules) {
+      if (rules.length === 0) {
         continue;
       }
 
-      const form = element.closest('form');
+      const form = getElementForm(element);
       if (!form) {
         continue;
       }
 
-      const messageElements = findMessageElements(element, form);
-
       const state: ElementState = {
         rules: rules,
-        triggerEvents: 'change', // TODO: Support different trigger events
-        messageElements: messageElements,
-        listeners: [],
+        triggerEvents: element.getAttribute('data-val-event') ?? 'change',
+        listenerController: new AbortController(),
         fingerprint: fingerprint,
+        hasBeenInvalid: false,
       };
 
-      this.engine.registerElement(element, state);
+      this.engine.registerElement(element, form, state);
       this.eventManager.attachInputListeners(element);
 
       // Suppress native browser validation UI, we handle it ourselves
       if (!form.hasAttribute('novalidate')) {
         form.setAttribute('novalidate', '');
+      }
+    }
+  }
+
+  private reconcile(root: ParentNode): void {
+    for (const [form, formState] of this.engine.getTrackedForms()) {
+      // Only reconcile forms within the scan root
+      if (!root.contains(form)) {
+        continue;
+      }
+
+      // If a form itself is removed from DOM, unregister all its elements.
+      if (!form.isConnected) {
+        const elementsToUnregister: ValidatableElement[] = [];
+        for (const element of formState.trackedElements) {
+          elementsToUnregister.push(element);
+        }
+        for (const element of elementsToUnregister) {
+          this.engine.unregisterElement(element);
+        }
+        continue;
+      }
+
+      // If an element is removed from DOM or becomes not validatable, unregister it.
+      const elementsToUnregister: ValidatableElement[] = [];
+      for (const element of formState.trackedElements) {
+        if (!element.isConnected ||
+          shouldSkipElement(element) ||
+          element.getAttribute('data-val') !== 'true') {
+          elementsToUnregister.push(element);
+        }
+      }
+      for (const element of elementsToUnregister) {
+        this.engine.unregisterElement(element);
       }
     }
   }
@@ -115,25 +153,21 @@ export function parseRules(element: ValidatableElement): ValidationRule[] {
   return Object.values(ruleMap);
 }
 
-function findMessageElements(input: ValidatableElement, form: HTMLFormElement): HTMLElement[] {
-  const name = input.getAttribute('name');
-  if (!name) {
-    return [];
-  }
-
-  // TODO: Support message elements outside the form.
-  const messageElements = form.querySelectorAll<HTMLElement>(`[data-valmsg-for="${CSS.escape(name)}"]`);
-  return Array.from(messageElements);
-}
-
 function computeElementFingerprint(element: ValidatableElement): string {
   const parts: string[] = [];
+
+  const name = element.getAttribute('name');
+  if (name) {
+    parts.push(`name=${name}`);
+  }
+
   for (let i = 0; i < element.attributes.length; i++) {
     const attr = element.attributes[i];
     if (attr.name.startsWith('data-val')) {
       parts.push(`${attr.name}=${attr.value}`);
     }
   }
+
   parts.sort();
   return parts.join('|');
 }
