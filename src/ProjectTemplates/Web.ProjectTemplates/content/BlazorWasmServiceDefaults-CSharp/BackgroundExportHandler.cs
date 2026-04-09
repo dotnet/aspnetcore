@@ -6,7 +6,7 @@ using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
 using Polly;
 
-namespace Microsoft.Extensions.Hosting;
+namespace BlazorWasm.ServiceDefaults1;
 
 /// <summary>
 /// A DelegatingHandler that works around the OTel SDK's sync-over-async
