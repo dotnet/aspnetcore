@@ -163,6 +163,7 @@ public class Http2ConnectionTests : Http2TestBase
         AssertConnectionNoError();
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65915")]
     [Fact]
     public async Task RequestHeaderStringReuse_MultipleStreams_KnownHeaderReused()
     {
@@ -422,6 +423,8 @@ public class Http2ConnectionTests : Http2TestBase
         var stream = _connection._streams[1];
         serverTcs.SetResult();
 
+        await WaitForAllStreamsAsync().DefaultTimeout();
+
         // TriggerTick will trigger the stream to be returned to the pool so we can assert it
         TriggerTick();
 
@@ -524,6 +527,8 @@ public class Http2ConnectionTests : Http2TestBase
 
         appDelegateTcs.TrySetResult();
 
+        await WaitForAllStreamsAsync().DefaultTimeout();
+
         // TriggerTick will trigger the stream to be returned to the pool so we can assert it
         TriggerTick();
 
@@ -550,6 +555,8 @@ public class Http2ConnectionTests : Http2TestBase
         Assert.Equal(0, _connection.StreamPool.Count);
 
         appDelegateTcs.TrySetResult();
+
+        await WaitForAllStreamsAsync().DefaultTimeout();
 
         // TriggerTick will trigger the stream to be returned to the pool so we can assert it
         TriggerTick();
@@ -688,6 +695,8 @@ public class Http2ConnectionTests : Http2TestBase
             withLength: 36,
             withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
             withStreamId: 1);
+
+        await WaitForAllStreamsAsync().DefaultTimeout();
 
         // TriggerTick will trigger the stream to be returned to the pool so we can assert it
         TriggerTick();
@@ -1631,7 +1640,7 @@ public class Http2ConnectionTests : Http2TestBase
                     CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.DATA, streamId: 1),
                     CoreStrings.FormatHttp2ErrorStreamHalfClosedRemote(Http2FrameType.DATA, streamId: 1)
             });
-        AssertConnectionEndReason(ConnectionEndReason.UnknownStream);
+        AssertConnectionEndReason(ConnectionEndReason.FrameAfterStreamClose);
     }
 
     [Fact]
@@ -1845,7 +1854,7 @@ public class Http2ConnectionTests : Http2TestBase
             expectedErrorCode: Http2ErrorCode.STREAM_CLOSED,
             expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.DATA, streamId: 1));
 
-        AssertConnectionEndReason(ConnectionEndReason.UnknownStream);
+        AssertConnectionEndReason(ConnectionEndReason.FrameAfterStreamClose);
     }
 
     [Fact]
@@ -1987,7 +1996,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/44415")]
     public async Task OutputFlowControl_ConnectionAndRequestAborted_NoException()
     {
         // Ensure the stream window size is bigger than the connection window size
@@ -2254,6 +2262,76 @@ public class Http2ConnectionTests : Http2TestBase
         await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
 
         AssertConnectionNoError();
+    }
+
+    [Fact]
+    public async Task CONTINUATION_Received_WithTrailers_ContentLengthMismatch_StreamError()
+    {
+        // Verify that a Content-Length mismatch detected during trailer decoding
+        // (via HEADERS + CONTINUATION) results in a stream reset, not a connection error.
+        // A second stream on the same connection should complete successfully.
+        var stream1RequestReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var stream3RequestReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await InitializeConnectionAsync(async context =>
+        {
+            if (context.Features.Get<IHttp2StreamIdFeature>().StreamId == 1)
+            {
+                stream1RequestReceived.SetResult();
+
+                // Read the body — will be interrupted by the stream error
+                var buffer = new byte[100];
+                try
+                {
+                    while (await context.Request.Body.ReadAsync(buffer, 0, buffer.Length) > 0) { }
+                }
+                catch (IOException)
+                {
+                    // Expected when the stream is reset
+                }
+            }
+            else if (context.Features.Get<IHttp2StreamIdFeature>().StreamId == 3)
+            {
+                stream3RequestReceived.SetResult();
+            }
+        });
+
+        // Stream 1: POST with Content-Length: 12 but only send 5 bytes of body data
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
+        };
+
+        await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS, headers);
+        await SendDataAsync(1, _helloBytes, endStream: false);
+
+        await stream1RequestReceived.Task.DefaultTimeout();
+
+        // Send trailers for stream 1 as HEADERS (no END_HEADERS) + CONTINUATION (END_HEADERS).
+        // OnEndStreamReceived will detect InputRemaining != 0 and throw Http2StreamErrorException.
+        var trailers = new byte[] { 0x00, 0x09 }
+            .Concat(Encoding.ASCII.GetBytes("trailer-1"))
+            .Concat(new byte[] { 0x01, (byte)'1' })
+            .ToArray();
+        await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM, new byte[0]);
+        await SendContinuationAsync(1, Http2ContinuationFrameFlags.END_HEADERS, trailers);
+
+        // Should get RST_STREAM for stream 1 only, not GOAWAY
+        await WaitForStreamErrorAsync(1, Http2ErrorCode.PROTOCOL_ERROR, CoreStrings.Http2StreamErrorLessDataThanLength);
+
+        // Stream 3: Verify the connection is still alive by opening a new stream
+        await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+        await stream3RequestReceived.Task.DefaultTimeout();
+
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 36,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 3);
+
+        await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
     }
 
     [Fact]
@@ -2667,6 +2745,59 @@ public class Http2ConnectionTests : Http2TestBase
         await InitializeConnectionAsync(_noopApplication);
 
         await SendInvalidHeadersFrameAsync(1, frameLength, padLength);
+
+        await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+            ignoreNonGoAwayFrames: true,
+            expectedLastStreamId: 0,
+            expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
+            expectedErrorMessage: CoreStrings.FormatHttp2ErrorPaddingTooLong(Http2FrameType.HEADERS));
+
+        AssertConnectionEndReason(ConnectionEndReason.InvalidDataPadding);
+    }
+
+    [Fact]
+    public async Task HEADERS_Received_WithPaddingAndPriority_PaddingExceedsAvailablePayload_ConnectionError()
+    {
+        await InitializeConnectionAsync(_noopApplication);
+
+        /*
+         Frame header (bytes 0-8):
+         ----------------------------------------------------------------------------
+         00 00 06  → Length = 6
+         01        → Type = HEADERS (0x01)
+         2D        → Flags = 0x2D = 0b00101101
+                     = END_STREAM (0x01) | END_HEADERS (0x04) | PADDED (0x08) | PRIORITY (0x20)
+         00 00 00 01 → StreamId = 1
+
+         Payload (9-14):
+         ----------------------------------------------------------------------------
+         01        → HeadersPadLength = 1     ← parsed because PADDED flag is set
+         00 00 00 00 → StreamDependency = 0  ← parsed because PRIORITY flag is set
+         10        → Weight = 16             ← parsed because PRIORITY flag is set
+         (nothing) → 0 bytes of HPACK data
+         (nothing) → 0 bytes of padding (but PadLength says 1!)
+        */
+
+        // Send a HEADERS frame with both PADDED and PRIORITY flags.
+        // PayloadLength=6 means all bytes are consumed by metadata (1 pad length + 4 stream dependency + 1 weight).
+        // PadLength=1 claims 1 byte of padding, but there are 0 bytes left for HPACK data + padding.
+        // This should be rejected as a PROTOCOL_ERROR because the padding exceeds available space.
+        var outputWriter = _pair.Application.Output;
+        var frame = new Http2Frame();
+
+        var payloadLength = 6;
+
+        frame.PrepareHeaders(Http2HeadersFrameFlags.END_STREAM | Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.PADDED | Http2HeadersFrameFlags.PRIORITY, 1 /* streamId */);
+        frame.PayloadLength = payloadLength;
+        var payload = new byte[payloadLength];
+
+        // Pad Length (1 byte) + Stream Dependency (4 bytes) + Weight (1 byte) = 6 bytes minimum
+        payload[0] = 1 /* PadLength */;
+        Bitshifter.WriteUInt31BigEndian(payload.AsSpan(1), (uint)0 /* zeros as streamDependency */);
+        payload[5] = 16 /* Priority */;
+
+        Http2FrameWriter.WriteHeader(frame, outputWriter);
+        await SendAsync(payload);
 
         await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
             ignoreNonGoAwayFrames: true,
@@ -3541,10 +3672,11 @@ public class Http2ConnectionTests : Http2TestBase
         await SendDataAsync(1, new byte[2], endStream: false);
         await SendRstStreamAsync(1);
         await SendDataAsync(1, new byte[10], endStream: false);
-        tcs.TrySetResult();
 
         await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1,
             Http2ErrorCode.STREAM_CLOSED, CoreStrings.FormatHttp2ErrorStreamAborted(Http2FrameType.DATA, 1));
+
+        tcs.TrySetResult(); // Don't let the response start until after the abort
 
         AssertConnectionEndReason(ConnectionEndReason.FrameAfterStreamClose);
     }
@@ -3567,10 +3699,11 @@ public class Http2ConnectionTests : Http2TestBase
         await SendDataAsync(1, new byte[2], endStream: false);
         await SendRstStreamAsync(1);
         await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM, _requestTrailers);
-        tcs.TrySetResult();
 
         await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1,
             Http2ErrorCode.STREAM_CLOSED, CoreStrings.FormatHttp2ErrorStreamAborted(Http2FrameType.HEADERS, 1));
+
+        tcs.TrySetResult(); // Don't let the response start until after the abort
 
         AssertConnectionEndReason(ConnectionEndReason.FrameAfterStreamClose);
     }
@@ -3578,6 +3711,7 @@ public class Http2ConnectionTests : Http2TestBase
     [Fact]
     public async Task RST_STREAM_IncompleteRequest_AdditionalResetFrame_IgnoreAdditionalReset()
     {
+        var abortedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var headers = new[]
@@ -3586,13 +3720,20 @@ public class Http2ConnectionTests : Http2TestBase
             new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
             new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
         };
-        await InitializeConnectionAsync(context => tcs.Task);
+        await InitializeConnectionAsync(context =>
+        {
+            context.RequestAborted.Register(() => abortedTcs.TrySetResult());
+            return tcs.Task;
+        });
 
         await StartStreamAsync(1, headers, endStream: false);
         await SendDataAsync(1, new byte[1], endStream: false);
         await SendRstStreamAsync(1);
         await SendRstStreamAsync(1);
-        tcs.TrySetResult();
+
+        await abortedTcs.Task;
+
+        tcs.TrySetResult(); // Don't let the response start until after the request aborts
 
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
@@ -4158,6 +4299,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66037")]
     public async Task GOAWAY_Received_ConnectionLifetimeNotification_Cancelled()
     {
         await InitializeConnectionAsync(_noopApplication, addKestrelFeatures: true);
@@ -5135,6 +5277,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66037")]
     public async Task AbortSendsFinalGOAWAY()
     {
         await InitializeConnectionAsync(_noopApplication);
@@ -5208,6 +5351,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66037")]
     public async Task StopProcessingNextRequestSendsGracefulGOAWAYThenFinalGOAWAYWhenAllStreamsComplete()
     {
         await InitializeConnectionAsync(_echoApplication);
@@ -5289,7 +5433,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60111")]
     public async Task IgnoreNewStreamsDuringClosedConnection()
     {
         // Remove callback that completes _pair.Application.Output on abort.
@@ -5702,6 +5845,7 @@ public class Http2ConnectionTests : Http2TestBase
     [InlineData((int)(Http2FrameType.DATA))]
     [InlineData((int)(Http2FrameType.HEADERS))]
     [InlineData((int)(Http2FrameType.CONTINUATION))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66037")]
     public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterEndOfStream(int intFinalFrameType)
     {
         var finalFrameType = (Http2FrameType)intFinalFrameType;
@@ -5734,7 +5878,7 @@ public class Http2ConnectionTests : Http2TestBase
                             CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.DATA, streamId: 1),
                             CoreStrings.FormatHttp2ErrorStreamHalfClosedRemote(Http2FrameType.DATA, streamId: 1)
                     });
-                AssertConnectionEndReason(ConnectionEndReason.UnknownStream);
+                AssertConnectionEndReason(ConnectionEndReason.FrameAfterStreamClose);
                 break;
 
             case Http2FrameType.HEADERS:
@@ -5825,7 +5969,7 @@ public class Http2ConnectionTests : Http2TestBase
         switch (finalFrameType)
         {
             case Http2FrameType.DATA:
-                AssertConnectionEndReason(ConnectionEndReason.UnknownStream);
+                AssertConnectionEndReason(ConnectionEndReason.FrameAfterStreamClose);
                 break;
 
             case Http2FrameType.HEADERS:

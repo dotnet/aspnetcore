@@ -52,6 +52,9 @@ fi
 # Configures warning treatment in msbuild.
 warn_as_error=${warn_as_error:-true}
 
+# Specifies semi-colon delimited list of warning codes that should not be treated as errors.
+warn_not_as_error=${warn_not_as_error:-''}
+
 # True to attempt using .NET Core already that meets requirements specified in global.json
 # installed on the machine instead of downloading one.
 use_installed_dotnet_cli=${use_installed_dotnet_cli:-true}
@@ -184,6 +187,8 @@ function InstallDotNet {
   local version=$2
   local runtime=$4
 
+  # For performance this check is duplicated in src/Microsoft.DotNet.Arcade.Sdk/src/InstallDotNetCore.cs
+  # if you are making changes here, consider if you need to make changes there as well.
   local dotnetVersionLabel="'$runtime v$version'"
   if [[ -n "${4:-}" ]] && [ "$4" != 'sdk' ]; then
     runtimePath="$root"
@@ -522,7 +527,18 @@ function MSBuild-Core {
     }
   }
 
-  RunBuildTool "$_InitializeBuildToolCommand" /m /nologo /clp:Summary /v:$verbosity /nr:$node_reuse $warnaserror_switch /p:TreatWarningsAsErrors=$warn_as_error /p:ContinuousIntegrationBuild=$ci "$@"
+  # Add -mt flag for MSBuild multithreaded mode if enabled via environment variable
+  local mt_switch=""
+  if [[ "${MSBUILD_MT_ENABLED:-}" == "1" ]]; then
+    mt_switch="-mt"
+  fi
+
+  local warnnotaserror_switch=""
+  if [[ -n "$warn_not_as_error" ]]; then
+    warnnotaserror_switch="/warnnotaserror:$warn_not_as_error /p:AdditionalWarningsNotAsErrors=$warn_not_as_error"
+  fi
+
+  RunBuildTool "$_InitializeBuildToolCommand" /m /nologo /clp:Summary /v:$verbosity /nr:$node_reuse $warnaserror_switch $mt_switch $warnnotaserror_switch /p:TreatWarningsAsErrors=$warn_as_error /p:ContinuousIntegrationBuild=$ci "$@"
 }
 
 function GetDarc {

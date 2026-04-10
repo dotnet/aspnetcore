@@ -14,8 +14,10 @@
       DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
       GrpcAspNetCoreVersion=$(GrpcAspNetCoreVersion);
       MicrosoftAspNetCoreMvcRazorRuntimeCompilationVersion=$(MicrosoftAspNetCoreMvcRazorRuntimeCompilationVersion);
+      MicrosoftEntityFrameworkCoreDesignVersion=$(MicrosoftEntityFrameworkCoreDesignVersion);
       MicrosoftEntityFrameworkCoreSqliteVersion=$(MicrosoftEntityFrameworkCoreSqliteVersion);
       MicrosoftEntityFrameworkCoreSqlServerVersion=$(MicrosoftEntityFrameworkCoreSqlServerVersion);
+      MicrosoftDataSqlClientExtensionsAzureVersion=$(MicrosoftDataSqlClientExtensionsAzureVersion);
       MicrosoftEntityFrameworkCoreToolsVersion=$(MicrosoftEntityFrameworkCoreToolsVersion);
       MicrosoftExtensionsHostingVersion=$(MicrosoftExtensionsHostingVersion);
       MicrosoftExtensionsHttpVersion=$(MicrosoftExtensionsHttpVersion);
@@ -63,6 +65,7 @@
     <GeneratedContent Include="BlazorWebCSharp.csproj.in" OutputPath="content/BlazorWeb-CSharp/BlazorWebCSharp.1/BlazorWebCSharp.1.csproj" />
     <GeneratedContent Include="BlazorWebCSharp.Client.csproj.in" OutputPath="content/BlazorWeb-CSharp/BlazorWebCSharp.1.Client/BlazorWebCSharp.1.Client.csproj" />
     <GeneratedContent Include="ComponentsWebAssembly-CSharp.csproj.in" OutputPath="content/ComponentsWebAssembly-CSharp/ComponentsWebAssembly-CSharp.csproj" />
+    <GeneratedContent Include="BlazorWebWorker-CSharp.csproj.in" OutputPath="content/BlazorWebWorker-CSharp/Company.WebWorker1.csproj" />
   </ItemGroup>
 
 </Project>

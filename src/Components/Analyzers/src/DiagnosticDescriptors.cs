@@ -73,7 +73,8 @@ internal static class DiagnosticDescriptors
         CreateLocalizableResourceString(nameof(Resources.ComponentParametersShouldBeAutoProperties_Message)),
         Usage,
         DiagnosticSeverity.Warning,
-        isEnabledByDefault: true);
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.ComponentParametersShouldBeAutoProperties_Description)));
 
     public static readonly DiagnosticDescriptor SupplyParameterFromFormShouldNotHavePropertyInitializer = new(
         "BL0008",

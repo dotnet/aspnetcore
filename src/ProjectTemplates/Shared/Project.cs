@@ -236,6 +236,54 @@ public class Project : IDisposable
         return new AspNetProcess(DevCert, Output, TemplatePublishDir, projectDll, environment, published: true, hasListeningUri: hasListeningUri, usePublishedAppHost: usePublishedAppHost);
     }
 
+    internal (ProcessEx process, string listeningUri) ServePublishedStandaloneApp(ITestOutputHelper output)
+    {
+        var publishDir = Path.Combine(TemplatePublishDir, "wwwroot");
+
+        output.WriteLine("Running dotnet serve on published output...");
+        var command = DotNetMuxer.MuxerPathOrDefault();
+        string args;
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX_DIR")))
+        {
+            args = "serve";
+        }
+        else
+        {
+            command = "dotnet-serve";
+            args = "--roll-forward LatestMajor";
+        }
+
+        var serveProcess = ProcessEx.Run(output, publishDir, command, args);
+        var listeningUri = ResolveListeningUrl(serveProcess);
+        return (serveProcess, listeningUri);
+
+        static string ResolveListeningUrl(ProcessEx process)
+        {
+            var buffer = new List<string>();
+            try
+            {
+                foreach (var line in process.OutputLinesAsEnumerable)
+                {
+                    if (line != null)
+                    {
+                        buffer.Add(line);
+                        if (line.Trim().Contains("https://", StringComparison.Ordinal) ||
+                            line.Trim().Contains("http://", StringComparison.Ordinal))
+                        {
+                            return line.Trim();
+                        }
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+
+            throw new InvalidOperationException(
+                $"Couldn't find listening url:\n{string.Join(Environment.NewLine, buffer.Append(process.Error))}");
+        }
+    }
+
     internal async Task RunDotNetEfCreateMigrationAsync(string migrationName)
     {
         var args = $"--verbose --no-build migrations add {migrationName}";
