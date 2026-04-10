@@ -412,15 +412,9 @@ if [[ -f "$_bootstrap_dir/Microsoft.Build.Tasks.Core.dll" ]]; then
   _target_dll="$DOTNET_INSTALL_DIR/sdk/$_sdk_version/Microsoft.Build.Tasks.Core.dll"
   if [[ -f "$_target_dll" ]]; then
     echo "=== MSBuild Bootstrap Overlay (dotnet/msbuild#12927) ==="
-    echo "Original Tasks: $(sha256sum "$_target_dll")"
+    echo "Original: $(sha256sum "$_target_dll")"
     cp "$_bootstrap_dir/Microsoft.Build.Tasks.Core.dll" "$_target_dll"
-    echo "Replaced Tasks: $(sha256sum "$_target_dll")"
-    _target_fw="$DOTNET_INSTALL_DIR/sdk/$_sdk_version/Microsoft.Build.Framework.dll"
-    if [[ -f "$_bootstrap_dir/Microsoft.Build.Framework.dll" && -f "$_target_fw" ]]; then
-      echo "Original Framework: $(sha256sum "$_target_fw")"
-      cp "$_bootstrap_dir/Microsoft.Build.Framework.dll" "$_target_fw"
-      echo "Replaced Framework: $(sha256sum "$_target_fw")"
-    fi
+    echo "Replaced: $(sha256sum "$_target_dll")"
     echo "=== Overlay complete ==="
   else
     echo "WARNING: SDK target not found at $_target_dll - skipping MSBuild overlay"
