@@ -318,10 +318,12 @@ public static class ListenOptionsHttpsExtensions
         {
             return async context =>
             {
-                using var timeoutCts = ctsPool.Rent();
-                timeoutCts.CancelAfter(effectiveTimeout);
+                using (var timeoutCts = ctsPool.Rent())
+                {
+                    timeoutCts.CancelAfter(effectiveTimeout);
+                    await tlsListener.OnTlsClientHelloAsync(context, timeoutCts.Token);
+                }
 
-                await tlsListener.OnTlsClientHelloAsync(context, timeoutCts.Token);
                 await next(context);
             };
         });
