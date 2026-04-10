@@ -310,7 +310,7 @@ The PR body MUST include:
 - A list of workarounds that remain and why they couldn't be fixed yet (e.g., symbol not found in generated code)
 - Build output summary confirming compilation success
 
-After the PR is created, use the `add-comment` safe output to post the following note on the created PR:
+After the PR is created, use the `add-comment` safe output to post a comment on it. You **must** specify the created PR number as the `item_number` so the comment is posted to the correct PR. Post the following note:
 
 > **Note:** After merging, push all packages to dotnet-public repo by queuing a build from [dotnet-migrate-package](https://dev.azure.com/dnceng/internal/_build?definitionId=931&_a=summary).
 

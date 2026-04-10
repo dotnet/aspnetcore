@@ -116,6 +116,10 @@ public class Startup
                                 }
                             });
 
+                            listenOptions.UseTlsClientHelloListener((connection, clientHelloBytes) =>
+                            {
+                                Console.WriteLine($"TLS Client Hello received on {connection.ConnectionId}, {clientHelloBytes.Length} bytes");
+                            });
                             listenOptions.UseHttps();
                             listenOptions.UseConnectionLogging();
 
