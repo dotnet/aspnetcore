@@ -740,3 +740,95 @@ describe('creditcardValidator', () => {
     });
   });
 });
+
+// Matches .NET CompareAttribute behavior:
+// - Empty values pass
+// - Strict string equality with another field's value
+// - Resolves "*.PropertyName" to model-prefixed field name
+describe('equaltoValidator', () => {
+  const equalto = getValidator('equalto');
+
+  function makeFormContext(
+    fieldName: string,
+    fieldValue: string,
+    otherName: string,
+    otherValue: string,
+    params: Record<string, string>,
+  ): ValidationContext {
+    const form = document.createElement('form');
+    const field = document.createElement('input');
+    field.name = fieldName;
+    field.value = fieldValue;
+    form.appendChild(field);
+
+    const other = document.createElement('input');
+    other.name = otherName;
+    other.value = otherValue;
+    form.appendChild(other);
+
+    return { value: fieldValue, element: field, params };
+  }
+
+  describe('empty values are not validated', () => {
+    test('accepts empty string', () => {
+      expect(equalto(makeContext({ value: '', params: { other: '*.Confirm' } }))).toBe(true);
+    });
+
+    test('accepts null', () => {
+      expect(equalto(makeContext({ value: null, params: { other: '*.Confirm' } }))).toBe(true);
+    });
+  });
+
+  describe('matching values', () => {
+    test('accepts when values match exactly', () => {
+      const ctx = makeFormContext('Password', 'secret', 'Confirm', 'secret', { other: '*.Confirm' });
+      expect(equalto(ctx)).toBe(true);
+    });
+
+    test('accepts when both fields are empty', () => {
+      const ctx = makeFormContext('Password', '', 'Confirm', '', { other: '*.Confirm' });
+      // value is empty so validator returns true before comparison
+      expect(equalto(ctx)).toBe(true);
+    });
+  });
+
+  describe('non-matching values', () => {
+    test('rejects when values differ', () => {
+      const ctx = makeFormContext('Password', 'secret', 'Confirm', 'different', { other: '*.Confirm' });
+      expect(equalto(ctx)).toBe(false);
+    });
+
+    test('rejects when other field is empty but current is not', () => {
+      const ctx = makeFormContext('Password', 'secret', 'Confirm', '', { other: '*.Confirm' });
+      expect(equalto(ctx)).toBe(false);
+    });
+  });
+
+  describe('other field resolution', () => {
+    test('resolves *.PropertyName with no prefix (simple model)', () => {
+      const ctx = makeFormContext('Password', 'abc', 'ConfirmPassword', 'abc', { other: '*.ConfirmPassword' });
+      expect(equalto(ctx)).toBe(true);
+    });
+
+    test('resolves *.PropertyName with dotted prefix (nested model)', () => {
+      const ctx = makeFormContext('User.Password', 'abc', 'User.ConfirmPassword', 'abc', { other: '*.ConfirmPassword' });
+      expect(equalto(ctx)).toBe(true);
+    });
+
+    test('passes when other field does not exist in form', () => {
+      const form = document.createElement('form');
+      const field = document.createElement('input');
+      field.name = 'Password';
+      field.value = 'secret';
+      form.appendChild(field);
+
+      const ctx: ValidationContext = { value: 'secret', element: field, params: { other: '*.NonExistent' } };
+      expect(equalto(ctx)).toBe(true);
+    });
+
+    test('passes when other param is missing', () => {
+      const ctx = makeFormContext('Password', 'secret', 'Confirm', 'different', {});
+      expect(equalto(ctx)).toBe(true);
+    });
+  });
+});
