@@ -8,7 +8,7 @@ export function registerBuiltInValidators(registry: ValidatorRegistry): void {
   registry.set('length', stringLengthValidator);
   registry.set('minlength', stringLengthValidator);
   registry.set('maxlength', stringLengthValidator);
-  // TODO: range
+  registry.set('range', rangeValidator);
   // TODO: regex
   // TODO: email
   // TODO: url
@@ -57,6 +57,32 @@ const stringLengthValidator: Validator = (context: ValidationContext): Validatio
   if (params.max) {
     const max = parseInt(params['max'], 10);
     if (value.length > max) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+const rangeValidator: Validator = (context: ValidationContext): ValidationResult => {
+  const { value, params } = context;
+  if (!value) {
+    return true;
+  }
+
+  const num = Number(value);
+  if (isNaN(num)) {
+    return false;
+  }
+
+  if (params.min !== undefined) {
+    if (num < Number(params.min)) {
+      return false;
+    }
+  }
+
+  if (params.max !== undefined) {
+    if (num > Number(params.max)) {
       return false;
     }
   }
