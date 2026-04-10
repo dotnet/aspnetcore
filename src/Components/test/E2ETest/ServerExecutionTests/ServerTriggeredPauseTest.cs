@@ -101,7 +101,10 @@ public class ServerTriggeredPauseTest : ServerTestBase<BasicTestAppServerSiteFix
         WaitForPausedUI();
 
         var javascript = (IJavaScriptExecutor)Browser;
-        var resumed = (bool)javascript.ExecuteScript("return await Blazor.resumeCircuit()");
+        var resumed = (bool)javascript.ExecuteAsyncScript(@"
+            const callback = arguments[arguments.length - 1];
+            Blazor.resumeCircuit().then(callback);
+        ");
         Assert.True(resumed);
 
         WaitForResumedUI();
@@ -149,11 +152,14 @@ public class ServerTriggeredPauseTest : ServerTestBase<BasicTestAppServerSiteFix
         WaitForPausedUI();
 
         var javascript = (IJavaScriptExecutor)Browser;
-        var pauseRejected = (bool)javascript.ExecuteScript(@"
-            const resumePromise = Blazor.resumeCircuit();
-            const pauseResult = await Blazor.pauseCircuit();
-            await resumePromise;
-            return !pauseResult;
+        var pauseRejected = (bool)javascript.ExecuteAsyncScript(@"
+            const callback = arguments[arguments.length - 1];
+            (async function() {
+                const resumePromise = Blazor.resumeCircuit();
+                const pauseResult = await Blazor.pauseCircuit();
+                await resumePromise;
+                callback(!pauseResult);
+            })();
         ");
 
         Assert.True(pauseRejected);
