@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
+using System.Threading;
 using OpenQA.Selenium;
 using OpenQA.Selenium.DevTools;
 using OpenQA.Selenium.Interactions;
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.E2ETesting;
 
 public static class WaitAssert
 {
-    private static bool TestRunFailed;
+    private static int _failureCount;
     public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(E2ETestOptions.Instance.DefaultWaitTimeoutInSeconds);
     public static TimeSpan FailureTimeout = TimeSpan.FromSeconds(E2ETestOptions.Instance.DefaultAfterFailureWaitTimeoutInSeconds);
 
@@ -91,11 +92,29 @@ public static class WaitAssert
         WaitAssertCore<object>(driver, () => { assertion(); return null; }, timeout);
     }
 
+    // Number of failures before the timeout is halved.
+    private const int FailuresPerStep = 5;
+
+    private static TimeSpan GetAdjustedTimeout()
+    {
+        var failures = Volatile.Read(ref _failureCount);
+        if (failures <= 0)
+        {
+            return DefaultTimeout;
+        }
+
+        // Halve the timeout every FailuresPerStep failures:
+        // 0-4 failures: 120s, 5-9: 60s, 10-14: 30s, 15-19: 15s, 20-24: 7.5s, 25+: floor
+        var steps = failures / FailuresPerStep;
+        var seconds = DefaultTimeout.TotalSeconds / Math.Pow(2, steps);
+        return TimeSpan.FromSeconds(Math.Max(seconds, FailureTimeout.TotalSeconds));
+    }
+
     private static TResult WaitAssertCore<TResult>(IWebDriver driver, Func<TResult> assertion, TimeSpan timeout = default)
     {
         if (timeout == default)
         {
-            timeout = !TestRunFailed ? DefaultTimeout : FailureTimeout;
+            timeout = GetAdjustedTimeout();
         }
 
         Exception lastException = null;
@@ -118,11 +137,9 @@ public static class WaitAssert
         }
         catch (WebDriverTimeoutException)
         {
-            // At this point at least one test failed, so we mark the test as failed. Any assertions after this one
-            // will fail faster. There's a small race condition here between checking the value for TestRunFailed
-            // above and setting it here, but nothing bad can come out of it. Worst case scenario, one or more
-            // tests running concurrently might use the DefaultTimeout in their current assertion, which is fine.
-            TestRunFailed = true;
+            // Increment the failure count so subsequent assertions use progressively shorter timeouts.
+            // The timeout halves with each failure until it reaches the FailureTimeout floor.
+            Interlocked.Increment(ref _failureCount);
 
             var innerHtml = driver.FindElement(By.CssSelector(":first-child"))?.GetDomProperty("innerHTML");
 
