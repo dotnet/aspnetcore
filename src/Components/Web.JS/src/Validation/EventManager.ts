@@ -4,26 +4,12 @@
 import { ValidationEngine } from './ValidationEngine';
 import { ValidatableElement } from './Validator';
 
-type SubmitHandler = (event: SubmitEvent) => void;
-
 // TODO: Implement "lazy validation, eager recovery" pattern
 
 export class EventManager {
-  private submitHandler: SubmitHandler | null = null;
+  private formListenerController: AbortController | null = null;
 
   constructor(private engine: ValidationEngine) { }
-
-  attachSubmitInterception(): void {
-    this.submitHandler = this.handleSubmit.bind(this);
-    document.addEventListener('submit', this.submitHandler, true);
-  }
-
-  detachSubmitInterception(): void {
-    if (this.submitHandler) {
-      document.removeEventListener('submit', this.submitHandler, true);
-      this.submitHandler = null;
-    }
-  }
 
   attachInputListeners(element: ValidatableElement): void {
     const state = this.engine.getElementState(element);
@@ -48,6 +34,19 @@ export class EventManager {
     for (const eventType of state.triggerEvents.split(' ')) {
       element.addEventListener(eventType, handler, { signal: state.listenerController.signal });
     }
+  }
+
+  attachFormInterceptors(): void {
+    this.formListenerController = new AbortController();
+    const signal = this.formListenerController.signal;
+
+    document.addEventListener('submit', this.handleSubmit.bind(this), { signal, capture: true });
+    document.addEventListener('reset', this.handleReset.bind(this), { signal, capture: true });
+  }
+
+  dettachFormInterceptors(): void {
+    this.formListenerController?.abort();
+    this.formListenerController = null;
   }
 
   private handleSubmit(event: SubmitEvent): void {
@@ -77,6 +76,22 @@ export class EventManager {
     }
 
     dispatchValidationComplete(form, result);
+  }
+
+  private handleReset(event: Event): void {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement)) {
+      return;
+    }
+
+    // Only intercept tracked forms.
+    if (!this.engine.getFormState(form)) {
+      return;
+    }
+
+    // Use setTimeout because the reset event fires before the browser resets field values.
+    // We clear validation state after values are reset so the state is consistent.
+    setTimeout(() => this.engine.resetForm(form), 0);
   }
 }
 

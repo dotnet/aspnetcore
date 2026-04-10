@@ -1,6 +1,7 @@
 import { expect, test, describe } from '@jest/globals';
 
-import { parseRules, ValidationRule } from '../../src/Validation/DomScanner';
+import { parseRules } from '../../src/Validation/DomScanner';
+import { ValidationRule } from '../../src/Validation/ValidationEngine';
 import { ValidatableElement } from '../../src/Validation/Validator';
 
 function createElement(tag: string, attributes: Record<string, string>): ValidatableElement {

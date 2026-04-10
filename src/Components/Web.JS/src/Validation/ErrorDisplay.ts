@@ -77,7 +77,7 @@ export class ErrorDisplay {
     input.removeAttribute('aria-describedby');
   }
 
-  updateSummary(form: HTMLFormElement, errors: Map<string, string>): void {
+  updateSummary(form: HTMLFormElement, errors?: Map<string, string>): void {
     // TODO: Support multiple summary elements?
     // TODO: Support summary elements outside the form?
     const summaryElement = form.querySelector<HTMLElement>('[data-valmsg-summary]');
@@ -92,7 +92,7 @@ export class ErrorDisplay {
       ul.removeChild(ul.firstChild);
     }
 
-    if (errors.size === 0) {
+    if (!errors || errors.size === 0) {
       // Set summary to valid state if there are no errors.
       summaryElement.classList.remove(this.cssClasses.summaryError);
       summaryElement.classList.add(this.cssClasses.summaryValid);

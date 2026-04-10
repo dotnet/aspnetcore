@@ -30,10 +30,7 @@ export class DomScanner {
     this.reconcile(root);
 
     // Phase 2: Discover — find and register new/changed elements
-    const candidates = root.querySelectorAll<ValidatableElement>(validatableElementSelector);
-
-    // TODOL: Remove debug log
-    console.log(`Found ${candidates.length} validatable elements.`);
+    const candidates = Array.from(root.querySelectorAll<ValidatableElement>(validatableElementSelector));
 
     for (const element of candidates) {
       if (shouldSkipElement(element)) {
@@ -123,7 +120,8 @@ const ruleAttributePrefixLength = ruleAttributePrefix.length;
 export function parseRules(element: ValidatableElement): ValidationRule[] {
   const ruleMap: Record<string, ValidationRule> = {};
 
-  for (const attr of element.attributes) {
+  for (let i = 0; i < element.attributes.length; i++) {
+    const attr = element.attributes[i];
     if (!attr.name.startsWith(ruleAttributePrefix)) {
       continue;
     }
