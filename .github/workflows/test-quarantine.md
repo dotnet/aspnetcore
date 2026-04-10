@@ -299,7 +299,7 @@ You have a limited turn and token budget. **Reserve at least 15 turns for creati
 
 - If you have used 60+ turns and have not yet started creating PRs/issues via the safe-output tools, **stop investigating immediately** and execute with the candidates you have identified so far.
 - It is always better to produce fewer but complete outputs (issue + PR + comment) than to investigate exhaustively and run out of budget before creating any outputs.
-- Deferred work will be handled by the next daily run — producing zero outputs is the worst outcome.
+- Deferred work will be handled by the next daily run — if you have identified candidates but fail to create any outputs for them, that is the worst outcome.
 - When creating outputs, you **must invoke the safe-output MCP tools** (`create_pull_request`, `create_issue`, `add_comment`) as actual tool calls. Writing JSON descriptions of intended calls in your text response does NOT create them.
 
 ---
