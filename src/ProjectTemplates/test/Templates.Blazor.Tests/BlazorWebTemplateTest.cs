@@ -117,6 +117,9 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         await page.GotoAsync(new Uri(aspNetProcess.ListeningUri, "/Error").AbsoluteUri, new() { WaitUntil = WaitUntilState.NetworkIdle });
         await page.WaitForSelectorAsync("h1.text-danger >> text=Error.");
         await page.WaitForSelectorAsync("h2.text-danger >> text=An error occurred while processing your request.");
+        // Verify the Request ID is shown, confirming the public [PersistentState] RequestId property is populated.
+        // A private property would cause PersistentValueProviderComponentSubscription to throw during rendering.
+        await page.WaitForSelectorAsync("strong >> text=Request ID:");
         await page.CloseAsync();
     }
 
