@@ -679,3 +679,64 @@ describe('phoneValidator', () => {
     });
   });
 });
+
+// Matches .NET CreditCardAttribute behavior (Luhn algorithm).
+// Empty values pass. Strips dashes and spaces before validation.
+// Length check: 13-19 digits (matching jQuery validation).
+describe('creditcardValidator', () => {
+  const creditcard = getValidator('creditcard');
+
+  describe('empty values are not validated', () => {
+    test('accepts empty string', () => {
+      expect(creditcard(makeContext({ value: '' }))).toBe(true);
+    });
+
+    test('accepts null', () => {
+      expect(creditcard(makeContext({ value: null }))).toBe(true);
+    });
+
+    test('accepts undefined', () => {
+      expect(creditcard(makeContext({ value: undefined }))).toBe(true);
+    });
+  });
+
+  describe('valid card numbers', () => {
+    test('accepts valid Visa number', () => {
+      expect(creditcard(makeContext({ value: '4111111111111111' }))).toBe(true);
+    });
+
+    test('accepts valid Mastercard number', () => {
+      expect(creditcard(makeContext({ value: '5500000000000004' }))).toBe(true);
+    });
+
+    test('accepts with dashes', () => {
+      expect(creditcard(makeContext({ value: '4111-1111-1111-1111' }))).toBe(true);
+    });
+
+    test('accepts with spaces', () => {
+      expect(creditcard(makeContext({ value: '4111 1111 1111 1111' }))).toBe(true);
+    });
+  });
+
+  describe('invalid card numbers', () => {
+    test('rejects Luhn-invalid number', () => {
+      expect(creditcard(makeContext({ value: '1234567890123456' }))).toBe(false);
+    });
+
+    test('rejects too short (12 digits)', () => {
+      expect(creditcard(makeContext({ value: '411111111111' }))).toBe(false);
+    });
+
+    test('rejects too long (20 digits)', () => {
+      expect(creditcard(makeContext({ value: '41111111111111111111' }))).toBe(false);
+    });
+
+    test('rejects letters', () => {
+      expect(creditcard(makeContext({ value: 'abcd1234abcd1234' }))).toBe(false);
+    });
+
+    test('rejects special characters', () => {
+      expect(creditcard(makeContext({ value: '4111@1111#1111$1111' }))).toBe(false);
+    });
+  });
+});
