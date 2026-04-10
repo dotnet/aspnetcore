@@ -32,7 +32,6 @@ export class ValidationEngine {
 
   private trackedElements: WeakMap<ValidatableElement, ElementState> = new WeakMap();
 
-
   constructor(
     private validatorRegistry: ValidatorRegistry,
     private errorDisplay: ErrorDisplay,
@@ -69,6 +68,24 @@ export class ValidationEngine {
         }
       }
     }
+  }
+
+  resetForm(form: HTMLFormElement): void {
+    const formState = this.trackedForms.get(form);
+    if (!formState) {
+      return;
+    }
+
+    for (const element of formState.trackedElements) {
+      const state = this.trackedElements.get(element);
+      if (state) {
+        this.markValid(element, state);
+        state.hasBeenInvalid = false;
+      }
+    }
+
+    formState.hasBeenSubmitted = false;
+    this.errorDisplay.updateSummary(form);
   }
 
   getElementState(element: ValidatableElement): ElementState | undefined {
@@ -193,7 +210,7 @@ export class ValidationEngine {
   }
 
   private markValid(element: ValidatableElement, state: ElementState): void {
-    state.currentError = '';
+    state.currentError = undefined;
     element.setCustomValidity('');
     this.errorDisplay.clearFieldError(element);
   }

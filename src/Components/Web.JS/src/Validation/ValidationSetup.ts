@@ -24,7 +24,7 @@ export function initializeStandaloneValidation(): void {
   const eventManager = new EventManager(engine);
   const scanner = new DomScanner(engine, eventManager);
 
-  eventManager.attachSubmitInterception();
+  eventManager.attachFormInterceptors();
 
   // Initial scan
   scanner.scan(document);
