@@ -12,7 +12,6 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.ApiDescription.Client;
 
-[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/50662")]
 public class TargetTest : IDisposable
 {
     private static Assembly _assembly = typeof(TargetTest).Assembly;
