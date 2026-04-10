@@ -64,93 +64,16 @@ timeout-minutes: 90
 
 You are an automated workflow that manages flaky test quarantine in the dotnet/aspnetcore repository. You perform two tasks each day:
 
-1. **Unquarantine** tests that have been reliably passing for 30+ days
-2. **Quarantine** tests that are flaky and causing CI failures
+1. **Quarantine** tests that are flaky and causing CI failures
+2. **Unquarantine** tests that have been reliably passing for 30+ days
 
 Before creating any PRs or issues, check for existing open PRs in dotnet/aspnetcore that already address the same tests. Humans may also open quarantine/unquarantine PRs without the `[test-quarantine]` prefix, so do not rely solely on title matching. For each test you plan to modify, search open PRs for any that touch the same test file by looking at PR changed files. If an open PR already adds or removes a `[QuarantinedTest]` attribute for a test you were about to modify, skip that test.
 
 ---
 
-## Part 1: Unquarantine Reliable Tests
+## Part 1: Quarantine Flaky Tests
 
-### Step 1.1 — Gather passing test data from the quarantined pipeline and components-e2e pipeline
-
-Query two pipelines in the `dnceng-public` Azure DevOps organization, `public` project:
-
-- **aspnetcore-quarantined-tests** (definition ID **84**) — runs only quarantined tests
-- **components-e2e** (definition ID **87**) — runs both quarantined and non-quarantined tests
-
-For each pipeline, query only builds on the **main branch**:
-
-1. Get all completed builds from the last 30 days on `refs/heads/main`. Use pagination via `continuationToken` to ensure all builds are retrieved, not just the first page:
-   ```
-   GET https://dev.azure.com/dnceng-public/public/_apis/build/builds?definitions={DEF_ID}&branchName=refs/heads/main&statusFilter=completed&$top=100&minTime={30_DAYS_AGO}&api-version=7.1
-   ```
-   If the response includes a `continuationToken`, repeat the request with `&continuationToken={TOKEN}` until no more tokens are returned.
-
-2. For each build, get all test results. Use pagination via `continuationToken` to ensure all results are retrieved:
-   ```
-   GET https://vstmr.dev.azure.com/dnceng-public/public/_apis/testresults/resultsbyBuild?buildId={BUILD_ID}&$top=10000&api-version=7.1-preview.1
-   ```
-   If the response includes a `continuationToken`, repeat the request with `&continuationToken={TOKEN}` until no more tokens are returned.
-
-3. Aggregate per test name across all builds from both pipelines: total pass count, total fail count, total "other" count, number of builds the test appeared in.
-
-**Note:** Since pipeline 87 runs non-quarantined tests too, those will appear in the data but will be filtered out in Step 1.3 when we verify each candidate has a `[QuarantinedTest]` attribute in source.
-
-### Step 1.2 — Identify unquarantine candidates
-
-A test is a candidate for unquarantining if ALL of the following are true:
-- It has a **100% pass rate** (zero failures) across the past 30 days
-- It does **not** have a suspiciously low total count (i.e. it appeared in at least 66% of the builds returned for the time window)
-- It is **not** `AlwaysTestTests.SuccessfulTests.GuaranteedQuarantinedTest` (this test must always stay quarantined)
-- It is an **individual test case**, not a work item (exclude names ending in `.WorkItemExecution`)
-- The `[QuarantinedTest]` attribute has been present for **at least 30 days**. To check this, use `git log -G` with a regex matching the issue URL from the attribute to find the commit that introduced it:
-  ```
-  git log --format="%H %ai" -1 -G 'QuarantinedTest.*{ISSUE_NUMBER}' -- {FILE_PATH}
-  ```
-  If the commit date is less than 30 days ago, skip this test — it was recently quarantined and needs more time to establish reliability.
-
-For IIS tests compiled into multiple assemblies (Common.LongTests, Common.FunctionalTests), the same test method appears with different namespace prefixes (e.g., `FunctionalTests.StartupTests.X`, `IISExpress.FunctionalTests.StartupTests.X`, `NewHandler.FunctionalTests.StartupTests.X`, `NewShim.FunctionalTests.StartupTests.X`). ALL variants must have 100% pass rates. Variants with 0 pass / 0 fail (all "other" outcomes) represent tests skipped by `[ConditionalFact]` and should be excluded from the pass-rate check — they are neither passing nor failing.
-
-### Step 1.3 — Match candidates to source code
-
-Search the repository for `[QuarantinedTest(` attributes. The `[QuarantinedTest]` attribute can be applied at three levels:
-
-1. **Method level** — on an individual test method (most common). Example:
-   ```csharp
-   [Fact]
-   [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/12345")]
-   public async Task MyTest() { ... }
-   ```
-
-2. **Class level** — on an entire test class, which quarantines all tests within it. Example:
-   ```csharp
-   [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/49126")]
-   public class RoutePatternCompletionProviderTests { ... }
-   ```
-
-3. **Assembly level** — applied via `[assembly: QuarantinedTest(...)]`, which quarantines all tests in the assembly.
-
-For each unquarantine candidate from Step 1.2, find the corresponding `[QuarantinedTest]` attribute in source:
-
-- If the attribute is on an **individual method**, unquarantine that method by removing the attribute.
-- If the attribute is on a **class**, only remove it if **every test method in that class** appears in the quarantine pipeline data with a 100% pass rate over the past 30 days. Verify by counting the distinct test methods for that class in the AzDO data and confirming all have zero failures.
-- If the attribute is at the **assembly level**, only remove it if every test in that assembly has 100% pass rate. This is rare and should be handled conservatively.
-
-Extract the **issue URL** from the `QuarantinedTest` attribute argument (e.g., `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/12345")]`).
-
-### Step 1.4 — Group candidates by issue
-
-Group the unquarantine candidates by their associated GitHub issue number. Extract the **issue URL** from each `QuarantinedTest` attribute argument (e.g., `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/12345")]`).
-
-**Do not create any PRs or issues yet.** Record the grouped candidates for later — they will be actioned in Part 3 after budget planning.
-
----
-
-## Part 2: Quarantine Flaky Tests
-
-### Step 2.1 — Gather failure data from CI pipelines
+### Step 1.1 — Gather failure data from CI pipelines
 
 Query two pipelines for test failures:
 
@@ -195,7 +118,7 @@ For work items (names ending in `.WorkItemExecution`) that failed 2+ times, inve
 
 3. Search the console log (which can be 10MB+) for `[FAIL]` markers to find the specific test that caused the crash. Use `curl | grep` for efficiency.
 
-### Step 2.2 — Combine and identify quarantine candidates
+### Step 1.2 — Combine and identify quarantine candidates
 
 Combine failure counts from all sources across both pipelines. A test is a candidate for quarantining if it meets **either** of the following cases:
 
@@ -211,7 +134,7 @@ All of the following are true:
 
 All of the following are true:
 - The test was **recently unquarantined** (had its `[QuarantinedTest]` attribute removed within the past 14 days, detectable via `git log --since="14 days ago" -G 'QuarantinedTest' -- '*.cs'`)
-- It has **at least one failure that occurred AFTER the unquarantine change landed on `main`**. Use the PR merge time when available, or otherwise use the **committer date of the first-parent commit on `main`** that introduced the removal of the `[QuarantinedTest]` attribute. Do **not** use the timestamp of the underlying topic-branch commit if it differs. Only count failures from builds that started after that `main`-branch landing time. Failures from before the unquarantine do not count — they are from when the test was still quarantined. For these tests, search for the original closed quarantine issue (title prefix "Quarantine" referencing the test name) and **reopen** it rather than creating a new one in Step&nbsp;2.4.
+- It has **at least one failure that occurred AFTER the unquarantine change landed on `main`**. Use the PR merge time when available, or otherwise use the **committer date of the first-parent commit on `main`** that introduced the removal of the `[QuarantinedTest]` attribute. Do **not** use the timestamp of the underlying topic-branch commit if it differs. Only count failures from builds that started after that `main`-branch landing time. Failures from before the unquarantine do not count — they are from when the test was still quarantined. For these tests, search for the original closed quarantine issue (title prefix "Quarantine" referencing the test name) and **reopen** it rather than creating a new one in Step&nbsp;3.1.
 
 **Class-level quarantine (applies to both Case A and Case B)**
 
@@ -222,7 +145,7 @@ After identifying individual quarantine candidates from either case above, also 
 3. If the errors are similar (e.g., all show the same exception type or share a common stack frame), quarantine the entire class instead of individual methods.
 4. If the errors are unrelated, treat each method as an independent candidate using the individual 2-failure threshold.
 
-### Step 2.3 — Group related failures
+### Step 1.3 — Group related failures
 
 Before creating issues and PRs, group related failures together:
 
@@ -232,6 +155,84 @@ Before creating issues and PRs, group related failures together:
 - If the entire class qualifies for class-level quarantine (>3 failures, multiple methods, similar errors), apply the `[QuarantinedTest]` attribute to the class instead of individual methods.
 
 **Do not create any PRs or issues yet.** Record the grouped candidates for later — they will be actioned in Part 3 after budget planning.
+
+---
+
+## Part 2: Unquarantine Reliable Tests
+
+### Step 2.1 — Gather passing test data from the quarantined pipeline and components-e2e pipeline
+
+Query two pipelines in the `dnceng-public` Azure DevOps organization, `public` project:
+
+- **aspnetcore-quarantined-tests** (definition ID **84**) — runs only quarantined tests
+- **components-e2e** (definition ID **87**) — runs both quarantined and non-quarantined tests
+
+For each pipeline, query only builds on the **main branch**:
+
+1. Get all completed builds from the last 30 days on `refs/heads/main`. Use pagination via `continuationToken` to ensure all builds are retrieved, not just the first page:
+   ```
+   GET https://dev.azure.com/dnceng-public/public/_apis/build/builds?definitions={DEF_ID}&branchName=refs/heads/main&statusFilter=completed&$top=100&minTime={30_DAYS_AGO}&api-version=7.1
+   ```
+   If the response includes a `continuationToken`, repeat the request with `&continuationToken={TOKEN}` until no more tokens are returned.
+
+2. For each build, get all test results. Use pagination via `continuationToken` to ensure all results are retrieved:
+   ```
+   GET https://vstmr.dev.azure.com/dnceng-public/public/_apis/testresults/resultsbyBuild?buildId={BUILD_ID}&$top=10000&api-version=7.1-preview.1
+   ```
+   If the response includes a `continuationToken`, repeat the request with `&continuationToken={TOKEN}` until no more tokens are returned.
+
+3. Aggregate per test name across all builds from both pipelines: total pass count, total fail count, total "other" count, number of builds the test appeared in.
+
+**Note:** Since pipeline 87 runs non-quarantined tests too, those will appear in the data but will be filtered out in Step 2.3 when we verify each candidate has a `[QuarantinedTest]` attribute in source.
+
+### Step 2.2 — Identify unquarantine candidates
+
+A test is a candidate for unquarantining if ALL of the following are true:
+- It has a **100% pass rate** (zero failures) across the past 30 days
+- It does **not** have a suspiciously low total count (i.e. it appeared in at least 66% of the builds returned for the time window)
+- It is **not** `AlwaysTestTests.SuccessfulTests.GuaranteedQuarantinedTest` (this test must always stay quarantined)
+- It is an **individual test case**, not a work item (exclude names ending in `.WorkItemExecution`)
+- The `[QuarantinedTest]` attribute has been present for **at least 30 days**. To check this, use `git log -G` with a regex matching the issue URL from the attribute to find the commit that introduced it:
+  ```
+  git log --format="%H %ai" -1 -G 'QuarantinedTest.*{ISSUE_NUMBER}' -- {FILE_PATH}
+  ```
+  If the commit date is less than 30 days ago, skip this test — it was recently quarantined and needs more time to establish reliability.
+
+For IIS tests compiled into multiple assemblies (Common.LongTests, Common.FunctionalTests), the same test method appears with different namespace prefixes (e.g., `FunctionalTests.StartupTests.X`, `IISExpress.FunctionalTests.StartupTests.X`, `NewHandler.FunctionalTests.StartupTests.X`, `NewShim.FunctionalTests.StartupTests.X`). ALL variants must have 100% pass rates. Variants with 0 pass / 0 fail (all "other" outcomes) represent tests skipped by `[ConditionalFact]` and should be excluded from the pass-rate check — they are neither passing nor failing.
+
+### Step 2.3 — Match candidates to source code
+
+Search the repository for `[QuarantinedTest(` attributes. The `[QuarantinedTest]` attribute can be applied at three levels:
+
+1. **Method level** — on an individual test method (most common). Example:
+   ```csharp
+   [Fact]
+   [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/12345")]
+   public async Task MyTest() { ... }
+   ```
+
+2. **Class level** — on an entire test class, which quarantines all tests within it. Example:
+   ```csharp
+   [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/49126")]
+   public class RoutePatternCompletionProviderTests { ... }
+   ```
+
+3. **Assembly level** — applied via `[assembly: QuarantinedTest(...)]`, which quarantines all tests in the assembly.
+
+For each unquarantine candidate from Step 2.2, find the corresponding `[QuarantinedTest]` attribute in source:
+
+- If the attribute is on an **individual method**, unquarantine that method by removing the attribute.
+- If the attribute is on a **class**, only remove it if **every test method in that class** appears in the quarantine pipeline data with a 100% pass rate over the past 30 days. Verify by counting the distinct test methods for that class in the AzDO data and confirming all have zero failures.
+- If the attribute is at the **assembly level**, only remove it if every test in that assembly has 100% pass rate. This is rare and should be handled conservatively.
+
+Extract the **issue URL** from the `QuarantinedTest` attribute argument (e.g., `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/12345")]`).
+
+### Step 2.4 — Group candidates by issue
+
+Group the unquarantine candidates by their associated GitHub issue number. Extract the **issue URL** from each `QuarantinedTest` attribute argument (e.g., `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/12345")]`).
+
+**Do not create any PRs or issues yet.** Record the grouped candidates for later — they will be actioned in Part 3 after budget planning.
+
 
 ---
 
@@ -292,6 +293,15 @@ Process items in this strict order:
 - **Unquarantine PRs do not require issues or comments**, so they can fill remaining PR budget after quarantine actions are complete.
 - **Issue closures are best-effort.** If you run out of close-issue budget, the issue simply stays open until the next run — this is harmless.
 
+### Turn budget awareness
+
+You have a limited turn and token budget. **Reserve at least 15 turns for creating outputs (PRs, issues, comments).** Monitor your progress:
+
+- If you have used 60+ turns and have not yet started creating PRs/issues via the safe-output tools, **stop investigating immediately** and execute with the candidates you have identified so far.
+- It is always better to produce fewer but complete outputs (issue + PR + comment) than to investigate exhaustively and run out of budget before creating any outputs.
+- Deferred work will be handled by the next daily run — producing zero outputs is the worst outcome.
+- When creating outputs, you **must invoke the safe-output MCP tools** (`create_pull_request`, `create_issue`, `add_comment`) as actual tool calls. Writing JSON descriptions of intended calls in your text response does NOT create them.
+
 ---
 
 ## Part 3: Execute Actions
@@ -326,7 +336,7 @@ For each quarantine/re-quarantine candidate, in priority order:
 
 ### Step 3.2 — Unquarantine (only after all quarantine work is done)
 
-For each unquarantine candidate group (from Step 1.4), using remaining budget:
+For each unquarantine candidate group (from Step 2.4), using remaining budget:
 
 1. **Create a PR** that removes the `[QuarantinedTest(...)]` attribute(s) from the test method(s) or class. Do NOT remove the `using Microsoft.AspNetCore.InternalTesting;` statement — it may be used by other attributes.
 
