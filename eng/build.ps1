@@ -463,17 +463,25 @@ try {
     $restore = $tmpRestore
 
     # TEMPORARY: Overlay custom MSBuild bootstrap for investigating dotnet/msbuild#12927
-    $bootstrapDll = Join-Path (Join-Path (Join-Path $RepoRoot "eng") "msbuild-bootstrap") "Microsoft.Build.Tasks.Core.dll"
+    $bootstrapDir = Join-Path (Join-Path $RepoRoot "eng") "msbuild-bootstrap"
+    $bootstrapDll = Join-Path $bootstrapDir "Microsoft.Build.Tasks.Core.dll"
     if (Test-Path $bootstrapDll) {
         $dotnetDir = if ($env:DOTNET_INSTALL_DIR) { $env:DOTNET_INSTALL_DIR } else { Join-Path $RepoRoot ".dotnet" }
         $sdkVersion = (Get-Content (Join-Path $RepoRoot "global.json") | ConvertFrom-Json).sdk.version
-        $targetDll = Join-Path (Join-Path (Join-Path $dotnetDir "sdk") $sdkVersion) "Microsoft.Build.Tasks.Core.dll"
+        $sdkDir = Join-Path (Join-Path $dotnetDir "sdk") $sdkVersion
+        $targetDll = Join-Path $sdkDir "Microsoft.Build.Tasks.Core.dll"
         if (Test-Path $targetDll) {
             Write-Host "=== MSBuild Bootstrap Overlay (dotnet/msbuild#12927) ==="
-            Write-Host "Original: $((Get-FileHash $targetDll -Algorithm SHA256).Hash) $targetDll"
+            Write-Host "Original Tasks: $((Get-FileHash $targetDll -Algorithm SHA256).Hash) $targetDll"
             Copy-Item $bootstrapDll $targetDll -Force
-            Write-Host "Replaced: $((Get-FileHash $targetDll -Algorithm SHA256).Hash) $targetDll"
-            Write-Host "Source:   $((Get-FileHash $bootstrapDll -Algorithm SHA256).Hash) $bootstrapDll"
+            Write-Host "Replaced Tasks: $((Get-FileHash $targetDll -Algorithm SHA256).Hash) $targetDll"
+            $bootstrapFw = Join-Path $bootstrapDir "Microsoft.Build.Framework.dll"
+            $targetFw = Join-Path $sdkDir "Microsoft.Build.Framework.dll"
+            if ((Test-Path $bootstrapFw) -and (Test-Path $targetFw)) {
+                Write-Host "Original Framework: $((Get-FileHash $targetFw -Algorithm SHA256).Hash) $targetFw"
+                Copy-Item $bootstrapFw $targetFw -Force
+                Write-Host "Replaced Framework: $((Get-FileHash $targetFw -Algorithm SHA256).Hash) $targetFw"
+            }
             Write-Host "=== Overlay complete ==="
         } else {
             Write-Host "WARNING: SDK target not found at $targetDll - skipping MSBuild overlay"
