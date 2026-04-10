@@ -3745,12 +3745,13 @@
       ]
     }
   },
-  "webworker": {
+  "blazorwebworker": {
     "Default": {
-      "Template": "webworker",
-      "Arguments": "new webworker",
+      "Template": "blazorwebworker",
+      "Arguments": "new blazorwebworker",
       "Files": [
         "WebWorkerClient.cs",
+        "WorkerMethods.cs",
         "wwwroot/dotnet-web-worker.js",
         "wwwroot/dotnet-web-worker-client.js"
       ]

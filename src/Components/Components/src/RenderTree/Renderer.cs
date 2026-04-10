@@ -120,7 +120,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
     internal ICascadingValueSupplier[] ServiceProviderCascadingValueSuppliers { get; }
 
-    internal HotReloadManager HotReloadManager { get; set; } = HotReloadManager.Default;
+    internal HotReloadManager? HotReloadManager { get; set; } = HotReloadManager.IsSupported ? HotReloadManager.Default : null;
 
     private static IComponentActivator GetComponentActivatorOrDefault(IServiceProvider serviceProvider)
     {
@@ -243,7 +243,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         if (!_hotReloadInitialized)
         {
             _hotReloadInitialized = true;
-            if (HotReloadManager.MetadataUpdateSupported)
+            if (HotReload.HotReloadManager.IsSupported && HotReloadManager != null)
             {
                 // Capture the current ExecutionContext so AsyncLocal values present during initial root component
                 // registration flow through to hot reload re-renders. Without this, hot reload callbacks execute
@@ -308,7 +308,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         _pendingTasks ??= new();
 
         var componentState = GetRequiredRootComponentState(componentId);
-        if (HotReloadManager.MetadataUpdateSupported)
+        if (HotReload.HotReloadManager.IsSupported && HotReloadManager != null)
         {
             // When we're doing hot-reload, stash away the parameters used while rendering root components.
             // We'll use this to trigger re-renders on hot reload updates.
@@ -338,7 +338,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // Currently there's no known scenario where we need to support calling RemoveRootComponentAsync
         // during a batch, but if a scenario emerges we can add support.
         _batchBuilder.ComponentDisposalQueue.Enqueue(componentId);
-        if (HotReloadManager.MetadataUpdateSupported)
+        if (HotReload.HotReloadManager.IsSupported && HotReloadManager != null)
         {
             _rootComponentsLatestParameters?.Remove(componentId);
         }
@@ -1253,7 +1253,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             _rendererIsDisposed = true;
         }
 
-        if (_hotReloadInitialized && HotReloadManager.MetadataUpdateSupported && _hotReloadRenderHandler is not null)
+        if (HotReload.HotReloadManager.IsSupported && HotReloadManager != null && _hotReloadInitialized && _hotReloadRenderHandler is not null)
         {
             HotReloadManager.OnDeltaApplied -= _hotReloadRenderHandler.RerenderOnHotReload;
         }
