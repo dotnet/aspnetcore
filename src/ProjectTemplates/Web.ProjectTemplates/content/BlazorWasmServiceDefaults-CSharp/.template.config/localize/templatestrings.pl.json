@@ -3,7 +3,6 @@
   "name": "Blazor WebAssembly Service Defaults",
   "description": "A project template for creating a service defaults library for Blazor WebAssembly applications. Includes OpenTelemetry, service discovery, and resilience support for Aspire integration.",
   "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net11.0/description": "Target net11.0",
   "symbols/hosted/description": "Configure for a hosted Blazor Web scenario where configuration flows from the server via a DOM comment. When false (default), configures for a standalone scenario with a configuration endpoint and JS initializer.",
   "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
   "postActions/restore/description": "Restore NuGet packages required by this project.",
