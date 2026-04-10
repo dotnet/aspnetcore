@@ -26,7 +26,7 @@
     "webpack-cli": "^4.9.2"
   },
   "dependencies": {
-    "@azure/msal-browser": "^2.39.0"
+    "@azure/msal-browser": "^4.30.0"
   },
   "resolutions": {
     "ansi-regex": "5.0.1",
