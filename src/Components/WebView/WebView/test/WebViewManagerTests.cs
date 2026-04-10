@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebView;
 
@@ -93,6 +94,48 @@ public class WebViewManagerTests
 
         // Act
         await webViewManager.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task DisposingWebViewManager_MarksJSRuntimeAsDisconnected()
+    {
+        // Arrange
+        var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
+        var fileProvider = new TestFileProvider();
+        var webViewManager = new TestWebViewManager(services, fileProvider);
+        await webViewManager.AddRootComponentAsync(typeof(MyComponent), "#app", ParameterView.Empty);
+        webViewManager.ReceiveAttachPageMessage();
+
+        var jsRuntime = webViewManager.CurrentPageContext.JSRuntime;
+
+        // Act
+        await webViewManager.DisposeAsync();
+
+        // Assert - After disposal, JS interop calls should throw JSDisconnectedException
+        await Assert.ThrowsAsync<JSDisconnectedException>(async () =>
+            await jsRuntime.InvokeAsync<string>("someFunction", []));
+    }
+
+    [Fact]
+    public async Task NavigatingToNewPage_MarksOldJSRuntimeAsDisconnected()
+    {
+        // Arrange
+        var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
+        var fileProvider = new TestFileProvider();
+        var webViewManager = new TestWebViewManager(services, fileProvider);
+        await webViewManager.AddRootComponentAsync(typeof(MyComponent), "#app", ParameterView.Empty);
+
+        // Attach to first page
+        webViewManager.ReceiveAttachPageMessage();
+
+        var firstPageJSRuntime = webViewManager.CurrentPageContext.JSRuntime;
+
+        // Act - Simulate navigation to a new page by attaching again
+        webViewManager.ReceiveAttachPageMessage();
+
+        // Assert - The first page's JS runtime should now be disconnected
+        await Assert.ThrowsAsync<JSDisconnectedException>(async () =>
+            await firstPageJSRuntime.InvokeAsync<string>("someFunction", []));
     }
 
     [Fact]
