@@ -364,3 +364,87 @@ describe('rangeValidator', () => {
     });
   });
 });
+
+// Matches .NET [RegularExpression] behavior:
+// - Null/empty values pass (emptiness is [Required]'s concern)
+// - Full match required (pattern is anchored with ^(?:...)$)
+// - Case-sensitive by default
+describe('regexValidator', () => {
+  const regex = getValidator('regex');
+
+  describe('empty values are not validated', () => {
+    test('accepts null', () => {
+      expect(regex(makeContext({ value: null, params: { pattern: '[A-Z]+' } }))).toBe(true);
+    });
+
+    test('accepts undefined', () => {
+      expect(regex(makeContext({ value: undefined, params: { pattern: '[A-Z]+' } }))).toBe(true);
+    });
+
+    test('accepts empty string', () => {
+      expect(regex(makeContext({ value: '', params: { pattern: '[A-Z]+' } }))).toBe(true);
+    });
+  });
+
+  describe('matching', () => {
+    test('accepts value matching letter pattern', () => {
+      expect(regex(makeContext({ value: 'Hello', params: { pattern: '[A-Za-z]+' } }))).toBe(true);
+    });
+
+    test('accepts value matching digit pattern', () => {
+      expect(regex(makeContext({ value: '555-1234', params: { pattern: '\\d{3}-\\d{4}' } }))).toBe(true);
+    });
+
+    test('rejects value not matching pattern', () => {
+      expect(regex(makeContext({ value: '12345', params: { pattern: '[A-Za-z]+' } }))).toBe(false);
+    });
+  });
+
+  describe('full match (not partial)', () => {
+    test('rejects partial match at start', () => {
+      expect(regex(makeContext({ value: 'abc123', params: { pattern: '[A-Za-z]+' } }))).toBe(false);
+    });
+
+    test('rejects partial match in middle', () => {
+      expect(regex(makeContext({ value: '123abc456', params: { pattern: '[A-Za-z]+' } }))).toBe(false);
+    });
+
+    test('rejects partial match at end', () => {
+      expect(regex(makeContext({ value: '123abc', params: { pattern: '[A-Za-z]+' } }))).toBe(false);
+    });
+  });
+
+  describe('already-anchored patterns', () => {
+    test('works correctly when pattern has anchors', () => {
+      expect(regex(makeContext({ value: 'abc', params: { pattern: '^[a-z]+$' } }))).toBe(true);
+    });
+
+    test('rejects non-match with anchored pattern', () => {
+      expect(regex(makeContext({ value: 'ABC', params: { pattern: '^[a-z]+$' } }))).toBe(false);
+    });
+  });
+
+  describe('alternation', () => {
+    test('accepts first alternative', () => {
+      expect(regex(makeContext({ value: 'cat', params: { pattern: 'cat|dog' } }))).toBe(true);
+    });
+
+    test('accepts second alternative', () => {
+      expect(regex(makeContext({ value: 'dog', params: { pattern: 'cat|dog' } }))).toBe(true);
+    });
+
+    test('rejects non-matching alternative', () => {
+      expect(regex(makeContext({ value: 'fish', params: { pattern: 'cat|dog' } }))).toBe(false);
+    });
+  });
+
+  describe('case sensitivity', () => {
+    test('rejects wrong case', () => {
+      expect(regex(makeContext({ value: 'ABC', params: { pattern: '[a-z]+' } }))).toBe(false);
+    });
+  });
+
+  test('accepts any value when pattern param is missing', () => {
+    expect(regex(makeContext({ value: 'anything', params: {} }))).toBe(true);
+  });
+});
