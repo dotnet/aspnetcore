@@ -306,7 +306,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
     [Fact]
     public async Task SnapshotPreservesAllPropertiesAfterConnectionClose()
     {
-        var handshakeFeatureTcs = new TaskCompletionSource<ITlsHandshakeFeature>();
+        var handshakeFeatureTcs = new TaskCompletionSource<ITlsHandshakeFeature>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         void ConfigureListenOptions(ListenOptions listenOptions)
         {
