@@ -1,0 +1,39 @@
+@page "/persistent-state/server-pause"
+@rendermode RenderMode.InteractiveServer
+@using Microsoft.AspNetCore.Components.Server.Circuits
+@using Microsoft.JSInterop
+@using TestServer
+
+@inject PauseTrackingHandler PauseTracker
+
+<p>Validates server-triggered circuit pause via RequestCircuitPauseAsync()</p>
+
+<TestContentPackage.PersistentCounter />
+
+<p>Circuit ID: <span id="circuit-id">@_circuitId</span></p>
+
+@code {
+    private string _circuitId = "";
+
+    protected override void OnInitialized()
+    {
+        _circuitId = PauseTracker.CurrentCircuit?.Id ?? "";
+    }
+
+    /// <summary>
+    /// Static JSInvokable method that E2E tests call via
+    /// DotNet.invokeMethodAsync('Components.TestServer', 'TriggerServerPause', circuitId).
+    /// This runs on the circuit's dispatcher, calls RequestCircuitPauseAsync(), then returns.
+    /// The JS.RequestPause message is sent to the client during this call.
+    /// </summary>
+    [JSInvokable]
+    public static async Task<bool> TriggerServerPause(string circuitId)
+    {
+        var circuit = PauseTrackingHandler.GetCircuit(circuitId);
+        if (circuit is null)
+        {
+            return false;
+        }
+        return await circuit.RequestCircuitPauseAsync();
+    }
+}
