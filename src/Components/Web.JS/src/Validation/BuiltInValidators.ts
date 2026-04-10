@@ -9,7 +9,7 @@ export function registerBuiltInValidators(registry: ValidatorRegistry): void {
   registry.set('minlength', stringLengthValidator);
   registry.set('maxlength', stringLengthValidator);
   registry.set('range', rangeValidator);
-  // TODO: regex
+  registry.set('regex', regexValidator);
   // TODO: email
   // TODO: url
   // TODO: phone
@@ -88,4 +88,21 @@ const rangeValidator: Validator = (context: ValidationContext): ValidationResult
   }
 
   return true;
+};
+
+const regexValidator: Validator = (context: ValidationContext): ValidationResult => {
+  const { value, params } = context;
+  if (!value) {
+    return true;
+  }
+
+  if (!params.pattern) {
+    return true;
+  }
+
+  // Anchor the pattern for full-match semantics, matching .NET's RegularExpressionAttribute
+  // which requires Index == 0 && Length == value.Length. The non-capturing group avoids
+  // changing semantics for patterns with alternation (e.g. "a|b").
+  const anchored = `^(?:${params.pattern})$`;
+  return new RegExp(anchored).test(value);
 };
