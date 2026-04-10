@@ -524,3 +524,75 @@ describe('emailValidator', () => {
     });
   });
 });
+
+// Matches jQuery validation URL pattern (Diego Perini's regex).
+// Empty values pass (emptiness is [Required]'s concern).
+describe('urlValidator', () => {
+  const url = getValidator('url');
+
+  describe('empty values are not validated', () => {
+    test('accepts empty string', () => {
+      expect(url(makeContext({ value: '' }))).toBe(true);
+    });
+
+    test('accepts null', () => {
+      expect(url(makeContext({ value: null }))).toBe(true);
+    });
+
+    test('accepts undefined', () => {
+      expect(url(makeContext({ value: undefined }))).toBe(true);
+    });
+  });
+
+  describe('valid URLs', () => {
+    test('accepts http URL', () => {
+      expect(url(makeContext({ value: 'http://example.com' }))).toBe(true);
+    });
+
+    test('accepts https URL', () => {
+      expect(url(makeContext({ value: 'https://example.com' }))).toBe(true);
+    });
+
+    test('accepts ftp URL', () => {
+      expect(url(makeContext({ value: 'ftp://example.com' }))).toBe(true);
+    });
+
+    test('accepts URL with path', () => {
+      expect(url(makeContext({ value: 'https://example.com/path/to/page' }))).toBe(true);
+    });
+
+    test('accepts URL with query string', () => {
+      expect(url(makeContext({ value: 'https://example.com?q=1&b=2' }))).toBe(true);
+    });
+
+    test('accepts URL with port', () => {
+      expect(url(makeContext({ value: 'https://example.com:8080' }))).toBe(true);
+    });
+
+    test('accepts URL with subdomain', () => {
+      expect(url(makeContext({ value: 'https://www.example.com' }))).toBe(true);
+    });
+
+    test('accepts protocol-relative URL', () => {
+      expect(url(makeContext({ value: '//example.com' }))).toBe(true);
+    });
+  });
+
+  describe('invalid URLs', () => {
+    test('rejects plain text', () => {
+      expect(url(makeContext({ value: 'not-a-url' }))).toBe(false);
+    });
+
+    test('rejects missing protocol', () => {
+      expect(url(makeContext({ value: 'example.com' }))).toBe(false);
+    });
+
+    test('rejects single word', () => {
+      expect(url(makeContext({ value: 'hello' }))).toBe(false);
+    });
+
+    test('rejects spaces in URL', () => {
+      expect(url(makeContext({ value: 'https://exam ple.com' }))).toBe(false);
+    });
+  });
+});
