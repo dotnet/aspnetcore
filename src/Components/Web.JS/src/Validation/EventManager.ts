@@ -22,13 +22,20 @@ export class EventManager {
     }
 
     const form = getElementForm(element);
+    if (!form) {
+      return;
+    }
+
+    const formState = this.engine.getFormState(form);
+    if (!formState) {
+      return;
+    }
+
     const signal = state.listenerController.signal;
 
     const validate = () => {
       this.engine.validateElement(element);
-      if (form) {
-        this.engine.updateValidationSummary(form);
-      }
+      this.engine.updateValidationSummary(form);
     };
 
     // Explicit data-val-event override: listen to the specified event(s), no gating.
@@ -43,8 +50,7 @@ export class EventManager {
     // Always validate on 'change' (fires on blur-commit for text, immediately for checkbox/select).
     // After the form has been submitted, or after the field has been invalid, validate also on 'input'.
     const validateGated = () => {
-      const formState = form ? this.engine.getFormState(form) : undefined;
-      if (formState?.hasBeenSubmitted || state.hasBeenInvalid) {
+      if (formState.hasBeenSubmitted || state.hasBeenInvalid) {
         validate();
       }
     };

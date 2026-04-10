@@ -46,6 +46,7 @@ export class ValidationEngine {
       this.trackedForms.set(form, formState);
     }
     formState.trackedElements.add(element);
+    initializeMessageElementsAria(element);
   }
 
   unregisterElement(element: ValidatableElement): void {
@@ -236,4 +237,28 @@ function resolveErrorMessage(result: ValidationResult, rule: ValidationRule): st
   }
 
   return '';
+}
+
+function initializeMessageElementsAria(element: ValidatableElement): void {
+  const name = element.getAttribute('name');
+  if (!name) {
+    return;
+  }
+
+  const form = getElementForm(element);
+  if (!form) {
+    return;
+  }
+
+  const messageElements = form.querySelectorAll<HTMLElement>(`[data-valmsg-for="${CSS.escape(name)}"]`);
+
+  for (let i = 0; i < messageElements.length; i++) {
+    const el = messageElements[i];
+    if (!el.hasAttribute('role')) {
+      el.setAttribute('role', 'alert');
+    }
+    if (!el.hasAttribute('aria-live')) {
+      el.setAttribute('aria-live', 'assertive');
+    }
+  }
 }
