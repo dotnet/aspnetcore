@@ -174,8 +174,12 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       this._componentManager.onAfterUpdateRootComponents?.(batchId);
     });
 
-    connection.on('JS.RequestPause', () => {
-      this.pause(true);
+    connection.on('JS.RequestPause', async () => {
+      try {
+        await this.pause(true);
+      } catch (error) {
+        this._logger.log(LogLevel.Error, `Failed to handle server-initiated pause: ${error}`);
+      }
     });
     connection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
     connection.onclose(error => {
