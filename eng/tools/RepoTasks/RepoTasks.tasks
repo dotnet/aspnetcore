@@ -1,4 +1,5 @@
 <Project>
+
   <PropertyGroup>
     <_RepoTaskAssemblyFolder Condition="'$(MSBuildRuntimeType)' == 'core'">net11.0</_RepoTaskAssemblyFolder>
     <_RepoTaskAssemblyFolder Condition="'$(MSBuildRuntimeType)' != 'core'">net472</_RepoTaskAssemblyFolder>
@@ -9,5 +10,4 @@
   <UsingTask TaskName="RepoTasks.GetMsiProperty" AssemblyFile="$(_RepoTaskAssembly)" TaskFactory="TaskHostFactory" Condition="'$(MSBuildRuntimeType)' != 'core'" />
   <UsingTask TaskName="RepoTasks.GenerateTestDevCert" AssemblyFile="$(_RepoTaskAssembly)" TaskFactory="TaskHostFactory" />
 
-  <UsingTask TaskName="DownloadFile" AssemblyFile="$(ArcadeSdkBuildTasksAssembly)" Runtime="NET" />
 </Project>

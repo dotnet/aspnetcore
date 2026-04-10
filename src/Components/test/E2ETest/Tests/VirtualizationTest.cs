@@ -740,6 +740,41 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         js.ExecuteScript("arguments[0].scrollLeft = arguments[0].scrollWidth", elem);
     }
 
+    private void ScrollToOffsetWithStabilization(
+        IWebElement container,
+        double targetScrollTop,
+        int minFirstRenderedIndexExclusive)
+    {
+        var js = (IJavaScriptExecutor)Browser;
+
+        container.Click();
+        Browser.True(() =>
+        {
+            js.ExecuteScript("arguments[0].scrollTop = arguments[1];", container, targetScrollTop);
+
+            var currentScrollTop = Convert.ToDouble(
+                js.ExecuteScript("return arguments[0].scrollTop;", container),
+                CultureInfo.InvariantCulture);
+            if (currentScrollTop + 1 < targetScrollTop)
+            {
+                return false;
+            }
+
+            var items = container.FindElements(By.CssSelector(".item"));
+            if (items.Count == 0)
+            {
+                return false;
+            }
+
+            var indexText = items.First().GetDomAttribute("data-index");
+            return indexText != null
+                && int.TryParse(indexText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var index)
+                && index > minFirstRenderedIndexExclusive;
+        });
+
+        WaitForScrollStabilization(container);
+    }
+
     /// <summary>
     /// Jumps to end using a single End key press, then waits for scroll position to stabilize.
     /// With the measurement-based scroll compensation in Virtualize, a single End press converges
@@ -1043,20 +1078,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => GetElementCount(container, ".item") > 0);
 
         // Scroll past the overscan window to force true virtualization.
-        js.ExecuteScript("arguments[0].scrollTop = 5000", container);
-        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) >= 5000);
-
-        Browser.True(() =>
-        {
-            var items = container.FindElements(By.CssSelector(".item"));
-            if (items.Count == 0)
-            {
-                return false;
-            }
-
-            var idx = items.First().GetDomAttribute("data-index");
-            return idx != null && int.Parse(idx, CultureInfo.InvariantCulture) > 10;
-        });
+        ScrollToOffsetWithStabilization(container, targetScrollTop: 5000, minFirstRenderedIndexExclusive: 10);
 
         // Record the first visible item and its Y position.
         var containerRect = container.Location;
@@ -1107,20 +1129,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => GetElementCount(container, ".item") > 0);
 
         // Scroll past the overscan window to force true virtualization.
-        js.ExecuteScript("arguments[0].scrollTop = 5000", container);
-        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) >= 5000);
-
-        Browser.True(() =>
-        {
-            var items = container.FindElements(By.CssSelector(".item"));
-            if (items.Count == 0)
-            {
-                return false;
-            }
-
-            var idx = items.First().GetDomAttribute("data-index");
-            return idx != null && int.Parse(idx, CultureInfo.InvariantCulture) > 10;
-        });
+        ScrollToOffsetWithStabilization(container, targetScrollTop: 5000, minFirstRenderedIndexExclusive: 10);
         var visibleItems = container.FindElements(By.CssSelector(".item"));
         var firstVisible = visibleItems.First();
         var firstVisibleIndex = firstVisible.GetDomAttribute("data-index");
