@@ -112,7 +112,7 @@ public class WebViewManagerTests
 
         // Assert - After disposal, JS interop calls should throw JSDisconnectedException
         await Assert.ThrowsAsync<JSDisconnectedException>(async () =>
-            await jsRuntime.InvokeAsync<string>("someFunction", []));
+            await jsRuntime.InvokeAsync<string>("someFunction", Array.Empty<object>()));
     }
 
     [Fact]
@@ -134,7 +134,7 @@ public class WebViewManagerTests
 
         // Assert - The first page's JS runtime should now be disconnected
         await Assert.ThrowsAsync<JSDisconnectedException>(async () =>
-            await firstPageJSRuntime.InvokeAsync<string>("someFunction", []));
+            await firstPageJSRuntime.InvokeAsync<string>("someFunction", Array.Empty<object>()));
     }
 
     [Fact]
