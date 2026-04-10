@@ -10,7 +10,7 @@ import { ValidatableElement, Validator, ValidatorRegistry } from './Validator';
 
 export interface StandaloneValidationService {
   addValidator(name: string, validator: Validator): void;
-  scan(): void;
+  scan(elementOrSelector?: ParentNode | string): void;
   validateField(element: ValidatableElement): boolean;
   validateForm(form: HTMLFormElement): boolean;
 }

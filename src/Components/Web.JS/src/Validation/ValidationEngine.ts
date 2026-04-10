@@ -13,7 +13,7 @@ export type ValidationRule = {
 
 export interface ElementState {
   rules: ValidationRule[];
-  triggerEvents: string; // Space-separated list of event types, 'default', 'submit', and 'change' are special values.
+  triggerEvents: string; // Space-separated list of event types, 'default' and 'submit' are special values.
   fingerprint: string; // TODO: Does the fingerprint need to include other data?
   listenerController: AbortController;
   currentError?: string;
@@ -39,12 +39,7 @@ export class ValidationEngine {
 
   registerElement(element: ValidatableElement, form: HTMLFormElement, state: ElementState): void {
     this.trackedElements.set(element, state);
-
-    let formState = this.trackedForms.get(form);
-    if (!formState) {
-      formState = { trackedElements: new Set(), hasBeenSubmitted: false };
-      this.trackedForms.set(form, formState);
-    }
+    const formState = this.trackedForms.get(form) ?? this.registerForm(form);
     formState.trackedElements.add(element);
     initializeMessageElementsAria(element);
   }
@@ -202,6 +197,14 @@ export class ValidationEngine {
 
     return '';
   }
+
+  private registerForm(form: HTMLFormElement): FormState {
+    const formState: FormState = { trackedElements: new Set(), hasBeenSubmitted: false };
+    this.trackedForms.set(form, formState);
+    this.errorDisplay.updateSummary(form);
+    return formState;
+  }
+
 
   private markInvalid(element: ValidatableElement, state: ElementState, errorMessage: string): void {
     state.currentError = errorMessage;
