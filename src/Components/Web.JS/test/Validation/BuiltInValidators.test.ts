@@ -257,3 +257,110 @@ describe('lengthValidator', () => {
     expect(length(makeContext({ value: 'anything', params: {} }))).toBe(true);
   });
 });
+
+// Matches .NET [Range] behavior:
+// - Null/empty values pass (emptiness is [Required]'s concern)
+// - Boundaries are inclusive (min <= value <= max)
+// - Uses numeric comparison via Number()
+// - Non-numeric values are rejected
+describe('rangeValidator', () => {
+  const range = getValidator('range');
+
+  describe('empty values are not validated', () => {
+    test('accepts null', () => {
+      expect(range(makeContext({ value: null, params: { min: '1', max: '100' } }))).toBe(true);
+    });
+
+    test('accepts undefined', () => {
+      expect(range(makeContext({ value: undefined, params: { min: '1', max: '100' } }))).toBe(true);
+    });
+
+    test('accepts empty string', () => {
+      expect(range(makeContext({ value: '', params: { min: '1', max: '100' } }))).toBe(true);
+    });
+  });
+
+  describe('integer range', () => {
+    test('rejects value below minimum', () => {
+      expect(range(makeContext({ value: '0', params: { min: '1', max: '100' } }))).toBe(false);
+    });
+
+    test('accepts value exactly at minimum', () => {
+      expect(range(makeContext({ value: '1', params: { min: '1', max: '100' } }))).toBe(true);
+    });
+
+    test('accepts value in the middle', () => {
+      expect(range(makeContext({ value: '50', params: { min: '1', max: '100' } }))).toBe(true);
+    });
+
+    test('accepts value exactly at maximum', () => {
+      expect(range(makeContext({ value: '100', params: { min: '1', max: '100' } }))).toBe(true);
+    });
+
+    test('rejects value above maximum', () => {
+      expect(range(makeContext({ value: '101', params: { min: '1', max: '100' } }))).toBe(false);
+    });
+  });
+
+  describe('decimal range', () => {
+    test('accepts decimal value within range', () => {
+      expect(range(makeContext({ value: '50.0', params: { min: '0.5', max: '99.5' } }))).toBe(true);
+    });
+
+    test('accepts decimal at minimum boundary', () => {
+      expect(range(makeContext({ value: '0.5', params: { min: '0.5', max: '99.5' } }))).toBe(true);
+    });
+
+    test('rejects decimal below minimum', () => {
+      expect(range(makeContext({ value: '0.4', params: { min: '0.5', max: '99.5' } }))).toBe(false);
+    });
+
+    test('accepts decimal at maximum boundary', () => {
+      expect(range(makeContext({ value: '99.5', params: { min: '0.5', max: '99.5' } }))).toBe(true);
+    });
+
+    test('rejects decimal above maximum', () => {
+      expect(range(makeContext({ value: '99.6', params: { min: '0.5', max: '99.5' } }))).toBe(false);
+    });
+  });
+
+  describe('negative range', () => {
+    test('accepts value in negative range', () => {
+      expect(range(makeContext({ value: '-50', params: { min: '-100', max: '-1' } }))).toBe(true);
+    });
+
+    test('accepts boundary of negative range', () => {
+      expect(range(makeContext({ value: '-100', params: { min: '-100', max: '-1' } }))).toBe(true);
+    });
+
+    test('rejects value outside negative range', () => {
+      expect(range(makeContext({ value: '0', params: { min: '-100', max: '-1' } }))).toBe(false);
+    });
+  });
+
+  describe('non-numeric input', () => {
+    test('rejects alphabetic string', () => {
+      expect(range(makeContext({ value: 'abc', params: { min: '1', max: '100' } }))).toBe(false);
+    });
+
+    test('rejects mixed alphanumeric', () => {
+      expect(range(makeContext({ value: '123abc', params: { min: '1', max: '100' } }))).toBe(false);
+    });
+  });
+
+  describe('partial params', () => {
+    test('validates only minimum when max is absent', () => {
+      expect(range(makeContext({ value: '50', params: { min: '10' } }))).toBe(true);
+      expect(range(makeContext({ value: '5', params: { min: '10' } }))).toBe(false);
+    });
+
+    test('validates only maximum when min is absent', () => {
+      expect(range(makeContext({ value: '50', params: { max: '100' } }))).toBe(true);
+      expect(range(makeContext({ value: '150', params: { max: '100' } }))).toBe(false);
+    });
+
+    test('accepts any numeric value when both are absent', () => {
+      expect(range(makeContext({ value: '999999', params: {} }))).toBe(true);
+    });
+  });
+});
