@@ -63,7 +63,7 @@ export class DomScanner {
 
       const state: ElementState = {
         rules: rules,
-        triggerEvents: element.getAttribute('data-val-event') ?? 'change',
+        triggerEvents: element.getAttribute('data-val-event') ?? 'default',
         listenerController: new AbortController(),
         fingerprint: fingerprint,
         hasBeenInvalid: false,
