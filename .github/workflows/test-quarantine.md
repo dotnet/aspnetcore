@@ -38,7 +38,7 @@ safe-outputs:
 
 tools:
   edit:
-  bash: ["git:*", "grep", "cat", "head", "tail", "wc", "curl:*", "python3", "echo", "date", "sort", "uniq"]
+  bash: ["git:*", "grep", "cat", "head", "tail", "wc", "curl", "python3", "echo", "date", "sort", "uniq"]
   github:
     toolsets: [repos, issues, pull_requests, search]
   web-fetch:
