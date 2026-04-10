@@ -18,6 +18,9 @@ export function registerBuiltInValidators(registry: ValidatorRegistry): void {
   registry.set('fileextensions', fileextensionsValidator);
 }
 
+// Validates that the field has a non-empty value.
+// Checkboxes: must be checked. Radio groups: at least one in the group must be checked.
+// Text/select/textarea: value must be non-empty after trimming whitespace.
 const requiredValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value, element } = context;
   if (element instanceof HTMLInputElement) {
@@ -41,6 +44,8 @@ const requiredValidator: Validator = (context: ValidationContext): ValidationRes
   return value.trim().length > 0;
 };
 
+// Validates string length against min and/or max bounds (inclusive).
+// Used for 'length' ([StringLength]), 'minlength' ([MinLength]), and 'maxlength' ([MaxLength]) rules.
 const stringLengthValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value, params } = context;
   if (!value) {
@@ -64,6 +69,8 @@ const stringLengthValidator: Validator = (context: ValidationContext): Validatio
   return true;
 };
 
+// Validates that a numeric value falls within min/max bounds (inclusive).
+// Non-numeric values fail. Uses Number() for parsing.
 const rangeValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value, params } = context;
   if (!value) {
@@ -90,6 +97,8 @@ const rangeValidator: Validator = (context: ValidationContext): ValidationResult
   return true;
 };
 
+// Validates that the value matches a regular expression pattern (full match).
+// The pattern is anchored with ^(?:...)$ to match .NET's exact-match semantics.
 const regexValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value, params } = context;
   if (!value) {
@@ -111,6 +120,9 @@ const regexValidator: Validator = (context: ValidationContext): ValidationResult
 // Source: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address
 const emailPattern = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
+// Validates email format using the WHATWG HTML5 email pattern (same as jQuery validation).
+// Stricter than .NET's EmailAddressAttribute (which only checks for a single '@').
+// The client won't let through anything the server would reject.
 const emailValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value } = context;
   if (!value) {
@@ -125,6 +137,10 @@ const emailValidator: Validator = (context: ValidationContext): ValidationResult
 // Source: https://gist.github.com/dperini/729294
 const urlPattern = /^(?:(?:(?:https?|ftp):)?\/\/)(?:(?:[^\]\[?\/<~#`!@$^&*()+=}|:";',>{ ]|%[0-9A-Fa-f]{2})+(?::(?:[^\]\[?\/<~#`!@$^&*()+=}|:";',>{ ]|%[0-9A-Fa-f]{2})*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z0-9\u00a1-\uffff][a-z0-9\u00a1-\uffff_-]{0,62})?[a-z0-9\u00a1-\uffff]\.)+(?:[a-z\u00a1-\uffff]{2,}\.?))(?::\d{2,5})?(?:[/?#]\S*)?$/i;
 
+// Validates URL format using the jQuery validation pattern (Diego Perini's regex).
+// Requires http/https/ftp protocol or protocol-relative (//). Stricter than .NET's
+// UrlAttribute (which only checks for http/https/ftp prefix via StartsWith).
+// The client won't let through anything the server would reject.
 const urlValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value } = context;
   if (!value) {
@@ -134,6 +150,9 @@ const urlValidator: Validator = (context: ValidationContext): ValidationResult =
   return urlPattern.test(value);
 };
 
+// Validates phone numbers matching .NET's PhoneAttribute logic.
+// Strips leading '+' and trailing extensions (ext./ext/x + digits).
+// Requires at least one digit. Only allows digits, whitespace, and: - . ( )
 const phoneValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value } = context;
   if (!value) {
@@ -155,6 +174,8 @@ const phoneValidator: Validator = (context: ValidationContext): ValidationResult
   return /^[\d\s\-.()\u00a0]+$/.test(phone);
 };
 
+// Validates credit card numbers using the Luhn algorithm (same as .NET CreditCardAttribute).
+// Strips dashes and spaces before validation. Requires 13-19 digits (from jQuery validation).
 const creditcardValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value } = context;
   if (!value) {
@@ -189,6 +210,9 @@ const creditcardValidator: Validator = (context: ValidationContext): ValidationR
   return (checksum % 10) === 0;
 };
 
+// Validates that the value equals another field's value (for password confirmation, etc.).
+// Resolves "*.PropertyName" to the model-prefixed field name using the current field's name.
+// Finds the other field by [name] attribute within the same form.
 const equaltoValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value, element, params } = context;
   if (!value) {
@@ -232,6 +256,8 @@ function resolveOtherFieldName(currentName: string, otherParam: string | undefin
   return otherParam;
 }
 
+// Validates that the filename ends with an allowed extension (case-insensitive).
+// Extensions param is comma-separated with dot prefix (e.g. ".png,.jpg,.gif") as emitted by MVC.
 const fileextensionsValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value, params } = context;
   if (!value) {

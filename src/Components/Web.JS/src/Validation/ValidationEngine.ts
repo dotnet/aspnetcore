@@ -14,7 +14,7 @@ export type ValidationRule = {
 export interface ElementState {
   rules: ValidationRule[];
   triggerEvents: string; // Space-separated list of event types, 'default' and 'submit' are special values.
-  fingerprint: string; // TODO: Does the fingerprint need to include other data?
+  fingerprint: string;
   listenerController: AbortController;
   currentError?: string;
   hasBeenInvalid: boolean;
