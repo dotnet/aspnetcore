@@ -832,3 +832,58 @@ describe('equaltoValidator', () => {
     });
   });
 });
+
+// Matches .NET FileExtensionsAttribute behavior:
+// - Null/empty passes
+// - Case-insensitive extension matching
+// - Extensions param format: ".png,.jpg,.gif" (dot-prefixed, comma-separated)
+describe('fileextensionsValidator', () => {
+  const fileext = getValidator('fileextensions');
+  const imgExtensions = { extensions: '.png,.jpg,.jpeg,.gif' };
+
+  describe('empty values are not validated', () => {
+    test('accepts empty string', () => {
+      expect(fileext(makeContext({ value: '', params: imgExtensions }))).toBe(true);
+    });
+
+    test('accepts null', () => {
+      expect(fileext(makeContext({ value: null, params: imgExtensions }))).toBe(true);
+    });
+
+    test('accepts undefined', () => {
+      expect(fileext(makeContext({ value: undefined, params: imgExtensions }))).toBe(true);
+    });
+  });
+
+  describe('valid file extensions', () => {
+    test('accepts matching extension', () => {
+      expect(fileext(makeContext({ value: 'photo.png', params: imgExtensions }))).toBe(true);
+    });
+
+    test('accepts case-insensitive match', () => {
+      expect(fileext(makeContext({ value: 'photo.PNG', params: imgExtensions }))).toBe(true);
+    });
+
+    test('accepts another allowed extension', () => {
+      expect(fileext(makeContext({ value: 'photo.jpg', params: imgExtensions }))).toBe(true);
+    });
+
+    test('accepts file with multiple dots in name', () => {
+      expect(fileext(makeContext({ value: 'my.vacation.photo.jpeg', params: imgExtensions }))).toBe(true);
+    });
+  });
+
+  describe('invalid file extensions', () => {
+    test('rejects disallowed extension', () => {
+      expect(fileext(makeContext({ value: 'script.exe', params: imgExtensions }))).toBe(false);
+    });
+
+    test('rejects file with no extension', () => {
+      expect(fileext(makeContext({ value: 'readme', params: imgExtensions }))).toBe(false);
+    });
+  });
+
+  test('accepts any file when extensions param is missing', () => {
+    expect(fileext(makeContext({ value: 'anything.xyz', params: {} }))).toBe(true);
+  });
+});

@@ -15,7 +15,7 @@ export function registerBuiltInValidators(registry: ValidatorRegistry): void {
   registry.set('phone', phoneValidator);
   registry.set('creditcard', creditcardValidator);
   registry.set('equalto', equaltoValidator);
-  // TODO: fileextensions
+  registry.set('fileextensions', fileextensionsValidator);
 }
 
 const requiredValidator: Validator = (context: ValidationContext): ValidationResult => {
@@ -231,3 +231,26 @@ function resolveOtherFieldName(currentName: string, otherParam: string | undefin
 
   return otherParam;
 }
+
+const fileextensionsValidator: Validator = (context: ValidationContext): ValidationResult => {
+  const { value, params } = context;
+  if (!value) {
+    return true;
+  }
+
+  if (!params.extensions) {
+    return true;
+  }
+
+  // Build regex from comma-separated extensions, stripping dots for escaping.
+  const extensions = params.extensions.split(',')
+    .map(ext => ext.trim().replace(/^\./, ''))
+    .filter(ext => ext.length > 0)
+    .join('|');
+
+  if (!extensions) {
+    return true;
+  }
+
+  return new RegExp(`\\.(${extensions})$`, 'i').test(value);
+};
