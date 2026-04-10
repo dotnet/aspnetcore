@@ -12,7 +12,7 @@ export function registerBuiltInValidators(registry: ValidatorRegistry): void {
   registry.set('regex', regexValidator);
   registry.set('email', emailValidator);
   registry.set('url', urlValidator);
-  // TODO: phone
+  registry.set('phone', phoneValidator);
   // TODO: creditcard
   // TODO: equalto
   // TODO: fileextensions
@@ -132,4 +132,25 @@ const urlValidator: Validator = (context: ValidationContext): ValidationResult =
   }
 
   return urlPattern.test(value);
+};
+
+const phoneValidator: Validator = (context: ValidationContext): ValidationResult => {
+  const { value } = context;
+  if (!value) {
+    return true;
+  }
+
+  // Strip leading '+' (international prefix)
+  let phone = value.startsWith('+') ? value.substring(1) : value;
+
+  // Strip trailing extension: "ext." / "ext" / "x" followed by digits
+  phone = phone.replace(/\s*(ext\.?|x)\s*\d+$/i, '').trimEnd();
+
+  // Must contain at least one digit
+  if (!/\d/.test(phone)) {
+    return false;
+  }
+
+  // Only allow digits, whitespace, and: - . ( )
+  return /^[\d\s\-.()\u00a0]+$/.test(phone);
 };
