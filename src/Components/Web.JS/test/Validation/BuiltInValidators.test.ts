@@ -596,3 +596,86 @@ describe('urlValidator', () => {
     });
   });
 });
+
+// Matches .NET PhoneAttribute behavior:
+// - Null/empty passes
+// - Strips leading '+' and trailing extensions (ext./ext/x + digits)
+// - Must contain at least one digit
+// - Only digits, whitespace, and -.() allowed
+describe('phoneValidator', () => {
+  const phone = getValidator('phone');
+
+  describe('empty values are not validated', () => {
+    test('accepts empty string', () => {
+      expect(phone(makeContext({ value: '' }))).toBe(true);
+    });
+
+    test('accepts null', () => {
+      expect(phone(makeContext({ value: null }))).toBe(true);
+    });
+
+    test('accepts undefined', () => {
+      expect(phone(makeContext({ value: undefined }))).toBe(true);
+    });
+  });
+
+  describe('valid phone numbers', () => {
+    test('accepts digits only', () => {
+      expect(phone(makeContext({ value: '5551234567' }))).toBe(true);
+    });
+
+    test('accepts formatted US number', () => {
+      expect(phone(makeContext({ value: '(555) 123-4567' }))).toBe(true);
+    });
+
+    test('accepts dashes', () => {
+      expect(phone(makeContext({ value: '555-123-4567' }))).toBe(true);
+    });
+
+    test('accepts dots', () => {
+      expect(phone(makeContext({ value: '555.123.4567' }))).toBe(true);
+    });
+
+    test('accepts spaces', () => {
+      expect(phone(makeContext({ value: '555 123 4567' }))).toBe(true);
+    });
+
+    test('accepts leading plus', () => {
+      expect(phone(makeContext({ value: '+1-555-123-4567' }))).toBe(true);
+    });
+
+    test('accepts international format', () => {
+      expect(phone(makeContext({ value: '+44 20 7946 0958' }))).toBe(true);
+    });
+
+    test('accepts with ext. extension', () => {
+      expect(phone(makeContext({ value: '555-1234 ext. 5678' }))).toBe(true);
+    });
+
+    test('accepts with ext extension', () => {
+      expect(phone(makeContext({ value: '555-1234 ext5678' }))).toBe(true);
+    });
+
+    test('accepts with x extension', () => {
+      expect(phone(makeContext({ value: '555-1234 x5678' }))).toBe(true);
+    });
+  });
+
+  describe('invalid phone numbers', () => {
+    test('rejects alphabetic string', () => {
+      expect(phone(makeContext({ value: 'abcdef' }))).toBe(false);
+    });
+
+    test('rejects letters mixed with digits', () => {
+      expect(phone(makeContext({ value: '555-abc-1234' }))).toBe(false);
+    });
+
+    test('rejects no digits at all', () => {
+      expect(phone(makeContext({ value: '(--)' }))).toBe(false);
+    });
+
+    test('rejects special characters', () => {
+      expect(phone(makeContext({ value: '555@1234' }))).toBe(false);
+    });
+  });
+});
