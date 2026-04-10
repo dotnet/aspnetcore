@@ -20,6 +20,7 @@ import { WebStartOptions } from './Platform/WebStartOptions';
 import { RuntimeAPI } from '@microsoft/dotnet-runtime';
 import { JSEventRegistry } from './Services/JSEventRegistry';
 import { BinaryMedia } from './Rendering/BinaryMedia';
+import { BlazorValidationService } from './Validation/BlazorValidation';
 
 
 // TODO: It's kind of hard to tell which .NET platform(s) some of these APIs are relevant to.
@@ -47,6 +48,7 @@ export interface IBlazor {
   platform?: Platform;
   rootComponents: typeof RootComponentsFunctions;
   runtime: RuntimeAPI,
+  validation?: BlazorValidationService;
 
   _internal: {
     navigationManager: typeof navigationManagerInternalFunctions | any;

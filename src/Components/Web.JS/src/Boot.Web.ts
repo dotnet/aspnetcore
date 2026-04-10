@@ -29,6 +29,7 @@ import { resolveOptions } from './Platform/Circuits/CircuitStartOptions';
 import { JSInitializer } from './JSInitializers/JSInitializers';
 import { enableFocusOnNavigate } from './Rendering/FocusOnNavigate';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
+import { createBlazorValidation } from './Validation/BlazorValidation';
 
 let started = false;
 let rootComponentManager: WebRootComponentManager;
@@ -77,6 +78,13 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   }
 
   enableFocusOnNavigate(jsEventRegistry);
+
+  // Initialize client-side validation. The initial scan happens in onInitialDomContentLoaded
+  // after the DOM is ready. Re-scan after each enhanced navigation DOM update.
+  Blazor.validation = createBlazorValidation();
+  jsEventRegistry.addEventListener('enhancedload', () => {
+    Blazor.validation?.scan();
+  });
 
   // Wait until the initial page response completes before activating interactive components.
   // If stream rendering is used, this helps to ensure that only the final set of interactive
