@@ -14,7 +14,7 @@ export function registerBuiltInValidators(registry: ValidatorRegistry): void {
   registry.set('url', urlValidator);
   registry.set('phone', phoneValidator);
   registry.set('creditcard', creditcardValidator);
-  // TODO: equalto
+  registry.set('equalto', equaltoValidator);
   // TODO: fileextensions
 }
 
@@ -188,3 +188,46 @@ const creditcardValidator: Validator = (context: ValidationContext): ValidationR
 
   return (checksum % 10) === 0;
 };
+
+const equaltoValidator: Validator = (context: ValidationContext): ValidationResult => {
+  const { value, element, params } = context;
+  if (!value) {
+    return true;
+  }
+
+  const otherFieldName = resolveOtherFieldName(element.name, params.other);
+  if (!otherFieldName) {
+    return true;
+  }
+
+  const form = element.closest('form');
+  if (!form) {
+    return true;
+  }
+
+  const otherElement = form.querySelector<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+    `[name="${CSS.escape(otherFieldName)}"]`
+  );
+
+  if (!otherElement) {
+    return true;
+  }
+
+  return value === otherElement.value;
+};
+
+function resolveOtherFieldName(currentName: string, otherParam: string | undefined): string | undefined {
+  if (!otherParam) {
+    return undefined;
+  }
+
+  if (otherParam.startsWith('*.')) {
+    // Replace * with the model prefix from the current field's name.
+    // E.g. currentName="User.Password", otherParam="*.ConfirmPassword" → "User.ConfirmPassword"
+    const lastDot = currentName.lastIndexOf('.');
+    const prefix = lastDot >= 0 ? currentName.substring(0, lastDot + 1) : '';
+    return prefix + otherParam.substring(2);
+  }
+
+  return otherParam;
+}
