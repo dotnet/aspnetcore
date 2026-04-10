@@ -112,6 +112,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
             return;
         }
 
+        aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
         await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
         var page = await browser.NewPageAsync();
         await page.GotoAsync(new Uri(aspNetProcess.ListeningUri, "/Error").AbsoluteUri, new() { WaitUntil = WaitUntilState.NetworkIdle });
