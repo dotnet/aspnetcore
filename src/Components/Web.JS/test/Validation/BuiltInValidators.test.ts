@@ -448,3 +448,79 @@ describe('regexValidator', () => {
     expect(regex(makeContext({ value: 'anything', params: {} }))).toBe(true);
   });
 });
+
+// Matches client-side email validation convention (WHATWG pattern, same as jQuery validation).
+// Empty values pass (emptiness is [Required]'s concern).
+describe('emailValidator', () => {
+  const email = getValidator('email');
+
+  describe('empty values are not validated', () => {
+    test('accepts empty string', () => {
+      expect(email(makeContext({ value: '' }))).toBe(true);
+    });
+
+    test('accepts null', () => {
+      expect(email(makeContext({ value: null }))).toBe(true);
+    });
+
+    test('accepts undefined', () => {
+      expect(email(makeContext({ value: undefined }))).toBe(true);
+    });
+  });
+
+  describe('valid emails', () => {
+    test('accepts simple email', () => {
+      expect(email(makeContext({ value: 'user@example.com' }))).toBe(true);
+    });
+
+    test('accepts email with subdomain', () => {
+      expect(email(makeContext({ value: 'user@mail.example.com' }))).toBe(true);
+    });
+
+    test('accepts email with dots in local part', () => {
+      expect(email(makeContext({ value: 'first.last@example.com' }))).toBe(true);
+    });
+
+    test('accepts email with plus tag', () => {
+      expect(email(makeContext({ value: 'user+tag@example.com' }))).toBe(true);
+    });
+
+    test('accepts email with digits', () => {
+      expect(email(makeContext({ value: 'user123@example456.com' }))).toBe(true);
+    });
+
+    test('accepts email with hyphens in domain', () => {
+      expect(email(makeContext({ value: 'user@my-domain.com' }))).toBe(true);
+    });
+
+    test('accepts single-char local part', () => {
+      expect(email(makeContext({ value: 'a@example.com' }))).toBe(true);
+    });
+  });
+
+  describe('invalid emails', () => {
+    test('rejects missing @', () => {
+      expect(email(makeContext({ value: 'userexample.com' }))).toBe(false);
+    });
+
+    test('rejects missing local part', () => {
+      expect(email(makeContext({ value: '@example.com' }))).toBe(false);
+    });
+
+    test('rejects missing domain', () => {
+      expect(email(makeContext({ value: 'user@' }))).toBe(false);
+    });
+
+    test('rejects double @', () => {
+      expect(email(makeContext({ value: 'user@@example.com' }))).toBe(false);
+    });
+
+    test('rejects spaces', () => {
+      expect(email(makeContext({ value: 'user @example.com' }))).toBe(false);
+    });
+
+    test('rejects plain text', () => {
+      expect(email(makeContext({ value: 'not-an-email' }))).toBe(false);
+    });
+  });
+});

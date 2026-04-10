@@ -10,7 +10,7 @@ export function registerBuiltInValidators(registry: ValidatorRegistry): void {
   registry.set('maxlength', stringLengthValidator);
   registry.set('range', rangeValidator);
   registry.set('regex', regexValidator);
-  // TODO: email
+  registry.set('email', emailValidator);
   // TODO: url
   // TODO: phone
   // TODO: creditcard
@@ -105,4 +105,17 @@ const regexValidator: Validator = (context: ValidationContext): ValidationResult
   // changing semantics for patterns with alternation (e.g. "a|b").
   const anchored = `^(?:${params.pattern})$`;
   return new RegExp(anchored).test(value);
+};
+
+// WHATWG email pattern, same as jQuery validation.
+// Source: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address
+const emailPattern = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
+const emailValidator: Validator = (context: ValidationContext): ValidationResult => {
+  const { value } = context;
+  if (!value) {
+    return true;
+  }
+
+  return emailPattern.test(value);
 };
