@@ -272,4 +272,43 @@ public static class ListenOptionsHttpsExtensions
 
         return listenOptions;
     }
+
+    /// <summary>
+    /// Configure Kestrel to use HTTPS with both standard options and a per-connection callback.
+    /// This does not use default certificates or other defaults specified via config or
+    /// <see cref="KestrelServerOptions.ConfigureHttpsDefaults(Action{HttpsConnectionAdapterOptions})"/>.
+    /// </summary>
+    /// <param name="listenOptions">The <see cref="ListenOptions"/> to configure.</param>
+    /// <param name="httpsOptions">Options to configure HTTPS.</param>
+    /// <param name="callbackOptions">Options for a per connection callback.</param>
+    /// <returns>The <see cref="ListenOptions"/>.</returns>
+    public static ListenOptions UseHttps(this ListenOptions listenOptions, HttpsConnectionAdapterOptions httpsOptions, TlsHandshakeCallbackOptions callbackOptions)
+    {
+        ArgumentNullException.ThrowIfNull(httpsOptions);
+        ArgumentNullException.ThrowIfNull(callbackOptions);
+
+        if (callbackOptions.OnConnection is null)
+        {
+            throw new ArgumentException($"{nameof(TlsHandshakeCallbackOptions.OnConnection)} must not be null.");
+        }
+
+        var loggerFactory = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<ILoggerFactory>();
+        var metrics = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<KestrelMetrics>();
+
+        listenOptions.IsTls = true;
+        listenOptions.HttpsOptions = httpsOptions;
+        listenOptions.HttpsCallbackOptions = callbackOptions;
+
+        listenOptions.Use(next =>
+        {
+            // Set the list of protocols from listen options.
+            // Set it inside Use delegate so Protocols and UseHttps can be called out of order.
+            callbackOptions.HttpProtocols = listenOptions.Protocols;
+
+            var middleware = new HttpsConnectionMiddleware(next, httpsOptions, callbackOptions, loggerFactory, metrics);
+            return middleware.OnConnectionAsync;
+        });
+
+        return listenOptions;
+    }
 }
