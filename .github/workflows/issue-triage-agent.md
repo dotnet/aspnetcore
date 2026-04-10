@@ -28,6 +28,8 @@ permissions:
 
 tools:
   bash: ["cat", "head", "tail", "grep", "wc", "jq"]
+  github:
+    min-integrity: none
 
 safe-outputs:
   noop:
