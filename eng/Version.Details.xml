@@ -339,10 +339,10 @@
       <Sha>63ae81154c50a1cf9287cc47d8351d55b4289e6d</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.24413.1">
-      <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>1b838a42e4952b8fdf212cb1b43c5ce4d69f27b3</Sha>
-      <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-assets" Version="9.0.0-alpha.1.26208.6">
+      <Uri>https://github.com/dotnet/source-build-assets</Uri>
+      <Sha>8e19a1b4f607fcbecc4edbd322d77a60d4e25c3c</Sha>
+      <SourceBuild RepoName="source-build-assets" ManagedOnly="true" />
     </Dependency>
     <!-- Not updated automatically -->
     <Dependency Name="Microsoft.CodeAnalysis.Common" Version="4.11.0-3.24554.2">
