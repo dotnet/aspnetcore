@@ -7,6 +7,7 @@ import { ErrorDisplay } from './ErrorDisplay';
 import { EventManager } from './EventManager';
 import { ValidationEngine } from './ValidationEngine';
 import { ValidatableElement, Validator, ValidatorRegistry } from './Validator';
+import { numberValidator } from './Validators/Number';
 
 export interface StandaloneValidationService {
   addValidator(name: string, validator: Validator): void;
@@ -18,6 +19,9 @@ export interface StandaloneValidationService {
 export function initializeStandaloneValidation(): void {
   const registry = new ValidatorRegistry();
   registerBuiltInValidators(registry);
+
+  // MVC-specific validators (not included in the Blazor bundle)
+  registry.set('number', numberValidator);
 
   const errorDisplay = new ErrorDisplay();
   const engine = new ValidationEngine(registry, errorDisplay);
