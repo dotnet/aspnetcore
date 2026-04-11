@@ -5,6 +5,20 @@ export function getElementForm(element: HTMLElement): HTMLFormElement | null {
   return element.closest('form');
 }
 
+export function findMessageElements(element: HTMLElement): HTMLElement[] {
+  const name = element.getAttribute('name');
+  if (!name) {
+    return [];
+  }
+
+  const form = getElementForm(element);
+  if (!form) {
+    return [];
+  }
+
+  return Array.from(form.querySelectorAll<HTMLElement>(`[data-valmsg-for="${CSS.escape(name)}"]`));
+}
+
 export function shouldSkipElement(element: HTMLElement): boolean {
   if ((element as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).disabled) {
     return true;

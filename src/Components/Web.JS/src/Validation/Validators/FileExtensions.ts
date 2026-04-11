@@ -1,11 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ValidationContext, ValidationResult, Validator } from '../Validator';
+import { ValidationContext, ValidationResult, Validator } from '../ValidationTypes';
 
 // Validates that the filename ends with an allowed extension (case-insensitive).
 // Extensions param is comma-separated with dot prefix (e.g. ".png,.jpg,.gif") as emitted by MVC.
-export const fileextensionsValidator: Validator = (context: ValidationContext): ValidationResult => {
+export const fileExtensionsValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value, params } = context;
   if (!value) {
     return true;

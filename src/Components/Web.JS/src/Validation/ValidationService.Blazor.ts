@@ -1,27 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { registerBuiltInValidators } from './BuiltInValidators';
+import { registerCoreValidators } from './CoreValidators';
 import { DomScanner } from './DomScanner';
 import { ErrorDisplay } from './ErrorDisplay';
 import { EventManager } from './EventManager';
 import { ValidationEngine } from './ValidationEngine';
-import { ValidatableElement, Validator, ValidatorRegistry } from './Validator';
-import { numberValidator } from './Validators/Number';
+import { ValidatableElement, ValidationService, Validator, ValidatorRegistry } from './ValidationTypes';
 
-export interface StandaloneValidationService {
-  addValidator(name: string, validator: Validator): void;
-  scan(elementOrSelector?: ParentNode | string): void;
-  validateField(element: ValidatableElement): boolean;
-  validateForm(form: HTMLFormElement): boolean;
-}
-
-export function initializeStandaloneValidation(): void {
+export function initializeBlazorValidation(): ValidationService {
   const registry = new ValidatorRegistry();
-  registerBuiltInValidators(registry);
-
-  // MVC-specific validators (not included in the Blazor bundle)
-  registry.set('number', numberValidator);
+  registerCoreValidators(registry);
 
   const errorDisplay = new ErrorDisplay();
   const engine = new ValidationEngine(registry, errorDisplay);
@@ -29,17 +18,12 @@ export function initializeStandaloneValidation(): void {
   const scanner = new DomScanner(engine, eventManager);
 
   eventManager.attachFormInterceptors();
-
-  // Initial scan
   scanner.scan(document);
 
-  const service: StandaloneValidationService = {
+  return {
     addValidator: (name: string, validator: Validator) => registry.set(name, validator),
     scan: (elementOrSelector?: ParentNode | string) => scanner.scan(elementOrSelector),
     validateField: (element: ValidatableElement) => engine.validateElement(element),
     validateForm: (form: HTMLFormElement) => engine.validateForm(form),
   };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).__aspnetValidation = service;
 }

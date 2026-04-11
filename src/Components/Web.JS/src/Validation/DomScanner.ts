@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { EventManager } from './EventManager';
-import { getElementForm, shouldSkipElement } from './Utils';
+import { getElementForm, shouldSkipElement } from './DomUtils';
 import { ElementState, validatableElementSelector, ValidationEngine, ValidationRule } from './ValidationEngine';
-import { ValidatableElement } from './Validator';
+import { ValidatableElement } from './ValidationTypes';
 
 export class DomScanner {
   constructor(
@@ -81,35 +81,30 @@ export class DomScanner {
 
   private reconcile(root: ParentNode): void {
     for (const [form, formState] of this.engine.getTrackedForms()) {
-      // Only reconcile forms within the scan root
       if (!root.contains(form)) {
         continue;
       }
 
-      // If a form itself is removed from DOM, unregister all its elements.
       if (!form.isConnected) {
-        const elementsToUnregister: ValidatableElement[] = [];
-        for (const element of formState.trackedElements) {
-          elementsToUnregister.push(element);
-        }
-        for (const element of elementsToUnregister) {
-          this.engine.unregisterElement(element);
-        }
+        this.unregisterElements(formState.trackedElements);
         continue;
       }
 
-      // If an element is removed from DOM or becomes not validatable, unregister it.
-      const elementsToUnregister: ValidatableElement[] = [];
-      for (const element of formState.trackedElements) {
-        if (!element.isConnected ||
-          shouldSkipElement(element) ||
-          element.getAttribute('data-val') !== 'true') {
-          elementsToUnregister.push(element);
-        }
-      }
-      for (const element of elementsToUnregister) {
-        this.engine.unregisterElement(element);
-      }
+      this.unregisterElements(formState.trackedElements, element =>
+        !element.isConnected ||
+        shouldSkipElement(element) ||
+        element.getAttribute('data-val') !== 'true'
+      );
+    }
+  }
+
+  private unregisterElements(
+    elements: Set<ValidatableElement>,
+    predicate?: (el: ValidatableElement) => boolean,
+  ): void {
+    const toRemove = predicate ? [...elements].filter(predicate) : [...elements];
+    for (const element of toRemove) {
+      this.engine.unregisterElement(element);
     }
   }
 }

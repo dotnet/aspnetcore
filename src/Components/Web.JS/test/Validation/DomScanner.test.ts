@@ -2,7 +2,7 @@ import { expect, test, describe } from '@jest/globals';
 
 import { parseRules } from '../../src/Validation/DomScanner';
 import { ValidationRule } from '../../src/Validation/ValidationEngine';
-import { ValidatableElement } from '../../src/Validation/Validator';
+import { ValidatableElement } from '../../src/Validation/ValidationTypes';
 
 function createElement(tag: string, attributes: Record<string, string>): ValidatableElement {
   const el = document.createElement(tag) as ValidatableElement;

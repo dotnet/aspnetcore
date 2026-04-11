@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { getElementForm } from './Utils';
-import { ValidatableElement } from './Validator';
+import { findMessageElements } from './DomUtils';
+import { ValidatableElement } from './ValidationTypes';
 
 export interface CssClassNames {
   inputError: string;
@@ -33,17 +33,8 @@ export class ErrorDisplay {
     input.classList.add(this.cssClasses.inputError);
     input.classList.remove(this.cssClasses.inputValid);
 
-    // Update message element classes and text content.
     const messageElements = findMessageElements(input);
-    for (const messageElement of messageElements) {
-      messageElement.classList.add(this.cssClasses.messageError);
-      messageElement.classList.remove(this.cssClasses.messageValid);
-
-      // Replace the text context, unless data-valmsg-replace is set to false.
-      if (messageElement.getAttribute('data-valmsg-replace') !== 'false') {
-        messageElement.textContent = errorMessage;
-      }
-    }
+    this.updateMessageElements(messageElements, errorMessage);
 
     // Update ARIA attributes.
     input.setAttribute('aria-invalid', 'true');
@@ -60,21 +51,26 @@ export class ErrorDisplay {
     input.classList.remove(this.cssClasses.inputError);
     input.classList.add(this.cssClasses.inputValid);
 
-    // Update message element classes and text content.
     const messageElements = findMessageElements(input);
-    for (const messageElement of messageElements) {
-      messageElement.classList.remove(this.cssClasses.messageError);
-      messageElement.classList.add(this.cssClasses.messageValid);
-
-      // Clear the text content, unless data-valmsg-replace is set to false.
-      if (messageElement.getAttribute('data-valmsg-replace') !== 'false') {
-        messageElement.textContent = '';
-      }
-    }
+    this.updateMessageElements(messageElements, '');
 
     // Update ARIA attributes.
     input.removeAttribute('aria-invalid');
     input.removeAttribute('aria-describedby');
+  }
+
+  private updateMessageElements(messageElements: HTMLElement[], errorMessage: string): void {
+    const errorClass = errorMessage ? this.cssClasses.messageError : this.cssClasses.messageValid;
+    const validClass = errorMessage ? this.cssClasses.messageValid : this.cssClasses.messageError;
+
+    for (const messageElement of messageElements) {
+      messageElement.classList.add(errorClass);
+      messageElement.classList.remove(validClass);
+
+      if (messageElement.getAttribute('data-valmsg-replace') !== 'false') {
+        messageElement.textContent = errorMessage;
+      }
+    }
   }
 
   updateSummary(form: HTMLFormElement, errors?: Map<string, string>): void {
@@ -114,20 +110,4 @@ export class ErrorDisplay {
       summaryElement.classList.add(this.cssClasses.summaryError);
     }
   }
-}
-
-function findMessageElements(element: ValidatableElement): HTMLElement[] {
-  const name = element.getAttribute('name');
-  if (!name) {
-    return [];
-  }
-
-  const form = getElementForm(element);
-  if (!form) {
-    return [];
-  }
-
-  // TODO: Support message elements outside the form?
-  const messageElements = form.querySelectorAll<HTMLElement>(`[data-valmsg-for="${CSS.escape(name)}"]`);
-  return Array.from(messageElements);
 }

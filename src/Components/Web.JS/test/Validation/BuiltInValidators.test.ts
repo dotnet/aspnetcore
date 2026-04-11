@@ -1,6 +1,6 @@
 import { expect, test, describe, beforeAll } from '@jest/globals';
-import { registerBuiltInValidators } from '../../src/Validation/BuiltInValidators';
-import { ValidatorRegistry, ValidationContext, Validator } from '../../src/Validation/Validator';
+import { registerCoreValidators } from '../../src/Validation/CoreValidators';
+import { ValidatorRegistry, ValidationContext, Validator } from '../../src/Validation/ValidationTypes';
 
 // jsdom does not provide CSS.escape; polyfill for radio group tests
 beforeAll(() => {
@@ -11,7 +11,7 @@ beforeAll(() => {
 
 function getValidator(name: string): Validator {
   const registry = new ValidatorRegistry();
-  registerBuiltInValidators(registry);
+  registerCoreValidators(registry);
   const v = registry.get(name);
   if (!v) throw new Error(`Validator '${name}' not found`);
   return v;
@@ -44,10 +44,10 @@ function makeRadioGroup(name: string, ...radios: { checked: boolean; name?: stri
   });
 }
 
-describe('registerBuiltInValidators', () => {
+describe('registerCoreValidators', () => {
   test('registers required and length validators', () => {
     const registry = new ValidatorRegistry();
-    registerBuiltInValidators(registry);
+    registerCoreValidators(registry);
     expect(registry.get('required')).toBeDefined();
     expect(registry.get('length')).toBeDefined();
   });
@@ -888,7 +888,7 @@ describe('fileextensionsValidator', () => {
   });
 });
 
-// numberValidator is MVC-specific (not in registerBuiltInValidators).
+// numberValidator is MVC-specific (not in registerCoreValidators).
 // Import and test directly.
 import { numberValidator } from '../../src/Validation/Validators/Number';
 

@@ -1,11 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ValidationContext, ValidationResult, Validator } from '../Validator';
+import { ValidationContext, ValidationResult, Validator } from '../ValidationTypes';
 
 // Validates credit card numbers using the Luhn algorithm (same as .NET CreditCardAttribute).
 // Strips dashes and spaces before validation. Requires 13-19 digits (from jQuery validation).
-export const creditcardValidator: Validator = (context: ValidationContext): ValidationResult => {
+export const creditCardValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value } = context;
   if (!value) {
     return true;

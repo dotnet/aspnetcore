@@ -13,6 +13,13 @@ export type ValidationResult = boolean | string;
 
 export type Validator = (context: ValidationContext) => ValidationResult;
 
+export interface ValidationService {
+  addValidator(name: string, validator: Validator): void;
+  scan(elementOrSelector?: ParentNode | string): void;
+  validateField(element: ValidatableElement): boolean;
+  validateForm(form: HTMLFormElement): boolean;
+}
+
 export class ValidatorRegistry {
   private validators: Map<string, Validator> = new Map();
 

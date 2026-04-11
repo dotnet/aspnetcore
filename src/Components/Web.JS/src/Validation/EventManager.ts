@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { getElementForm } from './Utils';
+import { getElementForm } from './DomUtils';
 import { ValidationEngine } from './ValidationEngine';
-import { ValidatableElement } from './Validator';
+import { ValidatableElement } from './ValidationTypes';
 
 export class EventManager {
   private formInterceptorController: AbortController | null = null;
