@@ -26,7 +26,7 @@ public class BrowserAssertFailedException : XunitException
 
         if (!string.IsNullOrEmpty(url))
         {
-            builder.AppendLine($"Browser URL: {url}");
+            builder.AppendLine(FormattableString.Invariant($"Browser URL: {url}"));
         }
 
         if (File.Exists(screenShotPath))
