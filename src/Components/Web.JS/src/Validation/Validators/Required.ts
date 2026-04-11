@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ValidationContext, ValidationResult, Validator } from '../Validator';
+import { ValidationContext, ValidationResult, Validator } from '../ValidationTypes';
 
 // Validates that the field has a non-empty value.
 // Checkboxes: must be checked. Radio groups: at least one in the group must be checked.

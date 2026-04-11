@@ -1,12 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ValidationContext, ValidationResult, Validator } from '../Validator';
+import { ValidationContext, ValidationResult, Validator } from '../ValidationTypes';
 
 // Validates that the value equals another field's value (for password confirmation, etc.).
 // Resolves "*.PropertyName" to the model-prefixed field name using the current field's name.
 // Finds the other field by [name] attribute within the same form.
-export const equaltoValidator: Validator = (context: ValidationContext): ValidationResult => {
+export const equalToValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value, element, params } = context;
   if (!value) {
     return true;

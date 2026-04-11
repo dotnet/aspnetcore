@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { ErrorDisplay } from './ErrorDisplay';
-import { getElementForm, shouldSkipElement } from './Utils';
-import { ValidatableElement, ValidationContext, ValidationResult, ValidatorRegistry } from './Validator';
+import { findMessageElements, getElementForm, shouldSkipElement } from './DomUtils';
+import { ValidatableElement, ValidationContext, ValidationResult, ValidatorRegistry } from './ValidationTypes';
 
 export type ValidationRule = {
   ruleName: string;
@@ -172,25 +172,19 @@ export class ValidationEngine {
 
   private validateElementInternal(element: ValidatableElement, state: ElementState): string {
     const value = getElementValue(element);
+    const context: ValidationContext = { value, element, params: {} };
 
     for (const rule of state.rules) {
       const validator = this.validatorRegistry.get(rule.ruleName);
       if (!validator) {
-        // No validator found for this rule, so skip it.
         continue;
       }
 
-      const context: ValidationContext = {
-        value: value,
-        element: element,
-        params: rule.params,
-      };
-
+      context.params = rule.params;
       const result = validator(context);
       const errorMessage = resolveErrorMessage(result, rule);
 
       if (errorMessage) {
-        // Return the first error message found.
         return errorMessage;
       }
     }
@@ -214,6 +208,10 @@ export class ValidationEngine {
   }
 
   private markValid(element: ValidatableElement, state: ElementState): void {
+    if (state.currentError === undefined) {
+      return;
+    }
+
     state.currentError = undefined;
     element.setCustomValidity('');
     this.errorDisplay.clearFieldError(element);
@@ -243,20 +241,7 @@ function resolveErrorMessage(result: ValidationResult, rule: ValidationRule): st
 }
 
 function initializeMessageElementsAria(element: ValidatableElement): void {
-  const name = element.getAttribute('name');
-  if (!name) {
-    return;
-  }
-
-  const form = getElementForm(element);
-  if (!form) {
-    return;
-  }
-
-  const messageElements = form.querySelectorAll<HTMLElement>(`[data-valmsg-for="${CSS.escape(name)}"]`);
-
-  for (let i = 0; i < messageElements.length; i++) {
-    const el = messageElements[i];
+  for (const el of findMessageElements(element)) {
     if (!el.hasAttribute('role')) {
       el.setAttribute('role', 'alert');
     }
