@@ -427,16 +427,16 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // scroll to bottom so the viewport stays pinned while items converge.
         if (itemsAfter == 0 && hadNewMeasurements)
         {
-            if (AnchorMode == VirtualizeAnchorMode.None)
-            {
-                // None mode: keep the same items visible instead of auto-scrolling.
-                // The distribution recalculation shifts _itemsBefore, so restore the
-                // anchor after the re-render.
-                _pendingAnchorIndexShift = itemsBefore - _itemsBefore;
-            }
-            else
+            if ((AnchorMode & VirtualizeAnchorMode.End) != 0)
             {
                 _pendingScrollToBottom = true;
+            }
+            else if (_pendingAnchorIndexShift is not null && itemsBefore != _itemsBefore)
+            {
+                // An anchor restore is already pending (from append detection in
+                // RefreshDataCoreAsync). Update the shift to account for the
+                // redistribution that followed.
+                _pendingAnchorIndexShift = (_pendingAnchorIndexShift ?? 0) + (itemsBefore - _itemsBefore);
             }
         }
 
@@ -591,6 +591,15 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
                         var adjustedRequest = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
                         result = await _itemsProvider(adjustedRequest);
+                    }
+                    else if (countDelta > 0
+                        && (AnchorMode & VirtualizeAnchorMode.End) == 0
+                        && _itemsBefore + _visibleItemCapacity >= previousItemCount)
+                    {
+                        // Items appended at the bottom while viewport is near the end.
+                        // In non-End modes, restore the anchor so the viewport doesn't
+                        // chase the new items via spacer redistribution.
+                        _pendingAnchorIndexShift = 0;
                     }
                 }
 

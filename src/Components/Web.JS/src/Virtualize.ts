@@ -514,9 +514,12 @@ function setAnchorMode(dotNetHelper: DotNet.DotNetObject, mode: number): void {
 }
 
 // Restores the anchor after a render that shifted content (e.g., prepend).
-// Uses the lazy snapshot saved by updateAnchorSnapshot() during the last IO callback.
-// indexShift is (newItemsBefore - oldItemsBefore): 0 for symmetric prepends,
-// positive for redistributions where the loaded range start moved forward.
+// Uses the snapshot saved by updateAnchorSnapshot() during the previous render cycle.
+// indexShift adjusts the DOM child index to account for rendered window changes:
+// - 0 for prepends (both absolute item index and loaded range shift by countDelta,
+//   so the anchor's child position within the rendered items is preserved)
+// - positive for redistributions where _itemsBefore grew without a prepend
+//   (e.g., bottom convergence shifting the window forward)
 function restoreAnchor(dotNetHelper: DotNet.DotNetObject, indexShift: number): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   const entry = observersByDotNetObjectId[id];
