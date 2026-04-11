@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>ARIA Advanced</title>
+  <style>
+    .field-validation-error { color: red; }
+    .field-validation-valid { display: none; }
+  </style>
+</head>
+<body>
+  <form id="test-form" method="post">
+    <input id="name" name="Name" type="text"
+           data-val="true"
+           data-val-required="Name is required." />
+    <span id="name-msg" data-valmsg-for="Name" data-valmsg-replace="true"></span>
+
+    <!-- Message span with developer-specified role (should NOT be overwritten) -->
+    <input id="email" name="Email" type="text"
+           data-val="true"
+           data-val-required="Email is required." />
+    <span data-valmsg-for="Email" data-valmsg-replace="true" role="status"></span>
+
+    <!-- data-valmsg-replace="false": content preserved, only classes toggle -->
+    <input id="code" name="Code" type="text"
+           data-val="true"
+           data-val-required="Code is required." />
+    <span data-valmsg-for="Code" data-valmsg-replace="false">Enter a valid code</span>
+
+    <button type="submit">Submit</button>
+    <button type="reset">Reset</button>
+  </form>
+
+  <script src="/dist/aspnet-core-validation.js"></script>
+</body>
+</html>
