@@ -1,0 +1,89 @@
+@model MvcValidationDemo.Models.RegistrationModel
+
+@{
+    ViewData["Title"] = "Registration";
+}
+
+<h1>Registration Form</h1>
+<p class="text-muted">Client-side validation powered by <code>aspnet-core-validation.js</code> (no jQuery).</p>
+
+@if (ViewData["Success"] is true)
+{
+    <div class="alert alert-success">Registration submitted successfully (server-side validation passed).</div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Index" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Phone" class="form-label"></label>
+                <input asp-for="Phone" class="form-control" />
+                <span asp-validation-for="Phone" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Website" class="form-label"></label>
+                <input asp-for="Website" class="form-control" />
+                <span asp-validation-for="Website" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ConfirmPassword" class="form-label"></label>
+                <input asp-for="ConfirmPassword" class="form-control" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Age" class="form-label"></label>
+                <input asp-for="Age" class="form-control" />
+                <span asp-validation-for="Age" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="CreditCard" class="form-label"></label>
+                <input asp-for="CreditCard" class="form-control" />
+                <span asp-validation-for="CreditCard" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="ZipCode" class="form-label"></label>
+                <input asp-for="ZipCode" class="form-control" />
+                <span asp-validation-for="ZipCode" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="AvatarFilename" class="form-label"></label>
+                <input asp-for="AvatarFilename" class="form-control" placeholder="e.g. photo.png" />
+                <span asp-validation-for="AvatarFilename" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Register</button>
+            <button type="reset" class="btn btn-outline-secondary">Reset</button>
+            <button type="submit" formnovalidate class="btn btn-outline-warning">Submit without validation</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/aspnet-core-validation/aspnet-core-validation.js"></script>
+}
