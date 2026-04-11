@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
+using System.Text.Json;
 using System.Threading;
 using OpenQA.Selenium;
 using OpenQA.Selenium.DevTools;
@@ -141,17 +142,22 @@ public static class WaitAssert
             // The timeout halves with each failure until it reaches the FailureTimeout floor.
             Interlocked.Increment(ref _failureCount);
 
+            var currentUrl = string.Empty;
+            try { currentUrl = driver.Url; }
+            catch { /* Browser may be in a bad state */ }
+
             var innerHtml = driver.FindElement(By.CssSelector(":first-child"))?.GetDomProperty("innerHTML");
 
             var fileId = $"{Guid.NewGuid():N}.png";
             var screenShotPath = Path.Combine(Path.GetFullPath(E2ETestOptions.Instance.ScreenShotsPath), fileId);
             var errors = driver.GetBrowserLogs(LogLevel.All).Select(c => c.ToString()).ToList();
+            var networkDetails = GetNetworkResponseDetails(driver);
 
             TakeScreenShot(driver, screenShotPath);
             var exceptionInfo = lastException != null ? ExceptionDispatchInfo.Capture(lastException) :
                 CaptureException(() => assertion());
 
-            throw new BrowserAssertFailedException(errors, exceptionInfo.SourceException, screenShotPath, innerHtml);
+            throw new BrowserAssertFailedException(errors, exceptionInfo.SourceException, screenShotPath, innerHtml, currentUrl, networkDetails);
         }
 
         return result;
@@ -186,5 +192,48 @@ public static class WaitAssert
                 Console.WriteLine($"Failed to take a screenshot {ex.ToString()}");
             }
         }
+    }
+
+    private static List<string> GetNetworkResponseDetails(IWebDriver driver)
+    {
+        var details = new List<string>();
+        try
+        {
+            var performanceLogs = driver.Manage().Logs.GetLog("performance");
+            foreach (var entry in performanceLogs)
+            {
+                if (!entry.Message.Contains("Network.responseReceived"))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    using var doc = JsonDocument.Parse(entry.Message);
+                    var message = doc.RootElement.GetProperty("message");
+                    var parameters = message.GetProperty("params");
+                    var response = parameters.GetProperty("response");
+                    var url = response.GetProperty("url").GetString();
+                    var status = response.GetProperty("status").GetInt32();
+                    var mimeType = response.TryGetProperty("mimeType", out var mt) ? mt.GetString() : "unknown";
+
+                    // Only include framework-related URLs and error responses to keep output manageable
+                    if (url is not null && (url.Contains("_framework") || url.Contains("_blazor") || status >= 400))
+                    {
+                        details.Add($"  [{status}] {mimeType} - {url}");
+                    }
+                }
+                catch
+                {
+                    // Skip entries we can't parse
+                }
+            }
+        }
+        catch
+        {
+            // Performance logs might not be available
+        }
+
+        return details;
     }
 }

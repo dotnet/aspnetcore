@@ -21,8 +21,10 @@
     <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TestTrimmedOrMultithreadingApps)' != 'true'">
-    <!-- Tests need hot reload support supported even -->
-    <MetadataUpdaterSupport>true</MetadataUpdaterSupport>
+    <!-- Temporarily disabled to test hypothesis that MetadataUpdaterSupport=true (from PR #65903)
+         causes intermittent MIME type failures for _framework/dotnet.js in E2E tests.
+         See: https://github.com/dotnet/aspnetcore/pull/65903 -->
+    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
   </PropertyGroup>
 
 
