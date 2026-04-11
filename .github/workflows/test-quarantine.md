@@ -352,7 +352,7 @@ For each unquarantine candidate group (from Step 2.4), using remaining budget:
 ## API Reference (Azure DevOps & Helix)
 
 **Important: Always use `python3` with `urllib.request` for all HTTP requests.** Do not use `curl` or `web_fetch` — they are unreliable in this environment due to firewall restrictions. For example:
-```python
+```bash
 python3 -c "
 import urllib.request, json
 url = 'https://dev.azure.com/dnceng-public/public/_apis/build/builds?definitions=83&api-version=7.1'
