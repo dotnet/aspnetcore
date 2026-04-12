@@ -89,6 +89,9 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<HttpContextFormDataProvider>();
         services.TryAddScoped<IFormValueMapper, HttpContextFormValueMapper>();
 
+        // Client-side validation
+        ClientValidationServiceCollectionExtensions.AddClientValidation(services);
+
         if (configure != null)
         {
             services.Configure(configure);

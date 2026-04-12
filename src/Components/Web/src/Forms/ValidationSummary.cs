@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.Forms.ClientValidation;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -60,10 +61,19 @@ public class ValidationSummary : ComponentBase, IDisposable
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         // As an optimization, only evaluate the messages enumerable once, and
-        // only produce the enclosing <ul> if there's at least one message
+        // only produce the enclosing <ul> if there's at least one message,
+        // or client-side validation is enabled.
         var validationMessages = Model is null ?
             CurrentEditContext.GetValidationMessages() :
             CurrentEditContext.GetValidationMessages(new FieldIdentifier(Model, string.Empty));
+
+        var hasClientValidation = CurrentEditContext.Properties.TryGetValue(typeof(IClientValidationService), out _);
+
+        if (hasClientValidation)
+        {
+            RenderForClientValidation(builder, validationMessages);
+            return;
+        }
 
         var first = true;
         foreach (var error in validationMessages)
@@ -88,6 +98,29 @@ public class ValidationSummary : ComponentBase, IDisposable
             // We have at least one validation message.
             builder.CloseElement();
         }
+    }
+
+    private void RenderForClientValidation(RenderTreeBuilder builder, IEnumerable<string> validationMessages)
+    {
+        // Render container for client-side validation summary.
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "data-valmsg-summary", "true");
+        builder.AddAttribute(2, "class", "validation-summary-valid");
+
+        builder.OpenElement(3, "ul");
+        builder.AddAttribute(4, "class", "validation-errors");
+        builder.AddMultipleAttributes(5, AdditionalAttributes);
+
+        foreach (var error in validationMessages)
+        {
+            builder.OpenElement(6, "li");
+            builder.AddAttribute(7, "class", "validation-message");
+            builder.AddContent(8, error);
+            builder.CloseElement();
+        }
+
+        builder.CloseElement(); // ul
+        builder.CloseElement(); // div
     }
 
     /// <inheritdoc/>

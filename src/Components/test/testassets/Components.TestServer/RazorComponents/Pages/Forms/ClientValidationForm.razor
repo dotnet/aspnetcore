@@ -1,0 +1,75 @@
+@page "/forms/client-validation"
+@using Components.TestServer.RazorComponents
+
+<h1 id="page-title">Client Validation Test (SSR)</h1>
+
+<EditForm Model="model" Enhance FormName="client-validation-test" id="test-form">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label for="Name">Name</label>
+        <InputText @bind-Value="model.Name" id="Name" />
+        <ValidationMessage For="@(() => model.Name)" />
+    </div>
+
+    <div>
+        <label for="Email">Email</label>
+        <InputText @bind-Value="model.Email" id="Email" />
+        <ValidationMessage For="@(() => model.Email)" />
+    </div>
+
+    <div>
+        <label for="Password">Password</label>
+        <InputText @bind-Value="model.Password" id="Password" type="password" />
+        <ValidationMessage For="@(() => model.Password)" />
+    </div>
+
+    <div>
+        <label for="ConfirmPassword">Confirm Password</label>
+        <InputText @bind-Value="model.ConfirmPassword" id="ConfirmPassword" type="password" />
+        <ValidationMessage For="@(() => model.ConfirmPassword)" />
+    </div>
+
+    <div>
+        <label for="Age">Age</label>
+        <InputNumber @bind-Value="model.Age" id="Age" />
+        <ValidationMessage For="@(() => model.Age)" />
+    </div>
+
+    <div>
+        <label for="Phone">Phone</label>
+        <InputText @bind-Value="model.Phone" id="Phone" />
+        <ValidationMessage For="@(() => model.Phone)" />
+    </div>
+
+    <div>
+        <label for="Website">Website</label>
+        <InputText @bind-Value="model.Website" id="Website" />
+        <ValidationMessage For="@(() => model.Website)" />
+    </div>
+
+    <div>
+        <label for="CreditCard">Credit Card</label>
+        <InputText @bind-Value="model.CreditCard" id="CreditCard" />
+        <ValidationMessage For="@(() => model.CreditCard)" />
+    </div>
+
+    <div>
+        <label for="ZipCode">Zip Code</label>
+        <InputText @bind-Value="model.ZipCode" id="ZipCode" />
+        <ValidationMessage For="@(() => model.ZipCode)" />
+    </div>
+
+    <div>
+        <label for="AvatarFilename">Avatar Filename</label>
+        <InputText @bind-Value="model.AvatarFilename" id="AvatarFilename" />
+        <ValidationMessage For="@(() => model.AvatarFilename)" />
+    </div>
+
+    <button type="submit" id="submit-btn">Submit</button>
+</EditForm>
+
+@code {
+    private ClientValidationModel model = new();
+}

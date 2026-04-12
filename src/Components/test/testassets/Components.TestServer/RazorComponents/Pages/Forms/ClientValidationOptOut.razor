@@ -1,0 +1,26 @@
+@page "/forms/client-validation-optout"
+@using Components.TestServer.RazorComponents
+
+<h1 id="page-title">Client Validation Opt-Out Test (SSR)</h1>
+
+<EditForm Model="model" Enhance FormName="optout-test" id="optout-form">
+    <DataAnnotationsValidator EnableClientValidation="false" />
+
+    <div>
+        <label for="OptoutName">Name</label>
+        <InputText @bind-Value="model.Name" id="OptoutName" />
+        <ValidationMessage For="@(() => model.Name)" />
+    </div>
+
+    <div>
+        <label for="OptoutEmail">Email</label>
+        <InputText @bind-Value="model.Email" id="OptoutEmail" />
+        <ValidationMessage For="@(() => model.Email)" />
+    </div>
+
+    <button type="submit" id="submit-btn">Submit</button>
+</EditForm>
+
+@code {
+    private ClientValidationModel model = new();
+}

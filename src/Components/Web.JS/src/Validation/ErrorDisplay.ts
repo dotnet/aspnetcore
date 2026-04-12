@@ -60,16 +60,33 @@ export class ErrorDisplay {
   }
 
   private updateMessageElements(messageElements: HTMLElement[], errorMessage: string): void {
-    const errorClass = errorMessage ? this.cssClasses.messageError : this.cssClasses.messageValid;
-    const validClass = errorMessage ? this.cssClasses.messageValid : this.cssClasses.messageError;
+    const classToAdd = errorMessage ? this.cssClasses.messageError : this.cssClasses.messageValid;
+    const classToRemove = errorMessage ? this.cssClasses.messageValid : this.cssClasses.messageError;
 
     for (const messageElement of messageElements) {
-      messageElement.classList.add(errorClass);
-      messageElement.classList.remove(validClass);
+      messageElement.classList.add(classToAdd);
+      messageElement.classList.remove(classToRemove);
 
       if (messageElement.getAttribute('data-valmsg-replace') !== 'false') {
         messageElement.textContent = errorMessage;
       }
+
+      this.removeServerRenderedSiblings(messageElement);
+    }
+  }
+
+  private removeServerRenderedSiblings(messageElement: HTMLElement): void {
+    // Remove server-rendered sibling validation messages (Blazor SSR renders
+    // one <div class="validation-message"> per error, only the first has data-valmsg-for).
+    let sibling = messageElement.nextElementSibling;
+    while (sibling) {
+      const next = sibling.nextElementSibling;
+      if (sibling.classList.contains('validation-message') && !sibling.hasAttribute('data-valmsg-for')) {
+        sibling.remove();
+      } else {
+        break; // Stop at the first unrelated element
+      }
+      sibling = next;
     }
   }
 
