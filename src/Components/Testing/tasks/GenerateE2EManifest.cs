@@ -31,6 +31,13 @@ public class GenerateE2EManifest : Task
     public string E2EAppsOutputDir { get; set; }
 
     /// <summary>
+    /// Relative directory name for E2E apps (e.g. "e2e-apps").
+    /// Used in manifest paths — never hardcoded.
+    /// </summary>
+    [Required]
+    public string E2EAppsRelativeDir { get; set; }
+
+    /// <summary>
     /// The E2E app mode: build, publish, or all.
     /// </summary>
     [Required]
@@ -73,8 +80,8 @@ public class GenerateE2EManifest : Task
 
                 if (isPublishing)
                 {
-                    // Source was copied to e2e-apps/<name>/ — use relative path.
-                    entry.WorkingDirectory = Path.Combine("e2e-apps", name);
+                    // Source was copied to <relDir>/<name>/ — use relative path.
+                    entry.WorkingDirectory = Path.Combine(E2EAppsRelativeDir, name);
                 }
                 else
                 {
@@ -87,22 +94,21 @@ public class GenerateE2EManifest : Task
 
             if (includePublish)
             {
-                var publishRelativeDir = isBothMode
-                    ? Path.Combine("e2e-apps", "publish", name)
-                    : Path.Combine("e2e-apps", name);
-
-                var publishAbsoluteDir = isBothMode
-                    ? Path.Combine(E2EAppsOutputDir, "publish", name)
-                    : Path.Combine(E2EAppsOutputDir, name);
+                // In 'all' mode, published output lives under publish/<name> within the apps dir.
+                var subPath = isBothMode
+                    ? Path.Combine("publish", name)
+                    : name;
+                var relativeDir = Path.Combine(E2EAppsRelativeDir, subPath);
+                var absoluteDir = Path.Combine(E2EAppsOutputDir, subPath);
 
                 var exeSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "";
-                var appHostPath = Path.Combine(publishAbsoluteDir, name + exeSuffix);
-                var appDllPath = Path.Combine(publishAbsoluteDir, name + ".dll");
+                var appHostPath = Path.Combine(absoluteDir, name + exeSuffix);
+                var appDllPath = Path.Combine(absoluteDir, name + ".dll");
 
                 var publishEntry = new E2EAppEntryModel
                 {
                     PublicUrl = publicUrl,
-                    WorkingDirectory = publishRelativeDir,
+                    WorkingDirectory = relativeDir,
                 };
 
                 if (File.Exists(appHostPath))
@@ -118,7 +124,7 @@ public class GenerateE2EManifest : Task
                 else
                 {
                     Log.LogError("Could not find published app at '{0}'. Expected '{1}' or '{2}'.",
-                        publishAbsoluteDir, appHostPath, appDllPath);
+                        absoluteDir, appHostPath, appDllPath);
                     return false;
                 }
 

@@ -80,7 +80,7 @@
       <_E2EIsPublishing Condition="Exists('$(PublishDir)$(TargetFileName)')">true</_E2EIsPublishing>
       <_E2EOutputRoot Condition="'$(_E2EIsPublishing)' == 'true'">$(PublishDir)</_E2EOutputRoot>
       <_E2EOutputRoot Condition="'$(_E2EIsPublishing)' != 'true'">$(OutputPath)</_E2EOutputRoot>
-      <_E2EAppsOutputDir>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(_E2EOutputRoot)', 'e2e-apps'))</_E2EAppsOutputDir>
+      <_E2EAppsOutputDir>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(_E2EOutputRoot)', '$(E2EAppsRelativeDir)'))</_E2EAppsOutputDir>
       <_ManifestPath>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(_E2EOutputRoot)', '$(AssemblyName).e2e-manifest.json'))</_ManifestPath>
     </PropertyGroup>
 
@@ -128,6 +128,7 @@
       AppItems="@(_E2EAppProjects)"
       ManifestPath="$(_ManifestPath)"
       E2EAppsOutputDir="$(_E2EAppsOutputDir)"
+      E2EAppsRelativeDir="$(E2EAppsRelativeDir)"
       E2EAppMode="$(E2EAppMode)"
       IsPublishing="$(_E2EIsPublishing)"
       Condition="'@(_E2EAppProjects)' != '' and '$(_E2ETasksAssembly)' != ''" />

@@ -14,6 +14,12 @@
         all               — copies source AND publishes, producing two manifest entries per app.
     -->
     <E2EAppMode Condition="'$(E2EAppMode)' == ''">build</E2EAppMode>
+
+    <!--
+      Relative directory under the output root where E2E apps are placed.
+      Override this to change the folder name (e.g., 'test-apps').
+    -->
+    <E2EAppsRelativeDir Condition="'$(E2EAppsRelativeDir)' == ''">e2e-apps</E2EAppsRelativeDir>
   </PropertyGroup>
 
 </Project>
