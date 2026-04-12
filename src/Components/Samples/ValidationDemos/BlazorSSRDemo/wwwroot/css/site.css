@@ -1,0 +1,10 @@
+body { font-family: sans-serif; margin: 2rem; }
+h1 { margin-bottom: 1rem; }
+div { margin-bottom: 0.75rem; }
+label { display: block; font-weight: bold; margin-bottom: 0.25rem; }
+input, select, textarea { display: block; padding: 0.4rem; width: 300px; }
+button { padding: 0.5rem 1rem; margin-right: 0.5rem; margin-top: 0.5rem; }
+.validation-message { color: red; font-size: 0.9rem; }
+.input-validation-error { border: 2px solid red; }
+.validation-summary-valid { display: none; }
+.validation-summary-errors { color: red; margin-bottom: 1rem; }
