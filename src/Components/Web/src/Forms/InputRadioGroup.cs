@@ -63,6 +63,9 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
         }
 
         _context.FieldClass = EditContext?.FieldCssClass(FieldIdentifier);
+
+        // Pass client validation attributes to child InputRadio components
+        _context.ClientValidationAttributes = ExtractClientValidationAttributes();
     }
 
     /// <inheritdoc />
@@ -81,4 +84,24 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
         => this.TryParseSelectableValueFromString(value, out result, out validationErrorMessage);
+
+    private IReadOnlyDictionary<string, object>? ExtractClientValidationAttributes()
+    {
+        if (AdditionalAttributes is null)
+        {
+            return null;
+        }
+
+        Dictionary<string, object>? result = null;
+        foreach (var (key, value) in AdditionalAttributes)
+        {
+            if (key.StartsWith("data-val", StringComparison.OrdinalIgnoreCase))
+            {
+                result ??= new();
+                result[key] = value;
+            }
+        }
+
+        return result;
+    }
 }

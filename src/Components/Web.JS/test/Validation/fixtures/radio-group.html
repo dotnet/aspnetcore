@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Radio Group Validation</title>
+  <style>
+    .field-validation-error { color: red; }
+    .field-validation-valid { display: none; }
+  </style>
+</head>
+<body>
+  <form id="test-form" method="post">
+    <fieldset>
+      <legend>Color (required)</legend>
+      <label>
+        <input type="radio" name="Color" value="red"
+               data-val="true"
+               data-val-required="Please select a color." />
+        Red
+      </label>
+      <label>
+        <input type="radio" name="Color" value="green"
+               data-val="true"
+               data-val-required="Please select a color." />
+        Green
+      </label>
+      <label>
+        <input type="radio" name="Color" value="blue"
+               data-val="true"
+               data-val-required="Please select a color." />
+        Blue
+      </label>
+      <div class="validation-message" data-valmsg-for="Color" data-valmsg-replace="true"></div>
+    </fieldset>
+
+    <!-- A required text field so the form always stays invalid for easy testing -->
+    <input id="anchor" name="Anchor" type="text"
+           data-val="true"
+           data-val-required="Required." />
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <script src="/dist/aspnet-core-validation.js"></script>
+</body>
+</html>
