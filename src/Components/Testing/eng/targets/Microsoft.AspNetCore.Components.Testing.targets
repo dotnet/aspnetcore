@@ -20,20 +20,23 @@
          <E2EPublicUrl>https://localhost:5001</E2EPublicUrl>  (optional)
        </ProjectReference>
 
-  3. Build normally for dev mode (dotnet run):
+  3. Build normally for dev mode (dotnet run from the app's working directory):
        dotnet test
 
-  4. Build with UsePublishedApp=true for published mode:
+  4. Build with UsePublishedApp=true for published / Helix mode:
        dotnet test -p:UsePublishedApp=true
 
   What happens:
-  - On EVERY build, a manifest is generated at:
-      $(OutputPath)/<AssemblyName>.e2e-manifest.json
-    containing the absolute project paths and metadata for each E2EApp reference.
+  - On EVERY build (and publish), a manifest is generated at:
+      $(OutputPath or PublishDir)/<AssemblyName>.e2e-manifest.json
+    containing the metadata for each E2EApp reference.
 
   - When UsePublishedApp=true, each E2EApp is also published to:
-      $(OutputPath)/e2e-apps/<AppProjectName>/
+      $(OutputPath or PublishDir)/e2e-apps/<AppProjectName>/
     and the manifest includes published executable details.
+
+  - On Publish (e.g. for Helix), everything flows to $(PublishDir) so the
+    Helix payload automatically includes the e2e-apps directory and manifest.
 
   The test fixture (ServerFixture<T>) reads this manifest at runtime
   to determine how to launch each app.
@@ -57,19 +60,28 @@
 
   <!--
     Target: PrepareE2EApps
-    Always runs after Build. Generates the E2E manifest and optionally publishes apps.
+    Runs after Build and Publish. Generates a JSON manifest describing each E2EApp
+    reference and optionally publishes them when UsePublishedApp=true.
+
+    On Build the output goes to $(OutputPath) (local dev, dotnet test).
+    On Publish it also goes to $(PublishDir) so that Helix payloads include the
+    e2e-apps directory and the manifest file.
+    Follows the same pattern as FunctionalTestWithAssets.targets.
   -->
   <Target
     Name="PrepareE2EApps"
-    AfterTargets="Build">
+    AfterTargets="Build;Publish">
 
     <!--
-      Compute absolute output paths INSIDE the target where $(OutputPath) is resolved.
-      $(MSBuildProjectDirectory) anchors paths to the test project.
+      Choose the right output root:
+        • During Publish, $(PublishDir) is set and that's where the payload lives.
+        • During Build (or when PublishDir is empty), fall back to $(OutputPath).
     -->
     <PropertyGroup>
-      <_E2EAppsOutputDir>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(OutputPath)', 'e2e-apps'))</_E2EAppsOutputDir>
-      <_ManifestPath>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(OutputPath)', '$(AssemblyName).e2e-manifest.json'))</_ManifestPath>
+      <_E2EOutputRoot Condition="'$(PublishDir)' != ''">$(PublishDir)</_E2EOutputRoot>
+      <_E2EOutputRoot Condition="'$(_E2EOutputRoot)' == ''">$(OutputPath)</_E2EOutputRoot>
+      <_E2EAppsOutputDir>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(_E2EOutputRoot)', 'e2e-apps'))</_E2EAppsOutputDir>
+      <_ManifestPath>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(_E2EOutputRoot)', '$(AssemblyName).e2e-manifest.json'))</_ManifestPath>
     </PropertyGroup>
 
     <!-- Find all ProjectReferences tagged as E2E apps -->
