@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net11.0</TargetFramework>
@@ -15,8 +15,7 @@
   </PropertyGroup>
 
   <Target Name="CopyValidationJs" BeforeTargets="Build">
-    <Error Condition="!Exists('$(ValidationJsSource)')"
-           Text="Validation JS not found at $(ValidationJsSource). Run 'npm run build' in src/Components/Web.JS first." />
+    <Error Condition="!Exists('$(ValidationJsSource)')" Text="Validation JS not found at $(ValidationJsSource). Run 'npm run build' in src/Components/Web.JS first." />
     <MakeDir Directories="$(MSBuildThisFileDirectory)wwwroot\lib\aspnet-core-validation" />
     <Copy SourceFiles="$(ValidationJsSource)" DestinationFiles="$(ValidationJsTarget)" SkipUnchangedFiles="true" />
     <Message Importance="high" Text="Copied aspnet-core-validation.js to wwwroot" />
