@@ -27,7 +27,10 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Testing" />
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build.Utilities.Core" />
     <ProjectReference Include="..\gen\Microsoft.AspNetCore.Components.Testing.Generators.csproj" />
+    <ProjectReference Include="..\tasks\Microsoft.AspNetCore.Components.Testing.Tasks.csproj" />
   </ItemGroup>
 
   <!--
