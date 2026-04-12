@@ -33,6 +33,7 @@ public sealed class ResourceLock : IAsyncDisposable
     private readonly Regex _urlPattern;
     private readonly TaskCompletionSource _requestedTcs = new();
     private IRoute? _heldRoute;
+    private int _captured;
     private bool _released;
 
     ResourceLock(IPage page, Regex urlPattern)
@@ -51,10 +52,17 @@ public sealed class ResourceLock : IAsyncDisposable
     public static async Task<ResourceLock> CreateAsync(IPage page, Regex urlPattern)
     {
         var resourceLock = new ResourceLock(page, urlPattern);
-        await page.RouteAsync(urlPattern, route =>
+        await page.RouteAsync(urlPattern, async route =>
         {
-            resourceLock._heldRoute = route;
-            resourceLock._requestedTcs.TrySetResult();
+            if (Interlocked.CompareExchange(ref resourceLock._captured, 1, 0) == 0)
+            {
+                resourceLock._heldRoute = route;
+                resourceLock._requestedTcs.TrySetResult();
+            }
+            else
+            {
+                await route.ContinueAsync().ConfigureAwait(false);
+            }
         }).ConfigureAwait(false);
         return resourceLock;
     }

@@ -41,7 +41,6 @@ public class GenerateE2EManifest : Task
 
             var entry = new E2EAppEntryModel
             {
-                ProjectPath = projectPath,
                 PublicUrl = publicUrl,
             };
 
@@ -52,18 +51,17 @@ public class GenerateE2EManifest : Task
                 var appHostPath = Path.Combine(publishDir, name + exeSuffix);
                 var appDllPath = Path.Combine(publishDir, name + ".dll");
 
-                string executable;
-                string args;
-
                 if (File.Exists(appHostPath))
                 {
-                    executable = name + exeSuffix;
-                    args = "";
+                    entry.Executable = name + exeSuffix;
+                    entry.Arguments = "";
+                    entry.WorkingDirectory = name;
                 }
                 else if (File.Exists(appDllPath))
                 {
-                    executable = "dotnet";
-                    args = name + ".dll";
+                    entry.Executable = "dotnet";
+                    entry.Arguments = name + ".dll";
+                    entry.WorkingDirectory = name;
                 }
                 else
                 {
@@ -71,13 +69,11 @@ public class GenerateE2EManifest : Task
                         publishDir, appHostPath, appDllPath);
                     return false;
                 }
-
-                entry.Published = new E2EPublishedAppModel
-                {
-                    Executable = executable,
-                    Args = args,
-                    WorkingDirectory = name,
-                };
+            }
+            else
+            {
+                entry.Executable = "dotnet";
+                entry.Arguments = $"run --no-launch-profile --project \"{projectPath}\"";
             }
 
             manifest.Apps[name] = entry;
@@ -85,7 +81,11 @@ public class GenerateE2EManifest : Task
 
         var json = JsonSerializer.Serialize(manifest, E2EManifestJsonContext.Default.E2EManifestModel);
 
-        Directory.CreateDirectory(Path.GetDirectoryName(ManifestPath));
+        var manifestDir = Path.GetDirectoryName(ManifestPath);
+        if (!string.IsNullOrEmpty(manifestDir))
+        {
+            Directory.CreateDirectory(manifestDir);
+        }
         File.WriteAllText(ManifestPath, json);
         Log.LogMessage(MessageImportance.High, "Generated E2E manifest: {0}", ManifestPath);
         return true;

@@ -14,27 +14,18 @@ internal class E2EManifestModel
 
 internal class E2EAppEntryModel
 {
-    [JsonPropertyName("projectPath")]
-    public string ProjectPath { get; set; } = "";
+    [JsonPropertyName("executable")]
+    public string Executable { get; set; } = "";
+
+    [JsonPropertyName("arguments")]
+    public string Arguments { get; set; } = "";
+
+    [JsonPropertyName("workingDirectory")]
+    public string WorkingDirectory { get; set; } = "";
 
     [JsonPropertyName("publicUrl")]
     public string PublicUrl { get; set; } = "";
 
-    [JsonPropertyName("published")]
-    public E2EPublishedAppModel Published { get; set; }
-
     [JsonPropertyName("environmentVariables")]
     public Dictionary<string, string> EnvironmentVariables { get; set; } = new();
-}
-
-internal class E2EPublishedAppModel
-{
-    [JsonPropertyName("executable")]
-    public string Executable { get; set; } = "";
-
-    [JsonPropertyName("args")]
-    public string Args { get; set; } = "";
-
-    [JsonPropertyName("workingDirectory")]
-    public string WorkingDirectory { get; set; } = "";
 }

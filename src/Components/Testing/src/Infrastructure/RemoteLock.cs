@@ -37,9 +37,10 @@ public sealed class RemoteLock : IAsyncDisposable
         }
 
         _released = true;
+        var encodedKey = Uri.EscapeDataString(_key);
         using var client = new HttpClient();
         await client.PostAsync(
-            $"{_server.AppUrl}/_test/lock/release?key={_key}", content: null).ConfigureAwait(false);
+            $"{_server.AppUrl}/_test/lock/release?key={encodedKey}", content: null).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>

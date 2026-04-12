@@ -46,10 +46,10 @@ public static class PlaywrightExtensions
     public static BrowserNewContextOptions WithServerRouting(
         this BrowserNewContextOptions options, ServerInstance server)
     {
-        options.ExtraHTTPHeaders = new Dictionary<string, string>
-        {
-            ["X-Test-Backend"] = server.Id
-        };
+        var headers = options.ExtraHTTPHeaders?.ToDictionary(h => h.Key, h => h.Value)
+            ?? new Dictionary<string, string>();
+        headers["X-Test-Backend"] = server.Id;
+        options.ExtraHTTPHeaders = headers;
         return options;
     }
 
@@ -171,9 +171,11 @@ public static class PlaywrightExtensions
     /// </summary>
     /// <param name="page">The page to listen on.</param>
     /// <returns>A task that completes when enhanced navigation finishes.</returns>
-    public static Task WaitForEnhancedNavigationAsync(this IPage page)
-        => page.EvaluateHandleAsync(
-            "() => new Promise(resolve => Blazor.addEventListener('enhancedload', () => resolve(true), { once: true }))");
+    public static async Task WaitForEnhancedNavigationAsync(this IPage page)
+    {
+        await using var handle = await page.EvaluateHandleAsync(
+            "() => new Promise(resolve => Blazor.addEventListener('enhancedload', () => resolve(true), { once: true }))").ConfigureAwait(false);
+    }
 
     /// <summary>
     /// Installs a one-shot <c>enhancedload</c> listener, executes the navigation action,

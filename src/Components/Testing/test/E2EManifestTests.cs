@@ -11,12 +11,12 @@ public class E2EManifestTests
     [Fact]
     public void Deserialize_ValidJson_ReturnsManifest()
     {
-        // Arrange
         var json = """
             {
                 "apps": {
                     "MyApp": {
-                        "projectPath": "/path/to/MyApp.csproj",
+                        "executable": "dotnet",
+                        "arguments": "run --no-launch-profile --project /path/to/MyApp.csproj",
                         "publicUrl": "https://localhost:5001",
                         "environmentVariables": {
                             "ASPNETCORE_ENVIRONMENT": "Development"
@@ -26,16 +26,15 @@ public class E2EManifestTests
             }
             """;
 
-        // Act
         var manifest = JsonSerializer.Deserialize<E2EManifest>(json);
 
-        // Assert
         Assert.NotNull(manifest);
         Assert.Single(manifest!.Apps);
         Assert.True(manifest.Apps.ContainsKey("MyApp"));
 
         var app = manifest.Apps["MyApp"];
-        Assert.Equal("/path/to/MyApp.csproj", app.ProjectPath);
+        Assert.Equal("dotnet", app.Executable);
+        Assert.Equal("run --no-launch-profile --project /path/to/MyApp.csproj", app.Arguments);
         Assert.Equal("https://localhost:5001", app.PublicUrl);
         Assert.Equal("Development", app.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"]);
     }
@@ -43,43 +42,35 @@ public class E2EManifestTests
     [Fact]
     public void Deserialize_WithPublishedApp_ReturnsPublishedDetails()
     {
-        // Arrange
         var json = """
             {
                 "apps": {
                     "PublishedApp": {
-                        "published": {
-                            "executable": "PublishedApp.exe",
-                            "args": "",
-                            "workingDirectory": "PublishedApp"
-                        },
+                        "executable": "PublishedApp.exe",
+                        "arguments": "",
+                        "workingDirectory": "PublishedApp",
                         "environmentVariables": {}
                     }
                 }
             }
             """;
 
-        // Act
         var manifest = JsonSerializer.Deserialize<E2EManifest>(json);
 
-        // Assert
         Assert.NotNull(manifest);
         var app = manifest!.Apps["PublishedApp"];
-        Assert.NotNull(app.Published);
-        Assert.Equal("PublishedApp.exe", app.Published!.Executable);
-        Assert.Equal("PublishedApp", app.Published.WorkingDirectory);
+        Assert.Equal("PublishedApp.exe", app.Executable);
+        Assert.Equal("", app.Arguments);
+        Assert.Equal("PublishedApp", app.WorkingDirectory);
     }
 
     [Fact]
     public void Deserialize_EmptyApps_ReturnsEmptyDictionary()
     {
-        // Arrange
         var json = """{ "apps": {} }""";
 
-        // Act
         var manifest = JsonSerializer.Deserialize<E2EManifest>(json);
 
-        // Assert
         Assert.NotNull(manifest);
         Assert.Empty(manifest!.Apps);
     }
@@ -87,38 +78,30 @@ public class E2EManifestTests
     [Fact]
     public void GetApp_ExistingKey_ReturnsEntry()
     {
-        // Arrange
         var manifest = new E2EManifest();
-        manifest.Apps["TestApp"] = new E2EAppEntry { ProjectPath = "/test" };
+        manifest.Apps["TestApp"] = new E2EAppEntry { Executable = "dotnet", Arguments = "run --project /test" };
 
-        // Act
         var result = manifest.GetApp("TestApp");
 
-        // Assert
         Assert.NotNull(result);
-        Assert.Equal("/test", result!.ProjectPath);
+        Assert.Equal("dotnet", result!.Executable);
     }
 
     [Fact]
     public void GetApp_MissingKey_ReturnsNull()
     {
-        // Arrange
         var manifest = new E2EManifest();
 
-        // Act
         var result = manifest.GetApp("NonExistent");
 
-        // Assert
         Assert.Null(result);
     }
 
     [Fact]
     public void Load_MissingManifest_ThrowsFileNotFoundException()
     {
-        // Arrange
         var assemblyName = "NonExistentAssembly_" + Guid.NewGuid().ToString("N");
 
-        // Act & Assert
         var ex = Assert.Throws<FileNotFoundException>(() => E2EManifest.Load(assemblyName));
         Assert.Contains("E2E manifest not found", ex.Message);
         Assert.Contains("Microsoft.AspNetCore.Components.Testing.targets", ex.Message);
@@ -127,21 +110,18 @@ public class E2EManifestTests
     [Fact]
     public void Deserialize_MultipleApps_AllPresent()
     {
-        // Arrange
         var json = """
             {
                 "apps": {
-                    "App1": { "projectPath": "/app1", "environmentVariables": {} },
-                    "App2": { "projectPath": "/app2", "environmentVariables": {} },
-                    "App3": { "projectPath": "/app3", "environmentVariables": {} }
+                    "App1": { "executable": "dotnet", "arguments": "run --project /app1", "environmentVariables": {} },
+                    "App2": { "executable": "dotnet", "arguments": "run --project /app2", "environmentVariables": {} },
+                    "App3": { "executable": "dotnet", "arguments": "run --project /app3", "environmentVariables": {} }
                 }
             }
             """;
 
-        // Act
         var manifest = JsonSerializer.Deserialize<E2EManifest>(json);
 
-        // Assert
         Assert.NotNull(manifest);
         Assert.Equal(3, manifest!.Apps.Count);
         Assert.NotNull(manifest.GetApp("App1"));

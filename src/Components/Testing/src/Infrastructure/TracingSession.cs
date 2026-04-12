@@ -17,9 +17,13 @@ namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 /// <see cref="TestContext.Current"/> provides test state availability:
 /// </para>
 /// <list type="bullet">
-///   <item><description>During test method body (<c>await using</c>): <c>TestState</c> is <c>null</c> → always saves</description></item>
-///   <item><description>During <c>IAsyncLifetime.DisposeAsync</c>: <c>TestState</c> is populated → conditional save</description></item>
+///   <item><description>During test method body (<c>await using</c>): <c>TestState</c> is <c>null</c> → always saves (conservative; wasteful on passing tests)</description></item>
+///   <item><description>During <c>IAsyncLifetime.DisposeAsync</c>: <c>TestState</c> is populated → conditional save on failure only</description></item>
 /// </list>
+/// <para>
+/// To avoid keeping artifacts for passing tests, dispose the <see cref="TracingSession"/>
+/// inside <c>IAsyncLifetime.DisposeAsync</c> rather than via <c>await using</c> in the test body.
+/// </para>
 /// </remarks>
 public sealed class TracingSession : IAsyncDisposable
 {

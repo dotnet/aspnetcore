@@ -7,14 +7,17 @@ namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 
 class E2EAppEntry
 {
-    [JsonPropertyName("projectPath")]
-    public string? ProjectPath { get; set; }
+    [JsonPropertyName("executable")]
+    public string Executable { get; set; } = "";
+
+    [JsonPropertyName("arguments")]
+    public string Arguments { get; set; } = "";
+
+    [JsonPropertyName("workingDirectory")]
+    public string? WorkingDirectory { get; set; }
 
     [JsonPropertyName("publicUrl")]
     public string? PublicUrl { get; set; }
-
-    [JsonPropertyName("published")]
-    public E2EPublishedApp? Published { get; set; }
 
     [JsonPropertyName("environmentVariables")]
     public Dictionary<string, string> EnvironmentVariables { get; set; } = new();

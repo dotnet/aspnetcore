@@ -13,7 +13,7 @@ public class PlaywrightExtensionsTests
     {
         // Arrange
         var options = new BrowserNewContextOptions();
-        var server = CreateMockServerInstance("unused");
+        var server = CreateMockServerInstance();
 
         // Act
         var result = options.WithServerRouting(server);
@@ -26,11 +26,30 @@ public class PlaywrightExtensionsTests
     }
 
     [Fact]
+    public void WithServerRouting_PreservesExistingHeaders()
+    {
+        var options = new BrowserNewContextOptions
+        {
+            ExtraHTTPHeaders = new Dictionary<string, string>
+            {
+                ["Authorization"] = "Bearer token123"
+            }
+        };
+        var server = CreateMockServerInstance();
+
+        options.WithServerRouting(server);
+
+        var headers = options.ExtraHTTPHeaders!.ToDictionary(x => x.Key, x => x.Value);
+        Assert.Equal("Bearer token123", headers["Authorization"]);
+        Assert.Equal(server.Id, headers["X-Test-Backend"]);
+    }
+
+    [Fact]
     public void WithServerRouting_ReturnsChainableInstance()
     {
         // Arrange
         var options = new BrowserNewContextOptions();
-        var server = CreateMockServerInstance("test-id");
+        var server = CreateMockServerInstance();
 
         // Act
         var result = options.WithServerRouting(server);
@@ -67,7 +86,7 @@ public class PlaywrightExtensionsTests
         Assert.Null(options.RecordVideoDir);
     }
 
-    static ServerInstance CreateMockServerInstance(string id)
+    static ServerInstance CreateMockServerInstance()
     {
         // InternalsVisibleTo grants access to the internal constructor.
         // Id is auto-generated (Guid); we use the real Id in assertions.

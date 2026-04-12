@@ -146,7 +146,7 @@ public class ServerInstance : IAsyncDisposable
             var output = GetCapturedOutput();
             throw new InvalidOperationException(
                 $"App '{AppName}' process exited with code {_process.ExitCode} before signaling readiness. " +
-                $"Project: {appEntry.ProjectPath ?? "(published)"}.\n" +
+                $"Command: {appEntry.Executable} {appEntry.Arguments}.\n" +
                 $"--- Captured output ---\n{output}");
         }
 
@@ -156,7 +156,7 @@ public class ServerInstance : IAsyncDisposable
             throw new TimeoutException(
                 $"App '{AppName}' did not signal readiness within {options.ReadinessTimeoutMs}ms. " +
                 $"Process still running: {!_process.HasExited}. " +
-                $"Project: {appEntry.ProjectPath ?? "(published)"}.\n" +
+                $"Command: {appEntry.Executable} {appEntry.Arguments}.\n" +
                 $"--- Captured output ---\n{output}");
         }
     }
@@ -195,30 +195,20 @@ public class ServerInstance : IAsyncDisposable
 
     static ProcessStartInfo BuildProcessStartInfo(E2EAppEntry appEntry)
     {
-        string executable;
-        string args;
+        var executable = appEntry.Executable;
+        var args = appEntry.Arguments;
         string? workingDir = null;
 
-        if (appEntry.Published is not null)
+        if (appEntry.WorkingDirectory is not null)
         {
-            var published = appEntry.Published;
             var e2eAppsDir = Path.Combine(AppContext.BaseDirectory, "e2e-apps");
-            workingDir = Path.Combine(e2eAppsDir, published.WorkingDirectory);
+            workingDir = Path.Combine(e2eAppsDir, appEntry.WorkingDirectory);
 
-            executable = published.Executable == "dotnet"
-                ? "dotnet"
-                : Path.Combine(workingDir, published.Executable);
-            args = published.Args;
-        }
-        else if (appEntry.ProjectPath is not null)
-        {
-            executable = "dotnet";
-            args = $"run --no-launch-profile --project \"{appEntry.ProjectPath}\"";
-        }
-        else
-        {
-            throw new InvalidOperationException(
-                $"App entry has no projectPath or published info in the manifest.");
+            // Resolve relative executable path within the working directory
+            if (executable != "dotnet")
+            {
+                executable = Path.Combine(workingDir, executable);
+            }
         }
 
         var startInfo = new ProcessStartInfo(executable, args)
