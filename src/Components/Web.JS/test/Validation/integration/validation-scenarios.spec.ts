@@ -532,3 +532,72 @@ test.describe('built-in validators integration', () => {
     expect(await getFieldMessage(page, 'Avatar')).toBe('');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Server-rendered sibling cleanup (Blazor SSR compatibility)
+// ---------------------------------------------------------------------------
+
+test.describe('server-rendered message siblings', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/server-rendered-messages.html');
+  });
+
+  test('sibling server errors are visible on initial load', async ({ page }) => {
+    // Both server-rendered error divs should be present
+    const nameMessages = page.locator('div.validation-message').filter({
+      has: page.locator('text=Name'),
+    });
+    // "Name is required." and "Name must be at least 2 characters."
+    const allNameDivs = page.locator('#test-form > div:first-child > div.validation-message');
+    expect(await allNameDivs.count()).toBe(2);
+  });
+
+  test('JS clears sibling server errors when field becomes valid', async ({ page }) => {
+    // Fill the name field to make it valid
+    await page.fill('#name', 'Alice');
+    // Trigger change to revalidate
+    await page.locator('#email').focus();
+
+    // The data-valmsg-for div should be cleared (empty text)
+    const msgForDiv = page.locator('[data-valmsg-for="Name"]');
+    expect(await msgForDiv.textContent()).toBe('');
+
+    // The sibling div (without data-valmsg-for) should be removed
+    const allNameDivs = page.locator('#test-form > div:first-child > div.validation-message');
+    expect(await allNameDivs.count()).toBe(1);
+  });
+
+  test('JS replaces server error with client error on submit', async ({ page }) => {
+    // Clear the pre-filled server content and submit to get client-side error
+    await page.fill('#name', '');
+
+    await page.evaluate(() =>
+      new Promise<void>(resolve => {
+        document.addEventListener('validationcomplete', () => resolve(), { once: true });
+        (document.querySelector('button[type="submit"]') as HTMLElement).click();
+      })
+    );
+
+    // The data-valmsg-for div should now have the client error
+    const msgForDiv = page.locator('[data-valmsg-for="Name"]');
+    expect(await msgForDiv.textContent()).toBe('Name is required.');
+
+    // The sibling div should be removed
+    const allNameDivs = page.locator('#test-form > div:first-child > div.validation-message');
+    expect(await allNameDivs.count()).toBe(1);
+  });
+
+  test('field with single server error has no siblings to remove', async ({ page }) => {
+    // Email has only one server error — no sibling cleanup needed
+    const emailDivs = page.locator('#test-form > div:nth-child(2) > div.validation-message');
+    expect(await emailDivs.count()).toBe(1);
+
+    // Fill to clear, then check div is still there (just empty)
+    await page.fill('#email', 'user@example.com');
+    await page.locator('#name').focus();
+
+    expect(await emailDivs.count()).toBe(1);
+    const msgForDiv = page.locator('[data-valmsg-for="Email"]');
+    expect(await msgForDiv.textContent()).toBe('');
+  });
+});

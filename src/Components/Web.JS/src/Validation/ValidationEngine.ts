@@ -208,10 +208,6 @@ export class ValidationEngine {
   }
 
   private markValid(element: ValidatableElement, state: ElementState): void {
-    if (state.currentError === undefined) {
-      return;
-    }
-
     state.currentError = undefined;
     element.setCustomValidity('');
     this.errorDisplay.clearFieldError(element);
