@@ -1,0 +1,27 @@
+@page "/forms/client-validation-nested"
+@using Microsoft.AspNetCore.Components.Forms
+@using Components.TestServer.RazorComponents
+
+<h1 id="page-title">Client Validation Nested Model Test (SSR)</h1>
+
+<EditForm Model="model" Enhance FormName="nested-validation-test" id="test-form">
+    <DataAnnotationsValidator />
+
+    <div>
+        <label for="Street">Street</label>
+        <InputText @bind-Value="model.Address.Street" id="Street" />
+        <ValidationMessage For="@(() => model.Address.Street)" />
+    </div>
+
+    <div>
+        <label for="ZipCode">Zip Code</label>
+        <InputText @bind-Value="model.Address.ZipCode" id="ZipCode" />
+        <ValidationMessage For="@(() => model.Address.ZipCode)" />
+    </div>
+
+    <button type="submit" id="submit-btn">Submit</button>
+</EditForm>
+
+@code {
+    private ClientValidationModel model = new();
+}

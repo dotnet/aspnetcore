@@ -244,4 +244,46 @@ public class ClientValidationAttributeTest : ServerTestBase<BasicTestAppServerSi
         var summaryElements = Browser.FindElements(By.CssSelector("#interactive-form [data-valmsg-summary]"));
         Assert.Empty(summaryElements);
     }
+
+    // -----------------------------------------------------------------------
+    // Scenario 2: Nested models with dotted-path field names
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public void NestedModel_InputGetsDataValAttributes()
+    {
+        Navigate($"{ServerPathBase}/forms/client-validation-nested");
+        Browser.Exists(By.Id("page-title"));
+
+        var streetInput = Browser.Exists(By.Id("Street"));
+        Assert.Equal("true", streetInput.GetDomAttribute("data-val"));
+        Assert.NotNull(streetInput.GetDomAttribute("data-val-required"));
+    }
+
+    [Fact]
+    public void NestedModel_InputNameUsesDottedPath()
+    {
+        Navigate($"{ServerPathBase}/forms/client-validation-nested");
+        Browser.Exists(By.Id("page-title"));
+
+        var streetInput = Browser.Exists(By.Id("Street"));
+        var name = streetInput.GetDomAttribute("name");
+        // Name should contain a dotted path like "model.Address.Street"
+        Assert.Contains(".", name);
+        Assert.EndsWith("Street", name);
+    }
+
+    [Fact]
+    public void NestedModel_ValidationMessageMatchesInputName()
+    {
+        Navigate($"{ServerPathBase}/forms/client-validation-nested");
+        Browser.Exists(By.Id("page-title"));
+
+        var streetInput = Browser.Exists(By.Id("Street"));
+        var inputName = streetInput.GetDomAttribute("name");
+
+        // data-valmsg-for should match the input's name attribute
+        var msgElement = Browser.Exists(By.CssSelector($"[data-valmsg-for='{inputName}']"));
+        Assert.NotNull(msgElement);
+    }
 }
