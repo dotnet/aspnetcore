@@ -116,7 +116,7 @@ For work items (names ending in `.WorkItemExecution`) that failed 2+ times, inve
    ```
    Find the file starting with `console.` and download it.
 
-3. Search the console log (which can be 10MB+) for `[FAIL]` markers to find the specific test that caused the crash. Use `curl | grep` for efficiency.
+3. Search the console log (which can be 10MB+) for `[FAIL]` markers to find the specific test that caused the crash. Use `python3` with `urllib.request` to download the log and search it.
 
 ### Step 1.2 — Combine and identify quarantine candidates
 
@@ -350,6 +350,17 @@ For each unquarantine candidate group (from Step 2.4), using remaining budget:
 ---
 
 ## API Reference (Azure DevOps & Helix)
+
+**Important: Always use `python3` with `urllib.request` for all HTTP requests.** Do not use `curl` or `web_fetch` — they are unreliable in this environment due to firewall restrictions. For example:
+```bash
+python3 -c "
+import urllib.request, json
+url = 'https://dev.azure.com/dnceng-public/public/_apis/build/builds?definitions=83&api-version=7.1'
+with urllib.request.urlopen(url, timeout=30) as r:
+    data = json.loads(r.read())
+    print(json.dumps(data, indent=2))
+"
+```
 
 These are the key API endpoints. All are public and require no authentication:
 
