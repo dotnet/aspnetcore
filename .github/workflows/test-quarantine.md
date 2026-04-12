@@ -183,7 +183,7 @@ For each pipeline, query only builds on the **main branch**:
    ```
    If the response includes a `continuationToken`, repeat the request with `&continuationToken={TOKEN}` until no more tokens are returned.
 
-3. Aggregate per test name across all builds from both pipelines: total pass count, total fail count, total "other" count, number of builds the test appeared in.
+3. Aggregate per test name **per pipeline**: total pass count, total fail count, total "other" count, and number of builds the test appeared in. Track these counts separately for each pipeline (84 and 87) — do not combine them. A quarantined test will only run in one of the two pipelines, so combining counts would dilute the appearance rate and cause valid candidates to be incorrectly excluded.
 
 **Note:** Since pipeline 87 runs non-quarantined tests too, those will appear in the data but will be filtered out in Step 2.3 when we verify each candidate has a `[QuarantinedTest]` attribute in source.
 
@@ -191,7 +191,7 @@ For each pipeline, query only builds on the **main branch**:
 
 A test is a candidate for unquarantining if ALL of the following are true:
 - It has a **100% pass rate** (zero failures) across the past 30 days
-- It does **not** have a suspiciously low total count (i.e. it appeared in at least 66% of the builds returned for the time window)
+- It does **not** have a suspiciously low total count — it appeared in at least 66% of the builds **for the pipeline that actually runs it**. Since a quarantined test only runs in one of the two pipelines (84 or 87), compare its build count against the total builds for that specific pipeline, not the combined total across both pipelines.
 - It is **not** `AlwaysTestTests.SuccessfulTests.GuaranteedQuarantinedTest` (this test must always stay quarantined)
 - It is an **individual test case**, not a work item (exclude names ending in `.WorkItemExecution`)
 - The `[QuarantinedTest]` attribute has been present for **at least 30 days**. To check this, use `git log -G` with a regex matching the issue URL from the attribute to find the commit that introduced it:
