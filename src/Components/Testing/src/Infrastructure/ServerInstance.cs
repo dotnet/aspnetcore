@@ -201,8 +201,7 @@ public class ServerInstance : IAsyncDisposable
 
         if (appEntry.WorkingDirectory is not null)
         {
-            var e2eAppsDir = Path.Combine(AppContext.BaseDirectory, "e2e-apps");
-            workingDir = Path.Combine(e2eAppsDir, appEntry.WorkingDirectory);
+            workingDir = Path.Combine(AppContext.BaseDirectory, appEntry.WorkingDirectory);
 
             // Resolve relative executable path within the working directory
             if (executable != "dotnet")

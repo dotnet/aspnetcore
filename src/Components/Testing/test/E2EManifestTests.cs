@@ -16,7 +16,8 @@ public class E2EManifestTests
                 "apps": {
                     "MyApp": {
                         "executable": "dotnet",
-                        "arguments": "run --no-launch-profile --project /path/to/MyApp.csproj",
+                        "arguments": "run --no-launch-profile",
+                        "workingDirectory": "/path/to/MyApp",
                         "publicUrl": "https://localhost:5001",
                         "environmentVariables": {
                             "ASPNETCORE_ENVIRONMENT": "Development"
@@ -34,7 +35,8 @@ public class E2EManifestTests
 
         var app = manifest.Apps["MyApp"];
         Assert.Equal("dotnet", app.Executable);
-        Assert.Equal("run --no-launch-profile --project /path/to/MyApp.csproj", app.Arguments);
+        Assert.Equal("run --no-launch-profile", app.Arguments);
+        Assert.Equal("/path/to/MyApp", app.WorkingDirectory);
         Assert.Equal("https://localhost:5001", app.PublicUrl);
         Assert.Equal("Development", app.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"]);
     }
@@ -48,7 +50,7 @@ public class E2EManifestTests
                     "PublishedApp": {
                         "executable": "PublishedApp.exe",
                         "arguments": "",
-                        "workingDirectory": "PublishedApp",
+                        "workingDirectory": "e2e-apps/PublishedApp",
                         "environmentVariables": {}
                     }
                 }
@@ -61,7 +63,7 @@ public class E2EManifestTests
         var app = manifest!.Apps["PublishedApp"];
         Assert.Equal("PublishedApp.exe", app.Executable);
         Assert.Equal("", app.Arguments);
-        Assert.Equal("PublishedApp", app.WorkingDirectory);
+        Assert.Equal("e2e-apps/PublishedApp", app.WorkingDirectory);
     }
 
     [Fact]
@@ -79,7 +81,7 @@ public class E2EManifestTests
     public void GetApp_ExistingKey_ReturnsEntry()
     {
         var manifest = new E2EManifest();
-        manifest.Apps["TestApp"] = new E2EAppEntry { Executable = "dotnet", Arguments = "run --project /test" };
+        manifest.Apps["TestApp"] = new E2EAppEntry { Executable = "dotnet", Arguments = "run --no-launch-profile", WorkingDirectory = "/test" };
 
         var result = manifest.GetApp("TestApp");
 
@@ -113,9 +115,9 @@ public class E2EManifestTests
         var json = """
             {
                 "apps": {
-                    "App1": { "executable": "dotnet", "arguments": "run --project /app1", "environmentVariables": {} },
-                    "App2": { "executable": "dotnet", "arguments": "run --project /app2", "environmentVariables": {} },
-                    "App3": { "executable": "dotnet", "arguments": "run --project /app3", "environmentVariables": {} }
+                    "App1": { "executable": "dotnet", "arguments": "run --no-launch-profile", "workingDirectory": "/app1", "environmentVariables": {} },
+                    "App2": { "executable": "dotnet", "arguments": "run --no-launch-profile", "workingDirectory": "/app2", "environmentVariables": {} },
+                    "App3": { "executable": "dotnet", "arguments": "run --no-launch-profile", "workingDirectory": "/app3", "environmentVariables": {} }
                 }
             }
             """;

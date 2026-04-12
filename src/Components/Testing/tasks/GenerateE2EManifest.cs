@@ -51,17 +51,21 @@ public class GenerateE2EManifest : Task
                 var appHostPath = Path.Combine(publishDir, name + exeSuffix);
                 var appDllPath = Path.Combine(publishDir, name + ".dll");
 
+                // WorkingDirectory is relative to AppContext.BaseDirectory at runtime.
+                // e2e-apps/<name> matches the publish layout from the targets.
+                var relativeWorkingDir = Path.Combine("e2e-apps", name);
+
                 if (File.Exists(appHostPath))
                 {
                     entry.Executable = name + exeSuffix;
                     entry.Arguments = "";
-                    entry.WorkingDirectory = name;
+                    entry.WorkingDirectory = relativeWorkingDir;
                 }
                 else if (File.Exists(appDllPath))
                 {
                     entry.Executable = "dotnet";
                     entry.Arguments = name + ".dll";
-                    entry.WorkingDirectory = name;
+                    entry.WorkingDirectory = relativeWorkingDir;
                 }
                 else
                 {
@@ -72,8 +76,10 @@ public class GenerateE2EManifest : Task
             }
             else
             {
+                // Dev mode: run from the project directory so the content root is correct.
                 entry.Executable = "dotnet";
-                entry.Arguments = $"run --no-launch-profile --project \"{projectPath}\"";
+                entry.Arguments = "run --no-launch-profile";
+                entry.WorkingDirectory = Path.GetDirectoryName(projectPath);
             }
 
             manifest.Apps[name] = entry;
