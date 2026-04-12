@@ -48,4 +48,16 @@ public class ClientValidationModel
     [FileExtensions(Extensions = "png,jpg,jpeg,gif")]
     [Display(Name = "Avatar Filename")]
     public string? AvatarFilename { get; set; }
+
+    public ClientValidationAddressModel Address { get; set; } = new();
+}
+
+public class ClientValidationAddressModel
+{
+    [Required]
+    public string Street { get; set; } = "";
+
+    [Required]
+    [RegularExpression(@"\d{5}")]
+    public string ZipCode { get; set; } = "";
 }
