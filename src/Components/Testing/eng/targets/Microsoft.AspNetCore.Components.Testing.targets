@@ -30,12 +30,12 @@
        dotnet test -p:E2EAppMode=all
 
   E2EAppMode controls what lands in e2e-apps/:
-    build   (default) — copies project source for 'dotnet run' (works locally and on Helix).
+    build   (default) — copies project source for 'dotnet run' (works locally and after publish).
     publish           — publishes the app (native exe / framework-dependent) for faster startup.
     all               — both: source in e2e-apps/<name>/, published in e2e-apps/publish/<name>/.
 
   Local dev (Build): manifest uses absolute paths to source, nothing is copied.
-  Helix (Publish):   manifest uses relative paths, everything flows to $(PublishDir).
+  Publish:           manifest uses relative paths, everything flows to $(PublishDir).
 
   The test fixture reads the manifest at runtime to determine how to launch each app.
 -->
@@ -62,7 +62,7 @@
     publishes each E2EApp project, then generates the manifest.
 
     On Build: output goes to $(OutputPath) (local dev).
-    On Publish: output goes to $(PublishDir) (Helix payload).
+    On Publish: output goes to $(PublishDir).
     Follows the same pattern as FunctionalTestWithAssets.targets.
   -->
   <Target
@@ -91,7 +91,7 @@
 
     <!--
       Copy project source for build/all modes.
-      During Publish, source is copied into the payload so 'dotnet run' works on Helix.
+      During Publish, source is copied into the output so 'dotnet run' works after deployment.
       During Build (local dev), source is NOT copied — the manifest uses absolute paths.
       Uses MSBuild batching: the target runs once per _E2EAppProjects item.
     -->

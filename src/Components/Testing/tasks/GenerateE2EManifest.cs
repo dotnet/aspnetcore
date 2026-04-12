@@ -37,7 +37,7 @@ public class GenerateE2EManifest : Task
     public string E2EAppMode { get; set; }
 
     /// <summary>
-    /// Whether the target is running in a Publish context (e.g. for Helix).
+    /// Whether the target is running in a Publish context.
     /// When true, working directories are relative to AppContext.BaseDirectory.
     /// When false, source-mode paths are absolute (local dev).
     /// </summary>

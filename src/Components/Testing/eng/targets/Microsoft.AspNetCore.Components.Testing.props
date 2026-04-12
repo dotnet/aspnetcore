@@ -9,7 +9,7 @@
   <PropertyGroup>
     <!--
       Controls how E2E app projects are prepared at build time.
-        build   (default) — copies the project source so 'dotnet run' works (including on Helix).
+        build   (default) — copies the project source so 'dotnet run' works (including after publish).
         publish           — publishes the app for faster startup (native exe / framework-dependent).
         all               — copies source AND publishes, producing two manifest entries per app.
     -->
