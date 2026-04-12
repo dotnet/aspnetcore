@@ -121,7 +121,7 @@ public class E2EManifestTests
                         "workingDirectory": "e2e-apps/MyApp",
                         "environmentVariables": {}
                     },
-                    "MyApp.Published": {
+                    "publish/MyApp": {
                         "executable": "MyApp.exe",
                         "arguments": "",
                         "workingDirectory": "e2e-apps/publish/MyApp",
@@ -142,7 +142,7 @@ public class E2EManifestTests
         Assert.Equal("run --no-launch-profile", buildEntry.Arguments);
         Assert.Equal("e2e-apps/MyApp", buildEntry.WorkingDirectory);
 
-        var publishedEntry = manifest.GetApp("MyApp.Published");
+        var publishedEntry = manifest.GetApp("publish/MyApp");
         Assert.NotNull(publishedEntry);
         Assert.Equal("MyApp.exe", publishedEntry!.Executable);
         Assert.Equal("", publishedEntry.Arguments);

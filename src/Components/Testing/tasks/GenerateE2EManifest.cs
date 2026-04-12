@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.Testing.Tasks;
 /// <list type="bullet">
 ///   <item><c>build</c> (default) — one entry per app using <c>dotnet run</c>.</item>
 ///   <item><c>publish</c> — one entry per app using the published executable.</item>
-///   <item><c>all</c> — two entries per app: source (<c>&lt;name&gt;</c>) and published (<c>&lt;name&gt;.Published</c>).</item>
+///   <item><c>all</c> — two entries per app: source (<c>&lt;name&gt;</c>) and published (<c>publish/&lt;name&gt;</c>).</item>
 /// </list>
 /// </summary>
 public class GenerateE2EManifest : Task
@@ -122,8 +122,8 @@ public class GenerateE2EManifest : Task
                     return false;
                 }
 
-                // In 'all' mode, published entry gets a ".Published" suffix; otherwise it's the primary entry.
-                var publishKey = isBothMode ? name + ".Published" : name;
+                // In 'all' mode, published entry uses "publish/<name>" key; otherwise it's the primary entry.
+                var publishKey = isBothMode ? "publish/" + name : name;
                 manifest.Apps[publishKey] = publishEntry;
             }
         }
