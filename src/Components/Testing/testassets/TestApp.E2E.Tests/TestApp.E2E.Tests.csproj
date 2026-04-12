@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../src/Microsoft.AspNetCore.Components.Testing.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Components.Testing" />
     <ProjectReference Include="../TestApp/TestApp.csproj">
       <E2EApp>true</E2EApp>
     </ProjectReference>

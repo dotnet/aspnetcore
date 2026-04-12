@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Microsoft.AspNetCore.Components.Testing.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Components.Testing" />
     <ProjectReference Include="..\gen\Microsoft.AspNetCore.Components.Testing.Generators.csproj" />
   </ItemGroup>
 
