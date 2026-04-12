@@ -12,7 +12,12 @@ namespace Microsoft.AspNetCore.Components.Testing.Tasks;
 
 /// <summary>
 /// MSBuild task that generates a JSON manifest describing all E2E app projects
-/// under test. The manifest includes project paths and, when published, executable details.
+/// under test. The manifest format depends on the <see cref="E2EAppMode"/>:
+/// <list type="bullet">
+///   <item><c>build</c> (default) — one entry per app using <c>dotnet run</c>.</item>
+///   <item><c>publish</c> — one entry per app using the published executable.</item>
+///   <item><c>all</c> — two entries per app: source (<c>&lt;name&gt;</c>) and published (<c>&lt;name&gt;.Published</c>).</item>
+/// </list>
 /// </summary>
 public class GenerateE2EManifest : Task
 {
@@ -25,12 +30,30 @@ public class GenerateE2EManifest : Task
     [Required]
     public string E2EAppsOutputDir { get; set; }
 
+    /// <summary>
+    /// The E2E app mode: build, publish, or all.
+    /// </summary>
     [Required]
-    public string IsPublished { get; set; }
+    public string E2EAppMode { get; set; }
+
+    /// <summary>
+    /// Whether the target is running in a Publish context (e.g. for Helix).
+    /// When true, working directories are relative to AppContext.BaseDirectory.
+    /// When false, source-mode paths are absolute (local dev).
+    /// </summary>
+    [Required]
+    public string IsPublishing { get; set; }
 
     public override bool Execute()
     {
-        var usePublished = IsPublished.Equals("true", StringComparison.OrdinalIgnoreCase);
+        var mode = E2EAppMode ?? "build";
+        var isPublishing = IsPublishing.Equals("true", StringComparison.OrdinalIgnoreCase);
+        var includeBuild = mode.Equals("build", StringComparison.OrdinalIgnoreCase)
+            || mode.Equals("all", StringComparison.OrdinalIgnoreCase);
+        var includePublish = mode.Equals("publish", StringComparison.OrdinalIgnoreCase)
+            || mode.Equals("all", StringComparison.OrdinalIgnoreCase);
+        var isBothMode = mode.Equals("all", StringComparison.OrdinalIgnoreCase);
+
         var manifest = new E2EManifestModel();
 
         foreach (var item in AppItems)
@@ -39,50 +62,70 @@ public class GenerateE2EManifest : Task
             var projectPath = item.GetMetadata("FullPath");
             var publicUrl = item.GetMetadata("E2EPublicUrl") ?? "";
 
-            var entry = new E2EAppEntryModel
+            if (includeBuild)
             {
-                PublicUrl = publicUrl,
-            };
+                var entry = new E2EAppEntryModel
+                {
+                    Executable = "dotnet",
+                    Arguments = "run --no-launch-profile",
+                    PublicUrl = publicUrl,
+                };
 
-            if (usePublished)
+                if (isPublishing)
+                {
+                    // Source was copied to e2e-apps/<name>/ — use relative path.
+                    entry.WorkingDirectory = Path.Combine("e2e-apps", name);
+                }
+                else
+                {
+                    // Local dev — point at the real project source directory.
+                    entry.WorkingDirectory = Path.GetDirectoryName(projectPath) ?? "";
+                }
+
+                manifest.Apps[name] = entry;
+            }
+
+            if (includePublish)
             {
-                var publishDir = Path.Combine(E2EAppsOutputDir, name);
+                var publishRelativeDir = isBothMode
+                    ? Path.Combine("e2e-apps", "publish", name)
+                    : Path.Combine("e2e-apps", name);
+
+                var publishAbsoluteDir = isBothMode
+                    ? Path.Combine(E2EAppsOutputDir, "publish", name)
+                    : Path.Combine(E2EAppsOutputDir, name);
+
                 var exeSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "";
-                var appHostPath = Path.Combine(publishDir, name + exeSuffix);
-                var appDllPath = Path.Combine(publishDir, name + ".dll");
+                var appHostPath = Path.Combine(publishAbsoluteDir, name + exeSuffix);
+                var appDllPath = Path.Combine(publishAbsoluteDir, name + ".dll");
 
-                // WorkingDirectory is relative to AppContext.BaseDirectory at runtime.
-                // e2e-apps/<name> matches the publish layout from the targets.
-                var relativeWorkingDir = Path.Combine("e2e-apps", name);
+                var publishEntry = new E2EAppEntryModel
+                {
+                    PublicUrl = publicUrl,
+                    WorkingDirectory = publishRelativeDir,
+                };
 
                 if (File.Exists(appHostPath))
                 {
-                    entry.Executable = name + exeSuffix;
-                    entry.Arguments = "";
-                    entry.WorkingDirectory = relativeWorkingDir;
+                    publishEntry.Executable = name + exeSuffix;
+                    publishEntry.Arguments = "";
                 }
                 else if (File.Exists(appDllPath))
                 {
-                    entry.Executable = "dotnet";
-                    entry.Arguments = name + ".dll";
-                    entry.WorkingDirectory = relativeWorkingDir;
+                    publishEntry.Executable = "dotnet";
+                    publishEntry.Arguments = name + ".dll";
                 }
                 else
                 {
                     Log.LogError("Could not find published app at '{0}'. Expected '{1}' or '{2}'.",
-                        publishDir, appHostPath, appDllPath);
+                        publishAbsoluteDir, appHostPath, appDllPath);
                     return false;
                 }
-            }
-            else
-            {
-                // Dev mode: run from the project directory so the content root is correct.
-                entry.Executable = "dotnet";
-                entry.Arguments = "run --no-launch-profile";
-                entry.WorkingDirectory = Path.GetDirectoryName(projectPath);
-            }
 
-            manifest.Apps[name] = entry;
+                // In 'all' mode, published entry gets a ".Published" suffix; otherwise it's the primary entry.
+                var publishKey = isBothMode ? name + ".Published" : name;
+                manifest.Apps[publishKey] = publishEntry;
+            }
         }
 
         var json = JsonSerializer.Serialize(manifest, E2EManifestJsonContext.Default.E2EManifestModel);

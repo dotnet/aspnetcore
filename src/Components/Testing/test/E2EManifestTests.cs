@@ -110,6 +110,46 @@ public class E2EManifestTests
     }
 
     [Fact]
+    public void Deserialize_AllMode_HasBothBuildAndPublishedEntries()
+    {
+        var json = """
+            {
+                "apps": {
+                    "MyApp": {
+                        "executable": "dotnet",
+                        "arguments": "run --no-launch-profile",
+                        "workingDirectory": "e2e-apps/MyApp",
+                        "environmentVariables": {}
+                    },
+                    "MyApp.Published": {
+                        "executable": "MyApp.exe",
+                        "arguments": "",
+                        "workingDirectory": "e2e-apps/publish/MyApp",
+                        "environmentVariables": {}
+                    }
+                }
+            }
+            """;
+
+        var manifest = JsonSerializer.Deserialize<E2EManifest>(json);
+
+        Assert.NotNull(manifest);
+        Assert.Equal(2, manifest!.Apps.Count);
+
+        var buildEntry = manifest.GetApp("MyApp");
+        Assert.NotNull(buildEntry);
+        Assert.Equal("dotnet", buildEntry!.Executable);
+        Assert.Equal("run --no-launch-profile", buildEntry.Arguments);
+        Assert.Equal("e2e-apps/MyApp", buildEntry.WorkingDirectory);
+
+        var publishedEntry = manifest.GetApp("MyApp.Published");
+        Assert.NotNull(publishedEntry);
+        Assert.Equal("MyApp.exe", publishedEntry!.Executable);
+        Assert.Equal("", publishedEntry.Arguments);
+        Assert.Equal("e2e-apps/publish/MyApp", publishedEntry.WorkingDirectory);
+    }
+
+    [Fact]
     public void Deserialize_MultipleApps_AllPresent()
     {
         var json = """

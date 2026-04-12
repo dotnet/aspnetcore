@@ -2,7 +2,7 @@
   Microsoft.AspNetCore.Components.Testing.targets
   ============================
   Reusable MSBuild targets for E2E test projects. Generates a JSON manifest
-  describing all Blazor app projects under test and optionally publishes them at build time.
+  describing all Blazor app projects under test and prepares them at build time.
 
   Usage (via NuGet — automatic):
   ==============================
@@ -20,26 +20,24 @@
          <E2EPublicUrl>https://localhost:5001</E2EPublicUrl>  (optional)
        </ProjectReference>
 
-  3. Build normally for dev mode (dotnet run from the app's working directory):
+  3. Build normally for dev/build mode (dotnet run from the app's working directory):
        dotnet test
 
-  4. Build with UsePublishedApp=true for published / Helix mode:
-       dotnet test -p:UsePublishedApp=true
+  4. Build with E2EAppMode=publish for published mode:
+       dotnet test -p:E2EAppMode=publish
 
-  What happens:
-  - On EVERY build (and publish), a manifest is generated at:
-      $(OutputPath or PublishDir)/<AssemblyName>.e2e-manifest.json
-    containing the metadata for each E2EApp reference.
+  5. Build with E2EAppMode=all for both source and published:
+       dotnet test -p:E2EAppMode=all
 
-  - When UsePublishedApp=true, each E2EApp is also published to:
-      $(OutputPath or PublishDir)/e2e-apps/<AppProjectName>/
-    and the manifest includes published executable details.
+  E2EAppMode controls what lands in e2e-apps/:
+    build   (default) — copies project source for 'dotnet run' (works locally and on Helix).
+    publish           — publishes the app (native exe / framework-dependent) for faster startup.
+    all               — both: source in e2e-apps/<name>/, published in e2e-apps/publish/<name>/.
 
-  - On Publish (e.g. for Helix), everything flows to $(PublishDir) so the
-    Helix payload automatically includes the e2e-apps directory and manifest.
+  Local dev (Build): manifest uses absolute paths to source, nothing is copied.
+  Helix (Publish):   manifest uses relative paths, everything flows to $(PublishDir).
 
-  The test fixture (ServerFixture<T>) reads this manifest at runtime
-  to determine how to launch each app.
+  The test fixture reads the manifest at runtime to determine how to launch each app.
 -->
 <Project>
 
@@ -60,12 +58,11 @@
 
   <!--
     Target: PrepareE2EApps
-    Runs after Build and Publish. Generates a JSON manifest describing each E2EApp
-    reference and optionally publishes them when UsePublishedApp=true.
+    Runs after Build and Publish. Depending on E2EAppMode, copies source and/or
+    publishes each E2EApp project, then generates the manifest.
 
-    On Build the output goes to $(OutputPath) (local dev, dotnet test).
-    On Publish it also goes to $(PublishDir) so that Helix payloads include the
-    e2e-apps directory and the manifest file.
+    On Build: output goes to $(OutputPath) (local dev).
+    On Publish: output goes to $(PublishDir) (Helix payload).
     Follows the same pattern as FunctionalTestWithAssets.targets.
   -->
   <Target
@@ -73,13 +70,16 @@
     AfterTargets="Build;Publish">
 
     <!--
-      Choose the right output root:
-        • During Publish, $(PublishDir) is set and that's where the payload lives.
-        • During Build (or when PublishDir is empty), fall back to $(OutputPath).
+      Detect whether we are running during Publish.
+      _E2EIsPublishing is true only when the Publish target has run; during Build
+      the output of "dotnet publish" doesn't exist so this check distinguishes the two.
+      We test for the sentinel file that "dotnet publish" always writes.
     -->
     <PropertyGroup>
-      <_E2EOutputRoot Condition="'$(PublishDir)' != ''">$(PublishDir)</_E2EOutputRoot>
-      <_E2EOutputRoot Condition="'$(_E2EOutputRoot)' == ''">$(OutputPath)</_E2EOutputRoot>
+      <_E2EIsPublishing>false</_E2EIsPublishing>
+      <_E2EIsPublishing Condition="Exists('$(PublishDir)$(TargetFileName)')">true</_E2EIsPublishing>
+      <_E2EOutputRoot Condition="'$(_E2EIsPublishing)' == 'true'">$(PublishDir)</_E2EOutputRoot>
+      <_E2EOutputRoot Condition="'$(_E2EIsPublishing)' != 'true'">$(OutputPath)</_E2EOutputRoot>
       <_E2EAppsOutputDir>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(_E2EOutputRoot)', 'e2e-apps'))</_E2EAppsOutputDir>
       <_ManifestPath>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(_E2EOutputRoot)', '$(AssemblyName).e2e-manifest.json'))</_ManifestPath>
     </PropertyGroup>
@@ -89,21 +89,60 @@
       <_E2EAppProjects Include="@(ProjectReference)" Condition="'%(ProjectReference.E2EApp)' == 'true'" />
     </ItemGroup>
 
-    <!-- Publish each E2E app project (only when UsePublishedApp=true) -->
+    <!--
+      Copy project source for build/all modes.
+      During Publish, source is copied into the payload so 'dotnet run' works on Helix.
+      During Build (local dev), source is NOT copied — the manifest uses absolute paths.
+      Uses MSBuild batching: the target runs once per _E2EAppProjects item.
+    -->
     <MSBuild
-      Condition="'$(UsePublishedApp)' == 'true' and '@(_E2EAppProjects)' != ''"
+      Condition="'$(_E2EIsPublishing)' == 'true' and ('$(E2EAppMode)' == 'build' or '$(E2EAppMode)' == 'all') and '@(_E2EAppProjects)' != ''"
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_CopyE2EAppSource"
+      Properties="_E2ESourceProjectDir=%(_E2EAppProjects.RootDir)%(_E2EAppProjects.Directory);_E2ESourceDestDir=$(_E2EAppsOutputDir)\%(_E2EAppProjects.Filename)\" />
+
+    <!--
+      Publish each E2E app project for publish/all modes.
+      publish mode: output goes to e2e-apps/<name>/
+      all mode:     output goes to e2e-apps/publish/<name>/
+    -->
+    <MSBuild
+      Condition="'$(E2EAppMode)' == 'publish' and '@(_E2EAppProjects)' != ''"
       Projects="@(_E2EAppProjects)"
       Targets="Publish"
       Properties="PublishDir=$([System.IO.Path]::Combine('$(_E2EAppsOutputDir)', '%(_E2EAppProjects.Filename)'))/;Configuration=$(Configuration)" />
+    <MSBuild
+      Condition="'$(E2EAppMode)' == 'all' and '@(_E2EAppProjects)' != ''"
+      Projects="@(_E2EAppProjects)"
+      Targets="Publish"
+      Properties="PublishDir=$([System.IO.Path]::Combine('$(_E2EAppsOutputDir)', 'publish', '%(_E2EAppProjects.Filename)'))/;Configuration=$(Configuration)" />
 
-    <!-- Generate manifest (always — includes project paths, optionally published info) -->
+    <!-- Generate manifest -->
     <GenerateE2EManifest
       AppItems="@(_E2EAppProjects)"
       ManifestPath="$(_ManifestPath)"
       E2EAppsOutputDir="$(_E2EAppsOutputDir)"
-      IsPublished="$(UsePublishedApp)"
+      E2EAppMode="$(E2EAppMode)"
+      IsPublishing="$(_E2EIsPublishing)"
       Condition="'@(_E2EAppProjects)' != '' and '$(_E2ETasksAssembly)' != ''" />
 
+  </Target>
+
+  <!--
+    Inner target: _CopyE2EAppSource
+    Copies a single E2EApp project's source directory to the output, excluding bin/obj.
+    Called via MSBuild batching from PrepareE2EApps.
+  -->
+  <Target Name="_CopyE2EAppSource">
+    <ItemGroup>
+      <_SourceFilesToCopy
+        Include="$(_E2ESourceProjectDir)**\*"
+        Exclude="$(_E2ESourceProjectDir)bin\**;$(_E2ESourceProjectDir)obj\**" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_SourceFilesToCopy)"
+      DestinationFiles="@(_SourceFilesToCopy->'$(_E2ESourceDestDir)%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true" />
   </Target>
 
 </Project>

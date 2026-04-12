@@ -7,9 +7,13 @@
 <Project>
 
   <PropertyGroup>
-    <!-- Controls whether app projects are published at build time for faster startup.
-         Set to true to use published executables instead of 'dotnet run'. -->
-    <UsePublishedApp Condition="'$(UsePublishedApp)' == ''">false</UsePublishedApp>
+    <!--
+      Controls how E2E app projects are prepared at build time.
+        build   (default) — copies the project source so 'dotnet run' works (including on Helix).
+        publish           — publishes the app for faster startup (native exe / framework-dependent).
+        all               — copies source AND publishes, producing two manifest entries per app.
+    -->
+    <E2EAppMode Condition="'$(E2EAppMode)' == ''">build</E2EAppMode>
   </PropertyGroup>
 
 </Project>
