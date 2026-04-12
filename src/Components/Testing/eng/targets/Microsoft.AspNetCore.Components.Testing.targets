@@ -93,13 +93,19 @@
       Copy project source for build/all modes.
       During Publish, source is copied into the output so 'dotnet run' works after deployment.
       During Build (local dev), source is NOT copied — the manifest uses absolute paths.
-      Uses MSBuild batching: the target runs once per _E2EAppProjects item.
     -->
-    <MSBuild
-      Condition="'$(_E2EIsPublishing)' == 'true' and ('$(E2EAppMode)' == 'build' or '$(E2EAppMode)' == 'all') and '@(_E2EAppProjects)' != ''"
-      Projects="$(MSBuildProjectFullPath)"
-      Targets="_CopyE2EAppSource"
-      Properties="_E2ESourceProjectDir=%(_E2EAppProjects.RootDir)%(_E2EAppProjects.Directory);_E2ESourceDestDir=$(_E2EAppsOutputDir)\%(_E2EAppProjects.Filename)\" />
+    <ItemGroup Condition="'$(_E2EIsPublishing)' == 'true' and ('$(E2EAppMode)' == 'build' or '$(E2EAppMode)' == 'all') and '@(_E2EAppProjects)' != ''">
+      <_E2ESourceFilesToCopy
+        Include="%(_E2EAppProjects.RootDir)%(_E2EAppProjects.Directory)**\*"
+        Exclude="%(_E2EAppProjects.RootDir)%(_E2EAppProjects.Directory)bin\**;%(_E2EAppProjects.RootDir)%(_E2EAppProjects.Directory)obj\**"
+        E2EAppName="%(_E2EAppProjects.Filename)"
+        SourceRoot="%(_E2EAppProjects.RootDir)%(_E2EAppProjects.Directory)" />
+    </ItemGroup>
+    <Copy
+      Condition="'@(_E2ESourceFilesToCopy)' != ''"
+      SourceFiles="@(_E2ESourceFilesToCopy)"
+      DestinationFiles="@(_E2ESourceFilesToCopy->'$(_E2EAppsOutputDir)\%(E2EAppName)\%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true" />
 
     <!--
       Publish each E2E app project for publish/all modes.
@@ -126,23 +132,6 @@
       IsPublishing="$(_E2EIsPublishing)"
       Condition="'@(_E2EAppProjects)' != '' and '$(_E2ETasksAssembly)' != ''" />
 
-  </Target>
-
-  <!--
-    Inner target: _CopyE2EAppSource
-    Copies a single E2EApp project's source directory to the output, excluding bin/obj.
-    Called via MSBuild batching from PrepareE2EApps.
-  -->
-  <Target Name="_CopyE2EAppSource">
-    <ItemGroup>
-      <_SourceFilesToCopy
-        Include="$(_E2ESourceProjectDir)**\*"
-        Exclude="$(_E2ESourceProjectDir)bin\**;$(_E2ESourceProjectDir)obj\**" />
-    </ItemGroup>
-    <Copy
-      SourceFiles="@(_SourceFilesToCopy)"
-      DestinationFiles="@(_SourceFilesToCopy->'$(_E2ESourceDestDir)%(RecursiveDir)%(Filename)%(Extension)')"
-      SkipUnchangedFiles="true" />
   </Target>
 
 </Project>
