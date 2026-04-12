@@ -1,0 +1,30 @@
+@page "/forms/client-validation-interactive"
+@using Components.TestServer.RazorComponents
+@rendermode RenderMode.InteractiveServer
+
+<h1 id="page-title">Client Validation Interactive Test</h1>
+<p>This form renders interactively — no data-val-* attributes should be emitted.</p>
+
+<EditForm Model="model" id="interactive-form">
+    <DataAnnotationsValidator />
+
+    <div>
+        <label for="InteractiveName">Name</label>
+        <InputText @bind-Value="model.Name" id="InteractiveName" />
+        <ValidationMessage For="@(() => model.Name)" />
+    </div>
+
+    <div>
+        <label for="InteractiveEmail">Email</label>
+        <InputText @bind-Value="model.Email" id="InteractiveEmail" />
+        <ValidationMessage For="@(() => model.Email)" />
+    </div>
+
+    <span id="is-interactive">true</span>
+
+    <button type="submit" id="submit-btn">Submit</button>
+</EditForm>
+
+@code {
+    private ClientValidationModel model = new();
+}
