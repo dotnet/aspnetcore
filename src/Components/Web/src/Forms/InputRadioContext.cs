@@ -18,6 +18,9 @@ internal sealed class InputRadioContext
     public string? GroupName { get; set; }
     public string? FieldClass { get; set; }
 
+    // Client validation attributes from the parent InputRadioGroup (data-val-* attributes)
+    public IReadOnlyDictionary<string, object>? ClientValidationAttributes { get; set; }
+
     public InputRadioContext(IInputRadioValueProvider valueProvider, InputRadioContext? parentContext, EventCallback<ChangeEventArgs> changeEventCallback)
     {
         _valueProvider = valueProvider;

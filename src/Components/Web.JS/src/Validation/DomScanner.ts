@@ -37,6 +37,14 @@ export class DomScanner {
         continue;
       }
 
+      // Only track one radio button per name group — the validator checks all siblings
+      if (element instanceof HTMLInputElement && element.type === 'radio') {
+        const form = getElementForm(element);
+        if (form && this.isRadioGroupAlreadyTracked(form, element.name)) {
+          continue;
+        }
+      }
+
       const previousState = this.engine.getElementState(element);
       const fingerprint = computeElementFingerprint(element);
 
@@ -106,6 +114,23 @@ export class DomScanner {
     for (const element of toRemove) {
       this.engine.unregisterElement(element);
     }
+  }
+
+  private isRadioGroupAlreadyTracked(form: HTMLFormElement, groupName: string): boolean {
+    const formState = this.engine.getFormState(form);
+    if (!formState) {
+      return false;
+    }
+
+    for (const tracked of formState.trackedElements) {
+      if (tracked instanceof HTMLInputElement
+        && tracked.type === 'radio'
+        && tracked.name === groupName) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
 

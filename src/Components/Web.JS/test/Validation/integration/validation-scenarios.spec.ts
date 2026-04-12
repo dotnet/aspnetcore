@@ -601,3 +601,43 @@ test.describe('server-rendered message siblings', () => {
     expect(await msgForDiv.textContent()).toBe('');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Radio group validation
+// ---------------------------------------------------------------------------
+
+test.describe('radio group validation', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/radio-group.html');
+  });
+
+  test('required radio group shows error when none selected', async ({ page }) => {
+    await submitForm(page);
+    expect(await getFieldMessage(page, 'Color')).toBe('Please select a color.');
+  });
+
+  test('required radio group clears error when one is selected', async ({ page }) => {
+    await submitForm(page);
+    expect(await getFieldMessage(page, 'Color')).toBe('Please select a color.');
+
+    // Select a radio button
+    await page.locator('input[name="Color"][value="green"]').click();
+    await submitForm(page);
+    expect(await getFieldMessage(page, 'Color')).toBe('');
+  });
+
+  test('all radios have data-val but validation works correctly', async ({ page }) => {
+    const radioCount = await page.evaluate(() =>
+      document.querySelectorAll('input[type="radio"][name="Color"][data-val="true"]').length
+    );
+    expect(radioCount).toBe(3);
+
+    // Validation still works correctly (group treated as one unit)
+    await submitForm(page);
+    expect(await getFieldMessage(page, 'Color')).toBe('Please select a color.');
+
+    await page.locator('input[name="Color"][value="red"]').click();
+    await submitForm(page);
+    expect(await getFieldMessage(page, 'Color')).toBe('');
+  });
+});
