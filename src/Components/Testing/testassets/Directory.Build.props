@@ -46,4 +46,15 @@
       OutputItemType="Analyzer"
       ReferenceOutputAssembly="false" />
   </ItemGroup>
+
+  <!--
+    E2E tests require Playwright/browser infrastructure and should not run via Arcade's
+    RunTests target during regular CI builds. Set IsTestProject=false AFTER all conditional
+    blocks above have executed (they need IsTestProject=true for references/generator setup).
+    The final value is what Arcade's Test/RunTests targets evaluate.
+  -->
+  <PropertyGroup Condition=" $(IsTestProject) ">
+    <IsTestProject>false</IsTestProject>
+    <IsUnitTestProject>false</IsUnitTestProject>
+  </PropertyGroup>
 </Project>

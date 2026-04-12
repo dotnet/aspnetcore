@@ -30,4 +30,14 @@
     <ProjectReference Include="..\gen\Microsoft.AspNetCore.Components.Testing.Generators.csproj" />
   </ItemGroup>
 
+  <!--
+    xUnit v3 projects are self-executing test runners (OutputType=Exe).
+    Arcade's RunTests target is not available because UsingToolXUnit=false
+    prevents importing XUnit.targets. Define a minimal RunTests target
+    so the build -test infrastructure can invoke tests.
+  -->
+  <Target Name="RunTests">
+    <Exec Command="dotnet exec &quot;$(TargetPath)&quot; $(TestRunnerAdditionalArguments)" />
+  </Target>
+
 </Project>
