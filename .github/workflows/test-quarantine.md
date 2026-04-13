@@ -305,6 +305,7 @@ You have a limited turn and token budget. **Reserve at least 15 turns for creati
 - It is always better to produce fewer but complete outputs (issue + PR + comment) than to investigate exhaustively and run out of budget before creating any outputs.
 - Deferred work will be handled by the next daily run — if you have identified candidates but fail to create any outputs for them, that is the worst outcome.
 - When creating outputs, you **must invoke the safe-output MCP tools** as actual tool calls. The callable MCP tool names are underscore-based (`create_pull_request`, `create_issue`, `add_comment`) and correspond to the hyphenated `safe-outputs` entries in the frontmatter. Writing JSON descriptions of intended calls in your text response does NOT create them.
+- When passing string parameters to safe-output tools (e.g., `item_number`, `temporary_id`), pass them as **plain strings without extra quoting**. For example, use `item_number: "aw_myid"` — not `item_number: "\"aw_myid\""`. Extra quote characters will cause the handler to reject the value.
 
 ---
 
@@ -325,7 +326,7 @@ For each quarantine/re-quarantine candidate, in priority order:
      - `## Logs` — console log content from the most recent failure, in a `<details>` block with ` ```text ``` `. Get this from the Helix work item files API: find the file named `{TestClassName}_{TestMethodName}.log` for the specific test. Prefer to include the full, verbatim log when it fits within GitHub issue size limits. If the log is very large or would exceed those limits, include a representative head and tail of the log in the issue and provide a direct link to the full Helix log file (and/or attach it as an artifact) so the complete output is still accessible.
      - `## Build` — link to the most recent failing build: `https://dev.azure.com/dnceng-public/public/_build/results?buildId={BUILD_ID}`
 
-2. **Post an investigation comment** on the issue. Examine all available failure logs for the test. Be concise but thorough:
+2. **Post an investigation comment** on the issue using `add_comment` with `item_number` set to the same `temporary_id` you used when calling `create_issue` (e.g., if you used `temporary_id: "aw_http2ign"`, pass `item_number: "aw_http2ign"`). **Important:** pass the temporary ID as a plain string — do not wrap it in extra quotes or other formatting. Examine all available failure logs for the test. Be concise but thorough:
    - If you can identify a root cause, explain it and suggest a fix if one is obvious.
    - If you cannot determine the root cause, say so.
    - You may reference Microsoft official docs or issues in other repos within the `dotnet` GitHub org if relevant, but do not include any other external links.
