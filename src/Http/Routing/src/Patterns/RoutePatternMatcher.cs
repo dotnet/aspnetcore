@@ -61,6 +61,9 @@ internal sealed class RoutePatternMatcher
     public RoutePattern RoutePattern { get; }
 
 #if !COMPONENTS
+    // This matcher is also compiled into the Components routing build, where there is
+    // no HttpContext or RawTarget. Keep the PathString-only path working there and only
+    // light up the RawTarget-aware overload for server-side routing.
     public bool TryMatch(HttpContext httpContext, RouteValueDictionary values)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
@@ -176,6 +179,8 @@ internal sealed class RoutePatternMatcher
         // At this point we've very likely got a match, so start capturing values for real.
         i = 0;
 #if !COMPONENTS
+        // The match above already used PathString semantics. RawTarget is only consulted
+        // here so the captured route value can reflect the original encoded segment.
         PathTokenizer rawPathTokenizer = default;
         var rawSegmentIndex = 0;
         var useRawText = httpContext != null && Matching.RawTargetRouteValueDecoder.TryGetPathTokenizer(httpContext, out rawPathTokenizer, out rawSegmentIndex);

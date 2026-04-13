@@ -32,6 +32,8 @@ internal static class RawTargetRouteValueDecoder
         tokenizer = new PathTokenizer(new PathString(rawPath));
         if (httpContext.Request.PathBase.HasValue)
         {
+            // RawTarget still contains the original path base, so skip those segments
+            // when aligning raw segments with the matched route path.
             segmentOffset = new PathTokenizer(httpContext.Request.PathBase).Count;
         }
 

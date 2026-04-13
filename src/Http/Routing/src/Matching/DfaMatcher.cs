@@ -110,6 +110,10 @@ internal sealed partial class DfaMatcher : Matcher
         var candidateState = useFastPath && candidateCount <= CandidateSetStackSize
             ? ((Span<CandidateState>)candidateStateStackArray)[..candidateCount]
             : (candidateStateArray = new CandidateState[candidateCount]);
+
+        // Matching and constraints still operate on Request.Path. RawTarget is only used
+        // when materializing captured values so encoded '/' can be decoded once without
+        // changing which endpoint wins.
         PathTokenizer rawPathTokenizer = default;
         var rawSegmentOffset = 0;
         var useRawText = path.Contains('%') &&
