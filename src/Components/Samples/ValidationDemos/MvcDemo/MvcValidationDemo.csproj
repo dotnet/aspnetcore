@@ -10,7 +10,7 @@
 
   <!-- Copy the validation JS bundle from the Web.JS build output -->
   <PropertyGroup>
-    <ValidationJsSource>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\..\Components\Web.JS\dist\Debug\aspnet-core-validation.js'))</ValidationJsSource>
+    <ValidationJsSource>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)..\..\..\Web.JS\dist\Debug\aspnet-core-validation.js'))</ValidationJsSource>
     <ValidationJsTarget>$(MSBuildThisFileDirectory)wwwroot\lib\aspnet-core-validation\aspnet-core-validation.js</ValidationJsTarget>
   </PropertyGroup>
 
