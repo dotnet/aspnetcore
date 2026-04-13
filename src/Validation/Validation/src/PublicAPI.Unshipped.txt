@@ -27,4 +27,13 @@ Microsoft.Extensions.Validation.ValidationOptions.FormatErrorMessage(System.Comp
 Microsoft.Extensions.Validation.ValidationOptions.LocalizerProvider.get -> System.Func<System.Type!, Microsoft.Extensions.Localization.IStringLocalizerFactory!, Microsoft.Extensions.Localization.IStringLocalizer!>?
 Microsoft.Extensions.Validation.ValidationOptions.LocalizerProvider.set -> void
 Microsoft.Extensions.Validation.ValidationOptions.ResolveDisplayName(string! displayName, System.Type? declaringType) -> string!
+Microsoft.Extensions.Validation.AsyncValidationAttribute
+Microsoft.Extensions.Validation.AsyncValidationAttribute.AsyncValidationAttribute() -> void
+Microsoft.Extensions.Validation.AsyncValidationAttribute.AsyncValidationAttribute(string! errorMessage) -> void
+Microsoft.Extensions.Validation.AsyncValidationAttribute.AsyncValidationAttribute(System.Func<string!>! errorMessageAccessor) -> void
+override sealed Microsoft.Extensions.Validation.AsyncValidationAttribute.IsValid(object? value, System.ComponentModel.DataAnnotations.ValidationContext! validationContext) -> System.ComponentModel.DataAnnotations.ValidationResult?
+abstract Microsoft.Extensions.Validation.AsyncValidationAttribute.IsValidAsync(object? value, System.ComponentModel.DataAnnotations.ValidationContext! validationContext, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.ComponentModel.DataAnnotations.ValidationResult?>!
+Microsoft.Extensions.Validation.IAsyncValidatableObject
+Microsoft.Extensions.Validation.IAsyncValidatableObject.ValidateAsync(System.ComponentModel.DataAnnotations.ValidationContext! validationContext, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult!>!>!
+Microsoft.Extensions.Validation.ValidatableTypeInfo.GetProperty(string! propertyName) -> Microsoft.Extensions.Validation.ValidatablePropertyInfo?
 static Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions.AddValidationAttributeFormatter<TAttribute>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Func<TAttribute!, Microsoft.Extensions.Validation.IValidationAttributeFormatter!>! factory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

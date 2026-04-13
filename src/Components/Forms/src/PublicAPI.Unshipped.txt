@@ -13,3 +13,12 @@ Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator.EnableClientValid
 Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator.EnableClientValidation.set -> void
 Microsoft.Extensions.DependencyInjection.ClientValidationServiceCollectionExtensions
 static Microsoft.Extensions.DependencyInjection.ClientValidationServiceCollectionExtensions.AddClientValidation(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Microsoft.AspNetCore.Components.Forms.EditContext.OnValidationRequestedAsync -> System.Func<object!, Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs!, System.Threading.Tasks.Task!>?
+Microsoft.AspNetCore.Components.Forms.EditContext.ValidateAsync() -> System.Threading.Tasks.Task<bool>!
+Microsoft.AspNetCore.Components.Forms.EditContext.AddValidationTask(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier, System.Threading.Tasks.Task! task, System.Threading.CancellationTokenSource! cts) -> void
+Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationPending(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationPending<TField>(System.Linq.Expressions.Expression<System.Func<TField>!>! accessor) -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationPending() -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationFaulted(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationFaulted<TField>(System.Linq.Expressions.Expression<System.Func<TField>!>! accessor) -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationFaulted() -> bool

@@ -54,6 +54,24 @@ public abstract class ValidatableTypeInfo(
     /// </summary>
     internal IReadOnlyList<ValidatablePropertyInfo> Members { get; } = members;
 
+    /// <summary>
+    /// Finds a validatable property by name.
+    /// </summary>
+    /// <param name="propertyName">The property name to look up.</param>
+    /// <returns>The <see cref="ValidatablePropertyInfo"/> for the property, or <see langword="null"/> if not found.</returns>
+    public ValidatablePropertyInfo? GetProperty(string propertyName)
+    {
+        for (var i = 0; i < _membersCount; i++)
+        {
+            if (string.Equals(Members[i].Name, propertyName, StringComparison.Ordinal))
+            {
+                return Members[i];
+            }
+        }
+
+        return null;
+    }
+
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
@@ -114,6 +132,9 @@ public abstract class ValidatableTypeInfo(
 
             // Finally validate IValidatableObject if implemented
             ValidateValidatableObjectInterface(value, context);
+
+            // Validate IAsyncValidatableObject if implemented
+            await ValidateAsyncValidatableObjectInterfaceAsync(value, context, cancellationToken);
         }
         finally
         {
@@ -198,6 +219,34 @@ public abstract class ValidatableTypeInfo(
                     if (!validationResult.MemberNames.Any())
                     {
                         // If no member names are specified, then treat this as a top-level error
+                        context.AddOrExtendValidationError(string.Empty, errorPrefix, validationResult.ErrorMessage, value);
+                    }
+                }
+            }
+        }
+    }
+
+    private static async Task ValidateAsyncValidatableObjectInterfaceAsync(
+        object? value,
+        ValidateContext context,
+        CancellationToken cancellationToken)
+    {
+        if (value is IAsyncValidatableObject asyncValidatable)
+        {
+            var errorPrefix = context.CurrentValidationPath;
+            var validationResults = await asyncValidatable.ValidateAsync(context.ValidationContext, cancellationToken);
+            foreach (var validationResult in validationResults)
+            {
+                if (validationResult != ValidationResult.Success && validationResult.ErrorMessage is not null)
+                {
+                    foreach (var memberName in validationResult.MemberNames)
+                    {
+                        var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
+                        context.AddOrExtendValidationError(memberName, key, validationResult.ErrorMessage, value);
+                    }
+
+                    if (!validationResult.MemberNames.Any())
+                    {
                         context.AddOrExtendValidationError(string.Empty, errorPrefix, validationResult.ErrorMessage, value);
                     }
                 }

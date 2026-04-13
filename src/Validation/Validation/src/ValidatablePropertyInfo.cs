@@ -126,7 +126,8 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         }
 
         // Validate any other attributes
-        ValidateValue(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value);
+        await ValidateValueAsync(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value,
+            displayName, localization, context, cancellationToken);
 
         // Check if we've reached the maximum depth before validating complex properties
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
@@ -183,38 +184,101 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             context.CurrentDepth--;
             context.CurrentValidationPath = originalPrefix;
         }
+    }
 
-        void ValidateValue(object? val, string name, string errorPrefix, ValidationAttribute[] validationAttributes, object? container)
+    private async Task ValidateValueAsync(
+        object? val,
+        string name,
+        string errorPrefix,
+        ValidationAttribute[] validationAttributes,
+        object? container,
+        string displayName,
+        ValidationLocalizationContext? localization,
+        ValidateContext context,
+        CancellationToken cancellationToken)
+    {
+        var originalErrorCount = context.ValidationErrors?.Count ?? 0;
+
+        // Phase 1: Run all sync validation attributes.
+        for (var i = 0; i < validationAttributes.Length; i++)
         {
-            for (var i = 0; i < validationAttributes.Length; i++)
+            var attribute = validationAttributes[i];
+            if (attribute is AsyncValidationAttribute)
             {
-                var attribute = validationAttributes[i];
-                try
-                {
-                    var result = attribute.GetValidationResult(val, context.ValidationContext);
-                    if (result is not null && result != ValidationResult.Success)
-                    {
-                        var customMessage = LocalizationHelper.TryResolveErrorMessage(
-                            attribute,
-                            DeclaringType,
-                            displayName,
-                            localization);
+                continue;
+            }
 
-                        var errorMessage = customMessage ?? result.ErrorMessage;
-
-                        if (errorMessage is not null)
-                        {
-                            var key = errorPrefix.TrimStart('.');
-                            context.AddOrExtendValidationErrors(name, key, [errorMessage], container);
-                        }
-                    }
-                }
-                catch (Exception ex)
+            try
+            {
+                var result = attribute.GetValidationResult(val, context.ValidationContext);
+                if (result is not null && result != ValidationResult.Success)
                 {
-                    var key = errorPrefix.TrimStart('.');
-                    context.AddOrExtendValidationErrors(name, key, [ex.Message], container);
+                    ReportError(attribute, result, name, errorPrefix, displayName, localization, context, container);
                 }
             }
+            catch (Exception ex)
+            {
+                var key = errorPrefix.TrimStart('.');
+                context.AddOrExtendValidationErrors(name, key, [ex.Message], container);
+            }
+        }
+
+        // Phase 2: Run async attributes only if no sync errors were found for this property.
+        var currentErrorCount = context.ValidationErrors?.Count ?? 0;
+        if (currentErrorCount > originalErrorCount)
+        {
+            return;
+        }
+
+        for (var i = 0; i < validationAttributes.Length; i++)
+        {
+            if (validationAttributes[i] is not AsyncValidationAttribute asyncAttribute)
+            {
+                continue;
+            }
+
+            try
+            {
+                var result = await asyncAttribute.GetValidationResultAsync(val, context.ValidationContext, cancellationToken);
+                if (result is not null && result != ValidationResult.Success)
+                {
+                    ReportError(asyncAttribute, result, name, errorPrefix, displayName, localization, context, container);
+                }
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                var key = errorPrefix.TrimStart('.');
+                context.AddOrExtendValidationErrors(name, key, [ex.Message], container);
+            }
+        }
+    }
+
+    private void ReportError(
+        ValidationAttribute attribute,
+        ValidationResult result,
+        string name,
+        string errorPrefix,
+        string displayName,
+        ValidationLocalizationContext? localization,
+        ValidateContext context,
+        object? container)
+    {
+        var customMessage = LocalizationHelper.TryResolveErrorMessage(
+            attribute,
+            DeclaringType,
+            displayName,
+            localization);
+
+        var errorMessage = customMessage ?? result.ErrorMessage;
+
+        if (errorMessage is not null)
+        {
+            var key = errorPrefix.TrimStart('.');
+            context.AddOrExtendValidationErrors(name, key, [errorMessage], container);
         }
     }
 }
