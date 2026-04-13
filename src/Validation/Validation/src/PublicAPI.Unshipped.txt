@@ -1,0 +1,30 @@
+#nullable enable
+*REMOVED*Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, string! displayName) -> void
+*REMOVED*Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name) -> void
+Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, string? displayName, System.Func<string!>? displayNameAccessor) -> void
+Microsoft.Extensions.Validation.ErrorMessageKeyContext
+Microsoft.Extensions.Validation.ErrorMessageKeyContext.Attribute.get -> System.ComponentModel.DataAnnotations.ValidationAttribute!
+Microsoft.Extensions.Validation.ErrorMessageKeyContext.Attribute.init -> void
+Microsoft.Extensions.Validation.ErrorMessageKeyContext.DeclaringType.get -> System.Type?
+Microsoft.Extensions.Validation.ErrorMessageKeyContext.DeclaringType.init -> void
+Microsoft.Extensions.Validation.ErrorMessageKeyContext.DisplayName.get -> string!
+Microsoft.Extensions.Validation.ErrorMessageKeyContext.DisplayName.init -> void
+Microsoft.Extensions.Validation.ErrorMessageKeyContext.ErrorMessageKeyContext() -> void
+Microsoft.Extensions.Validation.IValidationAttributeFormatter
+Microsoft.Extensions.Validation.IValidationAttributeFormatter.FormatErrorMessage(System.Globalization.CultureInfo! culture, string! messageTemplate, string! displayName) -> string!
+Microsoft.Extensions.Validation.ValidationAttributeFormatterRegistry
+Microsoft.Extensions.Validation.ValidationAttributeFormatterRegistry.AddFormatter<TAttribute>(System.Func<TAttribute!, Microsoft.Extensions.Validation.IValidationAttributeFormatter!>! factory) -> void
+Microsoft.Extensions.Validation.ValidationAttributeFormatterRegistry.GetFormatter(System.ComponentModel.DataAnnotations.ValidationAttribute! attribute) -> Microsoft.Extensions.Validation.IValidationAttributeFormatter?
+Microsoft.Extensions.Validation.ValidationAttributeFormatterRegistry.ValidationAttributeFormatterRegistry() -> void
+*REMOVED*Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, string! displayName) -> void
+Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, string? displayName, System.Func<string!>? displayNameAccessor) -> void
+*REMOVED*Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.Type! type, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Validation.ValidatablePropertyInfo!>! members) -> void
+Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.Type! type, string? displayName, System.Func<string!>? displayNameAccessor, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Validation.ValidatablePropertyInfo!>! members) -> void
+Microsoft.Extensions.Validation.ValidationOptions.AttributeFormatters.get -> Microsoft.Extensions.Validation.ValidationAttributeFormatterRegistry!
+Microsoft.Extensions.Validation.ValidationOptions.ErrorMessageKeyProvider.get -> System.Func<Microsoft.Extensions.Validation.ErrorMessageKeyContext, string?>?
+Microsoft.Extensions.Validation.ValidationOptions.ErrorMessageKeyProvider.set -> void
+Microsoft.Extensions.Validation.ValidationOptions.FormatErrorMessage(System.ComponentModel.DataAnnotations.ValidationAttribute! attribute, string! displayName, System.Type? declaringType) -> string?
+Microsoft.Extensions.Validation.ValidationOptions.LocalizerProvider.get -> System.Func<System.Type!, Microsoft.Extensions.Localization.IStringLocalizerFactory!, Microsoft.Extensions.Localization.IStringLocalizer!>?
+Microsoft.Extensions.Validation.ValidationOptions.LocalizerProvider.set -> void
+Microsoft.Extensions.Validation.ValidationOptions.ResolveDisplayName(string! displayName, System.Type? declaringType) -> string!
+static Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions.AddValidationAttributeFormatter<TAttribute>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Func<TAttribute!, Microsoft.Extensions.Validation.IValidationAttributeFormatter!>! factory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

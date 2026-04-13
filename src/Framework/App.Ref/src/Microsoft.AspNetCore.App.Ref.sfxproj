@@ -76,7 +76,7 @@
       OutputItemType="AspNetCoreAnalyzer"
       ReferenceOutputAssembly="false" />
 
-    <ProjectReference Include="$(RepoRoot)src\Validation\gen\Microsoft.Extensions.Validation.ValidationsGenerator.csproj"
+    <ProjectReference Include="$(RepoRoot)src\Validation\Validation\gen\Microsoft.Extensions.Validation.ValidationsGenerator.csproj"
       Private="false"
       OutputItemType="AspNetCoreAnalyzer"
       ReferenceOutputAssembly="false" />
