@@ -23,7 +23,7 @@ export function attachComponentDescriptorHandler(handler: DescriptorHandler) {
 export function registerAllComponentDescriptors(root: Node) {
   const descriptors = upgradeComponentCommentsToLogicalRootComments(root);
   const webAssemblyOptions = discoverWebAssemblyOptions(root);
-  descriptorHandler?.setWebAssemblyOptions(webAssemblyOptions);
+  if (webAssemblyOptions) { descriptorHandler?.setWebAssemblyOptions(webAssemblyOptions); }
 
   for (const descriptor of descriptors) {
     descriptorHandler?.registerComponent(descriptor);
