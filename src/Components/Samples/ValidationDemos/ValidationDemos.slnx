@@ -67,6 +67,7 @@
     <Project Path="../Validation/src/Microsoft.Extensions.Validation.csproj" />
     <Project Path="../WebEncoders/src/Microsoft.Extensions.WebEncoders.csproj" />
   </Folder>
+  <Project Path="BlazorInteractiveDemo/BlazorInteractiveDemo.csproj" />
   <Project Path="BlazorSSRDemo/BlazorSSRDemo.csproj" />
   <Project Path="MvcDemo/MvcDemo.csproj" />
 </Solution>

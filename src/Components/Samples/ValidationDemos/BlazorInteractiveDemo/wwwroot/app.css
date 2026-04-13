@@ -1,0 +1,192 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 2rem;
+    background: #f5f7fa;
+    color: #1a1a2e;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 520px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    padding: 2rem;
+}
+
+h1 {
+    font-size: 1.5rem;
+    margin: 0 0 0.25rem;
+}
+
+.subtitle {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin: 0 0 1.5rem;
+}
+
+.culture-picker {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+}
+
+.culture-picker a {
+    color: #4361ee;
+    text-decoration: none;
+}
+
+.culture-picker a:hover {
+    text-decoration: underline;
+}
+
+.culture-picker .active {
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+}
+
+.field-wrapper {
+    position: relative;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"] {
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    border: 1.5px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+input:focus {
+    outline: none;
+    border-color: #4361ee;
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+}
+
+.input-validation-error {
+    border-color: #e63946 !important;
+}
+
+.validation-message {
+    color: #e63946;
+    font-size: 0.82rem;
+    margin-top: 0.25rem;
+}
+
+.validation-summary-valid {
+    display: none;
+}
+
+.validation-summary-errors {
+    background: #fff0f0;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+    color: #e63946;
+    font-size: 0.85rem;
+}
+
+.validation-summary-errors ul {
+    margin: 0;
+    padding-left: 1.2rem;
+}
+
+.pending-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #4361ee;
+    font-size: 0.82rem;
+    margin-top: 0.25rem;
+}
+
+.spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #4361ee;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.faulted-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #e63946;
+    font-size: 0.82rem;
+    margin-top: 0.25rem;
+}
+
+.retry-btn {
+    background: none;
+    border: none;
+    color: #4361ee;
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 0.82rem;
+    padding: 0;
+}
+
+button[type="submit"] {
+    width: 100%;
+    padding: 0.7rem;
+    background: #4361ee;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 0.5rem;
+}
+
+button[type="submit"]:hover {
+    background: #3a56d4;
+}
+
+button[type="submit"]:disabled {
+    background: #a0aec0;
+    cursor: not-allowed;
+}
+
+.success-message {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 6px;
+    padding: 1rem;
+    color: #166534;
+    text-align: center;
+    margin-top: 1rem;
+}
