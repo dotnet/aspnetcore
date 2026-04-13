@@ -13,7 +13,7 @@ export function initializeBlazorValidation(): ValidationService {
   registerCoreValidators(registry);
 
   const errorDisplay = new ErrorDisplay();
-  const engine = new ValidationEngine(registry, errorDisplay);
+  const engine = new ValidationEngine(registry, errorDisplay, undefined);
   const eventManager = new EventManager(engine);
   const scanner = new DomScanner(engine, eventManager);
 

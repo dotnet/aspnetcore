@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Remote Validation</title>
+  <style>
+    .field-validation-error { color: red; }
+    .field-validation-valid { display: none; }
+    .validation-pending { opacity: 0.6; border-color: orange !important; }
+    .input-validation-error { border: 2px solid red; }
+    .input-validation-valid { border: 2px solid green; }
+  </style>
+</head>
+<body>
+  <form id="test-form" method="post">
+    <!-- Required + remote validated field -->
+    <div>
+      <label for="username">Username (remote: "taken" is invalid)</label>
+      <input id="username" name="Username" type="text"
+             data-val="true"
+             data-val-required="Username is required."
+             data-val-remote="This username is already taken."
+             data-val-remote-url="/api/validate-username" />
+      <div class="validation-message" data-valmsg-for="Username" data-valmsg-replace="true"></div>
+    </div>
+
+    <!-- Remote validated field with slow response -->
+    <div>
+      <label for="slow-field">Slow Field (500ms delay, "invalid" fails)</label>
+      <input id="slow-field" name="SlowField" type="text"
+             data-val="true"
+             data-val-remote="Invalid value."
+             data-val-remote-url="/api/validate-slow" />
+      <div class="validation-message" data-valmsg-for="SlowField" data-valmsg-replace="true"></div>
+    </div>
+
+    <!-- Plain required field (sync, for comparison) -->
+    <div>
+      <input id="email" name="Email" type="text"
+             data-val="true"
+             data-val-required="Email is required." />
+      <div class="validation-message" data-valmsg-for="Email" data-valmsg-replace="true"></div>
+    </div>
+
+    <button type="submit" id="submit-btn">Submit</button>
+    <button type="reset" id="reset-btn">Reset</button>
+  </form>
+
+  <script src="/dist/aspnet-core-validation.js"></script>
+</body>
+</html>
