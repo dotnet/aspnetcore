@@ -5,12 +5,21 @@
 
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Components.Forms.ClientValidation;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Validation;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
 public class DefaultClientValidationServiceTest
 {
-    private readonly DefaultClientValidationService _service = new();
+    private readonly DefaultClientValidationService _service = CreateService();
+
+    private static DefaultClientValidationService CreateService(ValidationOptions? options = null)
+    {
+        options ??= new ValidationOptions();
+        return new DefaultClientValidationService(Options.Create(options));
+    }
 
     [Fact]
     public void RequiredAttribute_GeneratesDataValRequired()
@@ -280,5 +289,143 @@ public class DefaultClientValidationServiceTest
 
         Assert.True(zipAttrs.ContainsKey("data-val-regex"));
         Assert.False(zipAttrs.ContainsKey("data-val-length"));
+    }
+
+    // --- Localization integration tests ---
+
+    [Fact]
+    public void Localization_ErrorMessages_AreLocalized()
+    {
+        var translations = new Dictionary<string, string>
+        {
+            ["RequiredError"] = "Le champ {0} est obligatoire."
+        };
+        var options = CreateOptionsWithLocalization(translations);
+        var service = CreateService(options);
+
+        var model = new LocalizedModel();
+        var fieldId = new FieldIdentifier(model, nameof(LocalizedModel.Name));
+        var attrs = service.GetHtmlAttributes(fieldId);
+
+        Assert.NotNull(attrs);
+        Assert.Equal("Le champ Name est obligatoire.", attrs["data-val-required"]);
+    }
+
+    [Fact]
+    public void Localization_DisplayNames_AreLocalized()
+    {
+        var translations = new Dictionary<string, string>
+        {
+            ["User Name"] = "Nom d'utilisateur",
+            ["RequiredError"] = "Le champ {0} est obligatoire."
+        };
+        var options = CreateOptionsWithLocalization(translations);
+        var service = CreateService(options);
+
+        var model = new LocalizedDisplayModel();
+        var fieldId = new FieldIdentifier(model, nameof(LocalizedDisplayModel.Name));
+        var attrs = service.GetHtmlAttributes(fieldId);
+
+        Assert.NotNull(attrs);
+        Assert.Equal("Le champ Nom d'utilisateur est obligatoire.", attrs["data-val-required"]);
+    }
+
+    [Fact]
+    public void Localization_RangeAttribute_FormatsArgs()
+    {
+        var translations = new Dictionary<string, string>
+        {
+            ["RangeError"] = "{0} doit être entre {1} et {2}."
+        };
+        var options = CreateOptionsWithLocalization(translations);
+        var service = CreateService(options);
+
+        var model = new LocalizedRangeModel();
+        var fieldId = new FieldIdentifier(model, nameof(LocalizedRangeModel.Age));
+        var attrs = service.GetHtmlAttributes(fieldId);
+
+        Assert.NotNull(attrs);
+        Assert.Equal("Age doit être entre 18 et 120.", attrs["data-val-range"]);
+    }
+
+    [Fact]
+    public void Localization_NoLocalization_UsesDefaultMessages()
+    {
+        // No localizer factory configured → default attribute messages
+        var service = CreateService();
+
+        var model = new RequiredModel();
+        var fieldId = new FieldIdentifier(model, nameof(RequiredModel.Name));
+        var attrs = service.GetHtmlAttributes(fieldId);
+
+        Assert.NotNull(attrs);
+        Assert.Equal("The Name field is required.", attrs["data-val-required"]);
+    }
+
+    private static ValidationOptions CreateOptionsWithLocalization(Dictionary<string, string> translations)
+    {
+        var factory = new TestStringLocalizerFactory(translations);
+        var options = new ValidationOptions
+        {
+            LocalizerProvider = (_, _) => new TestStringLocalizer(translations)
+        };
+        // Use the public FormatErrorMessage API to verify it works —
+        // but we need the localization context initialized. Use DI pattern.
+        var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
+        services.AddSingleton<Microsoft.Extensions.Localization.IStringLocalizerFactory>(factory);
+        services.Configure<ValidationOptions>(o =>
+        {
+            o.LocalizerProvider = options.LocalizerProvider;
+        });
+        services.AddValidation();
+        var sp = services.BuildServiceProvider();
+        return sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<ValidationOptions>>().Value;
+    }
+
+    private class TestStringLocalizerFactory(Dictionary<string, string> translations)
+        : Microsoft.Extensions.Localization.IStringLocalizerFactory
+    {
+        public Microsoft.Extensions.Localization.IStringLocalizer Create(Type resourceSource)
+            => new TestStringLocalizer(translations);
+
+        public Microsoft.Extensions.Localization.IStringLocalizer Create(string baseName, string location)
+            => new TestStringLocalizer(translations);
+    }
+
+    private class TestStringLocalizer(Dictionary<string, string> translations)
+        : Microsoft.Extensions.Localization.IStringLocalizer
+    {
+        public Microsoft.Extensions.Localization.LocalizedString this[string name] =>
+            translations.TryGetValue(name, out var value)
+                ? new(name, value, resourceNotFound: false)
+                : new(name, name, resourceNotFound: true);
+
+        public Microsoft.Extensions.Localization.LocalizedString this[string name, params object[] arguments] =>
+            translations.TryGetValue(name, out var value)
+                ? new(name, string.Format(System.Globalization.CultureInfo.CurrentCulture, value, arguments), resourceNotFound: false)
+                : new(name, name, resourceNotFound: true);
+
+        public IEnumerable<Microsoft.Extensions.Localization.LocalizedString> GetAllStrings(bool includeParentCultures) =>
+            translations.Select(kvp => new Microsoft.Extensions.Localization.LocalizedString(kvp.Key, kvp.Value, false));
+    }
+
+    // Localization test models
+    private class LocalizedModel
+    {
+        [Required(ErrorMessage = "RequiredError")]
+        public string Name { get; set; } = "";
+    }
+
+    private class LocalizedDisplayModel
+    {
+        [Required(ErrorMessage = "RequiredError")]
+        [Display(Name = "User Name")]
+        public string Name { get; set; } = "";
+    }
+
+    private class LocalizedRangeModel
+    {
+        [Range(18, 120, ErrorMessage = "RangeError")]
+        public int Age { get; set; }
     }
 }

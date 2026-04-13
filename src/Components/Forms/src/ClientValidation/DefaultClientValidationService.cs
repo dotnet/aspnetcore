@@ -8,23 +8,28 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Validation;
 
 namespace Microsoft.AspNetCore.Components.Forms.ClientValidation;
 
-using CacheKey = (Type ModelType, string FieldName);
+using CacheKey = (Type ModelType, string FieldName, string Culture);
 
-internal sealed class DefaultClientValidationService : IClientValidationService
+internal sealed class DefaultClientValidationService(
+    IOptions<ValidationOptions> validationOptions) : IClientValidationService
 {
     private readonly ConcurrentDictionary<CacheKey, IReadOnlyDictionary<string, object>?> _cache = new();
 
     public IReadOnlyDictionary<string, object>? GetHtmlAttributes(FieldIdentifier fieldIdentifier)
     {
-        var cacheKey = (fieldIdentifier.Model.GetType(), fieldIdentifier.FieldName);
-        return _cache.GetOrAdd(cacheKey, static key => ComputeAttributes(key.ModelType, key.FieldName));
+        var options = validationOptions.Value;
+        var culture = CultureInfo.CurrentUICulture.Name;
+        var cacheKey = (fieldIdentifier.Model.GetType(), fieldIdentifier.FieldName, culture);
+        return _cache.GetOrAdd(cacheKey, key => ComputeAttributes(key.ModelType, key.FieldName, options));
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Model types are application code and are preserved by default.")]
-    private static Dictionary<string, object>? ComputeAttributes(Type modelType, string fieldName)
+    private static Dictionary<string, object>? ComputeAttributes(Type modelType, string fieldName, ValidationOptions options)
     {
         var property = modelType.GetProperty(fieldName, BindingFlags.Public | BindingFlags.Instance);
         if (property is null)
@@ -34,11 +39,11 @@ internal sealed class DefaultClientValidationService : IClientValidationService
 
         var validationAttributes = property.GetCustomAttributes<ValidationAttribute>(inherit: true);
         var htmlAttributes = new Dictionary<string, object>();
-        var displayName = GetDisplayName(property) ?? fieldName;
+        var displayName = GetDisplayName(property, modelType, options);
 
         foreach (var validationAttribute in validationAttributes)
         {
-            var errorMessage = GetErrorMessage(validationAttribute, displayName);
+            var errorMessage = GetErrorMessage(validationAttribute, displayName, modelType, options);
             AddAttributes(htmlAttributes, validationAttribute, errorMessage);
         }
 
@@ -140,14 +145,23 @@ internal sealed class DefaultClientValidationService : IClientValidationService
         }
     }
 
-    private static string? GetDisplayName(PropertyInfo property)
+    private static string GetDisplayName(PropertyInfo property, Type declaringType, ValidationOptions options)
     {
-        // TODO: Integrate localization
         var displayAttribute = property.GetCustomAttribute<DisplayAttribute>();
 
         if (displayAttribute is not null)
         {
-            return displayAttribute.GetName();
+            // If ResourceType is set, use the static resource accessor (already localized)
+            if (displayAttribute.ResourceType is not null)
+            {
+                return displayAttribute.GetName() ?? property.Name;
+            }
+
+            // Use the localization pipeline if available
+            if (displayAttribute.Name is not null)
+            {
+                return options.ResolveDisplayName(displayAttribute.Name, declaringType);
+            }
         }
 
         var displayNameAttribute = property.GetCustomAttribute<DisplayNameAttribute>();
@@ -157,13 +171,20 @@ internal sealed class DefaultClientValidationService : IClientValidationService
             return displayNameAttribute.DisplayName;
         }
 
-        return null;
+        return property.Name;
     }
 
-    private static string GetErrorMessage(ValidationAttribute validationAttribute, string displayName)
+    private static string GetErrorMessage(
+        ValidationAttribute validationAttribute, string displayName, Type declaringType, ValidationOptions options)
     {
-        // TODO: Integrate localization
-        return validationAttribute.FormatErrorMessage(displayName);
+        // Try localization pipeline first
+        var localizedMessage = options.FormatErrorMessage(validationAttribute, displayName, declaringType);
+        if (localizedMessage is not null)
+        {
+            return localizedMessage;
+        }
 
+        // Fall back to the attribute's own formatting
+        return validationAttribute.FormatErrorMessage(displayName);
     }
 }
