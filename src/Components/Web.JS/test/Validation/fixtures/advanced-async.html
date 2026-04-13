@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Advanced Async &amp; Number Validation</title>
+  <style>
+    .field-validation-error { color: red; }
+    .field-validation-valid { display: none; }
+    .validation-pending { opacity: 0.6; border-color: orange !important; }
+    .input-validation-error { border: 2px solid red; }
+    .input-validation-valid { border: 2px solid green; }
+  </style>
+</head>
+<body>
+  <form id="test-form" method="post">
+    <!-- Remote with custom debounce (50ms instead of default 200ms) -->
+    <div>
+      <input id="fast-field" name="FastField" type="text"
+             data-val="true"
+             data-val-remote="Invalid."
+             data-val-remote-url="/api/validate-fast"
+             data-val-remote-debounce="50" />
+      <span data-valmsg-for="FastField" data-valmsg-replace="true"></span>
+    </div>
+
+    <!-- Remote with slow response for submit-skips-debounce test -->
+    <div>
+      <input id="slow-remote" name="SlowField" type="text"
+             data-val="true"
+             data-val-remote="Invalid value."
+             data-val-remote-url="/api/validate-slow" />
+      <span data-valmsg-for="SlowField" data-valmsg-replace="true"></span>
+    </div>
+
+    <!-- Custom async validated field (registered via addValidator in script below) -->
+    <div>
+      <input id="custom-async" name="CustomField" type="text"
+             data-val="true"
+             data-val-asynccheck="Value must start with OK." />
+      <span data-valmsg-for="CustomField" data-valmsg-replace="true"></span>
+    </div>
+
+    <!-- Number validator (MVC-only, standalone bundle) -->
+    <div>
+      <input id="quantity" name="Quantity" type="text"
+             data-val="true"
+             data-val-number="The field must be a number." />
+      <span data-valmsg-for="Quantity" data-valmsg-replace="true"></span>
+    </div>
+
+    <!-- Plain required field for form anchoring -->
+    <div>
+      <input id="name" name="Name" type="text"
+             data-val="true"
+             data-val-required="Name is required." />
+      <span data-valmsg-for="Name" data-valmsg-replace="true"></span>
+    </div>
+
+    <button type="submit" id="submit-btn">Submit</button>
+    <button type="reset" id="reset-btn">Reset</button>
+  </form>
+
+  <script src="/dist/aspnet-core-validation.js"></script>
+  <script>
+    // Register a custom async validator via the public API.
+    // This tests that user-registered async validators work the same as the built-in remote.
+    document.addEventListener('DOMContentLoaded', function () {
+      window.__aspnetValidation.addValidator('asynccheck', function (ctx) {
+        // Sync path: empty values pass (let required handle that)
+        if (!ctx.value) return true;
+
+        // Sync path: cache hit (simple in-memory cache)
+        var cacheKey = 'asynccheck:' + ctx.value;
+        if (window._asyncCache && window._asyncCache[cacheKey] !== undefined) {
+          return window._asyncCache[cacheKey];
+        }
+
+        // Async path: fetch from server, passing the signal for cancellation
+        return fetch('/api/validate-custom?CustomField=' + encodeURIComponent(ctx.value), {
+          signal: ctx.signal
+        })
+          .then(function (r) { return r.json(); })
+          .then(function (result) {
+            // Cache the result
+            if (!window._asyncCache) window._asyncCache = {};
+            window._asyncCache[cacheKey] = result === true ? true : (typeof result === 'string' ? result : 'Invalid.');
+            return window._asyncCache[cacheKey];
+          })
+          .catch(function () {
+            return true; // fail-open
+          });
+      }, { async: true });
+
+      // Re-scan after adding the async validator so the field is properly tracked
+      window.__aspnetValidation.scan();
+    });
+  </script>
+</body>
+</html>

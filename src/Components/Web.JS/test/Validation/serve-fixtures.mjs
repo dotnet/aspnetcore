@@ -44,6 +44,24 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  if (url.pathname === '/api/validate-custom') {
+    // Endpoint for custom async validator tests
+    await new Promise(resolve => setTimeout(resolve, 100));
+    const value = url.searchParams.get('CustomField') || '';
+    const valid = value.startsWith('OK');
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(valid ? true : 'Value must start with OK.'));
+    return;
+  }
+
+  if (url.pathname === '/api/validate-fast') {
+    // Fast endpoint for debounce timing tests (no artificial delay)
+    const value = url.searchParams.get('FastField') || '';
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(value === 'bad' ? 'Invalid.' : true));
+    return;
+  }
+
   let filePath;
 
   if (url.pathname.startsWith('/dist/')) {
