@@ -16,7 +16,7 @@ public class StatusCodePagesOptions
 {
     /// <summary>
     /// Creates a default <see cref="StatusCodePagesOptions"/> whose handler attempts to generate a
-    /// <see cref="ProblemDetails"/> response by using <see cref="IProblemDetailsService"/>, and falls back
+    /// <see cref="Microsoft.AspNetCore.Mvc.ProblemDetails"/> response by using <see cref="IProblemDetailsService"/>, and falls back
     /// to a plaintext response containing the status code and reason phrase when that service is unavailable
     /// or cannot write a response.
     /// </summary>
@@ -55,7 +55,7 @@ public class StatusCodePagesOptions
 
     /// <summary>
     /// The handler that generates the response body for the given <see cref="StatusCodeContext"/>.
-    /// By default this attempts to generate a <see cref="ProblemDetails"/> response and falls back to a
+    /// By default this attempts to generate a <see cref="Microsoft.AspNetCore.Mvc.ProblemDetails"/> response and falls back to a
     /// plain text response that includes the status code.
     /// </summary>
     public Func<StatusCodeContext, Task> HandleAsync { get; set; }
