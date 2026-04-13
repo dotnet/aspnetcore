@@ -1,67 +1,70 @@
 @page "/"
 @using System.Globalization
+@using Microsoft.Extensions.Localization
 
-<h1>Blazor SSR Client-Side Validation Demo</h1>
-<p>This form uses SSR with client-side validation powered by <code>blazor.web.js</code>.</p>
-<p>Current culture: <strong>@CultureInfo.CurrentUICulture.Name</strong>
-    | <a href="?culture=en">English</a>
-    | <a href="?culture=es">Español</a>
-</p>
+<div class="container">
+    <h1>Blazor SSR — Client-Side Validation</h1>
+    <p class="subtitle">Form validation runs in the browser via <code>blazor.web.js</code> — no round-trip needed.</p>
 
-<EditForm Model="model" Enhance FormName="registration" id="registration-form">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <div>
-        <label for="Name">@Loc["Full Name"]</label>
-        <InputText @bind-Value="model.Name" id="Name" />
-        <ValidationMessage For="@(() => model.Name)" />
+    <div class="culture-picker">
+        🌐
+        <a href="?culture=en" class="@(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en" ? "active" : "")">English</a>
+        <a href="?culture=es" class="@(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "es" ? "active" : "")">Español</a>
     </div>
 
-    <div>
-        <label for="Email">Email</label>
-        <InputText @bind-Value="model.Email" id="Email" />
-        <ValidationMessage For="@(() => model.Email)" />
-    </div>
+    <EditForm Model="model" Enhance FormName="registration" id="registration-form">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-    <div>
-        <label for="Password">Password</label>
-        <InputText @bind-Value="model.Password" id="Password" type="password" />
-        <ValidationMessage For="@(() => model.Password)" />
-    </div>
+        <div class="form-group">
+            <label for="Name">@Loc["Full Name"]</label>
+            <InputText @bind-Value="model.Name" id="Name" />
+            <ValidationMessage For="@(() => model.Name)" />
+        </div>
 
-    <div>
-        <label for="ConfirmPassword">@Loc["Confirm Password"]</label>
-        <InputText @bind-Value="model.ConfirmPassword" id="ConfirmPassword" type="password" />
-        <ValidationMessage For="@(() => model.ConfirmPassword)" />
-    </div>
+        <div class="form-group">
+            <label for="Email">Email</label>
+            <InputText @bind-Value="model.Email" id="Email" />
+            <ValidationMessage For="@(() => model.Email)" />
+        </div>
 
-    <div>
-        <label for="Age">Age</label>
-        <InputNumber @bind-Value="model.Age" id="Age" />
-        <ValidationMessage For="@(() => model.Age)" />
-    </div>
+        <div class="form-group">
+            <label for="Password">Password</label>
+            <InputText @bind-Value="model.Password" id="Password" type="password" />
+            <ValidationMessage For="@(() => model.Password)" />
+        </div>
 
-    <div>
-        <label for="Phone">@Loc["Phone Number"]</label>
-        <InputText @bind-Value="model.Phone" id="Phone" />
-        <ValidationMessage For="@(() => model.Phone)" />
-    </div>
+        <div class="form-group">
+            <label for="ConfirmPassword">@Loc["Confirm Password"]</label>
+            <InputText @bind-Value="model.ConfirmPassword" id="ConfirmPassword" type="password" />
+            <ValidationMessage For="@(() => model.ConfirmPassword)" />
+        </div>
 
-    <div>
-        <label for="ZipCode">@Loc["Zip Code"]</label>
-        <InputText @bind-Value="model.ZipCode" id="ZipCode" />
-        <ValidationMessage For="@(() => model.ZipCode)" />
-    </div>
+        <div class="form-group">
+            <label for="Age">Age</label>
+            <InputNumber @bind-Value="model.Age" id="Age" />
+            <ValidationMessage For="@(() => model.Age)" />
+        </div>
 
-    <button type="submit" id="submit-btn">Register</button>
-    <button type="reset">Reset</button>
-</EditForm>
+        <div class="form-group">
+            <label for="Phone">@Loc["Phone Number"]</label>
+            <InputText @bind-Value="model.Phone" id="Phone" />
+            <ValidationMessage For="@(() => model.Phone)" />
+        </div>
+
+        <div class="form-group">
+            <label for="ZipCode">@Loc["Zip Code"]</label>
+            <InputText @bind-Value="model.ZipCode" id="ZipCode" />
+            <ValidationMessage For="@(() => model.ZipCode)" />
+        </div>
+
+        <button type="submit" id="submit-btn">Register</button>
+        <button type="reset">Reset</button>
+    </EditForm>
+</div>
 
 @code {
     [Inject] private IStringLocalizer<BlazorSSRDemo.Resources.ValidationMessages> Loc { get; set; } = default!;
 
     private RegistrationModel model = new();
 }
-
-@using Microsoft.Extensions.Localization
