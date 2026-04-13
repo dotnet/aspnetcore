@@ -317,7 +317,19 @@ Now that you have identified all candidates (Parts 1 and 2) and planned your bud
 
 ### Step 3.1 — Quarantine and re-quarantine (highest priority)
 
-For each quarantine/re-quarantine candidate, in priority order:
+For each quarantine/re-quarantine candidate, in priority order (Case B re-quarantines first, then Case A new quarantines — follow the matching case for each candidate):
+
+#### Case B — Re-quarantine of a recently unquarantined test
+
+For re-quarantines, **reuse the original quarantine issue** instead of creating a new one. You identified this issue in Step 1.2.
+
+1. **Post an investigation comment** on the **existing** issue using `add_comment` with `item_number` set to the existing numeric issue number (e.g., `item_number: 66035`). Explain that the test was unquarantined but is failing again, include the recent failure details, and note which unquarantine PR removed the attribute.
+
+2. **Create a PR** that:
+   - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/{ISSUE_NUMBER}")]` to the test method (or class), using the **existing issue's numeric URL** directly (e.g., `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66035")]`) — not a temporary ID.
+   - Adds `using Microsoft.AspNetCore.InternalTesting;` if not already present in the file
+   - References the existing issue in the PR body with a literal issue reference (e.g., `Associated issue: #66035`).
+   - Adds the `re-quarantine` label to the PR.
 
 #### Case A — New quarantine
 
@@ -341,18 +353,6 @@ For each quarantine/re-quarantine candidate, in priority order:
    - Adds `using Microsoft.AspNetCore.InternalTesting;` if not already present in the file
    - References the issue in the PR body with `Associated issue: #{TEMPORARY_ID}` (using the same `temporary_id` from `create_issue`, e.g., `Associated issue: #aw_http2ign`). Do **not** use the word `Fixes` or `Closes` — quarantine PRs open tracking issues, they do not fix them, and GitHub would auto-close the issue when the PR merges.
    - When referencing build IDs in the PR body, always use full clickable URLs: `https://dev.azure.com/dnceng-public/public/_build/results?buildId={BUILD_ID}&view=results`. Never reference build IDs as plain numbers.
-
-#### Case B — Re-quarantine of a recently unquarantined test
-
-For re-quarantines, **reuse the original quarantine issue** instead of creating a new one. You identified this issue in Step 1.2.
-
-1. **Post an investigation comment** on the **existing** issue using `add_comment` with `item_number` set to the existing numeric issue number (e.g., `item_number: 66035`). Explain that the test was unquarantined but is failing again, include the recent failure details, and note which unquarantine PR removed the attribute.
-
-2. **Create a PR** that:
-   - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/{EXISTING_ISSUE_NUMBER}")]` to the test method (or class), using the **existing issue's numeric URL** directly — not a temporary ID.
-   - Adds `using Microsoft.AspNetCore.InternalTesting;` if not already present in the file
-   - References the existing issue in the PR body with `Associated issue: #{EXISTING_ISSUE_NUMBER}`.
-   - Adds the `re-quarantine` label to the PR.
 
 ### Step 3.2 — Unquarantine (only after all quarantine work is done)
 
