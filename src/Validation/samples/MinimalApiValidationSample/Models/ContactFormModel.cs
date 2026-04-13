@@ -16,7 +16,7 @@ public class ContactFormModel
     /// <summary>
     /// Gets or sets the contact name.
     /// </summary>
-    [Required]
+    [Required(ErrorMessage = "RequiredError")]
     [StringLength(100, MinimumLength = 2, ErrorMessage = "LengthError")]
     [Display(Name = "Name")]
     public string Name { get; set; } = string.Empty;

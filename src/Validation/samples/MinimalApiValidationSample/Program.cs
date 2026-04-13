@@ -15,7 +15,18 @@ builder.Services.AddSingleton<IStringLocalizerFactory, HardcodedStringLocalizerF
 // implements IStringLocalizerFactory and is registered in DI.
 builder.Services.AddValidation();
 
+// Configure request localization so Accept-Language header sets CultureInfo.CurrentUICulture.
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[] { "en", "es", "fr" };
+    options.SetDefaultCulture("en")
+        .AddSupportedCultures(supportedCultures)
+        .AddSupportedUICultures(supportedCultures);
+});
+
 var app = builder.Build();
+
+app.UseRequestLocalization();
 
 // Range validation on a route parameter
 app.MapGet("/customers/{id}", ([Range(1, int.MaxValue)] int id) =>
