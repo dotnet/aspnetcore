@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>1.3</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  <data name="Required" xml:space="preserve"><value>The {0} field is required.</value></data>
+  <data name="StringLength" xml:space="preserve"><value>The {0} must be between {2} and {1} characters.</value></data>
+  <data name="Email" xml:space="preserve"><value>Please enter a valid email address.</value></data>
+  <data name="Range" xml:space="preserve"><value>The {0} must be between {1} and {2}.</value></data>
+  <data name="Compare" xml:space="preserve"><value>{0} and {1} do not match.</value></data>
+  <data name="Phone" xml:space="preserve"><value>Please enter a valid phone number.</value></data>
+  <data name="Regex" xml:space="preserve"><value>The {0} field is not valid.</value></data>
+  <data name="Full Name" xml:space="preserve"><value>Full Name</value></data>
+  <data name="Confirm Password" xml:space="preserve"><value>Confirm Password</value></data>
+  <data name="Phone Number" xml:space="preserve"><value>Phone Number</value></data>
+  <data name="Zip Code" xml:space="preserve"><value>Zip Code</value></data>
+</root>

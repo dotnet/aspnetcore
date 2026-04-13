@@ -1,14 +1,19 @@
 @page "/"
+@using System.Globalization
 
 <h1>Blazor SSR Client-Side Validation Demo</h1>
 <p>This form uses SSR with client-side validation powered by <code>blazor.web.js</code>.</p>
+<p>Current culture: <strong>@CultureInfo.CurrentUICulture.Name</strong>
+    | <a href="?culture=en">English</a>
+    | <a href="?culture=es">Español</a>
+</p>
 
 <EditForm Model="model" Enhance FormName="registration" id="registration-form">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
     <div>
-        <label for="Name">Name</label>
+        <label for="Name">@Loc["Full Name"]</label>
         <InputText @bind-Value="model.Name" id="Name" />
         <ValidationMessage For="@(() => model.Name)" />
     </div>
@@ -26,7 +31,7 @@
     </div>
 
     <div>
-        <label for="ConfirmPassword">Confirm Password</label>
+        <label for="ConfirmPassword">@Loc["Confirm Password"]</label>
         <InputText @bind-Value="model.ConfirmPassword" id="ConfirmPassword" type="password" />
         <ValidationMessage For="@(() => model.ConfirmPassword)" />
     </div>
@@ -38,13 +43,13 @@
     </div>
 
     <div>
-        <label for="Phone">Phone</label>
+        <label for="Phone">@Loc["Phone Number"]</label>
         <InputText @bind-Value="model.Phone" id="Phone" />
         <ValidationMessage For="@(() => model.Phone)" />
     </div>
 
     <div>
-        <label for="ZipCode">Zip Code</label>
+        <label for="ZipCode">@Loc["Zip Code"]</label>
         <InputText @bind-Value="model.ZipCode" id="ZipCode" />
         <ValidationMessage For="@(() => model.ZipCode)" />
     </div>
@@ -54,5 +59,9 @@
 </EditForm>
 
 @code {
+    [Inject] private IStringLocalizer<BlazorSSRDemo.Resources.ValidationMessages> Loc { get; set; } = default!;
+
     private RegistrationModel model = new();
 }
+
+@using Microsoft.Extensions.Localization

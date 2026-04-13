@@ -7,34 +7,34 @@ namespace BlazorSSRDemo;
 
 public class RegistrationModel
 {
-    [Required]
-    [StringLength(100, MinimumLength = 2)]
+    [Required(ErrorMessage = "Required")]
+    [StringLength(100, MinimumLength = 2, ErrorMessage = "StringLength")]
     [Display(Name = "Full Name")]
     public string Name { get; set; } = "";
 
-    [Required]
-    [EmailAddress]
+    [Required(ErrorMessage = "Required")]
+    [EmailAddress(ErrorMessage = "Email")]
     public string Email { get; set; } = "";
 
-    [Required]
-    [StringLength(100, MinimumLength = 8)]
+    [Required(ErrorMessage = "Required")]
+    [StringLength(100, MinimumLength = 8, ErrorMessage = "StringLength")]
     [DataType(DataType.Password)]
     public string Password { get; set; } = "";
 
-    [Required]
-    [Compare("Password")]
+    [Required(ErrorMessage = "Required")]
+    [Compare("Password", ErrorMessage = "Compare")]
     [Display(Name = "Confirm Password")]
     [DataType(DataType.Password)]
     public string ConfirmPassword { get; set; } = "";
 
-    [Range(18, 120)]
+    [Range(18, 120, ErrorMessage = "Range")]
     public int? Age { get; set; }
 
-    [Phone]
+    [Phone(ErrorMessage = "Phone")]
     [Display(Name = "Phone Number")]
     public string? Phone { get; set; }
 
-    [RegularExpression(@"\d{5}(-\d{4})?", ErrorMessage = "Enter a valid US zip code.")]
+    [RegularExpression(@"\d{5}(-\d{4})?", ErrorMessage = "Regex")]
     [Display(Name = "Zip Code")]
     public string? ZipCode { get; set; }
 }
