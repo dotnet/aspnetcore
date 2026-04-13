@@ -22,6 +22,28 @@ const mimeTypes = {
 
 const server = createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
+
+  // Mock API endpoint for remote validation tests
+  if (url.pathname === '/api/validate-username') {
+    // Simulate network latency
+    await new Promise(resolve => setTimeout(resolve, 100));
+    const username = url.searchParams.get('Username') || '';
+    // "taken" is the only invalid username
+    const valid = username.toLowerCase() !== 'taken';
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(valid ? true : 'This username is already taken.'));
+    return;
+  }
+
+  if (url.pathname === '/api/validate-slow') {
+    // Slow endpoint for testing pending state and abort
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const value = url.searchParams.get('SlowField') || '';
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(value === 'invalid' ? 'Invalid value.' : true));
+    return;
+  }
+
   let filePath;
 
   if (url.pathname.startsWith('/dist/')) {

@@ -27,4 +27,3 @@ export function registerCoreValidators(registry: ValidatorRegistry): void {
   registry.set('equalto', equalToValidator);
   registry.set('fileextensions', fileExtensionsValidator);
 }
-
