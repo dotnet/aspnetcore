@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Playwright;
 using Templates.Test.Helpers;
@@ -14,6 +15,7 @@ namespace BlazorTemplates.Tests;
 
 #pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
 
+[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#66293")]
 public class BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory) : BlazorTemplateTest(projectFactory)
 {
     public override string ProjectType { get; } = "blazorwasm";
