@@ -14,7 +14,8 @@
 
 <div class="row">
     <div class="col-md-6">
-        <form asp-action="Index" method="post">
+        <form asp-action="Index" method="post" id="registration-form">
+            <fieldset id="registration-fieldset">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <div class="mb-3">
@@ -25,8 +26,26 @@
 
             <div class="mb-3">
                 <label asp-for="Email" class="form-label"></label>
-                <input asp-for="Email" class="form-control" />
+                <div class="position-relative">
+                    <input asp-for="Email" class="form-control" placeholder="Try admin@example.com" />
+                    <div class="pending-indicator">
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                        Checking&hellip;
+                    </div>
+                </div>
                 <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Username" class="form-label"></label>
+                <div class="position-relative">
+                    <input asp-for="Username" class="form-control" placeholder="Try admin, root, test" />
+                    <div class="pending-indicator">
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                        Checking&hellip;
+                    </div>
+                </div>
+                <span asp-validation-for="Username" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
@@ -77,13 +96,68 @@
                 <span asp-validation-for="AvatarFilename" class="text-danger"></span>
             </div>
 
-            <button type="submit" class="btn btn-primary">Register</button>
+            <button type="submit" class="btn btn-primary" id="submit-btn">
+                <span class="submit-text">Register</span>
+                <span class="submit-pending d-none">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                    Validating&hellip;
+                </span>
+            </button>
             <button type="reset" class="btn btn-outline-secondary">Reset</button>
             <button type="submit" formnovalidate class="btn btn-outline-warning">Submit without validation</button>
+            </fieldset>
         </form>
     </div>
 </div>
 
 @section Scripts {
+    <style>
+        /* Pending indicator: hidden by default, shown when input has validation-pending */
+        .pending-indicator {
+            display: none;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            font-size: 0.85em;
+            pointer-events: none;
+        }
+        .pending-indicator .spinner-border {
+            width: 0.9em;
+            height: 0.9em;
+            border-width: 0.15em;
+            vertical-align: text-bottom;
+        }
+        .validation-pending ~ .pending-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .validation-pending {
+            padding-right: 100px; /* room for the indicator */
+        }
+    </style>
     <script src="~/lib/aspnet-core-validation/aspnet-core-validation.js"></script>
+    <script>
+        (function () {
+            var form = document.getElementById('registration-form');
+            var fieldset = document.getElementById('registration-fieldset');
+            var btn = document.getElementById('submit-btn');
+            var textEl = btn.querySelector('.submit-text');
+            var pendingEl = btn.querySelector('.submit-pending');
+
+            form.addEventListener('submit', function () {
+                fieldset.disabled = true;
+                textEl.classList.add('d-none');
+                pendingEl.classList.remove('d-none');
+            });
+
+            form.addEventListener('validationcomplete', function () {
+                fieldset.disabled = false;
+                textEl.classList.remove('d-none');
+                pendingEl.classList.add('d-none');
+            });
+        })();
+    </script>
 }

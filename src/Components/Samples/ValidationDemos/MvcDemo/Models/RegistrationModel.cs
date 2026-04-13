@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 
 namespace MvcValidationDemo.Models;
 
@@ -14,7 +15,14 @@ public class RegistrationModel
 
     [Required]
     [EmailAddress]
+    [Remote("CheckEmail", "Validation", ErrorMessage = "This email is already registered.")]
     public string Email { get; set; } = "";
+
+    [Required]
+    [Display(Name = "Username")]
+    [StringLength(30, MinimumLength = 3)]
+    [Remote("CheckUsername", "Validation", ErrorMessage = "This username is taken.")]
+    public string Username { get; set; } = "";
 
     [Required]
     [Phone]
