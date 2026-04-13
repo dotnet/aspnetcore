@@ -7,6 +7,7 @@ import {
   detachWebRendererInterop,
   isRendererAttached,
 } from '../src/Rendering/WebRendererInteropMethods';
+import { WebRendererId } from '../src/Rendering/WebRendererId';
 
 function createMockInteropMethods(label?: string): any {
   return {
@@ -17,22 +18,20 @@ function createMockInteropMethods(label?: string): any {
   };
 }
 
-const ServerRendererId = 1;
-
 describe('Issue #64738 - reconnect then resume double registration', () => {
   beforeEach(() => {
-    if (isRendererAttached(ServerRendererId)) {
-      detachWebRendererInterop(ServerRendererId);
+    if (isRendererAttached(WebRendererId.Server)) {
+      detachWebRendererInterop(WebRendererId.Server);
     }
   });
 
   test('CircuitManager.reconnect detaches interop when ConnectCircuit fails, allowing resume to register new renderer', async () => {
     // 1. Server creates initial RemoteRenderer → registers interop for renderer 1
     const initialMethods = createMockInteropMethods('initial-circuit');
-    attachWebRendererInterop(ServerRendererId, initialMethods);
+    attachWebRendererInterop(WebRendererId.Server, initialMethods);
 
     // 2. Connection drops → onclose detaches and saves interop methods
-    const savedMethods = detachWebRendererInterop(ServerRendererId);
+    const savedMethods = detachWebRendererInterop(WebRendererId.Server);
 
     // 3–4. CircuitManager.reconnect() runs: re-attaches saved methods,
     //       then ConnectCircuit returns false. With the fix, reconnect()
@@ -56,15 +55,15 @@ describe('Issue #64738 - reconnect then resume double registration', () => {
     expect(result).toBe(false);
 
     // After the fix, renderer 1 should be detached
-    expect(isRendererAttached(ServerRendererId)).toBe(false);
+    expect(isRendererAttached(WebRendererId.Server)).toBe(false);
 
     // 5–6. resume() fallback → server creates new RemoteRenderer whose
     //       constructor calls attachWebRendererInterop(1, newMethods)
     const newCircuitMethods = createMockInteropMethods('new-circuit-from-resume');
-    attachWebRendererInterop(ServerRendererId, newCircuitMethods);
+    attachWebRendererInterop(WebRendererId.Server, newCircuitMethods);
 
     // Must succeed — the new renderer registered without throwing
-    expect(isRendererAttached(ServerRendererId)).toBe(true);
+    expect(isRendererAttached(WebRendererId.Server)).toBe(true);
   });
 
   test('CircuitManager.reconnect does not throw when ConnectCircuit fails and renderer is not attached', async () => {
@@ -87,11 +86,11 @@ describe('Issue #64738 - reconnect then resume double registration', () => {
       },
     });
 
-    expect(isRendererAttached(ServerRendererId)).toBe(false);
+    expect(isRendererAttached(WebRendererId.Server)).toBe(false);
 
     // Must not throw — the guard skips detach when renderer isn't attached
     const result = await manager.reconnect();
     expect(result).toBe(false);
-    expect(isRendererAttached(ServerRendererId)).toBe(false);
+    expect(isRendererAttached(WebRendererId.Server)).toBe(false);
   });
 });
