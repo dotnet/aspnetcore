@@ -27,7 +27,7 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 
 var app = builder.Build();
 
-app.UseStaticFiles();
+app.MapStaticAssets();
 app.UseRequestLocalization();
 app.UseAntiforgery();
 
