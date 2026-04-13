@@ -900,13 +900,13 @@ public class Order
     [Required]
     public Address ShippingAddress { get; set; }
 
-    // Static property with a validatable type — should not be emitted
+    // Static property with a validatable type - should not be emitted
     public static Address DefaultAddress { get; set; } = new();
 
-    // Write-only property with a validatable type — should not be emitted
+    // Write-only property with a validatable type - should not be emitted
     public Address InternalAddress { set { } }
 
-    // Property with non-public getter — should not be emitted
+    // Property with non-public getter - should not be emitted
     public Address CachedAddress { internal get; set; }
 }
 """;

@@ -4,7 +4,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using Microsoft.Extensions.Validation.Localization;
+using Microsoft.Extensions.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -36,46 +36,109 @@ public class ValidationOptions
     public int MaxDepth { get; set; } = 32;
 
     /// <summary>
-    /// Gets or sets the delegate that resolves display names for types, properties and parameters.
-    /// If the delegate returns a non-null string, that string is used as the display name.
-    /// If it returns <see langword="null"/>, the value of <see cref="DisplayAttribute.Name"/> or the member name is used.
-    /// </summary>
-    public Func<DisplayNameProviderContext, string?>? DisplayNameProvider { get; set; }
-
-    /// <summary>
-    /// Gets or sets the delegate that resolves error messages for validation attributes.
-    /// When set, this delegate is called for every validation attribute that produces an error,
-    /// <b>unless</b> the attribute has <see cref="ValidationAttribute.ErrorMessageResourceType"/>
-    /// set (which indicates the attribute handles its own resource-based localization).
+    /// Gets or sets the delegate that controls which <see cref="IStringLocalizer"/> is used
+    /// for a given declaring type. The declaring type is the type that contains the property
+    /// being validated.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// If the delegate returns a non-null string, that string is used as the <b>final, formatted</b>
-    /// error message and is displayed directly to the user. The delegate is responsible for
-    /// performing any necessary formatting — for example, replacing <c>{0}</c> with the display name
-    /// and any attribute-specific parameters. It must <b>not</b> return a raw template such as
-    /// <c>"The {0} field is required."</c>; instead, it should return the fully resolved message
-    /// such as <c>"The Name field is required."</c>.
+    /// When <see langword="null"/> (the default), <see cref="IStringLocalizerFactory.Create(Type)"/>
+    /// is called with the declaring type, which follows the standard resource file naming convention
+    /// (e.g., <c>Resources/Models.Customer.fr.resx</c> for type <c>Models.Customer</c>).
     /// </para>
     /// <para>
-    /// If the delegate returns <see langword="null"/>, the attribute's default error message
-    /// (from <see cref="ValidationAttribute.GetValidationResult"/>) is used instead.
+    /// Set this to use a shared resource file for all validation messages:
     /// </para>
     /// <example>
     /// <code>
-    /// options.ErrorMessageProvider = context =>
-    /// {
-    ///     var displayName = context.DisplayName ?? context.MemberName;
-    ///     return context.Attribute switch
-    ///     {
-    ///         RequiredAttribute => $"{displayName} is mandatory.",
-    ///         _ => null // fall back to default
-    ///     };
-    /// };
+    /// options.LocalizerProvider = (type, factory) =&gt;
+    ///     factory.Create(typeof(SharedValidationMessages));
     /// </code>
     /// </example>
     /// </remarks>
-    public Func<ErrorMessageProviderContext, string?>? ErrorMessageProvider { get; set; }
+    public Func<Type, IStringLocalizerFactory, IStringLocalizer>? LocalizerProvider { get; set; }
+
+    /// <summary>
+    /// Gets or sets the delegate that determines the localization lookup key for a
+    /// validation attribute's error message. When <see langword="null"/> (the default),
+    /// only attributes with <see cref="ValidationAttribute.ErrorMessage"/> set are localized
+    /// (using the <see cref="ValidationAttribute.ErrorMessage"/> value as the key).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When configured, this delegate is called as a fallback for attributes without an
+    /// explicit <see cref="ValidationAttribute.ErrorMessage"/>, enabling convention-based
+    /// key selection.
+    /// </para>
+    /// <example>
+    /// <code>
+    /// options.ErrorMessageKeyProvider = context =&gt;
+    ///     $"{context.Attribute.GetType().Name}_ValidationError";
+    /// // This makes the localizer look up "RequiredAttribute_ValidationError"
+    /// // instead of "The {0} field is required."
+    /// </code>
+    /// </example>
+    /// </remarks>
+    public Func<ErrorMessageKeyContext, string?>? ErrorMessageKeyProvider { get; set; }
+
+    /// <summary>
+    /// Gets the registry of formatters for attribute-specific error message template formatting.
+    /// Built-in formatters for standard attributes are registered automatically.
+    /// </summary>
+    public ValidationAttributeFormatterRegistry AttributeFormatters { get; } = new();
+
+    /// <summary>
+    /// The IStringLocalizerFactory discovered from DI, set by <see cref="ValidationLocalizationAutoSetup"/>.
+    /// Used to lazily create <see cref="LocalizationContext"/> on first access.
+    /// </summary>
+    internal IStringLocalizerFactory? StringLocalizerFactory { get; set; }
+
+    private ValidationLocalizationContext? _localizationContext;
+
+    /// <summary>
+    /// The localization context, created lazily on first access from <see cref="StringLocalizerFactory"/>
+    /// and the current values of <see cref="LocalizerProvider"/>, <see cref="ErrorMessageKeyProvider"/>,
+    /// and <see cref="AttributeFormatters"/>. Lazy creation ensures that all IPostConfigureOptions
+    /// callbacks have run before the delegates are captured.
+    /// </summary>
+    internal ValidationLocalizationContext? LocalizationContext =>
+        _localizationContext ??= StringLocalizerFactory is not null
+            ? new ValidationLocalizationContext(StringLocalizerFactory, LocalizerProvider, ErrorMessageKeyProvider, AttributeFormatters)
+            : null;
+
+    // TODO: Consider the design further - these methods expose localization resolution
+    // for external consumers (e.g., client-side validation attribute rendering) without
+    // leaking internal types. Evaluate whether a separate public interface/service would be better.
+
+    /// <summary>
+    /// Resolves a localized display name using the configured localization pipeline.
+    /// Returns the original <paramref name="displayName"/> if localization is not configured
+    /// or no localized value is found.
+    /// </summary>
+    /// <param name="displayName">The display name to localize (typically from <see cref="DisplayAttribute.Name"/>).</param>
+    /// <param name="declaringType">The type that declares the member, or <see langword="null"/> for parameters.</param>
+    /// <returns>The localized display name, or the original value if not found.</returns>
+    public string ResolveDisplayName(string displayName, Type? declaringType)
+        => LocalizationContext?.ResolveDisplayName(displayName, declaringType) ?? displayName;
+
+    /// <summary>
+    /// Resolves a localized, fully formatted error message for a validation attribute.
+    /// Returns <see langword="null"/> if localization is not configured, the attribute uses
+    /// its own resource-based localization, or no localized value is found.
+    /// </summary>
+    /// <param name="attribute">The validation attribute that produced the error.</param>
+    /// <param name="displayName">The (possibly localized) display name of the member.</param>
+    /// <param name="declaringType">The type that declares the member, or <see langword="null"/> for parameters.</param>
+    /// <returns>The localized error message, or <see langword="null"/> to use the attribute's default message.</returns>
+    public string? FormatErrorMessage(ValidationAttribute attribute, string displayName, Type? declaringType)
+    {
+        if (attribute.ErrorMessageResourceType is not null)
+        {
+            return null;
+        }
+
+        return LocalizationContext?.ResolveErrorMessage(attribute, displayName, declaringType);
+    }
 
     /// <summary>
     /// Attempts to get validation information for the specified type.

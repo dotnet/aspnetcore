@@ -8,6 +8,9 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Localization" />
+    <Reference Include="Microsoft.Extensions.Localization.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.Extensions.Validation" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>

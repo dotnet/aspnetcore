@@ -4,7 +4,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -80,8 +79,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             DisplayName,
             DisplayNameAccessor,
             declaringType: DeclaringType,
-            context.ValidationOptions.DisplayNameProvider,
-            context.ValidationContext);
+            context.ValidationOptions.LocalizationContext);
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
@@ -98,7 +96,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             context.CurrentValidationPath = $"{originalPrefix}.{Name}";
         }
 
-        var errorMessageProvider = context.ValidationOptions.ErrorMessageProvider;
+        var localization = context.ValidationOptions.LocalizationContext;
         var propertyValue = _propertyInfo.GetValue(value);
         var validationAttributes = GetValidationAttributes();
 
@@ -113,8 +111,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                     _requiredAttribute,
                     DeclaringType,
                     displayName,
-                    errorMessageProvider,
-                    context.ValidationContext);
+                    localization);
 
                 var errorMessage = customMessage ?? result.ErrorMessage;
 
@@ -201,8 +198,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                             attribute,
                             DeclaringType,
                             displayName,
-                            errorMessageProvider,
-                            context.ValidationContext);
+                            localization);
 
                         var errorMessage = customMessage ?? result.ErrorMessage;
 

@@ -14,11 +14,12 @@ builder.Services.AddLogging();
 // Use the StandardAttributeLocalization library to automatically localize
 // all standard DataAnnotations validation error messages without needing
 // to specify ErrorMessage keys on each attribute instance.
-builder.Services.AddValidation();
-builder.Services.AddValidationLocalization<ValidationMessages>(options =>
+builder.Services.AddValidation(options =>
 {
+    options.LocalizerProvider = (_, factory) => factory.Create(typeof(ValidationMessages));
     options.ErrorMessageKeyProvider = (context) => $"{context.Attribute.GetType().Name}_ValidationError";
 });
+builder.Services.AddLocalization();
 builder.Services.AddStandardAttributeLocalization();
 
 builder.Services.AddHostedService<DemoService>();

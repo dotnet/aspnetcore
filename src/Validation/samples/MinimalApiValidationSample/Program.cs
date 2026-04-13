@@ -11,10 +11,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Register the hardcoded localizer factory so validation messages resolve through it.
 builder.Services.AddSingleton<IStringLocalizerFactory, HardcodedStringLocalizerFactory>();
 
-// Wire up validation with localization support. AddValidationLocalization() configures
-// ValidationOptions.ErrorMessageProvider to look up error message keys via IStringLocalizer.
+// Wire up validation. Localization auto-activates because HardcodedStringLocalizerFactory
+// implements IStringLocalizerFactory and is registered in DI.
 builder.Services.AddValidation();
-builder.Services.AddValidationLocalization();
 
 var app = builder.Build();
 

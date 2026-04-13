@@ -2,16 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
-using Microsoft.Extensions.Validation.Localization;
 using StandardAttributeLocalization.Resources;
 
-#pragma warning disable IDE0130 // Namespace does not match folder structure
-namespace Microsoft.Extensions.DependencyInjection;
-#pragma warning restore IDE0130 // Namespace does not match folder structure
+namespace StandardAttributeLocalization;
 
 /// <summary>
 /// Post-configures <see cref="ValidationOptions"/> to provide localized error messages
@@ -19,39 +17,31 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// using the <see cref="StandardValidationMessages"/> resource file.
 /// </summary>
 internal sealed class StandardAttributeLocalizationConfiguration(
-    IOptions<ValidationAttributeFormatterRegistry> formatterRegistryOptions,
     ILoggerFactory loggerFactory)
     : IPostConfigureOptions<ValidationOptions>
 {
     public void PostConfigure(string? name, ValidationOptions options)
     {
-        // Manually create ResourceManagerStringLocalizerFactory instead of retrieving the factory from DI
-        // so that the user can register other localizers not based on resource files.
+        // Wrap the existing LocalizerProvider to add our fallback resources.
+        // User's per-type resources are checked first; if not found, the library's
+        // pre-translated messages are used as a fallback.
+        var originalProvider = options.LocalizerProvider;
         var localizationOptions = new OptionsWrapper<LocalizationOptions>(new LocalizationOptions());
         var resourceLocalizerFactory = new ResourceManagerStringLocalizerFactory(localizationOptions, loggerFactory);
-        var localizer = resourceLocalizerFactory.Create(typeof(StandardValidationMessages));
-        var originalProvider = options.ErrorMessageProvider ?? ((context) => null);
-        var formatterRegistry = formatterRegistryOptions.Value;
+        var packageLocalizer = resourceLocalizerFactory.Create(typeof(StandardValidationMessages));
 
-        options.ErrorMessageProvider = (context) =>
+        options.LocalizerProvider = (type, factory) =>
         {
-            if (!string.IsNullOrEmpty(context.Attribute.ErrorMessage))
-            {
-                return originalProvider(context);
-            }
-
-            var lookupKey = $"{context.Attribute.GetType().Name}_ValidationError";
-            var localizedTemplate = localizer[lookupKey];
-
-            if (localizedTemplate.ResourceNotFound)
-            {
-                return originalProvider(context);
-            }
-
-            var attributeFormatter = formatterRegistry.GetFormatter(context.Attribute);
-
-            return attributeFormatter?.FormatErrorMessage(CultureInfo.CurrentCulture, localizedTemplate, context.DisplayName)
-                ?? string.Format(CultureInfo.CurrentCulture, localizedTemplate, context.DisplayName);
+            var originalLocalizer = originalProvider?.Invoke(type, factory) ?? factory.Create(type);
+            return new FallbackStringLocalizer(originalLocalizer, packageLocalizer);
         };
+
+        // Compose with any existing key provider - add our convention as a fallback
+        // for attributes that don't have an explicit ErrorMessage.
+        var originalKeyProvider = options.ErrorMessageKeyProvider;
+
+        options.ErrorMessageKeyProvider = ctx =>
+            originalKeyProvider?.Invoke(ctx)
+            ?? $"{ctx.Attribute.GetType().Name}_ValidationError";
     }
 }

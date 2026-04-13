@@ -4,7 +4,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -99,8 +98,7 @@ public abstract class ValidatableTypeInfo(
                 DisplayName,
                 DisplayNameAccessor,
                 declaringType: Type,
-                context.ValidationOptions.DisplayNameProvider,
-                context.ValidationContext);
+                context.ValidationOptions.LocalizationContext);
 
             context.ValidationContext.DisplayName = displayName;
             context.ValidationContext.MemberName = null;
@@ -145,7 +143,7 @@ public abstract class ValidatableTypeInfo(
     {
         var validationAttributes = GetValidationAttributes();
         var errorPrefix = context.CurrentValidationPath;
-        var errorMessageProvider = context.ValidationOptions.ErrorMessageProvider;
+        var localization = context.ValidationOptions.LocalizationContext;
 
         for (var i = 0; i < validationAttributes.Length; i++)
         {
@@ -157,8 +155,7 @@ public abstract class ValidatableTypeInfo(
                     attribute,
                     declaringType: Type,
                     displayName,
-                    errorMessageProvider,
-                    context.ValidationContext);
+                    localization);
 
                 var errorMessage = customMessage ?? result.ErrorMessage;
 

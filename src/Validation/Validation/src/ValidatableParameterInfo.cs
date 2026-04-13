@@ -4,7 +4,6 @@
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -66,14 +65,13 @@ public abstract class ValidatableParameterInfo(
             DisplayName,
             DisplayNameAccessor,
             declaringType: null,
-            context.ValidationOptions.DisplayNameProvider,
-            context.ValidationContext);
+            context.ValidationOptions.LocalizationContext);
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
 
         var validationAttributes = GetValidationAttributes();
-        var errorMessageProvider = context.ValidationOptions.ErrorMessageProvider;
+        var localization = context.ValidationOptions.LocalizationContext;
 
         // Check required attribute first
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
@@ -86,8 +84,7 @@ public abstract class ValidatableParameterInfo(
                     _requiredAttribute,
                     declaringType: null,
                     displayName,
-                    errorMessageProvider,
-                    context.ValidationContext);
+                    localization);
 
                 var errorMessage = customMessage ?? result.ErrorMessage;
 
@@ -120,8 +117,7 @@ public abstract class ValidatableParameterInfo(
                         attribute,
                         declaringType: null,
                         displayName,
-                        errorMessageProvider,
-                        context.ValidationContext);
+                        localization);
 
                     var errorMessage = customMessage ?? result.ErrorMessage;
 

@@ -3,12 +3,12 @@
 
 using System.Globalization;
 
-namespace Microsoft.Extensions.Validation.Localization;
+namespace Microsoft.Extensions.Validation;
 
 /// <summary>
 /// Formats a validation error message template with attribute-specific arguments.
-/// The default validation localization pipeline uses <see cref="ValidationAttributeFormatterRegistry"/>
-/// to retrieve a formatter for the built-in <see cref="System.ComponentModel.DataAnnotations.ValidationAttribute"/> types.
+/// Used by the validation localization pipeline to produce fully formatted error messages
+/// from localized templates that contain positional placeholders beyond <c>{0}</c> (the display name).
 /// </summary>
 /// <remarks>
 /// <para>

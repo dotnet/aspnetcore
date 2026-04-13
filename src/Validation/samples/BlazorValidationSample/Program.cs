@@ -11,8 +11,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddValidation();
-builder.Services.AddValidationLocalization<ValidationMessages>();
+builder.Services.AddLocalization();
+builder.Services.AddValidation(options =>
+{
+    options.LocalizerProvider = (_, factory) => factory.Create(typeof(ValidationMessages));
+});
 
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {

@@ -3,11 +3,12 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Microsoft.Extensions.Validation.Localization;
+namespace Microsoft.Extensions.Validation;
 
 /// <summary>
 /// Registry of <see cref="IValidationAttributeFormatter"/> factories keyed by
-/// <see cref="ValidationAttribute"/> type.
+/// <see cref="ValidationAttribute"/> type. Used by the validation localization pipeline
+/// to format localized error message templates with attribute-specific arguments.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -37,8 +38,7 @@ namespace Microsoft.Extensions.Validation.Localization;
 /// <para>
 /// Built-in formatters for standard validation attributes (such as <see cref="RangeAttribute"/>,
 /// <see cref="MinLengthAttribute"/>, <see cref="StringLengthAttribute"/>, etc.) are registered
-/// automatically when <c>AddValidationLocalization</c> is called.
-/// Later registrations for the same attribute type replace earlier ones.
+/// automatically. Later registrations for the same attribute type replace earlier ones.
 /// </para>
 /// <example>
 /// <code>
@@ -50,6 +50,22 @@ namespace Microsoft.Extensions.Validation.Localization;
 public sealed class ValidationAttributeFormatterRegistry
 {
     private readonly Dictionary<Type, Func<ValidationAttribute, IValidationAttributeFormatter>> _factories = new();
+
+    /// <summary>
+    /// Creates a new instance of <see cref="ValidationAttributeFormatterRegistry"/>
+    /// with built-in formatters for standard validation attributes.
+    /// </summary>
+    public ValidationAttributeFormatterRegistry()
+    {
+        AddFormatter<RangeAttribute>(a => new RangeAttributeFormatter(a));
+        AddFormatter<MinLengthAttribute>(a => new MinLengthAttributeFormatter(a));
+        AddFormatter<MaxLengthAttribute>(a => new MaxLengthAttributeFormatter(a));
+        AddFormatter<LengthAttribute>(a => new LengthAttributeFormatter(a));
+        AddFormatter<StringLengthAttribute>(a => new StringLengthAttributeFormatter(a));
+        AddFormatter<RegularExpressionAttribute>(a => new RegularExpressionAttributeFormatter(a));
+        AddFormatter<FileExtensionsAttribute>(a => new FileExtensionsAttributeFormatter(a));
+        AddFormatter<CompareAttribute>(a => new CompareAttributeFormatter(a));
+    }
 
     /// <summary>
     /// Registers a formatter factory for the specified validation attribute type.

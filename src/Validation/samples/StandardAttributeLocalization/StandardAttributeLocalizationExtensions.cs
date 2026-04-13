@@ -2,8 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
+using StandardAttributeLocalization;
+using StandardAttributeLocalization.Resources;
 
 #pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Microsoft.Extensions.DependencyInjection;
@@ -23,9 +27,10 @@ public static class StandardAttributeLocalizationExtensions
     /// </summary>
     /// <remarks>
     /// <para>
-    /// This method calls <see cref="ValidationServiceCollectionExtensions.AddValidationLocalization{TResource}"/>
-    /// using a shared resource file that maps each standard attribute type to a
-    /// <c>{AttributeTypeName}_ValidationError</c> resource key.
+    /// This method wraps the existing <see cref="ValidationOptions.LocalizerProvider"/> to add
+    /// a fallback localizer that looks up pre-translated messages from the library's resource files.
+    /// It also composes with any existing <see cref="ValidationOptions.ErrorMessageKeyProvider"/>
+    /// to add a convention-based key fallback (<c>{AttributeTypeName}_ValidationError</c>).
     /// </para>
     /// <para>
     /// Users do not need to set <see cref="System.ComponentModel.DataAnnotations.ValidationAttribute.ErrorMessage"/>
@@ -43,13 +48,46 @@ public static class StandardAttributeLocalizationExtensions
     /// <code>
     /// var builder = Host.CreateApplicationBuilder();
     /// builder.Services.AddValidation();
+    /// builder.Services.AddLocalization();
     /// builder.Services.AddStandardAttributeLocalization();
     /// </code>
     /// </example>
     public static IServiceCollection AddStandardAttributeLocalization(this IServiceCollection services)
     {
+        services.AddLocalization();
         services.TryAddEnumerable(ServiceDescriptor.Transient<IPostConfigureOptions<ValidationOptions>, StandardAttributeLocalizationConfiguration>());
 
         return services;
     }
+}
+
+/// <summary>
+/// An <see cref="IStringLocalizer"/> that tries a primary localizer first
+/// and falls back to a secondary one when the resource is not found.
+/// </summary>
+internal sealed class FallbackStringLocalizer(IStringLocalizer primary, IStringLocalizer fallback) : IStringLocalizer
+{
+    public LocalizedString this[string name]
+    {
+        get
+        {
+            var result = primary[name];
+
+            return result.ResourceNotFound ? fallback[name] : result;
+        }
+    }
+
+    public LocalizedString this[string name, params object[] arguments]
+    {
+        get
+        {
+            var result = primary[name, arguments];
+
+            return result.ResourceNotFound ? fallback[name, arguments] : result;
+        }
+    }
+
+    public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
+        => primary.GetAllStrings(includeParentCultures)
+            .Concat(fallback.GetAllStrings(includeParentCultures));
 }
