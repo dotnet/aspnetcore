@@ -74,10 +74,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private VirtualizeAnchorMode _lastRenderedAnchorMode;
 
-    // When non-null, OnAfterRenderAsync restores the anchor snapshot.
-    // The value is the index shift (newItemsBefore - oldItemsBefore) for the
-    // anchor lookup: 0 for prepends (symmetric shift), positive for
-    // redistributions where _itemsBefore grew.
+    // When non-null, OnAfterRenderAsync tells JS to restore the anchor snapshot.
+    // The value is the change in _itemsBefore that JS uses to find the anchor
+    // item in the updated DOM: 0 for prepends (child position unchanged),
+    // non-zero when the rendered window shifted independently of item indices.
     private int? _pendingAnchorIndexShift;
 
     [Inject]
@@ -160,8 +160,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     /// <summary>
     /// Gets or sets the anchor mode that controls how the viewport behaves at the edges
-    /// of the list when new items arrive. The default is <see cref="VirtualizeAnchorMode.Beginning"/>,
-    /// which preserves backward-compatible behavior.
+    /// of the list when new items arrive. The default is <see cref="VirtualizeAnchorMode.Beginning"/>.
     /// </summary>
     [Parameter]
     public VirtualizeAnchorMode AnchorMode { get; set; } = VirtualizeAnchorMode.Beginning;
