@@ -15,7 +15,7 @@ namespace BlazorTemplates.Tests;
 
 #pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
 
-[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_blazwasm")]
+[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#66293")]
 public class BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory) : BlazorTemplateTest(projectFactory)
 {
     public override string ProjectType { get; } = "blazorwasm";
