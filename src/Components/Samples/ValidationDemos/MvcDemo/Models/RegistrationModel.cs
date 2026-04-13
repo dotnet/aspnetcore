@@ -4,7 +4,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MvcValidationDemo.Models;
+namespace MvcDemo.Models;
 
 public class RegistrationModel
 {

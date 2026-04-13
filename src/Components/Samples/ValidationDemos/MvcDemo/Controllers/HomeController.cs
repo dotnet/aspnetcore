@@ -3,9 +3,9 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using MvcValidationDemo.Models;
+using MvcDemo.Models;
 
-namespace MvcValidationDemo.Controllers;
+namespace MvcDemo.Controllers;
 
 public class HomeController : Controller
 {

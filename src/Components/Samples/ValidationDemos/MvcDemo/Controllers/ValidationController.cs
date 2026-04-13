@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace MvcValidationDemo.Controllers;
+namespace MvcDemo.Controllers;
 
 /// <summary>
 /// Provides remote validation endpoints for the registration form.

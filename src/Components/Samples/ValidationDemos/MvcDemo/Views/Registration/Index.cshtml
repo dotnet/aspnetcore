@@ -1,162 +1,128 @@
-@model MvcValidationDemo.Models.RegistrationModel
+@model MvcDemo.Models.RegistrationModel
 
 @{
     ViewData["Title"] = "Registration";
 }
 
-<h1>Registration Form</h1>
-<p class="text-muted">Client-side validation powered by <code>aspnet-core-validation.js</code> (no jQuery).</p>
+<div class="container">
+    <span class="app-badge">ASP.NET MVC</span>
+    <h1>Registration Form</h1>
+    <p class="subtitle">Client-side validation powered by <code>aspnet-core-validation.js</code> — no jQuery needed.</p>
 
-@if (ViewData["Success"] is true)
-{
-    <div class="alert alert-success">Registration submitted successfully (server-side validation passed).</div>
-}
+    @if (ViewData["Success"] is true)
+    {
+        <div class="success-message">✅ Registration submitted successfully (server-side validation passed).</div>
+    }
 
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="Index" method="post" id="registration-form">
-            <fieldset id="registration-fieldset">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <form asp-action="Index" method="post" id="registration-form">
+        <fieldset id="registration-fieldset">
+        <div asp-validation-summary="ModelOnly"></div>
 
-            <div class="mb-3">
-                <label asp-for="Name" class="form-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
+        <div class="form-group">
+            <label asp-for="Name"></label>
+            <input asp-for="Name" />
+            <span asp-validation-for="Name"></span>
+        </div>
 
-            <div class="mb-3">
-                <label asp-for="Email" class="form-label"></label>
-                <div class="position-relative">
-                    <input asp-for="Email" class="form-control" placeholder="Try admin@example.com" />
-                    <div class="pending-indicator">
-                        <span class="spinner-border spinner-border-sm" role="status"></span>
-                        Checking&hellip;
-                    </div>
+        <div class="form-group">
+            <label asp-for="Email"></label>
+            <div class="field-wrapper">
+                <input asp-for="Email" placeholder="Try admin@example.com" />
+                <div class="pending-indicator">
+                    <span class="spinner"></span>
+                    Checking&hellip;
                 </div>
-                <span asp-validation-for="Email" class="text-danger"></span>
             </div>
+            <span asp-validation-for="Email"></span>
+        </div>
 
-            <div class="mb-3">
-                <label asp-for="Username" class="form-label"></label>
-                <div class="position-relative">
-                    <input asp-for="Username" class="form-control" placeholder="Try admin, root, test" />
-                    <div class="pending-indicator">
-                        <span class="spinner-border spinner-border-sm" role="status"></span>
-                        Checking&hellip;
-                    </div>
+        <div class="form-group">
+            <label asp-for="Username"></label>
+            <div class="field-wrapper">
+                <input asp-for="Username" placeholder="Try admin, root, test" />
+                <div class="pending-indicator">
+                    <span class="spinner"></span>
+                    Checking&hellip;
                 </div>
-                <span asp-validation-for="Username" class="text-danger"></span>
             </div>
+            <span asp-validation-for="Username"></span>
+        </div>
 
-            <div class="mb-3">
-                <label asp-for="Phone" class="form-label"></label>
-                <input asp-for="Phone" class="form-control" />
-                <span asp-validation-for="Phone" class="text-danger"></span>
-            </div>
+        <div class="form-group">
+            <label asp-for="Phone"></label>
+            <input asp-for="Phone" />
+            <span asp-validation-for="Phone"></span>
+        </div>
 
-            <div class="mb-3">
-                <label asp-for="Website" class="form-label"></label>
-                <input asp-for="Website" class="form-control" />
-                <span asp-validation-for="Website" class="text-danger"></span>
-            </div>
+        <div class="form-group">
+            <label asp-for="Website"></label>
+            <input asp-for="Website" />
+            <span asp-validation-for="Website"></span>
+        </div>
 
-            <div class="mb-3">
-                <label asp-for="Password" class="form-label"></label>
-                <input asp-for="Password" class="form-control" />
-                <span asp-validation-for="Password" class="text-danger"></span>
-            </div>
+        <div class="form-group">
+            <label asp-for="Password"></label>
+            <input asp-for="Password" />
+            <span asp-validation-for="Password"></span>
+        </div>
 
-            <div class="mb-3">
-                <label asp-for="ConfirmPassword" class="form-label"></label>
-                <input asp-for="ConfirmPassword" class="form-control" />
-                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-            </div>
+        <div class="form-group">
+            <label asp-for="ConfirmPassword"></label>
+            <input asp-for="ConfirmPassword" />
+            <span asp-validation-for="ConfirmPassword"></span>
+        </div>
 
-            <div class="mb-3">
-                <label asp-for="Age" class="form-label"></label>
-                <input asp-for="Age" class="form-control" />
-                <span asp-validation-for="Age" class="text-danger"></span>
-            </div>
+        <div class="form-group">
+            <label asp-for="Age"></label>
+            <input asp-for="Age" />
+            <span asp-validation-for="Age"></span>
+        </div>
 
-            <div class="mb-3">
-                <label asp-for="CreditCard" class="form-label"></label>
-                <input asp-for="CreditCard" class="form-control" />
-                <span asp-validation-for="CreditCard" class="text-danger"></span>
-            </div>
+        <div class="form-group">
+            <label asp-for="CreditCard"></label>
+            <input asp-for="CreditCard" />
+            <span asp-validation-for="CreditCard"></span>
+        </div>
 
-            <div class="mb-3">
-                <label asp-for="ZipCode" class="form-label"></label>
-                <input asp-for="ZipCode" class="form-control" />
-                <span asp-validation-for="ZipCode" class="text-danger"></span>
-            </div>
+        <div class="form-group">
+            <label asp-for="ZipCode"></label>
+            <input asp-for="ZipCode" />
+            <span asp-validation-for="ZipCode"></span>
+        </div>
 
-            <div class="mb-3">
-                <label asp-for="AvatarFilename" class="form-label"></label>
-                <input asp-for="AvatarFilename" class="form-control" placeholder="e.g. photo.png" />
-                <span asp-validation-for="AvatarFilename" class="text-danger"></span>
-            </div>
+        <div class="form-group">
+            <label asp-for="AvatarFilename"></label>
+            <input asp-for="AvatarFilename" placeholder="e.g. photo.png" />
+            <span asp-validation-for="AvatarFilename"></span>
+        </div>
 
-            <button type="submit" class="btn btn-primary" id="submit-btn">
-                <span class="submit-text">Register</span>
-                <span class="submit-pending d-none">
-                    <span class="spinner-border spinner-border-sm" role="status"></span>
-                    Validating&hellip;
-                </span>
-            </button>
-            <button type="reset" class="btn btn-outline-secondary">Reset</button>
-            <button type="submit" formnovalidate class="btn btn-outline-warning">Submit without validation</button>
-            </fieldset>
-        </form>
-    </div>
+        <div class="button-group">
+            <button type="submit" class="btn-submit" id="submit-btn">Register</button>
+            <button type="reset" class="btn-reset">Reset</button>
+        </div>
+        <div class="button-group">
+            <button type="submit" formnovalidate class="btn-novalidate">Submit without validation</button>
+        </div>
+        </fieldset>
+    </form>
 </div>
 
 @section Scripts {
-    <style>
-        /* Pending indicator: hidden by default, shown when input has validation-pending */
-        .pending-indicator {
-            display: none;
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6c757d;
-            font-size: 0.85em;
-            pointer-events: none;
-        }
-        .pending-indicator .spinner-border {
-            width: 0.9em;
-            height: 0.9em;
-            border-width: 0.15em;
-            vertical-align: text-bottom;
-        }
-        .validation-pending ~ .pending-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .validation-pending {
-            padding-right: 100px; /* room for the indicator */
-        }
-    </style>
     <script src="~/lib/aspnet-core-validation/aspnet-core-validation.js"></script>
     <script>
         (function () {
             var form = document.getElementById('registration-form');
             var fieldset = document.getElementById('registration-fieldset');
             var btn = document.getElementById('submit-btn');
-            var textEl = btn.querySelector('.submit-text');
-            var pendingEl = btn.querySelector('.submit-pending');
 
             form.addEventListener('submit', function () {
                 fieldset.disabled = true;
-                textEl.classList.add('d-none');
-                pendingEl.classList.remove('d-none');
+                btn.textContent = 'Validating\u2026';
             });
 
             form.addEventListener('validationcomplete', function () {
                 fieldset.disabled = false;
-                textEl.classList.remove('d-none');
-                pendingEl.classList.add('d-none');
+                btn.textContent = 'Register';
             });
         })();
     </script>

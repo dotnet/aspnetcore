@@ -3,8 +3,9 @@
 @using Microsoft.Extensions.Localization
 
 <div class="container">
-    <h1>Blazor SSR — Client-Side Validation</h1>
-    <p class="subtitle">Form validation runs in the browser via <code>blazor.web.js</code> — no round-trip needed.</p>
+    <span class="app-badge">Blazor SSR</span>
+    <h1>Client-Side Validation</h1>
+    <p class="subtitle">Form validation runs in the browser via <code>blazor.web.js</code> — no server round-trip needed.</p>
 
     <div class="culture-picker">
         🌐
@@ -58,8 +59,10 @@
             <ValidationMessage For="@(() => model.ZipCode)" />
         </div>
 
-        <button type="submit" id="submit-btn">Register</button>
-        <button type="reset">Reset</button>
+        <div class="button-group">
+            <button type="submit" id="submit-btn">Register</button>
+            <button type="reset">Reset</button>
+        </div>
     </EditForm>
 </div>
 

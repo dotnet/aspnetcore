@@ -1,3 +1,25 @@
+:root {
+    --primary: #6366f1;
+    --primary-hover: #4f46e5;
+    --primary-light: #eef2ff;
+    --primary-border: #c7d2fe;
+
+    --error: #dc2626;
+    --error-light: #fef2f2;
+    --error-border: #fecaca;
+    --success: #16a34a;
+    --success-light: #f0fdf4;
+    --success-border: #bbf7d0;
+    --pending: #2563eb;
+    --pending-light: #eff6ff;
+
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+}
+
 *,
 *::before,
 *::after {
@@ -5,43 +27,58 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     margin: 0;
     padding: 2rem;
-    background: #f5f7fa;
-    color: #1a1a2e;
+    background: var(--bg);
+    color: var(--text);
     line-height: 1.6;
 }
 
 .container {
-    max-width: 520px;
+    max-width: 480px;
     margin: 0 auto;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    padding: 2rem;
+    background: var(--surface);
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.05);
+    padding: 2.5rem 2rem 2rem;
+}
+
+.app-badge {
+    display: inline-block;
+    background: var(--primary-light);
+    color: var(--primary);
+    border: 1px solid var(--primary-border);
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 100px;
+    padding: 0.25rem 0.75rem;
+    margin-bottom: 1rem;
 }
 
 h1 {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
     margin: 0 0 0.25rem;
 }
 
 .subtitle {
-    color: #6c757d;
-    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    line-height: 1.5;
     margin: 0 0 1.5rem;
 }
 
 .culture-picker {
-    display: flex;
+    display: inline-flex;
     gap: 0.75rem;
     margin-bottom: 1.5rem;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
 }
 
 .culture-picker a {
-    color: #4361ee;
+    color: var(--primary);
     text-decoration: none;
 }
 
@@ -51,7 +88,6 @@ h1 {
 
 .culture-picker .active {
     font-weight: 700;
-    text-decoration: underline;
 }
 
 .form-group {
@@ -61,8 +97,9 @@ h1 {
 label {
     display: block;
     font-weight: 600;
-    margin-bottom: 0.3rem;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    margin-bottom: 0.35rem;
+    color: var(--text);
 }
 
 .field-wrapper {
@@ -74,27 +111,38 @@ input[type="email"],
 input[type="password"],
 input[type="number"] {
     width: 100%;
-    padding: 0.55rem 0.75rem;
-    border: 1.5px solid #d1d5db;
-    border-radius: 6px;
+    padding: 0.6rem 0.85rem;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
     font-size: 0.95rem;
-    transition: border-color 0.2s;
+    font-family: inherit;
+    transition: all 0.15s ease;
 }
 
 input:focus {
     outline: none;
-    border-color: #4361ee;
-    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
 .input-validation-error {
-    border-color: #e63946 !important;
+    border-color: var(--error) !important;
+    background: var(--error-light) !important;
+}
+
+.valid {
+    border-color: var(--success);
+    border-left: 3px solid var(--success);
 }
 
 .validation-message {
-    color: #e63946;
-    font-size: 0.82rem;
-    margin-top: 0.25rem;
+    color: var(--error);
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
+}
+
+.validation-message::before {
+    content: "\2715 ";
 }
 
 .validation-summary-valid {
@@ -102,17 +150,17 @@ input:focus {
 }
 
 .validation-summary-errors {
-    background: #fff0f0;
-    border: 1px solid #fecaca;
-    border-radius: 6px;
+    background: var(--error-light);
+    border: 1px solid var(--error-border);
+    border-radius: 8px;
     padding: 0.75rem 1rem;
     margin-bottom: 1.25rem;
-    color: #e63946;
-    font-size: 0.85rem;
+    color: var(--error);
+    font-size: 0.82rem;
 }
 
 .validation-summary-errors ul {
-    margin: 0;
+    margin: 0.25rem 0 0;
     padding-left: 1.2rem;
 }
 
@@ -120,71 +168,82 @@ input:focus {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    color: #4361ee;
-    font-size: 0.82rem;
-    margin-top: 0.25rem;
-}
-
-.spinner {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    border: 2px solid #4361ee;
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
+    color: var(--pending);
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
 }
 
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
 
+.spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--pending);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
 .faulted-indicator {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    color: #e63946;
-    font-size: 0.82rem;
-    margin-top: 0.25rem;
+    color: var(--error);
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
 }
 
 .retry-btn {
     background: none;
     border: none;
-    color: #4361ee;
+    color: var(--primary);
     cursor: pointer;
     text-decoration: underline;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
+    font-family: inherit;
     padding: 0;
+}
+
+.button-group {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
 }
 
 button[type="submit"] {
     width: 100%;
     padding: 0.7rem;
-    background: #4361ee;
+    background: var(--primary);
     color: #fff;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 1rem;
     font-weight: 600;
+    font-family: inherit;
     cursor: pointer;
-    transition: background 0.2s;
-    margin-top: 0.5rem;
+    transition: all 0.15s ease;
 }
 
 button[type="submit"]:hover {
-    background: #3a56d4;
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
 }
 
 button[type="submit"]:disabled {
-    background: #a0aec0;
+    opacity: 0.5;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 .success-message {
-    background: #f0fdf4;
-    border: 1px solid #bbf7d0;
-    border-radius: 6px;
+    background: var(--success-light);
+    border: 1px solid var(--success-border);
+    border-radius: 8px;
     padding: 1rem;
     color: #166534;
     text-align: center;

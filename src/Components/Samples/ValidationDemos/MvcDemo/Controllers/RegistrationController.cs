@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Mvc;
-using MvcValidationDemo.Models;
+using MvcDemo.Models;
 
-namespace MvcValidationDemo.Controllers;
+namespace MvcDemo.Controllers;
 
 public class RegistrationController : Controller
 {
