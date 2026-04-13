@@ -75,6 +75,8 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<WebAssemblySettingsEmitter>();
         services.TryAddScoped<ResourcePreloadService>();
         services.AddTempData();
+        services.TryAddSingleton<CacheComponentStore>(sp =>
+            new MemoryCacheComponentStore(sp.GetRequiredService<IOptions<RazorComponentsServiceOptions>>()));
 
         services.TryAddScoped<ResourceCollectionProvider>();
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<ResourceCollectionProvider>(services, RenderMode.InteractiveWebAssembly);

@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -270,7 +271,47 @@ internal partial class EndpointHtmlRenderer
         _visitedComponentIdsInCurrentStreamingBatch?.Add(componentId);
 
         var componentState = (EndpointComponentState)GetComponentState(componentId);
+        var componentType = componentState.Component.GetType();
+
+        if (componentType == typeof(CacheComponent))
+        {
+            var cacheComponent = (CacheComponent)componentState.Component;
+            if (cacheComponent.Enabled && cacheComponent.ResolvedCacheKey is { } cacheKey)
+            {
+                if (cacheComponent.CachedData is not null)
+                {
+                    base.WriteComponentHtml(componentId, output);
+                    return;
+                }
+
+                if (_cacheStore is not null)
+                {
+                    var cacheCaptureWriter = new CacheComponentTextWriter(output, cacheComponent.GetVaryByOptions());
+                    cacheCaptureWriter.StartCapture();
+                    base.WriteComponentHtml(componentId, cacheCaptureWriter);
+                    var segments = cacheCaptureWriter.StopCapture();
+                    _cacheStore.Set(cacheKey, segments.Serialize(), new CacheStoreOptions
+                    {
+                        ExpiresAfter = cacheComponent.ExpiresAfter,
+                        ExpiresOn = cacheComponent.ExpiresOn,
+                        ExpiresSliding = cacheComponent.ExpiresSliding,
+                    });
+                    return;
+                }
+            }
+        }
+
         var renderBoundaryMarkers = allowBoundaryMarkers && componentState.StreamRendering;
+
+        var captureWriter = output as CacheComponentTextWriter;
+        var pausedCapture = false;
+        if (captureWriter is not null && captureWriter.IsCapturing && (IsHoleComponent(componentType, captureWriter.VaryBy) || renderBoundaryMarkers))
+        {
+            pausedCapture = true;
+            captureWriter.PauseCapture();
+            var (renderModeName, componentKey) = ExtractHoleMetadata(componentId, componentState);
+            captureWriter.CreateHole(componentType, renderModeName, componentKey);
+        }
 
         ComponentEndMarker? endMarkerOrNull = default;
 
@@ -322,6 +363,104 @@ internal partial class EndpointHtmlRenderer
             output.Write(serializedEndRecord);
             output.Write("-->");
         }
+
+        if (pausedCapture)
+        {
+            captureWriter!.StartCapture();
+        }
+    }
+
+    // Determines whether a component must be rendered as a "hole" (uncached placeholder)
+    // in the cache template. Hole components are excluded from cached HTML and re-rendered
+    // fresh on every request, even on cache hits.
+    private static bool IsHoleComponent(Type componentType, CacheComponentVaryBy varyBy)
+    {
+        // Security: AuthorizeView is a hole unless VaryByUser is set, to avoid
+        // serving cached auth state to the wrong user.
+        if (componentType == typeof(Authorization.AuthorizeView) && !varyBy.VaryByUser)
+        {
+            return true;
+        }
+
+        // Form components are holes because they contain antiforgery tokens and
+        // user-specific state that must not be served from cache.
+        if (componentType == typeof(EditForm)
+            || componentType == typeof(ValidationSummary))
+        {
+            return true;
+        }
+
+        // InputBase<T> and ValidationMessage<T> are generic — check the hierarchy
+        if (componentType.IsGenericType && componentType.GetGenericTypeDefinition() == typeof(ValidationMessage<>))
+        {
+            return true;
+        }
+
+        if (IsInputBaseDescendant(componentType))
+        {
+            return true;
+        }
+
+        return componentType == typeof(AntiforgeryToken)
+            || componentType == typeof(NotCacheComponent)
+            || componentType == typeof(SSRRenderModeBoundary)
+            || componentType == typeof(Web.HeadOutlet)
+            || componentType == typeof(Sections.SectionOutlet)
+            || componentType == typeof(Sections.SectionContent);
+    }
+
+    private static bool IsInputBaseDescendant(Type componentType)
+    {
+        while (componentType is not null && componentType != typeof(object))
+        {
+            if (componentType.IsGenericType && componentType.GetGenericTypeDefinition() == typeof(InputBase<>))
+            {
+                return true;
+            }
+            componentType = componentType.BaseType!;
+        }
+        return false;
+    }
+
+    private (string? RenderModeName, string? ComponentKey) ExtractHoleMetadata(int componentId, EndpointComponentState componentState)
+    {
+        var parentState = componentState.ParentComponentState;
+        if (parentState is null)
+        {
+            return (null, null);
+        }
+
+        var parentFrames = GetCurrentRenderTreeFrames(parentState.ComponentId);
+        var frames = parentFrames.Array;
+        var count = parentFrames.Count;
+
+        for (var i = 0; i < count; i++)
+        {
+            ref var frame = ref frames[i];
+            if (frame.FrameType == RenderTreeFrameType.Component && frame.ComponentId == componentId)
+            {
+                var endIndex = i + frame.ComponentSubtreeLength;
+                var renderModeName = ExtractRenderMode(frames, i, endIndex);
+                var componentKey = frame.ComponentKey as string;
+
+                return (renderModeName, componentKey);
+            }
+        }
+
+        return (null, null);
+    }
+
+    private static string? ExtractRenderMode(RenderTreeFrame[] frames, int componentFrameIndex, int endIndex)
+    {
+        for (var i = componentFrameIndex + 1; i < endIndex; i++)
+        {
+            if (frames[i].FrameType == RenderTreeFrameType.ComponentRenderMode)
+            {
+                return CacheSegment.GetRenderModeName(frames[i].ComponentRenderMode);
+            }
+        }
+
+        return null;
     }
 
     internal static bool IsProgressivelyEnhancedNavigation(HttpRequest request)

@@ -103,4 +103,11 @@ public sealed class RazorComponentsServiceOptions
     /// Defaults to <see cref="TempDataProviderType.Cookie"/>.
     /// </summary>
     public TempDataProviderType TempDataProviderType { get; set; } = TempDataProviderType.Cookie;
+
+    /// <summary>
+    /// Gets or sets the maximum size, in bytes, of the memory cache used by <see cref="CacheComponent"/>
+    /// for server-side rendering. When the limit is reached, no new entries are cached until
+    /// existing entries expire. Defaults to 100 MB.
+    /// </summary>
+    public long CacheComponentSizeLimit { get; set; } = 100_000_000;
 }

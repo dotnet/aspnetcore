@@ -1,6 +1,40 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Endpoints.BasePath
 Microsoft.AspNetCore.Components.Endpoints.BasePath.BasePath() -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.CacheComponentSizeLimit.get -> long
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.CacheComponentSizeLimit.set -> void
+Microsoft.AspNetCore.Components.CacheComponent
+Microsoft.AspNetCore.Components.CacheComponent.CacheComponent() -> void
+Microsoft.AspNetCore.Components.CacheComponent.CacheKey.get -> string?
+Microsoft.AspNetCore.Components.CacheComponent.CacheKey.set -> void
+Microsoft.AspNetCore.Components.CacheComponent.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.CacheComponent.ChildContent.set -> void
+Microsoft.AspNetCore.Components.CacheComponent.Enabled.get -> bool
+Microsoft.AspNetCore.Components.CacheComponent.Enabled.set -> void
+Microsoft.AspNetCore.Components.CacheComponent.ExpiresAfter.get -> System.TimeSpan?
+Microsoft.AspNetCore.Components.CacheComponent.ExpiresAfter.set -> void
+Microsoft.AspNetCore.Components.CacheComponent.ExpiresOn.get -> System.DateTimeOffset?
+Microsoft.AspNetCore.Components.CacheComponent.ExpiresOn.set -> void
+Microsoft.AspNetCore.Components.CacheComponent.ExpiresSliding.get -> System.TimeSpan?
+Microsoft.AspNetCore.Components.CacheComponent.ExpiresSliding.set -> void
+Microsoft.AspNetCore.Components.CacheComponent.VaryBy.get -> string?
+Microsoft.AspNetCore.Components.CacheComponent.VaryBy.set -> void
+Microsoft.AspNetCore.Components.CacheComponent.VaryByCookie.get -> string?
+Microsoft.AspNetCore.Components.CacheComponent.VaryByCookie.set -> void
+Microsoft.AspNetCore.Components.CacheComponent.VaryByCulture.get -> bool?
+Microsoft.AspNetCore.Components.CacheComponent.VaryByCulture.set -> void
+Microsoft.AspNetCore.Components.CacheComponent.VaryByHeader.get -> string?
+Microsoft.AspNetCore.Components.CacheComponent.VaryByHeader.set -> void
+Microsoft.AspNetCore.Components.CacheComponent.VaryByQuery.get -> string?
+Microsoft.AspNetCore.Components.CacheComponent.VaryByQuery.set -> void
+Microsoft.AspNetCore.Components.CacheComponent.VaryByRoute.get -> string?
+Microsoft.AspNetCore.Components.CacheComponent.VaryByRoute.set -> void
+Microsoft.AspNetCore.Components.CacheComponent.VaryByUser.get -> bool?
+Microsoft.AspNetCore.Components.CacheComponent.VaryByUser.set -> void
+Microsoft.AspNetCore.Components.NotCacheComponent
+Microsoft.AspNetCore.Components.NotCacheComponent.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.NotCacheComponent.ChildContent.set -> void
+Microsoft.AspNetCore.Components.NotCacheComponent.NotCacheComponent() -> void
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataCookie.get -> Microsoft.AspNetCore.Http.CookieBuilder!
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataCookie.set -> void
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataProviderType.get -> Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType

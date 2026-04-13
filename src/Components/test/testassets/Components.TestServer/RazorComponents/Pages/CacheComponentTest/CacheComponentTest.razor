@@ -1,0 +1,71 @@
+﻿@page "/cache-component"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h3>CacheComponent</h3>
+
+<div id="test-1">
+    <CacheComponent ExpiresAfter="TimeSpan.FromHours(1)">
+        <p class="cached">@DateTime.Now.ToString("o")</p>
+        <NotCacheComponent>
+            <p class="not-cache-component">@DateTime.Now.ToString("o")</p>
+        </NotCacheComponent>
+    </CacheComponent>
+    <p class="not-cached">@DateTime.Now.ToString("o")</p>
+</div>
+
+<div id="test-2">
+    <CacheComponent ExpiresAfter="TimeSpan.FromHours(1)" Enabled="false">
+        <p class="cached">@DateTime.Now.ToString("o")</p>
+        <NotCacheComponent>
+            <p class="not-cache-component">@DateTime.Now.ToString("o")</p>
+        </NotCacheComponent>
+    </CacheComponent>
+    <p class="not-cached">@DateTime.Now.ToString("o")</p>
+</div>
+
+<div id="test-3">
+    <CacheComponent ExpiresAfter="TimeSpan.FromHours(1)">
+        <EditForm Model="this" FormName="editFormTest" method="post">
+            <input id="message-input" type="text" name="Message" />
+            <button id="submit" type="submit">Submit</button>
+        </EditForm>
+        <NotCacheComponent>
+            <p id="message">@Message</p>
+        </NotCacheComponent>
+    </CacheComponent>
+</div>
+
+<div id="test-4">
+    <CacheComponent ExpiresAfter="TimeSpan.FromHours(1)">
+        <p id="outer-cached">@DateTime.Now.ToString("o")</p>
+        <CacheComponent ExpiresAfter="TimeSpan.FromHours(1)">
+            <InnerCachedComponent />
+        </CacheComponent>
+    </CacheComponent>
+</div>
+
+<div id="test-5">
+    @for (var i = 0; i < 3; i++)
+    {
+        <div class="loop-item" data-index="@i">
+            <CacheComponent ExpiresAfter="TimeSpan.FromHours(1)" CacheKey="@($"loop-{i}")">
+                <p class="cached-value">@DateTime.Now.ToString("o")</p>
+            </CacheComponent>
+        </div>
+    }
+</div>
+
+<div id="test-6">
+    <CacheComponent ExpiresAfter="TimeSpan.FromHours(1)">
+        @for (var i = 0; i < 3; i++)
+        {
+            <p class="loop-cached-item" data-index="@i">Item @i: @DateTime.Now.ToString("o")</p>
+        }
+    </CacheComponent>
+</div>
+
+@code
+{
+    [SupplyParameterFromForm(FormName = "editFormTest")]
+    private string Message { get; set; } = "never";
+}
