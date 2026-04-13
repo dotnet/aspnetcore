@@ -443,7 +443,8 @@ public class VirtualizeTest
         var rootComponent = new VirtualizeTestHostcomponent
         {
             InnerContent = BuildVirtualizeWithContent(50f, Enumerable.Range(1, 100).ToList(),
-                captureRenderedVirtualize: v => renderedVirtualize = v)
+                captureRenderedVirtualize: v => renderedVirtualize = v,
+                anchorMode: VirtualizeAnchorMode.End)
         };
 
         var serviceProvider = new ServiceCollection()
@@ -783,7 +784,8 @@ public class VirtualizeTest
         float itemSize,
         ICollection<int> items,
         Action<Virtualize<int>> captureRenderedVirtualize = null,
-        string spacerElement = "div")
+        string spacerElement = "div",
+        VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Beginning)
         => builder =>
     {
         builder.OpenComponent<Virtualize<int>>(0);
@@ -796,6 +798,7 @@ public class VirtualizeTest
             b.AddContent(1, item.ToString(System.Globalization.CultureInfo.InvariantCulture));
             b.CloseElement();
         }));
+        builder.AddComponentParameter(6, "AnchorMode", anchorMode);
 
         if (captureRenderedVirtualize != null)
         {
