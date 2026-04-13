@@ -108,10 +108,6 @@ public class ServerVirtualizationTest : VirtualizationTest
     public override void CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax()
         => base.CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax();
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66119")]
-    public override void NonZeroStartIndex_ScrollToMiddleThenMeasure()
-        => base.NonZeroStartIndex_ScrollToMiddleThenMeasure();
-
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66120")]
     public override void CancelsOutdatedRefreshes_Async()
         => base.CancelsOutdatedRefreshes_Async();

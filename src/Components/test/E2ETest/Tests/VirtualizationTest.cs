@@ -1606,7 +1606,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    public virtual void NonZeroStartIndex_ScrollToMiddleThenMeasure()
+    public void NonZeroStartIndex_ScrollToMiddleThenMeasure()
     {
         Browser.MountTestComponent<VirtualizationScrollBehavior>();
 
@@ -1614,21 +1614,29 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var js = (IJavaScriptExecutor)Browser;
         Browser.True(() => GetElementCount(container, ".scroll-behavior-item") > 0);
 
-        js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight / 2", container);
-        WaitForScrollStabilization(container);
+        var targetScrollTop= Convert.ToDouble(
+            js.ExecuteScript("return arguments[0].scrollHeight / 2", container),
+            CultureInfo.InvariantCulture);
 
+        container.Click();
         Browser.True(() =>
         {
+            js.ExecuteScript("arguments[0].scrollTop = arguments[1];", container, targetScrollTop);
+
+            var currentScrollTop = Convert.ToDouble(
+                js.ExecuteScript("return arguments[0].scrollTop;", container),
+                CultureInfo.InvariantCulture);
+            if (currentScrollTop + 1 < targetScrollTop)
+            {
+                return false;
+            }
+
             var items = container.FindElements(By.CssSelector(".scroll-behavior-item .item-index"));
             return items.Any(item =>
-            {
-                if (int.TryParse(item.Text, out var idx))
-                {
-                    return idx > 50;
-                }
-                return false;
-            });
+                int.TryParse(item.Text, out var idx) && idx > 50);
         });
+
+        WaitForScrollStabilization(container);
 
         var visibleItems = container.FindElements(By.CssSelector(".scroll-behavior-item"));
         Assert.True(visibleItems.Count > 0, "Should have visible items at non-zero start");
