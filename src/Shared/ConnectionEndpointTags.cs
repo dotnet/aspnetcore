@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Http.Features;
 
 #nullable enable
 
+namespace Microsoft.AspNetCore.Shared;
+
 internal static class ConnectionEndpointTags
 {
     /// <summary>
@@ -25,9 +27,9 @@ internal static class ConnectionEndpointTags
             return;
         }
 
-        // There isn't an easy way to detect whether QUIC is the underlying transport from a feature collection alone.
-        // This code assumes that a multiplexed connection is QUIC.
-        // Improve in the future if there are additional multiplexed connection types.
+        // This overload only has endpoint information from the feature collection and does not attempt
+        // to infer whether the underlying transport is multiplexed or QUIC. For IP endpoints, it records
+        // the transport as TCP.
         AddEndpointTags(ref tags, endpointFeature.LocalEndPoint, networkTransport: "tcp");
     }
 

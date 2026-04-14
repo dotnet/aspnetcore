@@ -30,7 +30,7 @@ internal partial class IISHttpContext
     private static readonly Type IHttpResponseTrailersFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature);
     private static readonly Type IHttpResetFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpResetFeature);
     private static readonly Type IConnectionLifetimeNotificationFeature = typeof(global::Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeNotificationFeature);
-    private static readonly Type IConnectionEndPointFeatureType = typeof(global::Microsoft.AspNetCore.Connections.Features.IConnectionEndPointFeature);
+    private static readonly Type IConnectionEndPointFeature = typeof(global::Microsoft.AspNetCore.Connections.Features.IConnectionEndPointFeature);
     private static readonly Type IHttpActivityFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpActivityFeature);
     private static readonly Type IHttpSysRequestInfoFeature = typeof(global::Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestInfoFeature);
     private static readonly Type IHttpSysRequestTimingFeature = typeof(global::Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestTimingFeature);
@@ -192,7 +192,7 @@ internal partial class IISHttpContext
         {
             return _currentIConnectionLifetimeNotificationFeature;
         }
-        if (key == IConnectionEndPointFeatureType)
+        if (key == IConnectionEndPointFeature)
         {
             return _currentIConnectionEndPointFeature;
         }
@@ -344,7 +344,7 @@ internal partial class IISHttpContext
             _currentIConnectionLifetimeNotificationFeature = feature;
             return;
         }
-        if (key == IConnectionEndPointFeatureType)
+        if (key == IConnectionEndPointFeature)
         {
             _currentIConnectionEndPointFeature = feature;
             return;
@@ -458,7 +458,7 @@ internal partial class IISHttpContext
         }
         if (_currentIConnectionEndPointFeature != null)
         {
-            yield return new KeyValuePair<Type, object>(IConnectionEndPointFeatureType, _currentIConnectionEndPointFeature);
+            yield return new KeyValuePair<Type, object>(IConnectionEndPointFeature, _currentIConnectionEndPointFeature);
         }
         if (_currentIHttpActivityFeature != null)
         {
