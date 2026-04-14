@@ -111,6 +111,10 @@ public class ServerVirtualizationTest : VirtualizationTest
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66120")]
     public override void CancelsOutdatedRefreshes_Async()
         => base.CancelsOutdatedRefreshes_Async();
+
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66308")]
+    public override void DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace()
+        => base.DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace();
 }
 
 public class ServerDynamicComponentRenderingTest : DynamicComponentRenderingTest
