@@ -25,4 +25,7 @@
   <data name="PageSubtitle" xml:space="preserve"><value>La validación del formulario se ejecuta en el navegador — sin viajes al servidor.</value></data>
   <data name="Register" xml:space="preserve"><value>Registrarse</value></data>
   <data name="Reset" xml:space="preserve"><value>Restablecer</value></data>
+  <data name="SuccessTitle" xml:space="preserve"><value>Registro exitoso</value></data>
+  <data name="SuccessMessage" xml:space="preserve"><value>Su registro se ha enviado correctamente.</value></data>
+  <data name="BackToForm" xml:space="preserve"><value>Volver al formulario</value></data>
 </root>

@@ -25,4 +25,7 @@
   <data name="PageSubtitle" xml:space="preserve"><value>Form validation runs in the browser — no server round-trip needed.</value></data>
   <data name="Register" xml:space="preserve"><value>Register</value></data>
   <data name="Reset" xml:space="preserve"><value>Reset</value></data>
+  <data name="SuccessTitle" xml:space="preserve"><value>Registration Successful</value></data>
+  <data name="SuccessMessage" xml:space="preserve"><value>Your registration has been submitted successfully.</value></data>
+  <data name="BackToForm" xml:space="preserve"><value>Back to form</value></data>
 </root>

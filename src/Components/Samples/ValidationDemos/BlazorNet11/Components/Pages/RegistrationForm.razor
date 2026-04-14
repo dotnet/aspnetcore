@@ -59,7 +59,7 @@
                                         @onclick="() => RetryValidation(nameof(_model.Email))">@Loc["Retry"]</button>
                             </div>
                         }
-                        else if (IsFieldValidAfterAsync(() => _model.Email))
+                        else if (IsFieldValidAfterAsyncCheck(() => _model.Email))
                         {
                             <div class="text-success small mt-1">✓ Available</div>
                         }
@@ -86,7 +86,7 @@
                                         @onclick="() => RetryValidation(nameof(_model.Username))">@Loc["Retry"]</button>
                             </div>
                         }
-                        else if (IsFieldValidAfterAsync(() => _model.Username))
+                        else if (IsFieldValidAfterAsyncCheck(() => _model.Username))
                         {
                             <div class="text-success small mt-1">✓ Available</div>
                         }
@@ -98,14 +98,8 @@
 
                     <div class="mb-3">
                         <label for="Password" class="form-label">@Loc["Password"]</label>
-                        <InputText @bind-Value="_model.Password" id="Password" type="password" class="form-control" />
+                        <InputText @bind-Value="_model.Password" id="Password" type="password" class="form-control" autocomplete="new-password" />
                         <ValidationMessage For="@(() => _model.Password)" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="Age" class="form-label">@Loc["Age"]</label>
-                        <InputNumber @bind-Value="_model.Age" id="Age" class="form-control" />
-                        <ValidationMessage For="@(() => _model.Age)" />
                     </div>
 
                     <button type="submit" class="btn btn-primary" disabled="@_editContext.IsValidationPending()">
@@ -127,6 +121,7 @@
     protected override void OnInitialized()
     {
         _editContext = new EditContext(_model);
+        _editContext.SetFieldCssClassProvider(new PendingAwareFieldCssClassProvider());
         _editContext.OnValidationStateChanged += OnValidationStateChanged;
     }
 
@@ -150,16 +145,30 @@
     {
         _model = new();
         _editContext = new EditContext(_model);
+        _editContext.SetFieldCssClassProvider(new PendingAwareFieldCssClassProvider());
         _editContext.OnValidationStateChanged += OnValidationStateChanged;
         _submitted = false;
     }
 
-    private bool IsFieldValidAfterAsync<TField>(System.Linq.Expressions.Expression<Func<TField>> accessor)
+    private bool IsFieldValidAfterAsyncCheck<TField>(System.Linq.Expressions.Expression<Func<TField>> accessor)
     {
         var field = FieldIdentifier.Create(accessor);
         return _editContext.IsModified(field)
             && !_editContext.IsValidationPending(field)
             && !_editContext.IsValidationFaulted(field)
             && !_editContext.GetValidationMessages(field).Any();
+    }
+
+    private sealed class PendingAwareFieldCssClassProvider : FieldCssClassProvider
+    {
+        public override string GetFieldCssClass(EditContext editContext, in FieldIdentifier fieldIdentifier)
+        {
+            if (editContext.IsValidationPending(fieldIdentifier))
+            {
+                return editContext.IsModified(fieldIdentifier) ? "modified" : "";
+            }
+
+            return base.GetFieldCssClass(editContext, fieldIdentifier);
+        }
     }
 }

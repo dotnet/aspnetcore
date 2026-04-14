@@ -11,36 +11,36 @@
 
             <div class="mb-3 d-flex gap-2 small">
                 🌐
-                <a href="?culture=en" class="@(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en" ? "fw-bold" : "")">English</a>
-                <a href="?culture=es" class="@(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "es" ? "fw-bold" : "")">Español</a>
+                <a href="/Culture/Set?culture=en&redirectUri=/" class="@(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en" ? "fw-bold" : "")">English</a>
+                <a href="/Culture/Set?culture=es&redirectUri=/" class="@(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "es" ? "fw-bold" : "")">Español</a>
             </div>
 
-            <EditForm Model="model" Enhance FormName="registration" id="registration-form">
+            <EditForm Model="Model" Enhance FormName="registration" OnValidSubmit="HandleValidSubmit" id="registration-form">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
                 <div class="mb-3">
                     <label for="Name" class="form-label">@Loc["FullName"]</label>
-                    <InputText @bind-Value="model.Name" id="Name" class="form-control" autocomplete="off" />
-                    <ValidationMessage For="@(() => model.Name)" />
+                    <InputText @bind-Value="Model.Name" id="Name" class="form-control" autocomplete="off" />
+                    <ValidationMessage For="@(() => Model.Name)" />
                 </div>
 
                 <div class="mb-3">
                     <label for="Email" class="form-label">@Loc["Email"]</label>
-                    <InputText @bind-Value="model.Email" id="Email" class="form-control" autocomplete="off" />
-                    <ValidationMessage For="@(() => model.Email)" />
+                    <InputText @bind-Value="Model.Email" id="Email" class="form-control" autocomplete="off" />
+                    <ValidationMessage For="@(() => Model.Email)" />
                 </div>
 
                 <div class="mb-3">
                     <label for="Password" class="form-label">@Loc["Password"]</label>
-                    <InputText @bind-Value="model.Password" id="Password" type="password" class="form-control" autocomplete="new-password" />
-                    <ValidationMessage For="@(() => model.Password)" />
+                    <InputText @bind-Value="Model.Password" id="Password" type="password" class="form-control" autocomplete="new-password" />
+                    <ValidationMessage For="@(() => Model.Password)" />
                 </div>
 
                 <div class="mb-3">
                     <label for="ConfirmPassword" class="form-label">@Loc["ConfirmPassword"]</label>
-                    <InputText @bind-Value="model.ConfirmPassword" id="ConfirmPassword" type="password" class="form-control" autocomplete="new-password" />
-                    <ValidationMessage For="@(() => model.ConfirmPassword)" />
+                    <InputText @bind-Value="Model.ConfirmPassword" id="ConfirmPassword" type="password" class="form-control" autocomplete="new-password" />
+                    <ValidationMessage For="@(() => Model.ConfirmPassword)" />
                 </div>
 
                 <div class="d-flex gap-2">
@@ -54,6 +54,13 @@
 
 @code {
     [Inject] private IStringLocalizer<BlazorSSRNet11.Resources.LocalizedStrings> Loc { get; set; } = default!;
+    [Inject] private NavigationManager Nav { get; set; } = default!;
 
-    private RegistrationModel model = new();
+    [SupplyParameterFromForm]
+    private RegistrationModel Model { get; set; } = new();
+
+    private void HandleValidSubmit()
+    {
+        Nav.NavigateTo("/success");
+    }
 }

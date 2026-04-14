@@ -21,11 +21,6 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     options.DefaultRequestCulture = new RequestCulture("en");
     options.SupportedCultures = supportedCultures;
     options.SupportedUICultures = supportedCultures;
-    options.RequestCultureProviders.Insert(0, new QueryStringRequestCultureProvider
-    {
-        QueryStringKey = "culture",
-        UIQueryStringKey = "culture"
-    });
 });
 
 var app = builder.Build();
@@ -37,6 +32,16 @@ if (!app.Environment.IsDevelopment())
 
 app.UseRequestLocalization();
 app.UseAntiforgery();
+
+// Cookie-based culture switching
+app.MapGet("/Culture/Set", (HttpContext context, string culture, string redirectUri) =>
+{
+    context.Response.Cookies.Append(
+        CookieRequestCultureProvider.DefaultCookieName,
+        CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+        new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) });
+    context.Response.Redirect(redirectUri);
+});
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>();
