@@ -563,7 +563,7 @@ public class MessageBufferTests
     }
 
     [Fact]
-    public async Task BackpressureWriteMessageCanBeCanceled()
+    public async Task PipeBackpressureWriteMessageCanBeCanceled()
     {
         var cts = new CancellationTokenSource();
         var protocol = new JsonHubProtocol();
@@ -581,7 +581,7 @@ public class MessageBufferTests
 
         cts.Cancel();
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await writeTask);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await writeTask).DefaultTimeout();
 
         DuplexPipe.UpdateConnectionPair(ref pipes, connection, pipeOptions);
         var resendTask = messageBuffer.ResendAsync(pipes.Transport.Output);
@@ -602,6 +602,94 @@ public class MessageBufferTests
 
             pipes.Application.Input.AdvanceTo(buffer.Start);
         }
+
+        Assert.False(pipes.Application.Input.TryRead(out res));
+
+        await resendTask;
+    }
+
+    [Fact]
+    public async Task BufferedBackpressureWriteMessageDefaultCancellation()
+    {
+        var cts = new CancellationTokenSource();
+        var protocol = new JsonHubProtocol();
+        var connection = new TestConnectionContext();
+        var pipeOptions = new PipeOptions(pauseWriterThreshold: 100, resumeWriterThreshold: 50);
+        var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), pipeOptions);
+        connection.Transport = pipes.Transport;
+        var timeProvider = new FakeTimeProvider();
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 50, NullLogger.Instance, timeProvider);
+
+        await messageBuffer.WriteAsync(new SerializedHubMessage(new InvocationMessage("t", new object[] { new byte[40] })), cts.Token);
+
+        // Write will hit pipe backpressure
+        var writeTask = messageBuffer.WriteAsync(new SerializedHubMessage(new InvocationMessage("t", new object[] { new byte[40] })), cts.Token);
+        Assert.False(writeTask.IsCompleted);
+
+        timeProvider.Advance(TimeSpan.FromSeconds(5) + TimeSpan.FromMilliseconds(1));
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await writeTask).DefaultTimeout();
+
+        DuplexPipe.UpdateConnectionPair(ref pipes, connection, pipeOptions);
+        var resendTask = messageBuffer.ResendAsync(pipes.Transport.Output);
+
+        var res = await pipes.Application.Input.ReadAsync();
+        var buffer = res.Buffer;
+        Assert.True(protocol.TryParseMessage(ref buffer, new TestBinder(), out var message));
+        Assert.IsType<SequenceMessage>(message);
+
+        pipes.Application.Input.AdvanceTo(buffer.Start);
+
+        res = await pipes.Application.Input.ReadAsync();
+        buffer = res.Buffer;
+        Assert.True(protocol.TryParseMessage(ref buffer, new TestBinder(), out message));
+        Assert.IsType<InvocationMessage>(message);
+
+        pipes.Application.Input.AdvanceTo(buffer.Start);
+
+        Assert.False(pipes.Application.Input.TryRead(out res));
+
+        await resendTask;
+    }
+
+    [Fact]
+    public async Task BufferedBackpressureWriteMessageCanBeCanceled()
+    {
+        var cts = new CancellationTokenSource();
+        var protocol = new JsonHubProtocol();
+        var connection = new TestConnectionContext();
+        var pipeOptions = new PipeOptions(pauseWriterThreshold: 100, resumeWriterThreshold: 50);
+        var pipes = DuplexPipe.CreateConnectionPair(new PipeOptions(), pipeOptions);
+        connection.Transport = pipes.Transport;
+        var timeProvider = new FakeTimeProvider();
+        using var messageBuffer = new MessageBuffer(connection, protocol, bufferLimit: 50, NullLogger.Instance, timeProvider);
+
+        await messageBuffer.WriteAsync(new SerializedHubMessage(new InvocationMessage("t", new object[] { new byte[40] })), cts.Token);
+
+        // Write will hit pipe backpressure
+        var writeTask = messageBuffer.WriteAsync(new SerializedHubMessage(new InvocationMessage("t", new object[] { new byte[40] })), cts.Token);
+        Assert.False(writeTask.IsCompleted);
+
+        cts.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await writeTask).DefaultTimeout();
+
+        DuplexPipe.UpdateConnectionPair(ref pipes, connection, pipeOptions);
+        var resendTask = messageBuffer.ResendAsync(pipes.Transport.Output);
+
+        var res = await pipes.Application.Input.ReadAsync();
+        var buffer = res.Buffer;
+        Assert.True(protocol.TryParseMessage(ref buffer, new TestBinder(), out var message));
+        Assert.IsType<SequenceMessage>(message);
+
+        pipes.Application.Input.AdvanceTo(buffer.Start);
+
+        res = await pipes.Application.Input.ReadAsync();
+        buffer = res.Buffer;
+        Assert.True(protocol.TryParseMessage(ref buffer, new TestBinder(), out message));
+        Assert.IsType<InvocationMessage>(message);
+
+        pipes.Application.Input.AdvanceTo(buffer.Start);
 
         Assert.False(pipes.Application.Input.TryRead(out res));
 
