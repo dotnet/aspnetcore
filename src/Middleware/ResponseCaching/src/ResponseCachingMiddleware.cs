@@ -196,7 +196,16 @@ namespace Microsoft.AspNetCore.ResponseCaching
 
         internal async Task<bool> TryServeFromCacheAsync(ResponseCachingContext context)
         {
-            context.BaseKey = _keyProvider.CreateBaseKey(context);
+            try
+            {
+                context.BaseKey = _keyProvider.CreateBaseKey(context);
+            }
+            catch (CacheKeyDelimiterException)
+            {
+                _logger.LogRequestContainsInvalidCacheSymbols();
+                return false;
+            }
+
             var cacheEntry = await _cache.GetAsync(context.BaseKey);
 
             var cachedVaryByRules = cacheEntry as CachedVaryByRules;
@@ -205,12 +214,20 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 // Request contains vary rules, recompute key(s) and try again
                 context.CachedVaryByRules = cachedVaryByRules;
 
-                foreach (var varyKey in _keyProvider.CreateLookupVaryByKeys(context))
+                try
                 {
-                    if (await TryServeCachedResponseAsync(context, await _cache.GetAsync(varyKey)))
+                    foreach (var varyKey in _keyProvider.CreateLookupVaryByKeys(context))
                     {
-                        return true;
+                        if (await TryServeCachedResponseAsync(context, await _cache.GetAsync(varyKey)))
+                        {
+                            return true;
+                        }
                     }
+                }
+                catch (CacheKeyDelimiterException)
+                {
+                    _logger.LogRequestContainsInvalidCacheSymbols();
+                    return false;
                 }
             }
             else
@@ -257,7 +274,17 @@ namespace Microsoft.AspNetCore.ResponseCaching
                 // Generate a base key if none exist
                 if (string.IsNullOrEmpty(context.BaseKey))
                 {
-                    context.BaseKey = _keyProvider.CreateBaseKey(context);
+                    try
+                    {
+                        context.BaseKey = _keyProvider.CreateBaseKey(context);
+                    }
+                    catch (CacheKeyDelimiterException)
+                    {
+                        _logger.LogRequestContainsInvalidCacheSymbols();
+                        context.ShouldCacheResponse = false;
+                        context.ResponseCachingStream.DisableBuffering();
+                        return false;
+                    }
                 }
 
                 // Check if any vary rules exist
@@ -284,7 +311,17 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     _logger.LogVaryByRulesUpdated(normalizedVaryHeaders, normalizedVaryQueryKeys);
                     storeVaryByEntry = true;
 
-                    context.StorageVaryKey = _keyProvider.CreateStorageVaryByKey(context);
+                    try
+                    {
+                        context.StorageVaryKey = _keyProvider.CreateStorageVaryByKey(context);
+                    }
+                    catch (CacheKeyDelimiterException)
+                    {
+                        _logger.LogRequestContainsInvalidCacheSymbols();
+                        context.ShouldCacheResponse = false;
+                        context.ResponseCachingStream.DisableBuffering();
+                        return false;
+                    }
                 }
 
                 // Ensure date header is set
