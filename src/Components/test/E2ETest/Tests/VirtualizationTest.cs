@@ -745,6 +745,26 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         double targetScrollTop,
         int minFirstRenderedIndexExclusive)
     {
+        ScrollToOffsetWithStabilization(container, targetScrollTop, () =>
+        {
+            var items = container.FindElements(By.CssSelector(".item"));
+            if (items.Count == 0)
+            {
+                return false;
+            }
+
+            var indexText = items.First().GetDomAttribute("data-index");
+            return indexText != null
+                && int.TryParse(indexText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var index)
+                && index > minFirstRenderedIndexExclusive;
+        });
+    }
+
+    private void ScrollToOffsetWithStabilization(
+        IWebElement container,
+        double targetScrollTop,
+        Func<bool> itemCheckPredicate)
+    {
         var js = (IJavaScriptExecutor)Browser;
 
         container.Click();
@@ -760,16 +780,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 return false;
             }
 
-            var items = container.FindElements(By.CssSelector(".item"));
-            if (items.Count == 0)
-            {
-                return false;
-            }
-
-            var indexText = items.First().GetDomAttribute("data-index");
-            return indexText != null
-                && int.TryParse(indexText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var index)
-                && index > minFirstRenderedIndexExclusive;
+            return itemCheckPredicate();
         });
 
         WaitForScrollStabilization(container);
@@ -1614,29 +1625,16 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var js = (IJavaScriptExecutor)Browser;
         Browser.True(() => GetElementCount(container, ".scroll-behavior-item") > 0);
 
-        var targetScrollTop= Convert.ToDouble(
+        var targetScrollTop = Convert.ToDouble(
             js.ExecuteScript("return arguments[0].scrollHeight / 2", container),
             CultureInfo.InvariantCulture);
 
-        container.Click();
-        Browser.True(() =>
+        ScrollToOffsetWithStabilization(container, targetScrollTop, () =>
         {
-            js.ExecuteScript("arguments[0].scrollTop = arguments[1];", container, targetScrollTop);
-
-            var currentScrollTop = Convert.ToDouble(
-                js.ExecuteScript("return arguments[0].scrollTop;", container),
-                CultureInfo.InvariantCulture);
-            if (currentScrollTop + 1 < targetScrollTop)
-            {
-                return false;
-            }
-
             var items = container.FindElements(By.CssSelector(".scroll-behavior-item .item-index"));
             return items.Any(item =>
                 int.TryParse(item.Text, out var idx) && idx > 50);
         });
-
-        WaitForScrollStabilization(container);
 
         var visibleItems = container.FindElements(By.CssSelector(".scroll-behavior-item"));
         Assert.True(visibleItems.Count > 0, "Should have visible items at non-zero start");
