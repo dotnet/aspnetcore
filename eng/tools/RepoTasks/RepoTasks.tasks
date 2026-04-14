@@ -5,10 +5,9 @@
   </PropertyGroup>
 
   <UsingTask TaskName="RepoTasks.GenerateGuid" AssemblyFile="$(_RepoTaskAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
-  <UsingTask TaskName="RepoTasks.GenerateSharedFrameworkDepsFile" AssemblyFile="$(_RepoTaskAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
-  <UsingTask TaskName="RepoTasks.CreateFrameworkListFile" AssemblyFile="$(_RepoTaskAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
+  <UsingTask TaskName="RepoTasks.GetMsiProperty" AssemblyFile="$(_RepoTaskAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="RepoTasks.GenerateTestDevCert" AssemblyFile="$(_RepoTaskAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
 
-  <UsingTask TaskName="DownloadFile" AssemblyFile="$(ArcadeSdkBuildTasksAssembly)" />
+  <UsingTask TaskName="DownloadFile" AssemblyFile="$(ArcadeSdkBuildTasksAssembly)" Runtime="NET" />
 
 </Project>

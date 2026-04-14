@@ -34,6 +34,9 @@
 # Configures warning treatment in msbuild.
 [bool]$warnAsError = if (Test-Path variable:warnAsError) { $warnAsError } else { $true }
 
+# Specifies semi-colon delimited list of warning codes that should not be treated as errors.
+[string]$warnNotAsError = if (Test-Path variable:warnNotAsError) { $warnNotAsError } else { '' }
+
 # Specifies which msbuild engine to use for build: 'vs', 'dotnet' or unspecified (determined based on presence of tools.vs in global.json).
 [string]$msbuildEngine = if (Test-Path variable:msbuildEngine) { $msbuildEngine } else { $null }
 
@@ -295,6 +298,8 @@ function InstallDotNet([string] $dotnetRoot,
 
   $dotnetVersionLabel = "'sdk v$version'"
 
+  # For performance this check is duplicated in src/Microsoft.DotNet.Arcade.Sdk/src/InstallDotNetCore.cs
+  # if you are making changes here, consider if you need to make changes there as well.
   if ($runtime -ne '' -and $runtime -ne 'sdk') {
     $runtimePath = $dotnetRoot
     $runtimePath = $runtimePath + "\shared"
@@ -588,6 +593,11 @@ function LocateVisualStudio([object]$vsRequirements = $null){
     return $null
   }
 
+  if ($null -eq $vsInfo -or $vsInfo.Count -eq 0) {
+    throw "No instance of Visual Studio meeting the requirements specified was found. Requirements: $($args -join ' ')"
+    return $null
+  }
+
   # use first matching instance
   return $vsInfo[0]
 }
@@ -820,11 +830,20 @@ function MSBuild-Core() {
 
   $cmdArgs = "$($buildTool.Command) /m /nologo /clp:Summary /v:$verbosity /nr:$nodeReuse /p:ContinuousIntegrationBuild=$ci"
 
+  # Add -mt flag for MSBuild multithreaded mode if enabled via environment variable
+  if ($env:MSBUILD_MT_ENABLED -eq "1") {
+    $cmdArgs += ' -mt'
+  }
+
   if ($warnAsError) {
     $cmdArgs += ' /warnaserror /p:TreatWarningsAsErrors=true'
   }
   else {
     $cmdArgs += ' /p:TreatWarningsAsErrors=false'
+  }
+
+  if ($warnNotAsError) {
+    $cmdArgs += " /warnnotaserror:$warnNotAsError /p:AdditionalWarningsNotAsErrors=$warnNotAsError"
   }
 
   foreach ($arg in $args) {

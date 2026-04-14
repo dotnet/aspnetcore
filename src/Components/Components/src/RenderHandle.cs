@@ -49,7 +49,7 @@ public readonly struct RenderHandle
     /// <summary>
     /// Gets a value that determines if the <see cref="Renderer"/> is triggering a render in response to a metadata update (hot-reload) change.
     /// </summary>
-    public bool IsRenderingOnMetadataUpdate => HotReloadManager.Default.MetadataUpdateSupported && (_renderer?.IsRenderingOnMetadataUpdate ?? false);
+    public bool IsRenderingOnMetadataUpdate => HotReloadManager.IsSupported && (_renderer?.IsRenderingOnMetadataUpdate ?? false);
 
     internal bool IsRendererDisposed => _renderer?.Disposed
         ?? throw new InvalidOperationException("No renderer has been initialized.");

@@ -205,7 +205,7 @@ internal static class Http2FrameReader
             case Http2FrameType.DATA: // Variable 0 or 1
                 return frame.DataHasPadding ? 1 : 0;
             case Http2FrameType.HEADERS:
-                return (frame.HeadersHasPadding ? 1 : 0) + (frame.HeadersHasPriority ? 5 : 0); // Variable 0 to 6
+                return frame.HeadersPayloadOffset; // Variable 0 to 6
             case Http2FrameType.GOAWAY:
                 return 8; // Last stream id and error code.
             case Http2FrameType.PRIORITY:
