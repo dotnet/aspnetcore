@@ -66,6 +66,8 @@ h1:focus {
 
 .validation-summary-errors ul {
     margin-bottom: 0;
+    padding-left: 1.5rem;
+    list-style: disc;
 }
 
 .blazor-error-boundary {
