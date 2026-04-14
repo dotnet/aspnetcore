@@ -26,6 +26,32 @@ internal sealed class ContentEncodingNegotiationMatcherPolicy : NegotiationMatch
         return metadata?.Quality;
     }
 
+    private protected override bool HasAdditionalConstraints(Endpoint endpoint)
+    {
+        var metadata = endpoint.Metadata.GetMetadata<ContentEncodingMetadata>();
+        return metadata?.DictionaryHash is not null;
+    }
+
+    private protected override bool MatchesAdditionalConstraints(Endpoint endpoint, HttpContext httpContext)
+    {
+        var metadata = endpoint.Metadata.GetMetadata<ContentEncodingMetadata>();
+        if (metadata?.DictionaryHash is null)
+        {
+            return true;
+        }
+
+        var availableDictionary = httpContext.Request.Headers["Available-Dictionary"];
+        if (StringValues.IsNullOrEmpty(availableDictionary))
+        {
+            return false;
+        }
+
+        // The Available-Dictionary header value is an RFC 9651 Structured Fields Byte Sequence
+        // encoded as :<base64>: (e.g., ":pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=:").
+        // We compare the raw header value directly against the stored hash which includes the colons.
+        return string.Equals(availableDictionary, metadata.DictionaryHash, StringComparison.Ordinal);
+    }
+
     private protected override NegotiationPolicyJumpTable CreateTable(int exitDestination, (string negotiationValue, double quality, int destination)[] destinations, int noNegotiationHeaderDestination) => new ContentEncodingPolicyJumpTable(exitDestination, noNegotiationHeaderDestination, new ContentEncodingDestinationsLookUp(destinations));
 
     internal sealed class ContentEncodingPolicyJumpTable(int anyContentEncodingDestination, int noContentEncodingDestination, ContentEncodingDestinationsLookUp destinations) : NegotiationPolicyJumpTable("Accept-Encoding", anyContentEncodingDestination, noContentEncodingDestination)

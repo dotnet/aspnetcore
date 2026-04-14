@@ -878,6 +878,157 @@ public class ContentEncodingNegotiationMatcherPolicyTest
         return endpoint;
     }
 
+    private static Endpoint CreateEndpointWithDictionary(string contentEncoding, double quality, string dictionaryHash)
+    {
+        var endpoint = new Endpoint(
+            _ => Task.CompletedTask,
+            new EndpointMetadataCollection(new ContentEncodingMetadata(contentEncoding, quality) { DictionaryHash = dictionaryHash }),
+            $"Endpoint -> {contentEncoding}: {quality} (dict:{dictionaryHash})");
+
+        return endpoint;
+    }
+
+    [Fact]
+    public async Task ApplyAsync_SelectsDcbEndpoint_WhenDictionaryHashMatches()
+    {
+        var policy = new ContentEncodingNegotiationMatcherPolicy();
+        var dcb = CreateEndpointWithDictionary("dcb", 1.0, ":pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=:");
+        var br = CreateEndpoint("br", 0.9);
+        var identity = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(), "Identity");
+        var endpoints = CreateCandidateSet(dcb, br, identity);
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers["Accept-Encoding"] = "dcb, br, gzip";
+        httpContext.Request.Headers["Available-Dictionary"] = ":pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=:";
+
+        await policy.ApplyAsync(httpContext, endpoints);
+
+        Assert.True(endpoints.IsValidCandidate(0));  // dcb matched
+        Assert.False(endpoints.IsValidCandidate(1)); // br invalidated (lower quality)
+        Assert.False(endpoints.IsValidCandidate(2)); // identity invalidated
+    }
+
+    [Fact]
+    public async Task ApplyAsync_FallsBackToBr_WhenDictionaryHashDoesNotMatch()
+    {
+        var policy = new ContentEncodingNegotiationMatcherPolicy();
+        var dcb = CreateEndpointWithDictionary("dcb", 1.0, ":pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=:");
+        var br = CreateEndpoint("br", 0.9);
+        var identity = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(), "Identity");
+        var endpoints = CreateCandidateSet(dcb, br, identity);
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers["Accept-Encoding"] = "dcb, br, gzip";
+        httpContext.Request.Headers["Available-Dictionary"] = ":WRONGHASH=:";
+
+        await policy.ApplyAsync(httpContext, endpoints);
+
+        Assert.False(endpoints.IsValidCandidate(0)); // dcb rejected — dictionary mismatch
+        Assert.True(endpoints.IsValidCandidate(1));  // br wins as fallback
+        Assert.False(endpoints.IsValidCandidate(2)); // identity invalidated
+    }
+
+    [Fact]
+    public async Task ApplyAsync_FallsBackToBr_WhenNoDictionaryHeader()
+    {
+        var policy = new ContentEncodingNegotiationMatcherPolicy();
+        var dcb = CreateEndpointWithDictionary("dcb", 1.0, ":pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=:");
+        var br = CreateEndpoint("br", 0.9);
+        var identity = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(), "Identity");
+        var endpoints = CreateCandidateSet(dcb, br, identity);
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers["Accept-Encoding"] = "dcb, br, gzip";
+
+        await policy.ApplyAsync(httpContext, endpoints);
+
+        Assert.False(endpoints.IsValidCandidate(0)); // dcb rejected — no dictionary
+        Assert.True(endpoints.IsValidCandidate(1));  // br wins as fallback
+        Assert.False(endpoints.IsValidCandidate(2)); // identity invalidated
+    }
+
+    [Fact]
+    public async Task ApplyAsync_FallsBackToIdentity_WhenNoDictionaryAndNoBrInAcceptEncoding()
+    {
+        var policy = new ContentEncodingNegotiationMatcherPolicy();
+        var dcb = CreateEndpointWithDictionary("dcb", 1.0, ":pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=:");
+        var identity = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(), "Identity");
+        var endpoints = CreateCandidateSet(dcb, identity);
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers["Accept-Encoding"] = "dcb";
+
+        await policy.ApplyAsync(httpContext, endpoints);
+
+        Assert.False(endpoints.IsValidCandidate(0)); // dcb rejected — no dictionary
+        Assert.True(endpoints.IsValidCandidate(1));  // identity survives as default
+    }
+
+    [Fact]
+    public async Task ApplyAsync_RegularEndpointsUnaffected_WhenNoDictionaryConstraint()
+    {
+        var policy = new ContentEncodingNegotiationMatcherPolicy();
+        var br = CreateEndpoint("br", 0.9);
+        var gzip = CreateEndpoint("gzip", 0.8);
+        var identity = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(), "Identity");
+        var endpoints = CreateCandidateSet(br, gzip, identity);
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Headers["Accept-Encoding"] = "br, gzip";
+
+        await policy.ApplyAsync(httpContext, endpoints);
+
+        Assert.True(endpoints.IsValidCandidate(0));  // br wins
+        Assert.False(endpoints.IsValidCandidate(1)); // gzip invalidated
+        Assert.False(endpoints.IsValidCandidate(2)); // identity invalidated
+    }
+
+    [Fact]
+    public void GetEdges_IncludesNonConstrainedFallbacks_InConstrainedBranch()
+    {
+        var policy = new ContentEncodingNegotiationMatcherPolicy();
+        var dcb = CreateEndpointWithDictionary("dcb", 1.0, ":hash=:");
+        var br = CreateEndpoint("br", 0.9);
+        var identity = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(), "Identity");
+        var endpoints = new[] { dcb, br, identity };
+
+        var edges = policy.GetEdges(endpoints);
+
+        // Find the dcb edge
+        var dcbEdge = edges.Single(e =>
+            Assert.IsType<NegotiationMatcherPolicy<ContentEncodingMetadata>.NegotiationEdgeKey>(e.State).NegotiationValue == "dcb");
+
+        // dcb branch should include: dcb itself, br (non-constrained fallback), identity (added to all branches)
+        Assert.Equal(3, dcbEdge.Endpoints.Count);
+        Assert.Contains(dcb, dcbEdge.Endpoints);
+        Assert.Contains(br, dcbEdge.Endpoints);
+        Assert.Contains(identity, dcbEdge.Endpoints);
+
+        // br edge should NOT include dcb (dcb is constrained, not a fallback for br)
+        var brEdge = edges.Single(e =>
+            Assert.IsType<NegotiationMatcherPolicy<ContentEncodingMetadata>.NegotiationEdgeKey>(e.State).NegotiationValue == "br");
+        Assert.Equal(2, brEdge.Endpoints.Count);
+        Assert.Contains(br, brEdge.Endpoints);
+        Assert.Contains(identity, brEdge.Endpoints);
+    }
+
+    [Fact]
+    public void GetEdges_DoesNotModifyBranches_WhenNoConstrainedEndpoints()
+    {
+        var policy = new ContentEncodingNegotiationMatcherPolicy();
+        var br = CreateEndpoint("br", 0.9);
+        var gzip = CreateEndpoint("gzip", 0.8);
+        var identity = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(), "Identity");
+        var endpoints = new[] { br, gzip, identity };
+
+        var edges = policy.GetEdges(endpoints);
+
+        // br edge: br + identity (standard behavior)
+        var brEdge = edges.Single(e =>
+            Assert.IsType<NegotiationMatcherPolicy<ContentEncodingMetadata>.NegotiationEdgeKey>(e.State).NegotiationValue == "br");
+        Assert.Equal(2, brEdge.Endpoints.Count);
+
+        // gzip edge: gzip + identity (standard behavior)
+        var gzipEdge = edges.Single(e =>
+            Assert.IsType<NegotiationMatcherPolicy<ContentEncodingMetadata>.NegotiationEdgeKey>(e.State).NegotiationValue == "gzip");
+        Assert.Equal(2, gzipEdge.Endpoints.Count);
+    }
+
     private class DynamicMetadata : IDynamicEndpointMetadata
     {
         public bool IsDynamic => true;

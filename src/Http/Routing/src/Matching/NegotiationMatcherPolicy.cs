@@ -51,6 +51,17 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
 
     private protected abstract double? GetMetadataQuality(Endpoint endpoint);
 
+    // Returns whether the negotiation value match is valid given additional request-level constraints.
+    // For example, dictionary-compressed encodings (dcb/dcz) require the client to present the correct
+    // dictionary hash via the Available-Dictionary header. If this returns false, the match is skipped
+    // and the next Accept-Encoding value is tried.
+    private protected virtual bool MatchesAdditionalConstraints(Endpoint endpoint, HttpContext httpContext) => true;
+
+    // Returns whether the endpoint has additional constraints beyond the negotiation value match.
+    // Used by GetEdges to include non-constrained encoding endpoints as fallbacks in constrained branches,
+    // so that ApplyAsync can fall back to them when MatchesAdditionalConstraints returns false.
+    private protected virtual bool HasAdditionalConstraints(Endpoint endpoint) => false;
+
     // We iterate over the list of candidates starting with a quality of 0.
     // If we are able to match a candidate with one of the values from the header
     // the one with the highest matching quality wins.
@@ -136,6 +147,13 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
                 var value = values[j];
                 if (MemoryExtensions.Equals(metadata.AsSpan(), value.Value.AsSpan(), StringComparison.OrdinalIgnoreCase))
                 {
+                    if (!MatchesAdditionalConstraints(candidate.Endpoint, httpContext))
+                    {
+                        // The negotiation value matched but an additional constraint was not satisfied
+                        // (e.g., the dictionary hash didn't match for dcb/dcz). Skip this value and
+                        // try the next one from the header.
+                        continue;
+                    }
                     found = true;
                     EvaluateCandidate(candidates, ref bestMatchIndex, ref bestQualitySoFar, ref bestEndpointQualitySoFar, i, scoreTierStart, value);
                     bestMatchScore = candidates[bestMatchIndex].Score;
@@ -272,6 +290,9 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
 
         // Now in a second loop, add endpoints to these lists.
         // We've enumerated all of the states, so we want to see which states each endpoint matches.
+        // We also collect non-constrained endpoints so we can add them as fallbacks to constrained branches.
+        List<Endpoint>? nonConstrainedEndpoints = null;
+        var hasConstrainedEndpoints = false;
         for (var i = 0; i < endpoints.Count; i++)
         {
             var endpoint = endpoints[i];
@@ -289,6 +310,41 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
             {
                 var endpointsForType = edges[metadata];
                 endpointsForType.Add(endpoint);
+
+                if (HasAdditionalConstraints(endpoint))
+                {
+                    hasConstrainedEndpoints = true;
+                }
+                else
+                {
+                    // Track non-constrained encoding endpoints (e.g., br, gzip) so they can be added
+                    // as fallbacks to constrained branches (e.g., dcb, dcz).
+                    nonConstrainedEndpoints ??= [];
+                    nonConstrainedEndpoints.Add(endpoint);
+                }
+            }
+        }
+
+        // For constrained branches (e.g., dcb/dcz with dictionary requirements), add all non-constrained
+        // encoding endpoints as fallback candidates. This ensures that when MatchesAdditionalConstraints
+        // rejects the constrained endpoint in ApplyAsync, the fallback encodings (br, gzip) are available.
+        if (hasConstrainedEndpoints && nonConstrainedEndpoints is not null)
+        {
+            for (var i = 0; i < endpoints.Count; i++)
+            {
+                var endpoint = endpoints[i];
+                if (HasAdditionalConstraints(endpoint))
+                {
+                    var metadata = GetMetadataValue(endpoint)!;
+                    var endpointsForType = edges[metadata];
+                    foreach (var fallback in nonConstrainedEndpoints)
+                    {
+                        if (!endpointsForType.Contains(fallback))
+                        {
+                            endpointsForType.Add(fallback);
+                        }
+                    }
+                }
             }
         }
 

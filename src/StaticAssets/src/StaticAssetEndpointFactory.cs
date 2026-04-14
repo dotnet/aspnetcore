@@ -27,15 +27,27 @@ internal class StaticAssetEndpointFactory(IServiceProvider serviceProvider)
             // If the endpoint has an explicit order (e.g., SPA fallback endpoints), use that instead.
             !string.IsNullOrEmpty(resource.Order) && int.TryParse(resource.Order, CultureInfo.InvariantCulture, out var order) ? order : -100);
 
+        // The dictionary hash, if any, is stored as an endpoint property by the SDK.
+        // It identifies the SHA-256 hash of the compression dictionary used for
+        // dictionary-compressed encodings (dcb/dcz) as defined by RFC 9842.
+        string? dictionaryHash = null;
+        foreach (var property in resource.Properties)
+        {
+            if (string.Equals(property.Name, "Dictionary-Hash", StringComparison.Ordinal))
+            {
+                dictionaryHash = property.Value;
+                break;
+            }
+        }
+
         foreach (var selector in resource.Selectors)
         {
-            switch (selector.Name)
+            if (string.Equals(selector.Name, "Content-Encoding", StringComparison.Ordinal))
             {
-                case "Content-Encoding":
-                    routeEndpointBuilder.Metadata.Add(new ContentEncodingMetadata(selector.Value, double.Parse(selector.Quality, CultureInfo.InvariantCulture)));
-                    break;
-                default:
-                    break;
+                routeEndpointBuilder.Metadata.Add(new ContentEncodingMetadata(
+                    selector.Value,
+                    double.Parse(selector.Quality, CultureInfo.InvariantCulture))
+                { DictionaryHash = dictionaryHash });
             }
         }
 

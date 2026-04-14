@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Routing.ContentEncodingMetadata.DictionaryHash.get -> string?
+Microsoft.AspNetCore.Routing.ContentEncodingMetadata.DictionaryHash.init -> void
