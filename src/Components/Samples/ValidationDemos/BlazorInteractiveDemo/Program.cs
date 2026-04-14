@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using BlazorInteractiveDemo;
+using BlazorInteractiveDemo.Data;
 using BlazorInteractiveDemo.Resources;
 using Microsoft.AspNetCore.Localization;
 
@@ -15,6 +16,9 @@ builder.Services.AddLocalization();
 builder.Services.AddValidation(options =>
 {
     options.LocalizerProvider = (_, factory) => factory.Create(typeof(ValidationMessages));
+    // Convention-based key fallback: for attributes without explicit ErrorMessage,
+    // generate a key like "RequiredAttribute_ValidationError".
+    options.ErrorMessageKeyProvider = ctx => $"{ctx.Attribute.GetType().Name}_ValidationError";
 });
 
 builder.Services.Configure<RequestLocalizationOptions>(options =>
@@ -43,5 +47,11 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+// Minimal API endpoint: demonstrates that the same AddValidation() + AddLocalization()
+// setup also produces localized validation errors for Minimal API endpoints.
+// Try: POST /api/contact with Accept-Language: es and an empty JSON body.
+app.MapPost("/api/contact", (ContactModel model) =>
+    Results.Ok(new { message = "Contact submitted.", model.Name, model.Email }));
 
 app.Run();

@@ -13,15 +13,51 @@
   <resheader name="version"><value>1.3</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter</value></resheader>
+  <!-- Explicit error message keys (Page 1 & 3) -->
   <data name="Required" xml:space="preserve"><value>El campo {0} es obligatorio.</value></data>
   <data name="StringLength" xml:space="preserve"><value>El campo {0} debe tener entre {2} y {1} caracteres.</value></data>
-  <data name="Email" xml:space="preserve"><value>Ingrese una dirección de correo electrónico válida.</value></data>
+  <data name="EmailInvalid" xml:space="preserve"><value>Ingrese una dirección de correo electrónico válida.</value></data>
+  <data name="PhoneInvalid" xml:space="preserve"><value>Ingrese un número de teléfono válido.</value></data>
   <data name="Range" xml:space="preserve"><value>El campo {0} debe estar entre {1} y {2}.</value></data>
   <data name="UniqueEmail" xml:space="preserve"><value>Este correo electrónico ya está en uso.</value></data>
   <data name="UniqueUsername" xml:space="preserve"><value>Este nombre de usuario ya está en uso.</value></data>
+  <!-- Convention-based keys (Page 2): {AttributeTypeName}_ValidationError -->
+  <data name="RequiredAttribute_ValidationError" xml:space="preserve"><value>El campo {0} es obligatorio.</value></data>
+  <data name="StringLengthAttribute_ValidationError" xml:space="preserve"><value>El campo {0} debe tener entre {2} y {1} caracteres.</value></data>
+  <data name="EmailAddressAttribute_ValidationError" xml:space="preserve"><value>Ingrese una dirección de correo electrónico válida.</value></data>
+  <data name="RangeAttribute_ValidationError" xml:space="preserve"><value>El campo {0} debe estar entre {1} y {2}.</value></data>
+  <!-- Display names -->
   <data name="Full Name" xml:space="preserve"><value>Nombre completo</value></data>
-  <data name="Email_Display" xml:space="preserve"><value>Correo electrónico</value></data>
+  <data name="Email" xml:space="preserve"><value>Correo electrónico</value></data>
+  <data name="Phone Number" xml:space="preserve"><value>Número de teléfono</value></data>
+  <data name="Message" xml:space="preserve"><value>Mensaje</value></data>
   <data name="Username" xml:space="preserve"><value>Nombre de usuario</value></data>
+  <data name="Password" xml:space="preserve"><value>Contraseña</value></data>
+  <data name="Age" xml:space="preserve"><value>Edad</value></data>
+  <data name="Your Name" xml:space="preserve"><value>Tu nombre</value></data>
+  <data name="Rating" xml:space="preserve"><value>Calificación</value></data>
+  <data name="Comments" xml:space="preserve"><value>Comentarios</value></data>
+  <!-- UI strings -->
   <data name="Register" xml:space="preserve"><value>Registrarse</value></data>
+  <data name="Send" xml:space="preserve"><value>Enviar</value></data>
   <data name="Checking" xml:space="preserve"><value>Verificando...</value></data>
+  <data name="ValidationFailed" xml:space="preserve"><value>La validación falló.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Reintentar</value></data>
+  <data name="SubmitAnother" xml:space="preserve"><value>Enviar otro</value></data>
+  <data name="RatingHint" xml:space="preserve"><value>Ingrese un valor del 1 al 5.</value></data>
+  <!-- Page titles and subtitles -->
+  <data name="ContactTitle" xml:space="preserve"><value>Formulario de contacto</value></data>
+  <data name="ContactSubtitle" xml:space="preserve"><value>Tres enfoques de localización lado a lado: sin localización, recursos estáticos e IStringLocalizer.</value></data>
+  <data name="ContactSuccess" xml:space="preserve"><value>¡Mensaje enviado con éxito!</value></data>
+  <data name="ApproachNone" xml:space="preserve"><value>Sin localización (mensajes en inglés por defecto)</value></data>
+  <data name="ApproachResourceType" xml:space="preserve"><value>Recursos estáticos (ResourceType/ResourceName)</value></data>
+  <data name="ApproachStringLocalizer" xml:space="preserve"><value>IStringLocalizer (ErrorMessage como clave de búsqueda)</value></data>
+  <data name="ConventionTitle" xml:space="preserve"><value>Formulario de opinión</value></data>
+  <data name="ConventionSubtitle" xml:space="preserve"><value>Validación localizada usando claves basadas en convenciones — sin necesidad de ErrorMessage en los atributos.</value></data>
+  <data name="ConventionExplanation" xml:space="preserve"><value>Este formulario usa [Required], [StringLength], etc. sin ErrorMessage. El ErrorMessageKeyProvider genera claves como "RequiredAttribute_ValidationError" automáticamente.</value></data>
+  <data name="FeedbackSuccess" xml:space="preserve"><value>¡Opinión enviada, gracias!</value></data>
+  <data name="AsyncTitle" xml:space="preserve"><value>Formulario de registro</value></data>
+  <data name="AsyncSubtitle" xml:space="preserve"><value>Los validadores asincrónicos verifican la disponibilidad del correo y nombre de usuario en el servidor.</value></data>
+  <data name="AsyncHint" xml:space="preserve"><value>Use admin@example.com o el nombre de usuario "admin" para activar errores de "ya en uso".</value></data>
+  <data name="RegistrationSuccess" xml:space="preserve"><value>¡Registro completado!</value></data>
 </root>

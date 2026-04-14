@@ -1,4 +1,4 @@
-@page "/"
+@page "/convention"
 @rendermode InteractiveServer
 @using System.Globalization
 @using BlazorInteractiveDemo.Data
@@ -8,19 +8,23 @@
 <div class="container py-4">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
-            <h1 class="h3 mb-1">@Loc["ContactTitle"]</h1>
-            <p class="text-body-secondary mb-4">@Loc["ContactSubtitle"]</p>
+            <h1 class="h3 mb-1">@Loc["ConventionTitle"]</h1>
+            <p class="text-body-secondary mb-4">@Loc["ConventionSubtitle"]</p>
 
             <div class="mb-3 d-flex gap-2 small">
                 <span>🌐</span>
-                <a href="?culture=en" class="@(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en" ? "fw-bold" : "")">English</a>
-                <a href="?culture=es" class="@(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "es" ? "fw-bold" : "")">Español</a>
+                <a href="/convention?culture=en" class="@(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en" ? "fw-bold" : "")">English</a>
+                <a href="/convention?culture=es" class="@(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "es" ? "fw-bold" : "")">Español</a>
+            </div>
+
+            <div class="alert alert-info small mb-3">
+                <strong>💡 How it works:</strong> @Loc["ConventionExplanation"]
             </div>
 
             @if (_submitted)
             {
                 <div class="alert alert-success">
-                    ✅ @Loc["ContactSuccess"]
+                    ✅ @Loc["FeedbackSuccess"]
                 </div>
                 <button class="btn btn-outline-primary btn-sm" @onclick="ResetForm">@Loc["SubmitAnother"]</button>
             }
@@ -30,23 +34,11 @@
                     <DataAnnotationsValidator />
                     <ValidationSummary />
 
-                    <h6 class="text-body-secondary mt-2 mb-3">① @Loc["ApproachNone"]</h6>
-
                     <div class="mb-3">
-                        <label for="Name" class="form-label">Name</label>
+                        <label for="Name" class="form-label">@Loc["Your Name"]</label>
                         <InputText @bind-Value="_model.Name" id="Name" class="form-control" />
                         <ValidationMessage For="@(() => _model.Name)" />
                     </div>
-
-                    <h6 class="text-body-secondary mt-4 mb-3">② @Loc["ApproachResourceType"]</h6>
-
-                    <div class="mb-3">
-                        <label for="Phone" class="form-label">@Loc["Phone Number"]</label>
-                        <InputText @bind-Value="_model.Phone" id="Phone" class="form-control" />
-                        <ValidationMessage For="@(() => _model.Phone)" />
-                    </div>
-
-                    <h6 class="text-body-secondary mt-4 mb-3">③ @Loc["ApproachStringLocalizer"]</h6>
 
                     <div class="mb-3">
                         <label for="Email" class="form-label">@Loc["Email"]</label>
@@ -55,9 +47,16 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="Message" class="form-label">@Loc["Message"]</label>
-                        <InputTextArea @bind-Value="_model.Message" id="Message" class="form-control" rows="4" />
-                        <ValidationMessage For="@(() => _model.Message)" />
+                        <label for="Rating" class="form-label">@Loc["Rating"]</label>
+                        <InputNumber @bind-Value="_model.Rating" id="Rating" class="form-control" />
+                        <div class="form-text">@Loc["RatingHint"]</div>
+                        <ValidationMessage For="@(() => _model.Rating)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Comments" class="form-label">@Loc["Comments"]</label>
+                        <InputTextArea @bind-Value="_model.Comments" id="Comments" class="form-control" rows="4" />
+                        <ValidationMessage For="@(() => _model.Comments)" />
                     </div>
 
                     <button type="submit" class="btn btn-primary">@Loc["Send"]</button>
@@ -70,7 +69,7 @@
 @code {
     [Inject] private IStringLocalizer<ValidationMessages> Loc { get; set; } = default!;
 
-    private ContactModel _model = new();
+    private FeedbackModel _model = new();
     private EditContext _editContext = default!;
     private bool _submitted;
 
