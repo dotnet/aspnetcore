@@ -64,13 +64,11 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.10' ">
     <PackagesInPatch>
-      Microsoft.AspNetCore;
       Microsoft.AspNetCore.Server.Kestrel;
       Microsoft.AspNetCore.Server.Kestrel.Core;
       Microsoft.AspNetCore.Server.Kestrel.Https;
       Microsoft.AspNetCore.Server.HttpSys;
       Microsoft.AspNetCore.ResponseCaching;
-      Microsoft.AspNetCore.Mvc.Core;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>
