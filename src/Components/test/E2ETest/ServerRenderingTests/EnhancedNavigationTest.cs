@@ -587,6 +587,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Theory]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_enhancednav")]
     [InlineData("server")]
     [InlineData("wasm")]
     public void NavigationManagerUriGetsUpdatedOnEnhancedNavigation_OnlyServerOrWebAssembly(string renderMode)
