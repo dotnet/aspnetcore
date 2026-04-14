@@ -1,4 +1,4 @@
-﻿@page "/convention"
+﻿@page "/feedback"
 @rendermode InteractiveServer
 @using System.Globalization
 @using Microsoft.Extensions.Localization
@@ -8,14 +8,14 @@
 <div class="container py-4">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
-            <h1 class="h3 mb-1">@Loc["ConventionTitle"]</h1>
-            <p class="text-body-secondary mb-4">@Loc["ConventionSubtitle"]</p>
+            <h1 class="h3 mb-1">@Loc["FeedbackTitle"]</h1>
+            <p class="text-body-secondary mb-4">@Loc["FeedbackSubtitle"]</p>
 
             <div class="mb-3 d-flex gap-2 small">
                 <span>🌐</span>
-                <a href="/Culture/Set?culture=en&redirectUri=/contact" data-enhance-nav="false"
+                <a href="/Culture/Set?culture=en&redirectUri=/feedback" data-enhance-nav="false"
                    class="@(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en" ? "fw-bold" : "")">English</a>
-                <a href="/Culture/Set?culture=es&redirectUri=/contact" data-enhance-nav="false"
+                <a href="/Culture/Set?culture=es&redirectUri=/feedback" data-enhance-nav="false"
                    class="@(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "es" ? "fw-bold" : "")">Español</a>
             </div>
 

@@ -6,10 +6,6 @@ using Microsoft.Extensions.Validation;
 
 namespace BlazorNet11.Validators;
 
-/// <summary>
-/// Async validator that simulates a database uniqueness check for usernames.
-/// Rejects known reserved usernames after a 500ms simulated delay.
-/// </summary>
 public sealed class UniqueUsernameAttribute : AsyncValidationAttribute
 {
     private static readonly HashSet<string> _takenUsernames = new(StringComparer.OrdinalIgnoreCase)
@@ -19,12 +15,6 @@ public sealed class UniqueUsernameAttribute : AsyncValidationAttribute
         "test"
     };
 
-    public UniqueUsernameAttribute()
-        : base("UniqueUsername")
-    {
-    }
-
-    /// <inheritdoc />
     protected override async Task<ValidationResult?> IsValidAsync(
         object? value,
         ValidationContext validationContext,
@@ -35,8 +25,8 @@ public sealed class UniqueUsernameAttribute : AsyncValidationAttribute
             return ValidationResult.Success;
         }
 
-        // Simulate a database lookup
-        await Task.Delay(500, cancellationToken);
+        // Simulate a rather slow database lookup
+        await Task.Delay(3000, cancellationToken);
 
         if (_takenUsernames.Contains(username))
         {

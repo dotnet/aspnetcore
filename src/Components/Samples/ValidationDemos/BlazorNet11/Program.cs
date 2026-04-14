@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using BlazorNet11.Components;
+using BlazorNet11.Data;
 using BlazorNet11.Localization;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Localization;
@@ -12,9 +13,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// Register JSON-based localizer factory
+builder.Services.AddLocalization();
 builder.Services.AddSingleton<IStringLocalizerFactory, JsonStringLocalizerFactory>();
-builder.Services.AddValidation();
+
+builder.Services.AddValidation(options =>
+{
+    // Convention-based key fallback:
+    // For attributes without explicit ErrorMessagem, generate a key like "RequiredError".
+    options.ErrorMessageKeyProvider = ctx => ctx.Attribute.GetType().Name.Replace("Attribute", "Error");
+});
 
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
@@ -43,5 +50,10 @@ app.MapGet("/Culture/Set", (HttpContext context, string culture, string redirect
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+// Minimal API endpoint: POST /api/feedback
+// Try with Accept-Language: es header to get Spanish error messages.
+app.MapPost("/api/feedback", (FeedbackModel model) =>
+    Results.Ok(new { message = "Feedback received.", model.Name, model.Rating }));
 
 app.Run();

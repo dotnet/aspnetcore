@@ -6,10 +6,6 @@ using Microsoft.Extensions.Validation;
 
 namespace BlazorNet11.Validators;
 
-/// <summary>
-/// Async validator that simulates a database uniqueness check for email addresses.
-/// Rejects known test emails after an 800ms simulated delay.
-/// </summary>
 public sealed class UniqueEmailAttribute : AsyncValidationAttribute
 {
     private static readonly HashSet<string> _takenEmails = new(StringComparer.OrdinalIgnoreCase)
@@ -19,12 +15,6 @@ public sealed class UniqueEmailAttribute : AsyncValidationAttribute
         "user@example.com"
     };
 
-    public UniqueEmailAttribute()
-        : base("UniqueEmail")
-    {
-    }
-
-    /// <inheritdoc />
     protected override async Task<ValidationResult?> IsValidAsync(
         object? value,
         ValidationContext validationContext,
@@ -35,8 +25,8 @@ public sealed class UniqueEmailAttribute : AsyncValidationAttribute
             return ValidationResult.Success;
         }
 
-        // Simulate a slow database lookup
-        await Task.Delay(800, cancellationToken);
+        // Simulate a rather slow database lookup
+        await Task.Delay(4000, cancellationToken);
 
         if (_takenEmails.Contains(email))
         {
