@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Authentication.Certificate;
 
 internal sealed class CertificateAuthenticationHandler : AuthenticationHandler<CertificateAuthenticationOptions>
 {
+    internal const string CertificateSchemeCacheKeyItem = "__CertificateAuthScheme";
+
     private static readonly Oid ClientCertificateOid = new Oid("1.3.6.1.5.5.7.3.2");
     private ICertificateValidationCache? _cache;
 
@@ -67,6 +69,7 @@ internal sealed class CertificateAuthenticationHandler : AuthenticationHandler<C
 
             if (_cache != null)
             {
+                Context.Items[CertificateSchemeCacheKeyItem] = Scheme.Name;
                 var cacheHit = _cache.Get(Context, clientCertificate);
                 if (cacheHit != null)
                 {
