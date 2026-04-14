@@ -28,5 +28,10 @@
     "Checking": "Checking…",
     "ValidationFailed": "Validation failed.",
     "Retry": "Retry",
-    "Register": "Register"
+    "Register": "Register",
+    "FeedbackTitle": "Feedback Form",
+    "FeedbackSubtitle": "Localized validation using convention-based keys — no ErrorMessage needed on attributes.",
+    "ConventionExplanation": "This form uses bare [Required], [StringLength], etc. without ErrorMessage. The ErrorMessageKeyProvider generates keys like \"RequiredError\" automatically.",
+    "FeedbackSuccess": "Feedback submitted, thank you!",
+    "RatingHint": "Enter a value from 1 to 5."
 }

@@ -28,5 +28,10 @@
     "Checking": "Verificando…",
     "ValidationFailed": "La validación falló.",
     "Retry": "Reintentar",
-    "Register": "Registrarse"
+    "Register": "Registrarse",
+    "FeedbackTitle": "Formulario de opinión",
+    "FeedbackSubtitle": "Validación localizada con claves basadas en convenciones — sin necesidad de ErrorMessage en los atributos.",
+    "ConventionExplanation": "Este formulario usa [Required], [StringLength], etc. sin ErrorMessage. El ErrorMessageKeyProvider genera claves como \"RequiredError\" automáticamente.",
+    "FeedbackSuccess": "¡Opinión enviada, gracias!",
+    "RatingHint": "Ingrese un valor del 1 al 5."
 }
