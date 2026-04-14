@@ -1178,15 +1178,25 @@
     <Project Path="src/Tools/Microsoft.dotnet-openapi/test/dotnet-microsoft.openapi.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Validation/" />
-  <Folder Name="/src/Validation/gen/">
-    <Project Path="src/Validation/gen/Microsoft.Extensions.Validation.ValidationsGenerator.csproj" />
+  <Folder Name="/src/Validation/Validation/">
+    <Project Path="src/Validation/Validation/src/Microsoft.Extensions.Validation.csproj" />
   </Folder>
-  <Folder Name="/src/Validation/src/">
-    <Project Path="src/Validation/src/Microsoft.Extensions.Validation.csproj" />
+  <Folder Name="/src/Validation/Validation/gen/">
+    <Project Path="src/Validation/Validation/gen/Microsoft.Extensions.Validation.ValidationsGenerator.csproj" />
   </Folder>
-  <Folder Name="/src/Validation/test/">
-    <Project Path="src/Validation/test/Microsoft.Extensions.Validation.GeneratorTests/Microsoft.Extensions.Validation.GeneratorTests.csproj" />
-    <Project Path="src/Validation/test/Microsoft.Extensions.Validation.Tests/Microsoft.Extensions.Validation.Tests.csproj" />
+  <Folder Name="/src/Validation/Validation/test/">
+    <Project Path="src/Validation/Validation/test/Microsoft.Extensions.Validation.Tests/Microsoft.Extensions.Validation.Tests.csproj" />
+    <Project Path="src/Validation/Validation/test/Microsoft.Extensions.Validation.GeneratorTests/Microsoft.Extensions.Validation.GeneratorTests.csproj" />
+  </Folder>
+  <Folder Name="/src/Validation/Localization/">
+    <Project Path="src/Validation/Localization/src/Microsoft.Extensions.Validation.Localization.csproj" />
+    <Project Path="src/Validation/Localization/test/Microsoft.Extensions.Validation.LocalizationTests/Microsoft.Extensions.Validation.LocalizationTests.csproj" />
+  </Folder>
+  <Folder Name="/src/Validation/samples/">
+    <Project Path="src/Validation/samples/ConsoleValidationSample/ConsoleValidationSample.csproj" />
+    <Project Path="src/Validation/samples/MinimalApiValidationSample/MinimalApiValidationSample.csproj" />
+    <Project Path="src/Validation/samples/BlazorValidationSample/BlazorValidationSample.csproj" />
+    <Project Path="src/Validation/samples/StandardAttributeLocalization/StandardAttributeLocalization.csproj" />
   </Folder>
   <Folder Name="/src/WebEncoders/">
     <Project Path="src/WebEncoders/src/Microsoft.Extensions.WebEncoders.csproj" />
