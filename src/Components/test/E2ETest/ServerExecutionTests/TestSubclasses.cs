@@ -47,6 +47,10 @@ public class ServerRoutingTest : RoutingTest
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61080")]
     public override void NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation()
         => base.NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation();
+
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66195")]
+    public override void CanNavigateToQueryStringPageWithNoQuery()
+        => base.CanNavigateToQueryStringPageWithNoQuery();
 }
 
 public class ServerCascadingValueTest : CascadingValueTest
@@ -100,10 +104,6 @@ public class ServerVirtualizationTest : VirtualizationTest
     public override void CanRenderHtmlTable()
         => base.CanRenderHtmlTable();
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65962")]
-    public override void CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax()
-        => base.CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax();
-
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66119")]
     public override void NonZeroStartIndex_ScrollToMiddleThenMeasure()
         => base.NonZeroStartIndex_ScrollToMiddleThenMeasure();
@@ -111,6 +111,10 @@ public class ServerVirtualizationTest : VirtualizationTest
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66120")]
     public override void CancelsOutdatedRefreshes_Async()
         => base.CancelsOutdatedRefreshes_Async();
+
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66308")]
+    public override void DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace()
+        => base.DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace();
 }
 
 public class ServerDynamicComponentRenderingTest : DynamicComponentRenderingTest
