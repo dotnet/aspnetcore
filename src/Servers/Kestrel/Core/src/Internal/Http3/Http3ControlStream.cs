@@ -83,6 +83,7 @@ internal abstract class Http3ControlStream : IHttp3Stream, IThreadPoolWorkItem
 
     public long StreamTimeoutTimestamp { get; set; }
     public bool IsReceivingHeader => _headerType == -1;
+    public bool IsReceivingTrailerHeaders => false;
     public bool IsDraining => false;
     public bool IsRequestStream => false;
     public string TraceIdentifier => _context.StreamContext.ConnectionId;
