@@ -55,7 +55,7 @@ h1:focus {
     display: none;
 }
 
-.validation-summary-errors {
+.validation-errors {
     color: var(--bs-danger-text-emphasis);
     background-color: var(--bs-danger-bg-subtle);
     border: var(--bs-border-width) solid var(--bs-danger-border-subtle);
@@ -64,7 +64,7 @@ h1:focus {
     margin-bottom: 1rem;
 }
 
-.validation-summary-errors ul {
+ul.validation-errors {
     margin-bottom: 0;
     padding-left: 1.5rem;
     list-style: disc;
