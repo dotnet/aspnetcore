@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Resources\ValidationMessages.resx" GenerateSource="false" />
-    <EmbeddedResource Update="Resources\ValidationMessages.*.resx" GenerateSource="false" />
+    <EmbeddedResource Update="Resources\LocalizedStrings.resx" GenerateSource="false" />
+    <EmbeddedResource Update="Resources\LocalizedStrings.*.resx" GenerateSource="false" />
   </ItemGroup>
 
   <PropertyGroup>

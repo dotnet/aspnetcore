@@ -8,6 +8,7 @@ namespace BlazorNet11.Data;
 // Convention-based error message localization:
 // See the ErrorMessageKeyProvider configured in AddValidation().
 
+[ValidatableType]
 public class FeedbackModel
 {
     [Required]

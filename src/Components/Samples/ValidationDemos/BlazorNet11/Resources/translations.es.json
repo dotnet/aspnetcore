@@ -8,7 +8,7 @@
     "ContactMessage": "Mensaje",
     "Message": "Mensaje",
     "Your Name": "Tu nombre",
-    "Email": "Correo electrónico",
+    "ContactEmail": "Correo electrónico",
     "Rating": "Calificación",
     "Comments": "Comentarios",
     "RequiredError": "Por favor, complete el campo {0}.",

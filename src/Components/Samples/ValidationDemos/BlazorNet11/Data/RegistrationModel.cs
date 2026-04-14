@@ -6,6 +6,7 @@ using BlazorNet11.Validators;
 
 namespace BlazorNet11.Data;
 
+[ValidatableType]
 public class RegistrationModel
 {
     [Required]
