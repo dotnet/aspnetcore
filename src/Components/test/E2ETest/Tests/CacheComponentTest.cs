@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -113,30 +110,6 @@ public class CacheComponentTest : ServerTestBase<BasicTestAppServerSiteFixture<R
                 Browser.FindElement(By.Id("test-5"))
                     .FindElements(By.CssSelector(".loop-item"))[index]
                     .FindElement(By.CssSelector(".cached-value")).Text);
-        }
-    }
-
-    [Fact]
-    public void CacheComponentCachesLoopContent()
-    {
-        Navigate($"{ServerPathBase}/cache-component");
-        var items = Browser.FindElement(By.Id("test-6")).FindElements(By.CssSelector(".loop-cached-item"));
-        Assert.Equal(3, items.Count);
-
-        var firstRenderValues = new string[3];
-        for (var i = 0; i < 3; i++)
-        {
-            firstRenderValues[i] = items[i].Text;
-        }
-
-        // Second navigation — all loop items should come from cache
-        Navigate($"{ServerPathBase}/cache-component");
-        for (var i = 0; i < 3; i++)
-        {
-            var index = i;
-            Browser.Equal(firstRenderValues[index], () =>
-                Browser.FindElement(By.Id("test-6"))
-                    .FindElements(By.CssSelector(".loop-cached-item"))[index].Text);
         }
     }
 

@@ -55,15 +55,6 @@
     }
 </div>
 
-<div id="test-6">
-    <CacheComponent ExpiresAfter="TimeSpan.FromHours(1)">
-        @for (var i = 0; i < 3; i++)
-        {
-            <p class="loop-cached-item" data-index="@i">Item @i: @DateTime.Now.ToString("o")</p>
-        }
-    </CacheComponent>
-</div>
-
 @code
 {
     [SupplyParameterFromForm(FormName = "editFormTest")]

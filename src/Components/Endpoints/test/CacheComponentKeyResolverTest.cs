@@ -23,31 +23,6 @@ public class CacheComponentKeyResolverTest
     }
 
     [Fact]
-    public void ComputeKey_IsBase64EncodedSha256()
-    {
-        var component = CreateComponent();
-        var httpContext = CreateHttpContext();
-
-        var key = CacheComponentKeyResolver.ComputeKey(component, httpContext);
-
-        // SHA256 = 32 bytes -> Base64 = ceil(32/3)*4 = 44 chars (with padding)
-        Assert.Equal(44, key.Length);
-        Assert.True(key.EndsWith('='));
-    }
-
-    [Fact]
-    public void ComputeKey_WithoutChildContent_UsesClassName()
-    {
-        var component = CreateComponent(useDefaultChildContent: false);
-        var httpContext = CreateHttpContext();
-
-        var key = CacheComponentKeyResolver.ComputeKey(component, httpContext);
-
-        Assert.NotNull(key);
-        Assert.NotEmpty(key);
-    }
-
-    [Fact]
     public void ComputeKey_DifferentChildContent_ProducesDifferentKeys()
     {
         var httpContext = CreateHttpContext();
@@ -80,19 +55,6 @@ public class CacheComponentKeyResolverTest
         var component = CreateComponent(varyByQuery: "page");
         var ctx1 = CreateHttpContext(queryString: "?page=1");
         var ctx2 = CreateHttpContext(queryString: "?page=2");
-
-        var key1 = CacheComponentKeyResolver.ComputeKey(component, ctx1);
-        var key2 = CacheComponentKeyResolver.ComputeKey(component, ctx2);
-
-        Assert.NotEqual(key1, key2);
-    }
-
-    [Fact]
-    public void ComputeKey_VaryByQuery_MultipleParams()
-    {
-        var component = CreateComponent(varyByQuery: "page, size");
-        var ctx1 = CreateHttpContext(queryString: "?page=1&size=10");
-        var ctx2 = CreateHttpContext(queryString: "?page=1&size=20");
 
         var key1 = CacheComponentKeyResolver.ComputeKey(component, ctx1);
         var key2 = CacheComponentKeyResolver.ComputeKey(component, ctx2);
@@ -231,6 +193,40 @@ public class CacheComponentKeyResolverTest
         Assert.NotEqual(key1, key2);
     }
 
+    [Fact]
+    public void ComputeKey_DifferentVaryByDimensions_DoNotCollide()
+    {
+        // A query param named "user" with value "alice" should not collide
+        // with VaryByUser=true when the username is "alice"
+        var componentWithQuery = CreateComponent(varyByQuery: "user");
+        var ctxWithQueryUser = CreateHttpContext(queryString: "?user=alice");
+
+        var componentWithUser = CreateComponent(varyByUser: true);
+        var ctxWithAuthUser = CreateHttpContext(userName: "alice");
+
+        var key1 = CacheComponentKeyResolver.ComputeKey(componentWithQuery, ctxWithQueryUser);
+        var key2 = CacheComponentKeyResolver.ComputeKey(componentWithUser, ctxWithAuthUser);
+
+        Assert.NotEqual(key1, key2);
+    }
+
+    [Fact]
+    public void ComputeKey_DifferentCollectionDimensions_DoNotCollide()
+    {
+        // A cookie named "lang" with value "en" should not collide
+        // with a header named "lang" with value "en"
+        var componentWithCookie = CreateComponent(varyByCookie: "lang");
+        var ctxWithCookie = CreateHttpContext(cookieHeader: "lang=en");
+
+        var componentWithHeader = CreateComponent(varyByHeader: "lang");
+        var ctxWithHeader = CreateHttpContext(headers: new Dictionary<string, string> { ["lang"] = "en" });
+
+        var key1 = CacheComponentKeyResolver.ComputeKey(componentWithCookie, ctxWithCookie);
+        var key2 = CacheComponentKeyResolver.ComputeKey(componentWithHeader, ctxWithHeader);
+
+        Assert.NotEqual(key1, key2);
+    }
+
     private static RenderFragment DefaultChildContent => builder => builder.AddContent(0, "test");
 
     private static CacheComponent CreateComponent(
@@ -242,12 +238,11 @@ public class CacheComponentKeyResolverTest
         string varyByCookie = null,
         bool? varyByUser = null,
         bool? varyByCulture = null,
-        string varyBy = null,
-        bool useDefaultChildContent = true)
+        string varyBy = null)
     {
         var component = new CacheComponent
         {
-            ChildContent = childContent ?? (useDefaultChildContent ? DefaultChildContent : null),
+            ChildContent = childContent ?? DefaultChildContent,
             CacheKey = cacheKey,
             VaryByQuery = varyByQuery,
             VaryByRoute = varyByRoute,

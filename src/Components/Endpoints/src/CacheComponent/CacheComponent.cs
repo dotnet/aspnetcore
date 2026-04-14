@@ -5,15 +5,16 @@ using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
-/// A component that caches the rendered HTML output of its child content during
-/// server-side rendering (SSR). On cache hit, child components are not instantiated
-/// or rendered, preventing unnecessary data fetching and computation.
+/// A component that caches the rendered HTML of its child content during
+/// server-side rendering (SSR). On cache hit, child components are not
+/// instantiated or rendered.
 /// </summary>
 public sealed class CacheComponent : ComponentBase
 {
@@ -24,9 +25,8 @@ public sealed class CacheComponent : ComponentBase
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Gets or sets an explicit cache key for additional disambiguation. Only needed
-    /// when a reusable component uses <see cref="CacheComponent"/> internally and
-    /// multiple instances of that component appear on the same page.
+    /// Gets or sets an explicit cache key for disambiguation when multiple
+    /// <see cref="CacheComponent"/> instances share the same component ancestor.
     /// </summary>
     [Parameter]
     public string? CacheKey { get; set; }
@@ -38,22 +38,28 @@ public sealed class CacheComponent : ComponentBase
     public bool Enabled { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets the duration, from the time the cache entry was added, when it should be evicted.
+    /// Gets or sets how long after creation the cache entry should be evicted.
     /// </summary>
     [Parameter]
     public TimeSpan? ExpiresAfter { get; set; }
 
     /// <summary>
-    /// Gets or sets the exact <see cref="DateTimeOffset"/> the cache entry should be evicted.
+    /// Gets or sets the absolute <see cref="DateTimeOffset"/> when the cache entry should be evicted.
     /// </summary>
     [Parameter]
     public DateTimeOffset? ExpiresOn { get; set; }
 
     /// <summary>
-    /// Gets or sets the duration from last access that the cache entry should be evicted.
+    /// Gets or sets how long after last access the cache entry should be evicted.
     /// </summary>
     [Parameter]
     public TimeSpan? ExpiresSliding { get; set; }
+
+    /// <summary>
+    /// Gets or sets the <see cref="CacheItemPriority"/> policy for the cache entry.
+    /// </summary>
+    [Parameter]
+    public CacheItemPriority? Priority { get; set; }
 
     /// <summary>
     /// Gets or sets a comma-separated list of query string parameter names to vary the cache by.
@@ -97,10 +103,8 @@ public sealed class CacheComponent : ComponentBase
     [Parameter]
     public string? VaryBy { get; set; }
 
-    // Injected cache store — registered as singleton in DI.
     [Inject] internal CacheComponentStore? CacheStore { get; set; }
 
-    // HttpContext is cascaded by the SSR infrastructure.
     [CascadingParameter] internal HttpContext? HttpContext { get; set; }
 
     internal string? ResolvedCacheKey { get; private set; }
@@ -158,10 +162,15 @@ public sealed class CacheComponent : ComponentBase
                     }
                     freshFrameSearchStart = ApplyFreshAttributes(
                         builder, ref seq, freshFrames, freshFrameSearchStart, segment.ComponentType!);
-                    var renderMode = segment.ReconstructRenderMode();
-                    if (renderMode is not null)
+                    if (segment.RenderModeName is { } renderModeName)
                     {
-                        builder.AddComponentRenderMode(renderMode);
+                        builder.AddComponentRenderMode(renderModeName switch
+                        {
+                            "InteractiveServer" => Web.RenderMode.InteractiveServer,
+                            "InteractiveWebAssembly" => Web.RenderMode.InteractiveWebAssembly,
+                            "InteractiveAuto" => Web.RenderMode.InteractiveAuto,
+                            _ => throw new InvalidOperationException($"Unknown cached render mode: '{renderModeName}'."),
+                        });
                     }
                     builder.CloseComponent();
                     break;
@@ -207,7 +216,6 @@ public sealed class CacheComponent : ComponentBase
         try
         {
             cacheJson = CacheComponentJson.Deserialize(CachedData);
-
             return cacheJson.Count > 0;
         }
         catch (Exception ex)

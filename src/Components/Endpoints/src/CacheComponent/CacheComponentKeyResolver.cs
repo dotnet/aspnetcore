@@ -10,9 +10,12 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal static class CacheComponentKeyResolver
 {
+    private static readonly char[] _separator = [','];
+
     internal static string ComputeKey(CacheComponent cacheComponent, HttpContext httpContext)
     {
         var sb = new StringBuilder();
+        var request = httpContext.Request;
 
         if (cacheComponent.ChildContent is { } childContent)
         {
@@ -20,71 +23,67 @@ internal static class CacheComponentKeyResolver
               .Append('.')
               .Append(childContent.Method.Name);
         }
-        else
-        {
-            sb.Append(nameof(CacheComponent));
-        }
 
         if (cacheComponent.CacheKey is { } cacheKey)
         {
-            sb.Append('.').Append(cacheKey);
-        }
-
-        AppendVaryByValues(sb, cacheComponent, httpContext);
-
-        return Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())));
-    }
-
-    private static void AppendVaryByValues(StringBuilder sb, CacheComponent cacheComponent, HttpContext httpContext)
-    {
-        var request = httpContext.Request;
-
-        if (cacheComponent.VaryByQuery is { } varyByQuery)
-        {
-            foreach (var name in varyByQuery.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
-            {
-                sb.Append('.').Append(name).Append('=').Append(request.Query[name]);
-            }
-        }
-
-        if (cacheComponent.VaryByRoute is { } varyByRoute)
-        {
-            foreach (var name in varyByRoute.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
-            {
-                sb.Append('.').Append(name).Append('=').Append(request.RouteValues[name]);
-            }
-        }
-
-        if (cacheComponent.VaryByHeader is { } varyByHeader)
-        {
-            foreach (var name in varyByHeader.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
-            {
-                sb.Append('.').Append(name).Append('=').Append(request.Headers[name]);
-            }
-        }
-
-        if (cacheComponent.VaryByCookie is { } varyByCookie)
-        {
-            foreach (var name in varyByCookie.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
-            {
-                sb.Append('.').Append(name).Append('=').Append(request.Cookies[name]);
-            }
-        }
-
-        if (cacheComponent.VaryByUser is true)
-        {
-            sb.Append(".user=").Append(httpContext.User.Identity?.Name);
-        }
-
-        if (cacheComponent.VaryByCulture is true)
-        {
-            sb.Append(".culture=").Append(CultureInfo.CurrentCulture.Name)
-              .Append('.').Append(CultureInfo.CurrentUICulture.Name);
+            sb.Append("||").Append(cacheKey);
         }
 
         if (cacheComponent.VaryBy is { } varyBy)
         {
-            sb.Append('.').Append(varyBy);
+            sb.Append("||VaryBy||").Append(varyBy);
         }
+
+        AppendDelimitedValues(sb, "VaryByQuery", cacheComponent.VaryByQuery, name => request.Query[name]);
+        AppendDelimitedValues(sb, "VaryByRoute", cacheComponent.VaryByRoute, name => request.RouteValues[name]);
+        AppendDelimitedValues(sb, "VaryByHeader", cacheComponent.VaryByHeader, name => request.Headers[name]);
+        AppendDelimitedValues(sb, "VaryByCookie", cacheComponent.VaryByCookie, name => request.Cookies[name]);
+
+        if (cacheComponent.VaryByUser is true)
+        {
+            sb.Append("||VaryByUser||").Append(httpContext.User.Identity?.Name);
+        }
+
+        if (cacheComponent.VaryByCulture is true)
+        {
+            sb.Append("||VaryByCulture||")
+              .Append(CultureInfo.CurrentCulture.Name)
+              .Append("||")
+              .Append(CultureInfo.CurrentUICulture.Name);
+        }
+
+        return Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(sb.ToString())));
+    }
+
+    private static void AppendDelimitedValues(
+        StringBuilder sb,
+        string collectionName,
+        string? commaSeparated,
+        Func<string, object?> valueAccessor)
+    {
+        if (commaSeparated is null)
+        {
+            return;
+        }
+
+        var names = commaSeparated.Split(_separator, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        if (names.Length == 0)
+        {
+            return;
+        }
+
+        sb.Append("||").Append(collectionName).Append('(');
+
+        for (var i = 0; i < names.Length; i++)
+        {
+            if (i > 0)
+            {
+                sb.Append("||");
+            }
+
+            sb.Append(names[i]).Append("||").Append(valueAccessor(names[i]));
+        }
+
+        sb.Append(')');
     }
 }

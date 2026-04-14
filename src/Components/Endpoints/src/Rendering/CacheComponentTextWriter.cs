@@ -7,14 +7,14 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal sealed class CacheComponentTextWriter : TextWriter
 {
-    private readonly TextWriter _inner;
+    private readonly TextWriter _innerWriter;
     private readonly CacheComponentJson _segments = new();
     private readonly StringBuilder _buffer = new();
     private bool _capturing;
 
     public CacheComponentTextWriter(TextWriter inner, CacheComponentVaryBy varyBy)
     {
-        _inner = inner;
+        _innerWriter = inner;
         VaryBy = varyBy;
     }
 
@@ -22,12 +22,11 @@ internal sealed class CacheComponentTextWriter : TextWriter
 
     public bool IsCapturing => _capturing;
 
-    public override Encoding Encoding => _inner.Encoding;
+    public override Encoding Encoding => _innerWriter.Encoding;
 
     public override void Write(char value)
     {
-        _inner.Write(value);
-
+        _innerWriter.Write(value);
         if (_capturing)
         {
             _buffer.Append(value);
@@ -36,7 +35,7 @@ internal sealed class CacheComponentTextWriter : TextWriter
 
     public override void Write(string? value)
     {
-        _inner.Write(value);
+        _innerWriter.Write(value);
         if (_capturing)
         {
             _buffer.Append(value);
@@ -58,7 +57,7 @@ internal sealed class CacheComponentTextWriter : TextWriter
         _capturing = true;
     }
 
-    public void CreateHole(Type componentType, string? renderModeName = null, string? componentKey = null)
+    public void CreateHole(Type componentType, string? renderModeName = null, object? componentKey = null)
     {
         _segments.AddHole(componentType, renderModeName, componentKey);
     }

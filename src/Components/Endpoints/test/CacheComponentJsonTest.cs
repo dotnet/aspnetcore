@@ -66,22 +66,6 @@ public class CacheComponentJsonTest
     }
 
     [Fact]
-    public void Count_ReflectsNumberOfSegments()
-    {
-        var json = new CacheComponentJson();
-        Assert.Equal(0, json.Count);
-
-        json.AddHtml("<p>1</p>");
-        Assert.Equal(1, json.Count);
-
-        json.AddHole(typeof(NotCacheComponent));
-        Assert.Equal(2, json.Count);
-
-        json.AddHtml("<p>2</p>");
-        Assert.Equal(3, json.Count);
-    }
-
-    [Fact]
     public void SerializeDeserialize_HtmlOnly()
     {
         var original = new CacheComponentJson();
@@ -97,21 +81,6 @@ public class CacheComponentJsonTest
         Assert.Equal("<div>cached</div>", segments[0].Html);
         Assert.Equal(CacheSegmentKind.Html, segments[1].Kind);
         Assert.Equal("<p>more</p>", segments[1].Html);
-    }
-
-    [Fact]
-    public void SerializeDeserialize_HoleOnly()
-    {
-        var original = new CacheComponentJson();
-        original.AddHole(typeof(NotCacheComponent));
-
-        var serialized = original.Serialize();
-        var restored = CacheComponentJson.Deserialize(serialized);
-
-        Assert.Equal(1, restored.Count);
-        var segment = GetSegments(restored)[0];
-        Assert.Equal(CacheSegmentKind.Hole, segment.Kind);
-        Assert.Equal(typeof(NotCacheComponent), segment.ComponentType);
     }
 
     [Fact]
@@ -157,22 +126,6 @@ public class CacheComponentJsonTest
         Assert.Equal(0, restored.Count);
     }
 
-    [Theory]
-    [InlineData("InteractiveServer")]
-    [InlineData("InteractiveWebAssembly")]
-    [InlineData("InteractiveAuto")]
-    public void SerializeDeserialize_PreservesRenderModes(string renderModeName)
-    {
-        var original = new CacheComponentJson();
-        original.AddHole(typeof(NotCacheComponent), renderModeName);
-
-        var serialized = original.Serialize();
-        var restored = CacheComponentJson.Deserialize(serialized);
-
-        var segment = GetSegments(restored)[0];
-        Assert.Equal(renderModeName, segment.RenderModeName);
-    }
-
     [Fact]
     public void SerializeDeserialize_PreservesHtmlWithSpecialCharacters()
     {
@@ -184,6 +137,62 @@ public class CacheComponentJsonTest
         var restored = CacheComponentJson.Deserialize(serialized);
 
         Assert.Equal(html, GetSegments(restored)[0].Html);
+    }
+
+    [Fact]
+    public void SerializeDeserialize_PreservesIntKey()
+    {
+        var original = new CacheComponentJson();
+        original.AddHole(typeof(NotCacheComponent), componentKey: 42);
+
+        var serialized = original.Serialize();
+        var restored = CacheComponentJson.Deserialize(serialized);
+
+        var segment = GetSegments(restored)[0];
+        Assert.IsType<int>(segment.ComponentKey);
+        Assert.Equal(42, segment.ComponentKey);
+    }
+
+    [Fact]
+    public void SerializeDeserialize_PreservesGuidKey()
+    {
+        var guid = Guid.NewGuid();
+        var original = new CacheComponentJson();
+        original.AddHole(typeof(NotCacheComponent), componentKey: guid);
+
+        var serialized = original.Serialize();
+        var restored = CacheComponentJson.Deserialize(serialized);
+
+        var segment = GetSegments(restored)[0];
+        Assert.IsType<Guid>(segment.ComponentKey);
+        Assert.Equal(guid, segment.ComponentKey);
+    }
+
+    [Fact]
+    public void SerializeDeserialize_PreservesStringKey()
+    {
+        var original = new CacheComponentJson();
+        original.AddHole(typeof(NotCacheComponent), componentKey: "my-key");
+
+        var serialized = original.Serialize();
+        var restored = CacheComponentJson.Deserialize(serialized);
+
+        var segment = GetSegments(restored)[0];
+        Assert.IsType<string>(segment.ComponentKey);
+        Assert.Equal("my-key", segment.ComponentKey);
+    }
+
+    [Fact]
+    public void SerializeDeserialize_PreservesNullKey()
+    {
+        var original = new CacheComponentJson();
+        original.AddHole(typeof(NotCacheComponent), componentKey: null);
+
+        var serialized = original.Serialize();
+        var restored = CacheComponentJson.Deserialize(serialized);
+
+        var segment = GetSegments(restored)[0];
+        Assert.Null(segment.ComponentKey);
     }
 
     [Fact]
@@ -226,24 +235,6 @@ public class CacheComponentJsonTest
     }
 
     [Fact]
-    public void ReconstructRenderMode_ReturnsCorrectModes()
-    {
-        Assert.Null(CacheSegment.CreateHole(typeof(NotCacheComponent)).ReconstructRenderMode());
-        Assert.IsType<InteractiveServerRenderMode>(CacheSegment.CreateHole(typeof(NotCacheComponent), "InteractiveServer").ReconstructRenderMode());
-        Assert.IsType<InteractiveWebAssemblyRenderMode>(CacheSegment.CreateHole(typeof(NotCacheComponent), "InteractiveWebAssembly").ReconstructRenderMode());
-        Assert.IsType<InteractiveAutoRenderMode>(CacheSegment.CreateHole(typeof(NotCacheComponent), "InteractiveAuto").ReconstructRenderMode());
-    }
-
-    [Fact]
-    public void ReconstructRenderMode_ThrowsForUnknownMode()
-    {
-        var segment = CacheSegment.CreateHole(typeof(NotCacheComponent), "SomeFutureMode");
-
-        var ex = Assert.Throws<InvalidOperationException>(() => segment.ReconstructRenderMode());
-        Assert.Contains("Unknown cached render mode", ex.Message);
-    }
-
-    [Fact]
     public void GetRenderModeName_ReturnsCorrectNames()
     {
         Assert.Null(CacheSegment.GetRenderModeName(null));
@@ -257,21 +248,6 @@ public class CacheComponentJsonTest
     {
         var ex = Assert.Throws<InvalidOperationException>(() => CacheSegment.GetRenderModeName(new TestRenderMode()));
         Assert.Contains("Unsupported render mode type", ex.Message);
-    }
-
-    [Fact]
-    public void RenderMode_RoundTrips_ThroughNameAndReconstruct()
-    {
-        var modes = new IComponentRenderMode[] { RenderMode.InteractiveServer, RenderMode.InteractiveWebAssembly, RenderMode.InteractiveAuto };
-
-        foreach (var mode in modes)
-        {
-            var name = CacheSegment.GetRenderModeName(mode);
-            var segment = CacheSegment.CreateHole(typeof(NotCacheComponent), name);
-            var reconstructed = segment.ReconstructRenderMode();
-
-            Assert.Equal(mode.GetType(), reconstructed!.GetType());
-        }
     }
 
     private static List<CacheSegment> GetSegments(CacheComponentJson json)

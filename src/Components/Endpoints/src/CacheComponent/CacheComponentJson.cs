@@ -19,7 +19,7 @@ internal sealed partial class CacheComponentJson
         _segments.Add(CacheSegment.CreateHtml(html));
     }
 
-    public void AddHole(Type componentType, string? renderModeName = null, string? componentKey = null)
+    public void AddHole(Type componentType, string? renderModeName = null, object? componentKey = null)
     {
         ArgumentNullException.ThrowIfNull(componentType);
         _segments.Add(CacheSegment.CreateHole(componentType, renderModeName, componentKey));
@@ -41,7 +41,8 @@ internal sealed partial class CacheComponentJson
                     Type = "hole",
                     Content = segment.ComponentType!.AssemblyQualifiedName,
                     RenderMode = segment.RenderModeName,
-                    Key = segment.ComponentKey,
+                    Key = SerializeKey(segment.ComponentKey),
+                    KeyType = segment.ComponentKey?.GetType().FullName,
                 },
                 _ => throw new InvalidOperationException($"Unknown segment kind: {segment.Kind}"),
             };
@@ -72,7 +73,7 @@ internal sealed partial class CacheComponentJson
                     {
                         throw new InvalidOperationException($"Resolved type '{type.FullName}' is not a valid component type.");
                     }
-                    result.AddHole(type, entry.RenderMode, entry.Key);
+                    result.AddHole(type, entry.RenderMode, DeserializeKey(entry.Key, entry.KeyType));
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown cache segment type: '{entry.Type}'.");
@@ -80,6 +81,29 @@ internal sealed partial class CacheComponentJson
         }
 
         return result;
+    }
+
+    private static string? SerializeKey(object? key)
+    {
+        if (key is null)
+        {
+            return null;
+        }
+
+        return JsonSerializer.Serialize(key);
+    }
+
+    private static object? DeserializeKey(string? keyValue, string? keyType)
+    {
+        if (keyValue is null || keyType is null)
+        {
+            return null;
+        }
+
+        var type = Type.GetType(keyType)
+            ?? throw new InvalidOperationException($"Could not resolve key type: '{keyType}'.");
+
+        return JsonSerializer.Deserialize(keyValue, type);
     }
 
     internal sealed class JsonCacheSegment
@@ -91,6 +115,8 @@ internal sealed partial class CacheComponentJson
         public string? RenderMode { get; set; }
 
         public string? Key { get; set; }
+
+        public string? KeyType { get; set; }
     }
 
     [JsonSerializable(typeof(JsonCacheSegment[]))]
@@ -105,9 +131,9 @@ internal readonly struct CacheSegment
     public string? Html { get; }
     public Type? ComponentType { get; }
     public string? RenderModeName { get; }
-    public string? ComponentKey { get; }
+    public object? ComponentKey { get; }
 
-    private CacheSegment(CacheSegmentKind kind, string? html, Type? componentType, string? renderModeName = null, string? componentKey = null)
+    private CacheSegment(CacheSegmentKind kind, string? html, Type? componentType, string? renderModeName = null, object? componentKey = null)
     {
         Kind = kind;
         Html = html;
@@ -117,23 +143,8 @@ internal readonly struct CacheSegment
     }
 
     public static CacheSegment CreateHtml(string html) => new(CacheSegmentKind.Html, html, componentType: null);
-    public static CacheSegment CreateHole(Type componentType, string? renderModeName = null, string? componentKey = null)
+    public static CacheSegment CreateHole(Type componentType, string? renderModeName = null, object? componentKey = null)
         => new(CacheSegmentKind.Hole, html: null, componentType, renderModeName, componentKey);
-
-    /// <summary>
-    /// Reconstructs the <see cref="IComponentRenderMode"/> from the serialized name, or returns <c>null</c> if no render mode was cached.
-    /// </summary>
-    public IComponentRenderMode? ReconstructRenderMode()
-    {
-        return RenderModeName switch
-        {
-            null => null,
-            "InteractiveServer" => RenderMode.InteractiveServer,
-            "InteractiveWebAssembly" => RenderMode.InteractiveWebAssembly,
-            "InteractiveAuto" => RenderMode.InteractiveAuto,
-            _ => throw new InvalidOperationException($"Unknown cached render mode: '{RenderModeName}'."),
-        };
-    }
 
     internal static string? GetRenderModeName(IComponentRenderMode? renderMode)
     {

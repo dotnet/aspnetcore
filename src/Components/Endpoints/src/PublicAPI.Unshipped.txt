@@ -17,6 +17,8 @@ Microsoft.AspNetCore.Components.CacheComponent.ExpiresOn.get -> System.DateTimeO
 Microsoft.AspNetCore.Components.CacheComponent.ExpiresOn.set -> void
 Microsoft.AspNetCore.Components.CacheComponent.ExpiresSliding.get -> System.TimeSpan?
 Microsoft.AspNetCore.Components.CacheComponent.ExpiresSliding.set -> void
+Microsoft.AspNetCore.Components.CacheComponent.Priority.get -> Microsoft.Extensions.Caching.Memory.CacheItemPriority?
+Microsoft.AspNetCore.Components.CacheComponent.Priority.set -> void
 Microsoft.AspNetCore.Components.CacheComponent.VaryBy.get -> string?
 Microsoft.AspNetCore.Components.CacheComponent.VaryBy.set -> void
 Microsoft.AspNetCore.Components.CacheComponent.VaryByCookie.get -> string?

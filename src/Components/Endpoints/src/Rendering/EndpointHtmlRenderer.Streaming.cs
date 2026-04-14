@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -295,6 +294,7 @@ internal partial class EndpointHtmlRenderer
                         ExpiresAfter = cacheComponent.ExpiresAfter,
                         ExpiresOn = cacheComponent.ExpiresOn,
                         ExpiresSliding = cacheComponent.ExpiresSliding,
+                        Priority = cacheComponent.Priority,
                     });
                     return;
                 }
@@ -302,15 +302,16 @@ internal partial class EndpointHtmlRenderer
         }
 
         var renderBoundaryMarkers = allowBoundaryMarkers && componentState.StreamRendering;
-
         var captureWriter = output as CacheComponentTextWriter;
         var pausedCapture = false;
         if (captureWriter is not null && captureWriter.IsCapturing && (IsHoleComponent(componentType, captureWriter.VaryBy) || renderBoundaryMarkers))
         {
             pausedCapture = true;
             captureWriter.PauseCapture();
-            var (renderModeName, componentKey) = ExtractHoleMetadata(componentId, componentState);
-            captureWriter.CreateHole(componentType, renderModeName, componentKey);
+            var renderModeName = componentState.Component is SSRRenderModeBoundary boundary2
+                ? CacheSegment.GetRenderModeName(boundary2.RenderMode)
+                : null;
+            captureWriter.CreateHole(componentType, renderModeName, sequenceAndKey.Key);
         }
 
         ComponentEndMarker? endMarkerOrNull = default;
@@ -370,97 +371,30 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    // Determines whether a component must be rendered as a "hole" (uncached placeholder)
-    // in the cache template. Hole components are excluded from cached HTML and re-rendered
-    // fresh on every request, even on cache hits.
-    private static bool IsHoleComponent(Type componentType, CacheComponentVaryBy varyBy)
-    {
-        // Security: AuthorizeView is a hole unless VaryByUser is set, to avoid
-        // serving cached auth state to the wrong user.
-        if (componentType == typeof(Authorization.AuthorizeView) && !varyBy.VaryByUser)
-        {
-            return true;
-        }
-
-        // Form components are holes because they contain antiforgery tokens and
-        // user-specific state that must not be served from cache.
-        if (componentType == typeof(EditForm)
-            || componentType == typeof(ValidationSummary))
-        {
-            return true;
-        }
-
-        // InputBase<T> and ValidationMessage<T> are generic — check the hierarchy
-        if (componentType.IsGenericType && componentType.GetGenericTypeDefinition() == typeof(ValidationMessage<>))
-        {
-            return true;
-        }
-
-        if (IsInputBaseDescendant(componentType))
-        {
-            return true;
-        }
-
-        return componentType == typeof(AntiforgeryToken)
+    internal static bool IsHoleComponent(Type componentType, CacheComponentVaryBy varyBy)
+        => (typeof(Authorization.AuthorizeViewCore).IsAssignableFrom(componentType) && !varyBy.VaryByUser)
+            || componentType == typeof(Components.Forms.EditForm)
+            || componentType == typeof(Components.Forms.ValidationSummary)
+            || (componentType.IsGenericType && componentType.GetGenericTypeDefinition() == typeof(Components.Forms.ValidationMessage<>))
+            || IsInputBaseDescendant(componentType)
+            || componentType == typeof(Components.Forms.AntiforgeryToken)
             || componentType == typeof(NotCacheComponent)
             || componentType == typeof(SSRRenderModeBoundary)
             || componentType == typeof(Web.HeadOutlet)
             || componentType == typeof(Sections.SectionOutlet)
             || componentType == typeof(Sections.SectionContent);
-    }
 
-    private static bool IsInputBaseDescendant(Type componentType)
+    internal static bool IsInputBaseDescendant(Type componentType)
     {
         while (componentType is not null && componentType != typeof(object))
         {
-            if (componentType.IsGenericType && componentType.GetGenericTypeDefinition() == typeof(InputBase<>))
+            if (componentType.IsGenericType && componentType.GetGenericTypeDefinition() == typeof(Components.Forms.InputBase<>))
             {
                 return true;
             }
             componentType = componentType.BaseType!;
         }
         return false;
-    }
-
-    private (string? RenderModeName, string? ComponentKey) ExtractHoleMetadata(int componentId, EndpointComponentState componentState)
-    {
-        var parentState = componentState.ParentComponentState;
-        if (parentState is null)
-        {
-            return (null, null);
-        }
-
-        var parentFrames = GetCurrentRenderTreeFrames(parentState.ComponentId);
-        var frames = parentFrames.Array;
-        var count = parentFrames.Count;
-
-        for (var i = 0; i < count; i++)
-        {
-            ref var frame = ref frames[i];
-            if (frame.FrameType == RenderTreeFrameType.Component && frame.ComponentId == componentId)
-            {
-                var endIndex = i + frame.ComponentSubtreeLength;
-                var renderModeName = ExtractRenderMode(frames, i, endIndex);
-                var componentKey = frame.ComponentKey as string;
-
-                return (renderModeName, componentKey);
-            }
-        }
-
-        return (null, null);
-    }
-
-    private static string? ExtractRenderMode(RenderTreeFrame[] frames, int componentFrameIndex, int endIndex)
-    {
-        for (var i = componentFrameIndex + 1; i < endIndex; i++)
-        {
-            if (frames[i].FrameType == RenderTreeFrameType.ComponentRenderMode)
-            {
-                return CacheSegment.GetRenderModeName(frames[i].ComponentRenderMode);
-            }
-        }
-
-        return null;
     }
 
     internal static bool IsProgressivelyEnhancedNavigation(HttpRequest request)

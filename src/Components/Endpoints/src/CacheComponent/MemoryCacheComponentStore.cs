@@ -35,13 +35,19 @@ internal sealed class MemoryCacheComponentStore : CacheComponentStore
         {
             entryOptions.SlidingExpiration = options.ExpiresSliding.Value;
         }
-        else if (options.ExpiresOn.HasValue)
+
+        if (options.ExpiresOn.HasValue)
         {
             entryOptions.AbsoluteExpiration = options.ExpiresOn.Value;
         }
         else
         {
             entryOptions.AbsoluteExpirationRelativeToNow = options.ExpiresAfter ?? DefaultExpiration;
+        }
+
+        if (options.Priority.HasValue)
+        {
+            entryOptions.Priority = options.Priority.Value;
         }
 
         _cache.Set(key, json, entryOptions);

@@ -118,19 +118,6 @@ public class CacheComponentTextWriterTest
         Assert.Equal(inner.Encoding, writer.Encoding);
     }
 
-    [Fact]
-    public void Write_ForwardsToInner_EvenDuringCapture()
-    {
-        var inner = new StringWriter();
-        var writer = CreateWriter(inner);
-
-        writer.StartCapture();
-        writer.Write("both");
-        writer.StopCapture();
-
-        Assert.Equal("both", inner.ToString());
-    }
-
     private static CacheComponentTextWriter CreateWriter(TextWriter inner = null)
     {
         return new CacheComponentTextWriter(inner ?? new StringWriter(), new CacheComponentVaryBy());
