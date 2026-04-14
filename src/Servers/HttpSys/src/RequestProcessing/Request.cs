@@ -9,12 +9,17 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
     internal sealed class Request
     {
+        private static bool AllowKeepAliveAfterCLTE;
+
         private NativeRequestContext _nativeRequestContext;
 
         private X509Certificate2 _clientCert;
@@ -31,6 +36,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private AspNetCore.HttpSys.Internal.SocketAddress _remoteEndPoint;
 
         private bool _isDisposed = false;
+
+        static Request()
+        {
+            AllowKeepAliveAfterCLTE = AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.HttpSys.AllowKeepAliveAfterCLTE", out var value) && value;
+        }
 
         internal Request(RequestContext requestContext, NativeRequestContext nativeRequestContext)
         {
@@ -88,6 +98,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // Finished directly accessing the HTTP_REQUEST structure.
             _nativeRequestContext.ReleasePins();
             // TODO: Verbose log parameters
+
+            RemoveContentLengthIfTransferEncodingContainsChunked();
         }
 
         internal ulong UConnectionId { get; }
@@ -101,6 +113,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private RequestContext RequestContext { get; }
 
+        public bool KeepAlive { get; private set; } = true;
+
         // With the leading ?, if any
         public string QueryString { get; }
 
@@ -111,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (_contentBoundaryType == BoundaryType.None)
                 {
                     string transferEncoding = Headers[HttpKnownHeaderNames.TransferEncoding];
-                    if (string.Equals("chunked", transferEncoding?.Trim(), StringComparison.OrdinalIgnoreCase))
+                    if (IsChunked(transferEncoding))
                     {
                         _contentBoundaryType = BoundaryType.Chunked;
                     }
@@ -339,6 +353,61 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _nativeStream = new RequestStream(RequestContext);
             }
             _nativeStream.SwitchToOpaqueMode();
+        }
+
+        private void RemoveContentLengthIfTransferEncodingContainsChunked()
+        {
+            if (StringValues.IsNullOrEmpty(Headers.ContentLength)) { return; }
+
+            var transferEncoding = Headers[HttpKnownHeaderNames.TransferEncoding].ToString();
+            if (!IsChunked(transferEncoding))
+            {
+                return;
+            }
+
+            // https://www.rfc-editor.org/rfc/rfc9112#section-6.2
+            // A sender MUST NOT send a Content-Length header field in any message
+            // that contains a Transfer-Encoding header field.
+            // https://www.rfc-editor.org/rfc/rfc9112#section-6.3-2.3
+            // If a message is received with both a Transfer-Encoding and a
+            // Content-Length header field, the Transfer-Encoding overrides the
+            // Content-Length. Such a message might indicate an attempt to
+            // perform request smuggling (Section 11.2) or response splitting
+            // (Section 11.1) and ought to be handled as an error. An intermediary
+            // that chooses to forward the message MUST first remove the received
+            // Content-Length field and process the Transfer-Encoding
+            // (as described below) prior to forwarding the message downstream.
+            // We should remove the Content-Length request header in this case, for compatibility
+            // reasons, include x-Content-Length so that the original Content-Length is still available.
+            IHeaderDictionary headerDictionary = Headers;
+            headerDictionary.Add("X-Content-Length", headerDictionary[HttpKnownHeaderNames.ContentLength]);
+            Headers.ContentLength = StringValues.Empty;
+
+            if (!AllowKeepAliveAfterCLTE)
+            {
+                // https://www.rfc-editor.org/rfc/rfc9112#section-6.1
+                // A server MAY reject a request that contains both Content-Length
+                // and Transfer-Encoding or process such a request in accordance
+                // with the Transfer-Encoding alone. Regardless, the server MUST
+                // close the connection after responding to such a request to
+                // avoid the potential attacks.
+                KeepAlive = false;
+            }
+        }
+
+        private static bool IsChunked(string transferEncoding)
+        {
+            if (transferEncoding is null)
+            {
+                return false;
+            }
+
+            var splitHeader = transferEncoding.Split(',');
+            if (string.Equals("chunked", splitHeader[splitHeader.Length - 1].Trim(), StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

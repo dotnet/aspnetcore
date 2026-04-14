@@ -820,6 +820,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             }
         }
+
+        [Fact]
+        public async Task CloseConnectionAfterProcessingContentLengthPlusChunkedRequest()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(AppChunked, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Transfer-Encoding: chunked",
+                        "Connection: keep-alive",
+                        "Content-Length: 7",
+                        "",
+                        "5", "Hello",
+                        "6", " World",
+                        "0",
+                        "",
+                        "",
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Transfer-Encoding: chunked",
+                        "Connection: keep-alive",
+                        "Content-Length: 7",
+                        "",
+                        "5", "Hello",
+                        "6", " World",
+                        "0",
+                        "",
+                        "");
+
+                    await connection.ReceiveForcedEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 11",
+                        "",
+                        "Hello World");
+                }
+            }
+        }
     }
 }
 
