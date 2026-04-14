@@ -611,14 +611,18 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65852")]
-    public virtual void CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax()
+    public void CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax()
     {
         Browser.MountTestComponent<VirtualizationLargeOverscan>();
         var container = Browser.Exists(By.Id("virtualize-large-overscan"));
-        // Ensure we have an initial contiguous batch and the elevated effective max has kicked in (>= OverscanCount)
-        var indices = GetVisibleItemIndices();
-        Browser.True(() => indices.Count >= 200);
+        // Wait for the elevated effective max to kick in (>= OverscanCount).
+        // Re-query inside the retry loop so we see new items as they render.
+        List<int> indices = null;
+        Browser.True(() =>
+        {
+            indices = GetVisibleItemIndices();
+            return indices.Count >= 200;
+        });
 
         // Give focus so PageDown works
         container.Click();
@@ -633,8 +637,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
         while (scrollTop + clientHeight < scrollHeight)
         {
-            // Validate contiguity on the current page
-            Browser.True(() => IsCurrentViewContiguous(indices));
+            // Re-query visible items after each scroll so contiguity and
+            // progress checks reflect the current DOM state.
+            Browser.True(() =>
+            {
+                indices = GetVisibleItemIndices();
+                return IsCurrentViewContiguous(indices);
+            });
 
             // Track progress in indices
             var currentMax = indices.Max();
@@ -1069,7 +1078,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    public void DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace()
+    public virtual void DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace()
     {
         Browser.MountTestComponent<VirtualizationDynamicContent>();
 
