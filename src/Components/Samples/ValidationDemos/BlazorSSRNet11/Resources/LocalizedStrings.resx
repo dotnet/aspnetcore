@@ -24,7 +24,7 @@
   <data name="ConfirmPassword" xml:space="preserve"><value>Confirm Password</value></data>
   <data name="PhoneNumber" xml:space="preserve"><value>Phone Number</value></data>
   <data name="ZipCode" xml:space="preserve"><value>Zip Code</value></data>
-  <data name="Email" xml:space="preserve"><value>Email</value></data>
+  <data name="Email" xml:space="preserve"><value>Contact Email</value></data>
   <data name="Password" xml:space="preserve"><value>Password</value></data>
   <data name="Age" xml:space="preserve"><value>Age</value></data>
   <data name="PageTitle" xml:space="preserve"><value>Client-Side Validation</value></data>
