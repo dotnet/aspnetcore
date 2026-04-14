@@ -104,10 +104,6 @@ public class ServerVirtualizationTest : VirtualizationTest
     public override void CanRenderHtmlTable()
         => base.CanRenderHtmlTable();
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65962")]
-    public override void CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax()
-        => base.CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax();
-
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66119")]
     public override void NonZeroStartIndex_ScrollToMiddleThenMeasure()
         => base.NonZeroStartIndex_ScrollToMiddleThenMeasure();
