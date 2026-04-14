@@ -1,218 +1,30 @@
-:root {
-    --primary: #0891b2;
-    --primary-hover: #0e7490;
-    --primary-light: #ecfeff;
-    --primary-border: #a5f3fc;
-
-    --error: #dc2626;
-    --error-light: #fef2f2;
-    --error-border: #fecaca;
-    --success: #16a34a;
-    --success-light: #f0fdf4;
-    --success-border: #bbf7d0;
-    --pending: #2563eb;
-    --pending-light: #eff6ff;
-
-    --text: #1e293b;
-    --text-muted: #64748b;
-    --bg: #f8fafc;
-    --surface: #ffffff;
-    --border: #e2e8f0;
+/* Bridge Blazor validation classes to Bootstrap */
+.input-validation-error {
+    border-color: var(--bs-form-invalid-border-color) !important;
+    padding-right: calc(1.5em + 0.75rem);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
 }
 
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
+/* Blazor validation message styling */
+.validation-message {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: var(--bs-form-invalid-color);
 }
 
-body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    margin: 0;
-    padding: 2rem;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-}
-
-.container {
-    max-width: 480px;
-    margin: 0 auto;
-    background: var(--surface);
-    border-radius: 16px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.05);
-    padding: 2.5rem 2rem 2rem;
-}
-
-.app-badge {
-    display: inline-block;
-    background: var(--primary-light);
-    color: var(--primary);
-    border: 1px solid var(--primary-border);
-    font-size: 0.75rem;
-    font-weight: 600;
-    border-radius: 100px;
-    padding: 0.25rem 0.75rem;
+/* Hide valid summary, style invalid summary */
+.validation-summary-valid { display: none; }
+.validation-summary-errors {
+    color: var(--bs-danger-text-emphasis);
+    background-color: var(--bs-danger-bg-subtle);
+    border: var(--bs-border-width) solid var(--bs-danger-border-subtle);
+    border-radius: var(--bs-border-radius);
+    padding: 1rem;
     margin-bottom: 1rem;
 }
-
-h1 {
-    font-size: 1.35rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin: 0 0 0.25rem;
-}
-
-.subtitle {
-    color: var(--text-muted);
-    font-size: 0.875rem;
-    line-height: 1.5;
-    margin: 0 0 1.5rem;
-}
-
-.culture-picker {
-    display: inline-flex;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-    font-size: 0.8rem;
-}
-
-.culture-picker a {
-    color: var(--primary);
-    text-decoration: none;
-}
-
-.culture-picker a:hover {
-    text-decoration: underline;
-}
-
-.culture-picker .active {
-    font-weight: 700;
-}
-
-.form-group {
-    margin-bottom: 1.25rem;
-}
-
-label {
-    display: block;
-    font-weight: 600;
-    font-size: 0.85rem;
-    margin-bottom: 0.35rem;
-    color: var(--text);
-}
-
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="number"],
-input[type="tel"] {
-    width: 100%;
-    padding: 0.6rem 0.85rem;
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    font-size: 0.95rem;
-    font-family: inherit;
-    transition: all 0.15s ease;
-}
-
-input:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.15);
-}
-
-.input-validation-error {
-    border-color: var(--error) !important;
-    background: var(--error-light) !important;
-}
-
-.validation-message {
-    color: var(--error);
-    font-size: 0.8rem;
-    margin-top: 0.3rem;
-}
-
-.validation-message::before {
-    content: "\2715 ";
-}
-
-.validation-summary-valid {
-    display: none;
-}
-
-.validation-summary-errors {
-    background: var(--error-light);
-    border: 1px solid var(--error-border);
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    margin-bottom: 1.25rem;
-    color: var(--error);
-    font-size: 0.82rem;
-}
-
-.validation-summary-errors ul {
-    margin: 0.25rem 0 0;
-    padding-left: 1.2rem;
-}
-
-.button-group {
-    display: flex;
-    gap: 0.75rem;
-    margin-top: 1rem;
-}
-
-button[type="submit"] {
-    width: 100%;
-    padding: 0.7rem;
-    background: var(--primary);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-button[type="submit"]:hover {
-    background: var(--primary-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(8, 145, 178, 0.25);
-}
-
-button[type="submit"]:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-button[type="reset"] {
-    width: 100%;
-    padding: 0.7rem;
-    background: transparent;
-    color: var(--text-muted);
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    font-size: 1rem;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-button[type="reset"]:hover {
-    border-color: var(--primary);
-    color: var(--primary);
-}
-
-.success-message {
-    background: var(--success-light);
-    border: 1px solid var(--success-border);
-    border-radius: 8px;
-    padding: 1rem;
-    color: #166534;
-    text-align: center;
-    margin-top: 1rem;
-}
+.validation-summary-errors ul { margin-bottom: 0; }

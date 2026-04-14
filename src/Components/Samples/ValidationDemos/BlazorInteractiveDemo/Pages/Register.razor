@@ -5,108 +5,96 @@
 @using Microsoft.Extensions.Localization
 @using BlazorInteractiveDemo.Resources
 
-<div class="container">
-    <span class="app-badge">Blazor Interactive</span>
-    <h1>Async Validation Demo</h1>
-    <p class="subtitle">
-        Server-side async validators with real-time pending &amp; faulted states.
-        Culture: <strong>@CultureInfo.CurrentUICulture.Name</strong>
-    </p>
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <h1 class="h3 mb-1">Async Validation Demo</h1>
+            <p class="text-body-secondary mb-4">
+                Server-side async validators with real-time pending &amp; faulted states.
+                Culture: <strong>@CultureInfo.CurrentUICulture.Name</strong>
+            </p>
 
-    <div class="culture-picker">
-        <span>🌐</span>
-        <a href="?culture=en" class="@(CultureInfo.CurrentUICulture.Name == "en" ? "active" : "")">English</a>
-        <a href="?culture=es" class="@(CultureInfo.CurrentUICulture.Name == "es" ? "active" : "")">Español</a>
-    </div>
+            <div class="mb-3 d-flex gap-2 small">
+                <span>🌐</span>
+                <a href="?culture=en" class="@(CultureInfo.CurrentUICulture.Name == "en" ? "fw-bold" : "")">English</a>
+                <a href="?culture=es" class="@(CultureInfo.CurrentUICulture.Name == "es" ? "fw-bold" : "")">Español</a>
+            </div>
 
-    @if (_submitted)
-    {
-        <div class="success-message">
-            ✅ Registration complete!
+            @if (_submitted)
+            {
+                <div class="success-message">
+                    ✅ Registration complete!
+                </div>
+            }
+            else
+            {
+                <EditForm EditContext="_editContext" OnValidSubmit="HandleValidSubmit" FormName="registration" id="registration-form">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="mb-3">
+                        <label for="Name" class="form-label">@Loc["Full Name"]</label>
+                        <InputText @bind-Value="_model.Name" id="Name" class="form-control" />
+                        <ValidationMessage For="@(() => _model.Name)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Email" class="form-label">@Loc["Email_Display"]</label>
+                        <InputText @bind-Value="_model.Email" id="Email" class="form-control" />
+                        @if (_editContext.IsValidationPending(() => _model.Email))
+                        {
+                            <span class="pending-indicator">
+                                <span class="spinner-border spinner-border-sm" role="status"></span> @Loc["Checking"]
+                            </span>
+                        }
+                        else if (_editContext.IsValidationFaulted(() => _model.Email))
+                        {
+                            <span class="faulted-indicator">
+                                ⚠️ Validation failed.
+                                <button type="button" class="retry-btn" @onclick="() => RetryValidation(nameof(_model.Email))">Retry</button>
+                            </span>
+                        }
+                        <ValidationMessage For="@(() => _model.Email)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Username" class="form-label">@Loc["Username"]</label>
+                        <InputText @bind-Value="_model.Username" id="Username" class="form-control" />
+                        @if (_editContext.IsValidationPending(() => _model.Username))
+                        {
+                            <span class="pending-indicator">
+                                <span class="spinner-border spinner-border-sm" role="status"></span> @Loc["Checking"]
+                            </span>
+                        }
+                        else if (_editContext.IsValidationFaulted(() => _model.Username))
+                        {
+                            <span class="faulted-indicator">
+                                ⚠️ Validation failed.
+                                <button type="button" class="retry-btn" @onclick="() => RetryValidation(nameof(_model.Username))">Retry</button>
+                            </span>
+                        }
+                        <ValidationMessage For="@(() => _model.Username)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Password" class="form-label">Password</label>
+                        <InputText @bind-Value="_model.Password" id="Password" type="password" class="form-control" />
+                        <ValidationMessage For="@(() => _model.Password)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Age" class="form-label">Age</label>
+                        <InputNumber @bind-Value="_model.Age" id="Age" class="form-control" />
+                        <ValidationMessage For="@(() => _model.Age)" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" disabled="@_editContext.IsValidationPending()">
+                        @Loc["Register"]
+                    </button>
+                </EditForm>
+            }
         </div>
-    }
-    else
-    {
-        <EditForm EditContext="_editContext" OnValidSubmit="HandleValidSubmit" FormName="registration" id="registration-form">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
-
-            @* Full Name *@
-            <div class="form-group">
-                <label for="Name">@Loc["Full Name"]</label>
-                <div class="field-wrapper">
-                    <InputText @bind-Value="_model.Name" id="Name" />
-                </div>
-                <ValidationMessage For="@(() => _model.Name)" />
-            </div>
-
-            @* Email *@
-            <div class="form-group">
-                <label for="Email">@Loc["Email_Display"]</label>
-                <div class="field-wrapper">
-                    <InputText @bind-Value="_model.Email" id="Email" />
-                </div>
-                @if (_editContext.IsValidationPending(() => _model.Email))
-                {
-                    <span class="pending-indicator">
-                        <span class="spinner"></span> @Loc["Checking"]
-                    </span>
-                }
-                else if (_editContext.IsValidationFaulted(() => _model.Email))
-                {
-                    <span class="faulted-indicator">
-                        ⚠️ Validation failed.
-                        <button type="button" class="retry-btn" @onclick="() => RetryValidation(nameof(_model.Email))">Retry</button>
-                    </span>
-                }
-                <ValidationMessage For="@(() => _model.Email)" />
-            </div>
-
-            @* Username *@
-            <div class="form-group">
-                <label for="Username">@Loc["Username"]</label>
-                <div class="field-wrapper">
-                    <InputText @bind-Value="_model.Username" id="Username" />
-                </div>
-                @if (_editContext.IsValidationPending(() => _model.Username))
-                {
-                    <span class="pending-indicator">
-                        <span class="spinner"></span> @Loc["Checking"]
-                    </span>
-                }
-                else if (_editContext.IsValidationFaulted(() => _model.Username))
-                {
-                    <span class="faulted-indicator">
-                        ⚠️ Validation failed.
-                        <button type="button" class="retry-btn" @onclick="() => RetryValidation(nameof(_model.Username))">Retry</button>
-                    </span>
-                }
-                <ValidationMessage For="@(() => _model.Username)" />
-            </div>
-
-            @* Password *@
-            <div class="form-group">
-                <label for="Password">Password</label>
-                <div class="field-wrapper">
-                    <InputText @bind-Value="_model.Password" id="Password" type="password" />
-                </div>
-                <ValidationMessage For="@(() => _model.Password)" />
-            </div>
-
-            @* Age *@
-            <div class="form-group">
-                <label for="Age">Age</label>
-                <div class="field-wrapper">
-                    <InputNumber @bind-Value="_model.Age" id="Age" />
-                </div>
-                <ValidationMessage For="@(() => _model.Age)" />
-            </div>
-
-            <button type="submit" disabled="@_editContext.IsValidationPending()">
-                @Loc["Register"]
-            </button>
-        </EditForm>
-    }
+    </div>
 </div>
 
 @code {

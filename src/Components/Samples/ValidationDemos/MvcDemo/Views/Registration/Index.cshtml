@@ -4,107 +4,110 @@
     ViewData["Title"] = "Registration";
 }
 
-<div class="container">
-    <span class="app-badge">ASP.NET MVC</span>
-    <h1>Registration Form</h1>
-    <p class="subtitle">Client-side validation powered by <code>aspnet-core-validation.js</code> — no jQuery needed.</p>
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <h1 class="h3 mb-1">Registration Form</h1>
+            <p class="text-body-secondary mb-4">Client-side validation powered by <code>aspnet-core-validation.js</code> — no jQuery needed.</p>
 
-    @if (ViewData["Success"] is true)
-    {
-        <div class="success-message">✅ Registration submitted successfully (server-side validation passed).</div>
-    }
+            @if (ViewData["Success"] is true)
+            {
+                <div class="success-message">✅ Registration submitted successfully (server-side validation passed).</div>
+            }
 
-    <form asp-action="Index" method="post" id="registration-form">
-        <fieldset id="registration-fieldset">
-        <div asp-validation-summary="ModelOnly"></div>
+            <form asp-action="Index" method="post" id="registration-form">
+                <fieldset id="registration-fieldset">
+                <div asp-validation-summary="ModelOnly"></div>
 
-        <div class="form-group">
-            <label asp-for="Name"></label>
-            <input asp-for="Name" />
-            <span asp-validation-for="Name"></span>
-        </div>
-
-        <div class="form-group">
-            <label asp-for="Email"></label>
-            <div class="field-wrapper">
-                <input asp-for="Email" placeholder="Try admin@example.com" />
-                <div class="pending-indicator">
-                    <span class="spinner"></span>
-                    Checking&hellip;
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label"></label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name"></span>
                 </div>
-            </div>
-            <span asp-validation-for="Email"></span>
-        </div>
 
-        <div class="form-group">
-            <label asp-for="Username"></label>
-            <div class="field-wrapper">
-                <input asp-for="Username" placeholder="Try admin, root, test" />
-                <div class="pending-indicator">
-                    <span class="spinner"></span>
-                    Checking&hellip;
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <div class="position-relative">
+                        <input asp-for="Email" class="form-control" placeholder="Try admin@example.com" />
+                        <div class="pending-indicator">
+                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                            Checking&hellip;
+                        </div>
+                    </div>
+                    <span asp-validation-for="Email"></span>
                 </div>
-            </div>
-            <span asp-validation-for="Username"></span>
-        </div>
 
-        <div class="form-group">
-            <label asp-for="Phone"></label>
-            <input asp-for="Phone" />
-            <span asp-validation-for="Phone"></span>
-        </div>
+                <div class="mb-3">
+                    <label asp-for="Username" class="form-label"></label>
+                    <div class="position-relative">
+                        <input asp-for="Username" class="form-control" placeholder="Try admin, root, test" />
+                        <div class="pending-indicator">
+                            <span class="spinner-border spinner-border-sm" role="status"></span>
+                            Checking&hellip;
+                        </div>
+                    </div>
+                    <span asp-validation-for="Username"></span>
+                </div>
 
-        <div class="form-group">
-            <label asp-for="Website"></label>
-            <input asp-for="Website" />
-            <span asp-validation-for="Website"></span>
-        </div>
+                <div class="mb-3">
+                    <label asp-for="Phone" class="form-label"></label>
+                    <input asp-for="Phone" class="form-control" />
+                    <span asp-validation-for="Phone"></span>
+                </div>
 
-        <div class="form-group">
-            <label asp-for="Password"></label>
-            <input asp-for="Password" />
-            <span asp-validation-for="Password"></span>
-        </div>
+                <div class="mb-3">
+                    <label asp-for="Website" class="form-label"></label>
+                    <input asp-for="Website" class="form-control" />
+                    <span asp-validation-for="Website"></span>
+                </div>
 
-        <div class="form-group">
-            <label asp-for="ConfirmPassword"></label>
-            <input asp-for="ConfirmPassword" />
-            <span asp-validation-for="ConfirmPassword"></span>
-        </div>
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label"></label>
+                    <input asp-for="Password" class="form-control" />
+                    <span asp-validation-for="Password"></span>
+                </div>
 
-        <div class="form-group">
-            <label asp-for="Age"></label>
-            <input asp-for="Age" />
-            <span asp-validation-for="Age"></span>
-        </div>
+                <div class="mb-3">
+                    <label asp-for="ConfirmPassword" class="form-label"></label>
+                    <input asp-for="ConfirmPassword" class="form-control" />
+                    <span asp-validation-for="ConfirmPassword"></span>
+                </div>
 
-        <div class="form-group">
-            <label asp-for="CreditCard"></label>
-            <input asp-for="CreditCard" />
-            <span asp-validation-for="CreditCard"></span>
-        </div>
+                <div class="mb-3">
+                    <label asp-for="Age" class="form-label"></label>
+                    <input asp-for="Age" class="form-control" />
+                    <span asp-validation-for="Age"></span>
+                </div>
 
-        <div class="form-group">
-            <label asp-for="ZipCode"></label>
-            <input asp-for="ZipCode" />
-            <span asp-validation-for="ZipCode"></span>
-        </div>
+                <div class="mb-3">
+                    <label asp-for="CreditCard" class="form-label"></label>
+                    <input asp-for="CreditCard" class="form-control" />
+                    <span asp-validation-for="CreditCard"></span>
+                </div>
 
-        <div class="form-group">
-            <label asp-for="AvatarFilename"></label>
-            <input asp-for="AvatarFilename" placeholder="e.g. photo.png" />
-            <span asp-validation-for="AvatarFilename"></span>
-        </div>
+                <div class="mb-3">
+                    <label asp-for="ZipCode" class="form-label"></label>
+                    <input asp-for="ZipCode" class="form-control" />
+                    <span asp-validation-for="ZipCode"></span>
+                </div>
 
-        <div class="button-group">
-            <button type="submit" class="btn-submit" id="submit-btn">Register</button>
-            <button type="reset" class="btn-reset">Reset</button>
+                <div class="mb-3">
+                    <label asp-for="AvatarFilename" class="form-label"></label>
+                    <input asp-for="AvatarFilename" class="form-control" placeholder="e.g. photo.png" />
+                    <span asp-validation-for="AvatarFilename"></span>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-warning" id="submit-btn">Register</button>
+                    <button type="reset" class="btn btn-outline-secondary">Reset</button>
+                </div>
+                <div class="mt-2">
+                    <button type="submit" formnovalidate class="btn btn-outline-secondary btn-sm">Submit without validation</button>
+                </div>
+                </fieldset>
+            </form>
         </div>
-        <div class="button-group">
-            <button type="submit" formnovalidate class="btn-novalidate">Submit without validation</button>
-        </div>
-        </fieldset>
-    </form>
+    </div>
 </div>
 
 @section Scripts {
