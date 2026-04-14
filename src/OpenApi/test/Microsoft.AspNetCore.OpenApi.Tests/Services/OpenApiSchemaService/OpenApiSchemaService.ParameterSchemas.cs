@@ -732,7 +732,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     private Status GetItemStatus([FromQuery] Status status) => status;
 
     [Fact]
-    public async Task GetOpenApiParameters_EnumWithGlobalNamingPolicy_UsesOriginalMemberNames()
+    public async Task GetOpenApiParameters_EnumWithGlobalNamingPolicy_NonBodyUsesOriginalMemberNames()
     {
         // Arrange - configure a global JsonStringEnumConverter with KebabCaseLower naming policy
         var serviceCollection = new ServiceCollection();
@@ -742,30 +742,37 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
         var builder = CreateBuilder(serviceCollection);
 
-        // Act - map an endpoint with an enum query parameter (no [JsonConverter] attribute on the enum)
-        builder.MapGet("/api", (Priority priority) => { });
+        // Act - map endpoints with enum parameters bound from query, header, and path.
+        builder.MapGet("/api/query", (Priority priority) => { });
+        builder.MapGet("/api/header", ([FromHeader] Priority priority) => { });
+        builder.MapGet("/api/path/{priority}", (Priority priority) => { });
+        builder.MapPut("/api/form", ([FromForm] Priority priority) => { });
 
-        // Assert - the OpenAPI schema should use the original C# member names (PascalCase),
-        // NOT the naming-policy-transformed values (kebab-case), because query parameter
-        // binding uses Enum.TryParse which only accepts the original member names.
+        // Assert - non-body enum parameters should use the original C# member names
+        // (PascalCase), NOT the naming-policy-transformed values (kebab-case), because
+        // query/path/header binding uses Enum.TryParse which only accepts the original
+        // member names.
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
-            var parameter = Assert.Single(operation.Parameters);
-            Assert.Collection(parameter.Schema.Enum,
-            value =>
-            {
-                Assert.Equal("HighPriority", value.GetValue<string>());
-            },
-            value =>
-            {
-                Assert.Equal("MediumPriority", value.GetValue<string>());
-            },
-            value =>
-            {
-                Assert.Equal("LowPriority", value.GetValue<string>());
-            });
+            var queryOperation = document.Paths["/api/query"].Operations[HttpMethod.Get];
+            var headerOperation = document.Paths["/api/header"].Operations[HttpMethod.Get];
+            var pathOperation = document.Paths["/api/path/{priority}"].Operations[HttpMethod.Get];
+            var formOperation = document.Paths["/api/form"].Operations[HttpMethod.Put];
+
+            AssertOriginalEnumMemberNames(Assert.Single(queryOperation.Parameters).Schema);
+            AssertOriginalEnumMemberNames(Assert.Single(headerOperation.Parameters).Schema);
+            AssertOriginalEnumMemberNames(Assert.Single(pathOperation.Parameters).Schema);
+            var formProperty = formOperation.RequestBody.Content["application/x-www-form-urlencoded"].Schema.Properties["priority"];
+            AssertOriginalEnumMemberNames(formProperty);
         });
+
+        static void AssertOriginalEnumMemberNames(IOpenApiSchema schema)
+        {
+            Assert.Collection(schema.Enum,
+                value => Assert.Equal("HighPriority", value.GetValue<string>()),
+                value => Assert.Equal("MediumPriority", value.GetValue<string>()),
+                value => Assert.Equal("LowPriority", value.GetValue<string>()));
+        }
     }
 
     [Fact]
