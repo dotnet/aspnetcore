@@ -392,7 +392,7 @@ public class LocalizationTests
     {
         var options = new ValidationOptions();
 
-        var result = options.FormatErrorMessage(new RequiredAttribute(), "Name", typeof(object));
+        var result = options.FormatErrorMessage(new RequiredAttribute(), "Name", "Name", typeof(object));
 
         Assert.Null(result);
     }
@@ -412,7 +412,7 @@ public class LocalizationTests
             ErrorMessageResourceName = nameof(IntegrationResources.RequiredError)
         };
 
-        var result = options.FormatErrorMessage(attr, "Name", typeof(object));
+        var result = options.FormatErrorMessage(attr, "Name", "Name", typeof(object));
 
         Assert.Null(result);
     }
@@ -427,7 +427,7 @@ public class LocalizationTests
         var options = CreateOptionsWithLocalization(translations);
 
         var attr = new RequiredAttribute { ErrorMessage = "RequiredError" };
-        var result = options.FormatErrorMessage(attr, "Name", typeof(object));
+        var result = options.FormatErrorMessage(attr, "Name", "Name", typeof(object));
 
         Assert.Equal("Le champ Name est obligatoire.", result);
     }
@@ -442,7 +442,7 @@ public class LocalizationTests
         var options = CreateOptionsWithLocalization(translations);
 
         var attr = new RangeAttribute(1, 100) { ErrorMessage = "RangeError" };
-        var result = options.FormatErrorMessage(attr, "Age", typeof(object));
+        var result = options.FormatErrorMessage(attr, "Age", "Age", typeof(object));
 
         Assert.Equal("Age doit être entre 1 et 100.", result);
     }

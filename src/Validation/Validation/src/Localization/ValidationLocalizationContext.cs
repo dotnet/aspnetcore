@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using Microsoft.Extensions.Localization;
 
-namespace Microsoft.Extensions.Validation;
+namespace Microsoft.Extensions.Validation.Localization;
 
 /// <summary>
 /// Encapsulates IStringLocalizer-based localization state for the validation pipeline.
@@ -41,15 +41,16 @@ internal sealed class ValidationLocalizationContext
         return localizedName.ResourceNotFound ? null : localizedName.Value;
     }
 
-    internal string? ResolveErrorMessage(ValidationAttribute attribute, string displayName, Type? declaringType)
+    internal string? ResolveErrorMessage(ValidationAttribute attribute, string memberName, string displayName, Type? declaringType)
     {
         var lookupKey = !string.IsNullOrEmpty(attribute.ErrorMessage)
             ? attribute.ErrorMessage
             : _keyProvider?.Invoke(new ErrorMessageKeyContext
             {
                 Attribute = attribute,
+                MemberName = memberName,
                 DisplayName = displayName,
-                DeclaringType = declaringType
+                DeclaringType = declaringType,
             });
 
         if (lookupKey is null)

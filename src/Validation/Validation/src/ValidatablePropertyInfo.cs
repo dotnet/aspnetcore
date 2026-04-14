@@ -4,6 +4,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -109,8 +110,9 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             {
                 var customMessage = LocalizationHelper.TryResolveErrorMessage(
                     _requiredAttribute,
-                    DeclaringType,
+                    Name,
                     displayName,
+                    DeclaringType,
                     localization);
 
                 var errorMessage = customMessage ?? result.ErrorMessage;
@@ -269,8 +271,9 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     {
         var customMessage = LocalizationHelper.TryResolveErrorMessage(
             attribute,
-            DeclaringType,
+            name,
             displayName,
+            DeclaringType,
             localization);
 
         var errorMessage = customMessage ?? result.ErrorMessage;

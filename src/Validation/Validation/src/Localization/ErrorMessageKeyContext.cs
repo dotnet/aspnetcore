@@ -17,6 +17,11 @@ public readonly struct ErrorMessageKeyContext
     public required ValidationAttribute Attribute { get; init; }
 
     /// <summary>
+    /// Gets the name of the member (property or parameter) being validated.
+    /// </summary>
+    public required string MemberName { get; init; }
+
+    /// <summary>
     /// Gets the resolved display name for the member being validated.
     /// This value is already localized if localization is configured.
     /// </summary>

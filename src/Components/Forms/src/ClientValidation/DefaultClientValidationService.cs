@@ -43,7 +43,7 @@ internal sealed class DefaultClientValidationService(
 
         foreach (var validationAttribute in validationAttributes)
         {
-            var errorMessage = GetErrorMessage(validationAttribute, displayName, modelType, options);
+            var errorMessage = GetErrorMessage(validationAttribute, fieldName, displayName, modelType, options);
             AddAttributes(htmlAttributes, validationAttribute, errorMessage);
         }
 
@@ -175,10 +175,14 @@ internal sealed class DefaultClientValidationService(
     }
 
     private static string GetErrorMessage(
-        ValidationAttribute validationAttribute, string displayName, Type declaringType, ValidationOptions options)
+        ValidationAttribute validationAttribute,
+        string memberName,
+        string displayName,
+        Type declaringType,
+        ValidationOptions options)
     {
         // Try localization pipeline first
-        var localizedMessage = options.FormatErrorMessage(validationAttribute, displayName, declaringType);
+        var localizedMessage = options.FormatErrorMessage(validationAttribute, memberName, displayName, declaringType);
         if (localizedMessage is not null)
         {
             return localizedMessage;

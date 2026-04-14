@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -127,17 +128,18 @@ public class ValidationOptions
     /// its own resource-based localization, or no localized value is found.
     /// </summary>
     /// <param name="attribute">The validation attribute that produced the error.</param>
+    /// <param name="memberName">The name of the property or parameter being validated.</param>
     /// <param name="displayName">The (possibly localized) display name of the member.</param>
     /// <param name="declaringType">The type that declares the member, or <see langword="null"/> for parameters.</param>
     /// <returns>The localized error message, or <see langword="null"/> to use the attribute's default message.</returns>
-    public string? FormatErrorMessage(ValidationAttribute attribute, string displayName, Type? declaringType)
+    public string? FormatErrorMessage(ValidationAttribute attribute, string memberName, string displayName, Type? declaringType)
     {
         if (attribute.ErrorMessageResourceType is not null)
         {
             return null;
         }
 
-        return LocalizationContext?.ResolveErrorMessage(attribute, displayName, declaringType);
+        return LocalizationContext?.ResolveErrorMessage(attribute, memberName, displayName, declaringType);
     }
 
     /// <summary>

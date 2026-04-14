@@ -4,6 +4,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -174,8 +175,9 @@ public abstract class ValidatableTypeInfo(
             {
                 var customMessage = LocalizationHelper.TryResolveErrorMessage(
                     attribute,
-                    declaringType: Type,
+                    memberName: Type.Name,
                     displayName,
+                    declaringType: Type,
                     localization);
 
                 var errorMessage = customMessage ?? result.ErrorMessage;

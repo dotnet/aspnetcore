@@ -4,6 +4,7 @@
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -82,8 +83,9 @@ public abstract class ValidatableParameterInfo(
             {
                 var customMessage = LocalizationHelper.TryResolveErrorMessage(
                     _requiredAttribute,
-                    declaringType: null,
+                    Name,
                     displayName,
+                    declaringType: null,
                     localization);
 
                 var errorMessage = customMessage ?? result.ErrorMessage;
@@ -115,8 +117,9 @@ public abstract class ValidatableParameterInfo(
                 {
                     var customMessage = LocalizationHelper.TryResolveErrorMessage(
                         attribute,
-                        declaringType: null,
+                        Name,
                         displayName,
+                        declaringType: null,
                         localization);
 
                     var errorMessage = customMessage ?? result.ErrorMessage;

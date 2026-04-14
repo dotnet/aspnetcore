@@ -3,7 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Microsoft.Extensions.Validation;
+namespace Microsoft.Extensions.Validation.Localization;
 
 internal static class LocalizationHelper
 {
@@ -37,8 +37,9 @@ internal static class LocalizationHelper
     /// </summary>
     internal static string? TryResolveErrorMessage(
         ValidationAttribute attribute,
-        Type? declaringType,
+        string memberName,
         string displayName,
+        Type? declaringType,
         ValidationLocalizationContext? localization)
     {
         if (attribute.ErrorMessageResourceType is not null)
@@ -48,6 +49,6 @@ internal static class LocalizationHelper
         }
 
         // Error message is localized using IStringLocalizer.
-        return localization?.ResolveErrorMessage(attribute, displayName, declaringType);
+        return localization?.ResolveErrorMessage(attribute, memberName, displayName, declaringType);
     }
 }
