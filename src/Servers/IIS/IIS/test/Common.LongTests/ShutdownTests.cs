@@ -34,7 +34,6 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52676")]
     public async Task ShutdownTimeoutIsApplied()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -557,7 +556,6 @@ public class ShutdownTests : IISFunctionalTestBase
         await deploymentResult.HttpClient.RetryRequestAsync("/ProcessId", async r => await r.Content.ReadAsStringAsync() == processBefore);
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55937")]
     [ConditionalFact]
     public async Task OutOfProcessToInProcessHostingModelSwitchWorks()
     {

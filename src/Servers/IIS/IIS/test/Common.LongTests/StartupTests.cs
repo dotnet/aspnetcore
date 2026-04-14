@@ -377,7 +377,6 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewShim]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52889")]
     public async Task WrongApplicationPath_FailedToRun()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -461,7 +460,6 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewHandler]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65081")]
     public async Task StartupTimeoutIsApplied()
     {
         // From what we can tell, this failure is due to ungraceful shutdown.
@@ -703,7 +701,6 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewHandler]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/62802")]
     public async Task SetCurrentDirectoryHandlerSettingWorks()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -1010,7 +1007,6 @@ public class StartupTests : IISFunctionalTestBase
     }
 
     [ConditionalTheory]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/58108")]
     [InlineData("CheckLargeStdOutWrites")]
     [InlineData("CheckOversizedStdOutWrites")]
     public async Task CheckStdoutWithLargeWrites_LogFile(string mode)

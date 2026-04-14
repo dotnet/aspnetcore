@@ -12,4 +12,9 @@
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <!-- Keep metrics support enabled to test them -->
+    <MetricsSupport>true</MetricsSupport>
+  </PropertyGroup>
+
 </Project>

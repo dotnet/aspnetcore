@@ -39,7 +39,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         Browser.MountTestComponent<VirtualizationComponent>();
         var topSpacer = Browser.Exists(By.Id("sync-container")).FindElement(By.TagName("div"));
-        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0;";
+        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0; overflow-anchor: none;";
 
         int initialItemCount = 0;
 
@@ -175,7 +175,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    public void CancelsOutdatedRefreshes_Async()
+    public virtual void CancelsOutdatedRefreshes_Async()
     {
         Browser.MountTestComponent<VirtualizationComponent>();
         var cancellationCount = Browser.Exists(By.Id("cancellation-count"));
@@ -202,7 +202,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     public void CanUseViewportAsContainer()
     {
         Browser.MountTestComponent<VirtualizationComponent>();
-        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0;";
+        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0; overflow-anchor: none;";
         var topSpacer = Browser.Exists(By.Id("viewport-as-root")).FindElement(By.TagName("div"));
 
         Browser.ExecuteJavaScript("const element = document.getElementById('viewport-as-root'); element.scrollIntoView();");
@@ -226,7 +226,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         Browser.MountTestComponent<VirtualizationComponent>();
         var topSpacer = Browser.Exists(By.Id("incorrect-size-container")).FindElement(By.TagName("div"));
-        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0;";
+        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0; overflow-anchor: none;";
 
         // Wait until items have been rendered.
         Browser.True(() => GetItemCount() > 0);
@@ -252,7 +252,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     [Fact]
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65852")]
-    public void CanRenderHtmlTable()
+    public virtual void CanRenderHtmlTable()
     {
         Browser.MountTestComponent<VirtualizationTable>();
         var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0;";
@@ -611,14 +611,18 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65852")]
     public void CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax()
     {
         Browser.MountTestComponent<VirtualizationLargeOverscan>();
         var container = Browser.Exists(By.Id("virtualize-large-overscan"));
-        // Ensure we have an initial contiguous batch and the elevated effective max has kicked in (>= OverscanCount)
-        var indices = GetVisibleItemIndices();
-        Browser.True(() => indices.Count >= 200);
+        // Wait for the elevated effective max to kick in (>= OverscanCount).
+        // Re-query inside the retry loop so we see new items as they render.
+        List<int> indices = null;
+        Browser.True(() =>
+        {
+            indices = GetVisibleItemIndices();
+            return indices.Count >= 200;
+        });
 
         // Give focus so PageDown works
         container.Click();
@@ -633,8 +637,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
         while (scrollTop + clientHeight < scrollHeight)
         {
-            // Validate contiguity on the current page
-            Browser.True(() => IsCurrentViewContiguous(indices));
+            // Re-query visible items after each scroll so contiguity and
+            // progress checks reflect the current DOM state.
+            Browser.True(() =>
+            {
+                indices = GetVisibleItemIndices();
+                return IsCurrentViewContiguous(indices);
+            });
 
             // Track progress in indices
             var currentMax = indices.Max();
@@ -740,6 +749,41 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         js.ExecuteScript("arguments[0].scrollLeft = arguments[0].scrollWidth", elem);
     }
 
+    private void ScrollToOffsetWithStabilization(
+        IWebElement container,
+        double targetScrollTop,
+        int minFirstRenderedIndexExclusive)
+    {
+        var js = (IJavaScriptExecutor)Browser;
+
+        container.Click();
+        Browser.True(() =>
+        {
+            js.ExecuteScript("arguments[0].scrollTop = arguments[1];", container, targetScrollTop);
+
+            var currentScrollTop = Convert.ToDouble(
+                js.ExecuteScript("return arguments[0].scrollTop;", container),
+                CultureInfo.InvariantCulture);
+            if (currentScrollTop + 1 < targetScrollTop)
+            {
+                return false;
+            }
+
+            var items = container.FindElements(By.CssSelector(".item"));
+            if (items.Count == 0)
+            {
+                return false;
+            }
+
+            var indexText = items.First().GetDomAttribute("data-index");
+            return indexText != null
+                && int.TryParse(indexText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var index)
+                && index > minFirstRenderedIndexExclusive;
+        });
+
+        WaitForScrollStabilization(container);
+    }
+
     /// <summary>
     /// Jumps to end using a single End key press, then waits for scroll position to stabilize.
     /// With the measurement-based scroll compensation in Virtualize, a single End press converges
@@ -777,14 +821,18 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 var metrics = (IReadOnlyDictionary<string, object>)js.ExecuteScript(
                     "var c = arguments[0]; var spacers = c.querySelectorAll('[aria-hidden]');" +
                     "return { spacerAfterHeight: spacers.length >= 2 ? spacers[spacers.length - 1].offsetHeight : 999," +
+                    "  spacerBeforeHeight: spacers.length >= 1 ? spacers[0].offsetHeight : -1," +
+                    "  overflowAnchor: getComputedStyle(c).overflowAnchor || 'N/A'," +
                     "  scrollTop: c.scrollTop, scrollHeight: c.scrollHeight, clientHeight: c.clientHeight };",
                     container);
                 var spacerAfterHeight = Convert.ToDouble(metrics["spacerAfterHeight"], CultureInfo.InvariantCulture);
+                var spacerBeforeHeight = Convert.ToDouble(metrics["spacerBeforeHeight"], CultureInfo.InvariantCulture);
+                var overflowAnchor = metrics["overflowAnchor"]?.ToString() ?? "N/A";
                 var scrollTop = Convert.ToDouble(metrics["scrollTop"], CultureInfo.InvariantCulture);
                 var scrollHeight = Convert.ToDouble(metrics["scrollHeight"], CultureInfo.InvariantCulture);
                 var clientHeight = Convert.ToDouble(metrics["clientHeight"], CultureInfo.InvariantCulture);
                 var remaining = scrollHeight - scrollTop - clientHeight;
-                endDiagnostics.AppendLine(CultureInfo.InvariantCulture, $"  poll #{endPollCount}: spacerAfter={spacerAfterHeight:F1}, scrollTop={scrollTop:F1}, scrollHeight={scrollHeight:F1}, clientHeight={clientHeight:F1}, remaining={remaining:F1}");
+                endDiagnostics.AppendLine(CultureInfo.InvariantCulture, $"  poll #{endPollCount}: spacerAfter={spacerAfterHeight:F1}, spacerBefore={spacerBeforeHeight:F1}, scrollTop={scrollTop:F1}, scrollHeight={scrollHeight:F1}, clientHeight={clientHeight:F1}, remaining={remaining:F1}, overflowAnchor={overflowAnchor}");
 
                 return spacerAfterHeight < 1;
             });
@@ -996,9 +1044,19 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var status = Browser.Exists(By.Id("status"));
         Browser.True(() => GetElementCount(container, ".item") > 0);
 
-        // Scroll down so item 2 is not visible
-        js.ExecuteScript("arguments[0].scrollTop = 200", container);
-        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) >= 200);
+        // Scroll to the very bottom so item 2 is virtualized out of the DOM
+        js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", container);
+        Browser.True(() =>
+        {
+            var scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+            var scrollHeight = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+            var clientHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+            return scrollTop >= scrollHeight - clientHeight - 1;
+        });
+
+        // Wait for virtualization to converge after scrolling to bottom
+        Browser.True(() => container.FindElements(By.CssSelector("[data-index='2']")).Count == 0,
+            TimeSpan.FromSeconds(10));
 
         // Get the position of a visible item before expanding the off-screen item
         var visibleItems = container.FindElements(By.CssSelector(".item"));
@@ -1017,6 +1075,90 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // The visible items should stay in place (or very close, allowing for minor reflow)
         Assert.True(Math.Abs(firstVisibleTopAfter - firstVisibleTopBefore) < 5,
             $"Visible item should not have moved when off-screen item expanded. Before: {firstVisibleTopBefore}, After: {firstVisibleTopAfter}");
+    }
+
+    [Fact]
+    public void DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace()
+    {
+        Browser.MountTestComponent<VirtualizationDynamicContent>();
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        // Scroll past the overscan window to force true virtualization.
+        ScrollToOffsetWithStabilization(container, targetScrollTop: 5000, minFirstRenderedIndexExclusive: 10);
+
+        // Record the first visible item and its Y position.
+        var containerRect = container.Location;
+        var containerHeight = container.Size.Height;
+        var visibleItems = container.FindElements(By.CssSelector(".item"));
+        string firstVisibleIndex = null;
+        int firstVisibleTopBefore = 0;
+        foreach (var item in visibleItems)
+        {
+            var relativeY = item.Location.Y - containerRect.Y;
+            if (relativeY >= 0 && relativeY < containerHeight)
+            {
+                firstVisibleIndex = item.GetDomAttribute("data-index");
+                firstVisibleTopBefore = item.Location.Y;
+                break;
+            }
+        }
+        Assert.NotNull(firstVisibleIndex);
+
+        Browser.Exists(By.Id("prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+
+        // The visible item should stay in place after prepend.
+        var sameItem = container.FindElement(By.CssSelector($"[data-index='{firstVisibleIndex}']"));
+        var firstVisibleTopAfter = sameItem.Location.Y;
+
+        Assert.True(Math.Abs(firstVisibleTopAfter - firstVisibleTopBefore) < 5,
+            $"Visible item {firstVisibleIndex} should not move when items are prepended above. " +
+            $"Before Y: {firstVisibleTopBefore}, After Y: {firstVisibleTopAfter}");
+
+        Browser.True(() => container.FindElements(By.CssSelector(".item")).Count > 0);
+
+        // Verify prepended items are reachable at the top.
+        js.ExecuteScript("arguments[0].scrollTop = 0", container);
+        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) == 0);
+        Browser.True(() => container.FindElements(By.CssSelector("[data-index='-10']")).Count > 0);
+        var topItems = container.FindElements(By.CssSelector(".item"));
+        Assert.True(topItems.Count > 0, "Should render items after scrolling back to top.");
+    }
+
+    [Fact]
+    public void DynamicContent_AppendItemsWhileScrolledToMiddle_VisibleItemsStayInPlace()
+    {
+        Browser.MountTestComponent<VirtualizationDynamicContent>();
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        // Scroll past the overscan window to force true virtualization.
+        ScrollToOffsetWithStabilization(container, targetScrollTop: 5000, minFirstRenderedIndexExclusive: 10);
+        var visibleItems = container.FindElements(By.CssSelector(".item"));
+        var firstVisible = visibleItems.First();
+        var firstVisibleIndex = firstVisible.GetDomAttribute("data-index");
+        var firstVisibleTopBefore = firstVisible.Location.Y;
+        var scrollTopBefore = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+
+        Browser.Exists(By.Id("append-items")).Click();
+        Browser.Contains("Appended 10 items", () => Browser.Exists(By.Id("status")).Text);
+
+        // Appending below the viewport should not affect visible items.
+        var sameItem = container.FindElement(By.CssSelector($"[data-index='{firstVisibleIndex}']"));
+        var firstVisibleTopAfter = sameItem.Location.Y;
+        var scrollTopAfter = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+
+        Assert.True(Math.Abs(firstVisibleTopAfter - firstVisibleTopBefore) < 5,
+            $"Visible item {firstVisibleIndex} should not move when items are appended below. " +
+            $"Before: {firstVisibleTopBefore}, After: {firstVisibleTopAfter}");
+        Assert.True(Math.Abs(scrollTopAfter - scrollTopBefore) < 5,
+            $"scrollTop should not change when appending below viewport. " +
+            $"Before: {scrollTopBefore}, After: {scrollTopAfter}");
     }
 
     [Fact]
@@ -1224,7 +1366,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.MountTestComponent<VirtualizationVariableHeightAsync>();
 
         var container = Browser.Exists(By.Id("async-variable-container"));
-        var js = (IJavaScriptExecutor)Browser;
         Browser.Exists(By.Id("toggle-autoload")).Click();
 
         if (transformScalePercent != 100)
@@ -1248,141 +1389,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.True(() => GetElementCount(container, ".async-variable-item") > 0);
 
-        const string detectFlashingScript = @"
-            var done = arguments[0];
-            (async () => {
-                const SCROLL_INCREMENT = 100;
-                const MAX_ITERATIONS = 300;
-                const VISIBILITY_TOLERANCE = 2;
-                const container = document.querySelector('#async-variable-container');
-                
-                if (!container) {
-                    done({ success: false, error: 'Container not found' });
-                    return;
-                }
-                
-                const getTopVisibleItemIndex = () => {
-                    const items = container.querySelectorAll('.async-variable-item');
-                    if (items.length === 0) return null;
-                    const containerRect = container.getBoundingClientRect();
-                    for (const item of items) {
-                        const itemRect = item.getBoundingClientRect();
-                        if (itemRect.bottom > containerRect.top + VISIBILITY_TOLERANCE &&
-                            itemRect.top < containerRect.bottom - VISIBILITY_TOLERANCE) {
-                            const match = item.id.match(/async-variable-item-(\d+)/);
-                            return match ? parseInt(match[1], 10) : null;
-                        }
-                    }
-                    return null;
-                };
-                
-                const getMaxIndex = () => {
-                    const items = container.querySelectorAll('.async-variable-item');
-                    let maxIdx = -1;
-                    for (const item of items) {
-                        const match = item.id.match(/async-variable-item-(\d+)/);
-                        if (match) maxIdx = Math.max(maxIdx, parseInt(match[1], 10));
-                    }
-                    return maxIdx;
-                };
-
-                const getMinIndex = () => {
-                    const items = container.querySelectorAll('.async-variable-item');
-                    let minIdx = Infinity;
-                    for (const item of items) {
-                        const match = item.id.match(/async-variable-item-(\d+)/);
-                        if (match) minIdx = Math.min(minIdx, parseInt(match[1], 10));
-                    }
-                    return minIdx === Infinity ? -1 : minIdx;
-                };
-                
-                const waitForSettledFrame = () => {
-                    return new Promise(resolve => {
-                        requestAnimationFrame(() => {
-                            const target = container.querySelector('.async-variable-item') || container;
-                            const io = new IntersectionObserver(() => {
-                                io.disconnect();
-                                resolve();
-                            }, { root: container, threshold: [0, 1] });
-                            io.observe(target);
-                        });
-                    });
-                };
-
-                const getSnapshot = () => {
-                    const spacerBefore = container.querySelector('[aria-hidden=""true""]:first-child');
-                    const spacerAfter = container.querySelector('[aria-hidden=""true""]:last-child');
-                    return {
-                        st: container.scrollTop,
-                        sh: container.scrollHeight,
-                        min: getMinIndex(),
-                        max: getMaxIndex(),
-                        cnt: container.querySelectorAll('.async-variable-item').length,
-                        sbH: spacerBefore ? spacerBefore.style.height : '?',
-                        saH: spacerAfter ? spacerAfter.style.height : '?',
-                    };
-                };
-                
-                let previousTopItemIndex = null;
-                let maxIndexSeen = -1;
-                // Keep last N snapshots as ring buffer for context
-                const history = [];
-                const HISTORY_SIZE = 10;
-                
-                for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {                    
-                    const beforeScroll = getSnapshot();
-                    beforeScroll.phase = 'pre';
-                    beforeScroll.iter = iteration;
-                    
-                    const previousScrollTop = container.scrollTop;
-                    container.scrollTop += SCROLL_INCREMENT;
-                    
-                    if (container.scrollTop === previousScrollTop) {
-                        break;
-                    }
-                    
-                    const afterAssign = { st: container.scrollTop, phase: 'post-assign', iter: iteration };
-                    
-                    await waitForSettledFrame();
-                    
-                    const afterSettle = getSnapshot();
-                    afterSettle.phase = 'settled';
-                    afterSettle.iter = iteration;
-                    
-                    const currentTopItemIndex = getTopVisibleItemIndex();
-                    afterSettle.topIdx = currentTopItemIndex;
-                    
-                    history.push({ beforeScroll, afterAssign, afterSettle });
-                    if (history.length > HISTORY_SIZE) history.shift();
-                    
-                    if (previousTopItemIndex !== null && currentTopItemIndex !== null && currentTopItemIndex < previousTopItemIndex) {
-                        // Format history as compact string
-                        const histStr = history.map(h => {
-                            const b = h.beforeScroll;
-                            const a = h.afterSettle;
-                            return `i${b.iter}:[st:${b.st}->${h.afterAssign.st}->${a.st}, items:${b.min}..${b.max}(${b.cnt})->${a.min}..${a.max}(${a.cnt}), sb:${b.sbH}->${a.sbH}, sa:${b.saH}->${a.saH}, top:${a.topIdx}]`;
-                        }).join(' | ');
-                        
-                        const scale = container.offsetHeight === 0 ? 1 : 
-                            Math.round(container.getBoundingClientRect().height / container.offsetHeight * 1000) / 1000;
-                        
-                        done({
-                            success: false,
-                            error: `Flashing at iter ${iteration}: ${previousTopItemIndex}->${currentTopItemIndex}. scale=${scale}, offsetH=${container.offsetHeight}. HISTORY: ${histStr}`
-                        });
-                        return;
-                    }
-                    
-                    if (currentTopItemIndex !== null) {
-                        previousTopItemIndex = currentTopItemIndex;
-                    }
-                    maxIndexSeen = Math.max(maxIndexSeen, getMaxIndex());
-                }
-                
-                done({ success: true, maxIndexSeen });
-            })();";
-
-        var result = (Dictionary<string, object>)js.ExecuteAsyncScript(detectFlashingScript);
+        var result = ExecuteDetectFlashingScript(
+            "async-variable-container", ".async-variable-item");
         var success = (bool)result["success"];
         if (!success)
         {
@@ -1570,28 +1578,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.MountTestComponent<VirtualizationScrollBehavior>();
 
         var container = Browser.Exists(By.Id("scroll-behavior-container"));
-        var js = (IJavaScriptExecutor)Browser;
         Browser.True(() => GetElementCount(container, ".scroll-behavior-item") > 0);
 
-        const string rapidScrollScript = @"
-            var done = arguments[0];
-            (async () => {
-                const container = document.getElementById('scroll-behavior-container');
-                const wait = ms => new Promise(r => setTimeout(r, ms));
+        var result = ExecuteRapidScrollReversalScript(
+            "scroll-behavior-container", ".scroll-behavior-item");
 
-                for (let i = 0; i < 20; i++) {
-                    container.scrollTop += 300;
-                    await wait(30);
-                    container.scrollTop -= 150;
-                    await wait(30);
-                }
-                await wait(200);
-
-                const items = container.querySelectorAll('.scroll-behavior-item');
-                done({ itemCount: items.length, scrollTop: container.scrollTop });
-            })();";
-
-        var result = (Dictionary<string, object>)js.ExecuteAsyncScript(rapidScrollScript);
         var itemCount = Convert.ToInt32(result["itemCount"], CultureInfo.InvariantCulture);
         Assert.True(itemCount > 0, "Items should still be visible after rapid scroll reversals");
     }
@@ -1624,7 +1615,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    public void NonZeroStartIndex_ScrollToMiddleThenMeasure()
+    public virtual void NonZeroStartIndex_ScrollToMiddleThenMeasure()
     {
         Browser.MountTestComponent<VirtualizationScrollBehavior>();
 
@@ -1665,7 +1656,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.MountTestComponent<VirtualizationVariableHeightAsync>();
 
         var container = Browser.Exists(By.Id("async-variable-container"));
-        var js = (IJavaScriptExecutor)Browser;
         Browser.Exists(By.Id("toggle-autoload")).Click();
 
         var setCount200Button = Browser.Exists(By.Id("set-count-200"));
@@ -1673,50 +1663,9 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Exists(By.Id("refresh-data")).Click();
         Browser.True(() => GetElementCount(container, ".async-variable-item") > 0);
 
-        const string stabilityScript = @"
-            var done = arguments[0];
-            (async () => {
-                const container = document.getElementById('async-variable-container');
-                const scrollLog = [];
-                const wait = ms => new Promise(r => setTimeout(r, ms));
+        var result = ExecuteScrollStabilityScript(
+            "async-variable-container", ".async-variable-item");
 
-                const scrollHandler = () => {
-                    scrollLog.push({
-                        t: performance.now(),
-                        st: container.scrollTop,
-                        items: container.querySelectorAll('.async-variable-item').length
-                    });
-                };
-                container.addEventListener('scroll', scrollHandler);
-
-                for (let i = 0; i < 50; i++) {
-                    container.scrollTop += 40;
-                    await wait(50);
-                }
-
-                container.removeEventListener('scroll', scrollHandler);
-                await wait(200);
-
-                let backwardJumps = 0;
-                let maxBackwardJump = 0;
-                for (let i = 1; i < scrollLog.length; i++) {
-                    const delta = scrollLog[i].st - scrollLog[i-1].st;
-                    if (delta < -5) {
-                        backwardJumps++;
-                        maxBackwardJump = Math.max(maxBackwardJump, Math.abs(delta));
-                    }
-                }
-
-                done({
-                    totalEvents: scrollLog.length,
-                    backwardJumps: backwardJumps,
-                    maxBackwardJump: maxBackwardJump,
-                    finalScrollTop: container.scrollTop,
-                    finalItemCount: container.querySelectorAll('.async-variable-item').length
-                });
-            })();";
-
-        var result = (Dictionary<string, object>)js.ExecuteAsyncScript(stabilityScript);
         var backwardJumps = Convert.ToInt32(result["backwardJumps"], CultureInfo.InvariantCulture);
         var totalEvents = Convert.ToInt32(result["totalEvents"], CultureInfo.InvariantCulture);
         var finalItemCount = Convert.ToInt32(result["finalItemCount"], CultureInfo.InvariantCulture);
@@ -1843,5 +1792,428 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         var lastElement = Browser.Exists(By.Id("horizontal-overflow-row-999"));
         Browser.True(() => lastElement.Displayed);
+    }
+
+    [Fact]
+    public void ViewportAnchoring_ExpandAboveViewport_VisibleItemStaysInPlace()
+    {
+        Browser.MountTestComponent<VirtualizationDynamicContent>();
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        // Scroll down so item 5 is above the viewport but still in DOM and verify its position
+        js.ExecuteScript("arguments[0].scrollTop = 500", container);
+        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) >= 500);
+        Browser.True(() => container.FindElements(By.CssSelector("[data-index='5']")).Count > 0);
+
+        // Record the first visible item and its position relative to the container.
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        var scrollTopBefore = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+
+        Browser.Exists(By.Id("expand-item-5")).Click();
+        Browser.Contains("Item 5 expanded via button", () => Browser.Exists(By.Id("status")).Text);
+
+        // Wait for the expanded content for item 5 to appear in the DOM
+        Browser.True(() => container.FindElements(By.CssSelector("[data-index='5'] .expanded-content")).Count > 0);
+
+        var (_, relTopAfter, scrollTopAfter) = GetItemPositionInContainer(js, container, ".item", indexBefore);
+
+        Assert.True(Math.Abs(relTopAfter - relTopBefore) < 5,
+            $"Visible item '{indexBefore}' should not have moved when off-screen item expanded. " +
+            $"RelTop Before: {relTopBefore:F1}, After: {relTopAfter:F1}, Delta: {relTopAfter - relTopBefore:F1}px. " +
+            $"scrollTop: {scrollTopBefore}->{scrollTopAfter}.");
+    }
+
+    [Fact]
+    public void ViewportAnchoring_CollapseAboveViewport_VisibleItemStaysInPlace()
+    {
+        Browser.MountTestComponent<VirtualizationDynamicContent>();
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        // Expand item 5 while it's visible (at the top)
+        Browser.Exists(By.Id("expand-item-5")).Click();
+        Browser.Contains("Item 5 expanded via button", () => Browser.Exists(By.Id("status")).Text);
+
+        // Scroll down past item 5 so it's in overscan above viewport
+        js.ExecuteScript("arguments[0].scrollTop = 600", container);
+        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) >= 600);
+
+        // Record first visible item position relative to container
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("collapse-all")).Click();
+        Browser.Contains("All items collapsed", () => Browser.Exists(By.Id("status")).Text);
+
+        var (_, relTopAfter, _) = GetItemPositionInContainer(js, container, ".item", indexBefore);
+
+        Assert.True(Math.Abs(relTopAfter - relTopBefore) < 5,
+            $"Visible item '{indexBefore}' should not have moved when off-screen item collapsed. " +
+            $"RelTop Before: {relTopBefore:F1}, After: {relTopAfter:F1}, Delta: {relTopAfter - relTopBefore:F1}px");
+    }
+
+    [Fact]
+    public void Table_VariableHeight_IncrementalScrollDoesNotCauseWildJumps()
+    {
+        // Guards against a browser-level CSS Scroll Anchoring bug with <table> layout.
+        // When overflow-anchor is allowed on <tr> elements, the anchoring algorithm
+        // miscalculates row positions causing 3000-8000px jumps per 300px scroll.
+        // The fix disables browser anchoring for tables and uses manual JS compensation.
+        Browser.MountTestComponent<VirtualizationVariableHeightTable>();
+
+        var js = (IJavaScriptExecutor)Browser;
+        Browser.Equal("Total items: 500", () => Browser.Exists(By.Id("vht-total-items")).Text);
+        Browser.True(() => Browser.Exists(By.Id("vht-row-0")).Displayed);
+
+        // Scroll to initial offset and wait deterministically for re-render
+        js.ExecuteScript("window.scrollTo(0, 1000)");
+        Browser.True(() => Browser.FindElements(By.Id("vht-row-10")).Count > 0);
+
+        var result = ExecuteViewportScrollJumpDetectionScript("variable-height-table");
+
+        var maxJump = Convert.ToInt64(result["maxJump"], CultureInfo.InvariantCulture);
+        var totalDelta = Convert.ToInt64(result["totalDelta"], CultureInfo.InvariantCulture);
+        var expectedDelta = Convert.ToInt64(result["expected"], CultureInfo.InvariantCulture);
+
+        // Without the fix: individual jumps of 3000-8000px, total drift 30,000+.
+        // With the fix: ~300px per step, total ~4500px.
+        Assert.True(maxJump < 1500,
+            $"Table scroll should not produce wild jumps. " +
+            $"Max single jump was {maxJump}px (expected ~300px each). " +
+            $"Total: {result["startY"]}->{result["endY"]} = {totalDelta}px (expected ~{expectedDelta}px). " +
+            $"Jumps: [{result["jumps"]}]. " +
+            $"Large jumps indicate CSS scroll anchoring is miscalculating on <tr> elements.");
+    }
+
+    private static (string index, double relTop, long scrollTop) GetItemPositionInContainer(
+        IJavaScriptExecutor js, IWebElement container, string itemSelector, string dataIndex = null)
+    {
+        var result = js.ExecuteScript(@"
+            var container = arguments[0];
+            var selector = arguments[1];
+            var targetIndex = arguments[2];
+            var containerRect = container.getBoundingClientRect();
+            var items = container.querySelectorAll(selector);
+            for (var i = 0; i < items.length; i++) {
+                var item = items[i];
+                var itemRect = item.getBoundingClientRect();
+                if (targetIndex != null) {
+                    if (item.getAttribute('data-index') === targetIndex) {
+                        return { index: targetIndex, relTop: itemRect.top - containerRect.top, scrollTop: container.scrollTop };
+                    }
+                } else if (itemRect.top >= containerRect.top - 1 && itemRect.top < containerRect.bottom) {
+                    return { index: item.getAttribute('data-index'), relTop: itemRect.top - containerRect.top, scrollTop: container.scrollTop };
+                }
+            }
+            return null;
+        ", container, itemSelector, dataIndex) as Dictionary<string, object>;
+
+        Assert.NotNull(result);
+        return (
+            result["index"].ToString(),
+            Convert.ToDouble(result["relTop"], CultureInfo.InvariantCulture),
+            Convert.ToInt64(result["scrollTop"], CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// Scrolls through all items detecting visual flashing (backward index jumps).
+    /// Scrolls in 100px increments up to 300 iterations, tracking the top visible item index.
+    /// Returns success=true if no flashing detected, with maxIndexSeen.
+    /// </summary>
+    private Dictionary<string, object> ExecuteDetectFlashingScript(string containerId, string itemSelector)
+    {
+        var itemIdPrefix = itemSelector.TrimStart('.') + "-";
+        var script = $@"
+            var done = arguments[0];
+            (async () => {{
+                const SCROLL_INCREMENT = 100;
+                const MAX_ITERATIONS = 300;
+                const VISIBILITY_TOLERANCE = 2;
+                const container = document.querySelector('#{containerId}');
+
+                if (!container) {{
+                    done({{ success: false, error: 'Container not found' }});
+                    return;
+                }}
+
+                const getTopVisibleItemIndex = () => {{
+                    const items = container.querySelectorAll('{itemSelector}');
+                    if (items.length === 0) return null;
+                    const containerRect = container.getBoundingClientRect();
+                    for (const item of items) {{
+                        const itemRect = item.getBoundingClientRect();
+                        if (itemRect.bottom > containerRect.top + VISIBILITY_TOLERANCE &&
+                            itemRect.top < containerRect.bottom - VISIBILITY_TOLERANCE) {{
+                            const match = item.id.match(/{itemIdPrefix}(\d+)/);
+                            return match ? parseInt(match[1], 10) : null;
+                        }}
+                    }}
+                    return null;
+                }};
+
+                const getMaxIndex = () => {{
+                    const items = container.querySelectorAll('{itemSelector}');
+                    let maxIdx = -1;
+                    for (const item of items) {{
+                        const match = item.id.match(/{itemIdPrefix}(\d+)/);
+                        if (match) maxIdx = Math.max(maxIdx, parseInt(match[1], 10));
+                    }}
+                    return maxIdx;
+                }};
+
+                const getMinIndex = () => {{
+                    const items = container.querySelectorAll('{itemSelector}');
+                    let minIdx = Infinity;
+                    for (const item of items) {{
+                        const match = item.id.match(/{itemIdPrefix}(\d+)/);
+                        if (match) minIdx = Math.min(minIdx, parseInt(match[1], 10));
+                    }}
+                    return minIdx === Infinity ? -1 : minIdx;
+                }};
+
+                const waitForSettledFrame = () => {{
+                    return new Promise(resolve => {{
+                        requestAnimationFrame(() => {{
+                            const target = container.querySelector('{itemSelector}') || container;
+                            const io = new IntersectionObserver(() => {{
+                                io.disconnect();
+                                resolve();
+                            }}, {{ root: container, threshold: [0, 1] }});
+                            io.observe(target);
+                        }});
+                    }});
+                }};
+
+                const getSnapshot = () => {{
+                    const spacerBefore = container.querySelector('[aria-hidden=""true""]:first-child');
+                    const spacerAfter = container.querySelector('[aria-hidden=""true""]:last-child');
+                    return {{
+                        st: container.scrollTop,
+                        sh: container.scrollHeight,
+                        min: getMinIndex(),
+                        max: getMaxIndex(),
+                        cnt: container.querySelectorAll('{itemSelector}').length,
+                        sbH: spacerBefore ? spacerBefore.style.height : '?',
+                        saH: spacerAfter ? spacerAfter.style.height : '?',
+                    }};
+                }};
+
+                let previousTopItemIndex = null;
+                let maxIndexSeen = -1;
+                const history = [];
+                const HISTORY_SIZE = 10;
+
+                for (let iteration = 0; iteration < MAX_ITERATIONS; iteration++) {{
+                    const beforeScroll = getSnapshot();
+                    beforeScroll.phase = 'pre';
+                    beforeScroll.iter = iteration;
+
+                    const previousScrollTop = container.scrollTop;
+                    container.scrollTop += SCROLL_INCREMENT;
+
+                    if (container.scrollTop === previousScrollTop) {{
+                        break;
+                    }}
+
+                    const afterAssign = {{ st: container.scrollTop, phase: 'post-assign', iter: iteration }};
+
+                    await waitForSettledFrame();
+
+                    const afterSettle = getSnapshot();
+                    afterSettle.phase = 'settled';
+                    afterSettle.iter = iteration;
+
+                    const currentTopItemIndex = getTopVisibleItemIndex();
+                    afterSettle.topIdx = currentTopItemIndex;
+
+                    history.push({{ beforeScroll, afterAssign, afterSettle }});
+                    if (history.length > HISTORY_SIZE) history.shift();
+
+                    if (previousTopItemIndex !== null && currentTopItemIndex !== null && currentTopItemIndex < previousTopItemIndex) {{
+                        const histStr = history.map(h => {{
+                            const b = h.beforeScroll;
+                            const a = h.afterSettle;
+                            return `i${{b.iter}}:[st:${{b.st}}->${{h.afterAssign.st}}->${{a.st}}, items:${{b.min}}..${{b.max}}(${{b.cnt}})->${{a.min}}..${{a.max}}(${{a.cnt}}), sb:${{b.sbH}}->${{a.sbH}}, sa:${{b.saH}}->${{a.saH}}, top:${{a.topIdx}}]`;
+                        }}).join(' | ');
+
+                        const scale = container.offsetHeight === 0 ? 1 :
+                            Math.round(container.getBoundingClientRect().height / container.offsetHeight * 1000) / 1000;
+
+                        done({{
+                            success: false,
+                            error: `Flashing at iter ${{iteration}}: ${{previousTopItemIndex}}->${{currentTopItemIndex}}. scale=${{scale}}, offsetH=${{container.offsetHeight}}. HISTORY: ${{histStr}}`
+                        }});
+                        return;
+                    }}
+
+                    if (currentTopItemIndex !== null) {{
+                        previousTopItemIndex = currentTopItemIndex;
+                    }}
+                    maxIndexSeen = Math.max(maxIndexSeen, getMaxIndex());
+                }}
+
+                done({{ success: true, maxIndexSeen }});
+            }})();";
+
+        return (Dictionary<string, object>)((IJavaScriptExecutor)Browser).ExecuteAsyncScript(script);
+    }
+
+    /// <summary>
+    /// Performs 20 rapid scroll reversals (+300px then -150px with 30ms delays)
+    /// to verify rendering stability under rapid direction changes.
+    /// Returns the item count and final scroll position.
+    /// </summary>
+    private Dictionary<string, object> ExecuteRapidScrollReversalScript(string containerId, string itemSelector)
+    {
+        var script = $@"
+            var done = arguments[0];
+            (async () => {{
+                const container = document.getElementById('{containerId}');
+                const wait = ms => new Promise(r => setTimeout(r, ms));
+
+                for (let i = 0; i < 20; i++) {{
+                    container.scrollTop += 300;
+                    await wait(30);
+                    container.scrollTop -= 150;
+                    await wait(30);
+                }}
+                await wait(200);
+
+                const items = container.querySelectorAll('{itemSelector}');
+                done({{ itemCount: items.length, scrollTop: container.scrollTop }});
+            }})();";
+
+        return (Dictionary<string, object>)((IJavaScriptExecutor)Browser).ExecuteAsyncScript(script);
+    }
+
+    /// <summary>
+    /// Monitors scroll events during 50 incremental scrolls (40px each, 50ms apart).
+    /// Detects backward scroll jumps exceeding 5px threshold.
+    /// Returns event counts and stability metrics.
+    /// </summary>
+    private Dictionary<string, object> ExecuteScrollStabilityScript(string containerId, string itemSelector)
+    {
+        var script = $@"
+            var done = arguments[0];
+            (async () => {{
+                const container = document.getElementById('{containerId}');
+                const scrollLog = [];
+                const wait = ms => new Promise(r => setTimeout(r, ms));
+
+                const scrollHandler = () => {{
+                    scrollLog.push({{
+                        t: performance.now(),
+                        st: container.scrollTop,
+                        items: container.querySelectorAll('{itemSelector}').length
+                    }});
+                }};
+                container.addEventListener('scroll', scrollHandler);
+
+                for (let i = 0; i < 50; i++) {{
+                    container.scrollTop += 40;
+                    await wait(50);
+                }}
+
+                container.removeEventListener('scroll', scrollHandler);
+                await wait(200);
+
+                let backwardJumps = 0;
+                let maxBackwardJump = 0;
+                for (let i = 1; i < scrollLog.length; i++) {{
+                    const delta = scrollLog[i].st - scrollLog[i-1].st;
+                    if (delta < -5) {{
+                        backwardJumps++;
+                        maxBackwardJump = Math.max(maxBackwardJump, Math.abs(delta));
+                    }}
+                }}
+
+                done({{
+                    totalEvents: scrollLog.length,
+                    backwardJumps: backwardJumps,
+                    maxBackwardJump: maxBackwardJump,
+                    finalScrollTop: container.scrollTop,
+                    finalItemCount: container.querySelectorAll('{itemSelector}').length
+                }});
+            }})();";
+
+        return (Dictionary<string, object>)((IJavaScriptExecutor)Browser).ExecuteAsyncScript(script);
+    }
+
+    /// <summary>
+    /// Performs incremental viewport-level scrolls (window.scrollBy) on a table element,
+    /// using MutationObserver + requestAnimationFrame to deterministically wait for each
+    /// render cycle to settle. Measures per-step scroll jumps to detect CSS Scroll Anchoring
+    /// miscalculations on &lt;tr&gt; elements.
+    /// Returns startY, endY, totalDelta, expected, maxJump, and comma-separated jumps.
+    /// </summary>
+    private Dictionary<string, object> ExecuteViewportScrollJumpDetectionScript(
+        string tableId, int scrollCount = 15, int scrollDelta = 300)
+    {
+        var script = $@"
+            var done = arguments[0];
+            (async () => {{
+                const tbody = document.querySelector('#{tableId} > tbody');
+
+                // Event-driven wait: watches for DOM mutations from C# re-renders,
+                // then waits 3 animation frames with no new mutations (layout settled).
+                // Falls back after 30 frames if no mutations occur.
+                const waitForRenderSettle = () => new Promise(resolve => {{
+                    let mutationSeen = false;
+                    let framesSinceLastMutation = 0;
+                    let totalFrames = 0;
+
+                    const mo = new MutationObserver(() => {{
+                        mutationSeen = true;
+                        framesSinceLastMutation = 0;
+                    }});
+                    mo.observe(tbody, {{ childList: true, subtree: true }});
+
+                    const checkSettle = () => {{
+                        totalFrames++;
+                        framesSinceLastMutation++;
+                        if ((mutationSeen && framesSinceLastMutation >= 3) || totalFrames >= 30) {{
+                            mo.disconnect();
+                            resolve();
+                        }} else {{
+                            requestAnimationFrame(checkSettle);
+                        }}
+                    }};
+                    requestAnimationFrame(checkSettle);
+                }});
+
+                const scrollCount = {scrollCount};
+                const scrollDelta = {scrollDelta};
+                const startY = Math.round(window.scrollY);
+                let maxJump = 0;
+                let prevY = startY;
+                const jumps = [];
+
+                for (let i = 0; i < scrollCount; i++) {{
+                    window.scrollBy(0, scrollDelta);
+                    await waitForRenderSettle();
+
+                    const currentY = Math.round(window.scrollY);
+                    const jump = currentY - prevY;
+                    jumps.push(jump);
+                    if (Math.abs(jump) > Math.abs(maxJump)) maxJump = jump;
+                    prevY = currentY;
+                }}
+
+                done({{
+                    startY: startY,
+                    endY: Math.round(window.scrollY),
+                    totalDelta: Math.round(window.scrollY) - startY,
+                    expected: scrollCount * scrollDelta,
+                    maxJump: maxJump,
+                    jumps: jumps.join(',')
+                }});
+            }})();";
+
+        return (Dictionary<string, object>)((IJavaScriptExecutor)Browser).ExecuteAsyncScript(script);
     }
 }

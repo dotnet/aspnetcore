@@ -37,15 +37,18 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private int _loadedItemsStartIndex;
 
-    private int _lastRenderedItemCount;
+    internal int _lastRenderedItemCount;
 
-    private int _lastRenderedPlaceholderCount;
+    internal int _lastRenderedPlaceholderCount;
 
     private float _itemSize;
 
     private float _lastSetItemSize;
 
     private IEnumerable<TItem>? _loadedItems;
+
+    // For in-memory Items where objects have stable identity
+    private TItem? _previousFirstLoadedItem;
 
     private CancellationTokenSource? _refreshCts;
 
@@ -290,17 +293,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
             builder.OpenRegion(5);
 
-            // Render items with comment delimiters for JS height measurement (N+1 fence pattern).
             foreach (var item in itemsToShow)
             {
-                builder.AddMarkupContent(0, "<!--virtualize:item-->");
                 _itemTemplate(item)(builder);
                 _lastRenderedItemCount++;
-            }
-
-            if (_lastRenderedItemCount > 0)
-            {
-                builder.AddMarkupContent(1, "<!--virtualize:item-->");
             }
 
             renderIndex += _lastRenderedItemCount;
@@ -344,21 +340,31 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private float GetItemHeight()
         => _measuredItemCount > 0 ? _totalMeasuredHeight / _measuredItemCount : _itemSize;
 
-    private bool ProcessMeasurements(float measuredItemHeightSum, int measuredItemCount)
+    private bool ProcessMeasurements(float spacerSeparation)
     {
-        if (measuredItemCount <= 0)
+        // Accumulate item height measurements only when no placeholders are rendered,
+        // so spacerSeparation directly represents real item heights. This avoids a
+        // feedback loop: subtracting (placeholderCount * _itemSize) makes the accumulated
+        // measurements depend on _itemSize, which itself depends on those measurements.
+        // Under CSS zoom, rounding errors in that loop compound and diverge from reality.
+        if (_lastRenderedItemCount <= 0 || _lastRenderedPlaceholderCount > 0)
         {
             return false;
         }
 
-        _totalMeasuredHeight += measuredItemHeightSum;
-        _measuredItemCount += measuredItemCount;
-        return true;
+        if (spacerSeparation > 0)
+        {
+            _totalMeasuredHeight += spacerSeparation;
+            _measuredItemCount += _lastRenderedItemCount;
+            return true;
+        }
+
+        return false;
     }
 
-    void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, float measuredItemHeightSum, int measuredItemCount)
+    void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
     {
-        ProcessMeasurements(measuredItemHeightSum, measuredItemCount);
+        ProcessMeasurements(spacerSeparation);
 
         CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
 
@@ -371,9 +377,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
     }
 
-    void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize, float measuredItemHeightSum, int measuredItemCount)
+    void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
     {
-        var hadNewMeasurements = ProcessMeasurements(measuredItemHeightSum, measuredItemCount);
+        var hadNewMeasurements = ProcessMeasurements(spacerSeparation);
 
         CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
 
@@ -512,9 +518,34 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             // Only apply result if the task was not canceled.
             if (!cancellationToken.IsCancellationRequested)
             {
+                var previousItemCount = _itemCount;
+                var countDelta = result.TotalItemCount - previousItemCount;
+
+                // Detect if items were prepended above the current viewport position.
+                if (countDelta > 0 && _itemsBefore > 0 && _previousFirstLoadedItem != null
+                    && _itemsProvider == DefaultItemsProvider)
+                {
+                    var newFirstItem = Items!.ElementAtOrDefault(_itemsBefore);
+                    if (newFirstItem != null && !ReferenceEquals(_previousFirstLoadedItem, newFirstItem))
+                    {
+                        _itemsBefore = Math.Min(_itemsBefore + countDelta, Math.Max(0, result.TotalItemCount - _visibleItemCapacity));
+
+                        var adjustedRequest = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
+                        result = await _itemsProvider(adjustedRequest);
+                    }
+                }
+
                 _itemCount = result.TotalItemCount;
                 _loadedItems = result.Items;
-                _loadedItemsStartIndex = request.StartIndex;
+                _loadedItemsStartIndex = _itemsBefore;
+
+                // Only needed for DefaultItemsProvider; custom providers return new instances
+                // per request, making ReferenceEquals unreliable.
+                _previousFirstLoadedItem = _itemsProvider == DefaultItemsProvider
+                    && Items != null && _itemsBefore < Items.Count
+                    ? Items.ElementAtOrDefault(_itemsBefore)
+                    : default;
+
                 _loading = false;
                 _skipNextDistributionRefresh = request.Count > 0;
 
