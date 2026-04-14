@@ -1,12 +1,12 @@
-@page "/"
+﻿@page "/"
 @using System.Globalization
 @using Microsoft.Extensions.Localization
 
 <div class="container py-4">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
-            <h1 class="h3 mb-1">Client-Side Validation</h1>
-            <p class="text-body-secondary mb-4">Form validation runs in the browser via <code>blazor.web.js</code> — no server round-trip needed.</p>
+            <h1 class="h3 mb-1">@Loc["PageTitle"]</h1>
+            <p class="text-body-secondary mb-4">@Loc["PageSubtitle"]</p>
 
             <div class="mb-3 d-flex gap-2 small">
                 🌐
@@ -19,50 +19,50 @@
                 <ValidationSummary />
 
                 <div class="mb-3">
-                    <label for="Name" class="form-label">@Loc["Full Name"]</label>
+                    <label for="Name" class="form-label">@Loc["FullName"]</label>
                     <InputText @bind-Value="model.Name" id="Name" class="form-control" />
                     <ValidationMessage For="@(() => model.Name)" />
                 </div>
 
                 <div class="mb-3">
-                    <label for="Email" class="form-label">Email</label>
+                    <label for="Email" class="form-label">@Loc["Email"]</label>
                     <InputText @bind-Value="model.Email" id="Email" class="form-control" />
                     <ValidationMessage For="@(() => model.Email)" />
                 </div>
 
                 <div class="mb-3">
-                    <label for="Password" class="form-label">Password</label>
+                    <label for="Password" class="form-label">@Loc["Password"]</label>
                     <InputText @bind-Value="model.Password" id="Password" type="password" class="form-control" />
                     <ValidationMessage For="@(() => model.Password)" />
                 </div>
 
                 <div class="mb-3">
-                    <label for="ConfirmPassword" class="form-label">@Loc["Confirm Password"]</label>
+                    <label for="ConfirmPassword" class="form-label">@Loc["ConfirmPassword"]</label>
                     <InputText @bind-Value="model.ConfirmPassword" id="ConfirmPassword" type="password" class="form-control" />
                     <ValidationMessage For="@(() => model.ConfirmPassword)" />
                 </div>
 
                 <div class="mb-3">
-                    <label for="Age" class="form-label">Age</label>
+                    <label for="Age" class="form-label">@Loc["Age"]</label>
                     <InputNumber @bind-Value="model.Age" id="Age" class="form-control" />
                     <ValidationMessage For="@(() => model.Age)" />
                 </div>
 
                 <div class="mb-3">
-                    <label for="Phone" class="form-label">@Loc["Phone Number"]</label>
+                    <label for="Phone" class="form-label">@Loc["PhoneNumber"]</label>
                     <InputText @bind-Value="model.Phone" id="Phone" class="form-control" />
                     <ValidationMessage For="@(() => model.Phone)" />
                 </div>
 
                 <div class="mb-3">
-                    <label for="ZipCode" class="form-label">@Loc["Zip Code"]</label>
+                    <label for="ZipCode" class="form-label">@Loc["ZipCode"]</label>
                     <InputText @bind-Value="model.ZipCode" id="ZipCode" class="form-control" />
                     <ValidationMessage For="@(() => model.ZipCode)" />
                 </div>
 
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-info" id="submit-btn">Register</button>
-                    <button type="reset" class="btn btn-outline-secondary">Reset</button>
+                    <button type="submit" class="btn btn-info" id="submit-btn">@Loc["Register"]</button>
+                    <button type="reset" class="btn btn-outline-secondary">@Loc["Reset"]</button>
                 </div>
             </EditForm>
         </div>

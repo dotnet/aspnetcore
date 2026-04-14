@@ -7,34 +7,34 @@ namespace BlazorSSRDemo;
 
 public class RegistrationModel
 {
-    [Required(ErrorMessage = "Required")]
-    [StringLength(100, MinimumLength = 2, ErrorMessage = "StringLength")]
-    [Display(Name = "Full Name")]
+    [Required(ErrorMessage = "RequiredError")]
+    [StringLength(100, MinimumLength = 2, ErrorMessage = "StringLengthError")]
+    [Display(Name = "FullName")]
     public string Name { get; set; } = "";
 
-    [Required(ErrorMessage = "Required")]
-    [EmailAddress(ErrorMessage = "Email")]
+    [Required(ErrorMessage = "RequiredError")]
+    [EmailAddress(ErrorMessage = "EmailError")]
     public string Email { get; set; } = "";
 
-    [Required(ErrorMessage = "Required")]
-    [StringLength(100, MinimumLength = 8, ErrorMessage = "StringLength")]
+    [Required(ErrorMessage = "RequiredError")]
+    [StringLength(100, MinimumLength = 8, ErrorMessage = "StringLengthError")]
     [DataType(DataType.Password)]
     public string Password { get; set; } = "";
 
-    [Required(ErrorMessage = "Required")]
-    [Compare("Password", ErrorMessage = "Compare")]
-    [Display(Name = "Confirm Password")]
+    [Required(ErrorMessage = "RequiredError")]
+    [Compare("Password", ErrorMessage = "CompareError")]
+    [Display(Name = "ConfirmPassword")]
     [DataType(DataType.Password)]
     public string ConfirmPassword { get; set; } = "";
 
-    [Range(18, 120, ErrorMessage = "Range")]
+    [Range(18, 120, ErrorMessage = "RangeError")]
     public int? Age { get; set; }
 
-    [Phone(ErrorMessage = "Phone")]
-    [Display(Name = "Phone Number")]
+    [Phone(ErrorMessage = "PhoneError")]
+    [Display(Name = "PhoneNumber")]
     public string? Phone { get; set; }
 
-    [RegularExpression(@"\d{5}(-\d{4})?", ErrorMessage = "Regex")]
-    [Display(Name = "Zip Code")]
+    [RegularExpression(@"\d{5}(-\d{4})?", ErrorMessage = "RegexError")]
+    [Display(Name = "ZipCode")]
     public string? ZipCode { get; set; }
 }
