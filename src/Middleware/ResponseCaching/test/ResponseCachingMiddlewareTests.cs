@@ -923,6 +923,104 @@ public class ResponseCachingMiddlewareTests
     }
 
     [Fact]
+    public async Task TryServeFromCacheAsync_ReturnsFalse_IfBaseKeyContainsDelimiters()
+    {
+        var sink = new TestSink();
+        var middleware = TestUtils.CreateTestMiddleware(testSink: sink);
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.Path = "/path\u001einjected";
+
+        Assert.False(await middleware.TryServeFromCacheAsync(context));
+        TestUtils.AssertLoggedMessages(
+            sink.Writes,
+            LoggedMessage.RequestContainsInvalidCacheSymbols);
+    }
+
+    [Fact]
+    public async Task TryServeFromCacheAsync_ReturnsFalse_IfVaryByKeyContainsDelimiters()
+    {
+        var cache = new TestResponseCache();
+        var sink = new TestSink();
+        // Use real key provider so CreateLookupVaryByKeys invokes validation
+        var middleware = TestUtils.CreateTestMiddleware(testSink: sink, cache: cache);
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.Method = HttpMethods.Get;
+        context.HttpContext.Request.QueryString = new QueryString("?key=value\u001einjected");
+
+        // Pre-set a base key so CreateBaseKey succeeds, then set up vary rules in cache
+        // so the middleware will call CreateLookupVaryByKeys -> CreateStorageVaryByKey
+        var baseKey = $"GET{(char)0x1e}{(char)0x1e}";
+        context.BaseKey = baseKey;
+        var varyByRules = new CachedVaryByRules()
+        {
+            VaryByKeyPrefix = FastGuid.NewGuid().IdString,
+            QueryKeys = new string[] { "*" }
+        };
+        cache.Set(baseKey, varyByRules, TimeSpan.Zero);
+
+        Assert.False(await middleware.TryServeFromCacheAsync(context));
+        TestUtils.AssertLoggedMessages(
+            sink.Writes,
+            LoggedMessage.RequestContainsInvalidCacheSymbols);
+    }
+
+    [Fact]
+    public void FinalizeCacheHeaders_ReturnsFalse_IfBaseKeyContainsDelimiters()
+    {
+        var sink = new TestSink();
+        var middleware = TestUtils.CreateTestMiddleware(testSink: sink, policyProvider: new ResponseCachingPolicyProvider());
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.Path = "/path\u001einjected";
+        context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
+        {
+            Public = true
+        }.ToString();
+
+        middleware.ShimResponseStream(context);
+        middleware.FinalizeCacheHeaders(context);
+
+        Assert.False(context.ShouldCacheResponse);
+        Assert.False(context.ResponseCachingStream.BufferingEnabled);
+        TestUtils.AssertLoggedMessages(
+            sink.Writes,
+            LoggedMessage.RequestContainsInvalidCacheSymbols);
+    }
+
+    [Fact]
+    public void FinalizeCacheHeaders_ReturnsFalse_IfStorageVaryKeyContainsDelimiters()
+    {
+        var sink = new TestSink();
+        var middleware = TestUtils.CreateTestMiddleware(testSink: sink, policyProvider: new ResponseCachingPolicyProvider());
+        var context = TestUtils.CreateTestContext();
+        context.HttpContext.Request.QueryString = new QueryString("?key=value\u001einjected");
+        context.HttpContext.Response.Headers.CacheControl = new CacheControlHeaderValue()
+        {
+            Public = true
+        }.ToString();
+        context.HttpContext.Features.Set<IResponseCachingFeature>(new ResponseCachingFeature()
+        {
+            VaryByQueryKeys = new string[] { "*" }
+        });
+        // Pre-set BaseKey so CreateBaseKey is skipped (it would also throw)
+        context.BaseKey = "SomeBaseKey";
+
+        // ShimResponseStream also calls AddResponseCachingFeature, so remove ours first
+        context.HttpContext.Features.Set<IResponseCachingFeature>(null);
+        middleware.ShimResponseStream(context);
+        // Now re-set VaryByQueryKeys on the feature that ShimResponseStream added
+        context.HttpContext.Features.Get<IResponseCachingFeature>()!.VaryByQueryKeys = new string[] { "*" };
+
+        middleware.FinalizeCacheHeaders(context);
+
+        Assert.False(context.ShouldCacheResponse);
+        Assert.False(context.ResponseCachingStream.BufferingEnabled);
+        TestUtils.AssertLoggedMessages(
+            sink.Writes,
+            LoggedMessage.VaryByRulesUpdated,
+            LoggedMessage.RequestContainsInvalidCacheSymbols);
+    }
+
+    [Fact]
     public void GetOrderCasingNormalizedStringValues_NormalizesCasingToUpper()
     {
         var uppercaseStrings = new StringValues(new[] { "STRINGA", "STRINGB" });
