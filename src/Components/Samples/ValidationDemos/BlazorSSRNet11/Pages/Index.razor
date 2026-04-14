@@ -1,0 +1,77 @@
+﻿@page "/"
+@using System.Globalization
+@using Microsoft.Extensions.Localization
+@using BlazorSSRNet11.Models
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <h1 class="h3 mb-1">@Loc["PageTitle"]</h1>
+            <p class="text-body-secondary mb-4">@Loc["PageSubtitle"]</p>
+
+            <div class="mb-3 d-flex gap-2 small">
+                🌐
+                <a href="?culture=en" class="@(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en" ? "fw-bold" : "")">English</a>
+                <a href="?culture=es" class="@(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "es" ? "fw-bold" : "")">Español</a>
+            </div>
+
+            <EditForm Model="model" Enhance FormName="registration" id="registration-form">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label for="Name" class="form-label">@Loc["FullName"]</label>
+                    <InputText @bind-Value="model.Name" id="Name" class="form-control" />
+                    <ValidationMessage For="@(() => model.Name)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="Email" class="form-label">@Loc["Email"]</label>
+                    <InputText @bind-Value="model.Email" id="Email" class="form-control" />
+                    <ValidationMessage For="@(() => model.Email)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="Password" class="form-label">@Loc["Password"]</label>
+                    <InputText @bind-Value="model.Password" id="Password" type="password" class="form-control" />
+                    <ValidationMessage For="@(() => model.Password)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="ConfirmPassword" class="form-label">@Loc["ConfirmPassword"]</label>
+                    <InputText @bind-Value="model.ConfirmPassword" id="ConfirmPassword" type="password" class="form-control" />
+                    <ValidationMessage For="@(() => model.ConfirmPassword)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="Age" class="form-label">@Loc["Age"]</label>
+                    <InputNumber @bind-Value="model.Age" id="Age" class="form-control" />
+                    <ValidationMessage For="@(() => model.Age)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="Phone" class="form-label">@Loc["PhoneNumber"]</label>
+                    <InputText @bind-Value="model.Phone" id="Phone" class="form-control" />
+                    <ValidationMessage For="@(() => model.Phone)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="ZipCode" class="form-label">@Loc["ZipCode"]</label>
+                    <InputText @bind-Value="model.ZipCode" id="ZipCode" class="form-control" />
+                    <ValidationMessage For="@(() => model.ZipCode)" />
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-info" id="submit-btn">@Loc["Register"]</button>
+                    <button type="reset" class="btn btn-outline-secondary">@Loc["Reset"]</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Inject] private IStringLocalizer<BlazorSSRNet11.Resources.ValidationMessages> Loc { get; set; } = default!;
+
+    private RegistrationModel model = new();
+}

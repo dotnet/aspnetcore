@@ -1,4 +1,0 @@
-<Project>
-  <!-- Block inheritance from the repository's Directory.Build.props/targets.
-       This demo app is standalone and uses standard NuGet packages. -->
-</Project>

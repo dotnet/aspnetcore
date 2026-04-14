@@ -1,0 +1,12 @@
+{
+    "ContactTitle": "Contact Form",
+    "ContactSubtitle": "A simple form showing validation with localization support.",
+    "ContactSuccess": "Message sent successfully!",
+    "SubmitAnother": "Submit another",
+    "Send": "Send",
+    "ContactName": "Contact Name",
+    "ContactMessage": "Message",
+    "RequiredError": "The {0} field is required.",
+    "StringLengthError": "The {0} must be between {2} and {1} characters.",
+    "Message": "Message"
+}

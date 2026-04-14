@@ -1,0 +1,12 @@
+{
+    "ContactTitle": "Formulario de contacto",
+    "ContactSubtitle": "Un formulario sencillo que muestra la validación con soporte de localización.",
+    "ContactSuccess": "¡Mensaje enviado correctamente!",
+    "SubmitAnother": "Enviar otro",
+    "Send": "Enviar",
+    "ContactName": "Nombre de contacto",
+    "ContactMessage": "Mensaje",
+    "RequiredError": "El campo {0} es obligatorio.",
+    "StringLengthError": "El campo {0} debe tener entre {2} y {1} caracteres.",
+    "Message": "Mensaje"
+}

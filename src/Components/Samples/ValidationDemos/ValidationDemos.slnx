@@ -1,5 +1,4 @@
 <Solution>
-  <Project Path="BlazorInteractiveDemo/BlazorInteractiveDemo.csproj" />
-  <Project Path="BlazorSSRDemo/BlazorSSRDemo.csproj" />
-  <Project Path="MvcDemo/MvcDemo.csproj" />
+  <Project Path="BlazorNet11/BlazorNet11.csproj" />
+  <Project Path="BlazorSSRNet11/BlazorSSRNet11.csproj" />
 </Solution>
