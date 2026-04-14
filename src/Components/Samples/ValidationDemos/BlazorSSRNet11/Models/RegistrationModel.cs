@@ -26,15 +26,4 @@ public class RegistrationModel
     [Display(Name = "ConfirmPassword")]
     [DataType(DataType.Password)]
     public string ConfirmPassword { get; set; } = "";
-
-    [Range(18, 120, ErrorMessage = "RangeError")]
-    public int? Age { get; set; }
-
-    [Phone(ErrorMessage = "PhoneError")]
-    [Display(Name = "PhoneNumber")]
-    public string? Phone { get; set; }
-
-    [RegularExpression(@"\d{5}(-\d{4})?", ErrorMessage = "RegexError")]
-    [Display(Name = "ZipCode")]
-    public string? ZipCode { get; set; }
 }

@@ -7,7 +7,7 @@
 
 <div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
+        <div class="col-md-8 col-lg-8">
             <h1 class="h3 mb-1">@Loc["RegistrationTitle"]</h1>
             <p class="text-body-secondary mb-4">@Loc["RegistrationSubtitle"]</p>
 
@@ -44,42 +44,56 @@
 
                     <div class="mb-3">
                         <label for="Email" class="form-label">@Loc["Email"]</label>
-                        <InputText @bind-Value="_model.Email" id="Email" class="form-control" />
+                        <InputText @bind-Value="_model.Email" id="Email" class="form-control" autocomplete="off" />
                         @if (_editContext.IsValidationPending(() => _model.Email))
                         {
-                            <span class="text-primary small">
+                            <div class="text-primary small mt-1">
                                 <span class="spinner-border spinner-border-sm" role="status"></span> @Loc["Checking"]
-                            </span>
+                            </div>
                         }
                         else if (_editContext.IsValidationFaulted(() => _model.Email))
                         {
-                            <span class="text-warning small">
+                            <div class="text-warning small mt-1">
                                 ⚠️ @Loc["ValidationFailed"]
                                 <button type="button" class="btn btn-link btn-sm p-0"
                                         @onclick="() => RetryValidation(nameof(_model.Email))">@Loc["Retry"]</button>
-                            </span>
+                            </div>
                         }
-                        <ValidationMessage For="@(() => _model.Email)" />
+                        else if (IsFieldValidAfterAsync(() => _model.Email))
+                        {
+                            <div class="text-success small mt-1">✓ Available</div>
+                        }
+                        else
+                        {
+                            <ValidationMessage For="@(() => _model.Email)" />
+                        }
                     </div>
 
                     <div class="mb-3">
                         <label for="Username" class="form-label">@Loc["Username"]</label>
-                        <InputText @bind-Value="_model.Username" id="Username" class="form-control" />
+                        <InputText @bind-Value="_model.Username" id="Username" class="form-control" autocomplete="off" />
                         @if (_editContext.IsValidationPending(() => _model.Username))
                         {
-                            <span class="text-primary small">
+                            <div class="text-primary small mt-1">
                                 <span class="spinner-border spinner-border-sm" role="status"></span> @Loc["Checking"]
-                            </span>
+                            </div>
                         }
                         else if (_editContext.IsValidationFaulted(() => _model.Username))
                         {
-                            <span class="text-warning small">
+                            <div class="text-warning small mt-1">
                                 ⚠️ @Loc["ValidationFailed"]
                                 <button type="button" class="btn btn-link btn-sm p-0"
                                         @onclick="() => RetryValidation(nameof(_model.Username))">@Loc["Retry"]</button>
-                            </span>
+                            </div>
                         }
-                        <ValidationMessage For="@(() => _model.Username)" />
+                        else if (IsFieldValidAfterAsync(() => _model.Username))
+                        {
+                            <div class="text-success small mt-1">✓ Available</div>
+                        }
+                        else
+                        {
+                            <ValidationMessage For="@(() => _model.Username)" />
+                        }
                     </div>
 
                     <div class="mb-3">
@@ -113,6 +127,12 @@
     protected override void OnInitialized()
     {
         _editContext = new EditContext(_model);
+        _editContext.OnValidationStateChanged += OnValidationStateChanged;
+    }
+
+    private void OnValidationStateChanged(object? sender, ValidationStateChangedEventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     private Task HandleValidSubmit()
@@ -130,6 +150,16 @@
     {
         _model = new();
         _editContext = new EditContext(_model);
+        _editContext.OnValidationStateChanged += OnValidationStateChanged;
         _submitted = false;
+    }
+
+    private bool IsFieldValidAfterAsync<TField>(System.Linq.Expressions.Expression<Func<TField>> accessor)
+    {
+        var field = FieldIdentifier.Create(accessor);
+        return _editContext.IsModified(field)
+            && !_editContext.IsValidationPending(field)
+            && !_editContext.IsValidationFaulted(field)
+            && !_editContext.GetValidationMessages(field).Any();
     }
 }

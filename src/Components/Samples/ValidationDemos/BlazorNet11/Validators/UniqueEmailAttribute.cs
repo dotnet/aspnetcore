@@ -26,7 +26,7 @@ public sealed class UniqueEmailAttribute : AsyncValidationAttribute
         }
 
         // Simulate a rather slow database lookup
-        await Task.Delay(4000, cancellationToken);
+        await Task.Delay(2500, cancellationToken);
 
         if (_takenEmails.Contains(email))
         {

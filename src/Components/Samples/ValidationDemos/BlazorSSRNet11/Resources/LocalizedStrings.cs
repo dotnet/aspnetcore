@@ -4,6 +4,6 @@
 namespace BlazorSSRNet11.Resources;
 
 /// <summary>
-/// Marker class for the shared validation messages resource file.
+/// Marker class for the shared localized strings resource file.
 /// </summary>
-public class ValidationMessages;
+public class LocalizedStrings;

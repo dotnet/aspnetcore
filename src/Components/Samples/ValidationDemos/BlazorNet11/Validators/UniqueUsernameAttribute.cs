@@ -26,7 +26,7 @@ public sealed class UniqueUsernameAttribute : AsyncValidationAttribute
         }
 
         // Simulate a rather slow database lookup
-        await Task.Delay(3000, cancellationToken);
+        await Task.Delay(2500, cancellationToken);
 
         if (_takenUsernames.Contains(username))
         {

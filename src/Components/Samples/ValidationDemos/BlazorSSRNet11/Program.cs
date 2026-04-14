@@ -12,7 +12,7 @@ builder.Services.AddRazorComponents();
 builder.Services.AddLocalization();
 builder.Services.AddValidation(options =>
 {
-    options.LocalizerProvider = (_, factory) => factory.Create(typeof(ValidationMessages));
+    options.LocalizerProvider = (_, factory) => factory.Create(typeof(LocalizedStrings));
 });
 
 builder.Services.Configure<RequestLocalizationOptions>(options =>
