@@ -266,11 +266,15 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
             // If a mutation captured an anchor snapshot before render,
             // restore it now to keep the same row at the same viewport offset.
-            if (_pendingAnchorIndexShift is not null)
+            if (_pendingAnchorIndexShift is not null && !_pendingScrollToBottom)
             {
                 var shift = _pendingAnchorIndexShift.Value;
                 _pendingAnchorIndexShift = null;
                 await _jsInterop.RestoreAnchorAsync(shift);
+            }
+            else
+            {
+                _pendingAnchorIndexShift = null;
             }
 
             await _jsInterop.RefreshObserversAsync();
@@ -422,20 +426,14 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             itemsBefore++;
         }
 
-        // When we're at the very bottom and new measurements arrived,
-        // scroll to bottom so the viewport stays pinned while items converge.
+        // Track whether the viewport is at the bottom of the list.
+        // In End mode, keep scrolling to bottom while measurements converge.
         if (itemsAfter == 0 && hadNewMeasurements)
         {
             if ((AnchorMode & VirtualizeAnchorMode.End) != 0)
             {
                 _pendingScrollToBottom = true;
-            }
-            else if (_pendingAnchorIndexShift is not null && itemsBefore != _itemsBefore)
-            {
-                // An anchor restore is already pending (from append detection in
-                // RefreshDataCoreAsync). Update the shift to account for the
-                // redistribution that followed.
-                _pendingAnchorIndexShift = (_pendingAnchorIndexShift ?? 0) + (itemsBefore - _itemsBefore);
+                _pendingAnchorIndexShift = null;
             }
         }
 
@@ -571,22 +569,14 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                     {
                         if (_itemsBefore > 0)
                         {
-                            // Mid-list: adjust itemsBefore to keep the same items visible.
                             _itemsBefore = Math.Min(_itemsBefore + countDelta, Math.Max(0, result.TotalItemCount - _visibleItemCapacity));
-
-                            // Signal OnAfterRenderAsync to restore the anchor after the DOM diff.
-                            // Shift is 0: for prepends, both the absolute item index and the
-                            // loaded range start shift by countDelta, keeping childIndex the same.
-                            _pendingAnchorIndexShift = 0;
                         }
-                        else if (AnchorMode == VirtualizeAnchorMode.None)
+                        else
                         {
-                            // At the top edge in None mode: shift the window past the
-                            // prepended items to keep the same content visible.
-                            // In Beginning/End mode, new items appear at the top instead.
                             _itemsBefore = Math.Min(countDelta, Math.Max(0, result.TotalItemCount - _visibleItemCapacity));
-                            _pendingAnchorIndexShift = 0;
                         }
+
+                        _pendingAnchorIndexShift = 0;
 
                         var adjustedRequest = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
                         result = await _itemsProvider(adjustedRequest);

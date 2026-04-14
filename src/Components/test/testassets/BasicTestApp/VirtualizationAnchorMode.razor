@@ -29,7 +29,7 @@
     <button id="append-items" @onclick="AppendItems">Append 10 Items</button>
     <button id="append-many-items" @onclick="AppendManyItems">Append 100 Items</button>
     <button id="toggle-height" @onclick="ToggleVariableHeight">
-        Heights: @(useVariableHeight ? "Variable (25-100px)" : "Fixed (50px)")
+        Heights: @(useVariableHeight ? "Variable (10-200px)" : "Fixed (50px)")
     </button>
 </div>
 
@@ -51,7 +51,7 @@
 
     private int GetHeight(int index)
     {
-        return useVariableHeight ? 25 + (Math.Abs(index * 7 + 13) % 76) : 50;
+        return useVariableHeight ? 10 + (Math.Abs(index * 7 + 13) % 191) : 50;
     }
 
     private void ToggleVariableHeight()
@@ -80,20 +80,22 @@
     {
         var newItems = Enumerable.Range(0, 10)
             .Select(i => new DynamicItem { Index = nextPrependIndex - i, Height = GetHeight(nextPrependIndex - i) })
+            .Reverse()
             .ToList();
         items.InsertRange(0, newItems);
         nextPrependIndex -= 10;
-        statusMessage = $"Prepended 10 items (indices {newItems.Last().Index}..{newItems.First().Index})";
+        statusMessage = $"Prepended 10 items (indices {newItems.First().Index}..{newItems.Last().Index})";
     }
 
     private void PrependManyItems()
     {
         var newItems = Enumerable.Range(0, 100)
             .Select(i => new DynamicItem { Index = nextPrependIndex - i, Height = GetHeight(nextPrependIndex - i) })
+            .Reverse()
             .ToList();
         items.InsertRange(0, newItems);
         nextPrependIndex -= 100;
-        statusMessage = $"Prepended 100 items (indices {newItems.Last().Index}..{newItems.First().Index})";
+        statusMessage = $"Prepended 100 items (indices {newItems.First().Index}..{newItems.Last().Index})";
     }
 
     private void AppendItems()
