@@ -1218,6 +1218,477 @@ public class FormDataMapperTests
             });
     }
 
+    [Fact]
+    public void GetKeys_IgnoresMalformedKeysWithUnterminatedBracket()
+    {
+        // Arrange
+        var collection = new Dictionary<string, StringValues>()
+        {
+            ["customer[0"] = "10",
+            ["customer[1]"] = "11",
+            ["customer[2"] = "12",
+        };
+
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("customer");
+
+        // Act
+        var result = reader.GetKeys().Select(key => key.ToString()).ToArray();
+
+        // Assert
+        Assert.Equal(new[] { "[1]" }, result);
+    }
+
+    [Theory]
+    [InlineData("prefix[", "prefix")]                    // unterminated [ at end
+    [InlineData("prefix[abc", "prefix")]                  // unterminated [ with content
+    [InlineData("prefix[value[[", "prefix")]              // double [[ at end, all unterminated
+    [InlineData("[", "")]                                  // key is just [
+    [InlineData("[[", "prefix")]                           // doubled open brackets
+    [InlineData("]", "prefix")]                            // only closing bracket
+    [InlineData("]value[", "prefix")]                      // reversed brackets surrounding value
+    [InlineData("prefix][", "prefix")]                     // reversed brackets at boundary
+    [InlineData("[[value]", "prefix")]                     // double [[ at start, different prefix
+    public void GetKeys_MalformedKeyIgnored_ValidKeyPreserved(string malformedKey, string prefix)
+    {
+        var validKey = prefix.Length > 0 ? $"{prefix}[ok]" : "[ok]";
+        var collection = new Dictionary<string, StringValues>()
+        {
+            [malformedKey] = "v1",
+            [validKey] = "v2",
+        };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        if (prefix.Length > 0)
+        {
+            reader.PushPrefix(prefix);
+        }
+
+        var result = reader.GetKeys().Select(k => k.ToString()).ToArray();
+
+        Assert.Equal(new[] { "[ok]" }, result);
+    }
+
+    [Theory]
+    [InlineData("prefix[]", "prefix", "[]")]                          // empty bracket pair
+    [InlineData("prefix[[value]", "prefix", "[[value]")]              // double [[ in middle
+    [InlineData("a[b.c]", "a", "[b.c]")]                              // dots inside brackets
+    [InlineData("a[ ]", "a", "[ ]")]                                  // whitespace inside brackets
+    [InlineData("prefix[val]]", "prefix", "[val]")]                   // double ]] at end
+    [InlineData("prefix[value][", "prefix", "[value]")]               // valid then unterminated [
+    [InlineData("a[b[c]d]", "a", "[b[c]")]                            // nested brackets
+    [InlineData("]]prefix[ok]", "]]prefix", "[ok]")]                  // double ]] at start of key
+    [InlineData("prefix[val]]rest[ok]", "prefix", "[val]")]           // double ]] in middle
+    [InlineData("prefix[[a][b]", "prefix", "[[a]")]                   // double [[ with valid segment after
+    [InlineData("prefix[a]][b]", "prefix", "[a]")]                    // double ]] between segments
+    [InlineData("prefix[a][b", "prefix", "[a]")]                      // valid then unterminated (partial)
+    [InlineData("prefix[a]suffix[b", "prefix", "[a]")]                // valid then unterminated in suffix
+    [InlineData("][value][", "]", "[value]")]                          // reversed ] at start
+    [InlineData("prefix][value][", "prefix]", "[value]")]             // reversed ] in middle
+    [InlineData("prefix][a][b][", "prefix]", "[a]")]                  // reversed ] with multiple segments
+    [InlineData("a[x][y]", "a", "[x]")]                               // adjacent brackets — first
+    [InlineData("a[x][y]", "a[x]", "[y]")]                            // adjacent brackets — second (nested)
+    [InlineData("prefix[]]", "prefix", "[]")]                         // extra ] after empty pair
+    public void GetKeys_ExtractsExpectedKey(string formKey, string prefix, string expectedKey)
+    {
+        var collection = new Dictionary<string, StringValues>()
+        {
+            [formKey] = "v1",
+        };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        if (prefix.Length > 0)
+        {
+            reader.PushPrefix(prefix);
+        }
+
+        var result = reader.GetKeys().Select(k => k.ToString()).ToArray();
+
+        Assert.Contains(expectedKey, result);
+    }
+
+    [Fact]
+    public void GetKeys_LongRunOfOpenBrackets_NoHang()
+    {
+        var malformedKey = new string('[', 10000);
+        var collection = new Dictionary<string, StringValues>()
+        {
+            [malformedKey] = "v1",
+            ["prefix[ok]"] = "v2",
+        };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("prefix");
+
+        var result = reader.GetKeys().Select(k => k.ToString()).ToArray();
+
+        Assert.Equal(new[] { "[ok]" }, result);
+    }
+
+    [Fact]
+    public void GetKeys_ManyValidSegments()
+    {
+        var sb = new StringBuilder();
+        sb.Append("root");
+        for (var i = 0; i < 64; i++)
+        {
+            sb.Append(CultureInfo.InvariantCulture, $"[{i}]");
+        }
+        var collection = new Dictionary<string, StringValues>()
+        {
+            [sb.ToString()] = "v1",
+        };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("root");
+
+        // Only [0] is directly under "root"; [1] is under "root[0]", etc.
+        var result = reader.GetKeys().Select(k => k.ToString()).ToArray();
+
+        Assert.Contains("[0]", result);
+    }
+
+    [Fact]
+    public void GetKeys_ManyKeysAllWellFormed()
+    {
+        var collection = new Dictionary<string, StringValues>();
+        for (var i = 0; i < 1000; i++)
+        {
+            collection[$"prefix[{i}]"] = $"v{i}";
+        }
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("prefix");
+
+        var result = reader.GetKeys().Select(k => k.ToString()).ToArray();
+
+        Assert.Equal(1000, result.Length);
+    }
+
+    [Fact]
+    public void GetKeys_AllowsOneExtraItemForOverflowDetection()
+    {
+        var collection = new Dictionary<string, StringValues>();
+        for (var i = 0; i < 200; i++)
+        {
+            collection[$"prefix[{i}]"] = $"v{i}";
+        }
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("prefix");
+        reader.MaxCollectionSize = 50;
+
+        var result = reader.GetKeys().Select(k => k.ToString()).ToArray();
+
+        Assert.Equal(51, result.Length);
+    }
+
+    [Fact]
+    public void Deserialize_Dictionary_WhenReaderMaxCollectionSizeIsSet_StillReportsOverflow()
+    {
+        var data = new Dictionary<string, StringValues>(Enumerable.Range(0, 3)
+            .Select(i => new KeyValuePair<string, StringValues>(
+                $"[{i.ToString(CultureInfo.InvariantCulture)}]",
+                (i + 10).ToString(CultureInfo.InvariantCulture))));
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var errors = new List<FormDataMappingError>();
+        reader.ErrorHandler = (key, message, attemptedValue) =>
+        {
+            errors.Add(new FormDataMappingError(key, message, attemptedValue));
+        };
+        reader.MaxCollectionSize = 2;
+
+        var options = new FormDataMapperOptions
+        {
+            MaxCollectionSize = 2
+        };
+
+        var result = FormDataMapper.Map<Dictionary<int, int>>(reader, options);
+
+        Assert.Equal(2, result.Count);
+        var error = Assert.Single(errors);
+        Assert.Equal("", error.Key);
+        Assert.Equal("The number of elements in the dictionary exceeded the maximum number of '2' elements allowed.", error.Message.ToString(reader.Culture));
+        Assert.Null(error.Value);
+    }
+
+    [Fact]
+    public void GetKeys_ManyMalformedKeys_NoHang()
+    {
+        var collection = new Dictionary<string, StringValues>();
+        for (var i = 0; i < 100; i++)
+        {
+            collection[$"prefix[{i}"] = $"v{i}";
+        }
+        collection["prefix[ok]"] = "valid";
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("prefix");
+
+        var result = reader.GetKeys().Select(k => k.ToString()).ToArray();
+
+        Assert.Equal(new[] { "[ok]" }, result);
+    }
+
+    [Fact]
+    public void GetLastPrefixSegment_EmptyPrefix()
+    {
+        var collection = new Dictionary<string, StringValues>() { ["key"] = "v1" };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+
+        var result = reader.GetLastPrefixSegment();
+
+        Assert.Equal("", result);
+    }
+
+    [Fact]
+    public void GetLastPrefixSegment_SimplePrefix()
+    {
+        var collection = new Dictionary<string, StringValues>() { ["key"] = "v1" };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("foo");
+
+        var result = reader.GetLastPrefixSegment();
+
+        Assert.Equal("foo", result);
+    }
+
+    [Fact]
+    public void GetLastPrefixSegment_DottedPrefix()
+    {
+        var collection = new Dictionary<string, StringValues>() { ["key"] = "v1" };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("foo");
+        reader.PushPrefix("bar");
+
+        var result = reader.GetLastPrefixSegment();
+
+        Assert.Equal("bar", result);
+    }
+
+    [Fact]
+    public void GetLastPrefixSegment_BracketedPrefix()
+    {
+        var collection = new Dictionary<string, StringValues>() { ["key"] = "v1" };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("foo");
+        reader.PushPrefix("[0]");
+
+        var result = reader.GetLastPrefixSegment();
+
+        Assert.Equal("0", result);
+    }
+
+    [Fact]
+    public void TryGetValue_SingleValue_ReturnsValue()
+    {
+        var collection = new Dictionary<string, StringValues>()
+        {
+            ["key"] = "hello",
+        };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("key");
+
+        var found = reader.TryGetValue(out var value);
+
+        Assert.True(found);
+        Assert.Equal("hello", value);
+    }
+
+    [Fact]
+    public void TryGetValue_MultipleValues_ReturnsFirstValue()
+    {
+        var collection = new Dictionary<string, StringValues>()
+        {
+            ["key"] = new StringValues(new[] { "first", "second", "third" }),
+        };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("key");
+
+        var found = reader.TryGetValue(out var value);
+
+        Assert.True(found);
+        Assert.Equal("first", value);
+    }
+
+    [Fact]
+    public void TryGetValue_KeyNotFound_ReturnsFalse()
+    {
+        var collection = new Dictionary<string, StringValues>()
+        {
+            ["other"] = "hello",
+        };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("missing");
+
+        var found = reader.TryGetValue(out var value);
+
+        Assert.False(found);
+        Assert.Null(value);
+    }
+
+    [Fact]
+    public void CurrentPrefixExists_EmptyPrefix_WithKeys_ReturnsTrue()
+    {
+        var collection = new Dictionary<string, StringValues>()
+        {
+            ["key"] = "v1",
+        };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+
+        var result = reader.CurrentPrefixExists();
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void CurrentPrefixExists_EmptyPrefix_NoKeys_ReturnsFalse()
+    {
+        var collection = new Dictionary<string, StringValues>();
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+
+        var result = reader.CurrentPrefixExists();
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void CurrentPrefixExists_MatchingPrefix_ReturnsTrue()
+    {
+        var collection = new Dictionary<string, StringValues>()
+        {
+            ["customer.name"] = "Alice",
+            ["customer.age"] = "30",
+        };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("customer");
+
+        var result = reader.CurrentPrefixExists();
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void CurrentPrefixExists_NoMatchingPrefix_ReturnsFalse()
+    {
+        var collection = new Dictionary<string, StringValues>()
+        {
+            ["other.name"] = "Alice",
+        };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("customer");
+
+        var result = reader.CurrentPrefixExists();
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void PushPrefix_ExceedingBufferLength_Throws()
+    {
+        var collection = new Dictionary<string, StringValues>()
+        {
+            ["key"] = "v1",
+        };
+        var reader = new FormDataReader(
+            new Dictionary<FormKey, StringValues>
+            {
+                [new FormKey("key".AsMemory())] = "v1"
+            },
+            CultureInfo.InvariantCulture,
+            new char[20]);
+
+        reader.PushPrefix("short");
+
+        Assert.ThrowsAny<Exception>(() => reader.PushPrefix(new string('x', 100)));
+    }
+
+    [Fact]
+    public void CurrentPrefixExists_BracketDelimitedKey_ReturnsTrue()
+    {
+        var collection = new Dictionary<string, StringValues>()
+        {
+            ["a[x]"] = "v1",
+        };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("a");
+
+        var result = reader.CurrentPrefixExists();
+
+        Assert.True(result);
+    }
+
+    [Theory]
+    [InlineData("a[x]", "a")]
+    [InlineData("d[x].y", "d")]
+    [InlineData("d[x].y", "d[x]")]
+    [InlineData("d[x].y", "d[x].y")]
+    [InlineData("e.a.b[foo].bar", "e")]
+    [InlineData("e.a.b[foo].bar", "e.a.b")]
+    [InlineData("e.a.b[foo].bar", "e.a.b[foo]")]
+    [InlineData("e.a.b[foo].bar", "e.a.b[foo].bar")]
+    public void CurrentPrefixExists_DotAndBracketPrefixes_ReturnsTrue(string key, string prefix)
+    {
+        var collection = new Dictionary<string, StringValues>()
+        {
+            [key] = "v1",
+        };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix(prefix);
+
+        var result = reader.CurrentPrefixExists();
+
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void GetKeys_MixedDotAndBracketKeys_ExtractsOnlyBracketedKeys()
+    {
+        var collection = new Dictionary<string, StringValues>()
+        {
+            ["foo[0].name"] = "Alice",
+            ["foo.age"] = "30",
+            ["foo[1].name"] = "Bob",
+        };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("foo");
+
+        var result = reader.GetKeys().Select(k => k.ToString()).OrderBy(k => k).ToArray();
+
+        Assert.Equal(new[] { "[0]", "[1]" }, result);
+    }
+
+    [Fact]
+    public void GetKeys_NestedDotBracketPrefix_ExtractsNestedKeys()
+    {
+        var collection = new Dictionary<string, StringValues>()
+        {
+            ["person[0].address[0].street"] = "Main St",
+            ["person[0].address[1].street"] = "Oak Ave",
+            ["person[0].address[1].zip"] = "12345",
+        };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+        reader.PushPrefix("person[0].address");
+
+        var result = reader.GetKeys().Select(k => k.ToString()).OrderBy(k => k).ToArray();
+
+        Assert.Equal(new[] { "[0]", "[1]" }, result);
+    }
+
+    [Fact]
+    public void GetKeys_EmptyPrefix_ExtractsBracketedRootKeys()
+    {
+        var collection = new Dictionary<string, StringValues>()
+        {
+            ["[0].name"] = "Alice",
+            ["[0].address.street"] = "Main St",
+            ["[item1].name"] = "Bob",
+            ["[item1].age"] = "30",
+            ["foo"] = "bar",
+            ["foo.baz"] = "qux",
+        };
+        var reader = CreateFormDataReader(collection, CultureInfo.InvariantCulture);
+
+        var result = reader.GetKeys().Select(k => k.ToString()).OrderBy(k => k).ToArray();
+
+        Assert.Contains("[0]", result);
+        Assert.Contains("[item1]", result);
+    }
+
     private void CanDeserialize_Dictionary<TDictionary, TImplementation, TKey, TValue>(TImplementation expected)
         where TDictionary : IDictionary<TKey, TValue>
         where TImplementation : TDictionary
