@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 // Contains all tests related to Startup, requiring starting ANCM/IIS every time.
 [Collection(PublishedSitesCollection.Name)]
-public class StartupTests : IISFunctionalTestBase
+public partial class StartupTests : IISFunctionalTestBase
 {
     public StartupTests(PublishedSitesFixture fixture) : base(fixture)
     {
@@ -41,7 +41,6 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
     public async Task ExpandEnvironmentVariableInWebConfig()
     {
         // Point to dotnet installed in user profile.
@@ -83,7 +82,6 @@ public class StartupTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
     public async Task StartsWithDotnetLocationWithoutExe()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -95,7 +93,6 @@ public class StartupTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
     public async Task StartsWithDotnetLocationUppercase()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -110,7 +107,6 @@ public class StartupTests : IISFunctionalTestBase
     [InlineData("dotnet")]
     [InlineData("dotnet.EXE")]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
     public async Task StartsWithDotnetOnThePath(string path)
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -130,7 +126,6 @@ public class StartupTests : IISFunctionalTestBase
     [SkipIfNotAdmin]
     [RequiresNewShim]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
     public async Task StartsWithDotnetInstallLocation()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -196,7 +191,6 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalTheory]
     [MemberData(nameof(TestVariants))]
-    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
     public async Task HelloWorld(TestVariant variant)
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
@@ -205,7 +199,6 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
     public async Task StartsWithPortableAndBootstraperExe()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -600,7 +593,6 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalTheory]
     [MemberData(nameof(PortableConfigTransformationsScenarios))]
-    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
     public async Task StartsWithWebConfigVariationsPortable(string scenario)
     {
         var action = PortableConfigTransformations[scenario];
@@ -671,7 +663,6 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalTheory]
     [MemberData(nameof(StandaloneConfigTransformationsScenarios))]
-    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
     public async Task StartsWithWebConfigVariationsStandalone(string scenario)
     {
         var action = StandaloneConfigTransformations[scenario];
@@ -727,7 +718,6 @@ public class StartupTests : IISFunctionalTestBase
     [ConditionalFact]
     [RequiresNewShim]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
     public async Task StartupIsSuspendedWhenEventIsUsed()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -1155,7 +1145,6 @@ public class StartupTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
     public async Task GetLongEnvironmentVariable_InProcess()
     {
         var expectedValue = "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
@@ -1175,7 +1164,6 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewShim]
-    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
     public async Task GetLongEnvironmentVariable_OutOfProcess()
     {
         var expectedValue = "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
@@ -1217,7 +1205,6 @@ public class StartupTests : IISFunctionalTestBase
     [ConditionalFact]
     [RequiresNewShim]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
     public Task WebConfigOverridesGlobalEnvironmentVariables_OutOfProcess() => WebConfigOverridesGlobalEnvironmentVariables(HostingModel.OutOfProcess);
 
     private async Task WebConfigOverridesGlobalEnvironmentVariables(HostingModel hostingModel)
@@ -1236,7 +1223,6 @@ public class StartupTests : IISFunctionalTestBase
     [ConditionalFact]
     [RequiresNewShim]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
     public Task WebConfigAppendsHostingStartup_OutOfProcess() => WebConfigAppendsHostingStartup(HostingModel.OutOfProcess);
 
     private async Task WebConfigAppendsHostingStartup(HostingModel hostingModel)
@@ -1261,7 +1247,6 @@ public class StartupTests : IISFunctionalTestBase
     [ConditionalFact]
     [RequiresNewShim]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
     public Task WebConfigOverridesHostingStartup_OutOfProcess() => WebConfigOverridesHostingStartup(HostingModel.OutOfProcess);
 
     private async Task WebConfigOverridesHostingStartup(HostingModel hostingModel)
@@ -1280,7 +1265,6 @@ public class StartupTests : IISFunctionalTestBase
     [ConditionalFact]
     [RequiresNewShim]
     [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
     public Task WebConfigExpandsVariables_OutOfProcess() => WebConfigExpandsVariables(HostingModel.OutOfProcess);
 
     private async Task WebConfigExpandsVariables(HostingModel hostingModel)
@@ -1365,7 +1349,6 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewShim]
-    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
     public async Task HttpsRedirectionWorksIn30AndNot22()
     {
         var port = TestPortHelper.GetNextSSLPort();
