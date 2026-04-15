@@ -28,6 +28,7 @@
     <button id="prepend-many-items" @onclick="PrependManyItems">Prepend 100 Items</button>
     <button id="append-items" @onclick="AppendItems">Append 10 Items</button>
     <button id="append-many-items" @onclick="AppendManyItems">Append 100 Items</button>
+    <button id="expand-item" @onclick="ExpandVisibleItem">Expand Item 3 to 400px</button>
     <button id="toggle-height" @onclick="ToggleVariableHeight">
         Heights: @(useVariableHeight ? "Variable (10-200px)" : "Fixed (50px)")
     </button>
@@ -118,6 +119,20 @@
         items.AddRange(newItems);
         nextAppendIndex += 100;
         statusMessage = $"Appended 100 items (indices {startIndex}..{startIndex + 99})";
+    }
+
+    private void ExpandVisibleItem()
+    {
+        var target = items.FirstOrDefault(i => i.Index == 3);
+        if (target != null)
+        {
+            target.Height = 400;
+            statusMessage = $"Expanded item {target.Index}";
+        }
+        else
+        {
+            statusMessage = "No item to expand";
+        }
     }
 
     private class DynamicItem

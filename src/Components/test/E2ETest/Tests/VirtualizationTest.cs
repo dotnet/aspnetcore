@@ -2375,6 +2375,55 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             "None mode mid-list: viewport should stay visually stable after prepend",
             compareWholePixels: true);
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnchorMode_None_ItemExpansionAfterPrepend_NoGap(bool variableHeight)
+    {
+        MountAnchorModeComponent("0", variableHeight);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        ScrollMidListAndWaitForRender(container, js);
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("prepend-items")).Click();
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+
+        Browser.Exists(By.Id("expand-item")).Click();
+        Browser.Contains("Expanded item", () => Browser.Exists(By.Id("status")).Text);
+
+        AssertViewportStaysStable(
+            js,
+            By.Id("scroll-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            "None mode: viewport should stay stable after prepend + item expansion",
+            driftTolerance: 5);
+
+        // No visible gaps between rendered items
+        var hasGap = js.ExecuteScript(@"
+            var c = arguments[0];
+            var items = c.querySelectorAll('.item[data-index]');
+            var cr = c.getBoundingClientRect();
+            for (var i = 0; i < items.length - 1; i++) {
+                var bottom = items[i].getBoundingClientRect().bottom;
+                var nextTop = items[i + 1].getBoundingClientRect().top;
+                if (nextTop - bottom > 2 &&
+                    bottom > cr.top && nextTop < cr.bottom) {
+                    return true;
+                }
+            }
+            return false;
+        ", container);
+        Assert.False(hasGap is bool g && g,
+            "No visible gaps should exist between rendered items");
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
