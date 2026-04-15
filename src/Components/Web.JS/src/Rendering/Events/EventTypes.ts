@@ -16,11 +16,13 @@ export function registerCustomEventType(eventName: string, options: EventTypeOpt
   if (!options) {
     throw new Error('The options parameter is required.');
   }
-
-  // There can't be more than one registration for the same event name because then we wouldn't
-  // know which eventargs data to supply.
+// Duplicate registrations can occur legitimately when JS initializers (lib.module.js)
+// re-execute after enhanced navigation or circuit reconnection.
   if (eventTypeRegistry.has(eventName)) {
-    throw new Error(`The event '${eventName}' is already registered.`);
+    console.warn(`The event '${eventName}' is being registered more than once. ` +
+      'Duplicate registrations will be ignored. ' +
+      'This may indicate that a JS initializer is running multiple times.');
+    return;
   }
 
   // When aliasing a browser event, the custom event name must be different from the browser event name
