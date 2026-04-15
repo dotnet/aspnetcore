@@ -31,7 +31,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 // Contains all tests related to Startup, requiring starting ANCM/IIS every time.
 [Collection(PublishedSitesCollection.Name)]
-public partial class StartupTests : IISFunctionalTestBase
+#if NEWSHIM_FUNCTIONALS
+[QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
+#endif
+public class StartupTests : IISFunctionalTestBase
 {
     public StartupTests(PublishedSitesFixture fixture) : base(fixture)
     {
