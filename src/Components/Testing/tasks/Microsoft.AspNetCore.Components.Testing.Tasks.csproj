@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsShippingPackage>false</IsShippingPackage>
+    <!-- This is a build-time tool, not shipped to users. Suppress NuGet vulnerability warnings and public API tracking. -->
+    <NoWarn>$(NoWarn);NU1903;NU1902;NU1901;RS0016;RS0017;CA1852</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Build.Utilities.Core" PrivateAssets="all" ExcludeAssets="runtime" />
+    <Reference Include="System.Text.Json" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>
