@@ -557,6 +557,9 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
+#if NEWSHIM_FUNCTIONALS
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
+#endif
     public async Task OutOfProcessToInProcessHostingModelSwitchWorks()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
