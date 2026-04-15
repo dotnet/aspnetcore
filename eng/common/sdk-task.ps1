@@ -22,7 +22,7 @@ $warnAsError = if ($noWarnAsError) { $false } else { $true }
 
 function Print-Usage() {
   Write-Host "Common settings:"
-  Write-Host "  -task <value>           Name of Arcade task (name of a project in SdkTasks directory of the Arcade SDK package)"
+  Write-Host "  -task <value>           Name of Arcade task (name of a project in toolset directory of the Arcade SDK package)"
   Write-Host "  -restore                Restore dependencies"
   Write-Host "  -verbosity <value>      Msbuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]"
   Write-Host "  -help                   Print help and exit"
