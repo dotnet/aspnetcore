@@ -163,6 +163,7 @@ public class Http2ConnectionTests : Http2TestBase
         AssertConnectionNoError();
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65915")]
     [Fact]
     public async Task RequestHeaderStringReuse_MultipleStreams_KnownHeaderReused()
     {
@@ -4298,6 +4299,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66037")]
     public async Task GOAWAY_Received_ConnectionLifetimeNotification_Cancelled()
     {
         await InitializeConnectionAsync(_noopApplication, addKestrelFeatures: true);
@@ -5275,6 +5277,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66037")]
     public async Task AbortSendsFinalGOAWAY()
     {
         await InitializeConnectionAsync(_noopApplication);
@@ -5348,6 +5351,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66037")]
     public async Task StopProcessingNextRequestSendsGracefulGOAWAYThenFinalGOAWAYWhenAllStreamsComplete()
     {
         await InitializeConnectionAsync(_echoApplication);
@@ -5429,7 +5433,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60111")]
     public async Task IgnoreNewStreamsDuringClosedConnection()
     {
         // Remove callback that completes _pair.Application.Output on abort.
@@ -5842,6 +5845,7 @@ public class Http2ConnectionTests : Http2TestBase
     [InlineData((int)(Http2FrameType.DATA))]
     [InlineData((int)(Http2FrameType.HEADERS))]
     [InlineData((int)(Http2FrameType.CONTINUATION))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66037")]
     public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterEndOfStream(int intFinalFrameType)
     {
         var finalFrameType = (Http2FrameType)intFinalFrameType;
@@ -5917,6 +5921,7 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Theory]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66309")]
     [InlineData((int)(Http2FrameType.DATA))]
     [InlineData((int)(Http2FrameType.HEADERS))]
     public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterClientReset(int intFinalFrameType)

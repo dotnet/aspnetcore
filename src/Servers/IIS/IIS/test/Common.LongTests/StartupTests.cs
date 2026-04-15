@@ -31,6 +31,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 // Contains all tests related to Startup, requiring starting ANCM/IIS every time.
 [Collection(PublishedSitesCollection.Name)]
+#if NEWSHIM_FUNCTIONALS
+[QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
+#endif
 public class StartupTests : IISFunctionalTestBase
 {
     public StartupTests(PublishedSitesFixture fixture) : base(fixture)
@@ -377,7 +380,6 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewShim]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52889")]
     public async Task WrongApplicationPath_FailedToRun()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -461,7 +463,6 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewHandler]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65081")]
     public async Task StartupTimeoutIsApplied()
     {
         // From what we can tell, this failure is due to ungraceful shutdown.
@@ -703,7 +704,6 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewHandler]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/62802")]
     public async Task SetCurrentDirectoryHandlerSettingWorks()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -985,7 +985,6 @@ public class StartupTests : IISFunctionalTestBase
     }
 
     [ConditionalTheory]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52734")]
     [InlineData("CheckLargeStdErrWrites")]
     [InlineData("CheckLargeStdOutWrites")]
     [InlineData("CheckOversizedStdErrWrites")]
@@ -1011,7 +1010,6 @@ public class StartupTests : IISFunctionalTestBase
     }
 
     [ConditionalTheory]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/58108")]
     [InlineData("CheckLargeStdOutWrites")]
     [InlineData("CheckOversizedStdOutWrites")]
     public async Task CheckStdoutWithLargeWrites_LogFile(string mode)
@@ -1191,6 +1189,7 @@ public class StartupTests : IISFunctionalTestBase
     public Task AuthHeaderEnvironmentVariableRemoved_InProcess() => AuthHeaderEnvironmentVariableRemoved(HostingModel.InProcess);
 
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
     public Task AuthHeaderEnvironmentVariableRemoved_OutOfProcess() => AuthHeaderEnvironmentVariableRemoved(HostingModel.OutOfProcess);
 
     private async Task AuthHeaderEnvironmentVariableRemoved(HostingModel hostingModel)
