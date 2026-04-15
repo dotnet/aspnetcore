@@ -8,6 +8,9 @@
     <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
     <ImplicitUsings>disable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Suppress obsolete warnings: FORWARDCOMPAT blocks intentionally use old APIs
+         (IHostingEnvironment, IApplicationLifetime) to exercise legacy code paths -->
+    <NoWarn>$(NoWarn);CS0618;CS0612</NoWarn>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
