@@ -1,4 +1,4 @@
-import { expect, test, describe, jest } from '@jest/globals';
+import { expect, test, describe, afterEach, jest } from '@jest/globals';
 import { registerCustomEventType, getEventTypeOptions, getEventNameAliases } from '../src/Rendering/Events/EventTypes';
 
 // The eventTypeRegistry is module-scoped and persists across tests, so we need
@@ -6,7 +6,11 @@ import { registerCustomEventType, getEventTypeOptions, getEventNameAliases } fro
 // and other tests.
 
 describe('registerCustomEventType duplicate registration', () => {
-  test('duplicate registration with same browserEventName is silently ignored', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test('duplicate registration with same browserEventName warns and is ignored', () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
     const options1 = {
@@ -38,11 +42,9 @@ describe('registerCustomEventType duplicate registration', () => {
     const aliases = getEventNameAliases('change');
     const count = aliases!.filter(a => a === 'mycheckedchange').length;
     expect(count).toBe(1);
-
-    warnSpy.mockRestore();
   });
 
-  test('duplicate registration with different browserEventName is silently ignored', () => {
+  test('duplicate registration with different browserEventName warns and is ignored', () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
     registerCustomEventType('myevent-diffbrowser', {
@@ -61,12 +63,10 @@ describe('registerCustomEventType duplicate registration', () => {
     // First registration wins
     const registered = getEventTypeOptions('myevent-diffbrowser');
     expect(registered!.browserEventName).toBe('click');
-
-    warnSpy.mockRestore();
   });
 
   test('duplicate registration does not cause double alias entries', () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
 
     registerCustomEventType('mytabchange', {
       browserEventName: 'change',
@@ -89,16 +89,9 @@ describe('registerCustomEventType duplicate registration', () => {
     const aliases = getEventNameAliases('change');
     const count = aliases!.filter(a => a === 'mytabchange').length;
     expect(count).toBe(1);
-
-    warnSpy.mockRestore();
   });
 
   test('simulates FluentUI re-initialization scenario', () => {
-    // This simulates what happens when FluentUI's afterStarted hook fires
-    // multiple times (e.g., after enhanced navigation or circuit reconnection).
-    // FluentUI registers ~18 custom events. On re-initialization, it tries
-    // to register them all again.
-
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
     const fluentEvents = [
@@ -130,7 +123,5 @@ describe('registerCustomEventType duplicate registration', () => {
 
     // Should have warned for each duplicate
     expect(warnSpy).toHaveBeenCalledTimes(fluentEvents.length);
-
-    warnSpy.mockRestore();
   });
 });
