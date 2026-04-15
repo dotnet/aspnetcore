@@ -16,6 +16,7 @@ export function registerCustomEventType(eventName: string, options: EventTypeOpt
   if (!options) {
     throw new Error('The options parameter is required.');
   }
+
 // Duplicate registrations can occur legitimately when JS initializers (lib.module.js)
 // re-execute after enhanced navigation or circuit reconnection.
   if (eventTypeRegistry.has(eventName)) {
