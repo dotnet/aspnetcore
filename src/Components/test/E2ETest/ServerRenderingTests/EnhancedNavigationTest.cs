@@ -929,24 +929,28 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         var h1Elem = Browser.Exists(By.Id("interactive-layout-home"));
         Browser.Equal("Hello from interactive layout", () => h1Elem.Text);
 
-        // Navigate to the other page
+        // Use a layout element for staleness checks since it persists across pages
+        var layoutCounter = Browser.Exists(By.Id("layout-counter"));
+
+        // Navigate to the other page and verify enhanced navigation was used (DOM preserved)
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Other (interactive layout)")).Click();
         Browser.Equal("Other page with interactive layout", () => Browser.Exists(By.Id("interactive-layout-other")).Text);
+        Assert.False(layoutCounter.IsStale(), "Enhanced navigation should have been used for first navigation");
 
         // Navigate back to home - this is the step that triggered the crash
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Home (interactive layout)")).Click();
         Browser.Equal("Hello from interactive layout", () => Browser.Exists(By.Id("interactive-layout-home")).Text);
+        Assert.False(layoutCounter.IsStale(), "Enhanced navigation should have been used for second navigation");
 
-        // Verify the page is still functional by checking the interactive counter in the layout
+        // Verify the interactive layout component is still functional by clicking the counter
         var counterValue = Browser.Exists(By.Id("layout-counter-value"));
         Browser.Equal("0", () => counterValue.Text);
+        Browser.Exists(By.Id("layout-counter-button")).Click();
+        Browser.Equal("1", () => counterValue.Text);
 
-        // Verify no JavaScript errors occurred by checking the error UI is not visible
-        var errorUi = Browser.FindElements(By.Id("blazor-error-ui"));
-        if (errorUi.Count > 0)
-        {
-            Assert.DoesNotContain("block", errorUi[0].GetCssValue("display"));
-        }
+        // Verify no JavaScript errors occurred during enhanced navigation
+        var logs = Browser.GetBrowserLogs(LogLevel.Warning);
+        Assert.DoesNotContain(logs, log => log.Message.Contains("Error"));
     }
 
     private void AssertScrollPositionCorrect(bool useEnhancedNavigation, long previousScrollPosition)
