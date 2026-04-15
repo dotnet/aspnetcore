@@ -1,6 +1,8 @@
 <Project>
   <PropertyGroup>
     <_BlazorGatewayDll Condition="'$(_BlazorGatewayDll)' == ''">$(MSBuildThisFileDirectory)../tools/blazor-gateway.dll</_BlazorGatewayDll>
+    <!-- Prevents the runtime SDK (Microsoft.NET.Sdk.WebAssembly.Browser.targets) from overriding
+         RunCommand/RunArguments with WasmAppHost when _UseBlazorDevServer is false. -->
     <_WebAssemblyUserRunParameters>true</_WebAssemblyUserRunParameters>
   </PropertyGroup>
 

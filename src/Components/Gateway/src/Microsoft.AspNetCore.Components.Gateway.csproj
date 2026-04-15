@@ -12,6 +12,9 @@
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
     <Nullable>enable</Nullable>
+    <!-- Disable the default runtimeconfig.json in favor of the one we create via template,
+         which contains the correct framework version. -->
+    <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
     <!-- Allow direct PackageReference for external packages not in the shared framework -->
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
     <!-- Use the shared ASP.NET Core runtime from the SDK targeting pack instead of requiring
@@ -27,6 +30,24 @@
     <Reference Include="Microsoft.Extensions.ServiceDiscovery" />
     <Reference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" />
   </ItemGroup>
+
+  <Target Name="_CreateRuntimeConfig" BeforeTargets="CoreBuild">
+    <PropertyGroup>
+      <_RuntimeConfigProperties Condition="'$(IsServicingBuild)' == 'true'">
+        FrameworkVersion=$(AspNetCoreMajorMinorVersion).0;
+      </_RuntimeConfigProperties>
+      <_RuntimeConfigProperties Condition="'$(IsServicingBuild)' != 'true'">
+        FrameworkVersion=$(SharedFxVersion);
+      </_RuntimeConfigProperties>
+
+      <_RuntimeConfigPath>$(OutputPath)blazor-gateway.runtimeconfig.json</_RuntimeConfigPath>
+    </PropertyGroup>
+
+    <GenerateFileFromTemplate
+      TemplateFile="blazor-gateway.runtimeconfig.json.in"
+      Properties="$(_RuntimeConfigProperties)"
+      OutputPath="$(_RuntimeConfigPath)" />
+  </Target>
 
   <!-- Pack settings -->
   <PropertyGroup>
