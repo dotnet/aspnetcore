@@ -15,7 +15,9 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
 
     [Inject] private IServiceProvider ServiceProvider { get; set; } = default!;
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Initializes the component and enables data annotations validation for the current <see cref="EditContext"/>.
+    /// </summary>
     protected override void OnInitialized()
     {
         if (CurrentEditContext == null)
@@ -29,7 +31,9 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
         _originalEditContext = CurrentEditContext;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Validates that the associated <see cref="EditContext"/> has not changed between parameter updates.
+    /// </summary>
     protected override void OnParametersSet()
     {
         if (CurrentEditContext != _originalEditContext)
@@ -41,7 +45,10 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
         }
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Releases resources used by the validator.
+    /// </summary>
+    /// <param name="disposing"><see langword="true"/> if managed resources should be released; otherwise, <see langword="false"/>.</param>
     protected virtual void Dispose(bool disposing)
     {
     }

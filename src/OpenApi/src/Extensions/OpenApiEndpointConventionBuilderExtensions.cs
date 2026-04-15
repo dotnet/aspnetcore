@@ -48,7 +48,7 @@ public static class OpenApiEndpointConventionBuilderExtensions
     /// and is primarily intended for consumption along-side Swashbuckle.AspNetCore.
     /// </remarks>
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
-    /// <param name="configureOperation">An <see cref="Func{T, TResult}"/> that returns a new OpenAPI annotation given a generated operation.</param>
+    /// <param name="configureOperation">A delegate that customizes the generated OpenAPI operation metadata for the endpoint.</param>
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
     [Obsolete("WithOpenApi is deprecated and will be removed in a future release. For more information, visit https://aka.ms/aspnet/deprecate/002.", DiagnosticId = "ASPDEPR002", UrlFormat = Obsoletions.AspNetCoreDeprecate002Url)]
     [RequiresDynamicCode(TrimWarningMessage)]
@@ -129,7 +129,7 @@ public static class OpenApiEndpointConventionBuilderExtensions
     /// with the current endpoint.
     /// </summary>
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
-    /// <param name="transformer">The <see cref="Func{OpenApiOperation, OpenApiOperationTransformerContext, CancellationToken, Task}"/> that modifies the operation in the <see cref="OpenApiDocument"/>.</param>
+    /// <param name="transformer">A delegate that modifies the generated OpenAPI operation in the <see cref="OpenApiDocument"/>.</param>
     /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
     public static TBuilder AddOpenApiOperationTransformer<TBuilder>(this TBuilder builder, Func<OpenApiOperation, OpenApiOperationTransformerContext, CancellationToken, Task> transformer) where TBuilder : IEndpointConventionBuilder
     {
