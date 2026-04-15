@@ -72,7 +72,6 @@ public static class RazorComponentsServiceCollectionExtensions
         services.AddSupplyValueFromQueryProvider();
         services.AddSupplyValueFromPersistentComponentStateProvider();
         services.TryAddCascadingValue(sp => sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext);
-        services.TryAddScoped<WebAssemblySettingsEmitter>();
         services.TryAddScoped<ResourcePreloadService>();
         services.AddTempData();
 
