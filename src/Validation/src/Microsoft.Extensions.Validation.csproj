@@ -25,11 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Options" />
-  </ItemGroup>
-
-  <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.Extensions.Validation.Tests" />
   </ItemGroup>
 
