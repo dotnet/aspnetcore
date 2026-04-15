@@ -250,19 +250,19 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     observersByDotNetObjectId[id].anchorSnapshot = null;
 
     if (convergingToTop || convergingToBottom) {
-        return;
+      return;
     }
 
     // Beginning mode at the very top: let new items appear instead of anchoring.
     if ((anchorMode & 1) && snapshot.scrollTop < 1) {
-        return;
+      return;
     }
 
     // indexShift adjusts the child index for rendered window changes:
     // 0 for prepends (child position preserved), positive for redistributions.
     const targetChildIndex = snapshot.childIndex - indexShift;
     if (targetChildIndex < 0) {
-        return;
+      return;
     }
 
     let current = spacerBefore.nextElementSibling;
@@ -271,7 +271,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
 
     if (!current || current === spacerAfter) {
-        return;
+      return;
     }
 
     const containerTop = scrollContainer
