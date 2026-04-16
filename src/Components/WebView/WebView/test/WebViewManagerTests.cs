@@ -219,8 +219,8 @@ public class WebViewManagerTests
     {
         private RenderHandle _handle;
 
-        [Inject] public IJSRuntime JSRuntime { get; set; }
-        [Inject] public SingletonService Singleton { get; set; }
+        [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
+        [Inject] public SingletonService Singleton { get; set; } = default!;
 
         public void Attach(RenderHandle renderHandle)
         {
