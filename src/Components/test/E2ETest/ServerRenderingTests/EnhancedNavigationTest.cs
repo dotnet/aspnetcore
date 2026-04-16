@@ -943,10 +943,9 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Assert.False(layoutCounter.IsStale(), "Enhanced navigation should have been used for second navigation");
 
         // Verify the interactive layout component is still functional by clicking the counter
-        var counterValue = Browser.Exists(By.Id("layout-counter-value"));
-        Browser.Equal("0", () => counterValue.Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id("layout-counter-value")).Text);
         Browser.Exists(By.Id("layout-counter-button")).Click();
-        Browser.Equal("1", () => counterValue.Text);
+        Browser.Equal("1", () => Browser.Exists(By.Id("layout-counter-value")).Text);
 
         // Verify no JavaScript errors occurred during enhanced navigation
         var logs = Browser.GetBrowserLogs(LogLevel.Warning);
