@@ -10,8 +10,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Services;
 internal sealed class WebViewJSRuntime : JSRuntime
 {
     private IpcSender _ipcSender;
+    private bool _isDisposed;
 
     public ElementReferenceContext ElementReferenceContext { get; }
+
+    internal bool IsDisposed => _isDisposed;
 
     public WebViewJSRuntime()
     {
@@ -24,6 +27,11 @@ internal sealed class WebViewJSRuntime : JSRuntime
     public void AttachToWebView(IpcSender ipcSender)
     {
         _ipcSender = ipcSender;
+    }
+
+    internal void MarkAsDisconnected()
+    {
+        _isDisposed = true;
     }
 
     public JsonSerializerOptions ReadJsonSerializerOptions() => JsonSerializerOptions;
@@ -45,6 +53,8 @@ internal sealed class WebViewJSRuntime : JSRuntime
 
     protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
     {
+        ThrowIfDisposed();
+
         if (_ipcSender is null)
         {
             throw new InvalidOperationException("Cannot invoke JavaScript outside of a WebView context.");
@@ -55,6 +65,11 @@ internal sealed class WebViewJSRuntime : JSRuntime
 
     protected override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
         var resultJsonOrErrorMessage = invocationResult.Success
             ? invocationResult.ResultJson
             : invocationResult.Exception.ToString();
@@ -63,6 +78,11 @@ internal sealed class WebViewJSRuntime : JSRuntime
 
     protected override void SendByteArray(int id, byte[] data)
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
         _ipcSender.SendByteArray(id, data);
     }
 
@@ -72,5 +92,15 @@ internal sealed class WebViewJSRuntime : JSRuntime
     protected override Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)
     {
         return TransmitDataStreamToJS.TransmitStreamAsync(this, "Blazor._internal.receiveWebViewDotNetDataStream", streamId, dotNetStreamReference);
+    }
+
+    private void ThrowIfDisposed()
+    {
+        if (_isDisposed)
+        {
+            throw new JSDisconnectedException(
+                "JavaScript interop calls cannot be issued at this time. This is because the WebView page has been " +
+                "disposed.");
+        }
     }
 }
