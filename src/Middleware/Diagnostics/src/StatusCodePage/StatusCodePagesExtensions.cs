@@ -20,6 +20,9 @@ public static class StatusCodePagesExtensions
     /// <summary>
     /// Adds a StatusCodePages middleware with the given options that checks for responses with status codes
     /// between 400 and 599 that do not have a body.
+    /// If <see cref="StatusCodePagesOptions.HandleAsync"/> uses its default value, it attempts to generate a
+    /// <see cref="Microsoft.AspNetCore.Mvc.ProblemDetails"/> response using <see cref="IProblemDetailsService"/>
+    /// and falls back to a plain text response that includes the status code.
     /// </summary>
     /// <param name="app"></param>
     /// <param name="options"></param>
