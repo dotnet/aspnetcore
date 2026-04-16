@@ -745,7 +745,7 @@ function InitializeToolset() {
     ExitWithExitCode 1
   }
 
-  $downloadArgs = @("package", "download", "Microsoft.DotNet.Arcade.Sdk@$toolsetVersion", "--prerelease", "--output", "$nugetCache")
+  $downloadArgs = @("package", "download", "Microsoft.DotNet.Arcade.Sdk@$toolsetVersion", "--verbosity", "minimal", "--prerelease", "--output", "$nugetCache")
   if ($env:NUGET_CONFIG) {
     $downloadArgs += "--configfile"
     $downloadArgs += $env:NUGET_CONFIG
