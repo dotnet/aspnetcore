@@ -4,6 +4,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +17,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests;
 public class TestServerTests : VerifiableLoggedTest
 {
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65914")]
     public async Task WebSocketsWorks()
     {
         using (StartVerifiableLog())
@@ -78,6 +80,7 @@ public class TestServerTests : VerifiableLoggedTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65702")]
     public async Task LongPollingWorks()
     {
         using (StartVerifiableLog())

@@ -17,13 +17,15 @@ namespace Microsoft.AspNetCore.Connections
                                                             IConnectionIdFeature,
                                                             IConnectionItemsFeature,
                                                             IMemoryPoolFeature,
-                                                            IConnectionLifetimeFeature
+                                                            IConnectionLifetimeFeature,
+                                                            IConnectionEndPointFeature
     {
         // Implemented features
         internal protected IConnectionIdFeature? _currentIConnectionIdFeature;
         internal protected IConnectionItemsFeature? _currentIConnectionItemsFeature;
         internal protected IMemoryPoolFeature? _currentIMemoryPoolFeature;
         internal protected IConnectionLifetimeFeature? _currentIConnectionLifetimeFeature;
+        internal protected IConnectionEndPointFeature? _currentIConnectionEndPointFeature;
 
         // Other reserved feature slots
         internal protected IConnectionTransportFeature? _currentIConnectionTransportFeature;
@@ -40,6 +42,7 @@ namespace Microsoft.AspNetCore.Connections
             _currentIConnectionItemsFeature = this;
             _currentIMemoryPoolFeature = this;
             _currentIConnectionLifetimeFeature = this;
+            _currentIConnectionEndPointFeature = this;
 
             _currentIConnectionTransportFeature = null;
             _currentIProtocolErrorCodeFeature = null;
@@ -135,6 +138,10 @@ namespace Microsoft.AspNetCore.Connections
                 {
                     feature = _currentIConnectionLifetimeFeature;
                 }
+                else if (key == typeof(IConnectionEndPointFeature))
+                {
+                    feature = _currentIConnectionEndPointFeature;
+                }
                 else if (key == typeof(IProtocolErrorCodeFeature))
                 {
                     feature = _currentIProtocolErrorCodeFeature;
@@ -174,6 +181,10 @@ namespace Microsoft.AspNetCore.Connections
                 else if (key == typeof(IConnectionLifetimeFeature))
                 {
                     _currentIConnectionLifetimeFeature = (IConnectionLifetimeFeature?)value;
+                }
+                else if (key == typeof(IConnectionEndPointFeature))
+                {
+                    _currentIConnectionEndPointFeature = (IConnectionEndPointFeature?)value;
                 }
                 else if (key == typeof(IProtocolErrorCodeFeature))
                 {
@@ -216,6 +227,10 @@ namespace Microsoft.AspNetCore.Connections
             else if (typeof(TFeature) == typeof(IConnectionLifetimeFeature))
             {
                 feature = Unsafe.As<IConnectionLifetimeFeature?, TFeature?>(ref _currentIConnectionLifetimeFeature);
+            }
+            else if (typeof(TFeature) == typeof(IConnectionEndPointFeature))
+            {
+                feature = Unsafe.As<IConnectionEndPointFeature?, TFeature?>(ref _currentIConnectionEndPointFeature);
             }
             else if (typeof(TFeature) == typeof(IProtocolErrorCodeFeature))
             {
@@ -260,6 +275,10 @@ namespace Microsoft.AspNetCore.Connections
             {
                 _currentIConnectionLifetimeFeature = Unsafe.As<TFeature?, IConnectionLifetimeFeature?>(ref feature);
             }
+            else if (typeof(TFeature) == typeof(IConnectionEndPointFeature))
+            {
+                _currentIConnectionEndPointFeature = Unsafe.As<TFeature?, IConnectionEndPointFeature?>(ref feature);
+            }
             else if (typeof(TFeature) == typeof(IProtocolErrorCodeFeature))
             {
                 _currentIProtocolErrorCodeFeature = Unsafe.As<TFeature?, IProtocolErrorCodeFeature?>(ref feature);
@@ -295,6 +314,10 @@ namespace Microsoft.AspNetCore.Connections
             if (_currentIConnectionLifetimeFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IConnectionLifetimeFeature), _currentIConnectionLifetimeFeature);
+            }
+            if (_currentIConnectionEndPointFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IConnectionEndPointFeature), _currentIConnectionEndPointFeature);
             }
             if (_currentIProtocolErrorCodeFeature != null)
             {
