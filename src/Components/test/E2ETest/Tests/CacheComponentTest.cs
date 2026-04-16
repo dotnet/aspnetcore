@@ -100,6 +100,7 @@ public class CacheComponentTest : ServerTestBase<BasicTestAppServerSiteFixture<R
         {
             firstRenderValues[i] = loopItems[i].FindElement(By.CssSelector(".cached-value")).Text;
         }
+        Assert.Equal(3, firstRenderValues.Distinct().Count());
 
         // Second navigation — each entry should be independently cached
         Navigate($"{ServerPathBase}/cache-component");

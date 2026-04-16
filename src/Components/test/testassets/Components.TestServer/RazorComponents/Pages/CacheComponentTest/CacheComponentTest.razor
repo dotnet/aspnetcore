@@ -5,22 +5,22 @@
 
 <div id="test-1">
     <CacheComponent ExpiresAfter="TimeSpan.FromHours(1)">
-        <p class="cached">@DateTime.Now.ToString("o")</p>
+        <p class="cached">@Guid.NewGuid()</p>
         <NotCacheComponent>
-            <p class="not-cache-component">@DateTime.Now.ToString("o")</p>
+            <p class="not-cache-component">@Guid.NewGuid()</p>
         </NotCacheComponent>
     </CacheComponent>
-    <p class="not-cached">@DateTime.Now.ToString("o")</p>
+    <p class="not-cached">@Guid.NewGuid()</p>
 </div>
 
 <div id="test-2">
     <CacheComponent ExpiresAfter="TimeSpan.FromHours(1)" Enabled="false">
-        <p class="cached">@DateTime.Now.ToString("o")</p>
+        <p class="cached">@Guid.NewGuid()</p>
         <NotCacheComponent>
-            <p class="not-cache-component">@DateTime.Now.ToString("o")</p>
+            <p class="not-cache-component">@Guid.NewGuid()</p>
         </NotCacheComponent>
     </CacheComponent>
-    <p class="not-cached">@DateTime.Now.ToString("o")</p>
+    <p class="not-cached">@Guid.NewGuid()</p>
 </div>
 
 <div id="test-3">
@@ -37,7 +37,7 @@
 
 <div id="test-4">
     <CacheComponent ExpiresAfter="TimeSpan.FromHours(1)">
-        <p id="outer-cached">@DateTime.Now.ToString("o")</p>
+        <p id="outer-cached">@Guid.NewGuid()</p>
         <CacheComponent ExpiresAfter="TimeSpan.FromHours(1)">
             <InnerCachedComponent />
         </CacheComponent>
@@ -49,7 +49,7 @@
     {
         <div class="loop-item" data-index="@i">
             <CacheComponent ExpiresAfter="TimeSpan.FromHours(1)" CacheKey="@($"loop-{i}")">
-                <p class="cached-value">@DateTime.Now.ToString("o")</p>
+                <p class="cached-value">@Guid.NewGuid()</p>
             </CacheComponent>
         </div>
     }

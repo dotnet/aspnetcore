@@ -107,7 +107,18 @@ public sealed class RazorComponentsServiceOptions
     /// <summary>
     /// Gets or sets the maximum size, in bytes, of the memory cache used by <see cref="CacheComponent"/>
     /// for server-side rendering. When the limit is reached, no new entries are cached until
-    /// existing entries expire. Defaults to 100 MB.
+    /// existing entries expire. Defaults to 100 MB. A value of 0 configures a zero-byte
+    /// cache size limit, so entries are not cached.
     /// </summary>
-    public long CacheComponentSizeLimit { get; set; } = 100_000_000;
+    public long CacheComponentSizeLimit
+    {
+        get => _cacheComponentSizeLimit;
+        set
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
+            _cacheComponentSizeLimit = value;
+        }
+    }
+
+    private long _cacheComponentSizeLimit = 100_000_000;
 }
