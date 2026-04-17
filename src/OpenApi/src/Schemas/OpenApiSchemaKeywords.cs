@@ -27,4 +27,5 @@ internal class OpenApiSchemaKeywords
     public const string MaxItemsKeyword = "maxItems";
     public const string RefKeyword = "$ref";
     public const string ConstKeyword = "const";
+    public const string DeprecatedKeyword = "deprecated";
 }

@@ -140,4 +140,118 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [Description("Property: DescribedInlinedDto.ChildValue")]
         public string ChildValue { get; set; }
     }
+
+    [Fact]
+    public async Task SchemaDeprecated_HandlesObsoleteType()
+    {
+        var builder = CreateBuilder();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        builder.MapPost("/", (ObsoleteDto dto) => { });
+#pragma warning restore CS0618
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var schema = document.Components.Schemas["ObsoleteDto"];
+            Assert.True(schema.Deprecated);
+        });
+    }
+
+    [Fact]
+    public async Task SchemaDeprecated_HandlesObsoletePropertyWithInlinedSchema()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (DtoWithObsoleteInlinedProperty dto) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"].Operations[HttpMethod.Post];
+            var content = Assert.Single(operation.RequestBody.Content);
+            var schema = content.Value.Schema;
+
+            Assert.Collection(schema.Properties,
+                property =>
+                {
+                    Assert.Equal("active", property.Key);
+                    Assert.False(property.Value.Deprecated);
+                },
+                property =>
+                {
+                    Assert.Equal("legacy", property.Key);
+                    Assert.True(property.Value.Deprecated);
+                });
+        });
+    }
+
+    [Fact]
+    public async Task SchemaDeprecated_HandlesObsoletePropertyWithSchemaReference()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (DtoWithObsoleteReferenceProperty dto) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"].Operations[HttpMethod.Post];
+            var content = Assert.Single(operation.RequestBody.Content);
+            var schema = content.Value.Schema;
+
+            Assert.Collection(schema.Properties,
+                property =>
+                {
+                    Assert.Equal("current", property.Key);
+                    var reference = Assert.IsType<OpenApiSchemaReference>(property.Value);
+                    Assert.False(reference.Deprecated);
+                },
+                property =>
+                {
+                    Assert.Equal("old", property.Key);
+                    var reference = Assert.IsType<OpenApiSchemaReference>(property.Value);
+                    Assert.True(reference.Deprecated);
+                });
+
+            var referencedSchema = document.Components.Schemas["NonObsoleteChildDto"];
+            Assert.False(referencedSchema.Deprecated);
+        });
+    }
+
+    [Fact]
+    public async Task SchemaDeprecated_NonObsoleteTypeIsNotDeprecated()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (NonObsoleteChildDto dto) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var schema = document.Components.Schemas["NonObsoleteChildDto"];
+            Assert.False(schema.Deprecated);
+        });
+    }
+
+    [Obsolete("This type is deprecated.")]
+    public class ObsoleteDto
+    {
+        public string Name { get; set; }
+    }
+
+    public class DtoWithObsoleteInlinedProperty
+    {
+        public string Active { get; set; }
+        [Obsolete("Use Active instead.")]
+        public string Legacy { get; set; }
+    }
+
+    public class DtoWithObsoleteReferenceProperty
+    {
+        public NonObsoleteChildDto Current { get; set; }
+        [Obsolete("Use Current instead.")]
+        public NonObsoleteChildDto Old { get; set; }
+    }
+
+    public class NonObsoleteChildDto
+    {
+        public string Value { get; set; }
+    }
 }

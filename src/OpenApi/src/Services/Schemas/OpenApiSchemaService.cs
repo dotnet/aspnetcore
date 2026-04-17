@@ -108,6 +108,10 @@ internal sealed class OpenApiSchemaService(
             {
                 schema[OpenApiSchemaKeywords.DescriptionKeyword] = typeDescriptionAttribute.Description;
             }
+            if (context.TypeInfo.Type.GetCustomAttributes(inherit: false).OfType<ObsoleteAttribute>().Any())
+            {
+                schema[OpenApiSchemaKeywords.DeprecatedKeyword] = true;
+            }
             if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
             {
                 var propertyAttributes = attributeProvider.GetCustomAttributes(inherit: false);
@@ -126,12 +130,20 @@ internal sealed class OpenApiSchemaService(
                     {
                         schema[OpenApiSchemaKeywords.DescriptionKeyword] = descriptionAttribute.Description;
                     }
+                    if (propertyAttributes.OfType<ObsoleteAttribute>().Any())
+                    {
+                        schema[OpenApiSchemaKeywords.DeprecatedKeyword] = true;
+                    }
                 }
                 else
                 {
                     if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
                     {
                         schema[OpenApiConstants.RefDescriptionAnnotation] = descriptionAttribute.Description;
+                    }
+                    if (propertyAttributes.OfType<ObsoleteAttribute>().Any())
+                    {
+                        schema[OpenApiConstants.RefDeprecatedAnnotation] = true;
                     }
                 }
             }

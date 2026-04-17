@@ -345,6 +345,10 @@ internal sealed partial class OpenApiJsonSchema
                 schema.Enum = ReadJsonNode(ref reader, out var constType) is { } jsonNode ? [jsonNode] : [];
                 schema.Type = constType;
                 break;
+            case OpenApiSchemaKeywords.DeprecatedKeyword:
+                reader.Read();
+                schema.Deprecated = reader.GetBoolean();
+                break;
             case OpenApiConstants.RefDescriptionAnnotation:
                 reader.Read();
                 schema.Metadata ??= new Dictionary<string, object>();
@@ -354,6 +358,11 @@ internal sealed partial class OpenApiJsonSchema
                 reader.Read();
                 schema.Metadata ??= new Dictionary<string, object>();
                 schema.Metadata[OpenApiConstants.RefDefaultAnnotation] = ReadJsonNode(ref reader)!;
+                break;
+            case OpenApiConstants.RefDeprecatedAnnotation:
+                reader.Read();
+                schema.Metadata ??= new Dictionary<string, object>();
+                schema.Metadata[OpenApiConstants.RefDeprecatedAnnotation] = reader.GetBoolean();
                 break;
             default:
                 reader.Skip();
