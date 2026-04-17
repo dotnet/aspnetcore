@@ -182,6 +182,7 @@
   </Folder>
   <Folder Name="/src/DataProtection/DataProtection/">
     <Project Path="src/DataProtection/DataProtection/src/Microsoft.AspNetCore.DataProtection.csproj" />
+    <Project Path="src/DataProtection/DataProtection/test/Microsoft.AspNetCore.DataProtection.NuGetIntegrationTests/Microsoft.AspNetCore.DataProtection.NuGetIntegrationTests.csproj" />
     <Project Path="src/DataProtection/DataProtection/test/Microsoft.AspNetCore.DataProtection.Tests/Microsoft.AspNetCore.DataProtection.Tests.csproj" />
   </Folder>
   <Folder Name="/src/DataProtection/EntityFrameworkCore/">
