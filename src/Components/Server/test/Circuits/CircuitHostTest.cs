@@ -788,6 +788,45 @@ public class CircuitHostTest
     }
 
     [Fact]
+    public async Task A17_PauseFromInsideHandler_WhileOtherAsyncWorkActive_WaitsForOtherWork()
+    {
+        var otherWorkReleased = false;
+        var pauseSentAfterRelease = false;
+        var proxy = new Mock<ISingleClientProxy>();
+        proxy.Setup(c => c.SendCoreAsync("JS.RequestPause", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+             .Callback(() => pauseSentAfterRelease = otherWorkReleased)
+             .Returns(Task.CompletedTask);
+        var circuitHost = await CreateConnectedCircuitHostAsync(proxy);
+
+        var otherWorkStarted = new TaskCompletionSource();
+        var releaseOtherWork = new TaskCompletionSource();
+
+        // Start another async inbound handler.
+        var otherHandlerTask = circuitHost.HandleInboundActivityAsync(async () =>
+        {
+            otherWorkStarted.SetResult();
+            await releaseOtherWork.Task;
+        });
+
+        await otherWorkStarted.Task;
+
+        // Simulate a component event handler calling RequestPauseAsync directly.
+        // This is ONE HandleInboundActivityAsync wrapping the dispatcher call +
+        // the pause call inside it — NOT a nested HandleInboundActivityAsync.
+        var pauseTask = circuitHost.HandleInboundActivityAsync(
+            () => circuitHost.Renderer.Dispatcher.InvokeAsync(
+                () => circuitHost.RequestPauseAsync(CancellationToken.None).AsTask()));
+
+        // Release the other handler.
+        otherWorkReleased = true;
+        releaseOtherWork.SetResult();
+        await otherHandlerTask;
+
+        await pauseTask;
+        Assert.True(pauseSentAfterRelease, "Pause should be sent after other async work completes");
+    }
+
+    [Fact]
     public async Task A10_Disposed_ReturnsFalseNoMessage()
     {
         var proxy = new Mock<ISingleClientProxy>();
