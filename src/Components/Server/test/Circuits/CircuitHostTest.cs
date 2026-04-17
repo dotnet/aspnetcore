@@ -680,18 +680,10 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task A17_PauseFromOutsideDispatcher_WhileRenderBlocked_PauseBeatsRender()
+    public async Task A17_PauseFromOutsideDispatcher_WhileRenderBlocked_PauseSentImmediately()
     {
-        var messageOrder = new List<string>();
         var proxy = new Mock<ISingleClientProxy>();
         proxy.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
-             .Callback((string method, object[] _, CancellationToken _) =>
-             {
-                 lock (messageOrder)
-                 {
-                     messageOrder.Add(method);
-                 }
-             })
              .Returns(Task.CompletedTask);
 
         var client = new CircuitClientProxy(proxy.Object, "connection-id");
@@ -702,9 +694,6 @@ public class CircuitHostTest
         await circuitHost.Renderer.Dispatcher.InvokeAsync(
             () => circuitHost.OnConnectionUpAsync(CancellationToken.None));
 
-        messageOrder.Clear();
-
-        // Block the dispatcher to simulate a render in progress.
         var renderStarted = new TaskCompletionSource();
         var releaseTcs = new TaskCompletionSource();
         var dispatcherTask = circuitHost.Renderer.Dispatcher.InvokeAsync(async () =>
@@ -713,24 +702,89 @@ public class CircuitHostTest
             await releaseTcs.Task;
         });
 
-        // Wait until the dispatcher is confirmed blocked.
         await renderStarted.Task;
 
-        // Call RequestPauseAsync from outside the dispatcher.
-        // This sends JS.RequestPause directly, bypassing the blocked dispatcher.
+        // Pause sends immediately even though the dispatcher is blocked.
         var result = await circuitHost.RequestPauseAsync(CancellationToken.None);
         Assert.True(result);
+        proxy.Verify(c => c.SendCoreAsync("JS.RequestPause",
+            It.IsAny<object[]>(), It.IsAny<CancellationToken>()), Times.Once);
 
-        // Release the dispatcher — any pending render can now complete.
         releaseTcs.SetResult();
         await dispatcherTask;
+    }
 
-        // Verify JS.RequestPause was sent while the dispatcher was blocked.
-        lock (messageOrder)
+    [Fact]
+    public async Task A17_DispatchedPause_WhileSyncWorkBlocked_PauseWaitsForSyncWork()
+    {
+        var pauseSent = false;
+        var proxy = new Mock<ISingleClientProxy>();
+        proxy.Setup(c => c.SendCoreAsync("JS.RequestPause", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+             .Callback(() => pauseSent = true)
+             .Returns(Task.CompletedTask);
+        var circuitHost = await CreateConnectedCircuitHostAsync(proxy);
+
+        var syncWorkStarted = new ManualResetEventSlim();
+        var releaseSyncWork = new ManualResetEventSlim();
+
+        // Block the dispatcher with synchronous work.
+        var dispatcherTask = Task.Run(() => circuitHost.Renderer.Dispatcher.InvokeAsync(() =>
         {
-            var pauseIndex = messageOrder.IndexOf("JS.RequestPause");
-            Assert.True(pauseIndex >= 0, "JS.RequestPause should have been sent");
-        }
+            syncWorkStarted.Set();
+            releaseSyncWork.Wait();
+        }));
+
+        syncWorkStarted.Wait();
+
+        // Dispatch pause onto the dispatcher — queues behind the sync work.
+        var pauseTask = Task.Run(() => circuitHost.Renderer.Dispatcher.InvokeAsync(
+            async () => await circuitHost.RequestPauseAsync(CancellationToken.None)));
+
+        await Task.Delay(100);
+
+        // Pause has NOT been sent — sync work is blocking the dispatcher.
+        Assert.False(pauseSent);
+
+        releaseSyncWork.Set();
+        await dispatcherTask;
+
+        var result = await pauseTask;
+        Assert.True(result);
+        Assert.True(pauseSent);
+    }
+
+    [Fact]
+    public async Task A17_DispatchedPause_WhileAsyncWorkSuspended_PauseRunsImmediately()
+    {
+        var pauseSent = false;
+        var proxy = new Mock<ISingleClientProxy>();
+        proxy.Setup(c => c.SendCoreAsync("JS.RequestPause", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+             .Callback(() => pauseSent = true)
+             .Returns(Task.CompletedTask);
+        var circuitHost = await CreateConnectedCircuitHostAsync(proxy);
+
+        var asyncWorkStarted = new TaskCompletionSource();
+        var releaseAsyncWork = new TaskCompletionSource();
+
+        // Start async work on the dispatcher — it suspends at the await.
+        var dispatcherTask = circuitHost.Renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            asyncWorkStarted.SetResult();
+            await releaseAsyncWork.Task;
+        });
+
+        await asyncWorkStarted.Task;
+
+        // Dispatch pause onto the dispatcher. The async work is suspended,
+        // so the dispatcher runs the pause immediately.
+        var result = await Task.Run(() => circuitHost.Renderer.Dispatcher.InvokeAsync(
+            async () => await circuitHost.RequestPauseAsync(CancellationToken.None)));
+
+        Assert.True(result);
+        Assert.True(pauseSent);
+
+        releaseAsyncWork.SetResult();
+        await dispatcherTask;
     }
 
     [Fact]
