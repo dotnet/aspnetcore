@@ -34,6 +34,8 @@ internal partial class CircuitHost : IAsyncDisposable
     private bool _onConnectionDownFired;
     private bool _disposed;
     private long _startTime;
+    private int _activeInboundWork;
+    private TaskCompletionSource _inboundWorkDrained;
     private ResumedPersistedCircuitState _persistedCircuitState;
 
     // This event is fired when there's an unrecoverable exception coming from the circuit, and
@@ -651,15 +653,39 @@ internal partial class CircuitHost : IAsyncDisposable
     }
 
     // Internal for testing.
-    internal Task HandleInboundActivityAsync(Func<Task> handler)
-        => _dispatchInboundActivity(handler);
+    internal async Task HandleInboundActivityAsync(Func<Task> handler)
+    {
+        Interlocked.Increment(ref _activeInboundWork);
+        try
+        {
+            await _dispatchInboundActivity(handler);
+        }
+        finally
+        {
+            if (Interlocked.Decrement(ref _activeInboundWork) == 0)
+            {
+                _inboundWorkDrained?.TrySetResult();
+            }
+        }
+    }
 
     // Internal for testing.
     internal async Task<TResult> HandleInboundActivityAsync<TResult>(Func<Task<TResult>> handler)
     {
-        TResult result = default;
-        await _dispatchInboundActivity(async () => result = await handler());
-        return result;
+        Interlocked.Increment(ref _activeInboundWork);
+        try
+        {
+            TResult result = default;
+            await _dispatchInboundActivity(async () => result = await handler());
+            return result;
+        }
+        finally
+        {
+            if (Interlocked.Decrement(ref _activeInboundWork) == 0)
+            {
+                _inboundWorkDrained?.TrySetResult();
+            }
+        }
     }
 
     private static Func<Func<Task>, Task> BuildInboundActivityDispatcher(IReadOnlyList<CircuitHandler> circuitHandlers, Circuit circuit)
@@ -968,16 +994,48 @@ internal partial class CircuitHost : IAsyncDisposable
             return false;
         }
 
-        try
+        // If called from outside the dispatcher, wait for in-flight work to complete.
+        // This ensures async event handlers and their renders finish first.
+        if (!Renderer.Dispatcher.CheckAccess())
         {
-            await Client.SendCoreAsync("JS.RequestPause", Array.Empty<object>(), cancellationToken);
-            Log.ServerPauseAccepted(_logger, CircuitId);
-            return true;
+            await WaitForInboundWorkToDrainAsync(cancellationToken);
         }
-        catch (Exception ex)
+
+        return await Renderer.Dispatcher.InvokeAsync(async () =>
         {
-            Log.ServerPauseFailed(_logger, CircuitId, ex);
-            return false;
+            if (_disposed || !Client.Connected)
+            {
+                Log.ServerPauseRejected(_logger, CircuitId);
+                return false;
+            }
+
+            try
+            {
+                await Client.SendCoreAsync("JS.RequestPause", Array.Empty<object>(), cancellationToken);
+                Log.ServerPauseAccepted(_logger, CircuitId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.ServerPauseFailed(_logger, CircuitId, ex);
+                return false;
+            }
+        });
+    }
+
+    private async Task WaitForInboundWorkToDrainAsync(CancellationToken cancellationToken)
+    {
+        while (Volatile.Read(ref _activeInboundWork) > 0)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            _inboundWorkDrained = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            // Re-check after creating the TCS to avoid a race where work completed
+            // between the while check and the TCS creation.
+            if (Volatile.Read(ref _activeInboundWork) == 0)
+            {
+                break;
+            }
+            await _inboundWorkDrained.Task.WaitAsync(cancellationToken);
         }
     }
 
