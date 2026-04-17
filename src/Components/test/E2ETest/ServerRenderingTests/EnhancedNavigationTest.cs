@@ -942,7 +942,10 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Equal("Hello from interactive layout", () => Browser.Exists(By.Id("interactive-layout-home")).Text);
         Assert.False(layoutCounter.IsStale(), "Enhanced navigation should have been used for second navigation");
 
-        // Verify the interactive layout component is still functional by clicking the counter
+        // Verify the interactive layout component is still functional by clicking the counter.
+        // Wait for interactivity to be established first (InteractiveAuto may start as SSR/Server
+        // and become interactive only after the circuit or WebAssembly runtime has connected).
+        Browser.Equal("True", () => Browser.Exists(By.Id("layout-counter-interactive")).Text);
         Browser.Equal("0", () => Browser.Exists(By.Id("layout-counter-value")).Text);
         Browser.Exists(By.Id("layout-counter-button")).Click();
         Browser.Equal("1", () => Browser.Exists(By.Id("layout-counter-value")).Text);
