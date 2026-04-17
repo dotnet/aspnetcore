@@ -1,17 +1,22 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal partial class TempDataCascadingValueSupplier
 {
+    private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
     private HttpContext? _httpContext;
     private readonly Dictionary<string, Func<object?>> _valueCallbacks = new(StringComparer.OrdinalIgnoreCase);
     private readonly ILogger<TempDataCascadingValueSupplier> _logger;
@@ -33,13 +38,21 @@ internal partial class TempDataCascadingValueSupplier
     {
         var tempDataKey = attribute.Name ?? parameterInfo.PropertyName;
         var componentType = componentState.Component.GetType();
-        var propertyInfo = componentType.GetProperty(
-            parameterInfo.PropertyName,
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        var getter = new PropertyGetter(componentType, propertyInfo!);
+        var getter = _propertyGetterCache.GetOrAdd((componentType, parameterInfo.PropertyName), PropertyGetterFactory);
         Func<object?> valueGetter = () => getter.GetValue(componentState.Component);
         RegisterValueCallback(tempDataKey, valueGetter);
         return new TempDataSubscription(this, tempDataKey, parameterInfo.PropertyType, valueGetter);
+    }
+
+    private static PropertyGetter PropertyGetterFactory((Type type, string propertyName) key)
+    {
+        var (type, propertyName) = key;
+        var propertyInfo = type.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        if (propertyInfo is null)
+        {
+            throw new InvalidOperationException($"A property '{propertyName}' on component type '{type.FullName}' wasn't found.");
+        }
+        return new PropertyGetter(type, propertyInfo);
     }
 
     internal ITempData? GetTempData() => _httpContext is null
