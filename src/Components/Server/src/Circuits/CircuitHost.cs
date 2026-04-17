@@ -35,7 +35,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private bool _disposed;
     private long _startTime;
     private int _activeInboundWork;
-    private TaskCompletionSource _inboundWorkDrained;
+    private TaskCompletionSource? _inboundWorkDrained;
     private ResumedPersistedCircuitState _persistedCircuitState;
 
     // This event is fired when there's an unrecoverable exception coming from the circuit, and
@@ -1007,6 +1007,11 @@ internal partial class CircuitHost : IAsyncDisposable
         {
             await WaitForInboundWorkToDrainAsync(cancellationToken);
         }
+        catch (OperationCanceledException)
+        {
+            Log.ServerPauseRejected(_logger, CircuitId);
+            return false;
+        }
         finally
         {
             if (isOnDispatcher)
@@ -1025,14 +1030,9 @@ internal partial class CircuitHost : IAsyncDisposable
 
             try
             {
-                await Client.SendCoreAsync("JS.RequestPause", Array.Empty<object>(), cancellationToken);
+                await Client.SendCoreAsync("JS.RequestPause", Array.Empty<object>(), CancellationToken.None);
                 Log.ServerPauseAccepted(_logger, CircuitId);
                 return true;
-            }
-            catch (OperationCanceledException)
-            {
-                Log.ServerPauseRejected(_logger, CircuitId);
-                return false;
             }
             catch (Exception ex)
             {
@@ -1044,17 +1044,26 @@ internal partial class CircuitHost : IAsyncDisposable
 
     private async Task WaitForInboundWorkToDrainAsync(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         while (Volatile.Read(ref _activeInboundWork) > 0)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            _inboundWorkDrained = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            // Re-check after creating the TCS to avoid a race where work completed
-            // between the while check and the TCS creation.
+
+            var inboundWorkDrained = Volatile.Read(ref _inboundWorkDrained);
+            if (inboundWorkDrained is null || inboundWorkDrained.Task.IsCompleted)
+            {
+                var newTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                var existing = Interlocked.CompareExchange(ref _inboundWorkDrained, newTcs, inboundWorkDrained);
+                inboundWorkDrained = existing == inboundWorkDrained ? newTcs : existing;
+            }
+
             if (Volatile.Read(ref _activeInboundWork) == 0)
             {
                 break;
             }
-            await _inboundWorkDrained.Task.WaitAsync(cancellationToken);
+
+            await inboundWorkDrained.Task.WaitAsync(cancellationToken);
         }
     }
 

@@ -894,14 +894,7 @@ public class CircuitHostTest
     [Fact]
     public async Task A15_CancelledBeforeSend_ReturnsFalse()
     {
-        var proxy = new Mock<ISingleClientProxy>();
-        proxy.Setup(c => c.SendCoreAsync("JS.RequestPause", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
-             .Returns((string _, object[] _, CancellationToken ct) =>
-             {
-                 ct.ThrowIfCancellationRequested();
-                 return Task.CompletedTask;
-             });
-        var circuitHost = await CreateConnectedCircuitHostAsync(proxy);
+        var circuitHost = await CreateConnectedCircuitHostAsync();
 
         using var cts = new CancellationTokenSource();
         cts.Cancel();
@@ -1124,18 +1117,35 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task PublicApi_ForwardsCancellationToken()
+    public async Task PublicApi_CancellationTokenRejectsDuringDrainWait()
     {
-        using var cts = new CancellationTokenSource();
-        CancellationToken received = default;
         var proxy = new Mock<ISingleClientProxy>();
         proxy.Setup(c => c.SendCoreAsync("JS.RequestPause", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
-             .Callback((string _, object[] _, CancellationToken ct) => received = ct)
              .Returns(Task.CompletedTask);
         var circuitHost = await CreateConnectedCircuitHostAsync(proxy);
 
-        await circuitHost.Circuit.RequestCircuitPauseAsync(cts.Token);
-        Assert.Equal(cts.Token, received);
+        var asyncWorkStarted = new TaskCompletionSource();
+        var releaseAsyncWork = new TaskCompletionSource();
+
+        var inboundTask = circuitHost.HandleInboundActivityAsync(async () =>
+        {
+            asyncWorkStarted.SetResult();
+            await releaseAsyncWork.Task;
+        });
+
+        await asyncWorkStarted.Task;
+
+        using var cts = new CancellationTokenSource();
+        var pauseTask = Task.Run(() => circuitHost.RequestPauseAsync(cts.Token).AsTask());
+
+        // Cancel while waiting for drain — should return false.
+        cts.Cancel();
+
+        var result = await pauseTask;
+        Assert.False(result);
+
+        releaseAsyncWork.SetResult();
+        await inboundTask;
     }
 
     [Fact]
