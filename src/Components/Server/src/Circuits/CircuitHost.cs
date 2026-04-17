@@ -994,11 +994,25 @@ internal partial class CircuitHost : IAsyncDisposable
             return false;
         }
 
-        // If called from outside the dispatcher, wait for in-flight work to complete.
-        // This ensures async event handlers and their renders finish first.
-        if (!Renderer.Dispatcher.CheckAccess())
+        // Wait for in-flight work to complete before sending. If called from inside
+        // the dispatcher, exclude the caller's own HandleInboundActivityAsync from
+        // the counter to avoid self-deadlock while still waiting for other in-flight work.
+        var isOnDispatcher = Renderer.Dispatcher.CheckAccess();
+        if (isOnDispatcher)
+        {
+            Interlocked.Decrement(ref _activeInboundWork);
+        }
+
+        try
         {
             await WaitForInboundWorkToDrainAsync(cancellationToken);
+        }
+        finally
+        {
+            if (isOnDispatcher)
+            {
+                Interlocked.Increment(ref _activeInboundWork);
+            }
         }
 
         return await Renderer.Dispatcher.InvokeAsync(async () =>
