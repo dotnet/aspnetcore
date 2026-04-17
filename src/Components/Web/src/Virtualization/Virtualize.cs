@@ -21,7 +21,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private ElementReference _spacerAfter;
 
-    private int _itemsBefore;
+    internal int _itemsBefore;
 
     private int _visibleItemCapacity;
 
@@ -49,6 +49,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     // For in-memory Items where objects have stable identity
     private TItem? _previousFirstLoadedItem;
+
+    private object? _previousFirstLoadedItemKey;
+
+    private bool _hasWarnedMissingItemKey;
 
     private CancellationTokenSource? _refreshCts;
 
@@ -166,6 +170,18 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     public VirtualizeAnchorMode AnchorMode { get; set; } = VirtualizeAnchorMode.Beginning;
 
     /// <summary>
+    /// Gets or sets a function that extracts a key value from each item. The key is used
+    /// to detect whether items were prepended or appended when using <see cref="ItemsProvider"/>.
+    /// When not set, anchoring does not work with <see cref="ItemsProvider"/> and the viewport
+    /// may jump when items are added dynamically.
+    ///
+    /// For in-memory <see cref="Items"/>, this parameter is not needed because the component
+    /// can detect prepends using object identity.
+    /// </summary>
+    [Parameter]
+    public Func<TItem, object>? ItemKey { get; set; }
+
+    /// <summary>
     /// Instructs the component to re-request data from its <see cref="ItemsProvider"/>.
     /// This is useful if external data may have changed. There is no need to call this
     /// when using <see cref="Items"/>.
@@ -211,6 +227,16 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 throw new InvalidOperationException(
                     $"{GetType()} can only accept one item source from its parameters. " +
                     $"Do not supply both '{nameof(Items)}' and '{nameof(ItemsProvider)}'.");
+            }
+
+            if (ItemKey == null && !_hasWarnedMissingItemKey)
+            {
+                _hasWarnedMissingItemKey = true;
+                System.Diagnostics.Debug.WriteLine(
+                    $"[Virtualize] Warning: '{nameof(ItemsProvider)}' is set without '{nameof(ItemKey)}'. " +
+                    $"Anchoring requires '{nameof(ItemKey)}' to keep the viewport stable " +
+                    $"when items change dynamically. Set '{nameof(ItemKey)}' to a function that returns " +
+                    $"a unique identifier for each item (e.g., ItemKey=\"@(item => item.Id)\").");
             }
 
             _itemsProvider = ItemsProvider;
@@ -328,10 +354,17 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
             builder.OpenRegion(5);
 
+            var isFirstRenderedItem = true;
             foreach (var item in itemsToShow)
             {
                 _itemTemplate(item)(builder);
                 _lastRenderedItemCount++;
+
+                if (isFirstRenderedItem && ItemKey != null && _itemsProvider != DefaultItemsProvider)
+                {
+                    _previousFirstLoadedItemKey = ItemKey(item);
+                    isFirstRenderedItem = false;
+                }
             }
 
             renderIndex += _lastRenderedItemCount;
@@ -559,36 +592,37 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             {
                 var previousItemCount = _itemCount;
                 var countDelta = result.TotalItemCount - previousItemCount;
+                var itemsAdded = countDelta > 0 && previousItemCount > 0;
+                var isDefaultProvider = _itemsProvider == DefaultItemsProvider;
 
-                // Detect if items were prepended above the current viewport position.
-                if (countDelta > 0 && _previousFirstLoadedItem != null
-                    && _itemsProvider == DefaultItemsProvider)
+                if (itemsAdded && isDefaultProvider && _previousFirstLoadedItem != null)
                 {
                     var newFirstItem = Items!.ElementAtOrDefault(_itemsBefore);
                     if (newFirstItem != null && !ReferenceEquals(_previousFirstLoadedItem, newFirstItem))
                     {
-                        if (_itemsBefore > 0)
-                        {
-                            _itemsBefore = Math.Min(_itemsBefore + countDelta, Math.Max(0, result.TotalItemCount - _visibleItemCapacity));
-                        }
-                        else
-                        {
-                            _itemsBefore = Math.Min(countDelta, Math.Max(0, result.TotalItemCount - _visibleItemCapacity));
-                        }
-
-                        _pendingAnchorIndexShift = 0;
-
-                        var adjustedRequest = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
-                        result = await _itemsProvider(adjustedRequest);
+                        result = await AdjustForPrependAsync(countDelta, result.TotalItemCount, cancellationToken);
                     }
-                    else if (countDelta > 0
-                        && (AnchorMode & VirtualizeAnchorMode.End) == 0
-                        && _itemsBefore + _visibleItemCapacity >= previousItemCount)
+                    else if (IsAppendAtBottom(countDelta, previousItemCount))
                     {
-                        // Items appended at the bottom while viewport is near the end.
-                        // In non-End modes, restore the anchor so the viewport doesn't
-                        // chase the new items via spacer redistribution.
                         _pendingAnchorIndexShift = 0;
+                    }
+                }
+                else if (itemsAdded && !isDefaultProvider && ItemKey != null && _previousFirstLoadedItemKey != null)
+                {
+                    using var enumerator = result.Items.GetEnumerator();
+                    if (enumerator.MoveNext())
+                    {
+                        var newKey = ItemKey!(enumerator.Current);
+                        var itemsShifted = !Equals(_previousFirstLoadedItemKey, newKey);
+
+                        if (itemsShifted)
+                        {
+                            result = await AdjustForPrependAsync(countDelta, result.TotalItemCount, cancellationToken);
+                        }
+                        else if (IsAppendAtBottom(countDelta, previousItemCount))
+                        {
+                            _pendingAnchorIndexShift = 0;
+                        }
                     }
                 }
 
@@ -642,6 +676,32 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         builder.AddAttribute(1, "style", $"height: {_itemSize.ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0;");
         builder.CloseElement();
     };
+
+    private async ValueTask<ItemsProviderResult<TItem>> AdjustForPrependAsync(
+        int countDelta, int newTotalCount, CancellationToken cancellationToken)
+    {
+        if (_itemsBefore > 0)
+        {
+            _itemsBefore = Math.Min(_itemsBefore + countDelta, Math.Max(0, newTotalCount - _visibleItemCapacity));
+        }
+        else
+        {
+            _itemsBefore = Math.Min(countDelta, Math.Max(0, newTotalCount - _visibleItemCapacity));
+        }
+
+        _pendingAnchorIndexShift = 0;
+
+        var adjustedRequest = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
+        return await _itemsProvider(adjustedRequest);
+    }
+
+    // Items appended at the bottom while viewport is near the end.
+    // In non-End modes, restore the anchor so the viewport doesn't
+    // chase the new items via spacer redistribution.
+    private bool IsAppendAtBottom(int countDelta, int previousItemCount)
+        => countDelta > 0
+            && (AnchorMode & VirtualizeAnchorMode.End) == 0
+            && _itemsBefore + _visibleItemCapacity >= previousItemCount;
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
