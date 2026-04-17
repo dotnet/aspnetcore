@@ -46,6 +46,30 @@ public class ServerTriggeredPauseTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
     }
 
+    [Fact]
+    public void A4_PauseDuringRender_StateMutationPreservedAfterResume()
+    {
+        Browser.Equal("0", () => Browser.Exists(By.Id("inline-count")).Text);
+
+        // Click the button that increments AND pauses in the same handler.
+        Browser.Exists(By.Id("increment-and-pause")).Click();
+
+        WaitForPausedUI();
+        ClickResumeButton();
+        WaitForResumedUI();
+
+        // The state mutation from the handler (count incremented to 1) should be preserved.
+        Browser.Equal("1", () => Browser.Exists(By.Id("inline-count")).Text);
+
+        // Can continue interacting after resume.
+        Browser.Exists(By.Id("increment-and-pause")).Click();
+        WaitForPausedUI();
+        ClickResumeButton();
+        WaitForResumedUI();
+
+        Browser.Equal("2", () => Browser.Exists(By.Id("inline-count")).Text);
+    }
+
     // B1: Client pause + server pause in the same JS turn.
     // Blazor.pauseCircuit() synchronously sends PauseCircuit to the hub.
     // TriggerServerPause is queued after it. SignalR processes PauseCircuit first,

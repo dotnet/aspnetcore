@@ -589,6 +589,151 @@ public class CircuitHostTest
     }
 
     [Fact]
+    public async Task A3_PauseWhileAsyncHandlerSuspended_NoUnobservedExceptions()
+    {
+        var proxy = new Mock<ISingleClientProxy>();
+        proxy.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+             .Returns(Task.CompletedTask);
+        var circuitHost = await CreateConnectedCircuitHostAsync(proxy);
+
+        var unhandledExceptions = new List<Exception>();
+        circuitHost.UnhandledException += (_, e) =>
+            unhandledExceptions.Add((Exception)e.ExceptionObject);
+
+        // Simulate an async event handler that suspends at an await point.
+        var asyncWorkTcs = new TaskCompletionSource();
+        var handlerStarted = new TaskCompletionSource();
+        var handlerTask = circuitHost.Renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            handlerStarted.SetResult();
+            // Simulates: await Http.GetAsync(...) — dispatcher is released here.
+            await asyncWorkTcs.Task;
+            // This continuation runs after the circuit is disposed.
+            // Any attempt to render or use JSRuntime will fail.
+        });
+
+        // Wait for the handler to reach the await point.
+        await handlerStarted.Task;
+
+        // Pause succeeds — the dispatcher is free (handler is suspended).
+        var result = await circuitHost.RequestPauseAsync(CancellationToken.None);
+        Assert.True(result);
+
+        // Dispose the circuit (simulating what PauseCircuitAsync does after persistence).
+        await circuitHost.DisposeAsync();
+
+        // Release the async work — continuation runs on a disposed circuit.
+        asyncWorkTcs.SetResult();
+
+        // Wait for the handler to complete.
+        // The continuation should not throw unobserved exceptions.
+        await handlerTask;
+
+        Assert.Empty(unhandledExceptions);
+    }
+
+    [Fact]
+    public async Task A4_PauseFromHandler_PauseMessageSentBeforeRenderBatch()
+    {
+        var messageOrder = new List<string>();
+        var proxy = new Mock<ISingleClientProxy>();
+        proxy.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+             .Callback((string method, object[] _, CancellationToken _) => messageOrder.Add(method))
+             .Returns(Task.CompletedTask);
+
+        var client = new CircuitClientProxy(proxy.Object, "connection-id");
+        var remoteRenderer = GetRemoteRenderer();
+        var circuitHost = TestCircuitHost.Create(clientProxy: client, remoteRenderer: remoteRenderer);
+        await circuitHost.InitializeAsync(
+            new ProtectedPrerenderComponentApplicationStore(new EphemeralDataProtectionProvider()),
+            default, CancellationToken.None);
+        await circuitHost.Renderer.Dispatcher.InvokeAsync(
+            () => circuitHost.OnConnectionUpAsync(CancellationToken.None));
+
+        messageOrder.Clear();
+
+        // Simulate an event handler that mutates state and triggers pause.
+        await circuitHost.Renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            // Mutate state — this will cause a render after the handler returns.
+            var component = new TestComponent(builder =>
+            {
+                builder.AddContent(0, "rendered");
+            });
+            circuitHost.Renderer.AssignRootComponentId(component);
+
+            // Trigger pause — SendCoreAsync("JS.RequestPause") is called NOW.
+            await circuitHost.RequestPauseAsync(CancellationToken.None);
+        });
+
+        // JS.RequestPause is sent inside the handler.
+        // JS.RenderBatch (if sent) comes after the handler completes.
+        var pauseIndex = messageOrder.IndexOf("JS.RequestPause");
+        Assert.True(pauseIndex >= 0, "JS.RequestPause should have been sent");
+
+        var renderIndex = messageOrder.IndexOf("JS.RenderBatch");
+        if (renderIndex >= 0)
+        {
+            Assert.True(pauseIndex < renderIndex,
+                "JS.RequestPause should be sent before JS.RenderBatch");
+        }
+    }
+
+    [Fact]
+    public async Task A17_PauseFromOutsideDispatcher_WhileRenderBlocked_PauseBeatsRender()
+    {
+        var messageOrder = new List<string>();
+        var proxy = new Mock<ISingleClientProxy>();
+        proxy.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
+             .Callback((string method, object[] _, CancellationToken _) =>
+             {
+                 lock (messageOrder)
+                 {
+                     messageOrder.Add(method);
+                 }
+             })
+             .Returns(Task.CompletedTask);
+
+        var client = new CircuitClientProxy(proxy.Object, "connection-id");
+        var circuitHost = TestCircuitHost.Create(clientProxy: client);
+        await circuitHost.InitializeAsync(
+            new ProtectedPrerenderComponentApplicationStore(new EphemeralDataProtectionProvider()),
+            default, CancellationToken.None);
+        await circuitHost.Renderer.Dispatcher.InvokeAsync(
+            () => circuitHost.OnConnectionUpAsync(CancellationToken.None));
+
+        messageOrder.Clear();
+
+        // Block the dispatcher to simulate a render in progress.
+        var renderStarted = new TaskCompletionSource();
+        var releaseTcs = new TaskCompletionSource();
+        var dispatcherTask = circuitHost.Renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            renderStarted.SetResult();
+            await releaseTcs.Task;
+        });
+
+        // Wait until the dispatcher is confirmed blocked.
+        await renderStarted.Task;
+
+        // Call RequestPauseAsync from outside the dispatcher.
+        // This sends JS.RequestPause directly, bypassing the blocked dispatcher.
+        var result = await circuitHost.RequestPauseAsync(CancellationToken.None);
+        Assert.True(result);
+
+        // Release the dispatcher — any pending render can now complete.
+        releaseTcs.SetResult();
+        await dispatcherTask;
+
+        // Verify JS.RequestPause was sent while the dispatcher was blocked.
+        lock (messageOrder)
+        {
+            var pauseIndex = messageOrder.IndexOf("JS.RequestPause");
+            Assert.True(pauseIndex >= 0, "JS.RequestPause should have been sent");
+        }
+    }
+
+    [Fact]
     public async Task A10_Disposed_ReturnsFalseNoMessage()
     {
         var proxy = new Mock<ISingleClientProxy>();
@@ -1313,7 +1458,7 @@ public class CircuitHostTest
                   NullLogger.Instance,
                   CreateJSRuntime(new CircuitOptions()),
                   new CircuitJSComponentInterop(new CircuitOptions()))
-        {            
+        {
         }
 
         public ComponentState GetTestComponentState(int id)

@@ -11,21 +11,41 @@
 <TestContentPackage.PersistentCounter />
 
 <p>Circuit ID: <span id="circuit-id">@_circuitId</span></p>
+<p>Inline count: <span id="inline-count">@_inlineState.Count</span></p>
+<button id="increment-and-pause" @onclick="IncrementAndPause">Increment + Pause</button>
 
 @code {
     private string _circuitId = "";
 
+    [PersistentState]
+    public CounterState _inlineState { get; set; }
+
+    public class CounterState
+    {
+        public int Count { get; set; } = 0;
+    }
+
     protected override void OnInitialized()
     {
         _circuitId = PauseTracker.CurrentCircuit?.Id ?? "";
+        _inlineState ??= new CounterState();
     }
 
-    /// <summary>
-    /// Static JSInvokable method that E2E tests call via
-    /// DotNet.invokeMethodAsync('Components.TestServer', 'TriggerServerPause', circuitId).
-    /// This runs on the circuit's dispatcher, calls RequestCircuitPauseAsync(), then returns.
-    /// The JS.RequestPause message is sent to the client during this call.
-    /// </summary>
+    private async Task IncrementAndPause()
+    {
+        // Mutate state — this triggers StateHasChanged and a render batch.
+        _inlineState.Count++;
+
+        // Request pause while the render batch from the mutation above
+        // is being generated/queued. The JS.RequestPause message is sent
+        // after the render batch on the same connection.
+        var circuit = PauseTracker.CurrentCircuit;
+        if (circuit is not null)
+        {
+            await circuit.RequestCircuitPauseAsync();
+        }
+    }
+
     [JSInvokable]
     public static async Task<bool> TriggerServerPause(string circuitId)
     {
