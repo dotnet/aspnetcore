@@ -1167,7 +1167,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             $"scrollTop should stay near 0 at the natural floor, but was {scrollTopAfter}");
 
         // The prepended items should become visible after the IO callback triggers re-render.
-        Browser.True(() => container.FindElements(By.CssSelector("[data-index='-1']")).Count > 0);
+        Browser.True(() => container.FindElements(By.CssSelector("[data-index='-10']")).Count > 0);
     }
 
     [Fact]
@@ -1940,11 +1940,17 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             $"Large jumps indicate CSS scroll anchoring is miscalculating on <tr> elements.");
     }
 
-    private void MountAnchorModeComponent(string anchorMode, bool variableHeight = false)
+    private void MountAnchorModeComponent(string anchorMode, bool variableHeight = false, bool useItemsProvider = false)
     {
         Browser.MountTestComponent<VirtualizationAnchorMode>();
         var container = Browser.Exists(By.Id("scroll-container"));
         Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        if (useItemsProvider)
+        {
+            Browser.Exists(By.Id("toggle-provider")).Click();
+            Browser.True(() => GetElementCount(container, ".item") > 0);
+        }
 
         if (variableHeight)
         {
@@ -2031,11 +2037,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         });
     }
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void AnchorMode_None_PrependAtTop_ViewportStaysStable(bool variableHeight)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void AnchorMode_None_PrependAtTop_ViewportStaysStable(bool variableHeight, bool useItemsProvider)
     {
-        MountAnchorModeComponent("0", variableHeight);
+        MountAnchorModeComponent("0", variableHeight, useItemsProvider);
 
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
@@ -2060,16 +2068,18 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         ScrollContainer(js, container, 0);
         Browser.True(() =>
         {
-            return container.FindElements(By.CssSelector("[data-index='-1']")).Count > 0;
+            return container.FindElements(By.CssSelector("[data-index='-10']")).Count > 0;
         }, TimeSpan.FromSeconds(5), "None mode: prepended items should be reachable after scrolling up");
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void AnchorMode_None_LargeAppendAtBottom_DoesNotFollowToBottom(bool variableHeight)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void AnchorMode_None_LargeAppendAtBottom_DoesNotFollowToBottom(bool variableHeight, bool useItemsProvider)
     {
-        MountAnchorModeComponent("0", variableHeight);
+        MountAnchorModeComponent("0", variableHeight, useItemsProvider);
 
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
@@ -2091,10 +2101,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     // Append at bottom in None mode: the viewport should not auto-scroll to follow
     // appended content. Pixel-perfect stability requires height cache (Option B);
     // for now we verify the viewport doesn't jump to the very bottom.
-    [Fact]
-    public void AnchorMode_None_AppendAtBottom_NoAutoScroll()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnchorMode_None_AppendAtBottom_NoAutoScroll(bool useItemsProvider)
     {
-        MountAnchorModeComponent("0");
+        MountAnchorModeComponent("0", useItemsProvider: useItemsProvider);
 
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
@@ -2387,11 +2399,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void AnchorMode_Beginning_PrependAtTop_NewItemsVisible(bool variableHeight)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void AnchorMode_Beginning_PrependAtTop_NewItemsVisible(bool variableHeight, bool useItemsProvider)
     {
-        MountAnchorModeComponent("1", variableHeight);
+        MountAnchorModeComponent("1", variableHeight, useItemsProvider);
 
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
@@ -2405,7 +2419,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Assert.True(scrollTopAfter < 50,
             $"Beginning mode: should stay near top after prepend, but scrollTop was {scrollTopAfter}");
 
-        Browser.True(() => container.FindElements(By.CssSelector("[data-index='-1']")).Count > 0);
+        Browser.True(() => container.FindElements(By.CssSelector("[data-index='-10']")).Count > 0);
     }
 
     // Append at bottom in Beginning mode: the viewport should not auto-scroll.
@@ -2457,11 +2471,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             "Beginning mode mid-list: viewport should stay stable after prepend");
     }
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void AnchorMode_End_PrependAtTop_ViewportStaysStable(bool variableHeight)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void AnchorMode_End_PrependAtTop_ViewportStaysStable(bool variableHeight, bool useItemsProvider)
     {
-        MountAnchorModeComponent("2", variableHeight);
+        MountAnchorModeComponent("2", variableHeight, useItemsProvider);
 
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
@@ -2486,11 +2502,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void AnchorMode_End_AppendAtBottom_ViewportFollows(bool variableHeight)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void AnchorMode_End_AppendAtBottom_ViewportFollows(bool variableHeight, bool useItemsProvider)
     {
-        MountAnchorModeComponent("2", variableHeight);
+        MountAnchorModeComponent("2", variableHeight, useItemsProvider);
 
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
@@ -2553,11 +2571,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             $"relTop before: {relTopBefore}, after: {relTopAfter}");
     }
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void AnchorMode_End_LargeAppendAtBottom_StillFollows(bool variableHeight)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void AnchorMode_End_LargeAppendAtBottom_StillFollows(bool variableHeight, bool useItemsProvider)
     {
-        MountAnchorModeComponent("2", variableHeight);
+        MountAnchorModeComponent("2", variableHeight, useItemsProvider);
 
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
@@ -2578,11 +2598,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void AnchorMode_Beginning_LargePrependAtTop_StillShowsNewItems(bool variableHeight)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void AnchorMode_Beginning_LargePrependAtTop_StillShowsNewItems(bool variableHeight, bool useItemsProvider)
     {
-        MountAnchorModeComponent("1", variableHeight);
+        MountAnchorModeComponent("1", variableHeight, useItemsProvider);
 
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
@@ -2599,11 +2621,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => container.FindElements(By.CssSelector("[data-index='-100']")).Count > 0);
     }
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void AnchorMode_End_AppendAfterLeavingBottom_DoesNotReengage(bool variableHeight)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void AnchorMode_End_AppendAfterLeavingBottom_DoesNotReengage(bool variableHeight, bool useItemsProvider)
     {
-        MountAnchorModeComponent("2", variableHeight);
+        MountAnchorModeComponent("2", variableHeight, useItemsProvider);
 
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;
@@ -2646,7 +2670,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.Exists(By.Id("prepend-items")).Click();
         Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
-        Browser.True(() => container.FindElements(By.CssSelector("[data-index='-1']")).Count > 0);
+        Browser.True(() => container.FindElements(By.CssSelector("[data-index='-10']")).Count > 0);
 
         ScrollContainer(js, container, 3000);
         Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) > 2000);
@@ -2666,11 +2690,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void AnchorMode_Beginning_LargeAppendAtBottom_DoesNotFollowToBottom(bool variableHeight)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public void AnchorMode_Beginning_LargeAppendAtBottom_DoesNotFollowToBottom(bool variableHeight, bool useItemsProvider)
     {
-        MountAnchorModeComponent("1", variableHeight);
+        MountAnchorModeComponent("1", variableHeight, useItemsProvider);
 
         var container = Browser.Exists(By.Id("scroll-container"));
         var js = (IJavaScriptExecutor)Browser;

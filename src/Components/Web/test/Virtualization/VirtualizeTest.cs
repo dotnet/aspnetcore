@@ -870,4 +870,55 @@ public class VirtualizeTest
             builder.CloseElement();
         }
     }
+
+    [Fact]
+    public async Task Virtualize_ItemsProvider_GrowingTotalCount_DoesNotAssumePreprend()
+    {
+        Virtualize<int> renderedVirtualize = null;
+        var totalCount = 100;
+
+        ValueTask<ItemsProviderResult<int>> growingProvider(ItemsProviderRequest request)
+        {
+            var items = Enumerable.Range(request.StartIndex, Math.Min(request.Count, totalCount - request.StartIndex));
+            return ValueTask.FromResult(new ItemsProviderResult<int>(items, totalCount));
+        }
+
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualize(50f, (ItemsProviderDelegate<int>)growingProvider, null, v => renderedVirtualize = v)
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+
+        await testRenderer.RenderRootComponentAsync(componentId);
+        Assert.NotNull(renderedVirtualize);
+
+        var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
+
+        // Initial IO callback to set up _itemCount
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 800f, 800f));
+
+        var itemsBeforeAfterInit = renderedVirtualize._itemsBefore;
+
+        // Simulate TotalItemCount growing (new data arriving, not a prepend)
+        totalCount = 120;
+
+        // IO-driven refresh (NOT RefreshDataAsync) — triggered by spacer becoming visible
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 800f, 800f));
+
+        // _itemsBefore may change due to normal IO redistribution, but should NOT
+        // have been shifted by exactly countDelta (20) which would indicate false
+        // prepend detection. Normal redistribution produces different offsets.
+        var shift = renderedVirtualize._itemsBefore - itemsBeforeAfterInit;
+        Assert.True(shift != 20,
+            $"IO-driven refresh should not trigger prepend detection (shift by countDelta). " +
+            $"Before: {itemsBeforeAfterInit}, After: {renderedVirtualize._itemsBefore}, Shift: {shift}");
+    }
 }
