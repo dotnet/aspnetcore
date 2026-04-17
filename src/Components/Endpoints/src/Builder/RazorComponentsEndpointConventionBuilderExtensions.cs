@@ -30,7 +30,7 @@ public static class RazorComponentsEndpointConventionBuilderExtensions
 
         foreach (var assembly in assemblies)
         {
-            builder.ApplicationBuilder.AddAssembly(assembly);
+            builder.ComponentApplicationBuilderActions.Add(b => b.AddAssembly(assembly));
         }
         return builder;
     }
@@ -60,6 +60,31 @@ public static class RazorComponentsEndpointConventionBuilderExtensions
             builder.BeforeCreateEndpoints += convention.OnBeforeCreateEndpoints;
             builder.Add(convention.ApplyConvention);
         }
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Configures a <see cref="BrowserConfiguration"/> that will be emitted as a DOM comment
+    /// to the browser for all Razor component endpoints.
+    /// </summary>
+    /// <param name="builder">The <see cref="RazorComponentsEndpointConventionBuilder"/>.</param>
+    /// <param name="configure">An action to configure the <see cref="BrowserConfiguration"/>.</param>
+    /// <returns>The <see cref="RazorComponentsEndpointConventionBuilder"/>.</returns>
+    public static RazorComponentsEndpointConventionBuilder WithBrowserConfiguration(
+        this RazorComponentsEndpointConventionBuilder builder,
+        Action<BrowserConfiguration> configure)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var config = new BrowserConfiguration();
+        configure(config);
+
+        builder.Add(endpointBuilder =>
+        {
+            endpointBuilder.Metadata.Add(config);
+        });
 
         return builder;
     }

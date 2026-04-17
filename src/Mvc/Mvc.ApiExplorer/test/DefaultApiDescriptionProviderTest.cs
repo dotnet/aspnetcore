@@ -8,7 +8,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -1522,6 +1521,20 @@ public class DefaultApiDescriptionProviderTest
     }
 
     [Fact]
+    public void GetApiDescription_ParameterDescription_SourceFromDerivedServices()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(AcceptsFormatters_DerivedServices));
+
+        // Act
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert
+        var description = Assert.Single(descriptions);
+        Assert.Empty(description.ParameterDescriptions);
+    }
+
+    [Fact]
     public void GetApiDescription_ParameterDescription_SourceFromCustomModelBinder()
     {
         // Arrange
@@ -2509,6 +2522,10 @@ public class DefaultApiDescriptionProviderTest
     {
     }
 
+    private void AcceptsFormatters_DerivedServices([CustomFromServices] ITestService tempDataProvider, [CustomFromKeyedServices("foo")] ITestService keyedTempDataProvider)
+    {
+    }
+
     private void AcceptsProductChangeDTO(ProductChangeDTO dto)
     {
     }
@@ -2953,4 +2970,8 @@ public class DefaultApiDescriptionProviderTest
             return base.ConvertFrom(context, culture, value);
         }
     }
+
+    private class CustomFromKeyedServicesAttribute(object key) : FromKeyedServicesAttribute(key);
+
+    private class CustomFromServicesAttribute : FromServicesAttribute;
 }

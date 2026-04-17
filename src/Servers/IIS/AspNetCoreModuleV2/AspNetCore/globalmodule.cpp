@@ -35,6 +35,9 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalStopListening(
     return GL_NOTIFICATION_CONTINUE;
 }
 
+// We prefer shutting down from OnGlobalStopListening as it is called right before the IIS request handler is disabled, which means it'll start queueing requests
+// But if we stopped in OnGlobalApplicationStop then we can start shutting down while the request handler is still active resulting in us returning 503's since we're shutting down.
+// We still need to shutdown in specific cases where OnGlobalStopListening isn't called, like IISExpress or if the app never receives a request (app preload).
 GLOBAL_NOTIFICATION_STATUS
 ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop(
     IN IHttpApplicationStopProvider* pProvider
@@ -53,10 +56,17 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop(
 
     if (!g_fInShutdown && !m_shutdown.joinable())
     {
-        // Apps with preload + always running that don't receive a request before recycle/shutdown will never call OnGlobalStopListening
-        // IISExpress can also close without calling OnGlobalStopListening which is where we usually would trigger shutdown
-        // so we should make sure to shutdown the server in those cases
-        StartShutdown();
+        if ((m_pApplicationManager->IsIISExpress() || !m_pApplicationManager->HasReceivedRequest()))
+        {
+            // Apps with preload + always running that don't receive a request before recycle/shutdown will never call OnGlobalStopListening
+            // IISExpress can also close without calling OnGlobalStopListening which is where we usually would trigger shutdown
+            // so we should make sure to shutdown the server in those cases
+            StartShutdown();
+        }
+        else
+        {
+            LOG_INFO(L"Ignoring OnGlobalApplicationStop, OnGlobalStopListening has been called or should be called shortly.");
+        }
     }
 
     return GL_NOTIFICATION_CONTINUE;
@@ -80,17 +90,18 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalConfigurationChange(
 
     LOG_INFOF(L"ASPNET_CORE_GLOBAL_MODULE::OnGlobalConfigurationChange '%ls'", pwszChangePath);
 
-    // Test for an error.
-    if (nullptr != pwszChangePath &&
+    if (pwszChangePath != nullptr && pwszChangePath[0] != L'\0' &&
         _wcsicmp(pwszChangePath, L"MACHINE") != 0 &&
-        _wcsicmp(pwszChangePath, L"MACHINE/WEBROOT") != 0)
-    {
+        _wcsicmp(pwszChangePath, L"MACHINE/WEBROOT") != 0 &&
         // Configuration change recycling behavior can be turned off via setting disallowRotationOnConfigChange=true on the handler settings section.
         // We need this duplicate setting because the global module is unable to read the app settings disallowRotationOnConfigChange value.
-        if (m_pApplicationManager && m_pApplicationManager->ShouldRecycleOnConfigChange())
-        {
-            m_pApplicationManager->RecycleApplicationFromManager(pwszChangePath);
-        }
+        m_pApplicationManager && m_pApplicationManager->ShouldRecycleOnConfigChange())
+    {
+        m_pApplicationManager->RecycleApplicationFromManager(pwszChangePath);
+    }
+    else
+    {
+        LOG_INFOF(L"Ignoring configuration change for '%ls'", pwszChangePath);
     }
 
     // Return processing to the pipeline.

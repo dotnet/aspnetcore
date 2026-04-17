@@ -14,7 +14,10 @@ internal static class ExpressionFormatter
 {
     static ExpressionFormatter()
     {
-        HotReloadManager.Default.OnDeltaApplied += ClearCache;
+        if (HotReloadManager.IsSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += ClearCache;
+        }
     }
 
     internal const int StackAllocBufferSize = 128;
@@ -74,7 +77,7 @@ internal static class ExpressionFormatter
                     builder.InsertFront("]");
                     FormatIndexArgument(methodCallExpression.Arguments[0], ref builder);
                     builder.InsertFront("[");
-                    
+
                     break;
 
                 case ExpressionType.ArrayIndex:

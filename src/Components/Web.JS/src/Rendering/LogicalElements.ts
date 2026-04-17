@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ComponentDescriptor } from '../Services/ComponentDescriptorDiscovery';
+import { ComponentDescriptor, isMetadataComment } from '../Services/ComponentDescriptorDiscovery';
 
 /*
   A LogicalElement plays the same role as an Element instance from the point of view of the
@@ -109,6 +109,12 @@ export function toLogicalElement(element: Node, allowExistingContents?: boolean)
     }
 
     element.childNodes.forEach(child => {
+      // Skip metadata comments that will be consumed during discovery
+      // These are not components and should not be part of the logical tree
+      if (isMetadataComment(child)) {
+        return;
+      }
+
       const childLogicalElement = toLogicalElement(child, /* allowExistingContents */ true);
       childLogicalElement[logicalParentPropname] = element;
       childrenArray.push(childLogicalElement);
@@ -234,6 +240,14 @@ export function isSvgElement(element: LogicalElement): boolean {
   // to appear as a child of an SVG element and SVGs are case-sensitive.
   const closestElement = getClosestDomElement(element) as any;
   return closestElement.namespaceURI === 'http://www.w3.org/2000/svg' && closestElement['tagName'] !== 'foreignObject';
+}
+
+// MathML elements need to be created with the MathML namespace to render correctly.
+// Similar to SVG, MathML has its own namespace (http://www.w3.org/1998/Math/MathML)
+// and elements created without this namespace will not render properly in browsers.
+export function isMathMLElement(element: LogicalElement): boolean {
+  const closestElement = getClosestDomElement(element) as any;
+  return closestElement.namespaceURI === 'http://www.w3.org/1998/Math/MathML';
 }
 
 export function getLogicalChildrenArray(element: LogicalElement): LogicalElement[] {

@@ -22,7 +22,10 @@
             @foreach (var passkey in currentPasskeys)
             {
                 <tr>
-                    <td>@(passkey.Name ?? "Unnamed passkey")</td>
+                    <td>
+                        <div>@PasskeyAuthenticators.GetDisplayName(passkey)</div>
+                        <small class="text-muted">Created @passkey.CreatedAt.UtcDateTime.ToString("MMM d, yyyy") (UTC)</small>
+                    </td>
                     <td>
                         @{
                             var credentialId = Base64Url.EncodeToString(passkey.CredentialId);
@@ -48,10 +51,20 @@ else
 
 <form @formname="add-passkey" @onsubmit="AddPasskey" method="post">
     <AntiforgeryToken />
-    <PasskeySubmit Operation="PasskeyOperation.Create" Name="Input" class="btn btn-primary">Add a new passkey</PasskeySubmit>
+    @if (currentPasskeys is { Count: >= MaxPasskeyCount })
+    {
+        <p class="text-danger">You have reached the maximum number of allowed passkeys. Please delete one before adding a new one.</p>
+    }
+    else
+    {
+        <PasskeySubmit Operation="PasskeyOperation.Create" Name="Input" class="btn btn-primary">Add a new passkey</PasskeySubmit>
+    }
+
 </form>
 
 @code {
+    private const int MaxPasskeyCount = 100;
+
     private ApplicationUser? user;
     private IList<UserPasskeyInfo>? currentPasskeys;
 
@@ -100,11 +113,23 @@ else
             return;
         }
 
+        if (currentPasskeys!.Count >= MaxPasskeyCount)
+        {
+            RedirectManager.RedirectToCurrentPageWithStatus($"Error: You have reached the maximum number of allowed passkeys.", HttpContext);
+            return;
+        }
+
         var attestationResult = await SignInManager.PerformPasskeyAttestationAsync(Input.CredentialJson);
         if (!attestationResult.Succeeded)
         {
             RedirectManager.RedirectToCurrentPageWithStatus($"Error: Could not add the passkey: {attestationResult.Failure.Message}", HttpContext);
             return;
+        }
+
+        // If the authenticator is known, assign the inferred name
+        if (PasskeyAuthenticators.TryGetDefaultDisplayName(attestationResult.Passkey, out var defaultName))
+        {
+            attestationResult.Passkey.Name = defaultName;
         }
 
         var addPasskeyResult = await UserManager.AddOrUpdatePasskeyAsync(user, attestationResult.Passkey);
@@ -114,7 +139,14 @@ else
             return;
         }
 
-        // Immediately prompt the user to enter a name for the credential
+        // If a name was inferred, go back to the passkeys list
+        if (!string.IsNullOrEmpty(attestationResult.Passkey.Name))
+        {
+            RedirectManager.RedirectToCurrentPageWithStatus("Your passkey was added successfully.", HttpContext);
+            return;
+        }
+
+        // For unknown authenticators, prompt the user to enter a name
         var credentialIdBase64Url = Base64Url.EncodeToString(attestationResult.Passkey.CredentialId);
         RedirectManager.RedirectTo($"Account/Manage/RenamePasskey/{credentialIdBase64Url}");
     }

@@ -10,8 +10,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project for creating a Razor class library that targets .NET",
   "groupIdentity": "Microsoft.Web.Razor",
-  "precedence": "10000",
-  "identity": "Microsoft.Web.Razor.Library.CSharp.10.0",
+  "precedence": "11000",
+  "identity": "Microsoft.Web.Razor.Library.CSharp.11.0",
   "shortName": "razorclasslib",
   "tags": {
     "language": "C#",
@@ -48,11 +48,10 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "net10.0",
-          "description": "Target net10.0"
+          "choice": "net11.0"
         }
       ],
-      "defaultValue": "net10.0"
+      "defaultValue": "net11.0"
     },
     "HostIdentifier": {
       "type": "bind",
@@ -77,8 +76,12 @@
       "path": "Company.RazorClassLibrary1.csproj"
     },
     {
-      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "condition": "(SupportPagesAndViews && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "path": "Areas/MyFeature/Pages/Page1.cshtml"
+    },
+    {
+      "condition": "(!SupportPagesAndViews && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "Component1.razor"
     }
   ],
   "defaultName": "RazorClassLibrary",
@@ -96,9 +99,20 @@
       "continueOnError": true
     },
     {
-      "id": "openInEditor",
-      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "id": "openPageInEditor",
+      "condition": "(SupportPagesAndViews && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "description": "Opens Areas/MyFeature/Pages/Page1.cshtml in the editor",
+      "manualInstructions": [],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "1"
+      },
+      "continueOnError": true
+    },
+    {
+      "id": "openComponentInEditor",
+      "condition": "(!SupportPagesAndViews && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "description": "Opens Component1.razor in the editor",
       "manualInstructions": [],
       "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
       "args": {

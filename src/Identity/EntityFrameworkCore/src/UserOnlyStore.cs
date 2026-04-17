@@ -43,7 +43,7 @@ public class UserOnlyStore<TUser, TContext> : UserOnlyStore<TUser, TContext, str
 /// </summary>
 /// <typeparam name="TUser">The type representing a user.</typeparam>
 /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
-/// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
+/// <typeparam name="TKey">The type of the primary key for a user.</typeparam>
 public class UserOnlyStore<TUser, TContext, TKey> : UserOnlyStore<TUser, TContext, TKey, IdentityUserClaim<TKey>, IdentityUserLogin<TKey>, IdentityUserToken<TKey>>
     where TUser : IdentityUser<TKey>
     where TContext : DbContext
@@ -62,7 +62,7 @@ public class UserOnlyStore<TUser, TContext, TKey> : UserOnlyStore<TUser, TContex
 /// </summary>
 /// <typeparam name="TUser">The type representing a user.</typeparam>
 /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
-/// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
+/// <typeparam name="TKey">The type of the primary key for a user.</typeparam>
 /// <typeparam name="TUserClaim">The type representing a claim.</typeparam>
 /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
 /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
@@ -88,7 +88,7 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
 /// </summary>
 /// <typeparam name="TUser">The type representing a user.</typeparam>
 /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
-/// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
+/// <typeparam name="TKey">The type of the primary key for a user.</typeparam>
 /// <typeparam name="TUserClaim">The type representing a claim.</typeparam>
 /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
 /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
@@ -625,10 +625,7 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
         var userPasskey = await FindUserPasskeyByIdAsync(passkey.CredentialId, cancellationToken).ConfigureAwait(false);
         if (userPasskey != null)
         {
-            userPasskey.Data.Name = passkey.Name;
-            userPasskey.Data.SignCount = passkey.SignCount;
-            userPasskey.Data.IsBackedUp = passkey.IsBackedUp;
-            userPasskey.Data.IsUserVerified = passkey.IsUserVerified;
+            userPasskey.UpdateFromUserPasskeyInfo(passkey);
             UserPasskeys.Update(userPasskey);
         }
         else
@@ -655,20 +652,7 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
         var userId = user.Id;
         var passkeys = await UserPasskeys
             .Where(p => p.UserId.Equals(userId))
-            .Select(p => new UserPasskeyInfo(
-                p.CredentialId,
-                p.Data.PublicKey,
-                p.Data.CreatedAt,
-                p.Data.SignCount,
-                p.Data.Transports,
-                p.Data.IsUserVerified,
-                p.Data.IsBackupEligible,
-                p.Data.IsBackedUp,
-                p.Data.AttestationObject,
-                p.Data.ClientDataJson)
-            {
-                Name = p.Data.Name,
-            })
+            .Select(p => p.ToUserPasskeyInfo())
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -708,26 +692,10 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(credentialId);
 
         var passkey = await FindUserPasskeyAsync(user.Id, credentialId, cancellationToken).ConfigureAwait(false);
-        if (passkey != null)
-        {
-            return new UserPasskeyInfo(
-                passkey.CredentialId,
-                passkey.Data.PublicKey,
-                passkey.Data.CreatedAt,
-                passkey.Data.SignCount,
-                passkey.Data.Transports,
-                passkey.Data.IsUserVerified,
-                passkey.Data.IsBackupEligible,
-                passkey.Data.IsBackedUp,
-                passkey.Data.AttestationObject,
-                passkey.Data.ClientDataJson)
-            {
-                Name = passkey.Data.Name,
-            };
-        }
-        return null;
+        return passkey?.ToUserPasskeyInfo();
     }
 
     /// <summary>

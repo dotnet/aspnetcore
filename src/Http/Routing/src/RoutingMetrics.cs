@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.Metrics;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -31,7 +32,7 @@ internal sealed class RoutingMetrics
     public void MatchSuccess(string route, bool isFallback)
     {
         _matchAttemptsCounter.Add(1,
-            new KeyValuePair<string, object?>("http.route", route),
+            new KeyValuePair<string, object?>("http.route", RouteDiagnosticsHelpers.ResolveHttpRoute(route)),
             new KeyValuePair<string, object?>("aspnetcore.routing.match_status", "success"),
             new KeyValuePair<string, object?>("aspnetcore.routing.is_fallback", isFallback ? BoxedTrue : BoxedFalse));
     }

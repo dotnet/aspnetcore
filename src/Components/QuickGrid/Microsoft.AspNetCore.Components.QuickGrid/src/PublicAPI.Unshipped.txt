@@ -1,4 +1,3 @@
 #nullable enable
-Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.HideColumnOptionsAsync() -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.RowClass.get -> System.Func<TGridItem, string?>?
-Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.RowClass.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnRowClick.get -> Microsoft.AspNetCore.Components.EventCallback<TGridItem>
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnRowClick.set -> void

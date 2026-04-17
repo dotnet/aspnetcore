@@ -980,7 +980,10 @@ public class PasskeyHandlerAssertionTest
     {
         private static readonly byte[] _defaultCredentialId = [1, 2, 3, 4, 5, 6, 7, 8];
 
-        public IdentityPasskeyOptions PasskeyOptions { get; } = new();
+        public IdentityPasskeyOptions PasskeyOptions { get; } = new()
+        {
+            UserVerificationRequirement = "preferred",
+        };
         public string Origin { get; set; } = "https://example.com";
         public PocoUser User { get; set; } = new()
         {

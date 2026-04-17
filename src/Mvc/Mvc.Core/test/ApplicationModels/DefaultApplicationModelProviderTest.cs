@@ -1280,7 +1280,7 @@ public class DefaultApplicationModelProviderTest
         Assert.NotNull(selector.EndpointMetadata);
         Assert.Equal(2, selector.EndpointMetadata.Count);
         Assert.Single(selector.EndpointMetadata.OfType<ProducesResponseTypeMetadata>());
-        Assert.Single(selector.EndpointMetadata.OfType<IApiEndpointMetadata>());
+        Assert.Single(selector.EndpointMetadata.OfType<IDisableCookieRedirectMetadata>());
         Assert.Equal(200, ((ProducesResponseTypeMetadata)selector.EndpointMetadata[0]).StatusCode);
     }
 

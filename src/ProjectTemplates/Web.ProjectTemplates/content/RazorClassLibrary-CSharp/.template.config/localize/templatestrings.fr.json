@@ -3,11 +3,11 @@
   "name": "Bibliothèque de classes Razor",
   "description": "Projet de création d’une bibliothèque de classes Razor qui cible .NET",
   "symbols/Framework/description": "Framework cible du projet.",
-  "symbols/Framework/choices/net10.0/description": "Net10.0 cible",
   "symbols/skipRestore/description": "S’il est spécifié, ignore la restauration automatique du projet lors de la création.",
   "symbols/SupportPagesAndViews/displayName": "Prendre en charge les pages et les vues",
   "symbols/SupportPagesAndViews/description": "Indique si l’ajout de pages et de vues Razor classiques à cette bibliothèque.",
   "postActions/restore/description": "Restaurez les packages NuGet requis par ce projet.",
   "postActions/restore/manualInstructions/default/text": "Exécuter « dotnet restore »",
-  "postActions/openInEditor/description": "Ouvre Areas/MyFeature/Pages/Page1.cshtml dans l’éditeur"
+  "postActions/openPageInEditor/description": "Ouvre Areas/MyFeature/Pages/Page1.cshtml dans l’éditeur",
+  "postActions/openComponentInEditor/description": "Ouvre Component1.razor dans l’éditeur"
 }

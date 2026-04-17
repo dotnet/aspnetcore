@@ -86,7 +86,7 @@ public partial class CreatedAtRouteResultTests
         Assert.Equal(StatusCodes.Status201Created, producesResponseTypeMetadata.StatusCode);
         Assert.Equal(typeof(void), producesResponseTypeMetadata.Type);
 
-        Assert.Contains(builder.Metadata, m => m is IApiEndpointMetadata);
+        Assert.Contains(builder.Metadata, m => m is IDisableCookieRedirectMetadata);
     }
 
     [Fact]

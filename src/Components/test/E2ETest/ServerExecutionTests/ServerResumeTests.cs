@@ -38,41 +38,69 @@ public class ServerResumeTests : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     [Fact]
     public void CanResumeCircuitAfterDisconnection()
     {
+        // Initial state: NonPersistedCounter should be 5
+        Browser.Equal("5", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
+
+        // Increment both counters
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Exists(By.Id("increment-non-persisted-counter")).Click();
 
         Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Browser.Equal("6", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
+
         var javascript = (IJavaScriptExecutor)Browser;
         javascript.ExecuteScript("window.replaceReconnectCallback()");
 
         TriggerReconnectAndInteract(javascript);
 
-        // Can dispatch events after reconnect
+        // After first reconnection:
+        // - Persistent counter should be incremented
+        // - Non-persisted counter should be reset to 0
         Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
+
+        // Increment non-persisted counter again
+        Browser.Exists(By.Id("increment-non-persisted-counter")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
 
         javascript.ExecuteScript("resetReconnect()");
 
         TriggerReconnectAndInteract(javascript);
 
-        // Ensure that reconnection events are repeatable
+        // After second reconnection:
         Browser.Equal("3", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
     }
 
     [Fact]
     public void CanResumeCircuitFromJavaScript()
     {
+        // Initial state: NonPersistedCounter should be 5
+        Browser.Equal("5", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
+
+        // Increment both counters
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Exists(By.Id("increment-non-persisted-counter")).Click();
 
         Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Browser.Equal("6", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
+
         var javascript = (IJavaScriptExecutor)Browser;
         TriggerClientPauseAndInteract(javascript);
 
-        // Can dispatch events after reconnect
+        // After first reconnection:
         Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
+
+        // Increment non-persisted counter again
+        Browser.Exists(By.Id("increment-non-persisted-counter")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
 
         TriggerClientPauseAndInteract(javascript);
 
-        // Ensure that reconnection events are repeatable
+        // After second reconnection:
         Browser.Equal("3", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
     }
 
     [Fact]

@@ -216,10 +216,8 @@ public class ModelAttributesTest
             attribute => Assert.IsType<RequiredAttribute>(attribute),
             attribute => Assert.IsType<RangeAttribute>(attribute));
         Assert.Null(attributes.PropertyAttributes);
-        Assert.Collection(
-            // Take(1) because the attribute or attributes after SerializableAttribute are framework-specific.
-            attributes.TypeAttributes.Take(1),
-            attribute => Assert.IsType<SerializableAttribute>(attribute));
+        // Check that SerializableAttribute exists in TypeAttributes (order-agnostic)
+        Assert.Contains(attributes.TypeAttributes, attr => attr is SerializableAttribute);
     }
 
     [Fact]

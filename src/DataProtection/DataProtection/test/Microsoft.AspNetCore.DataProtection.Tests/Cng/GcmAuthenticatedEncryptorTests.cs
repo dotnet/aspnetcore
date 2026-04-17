@@ -1,11 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Cryptography.Cng;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.Managed;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
+#if NET
+using Microsoft.AspNetCore.DataProtection.Tests.Internal;
+#endif
 using Microsoft.AspNetCore.InternalTesting;
+using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.Cng;
 
@@ -26,7 +34,7 @@ public class GcmAuthenticatedEncryptorTests
         byte[] decipheredtext = encryptor.Decrypt(new ArraySegment<byte>(ciphertext), aad);
 
         // Assert
-        Assert.Equal(plaintext.AsSpan(), decipheredtext.AsSpan());
+        Assert.Equal(plaintext.AsSpan().ToArray(), decipheredtext.AsSpan().ToArray());
     }
 
     [ConditionalFact]
@@ -102,4 +110,23 @@ public class GcmAuthenticatedEncryptorTests
         string retValAsString = Convert.ToBase64String(retVal);
         Assert.Equal("AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaG0O2kY0NZtmh2UQtXY5B2jlgnOgAAAAA", retValAsString);
     }
+
+#if NET
+    [ConditionalTheory]
+    [ConditionalRunTestOnlyOnWindows]
+    [InlineData(128)]
+    [InlineData(192)]
+    [InlineData(256)]
+    public void Roundtrip_CngGcm_TryEncryptDecrypt_CorrectlyEstimatesDataLength(int symmetricKeySizeBits)
+    {
+        Secret kdk = new Secret(new byte[512 / 8]);
+        IAuthenticatedEncryptor encryptor = new CngGcmAuthenticatedEncryptor(kdk,
+            symmetricAlgorithmHandle: CachedAlgorithmHandles.AES_GCM,
+            symmetricAlgorithmKeySizeInBytes: (uint)(symmetricKeySizeBits / 8));
+        ArraySegment<byte> plaintext = new ArraySegment<byte>(Encoding.UTF8.GetBytes("plaintext"));
+        ArraySegment<byte> aad = new ArraySegment<byte>(Encoding.UTF8.GetBytes("aad"));
+
+        RoundtripEncryptionHelpers.AssertTryEncryptTryDecryptParity(encryptor, plaintext, aad);
+    }
+#endif
 }

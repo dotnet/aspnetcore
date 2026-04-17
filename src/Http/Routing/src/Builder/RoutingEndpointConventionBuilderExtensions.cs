@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebUtilities;
@@ -22,6 +23,20 @@ public static class RoutingEndpointConventionBuilderExtensions
     /// An empty collection means any host will be accepted.
     /// </param>
     /// <returns>A reference to this instance after the operation has completed.</returns>
+    /// <remarks>
+    /// APIs that depend on the <see href="https://developer.mozilla.org/docs/Web/HTTP/Headers/Host">Host header</see>, including
+    /// <see cref="HttpRequest.Host"/> and <see cref="RequireHost"/>, are vulnerable to client spoofing.
+    ///
+    /// To safeguard against host and port spoofing:
+    /// <list type="bullet">
+    /// <item><description>
+    /// Verify the server name used during the TLS handshake using <see href="https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.connections.features.itlshandshakefeature.hostname">ITlsHandshakeFeature.HostName</see>.
+    /// </description></item>
+    /// <item><description>
+    /// Verify the local port where the connection was accepted using <see cref="HttpContext.Connection"/> (specifically <see cref="ConnectionInfo.LocalPort"/>).
+    /// </description></item>
+    /// </list>
+    /// </remarks>
     public static TBuilder RequireHost<TBuilder>(this TBuilder builder, params string[] hosts) where TBuilder : IEndpointConventionBuilder
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -167,7 +182,7 @@ public static class RoutingEndpointConventionBuilderExtensions
     /// on the target <see cref="IEndpointConventionBuilder"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
-    /// <param name="maxCollectionSize">The maximum number of elements allowed in a form collection. Defaults to <see cref="FormReader.DefaultValueCountLimit"/>>.</param>
+    /// <param name="maxCollectionSize">The maximum number of elements allowed in a form collection. Defaults to <see cref="FormReader.DefaultValueCountLimit"/>.</param>
     /// <param name="maxRecursionDepth">The maximum depth allowed when recursively mapping form data. Defaults to 64.</param>
     /// <param name="maxKeySize">The maximum size of the buffer used to read form data keys. Defaults to <see cref="FormReader.DefaultKeyLengthLimit"/></param>
     /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>

@@ -29,7 +29,9 @@ and make pull-requests.
 
 ## Reporting security issues and bugs
 
-Security issues and bugs should be reported privately, via email, to the Microsoft Security Response Center (MSRC)  secure@microsoft.com. You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Further information, including the MSRC PGP key, can be found in the [Security TechCenter](https://technet.microsoft.com/en-us/security/ff852094.aspx).
+Security issues and bugs should be reported privately to the Microsoft Security Response Center (MSRC) via the [MSRC Researcher Portal](https://msrc.microsoft.com/report/vulnerability/new). You should receive a response within 24 hours. Further information can be found in the [MSRC Report an Issue FAQ](https://www.microsoft.com/msrc/faqs-report-an-issue). You can also find these instructions in this repo's [Security doc](SECURITY.md).
+
+Also see info about related [Microsoft .NET Bounty Program](https://www.microsoft.com/msrc/bounty-dot-net-core).
 
 ## Related projects
 
@@ -46,18 +48,18 @@ See [CODE-OF-CONDUCT](./CODE-OF-CONDUCT.md)
 
 ## Nightly builds
 
-This table includes links to download the latest builds of the ASP.NET Core Shared Framework. Also included are links to download the Windows Hosting Bundle, which includes the ASP.NET Core Shared Framework, the .NET Runtime Shared Framework, and the IIS plugin (ASP.NET Core Module). You can download the latest .NET Runtime builds [here](https://github.com/dotnet/runtime/blob/main/docs/project/dogfooding.md#nightly-builds-table), and the latest .NET SDK builds [here](https://github.com/dotnet/installer#table). **If you're unsure what you need, then install the SDK; it has everything except the IIS plugin.**
+This table includes links to download the latest builds of the ASP.NET Core Shared Framework. Also included are links to download the Windows Hosting Bundle, which includes the ASP.NET Core Shared Framework, the .NET Runtime Shared Framework, and the IIS plugin (ASP.NET Core Module). You can download the latest .NET Runtime builds [here](https://github.com/dotnet/runtime/blob/main/docs/project/dogfooding.md#nightly-builds-table), and the latest .NET SDK builds [here](https://github.com/dotnet/dotnet/blob/main/docs/builds-table.md). **If you're unsure what you need, then install the SDK; it has everything except the IIS plugin.**
 
 | Platform | Shared Framework (Installer) | Shared Framework (Binaries) | Hosting Bundle (Installer) |
 | :--------- | :----------: | :----------: | :----------: |
-| **Windows x64** | [Installer](https://aka.ms/dotnet/10.0/daily/aspnetcore-runtime-win-x64.exe) | [Binaries](https://aka.ms/dotnet/10.0/daily/aspnetcore-runtime-win-x64.zip) | [Installer](https://aka.ms/dotnet/10.0/daily/dotnet-hosting-win.exe) |
-| **Windows x86** | [Installer](https://aka.ms/dotnet/10.0/daily/aspnetcore-runtime-win-x86.exe) | [Binaries](https://aka.ms/dotnet/10.0/daily/aspnetcore-runtime-win-x86.zip) | [Installer](https://aka.ms/dotnet/10.0/daily/dotnet-hosting-win.exe) |
-| **Windows arm64** | [Installer](https://aka.ms/dotnet/10.0/daily/aspnetcore-runtime-win-arm64.exe) | [Binaries](https://aka.ms/dotnet/10.0/daily/aspnetcore-runtime-win-arm64.zip) | [Installer](https://aka.ms/dotnet/10.0/daily/dotnet-hosting-win.exe) |
-| **macOS x64** | **N/A** | [Binaries](https://aka.ms/dotnet/10.0/daily/aspnetcore-runtime-osx-x64.tar.gz) | **N/A** |
-| **macOS arm64** | **N/A** | [Binaries](https://aka.ms/dotnet/10.0/daily/aspnetcore-runtime-osx-arm64.tar.gz) | **N/A** |
-| **Linux x64** | [Deb Installer](https://aka.ms/dotnet/10.0/daily/aspnetcore-runtime-x64.deb) - [RPM Installer](https://aka.ms/dotnet/10.0/daily/aspnetcore-runtime-x64.rpm) | [Binaries](https://aka.ms/dotnet/10.0/daily/aspnetcore-runtime-linux-x64.tar.gz) | **N/A** |
-| **Linux arm** | **N/A** | [Binaries](https://aka.ms/dotnet/10.0/daily/aspnetcore-runtime-linux-arm.tar.gz) | **N/A** |
-| **Linux arm64** | [RPM Installer](https://aka.ms/dotnet/10.0/daily/aspnetcore-runtime-aarch64.rpm) | [Binaries](https://aka.ms/dotnet/10.0/daily/aspnetcore-runtime-linux-arm64.tar.gz) | **N/A** |
-| **Linux-musl-x64** | **N/A** | [Binaries](https://aka.ms/dotnet/10.0/daily/aspnetcore-runtime-linux-musl-x64.tar.gz) | **N/A** |
-| **Linux-musl-arm** | **N/A** | [Binaries](https://aka.ms/dotnet/10.0/daily/aspnetcore-runtime-linux-musl-arm.tar.gz) | **N/A** |
-| **Linux-musl-arm64** | **N/A** | [Binaries](https://aka.ms/dotnet/10.0/daily/aspnetcore-runtime-linux-musl-arm64.tar.gz) | **N/A** |
+| **Windows x64** | [Installer](https://aka.ms/dotnet/11.0/daily/aspnetcore-runtime-win-x64.exe) | [Binaries](https://aka.ms/dotnet/11.0/daily/aspnetcore-runtime-win-x64.zip) | [Installer](https://aka.ms/dotnet/11.0/daily/dotnet-hosting-win.exe) |
+| **Windows x86** | [Installer](https://aka.ms/dotnet/11.0/daily/aspnetcore-runtime-win-x86.exe) | [Binaries](https://aka.ms/dotnet/11.0/daily/aspnetcore-runtime-win-x86.zip) | [Installer](https://aka.ms/dotnet/11.0/daily/dotnet-hosting-win.exe) |
+| **Windows arm64** | [Installer](https://aka.ms/dotnet/11.0/daily/aspnetcore-runtime-win-arm64.exe) | [Binaries](https://aka.ms/dotnet/11.0/daily/aspnetcore-runtime-win-arm64.zip) | [Installer](https://aka.ms/dotnet/11.0/daily/dotnet-hosting-win.exe) |
+| **macOS x64** | **N/A** | [Binaries](https://aka.ms/dotnet/11.0/daily/aspnetcore-runtime-osx-x64.tar.gz) | **N/A** |
+| **macOS arm64** | **N/A** | [Binaries](https://aka.ms/dotnet/11.0/daily/aspnetcore-runtime-osx-arm64.tar.gz) | **N/A** |
+| **Linux x64** | [Deb Installer](https://aka.ms/dotnet/11.0/daily/aspnetcore-runtime-x64.deb) - [RPM Installer](https://aka.ms/dotnet/11.0/daily/aspnetcore-runtime-x64.rpm) | [Binaries](https://aka.ms/dotnet/11.0/daily/aspnetcore-runtime-linux-x64.tar.gz) | **N/A** |
+| **Linux arm** | **N/A** | [Binaries](https://aka.ms/dotnet/11.0/daily/aspnetcore-runtime-linux-arm.tar.gz) | **N/A** |
+| **Linux arm64** | [RPM Installer](https://aka.ms/dotnet/11.0/daily/aspnetcore-runtime-aarch64.rpm) | [Binaries](https://aka.ms/dotnet/11.0/daily/aspnetcore-runtime-linux-arm64.tar.gz) | **N/A** |
+| **Linux-musl-x64** | **N/A** | [Binaries](https://aka.ms/dotnet/11.0/daily/aspnetcore-runtime-linux-musl-x64.tar.gz) | **N/A** |
+| **Linux-musl-arm** | **N/A** | [Binaries](https://aka.ms/dotnet/11.0/daily/aspnetcore-runtime-linux-musl-arm.tar.gz) | **N/A** |
+| **Linux-musl-arm64** | **N/A** | [Binaries](https://aka.ms/dotnet/11.0/daily/aspnetcore-runtime-linux-musl-arm64.tar.gz) | **N/A** |

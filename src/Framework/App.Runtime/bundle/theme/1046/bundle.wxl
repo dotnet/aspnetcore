@@ -1,55 +1,78 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-  <String Id="Caption">Instalação do [BundleNameFull]</String>
-  <String Id="Title">[BundleNameShort]</String>
-  <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallVersion">Versão [WixBundleVersion]</String>
-  <String Id="ConfirmCancelMessage">Tem certeza de que deseja cancelar?</String>
-  <String Id="ExecuteUpgradeRelatedBundleMessage">Versão anterior</String>
-  <String Id="HelpHeader">Ajuda da Instalação</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]diretório[\]] - instala, repara, desinstala ou
-   cria uma cópia local completa do pacote no diretório. Install é o padrão
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  
+  <String Id="Caption" Value="[WixBundleName] Configuração"/>
+  
+  <String Id="Title" Value="[BUNDLEMONIKER]"/>
+  
+  
+  <String Id="InstallVersion" Value="Versão [WixBundleVersion]"/>
+  <String Id="ConfirmCancelMessage" Value="Tem certeza de que deseja cancelar?"/>
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Versão anterior"/>
+  <String Id="HelpHeader" Value="Ajuda de Configuração"/>
+  
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - instala, repara, desinstala ou
+   cria uma cópia local completa do pacote no diretório. A instalação é padrão.
 
-/passive | /quiet -  exibe a interface do usuário mínima sem nenhum prompt ou não exibe nenhuma interface do usuário e
-   nenhum prompt. Por padrão, a interface do usuário e todos os prompts são exibidos.
+/passive | /quiet - exibe interface mínima sem solicitações ou não exibe interface e
+   nenhuma solicitação. Por padrão, a interface e todas as solicitações são exibidas.
 
-/norestart   - suprime qualquer tentativa de reiniciar. Por padrão, a interface do usuário perguntará antes de reiniciar.
-/log log.txt - registra em um arquivo específico. Por padrão, um arquivo de log é criado em %TEMP%.</String>
-  <String Id="HelpCloseButton">&amp;Fechar</String>
-  <String Id="InstallAcceptCheckbox">Eu &amp;concordo com os termos e condições da licença</String>
-  <String Id="InstallInstallButton">&amp;Instalar</String>
-  <String Id="InstallCloseButton">&amp;Fechar</String>
-  <String Id="ProgressHeader">Progresso da Instalação</String>
-  <String Id="ProgressLabel">Processando:</String>
-  <String Id="OverallProgressPackageText">Inicializando...</String>
-  <String Id="ProgressCancelButton">&amp;Cancelar</String>
-  <String Id="ModifyHeader">Modificar Instalação</String>
-  <String Id="ModifyRepairButton">&amp;Reparar</String>
-  <String Id="ModifyUninstallButton">&amp;Desinstalar</String>
-  <String Id="ModifyCloseButton">&amp;Fechar</String>
-  <String Id="SuccessRepairHeader">Reparação Concluída com Êxito</String>
-  <String Id="SuccessUninstallHeader">Desinstalação Concluída com Êxito</String>
-  <String Id="SuccessInstallHeader">Instalação Concluída com Êxito</String>
-  <String Id="SuccessHeader">Instalação com Êxito</String>
-  <String Id="SuccessLaunchButton">&amp;Iniciar</String>
-  <String Id="SuccessRestartText">Reinicie o computador para poder usar o software.</String>
-  <String Id="SuccessRestartButton">&amp;Reiniciar</String>
-  <String Id="SuccessCloseButton">&amp;Fechar</String>
-  <String Id="FailureHeader">Falha na Instalação</String>
-  <String Id="FailureInstallHeader">Falha na Instalação</String>
-  <String Id="FailureUninstallHeader">Falha na Desinstalação</String>
-  <String Id="FailureRepairHeader">Falha ao Reparar</String>
-  <String Id="FailureHyperlinkLogText">Um ou mais problemas causaram falha na instalação. Corrija-os e tente instalar novamente. Para obter mais informações, consulte o &lt;a href="#"&gt;arquivo de log&lt;/a&gt;.</String>
-  <String Id="FailureRestartText">Reinicie o computador para concluir a reversão do software.</String>
-  <String Id="FailureRestartButton">&amp;Reiniciar</String>
-  <String Id="FailureCloseButton">&amp;Fechar</String>
-  <String Id="FilesInUseHeader">Arquivos em Uso</String>
-  <String Id="FilesInUseLabel">Os aplicativos a seguir estão usando arquivos que precisam ser atualizados:</String>
-  <String Id="FilesInUseCloseRadioButton">Feche os &amp;aplicativos e tente reiniciá-los.</String>
-  <String Id="FilesInUseDontCloseRadioButton">&amp;Não feche os aplicativos. Uma reinicialização será necessária.</String>
-  <String Id="FilesInUseOkButton">&amp;OK</String>
-  <String Id="FilesInUseCancelButton">&amp;Cancelar</String>
+/norestart - suprime quaisquer tentativas de reinício. Por padrão, a interface exibirá uma solicitação antes de reiniciar.
+/log log.txt - registra em um arquivo específico. Por padrão, um arquivo de log é criado em %TEMP%."/>
+  <String Id="HelpCloseButton" Value="&amp;Fechar"/>
+  <String Id="InstallAcceptCheckbox" Value="Eu &amp;concordo com os termos e condições da licença"/>
+  <String Id="InstallInstallButton" Value="I&amp;nstalar"/>
+  <String Id="InstallCloseButton" Value="&amp;Fechar"/>
+  <String Id="ProgressHeader" Value="Progresso da Instalação"/>
+  <String Id="ProgressLabel" Value="Processamento:"/>
+  <String Id="OverallProgressPackageText" Value="Inicializando..."/>
+  <String Id="ProgressCancelButton" Value="&amp;Cancelar"/>
+  <String Id="ModifyHeader" Value="Modificar Instalação"/>
+  <String Id="ModifyRepairButton" Value="&amp;Reparar"/>
+  <String Id="ModifyUninstallButton" Value="&amp;Desinstalar"/>
+  <String Id="ModifyCloseButton" Value="&amp;Fechar"/>
+  <String Id="SuccessCacheHeader" Value="Cache Concluído com Sucesso"/>
+  <String Id="SuccessModifyHeader" Value="Modificação Concluída com Sucesso"/>
+  <String Id="SuccessUnsafeUninstallHeader" Value="Desinstalação Concluída com Sucesso"/>
+  <String Id="SuccessLayoutHeader" Value="Layout Concluído com Sucesso"/>
+  <String Id="SuccessRepairHeader" Value="Reparo Concluído com Sucesso"/>
+  <String Id="SuccessUninstallHeader" Value="Desinstalação Concluída com Sucesso"/>
+  <String Id="SuccessInstallHeader" Value="Instalação Concluída com Sucesso"/>
+  <String Id="SuccessHeader" Value="Instalação bem-sucedida"/>
+  <String Id="SuccessLaunchButton" Value="&amp;Iniciar"/>
+  <String Id="SuccessRestartText" Value="Você deve reiniciar seu computador antes de usar o software."/>
+  <String Id="SuccessUninstallRestartText" Value="Você precisa reiniciar o seu computador para concluir a remoção do software."/>
+  <String Id="SuccessRestartButton" Value="&amp;Reiniciar"/>
+  <String Id="SuccessCloseButton" Value="&amp;Fechar"/>
+  <String Id="FailureHeader" Value="Falha na Instalação"/>
+  <String Id="FailureCacheHeader" Value="Falha no Cache"/>
+  <String Id="FailureLayoutHeader" Value="Falha no Layout"/>
+  <String Id="FailureInstallHeader" Value="Falha na Instalação"/>
+  <String Id="FailureUninstallHeader" Value="Falha ao Desinstalar"/>
+  <String Id="FailureUnsafeUninstallHeader" Value="Falha ao Desinstalar"/>
+  <String Id="FailureRepairHeader" Value="Falha no Reparo"/>
+  <String Id="FailureModifyHeader" Value="Falha ao Modificar"/>
+  <String Id="FailureHyperlinkLogText" Value="Um ou mais problemas fizeram com que a instalação falhasse. Corrija os problemas e, em seguida, tente a instalação novamente. Para mais informações, consulte o &lt;a href=&quot;#&quot;&gt;arquivo de log&lt;/a&gt;."/>
+  <String Id="FailureRestartText" Value="Você deve reiniciar o computador para concluir a reversão do software."/>
+  <String Id="FailureRestartButton" Value="&amp;Reiniciar"/>
+  <String Id="FailureCloseButton" Value="&amp;Fechar"/>
+  <String Id="FilesInUseHeader" Value="Arquivos em Uso"/>
+  <String Id="FilesInUseLabel" Value="Os aplicativos a seguir estão usando arquivos que precisam ser atualizados:"/>
+  <String Id="FilesInUseCloseRadioButton" Value="Feche os &amp;aplicativos e tente reiniciá-los."/>
+  <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Não fechar aplicativos. Uma reinicialização será necessária."/>
+  <String Id="FilesInUseNetfxCloseRadioButton" Value="Feche os &amp;aplicativos."/>
+  <String Id="FilesInUseOkButton" Value="&amp;OK"/>
+  <String Id="FilesInUseCancelButton" Value="&amp;Cancelar"/>
+  <String Id="FilesInUseRetryButton" Value="&amp;Repetir"/>
+  <String Id="FilesInUseIgnoreButton" Value="&amp;Ignorar"/>
+  <String Id="FilesInUseExitButton" Value="&amp;Saída"/>
+  <String Id="FilesInUseTitle" Value="Arquivos em Uso"/>
+  <String Id="LicenseAssent" Value="Ao clicar em Instalar, você concorda com os termos a seguir:"/>
+  <String Id="WelcomeHeaderMessage">ASP.NET Runtime</String>
+  <String Id="WelcomeDescription">The ASP.NET Runtime is used to run ASP.NET applications, on your Windows computer. ASP.NET is open source, cross platform, and supported by Microsoft. We hope you enjoy it!</String>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;Política de privacidade&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;Informações de licenciamento para .NET&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Coleta e recusa de telemetria&lt;/A&gt;"/>
 
-  <String Id="Welcome">Bem-vindo à Instalação do [WixBundleName].</String>
-  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;termos de licença&lt;/a&gt; e &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;política de privacidade&lt;/a&gt;.</String>
+  
+  <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;termos de licença&lt;/a&gt; e &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;declaração de privacidade&lt;/a&gt;."/>
 </WixLocalization>

@@ -53,7 +53,7 @@ public class ComponentState : IAsyncDisposable
             _hasAnyCascadingParameterSubscriptions = AddCascadingParameterSubscriptions();
         }
 
-        if (_renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled)
+        if (ComponentsMetrics.IsSupported && _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled)
         {
             _componentTypeName = component.GetType().FullName;
         }
@@ -93,7 +93,12 @@ public class ComponentState : IAsyncDisposable
 
     internal RenderTreeBuilder CurrentRenderTree { get; set; }
 
-    internal Renderer Renderer => _renderer;
+    /// <summary>
+    /// Gets the <see cref="Renderer"/> instance used to render the output.
+    /// </summary>
+    /// <remarks>The <see cref="Renderer"/> instance is accessible to derived classes and classes within the
+    /// same assembly. It provides rendering functionality that may be used for custom rendering logic.</remarks>
+    protected internal Renderer Renderer => _renderer;
 
     internal void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment, out Exception? renderFragmentException)
     {
@@ -237,7 +242,7 @@ public class ComponentState : IAsyncDisposable
     // a consistent set to the recipient.
     private void SupplyCombinedParameters(ParameterView directAndCascadingParameters)
     {
-        var parametersStartTimestamp = _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled ? Stopwatch.GetTimestamp() : 0;
+        var parametersStartTimestamp = ComponentsMetrics.IsSupported && _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled ? Stopwatch.GetTimestamp() : 0;
 
         // Normalize sync and async exceptions into a Task
         Task setParametersAsyncTask;
@@ -246,14 +251,14 @@ public class ComponentState : IAsyncDisposable
             setParametersAsyncTask = Component.SetParametersAsync(directAndCascadingParameters);
 
             // collect metrics
-            if (_renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled)
+            if (ComponentsMetrics.IsSupported && _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled)
             {
                 _ = _renderer.ComponentMetrics.CaptureParametersDuration(setParametersAsyncTask, parametersStartTimestamp, _componentTypeName);
             }
         }
         catch (Exception ex)
         {
-            if (_renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled)
+            if (ComponentsMetrics.IsSupported && _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled)
             {
                 _renderer.ComponentMetrics.FailParametersSync(ex, parametersStartTimestamp, _componentTypeName);
             }
@@ -356,6 +361,9 @@ public class ComponentState : IAsyncDisposable
         for (var i = 0; i < frames.Count; i++)
         {
             ref var currentFrame = ref frames.Array[i];
+
+            Debug.Assert(currentFrame.FrameType != RenderTreeFrameType.Component || currentFrame.Component != null, "GetComponentKey is being invoked too soon, ComponentState is not fully constructed.");
+
             if (currentFrame.FrameType != RenderTreeFrameType.Component ||
                 !ReferenceEquals(Component, currentFrame.Component))
             {

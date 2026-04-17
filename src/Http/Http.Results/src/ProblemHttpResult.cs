@@ -79,6 +79,6 @@ public sealed class ProblemHttpResult : IResult, IEndpointMetadataProvider, ISta
         ArgumentNullException.ThrowIfNull(method);
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Metadata.Add(ApiEndpointMetadata.Instance);
+        builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
     }
 }

@@ -30,26 +30,29 @@ internal class TestCircuitHost : CircuitHost
         CircuitHandler[] handlers = null,
         CircuitClientProxy clientProxy = null)
     {
-        serviceScope = serviceScope ?? new AsyncServiceScope(Mock.Of<IServiceScope>());
         clientProxy = clientProxy ?? new CircuitClientProxy(Mock.Of<ISingleClientProxy>(), Guid.NewGuid().ToString());
         var jsRuntime = new RemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
         var navigationManager = new RemoteNavigationManager(Mock.Of<ILogger<RemoteNavigationManager>>());
         var componentsActivitySource = new ComponentsActivitySource();
         var circuitActivitySource = new CircuitActivitySource();
-        var serviceProvider = new Mock<IServiceProvider>();
-        serviceProvider
-            .Setup(services => services.GetService(typeof(IJSRuntime)))
-            .Returns(jsRuntime);
-        serviceProvider
-            .Setup(services => services.GetService(typeof(ComponentsActivitySource)))
-            .Returns(componentsActivitySource);
+        var persistenceManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            new ServiceCollection().BuildServiceProvider());
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton<IJSRuntime>(jsRuntime)
+            .AddSingleton(componentsActivitySource)
+            .AddSingleton(persistenceManager)
+            .AddSingleton(circuitActivitySource)
+            .BuildServiceProvider();
+        serviceScope ??= serviceProvider.CreateAsyncScope();
+
         var serverComponentDeserializer = Mock.Of<IServerComponentDeserializer>();
         var circuitMetrics = new CircuitMetrics(new TestMeterFactory());
 
         if (remoteRenderer == null)
         {
             remoteRenderer = new RemoteRenderer(
-                serviceProvider.Object,
+                serviceProvider,
                 NullLoggerFactory.Instance,
                 new CircuitOptions(),
                 clientProxy,

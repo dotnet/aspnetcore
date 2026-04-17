@@ -25,8 +25,8 @@ export type BlazorInitializer = {
 };
 
 export type JSAsset = {
-    moduleExports?: any | Promise<any>,
-    name?: string; // actually URL
+  moduleExports?: any | Promise<any>,
+  name?: string; // actually URL
 }
 
 export class JSInitializer {
@@ -49,10 +49,9 @@ export class JSInitializer {
     await Promise.all(initializerFiles.map(f => importAndInvokeInitializer(this, f)));
 
     function adjustPath(path: string): string {
-      // This is the same we do in JS interop with the import callback
-      const base = document.baseURI;
-      path = base.endsWith('/') ? `${base}${path}` : `${base}/${path}`;
-      return path;
+      // Use URL constructor to properly resolve relative paths, avoiding issues with query parameters
+      // This is the same mechanism as for import dotnet.js in MonoPlatform.ts
+      return new URL(path, document.baseURI).toString();
     }
 
     async function importAndInvokeInitializer(jsInitializer: JSInitializer, asset: JSAsset): Promise<void> {
@@ -91,7 +90,8 @@ export class JSInitializer {
 
       function runMultiRuntimeInitializers(
         jsInitializer: JSInitializer,
-        initializerModule: Partial<BlazorInitializer>, initializerArguments: unknown[]): void | PromiseLike<void> {
+        initializerModule: Partial<BlazorInitializer>, initializerArguments: unknown[]
+      ): void | PromiseLike<void> {
         const options = initializerArguments[0] as WebStartOptions;
         const { beforeStart, afterStarted, beforeWebStart, afterWebStarted, beforeWebAssemblyStart, afterWebAssemblyStarted, beforeServerStart, afterServerStarted } = initializerModule;
         const runtimeSpecificExports = !!(beforeWebStart || afterWebStarted || beforeWebAssemblyStart || afterWebAssemblyStarted || beforeServerStart || afterServerStarted);

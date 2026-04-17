@@ -197,7 +197,7 @@ internal sealed class OpenApiGenerator
 
             // TODO: Use the discarded response Type for schema generation
             var (_, contentTypes) = annotation.Value;
-            var responseContent = new Dictionary<string, OpenApiMediaType>();
+            var responseContent = new Dictionary<string, IOpenApiMediaType>();
 
             foreach (var contentType in contentTypes)
             {
@@ -269,7 +269,7 @@ internal sealed class OpenApiGenerator
         }
 
         var acceptsMetadata = metadata.GetMetadata<IAcceptsMetadata>();
-        var requestBodyContent = new Dictionary<string, OpenApiMediaType>();
+        var requestBodyContent = new Dictionary<string, IOpenApiMediaType>();
 
         if (acceptsMetadata is not null)
         {
@@ -424,7 +424,7 @@ internal sealed class OpenApiGenerator
         {
             return (true, null, null);
         }
-        else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType) || typeof(FromKeyedServicesAttribute) == a.AttributeType) ||
+        else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType) || typeof(FromKeyedServicesAttribute).IsAssignableFrom(a.AttributeType)) ||
                 parameter.ParameterType == typeof(HttpContext) ||
                 parameter.ParameterType == typeof(HttpRequest) ||
                 parameter.ParameterType == typeof(HttpResponse) ||
@@ -447,7 +447,9 @@ internal sealed class OpenApiGenerator
                 return (false, ParameterLocation.Query, null);
             }
         }
-        else if (parameter.ParameterType == typeof(IFormFile) || parameter.ParameterType == typeof(IFormFileCollection))
+        else if (parameter.ParameterType == typeof(IFormFile) ||
+                 parameter.ParameterType == typeof(IFormFileCollection) ||
+                 parameter.ParameterType.IsJsonPatchDocument())
         {
             return (true, null, null);
         }

@@ -52,6 +52,6 @@ public sealed class UnprocessableEntity : IResult, IEndpointMetadataProvider, IS
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status422UnprocessableEntity, typeof(void)));
-        builder.Metadata.Add(ApiEndpointMetadata.Instance);
+        builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
     }
 }

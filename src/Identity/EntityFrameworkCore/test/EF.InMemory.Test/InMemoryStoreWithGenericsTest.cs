@@ -24,6 +24,10 @@ public class InMemoryEFUserStoreTestWithGenerics
 
         var services = new ServiceCollection();
         services.AddHttpContextAccessor();
+        services.Configure<IdentityOptions>(options =>
+        {
+            options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+        });
         services.AddDbContext<InMemoryContextWithGenerics>(
             options => options
                 .UseSqlite(_fixture.Connection)

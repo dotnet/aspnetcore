@@ -493,18 +493,18 @@ internal static class RequestDelegateGeneratorSources
     }
 """;
 
-    public static string ApiEndpointMetadataClass = """
-    file sealed class ApiEndpointMetadata : IApiEndpointMetadata
+    public static string DisableCookieRedirectMetadataClass = """
+    file sealed class DisableCookieRedirectMetadata : IDisableCookieRedirectMetadata
     {
-        public static readonly ApiEndpointMetadata Instance = new();
+        public static readonly DisableCookieRedirectMetadata Instance = new();
 
-        private ApiEndpointMetadata()
+        private DisableCookieRedirectMetadata()
         {
         }
 
-        public static void AddApiEndpointMetadataIfMissing(EndpointBuilder builder)
+        public static void AddMetadataIfMissing(EndpointBuilder builder)
         {
-            if (!builder.Metadata.Any(m => m is IApiEndpointMetadata))
+            if (!builder.Metadata.Any(m => m is IDisableCookieRedirectMetadata))
             {
                 builder.Metadata.Add(Instance);
             }

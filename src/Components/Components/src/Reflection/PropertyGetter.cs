@@ -14,12 +14,16 @@ internal sealed class PropertyGetter
 
     private readonly Func<object, object?> _GetterDelegate;
 
+    public PropertyInfo PropertyInfo { get; }
+
     [UnconditionalSuppressMessage(
         "ReflectionAnalysis",
         "IL2060:MakeGenericMethod",
         Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
     public PropertyGetter(Type targetType, PropertyInfo property)
     {
+        PropertyInfo = property;
+
         if (property.GetMethod == null)
         {
             throw new InvalidOperationException("Cannot provide a value for property " +

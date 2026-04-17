@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies;
 /// </summary>
 public class CookieAuthenticationEvents
 {
+    private static readonly bool _ignoreCookieRedirectMetadata = AppContext.TryGetSwitch("Microsoft.AspNetCore.Authentication.Cookies.IgnoreRedirectMetadata", out var isEnabled) && isEnabled;
+
     /// <summary>
     /// Invoked to validate the principal.
     /// </summary>
@@ -42,7 +44,7 @@ public class CookieAuthenticationEvents
     /// </summary>
     public Func<RedirectContext<CookieAuthenticationOptions>, Task> OnRedirectToLogin { get; set; } = context =>
     {
-        if (IsAjaxRequest(context.Request) || IsApiEndpoint(context.HttpContext))
+        if (IsAjaxRequest(context.Request) || IsCookieRedirectDisabledByMetadata(context.HttpContext))
         {
             context.Response.Headers.Location = context.RedirectUri;
             context.Response.StatusCode = 401;
@@ -59,7 +61,7 @@ public class CookieAuthenticationEvents
     /// </summary>
     public Func<RedirectContext<CookieAuthenticationOptions>, Task> OnRedirectToAccessDenied { get; set; } = context =>
     {
-        if (IsAjaxRequest(context.Request) || IsApiEndpoint(context.HttpContext))
+        if (IsAjaxRequest(context.Request) || IsCookieRedirectDisabledByMetadata(context.HttpContext))
         {
             context.Response.Headers.Location = context.RedirectUri;
             context.Response.StatusCode = 403;
@@ -109,10 +111,16 @@ public class CookieAuthenticationEvents
             string.Equals(request.Headers.XRequestedWith, "XMLHttpRequest", StringComparison.Ordinal);
     }
 
-    private static bool IsApiEndpoint(HttpContext context)
+    private static bool IsCookieRedirectDisabledByMetadata(HttpContext context)
     {
+        if (_ignoreCookieRedirectMetadata)
+        {
+            return false;
+        }
+
         var endpoint = context.GetEndpoint();
-        return endpoint?.Metadata.GetMetadata<IApiEndpointMetadata>() is not null;
+        return endpoint?.Metadata.GetMetadata<IDisableCookieRedirectMetadata>() is not null &&
+            endpoint?.Metadata.GetMetadata<IAllowCookieRedirectMetadata>() is null;
     }
 
     /// <summary>

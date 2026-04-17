@@ -218,7 +218,7 @@ internal static class StaticRouteHandlerModelEmitter
         else if (response.ResponseType is { } responseType)
         {
             codeWriter.WriteLine($$"""options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof({{responseType.ToDisplayString(EmitterConstants.DisplayFormatWithoutNullability)}}), contentTypes: GeneratedMetadataConstants.JsonContentType));""");
-            codeWriter.WriteLine("ApiEndpointMetadata.AddApiEndpointMetadataIfMissing(options.EndpointBuilder);");
+            codeWriter.WriteLine("DisableCookieRedirectMetadata.AddMetadataIfMissing(options.EndpointBuilder);");
         }
     }
 
@@ -336,7 +336,7 @@ internal static class StaticRouteHandlerModelEmitter
             codeWriter.WriteLine("if (!serviceProviderIsService.IsService(type))");
             codeWriter.StartBlock();
             codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(type: type, isOptional: isOptional, contentTypes: GeneratedMetadataConstants.JsonContentType));");
-            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(ApiEndpointMetadata.Instance);");
+            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(DisableCookieRedirectMetadata.Instance);");
             codeWriter.WriteLine("break;");
             codeWriter.EndBlock();
             codeWriter.EndBlock();
@@ -344,7 +344,7 @@ internal static class StaticRouteHandlerModelEmitter
         else
         {
             codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(contentTypes: GeneratedMetadataConstants.JsonContentType));");
-            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(ApiEndpointMetadata.Instance);");
+            codeWriter.WriteLine("options.EndpointBuilder.Metadata.Add(DisableCookieRedirectMetadata.Instance);");
         }
     }
 

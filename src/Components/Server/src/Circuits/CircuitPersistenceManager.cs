@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -21,26 +22,29 @@ internal partial class CircuitPersistenceManager(
 {
     public async Task PauseCircuitAsync(CircuitHost circuit, bool saveStateToClient = false, CancellationToken cancellation = default)
     {
-        var renderer = circuit.Renderer;
-        var persistenceManager = circuit.Services.GetRequiredService<ComponentStatePersistenceManager>();
-        var collector = new CircuitPersistenceManagerCollector(circuitOptions, serverComponentSerializer, circuit.Renderer);
-        using var subscription = persistenceManager.State.RegisterOnPersisting(
-            collector.PersistRootComponents,
-            RenderMode.InteractiveServer);
-
-        await persistenceManager.PersistStateAsync(collector, renderer);
-
-        if (saveStateToClient)
+        await circuit.Renderer.Dispatcher.InvokeAsync(async () =>
         {
-            await SaveStateToClient(circuit, collector.PersistedCircuitState, cancellation);
-        }
-        else
-        {
-            await circuitPersistenceProvider.PersistCircuitAsync(
-                circuit.CircuitId,
-                collector.PersistedCircuitState,
-                cancellation);
-        }
+            var renderer = circuit.Renderer;
+            var persistenceManager = circuit.Services.GetRequiredService<ComponentStatePersistenceManager>();
+            var collector = new CircuitPersistenceManagerCollector(circuitOptions, serverComponentSerializer, circuit.Renderer);
+            using var subscription = persistenceManager.State.RegisterOnPersisting(
+                collector.PersistRootComponents,
+                RenderMode.InteractiveServer);
+
+            await persistenceManager.PersistStateAsync(collector, renderer);
+
+            if (saveStateToClient)
+            {
+                await SaveStateToClient(circuit, collector.PersistedCircuitState, cancellation);
+            }
+            else
+            {
+                await circuitPersistenceProvider.PersistCircuitAsync(
+                    circuit.CircuitId,
+                    collector.PersistedCircuitState,
+                    cancellation);
+            }
+        });
     }
 
     internal async Task SaveStateToClient(CircuitHost circuit, PersistedCircuitState state, CancellationToken cancellation = default)
@@ -103,11 +107,11 @@ internal partial class CircuitPersistenceManager(
     // The way pausing and resuming works is that when the client starts the resume process, it 'simulates' that an SSR has happened and
     // queues an 'Add' operation for each server-side component that is on the document.
     // That ends up calling UpdateRootComponents with the old descriptors and no application state.
-    // On the server side, we replace the descriptors with the ones that we have persisted. We can't use the original descriptors because
-    // those have a lifetime of ~ 5 minutes, after which we are not able to unprotect them anymore.
+    // On the server side, we replace the descriptors with the ones that we have persisted and later retrieved in ResumeCircuit.
+    // We can't use the original descriptors because those have a lifetime of ~ 5 minutes, after which we are not able to unprotect them anymore.
     internal static RootComponentOperationBatch ToRootComponentOperationBatch(
         IServerComponentDeserializer serverComponentDeserializer,
-        byte[] rootComponents,
+        IReadOnlyDictionary<int, WebRootComponentDescriptor> rootComponentDescriptors,
         string serializedComponentOperations)
     {
         // Deserialize the existing batch the client has sent but ignore the markers
@@ -119,14 +123,7 @@ internal partial class CircuitPersistenceManager(
             return null;
         }
 
-        var persistedMarkers = TryDeserializeMarkers(rootComponents);
-
-        if (persistedMarkers == null)
-        {
-            return null;
-        }
-
-        if (batch.Operations.Length != persistedMarkers.Count)
+        if (batch.Operations.Length != rootComponentDescriptors.Count)
         {
             return null;
         }
@@ -140,14 +137,7 @@ internal partial class CircuitPersistenceManager(
                 return null;
             }
 
-            // Retrieve the marker from the persisted root components, replace it and deserialize the descriptor
-            if (!persistedMarkers.TryGetValue(operation.SsrComponentId, out var marker))
-            {
-                return null;
-            }
-            operation.Marker = marker;
-
-            if (!serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(operation.Marker.Value, out var descriptor))
+            if (!rootComponentDescriptors.TryGetValue(operation.SsrComponentId, out var descriptor))
             {
                 return null;
             }
@@ -156,6 +146,37 @@ internal partial class CircuitPersistenceManager(
         }
 
         return batch;
+    }
+
+    internal static bool TryDeserializeWebRootComponentDescriptors(
+        IServerComponentDeserializer serverComponentDeserializer,
+        byte[] rootComponents,
+        [NotNullWhen(true)] out Dictionary<int, WebRootComponentDescriptor> rootComponentDescriptors)
+    {
+        var persistedMarkers = TryDeserializeMarkers(rootComponents);
+
+        if (persistedMarkers == null)
+        {
+            rootComponentDescriptors = null;
+            return false;
+        }
+
+        rootComponentDescriptors = new Dictionary<int, WebRootComponentDescriptor>();
+
+        foreach (var marker in persistedMarkers)
+        {
+            if (serverComponentDeserializer.TryDeserializeWebRootComponentDescriptor(marker.Value, out var descriptor))
+            {
+                rootComponentDescriptors.Add(marker.Key, descriptor);
+            }
+            else
+            {
+                rootComponentDescriptors = null;
+                return false;
+            }
+        }
+
+        return true;
 
         static Dictionary<int, ComponentMarker> TryDeserializeMarkers(byte[] rootComponents)
         {
@@ -190,12 +211,13 @@ internal partial class CircuitPersistenceManager(
             var persistedComponents = new Dictionary<int, ComponentMarker>();
             var components = renderer.GetOrCreateWebRootComponentManager().GetRootComponents();
             var invocation = new ServerComponentInvocationSequence();
+
+            var distributedRetention = circuitOptions.Value.PersistedCircuitDistributedRetentionPeriod;
+            var localRetention = circuitOptions.Value.PersistedCircuitInMemoryRetentionPeriod;
+            var maxRetention = distributedRetention > localRetention ? distributedRetention : localRetention;
+
             foreach (var (id, componentKey, (componentType, parameters)) in components)
             {
-                var distributedRetention = circuitOptions.Value.PersistedCircuitInMemoryRetentionPeriod;
-                var localRetention = circuitOptions.Value.PersistedCircuitInMemoryRetentionPeriod;
-                var maxRetention = distributedRetention > localRetention ? distributedRetention : localRetention;
-
                 var marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, prerendered: false, componentKey);
                 serverComponentSerializer.SerializeInvocation(ref marker, invocation, componentType, parameters, maxRetention);
                 persistedComponents.Add(id, marker);

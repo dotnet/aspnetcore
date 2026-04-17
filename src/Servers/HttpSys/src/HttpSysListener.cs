@@ -55,7 +55,7 @@ internal sealed partial class HttpSysListener : IDisposable
             throw new PlatformNotSupportedException();
         }
 
-        MemoryPool = memoryPoolFactory.Create();
+        MemoryPool = memoryPoolFactory.Create(new MemoryPoolOptions { Owner = "httpsys" });
 
         Options = options;
 
@@ -344,7 +344,6 @@ internal sealed partial class HttpSysListener : IDisposable
 
         httpResponse.Base.StatusCode = checked((ushort)httpStatusCode);
         var statusDescription = ReasonPhrases.GetReasonPhrase(httpStatusCode);
-        uint dataWritten = 0;
         uint statusCode;
 
         bytes = allocator.GetHeaderEncodedBytes(statusDescription, out bytesLength);
@@ -367,7 +366,7 @@ internal sealed partial class HttpSysListener : IDisposable
             0,
             httpResponse,
             null,
-            &dataWritten,
+            out _,
             null,
             null);
         if (statusCode != ErrorCodes.ERROR_SUCCESS)

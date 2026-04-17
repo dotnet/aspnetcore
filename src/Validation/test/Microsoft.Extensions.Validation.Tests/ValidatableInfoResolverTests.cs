@@ -214,10 +214,4 @@ public class ValidatableInfoResolverTests
 
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
     }
-
-    private class TestValidatableTypeInfo(
-        Type type,
-        ValidatablePropertyInfo[] members) : ValidatableTypeInfo(type, members)
-    {
-    }
 }

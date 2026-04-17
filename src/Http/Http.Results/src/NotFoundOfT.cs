@@ -65,6 +65,6 @@ public sealed class NotFound<TValue> : IResult, IEndpointMetadataProvider, IStat
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(typeof(TValue), StatusCodes.Status404NotFound, ContentTypeConstants.ApplicationJsonContentTypes));
-        builder.Metadata.Add(ApiEndpointMetadata.Instance);
+        builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
     }
 }

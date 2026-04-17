@@ -330,7 +330,7 @@ internal sealed class GetDocumentCommandWorker
         _reporter.WriteInformation(Resources.FormatGeneratingDocument(documentName));
 
         using var stream = new MemoryStream();
-        using (var writer = new StreamWriter(stream, _utf8EncodingWithoutBOM, bufferSize: 1024, leaveOpen: true))
+        using (var writer = new InvariantStreamWriter(stream, _utf8EncodingWithoutBOM, bufferSize: 1024, leaveOpen: true))
         {
             var targetMethod = generateWithVersionMethod ?? generateMethod;
             object[] arguments = [documentName, writer];
@@ -462,6 +462,12 @@ internal sealed class GetDocumentCommandWorker
         }
 
         return result;
+    }
+
+    private sealed class InvariantStreamWriter(Stream stream, Encoding? encoding = null, int bufferSize = -1, bool leaveOpen = false)
+        : StreamWriter(stream, encoding, bufferSize, leaveOpen)
+    {
+        public override IFormatProvider FormatProvider => System.Globalization.CultureInfo.InvariantCulture;
     }
 
 #if NET7_0_OR_GREATER

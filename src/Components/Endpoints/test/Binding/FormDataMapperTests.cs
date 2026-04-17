@@ -2024,7 +2024,7 @@ public class FormDataMapperTests
 
         // Assert
         var browserFile = Assert.IsAssignableFrom<IBrowserFile>(result);
-        Assert.Equal("file", browserFile.Name);
+        Assert.Equal("file.txt", browserFile.Name);
         Assert.Equal(expectedString.Length, browserFile.Size);
         var buffer = new byte[browserFile.Size];
         browserFile.OpenReadStream().Read(buffer);
@@ -2059,18 +2059,18 @@ public class FormDataMapperTests
         var browserFiles = Assert.IsAssignableFrom<IReadOnlyList<IBrowserFile>>(result);
         // First file
         var browserFile1 = browserFiles[0];
-        Assert.Equal("file", browserFile1.Name);
+        Assert.Equal("file1.txt", browserFile1.Name);
         Assert.Equal(expectedString1.Length, browserFile1.Size);
         var buffer1 = new byte[browserFile1.Size];
         browserFile1.OpenReadStream().Read(buffer1);
         Assert.Equal(expectedString1, Encoding.UTF8.GetString(buffer1, 0, buffer1.Length));
         // Second files
-        var browserFile2 = browserFiles[0];
-        Assert.Equal("file", browserFile2.Name);
-        Assert.Equal(expectedString1.Length, browserFile2.Size);
+        var browserFile2 = browserFiles[1];
+        Assert.Equal("file2.txt", browserFile2.Name);
+        Assert.Equal(expectedString2.Length, browserFile2.Size);
         var buffer2 = new byte[browserFile2.Size];
-        browserFile1.OpenReadStream().Read(buffer2);
-        Assert.Equal(expectedString1, Encoding.UTF8.GetString(buffer2, 0, buffer2.Length));
+        browserFile2.OpenReadStream().Read(buffer2);
+        Assert.Equal(expectedString2, Encoding.UTF8.GetString(buffer2, 0, buffer2.Length));
     }
 
     [Fact]

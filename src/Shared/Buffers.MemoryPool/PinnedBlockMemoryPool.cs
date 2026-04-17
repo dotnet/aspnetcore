@@ -27,15 +27,15 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
     public static readonly TimeSpan DefaultEvictionDelay = TimeSpan.FromSeconds(10);
 
     /// <summary>
+    /// The size of a block. 4096 is chosen because most operating systems use 4k pages.
+    /// </summary>
+    public static int BlockSize => _blockSize;
+
+    /// <summary>
     /// Max allocation block size for pooled blocks,
     /// larger values can be leased but they will be disposed after use rather than returned to the pool.
     /// </summary>
     public override int MaxBufferSize { get; } = _blockSize;
-
-    /// <summary>
-    /// The size of a block. 4096 is chosen because most operating systems use 4k pages.
-    /// </summary>
-    public static int BlockSize => _blockSize;
 
     /// <summary>
     /// Thread-safe collection of blocks which are currently in the pool. A slab will pre-allocate all of the block tracking objects
@@ -48,29 +48,32 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
     /// </summary>
     private bool _isDisposed; // To detect redundant calls
 
-    private readonly PinnedBlockMemoryPoolMetrics? _metrics;
+    private readonly string? _owner;
+    private readonly MemoryPoolMetrics? _metrics;
     private readonly ILogger? _logger;
 
-    private long _currentMemory;
-    private long _evictedMemory;
     private DateTimeOffset _nextEviction = DateTime.UtcNow.Add(DefaultEvictionDelay);
 
-    private uint _rentCount;
-    private uint _returnCount;
+    private ulong _rentCount;
+    private ulong _returnCount;
 
     private readonly object _disposeSync = new object();
 
     private Action<object?, PinnedBlockMemoryPool>? _onPoolDisposed;
     private object? _onPoolDisposedState;
 
+    // Internal for tests.
+    internal string? Owner => _owner;
+
     /// <summary>
     /// This default value passed in to Rent to use the default value for the pool.
     /// </summary>
     private const int AnySize = -1;
 
-    public PinnedBlockMemoryPool(IMeterFactory? meterFactory = null, ILogger? logger = null)
+    public PinnedBlockMemoryPool(string? owner = null, MemoryPoolMetrics? metrics = null, ILogger? logger = null)
     {
-        _metrics = meterFactory is null ? null : new PinnedBlockMemoryPoolMetrics(meterFactory);
+        _metrics = metrics;
+        _owner = owner;
         _logger = logger;
     }
 
@@ -99,16 +102,15 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
 
         if (_blocks.TryDequeue(out var block))
         {
-            _metrics?.UpdateCurrentMemory(-block.Memory.Length);
-            _metrics?.Rent(block.Memory.Length);
-            Interlocked.Add(ref _currentMemory, -block.Memory.Length);
+            _metrics?.UpdatePooledMemory(-block.Memory.Length, _owner);
+            _metrics?.AddRentedMemory(block.Memory.Length, _owner);
 
             // block successfully taken from the stack - return it
             return block;
         }
 
-        _metrics?.IncrementTotalMemory(BlockSize);
-        _metrics?.Rent(BlockSize);
+        _metrics?.AddAllocatedMemory(BlockSize, _owner);
+        _metrics?.AddRentedMemory(BlockSize, _owner);
 
         // We already counted this Rent call above, but since we're now allocating (need more blocks)
         // that means the pool is 'very' active and we probably shouldn't evict blocks, so we count again
@@ -129,17 +131,16 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
     internal void Return(MemoryPoolBlock block)
     {
 #if BLOCK_LEASE_TRACKING
-            Debug.Assert(block.Pool == this, "Returned block was not leased from this pool");
-            Debug.Assert(block.IsLeased, $"Block being returned to pool twice: {block.Leaser}{Environment.NewLine}");
-            block.IsLeased = false;
+        Debug.Assert(block.Pool == this, "Returned block was not leased from this pool");
+        Debug.Assert(block.IsLeased, $"Block being returned to pool twice: {block.Leaser}{Environment.NewLine}");
+        block.IsLeased = false;
 #endif
 
         Interlocked.Increment(ref _returnCount);
 
         if (!_isDisposed)
         {
-            _metrics?.UpdateCurrentMemory(block.Memory.Length);
-            Interlocked.Add(ref _currentMemory, block.Memory.Length);
+            _metrics?.UpdatePooledMemory(block.Memory.Length, _owner);
 
             _blocks.Enqueue(block);
         }
@@ -178,8 +179,8 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
     /// </summary>
     internal void PerformEviction()
     {
-        var currentCount = (uint)_blocks.Count;
-        var burstAmount = 0u;
+        var currentCount = (ulong)_blocks.Count;
+        var burstAmount = 0ul;
 
         var rentCount = _rentCount;
         var returnCount = _returnCount;
@@ -213,10 +214,8 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
         // Remove from queue and let GC clean the memory up
         while (burstAmount > 0 && _blocks.TryDequeue(out var block))
         {
-            _metrics?.UpdateCurrentMemory(-block.Memory.Length);
-            _metrics?.EvictBlock(block.Memory.Length);
-            Interlocked.Add(ref _currentMemory, -block.Memory.Length);
-            Interlocked.Add(ref _evictedMemory, block.Memory.Length);
+            _metrics?.UpdatePooledMemory(-block.Memory.Length, _owner);
+            _metrics?.AddEvictedMemory(block.Memory.Length, _owner);
 
             burstAmount--;
         }
