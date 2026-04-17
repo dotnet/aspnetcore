@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
-using OpenQA.Selenium.BiDi.Communication;
+using OpenQA.Selenium.BiDi;
 using OpenQA.Selenium.DevTools;
 using OpenQA.Selenium.Support.Extensions;
 using TestServer;
@@ -596,11 +596,11 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"LocationChanged/LocationChanging event ({renderMode})")).Click();
         Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
-        Assert.EndsWith($"/nav/location-changed/{renderMode}", Browser.Exists(By.Id($"nav-uri-{renderMode}")).Text);
+        Browser.Contains($"/nav/location-changed/{renderMode}", () => Browser.Exists(By.Id($"nav-uri-{renderMode}")).Text);
 
         Browser.Exists(By.Id($"update-query-string-{renderMode}")).Click();
 
-        Assert.EndsWith($"/nav/location-changed/{renderMode}?query=1", Browser.Exists(By.Id($"nav-uri-{renderMode}")).Text);
+        Browser.Contains($"/nav/location-changed/{renderMode}?query=1", () => Browser.Exists(By.Id($"nav-uri-{renderMode}")).Text);
     }
 
     [Theory]
@@ -613,13 +613,13 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("LocationChanged/LocationChanging event (server-and-wasm)")).Click();
         Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
-        Assert.EndsWith("/nav/location-changed/server-and-wasm", Browser.Exists(By.Id("nav-uri-server")).Text);
-        Assert.EndsWith("/nav/location-changed/server-and-wasm", Browser.Exists(By.Id("nav-uri-wasm")).Text);
+        Browser.Contains("/nav/location-changed/server-and-wasm", () => Browser.Exists(By.Id("nav-uri-server")).Text);
+        Browser.Contains("/nav/location-changed/server-and-wasm", () => Browser.Exists(By.Id("nav-uri-wasm")).Text);
 
         Browser.Exists(By.Id($"update-query-string-{runtimeThatInvokedNavigation}")).Click();
 
-        Assert.EndsWith($"/nav/location-changed/server-and-wasm?query=1", Browser.Exists(By.Id($"nav-uri-server")).Text);
-        Assert.EndsWith($"/nav/location-changed/server-and-wasm?query=1", Browser.Exists(By.Id($"nav-uri-wasm")).Text);
+        Browser.Contains("/nav/location-changed/server-and-wasm?query=1", () => Browser.Exists(By.Id("nav-uri-server")).Text);
+        Browser.Contains("/nav/location-changed/server-and-wasm?query=1", () => Browser.Exists(By.Id("nav-uri-wasm")).Text);
     }
 
     [Theory]

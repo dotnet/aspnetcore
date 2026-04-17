@@ -55,7 +55,21 @@ internal class ResourceCollectionProvider
         }
 
         var module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", _url);
-        var result = await module.InvokeAsync<ResourceAsset[]>("get");
-        return result == null ? ResourceAssetCollection.Empty : new ResourceAssetCollection(result);
+        try
+        {
+            var result = await module.InvokeAsync<ResourceAsset[]>("get");
+            return result == null ? ResourceAssetCollection.Empty : new ResourceAssetCollection(result);
+        }
+        finally
+        {
+            try
+            {
+                await module.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // If the browser is gone, we don't need it to clean up any browser-side state
+            }
+        }
     }
 }

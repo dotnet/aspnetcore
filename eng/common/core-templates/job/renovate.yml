@@ -1,0 +1,196 @@
+# --------------------------------------------------------------------------------------
+# Renovate Bot Job Template
+# --------------------------------------------------------------------------------------
+# This Azure DevOps pipeline job template runs Renovate (https://docs.renovatebot.com/)
+# to automatically update dependencies in a GitHub repository.
+#
+# Renovate scans the repository for dependency files and creates pull requests to update
+# outdated dependencies based on the configuration specified in the renovateConfigPath
+# parameter.
+#
+# Usage:
+#   For each product repo wanting to make use of Renovate, this template is called from
+#   an internal Azure DevOps pipeline, typically with a schedule trigger, to check for
+#   and propose dependency updates.
+#
+# For more info, see https://github.com/dotnet/arcade/blob/main/Documentation/Renovate.md
+# --------------------------------------------------------------------------------------
+
+parameters:
+
+# Path to the Renovate configuration file within the repository.
+- name: renovateConfigPath
+  type: string
+  default: 'eng/renovate.json'
+
+# GitHub repository to run Renovate against, in the format 'owner/repo'.
+# This could technically be any repo but convention is to target the same
+# repo that contains the calling pipeline. The Renovate config file would
+# be co-located with the pipeline's repo and, in most cases, the config
+# file is specific to the repo being targeted.
+- name: gitHubRepo
+  type: string
+
+# List of base branches to target for Renovate PRs.
+# NOTE: The Renovate configuration file is always read from the branch where the
+# pipeline is run, NOT from the target branches specified here. If you need different
+# configurations for different branches, run the pipeline from each branch separately.
+- name: baseBranches
+  type: object
+  default:
+  - main
+
+# When true, Renovate will run in dry run mode, which previews changes without creating PRs.
+# See the 'Run Renovate' step log output for details of what would have been changed.
+- name: dryRun
+  type: boolean
+  default: false
+
+# By default, Renovate will not recreate a PR for a given dependency/version pair that was
+# previously closed. This allows opting in to always recreating PRs even if they were
+# previously closed.
+- name: forceRecreatePR
+  type: boolean
+  default: false
+
+# Name of the arcade repository resource in the pipeline.
+# This allows repos which haven't been onboarded to Arcade to still use this 
+# template by checking out the repo as a resource with a custom name and pointing
+# this parameter to it.
+- name: arcadeRepoResource
+  type: string
+  default: self
+
+# Directory name for the self repo under $(Build.SourcesDirectory) in multi-checkout.
+# In multi-checkout (when arcadeRepoResource != 'self'), Azure DevOps checks out the
+# self repo to $(Build.SourcesDirectory)/<repoName>. Set this to match the auto-generated
+# directory name. Using the auto-generated name is necessary rather than explicitly
+# defining a checkout path because container jobs expect repos to live under the agent's
+# workspace ($(Pipeline.Workspace)). On some self-hosted setups the host path
+# (e.g., /mnt/vss/_work) differs from the container path (e.g., /__w), and a custom checkout
+# path can fail validation. Using the default checkout location keeps the paths consistent
+# and avoids this issue.
+- name: selfRepoName
+  type: string
+  default: ''
+- name: arcadeRepoName
+  type: string
+  default: ''
+
+# Pool configuration for the job.
+- name: pool
+  type: object
+  default:
+    name: NetCore1ESPool-Internal
+    image: build.azurelinux.3.amd64
+    os: linux
+
+jobs:
+- job: Renovate
+  displayName: Run Renovate
+  container: RenovateContainer
+  variables:
+  - group: dotnet-renovate-bot
+  # The Renovate version is automatically updated by https://github.com/dotnet/arcade/blob/main/azure-pipelines-renovate.yml.
+  # Changing the variable name here would require updating the name in https://github.com/dotnet/arcade/blob/main/eng/renovate.json as well.
+  - name: renovateVersion
+    value: '42'
+    readonly: true
+  - name: renovateLogFilePath
+    value: '$(Build.ArtifactStagingDirectory)/renovate.json'
+    readonly: true
+  - name: dryRunArg
+    readonly: true
+    ${{ if eq(parameters.dryRun, true) }}:
+      value: 'full'
+    ${{ else }}:
+      value: ''
+  - name: recreateWhenArg
+    readonly: true
+    ${{ if eq(parameters.forceRecreatePR, true) }}:
+      value: 'always'
+    ${{ else }}:
+      value: ''
+  # In multi-checkout (without custom paths), Azure DevOps places each repo under
+  # $(Build.SourcesDirectory)/<repoName>. selfRepoName must be provided in that case.
+  - name: selfRepoPath
+    readonly: true
+    ${{ if eq(parameters.arcadeRepoResource, 'self') }}:
+      value: '$(Build.SourcesDirectory)'
+    ${{ else }}:
+      value: '$(Build.SourcesDirectory)/${{ parameters.selfRepoName }}'
+  - name: arcadeRepoPath
+    readonly: true
+    ${{ if eq(parameters.arcadeRepoResource, 'self') }}:
+      value: '$(Build.SourcesDirectory)'
+    ${{ else }}:
+      value: '$(Build.SourcesDirectory)/${{ parameters.arcadeRepoName }}'
+  pool: ${{ parameters.pool }}
+  
+  templateContext:
+    outputParentDirectory: $(Build.ArtifactStagingDirectory)
+    outputs:
+    - output: pipelineArtifact
+      displayName: Publish Renovate Log
+      condition: succeededOrFailed()
+      targetPath: $(Build.ArtifactStagingDirectory)
+      artifactName: $(Agent.JobName)_Logs_Attempt$(System.JobAttempt)
+      sbomEnabled: false
+
+  steps:
+  - checkout: self
+    fetchDepth: 1
+  
+  - ${{ if ne(parameters.arcadeRepoResource, 'self') }}:
+    - checkout: ${{ parameters.arcadeRepoResource }}
+      fetchDepth: 1
+
+  - script: |
+      renovate-config-validator $(selfRepoPath)/${{parameters.renovateConfigPath}} 2>&1 | tee /tmp/renovate-config-validator.out
+      validatorExit=${PIPESTATUS[0]}
+      if grep -q '^ WARN:' /tmp/renovate-config-validator.out; then
+        echo "##vso[task.logissue type=warning]Renovate config validator produced warnings."
+        echo "##vso[task.complete result=SucceededWithIssues]"
+      fi
+      exit $validatorExit
+    displayName: Validate Renovate config
+    env:
+      LOG_LEVEL: info
+      LOG_FILE_LEVEL: debug
+      LOG_FILE: $(Build.ArtifactStagingDirectory)/renovate-config-validator.json
+  
+  - script: |
+      . $(arcadeRepoPath)/eng/common/renovate.env
+      renovate 2>&1 | tee /tmp/renovate.out
+      renovateExit=${PIPESTATUS[0]}
+      if grep -q '^ WARN:' /tmp/renovate.out; then
+        echo "##vso[task.logissue type=warning]Renovate produced warnings."
+        echo "##vso[task.complete result=SucceededWithIssues]"
+      fi
+      exit $renovateExit
+    displayName: Run Renovate
+    env:
+      RENOVATE_FORK_TOKEN: $(BotAccount-dotnet-renovate-bot-PAT)
+      RENOVATE_TOKEN: $(BotAccount-dotnet-renovate-bot-PAT)
+      RENOVATE_REPOSITORIES: ${{parameters.gitHubRepo}}
+      RENOVATE_BASE_BRANCHES: ${{ convertToJson(parameters.baseBranches) }}
+      RENOVATE_DRY_RUN: $(dryRunArg)
+      RENOVATE_RECREATE_WHEN: $(recreateWhenArg)
+      LOG_LEVEL: info
+      LOG_FILE_LEVEL: debug
+      LOG_FILE: $(renovateLogFilePath)
+      RENOVATE_CONFIG_FILE: $(selfRepoPath)/${{parameters.renovateConfigPath}}
+  
+  - script: |
+      echo "PRs created by Renovate:"
+      if [ -s "$(renovateLogFilePath)" ]; then
+        if ! jq -r 'select(.msg == "PR created" and .pr != null) | "https://github.com/\(.repository)/pull/\(.pr)"' "$(renovateLogFilePath)" | sort -u; then
+          echo "##vso[task.logissue type=warning]Failed to parse Renovate log file with jq."
+          echo "##vso[task.complete result=SucceededWithIssues]"
+        fi
+      else
+        echo "##vso[task.logissue type=warning]No Renovate log file found or file is empty."
+        echo "##vso[task.complete result=SucceededWithIssues]"
+      fi
+    displayName: List created PRs
+    condition: and(succeededOrFailed(), eq('${{ parameters.dryRun }}', false))

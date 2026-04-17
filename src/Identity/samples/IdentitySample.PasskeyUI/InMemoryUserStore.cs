@@ -116,6 +116,7 @@ public sealed class InMemoryUserStore<TUser> :
             p.ClientDataJson)
         {
             Name = p.Name,
+            Aaguid = p.Aaguid,
         };
 
     [return: NotNullIfNotNull(nameof(p))]
@@ -134,6 +135,7 @@ public sealed class InMemoryUserStore<TUser> :
             IsBackedUp = p.IsBackedUp,
             AttestationObject = p.AttestationObject,
             ClientDataJson = p.ClientDataJson,
+            Aaguid = p.Aaguid,
         };
 
     public void Dispose()
