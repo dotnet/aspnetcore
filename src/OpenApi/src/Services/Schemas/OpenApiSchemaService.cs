@@ -104,11 +104,12 @@ internal sealed class OpenApiSchemaService(
             {
                 schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
             }
-            if (context.TypeInfo.Type.GetCustomAttributes(inherit: false).OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
+            var typeAttributes = context.TypeInfo.Type.GetCustomAttributes(inherit: false);
+            if (typeAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
             {
                 schema[OpenApiSchemaKeywords.DescriptionKeyword] = typeDescriptionAttribute.Description;
             }
-            if (context.TypeInfo.Type.GetCustomAttributes(inherit: false).OfType<ObsoleteAttribute>().Any())
+            if (typeAttributes.OfType<ObsoleteAttribute>().Any())
             {
                 schema[OpenApiSchemaKeywords.DeprecatedKeyword] = true;
             }
