@@ -1015,6 +1015,11 @@ internal partial class CircuitHost : IAsyncDisposable
                 Log.ServerPauseAccepted(_logger, CircuitId);
                 return true;
             }
+            catch (OperationCanceledException)
+            {
+                Log.ServerPauseRejected(_logger, CircuitId);
+                return false;
+            }
             catch (Exception ex)
             {
                 Log.ServerPauseFailed(_logger, CircuitId, ex);
