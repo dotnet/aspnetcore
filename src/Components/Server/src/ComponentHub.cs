@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
@@ -458,7 +459,7 @@ internal sealed partial class ComponentHub : Hub
         return true;
     }
 
-    public async ValueTask BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
+    public async ValueTask BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, [StringSyntax(StringSyntaxAttribute.Json)] string argsJson)
     {
         var circuitHost = await GetActiveCircuitAsync();
         if (circuitHost == null)
