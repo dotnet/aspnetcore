@@ -1,0 +1,138 @@
+<!--
+  Microsoft.AspNetCore.Components.Testing.targets
+  ============================
+  Reusable MSBuild targets for E2E test projects. Generates a JSON manifest
+  describing all Blazor app projects under test and prepares them at build time.
+
+  Usage (via NuGet — automatic):
+  ==============================
+  Add <PackageReference Include="Microsoft.AspNetCore.Components.Testing" /> to the test project.
+  The props and targets are auto-imported via buildTransitive.
+
+  Usage (via ProjectReference — development):
+  ============================================
+  1. Import this file after the SDK import:
+       <Import Project="../../eng/targets/Microsoft.AspNetCore.Components.Testing.targets" />
+
+  2. Tag each app ProjectReference with E2EApp metadata:
+       <ProjectReference Include="..\..\src\MyApp\MyApp.csproj">
+         <E2EApp>true</E2EApp>
+         <E2EPublicUrl>https://localhost:5001</E2EPublicUrl>  (optional)
+       </ProjectReference>
+
+  3. Build normally for dev/build mode (dotnet run from the app's working directory):
+       dotnet test
+
+  4. Build with E2EAppMode=publish for published mode:
+       dotnet test -p:E2EAppMode=publish
+
+  5. Build with E2EAppMode=all for both source and published:
+       dotnet test -p:E2EAppMode=all
+
+  E2EAppMode controls what lands in e2e-apps/:
+    build   (default) — copies project source for 'dotnet run' (works locally and after publish).
+    publish           — publishes the app (native exe / framework-dependent) for faster startup.
+    all               — both: source in e2e-apps/<name>/, published in e2e-apps/publish/<name>/.
+
+  Local dev (Build): manifest uses absolute paths to source, nothing is copied.
+  Publish:           manifest uses relative paths, everything flows to $(PublishDir).
+
+  The test fixture reads the manifest at runtime to determine how to launch each app.
+-->
+<Project>
+
+  <!--
+    MSBuild task: GenerateE2EManifest (from compiled task assembly).
+    When consumed via NuGet, the task DLL is in the tasks/ folder of the package.
+    Set _E2ETasksAssembly before importing this file to use a different location
+    (e.g., set it to the development build output in testassets/Directory.Build.props).
+  -->
+  <PropertyGroup>
+    <_E2ETasksAssembly Condition="'$(_E2ETasksAssembly)' == '' and Exists('$(MSBuildThisFileDirectory)tasks\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll')">$(MSBuildThisFileDirectory)tasks\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll</_E2ETasksAssembly>
+  </PropertyGroup>
+
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.Components.Testing.Tasks.GenerateE2EManifest"
+    AssemblyFile="$(_E2ETasksAssembly)"
+    Condition="'$(_E2ETasksAssembly)' != ''" />
+
+  <!--
+    Target: PrepareE2EApps
+    Runs after Build and Publish. Depending on E2EAppMode, copies source and/or
+    publishes each E2EApp project, then generates the manifest.
+
+    On Build: output goes to $(OutputPath) (local dev).
+    On Publish: output goes to $(PublishDir).
+    Follows the same pattern as FunctionalTestWithAssets.targets.
+  -->
+  <Target
+    Name="PrepareE2EApps"
+    AfterTargets="Build;Publish">
+
+    <!--
+      Detect whether we are running during Publish.
+      _E2EIsPublishing is true only when the Publish target has run; during Build
+      the output of "dotnet publish" doesn't exist so this check distinguishes the two.
+      We test for the sentinel file that "dotnet publish" always writes.
+    -->
+    <PropertyGroup>
+      <_E2EIsPublishing>false</_E2EIsPublishing>
+      <_E2EIsPublishing Condition="Exists('$(PublishDir)$(TargetFileName)')">true</_E2EIsPublishing>
+      <_E2EOutputRoot Condition="'$(_E2EIsPublishing)' == 'true'">$(PublishDir)</_E2EOutputRoot>
+      <_E2EOutputRoot Condition="'$(_E2EIsPublishing)' != 'true'">$(OutputPath)</_E2EOutputRoot>
+      <_E2EAppsOutputDir>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(_E2EOutputRoot)', '$(E2EAppsRelativeDir)'))</_E2EAppsOutputDir>
+      <_ManifestPath>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(_E2EOutputRoot)', '$(AssemblyName).e2e-manifest.json'))</_ManifestPath>
+    </PropertyGroup>
+
+    <!-- Find all ProjectReferences tagged as E2E apps -->
+    <ItemGroup>
+      <_E2EAppProjects Include="@(ProjectReference)" Condition="'%(ProjectReference.E2EApp)' == 'true'" />
+    </ItemGroup>
+
+    <!--
+      Copy project source for build/all modes.
+      During Publish, source is copied into the output so 'dotnet run' works after deployment.
+      During Build (local dev), source is NOT copied — the manifest uses absolute paths.
+    -->
+    <ItemGroup Condition="'$(_E2EIsPublishing)' == 'true' and ('$(E2EAppMode)' == 'build' or '$(E2EAppMode)' == 'all') and '@(_E2EAppProjects)' != ''">
+      <_E2ESourceFilesToCopy
+        Include="%(_E2EAppProjects.RootDir)%(_E2EAppProjects.Directory)**\*"
+        Exclude="%(_E2EAppProjects.RootDir)%(_E2EAppProjects.Directory)bin\**;%(_E2EAppProjects.RootDir)%(_E2EAppProjects.Directory)obj\**"
+        E2EAppName="%(_E2EAppProjects.Filename)"
+        SourceRoot="%(_E2EAppProjects.RootDir)%(_E2EAppProjects.Directory)" />
+    </ItemGroup>
+    <Copy
+      Condition="'@(_E2ESourceFilesToCopy)' != ''"
+      SourceFiles="@(_E2ESourceFilesToCopy)"
+      DestinationFiles="@(_E2ESourceFilesToCopy->'$(_E2EAppsOutputDir)\%(E2EAppName)\%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true" />
+
+    <!--
+      Publish each E2E app project for publish/all modes.
+      publish mode: output goes to e2e-apps/<name>/
+      all mode:     output goes to e2e-apps/publish/<name>/
+    -->
+    <MSBuild
+      Condition="'$(E2EAppMode)' == 'publish' and '@(_E2EAppProjects)' != ''"
+      Projects="@(_E2EAppProjects)"
+      Targets="Publish"
+      Properties="PublishDir=$([System.IO.Path]::Combine('$(_E2EAppsOutputDir)', '%(_E2EAppProjects.Filename)'))/;Configuration=$(Configuration)" />
+    <MSBuild
+      Condition="'$(E2EAppMode)' == 'all' and '@(_E2EAppProjects)' != ''"
+      Projects="@(_E2EAppProjects)"
+      Targets="Publish"
+      Properties="PublishDir=$([System.IO.Path]::Combine('$(_E2EAppsOutputDir)', 'publish', '%(_E2EAppProjects.Filename)'))/;Configuration=$(Configuration)" />
+
+    <!-- Generate manifest -->
+    <GenerateE2EManifest
+      AppItems="@(_E2EAppProjects)"
+      ManifestPath="$(_ManifestPath)"
+      E2EAppsOutputDir="$(_E2EAppsOutputDir)"
+      E2EAppsRelativeDir="$(E2EAppsRelativeDir)"
+      E2EAppMode="$(E2EAppMode)"
+      IsPublishing="$(_E2EIsPublishing)"
+      Condition="'@(_E2EAppProjects)' != '' and '$(_E2ETasksAssembly)' != ''" />
+
+  </Target>
+
+</Project>

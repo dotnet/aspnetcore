@@ -21,7 +21,7 @@ internal sealed class ComponentFactory
 
     static ComponentFactory()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += ClearCache;
         }
