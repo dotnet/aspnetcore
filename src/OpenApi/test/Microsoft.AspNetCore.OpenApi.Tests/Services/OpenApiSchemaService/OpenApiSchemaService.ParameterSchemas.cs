@@ -198,7 +198,6 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 #nullable restore
 
-
     [Fact]
     public async Task GetOpenApiParameters_HandlesEnumParameterWithoutConverter()
     {

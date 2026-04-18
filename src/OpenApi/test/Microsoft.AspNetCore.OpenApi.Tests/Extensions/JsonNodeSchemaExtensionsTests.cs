@@ -169,7 +169,7 @@ public static class JsonNodeSchemaExtensionsTests
         schema.ApplyDefaultValue(defaultValue, jsonTypeInfo);
 
         // Assert
-        Assert.Equal(expected, schema["default"]!.GetValue(targetType));
+        Assert.Equal(expected, JsonSerializer.Deserialize(schema["default"]!, targetType));
     }
 
     [Fact]
