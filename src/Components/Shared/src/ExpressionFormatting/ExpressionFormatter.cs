@@ -14,7 +14,7 @@ internal static class ExpressionFormatter
 {
     static ExpressionFormatter()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += ClearCache;
         }
@@ -77,7 +77,7 @@ internal static class ExpressionFormatter
                     builder.InsertFront("]");
                     FormatIndexArgument(methodCallExpression.Arguments[0], ref builder);
                     builder.InsertFront("[");
-                    
+
                     break;
 
                 case ExpressionType.ArrayIndex:

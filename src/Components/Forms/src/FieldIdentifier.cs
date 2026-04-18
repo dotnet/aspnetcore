@@ -20,7 +20,7 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
 
     static FieldIdentifier()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += ClearCache;
         }

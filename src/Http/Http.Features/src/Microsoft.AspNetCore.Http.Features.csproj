@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core HTTP feature interface definitions.</Description>
@@ -13,7 +13,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.Extensions.Features" />
-    <Reference Include="Microsoft.Extensions.Primitives" />
     <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 

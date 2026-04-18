@@ -611,14 +611,18 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65852")]
-    public virtual void CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax()
+    public void CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax()
     {
         Browser.MountTestComponent<VirtualizationLargeOverscan>();
         var container = Browser.Exists(By.Id("virtualize-large-overscan"));
-        // Ensure we have an initial contiguous batch and the elevated effective max has kicked in (>= OverscanCount)
-        var indices = GetVisibleItemIndices();
-        Browser.True(() => indices.Count >= 200);
+        // Wait for the elevated effective max to kick in (>= OverscanCount).
+        // Re-query inside the retry loop so we see new items as they render.
+        List<int> indices = null;
+        Browser.True(() =>
+        {
+            indices = GetVisibleItemIndices();
+            return indices.Count >= 200;
+        });
 
         // Give focus so PageDown works
         container.Click();
@@ -633,8 +637,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
         while (scrollTop + clientHeight < scrollHeight)
         {
-            // Validate contiguity on the current page
-            Browser.True(() => IsCurrentViewContiguous(indices));
+            // Re-query visible items after each scroll so contiguity and
+            // progress checks reflect the current DOM state.
+            Browser.True(() =>
+            {
+                indices = GetVisibleItemIndices();
+                return IsCurrentViewContiguous(indices);
+            });
 
             // Track progress in indices
             var currentMax = indices.Max();
@@ -738,6 +747,52 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         var js = (IJavaScriptExecutor)Browser;
         js.ExecuteScript("arguments[0].scrollLeft = arguments[0].scrollWidth", elem);
+    }
+
+    private void ScrollToOffsetWithStabilization(
+        IWebElement container,
+        double targetScrollTop,
+        int minFirstRenderedIndexExclusive)
+    {
+        ScrollToOffsetWithStabilization(container, targetScrollTop, () =>
+        {
+            var items = container.FindElements(By.CssSelector(".item"));
+            if (items.Count == 0)
+            {
+                return false;
+            }
+
+            var indexText = items.First().GetDomAttribute("data-index");
+            return indexText != null
+                && int.TryParse(indexText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var index)
+                && index > minFirstRenderedIndexExclusive;
+        });
+    }
+
+    private void ScrollToOffsetWithStabilization(
+        IWebElement container,
+        double targetScrollTop,
+        Func<bool> itemCheckPredicate)
+    {
+        var js = (IJavaScriptExecutor)Browser;
+
+        container.Click();
+        Browser.True(() =>
+        {
+            js.ExecuteScript("arguments[0].scrollTop = arguments[1];", container, targetScrollTop);
+
+            var currentScrollTop = Convert.ToDouble(
+                js.ExecuteScript("return arguments[0].scrollTop;", container),
+                CultureInfo.InvariantCulture);
+            if (currentScrollTop + 1 < targetScrollTop)
+            {
+                return false;
+            }
+
+            return itemCheckPredicate();
+        });
+
+        WaitForScrollStabilization(container);
     }
 
     /// <summary>
@@ -1034,7 +1089,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    public void DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace()
+    public virtual void DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace()
     {
         Browser.MountTestComponent<VirtualizationDynamicContent>();
 
@@ -1043,20 +1098,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => GetElementCount(container, ".item") > 0);
 
         // Scroll past the overscan window to force true virtualization.
-        js.ExecuteScript("arguments[0].scrollTop = 5000", container);
-        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) >= 5000);
-
-        Browser.True(() =>
-        {
-            var items = container.FindElements(By.CssSelector(".item"));
-            if (items.Count == 0)
-            {
-                return false;
-            }
-
-            var idx = items.First().GetDomAttribute("data-index");
-            return idx != null && int.Parse(idx, CultureInfo.InvariantCulture) > 10;
-        });
+        ScrollToOffsetWithStabilization(container, targetScrollTop: 5000, minFirstRenderedIndexExclusive: 10);
 
         // Record the first visible item and its Y position.
         var containerRect = container.Location;
@@ -1107,20 +1149,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => GetElementCount(container, ".item") > 0);
 
         // Scroll past the overscan window to force true virtualization.
-        js.ExecuteScript("arguments[0].scrollTop = 5000", container);
-        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) >= 5000);
-
-        Browser.True(() =>
-        {
-            var items = container.FindElements(By.CssSelector(".item"));
-            if (items.Count == 0)
-            {
-                return false;
-            }
-
-            var idx = items.First().GetDomAttribute("data-index");
-            return idx != null && int.Parse(idx, CultureInfo.InvariantCulture) > 10;
-        });
+        ScrollToOffsetWithStabilization(container, targetScrollTop: 5000, minFirstRenderedIndexExclusive: 10);
         var visibleItems = container.FindElements(By.CssSelector(".item"));
         var firstVisible = visibleItems.First();
         var firstVisibleIndex = firstVisible.GetDomAttribute("data-index");
@@ -1597,7 +1626,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    public virtual void NonZeroStartIndex_ScrollToMiddleThenMeasure()
+    public void NonZeroStartIndex_ScrollToMiddleThenMeasure()
     {
         Browser.MountTestComponent<VirtualizationScrollBehavior>();
 
@@ -1605,21 +1634,31 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var js = (IJavaScriptExecutor)Browser;
         Browser.True(() => GetElementCount(container, ".scroll-behavior-item") > 0);
 
-        js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight / 2", container);
+        // Scroll to middle and wait for Blazor's DOM update to land via MutationObserver.
+        // This sets scrollTop once and waits for the virtualization render to complete,
+        // rather than retrying the scroll which could mask bugs.
+        js.ExecuteAsyncScript(@"
+            var container = arguments[0];
+            var callback = arguments[1];
+            var targetTop = container.scrollHeight / 2;
+            container.scrollTop = targetTop;
+            var timer;
+            var observer = new MutationObserver(function() {
+                clearTimeout(timer);
+                timer = setTimeout(function() { observer.disconnect(); callback(); }, 200);
+            });
+            observer.observe(container, { childList: true, subtree: true });
+            // Fallback in case scroll didn't trigger any DOM mutations (e.g., already at target)
+            timer = setTimeout(function() { observer.disconnect(); callback(); }, 2000);
+        ", container);
+
         WaitForScrollStabilization(container);
 
-        Browser.True(() =>
-        {
-            var items = container.FindElements(By.CssSelector(".scroll-behavior-item .item-index"));
-            return items.Any(item =>
-            {
-                if (int.TryParse(item.Text, out var idx))
-                {
-                    return idx > 50;
-                }
-                return false;
-            });
-        });
+        // Verify that scrolling to the middle actually rendered middle items
+        var items = container.FindElements(By.CssSelector(".scroll-behavior-item .item-index"));
+        Assert.True(
+            items.Any(item => int.TryParse(item.Text, out var idx) && idx > 50),
+            "After scrolling to middle, expected items with index > 50 to be visible");
 
         var visibleItems = container.FindElements(By.CssSelector(".scroll-behavior-item"));
         Assert.True(visibleItems.Count > 0, "Should have visible items at non-zero start");
