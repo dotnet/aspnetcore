@@ -208,7 +208,7 @@ namespace Microsoft.Extensions.Validation.Generated
         var cw = new CodeWriter(sw, baseIndent: 3);
         foreach (var validatableType in validatableTypes)
         {
-            var typeName = validatableType.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            var typeName = validatableType.TypeFQN;
             cw.WriteLine($"if (type == typeof({typeName}))");
             cw.StartBlock();
             cw.WriteLine($"validatableInfo = new GeneratedValidatableTypeInfo(");
@@ -241,8 +241,8 @@ namespace Microsoft.Extensions.Validation.Generated
     {
         cw.WriteLine("new GeneratedValidatablePropertyInfo(");
         cw.Indent++;
-        cw.WriteLine($"containingType: typeof({member.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}),");
-        cw.WriteLine($"propertyType: typeof({member.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}),");
+        cw.WriteLine($"containingType: typeof({member.ContainingTypeFQN}),");
+        cw.WriteLine($"propertyType: typeof({member.TypeFQN}),");
         cw.WriteLine($"name: \"{member.Name}\",");
         cw.WriteLine($"displayName: \"{member.DisplayName}\"");
         cw.Indent--;
