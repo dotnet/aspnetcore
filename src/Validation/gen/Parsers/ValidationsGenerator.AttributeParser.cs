@@ -16,7 +16,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         return syntaxNode.IsKind(SyntaxKind.ClassDeclaration) || syntaxNode.IsKind(SyntaxKind.RecordDeclaration);
     }
 
-    internal ImmutableArray<ValidatableType> TransformValidatableTypeWithAttribute(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
+    internal static ImmutableArray<ValidatableType> TransformValidatableTypeWithAttribute(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
     {
         var validatableTypes = new HashSet<ValidatableType>(ValidatableTypeComparer.Instance);
         List<ITypeSymbol> visitedTypes = [];

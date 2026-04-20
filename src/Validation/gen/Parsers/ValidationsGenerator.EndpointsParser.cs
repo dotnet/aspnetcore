@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Validation;
 
 public sealed partial class ValidationsGenerator : IIncrementalGenerator
 {
-    internal bool FindEndpoints(SyntaxNode syntaxNode, CancellationToken cancellationToken)
+    internal static bool FindEndpoints(SyntaxNode syntaxNode, CancellationToken cancellationToken)
     {
         if (syntaxNode.IsKind(SyntaxKind.InvocationExpression)
             && ((InvocationExpressionSyntax)syntaxNode).TryGetMapMethodName(out var method))
@@ -27,7 +27,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         return false;
     }
 
-    internal ImmutableArray<ValidatableType> TransformEndpoints(GeneratorSyntaxContext context, CancellationToken cancellationToken)
+    internal static ImmutableArray<ValidatableType> TransformEndpoints(GeneratorSyntaxContext context, CancellationToken cancellationToken)
     {
         if (context.Node is not InvocationExpressionSyntax node)
         {
@@ -37,11 +37,11 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         var operation = context.SemanticModel.GetOperation(node, cancellationToken);
         AnalyzerDebug.Assert(operation != null, "Operation should not be null.");
         return operation is IInvocationOperation invocationOperation
-            ? ExtractValidatableEndpoint(invocationOperation, cancellationToken)
+            ? ExtractValidatableEndpoint(invocationOperation)
             : default;
     }
 
-    internal ImmutableArray<ValidatableType> ExtractValidatableEndpoint(IInvocationOperation? operation, CancellationToken cancellationToken)
+    internal static ImmutableArray<ValidatableType> ExtractValidatableEndpoint(IInvocationOperation? operation)
     {
         AnalyzerDebug.Assert(operation != null, "Operation should not be null.");
         AnalyzerDebug.Assert(operation.SemanticModel != null, "Operation should have a semantic model.");
