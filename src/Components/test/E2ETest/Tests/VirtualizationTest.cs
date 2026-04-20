@@ -251,7 +251,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65852")]
     public virtual void CanRenderHtmlTable()
     {
         Browser.MountTestComponent<VirtualizationTable>();
@@ -754,6 +753,26 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         double targetScrollTop,
         int minFirstRenderedIndexExclusive)
     {
+        ScrollToOffsetWithStabilization(container, targetScrollTop, () =>
+        {
+            var items = container.FindElements(By.CssSelector(".item"));
+            if (items.Count == 0)
+            {
+                return false;
+            }
+
+            var indexText = items.First().GetDomAttribute("data-index");
+            return indexText != null
+                && int.TryParse(indexText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var index)
+                && index > minFirstRenderedIndexExclusive;
+        });
+    }
+
+    private void ScrollToOffsetWithStabilization(
+        IWebElement container,
+        double targetScrollTop,
+        Func<bool> itemCheckPredicate)
+    {
         var js = (IJavaScriptExecutor)Browser;
 
         container.Click();
@@ -769,16 +788,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 return false;
             }
 
-            var items = container.FindElements(By.CssSelector(".item"));
-            if (items.Count == 0)
-            {
-                return false;
-            }
-
-            var indexText = items.First().GetDomAttribute("data-index");
-            return indexText != null
-                && int.TryParse(indexText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var index)
-                && index > minFirstRenderedIndexExclusive;
+            return itemCheckPredicate();
         });
 
         WaitForScrollStabilization(container);
@@ -1623,21 +1633,31 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var js = (IJavaScriptExecutor)Browser;
         Browser.True(() => GetElementCount(container, ".scroll-behavior-item") > 0);
 
-        js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight / 2", container);
+        // Scroll to middle and wait for Blazor's DOM update to land via MutationObserver.
+        // This sets scrollTop once and waits for the virtualization render to complete,
+        // rather than retrying the scroll which could mask bugs.
+        js.ExecuteAsyncScript(@"
+            var container = arguments[0];
+            var callback = arguments[1];
+            var targetTop = container.scrollHeight / 2;
+            container.scrollTop = targetTop;
+            var timer;
+            var observer = new MutationObserver(function() {
+                clearTimeout(timer);
+                timer = setTimeout(function() { observer.disconnect(); callback(); }, 200);
+            });
+            observer.observe(container, { childList: true, subtree: true });
+            // Fallback in case scroll didn't trigger any DOM mutations (e.g., already at target)
+            timer = setTimeout(function() { observer.disconnect(); callback(); }, 2000);
+        ", container);
+
         WaitForScrollStabilization(container);
 
-        Browser.True(() =>
-        {
-            var items = container.FindElements(By.CssSelector(".scroll-behavior-item .item-index"));
-            return items.Any(item =>
-            {
-                if (int.TryParse(item.Text, out var idx))
-                {
-                    return idx > 50;
-                }
-                return false;
-            });
-        });
+        // Verify that scrolling to the middle actually rendered middle items
+        var items = container.FindElements(By.CssSelector(".scroll-behavior-item .item-index"));
+        Assert.True(
+            items.Any(item => int.TryParse(item.Text, out var idx) && idx > 50),
+            "After scrolling to middle, expected items with index > 50 to be visible");
 
         var visibleItems = container.FindElements(By.CssSelector(".scroll-behavior-item"));
         Assert.True(visibleItems.Count > 0, "Should have visible items at non-zero start");
