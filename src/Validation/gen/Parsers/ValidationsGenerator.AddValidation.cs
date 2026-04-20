@@ -13,8 +13,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 {
     internal static bool FindAddValidation(SyntaxNode syntaxNode, CancellationToken cancellationToken)
     {
-        if (syntaxNode.IsKind(SyntaxKind.InvocationExpression)
-            && ((InvocationExpressionSyntax)syntaxNode).TryGetMapMethodName(out var method)
+        if (syntaxNode is InvocationExpressionSyntax invocationExpressionSyntax
+            && invocationExpressionSyntax.TryGetMapMethodName(out var method)
             && method == "AddValidation")
         {
             return true;
