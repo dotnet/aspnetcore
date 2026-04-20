@@ -243,9 +243,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
             var hasValidatableType = TryExtractValidatableType(member.Type, wellKnownTypes, validatableTypes, ref visitedTypes);
 
-            // If the member has no validation attributes or validatable types and is not required, skip it.
-            if (!TryExtractValidationAttributes(member, wellKnownTypes, out var isRequired) &&
-                !hasValidatableType && !isRequired)
+            // If the member has no validation attributes or validatable types, skip it.
+            if (!HasValidationAttributes(member, wellKnownTypes) && !hasValidatableType)
             {
                 continue;
             }
@@ -258,30 +257,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         }
 
         return [.. members];
-    }
-
-    private static bool TryExtractValidationAttributes(ISymbol symbol, WellKnownTypes wellKnownTypes, out bool isRequired)
-    {
-        var attributes = symbol.GetAttributes();
-        isRequired = false;
-        var hasValidationAttribute = false;
-
-        foreach (var attribute in attributes)
-        {
-            if (attribute.AttributeClass is null ||
-                !attribute.AttributeClass.ImplementsValidationAttribute(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_ValidationAttribute)))
-            {
-                continue;
-            }
-
-            hasValidationAttribute = true;
-            if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_RequiredAttribute)))
-            {
-                isRequired = true;
-            }
-        }
-
-        return hasValidationAttribute;
     }
 
     internal static bool HasValidationAttributes(ISymbol symbol, WellKnownTypes wellKnownTypes)
