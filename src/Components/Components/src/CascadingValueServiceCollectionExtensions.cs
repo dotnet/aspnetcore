@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -53,6 +54,24 @@ public static class CascadingValueServiceCollectionExtensions
         => serviceCollection.AddScoped<ICascadingValueSupplier>(sourceFactory);
 
     /// <summary>
+    /// Adds a cascading value supplier to the <paramref name="serviceCollection"/>. This allows supplying cascading values based on custom attributes, which can be used to support multiple cascading values of the same type with different matching criteria.
+    /// </summary>
+    /// <typeparam name="TAttribute">The attribute type.</typeparam>
+    /// <param name="serviceCollection">The <see cref="IServiceCollection"/>.</param>
+    /// <param name="subscribeFactory">A callback that supplies a <see cref="CascadingParameterSubscription"/> that handles subscriptions for attribute.</param>
+    /// <returns>The <see cref="IServiceCollection"/>.</returns>
+    public static IServiceCollection TryAddCascadingValueSupplier<TAttribute>(
+        this IServiceCollection serviceCollection,
+        Func<IServiceProvider, Func<ComponentState, TAttribute, CascadingParameterInfo, CascadingParameterSubscription>> subscribeFactory)
+        where TAttribute : CascadingParameterAttributeBase
+    {
+        serviceCollection.TryAddEnumerable(
+           ServiceDescriptor.Scoped<ICascadingValueSupplier, CascadingParameterValueProvider<TAttribute>>(
+               sp => new CascadingParameterValueProvider<TAttribute>(subscribeFactory(sp))));
+        return serviceCollection;
+    }
+
+    /// <summary>
     /// Adds a cascading value to the <paramref name="serviceCollection"/>, if none is already registered
     /// with the value type. This is equivalent to having a fixed <see cref="CascadingValue{TValue}"/> at
     /// the root of the component hierarchy.
@@ -91,7 +110,7 @@ public static class CascadingValueServiceCollectionExtensions
     /// Adds a cascading value to the <paramref name="serviceCollection"/>, if none is already registered
     /// with the value type. This is equivalent to having a fixed <see cref="CascadingValue{TValue}"/> at
     /// the root of the component hierarchy.
-    /// 
+    ///
     /// With this overload, you can supply a <see cref="CascadingValueSource{TValue}"/> which allows you
     /// to notify about updates to the value later, causing recipients to re-render. This overload should
     /// only be used if you plan to update the value dynamically.
