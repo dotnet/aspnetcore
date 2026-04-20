@@ -69,9 +69,7 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<EndpointRoutingStateProvider>();
         services.TryAddScoped<IRoutingStateProvider>(sp => sp.GetRequiredService<EndpointRoutingStateProvider>());
         services.TryAddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
-        services.TryAddScoped<ISessionValueMapper, SessionValueMapper>();
         services.AddSupplyValueFromQueryProvider();
-        services.AddSupplyValueFromSessionProvider();
         services.AddSupplyValueFromPersistentComponentStateProvider();
         services.TryAddCascadingValue(sp => sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext);
         services.TryAddScoped<ResourcePreloadService>();
@@ -79,6 +77,9 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<TempDataCascadingValueSupplier>();
         services.TryAddCascadingValueSupplier<SupplyParameterFromTempDataAttribute>(
             sp => sp.GetRequiredService<TempDataCascadingValueSupplier>().CreateSubscription);
+        services.TryAddScoped<SessionCascadingValueSupplier>();
+        services.TryAddCascadingValueSupplier<SupplyParameterFromSessionAttribute>(
+            sp => sp.GetRequiredService<SessionCascadingValueSupplier>().CreateSubscription);
 
         services.TryAddScoped<ResourceCollectionProvider>();
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<ResourceCollectionProvider>(services, RenderMode.InteractiveWebAssembly);

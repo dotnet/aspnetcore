@@ -11,16 +11,6 @@ Microsoft.AspNetCore.Components.IComponentPropertyActivator.GetActivator(System.
 *REMOVED*Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void
 *REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
 *REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void
-Microsoft.AspNetCore.Components.ISessionValueMapper
-Microsoft.AspNetCore.Components.ISessionValueMapper.DeleteValueCallback(string! sessionKey) -> void
-Microsoft.AspNetCore.Components.ISessionValueMapper.GetValue(string! sessionKey, System.Type! targetType) -> object?
-Microsoft.AspNetCore.Components.ISessionValueMapper.RegisterValueCallback(string! sessionKey, System.Func<object?>! valueGetter) -> void
-Microsoft.AspNetCore.Components.SupplyParameterFromSessionAttribute
-Microsoft.AspNetCore.Components.SupplyParameterFromSessionAttribute.Name.get -> string?
-Microsoft.AspNetCore.Components.SupplyParameterFromSessionAttribute.Name.set -> void
-Microsoft.AspNetCore.Components.SupplyParameterFromSessionAttribute.SupplyParameterFromSessionAttribute() -> void
-Microsoft.AspNetCore.Components.SupplyParameterFromSessionServiceCollectionExtensions
-static Microsoft.AspNetCore.Components.SupplyParameterFromSessionServiceCollectionExtensions.AddSupplyValueFromSessionProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.TryAddCascadingValueSupplier<TAttribute>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, System.Func<System.IServiceProvider!, System.Func<Microsoft.AspNetCore.Components.Rendering.ComponentState!, TAttribute!, Microsoft.AspNetCore.Components.CascadingParameterInfo, Microsoft.AspNetCore.Components.CascadingParameterSubscription!>!>! subscribeFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.AspNetCore.Components.BrowserConfiguration
 Microsoft.AspNetCore.Components.BrowserConfiguration.BrowserConfiguration() -> void
