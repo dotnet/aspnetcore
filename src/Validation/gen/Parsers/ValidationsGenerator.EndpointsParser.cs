@@ -28,12 +28,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
     internal static ImmutableArray<ValidatableType> TransformEndpoints(GeneratorSyntaxContext context, CancellationToken cancellationToken)
     {
-        if (context.Node is not InvocationExpressionSyntax node)
-        {
-            return default;
-        }
-
-        var operation = context.SemanticModel.GetOperation(node, cancellationToken);
+        var operation = context.SemanticModel.GetOperation((InvocationExpressionSyntax)context.Node, cancellationToken);
         AnalyzerDebug.Assert(operation != null, "Operation should not be null.");
         return operation is IInvocationOperation invocationOperation
             ? ExtractValidatableTypes(invocationOperation)
