@@ -402,6 +402,14 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>03a9943b2a2ebbc8e2cd9336ba1defcdaf6ffefd</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.ServiceDiscovery" Version="10.4.1">
+      <Uri>https://github.com/dotnet/extensions</Uri>
+      <Sha>24c7e4fc4f08e94d9e977bac3ab7b352762e28b2</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.ServiceDiscovery.Yarp" Version="10.4.1">
+      <Uri>https://github.com/dotnet/extensions</Uri>
+      <Sha>24c7e4fc4f08e94d9e977bac3ab7b352762e28b2</Sha>
+    </Dependency>
     <Dependency Name="optimization.windows_nt-x64.MIBC.Runtime" Version="1.0.0-prerelease.26180.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
       <Sha>9f55ee44f6d99b78f3e80f77e2ed73fb73b8f63b</Sha>
