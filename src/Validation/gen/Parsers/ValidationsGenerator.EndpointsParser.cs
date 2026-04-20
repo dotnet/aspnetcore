@@ -36,15 +36,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         var operation = context.SemanticModel.GetOperation(node, cancellationToken);
         AnalyzerDebug.Assert(operation != null, "Operation should not be null.");
         return operation is IInvocationOperation invocationOperation
-            ? ExtractValidatableEndpoint(invocationOperation)
+            ? ExtractValidatableTypes(invocationOperation)
             : default;
-    }
-
-    private static ImmutableArray<ValidatableType> ExtractValidatableEndpoint(IInvocationOperation? operation)
-    {
-        AnalyzerDebug.Assert(operation != null, "Operation should not be null.");
-        AnalyzerDebug.Assert(operation.SemanticModel != null, "Operation should have a semantic model.");
-        var validatableTypes = ExtractValidatableTypes(operation);
-        return validatableTypes;
     }
 }
