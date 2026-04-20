@@ -143,67 +143,31 @@ Use a descriptive title summarizing the API addition. Examples:
 
 The `create-issue` safe output will automatically prepend "API Proposal: ".
 
-### Issue body format
+### Issue body: use the api-review skill
 
-Use this exact template:
+Read the following files from the repository to get the issue template and
+section-by-section filling guidelines:
 
-```markdown
-## Background and Motivation
+1. **Issue template**: `.github/skills/api-review/assets/issue-template.md`
+2. **Section guidelines**: `.github/skills/api-review/references/section-guidelines.md`
+3. **Skill instructions**: `.github/skills/api-review/SKILL.md`
 
-<!-- Brief description of why this API was added, based on the PR description
-     and any linked issues. If insufficient context, state what is known and
-     note that additional context is needed. -->
+Use `cat` to read these files at the start of this step. Follow the template
+structure and section guidelines exactly when filling out the issue body.
 
-[Description from PR/linked issues]
+**Inputs for the skill**:
+- **Original issue**: the linked issue from the PR (if any), or "N/A"
+- **Implementation commits**: the merged PR #NNNNN and its commits
+- **PublicAPI.Unshipped.txt changes**: the net-new API entries from Step 2
 
-**Implementation**: PR #NNNNN
-[If there's a linked source issue]: **Original issue**: #MMMM
-
-## Proposed API
-
-<!-- API diff extracted from PublicAPI.Unshipped.txt changes -->
-
-```diff
-namespace [Namespace];
-
-[Type declarations with + prefixed additions]
-`` `
-
-**Source**: [`PublicAPI.Unshipped.txt` changes in PR #NNNNN](link-to-file-in-PR)
-
-## Usage Examples
-
-<!-- Extract usage examples from the PR description or linked issue.
-     If none available, note that examples are needed. -->
-
-[Examples from PR/issue, or "Usage examples needed — please add before moving to api-ready-for-review."]
-
-## Alternative Designs
-
-<!-- Extract from PR/issue discussion, or note that discussion is needed. -->
-
-[From PR/issue, or "N/A — please add context before moving to api-ready-for-review."]
-
-## Risks
-
-<!-- Any breaking changes or risks noted in the PR. -->
-
-[From PR, or "No known risks identified from the PR description."]
-```
-
-### Filling the sections
-
-- **Background**: Pull from the PR description body and any linked issue body.
-  Quote relevant portions. If the PR has minimal description, state what the API
-  does based on the type/member names and note that more context is needed.
-- **Proposed API**: Convert the `PublicAPI.Unshipped.txt` entries into
-  ref-assembly diff format. Group by namespace, show type hierarchy, prefix
-  additions with `+`.
-- **Usage Examples**: Extract code examples from the PR description or linked
-  issues. If none exist, add a placeholder asking the champion to add examples.
-- **Alternative Designs**: Pull from PR or issue discussion. If none, use "N/A".
-- **Risks**: Note any breaking changes (REMOVED entries paired with additions),
-  behavioral changes mentioned in the PR, or say "No known risks" if clean addition.
+**Adaptations for automated context** (since there is no human to ask):
+- If the PR description or linked issues don't provide enough context to fill
+  a section, write a brief placeholder noting what's missing and that a champion
+  should fill it before promoting to `api-ready-for-review`.
+- Always include `**Implementation**: PR #NNNNN` in the Background section.
+- Always include a link to the `PublicAPI.Unshipped.txt` diff in the Proposed API section.
+- Skip the source justification block (the `<<CONTENT>>: "<<QUOTE>>"` mapping)
+  since this is an automated draft, not a final review-ready issue.
 
 ### Area label
 
