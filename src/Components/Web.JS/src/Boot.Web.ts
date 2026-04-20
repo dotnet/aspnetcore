@@ -20,6 +20,7 @@ import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationLi
 import { WebRootComponentManager } from './Services/WebRootComponentManager';
 import { hasProgrammaticEnhancedNavigationHandler, performProgrammaticEnhancedNavigation } from './Services/NavigationUtils';
 import { attachComponentDescriptorHandler, registerAllComponentDescriptors } from './Rendering/DomMerging/DomSync';
+import { discoverBrowserConfiguration } from './Services/ComponentDescriptorDiscovery';
 import { JSEventRegistry } from './Services/JSEventRegistry';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Web';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
@@ -90,6 +91,40 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 }
 
 function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
+  // Discover server-emitted browser configuration and merge into options
+  const browserConfig = discoverBrowserConfiguration(document);
+  if (browserConfig) {
+    if (browserConfig.logLevel !== undefined) {
+      options.logLevel = browserConfig.logLevel;
+    }
+
+    // SSR options
+    if (browserConfig.ssr) {
+      options.ssr = options.ssr || {};
+      if (browserConfig.ssr.disableDomPreservation !== undefined) {
+        options.ssr.disableDomPreservation = browserConfig.ssr.disableDomPreservation;
+      }
+      if (browserConfig.ssr.circuitInactivityTimeoutMs !== undefined) {
+        options.ssr.circuitInactivityTimeoutMs = browserConfig.ssr.circuitInactivityTimeoutMs;
+      }
+    }
+
+    // Circuit/Server options
+    if (browserConfig.server) {
+      const circuitOpts = options.circuit = options.circuit || {} as any;
+      const reconnOpts = circuitOpts.reconnectionOptions = circuitOpts.reconnectionOptions || {} as any;
+      if (browserConfig.server.reconnectionMaxRetries !== undefined) {
+        reconnOpts.maxRetries = browserConfig.server.reconnectionMaxRetries;
+      }
+      if (browserConfig.server.reconnectionRetryIntervalMilliseconds !== undefined) {
+        reconnOpts.retryIntervalMilliseconds = browserConfig.server.reconnectionRetryIntervalMilliseconds;
+      }
+      if (browserConfig.server.reconnectionDialogId !== undefined) {
+        reconnOpts.dialogId = browserConfig.server.reconnectionDialogId;
+      }
+    }
+  }
+
   // Retrieve and start invoking the initializers.
   // Blazor server options get defaults that are configured before we invoke the initializers
   // so we do the same here.
@@ -101,7 +136,18 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
   setCircuitOptions(resolveConfiguredOptions(initializersPromise, initialCircuitOptions));
   setWebAssemblyOptions(resolveConfiguredOptions(initializersPromise, options.webAssembly));
 
+  // If BrowserConfiguration had WebAssembly server options, apply them
+  // before registering component descriptors, since registration triggers
+  // WebAssembly platform loading which captures these options.
+  if (browserConfig?.webAssembly) {
+    rootComponentManager.setWebAssemblyOptions({
+      environmentName: browserConfig.webAssembly.environmentName ?? '',
+      environmentVariables: browserConfig.webAssembly.environmentVariables ?? {},
+    });
+  }
+
   registerAllComponentDescriptors(document);
+
   rootComponentManager.onDocumentUpdated();
 
   callAfterStartedCallbacks(initializersPromise);

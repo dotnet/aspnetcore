@@ -128,7 +128,7 @@ configuration:
       actions:
       - addReply:
           reply: >-
-            Hi @${issueAuthor}.
+            Hi ${issueAuthor}.
 
             It seems you haven't touched this PR for the last two weeks. To avoid accumulating old PRs, we're marking it as `stale`.  As a result, it will be closed if no further activity occurs **within 4 days of this comment**. You can learn more about our Issue Management Policies [here](https://aka.ms/aspnet/issue-policies).
       - addLabel:
@@ -430,7 +430,7 @@ configuration:
       - addLabel:
           label: community-contribution
       - addReply:
-          reply: Thanks for your PR, @${issueAuthor}. Someone from the team will get assigned to your PR shortly and we'll get it reviewed.
+          reply: Thanks for your PR, ${issueAuthor}. Someone from the team will get assigned to your PR shortly and we'll get it reviewed.
       description: Label community PRs with `community contribution` label
     - if:
       - payloadType: Pull_Request
@@ -440,8 +440,19 @@ configuration:
           branch: main
       then:
       - addMilestone:
-          milestone: 11.0-preview1
+          milestone: 11.0-preview4
       description: '[Milestone Assignments] Assign Milestone to PRs merged to the `main` branch'
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Closed
+      - targetsBranch:
+          branch: release/11.0-preview3
+      then:
+      - removeMilestone
+      - addMilestone:
+          milestone: 11.0-preview3
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/11.0-preview3 branch'
     - if:
       - payloadType: Issues
       - isAction:
@@ -486,7 +497,7 @@ configuration:
       then:
       - addReply:
           reply: >-
-            Hi @${issueAuthor}. Please make sure you've updated the PR description to use the [Shiproom Template](https://aka.ms/aspnet/servicing/template). Also, make sure this PR is not marked as a draft and is ready-to-merge.
+            Hi ${issueAuthor}. Please make sure you've updated the PR description to use the [Shiproom Template](https://aka.ms/aspnet/servicing/template). Also, make sure this PR is not marked as a draft and is ready-to-merge.
 
 
             To learn more about how to prepare a servicing PR [click here](https://aka.ms/aspnet/servicing).
@@ -507,7 +518,7 @@ configuration:
           label: 'Needs: Author Feedback'
       then:
       - addReply:
-          reply: 'Hi @${issueAuthor}. We have added the "Needs: Author Feedback" label to this issue, which indicates that we have an open question for you before we can take further action. This issue will be closed automatically in 7 days if we do not hear back from you by then - please feel free to re-open it if you come back to this issue after that time.'
+          reply: 'Hi ${issueAuthor}. We have added the "Needs: Author Feedback" label to this issue, which indicates that we have an open question for you before we can take further action. This issue will be closed automatically in 7 days if we do not hear back from you by then - please feel free to re-open it if you come back to this issue after that time.'
       description: Add comment when 'Needs Author Feedback' is applied to issue
     - if:
       - payloadType: Pull_Request
@@ -520,7 +531,7 @@ configuration:
           milestone: 9.0.x
       - addReply:
           reply: >-
-            Hi @${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.
+            Hi ${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.
 
             Otherwise, please add `tell-mode` label.
       description: Add release/9.0 targeting PRs to the servicing project
@@ -535,7 +546,7 @@ configuration:
           milestone: 8.0.x
       - addReply:
           reply: >-
-            Hi @${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.
+            Hi ${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.
 
             Otherwise, please add `tell-mode` label.
       description: Add release/8.0 targeting PRs to the servicing project
@@ -550,7 +561,7 @@ configuration:
           milestone: 2.3.x
       - addReply:
           reply: >-
-            Hi @${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.
+            Hi ${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.
 
             Otherwise, please add `tell-mode` label.
       description: Add release/2.3 targeting PRs to the servicing project
@@ -593,7 +604,7 @@ configuration:
       then:
       - addReply:
           reply: >-
-            @${issueAuthor}, this change will be considered for inclusion in the blog post for the release it'll ship in. Nice work!
+            ${issueAuthor}, this change will be considered for inclusion in the blog post for the release it'll ship in. Nice work!
 
 
             Please ensure that the original comment in this thread contains a clear explanation of what the change does, why it's important (what problem does it solve?), and, if relevant, include things like code samples and/or performance numbers.
@@ -610,7 +621,7 @@ configuration:
           label: Servicing-approved
       then:
       - addReply:
-          reply: Hi @${issueAuthor}. This PR was just approved to be included in the upcoming servicing release. Somebody from the @dotnet/aspnet-build team will get it merged when the branches are open. Until then, please make sure all the CI checks pass and the PR is reviewed.
+          reply: Hi ${issueAuthor}. This PR was just approved to be included in the upcoming servicing release. Somebody from the @dotnet/aspnet-build team will get it merged when the branches are open. Until then, please make sure all the CI checks pass and the PR is reviewed.
       description: '[Servicing PR Approved] Let the author know that the PR will be merged by the build team'
     - if:
       - payloadType: Pull_Request
@@ -621,7 +632,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 10.0.4
+          milestone: 10.0.7
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/10.0 branch'
     - if:
       - payloadType: Pull_Request
@@ -632,7 +643,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 9.0.14
+          milestone: 9.0.16
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0 branch'
     - if:
       - payloadType: Pull_Request
@@ -643,7 +654,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 8.0.25
+          milestone: 8.0.27
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/8.0 branch'
     - if:
       - payloadType: Issues
@@ -750,6 +761,9 @@ configuration:
       description: '[Infrastructure PRs] Add area-infrastructure label to dependabot update Pull Requests & enable auto-merge'
 onFailure:
 onSuccess:
+
+
+
 
 
 
