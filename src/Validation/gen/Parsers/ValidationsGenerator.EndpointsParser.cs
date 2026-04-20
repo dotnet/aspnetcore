@@ -40,7 +40,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             : default;
     }
 
-    internal static ImmutableArray<ValidatableType> ExtractValidatableEndpoint(IInvocationOperation? operation)
+    private static ImmutableArray<ValidatableType> ExtractValidatableEndpoint(IInvocationOperation? operation)
     {
         AnalyzerDebug.Assert(operation != null, "Operation should not be null.");
         AnalyzerDebug.Assert(operation.SemanticModel != null, "Operation should have a semantic model.");
