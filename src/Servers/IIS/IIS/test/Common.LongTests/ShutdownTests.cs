@@ -27,6 +27,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 // Contains all tests related to shutdown, including app_offline, abort, and app recycle
 [Collection(PublishedSitesCollection.Name)]
+#if NEWSHIM_FUNCTIONALS
+[QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
+#endif
 public class ShutdownTests : IISFunctionalTestBase
 {
     public ShutdownTests(PublishedSitesFixture fixture) : base(fixture)
