@@ -14,12 +14,19 @@ namespace Microsoft.Extensions.Validation;
 
 public sealed partial class ValidationsGenerator : IIncrementalGenerator
 {
-    internal static ImmutableArray<ValidatableType> ExtractValidatableTypes(IInvocationOperation operation, WellKnownTypes wellKnownTypes)
+    internal static ImmutableArray<ValidatableType> ExtractValidatableTypes(IInvocationOperation operation)
     {
         AnalyzerDebug.Assert(operation.SemanticModel != null, "SemanticModel should not be null.");
         var parameters = operation.TryGetRouteHandlerMethod(operation.SemanticModel, out var method)
             ? method.Parameters
             : [];
+
+        if (parameters.IsEmpty)
+        {
+            return [];
+        }
+
+        var wellKnownTypes = WellKnownTypes.GetOrCreate(operation.SemanticModel.Compilation)
 
         var fromServiceMetadataSymbol = wellKnownTypes.GetOptional(
             WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata);

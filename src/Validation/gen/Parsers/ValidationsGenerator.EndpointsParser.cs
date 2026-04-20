@@ -6,7 +6,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
-using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -45,8 +44,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
     {
         AnalyzerDebug.Assert(operation != null, "Operation should not be null.");
         AnalyzerDebug.Assert(operation.SemanticModel != null, "Operation should have a semantic model.");
-        var wellKnownTypes = WellKnownTypes.GetOrCreate(operation.SemanticModel.Compilation);
-        var validatableTypes = ExtractValidatableTypes(operation, wellKnownTypes);
+        var validatableTypes = ExtractValidatableTypes(operation);
         return validatableTypes;
     }
 }
