@@ -13,25 +13,29 @@ using Microsoft.AspNetCore.DataProtection.Managed;
 namespace Microsoft.AspNetCore.DataProtection.NuGetIntegrationTests;
 
 /// <summary>
-/// Downloads a released NuGet package once, loads the ManagedAuthenticatedEncryptor
-/// from it via reflection in an isolated AssemblyLoadContext, and creates encryptors
-/// that use the same key material as current source code for cross-version testing.
+/// Downloads a released NuGet package (and its Cryptography.Internal dependency) once,
+/// then creates ManagedAuthenticatedEncryptor instances from any TFM in the package
+/// via reflection in isolated AssemblyLoadContexts.
+/// Implements <see cref="IAsyncLifetime"/> for xUnit's <c>IClassFixture</c>.
 /// </summary>
-internal sealed class NuGetEncryptorFactory : IDisposable
+public sealed class NuGetEncryptorFactory : IAsyncLifetime, IDisposable
 {
+    public const string DefaultPackageVersion = "9.0.15";
+
     private const string NuGetBaseUrl = "https://api.nuget.org/v3-flatcontainer";
-    private const string NuGetPackageId = "Microsoft.AspNetCore.DataProtection";
+    private const string DataProtectionPackageId = "Microsoft.AspNetCore.DataProtection";
+    private const string CryptoInternalPackageId = "Microsoft.AspNetCore.Cryptography.Internal";
 
-    private readonly string _tempDir;
     private readonly string _packageVersion;
+    private readonly string _tempDir;
 
-    private Assembly? _nugetAssembly;
-    private Type? _encryptorType;
-    private Type? _secretType;
-    private ConstructorInfo? _encryptorCtor;
-    private object? _genRandomInstance;
+    // Per-TFM directories containing DataProtection + Cryptography.Internal DLLs
+    private readonly Dictionary<string, string> _tfmDirs = new(StringComparer.OrdinalIgnoreCase);
 
-    public NuGetEncryptorFactory(string packageVersion)
+    /// <summary>Parameterless constructor used by xUnit's IClassFixture.</summary>
+    public NuGetEncryptorFactory() : this(DefaultPackageVersion) { }
+
+    internal NuGetEncryptorFactory(string packageVersion)
     {
         _packageVersion = packageVersion;
         _tempDir = Path.Combine(Path.GetTempPath(), $"dp-nuget-test-{Guid.NewGuid():N}");
@@ -39,93 +43,229 @@ internal sealed class NuGetEncryptorFactory : IDisposable
     }
 
     /// <summary>
-    /// Downloads and extracts the NuGet package, loading the DLL into an isolated ALC.
-    /// Call once before creating encryptors.
+    /// Downloads and extracts NuGet packages. Called once by xUnit when used as IClassFixture.
     /// </summary>
     public async Task InitializeAsync()
     {
-        var dllPath = await DownloadAndExtractNuGetDll();
-        var alc = new AssemblyLoadContext($"NuGet-{_packageVersion}", isCollectible: true);
-        _nugetAssembly = alc.LoadFromAssemblyPath(dllPath);
+        var dpLibDir = await DownloadAndExtractPackage(DataProtectionPackageId);
+        var cryptoLibDir = await DownloadAndExtractPackage(CryptoInternalPackageId);
 
-        // Resolve types using typeof().FullName for refactor safety
-        _secretType = _nugetAssembly.GetType(typeof(Secret).FullName!)
-            ?? throw new InvalidOperationException($"Cannot find {nameof(Secret)} type in NuGet assembly");
-        _encryptorType = _nugetAssembly.GetType(typeof(ManagedAuthenticatedEncryptor).FullName!)
-            ?? throw new InvalidOperationException($"Cannot find {nameof(ManagedAuthenticatedEncryptor)} type in NuGet assembly");
+        // For each TFM in the DataProtection package, stage a directory with both DLLs
+        foreach (var tfmDir in Directory.GetDirectories(dpLibDir))
+        {
+            var tfm = Path.GetFileName(tfmDir)!;
+            var stageDir = Path.Combine(_tempDir, "staged", tfm);
+            Directory.CreateDirectory(stageDir);
 
-        _encryptorCtor = _encryptorType.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            .FirstOrDefault(c => c.GetParameters().Length == 5)
-            ?? throw new InvalidOperationException($"Cannot find {nameof(ManagedAuthenticatedEncryptor)} 5-param constructor");
+            // Copy DataProtection DLL
+            foreach (var dll in Directory.GetFiles(tfmDir, "*.dll"))
+            {
+                File.Copy(dll, Path.Combine(stageDir, Path.GetFileName(dll)));
+            }
 
-        var genRandomImplType = _nugetAssembly.GetType(typeof(ManagedGenRandomImpl).FullName!)
-            ?? throw new InvalidOperationException($"Cannot find {nameof(ManagedGenRandomImpl)} type in NuGet assembly");
-        _genRandomInstance = genRandomImplType.GetField("Instance", BindingFlags.Public | BindingFlags.Static)?.GetValue(null)
-            ?? throw new InvalidOperationException($"Cannot find {nameof(ManagedGenRandomImpl)}.Instance");
+            // Copy matching Cryptography.Internal DLL (same TFM if available, else best match)
+            var cryptoTfmDir = FindBestMatchingTfmDir(cryptoLibDir, tfm);
+            if (cryptoTfmDir is not null)
+            {
+                foreach (var dll in Directory.GetFiles(cryptoTfmDir, "*.dll"))
+                {
+                    var dest = Path.Combine(stageDir, Path.GetFileName(dll));
+                    if (!File.Exists(dest))
+                    {
+                        File.Copy(dll, dest);
+                    }
+                }
+            }
+
+            _tfmDirs[tfm] = stageDir;
+        }
+    }
+
+    public Task DisposeAsync()
+    {
+        Dispose();
+        return Task.CompletedTask;
     }
 
     /// <summary>
-    /// Creates a ManagedAuthenticatedEncryptor from the downloaded NuGet assembly
-    /// using reflection and the same key material (all-zero 512-bit key).
+    /// Returns the TFM folder names available (e.g. "net9.0", "net462").
     /// </summary>
-    public NuGetEncryptorWrapper CreateEncryptor()
+    public string[] GetAvailableTargetFrameworks()
     {
-        if (_nugetAssembly is null)
+        EnsureInitialized();
+        return [.. _tfmDirs.Keys];
+    }
+
+    /// <summary>
+    /// Creates a ManagedAuthenticatedEncryptor from the specified TFM's DLL, loaded in an
+    /// isolated AssemblyLoadContext with proper dependency resolution.
+    /// Uses the same key material (all-zero 512-bit key) for cross-version testing.
+    /// </summary>
+    public NuGetEncryptorWrapper CreateEncryptor(string? targetFramework = null)
+    {
+        EnsureInitialized();
+
+        var tfm = targetFramework ?? PickBestModernTfm();
+        if (!_tfmDirs.TryGetValue(tfm, out var stageDir))
         {
-            throw new InvalidOperationException("Call InitializeAsync() before creating encryptors.");
+            throw new InvalidOperationException($"TFM '{tfm}' not available. Available: {string.Join(", ", _tfmDirs.Keys)}");
         }
 
-        var secretCtor = _secretType!.GetConstructor([typeof(byte[])])
-            ?? throw new InvalidOperationException("Cannot find Secret(byte[]) constructor");
+        var dllPath = Path.Combine(stageDir, $"{DataProtectionPackageId}.dll");
+        if (!File.Exists(dllPath))
+        {
+            throw new FileNotFoundException($"No DLL found at {dllPath}");
+        }
+
+        return CreateEncryptorFromDirectory(stageDir, dllPath, $"NuGet-{_packageVersion}-{tfm}");
+    }
+
+    /// <summary>
+    /// Creates a ManagedAuthenticatedEncryptor from the source-built net462 DLL (the #else path).
+    /// The DLL is loaded via ALC from the local build artifacts directory.
+    /// </summary>
+    public NuGetEncryptorWrapper CreateSourceBuiltNetFxEncryptor()
+    {
+        // Walk up from test output to find the DataProtection net462 build output.
+        // Test output:     artifacts/bin/Microsoft.AspNetCore.DataProtection.NuGetIntegrationTests/Debug/net11.0/
+        // Source output:   artifacts/bin/Microsoft.AspNetCore.DataProtection/Debug/net462/
+        var testAssemblyDir = Path.GetDirectoryName(typeof(NuGetEncryptorFactory).Assembly.Location)!;
+        var artifactsBinDir = Path.GetFullPath(Path.Combine(testAssemblyDir, "..", "..", ".."));
+        var netFxDir = Path.Combine(artifactsBinDir, "Microsoft.AspNetCore.DataProtection", "Debug", "net462");
+        var dllPath = Path.Combine(netFxDir, $"{DataProtectionPackageId}.dll");
+
+        if (!File.Exists(dllPath))
+        {
+            throw new FileNotFoundException(
+                $"Source-built net462 DLL not found at {dllPath}. " +
+                $"Ensure the DataProtection project is built for net462.");
+        }
+
+        return CreateEncryptorFromDirectory(netFxDir, dllPath, "SourceBuilt-net462");
+    }
+
+    private static NuGetEncryptorWrapper CreateEncryptorFromDirectory(string directory, string dllPath, string alcName)
+    {
+        var alc = new DirectoryAssemblyLoadContext(directory, alcName);
+        var assembly = alc.LoadFromAssemblyPath(dllPath);
+
+        var secretType = assembly.GetType(typeof(Secret).FullName!)
+            ?? throw new InvalidOperationException($"Cannot find {nameof(Secret)} in assembly ({alcName})");
+        var encryptorType = assembly.GetType(typeof(ManagedAuthenticatedEncryptor).FullName!)
+            ?? throw new InvalidOperationException($"Cannot find {nameof(ManagedAuthenticatedEncryptor)} in assembly ({alcName})");
+
+        var encryptorCtor = encryptorType.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+            .FirstOrDefault(c => c.GetParameters().Length == 5)
+            ?? throw new InvalidOperationException($"Cannot find {nameof(ManagedAuthenticatedEncryptor)} 5-param constructor ({alcName})");
+
+        var genRandomImplType = assembly.GetType(typeof(ManagedGenRandomImpl).FullName!)
+            ?? throw new InvalidOperationException($"Cannot find {nameof(ManagedGenRandomImpl)} in assembly ({alcName})");
+        var genRandomInstance = genRandomImplType.GetField("Instance", BindingFlags.Public | BindingFlags.Static)?.GetValue(null)
+            ?? throw new InvalidOperationException($"Cannot find {nameof(ManagedGenRandomImpl)}.Instance ({alcName})");
+
+        var secretCtor = secretType.GetConstructor([typeof(byte[])])
+            ?? throw new InvalidOperationException($"Cannot find Secret(byte[]) constructor ({alcName})");
         var secret = secretCtor.Invoke([new byte[512 / 8]]);
 
         Func<SymmetricAlgorithm> symFactory = Aes.Create;
         Func<KeyedHashAlgorithm> hmacFactory = () => new HMACSHA256();
 
-        var encryptor = _encryptorCtor!.Invoke([secret, symFactory, 256 / 8, hmacFactory, _genRandomInstance!]);
-        return new NuGetEncryptorWrapper(encryptor, _encryptorType!);
+        var encryptor = encryptorCtor.Invoke([secret, symFactory, 256 / 8, hmacFactory, genRandomInstance]);
+        return new NuGetEncryptorWrapper(encryptor, encryptorType);
     }
 
     public void Dispose()
     {
-        try
+        try { Directory.Delete(_tempDir, recursive: true); } catch { }
+    }
+
+    private void EnsureInitialized()
+    {
+        if (_tfmDirs.Count == 0)
         {
-            Directory.Delete(_tempDir, recursive: true);
-        }
-        catch
-        {
+            throw new InvalidOperationException("Call InitializeAsync() before using the factory.");
         }
     }
 
-    private async Task<string> DownloadAndExtractNuGetDll()
+    private string PickBestModernTfm()
     {
-        var nupkgPath = Path.Combine(_tempDir, $"{NuGetPackageId}.{_packageVersion}.nupkg");
-        var extractDir = Path.Combine(_tempDir, "extracted");
-
-        using var http = new HttpClient();
-        var url = $"{NuGetBaseUrl}/{NuGetPackageId.ToLowerInvariant()}/{_packageVersion}/{NuGetPackageId.ToLowerInvariant()}.{_packageVersion}.nupkg";
-        var bytes = await http.GetByteArrayAsync(url);
-        await File.WriteAllBytesAsync(nupkgPath, bytes);
-        ZipFile.ExtractToDirectory(nupkgPath, extractDir);
-
-        // Prefer the highest netX.0 TFM (not netstandard, not net4xx)
-        var libDir = Path.Combine(extractDir, "lib");
-        var bestTfm = Directory.GetDirectories(libDir)
-            .Select(d => Path.GetFileName(d)!)
+        return _tfmDirs.Keys
             .Where(t => t.StartsWith("net", StringComparison.Ordinal)
                      && !t.StartsWith("netstandard", StringComparison.Ordinal)
                      && !t.StartsWith("net4", StringComparison.Ordinal))
             .OrderByDescending(t => t)
             .FirstOrDefault()
             ?? throw new InvalidOperationException("No suitable TFM found in NuGet package");
+    }
 
-        var dllPath = Path.Combine(libDir, bestTfm, $"{NuGetPackageId}.dll");
-        if (!File.Exists(dllPath))
+    private async Task<string> DownloadAndExtractPackage(string packageId)
+    {
+        var extractDir = Path.Combine(_tempDir, packageId);
+        var nupkgPath = Path.Combine(_tempDir, $"{packageId}.{_packageVersion}.nupkg");
+
+        using var http = new HttpClient();
+        var url = $"{NuGetBaseUrl}/{packageId.ToLowerInvariant()}/{_packageVersion}/{packageId.ToLowerInvariant()}.{_packageVersion}.nupkg";
+        var bytes = await http.GetByteArrayAsync(url);
+        await File.WriteAllBytesAsync(nupkgPath, bytes);
+        ZipFile.ExtractToDirectory(nupkgPath, extractDir);
+
+        var libDir = Path.Combine(extractDir, "lib");
+        if (!Directory.Exists(libDir))
         {
-            throw new FileNotFoundException($"Expected DLL at {dllPath}");
+            throw new InvalidOperationException($"No lib/ folder found in {packageId} {_packageVersion}");
         }
 
-        return dllPath;
+        return libDir;
+    }
+
+    /// <summary>
+    /// Find the best matching TFM directory for a dependency package.
+    /// Exact match first, then fall back to compatible TFMs.
+    /// </summary>
+    private static string? FindBestMatchingTfmDir(string libDir, string targetTfm)
+    {
+        var exact = Path.Combine(libDir, targetTfm);
+        if (Directory.Exists(exact))
+        {
+            return exact;
+        }
+
+        // For netX.0 targets, try netstandard2.0 as fallback
+        var netstandard = Path.Combine(libDir, "netstandard2.0");
+        if (Directory.Exists(netstandard))
+        {
+            return netstandard;
+        }
+
+        // Return first available TFM as last resort
+        return Directory.GetDirectories(libDir).FirstOrDefault();
+    }
+
+    /// <summary>
+    /// AssemblyLoadContext that resolves dependencies from a directory before falling back
+    /// to the default context. This is needed when loading older NuGet DLLs that depend on
+    /// matching versions of Cryptography.Internal (which has different API surface per major version).
+    /// </summary>
+    private sealed class DirectoryAssemblyLoadContext : AssemblyLoadContext
+    {
+        private readonly string _directory;
+
+        public DirectoryAssemblyLoadContext(string directory, string name) : base(name, isCollectible: true)
+        {
+            _directory = directory;
+        }
+
+        protected override Assembly? Load(AssemblyName assemblyName)
+        {
+            var candidate = Path.Combine(_directory, $"{assemblyName.Name}.dll");
+            if (File.Exists(candidate))
+            {
+                return LoadFromAssemblyPath(candidate);
+            }
+
+            // Fall back to default context for framework assemblies
+            return null;
+        }
     }
 }
 
@@ -133,7 +273,7 @@ internal sealed class NuGetEncryptorFactory : IDisposable
 /// Wraps a ManagedAuthenticatedEncryptor loaded from a NuGet assembly,
 /// calling Encrypt/Decrypt via reflection to avoid type identity conflicts.
 /// </summary>
-internal sealed class NuGetEncryptorWrapper(object encryptor, Type encryptorType)
+public sealed class NuGetEncryptorWrapper(object encryptor, Type encryptorType)
 {
     private readonly object _encryptor = encryptor;
     private readonly MethodInfo _encrypt = encryptorType.GetMethod("Encrypt", BindingFlags.Public | BindingFlags.Instance)
