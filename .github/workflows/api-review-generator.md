@@ -4,13 +4,24 @@ on:
     types: [closed]
     paths:
       - "src/**/PublicAPI.Unshipped.txt"
-
+  steps:
+    - name: Check PR was merged
+      id: merged_check
+      env:
+        PR_MERGED: ${{ github.event.pull_request.merged }}
+      run: |
+        if [ "$PR_MERGED" != "true" ]; then
+          echo "PR was closed without merging, skipping."
+          exit 1
+        fi
   workflow_dispatch:
     inputs:
       pr_number:
         description: "PR number to analyze for new public APIs"
         required: true
         type: number
+
+if: needs.pre_activation.outputs.merged_check_result == 'success'
 
 description: >
   Detect new public APIs in merged PRs by analyzing PublicAPI.Unshipped.txt
