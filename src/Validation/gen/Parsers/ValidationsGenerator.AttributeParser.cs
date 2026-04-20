@@ -21,7 +21,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         var validatableTypes = new HashSet<ValidatableType>(ValidatableTypeComparer.Instance);
         List<ITypeSymbol> visitedTypes = [];
         var wellKnownTypes = WellKnownTypes.GetOrCreate(context.SemanticModel.Compilation);
-        if (TryExtractValidatableType((ITypeSymbol)context.TargetSymbol, wellKnownTypes, validatableTypes, ref visitedTypes))
+        if (TryExtractValidatableType((ITypeSymbol)context.TargetSymbol, wellKnownTypes, validatableTypes, visitedTypes))
         {
             return [.. validatableTypes];
         }
