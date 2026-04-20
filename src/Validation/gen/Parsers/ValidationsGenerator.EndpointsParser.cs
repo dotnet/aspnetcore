@@ -18,8 +18,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 {
     internal static bool FindEndpoints(SyntaxNode syntaxNode, CancellationToken cancellationToken)
     {
-        if (syntaxNode.IsKind(SyntaxKind.InvocationExpression)
-            && ((InvocationExpressionSyntax)syntaxNode).TryGetMapMethodName(out var method))
+        if (syntaxNode is InvocationExpressionSyntax invocationExpressionSyntax
+            && invocationExpressionSyntax.TryGetMapMethodName(out var method))
         {
             return method == "MapMethods" || InvocationOperationExtensions.KnownMethods.Contains(method);
         }
