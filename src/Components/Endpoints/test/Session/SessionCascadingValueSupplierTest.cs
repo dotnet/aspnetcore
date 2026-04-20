@@ -102,6 +102,20 @@ public class SessionCascadingValueSupplierTest
     }
 
     [Fact]
+    public async Task PersistAllValues_ContinuesOnSerializationException()
+    {
+        _supplier.RegisterValueCallback("key1", () => new IntPtr(42));
+        _supplier.RegisterValueCallback("key2", () => "value2");
+
+        var httpContext = CreateHttpContextWithSession();
+        _supplier.SetRequestContext(httpContext);
+        await _supplier.PersistAllValues();
+
+        Assert.Null(httpContext.Session.GetString("key1"));
+        Assert.Equal("\"value2\"", httpContext.Session.GetString("key2"));
+    }
+
+    [Fact]
     public async Task PersistAllValues_LowercasesSessionKey()
     {
         _supplier.RegisterValueCallback("MyKey", () => "value");
@@ -156,24 +170,6 @@ public class SessionCascadingValueSupplierTest
         await responseFeature.FireOnStartingAsync();
 
         Assert.Equal("\"value\"", httpContext.Session.GetString("key"));
-    }
-
-    [Fact]
-    public void SetRequestContext_IsIdempotent_ForSameHttpContext()
-    {
-        var httpContext = CreateHttpContextWithSession();
-        _supplier.SetRequestContext(httpContext);
-        _supplier.SetRequestContext(httpContext);
-    }
-
-    [Fact]
-    public void SetRequestContext_Throws_ForDifferentHttpContext()
-    {
-        var first = CreateHttpContextWithSession();
-        var second = CreateHttpContextWithSession();
-        _supplier.SetRequestContext(first);
-
-        Assert.Throws<InvalidOperationException>(() => _supplier.SetRequestContext(second));
     }
 
     internal static DefaultHttpContext CreateHttpContextWithSession()

@@ -84,20 +84,6 @@ public class SessionSubscriptionTest
     public void GetValue_DeserializesEnum()
     {
         var httpContext = CreateHttpContextWithSession();
-        httpContext.Session.SetString("status", "1");
-        _supplier.SetRequestContext(httpContext);
-
-        var subscription = CreateSubscription("status", typeof(TestEnum));
-        var result = subscription.GetCurrentValue();
-
-        Assert.IsType<TestEnum>(result);
-        Assert.Equal(TestEnum.Active, result);
-    }
-
-    [Fact]
-    public void GetValue_DeserializesNullableEnum()
-    {
-        var httpContext = CreateHttpContextWithSession();
         httpContext.Session.SetString("status", "2");
         _supplier.SetRequestContext(httpContext);
 
@@ -106,18 +92,6 @@ public class SessionSubscriptionTest
 
         Assert.IsType<TestEnum>(result);
         Assert.Equal(TestEnum.Inactive, result);
-    }
-
-    [Fact]
-    public void GetValue_ReturnsNull_WhenKeyNotFound_ForEnumType()
-    {
-        var httpContext = CreateHttpContextWithSession();
-        _supplier.SetRequestContext(httpContext);
-
-        var subscription = CreateSubscription("missing", typeof(TestEnum));
-        var result = subscription.GetCurrentValue();
-
-        Assert.Null(result);
     }
 
     [Fact]

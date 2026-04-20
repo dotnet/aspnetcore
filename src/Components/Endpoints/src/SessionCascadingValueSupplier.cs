@@ -28,16 +28,6 @@ internal partial class SessionCascadingValueSupplier
 
     internal void SetRequestContext(HttpContext httpContext)
     {
-        if (ReferenceEquals(_httpContext, httpContext))
-        {
-            return;
-        }
-
-        if (_httpContext is not null)
-        {
-            throw new InvalidOperationException($"{nameof(SessionCascadingValueSupplier)} is already associated with a different {nameof(HttpContext)}.");
-        }
-
         _httpContext = httpContext;
         _httpContext.Response.OnStarting(PersistAllValues);
     }
@@ -91,26 +81,23 @@ internal partial class SessionCascadingValueSupplier
 
         foreach (var (key, valueGetter) in _valueCallbacks)
         {
-            object? value = null;
+            var sessionKey = key.ToLowerInvariant();
             try
             {
-                value = valueGetter();
+                var value = valueGetter();
+                if (value is not null)
+                {
+                    var json = JsonSerializer.Serialize(value, value.GetType(), _jsonOptions);
+                    session.SetString(sessionKey, json);
+                }
+                else
+                {
+                    session.Remove(sessionKey);
+                }
             }
             catch (Exception ex)
             {
                 Log.SessionPersistFail(_logger, ex);
-                continue;
-            }
-
-            var sessionKey = key.ToLowerInvariant();
-            if (value is not null)
-            {
-                var json = JsonSerializer.Serialize(value, value.GetType(), _jsonOptions);
-                session.SetString(sessionKey, json);
-            }
-            else
-            {
-                session.Remove(sessionKey);
             }
         }
         return Task.CompletedTask;
@@ -154,13 +141,10 @@ internal partial class SessionCascadingValueSupplier
         {
             if (_delivered)
             {
-                // After the first delivery, return the component's current property value
-                // to avoid overriding modifications the component made during rendering.
                 return _currentValueGetter();
             }
 
             _delivered = true;
-
             var session = _owner.GetSession();
             if (session is null)
             {
@@ -174,7 +158,6 @@ internal partial class SessionCascadingValueSupplier
                 {
                     return null;
                 }
-
                 return JsonSerializer.Deserialize(json, _propertyType, _jsonOptions);
             }
             catch (Exception ex)
