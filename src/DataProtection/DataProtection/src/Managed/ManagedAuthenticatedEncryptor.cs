@@ -70,6 +70,8 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         AlgorithmAssert.IsAllowableValidationAlgorithmDigestSize(checked((uint)_validationAlgorithmDigestLengthInBytes * 8));
 
         _contextHeader = CreateContextHeader();
+
+        this.PerformSelfTest();
     }
 
 #if NET

@@ -58,7 +58,6 @@ internal static unsafe class CryptoUtil
     [MethodImpl(MethodImplOptions.NoInlining)]
     public static Exception Fail(string message)
     {
-        Debug.Fail(message);
         throw new CryptographicException("Assertion failed: " + message);
     }
 

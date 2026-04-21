@@ -58,6 +58,8 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         AlgorithmAssert.IsAllowableValidationAlgorithmDigestSize(checked(_hmacAlgorithmDigestLengthInBytes * 8));
 
         _contextHeader = CreateContextHeader();
+
+        this.PerformSelfTest();
     }
 
     public void Decrypt<TWriter>(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination) where TWriter : IBufferWriter<byte>
