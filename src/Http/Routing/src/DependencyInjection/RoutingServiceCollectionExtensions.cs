@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.ObjectModel;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matching;
@@ -114,6 +115,10 @@ public static class RoutingServiceCollectionExtensions
         services.TryAddSingleton<RoutePatternTransformer, DefaultRoutePatternTransformer>();
         services.TryAddSingleton<RoutingMetrics>();
 
+        // Cross-origin protection (Sec-Fetch-Site / Origin header validation)
+        services.AddOptions<CrossOriginProtectionOptions>();
+        services.TryAddSingleton<ICrossOriginProtection, DefaultCrossOriginProtection>();
+
         // Set RouteHandlerOptions.ThrowOnBadRequest in development
         services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<RouteHandlerOptions>, ConfigureRouteHandlerOptions>());
 
@@ -135,6 +140,27 @@ public static class RoutingServiceCollectionExtensions
 
         services.Configure(configureOptions);
         services.AddRouting();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Configures cross-origin protection options for routing.
+    /// Cross-origin protection uses Sec-Fetch-Site and Origin headers to protect
+    /// endpoints with antiforgery metadata against CSRF attacks without requiring
+    /// the antiforgery middleware or DataProtection services.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
+    /// <param name="configureOptions">The cross-origin protection options to configure.</param>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    public static IServiceCollection ConfigureCrossOriginProtection(
+        this IServiceCollection services,
+        Action<CrossOriginProtectionOptions> configureOptions)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configureOptions);
+
+        services.Configure(configureOptions);
 
         return services;
     }

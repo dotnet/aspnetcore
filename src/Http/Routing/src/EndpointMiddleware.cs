@@ -19,15 +19,18 @@ internal sealed partial class EndpointMiddleware
     private readonly ILogger _logger;
     private readonly RequestDelegate _next;
     private readonly RouteOptions _routeOptions;
+    private readonly ICrossOriginProtection _crossOriginProtection;
 
     public EndpointMiddleware(
         ILogger<EndpointMiddleware> logger,
         RequestDelegate next,
-        IOptions<RouteOptions> routeOptions)
+        IOptions<RouteOptions> routeOptions,
+        ICrossOriginProtection crossOriginProtection)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _routeOptions = routeOptions?.Value ?? throw new ArgumentNullException(nameof(routeOptions));
+        _crossOriginProtection = crossOriginProtection ?? throw new ArgumentNullException(nameof(crossOriginProtection));
     }
 
     public Task Invoke(HttpContext httpContext)
@@ -53,7 +56,19 @@ internal sealed partial class EndpointMiddleware
                 if (endpoint.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true } &&
                     !httpContext.Items.ContainsKey(AntiforgeryMiddlewareWithEndpointInvokedKey))
                 {
-                    ThrowMissingAntiforgeryMiddlewareException(endpoint);
+                    var crossOriginResult = _crossOriginProtection.Validate(httpContext);
+                    switch (crossOriginResult)
+                    {
+                        case CrossOriginValidationResult.Denied:
+                            Log.CrossOriginRequestBlocked(_logger, endpoint);
+                            httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                            return Task.CompletedTask;
+
+                        case CrossOriginValidationResult.Disabled:
+                            // Cross-origin protection is disabled and antiforgery middleware didn't run — fail closed.
+                            ThrowMissingAntiforgeryMiddlewareException(endpoint);
+                            break;
+                    }
                 }
             }
 
@@ -133,5 +148,8 @@ internal sealed partial class EndpointMiddleware
 
         [LoggerMessage(1, LogLevel.Information, "Executed endpoint '{EndpointName}'", EventName = "ExecutedEndpoint")]
         public static partial void ExecutedEndpoint(ILogger logger, Endpoint endpointName);
+
+        [LoggerMessage(2, LogLevel.Warning, "Cross-origin request to endpoint '{EndpointName}' was blocked by Sec-Fetch-Site / Origin header validation.", EventName = "CrossOriginRequestBlocked")]
+        public static partial void CrossOriginRequestBlocked(ILogger logger, Endpoint endpointName);
     }
 }
