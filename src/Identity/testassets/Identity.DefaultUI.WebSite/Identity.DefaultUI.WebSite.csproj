@@ -3,8 +3,10 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <UserSecretsId>aspnet-Identity.DefaultUI.WebSite-80C658D8-CED7-467F-9B47-75DA3BC1A16D</UserSecretsId>
-    <IdentityDefaultUIFramework>Bootstrap4</IdentityDefaultUIFramework>
+    <IdentityUIFrameworkVersion>Bootstrap4</IdentityUIFrameworkVersion>
   </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\UI\src\StaticWebAssets.Groups.targets" />
 
   <ItemGroup>
     <Compile Include="..\..\test\InMemory.Test\InMemoryUserStore.cs" LinkBase="Services" />
@@ -95,22 +97,5 @@
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Logging.Debug" />
   </ItemGroup>
-
-  <ItemGroup>
-    <AssemblyAttribute Include="Microsoft.AspNetCore.Identity.UI.UIFrameworkAttribute">
-      <_Parameter1>$(IdentityDefaultUIFramework)</_Parameter1>
-    </AssemblyAttribute>
-  </ItemGroup>
-
-  <Target
-    Name="_SetBootstrapFrameworkVersion"
-    AfterTargets="ResolveReferencedProjectsStaticWebAssetsConfiguration"
-    BeforeTargets="ResolveReferencedProjectsStaticWebAssets">
-    <ItemGroup>
-      <StaticWebAssetProjectConfiguration Condition="'%(FileName)' == 'Microsoft.AspNetCore.Identity.UI'">
-        <AdditionalBuildProperties>IdentityDefaultUIFramework=$(IdentityDefaultUIFramework)</AdditionalBuildProperties>
-      </StaticWebAssetProjectConfiguration>
-    </ItemGroup>
-  </Target>
 
 </Project>

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -13,6 +13,10 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- TODO: Address Native AOT analyzer warnings https://github.com/dotnet/aspnetcore/issues/45473 -->
     <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
+
+    <StaticWebAssetBasePath>/_framework</StaticWebAssetBasePath>
+    <!-- SWA Framework Assets: mark all JS files as Framework type during pack -->
+    <StaticWebAssetFrameworkPattern>**/*.js</StaticWebAssetFrameworkPattern>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +27,9 @@
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.Extensions.Diagnostics" />
     <Reference Include="Microsoft.JSInterop.WebAssembly" />
+    <!-- This project provides blazor.webassembly.js itself; remove the Assets.Internal
+         reference added by Directory.Build.props to avoid duplicate SWA entries. -->
+    <Reference Remove="Microsoft.AspNetCore.App.Internal.Assets" />
   </ItemGroup>
 
   <ItemGroup>
@@ -56,12 +63,24 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <BlazorWebAssemblyJSFile Condition=" '$(Configuration)' == 'Debug' ">..\..\..\Web.JS\dist\Debug\blazor.webassembly.js</BlazorWebAssemblyJSFile>
-    <BlazorWebAssemblyJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\..\Web.JS\dist\Release\blazor.webassembly.js</BlazorWebAssemblyJSFile>
+    <_BlazorWasmJSContentRoot Condition="'$(Configuration)' == 'Debug'">$(RepoRoot)src\Components\Web.JS\dist\Debug</_BlazorWasmJSContentRoot>
+    <_BlazorWasmJSContentRoot Condition="'$(Configuration)' == 'Release'">$(RepoRoot)src\Components\Web.JS\dist\Release</_BlazorWasmJSContentRoot>
   </PropertyGroup>
 
+  <!-- Include blazor.webassembly.js as Content under wwwroot/ so the SWA pipeline discovers it.
+       ContentRoot points to the JS dist folder so the runtime middleware can serve files directly. -->
+  <ItemGroup Condition="'$(BuildNodeJS)' != 'false'">
+    <Content Include="$(_BlazorWasmJSContentRoot)\blazor.webassembly.js" Link="wwwroot\blazor.webassembly.js" ContentRoot="$(_BlazorWasmJSContentRoot)\" />
+    <Content Include="$(_BlazorWasmJSContentRoot)\blazor.webassembly.js.map" Link="wwwroot\blazor.webassembly.js.map" ContentRoot="$(_BlazorWasmJSContentRoot)\" />
+  </ItemGroup>
+
   <ItemGroup>
-    <Content Include="$(BlazorWebAssemblyJSFile)" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\" LinkBase="build\$(DefaultNetCoreTargetFramework)\" />
+    <StaticWebAssetGroupDefinition Include="BlazorWebAssembly"
+      Value="enabled" SourceId="$(PackageId)" Order="0"
+      IncludePattern="**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="targets\*.props" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\" />
   </ItemGroup>
 
