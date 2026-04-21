@@ -1855,7 +1855,7 @@ public class UnaryServerCallHandlerTests : LoggedTest
     public async Task HandleCallAsync_QueryStringProtoName_DoesNotOverwriteRouteValue()
     {
         // Arrange
-        // A query parameter using the proto name is not overwritting the route-bound field.
+        // A query parameter using the proto name is not overwriting the route-bound field.
         HelloRequest? request = null;
         UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
         {
