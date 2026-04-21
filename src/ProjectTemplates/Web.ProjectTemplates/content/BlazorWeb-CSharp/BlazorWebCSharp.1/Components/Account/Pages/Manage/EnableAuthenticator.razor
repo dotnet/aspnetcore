@@ -77,20 +77,22 @@ else
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    [CascadingParameter]
-    private ITempData TempData { get; set; } = default!;
+    [SupplyParameterFromTempData(Name = IdentityRedirectManager.StatusMessageKey)]
+    private string? IdentityStatusMessage { get; set; }
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
+        message = IdentityStatusMessage;
+        IdentityStatusMessage = null;
         Input ??= new();
 
         user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext.User, TempData);
+            RedirectManager.RedirectTo("Account/InvalidUser");
             return;
         }
 
@@ -101,11 +103,11 @@ else
     {
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext.User, TempData);
+            RedirectManager.RedirectTo("Account/InvalidUser");
             return;
         }
 
-        // Strip spaces and hyphens
+        // Strip spacesand hyphens
         var verificationCode = Input.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
 
         var is2faTokenValid = await UserManager.VerifyTwoFactorTokenAsync(
@@ -129,7 +131,8 @@ else
         }
         else
         {
-            RedirectManager.RedirectToWithStatus("Account/Manage/TwoFactorAuthentication", message, TempData);
+            IdentityStatusMessage = message;
+            RedirectManager.RedirectTo("Account/Manage/TwoFactorAuthentication");
         }
     }
 

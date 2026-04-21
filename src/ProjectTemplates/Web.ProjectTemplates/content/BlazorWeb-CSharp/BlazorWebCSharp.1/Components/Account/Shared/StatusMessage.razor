@@ -1,24 +1,12 @@
-﻿@if (!string.IsNullOrEmpty(DisplayMessage))
+﻿@if (!string.IsNullOrEmpty(Message))
 {
-    var statusMessageClass = DisplayMessage.StartsWith("Error") ? "danger" : "success";
+    var statusMessageClass = Message.StartsWith("Error") ? "danger" : "success";
     <div class="alert alert-@statusMessageClass" role="alert">
-        @DisplayMessage
+        @Message
     </div>
 }
 
 @code {
-    private string? messageFromTempData;
-
     [Parameter]
     public string? Message { get; set; }
-
-    [CascadingParameter]
-    private ITempData TempData { get; set; } = default!;
-
-    private string? DisplayMessage => Message ?? messageFromTempData;
-
-    protected override void OnInitialized()
-    {
-        messageFromTempData = TempData.Get(IdentityRedirectManager.StatusMessageKey) as string;
-    }
 }

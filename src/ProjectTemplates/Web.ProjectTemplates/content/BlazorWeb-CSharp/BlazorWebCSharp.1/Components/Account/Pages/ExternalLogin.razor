@@ -53,8 +53,8 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    [CascadingParameter]
-    private ITempData TempData { get; set; } = default!;
+    [SupplyParameterFromTempData(Name = IdentityRedirectManager.StatusMessageKey)]
+    private string? IdentityStatusMessage { get; set; }
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = default!;
@@ -72,18 +72,22 @@
 
     protected override async Task OnInitializedAsync()
     {
+        message = IdentityStatusMessage;
+        IdentityStatusMessage = null;
         Input ??= new();
 
         if (RemoteError is not null)
         {
-            RedirectManager.RedirectToWithStatus("Account/Login", $"Error from external provider: {RemoteError}", TempData);
+            IdentityStatusMessage = $"Error from external provider: {RemoteError}";
+            RedirectManager.RedirectTo("Account/Login");
             return;
         }
 
         var info = await SignInManager.GetExternalLoginInfoAsync();
         if (info is null)
         {
-            RedirectManager.RedirectToWithStatus("Account/Login", "Error loading external login information.", TempData);
+            IdentityStatusMessage = "Error loading external login information.";
+            RedirectManager.RedirectTo("Account/Login");
             return;
         }
 
@@ -107,7 +111,8 @@
     {
         if (externalLoginInfo is null)
         {
-            RedirectManager.RedirectToWithStatus("Account/Login", "Error loading external login information.", TempData);
+            IdentityStatusMessage = "Error loading external login information.";
+            RedirectManager.RedirectTo("Account/Login");
             return;
         }
 
@@ -144,7 +149,8 @@
     {
         if (externalLoginInfo is null)
         {
-            RedirectManager.RedirectToWithStatus("Account/Login", "Error loading external login information during confirmation.", TempData);
+            IdentityStatusMessage = "Error loading external login information during confirmation.";
+            RedirectManager.RedirectTo("Account/Login");
             return;
         }
 

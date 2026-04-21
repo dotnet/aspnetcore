@@ -45,20 +45,22 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    [CascadingParameter]
-    private ITempData TempData { get; set; } = default!;
+    [SupplyParameterFromTempData(Name = IdentityRedirectManager.StatusMessageKey)]
+    private string? IdentityStatusMessage { get; set; }
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
+        message = IdentityStatusMessage;
+        IdentityStatusMessage = null;
         Input ??= new();
 
         user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext.User, TempData);
+            RedirectManager.RedirectTo("Account/InvalidUser");
             return;
         }
         requirePassword = await UserManager.HasPasswordAsync(user);
@@ -68,11 +70,11 @@
     {
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext.User, TempData);
+            RedirectManager.RedirectTo("Account/InvalidUser");
             return;
         }
 
-        if (requirePassword && !await UserManager.CheckPasswordAsync(user, Input.Password))
+        if (requirePassword&& !await UserManager.CheckPasswordAsync(user, Input.Password))
         {
             message = "Error: Incorrect password.";
             return;

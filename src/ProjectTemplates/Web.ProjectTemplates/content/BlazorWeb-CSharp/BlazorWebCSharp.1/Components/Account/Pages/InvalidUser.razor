@@ -1,7 +1,15 @@
 ﻿@page "/Account/InvalidUser"
 
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+
 <PageTitle>Invalid user</PageTitle>
 
 <h3>Invalid user</h3>
 
-<StatusMessage />
+<p class="text-danger">Error: Unable to load user with ID '@UserManager.GetUserId(HttpContext.User)'.</p>
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+}
