@@ -71,7 +71,15 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 
         _contextHeader = CreateContextHeader();
 
-        this.PerformSelfTest();
+        try
+        {
+            this.PerformSelfTest();
+        }
+        catch
+        {
+            _keyDerivationKey.Dispose();
+            throw;
+        }
     }
 
 #if NET

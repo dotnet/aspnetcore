@@ -59,7 +59,15 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
 
         _contextHeader = CreateContextHeader();
 
-        this.PerformSelfTest();
+        try
+        {
+            this.PerformSelfTest();
+        }
+        catch
+        {
+            _sp800_108_ctr_hmac_provider.Dispose();
+            throw;
+        }
     }
 
     public void Decrypt<TWriter>(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination) where TWriter : IBufferWriter<byte>
