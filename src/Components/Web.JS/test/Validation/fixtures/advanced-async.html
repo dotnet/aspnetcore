@@ -89,7 +89,7 @@
           .catch(function () {
             return true; // fail-open
           });
-      }, { async: true });
+      }, { deferred: true });
 
       // Re-scan after adding the async validator so the field is properly tracked
       window.__aspnetValidation.scan();

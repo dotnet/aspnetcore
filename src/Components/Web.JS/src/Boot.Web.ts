@@ -29,7 +29,7 @@ import { resolveOptions } from './Platform/Circuits/CircuitStartOptions';
 import { JSInitializer } from './JSInitializers/JSInitializers';
 import { enableFocusOnNavigate } from './Rendering/FocusOnNavigate';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
-import { initializeBlazorValidation } from './Validation/ValidationService.Blazor';
+import { createValidationService } from './Validation/ValidationService';
 
 let started = false;
 let rootComponentManager: WebRootComponentManager;
@@ -81,7 +81,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 
   // Initialize client-side validation. The initial scan happens in onInitialDomContentLoaded
   // after the DOM is ready. Re-scan after each enhanced navigation DOM update.
-  Blazor.validation = initializeBlazorValidation();
+  Blazor.validation = createValidationService();
   jsEventRegistry.addEventListener('enhancedload', () => {
     Blazor.validation?.scan();
   });

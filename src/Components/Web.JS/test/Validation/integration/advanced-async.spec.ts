@@ -97,7 +97,7 @@ test.describe('submit skips debounce', () => {
 });
 
 // ---------------------------------------------------------------------------
-// User-registered async validator (addValidator with { async: true })
+// User-registered deferred validator (addValidator with { deferred: true })
 // ---------------------------------------------------------------------------
 
 test.describe('custom async validator', () => {

@@ -35,7 +35,7 @@ export class ValidationEngine {
   constructor(
     private validatorRegistry: ValidatorRegistry,
     private errorDisplay: ErrorDisplay,
-    private asyncTracker?: AsyncValidationTracker,
+    private asyncTracker: AsyncValidationTracker,
   ) { }
 
   /** Called when all pending async validations resolve. Set by wiring code. */
@@ -85,12 +85,12 @@ export class ValidationEngine {
     }
 
     formState.hasBeenSubmitted = false;
-    this.asyncTracker?.clear();
+    this.asyncTracker.clear();
     this.errorDisplay.updateSummary(form);
   }
 
   hasAsyncPending(): boolean {
-    return this.asyncTracker?.hasPending() ?? false;
+    return this.asyncTracker.hasPending();
   }
 
   getElementState(element: ValidatableElement): ElementState | undefined {
@@ -183,9 +183,12 @@ export class ValidationEngine {
     const value = getElementValue(element);
     const context: ValidationContext = { value, element, params: {}, immediate };
 
-    // Phase 1: Sync validators — run first; if any fail, skip async entirely.
+    // Clear any previous pending state for this element
+    this.asyncTracker.clear(element);
+
+    // Phase 1: Non-deferred validators — run first; if any fail, skip deferred entirely.
     for (const rule of state.rules) {
-      if (this.validatorRegistry.isAsync(rule.ruleName)) {
+      if (this.validatorRegistry.isDeferred(rule.ruleName)) {
         continue;
       }
 
@@ -199,48 +202,42 @@ export class ValidationEngine {
       const errorMessage = resolveErrorMessage(result as ValidationResult, rule);
 
       if (errorMessage) {
-        // Sync validation failed — clear any lingering pending state for this element
-        // (e.g., a previous async pass is now irrelevant because sync rules changed).
-        this.asyncTracker?.clear(element);
-
         return errorMessage;
       }
     }
 
-    // Phase 2: Async validators — only when async tracker is available and sync passed.
-    if (this.asyncTracker) {
-      for (const rule of state.rules) {
-        if (!this.validatorRegistry.isAsync(rule.ruleName)) {
-          continue;
-        }
+    // Phase 2: Deferred validators — only run after all non-deferred validators pass.
+    for (const rule of state.rules) {
+      if (!this.validatorRegistry.isDeferred(rule.ruleName)) {
+        continue;
+      }
 
-        const validator = this.validatorRegistry.get(rule.ruleName);
-        if (!validator) {
-          continue;
-        }
+      const validator = this.validatorRegistry.get(rule.ruleName);
+      if (!validator) {
+        continue;
+      }
 
-        context.params = rule.params;
-        context.signal = this.asyncTracker.createSignal(element, rule.ruleName);
-        const result = validator(context);
+      context.params = rule.params;
+      context.signal = this.asyncTracker.createSignal(element, rule.ruleName);
+      const result = validator(context);
 
-        if (result instanceof Promise) {
-          this.asyncTracker.track(element, rule.ruleName, result, () => {
-            this.validateElement(element);
-            const form = getElementForm(element);
-            if (form) {
-              this.updateValidationSummary(form);
-            }
-
-            if (!this.hasAsyncPending()) {
-              this.onPendingComplete?.();
-            }
-          });
-        } else {
-          // Sync return from an async-registered validator (cache hit).
-          const errorMessage = resolveErrorMessage(result, rule);
-          if (errorMessage) {
-            return errorMessage;
+      if (isPromiseLike(result)) {
+        this.asyncTracker.track(element, rule.ruleName, result, () => {
+          this.validateElement(element);
+          const form = getElementForm(element);
+          if (form) {
+            this.updateValidationSummary(form);
           }
+
+          if (!this.hasAsyncPending()) {
+            this.onPendingComplete?.();
+          }
+        });
+      } else {
+        // Sync return from a deferred validator (e.g., cache hit).
+        const errorMessage = resolveErrorMessage(result, rule);
+        if (errorMessage) {
+          return errorMessage;
         }
       }
     }
@@ -290,6 +287,11 @@ function resolveErrorMessage(result: ValidationResult, rule: ValidationRule): st
   }
 
   return '';
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isPromiseLike(value: unknown): value is Promise<ValidationResult> {
+  return value != null && typeof (value as any).then === 'function';
 }
 
 function initializeMessageElementsAria(element: ValidatableElement): void {

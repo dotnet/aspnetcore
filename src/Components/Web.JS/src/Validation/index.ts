@@ -1,10 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { initializeStandaloneValidation } from './ValidationService.Standalone';
+import { createValidationService } from './ValidationService';
+import { numberValidator } from './Validators/Number';
+import { remoteValidator } from './Validators/Remote';
 
 function initialize(): void {
-  initializeStandaloneValidation();
+  const service = createValidationService({
+    additionalValidators: [
+      { name: 'number', validator: numberValidator },
+      { name: 'remote', validator: remoteValidator, deferred: true },
+    ],
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).__aspnetValidation = service;
 }
 
 if (document.readyState === 'loading') {

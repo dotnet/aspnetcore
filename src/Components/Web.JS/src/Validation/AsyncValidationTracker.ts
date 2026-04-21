@@ -65,6 +65,7 @@ export class DefaultAsyncValidationTracker implements AsyncValidationTracker {
         if (key.startsWith(element.name + ':')) {
           controller.abort();
           this.controllers.delete(key);
+          this.versions.delete(key);
         }
       }
       this.pending.delete(element);

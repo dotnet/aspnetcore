@@ -2,22 +2,27 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { registerCoreValidators } from './CoreValidators';
+import { DefaultAsyncValidationTracker } from './AsyncValidationTracker';
 import { DomScanner } from './DomScanner';
 import { ErrorDisplay } from './ErrorDisplay';
 import { EventManager } from './EventManager';
-import { DefaultAsyncValidationTracker } from './AsyncValidationTracker';
 import { ValidationEngine } from './ValidationEngine';
 import { ValidatableElement, ValidationService, Validator, ValidatorOptions, ValidatorRegistry } from './ValidationTypes';
-import { numberValidator } from './Validators/Number';
-import { remoteValidator } from './Validators/Remote';
 
-export function initializeStandaloneValidation(): void {
+export interface ValidationServiceInit {
+  /** Additional validators to register beyond the core set (e.g., number, remote). */
+  additionalValidators?: Array<{ name: string; validator: Validator; deferred?: boolean }>;
+}
+
+export function createValidationService(init?: ValidationServiceInit): ValidationService {
   const registry = new ValidatorRegistry();
   registerCoreValidators(registry);
 
-  // MVC-specific validators (not included in the Blazor bundle)
-  registry.set('number', numberValidator);
-  registry.set('remote', remoteValidator, { async: true });
+  if (init?.additionalValidators) {
+    for (const v of init.additionalValidators) {
+      registry.set(v.name, v.validator, { deferred: v.deferred });
+    }
+  }
 
   const errorDisplay = new ErrorDisplay();
   const asyncTracker = new DefaultAsyncValidationTracker();
@@ -25,18 +30,14 @@ export function initializeStandaloneValidation(): void {
   const eventManager = new EventManager(engine);
   const scanner = new DomScanner(engine, eventManager);
 
-  // Wire deferred submission retry: when all async validators resolve, retry any blocked submit.
   engine.onPendingComplete = () => eventManager.retryDeferredSubmission();
   eventManager.attachFormInterceptors();
   scanner.scan(document);
 
-  const service: ValidationService = {
+  return {
     addValidator: (name: string, validator: Validator, options?: ValidatorOptions) => registry.set(name, validator, options),
     scan: (elementOrSelector?: ParentNode | string) => scanner.scan(elementOrSelector),
     validateField: (element: ValidatableElement) => engine.validateElement(element),
     validateForm: (form: HTMLFormElement) => engine.validateForm(form),
   };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).__aspnetValidation = service;
 }

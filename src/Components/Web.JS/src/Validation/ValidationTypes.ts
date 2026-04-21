@@ -18,8 +18,9 @@ export type ValidationResult = boolean | string;
 export type Validator = (context: ValidationContext) => ValidationResult | Promise<ValidationResult>;
 
 export interface ValidatorOptions {
-  /** When true, this validator is only invoked after all sync validators pass. */
-  async?: boolean;
+  /** When true, this validator runs only after all non-deferred validators pass.
+   *  Use for validators that make network requests or have other side effects. */
+  deferred?: boolean;
 }
 
 export interface ValidationService {
@@ -61,21 +62,21 @@ export interface AsyncValidationTracker {
 
 interface ValidatorEntry {
   fn: Validator;
-  async: boolean;
+  deferred: boolean;
 }
 
 export class ValidatorRegistry {
   private validators: Map<string, ValidatorEntry> = new Map();
 
   set(name: string, validator: Validator, options?: ValidatorOptions): void {
-    this.validators.set(name, { fn: validator, async: options?.async ?? false });
+    this.validators.set(name, { fn: validator, deferred: options?.deferred ?? false });
   }
 
   get(name: string): Validator | undefined {
     return this.validators.get(name)?.fn;
   }
 
-  isAsync(name: string): boolean {
-    return this.validators.get(name)?.async ?? false;
+  isDeferred(name: string): boolean {
+    return this.validators.get(name)?.deferred ?? false;
   }
 }
