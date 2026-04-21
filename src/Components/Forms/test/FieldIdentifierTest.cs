@@ -89,6 +89,45 @@ public class FieldIdentifierTest
     }
 
     [Fact]
+    public void DefaultFieldIdentifier_GetHashCode_DoesNotThrow()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/45096.
+        // The public constructor rejects null, but `default(FieldIdentifier)` bypasses it
+        // and yields null Model/FieldName. GetHashCode must not throw in that case,
+        // otherwise callers such as EditContext.NotifyFieldChanged surface a confusing
+        // "Value cannot be null. (Parameter 'obj')" error.
+        var fieldIdentifier = default(FieldIdentifier);
+
+        var hashCode = fieldIdentifier.GetHashCode();
+
+        Assert.Equal(default(FieldIdentifier).GetHashCode(), hashCode);
+    }
+
+    [Fact]
+    public void DefaultFieldIdentifiers_AreEqual()
+    {
+        var fieldIdentifier1 = default(FieldIdentifier);
+        var fieldIdentifier2 = default(FieldIdentifier);
+
+        Assert.Equal(fieldIdentifier1.GetHashCode(), fieldIdentifier2.GetHashCode());
+        Assert.True(fieldIdentifier1.Equals(fieldIdentifier2));
+    }
+
+    [Fact]
+    public void DefaultFieldIdentifier_CanBeUsedAsDictionaryKey()
+    {
+        // EditContext stores field state in a Dictionary<FieldIdentifier, FieldState>, so
+        // any dictionary operation on a default-valued key must not throw.
+        var dictionary = new Dictionary<FieldIdentifier, string>
+        {
+            [default] = "value",
+        };
+
+        Assert.True(dictionary.ContainsKey(default));
+        Assert.Equal("value", dictionary[default]);
+    }
+
+    [Fact]
     public void SameContentsProduceSameHashCodesAndEquality()
     {
         // Arrange
