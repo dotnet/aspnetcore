@@ -29,7 +29,6 @@
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
     <Reference Include="Microsoft.Extensions.FileSystemGlobbing" />
-    <Reference Include="Microsoft.Extensions.Primitives" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc" />

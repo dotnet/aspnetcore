@@ -11,9 +11,11 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Tests;
 
+[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66031")]
 public class HttpsConfigurationTests
 {
     [Theory]
