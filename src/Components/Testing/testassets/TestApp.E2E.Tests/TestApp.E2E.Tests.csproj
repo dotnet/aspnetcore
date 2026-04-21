@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="../../eng/targets/Microsoft.AspNetCore.Components.Testing.props" />
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Playwright.Xunit.v3" />
+    <Reference Include="xunit.v3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Testing" />
+    <ProjectReference Include="../TestApp/TestApp.csproj">
+      <E2EApp>true</E2EApp>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Import Project="../../eng/targets/Microsoft.AspNetCore.Components.Testing.targets" />
+
+</Project>
