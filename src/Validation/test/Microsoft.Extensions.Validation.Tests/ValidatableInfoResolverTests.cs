@@ -86,7 +86,6 @@ public class ValidatableInfoResolverTests
 
         var mockParamInfo = new Mock<ValidatableParameterInfo>(
             typeof(string),
-            "model",
             "model").Object;
 
         var resolver = new Mock<IValidatableInfoResolver>();
@@ -119,7 +118,9 @@ public class ValidatableInfoResolverTests
         var resolver3 = new Mock<IValidatableInfoResolver>();
 
         // Create the object that will be returned by resolver2
-        var mockTypeInfo = new Mock<ValidatableTypeInfo>(typeof(ValidatableType), Array.Empty<ValidatablePropertyInfo>()).Object;
+        var mockTypeInfo = new Mock<ValidatableTypeInfo>(
+            typeof(ValidatableType),
+            Array.Empty<ValidatablePropertyInfo>()).Object;
 
         // Setup resolver1 to return false (doesn't handle this type)
         resolver1
@@ -188,14 +189,15 @@ public class ValidatableInfoResolverTests
             Type containingType,
             Type propertyType,
             string name,
-            string displayName,
             ValidationAttribute[] validationAttributes)
-            : base(containingType, propertyType, name, displayName)
+            : base(containingType, propertyType, name)
         {
             _validationAttributes = validationAttributes;
         }
 
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+
+        protected override string? GetDisplayName() => null;
     }
 
     private class TestValidatableParameterInfo : ValidatableParameterInfo
@@ -205,13 +207,14 @@ public class ValidatableInfoResolverTests
         public TestValidatableParameterInfo(
             Type parameterType,
             string name,
-            string displayName,
             ValidationAttribute[] validationAttributes)
-            : base(parameterType, name, displayName)
+            : base(parameterType, name)
         {
             _validationAttributes = validationAttributes;
         }
 
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+
+        protected override string? GetDisplayName() => null;
     }
 }

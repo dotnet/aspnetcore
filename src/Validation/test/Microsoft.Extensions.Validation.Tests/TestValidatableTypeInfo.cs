@@ -15,4 +15,6 @@ internal class TestValidatableTypeInfo(
     private readonly ValidationAttribute[] _attributes = attributes ?? [];
 
     protected override ValidationAttribute[] GetValidationAttributes() => _attributes;
+
+    protected override string? GetDisplayName() => null;
 }

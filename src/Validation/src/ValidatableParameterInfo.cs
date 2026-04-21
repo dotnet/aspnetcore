@@ -20,15 +20,12 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// </summary>
     /// <param name="parameterType">The <see cref="Type"/> associated with the parameter.</param>
     /// <param name="name">The parameter name.</param>
-    /// <param name="displayName">The display name for the parameter.</param>
     protected ValidatableParameterInfo(
         Type parameterType,
-        string name,
-        string displayName)
+        string name)
     {
         ParameterType = parameterType;
         Name = name;
-        DisplayName = displayName;
     }
 
     /// <summary>
@@ -42,15 +39,20 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     internal string Name { get; }
 
     /// <summary>
-    /// Gets the display name for the parameter.
-    /// </summary>
-    internal string DisplayName { get; }
-
-    /// <summary>
     /// Gets the validation attributes for this parameter.
     /// </summary>
     /// <returns>An array of validation attributes to apply to this parameter.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
+
+    /// <summary>
+    /// Gets the display name for this parameter resolved from display-related attributes
+    /// such as <see cref="DisplayAttribute"/>.
+    /// </summary>
+    /// <returns>
+    /// The resolved display name, or <see langword="null"/> if no display name attribute
+    /// is present on the parameter, indicating that the caller should fall back to the parameter name.
+    /// </returns>
+    protected abstract string? GetDisplayName();
 
     /// <inheritdoc />
     /// <remarks>
@@ -65,7 +67,9 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             return;
         }
 
-        context.ValidationContext.DisplayName = DisplayName;
+        var displayName = GetDisplayName() ?? Name;
+
+        context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
 
         var validationAttributes = GetValidationAttributes();
