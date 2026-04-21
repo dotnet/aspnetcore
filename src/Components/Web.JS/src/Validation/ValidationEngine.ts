@@ -3,7 +3,7 @@
 
 import { ErrorDisplay } from './ErrorDisplay';
 import { findMessageElements, getElementForm, shouldSkipElement } from './DomUtils';
-import { AsyncValidationTracker, ValidatableElement, ValidationContext, ValidationResult, ValidatorRegistry } from './ValidationTypes';
+import { ValidatableElement, ValidationContext, ValidationResult, ValidatorRegistry } from './ValidationTypes';
 
 export type ValidationRule = {
   ruleName: string;
@@ -35,11 +35,7 @@ export class ValidationEngine {
   constructor(
     private validatorRegistry: ValidatorRegistry,
     private errorDisplay: ErrorDisplay,
-    private asyncTracker: AsyncValidationTracker,
   ) { }
-
-  /** Called when all pending async validations resolve. Set by wiring code. */
-  onPendingComplete: (() => void) | null = null;
 
   registerElement(element: ValidatableElement, form: HTMLFormElement, state: ElementState): void {
     this.trackedElements.set(element, state);
@@ -85,12 +81,7 @@ export class ValidationEngine {
     }
 
     formState.hasBeenSubmitted = false;
-    this.asyncTracker.clear();
     this.errorDisplay.updateSummary(form);
-  }
-
-  hasAsyncPending(): boolean {
-    return this.asyncTracker.hasPending();
   }
 
   getElementState(element: ValidatableElement): ElementState | undefined {
@@ -125,7 +116,7 @@ export class ValidationEngine {
         continue;
       }
 
-      const isValid = this.validateElement(input, { immediate: true });
+      const isValid = this.validateElement(input);
       if (!isValid) {
         const name = input.name || input.id || '';
         summaryErrors.set(name, input.validationMessage);
@@ -141,7 +132,7 @@ export class ValidationEngine {
     return summaryErrors.size === 0;
   }
 
-  validateElement(element: ValidatableElement, options?: { immediate?: boolean }): boolean {
+  validateElement(element: ValidatableElement): boolean {
     const state = this.getElementState(element);
 
     if (!state) {
@@ -149,7 +140,7 @@ export class ValidationEngine {
       return true;
     }
 
-    const errorMessage = this.validateElementInternal(element, state, options?.immediate);
+    const errorMessage = this.validateElementInternal(element, state);
 
     if (errorMessage) {
       this.markInvalid(element, state, errorMessage);
@@ -179,19 +170,11 @@ export class ValidationEngine {
     this.errorDisplay.updateSummary(form, errors);
   }
 
-  private validateElementInternal(element: ValidatableElement, state: ElementState, immediate?: boolean): string {
+  private validateElementInternal(element: ValidatableElement, state: ElementState): string {
     const value = getElementValue(element);
-    const context: ValidationContext = { value, element, params: {}, immediate };
+    const context: ValidationContext = { value, element, params: {} };
 
-    // Clear any previous pending state for this element
-    this.asyncTracker.clear(element);
-
-    // Phase 1: Non-deferred validators — run first; if any fail, skip deferred entirely.
     for (const rule of state.rules) {
-      if (this.validatorRegistry.isDeferred(rule.ruleName)) {
-        continue;
-      }
-
       const validator = this.validatorRegistry.get(rule.ruleName);
       if (!validator) {
         continue;
@@ -203,42 +186,6 @@ export class ValidationEngine {
 
       if (errorMessage) {
         return errorMessage;
-      }
-    }
-
-    // Phase 2: Deferred validators — only run after all non-deferred validators pass.
-    for (const rule of state.rules) {
-      if (!this.validatorRegistry.isDeferred(rule.ruleName)) {
-        continue;
-      }
-
-      const validator = this.validatorRegistry.get(rule.ruleName);
-      if (!validator) {
-        continue;
-      }
-
-      context.params = rule.params;
-      context.signal = this.asyncTracker.createSignal(element, rule.ruleName);
-      const result = validator(context);
-
-      if (isPromiseLike(result)) {
-        this.asyncTracker.track(element, rule.ruleName, result, () => {
-          this.validateElement(element);
-          const form = getElementForm(element);
-          if (form) {
-            this.updateValidationSummary(form);
-          }
-
-          if (!this.hasAsyncPending()) {
-            this.onPendingComplete?.();
-          }
-        });
-      } else {
-        // Sync return from a deferred validator (e.g., cache hit).
-        const errorMessage = resolveErrorMessage(result, rule);
-        if (errorMessage) {
-          return errorMessage;
-        }
       }
     }
 
@@ -287,11 +234,6 @@ function resolveErrorMessage(result: ValidationResult, rule: ValidationRule): st
   }
 
   return '';
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function isPromiseLike(value: unknown): value is Promise<ValidationResult> {
-  return value != null && typeof (value as any).then === 'function';
 }
 
 function initializeMessageElementsAria(element: ValidatableElement): void {

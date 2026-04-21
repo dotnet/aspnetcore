@@ -2,16 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { createValidationService } from './ValidationService';
-import { numberValidator } from './Validators/Number';
-import { remoteValidator } from './Validators/Remote';
 
 function initialize(): void {
-  const service = createValidationService({
-    additionalValidators: [
-      { name: 'number', validator: numberValidator },
-      { name: 'remote', validator: remoteValidator, deferred: true },
-    ],
-  });
+  const service = createValidationService();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).__aspnetValidation = service;

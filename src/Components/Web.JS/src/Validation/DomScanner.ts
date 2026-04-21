@@ -101,8 +101,7 @@ export class DomScanner {
       this.unregisterElements(formState.trackedElements, element =>
         !element.isConnected ||
         shouldSkipElement(element) ||
-        element.getAttribute('data-val') !== 'true'
-      );
+        element.getAttribute('data-val') !== 'true');
     }
   }
 

@@ -8,8 +8,6 @@ import { ValidatableElement } from './ValidationTypes';
 export class EventManager {
   private formInterceptorController: AbortController | null = null;
 
-  private deferredSubmission: { form: HTMLFormElement; submitter: Element | null } | null = null;
-
   constructor(private engine: ValidationEngine) { }
 
   attachInputListeners(element: ValidatableElement): void {
@@ -102,37 +100,7 @@ export class EventManager {
       return;
     }
 
-    // Block submission if async validation is still in flight.
-    if (this.engine.hasAsyncPending()) {
-      event.preventDefault();
-      event.stopPropagation();
-      this.deferredSubmission = { form, submitter: event.submitter };
-      return;
-    }
-
     dispatchValidationComplete(form, result);
-  }
-
-  /** Called when all async validators resolve. Retries deferred submission. */
-  retryDeferredSubmission(): void {
-    if (!this.deferredSubmission) {
-      return;
-    }
-
-    if (this.engine.hasAsyncPending()) {
-      return; // still pending
-    }
-
-    const { form, submitter } = this.deferredSubmission;
-    this.deferredSubmission = null;
-
-    const result = this.engine.validateForm(form);
-    dispatchValidationComplete(form, result);
-
-    if (result) {
-      // requestSubmit fires a real SubmitEvent → compatible with enhanced nav
-      form.requestSubmit(submitter as HTMLElement | null);
-    }
   }
 
   private handleReset(event: Event): void {
@@ -144,11 +112,6 @@ export class EventManager {
     // Only intercept tracked forms.
     if (!this.engine.getFormState(form)) {
       return;
-    }
-
-    // Clear deferred submission on reset.
-    if (this.deferredSubmission?.form === form) {
-      this.deferredSubmission = null;
     }
 
     // Use setTimeout because the reset event fires before the browser resets field values.
