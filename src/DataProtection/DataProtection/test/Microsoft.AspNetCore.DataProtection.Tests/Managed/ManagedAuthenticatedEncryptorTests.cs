@@ -189,7 +189,7 @@ public class ManagedAuthenticatedEncryptorTests
         // but subsequent calls (used during encrypt/decrypt) return HMACSHA512 (64-byte digest).
         // The stored digest length won't match, causing the HMAC check to fail.
         Func<KeyedHashAlgorithm> inconsistentFactory = () =>
-            ++callCount <= 1
+            ++callCount <= 2
                 ? (KeyedHashAlgorithm)new HMACSHA256()
                 : new HMACSHA512();
 
