@@ -1,0 +1,20 @@
+<Project>
+  <PropertyGroup>
+    <IdentityUIFrameworkVersion Condition="'$(IdentityUIFrameworkVersion)' == ''">Bootstrap5</IdentityUIFrameworkVersion>
+
+    <_IdentityUIGroupValue Condition="'$(IdentityUIFrameworkVersion)' == 'Bootstrap4'">V4</_IdentityUIGroupValue>
+    <_IdentityUIGroupValue Condition="'$(IdentityUIFrameworkVersion)' == 'Bootstrap5'">V5</_IdentityUIGroupValue>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.Identity.UI.UIFrameworkAttribute">
+      <_Parameter1>$(IdentityUIFrameworkVersion)</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <StaticWebAssetGroup Include="BootstrapVersion"
+      Value="$(_IdentityUIGroupValue)"
+      SourceId="Microsoft.AspNetCore.Identity.UI" />
+  </ItemGroup>
+</Project>
