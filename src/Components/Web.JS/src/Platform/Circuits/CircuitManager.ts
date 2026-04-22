@@ -176,6 +176,13 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     connection.on('JS.RequestPause', async () => {
       try {
+        if (this._options.onPauseRequested) {
+          const shouldPause = await this._options.onPauseRequested();
+          if (!shouldPause) {
+            this._logger.log(LogLevel.Trace, 'Server-initiated pause was deferred by onPauseRequested callback.');
+            return;
+          }
+        }
         await this.pause(true);
       } catch (error) {
         this._logger.log(LogLevel.Error, `Failed to handle server-initiated pause: ${error}`);

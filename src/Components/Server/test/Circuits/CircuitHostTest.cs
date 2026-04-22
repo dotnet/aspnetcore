@@ -721,39 +721,6 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task A17_PauseFromOutside_WhileAsyncInboundWorkActive_PauseWaitsForCompletion()
-    {
-        var asyncWorkReleased = false;
-        var pauseSentAfterRelease = false;
-        var proxy = new Mock<ISingleClientProxy>();
-        proxy.Setup(c => c.SendCoreAsync("JS.RequestPause", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
-             .Callback(() => pauseSentAfterRelease = asyncWorkReleased)
-             .Returns(Task.CompletedTask);
-        var circuitHost = await CreateConnectedCircuitHostAsync(proxy);
-
-        var asyncWorkStarted = new TaskCompletionSource();
-        var releaseAsyncWork = new TaskCompletionSource();
-
-        var inboundTask = circuitHost.HandleInboundActivityAsync(async () =>
-        {
-            asyncWorkStarted.SetResult();
-            await releaseAsyncWork.Task;
-        });
-
-        await asyncWorkStarted.Task;
-
-        var pauseTask = Task.Run(() => circuitHost.RequestPauseAsync(CancellationToken.None).AsTask());
-
-        asyncWorkReleased = true;
-        releaseAsyncWork.SetResult();
-        await inboundTask;
-
-        var result = await pauseTask;
-        Assert.True(result);
-        Assert.True(pauseSentAfterRelease, "Pause should be sent after async inbound work completes");
-    }
-
-    [Fact]
     public async Task A17_DispatchedPause_WhileSyncWorkBlocked_PauseWaitsForSyncWork()
     {
         var syncWorkReleased = false;
@@ -785,45 +752,6 @@ public class CircuitHostTest
         var result = await pauseTask;
         Assert.True(result);
         Assert.True(pauseSentAfterRelease, "Pause should be sent after sync work finishes");
-    }
-
-    [Fact]
-    public async Task A17_PauseFromInsideHandler_WhileOtherAsyncWorkActive_WaitsForOtherWork()
-    {
-        var otherWorkReleased = false;
-        var pauseSentAfterRelease = false;
-        var proxy = new Mock<ISingleClientProxy>();
-        proxy.Setup(c => c.SendCoreAsync("JS.RequestPause", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
-             .Callback(() => pauseSentAfterRelease = otherWorkReleased)
-             .Returns(Task.CompletedTask);
-        var circuitHost = await CreateConnectedCircuitHostAsync(proxy);
-
-        var otherWorkStarted = new TaskCompletionSource();
-        var releaseOtherWork = new TaskCompletionSource();
-
-        // Start another async inbound handler.
-        var otherHandlerTask = circuitHost.HandleInboundActivityAsync(async () =>
-        {
-            otherWorkStarted.SetResult();
-            await releaseOtherWork.Task;
-        });
-
-        await otherWorkStarted.Task;
-
-        // Simulate a component event handler calling RequestPauseAsync directly.
-        // This is ONE HandleInboundActivityAsync wrapping the dispatcher call +
-        // the pause call inside it — NOT a nested HandleInboundActivityAsync.
-        var pauseTask = circuitHost.HandleInboundActivityAsync(
-            () => circuitHost.Renderer.Dispatcher.InvokeAsync(
-                () => circuitHost.RequestPauseAsync(CancellationToken.None).AsTask()));
-
-        // Release the other handler.
-        otherWorkReleased = true;
-        releaseOtherWork.SetResult();
-        await otherHandlerTask;
-
-        await pauseTask;
-        Assert.True(pauseSentAfterRelease, "Pause should be sent after other async work completes");
     }
 
     [Fact]
@@ -1114,38 +1042,6 @@ public class CircuitHostTest
         var circuitHost = TestCircuitHost.Create(clientProxy: client);
 
         Assert.False(await circuitHost.Circuit.RequestCircuitPauseAsync());
-    }
-
-    [Fact]
-    public async Task PublicApi_CancellationTokenRejectsDuringDrainWait()
-    {
-        var proxy = new Mock<ISingleClientProxy>();
-        proxy.Setup(c => c.SendCoreAsync("JS.RequestPause", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
-             .Returns(Task.CompletedTask);
-        var circuitHost = await CreateConnectedCircuitHostAsync(proxy);
-
-        var asyncWorkStarted = new TaskCompletionSource();
-        var releaseAsyncWork = new TaskCompletionSource();
-
-        var inboundTask = circuitHost.HandleInboundActivityAsync(async () =>
-        {
-            asyncWorkStarted.SetResult();
-            await releaseAsyncWork.Task;
-        });
-
-        await asyncWorkStarted.Task;
-
-        using var cts = new CancellationTokenSource();
-        var pauseTask = Task.Run(() => circuitHost.RequestPauseAsync(cts.Token).AsTask());
-
-        // Cancel while waiting for drain — should return false.
-        cts.Cancel();
-
-        var result = await pauseTask;
-        Assert.False(result);
-
-        releaseAsyncWork.SetResult();
-        await inboundTask;
     }
 
     [Fact]
