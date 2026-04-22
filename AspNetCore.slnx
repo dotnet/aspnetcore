@@ -84,6 +84,7 @@
   </Folder>
   <Folder Name="/src/Components/test/">
     <Project Path="src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests.csproj" />
+    <Project Path="src/Components/test/AIApp.E2E.Tests/AIApp.E2E.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Components/test/testassets/">
     <Project Path="src/Components/test/testassets/BasicTestApp/BasicTestApp.csproj" />
@@ -96,6 +97,7 @@
     <Project Path="src/Components/test/testassets/LazyTestContentPackage/LazyTestContentPackage.csproj" />
     <Project Path="src/Components/test/testassets/NotReferencedInWasmCodePackage/NotReferencedInWasmCodePackage.csproj" />
     <Project Path="src/Components/test/testassets/TestContentPackage/TestContentPackage.csproj" />
+    <Project Path="src/Components/test/testassets/AIApp/AIApp.csproj" />
   </Folder>
   <Folder Name="/src/Components/Testing/">
     <Project Path="src/Components/Testing/src/Microsoft.AspNetCore.Components.Testing.csproj" />

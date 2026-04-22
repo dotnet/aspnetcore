@@ -1,0 +1,69 @@
+[
+  [
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": "This"
+        }
+      ],
+      "responseId": "e2e-stream-001",
+      "messageId": "e2e-stream-001",
+      "createdAt": "2026-01-01T00:00:00+00:00",
+      "modelId": "e2e-test"
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": " is"
+        }
+      ],
+      "responseId": "e2e-stream-001",
+      "messageId": "e2e-stream-001",
+      "createdAt": "2026-01-01T00:00:00+00:00",
+      "modelId": "e2e-test"
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": " a"
+        }
+      ],
+      "responseId": "e2e-stream-001",
+      "messageId": "e2e-stream-001",
+      "createdAt": "2026-01-01T00:00:00+00:00",
+      "modelId": "e2e-test"
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": " streamed"
+        }
+      ],
+      "responseId": "e2e-stream-001",
+      "messageId": "e2e-stream-001",
+      "createdAt": "2026-01-01T00:00:00+00:00",
+      "modelId": "e2e-test"
+    },
+    {
+      "role": "assistant",
+      "contents": [
+        {
+          "$type": "text",
+          "text": " response"
+        }
+      ],
+      "responseId": "e2e-stream-001",
+      "messageId": "e2e-stream-001",
+      "createdAt": "2026-01-01T00:00:00+00:00",
+      "modelId": "e2e-test"
+    }
+  ]
+]

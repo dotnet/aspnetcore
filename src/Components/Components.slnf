@@ -76,6 +76,8 @@
       "src\\Components\\AI\\gen\\Microsoft.AspNetCore.Components.AI.SourceGenerators.csproj",
       "src\\Components\\AI\\test\\Microsoft.AspNetCore.Components.AI.Tests.csproj",
       "src\\Components\\AI\\gen\\test\\Microsoft.AspNetCore.Components.AI.SourceGenerators.Tests.csproj",
+      "src\\Components\\test\\AIApp.E2E.Tests\\AIApp.E2E.Tests.csproj",
+      "src\\Components\\test\\testassets\\AIApp\\AIApp.csproj",
       "src\\DataProtection\\Abstractions\\src\\Microsoft.AspNetCore.DataProtection.Abstractions.csproj",
       "src\\DataProtection\\Cryptography.Internal\\src\\Microsoft.AspNetCore.Cryptography.Internal.csproj",
       "src\\DataProtection\\Cryptography.KeyDerivation\\src\\Microsoft.AspNetCore.Cryptography.KeyDerivation.csproj",

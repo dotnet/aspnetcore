@@ -1,0 +1,84 @@
+@page "/toolblocks"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.AI
+@using Microsoft.Extensions.AI
+@implements IDisposable
+
+<PageTitle>ToolBlock Demo</PageTitle>
+
+<h1 id="page-title">ToolBlock Demo</h1>
+
+<AgentBoundary Agent="_agent">
+    <MessageList />
+    <MessageInput Placeholder="Ask about weather..." />
+</AgentBoundary>
+
+@code {
+    private UIAgent _agent = default!;
+
+    protected override void OnInitialized()
+    {
+        _agent = new UIAgent(new ToolDemoChatClient(), options =>
+        {
+            options.AddGeneratedToolBlocks();
+        });
+    }
+
+    public void Dispose()
+    {
+        _agent?.Dispose();
+    }
+
+    private sealed class ToolDemoChatClient : IChatClient
+    {
+        public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+            IEnumerable<ChatMessage> messages,
+            ChatOptions? options = null,
+            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            yield return new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                Contents = [new TextContent("Let me check the weather for you.")]
+            };
+
+            await Task.Delay(100, cancellationToken);
+
+            yield return new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                Contents = [new FunctionCallContent("call-1", "get_weather",
+                    new Dictionary<string, object?>
+                    {
+                        ["Location"] = "Seattle",
+                        ["units"] = "fahrenheit"
+                    }) { InformationalOnly = true }]
+            };
+
+            await Task.Delay(200, cancellationToken);
+
+            yield return new ChatResponseUpdate
+            {
+                Contents = [new FunctionResultContent("call-1", "Sunny, 72°F")]
+            };
+
+            await Task.Delay(100, cancellationToken);
+
+            yield return new ChatResponseUpdate
+            {
+                Role = ChatRole.Assistant,
+                Contents = [new TextContent("The weather in Seattle is sunny and 72°F!")]
+            };
+        }
+
+        public Task<ChatResponse> GetResponseAsync(
+            IEnumerable<ChatMessage> messages,
+            ChatOptions? options = null,
+            CancellationToken cancellationToken = default)
+            => throw new NotSupportedException();
+
+        public object? GetService(Type serviceType, object? serviceKey = null) => null;
+
+        public void Dispose() { }
+    }
+}
