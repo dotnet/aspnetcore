@@ -169,7 +169,6 @@ public class Http2TimeoutTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65853")]
     public async Task HEADERS_ReceivedWithoutAllCONTINUATIONs_WithinRequestHeadersTimeout_AbortsConnection()
     {
         var limits = _serviceContext.ServerOptions.Limits;
