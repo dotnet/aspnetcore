@@ -30,6 +30,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private CircuitHandler[] _circuitHandlers;
     private bool _initialized;
     private bool _isFirstUpdate = true;
+    private bool _onConnectionUpFired;
     private bool _onConnectionDownFired;
     private bool _disposed;
     private long _startTime;
@@ -280,6 +281,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
     public async Task OnConnectionUpAsync(CancellationToken cancellationToken)
     {
+        _onConnectionUpFired = true;
         _onConnectionDownFired = false;
         Log.ConnectionUp(_logger, CircuitId, Client.ConnectionId);
         _circuitMetrics?.OnConnectionUp();
@@ -944,6 +946,68 @@ internal partial class CircuitHost : IAsyncDisposable
         return result;
     }
 
+    internal async ValueTask<bool> RequestPauseAsync(CancellationToken cancellationToken)
+    {
+        Log.ServerPauseRequested(_logger, CircuitId);
+
+        if (_disposed)
+        {
+            Log.ServerPauseRejected(_logger, CircuitId);
+            return false;
+        }
+
+        if (!_initialized || !_onConnectionUpFired)
+        {
+            Log.ServerPauseRejected(_logger, CircuitId);
+            return false;
+        }
+
+        if (!Client.Connected)
+        {
+            Log.ServerPauseRejected(_logger, CircuitId);
+            return false;
+        }
+
+        // Dispatch the send onto the dispatcher to serialize with any sync work
+        // (renders, event handlers) that may be in progress.
+        // The client receives the message and decides when to actually pause via
+        // an optional onPauseRequested callback in CircuitStartOptions.
+        return await Renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            if (_disposed || !Client.Connected)
+            {
+                Log.ServerPauseRejected(_logger, CircuitId);
+                return false;
+            }
+
+            // Check cancellation before sending. The dispatcher may have queued
+            // this work item while the token was still valid, but by the time
+            // it runs the caller may have cancelled.
+            if (cancellationToken.IsCancellationRequested)
+            {
+                Log.ServerPauseRejected(_logger, CircuitId);
+                return false;
+            }
+
+            try
+            {
+                await Client.SendCoreAsync("JS.RequestPause", Array.Empty<object>(), cancellationToken);
+                Log.ServerPauseAccepted(_logger, CircuitId);
+                return true;
+            }
+            catch (OperationCanceledException)
+            {
+                Log.ServerPauseRejected(_logger, CircuitId);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Log.ServerPauseFailed(_logger, CircuitId, ex);
+                return false;
+            }
+        });
+    }
+
     internal async Task<bool> SendPersistedStateToClient(string rootComponents, string applicationState, CancellationToken cancellation)
     {
         try
@@ -1121,5 +1185,17 @@ internal partial class CircuitHost : IAsyncDisposable
 
         [LoggerMessage(220, LogLevel.Debug, "Failed to save state to client in circuit '{CircuitId}'.", EventName = "FailedToSaveStateToClient")]
         public static partial void FailedToSaveStateToClient(ILogger logger, CircuitId circuitId, Exception exception);
+
+        [LoggerMessage(120, LogLevel.Debug, "Server-initiated pause requested for circuit '{CircuitId}'.", EventName = "ServerPauseRequested")]
+        public static partial void ServerPauseRequested(ILogger logger, CircuitId circuitId);
+
+        [LoggerMessage(121, LogLevel.Debug, "Server-initiated pause request accepted for circuit '{CircuitId}'. Client has been asked to begin pausing.", EventName = "ServerPauseAccepted")]
+        public static partial void ServerPauseAccepted(ILogger logger, CircuitId circuitId);
+
+        [LoggerMessage(122, LogLevel.Debug, "Server-initiated pause request rejected for circuit '{CircuitId}'. Circuit is not in a connected state.", EventName = "ServerPauseRejected")]
+        public static partial void ServerPauseRejected(ILogger logger, CircuitId circuitId);
+
+        [LoggerMessage(123, LogLevel.Debug, "Server-initiated pause request failed for circuit '{CircuitId}'.", EventName = "ServerPauseFailed")]
+        public static partial void ServerPauseFailed(ILogger logger, CircuitId circuitId, Exception exception);
     }
 }

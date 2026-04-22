@@ -251,7 +251,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65852")]
     public virtual void CanRenderHtmlTable()
     {
         Browser.MountTestComponent<VirtualizationTable>();
@@ -1626,7 +1625,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    public void NonZeroStartIndex_ScrollToMiddleThenMeasure()
+    public virtual void NonZeroStartIndex_ScrollToMiddleThenMeasure()
     {
         Browser.MountTestComponent<VirtualizationScrollBehavior>();
 
