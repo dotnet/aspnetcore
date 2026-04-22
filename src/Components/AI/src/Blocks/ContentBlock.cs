@@ -7,27 +7,30 @@ namespace Microsoft.AspNetCore.Components.AI;
 
 public abstract class ContentBlock
 {
-    public string Id { get; set; } = string.Empty;
+    public string Id { get; internal set; } = string.Empty;
 
-    public BlockLifecycleState LifecycleState { get; set; }
+    public BlockLifecycleState LifecycleState { get; internal set; }
 
-    public ChatRole? Role { get; set; }
+    public ChatRole? Role { get; internal set; }
 
-    public string? AuthorName { get; set; }
+    public string? AuthorName { get; internal set; }
 
     private readonly List<Action> _callbacks = new();
 
     public ContentBlockChangedSubscription OnChanged(Action callback)
     {
+        ArgumentNullException.ThrowIfNull(callback);
         _callbacks.Add(callback);
         return new ContentBlockChangedSubscription(this, callback);
     }
 
     protected void NotifyChanged()
     {
-        for (var i = 0; i < _callbacks.Count; i++)
+        // Snapshot the callbacks to allow safe removal during iteration
+        var snapshot = _callbacks.ToArray();
+        for (var i = 0; i < snapshot.Length; i++)
         {
-            _callbacks[i]();
+            snapshot[i]();
         }
     }
 

@@ -20,7 +20,11 @@ public readonly struct BlockMappingResult<TState>
 
     public static BlockMappingResult<TState> Pass() => new(ResultKind.Pass, null, default);
 
-    public static BlockMappingResult<TState> Emit(ContentBlock block, TState state) => new(ResultKind.Emit, block, state);
+    public static BlockMappingResult<TState> Emit(ContentBlock block, TState state)
+    {
+        ArgumentNullException.ThrowIfNull(block);
+        return new(ResultKind.Emit, block, state);
+    }
 
     public static BlockMappingResult<TState> Update(TState state) => new(ResultKind.Update, null, state);
 

@@ -14,6 +14,7 @@ public class UIAgentOptions
     public void AddBlockHandler<TState>(ContentBlockHandler<TState> handler)
         where TState : new()
     {
+        ArgumentNullException.ThrowIfNull(handler);
         HandlerRegistrations.Add(new HandlerRegistration<TState>(handler));
     }
 
