@@ -11,19 +11,17 @@
   </ItemGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
 
-  <!-- After ResolveReferences.targets converts Reference to ProjectReference (which drops
-       all custom metadata), re-apply metadata so that:
+  <!-- After ResolveReferences.targets (imported above) converts Reference to ProjectReference
+       at evaluation time (which drops all custom metadata), re-apply metadata at evaluation
+       time so it is always in effect for every build phase (Build, Publish, Razor, etc.):
        - ReferenceOutputAssembly=false: don't try to resolve/copy the DLL (the project uses
          CopyBuildOutputToOutputDirectory=false so no DLL exists in the output directory)
        - Private=false: don't copy to consuming project output
        - PrivateAssets=all: don't flow as a dependency to consuming packages -->
-  <Target Name="_ConfigureAssetsInternalReference" BeforeTargets="ResolveProjectReferences">
-    <ItemGroup>
-      <ProjectReference Update="@(ProjectReference)" Condition="'%(Filename)' == 'Microsoft.AspNetCore.App.Internal.Assets'">
-        <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-        <Private>false</Private>
-        <PrivateAssets>all</PrivateAssets>
-      </ProjectReference>
-    </ItemGroup>
-  </Target>
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true'">
+    <ProjectReference Update="$(RepoRoot)src\Assets\Microsoft.AspNetCore.App.Internal.Assets.csproj"
+      ReferenceOutputAssembly="false"
+      Private="false"
+      PrivateAssets="all" />
+  </ItemGroup>
 </Project>

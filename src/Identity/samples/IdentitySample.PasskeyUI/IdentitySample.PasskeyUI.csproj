@@ -81,15 +81,14 @@
   <Import Project="$(RepoRoot)\src\Assets\StaticWebAssets.Groups.targets" />
 
   <!-- After ResolveReferences.targets converts Reference to ProjectReference (dropping metadata),
-       re-apply metadata so publish doesn't try to copy the non-existent Assets.Internal DLL. -->
-  <Target Name="_ConfigureAssetsInternalReference" BeforeTargets="ResolveProjectReferences">
-    <ItemGroup>
-      <ProjectReference Update="@(ProjectReference)" Condition="'%(Filename)' == 'Microsoft.AspNetCore.App.Internal.Assets'">
-        <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-        <Private>false</Private>
-        <PrivateAssets>all</PrivateAssets>
-      </ProjectReference>
-    </ItemGroup>
-  </Target>
+       re-apply metadata at evaluation time so it is always in effect for every build phase
+       (Build, Publish, Razor, etc.). The Assets.Internal project uses CopyBuildOutputToOutputDirectory=false
+       so no DLL exists in the output directory. -->
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <ProjectReference Update="$(RepoRoot)src\Assets\Microsoft.AspNetCore.App.Internal.Assets.csproj"
+      ReferenceOutputAssembly="false"
+      Private="false"
+      PrivateAssets="all" />
+  </ItemGroup>
 
 </Project>
