@@ -128,4 +128,14 @@
     <!-- Keep metrics support enabled on the test server (not the trimmed WASM client) -->
     <MetricsSupport>true</MetricsSupport>
   </PropertyGroup>
+
+  <!-- Workaround: The BlazorWebAssembly group on blazor.webassembly.js should be cleared by the
+       SDK when the asset crosses project boundaries as a framework asset. Until then, declare the
+       group here so the asset passes filtering. -->
+  <ItemGroup>
+    <StaticWebAssetGroup Include="BlazorWebAssembly"
+      Value="enabled"
+      SourceId="Microsoft.AspNetCore.Components.WebAssembly" />
+  </ItemGroup>
+
 </Project>
