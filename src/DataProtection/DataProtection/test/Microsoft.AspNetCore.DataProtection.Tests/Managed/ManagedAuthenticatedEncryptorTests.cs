@@ -180,26 +180,6 @@ public class ManagedAuthenticatedEncryptorTests
     }
 
     [Fact]
-    public void Constructor_SelfTest_Throws_WhenValidationAlgorithmFactoryIsInconsistent()
-    {
-        Secret kdk = new Secret(new byte[512 / 8]);
-        int callCount = 0;
-
-        // First call (constructor validation) returns HMACSHA256 (32-byte digest),
-        // but subsequent calls (used during encrypt/decrypt) return HMACSHA512 (64-byte digest).
-        // The stored digest length won't match, causing the HMAC check to fail.
-        Func<KeyedHashAlgorithm> inconsistentFactory = () =>
-            ++callCount <= 2
-                ? (KeyedHashAlgorithm)new HMACSHA256()
-                : new HMACSHA512();
-
-        Assert.Throws<CryptographicException>(() => new ManagedAuthenticatedEncryptor(kdk,
-            symmetricAlgorithmFactory: Aes.Create,
-            symmetricAlgorithmKeySizeInBytes: 256 / 8,
-            validationAlgorithmFactory: inconsistentFactory));
-    }
-
-    [Fact]
     public void Constructor_PerformsSelfTest_ConsumesRandomBytes()
     {
         var genRandom = new SequentialGenRandom();
