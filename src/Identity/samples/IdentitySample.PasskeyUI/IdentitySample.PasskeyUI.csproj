@@ -74,10 +74,22 @@
     <Compile Include="$(IdentityTestSharedSourceRoot)PocoModel\**\*.cs" LinkBase="Shared" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <Reference Include="Microsoft.AspNetCore.App.Internal.Assets" PrivateAssets="All" />
   </ItemGroup>
 
   <Import Project="$(RepoRoot)\src\Assets\StaticWebAssets.Groups.targets" />
+
+  <!-- After ResolveReferences.targets converts Reference to ProjectReference (dropping metadata),
+       re-apply metadata so publish doesn't try to copy the non-existent Assets.Internal DLL. -->
+  <Target Name="_ConfigureAssetsInternalReference" BeforeTargets="ResolveProjectReferences">
+    <ItemGroup>
+      <ProjectReference Update="@(ProjectReference)" Condition="'%(Filename)' == 'Microsoft.AspNetCore.App.Internal.Assets'">
+        <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+        <Private>false</Private>
+        <PrivateAssets>all</PrivateAssets>
+      </ProjectReference>
+    </ItemGroup>
+  </Target>
 
 </Project>

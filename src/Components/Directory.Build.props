@@ -18,10 +18,6 @@
     <AddSyntheticProjectReferencesForSolutionDependencies>false</AddSyntheticProjectReferencesForSolutionDependencies>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true'">
-    <Reference Include="Microsoft.AspNetCore.App.Internal.Assets" PrivateAssets="All" />
-  </ItemGroup>
-
   <Import Project="$(RepoRoot)\src\Assets\StaticWebAssets.Groups.targets" />
   <Import Project="$(RepoRoot)\src\Components\WebAssembly\WebAssembly\src\StaticWebAssets.Groups.targets" />
 

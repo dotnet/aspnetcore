@@ -2,6 +2,28 @@
   <!-- blazor.webassembly.js is now provided as a framework static web asset from
        Microsoft.AspNetCore.App.Internal.Assets. No need to set BlazorWebAssemblyJSPath
        for the Wasm SDK to resolve it separately. -->
-
+  <!-- Add Assets.Internal reference in .targets so TargetFrameworkIdentifier is available.
+       Exclude netstandard projects (analyzers, generators, tasks), Wasm projects
+       (which provide their own JS via the Components.WebAssembly package), and
+       source-only builds (Assets.Internal is excluded from source-build). -->
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true'">
+    <Reference Include="Microsoft.AspNetCore.App.Internal.Assets" PrivateAssets="All" />
+  </ItemGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
+
+  <!-- After ResolveReferences.targets converts Reference to ProjectReference (which drops
+       all custom metadata), re-apply metadata so that:
+       - ReferenceOutputAssembly=false: don't try to resolve/copy the DLL (the project uses
+         CopyBuildOutputToOutputDirectory=false so no DLL exists in the output directory)
+       - Private=false: don't copy to consuming project output
+       - PrivateAssets=all: don't flow as a dependency to consuming packages -->
+  <Target Name="_ConfigureAssetsInternalReference" BeforeTargets="ResolveProjectReferences">
+    <ItemGroup>
+      <ProjectReference Update="@(ProjectReference)" Condition="'%(Filename)' == 'Microsoft.AspNetCore.App.Internal.Assets'">
+        <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+        <Private>false</Private>
+        <PrivateAssets>all</PrivateAssets>
+      </ProjectReference>
+    </ItemGroup>
+  </Target>
 </Project>

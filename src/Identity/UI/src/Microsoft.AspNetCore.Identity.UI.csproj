@@ -26,10 +26,14 @@
   <ItemGroup>
     <StaticWebAssetGroupDefinition Include="BootstrapVersion"
       Value="V4" SourceId="$(PackageId)" Order="0"
-      IncludePattern="V4/**" RelativePathPattern="V4/**" ContentRootSuffix="V4" />
+      IncludePattern="V4/**" RelativePathPattern="V4/**"
+      RelativePathPrefix="#[{BootstrapVersion}/]~"
+      ContentRootSuffix="V4" />
     <StaticWebAssetGroupDefinition Include="BootstrapVersion"
       Value="V5" SourceId="$(PackageId)" Order="1"
-      IncludePattern="V5/**" RelativePathPattern="V5/**" ContentRootSuffix="V5" />
+      IncludePattern="V5/**" RelativePathPattern="V5/**"
+      RelativePathPrefix="#[{BootstrapVersion}/]~"
+      ContentRootSuffix="V5" />
   </ItemGroup>
 
   <!-- Default group selection for the library's own build (endpoints/dev manifests).
