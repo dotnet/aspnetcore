@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "Protokollpufferdatei",
   "description": "Eine Protokollpufferdatei zum Beschreiben von Nachrichten und Diensten für gRPC.",
