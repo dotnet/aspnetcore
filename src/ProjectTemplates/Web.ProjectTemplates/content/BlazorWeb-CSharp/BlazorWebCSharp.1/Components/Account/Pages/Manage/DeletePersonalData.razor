@@ -74,7 +74,7 @@
             return;
         }
 
-        if (requirePassword&& !await UserManager.CheckPasswordAsync(user, Input.Password))
+        if (requirePassword && !await UserManager.CheckPasswordAsync(user, Input.Password))
         {
             message = "Error: Incorrect password.";
             return;

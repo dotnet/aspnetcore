@@ -107,7 +107,7 @@ else
             return;
         }
 
-        // Strip spacesand hyphens
+        // Strip spaces and hyphens
         var verificationCode = Input.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
 
         var is2faTokenValid = await UserManager.VerifyTwoFactorTokenAsync(
