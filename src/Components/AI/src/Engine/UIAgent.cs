@@ -27,6 +27,7 @@ public class UIAgent : IDisposable
 
     public UIAgent(IChatClient chatClient, Action<UIAgentOptions>? configure)
     {
+        ArgumentNullException.ThrowIfNull(chatClient);
         _chatClient = chatClient;
         _options = new UIAgentOptions();
         configure?.Invoke(_options);

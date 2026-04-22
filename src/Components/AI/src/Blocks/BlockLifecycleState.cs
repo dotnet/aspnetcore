@@ -8,5 +8,4 @@ public enum BlockLifecycleState
     Pending,
     Active,
     Inactive,
-    Hidden
 }

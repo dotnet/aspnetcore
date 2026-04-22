@@ -13,7 +13,7 @@ public class RichContentBlock : ContentBlock
 
     public string RawText => _cachedText ??= string.Concat(_segments);
 
-    public IReadOnlyList<RichTextNode> Content { get; set; } =
+    public IReadOnlyList<RichTextNode> Content { get; internal set; } =
         Array.Empty<RichTextNode>();
 
     public IReadOnlyList<AIContent> MediaItems => _mediaItems;
