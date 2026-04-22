@@ -151,7 +151,6 @@
     <MessagePackVersion>2.5.187</MessagePackVersion>
     <!-- Extensions packages for Blazor WASM Service Defaults -->
     <MicrosoftExtensionsHttpResilienceVersion>10.0.0</MicrosoftExtensionsHttpResilienceVersion>
-    <MicrosoftExtensionsServiceDiscoveryVersion>10.0.0</MicrosoftExtensionsServiceDiscoveryVersion>
     <MicrosoftIdentityWebVersion>3.14.1</MicrosoftIdentityWebVersion>
     <MicrosoftIdentityWebGraphServiceClientVersion>3.14.1</MicrosoftIdentityWebGraphServiceClientVersion>
     <MicrosoftIdentityWebUIVersion>3.14.1</MicrosoftIdentityWebUIVersion>
@@ -162,7 +161,7 @@
     <MonoCecilVersion>0.11.2</MonoCecilVersion>
     <MonoTextTemplatingVersion>2.2.1</MonoTextTemplatingVersion>
     <NewtonsoftJsonBsonVersion>1.0.2</NewtonsoftJsonBsonVersion>
-    <NewtonsoftJsonVersion>13.0.3</NewtonsoftJsonVersion>
+    <NewtonsoftJsonVersion>13.0.4</NewtonsoftJsonVersion>
     <NSwagApiDescriptionClientVersion>13.0.4</NSwagApiDescriptionClientVersion>
     <!-- OpenTelemetry packages for Blazor WASM Service Defaults -->
     <OpenTelemetryExporterOpenTelemetryProtocolVersion>1.15.0</OpenTelemetryExporterOpenTelemetryProtocolVersion>
@@ -195,6 +194,7 @@
     <MicrosoftPlaywrightXunitV3Version>1.58.0</MicrosoftPlaywrightXunitV3Version>
     <!-- Components.Testing dependencies -->
     <YarpReverseProxyVersion>2.3.0</YarpReverseProxyVersion>
+    <MicrosoftExtensionsServiceDiscoveryYarpVersion>$(MicrosoftExtensionsServiceDiscoveryVersion)</MicrosoftExtensionsServiceDiscoveryYarpVersion>
     <MicrosoftDataSqlClientVersion>7.0.0</MicrosoftDataSqlClientVersion>
     <MicrosoftDataSqlClientExtensionsAzureVersion>1.0.0</MicrosoftDataSqlClientExtensionsAzureVersion>
     <MicrosoftOpenApiVersion>3.3.1</MicrosoftOpenApiVersion>
