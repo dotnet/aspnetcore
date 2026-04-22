@@ -29,6 +29,8 @@ import { resolveOptions } from './Platform/Circuits/CircuitStartOptions';
 import { JSInitializer } from './JSInitializers/JSInitializers';
 import { enableFocusOnNavigate } from './Rendering/FocusOnNavigate';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
+import { createValidationService } from './Validation/ValidationService';
+import type { ValidationOptions } from './Validation/ValidationTypes';
 
 let started = false;
 let rootComponentManager: WebRootComponentManager;
@@ -77,6 +79,17 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   }
 
   enableFocusOnNavigate(jsEventRegistry);
+
+  // Client-side validation is initialized on demand: only when the page contains
+  // SSR-rendered form fields with data-val attributes. This avoids adding document-level
+  // event listeners in interactive-only apps that never use client-side validation.
+  jsEventRegistry.addEventListener('enhancedload', () => {
+    if (Blazor.formValidation) {
+      Blazor.formValidation.scanRules();
+    } else {
+      initFormValidationIfNeeded(options?.ssr?.formValidation);
+    }
+  });
 
   // Wait until the initial page response completes before activating interactive components.
   // If stream rendering is used, this helps to ensure that only the final set of interactive
@@ -150,7 +163,16 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
 
   rootComponentManager.onDocumentUpdated();
 
+  // Initialize client-side validation if the page has validatable fields.
+  initFormValidationIfNeeded(options?.ssr?.formValidation);
+
   callAfterStartedCallbacks(initializersPromise);
+}
+
+function initFormValidationIfNeeded(formValidation?: ValidationOptions): void {
+  if (!Blazor.formValidation && document.querySelector('[data-val="true"]')) {
+    Blazor.formValidation = createValidationService(formValidation);
+  }
 }
 
 async function resolveConfiguredOptions<TOptions>(initializers: Promise<JSInitializer>, options: TOptions): Promise<TOptions> {
