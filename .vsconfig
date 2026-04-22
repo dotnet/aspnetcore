@@ -16,10 +16,14 @@
     "Microsoft.VisualStudio.Component.VC.14.44.17.14.ATL.ARM64",
     "Microsoft.VisualStudio.Component.VC.14.44.17.14.ATL",
     "Microsoft.VisualStudio.Component.Windows11SDK.22621",
+    "Microsoft.VisualStudio.Workload.ManagedDesktop",
     "Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools",
     "Microsoft.VisualStudio.Workload.MSBuildTools",
+    "Microsoft.VisualStudio.Workload.NativeDesktop",
     "Microsoft.VisualStudio.Workload.NetCoreBuildTools",
+    "Microsoft.VisualStudio.Workload.NetWeb",
     "Microsoft.VisualStudio.Workload.VCTools",
+    "Microsoft.VisualStudio.Workload.VisualStudioExtension",
     "Microsoft.VisualStudio.Workload.VisualStudioExtensionBuildTools",
     "Microsoft.VisualStudio.Workload.WebBuildTools"
   ]
