@@ -89,7 +89,7 @@ internal sealed class OpenApiSchemaService(
             {
                 schema = CreateSchemaForJsonPatch();
             }
-            else if (type.IsEnum && schema[OpenApiSchemaKeywords.EnumKeyword] is not null && schema[OpenApiSchemaKeywords.TypeKeyword] is null)
+            else if (type.IsEnum && schema is JsonObject && schema[OpenApiSchemaKeywords.EnumKeyword] is not null && schema[OpenApiSchemaKeywords.TypeKeyword] is null)
             {
                 schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
             }
