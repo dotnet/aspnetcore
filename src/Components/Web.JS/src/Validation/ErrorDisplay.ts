@@ -50,9 +50,10 @@ export class ErrorDisplay {
     const firstMessageElement = messageElements[0];
     if (firstMessageElement) {
       if (!firstMessageElement.id) {
-        firstMessageElement.id = `val-msg-${CSS.escape(input.getAttribute('name') || input.id)}`;
+        firstMessageElement.id = generateMessageId(input);
       }
-      input.setAttribute('aria-describedby', firstMessageElement.id);
+      // Append our message ID to aria-describedby (preserving existing tokens like help text IDs)
+      addAriaToken(input, 'aria-describedby', firstMessageElement.id);
     }
   }
 
@@ -65,7 +66,13 @@ export class ErrorDisplay {
 
     // Update ARIA attributes.
     input.removeAttribute('aria-invalid');
-    input.removeAttribute('aria-describedby');
+    // Remove only our message ID from aria-describedby (preserving other tokens)
+    const msgId = messageElements[0]?.id;
+    if (msgId) {
+      removeAriaToken(input, 'aria-describedby', msgId);
+    } else {
+      input.removeAttribute('aria-describedby');
+    }
   }
 
   private updateMessageElements(messageElements: HTMLElement[], errorMessage: string): void {
@@ -151,5 +158,32 @@ function removeClasses(element: Element, classes: string): void {
     if (cls) {
       element.classList.remove(cls);
     }
+  }
+}
+
+let messageIdCounter = 0;
+
+/** Generates a unique, safe ID for a validation message element. */
+function generateMessageId(input: ValidatableElement): string {
+  const name = (input.getAttribute('name') || input.id || 'field').replace(/[^a-zA-Z0-9_-]/g, '-');
+  return `val-msg-${name}-${++messageIdCounter}`;
+}
+
+/** Appends a token to a space-separated attribute value (e.g., aria-describedby), avoiding duplicates. */
+function addAriaToken(element: Element, attribute: string, token: string): void {
+  const existing = element.getAttribute(attribute) || '';
+  const tokens = existing.split(/\s+/).filter(t => t && t !== token);
+  tokens.push(token);
+  element.setAttribute(attribute, tokens.join(' '));
+}
+
+/** Removes a token from a space-separated attribute value. Removes the attribute entirely if no tokens remain. */
+function removeAriaToken(element: Element, attribute: string, token: string): void {
+  const existing = element.getAttribute(attribute) || '';
+  const tokens = existing.split(/\s+/).filter(t => t && t !== token);
+  if (tokens.length > 0) {
+    element.setAttribute(attribute, tokens.join(' '));
+  } else {
+    element.removeAttribute(attribute);
   }
 }

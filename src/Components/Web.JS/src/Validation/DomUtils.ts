@@ -26,7 +26,7 @@ export function findMessageElements(element: HTMLElement): HTMLElement[] {
 
 /**
  * Returns true if the element should be skipped during validation
- * (disabled, hidden, type="hidden", or any ancestor has display:none).
+ * (disabled, hidden, type="hidden", or not visible in the layout).
  */
 export function shouldSkipElement(element: HTMLElement): boolean {
   if ((element as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement).disabled) {
@@ -41,12 +41,12 @@ export function shouldSkipElement(element: HTMLElement): boolean {
     return true;
   }
 
-  let current: HTMLElement | null = element;
-  while (current) {
-    if (current.style.display === 'none') {
-      return true;
-    }
-    current = current.parentElement;
+  // offsetParent is null for elements that are not rendered (display:none on self or ancestor,
+  // or not connected to the document). This covers CSS-class-based hiding (e.g., Bootstrap's
+  // .d-none) not just inline styles. Note: offsetParent is also null for position:fixed elements,
+  // but those are visible — we check for that case explicitly.
+  if (element.offsetParent === null && getComputedStyle(element).position !== 'fixed') {
+    return true;
   }
 
   return false;

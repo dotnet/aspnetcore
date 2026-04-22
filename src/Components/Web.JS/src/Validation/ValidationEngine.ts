@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { ErrorDisplay } from './ErrorDisplay';
-import { findMessageElements, getElementForm, shouldSkipElement } from './DomUtils';
+import { findMessageElements, shouldSkipElement } from './DomUtils';
 import { ValidatableElement, ValidationContext, ValidationResult, ValidatorRegistry } from './ValidationTypes';
 
 /** A parsed validation rule from data-val-* attributes on an element. */
@@ -15,8 +15,9 @@ export type ValidationRule = {
 /** Per-element validation state tracked by the engine. */
 export interface ElementState {
   rules: ValidationRule[];
+  form: HTMLFormElement; // Owning form, stored at registration to avoid DOM traversal on disconnect
   triggerEvents: string; // 'default' | 'submit' | space-separated event types
-  fingerprint: string;   // Hash of data-val* attributes for change detection during re-scan
+  fingerprint: string; // Hash of data-val* attributes for change detection during re-scan
   listenerController: AbortController;
   currentError?: string;
   hasBeenInvalid: boolean; // Enables eager recovery (input-level validation after first error)
@@ -68,18 +69,17 @@ export class ValidationEngine {
       state.listenerController.abort();
       element.setCustomValidity('');
       this.errorDisplay.clearFieldError(element);
-      this.trackedElements.delete(element);
-    }
 
-    const form = getElementForm(element);
-    if (form) {
-      const formState = this.trackedForms.get(form);
+      // Remove from form tracking using stored form ref (works even if element is disconnected from DOM)
+      const formState = this.trackedForms.get(state.form);
       if (formState) {
         formState.trackedElements.delete(element);
         if (formState.trackedElements.size === 0) {
-          this.trackedForms.delete(form);
+          this.trackedForms.delete(state.form);
         }
       }
+
+      this.trackedElements.delete(element);
     }
   }
 

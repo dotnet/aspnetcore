@@ -115,15 +115,15 @@ test.describe('timing: lazy validation, eager recovery', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Scenario 4: data-val-event overrides
+// Scenario 4: data-valevent overrides
 // ---------------------------------------------------------------------------
 
-test.describe('timing: data-val-event overrides', () => {
+test.describe('timing: data-valevent overrides', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/timing.html');
   });
 
-  test('data-val-event="submit" — no validation on change or input', async ({ page }) => {
+  test('data-valevent="submit" — no validation on change or input', async ({ page }) => {
     await page.fill('#submit-only', 'x');
     await page.fill('#submit-only', '');
     await page.locator('#default-field').focus(); // blur away
@@ -134,7 +134,7 @@ test.describe('timing: data-val-event overrides', () => {
     expect(await getFieldMessage(page, 'SubmitOnly')).toBe('SubmitOnly is required.');
   });
 
-  test('data-val-event="change" — validates on blur, not on input after submit', async ({ page }) => {
+  test('data-valevent="change" — validates on blur, not on input after submit', async ({ page }) => {
     // Submit first to enable eager mode on default fields
     await submitForm(page);
     expect(await getFieldMessage(page, 'ChangeOnly')).toBe('ChangeOnly is required.');
@@ -153,7 +153,7 @@ test.describe('timing: data-val-event overrides', () => {
     expect(await getFieldMessage(page, 'ChangeOnly')).toBe('');
   });
 
-  test('data-val-event="input" — validates on every keystroke from start', async ({ page }) => {
+  test('data-valevent="input" — validates on every keystroke from start', async ({ page }) => {
     // Type and delete without submitting — should validate eagerly from the start
     await page.locator('#input-eager').pressSequentially('a');
     expect(await getFieldMessage(page, 'InputEager')).toBe('');

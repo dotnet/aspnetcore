@@ -50,10 +50,12 @@ export class EventManager {
       this.engine.updateValidationSummary(form);
     };
 
-    // Explicit data-val-event override: listen to the specified event(s), no gating.
+    // Explicit data-valevent override: listen to the specified event(s), no gating.
     if (state.triggerEvents !== 'default') {
-      for (const eventType of state.triggerEvents.split(' ')) {
-        element.addEventListener(eventType, validate, { signal });
+      for (const eventType of state.triggerEvents.split(/\s+/)) {
+        if (eventType) {
+          element.addEventListener(eventType, validate, { signal });
+        }
       }
       return;
     }
