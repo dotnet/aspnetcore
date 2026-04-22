@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal sealed partial class CacheComponentJson
+internal sealed partial class CacheBoundaryJson
 {
     private readonly List<CacheSegment> _segments = [];
 
@@ -51,14 +51,14 @@ internal sealed partial class CacheComponentJson
         return JsonSerializer.Serialize(entries, CacheJsonContext.Default.JsonCacheSegmentArray);
     }
 
-    public static CacheComponentJson Deserialize(string json)
+    public static CacheBoundaryJson Deserialize(string json)
     {
         ArgumentNullException.ThrowIfNull(json);
 
         var entries = JsonSerializer.Deserialize(json, CacheJsonContext.Default.JsonCacheSegmentArray)
             ?? throw new InvalidOperationException("Failed to deserialize cache entry.");
 
-        var result = new CacheComponentJson();
+        var result = new CacheBoundaryJson();
         foreach (var entry in entries)
         {
             switch (entry.Type)

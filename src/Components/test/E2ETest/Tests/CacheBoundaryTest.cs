@@ -12,9 +12,9 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
-public class CacheComponentTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>>>
+public class CacheBoundaryTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>>>
 {
-    public CacheComponentTest(
+    public CacheBoundaryTest(
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>> serverFixture,
         ITestOutputHelper output)
@@ -31,7 +31,7 @@ public class CacheComponentTest : ServerTestBase<BasicTestAppServerSiteFixture<R
     }
 
     [Fact]
-    public void CacheComponentCachesData()
+    public void CacheBoundaryCachesData()
     {
         Navigate($"{ServerPathBase}/cache-component");
         var testElement = Browser.FindElement(By.Id("test-1"));
@@ -44,7 +44,7 @@ public class CacheComponentTest : ServerTestBase<BasicTestAppServerSiteFixture<R
     }
 
     [Fact]
-    public void CacheComponentDoesNotCacheDataWhenNotEnabled()
+    public void CacheBoundaryDoesNotCacheDataWhenNotEnabled()
     {
         Navigate($"{ServerPathBase}/cache-component");
         var testElement = Browser.FindElement(By.Id("test-2"));
@@ -57,7 +57,7 @@ public class CacheComponentTest : ServerTestBase<BasicTestAppServerSiteFixture<R
     }
 
     [Fact]
-    public void CacheComponentCorrectlyCreatesHoles()
+    public void CacheBoundaryCorrectlyCreatesHoles()
     {
         Navigate($"{ServerPathBase}/cache-component");
         var testElement = Browser.FindElement(By.Id("test-3"));
@@ -74,7 +74,7 @@ public class CacheComponentTest : ServerTestBase<BasicTestAppServerSiteFixture<R
     }
 
     [Fact]
-    public void NestedCacheComponentDoesNotExecuteOnOuterCacheHit()
+    public void NestedCacheBoundaryDoesNotExecuteOnOuterCacheHit()
     {
         Navigate($"{ServerPathBase}/cache-component");
         Browser.Exists(By.Id("inner-cached"));
@@ -88,7 +88,7 @@ public class CacheComponentTest : ServerTestBase<BasicTestAppServerSiteFixture<R
     }
 
     [Fact]
-    public void CacheComponentInLoopUsesVaryByForDistinctEntries()
+    public void CacheBoundaryInLoopUsesVaryByForDistinctEntries()
     {
         Navigate($"{ServerPathBase}/cache-component");
         var loopItems = Browser.FindElement(By.Id("test-5")).FindElements(By.CssSelector(".loop-item"));

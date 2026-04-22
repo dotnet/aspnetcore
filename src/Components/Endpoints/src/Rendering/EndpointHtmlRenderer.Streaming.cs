@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -270,14 +272,12 @@ internal partial class EndpointHtmlRenderer
         _visitedComponentIdsInCurrentStreamingBatch?.Add(componentId);
 
         var componentState = (EndpointComponentState)GetComponentState(componentId);
-        var componentType = componentState.Component.GetType();
 
-        if (componentType == typeof(CacheComponent))
+        if (componentState.Component is CacheBoundary cacheBoundary)
         {
-            var cacheComponent = (CacheComponent)componentState.Component;
-            if (cacheComponent.Enabled && cacheComponent.ResolvedCacheKey is { } cacheKey)
+            if (cacheBoundary.Enabled && cacheBoundary.ResolvedCacheKey is { } cacheKey)
             {
-                if (cacheComponent.CachedData is not null)
+                if (cacheBoundary.CachedData is not null)
                 {
                     base.WriteComponentHtml(componentId, output);
                     return;
@@ -285,16 +285,16 @@ internal partial class EndpointHtmlRenderer
 
                 if (_cacheStore is not null)
                 {
-                    var cacheCaptureWriter = new CacheComponentTextWriter(output, cacheComponent.GetVaryByOptions());
+                    var cacheCaptureWriter = new CacheBoundaryTextWriter(output, cacheBoundary.GetVaryByOptions());
                     cacheCaptureWriter.StartCapture();
                     base.WriteComponentHtml(componentId, cacheCaptureWriter);
                     var segments = cacheCaptureWriter.StopCapture();
                     _cacheStore.Set(cacheKey, segments.Serialize(), new CacheStoreOptions
                     {
-                        ExpiresAfter = cacheComponent.ExpiresAfter,
-                        ExpiresOn = cacheComponent.ExpiresOn,
-                        ExpiresSliding = cacheComponent.ExpiresSliding,
-                        Priority = cacheComponent.Priority,
+                        ExpiresAfter = cacheBoundary.ExpiresAfter,
+                        ExpiresOn = cacheBoundary.ExpiresOn,
+                        ExpiresSliding = cacheBoundary.ExpiresSliding,
+                        Priority = cacheBoundary.Priority,
                     });
                     return;
                 }
@@ -302,16 +302,16 @@ internal partial class EndpointHtmlRenderer
         }
 
         var renderBoundaryMarkers = allowBoundaryMarkers && componentState.StreamRendering;
-        var captureWriter = output as CacheComponentTextWriter;
+        var captureWriter = output as CacheBoundaryTextWriter;
         var pausedCapture = false;
-        if (captureWriter is not null && captureWriter.IsCapturing && (IsHoleComponent(componentType, captureWriter.VaryBy) || renderBoundaryMarkers))
+        if (captureWriter is not null && captureWriter.IsCapturing && (IsHoleComponent(componentState.Component.GetType(), captureWriter.VaryBy) || renderBoundaryMarkers))
         {
             pausedCapture = true;
             captureWriter.PauseCapture();
             var renderModeName = componentState.Component is SSRRenderModeBoundary boundary2
                 ? CacheSegment.GetRenderModeName(boundary2.RenderMode)
                 : null;
-            captureWriter.CreateHole(componentType, renderModeName, sequenceAndKey.Key);
+            captureWriter.CreateHole(componentState.Component.GetType(), renderModeName, sequenceAndKey.Key);
         }
 
         ComponentEndMarker? endMarkerOrNull = default;
@@ -371,30 +371,17 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    internal static bool IsHoleComponent(Type componentType, CacheComponentVaryBy varyBy)
-        => (typeof(Authorization.AuthorizeViewCore).IsAssignableFrom(componentType) && !varyBy.VaryByUser)
-            || componentType == typeof(Components.Forms.EditForm)
-            || componentType == typeof(Components.Forms.ValidationSummary)
-            || (componentType.IsGenericType && componentType.GetGenericTypeDefinition() == typeof(Components.Forms.ValidationMessage<>))
-            || IsInputBaseDescendant(componentType)
-            || componentType == typeof(Components.Forms.AntiforgeryToken)
-            || componentType == typeof(NotCacheComponent)
-            || componentType == typeof(SSRRenderModeBoundary)
-            || componentType == typeof(Web.HeadOutlet)
-            || componentType == typeof(Sections.SectionOutlet)
-            || componentType == typeof(Sections.SectionContent);
+    private static readonly ConcurrentDictionary<Type, CacheBoundaryPolicyAttribute?> _cachedCacheExclusions = new();
 
-    internal static bool IsInputBaseDescendant(Type componentType)
+    internal static bool IsHoleComponent(Type componentType, CacheBoundaryVaryBy varyBy)
     {
-        while (componentType is not null && componentType != typeof(object))
+        if (!_cachedCacheExclusions.TryGetValue(componentType, out var attr))
         {
-            if (componentType.IsGenericType && componentType.GetGenericTypeDefinition() == typeof(Components.Forms.InputBase<>))
-            {
-                return true;
-            }
-            componentType = componentType.BaseType!;
+            attr = componentType.GetCustomAttribute<CacheBoundaryPolicyAttribute>(inherit: true);
+            _cachedCacheExclusions.TryAdd(componentType, attr);
         }
-        return false;
+
+        return attr is { Excluded: true } && (attr.VaryBy == CacheBoundaryVaryBy.None || (attr.VaryBy & varyBy) != attr.VaryBy);
     }
 
     internal static bool IsProgressivelyEnhancedNavigation(HttpRequest request)

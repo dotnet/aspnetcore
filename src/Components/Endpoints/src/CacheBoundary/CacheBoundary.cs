@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components;
 /// server-side rendering (SSR). On cache hit, child components are not
 /// instantiated or rendered.
 /// </summary>
-public sealed class CacheComponent : ComponentBase
+public sealed class CacheBoundary : ComponentBase
 {
     /// <summary>
     /// Gets or sets the content to be cached.
@@ -26,7 +26,7 @@ public sealed class CacheComponent : ComponentBase
 
     /// <summary>
     /// Gets or sets an explicit cache key for disambiguation when multiple
-    /// <see cref="CacheComponent"/> instances share the same component ancestor.
+    /// <see cref="CacheBoundary"/> instances share the same component ancestor.
     /// </summary>
     [Parameter]
     public string? CacheKey { get; set; }
@@ -103,29 +103,60 @@ public sealed class CacheComponent : ComponentBase
     [Parameter]
     public string? VaryBy { get; set; }
 
-    [Inject] internal CacheComponentStore? CacheStore { get; set; }
+    [Inject] internal CacheBoundaryStore? CacheStore { get; set; }
 
     [CascadingParameter] internal HttpContext? HttpContext { get; set; }
+
+    internal Func<string>? TreePositionKeyFactory { get; set; }
+
+    internal string? TreePositionKey => TreePositionKeyFactory?.Invoke();
 
     internal string? ResolvedCacheKey { get; private set; }
     internal string? CachedData { get; private set; }
 
-    internal CacheComponentVaryBy GetVaryByOptions() => new()
+    internal CacheBoundaryVaryBy GetVaryByOptions()
     {
-        VaryByQuery = VaryByQuery is not null,
-        VaryByRoute = VaryByRoute is not null,
-        VaryByHeader = VaryByHeader is not null,
-        VaryByCookie = VaryByCookie is not null,
-        VaryByUser = VaryByUser is true,
-        VaryByCulture = VaryByCulture is true,
-    };
+        var result = CacheBoundaryVaryBy.None;
+
+        if (VaryByQuery is not null)
+        {
+            result |= CacheBoundaryVaryBy.Query;
+        }
+
+        if (VaryByRoute is not null)
+        {
+            result |= CacheBoundaryVaryBy.Route;
+        }
+
+        if (VaryByHeader is not null)
+        {
+            result |= CacheBoundaryVaryBy.Header;
+        }
+
+        if (VaryByCookie is not null)
+        {
+            result |= CacheBoundaryVaryBy.Cookie;
+        }
+
+        if (VaryByUser is true)
+        {
+            result |= CacheBoundaryVaryBy.User;
+        }
+
+        if (VaryByCulture is true)
+        {
+            result |= CacheBoundaryVaryBy.Culture;
+        }
+
+        return result;
+    }
 
     /// <inheritdoc/>
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         if (Enabled && CacheStore is not null && HttpContext is { } httpContext)
         {
-            ResolvedCacheKey = CacheComponentKeyResolver.ComputeKey(this, httpContext);
+            ResolvedCacheKey = CacheBoundaryKeyResolver.ComputeKey(this, httpContext);
             CachedData = CacheStore.Get(ResolvedCacheKey);
         }
 
@@ -204,7 +235,7 @@ public sealed class CacheComponent : ComponentBase
         return searchStart;
     }
 
-    private bool TryRestoreFromCache(out CacheComponentJson? cacheJson)
+    private bool TryRestoreFromCache(out CacheBoundaryJson? cacheJson)
     {
         cacheJson = null;
 
@@ -215,14 +246,14 @@ public sealed class CacheComponent : ComponentBase
 
         try
         {
-            cacheJson = CacheComponentJson.Deserialize(CachedData);
+            cacheJson = CacheBoundaryJson.Deserialize(CachedData);
             return cacheJson.Count > 0;
         }
         catch (Exception ex)
         {
             HttpContext?.RequestServices.GetService<ILoggerFactory>()
-                ?.CreateLogger<CacheComponent>()
-                .LogWarning(ex, "Failed to restore CacheComponent from cached data. Falling back to fresh render.");
+                ?.CreateLogger<CacheBoundary>()
+                .LogWarning(ex, "Failed to restore CacheBoundary from cached data. Falling back to fresh render.");
             return false;
         }
     }

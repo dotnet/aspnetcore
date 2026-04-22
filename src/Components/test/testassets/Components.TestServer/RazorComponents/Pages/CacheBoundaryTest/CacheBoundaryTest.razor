@@ -1,56 +1,56 @@
-﻿@page "/cache-component"
+@page "/cache-component"
 @using Microsoft.AspNetCore.Components.Forms
 
-<h3>CacheComponent</h3>
+<h3>CacheBoundary</h3>
 
 <div id="test-1">
-    <CacheComponent ExpiresAfter="TimeSpan.FromHours(1)">
+    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)">
         <p class="cached">@Guid.NewGuid()</p>
-        <NotCacheComponent>
+        <NotCacheBoundary>
             <p class="not-cache-component">@Guid.NewGuid()</p>
-        </NotCacheComponent>
-    </CacheComponent>
+        </NotCacheBoundary>
+    </CacheBoundary>
     <p class="not-cached">@Guid.NewGuid()</p>
 </div>
 
 <div id="test-2">
-    <CacheComponent ExpiresAfter="TimeSpan.FromHours(1)" Enabled="false">
+    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)" Enabled="false">
         <p class="cached">@Guid.NewGuid()</p>
-        <NotCacheComponent>
+        <NotCacheBoundary>
             <p class="not-cache-component">@Guid.NewGuid()</p>
-        </NotCacheComponent>
-    </CacheComponent>
+        </NotCacheBoundary>
+    </CacheBoundary>
     <p class="not-cached">@Guid.NewGuid()</p>
 </div>
 
 <div id="test-3">
-    <CacheComponent ExpiresAfter="TimeSpan.FromHours(1)">
+    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)">
         <EditForm Model="this" FormName="editFormTest" method="post">
             <input id="message-input" type="text" name="Message" />
             <button id="submit" type="submit">Submit</button>
         </EditForm>
-        <NotCacheComponent>
+        <NotCacheBoundary>
             <p id="message">@Message</p>
-        </NotCacheComponent>
-    </CacheComponent>
+        </NotCacheBoundary>
+    </CacheBoundary>
 </div>
 
 <div id="test-4">
-    <CacheComponent ExpiresAfter="TimeSpan.FromHours(1)">
+    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)">
         <p id="outer-cached">@Guid.NewGuid()</p>
-        <CacheComponent ExpiresAfter="TimeSpan.FromHours(1)">
+        <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)">
             <InnerCachedComponent />
-        </CacheComponent>
-    </CacheComponent>
+        </CacheBoundary>
+    </CacheBoundary>
 </div>
 
 <div id="test-5">
     @for (var i = 0; i < 3; i++)
     {
         <div class="loop-item" data-index="@i">
-            <CacheComponent ExpiresAfter="TimeSpan.FromHours(1)" CacheKey="@($"loop-{i}")">
+            <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)" CacheKey="@($"loop-{i}")">
                 <p class="cached-value">@Guid.NewGuid()</p>
-            </CacheComponent>
+            </CacheBoundary>
         </div>
     }
 </div>

@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// <summary>
 /// Displays a list of validation messages from a cascaded <see cref="EditContext"/>.
 /// </summary>
+[CacheBoundaryPolicy(Excluded = true)]
 public class ValidationSummary : ComponentBase, IDisposable
 {
     private EditContext? _previousEditContext;

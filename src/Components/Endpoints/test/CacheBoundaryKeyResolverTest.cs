@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-public class CacheComponentKeyResolverTest
+public class CacheBoundaryKeyResolverTest
 {
     [Fact]
     public void ComputeKey_IsDeterministic()
@@ -16,23 +16,22 @@ public class CacheComponentKeyResolverTest
         var component = CreateComponent();
         var httpContext = CreateHttpContext();
 
-        var key1 = CacheComponentKeyResolver.ComputeKey(component, httpContext);
-        var key2 = CacheComponentKeyResolver.ComputeKey(component, httpContext);
+        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, httpContext);
+        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, httpContext);
 
         Assert.Equal(key1, key2);
     }
 
     [Fact]
-    public void ComputeKey_DifferentChildContent_ProducesDifferentKeys()
+    public void ComputeKey_DifferentTreePosition_ProducesDifferentKeys()
     {
         var httpContext = CreateHttpContext();
-        var component1 = CreateComponent(childContent: builder => builder.AddContent(0, "a"));
-        var component2 = CreateComponent(childContent: builder => builder.AddContent(0, "b"));
+        var component1 = CreateComponent(treePositionKey: "ParentA.CacheBoundary");
+        var component2 = CreateComponent(treePositionKey: "ParentB.CacheBoundary");
 
-        var key1 = CacheComponentKeyResolver.ComputeKey(component1, httpContext);
-        var key2 = CacheComponentKeyResolver.ComputeKey(component2, httpContext);
+        var key1 = CacheBoundaryKeyResolver.ComputeKey(component1, httpContext);
+        var key2 = CacheBoundaryKeyResolver.ComputeKey(component2, httpContext);
 
-        // Different lambda methods -> different declaring type/method name -> different keys
         Assert.NotEqual(key1, key2);
     }
 
@@ -43,8 +42,8 @@ public class CacheComponentKeyResolverTest
         var component1 = CreateComponent(cacheKey: "v1");
         var component2 = CreateComponent(cacheKey: "v2");
 
-        var key1 = CacheComponentKeyResolver.ComputeKey(component1, httpContext);
-        var key2 = CacheComponentKeyResolver.ComputeKey(component2, httpContext);
+        var key1 = CacheBoundaryKeyResolver.ComputeKey(component1, httpContext);
+        var key2 = CacheBoundaryKeyResolver.ComputeKey(component2, httpContext);
 
         Assert.NotEqual(key1, key2);
     }
@@ -56,8 +55,8 @@ public class CacheComponentKeyResolverTest
         var ctx1 = CreateHttpContext(queryString: "?page=1");
         var ctx2 = CreateHttpContext(queryString: "?page=2");
 
-        var key1 = CacheComponentKeyResolver.ComputeKey(component, ctx1);
-        var key2 = CacheComponentKeyResolver.ComputeKey(component, ctx2);
+        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
+        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
 
         Assert.NotEqual(key1, key2);
     }
@@ -69,8 +68,8 @@ public class CacheComponentKeyResolverTest
         var ctx1 = CreateHttpContext(routeValues: new RouteValueDictionary { ["id"] = "1" });
         var ctx2 = CreateHttpContext(routeValues: new RouteValueDictionary { ["id"] = "2" });
 
-        var key1 = CacheComponentKeyResolver.ComputeKey(component, ctx1);
-        var key2 = CacheComponentKeyResolver.ComputeKey(component, ctx2);
+        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
+        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
 
         Assert.NotEqual(key1, key2);
     }
@@ -82,8 +81,8 @@ public class CacheComponentKeyResolverTest
         var ctx1 = CreateHttpContext(headers: new Dictionary<string, string> { ["Accept-Language"] = "en-US" });
         var ctx2 = CreateHttpContext(headers: new Dictionary<string, string> { ["Accept-Language"] = "fr-FR" });
 
-        var key1 = CacheComponentKeyResolver.ComputeKey(component, ctx1);
-        var key2 = CacheComponentKeyResolver.ComputeKey(component, ctx2);
+        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
+        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
 
         Assert.NotEqual(key1, key2);
     }
@@ -95,8 +94,8 @@ public class CacheComponentKeyResolverTest
         var ctx1 = CreateHttpContext(cookieHeader: "session=abc");
         var ctx2 = CreateHttpContext(cookieHeader: "session=xyz");
 
-        var key1 = CacheComponentKeyResolver.ComputeKey(component, ctx1);
-        var key2 = CacheComponentKeyResolver.ComputeKey(component, ctx2);
+        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
+        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
 
         Assert.NotEqual(key1, key2);
     }
@@ -108,8 +107,8 @@ public class CacheComponentKeyResolverTest
         var ctx1 = CreateHttpContext(userName: "alice");
         var ctx2 = CreateHttpContext(userName: "bob");
 
-        var key1 = CacheComponentKeyResolver.ComputeKey(component, ctx1);
-        var key2 = CacheComponentKeyResolver.ComputeKey(component, ctx2);
+        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
+        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
 
         Assert.NotEqual(key1, key2);
     }
@@ -121,8 +120,8 @@ public class CacheComponentKeyResolverTest
         var ctx1 = CreateHttpContext(userName: "alice");
         var ctx2 = CreateHttpContext(userName: "bob");
 
-        var key1 = CacheComponentKeyResolver.ComputeKey(component, ctx1);
-        var key2 = CacheComponentKeyResolver.ComputeKey(component, ctx2);
+        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
+        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
 
         Assert.Equal(key1, key2);
     }
@@ -139,11 +138,11 @@ public class CacheComponentKeyResolverTest
         {
             CultureInfo.CurrentCulture = new CultureInfo("en-US");
             CultureInfo.CurrentUICulture = new CultureInfo("en-US");
-            var key1 = CacheComponentKeyResolver.ComputeKey(component, httpContext);
+            var key1 = CacheBoundaryKeyResolver.ComputeKey(component, httpContext);
 
             CultureInfo.CurrentCulture = new CultureInfo("fr-FR");
             CultureInfo.CurrentUICulture = new CultureInfo("fr-FR");
-            var key2 = CacheComponentKeyResolver.ComputeKey(component, httpContext);
+            var key2 = CacheBoundaryKeyResolver.ComputeKey(component, httpContext);
 
             Assert.NotEqual(key1, key2);
         }
@@ -161,8 +160,8 @@ public class CacheComponentKeyResolverTest
         var component1 = CreateComponent(varyBy: "dark-theme");
         var component2 = CreateComponent(varyBy: "light-theme");
 
-        var key1 = CacheComponentKeyResolver.ComputeKey(component1, httpContext);
-        var key2 = CacheComponentKeyResolver.ComputeKey(component2, httpContext);
+        var key1 = CacheBoundaryKeyResolver.ComputeKey(component1, httpContext);
+        var key2 = CacheBoundaryKeyResolver.ComputeKey(component2, httpContext);
 
         Assert.NotEqual(key1, key2);
     }
@@ -174,8 +173,8 @@ public class CacheComponentKeyResolverTest
         var ctx1 = CreateHttpContext(queryString: "?page=1");
         var ctx2 = CreateHttpContext(queryString: "?page=2");
 
-        var key1 = CacheComponentKeyResolver.ComputeKey(component, ctx1);
-        var key2 = CacheComponentKeyResolver.ComputeKey(component, ctx2);
+        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
+        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
 
         Assert.Equal(key1, key2);
     }
@@ -187,8 +186,8 @@ public class CacheComponentKeyResolverTest
         var ctx1 = CreateHttpContext(queryString: "?page=1", headers: new Dictionary<string, string> { ["Accept"] = "text/html" });
         var ctx2 = CreateHttpContext(queryString: "?page=1", headers: new Dictionary<string, string> { ["Accept"] = "application/json" });
 
-        var key1 = CacheComponentKeyResolver.ComputeKey(component, ctx1);
-        var key2 = CacheComponentKeyResolver.ComputeKey(component, ctx2);
+        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
+        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
 
         Assert.NotEqual(key1, key2);
     }
@@ -204,8 +203,8 @@ public class CacheComponentKeyResolverTest
         var componentWithUser = CreateComponent(varyByUser: true);
         var ctxWithAuthUser = CreateHttpContext(userName: "alice");
 
-        var key1 = CacheComponentKeyResolver.ComputeKey(componentWithQuery, ctxWithQueryUser);
-        var key2 = CacheComponentKeyResolver.ComputeKey(componentWithUser, ctxWithAuthUser);
+        var key1 = CacheBoundaryKeyResolver.ComputeKey(componentWithQuery, ctxWithQueryUser);
+        var key2 = CacheBoundaryKeyResolver.ComputeKey(componentWithUser, ctxWithAuthUser);
 
         Assert.NotEqual(key1, key2);
     }
@@ -221,15 +220,15 @@ public class CacheComponentKeyResolverTest
         var componentWithHeader = CreateComponent(varyByHeader: "lang");
         var ctxWithHeader = CreateHttpContext(headers: new Dictionary<string, string> { ["lang"] = "en" });
 
-        var key1 = CacheComponentKeyResolver.ComputeKey(componentWithCookie, ctxWithCookie);
-        var key2 = CacheComponentKeyResolver.ComputeKey(componentWithHeader, ctxWithHeader);
+        var key1 = CacheBoundaryKeyResolver.ComputeKey(componentWithCookie, ctxWithCookie);
+        var key2 = CacheBoundaryKeyResolver.ComputeKey(componentWithHeader, ctxWithHeader);
 
         Assert.NotEqual(key1, key2);
     }
 
     private static RenderFragment DefaultChildContent => builder => builder.AddContent(0, "test");
 
-    private static CacheComponent CreateComponent(
+    private static CacheBoundary CreateComponent(
         RenderFragment childContent = null,
         string cacheKey = null,
         string varyByQuery = null,
@@ -238,9 +237,10 @@ public class CacheComponentKeyResolverTest
         string varyByCookie = null,
         bool? varyByUser = null,
         bool? varyByCulture = null,
-        string varyBy = null)
+        string varyBy = null,
+        string treePositionKey = "DefaultParent.CacheBoundary")
     {
-        var component = new CacheComponent
+        var component = new CacheBoundary
         {
             ChildContent = childContent ?? DefaultChildContent,
             CacheKey = cacheKey,
@@ -251,6 +251,7 @@ public class CacheComponentKeyResolverTest
             VaryByUser = varyByUser,
             VaryByCulture = varyByCulture,
             VaryBy = varyBy,
+            TreePositionKeyFactory = () => treePositionKey,
         };
         return component;
     }

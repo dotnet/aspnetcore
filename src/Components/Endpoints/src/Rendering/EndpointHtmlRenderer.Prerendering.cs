@@ -283,6 +283,9 @@ internal partial class EndpointHtmlRenderer
         return (ServerComponentInvocationSequence)result!;
     }
 
+    internal ArrayRange<RenderTreeFrame> GetRenderTreeFrames(int componentId)
+        => GetCurrentRenderTreeFrames(componentId);
+
     internal (int sequence, object? key) GetSequenceAndKey(ComponentState boundaryComponentState)
     {
         if (boundaryComponentState is null || boundaryComponentState.Component is not SSRRenderModeBoundary boundary)

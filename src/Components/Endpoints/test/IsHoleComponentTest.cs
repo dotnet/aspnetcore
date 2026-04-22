@@ -11,8 +11,8 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 public class IsHoleComponentTest
 {
-    private static readonly CacheComponentVaryBy DefaultVaryBy = new();
-    private static readonly CacheComponentVaryBy VaryByUser = new() { VaryByUser = true };
+    private static readonly CacheBoundaryVaryBy DefaultVaryBy = CacheBoundaryVaryBy.None;
+    private static readonly CacheBoundaryVaryBy VaryByUser = CacheBoundaryVaryBy.User;
 
     [Fact]
     public void EditForm_IsHole()
@@ -57,9 +57,9 @@ public class IsHoleComponentTest
     }
 
     [Fact]
-    public void NotCacheComponent_IsHole()
+    public void NotCacheBoundary_IsHole()
     {
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(NotCacheComponent), DefaultVaryBy));
+        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(NotCacheBoundary), DefaultVaryBy));
     }
 
     [Fact]
@@ -126,24 +126,6 @@ public class IsHoleComponentTest
     public void CustomInputBaseDescendant_IsHole()
     {
         Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(CustomInput), DefaultVaryBy));
-    }
-
-    [Fact]
-    public void IsInputBaseDescendant_ReturnsFalse_ForNonInputType()
-    {
-        Assert.False(EndpointHtmlRenderer.IsInputBaseDescendant(typeof(ComponentBase)));
-    }
-
-    [Fact]
-    public void IsInputBaseDescendant_ReturnsTrue_ForDirectDescendant()
-    {
-        Assert.True(EndpointHtmlRenderer.IsInputBaseDescendant(typeof(InputText)));
-    }
-
-    [Fact]
-    public void IsInputBaseDescendant_ReturnsTrue_ForIndirectDescendant()
-    {
-        Assert.True(EndpointHtmlRenderer.IsInputBaseDescendant(typeof(CustomInput)));
     }
 
     private class PlainComponent : ComponentBase

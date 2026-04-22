@@ -10,12 +10,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-public class CacheComponentRenderTest
+public class CacheBoundaryRenderTest
 {
     [Fact]
     public async Task MissingDependencies_FallsBackToChildContent()
     {
-        var component = new CacheComponent
+        var component = new CacheBoundary
         {
             ChildContent = builder => builder.AddContent(0, "hello"),
         };
@@ -34,7 +34,7 @@ public class CacheComponentRenderTest
 
         var store = new TestCacheStore { ReturnForAnyKey = "NOT VALID JSON {{{" };
 
-        var component = new CacheComponent
+        var component = new CacheBoundary
         {
             ChildContent = builder => builder.AddContent(0, "fallback"),
             CacheStore = store,
@@ -46,7 +46,7 @@ public class CacheComponentRenderTest
         AssertContainsText(frames, "fallback");
         var entry = Assert.Single(testLogger.Entries);
         Assert.Equal(LogLevel.Warning, entry.Level);
-        Assert.Contains("Failed to restore CacheComponent", entry.Message);
+        Assert.Contains("Failed to restore CacheBoundary", entry.Message);
         Assert.NotNull(entry.Exception);
     }
 
@@ -61,7 +61,7 @@ public class CacheComponentRenderTest
         return context;
     }
 
-    private static async Task<ArrayRange<RenderTreeFrame>> RenderComponent(CacheComponent component)
+    private static async Task<ArrayRange<RenderTreeFrame>> RenderComponent(CacheBoundary component)
     {
         var renderer = new TestRenderer();
         var id = renderer.AssignRootComponentId(component);
@@ -84,7 +84,7 @@ public class CacheComponentRenderTest
         Assert.Fail($"Expected to find text frame '{expectedText}' but it was not present.");
     }
 
-    private sealed class TestCacheStore : CacheComponentStore
+    private sealed class TestCacheStore : CacheBoundaryStore
     {
         public Dictionary<string, string> Data { get; } = new();
         public string? ReturnForAnyKey { get; set; }

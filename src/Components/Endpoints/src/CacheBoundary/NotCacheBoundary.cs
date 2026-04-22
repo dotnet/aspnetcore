@@ -10,7 +10,8 @@ namespace Microsoft.AspNetCore.Components;
 /// of its child content. This is useful for opt-out scenarios when a parent component
 /// enables caching but certain child content should be excluded.
 /// </summary>
-public sealed class NotCacheComponent : ComponentBase
+[CacheBoundaryPolicy(Excluded = true)]
+public sealed class NotCacheBoundary : ComponentBase
 {
     /// <summary>
     /// Gets or sets the content not to be cached.

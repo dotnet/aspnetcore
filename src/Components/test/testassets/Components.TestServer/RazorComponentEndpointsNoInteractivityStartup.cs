@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Web;
 using Components.TestServer.RazorComponents;
-using Components.TestServer.RazorComponents.Pages.CacheComponentTest;
+using Components.TestServer.RazorComponents.Pages.CacheBoundaryTest;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Components.Endpoints;
@@ -144,12 +144,12 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
             endpoints.MapGet("cache-component/clear", (HttpContext context) =>
             {
                 var storeType = typeof(RazorComponentsServiceOptions).Assembly
-                    .GetType("Microsoft.AspNetCore.Components.Endpoints.CacheComponentStore")
-                    ?? throw new InvalidOperationException("CacheComponentStore type not found. The internal type may have been renamed or moved.");
+                    .GetType("Microsoft.AspNetCore.Components.Endpoints.CacheBoundaryStore")
+                    ?? throw new InvalidOperationException("CacheBoundaryStore type not found. The internal type may have been renamed or moved.");
                 var store = context.RequestServices.GetService(storeType)
-                    ?? throw new InvalidOperationException("CacheComponentStore is not registered in DI.");
+                    ?? throw new InvalidOperationException("CacheBoundaryStore is not registered in DI.");
                 var clearMethod = storeType.GetMethod("Clear")
-                    ?? throw new InvalidOperationException("CacheComponentStore.Clear() method not found.");
+                    ?? throw new InvalidOperationException("CacheBoundaryStore.Clear() method not found.");
                 clearMethod.Invoke(store, null);
                 InnerCachedComponent.ResetRenderCount();
             });

@@ -5,20 +5,20 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal sealed class CacheComponentTextWriter : TextWriter
+internal sealed class CacheBoundaryTextWriter : TextWriter
 {
     private readonly TextWriter _innerWriter;
-    private readonly CacheComponentJson _segments = new();
+    private readonly CacheBoundaryJson _segments = new();
     private readonly StringBuilder _buffer = new();
     private bool _capturing;
 
-    public CacheComponentTextWriter(TextWriter inner, CacheComponentVaryBy varyBy)
+    public CacheBoundaryTextWriter(TextWriter inner, CacheBoundaryVaryBy varyBy)
     {
         _innerWriter = inner;
         VaryBy = varyBy;
     }
 
-    public CacheComponentVaryBy VaryBy { get; set; }
+    public CacheBoundaryVaryBy VaryBy { get; set; }
 
     public bool IsCapturing => _capturing;
 
@@ -62,7 +62,7 @@ internal sealed class CacheComponentTextWriter : TextWriter
         _segments.AddHole(componentType, renderModeName, componentKey);
     }
 
-    public CacheComponentJson StopCapture()
+    public CacheBoundaryJson StopCapture()
     {
         _capturing = false;
 

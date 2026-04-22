@@ -6,15 +6,15 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal sealed class MemoryCacheComponentStore : CacheComponentStore
+internal sealed class MemoryCacheBoundaryStore : CacheBoundaryStore
 {
     private readonly MemoryCache _cache;
 
-    public MemoryCacheComponentStore(IOptions<RazorComponentsServiceOptions> options)
+    public MemoryCacheBoundaryStore(IOptions<RazorComponentsServiceOptions> options)
     {
         _cache = new MemoryCache(new MemoryCacheOptions
         {
-            SizeLimit = options.Value.CacheComponentSizeLimit,
+            SizeLimit = options.Value.CacheBoundarySizeLimit,
         });
     }
 

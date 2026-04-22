@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 /// <summary>
 /// Provides a store for caching rendered component output as a JSON template-with-holes representation.
 /// </summary>
-internal abstract class CacheComponentStore : IDisposable
+internal abstract class CacheBoundaryStore : IDisposable
 {
     protected static readonly TimeSpan DefaultExpiration = TimeSpan.FromSeconds(30);
 

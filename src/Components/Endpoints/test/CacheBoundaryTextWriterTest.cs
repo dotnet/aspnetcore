@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-public class CacheComponentTextWriterTest
+public class CacheBoundaryTextWriterTest
 {
     [Fact]
     public void Write_AlwaysForwardsToInner()
@@ -118,9 +118,9 @@ public class CacheComponentTextWriterTest
         Assert.Equal(inner.Encoding, writer.Encoding);
     }
 
-    private static CacheComponentTextWriter CreateWriter(TextWriter inner = null)
+    private static CacheBoundaryTextWriter CreateWriter(TextWriter inner = null)
     {
-        return new CacheComponentTextWriter(inner ?? new StringWriter(), new CacheComponentVaryBy());
+        return new CacheBoundaryTextWriter(inner ?? new StringWriter(), CacheBoundaryVaryBy.None);
     }
 
     private class FakeHoleComponent : IComponent
