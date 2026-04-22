@@ -6,6 +6,10 @@
     <Description>ASP.NET Core Web Template Pack for Microsoft Template Engine</Description>
     <ComponentsWebAssemblyProjectsRoot>$(RepoRoot)src\Components\WebAssembly\</ComponentsWebAssemblyProjectsRoot>
     <UsingToolTemplateLocalizer>true</UsingToolTemplateLocalizer>
+    <!-- The Arcade-default TemplateEngine.Authoring.Tasks 8.0.100-rtm.23479.1 has a bug in
+         ParseLocFileName that uses CultureInfo.GetCultures().FirstOrDefault() which fails on
+         CI agents. Fixed in dotnet/templating@663a610 but not in this package version. -->
+    <ValidateTemplates>false</ValidateTemplates>
   </PropertyGroup>
 
   <PropertyGroup>
