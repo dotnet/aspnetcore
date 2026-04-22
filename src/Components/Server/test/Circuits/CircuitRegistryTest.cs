@@ -567,7 +567,7 @@ public class CircuitRegistryTest
     }
 
     [Fact]
-    public async Task D2_PauseWithStaleConnectionId_AfterReconnect_DoesNotPause()
+    public async Task PauseWithStaleConnectionId_AfterReconnect_DoesNotPause()
     {
         var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
         var (registry, persistenceProvider) = CreateRegistryWithProvider(circuitIdFactory);
