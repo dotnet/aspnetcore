@@ -1,23 +1,10 @@
 <Project>
-  <PropertyGroup>
-    <FilterDeferredStaticWebAssetGroupsDependsOn>
-      $(FilterDeferredStaticWebAssetGroupsDependsOn);
-      _ResolveBlazorFrameworkGroup
-    </FilterDeferredStaticWebAssetGroupsDependsOn>
-  </PropertyGroup>
 
   <ItemGroup>
-    <StaticWebAssetGroup Include="BlazorFramework"
-      SourceId="Microsoft.AspNetCore.App.Internal.Assets" Deferred="true" />
+    <StaticWebAssetGroup
+      Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'"
+      Include="BlazorFramework" Value="enabled"
+      SourceId="Microsoft.AspNetCore.App.Internal.Assets" />
   </ItemGroup>
 
-  <Target Name="_ResolveBlazorFrameworkGroup">
-    <ItemGroup>
-      <StaticWebAssetGroup Remove="BlazorFramework" />
-      <StaticWebAssetGroup Include="BlazorFramework"
-        Value="enabled"
-        SourceId="Microsoft.AspNetCore.App.Internal.Assets"
-        Condition="('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(UsingMicrosoftNETSdkWeb)' == 'true' and '$(UsingMicrosoftNETSdkBlazorWebAssembly)' != 'true'" />
-    </ItemGroup>
-  </Target>
 </Project>
