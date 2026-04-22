@@ -553,7 +553,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task A1_AliveConnectedIdle_ReturnsTrueAndSendsMessage()
+    public async Task AliveConnectedIdle_ReturnsTrueAndSendsMessage()
     {
         var proxy = new Mock<ISingleClientProxy>();
         proxy.Setup(c => c.SendCoreAsync("JS.RequestPause", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
@@ -568,7 +568,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task A2_A9_ConnectedWhileDispatcherBusy_ReturnsTrueAndSendsMessage()
+    public async Task ConnectedWhileDispatcherBusy_ReturnsTrueAndSendsMessage()
     {
         var proxy = new Mock<ISingleClientProxy>();
         proxy.Setup(c => c.SendCoreAsync("JS.RequestPause", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
@@ -589,7 +589,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task A3_PauseWhileAsyncHandlerSuspended_NoUnobservedExceptions()
+    public async Task PauseWhileAsyncHandlerSuspended_NoUnobservedExceptions()
     {
         var proxy = new Mock<ISingleClientProxy>();
         proxy.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
@@ -633,7 +633,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task A4_PauseFromHandler_PauseMessageSentBeforeRenderBatch()
+    public async Task PauseFromHandler_PauseMessageSentBeforeRenderBatch()
     {
         var messageOrder = new List<string>();
         var proxy = new Mock<ISingleClientProxy>();
@@ -680,7 +680,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task A17_PauseFromOutside_WhileSyncRenderBlocked_PauseWaitsForRender()
+    public async Task PauseFromOutside_WhileSyncRenderBlocked_PauseWaitsForRender()
     {
         var renderReleased = false;
         var pauseSentAfterRelease = false;
@@ -721,7 +721,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task A17_DispatchedPause_WhileSyncWorkBlocked_PauseWaitsForSyncWork()
+    public async Task DispatchedPause_WhileSyncWorkBlocked_PauseWaitsForSyncWork()
     {
         var syncWorkReleased = false;
         var pauseSentAfterRelease = false;
@@ -755,7 +755,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task A10_Disposed_ReturnsFalseNoMessage()
+    public async Task Disposed_ReturnsFalseNoMessage()
     {
         var proxy = new Mock<ISingleClientProxy>();
         var circuitHost = await CreateConnectedCircuitHostAsync(proxy);
@@ -767,7 +767,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task A11_Disconnected_ReturnsFalse()
+    public async Task Disconnected_ReturnsFalse()
     {
         var proxy = new Mock<ISingleClientProxy>();
         var client = new CircuitClientProxy(proxy.Object, "connection-id");
@@ -786,7 +786,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task A12_NotInitialized_ReturnsFalse()
+    public async Task NotInitialized_ReturnsFalse()
     {
         var circuitHost = await CreateConnectedCircuitHostAsync(initialize: false);
 
@@ -794,7 +794,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task A13_AlreadyPausedAndDisposed_ReturnsFalse()
+    public async Task AlreadyPausedAndDisposed_ReturnsFalse()
     {
         var circuitHost = await CreateConnectedCircuitHostAsync();
         Assert.True(await circuitHost.RequestPauseAsync(CancellationToken.None));
@@ -805,7 +805,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task A14_PauseInProgress_IdempotentReturnsTrue()
+    public async Task PauseInProgress_IdempotentReturnsTrue()
     {
         var proxy = new Mock<ISingleClientProxy>();
         proxy.Setup(c => c.SendCoreAsync("JS.RequestPause", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
@@ -820,7 +820,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task A15_CancelledBeforeSend_ReturnsFalse()
+    public async Task CancelledBeforeSend_ReturnsFalse()
     {
         var circuitHost = await CreateConnectedCircuitHostAsync();
 
@@ -831,7 +831,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task A16_CancelledAfterSend_ReturnsTrue()
+    public async Task CancelledAfterSend_ReturnsTrue()
     {
         using var cts = new CancellationTokenSource();
         var proxy = new Mock<ISingleClientProxy>();
@@ -846,7 +846,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task C1_SendSucceeds_ReturnsTrue_EvenIfClientNeverReceives()
+    public async Task SendSucceeds_ReturnsTrue_EvenIfClientNeverReceives()
     {
         var circuitHost = await CreateConnectedCircuitHostAsync();
 
@@ -854,7 +854,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task C1_SendThrows_ReturnsFalse()
+    public async Task SendThrows_ReturnsFalse()
     {
         var proxy = new Mock<ISingleClientProxy>();
         proxy.Setup(c => c.SendCoreAsync("JS.RequestPause", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
@@ -865,7 +865,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task D1_AfterReconnect_SendsOnNewConnection()
+    public async Task AfterReconnect_SendsOnNewConnection()
     {
         var oldProxy = new Mock<ISingleClientProxy>();
         var newProxy = new Mock<ISingleClientProxy>();
@@ -890,7 +890,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task D3_DisconnectedCache_ReturnsFalse()
+    public async Task DisconnectedCache_ReturnsFalse()
     {
         var client = new CircuitClientProxy(Mock.Of<ISingleClientProxy>(), "conn");
         var circuitHost = TestCircuitHost.Create(clientProxy: client);
@@ -906,7 +906,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task E1_MultipleConcurrentCalls_AllReturnTrue()
+    public async Task MultipleConcurrentCalls_AllReturnTrue()
     {
         var circuitHost = await CreateConnectedCircuitHostAsync();
 
@@ -919,7 +919,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task E2_PauseDisposeRepause_OldRefReturnsFalse()
+    public async Task PauseDisposeRepause_OldRefReturnsFalse()
     {
         var circuitHost = await CreateConnectedCircuitHostAsync();
         Assert.True(await circuitHost.RequestPauseAsync(CancellationToken.None));
@@ -930,7 +930,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task E3_StaleReference_ReturnsFalse()
+    public async Task StaleReference_ReturnsFalse()
     {
         var circuitHost = await CreateConnectedCircuitHostAsync();
         var circuit = circuitHost.Circuit;
@@ -940,7 +940,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task F1_DrainMultipleCircuits_AllAccepted()
+    public async Task DrainMultipleCircuits_AllAccepted()
     {
         var hosts = new List<CircuitHost>();
         for (var i = 0; i < 5; i++)
@@ -955,7 +955,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task F2_HostShutdownCancels_ReturnsFalse()
+    public async Task HostShutdownCancels_ReturnsFalse()
     {
         var tcs = new TaskCompletionSource();
         var proxy = new Mock<ISingleClientProxy>();
@@ -977,7 +977,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task I1_RecoverableRenderingError_StillConnected_ReturnsTrue()
+    public async Task RecoverableRenderingError_StillConnected_ReturnsTrue()
     {
         var circuitHost = await CreateConnectedCircuitHostAsync();
 
@@ -985,7 +985,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task I2_FatalRenderingError_Disposed_ReturnsFalse()
+    public async Task FatalRenderingError_Disposed_ReturnsFalse()
     {
         var circuitHost = await CreateConnectedCircuitHostAsync();
         await circuitHost.DisposeAsync();
@@ -995,7 +995,7 @@ public class CircuitHostTest
 
     // Initialized but OnConnectionUpAsync not yet fired (Blazor Web path without descriptors).
     [Fact]
-    public async Task I3_DuringOnCircuitOpenedAsync_ReturnsFalse()
+    public async Task DuringOnCircuitOpenedAsync_ReturnsFalse()
     {
         var proxy = new Mock<ISingleClientProxy>();
         proxy.Setup(c => c.SendCoreAsync("JS.RequestPause", It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
@@ -1015,7 +1015,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task I4_ClientUnresponsive_ServerReturnsTrue()
+    public async Task ClientUnresponsive_ServerReturnsTrue()
     {
         var circuitHost = await CreateConnectedCircuitHostAsync();
 

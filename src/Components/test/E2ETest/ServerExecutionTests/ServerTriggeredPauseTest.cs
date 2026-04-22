@@ -29,7 +29,7 @@ public class ServerTriggeredPauseTest : ServerTestBase<BasicTestAppServerSiteFix
     }
 
     [Fact]
-    public void A1_ServerPause_StateRestoredAfterResume()
+    public void ServerPause_StateRestoredAfterResume()
     {
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
         Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
@@ -47,7 +47,7 @@ public class ServerTriggeredPauseTest : ServerTestBase<BasicTestAppServerSiteFix
     }
 
     [Fact]
-    public void A4_PauseDuringRender_StateMutationPreservedAfterResume()
+    public void PauseDuringRender_StateMutationPreservedAfterResume()
     {
         Browser.Equal("0", () => Browser.Exists(By.Id("inline-count")).Text);
 
@@ -76,7 +76,7 @@ public class ServerTriggeredPauseTest : ServerTestBase<BasicTestAppServerSiteFix
     // removing the circuit from ConnectedCircuits. The server pause interop call
     // arrives at a dead circuit and is dropped. The client pause always wins.
     [Fact]
-    public void B1_ConcurrentClientAndServerPause_ClientPauseWins()
+    public void ConcurrentClientAndServerPause_ClientPauseWins()
     {
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
         Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
@@ -99,7 +99,7 @@ public class ServerTriggeredPauseTest : ServerTestBase<BasicTestAppServerSiteFix
     // click() fires beginInvokeDotNetFromJS first, then TriggerServerPause fires second.
     // SignalR delivers them in order → click processed, then pause.
     [Fact]
-    public void B2_EventDispatchDuringPause_EventProcessedBeforePause()
+    public void EventDispatchDuringPause_EventProcessedBeforePause()
     {
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
         Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
@@ -119,7 +119,7 @@ public class ServerTriggeredPauseTest : ServerTestBase<BasicTestAppServerSiteFix
     }
 
     [Fact]
-    public void B5_ResumeWhilePausing_ResumeRejectedThenSucceedsAfterPause()
+    public void ResumeWhilePausing_ResumeRejectedThenSucceedsAfterPause()
     {
         TriggerServerPause();
         WaitForPausedUI();
@@ -136,7 +136,7 @@ public class ServerTriggeredPauseTest : ServerTestBase<BasicTestAppServerSiteFix
 
     // SignalR ordering: 3 beginInvokeDotNetFromJS calls queued before the pause interop.
     [Fact]
-    public void B6_MultipleEventsBeforePause_CircuitPausesCleanly()
+    public void MultipleEventsBeforePause_CircuitPausesCleanly()
     {
         var circuitId = GetCircuitId();
         var javascript = (IJavaScriptExecutor)Browser;
@@ -155,7 +155,7 @@ public class ServerTriggeredPauseTest : ServerTestBase<BasicTestAppServerSiteFix
     }
 
     [Fact]
-    public void F3_NewCircuitConnectsDuringDrain()
+    public void NewCircuitConnectsDuringDrain()
     {
         TriggerServerPause();
         WaitForPausedUI();
@@ -170,7 +170,7 @@ public class ServerTriggeredPauseTest : ServerTestBase<BasicTestAppServerSiteFix
     // resumeCircuit() sets _resumingState synchronously. pauseCircuit() checks it next.
     // JS single-threading guarantees the order.
     [Fact]
-    public void G1_PauseDuringResume_PauseRejectedByClient()
+    public void PauseDuringResume_PauseRejectedByClient()
     {
         TriggerServerPause();
         WaitForPausedUI();
@@ -191,7 +191,7 @@ public class ServerTriggeredPauseTest : ServerTestBase<BasicTestAppServerSiteFix
     }
 
     [Fact]
-    public void G3_PauseAfterRender_StateIncludesPriorMutations()
+    public void PauseAfterRender_StateIncludesPriorMutations()
     {
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
         Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
@@ -205,7 +205,7 @@ public class ServerTriggeredPauseTest : ServerTestBase<BasicTestAppServerSiteFix
     }
 
     [Fact]
-    public void H1_PausedUI_ShowsResumeButtonNotRetry()
+    public void PausedUI_ShowsResumeButtonNotRetry()
     {
         TriggerServerPause();
         WaitForPausedUI();
@@ -301,7 +301,7 @@ public class H2_CustomUIServerTriggeredPauseTest : ServerTestBase<BasicTestAppSe
     }
 
     [Fact]
-    public void H2_CustomReconnectUI_HandlesServerPause()
+    public void CustomReconnectUI_HandlesServerPause()
     {
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
         Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
