@@ -1,3 +1,1 @@
 #nullable enable
-*REMOVED*~override Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.Process(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> void
-~override Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> System.Threading.Tasks.Task

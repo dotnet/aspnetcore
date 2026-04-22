@@ -172,7 +172,13 @@ public class ComponentStatePersistenceManager
 
     private void InferRenderModes(Renderer renderer)
     {
-        for (var i = 0; i < _registeredCallbacks.Count; i++)
+        // We are iterating backwards to allow the callbacks to remove themselves from the list.
+        // Otherwise, we would have to make a copy of the list to avoid running into situations
+        // where we don't run all the callbacks because the count of the list changed while we
+        // were iterating over it.
+        // It is not allowed to register a callback while we are persisting the state, so we don't
+        // need to worry about new callbacks being added to the list.
+        for (var i = _registeredCallbacks.Count - 1; i >= 0; i--)
         {
             var registration = _registeredCallbacks[i];
             if (registration.RenderMode != null)

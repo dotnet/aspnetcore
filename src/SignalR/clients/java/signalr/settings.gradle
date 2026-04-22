@@ -1,2 +1,19 @@
+pluginManagement {
+    repositories {
+        maven {
+            url = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-maven/maven/v1'
+        }
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
+    repositories {
+        maven {
+            url = 'https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-maven/maven/v1'
+        }
+    }
+}
+
 rootProject.name = 'signalr'
 include 'core', 'messagepack', 'test'

@@ -8,6 +8,8 @@
     <PlatformManifestFileName>PlatformManifest.txt</PlatformManifestFileName>
     <PlatformManifestOutputPath>$(ArtifactsObjDir)$(PlatformManifestFileName)</PlatformManifestOutputPath>
 
+    <UseWix5>true</UseWix5>
+
     <!-- Platform manifest and package override metadata -->
     <ReferencePackSharedFxVersion>$(AspNetCoreMajorMinorVersion).0</ReferencePackSharedFxVersion>
     <ReferencePackSharedFxVersion Condition="'$(VersionSuffix)' != ''">$(ReferencePackSharedFxVersion)-$(VersionSuffix)</ReferencePackSharedFxVersion>

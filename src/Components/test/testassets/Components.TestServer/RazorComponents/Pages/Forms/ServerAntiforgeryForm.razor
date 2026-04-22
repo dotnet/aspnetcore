@@ -6,7 +6,7 @@
 {
     <TestContentPackage.InteractiveAntiforgery RenderForm="bool.Parse(RenderForm)" />
 }
-else
+else if (RendererInfo.IsInteractive)
 {
     <p id="result">@Name</p>
 }

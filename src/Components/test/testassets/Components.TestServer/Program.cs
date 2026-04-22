@@ -3,11 +3,10 @@
 
 using System.Reflection;
 using Components.TestServer.RazorComponents;
+using Microsoft.AspNetCore.Components.Gateway;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Logging.Testing;
-using DevServerProgram = Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server.Program;
-
 namespace TestServer;
 
 public class Program
@@ -23,7 +22,7 @@ public class Program
             ["Server authentication"] = (BuildWebHost<ServerAuthenticationStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["CORS (WASM)"] = (BuildWebHost<CorsStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Prerendering (Server-side)"] = (BuildWebHost<PrerenderedStartup>(CreateAdditionalArgs(args)), "/prerendered"),
-            ["Razor Component Endpoints"] = (BuildWebHost<RazorComponentEndpointsStartup<Components.TestServer.RazorComponents.App>>(CreateAdditionalArgs(args)), "/subdir"),
+            ["Razor Component Endpoints"] = (BuildWebHost<RazorComponentEndpointsStartup<App>>(CreateAdditionalArgs(args)), "/subdir"),
             ["Deferred component content (Server-side)"] = (BuildWebHost<DeferredComponentContentStartup>(CreateAdditionalArgs(args)), "/deferred-component-content"),
             ["Locked navigation (Server-side)"] = (BuildWebHost<LockedNavigationStartup>(CreateAdditionalArgs(args)), "/locked-navigation"),
             ["Client-side with fallback"] = (BuildWebHost<StartupWithMapFallbackToClientSideBlazor>(CreateAdditionalArgs(args)), "/fallback"),
@@ -38,6 +37,7 @@ public class Program
             ["Hot Reload"] = (BuildWebHost<HotReloadStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Dev server client-side blazor"] = CreateDevServerHost(CreateAdditionalArgs(args)),
             ["Global Interactivity"] = (BuildWebHost<RazorComponentEndpointsStartup<GlobalInteractivityApp>>(CreateAdditionalArgs(args)), "/subdir"),
+            ["SSR (No Interactivity)"] = (BuildWebHost<RazorComponentEndpointsNoInteractivityStartup<App>>(CreateAdditionalArgs(args)), "/subdir"),
         };
 
         var mainHost = BuildWebHost(args);
@@ -58,13 +58,16 @@ public class Program
         var contentRoot = typeof(Program).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .Single(a => a.Key == "Microsoft.AspNetCore.InternalTesting.BasicTestApp.ContentRoot")
             .Value;
+        var assemblyLocation = typeof(BasicTestApp.Program).Assembly.Location;
         var finalArgs = new List<string>();
         finalArgs.AddRange(args);
         finalArgs.AddRange(
         [
             "--contentroot", contentRoot,
             "--pathbase", "/subdir",
-            "--applicationpath", typeof(BasicTestApp.Program).Assembly.Location,
+            "--staticWebAssets", Path.ChangeExtension(assemblyLocation, ".staticwebassets.runtime.json"),
+            "--ClientApps:app:EndpointsManifest", Path.ChangeExtension(assemblyLocation, ".staticwebassets.endpoints.json"),
+            "--ClientApps:app:PathPrefix", "",
         ]);
 
         if (WebAssemblyTestHelper.MultithreadingIsEnabled())
@@ -72,7 +75,7 @@ public class Program
             finalArgs.Add("--apply-cop-headers");
         }
 
-        var host = DevServerProgram.BuildWebHost(finalArgs.ToArray());
+        var host = BlazorGateway.BuildWebHost(finalArgs.ToArray());
         return (host, "/subdir");
     }
 

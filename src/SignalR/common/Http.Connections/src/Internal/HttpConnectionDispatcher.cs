@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Timeouts;
@@ -601,6 +602,10 @@ internal sealed partial class HttpConnectionDispatcher
 
         // Set the IHttpConnectionFeature now that we can access it.
         connection.Features.Set(context.Features.Get<IHttpConnectionFeature>());
+
+        // Set the IConnectionEndPointFeature from the HttpContext so that real connection endpoint
+        // information (LocalEndPoint and RemoteEndPoint) is available for telemetry and other uses.
+        connection.Features.Set(context.Features.Get<IConnectionEndPointFeature>());
 
         // Configure transport-specific features.
         if (transportType == HttpTransportType.LongPolling)

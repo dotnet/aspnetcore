@@ -19,17 +19,19 @@ parameters:
   # publishing defaults
   artifacts: ''
   enableMicrobuild: false
+  enablePreviewMicrobuild: false
+  microbuildPluginVersion: 'latest'
   enableMicrobuildForMacAndLinux: false
   microbuildUseESRP: true
   enablePublishBuildArtifacts: false
   enablePublishBuildAssets: false
   enablePublishTestResults: false
+  enablePublishing: false
   enableBuildRetry: false
   mergeTestResults: false
   testRunTitle: ''
   testResultsFormat: ''
   name: ''
-  componentGovernanceSteps: []
   preSteps: []
   artifactPublishSteps: []
   runAsPublic: false
@@ -71,6 +73,8 @@ jobs:
     templateContext: ${{ parameters.templateContext }}
 
   variables:
+  - name: AllowPtrToDetectTestRunRetryFiles
+    value: true
   - ${{ if ne(parameters.enableTelemetry, 'false') }}:
     - name: DOTNET_CLI_TELEMETRY_PROFILE
       value: '$(Build.Repository.Uri)'
@@ -128,6 +132,8 @@ jobs:
     - template: /eng/common/core-templates/steps/install-microbuild.yml
       parameters:
         enableMicrobuild: ${{ parameters.enableMicrobuild }}
+        enablePreviewMicrobuild: ${{ parameters.enablePreviewMicrobuild }}
+        microbuildPluginVersion: ${{ parameters.microbuildPluginVersion }}
         enableMicrobuildForMacAndLinux: ${{ parameters.enableMicrobuildForMacAndLinux }}
         microbuildUseESRP: ${{ parameters.microbuildUseESRP }}
         continueOnError: ${{ parameters.continueOnError }}
@@ -146,13 +152,12 @@ jobs:
   - ${{ each step in parameters.steps }}:
     - ${{ step }}
 
-  - ${{ each step in parameters.componentGovernanceSteps }}:
-    - ${{ step }}
-
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - template: /eng/common/core-templates/steps/cleanup-microbuild.yml
       parameters:
         enableMicrobuild: ${{ parameters.enableMicrobuild }}
+        enablePreviewMicrobuild: ${{ parameters.enablePreviewMicrobuild }}
+        microbuildPluginVersion: ${{ parameters.microbuildPluginVersion }}
         enableMicrobuildForMacAndLinux: ${{ parameters.enableMicrobuildForMacAndLinux }}
         continueOnError: ${{ parameters.continueOnError }}
 

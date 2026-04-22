@@ -109,6 +109,11 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// </summary>
     [Parameter] public Func<TGridItem, string?>? RowClass { get; set; }
 
+    /// <summary>
+    /// Optional. A callback that is invoked when a row is clicked.
+    /// </summary>
+    [Parameter] public EventCallback<TGridItem> OnRowClick { get; set; }
+
     [Inject] private IServiceProvider Services { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -154,6 +159,8 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
 
     // If the QuickGrid is disposed while the JS module is being loaded, we need to avoid calling JS methods
     private bool _wasDisposed;
+
+    private bool _firstRefreshDataAsync = true;
 
     /// <summary>
     /// Constructs an instance of <see cref="QuickGrid{TGridItem}"/>.
@@ -311,6 +318,13 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     // because in that case there's going to be a re-render anyway.
     private async Task RefreshDataCoreAsync()
     {
+        // First render of Virtualize component will handle the data load itself.
+        if (_firstRefreshDataAsync && Virtualize)
+        {
+            _firstRefreshDataAsync = false;
+            return;
+        }
+
         // Move into a "loading" state, cancelling any earlier-but-still-pending load
         _pendingDataLoadCancellationTokenSource?.Cancel();
         var thisLoadCts = _pendingDataLoadCancellationTokenSource = new CancellationTokenSource();
@@ -326,7 +340,6 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         else
         {
             // If we're not using Virtualize, we build and execute a request against the items provider directly
-            _lastRefreshedPaginationStateHash = Pagination?.GetHashCode();
             var startIndex = Pagination is null ? 0 : (Pagination.CurrentPageIndex * Pagination.ItemsPerPage);
             var request = new GridItemsProviderRequest<TGridItem>(
                 startIndex, Pagination?.ItemsPerPage, _sortByColumn, _sortByAscending, thisLoadCts.Token);
@@ -336,6 +349,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
                 _currentNonVirtualizedViewItems = result.Items;
                 _ariaBodyRowCount = _currentNonVirtualizedViewItems.Count;
                 Pagination?.SetTotalItemCountAsync(result.TotalItemCount);
+                _lastRefreshedPaginationStateHash = Pagination?.GetHashCode();
                 _pendingDataLoadCancellationTokenSource = null;
             }
         }

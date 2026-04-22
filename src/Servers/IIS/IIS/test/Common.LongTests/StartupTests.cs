@@ -31,6 +31,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 // Contains all tests related to Startup, requiring starting ANCM/IIS every time.
 [Collection(PublishedSitesCollection.Name)]
+#if NEWSHIM_FUNCTIONALS
+[QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
+#endif
 public class StartupTests : IISFunctionalTestBase
 {
     public StartupTests(PublishedSitesFixture fixture) : base(fixture)
@@ -377,7 +380,6 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewShim]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52889")]
     public async Task WrongApplicationPath_FailedToRun()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -702,7 +704,6 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewHandler]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/62802")]
     public async Task SetCurrentDirectoryHandlerSettingWorks()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -984,7 +985,6 @@ public class StartupTests : IISFunctionalTestBase
     }
 
     [ConditionalTheory]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52734")]
     [InlineData("CheckLargeStdErrWrites")]
     [InlineData("CheckLargeStdOutWrites")]
     [InlineData("CheckOversizedStdErrWrites")]
@@ -1010,7 +1010,6 @@ public class StartupTests : IISFunctionalTestBase
     }
 
     [ConditionalTheory]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/58108")]
     [InlineData("CheckLargeStdOutWrites")]
     [InlineData("CheckOversizedStdOutWrites")]
     public async Task CheckStdoutWithLargeWrites_LogFile(string mode)
@@ -1190,6 +1189,7 @@ public class StartupTests : IISFunctionalTestBase
     public Task AuthHeaderEnvironmentVariableRemoved_InProcess() => AuthHeaderEnvironmentVariableRemoved(HostingModel.InProcess);
 
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
     public Task AuthHeaderEnvironmentVariableRemoved_OutOfProcess() => AuthHeaderEnvironmentVariableRemoved(HostingModel.OutOfProcess);
 
     private async Task AuthHeaderEnvironmentVariableRemoved(HostingModel hostingModel)
@@ -1298,7 +1298,7 @@ public class StartupTests : IISFunctionalTestBase
     [ConditionalFact]
     [RequiresNewHandler]
     [RequiresNewShim]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/62787", Queues = "Windows.Amd64.VS2022.Pre.Open;" + "Windows.Amd64.VS2022.Pre;")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/62787", Queues = "Windows.Amd64.VS2026.Pre.Scout.Open;" + "Windows.Amd64.VS2026.Pre.Scout;")]
     public async Task ServerAddressesIncludesBaseAddress()
     {
         var appName = "\u041C\u043E\u0451\u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435";
@@ -1311,7 +1311,10 @@ public class StartupTests : IISFunctionalTestBase
         deploymentParameters.AddServerConfigAction(
             (element, root) =>
             {
-                element.Descendants("site").Single().Element("application").SetAttributeValue("path", "/" + appName);
+                foreach (var site in element.Descendants("site"))
+                {
+                    site.Element("application").SetAttributeValue("path", "/" + appName);
+                }
                 Helpers.CreateEmptyApplication(element, root);
             });
 
@@ -1330,10 +1333,12 @@ public class StartupTests : IISFunctionalTestBase
         deploymentParameters.AddServerConfigAction(
             element =>
             {
-                element.Descendants("bindings")
-                    .Single()
-                    .GetOrAdd("binding", "protocol", "https")
-                    .SetAttributeValue("bindingInformation", $":{TestPortHelper.GetNextSSLPort()}:localhost");
+                foreach (var binding in element.Descendants("bindings"))
+                {
+                    binding
+                        .GetOrAdd("binding", "protocol", "https")
+                        .SetAttributeValue("bindingInformation", $":{TestPortHelper.GetNextSSLPort()}:localhost");
+                }
             });
 
         deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_ANCM_HTTPS_PORT"] = "123";
@@ -1357,14 +1362,18 @@ public class StartupTests : IISFunctionalTestBase
         deploymentParameters.AddServerConfigAction(
             element =>
             {
-                element.Descendants("bindings")
-                    .Single()
-                    .AddAndGetInnerElement("binding", "protocol", "https")
-                    .SetAttributeValue("bindingInformation", $":{port}:localhost");
+                foreach (var binding in element.Descendants("bindings"))
+                {
+                    binding
+                        .AddAndGetInnerElement("binding", "protocol", "https")
+                        .SetAttributeValue("bindingInformation", $":{port}:localhost");
+                }
 
-                element.Descendants("access")
-                    .Single()
-                    .SetAttributeValue("sslFlags", "None");
+                foreach (var access in element.Descendants("access"))
+                {
+                    access
+                        .SetAttributeValue("sslFlags", "None");
+                }
             });
 
         var deploymentResult = await DeployAsync(deploymentParameters);
@@ -1404,15 +1413,17 @@ public class StartupTests : IISFunctionalTestBase
         deploymentParameters.AddServerConfigAction(
             element =>
             {
-                element.Descendants("bindings")
-                    .Single()
-                    .Add(
-                        new XElement("binding",
-                            new XAttribute("protocol", "https"),
-                            new XAttribute("bindingInformation", $":{sslPort}:localhost")),
-                        new XElement("binding",
-                            new XAttribute("protocol", "https"),
-                            new XAttribute("bindingInformation", $":{anotherSslPort}:localhost")));
+                foreach (var binding in element.Descendants("bindings"))
+                {
+                    binding
+                        .Add(
+                            new XElement("binding",
+                                new XAttribute("protocol", "https"),
+                                new XAttribute("bindingInformation", $":{sslPort}:localhost")),
+                            new XElement("binding",
+                                new XAttribute("protocol", "https"),
+                                new XAttribute("bindingInformation", $":{anotherSslPort}:localhost")));
+                }
             });
 
         var deploymentResult = await DeployAsync(deploymentParameters);

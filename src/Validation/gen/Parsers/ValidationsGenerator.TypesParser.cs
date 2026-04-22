@@ -27,9 +27,9 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             ? method.Parameters
             : [];
 
-        var fromServiceMetadataSymbol = wellKnownTypes.Get(
+        var fromServiceMetadataSymbol = wellKnownTypes.GetOptional(
             WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata);
-        var fromKeyedServiceAttributeSymbol = wellKnownTypes.Get(
+        var fromKeyedServiceAttributeSymbol = wellKnownTypes.GetOptional(
             WellKnownTypeData.WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute);
         var skipValidationAttributeSymbol = wellKnownTypes.Get(
             WellKnownTypeData.WellKnownType.Microsoft_Extensions_Validation_SkipValidationAttribute);
@@ -127,9 +127,9 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         var members = new List<ValidatableProperty>();
         var resolvedRecordProperty = new List<IPropertySymbol>();
 
-        var fromServiceMetadataSymbol = wellKnownTypes.Get(
+        var fromServiceMetadataSymbol = wellKnownTypes.GetOptional(
             WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata);
-        var fromKeyedServiceAttributeSymbol = wellKnownTypes.Get(
+        var fromKeyedServiceAttributeSymbol = wellKnownTypes.GetOptional(
             WellKnownTypeData.WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute);
         var jsonIgnoreAttributeSymbol = wellKnownTypes.Get(
             WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonIgnoreAttribute);
@@ -210,9 +210,14 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         // Handle properties for classes and any properties not handled by the constructor
         foreach (var member in typeSymbol.GetMembers().OfType<IPropertySymbol>())
         {
-            // Skip compiler generated properties and properties already processed via
-            // the record processing logic above.
+            // Skip compiler generated properties, indexers, static properties, properties without
+            // a public getter, and properties already processed via the record processing logic above.
             if (member.IsImplicitlyDeclared
+                || member.IsIndexer
+                || member.IsStatic
+                || member.IsWriteOnly
+                || member.GetMethod is null
+                || member.GetMethod.DeclaredAccessibility is not Accessibility.Public
                 || member.IsEqualityContract(wellKnownTypes)
                 || resolvedRecordProperty.Contains(member, SymbolEqualityComparer.Default))
             {

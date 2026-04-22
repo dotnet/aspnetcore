@@ -1,8 +1,1 @@
 #nullable enable
-*REMOVED*static Microsoft.AspNetCore.TestHost.WebHostBuilderExtensions.UseSolutionRelativeContentRoot(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! builder, string! solutionRelativePath, string! applicationBasePath, string! solutionName = "*.sln") -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
-*REMOVED*static Microsoft.AspNetCore.TestHost.WebHostBuilderExtensions.UseSolutionRelativeContentRoot(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! builder, string! solutionRelativePath, string! solutionName = "*.sln") -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
-static Microsoft.AspNetCore.TestHost.WebHostBuilderExtensions.UseSolutionRelativeContentRoot(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! builder, string! solutionRelativePath) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
-static Microsoft.AspNetCore.TestHost.WebHostBuilderExtensions.UseSolutionRelativeContentRoot(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! builder, string! solutionRelativePath, string! applicationBasePath, string! solutionName) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
-static Microsoft.AspNetCore.TestHost.WebHostBuilderExtensions.UseSolutionRelativeContentRoot(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! builder, string! solutionRelativePath, string! applicationBasePath, System.ReadOnlySpan<string!> solutionNames = default(System.ReadOnlySpan<string!>)) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
-static Microsoft.AspNetCore.TestHost.WebHostBuilderExtensions.UseSolutionRelativeContentRoot(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! builder, string! solutionRelativePath, string! solutionName) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
-

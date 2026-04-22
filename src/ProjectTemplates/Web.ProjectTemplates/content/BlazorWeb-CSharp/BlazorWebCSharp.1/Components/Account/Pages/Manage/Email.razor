@@ -45,7 +45,9 @@
             }
             <div class="form-floating mb-3">
                 <InputText @bind-Value="Input.NewEmail" id="Input.NewEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Enter a new email" />
-                <label for="Input.NewEmail" class="form-label">New email</label>
+                <label for="Input.NewEmail" class="form-label">
+                    <DisplayName For="() => Input.NewEmail" />
+                </label>
                 <ValidationMessage For="() => Input.NewEmail" class="text-danger" />
             </div>
             <button type="submit" class="w-100 btn btn-lg btn-primary">Change email</button>
@@ -62,17 +64,22 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
+    [SupplyParameterFromTempData(Name = IdentityRedirectManager.StatusMessageKey)]
+    private string? IdentityStatusMessage { get; set; }
+
     [SupplyParameterFromForm(FormName = "change-email")]
     private InputModel Input { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
+        message = IdentityStatusMessage;
+        IdentityStatusMessage = null;
         Input ??= new();
 
         user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectTo("Account/InvalidUser");
             return;
         }
 
@@ -92,7 +99,7 @@
 
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectTo("Account/InvalidUser");
             return;
         }
 
@@ -117,7 +124,7 @@
 
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectTo("Account/InvalidUser");
             return;
         }
 

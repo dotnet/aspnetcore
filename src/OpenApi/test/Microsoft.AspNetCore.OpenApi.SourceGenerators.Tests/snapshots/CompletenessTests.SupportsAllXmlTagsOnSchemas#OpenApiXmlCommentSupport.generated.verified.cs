@@ -522,7 +522,7 @@ T", null, null, false, null, null, null));
                                     {
                                         continue;
                                     }
-                                    foreach (var mediaType in content)
+                                    foreach (var mediaType in content.OfType<OpenApiMediaType>())
                                     {
                                         mediaType.Example = jsonString.Parse();
                                     }
@@ -553,7 +553,8 @@ T", null, null, false, null, null, null));
             foreach (var parameterDescription in context.Description.ParameterDescriptions)
             {
                 var metadata = parameterDescription.ModelMetadata;
-                if (metadata.MetadataKind == ModelMetadataKind.Property
+                if (metadata is not null
+                    && metadata.MetadataKind == ModelMetadataKind.Property
                     && metadata.ContainerType is { } containerType
                     && metadata.PropertyName is { } propertyName)
                 {
@@ -583,7 +584,7 @@ T", null, null, false, null, null, null));
                                         continue;
                                     }
                                     var parsedExample = jsonString.Parse();
-                                    foreach (var mediaType in content)
+                                    foreach (var mediaType in content.OfType<OpenApiMediaType>())
                                     {
                                         mediaType.Example = parsedExample;
                                     }

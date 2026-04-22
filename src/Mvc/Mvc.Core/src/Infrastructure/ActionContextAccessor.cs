@@ -4,13 +4,14 @@
 #nullable enable
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
 /// <summary>
 /// Type that provides access to an <see cref="ActionContext"/>.
 /// </summary>
-[Obsolete("ActionContextAccessor is obsolete and will be removed in a future version. For more information, visit https://aka.ms/aspnet/deprecate/006.", DiagnosticId = "ASPDEPR006")]
+[Obsolete("ActionContextAccessor is obsolete and will be removed in a future version. For more information, visit https://aka.ms/aspnet/deprecate/006.", DiagnosticId = "ASPDEPR006", UrlFormat = Obsoletions.AspNetCoreDeprecate006Url)]
 public class ActionContextAccessor : IActionContextAccessor
 {
     internal static readonly IActionContextAccessor Null = new NullActionContextAccessor();

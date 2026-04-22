@@ -1,16 +1,1 @@
 #nullable enable
-*REMOVED*Microsoft.AspNetCore.Mvc.ApiExplorer.IApiRequestFormatMetadataProvider.GetSupportedContentTypes(string! contentType, System.Type! objectType) -> System.Collections.Generic.IReadOnlyList<string!>?
-Microsoft.AspNetCore.Mvc.ApiExplorer.IApiRequestFormatMetadataProvider.GetSupportedContentTypes(string? contentType, System.Type! objectType) -> System.Collections.Generic.IReadOnlyList<string!>?
-Microsoft.AspNetCore.Mvc.ApiExplorer.IApiResponseMetadataProvider.Description.get -> string?
-*REMOVED*Microsoft.AspNetCore.Mvc.ApiExplorer.IApiResponseTypeMetadataProvider.GetSupportedContentTypes(string! contentType, System.Type! objectType) -> System.Collections.Generic.IReadOnlyList<string!>?
-Microsoft.AspNetCore.Mvc.ApiExplorer.IApiResponseTypeMetadataProvider.GetSupportedContentTypes(string? contentType, System.Type! objectType) -> System.Collections.Generic.IReadOnlyList<string!>?
-Microsoft.AspNetCore.Mvc.ProducesAttribute.Description.get -> string?
-Microsoft.AspNetCore.Mvc.ProducesAttribute.Description.set -> void
-Microsoft.AspNetCore.Mvc.ProducesDefaultResponseTypeAttribute.Description.get -> string?
-Microsoft.AspNetCore.Mvc.ProducesDefaultResponseTypeAttribute.Description.set -> void
-Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute.Description.get -> string?
-Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute.Description.set -> void
-*REMOVED*virtual Microsoft.AspNetCore.Mvc.Formatters.InputFormatter.GetSupportedContentTypes(string! contentType, System.Type! objectType) -> System.Collections.Generic.IReadOnlyList<string!>?
-virtual Microsoft.AspNetCore.Mvc.Formatters.InputFormatter.GetSupportedContentTypes(string? contentType, System.Type! objectType) -> System.Collections.Generic.IReadOnlyList<string!>?
-*REMOVED*virtual Microsoft.AspNetCore.Mvc.Formatters.OutputFormatter.GetSupportedContentTypes(string! contentType, System.Type! objectType) -> System.Collections.Generic.IReadOnlyList<string!>?
-virtual Microsoft.AspNetCore.Mvc.Formatters.OutputFormatter.GetSupportedContentTypes(string? contentType, System.Type! objectType) -> System.Collections.Generic.IReadOnlyList<string!>?

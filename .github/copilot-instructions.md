@@ -40,3 +40,6 @@
   * On Linux/Mac: `source activate.sh` (from repository root)
 * If not in the repository root, navigate there first or use the full path to the activation script.
 * This ensures that the correct version of .NET SDK is used for the repository.
+
+## ASP.NET Core Components Area
+* When working on issues under the src/Components area, follow the instructions in [./instructions/components.instructions.md](./instructions/components.instructions.md).

@@ -1,5 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.PropertyNameCaseInsensitive.get -> bool
-Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.PropertyNameCaseInsensitive.set -> void
-Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.RemoveEnumPrefix.get -> bool
-Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.RemoveEnumPrefix.set -> void

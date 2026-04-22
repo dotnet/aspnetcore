@@ -71,6 +71,11 @@ public class Project : IDisposable
         // Used to set special options in MSBuild
         IDictionary<string, string> environmentVariables = null)
     {
+        if (templateName.Contains(' '))
+        {
+            throw new ArgumentException("Template name cannot contain spaces.");
+        }
+
         var hiveArg = $"--debug:disable-sdk-templates --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
         var argString = $"new {templateName} {hiveArg}";
         environmentVariables ??= new Dictionary<string, string>();
@@ -110,6 +115,13 @@ public class Project : IDisposable
         // Save a copy of the arguments used for better diagnostic error messages later.
         // We omit the hive argument and the template output dir as they are not relevant and add noise.
         ProjectArguments = argString.Replace(hiveArg, "");
+
+        // Only add -n parameter if ProjectName is set and args doesn't already contain -n or --name
+        if (!string.IsNullOrEmpty(ProjectName) &&
+            args?.Any(a => a.Contains("-n ") || a.Contains("--name ") || a == "-n" || a == "--name") != true)
+        {
+            argString += $" -n \"{ProjectName}\"";
+        }
 
         argString += $" -o {TemplateOutputDir}";
 
@@ -222,6 +234,54 @@ public class Project : IDisposable
 
         var projectDll = Path.Combine(TemplatePublishDir, $"{ProjectName}.dll");
         return new AspNetProcess(DevCert, Output, TemplatePublishDir, projectDll, environment, published: true, hasListeningUri: hasListeningUri, usePublishedAppHost: usePublishedAppHost);
+    }
+
+    internal (ProcessEx process, string listeningUri) ServePublishedStandaloneApp(ITestOutputHelper output)
+    {
+        var publishDir = Path.Combine(TemplatePublishDir, "wwwroot");
+
+        output.WriteLine("Running dotnet serve on published output...");
+        var command = DotNetMuxer.MuxerPathOrDefault();
+        string args;
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX_DIR")))
+        {
+            args = "serve";
+        }
+        else
+        {
+            command = "dotnet-serve";
+            args = "--roll-forward LatestMajor";
+        }
+
+        var serveProcess = ProcessEx.Run(output, publishDir, command, args);
+        var listeningUri = ResolveListeningUrl(serveProcess);
+        return (serveProcess, listeningUri);
+
+        static string ResolveListeningUrl(ProcessEx process)
+        {
+            var buffer = new List<string>();
+            try
+            {
+                foreach (var line in process.OutputLinesAsEnumerable)
+                {
+                    if (line != null)
+                    {
+                        buffer.Add(line);
+                        if (line.Trim().Contains("https://", StringComparison.Ordinal) ||
+                            line.Trim().Contains("http://", StringComparison.Ordinal))
+                        {
+                            return line.Trim();
+                        }
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+
+            throw new InvalidOperationException(
+                $"Couldn't find listening url:\n{string.Join(Environment.NewLine, buffer.Append(process.Error))}");
+        }
     }
 
     internal async Task RunDotNetEfCreateMigrationAsync(string migrationName)
@@ -347,6 +407,42 @@ public class Project : IDisposable
 
             // Check there are no more launch profiles defined
             Assert.False(profilesEnumerator.MoveNext());
+        }
+    }
+
+    public async Task VerifyDnsCompliantHostname(string expectedHostname)
+    {
+        var launchSettingsPath = Path.Combine(TemplateOutputDir, "Properties", "launchSettings.json");
+        Assert.True(File.Exists(launchSettingsPath), $"launchSettings.json not found at {launchSettingsPath}");
+
+        var launchSettingsContent = await File.ReadAllTextAsync(launchSettingsPath);
+        using var launchSettings = JsonDocument.Parse(launchSettingsContent);
+
+        var profiles = launchSettings.RootElement.GetProperty("profiles");
+
+        foreach (var profile in profiles.EnumerateObject())
+        {
+            if (profile.Value.TryGetProperty("applicationUrl", out var applicationUrl))
+            {
+                var urls = applicationUrl.GetString();
+                if (!string.IsNullOrEmpty(urls))
+                {
+                    // Verify the hostname in the URL matches expected DNS-compliant format
+                    Assert.Contains($"{expectedHostname}.dev.localhost:", urls);
+
+                    // Verify no underscores in hostname (RFC 952/1123 compliance)
+                    var hostnamePattern = @"://([^:]+)\.dev\.localhost:";
+                    var matches = System.Text.RegularExpressions.Regex.Matches(urls, hostnamePattern);
+                    foreach (System.Text.RegularExpressions.Match match in matches)
+                    {
+                        var hostname = match.Groups[1].Value;
+                        Assert.DoesNotContain("_", hostname);
+                        Assert.DoesNotContain(".", hostname);
+                        Assert.False(hostname.StartsWith("-", StringComparison.Ordinal), $"Hostname '{hostname}' should not start with hyphen (RFC 952/1123 violation)");
+                        Assert.False(hostname.EndsWith("-", StringComparison.Ordinal), $"Hostname '{hostname}' should not end with hyphen (RFC 952/1123 violation)");
+                    }
+                }
+            }
         }
     }
 

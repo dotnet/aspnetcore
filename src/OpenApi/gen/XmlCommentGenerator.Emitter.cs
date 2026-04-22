@@ -413,7 +413,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                                     {
                                         continue;
                                     }
-                                    foreach (var mediaType in content)
+                                    foreach (var mediaType in content.OfType<OpenApiMediaType>())
                                     {
                                         mediaType.Example = jsonString.Parse();
                                     }
@@ -444,7 +444,8 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             foreach (var parameterDescription in context.Description.ParameterDescriptions)
             {
                 var metadata = parameterDescription.ModelMetadata;
-                if (metadata.MetadataKind == ModelMetadataKind.Property
+                if (metadata is not null
+                    && metadata.MetadataKind == ModelMetadataKind.Property
                     && metadata.ContainerType is { } containerType
                     && metadata.PropertyName is { } propertyName)
                 {
@@ -474,7 +475,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                                         continue;
                                     }
                                     var parsedExample = jsonString.Parse();
-                                    foreach (var mediaType in content)
+                                    foreach (var mediaType in content.OfType<OpenApiMediaType>())
                                     {
                                         mediaType.Example = parsedExample;
                                     }

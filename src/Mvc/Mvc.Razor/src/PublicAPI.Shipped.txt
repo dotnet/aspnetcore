@@ -28,8 +28,8 @@ Microsoft.AspNetCore.Mvc.Diagnostics.BeforeViewPageEventData.Page.get -> Microso
 Microsoft.AspNetCore.Mvc.Diagnostics.BeforeViewPageEventData.ViewContext.get -> Microsoft.AspNetCore.Mvc.Rendering.ViewContext!
 Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor
 Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor.CompiledViewDescriptor() -> void
-Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor.CompiledViewDescriptor(Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItem! item) -> void
 Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor.CompiledViewDescriptor(Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItem! item, Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute! attribute) -> void
+Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor.CompiledViewDescriptor(Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItem! item) -> void
 Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor.ExpirationTokens.get -> System.Collections.Generic.IList<Microsoft.Extensions.Primitives.IChangeToken!>?
 Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor.ExpirationTokens.set -> void
 Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor.Item.get -> Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItem?
@@ -106,10 +106,10 @@ Microsoft.AspNetCore.Mvc.Razor.RazorPage.IgnoreBody() -> void
 Microsoft.AspNetCore.Mvc.Razor.RazorPage.IgnoreSection(string! sectionName) -> void
 Microsoft.AspNetCore.Mvc.Razor.RazorPage.IsSectionDefined(string! name) -> bool
 Microsoft.AspNetCore.Mvc.Razor.RazorPage.RazorPage() -> void
-Microsoft.AspNetCore.Mvc.Razor.RazorPage.RenderSection(string! name) -> Microsoft.AspNetCore.Html.HtmlString?
 Microsoft.AspNetCore.Mvc.Razor.RazorPage.RenderSection(string! name, bool required) -> Microsoft.AspNetCore.Html.HtmlString?
-Microsoft.AspNetCore.Mvc.Razor.RazorPage.RenderSectionAsync(string! name) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.HtmlString?>!
+Microsoft.AspNetCore.Mvc.Razor.RazorPage.RenderSection(string! name) -> Microsoft.AspNetCore.Html.HtmlString?
 Microsoft.AspNetCore.Mvc.Razor.RazorPage.RenderSectionAsync(string! name, bool required) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.HtmlString?>!
+Microsoft.AspNetCore.Mvc.Razor.RazorPage.RenderSectionAsync(string! name) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.HtmlString?>!
 Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>
 Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>.Model.get -> TModel
 Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>.RazorPage() -> void
@@ -242,8 +242,8 @@ static Microsoft.AspNetCore.Mvc.Razor.RazorViewEngine.GetNormalizedRouteValue(Mi
 static Microsoft.Extensions.DependencyInjection.MvcRazorMvcBuilderExtensions.AddRazorOptions(this Microsoft.Extensions.DependencyInjection.IMvcBuilder! builder, System.Action<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder!
 static Microsoft.Extensions.DependencyInjection.MvcRazorMvcBuilderExtensions.AddTagHelpersAsServices(this Microsoft.Extensions.DependencyInjection.IMvcBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder!
 static Microsoft.Extensions.DependencyInjection.MvcRazorMvcBuilderExtensions.InitializeTagHelper<TTagHelper>(this Microsoft.Extensions.DependencyInjection.IMvcBuilder! builder, System.Action<TTagHelper, Microsoft.AspNetCore.Mvc.Rendering.ViewContext!>! initialize) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder!
-static Microsoft.Extensions.DependencyInjection.MvcRazorMvcCoreBuilderExtensions.AddRazorViewEngine(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder!
 static Microsoft.Extensions.DependencyInjection.MvcRazorMvcCoreBuilderExtensions.AddRazorViewEngine(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder! builder, System.Action<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder!
+static Microsoft.Extensions.DependencyInjection.MvcRazorMvcCoreBuilderExtensions.AddRazorViewEngine(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder!
 static Microsoft.Extensions.DependencyInjection.MvcRazorMvcCoreBuilderExtensions.AddTagHelpersAsServices(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder!
 static Microsoft.Extensions.DependencyInjection.MvcRazorMvcCoreBuilderExtensions.InitializeTagHelper<TTagHelper>(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder! builder, System.Action<TTagHelper, Microsoft.AspNetCore.Mvc.Rendering.ViewContext!>! initialize) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder!
 static readonly Microsoft.AspNetCore.Mvc.Razor.RazorViewEngine.ViewExtension -> string!

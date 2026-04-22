@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest;
@@ -9,7 +11,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
-using OpenQA.Selenium.BiDi.Communication;
+using OpenQA.Selenium.BiDi;
 using OpenQA.Selenium.DevTools;
 using OpenQA.Selenium.Support.Extensions;
 using TestServer;
@@ -247,22 +249,22 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"Interactive component navigation ({renderMode})")).Click();
         Browser.Equal("Page with interactive components that navigate", () => Browser.Exists(By.TagName("h1")).Text);
-        Browser.False(() => IsElementStale(elementForStalenessCheck));
+        Browser.False(() => elementForStalenessCheck.IsStale());
 
         Browser.Exists(By.Id("navigate-to-another-page")).Click();
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
         Assert.EndsWith("/nav", Browser.Url);
-        Browser.False(() => IsElementStale(elementForStalenessCheck));
+        Browser.False(() => elementForStalenessCheck.IsStale());
 
         // Ensure that the history stack was correctly updated
         Browser.Navigate().Back();
         Browser.Equal("Page with interactive components that navigate", () => Browser.Exists(By.TagName("h1")).Text);
-        Browser.False(() => IsElementStale(elementForStalenessCheck));
+        Browser.False(() => elementForStalenessCheck.IsStale());
 
         Browser.Navigate().Back();
         Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
         Assert.EndsWith("/nav", Browser.Url);
-        Browser.False(() => IsElementStale(elementForStalenessCheck));
+        Browser.False(() => elementForStalenessCheck.IsStale());
     }
 
     [Theory]
@@ -289,7 +291,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Exists(By.Id(refreshButtonId)).Click();
         Browser.True(() =>
         {
-            if (IsElementStale(renderIdElement) || !int.TryParse(renderIdElement.Text, out var newRenderId))
+            if (renderIdElement.IsStale() || !int.TryParse(renderIdElement.Text, out var newRenderId))
             {
                 return false;
             }
@@ -323,7 +325,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Assert.NotEqual(-1, initialRenderId);
 
         Browser.Exists(By.Id("reload-with-navigate-to")).Click();
-        Browser.True(() => IsElementStale(initialRenderIdElement));
+        Browser.True(() => initialRenderIdElement.IsStale());
 
         var finalRenderIdElement = Browser.Exists(By.Id("render-id"));
         var finalRenderId = -1;
@@ -363,8 +365,8 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.True(() => int.TryParse(initialRenderIdElement.Text, out initialRenderId));
         Assert.NotEqual(-1, initialRenderId);
 
-        Browser.Exists(By.Id("refresh-with-refresh")).Click();
-        Browser.True(() => IsElementStale(initialRenderIdElement));
+    Browser.Exists(By.Id("refresh-with-refresh")).Click();
+    Browser.True(() => initialRenderIdElement.IsStale());
 
         var finalRenderIdElement = Browser.Exists(By.Id("render-id"));
         var finalRenderId = -1;
@@ -397,8 +399,8 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.True(() => int.TryParse(initialRenderIdElement.Text, out initialRenderId));
         Assert.NotEqual(-1, initialRenderId);
 
-        Browser.Exists(By.Id("reload-with-refresh")).Click();
-        Browser.True(() => IsElementStale(initialRenderIdElement));
+    Browser.Exists(By.Id("reload-with-refresh")).Click();
+    Browser.True(() => initialRenderIdElement.IsStale());
 
         var finalRenderIdElement = Browser.Exists(By.Id("render-id"));
         var finalRenderId = -1;
@@ -498,6 +500,39 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Fact]
+    public void ElementsWithDataPermanentAttribute_HavePreservedAttributes()
+    {
+        Navigate($"{ServerPathBase}/nav");
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Preserve content")).Click();
+        Browser.Equal("Page that preserves content", () => Browser.Exists(By.TagName("h1")).Text);
+
+        // Required until https://github.com/dotnet/aspnetcore/issues/50424 is fixed
+        Browser.Navigate().Refresh();
+
+        Browser.Exists(By.Id("refresh-with-refresh"));
+
+        Browser.Click(By.Id("start-listening"));
+
+        // Verify the dynamically added class exists before enhanced nav
+        var preservedAttributesElement = Browser.Exists(By.Id("preserved-attributes"));
+        Browser.True(() => preservedAttributesElement.GetAttribute("class")?.Contains("dynamically-added-class") == true);
+
+        Browser.Click(By.Id("refresh-with-refresh"));
+        AssertEnhancedUpdateCountEquals(1);
+
+        // Verify the dynamically added class is preserved after enhanced nav
+        Browser.True(() => preservedAttributesElement.GetAttribute("class")?.Contains("dynamically-added-class") == true);
+
+        Browser.Click(By.Id("refresh-with-refresh"));
+        AssertEnhancedUpdateCountEquals(2);
+
+        // Verify the dynamically added class is still preserved after another enhanced nav
+        Browser.True(() => preservedAttributesElement.GetAttribute("class")?.Contains("dynamically-added-class") == true);
+    }
+
+    [Fact]
     public void EnhancedNavNotUsedForNonBlazorDestinations()
     {
         Navigate($"{ServerPathBase}/nav");
@@ -561,11 +596,11 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"LocationChanged/LocationChanging event ({renderMode})")).Click();
         Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
-        Assert.EndsWith($"/nav/location-changed/{renderMode}", Browser.Exists(By.Id($"nav-uri-{renderMode}")).Text);
+        Browser.Contains($"/nav/location-changed/{renderMode}", () => Browser.Exists(By.Id($"nav-uri-{renderMode}")).Text);
 
         Browser.Exists(By.Id($"update-query-string-{renderMode}")).Click();
 
-        Assert.EndsWith($"/nav/location-changed/{renderMode}?query=1", Browser.Exists(By.Id($"nav-uri-{renderMode}")).Text);
+        Browser.Contains($"/nav/location-changed/{renderMode}?query=1", () => Browser.Exists(By.Id($"nav-uri-{renderMode}")).Text);
     }
 
     [Theory]
@@ -578,13 +613,13 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("LocationChanged/LocationChanging event (server-and-wasm)")).Click();
         Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
-        Assert.EndsWith("/nav/location-changed/server-and-wasm", Browser.Exists(By.Id("nav-uri-server")).Text);
-        Assert.EndsWith("/nav/location-changed/server-and-wasm", Browser.Exists(By.Id("nav-uri-wasm")).Text);
+        Browser.Contains("/nav/location-changed/server-and-wasm", () => Browser.Exists(By.Id("nav-uri-server")).Text);
+        Browser.Contains("/nav/location-changed/server-and-wasm", () => Browser.Exists(By.Id("nav-uri-wasm")).Text);
 
         Browser.Exists(By.Id($"update-query-string-{runtimeThatInvokedNavigation}")).Click();
 
-        Assert.EndsWith($"/nav/location-changed/server-and-wasm?query=1", Browser.Exists(By.Id($"nav-uri-server")).Text);
-        Assert.EndsWith($"/nav/location-changed/server-and-wasm?query=1", Browser.Exists(By.Id($"nav-uri-wasm")).Text);
+        Browser.Contains("/nav/location-changed/server-and-wasm?query=1", () => Browser.Exists(By.Id("nav-uri-server")).Text);
+        Browser.Contains("/nav/location-changed/server-and-wasm?query=1", () => Browser.Exists(By.Id("nav-uri-wasm")).Text);
     }
 
     [Theory]
@@ -735,37 +770,67 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // "landing" page: scroll maximally down and go to "next" page - we should land at the top of that page
         AssertWeAreOnLandingPage();
 
-        // staleness check is used to assert enhanced navigation is enabled/disabled, as requested
-        var elementForStalenessCheckOnNextPage = Browser.Exists(By.TagName("html"));
+        var scrollOverride = new ScrollOverrideScope(Browser, useEnhancedNavigation);
 
-        var button1Id = $"do{buttonKeyword}-navigation";
-        var button1Pos = Browser.GetElementPositionWithRetry(button1Id);
-        Browser.SetScrollY(button1Pos);
-        Browser.Exists(By.Id(button1Id)).Click();
+        try
+        {
+            // Staleness check is used to assert enhanced navigation is enabled/disabled, as requested
+            var elementForStalenessCheckOnNextPage = Browser.Exists(By.TagName("html"));
 
-        // "next" page: check if we landed at 0, then navigate to "landing"
-        AssertWeAreOnNextPage();
-        WaitStreamingRendersFullPage(enableStreaming);
-        string fragmentId = "some-content";
-        Browser.WaitForElementToBeVisible(By.Id(fragmentId));
-        AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnNextPage);
-        Assert.Equal(0, Browser.GetScrollY());
-        var elementForStalenessCheckOnLandingPage = Browser.Exists(By.TagName("html"));
-        var fragmentScrollPosition = Browser.GetElementPositionWithRetry(fragmentId);
-        Browser.Exists(By.Id(button1Id)).Click();
+            var button1Id = $"do{buttonKeyword}-navigation";
+            var button1Pos = Browser.GetElementPositionWithRetry(button1Id);
+            Browser.SetScrollY(button1Pos);
+            scrollOverride.ClearLog();
+            var firstNavigationObservation = BeginEnhancedNavigationObservationIfEnhancedNavigation(
+                useEnhancedNavigation,
+                elementForStalenessCheckOnNextPage,
+                ElementWithTextAppears(By.Id("test-info-2"), "Scroll tests next page"));
+            Browser.Exists(By.Id(button1Id)).Click();
 
-        // "landing" page: navigate to a fragment on another page - we should land at the beginning of the fragment
-        AssertWeAreOnLandingPage();
-        WaitStreamingRendersFullPage(enableStreaming);
-        AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnLandingPage);
+            // "next" page: check if we landed at 0, then navigate to "landing"
+            AssertWeAreOnNextPage();
+            WaitStreamingRendersFullPage(enableStreaming);
+            const string fragmentId = "some-content";
+            Browser.WaitForElementToBeVisible(By.Id(fragmentId));
+            AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnNextPage);
+            AssertNoPrematureScrollBeforeDomSwapIfEnhancedNavigation(firstNavigationObservation, "landing -> next navigation");
+            scrollOverride.AssertNoPrematureScroll("next", "landing -> next navigation");
+            Assert.Equal(0, Browser.GetScrollY());
+            var elementForStalenessCheckOnLandingPage = Browser.Exists(By.TagName("html"));
+            var fragmentScrollPosition = Browser.GetElementPositionWithRetry(fragmentId);
+            var secondNavigationObservation = BeginEnhancedNavigationObservationIfEnhancedNavigation(
+                useEnhancedNavigation,
+                elementForStalenessCheckOnLandingPage,
+                ElementWithTextAppears(By.Id("test-info-1"), "Scroll tests landing page"));
+            scrollOverride.ClearLog();
+            Browser.Exists(By.Id(button1Id)).Click();
 
-        var button2Id = $"do{buttonKeyword}-navigation-with-fragment";
-        Browser.Exists(By.Id(button2Id)).Click();
-        AssertWeAreOnNextPage();
-        WaitStreamingRendersFullPage(enableStreaming);
-        AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnNextPage);
-        var expectedFragmentScrollPosition = fragmentScrollPosition;
-        Assert.Equal(expectedFragmentScrollPosition, Browser.GetScrollY());
+            // "landing" page: navigate to a fragment on another page - we should land at the beginning of the fragment
+            AssertWeAreOnLandingPage();
+            WaitStreamingRendersFullPage(enableStreaming);
+            AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnLandingPage);
+            AssertNoPrematureScrollBeforeDomSwapIfEnhancedNavigation(secondNavigationObservation, "next -> landing navigation");
+            scrollOverride.AssertNoPrematureScroll("landing", "next -> landing navigation");
+
+            var button2Id = $"do{buttonKeyword}-navigation-with-fragment";
+            var thirdNavigationObservation = BeginEnhancedNavigationObservationIfEnhancedNavigation(
+                useEnhancedNavigation,
+                elementForStalenessCheckOnNextPage,
+                ElementWithTextAppears(By.Id("test-info-2"), "Scroll tests next page"));
+            scrollOverride.ClearLog();
+            Browser.Exists(By.Id(button2Id)).Click();
+            AssertWeAreOnNextPage();
+            WaitStreamingRendersFullPage(enableStreaming);
+            AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnNextPage);
+            AssertNoPrematureScrollBeforeDomSwapIfEnhancedNavigation(thirdNavigationObservation, "landing -> next (fragment) navigation");
+            scrollOverride.AssertNoPrematureScroll("next", "landing -> next (fragment) navigation");
+            var expectedFragmentScrollPosition = fragmentScrollPosition;
+            Assert.Equal(expectedFragmentScrollPosition, Browser.GetScrollY());
+        }
+        finally
+        {
+            scrollOverride.Dispose();
+        }
     }
 
     [Theory]
@@ -851,6 +916,44 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         AssertScrollPositionCorrect(useEnhancedNavigation, landingPagePos2);
     }
 
+    [Fact]
+    public void CanNavigateBetweenPagesWhenLayoutContainsInteractiveComponent()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/64722
+        // When an interactive component (InteractiveAuto) is placed in the layout,
+        // navigating between pages should not cause a JS error from orphaned
+        // metadata comments in the logical children array.
+        Navigate($"{ServerPathBase}/nav/interactive-in-layout");
+
+        var h1Elem = Browser.Exists(By.Id("interactive-layout-home"));
+        Browser.Equal("Hello from interactive layout", () => h1Elem.Text);
+
+        // Use a layout element for staleness checks since it persists across pages
+        var layoutCounter = Browser.Exists(By.Id("layout-counter"));
+
+        // Navigate to the other page and verify enhanced navigation was used (DOM preserved)
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Other (interactive layout)")).Click();
+        Browser.Equal("Other page with interactive layout", () => Browser.Exists(By.Id("interactive-layout-other")).Text);
+        Assert.False(layoutCounter.IsStale(), "Enhanced navigation should have been used for first navigation");
+
+        // Navigate back to home - this is the step that triggered the crash
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Home (interactive layout)")).Click();
+        Browser.Equal("Hello from interactive layout", () => Browser.Exists(By.Id("interactive-layout-home")).Text);
+        Assert.False(layoutCounter.IsStale(), "Enhanced navigation should have been used for second navigation");
+
+        // Verify the interactive layout component is still functional by clicking the counter.
+        // Wait for interactivity to be established first (InteractiveAuto may start as SSR/Server
+        // and become interactive only after the circuit or WebAssembly runtime has connected).
+        Browser.Equal("True", () => Browser.Exists(By.Id("layout-counter-interactive")).Text);
+        Browser.Equal("0", () => Browser.Exists(By.Id("layout-counter-value")).Text);
+        Browser.Exists(By.Id("layout-counter-button")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("layout-counter-value")).Text);
+
+        // Verify no JavaScript errors occurred during enhanced navigation
+        var logs = Browser.GetBrowserLogs(LogLevel.Warning);
+        Assert.DoesNotContain(logs, log => log.Message.Contains("Error"));
+    }
+
     private void AssertScrollPositionCorrect(bool useEnhancedNavigation, long previousScrollPosition)
     {
         // from some reason, scroll position sometimes differs by 1 pixel between enhanced and browser's navigation
@@ -874,7 +977,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         {
             try
             {
-                enhancedNavigationDetected = !IsElementStale(elementForStalenessCheck);
+                enhancedNavigationDetected = !elementForStalenessCheck.IsStale();
                 Assert.Equal(useEnhancedNavigation, enhancedNavigationDetected);
                 return;
             }
@@ -920,16 +1023,41 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     private void AssertEnhancedUpdateCountEquals(long count)
         => Browser.Equal(count, () => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.enhancedPageUpdateCount;"));
 
-    private static bool IsElementStale(IWebElement element)
+    private ScrollObservation? BeginEnhancedNavigationObservationIfEnhancedNavigation(bool useEnhancedNavigation, IWebElement elementForStalenessCheck, Func<IWebDriver, bool> domMutationPredicate) =>
+        useEnhancedNavigation ? Browser.BeginScrollObservation(elementForStalenessCheck, domMutationPredicate) : null;
+
+    private void AssertNoPrematureScrollBeforeDomSwapIfEnhancedNavigation(ScrollObservation? observation, string navigationDescription)
     {
+        if (observation is not ScrollObservation context)
+        {
+            return;
+        }
+
+        ScrollObservationResult result;
         try
         {
-            _ = element.Enabled;
-            return false;
+            result = Browser.WaitForStaleDomOrScrollChange(context);
         }
-        catch (StaleElementReferenceException)
+        catch (WebDriverTimeoutException ex)
         {
-            return true;
+            throw new XunitException($"Timed out while waiting for the DOM to update or the scroll position to change during {navigationDescription}.", ex);
+        }
+
+        if (result.Outcome == ScrollObservationOutcome.ScrollChanged)
+        {
+            throw new XunitException($"Detected a scroll reset before the DOM update completed during {navigationDescription}. Scroll moved from {result.InitialScrollPosition} to {result.FinalScrollPosition} before the page rendered new content.");
         }
     }
+
+    private static Func<IWebDriver, bool> ElementWithTextAppears(By selector, string expectedText) => driver =>
+    {
+        var elements = driver.FindElements(selector);
+        if (elements.Count == 0)
+        {
+            return false;
+        }
+
+        // Ensure we actually observed the new content, not just the presence of the element.
+        return string.Equals(elements[0].Text, expectedText, StringComparison.Ordinal);
+    };
 }

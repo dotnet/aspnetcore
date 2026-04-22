@@ -1,7 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Connections.IMemoryPoolFactory<T>
-Microsoft.AspNetCore.Connections.IMemoryPoolFactory<T>.Create(Microsoft.AspNetCore.Connections.MemoryPoolOptions? options = null) -> System.Buffers.MemoryPool<T>!
-Microsoft.AspNetCore.Connections.MemoryPoolOptions
-Microsoft.AspNetCore.Connections.MemoryPoolOptions.MemoryPoolOptions() -> void
-Microsoft.AspNetCore.Connections.MemoryPoolOptions.Owner.get -> string?
-Microsoft.AspNetCore.Connections.MemoryPoolOptions.Owner.set -> void

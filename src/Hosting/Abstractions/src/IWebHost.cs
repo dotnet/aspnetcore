@@ -2,13 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Hosting;
 
 /// <summary>
 /// Represents a configured web host.
 /// </summary>
-[Obsolete("IWebHost is obsolete. Use IHost instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008")]
+[Obsolete("IWebHost is obsolete. Use IHost instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008", UrlFormat = Obsoletions.AspNetCoreDeprecate008Url)]
 public interface IWebHost : IDisposable
 {
     /// <summary>

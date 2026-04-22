@@ -209,6 +209,12 @@ internal sealed class OpenApiDocumentService(
         if (httpRequest is not null)
         {
             var serverUrl = UriHelper.BuildAbsolute(httpRequest.Scheme, httpRequest.Host, httpRequest.PathBase);
+            // Remove trailing slash when pathBase is empty to align with OpenAPI specification.
+            // Keep the trailing slash if pathBase explicitly contains "/" to preserve intentional path structure.
+            if (serverUrl.EndsWith('/') && !httpRequest.PathBase.HasValue)
+            {
+                serverUrl = serverUrl.TrimEnd('/');
+            }
             return [new OpenApiServer { Url = serverUrl }];
         }
         else
@@ -412,7 +418,7 @@ internal sealed class OpenApiDocumentService(
         var response = new OpenApiResponse
         {
             Description = apiResponseType.Description ?? ReasonPhrases.GetReasonPhrase(statusCode),
-            Content = new Dictionary<string, OpenApiMediaType>()
+            Content = new Dictionary<string, IOpenApiMediaType>()
         };
 
         // ApiResponseFormats aggregates information about the supported response content types
@@ -570,7 +576,7 @@ internal sealed class OpenApiDocumentService(
             // serializing a form collection from an empty body. Instead, requiredness
             // must be set on a per-parameter basis. See below.
             Required = true,
-            Content = new Dictionary<string, OpenApiMediaType>()
+            Content = new Dictionary<string, IOpenApiMediaType>()
         };
 
         var schema = new OpenApiSchema { Type = JsonSchemaType.Object, Properties = new Dictionary<string, IOpenApiSchema>() };
@@ -744,7 +750,7 @@ internal sealed class OpenApiDocumentService(
         var requestBody = new OpenApiRequestBody
         {
             Required = IsRequired(bodyParameter),
-            Content = new Dictionary<string, OpenApiMediaType>(),
+            Content = new Dictionary<string, IOpenApiMediaType>(),
             Description = GetParameterDescriptionFromAttribute(bodyParameter)
         };
 
