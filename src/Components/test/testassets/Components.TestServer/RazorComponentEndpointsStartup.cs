@@ -189,7 +189,12 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
                     options.ConfigureWebSocketAcceptContext = config.ConfigureWebSocketAcceptContext;
                 })
-                .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal");
+                .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal")
+                .WithBrowserConfiguration(config =>
+                {
+                    config.WebAssembly.EnvironmentVariables["MY_TEST_VAR"] = "test-value-from-server";
+                    config.WebAssembly.EnvironmentVariables["ANOTHER_TEST_VAR"] = "another-test-value";
+                });
 
             NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
             StreamingRenderingForm.MapEndpoints(endpoints);

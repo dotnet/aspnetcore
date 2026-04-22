@@ -407,15 +407,18 @@ function InitializeToolset {
   ReadGlobalVersion "Microsoft.DotNet.Arcade.Sdk"
 
   local toolset_version=$_ReadGlobalVersion
-  local toolset_location_file="$toolset_dir/$toolset_version.txt"
+  local toolset_tools_dir="$toolset_dir/$toolset_version"
 
-  if [[ -a "$toolset_location_file" ]]; then
-    local path=`cat "$toolset_location_file"`
-    if [[ -a "$path" ]]; then
-      # return value
-      _InitializeToolset="$path"
-      return
-    fi
+  # Check if the toolset has already been extracted
+  local toolset_build_proj=""
+  if [[ -a "$toolset_tools_dir/Build.proj" ]]; then
+    toolset_build_proj="$toolset_tools_dir/Build.proj"
+  fi
+
+  if [[ -n "$toolset_build_proj" ]]; then
+    # return value
+    _InitializeToolset="$toolset_build_proj"
+    return
   fi
 
   if [[ "$restore" != true ]]; then
@@ -423,20 +426,34 @@ function InitializeToolset {
     ExitWithExitCode 2
   fi
 
-  local proj="$toolset_dir/restore.proj"
+  local download_args=("package" "download" "Microsoft.DotNet.Arcade.Sdk@$toolset_version" "--verbosity" "minimal" "--prerelease" "--output" "$_GetNuGetPackageCachePath")
+  if [[ -n "${NUGET_CONFIG:-}" ]]; then
+    download_args+=("--configfile" "$NUGET_CONFIG")
+  fi
+  DotNet "${download_args[@]}"
 
-  local bl=""
-  if [[ "$binary_log" == true ]]; then
-    bl="/bl:$log_dir/ToolsetRestore.binlog"
+  local package_dir="$_GetNuGetPackageCachePath/microsoft.dotnet.arcade.sdk/$toolset_version"
+
+  # TODO: Remove the tools/ check once all supported versions have the toolset folder.
+  if [[ ! -d "$package_dir/toolset" && ! -d "$package_dir/tools" ]]; then
+    Write-PipelineTelemetryError -category 'InitializeToolset' "Arcade SDK package does not contain a toolset or tools folder: $package_dir"
+    ExitWithExitCode 3
   fi
 
-  echo '<Project Sdk="Microsoft.DotNet.Arcade.Sdk"/>' > "$proj"
-  MSBuild-Core "$proj" $bl /t:__WriteToolsetLocation /clp:ErrorsOnly\;NoSummary /p:__ToolsetLocationOutputFile="$toolset_location_file"
+  mkdir -p "$toolset_tools_dir"
 
-  local toolset_build_proj=`cat "$toolset_location_file"`
+  # Copy toolset if present at the package root (new layout), otherwise fall back to tools
+  if [[ -d "$package_dir/toolset" ]]; then
+    cp -r "$package_dir/toolset/." "$toolset_tools_dir"
+  else
+    # TODO: Remove this fallback once all supported versions have the toolset folder.
+    cp -r "$package_dir/tools/." "$toolset_tools_dir"
+  fi
 
-  if [[ ! -a "$toolset_build_proj" ]]; then
-    Write-PipelineTelemetryError -category 'Build' "Invalid toolset path: $toolset_build_proj"
+  if [[ -a "$toolset_tools_dir/Build.proj" ]]; then
+    toolset_build_proj="$toolset_tools_dir/Build.proj"
+  else
+    Write-PipelineTelemetryError -category 'Build' "Unable to find Build.proj in toolset at: $toolset_tools_dir"
     ExitWithExitCode 3
   fi
 
@@ -456,6 +473,26 @@ function StopProcesses {
   pkill -9 "dotnet" || true
   pkill -9 "vbcscompiler" || true
   return 0
+}
+
+function DotNet {
+  InitializeDotNetCli $restore
+
+  local dotnet_path="$_InitializeDotNetCli/dotnet"
+
+  export ARCADE_BUILD_TOOL_COMMAND="$dotnet_path $@"
+
+  "$dotnet_path" "$@" || {
+    local exit_code=$?
+    echo "dotnet command failed with exit code $exit_code. Check errors above."
+
+    if [[ "$ci" == true && -n ${SYSTEM_TEAMPROJECT:-} && "$from_vmr" != true ]]; then
+      Write-PipelineSetResult -result "Failed" -message "dotnet command execution failed."
+      ExitWithExitCode 0
+    else
+      ExitWithExitCode $exit_code
+    fi
+  }
 }
 
 function MSBuild {
@@ -534,7 +571,7 @@ function MSBuild-Core {
   fi
 
   local warnnotaserror_switch=""
-  if [[ -n "$warn_not_as_error" ]]; then
+  if [[ -n "$warn_not_as_error" && "$warn_as_error" == true ]]; then
     warnnotaserror_switch="/warnnotaserror:$warn_not_as_error /p:AdditionalWarningsNotAsErrors=$warn_not_as_error"
   fi
 
@@ -555,8 +592,22 @@ function GetDarc {
 
 # Returns a full path to an Arcade SDK task project file.
 function GetSdkTaskProject {
-  taskName=$1
-  echo "$(dirname $_InitializeToolset)/SdkTasks/$taskName.proj"
+  local taskName=$1
+  local toolsetDir
+  toolsetDir="$(dirname "$_InitializeToolset")"
+  local proj="$toolsetDir/$taskName.proj"
+  if [[ -a "$proj" ]]; then
+    echo "$proj"
+    return
+  fi
+  # TODO: Remove this fallback once all supported versions use the new layout.
+  local legacyProj="$toolsetDir/SdkTasks/$taskName.proj"
+  if [[ -a "$legacyProj" ]]; then
+    echo "$legacyProj"
+    return
+  fi
+  Write-PipelineTelemetryError -category 'Build' "Unable to find $taskName.proj in toolset at: $toolsetDir"
+  ExitWithExitCode 3
 }
 
 ResolvePath "${BASH_SOURCE[0]}"

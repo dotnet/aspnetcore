@@ -46,7 +46,6 @@
     <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
     <Reference Include="Microsoft.AspNetCore.Server.IIS" />
     <Reference Include="Microsoft.Extensions.Hosting" />
-    <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="Microsoft.Extensions.Validation" />
     <Reference Include="Verify.SourceGenerators" />
     <Reference Include="Verify.XUnit" />

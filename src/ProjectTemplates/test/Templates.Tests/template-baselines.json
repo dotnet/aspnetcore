@@ -3756,5 +3756,16 @@
         "wwwroot/dotnet-web-worker-client.js"
       ]
     }
+  },
+  "blazor-wasm-servicedefaults": {
+    "Default": {
+      "Template": "blazor-wasm-servicedefaults",
+      "Arguments": "new blazor-wasm-servicedefaults",
+      "Files": [
+        "BackgroundExportHandler.cs",
+        "Extensions.cs",
+        "wwwroot/{ProjectName}.lib.module.js"
+      ]
+    }
   }
 }
