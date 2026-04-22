@@ -6,13 +6,13 @@ import { DomScanner } from './DomScanner';
 import { ErrorDisplay } from './ErrorDisplay';
 import { EventManager } from './EventManager';
 import { ValidationEngine } from './ValidationEngine';
-import { ValidatableElement, ValidationService, Validator, ValidatorRegistry } from './ValidationTypes';
+import { FormValidationOptions, ValidatableElement, ValidationService, Validator, ValidatorRegistry } from './ValidationTypes';
 
-export function createValidationService(): ValidationService {
+export function createValidationService(options?: FormValidationOptions): ValidationService {
   const registry = new ValidatorRegistry();
   registerCoreValidators(registry);
 
-  const errorDisplay = new ErrorDisplay();
+  const errorDisplay = new ErrorDisplay(options?.cssClasses);
   const engine = new ValidationEngine(registry, errorDisplay);
   const eventManager = new EventManager(engine);
   const scanner = new DomScanner(engine, eventManager);
@@ -22,8 +22,8 @@ export function createValidationService(): ValidationService {
 
   return {
     addValidator: (name: string, validator: Validator) => registry.set(name, validator),
-    scan: (elementOrSelector?: ParentNode | string) => scanner.scan(elementOrSelector),
+    scanRules: (elementOrSelector?: ParentNode | string) => scanner.scan(elementOrSelector),
     validateField: (element: ValidatableElement) => engine.validateElement(element),
-    validateForm: (form: HTMLFormElement) => engine.validateForm(form),
+    validateForm: (form: HTMLFormElement) => engine.validateForm(form).size === 0,
   };
 }

@@ -91,16 +91,16 @@ export class EventManager {
     }
 
     formState.hasBeenSubmitted = true;
-    const result = this.engine.validateForm(form);
+    const errors = this.engine.validateForm(form);
 
-    if (!result) {
+    if (errors.size > 0) {
       event.preventDefault();
       event.stopPropagation();
-      dispatchValidationComplete(form, false);
+      dispatchValidationComplete(form, false, errors);
       return;
     }
 
-    dispatchValidationComplete(form, result);
+    dispatchValidationComplete(form, true, errors);
   }
 
   private handleReset(event: Event): void {
@@ -120,9 +120,9 @@ export class EventManager {
   }
 }
 
-function dispatchValidationComplete(form: HTMLFormElement, valid: boolean): void {
+function dispatchValidationComplete(form: HTMLFormElement, valid: boolean, errors: Map<string, string>): void {
   form.dispatchEvent(new CustomEvent('validationcomplete', {
     bubbles: true,
-    detail: { valid },
+    detail: { valid, errors },
   }));
 }

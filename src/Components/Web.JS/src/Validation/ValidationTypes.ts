@@ -13,9 +13,15 @@ export type ValidationResult = boolean | string;
 
 export type Validator = (context: ValidationContext) => ValidationResult;
 
+export interface FormValidationOptions {
+  /** Override default CSS class names for validation states.
+   *  Supports space-separated class names (e.g., 'border-red-500 ring-1'). */
+  cssClasses?: Partial<import('./ErrorDisplay').CssClassNames>;
+}
+
 export interface ValidationService {
   addValidator(name: string, validator: Validator): void;
-  scan(elementOrSelector?: ParentNode | string): void;
+  scanRules(elementOrSelector?: ParentNode | string): void;
   validateField(element: ValidatableElement): boolean;
   validateForm(form: HTMLFormElement): boolean;
 }

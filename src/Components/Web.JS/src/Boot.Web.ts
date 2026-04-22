@@ -79,11 +79,15 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 
   enableFocusOnNavigate(jsEventRegistry);
 
-  // Initialize client-side validation. The initial scan happens in onInitialDomContentLoaded
-  // after the DOM is ready. Re-scan after each enhanced navigation DOM update.
-  Blazor.validation = createValidationService();
+  // Client-side validation is initialized on demand: only when the page contains
+  // SSR-rendered form fields with data-val attributes. This avoids adding document-level
+  // event listeners in interactive-only apps that never use client-side validation.
   jsEventRegistry.addEventListener('enhancedload', () => {
-    Blazor.validation?.scan();
+    if (Blazor.formValidation) {
+      Blazor.formValidation.scanRules();
+    } else {
+      initFormValidationIfNeeded(options?.ssr?.formValidation);
+    }
   });
 
   // Wait until the initial page response completes before activating interactive components.
@@ -158,7 +162,16 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
 
   rootComponentManager.onDocumentUpdated();
 
+  // Initialize client-side validation if the page has validatable fields.
+  initFormValidationIfNeeded(options?.ssr?.formValidation);
+
   callAfterStartedCallbacks(initializersPromise);
+}
+
+function initFormValidationIfNeeded(formValidation?: import('./Validation/ValidationTypes').FormValidationOptions): void {
+  if (!Blazor.formValidation && document.querySelector('[data-val="true"]')) {
+    Blazor.formValidation = createValidationService(formValidation);
+  }
 }
 
 async function resolveConfiguredOptions<TOptions>(initializers: Promise<JSInitializer>, options: TOptions): Promise<TOptions> {

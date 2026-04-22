@@ -299,7 +299,7 @@ test.describe('dynamic content and re-scan', () => {
     await page.goto('/dynamic-content.html');
   });
 
-  test('dynamically added fields are validated after scan()', async ({ page }) => {
+  test('dynamically added fields are validated after scanRules()', async ({ page }) => {
     // Inject a new field
     await page.evaluate(() => {
       const container = document.getElementById('dynamic-container')!;
@@ -309,7 +309,7 @@ test.describe('dynamic content and re-scan', () => {
                data-val-required="Dynamic is required." />
         <span data-valmsg-for="Dynamic" data-valmsg-replace="true"></span>
       `;
-      (window as any).__aspnetValidation.scan('#dynamic-container');
+      (window as any).__aspnetValidation.scanRules('#dynamic-container');
     });
 
     await submitForm(page);
@@ -325,7 +325,7 @@ test.describe('dynamic content and re-scan', () => {
     await page.evaluate(() => {
       const input = document.getElementById('name')!;
       input.parentElement!.removeChild(input);
-      (window as any).__aspnetValidation.scan();
+      (window as any).__aspnetValidation.scanRules();
     });
 
     // Submit again — Name error should be gone (field no longer tracked)
@@ -333,7 +333,7 @@ test.describe('dynamic content and re-scan', () => {
     expect(await getFieldMessage(page, 'Name')).toBe('');
   });
 
-  test('scan() with selector scopes to subtree', async ({ page }) => {
+  test('scanRules() with selector scopes to subtree', async ({ page }) => {
     // Add fields to two separate containers
     await page.evaluate(() => {
       const container = document.getElementById('dynamic-container')!;
@@ -359,7 +359,7 @@ test.describe('dynamic content and re-scan', () => {
       form.insertBefore(outsideSpan, form.querySelector('button'));
 
       // Only scan the dynamic container
-      (window as any).__aspnetValidation.scan('#dynamic-container');
+      (window as any).__aspnetValidation.scanRules('#dynamic-container');
     });
 
     await submitForm(page);

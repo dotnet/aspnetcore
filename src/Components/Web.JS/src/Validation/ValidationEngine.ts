@@ -96,14 +96,14 @@ export class ValidationEngine {
     return this.trackedForms;
   }
 
-  validateForm(form: HTMLFormElement): boolean {
+  validateForm(form: HTMLFormElement): Map<string, string> {
     const formState = this.trackedForms.get(form);
     if (!formState) {
       // The form is not being tracked, so consider it valid.
-      return true;
+      return new Map();
     }
 
-    const summaryErrors = new Map<string, string>();
+    const errors = new Map<string, string>();
     let firstInvalidElement: ValidatableElement | null = null;
 
     for (const input of formState.trackedElements) {
@@ -119,7 +119,7 @@ export class ValidationEngine {
       const isValid = this.validateElement(input);
       if (!isValid) {
         const name = input.name || input.id || '';
-        summaryErrors.set(name, input.validationMessage);
+        errors.set(name, input.validationMessage);
         firstInvalidElement ??= input;
       }
     }
@@ -128,8 +128,8 @@ export class ValidationEngine {
       firstInvalidElement.focus();
     }
 
-    this.errorDisplay.updateSummary(form, summaryErrors);
-    return summaryErrors.size === 0;
+    this.errorDisplay.updateSummary(form, errors);
+    return errors;
   }
 
   validateElement(element: ValidatableElement): boolean {

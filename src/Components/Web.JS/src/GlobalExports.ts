@@ -48,7 +48,7 @@ export interface IBlazor {
   platform?: Platform;
   rootComponents: typeof RootComponentsFunctions;
   runtime: RuntimeAPI,
-  validation?: ValidationService;
+  formValidation?: ValidationService;
 
   _internal: {
     navigationManager: typeof navigationManagerInternalFunctions | any;

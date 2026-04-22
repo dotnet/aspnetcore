@@ -25,13 +25,13 @@ export const defaultCssClassNames: CssClassNames = {
 export class ErrorDisplay {
   private cssClasses: CssClassNames;
 
-  constructor(cssClasses?: CssClassNames) {
-    this.cssClasses = cssClasses ?? defaultCssClassNames;
+  constructor(cssClasses?: Partial<CssClassNames>) {
+    this.cssClasses = { ...defaultCssClassNames, ...cssClasses };
   }
 
   showFieldError(input: ValidatableElement, errorMessage: string): void {
-    input.classList.add(this.cssClasses.inputError);
-    input.classList.remove(this.cssClasses.inputValid);
+    addClasses(input, this.cssClasses.inputError);
+    removeClasses(input, this.cssClasses.inputValid);
 
     const messageElements = findMessageElements(input);
     this.updateMessageElements(messageElements, errorMessage);
@@ -48,8 +48,8 @@ export class ErrorDisplay {
   }
 
   clearFieldError(input: ValidatableElement): void {
-    input.classList.remove(this.cssClasses.inputError);
-    input.classList.add(this.cssClasses.inputValid);
+    removeClasses(input, this.cssClasses.inputError);
+    addClasses(input, this.cssClasses.inputValid);
 
     const messageElements = findMessageElements(input);
     this.updateMessageElements(messageElements, '');
@@ -64,8 +64,8 @@ export class ErrorDisplay {
     const classToRemove = errorMessage ? this.cssClasses.messageValid : this.cssClasses.messageError;
 
     for (const messageElement of messageElements) {
-      messageElement.classList.add(classToAdd);
-      messageElement.classList.remove(classToRemove);
+      addClasses(messageElement, classToAdd);
+      removeClasses(messageElement, classToRemove);
 
       if (messageElement.getAttribute('data-valmsg-replace') !== 'false') {
         messageElement.textContent = errorMessage;
@@ -107,8 +107,8 @@ export class ErrorDisplay {
 
     if (!errors || errors.size === 0) {
       // Set summary to valid state if there are no errors.
-      summaryElement.classList.remove(this.cssClasses.summaryError);
-      summaryElement.classList.add(this.cssClasses.summaryValid);
+      removeClasses(summaryElement, this.cssClasses.summaryError);
+      addClasses(summaryElement, this.cssClasses.summaryValid);
     } else {
       if (!ul) {
         ul = document.createElement('ul');
@@ -123,8 +123,24 @@ export class ErrorDisplay {
         ul.appendChild(li);
       }
 
-      summaryElement.classList.remove(this.cssClasses.summaryValid);
-      summaryElement.classList.add(this.cssClasses.summaryError);
+      removeClasses(summaryElement, this.cssClasses.summaryValid);
+      addClasses(summaryElement, this.cssClasses.summaryError);
+    }
+  }
+}
+
+function addClasses(element: Element, classes: string): void {
+  for (const cls of classes.split(' ')) {
+    if (cls) {
+      element.classList.add(cls);
+    }
+  }
+}
+
+function removeClasses(element: Element, classes: string): void {
+  for (const cls of classes.split(' ')) {
+    if (cls) {
+      element.classList.remove(cls);
     }
   }
 }
