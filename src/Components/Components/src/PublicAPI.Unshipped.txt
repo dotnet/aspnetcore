@@ -1,5 +1,9 @@
 #nullable enable
 override Microsoft.AspNetCore.Components.ErrorBoundaryBase.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
+abstract Microsoft.AspNetCore.Components.CascadingParameterSubscription.Dispose() -> void
+abstract Microsoft.AspNetCore.Components.CascadingParameterSubscription.GetCurrentValue() -> object?
+Microsoft.AspNetCore.Components.CascadingParameterSubscription
+Microsoft.AspNetCore.Components.CascadingParameterSubscription.CascadingParameterSubscription() -> void
 static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithHash(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! hash) -> string!
 Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.get -> bool
 Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.init -> void
@@ -10,6 +14,7 @@ Microsoft.AspNetCore.Components.IComponentPropertyActivator.GetActivator(System.
 *REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void
 virtual Microsoft.AspNetCore.Components.ErrorBoundaryBase.RenderOnException.get -> bool
 virtual Microsoft.AspNetCore.Components.ErrorBoundaryBase.RenderOnException.set -> void
+static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.TryAddCascadingValueSupplier<TAttribute>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, System.Func<System.IServiceProvider!, System.Func<Microsoft.AspNetCore.Components.Rendering.ComponentState!, TAttribute!, Microsoft.AspNetCore.Components.CascadingParameterInfo, Microsoft.AspNetCore.Components.CascadingParameterSubscription!>!>! subscribeFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.AspNetCore.Components.BrowserConfiguration
 Microsoft.AspNetCore.Components.BrowserConfiguration.BrowserConfiguration() -> void
 Microsoft.AspNetCore.Components.BrowserConfiguration.LogLevel.get -> int?

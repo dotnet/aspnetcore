@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Gateway;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -10,7 +11,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TestServer;
-using DevHostServerProgram = Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server.Program;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 
@@ -49,12 +49,15 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
             host = E2ETestOptions.Instance.Sauce.HostName;
         }
 
+        var assemblyLocation = typeof(TProgram).Assembly.Location;
         var args = new List<string>
             {
                 "--urls", $"http://{host}:0",
                 "--contentroot", ContentRoot,
                 "--pathbase", PathBase,
-                "--applicationpath", typeof(TProgram).Assembly.Location,
+                "--staticWebAssets", Path.ChangeExtension(assemblyLocation, ".staticwebassets.runtime.json"),
+                "--ClientApps:app:EndpointsManifest", Path.ChangeExtension(assemblyLocation, ".staticwebassets.endpoints.json"),
+                "--ClientApps:app:PathPrefix", "",
             };
 
         if (!string.IsNullOrEmpty(Environment))
@@ -68,7 +71,7 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
             args.Add("--apply-cop-headers");
         }
 
-        return DevHostServerProgram.BuildWebHost(args.ToArray());
+        return BlazorGateway.BuildWebHost(args.ToArray());
     }
 
     private IHost CreateStaticWebHost(string contentRoot)
