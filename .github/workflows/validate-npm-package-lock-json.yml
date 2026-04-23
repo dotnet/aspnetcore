@@ -27,4 +27,4 @@ jobs:
       - name: Run npm ci to validate package-lock.json against the feed
         shell: pwsh
         id: npm-install-script
-        run: npm ci --prefer-online --fetch-retries 5
+        run: npm ci --prefer-online

@@ -191,7 +191,7 @@ configuration:
           days: 1
       actions:
       - addReply:
-          reply: This dependency PR has had no activity for a full business day - @dotnet/aspnet-build please take a look if you are on build-ops.
+          reply: This dependency PR has had no activity for a full business day - @dotnet/aspnet-build please take a look.
     - description: '[Idle Issue Management] Tag aspnet-build on dependency PRs (weekend)'
       frequencies:
       - weekday:
@@ -206,7 +206,7 @@ configuration:
           days: 3
       actions:
       - addReply:
-          reply: This dependency PR has had no activity for a full business day - @dotnet/aspnet-build please take a look if you are on build-ops.
+          reply: This dependency PR has had no activity for a full business day - @dotnet/aspnet-build please take a look.
     eventResponderTasks:
     - if:
       - payloadType: Issue_Comment
@@ -632,7 +632,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 10.0.7
+          milestone: 10.0.8
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/10.0 branch'
     - if:
       - payloadType: Pull_Request
