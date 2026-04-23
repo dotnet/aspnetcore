@@ -19,5 +19,10 @@ export const regexValidator: Validator = (context: ValidationContext): Validatio
   // which requires Index == 0 && Length == value.Length. The non-capturing group avoids
   // changing semantics for patterns with alternation (e.g. "a|b").
   const anchored = `^(?:${params.pattern})$`;
-  return new RegExp(anchored).test(value);
+
+  try {
+    return new RegExp(anchored).test(value);
+  } catch {
+    return true;
+  }
 };

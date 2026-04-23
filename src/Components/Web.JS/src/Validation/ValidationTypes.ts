@@ -9,7 +9,7 @@ export type ValidationContext = {
   value: string | null | undefined;
   element: ValidatableElement;
   params: Record<string, string>;
-}
+};
 
 /**
  * The result of a validator function.

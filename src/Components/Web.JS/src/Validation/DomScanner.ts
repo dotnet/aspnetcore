@@ -57,7 +57,7 @@ export class DomScanner {
 
       if (previousState) {
         // Element is already tracked.
-        // Check if its attributes has changed.
+        // Check if its attributes have changed.
         if (fingerprint === previousState.fingerprint) {
           continue;
         }

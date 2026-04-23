@@ -10,7 +10,7 @@ export type ValidationRule = {
   ruleName: string;
   errorMessage: string;
   params: Record<string, string>;
-}
+};
 
 /** Per-element validation state tracked by the engine. */
 export interface ElementState {

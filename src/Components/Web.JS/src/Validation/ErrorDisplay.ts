@@ -66,12 +66,11 @@ export class ErrorDisplay {
 
     // Update ARIA attributes.
     input.removeAttribute('aria-invalid');
-    // Remove only our message ID from aria-describedby (preserving other tokens)
+    // Remove only our message ID from aria-describedby when we know it,
+    // preserving any other developer-provided tokens.
     const msgId = messageElements[0]?.id;
     if (msgId) {
       removeAriaToken(input, 'aria-describedby', msgId);
-    } else {
-      input.removeAttribute('aria-describedby');
     }
   }
 
