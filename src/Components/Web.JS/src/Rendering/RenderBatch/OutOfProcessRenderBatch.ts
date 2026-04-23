@@ -203,8 +203,12 @@ class OutOfProcessStringReader {
 }
 
 class OutOfProcessStringReaderUtf16 {
-  private static textDecoder = new TextDecoder('utf-16le');
+  private static textDecoder: TextDecoder | undefined;
   private stringTableStartIndex: number;
+
+  private static getTextDecoder(): TextDecoder {
+    return OutOfProcessStringReaderUtf16.textDecoder ??= new TextDecoder('utf-16le');
+  }
 
   constructor(private batchDataUint8: Uint8Array) {
     // Final int gives start position of the string table (same layout as UTF-8 variant)
@@ -223,7 +227,7 @@ class OutOfProcessStringReaderUtf16 {
       const charsStart = stringTableEntryPos + 4;
       const byteLength = charCount * 2;
       const utf16Bytes = new Uint8Array(this.batchDataUint8.buffer, this.batchDataUint8.byteOffset + charsStart, byteLength);
-      return OutOfProcessStringReaderUtf16.textDecoder.decode(utf16Bytes);
+      return OutOfProcessStringReaderUtf16.getTextDecoder().decode(utf16Bytes);
     }
   }
 }
