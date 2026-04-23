@@ -780,7 +780,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("24:00:00", () => input.GetDomProperty("value"));
     }
 
-    [Fact(Skip = "Hangs with runtime-async enabled: https://github.com/dotnet/runtime/issues/126735")]
+    [Fact]
     public void InputTextAreaWorksWithMutatingSetter()
     {
         // Repro for https://github.com/dotnet/aspnetcore/issues/40097
