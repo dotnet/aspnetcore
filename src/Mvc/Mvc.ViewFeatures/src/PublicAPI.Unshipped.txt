@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers.ViewBufferValue.IsUtf8Value.get -> bool
+Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers.ViewBufferValue.Utf8Value.get -> System.ReadOnlyMemory<byte>
+Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers.ViewBufferValue.ViewBufferValue(System.ReadOnlyMemory<byte> utf8Value) -> void

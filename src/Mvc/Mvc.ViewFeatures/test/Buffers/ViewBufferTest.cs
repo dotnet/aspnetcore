@@ -513,27 +513,28 @@ public class ViewBufferTest
     }
 
     [Fact]
-    public void AppendHtml_Utf8HtmlLiteralContent_AddsToBuffer()
+    public void AppendHtml_Utf8Value_AddsToBuffer()
     {
         var buffer = new ViewBuffer(new TestViewBufferScope(), "some-name", pageSize: 32);
-        var utf8Content = new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<h1>Hello</h1>"));
+        var utf8Content = System.Text.Encoding.UTF8.GetBytes("<h1>Hello</h1>");
 
         buffer.AppendHtml(utf8Content);
 
         Assert.Equal(1, buffer.Count);
         var page = buffer[0];
         Assert.Equal(1, page.Count);
-        Assert.IsType<Utf8HtmlLiteralContent>(page.Buffer[0].Value);
+        Assert.True(page.Buffer[0].IsUtf8Value);
+        Assert.True(utf8Content.AsSpan().SequenceEqual(page.Buffer[0].Utf8Value.Span));
     }
 
     [Fact]
-    public void WriteTo_WithUtf8HtmlLiteralContent_WritesDecodedContent()
+    public void WriteTo_WithUtf8Value_WritesDecodedContent()
     {
         var buffer = new ViewBuffer(new TestViewBufferScope(), "some-name", pageSize: 32);
         var writer = new StringWriter();
 
         buffer.AppendHtml("prefix ");
-        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<h1>UTF-8</h1>")));
+        buffer.AppendHtml(System.Text.Encoding.UTF8.GetBytes("<h1>UTF-8</h1>"));
         buffer.AppendHtml(" suffix");
         buffer.WriteTo(writer, new HtmlTestEncoder());
 
@@ -541,13 +542,13 @@ public class ViewBufferTest
     }
 
     [Fact]
-    public async Task WriteToAsync_WithUtf8HtmlLiteralContent_WritesDecodedContent()
+    public async Task WriteToAsync_WithUtf8Value_WritesDecodedContent()
     {
         var buffer = new ViewBuffer(new TestViewBufferScope(), "some-name", pageSize: 32);
         var writer = new StringWriter();
 
         buffer.AppendHtml("prefix ");
-        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<h1>UTF-8</h1>")));
+        buffer.AppendHtml(System.Text.Encoding.UTF8.GetBytes("<h1>UTF-8</h1>"));
         buffer.AppendHtml(" suffix");
 
         await buffer.WriteToAsync(writer, new HtmlTestEncoder());
@@ -562,9 +563,9 @@ public class ViewBufferTest
         var writer = new StringWriter();
 
         buffer.AppendHtml("<html>");
-        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<head><title>Test</title></head>")));
+        buffer.AppendHtml(System.Text.Encoding.UTF8.GetBytes("<head><title>Test</title></head>"));
         buffer.AppendHtml("<body>");
-        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<h1>Hello</h1>")));
+        buffer.AppendHtml(System.Text.Encoding.UTF8.GetBytes("<h1>Hello</h1>"));
         buffer.AppendHtml("</body></html>");
 
         buffer.WriteTo(writer, new HtmlTestEncoder());
@@ -579,9 +580,9 @@ public class ViewBufferTest
         var writer = new StringWriter();
 
         buffer.AppendHtml("<html>");
-        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<head><title>Test</title></head>")));
+        buffer.AppendHtml(System.Text.Encoding.UTF8.GetBytes("<head><title>Test</title></head>"));
         buffer.AppendHtml("<body>");
-        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<h1>Hello</h1>")));
+        buffer.AppendHtml(System.Text.Encoding.UTF8.GetBytes("<h1>Hello</h1>"));
         buffer.AppendHtml("</body></html>");
 
         await buffer.WriteToAsync(writer, new HtmlTestEncoder());
@@ -590,14 +591,14 @@ public class ViewBufferTest
     }
 
     [Fact]
-    public async Task WriteToAsync_Utf8HtmlLiteralContent_DoesNotFlushPerItem()
+    public async Task WriteToAsync_Utf8Value_DoesNotFlushPerItem()
     {
         var buffer = new ViewBuffer(new TestViewBufferScope(), "some-name", pageSize: 32);
         var flushTrackingWriter = new FlushTrackingWriter();
 
-        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<p>One</p>")));
-        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<p>Two</p>")));
-        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<p>Three</p>")));
+        buffer.AppendHtml(System.Text.Encoding.UTF8.GetBytes("<p>One</p>"));
+        buffer.AppendHtml(System.Text.Encoding.UTF8.GetBytes("<p>Two</p>"));
+        buffer.AppendHtml(System.Text.Encoding.UTF8.GetBytes("<p>Three</p>"));
 
         await buffer.WriteToAsync(flushTrackingWriter, new HtmlTestEncoder());
 
@@ -615,7 +616,7 @@ public class ViewBufferTest
         var pagedWriter = new PagedBufferedTextWriter(ArrayPool<char>.Shared, responseWriter);
 
         var utf8Bytes = "<h1>Direct UTF-8</h1>"u8.ToArray();
-        buffer.AppendHtml(new Utf8HtmlLiteralContent(utf8Bytes));
+        buffer.AppendHtml(utf8Bytes);
 
         buffer.WriteTo(pagedWriter, new HtmlTestEncoder());
         responseWriter.Flush();
@@ -633,7 +634,7 @@ public class ViewBufferTest
         var pagedWriter = new PagedBufferedTextWriter(ArrayPool<char>.Shared, responseWriter);
 
         var utf8Bytes = "<h1>Direct UTF-8</h1>"u8.ToArray();
-        buffer.AppendHtml(new Utf8HtmlLiteralContent(utf8Bytes));
+        buffer.AppendHtml(utf8Bytes);
 
         await buffer.WriteToAsync(pagedWriter, new HtmlTestEncoder());
         await pagedWriter.FlushAsync();
@@ -652,9 +653,9 @@ public class ViewBufferTest
         var pagedWriter = new PagedBufferedTextWriter(ArrayPool<char>.Shared, responseWriter);
 
         buffer.AppendHtml("<html>");
-        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<head>")));
+        buffer.AppendHtml(System.Text.Encoding.UTF8.GetBytes("<head>"));
         buffer.AppendHtml("<title>Test</title>");
-        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("</head>")));
+        buffer.AppendHtml(System.Text.Encoding.UTF8.GetBytes("</head>"));
         buffer.AppendHtml("<body></body></html>");
 
         await buffer.WriteToAsync(pagedWriter, new HtmlTestEncoder());

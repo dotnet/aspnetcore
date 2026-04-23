@@ -484,18 +484,18 @@ public abstract class RazorPageBase : IRazorPage
     /// </remarks>
     public virtual void WriteLiteral(ReadOnlyMemory<byte> utf8Value)
     {
-        if (utf8Value.Length == 0)
+        if (utf8Value.IsEmpty)
         {
             return;
         }
 
         var writer = Output;
 
-        if (writer.Encoding is UTF8Encoding && writer is ViewBufferTextWriter viewBufferWriter)
+        if (writer is ViewBufferTextWriter viewBufferWriter && writer.Encoding is UTF8Encoding)
         {
             // When the output encoding is UTF-8 and we're writing to a ViewBuffer,
             // preserve the raw UTF-8 bytes through the buffer pipeline.
-            viewBufferWriter.Buffer.AppendHtml(new Utf8HtmlLiteralContent(utf8Value));
+            viewBufferWriter.Buffer.AppendHtml(utf8Value);
         }
         else
         {

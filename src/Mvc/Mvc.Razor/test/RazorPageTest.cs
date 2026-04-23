@@ -1351,7 +1351,7 @@ public class RazorPageTest
     }
 
     [Fact]
-    public void WriteLiteral_Utf8_WithUtf8Encoding_BuffersAsUtf8HtmlLiteralContent()
+    public void WriteLiteral_Utf8_WithUtf8Encoding_BuffersAsUtf8Value()
     {
         var page = CreatePage(p => { });
         var buffer = new ViewBuffer(new TestViewBufferScope(), string.Empty, pageSize: 32);
@@ -1365,8 +1365,8 @@ public class RazorPageTest
         Assert.Equal(1, buffer.Count);
         var page0 = buffer[0];
         Assert.Equal(1, page0.Count);
-        var content = Assert.IsType<Utf8HtmlLiteralContent>(page0.Buffer[0].Value);
-        Assert.True(utf8Bytes.AsSpan().SequenceEqual(content.Utf8Content.Span));
+        Assert.True(page0.Buffer[0].IsUtf8Value);
+        Assert.True(utf8Bytes.AsSpan().SequenceEqual(page0.Buffer[0].Utf8Value.Span));
     }
 
     [Fact]

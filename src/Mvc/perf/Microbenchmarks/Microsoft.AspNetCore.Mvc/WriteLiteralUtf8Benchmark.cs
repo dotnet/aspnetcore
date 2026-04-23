@@ -39,16 +39,11 @@ public class WriteLiteralUtf8Benchmark
     {
         _stringView = new StringWriteLiteralView();
         _utf8View = new Utf8WriteLiteralView();
-    }
-
-    [IterationSetup]
-    public void IterationSetup()
-    {
         _outputStream = new MemoryStream(capacity: 16 * 1024);
     }
 
-    [IterationCleanup]
-    public void IterationCleanup()
+    [GlobalCleanup]
+    public void Cleanup()
     {
         _outputStream.Dispose();
     }
@@ -60,6 +55,8 @@ public class WriteLiteralUtf8Benchmark
     [Benchmark(Description = "WriteLiteral(string)", Baseline = true)]
     public async Task WriteLiteral_String()
     {
+        _outputStream.Position = 0;
+        _outputStream.SetLength(0);
         await RenderViewAsync(_stringView, _outputStream);
     }
 
@@ -70,6 +67,8 @@ public class WriteLiteralUtf8Benchmark
     [Benchmark(Description = "WriteLiteral(ROM<byte>)")]
     public async Task WriteLiteral_Utf8()
     {
+        _outputStream.Position = 0;
+        _outputStream.SetLength(0);
         await RenderViewAsync(_utf8View, _outputStream);
     }
 
