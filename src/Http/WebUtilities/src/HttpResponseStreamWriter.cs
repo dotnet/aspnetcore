@@ -502,6 +502,83 @@ public class HttpResponseStreamWriter : TextWriter
     // We want to flush the stream when Flush/FlushAsync is explicitly
     // called by the user (example: from a Razor view).
 
+    /// <summary>
+    /// Writes pre-encoded UTF-8 bytes directly to the underlying stream, bypassing character encoding.
+    /// </summary>
+    /// <param name="utf8Value">The UTF-8 encoded bytes to write.</param>
+    /// <remarks>
+    /// This method flushes any pending character data to maintain correct write ordering,
+    /// then writes the raw bytes directly to the stream. The writer's <see cref="Encoding"/>
+    /// must be <see cref="System.Text.Encoding.UTF8"/> or a <see cref="UTF8Encoding"/>; otherwise
+    /// an <see cref="InvalidOperationException"/> is thrown.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">
+    /// The writer's encoding is not UTF-8.
+    /// </exception>
+    public void WriteUtf8(ReadOnlySpan<byte> utf8Value)
+    {
+        ThrowIfDisposed();
+        ThrowIfNotUtf8Encoding();
+
+        if (utf8Value.IsEmpty)
+        {
+            return;
+        }
+
+        // Flush any pending char data with encoder finalization to maintain write ordering
+        FlushInternal(flushEncoder: true);
+
+        // Write raw UTF-8 bytes directly to the underlying stream
+        _stream.Write(utf8Value);
+    }
+
+    /// <summary>
+    /// Asynchronously writes pre-encoded UTF-8 bytes directly to the underlying stream, bypassing character encoding.
+    /// </summary>
+    /// <param name="utf8Value">The UTF-8 encoded bytes to write.</param>
+    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+    /// <returns>A task that represents the asynchronous write operation.</returns>
+    /// <remarks>
+    /// This method flushes any pending character data to maintain correct write ordering,
+    /// then writes the raw bytes directly to the stream. The writer's <see cref="Encoding"/>
+    /// must be <see cref="System.Text.Encoding.UTF8"/> or a <see cref="UTF8Encoding"/>; otherwise
+    /// an <see cref="InvalidOperationException"/> is thrown.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">
+    /// The writer's encoding is not UTF-8.
+    /// </exception>
+    [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")]
+    public Task WriteUtf8Async(ReadOnlyMemory<byte> utf8Value, CancellationToken cancellationToken = default)
+    {
+        if (_disposed)
+        {
+            return GetObjectDisposedTask();
+        }
+
+        ThrowIfNotUtf8Encoding();
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return Task.FromCanceled(cancellationToken);
+        }
+
+        if (utf8Value.IsEmpty)
+        {
+            return Task.CompletedTask;
+        }
+
+        return WriteUtf8AsyncCore(utf8Value, cancellationToken);
+    }
+
+    private async Task WriteUtf8AsyncCore(ReadOnlyMemory<byte> utf8Value, CancellationToken cancellationToken)
+    {
+        // Flush pending char data with encoder finalization to maintain write ordering
+        await FlushInternalAsync(flushEncoder: true);
+
+        // Write raw bytes directly to stream
+        await _stream.WriteAsync(utf8Value, cancellationToken);
+    }
+
     /// <inheritdoc/>
     public override void Flush()
     {
@@ -677,5 +754,13 @@ public class HttpResponseStreamWriter : TextWriter
     private void ThrowIfDisposed()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+    }
+
+    private void ThrowIfNotUtf8Encoding()
+    {
+        if (Encoding is not UTF8Encoding)
+        {
+            throw new InvalidOperationException($"WriteUtf8 requires a UTF-8 encoding, but the writer's encoding is '{Encoding.WebName}'.");
+        }
     }
 }

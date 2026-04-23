@@ -916,4 +916,141 @@ public class HttpResponseStreamWriterTest
                 await httpResponseStreamWriter.FlushAsync();
             })};
     }
+
+    [Fact]
+    public void WriteUtf8_WritesBytesDirectlyToStream()
+    {
+        var stream = new MemoryStream();
+        var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+        var utf8Bytes = "<h1>Hello World</h1>"u8;
+
+        writer.WriteUtf8(utf8Bytes);
+        writer.Flush();
+
+        Assert.Equal(utf8Bytes.ToArray(), stream.ToArray());
+    }
+
+    [Fact]
+    public async Task WriteUtf8Async_WritesBytesDirectlyToStream()
+    {
+        var stream = new MemoryStream();
+        var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+        var utf8Bytes = "<h1>Hello World</h1>"u8.ToArray();
+
+        await writer.WriteUtf8Async(utf8Bytes);
+        await writer.FlushAsync();
+
+        Assert.Equal(utf8Bytes, stream.ToArray());
+    }
+
+    [Fact]
+    public void WriteUtf8_FlushesCharBufferFirst_MaintainsOrdering()
+    {
+        var stream = new MemoryStream();
+        var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+
+        writer.Write("Hello ");
+        writer.WriteUtf8("<b>World</b>"u8);
+        writer.Flush();
+
+        var output = Encoding.UTF8.GetString(stream.ToArray());
+        Assert.Equal("Hello <b>World</b>", output);
+    }
+
+    [Fact]
+    public async Task WriteUtf8Async_FlushesCharBufferFirst_MaintainsOrdering()
+    {
+        var stream = new MemoryStream();
+        var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+
+        await writer.WriteAsync("Hello ");
+        await writer.WriteUtf8Async("<b>World</b>"u8.ToArray());
+        await writer.FlushAsync();
+
+        var output = Encoding.UTF8.GetString(stream.ToArray());
+        Assert.Equal("Hello <b>World</b>", output);
+    }
+
+    [Fact]
+    public void WriteUtf8_MixedCharsAndBytes_InterleavedCorrectly()
+    {
+        var stream = new MemoryStream();
+        var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+
+        writer.Write("<html>");
+        writer.WriteUtf8("<head>"u8);
+        writer.Write("<title>Test</title>");
+        writer.WriteUtf8("</head>"u8);
+        writer.Write("<body></body></html>");
+        writer.Flush();
+
+        var output = Encoding.UTF8.GetString(stream.ToArray());
+        Assert.Equal("<html><head><title>Test</title></head><body></body></html>", output);
+    }
+
+    [Fact]
+    public void WriteUtf8_WithEmptySpan_DoesNothing()
+    {
+        var stream = new MemoryStream();
+        var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+
+        writer.WriteUtf8(ReadOnlySpan<byte>.Empty);
+        writer.Flush();
+
+        Assert.Empty(stream.ToArray());
+    }
+
+    [Fact]
+    public void WriteUtf8_ThrowsForNonUtf8Encoding()
+    {
+        var stream = new MemoryStream();
+        var writer = new HttpResponseStreamWriter(stream, Encoding.Unicode);
+
+        Assert.Throws<InvalidOperationException>(() => writer.WriteUtf8("<p>test</p>"u8));
+    }
+
+    [Fact]
+    public async Task WriteUtf8Async_ThrowsForNonUtf8Encoding()
+    {
+        var stream = new MemoryStream();
+        var writer = new HttpResponseStreamWriter(stream, Encoding.Unicode);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => writer.WriteUtf8Async("<p>test</p>"u8.ToArray()));
+    }
+
+    [Fact]
+    public void WriteUtf8_ThrowsWhenDisposed()
+    {
+        var stream = new MemoryStream();
+        var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+        writer.Dispose();
+
+        Assert.Throws<ObjectDisposedException>(() => writer.WriteUtf8("<p>test</p>"u8));
+    }
+
+    [Fact]
+    public async Task WriteUtf8Async_ThrowsWhenDisposed()
+    {
+        var stream = new MemoryStream();
+        var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+        writer.Dispose();
+
+        await Assert.ThrowsAsync<ObjectDisposedException>(
+            () => writer.WriteUtf8Async("<p>test</p>"u8.ToArray()));
+    }
+
+    [Fact]
+    public void WriteUtf8_BytesNotReEncoded()
+    {
+        // Verify the bytes go to the stream byte-for-byte without re-encoding
+        var stream = new MemoryStream();
+        var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
+        var originalBytes = "Héllo Wörld — 日本語"u8.ToArray();
+
+        writer.WriteUtf8(originalBytes);
+        writer.Flush();
+
+        Assert.Equal(originalBytes, stream.ToArray());
+    }
 }

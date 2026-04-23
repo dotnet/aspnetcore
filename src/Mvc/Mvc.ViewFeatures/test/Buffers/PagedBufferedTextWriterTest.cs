@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 
@@ -348,5 +349,79 @@ public class PagedBufferedTextWriterTest
         {
             Returned.Add(buffer);
         }
+    }
+
+    [Fact]
+    public void WriteUtf8_WritesBytesDirectlyToInnerWriter()
+    {
+        var stream = new MemoryStream();
+        var inner = new HttpResponseStreamWriter(stream, System.Text.Encoding.UTF8);
+        var writer = new PagedBufferedTextWriter(new TestArrayPool(), inner);
+
+        writer.WriteUtf8("<h1>Hello</h1>"u8);
+        inner.Flush();
+
+        Assert.Equal("<h1>Hello</h1>", System.Text.Encoding.UTF8.GetString(stream.ToArray()));
+    }
+
+    [Fact]
+    public async Task WriteUtf8Async_WritesBytesDirectlyToInnerWriter()
+    {
+        var stream = new MemoryStream();
+        var inner = new HttpResponseStreamWriter(stream, System.Text.Encoding.UTF8);
+        var writer = new PagedBufferedTextWriter(new TestArrayPool(), inner);
+
+        await writer.WriteUtf8Async("<h1>Hello</h1>"u8.ToArray());
+        await inner.FlushAsync();
+
+        Assert.Equal("<h1>Hello</h1>", System.Text.Encoding.UTF8.GetString(stream.ToArray()));
+    }
+
+    [Fact]
+    public async Task WriteUtf8Async_FlushesBufferedCharsFirst_MaintainsOrdering()
+    {
+        var stream = new MemoryStream();
+        var inner = new HttpResponseStreamWriter(stream, System.Text.Encoding.UTF8);
+        var writer = new PagedBufferedTextWriter(new TestArrayPool(), inner);
+
+        writer.Write("Hello ");
+        await writer.WriteUtf8Async("<b>World</b>"u8.ToArray());
+        await writer.FlushAsync();
+        await inner.FlushAsync();
+
+        var output = System.Text.Encoding.UTF8.GetString(stream.ToArray());
+        Assert.Equal("Hello <b>World</b>", output);
+    }
+
+    [Fact]
+    public async Task WriteUtf8Async_MixedCharsAndBytes_InterleavedCorrectly()
+    {
+        var stream = new MemoryStream();
+        var inner = new HttpResponseStreamWriter(stream, System.Text.Encoding.UTF8);
+        var writer = new PagedBufferedTextWriter(new TestArrayPool(), inner);
+
+        writer.Write("<html>");
+        await writer.WriteUtf8Async("<head>"u8.ToArray());
+        writer.Write("<title>T</title>");
+        await writer.WriteUtf8Async("</head>"u8.ToArray());
+        writer.Write("<body></body></html>");
+        await writer.FlushAsync();
+        await inner.FlushAsync();
+
+        var output = System.Text.Encoding.UTF8.GetString(stream.ToArray());
+        Assert.Equal("<html><head><title>T</title></head><body></body></html>", output);
+    }
+
+    [Fact]
+    public async Task WriteUtf8Async_FallsBackToString_WhenInnerIsNotHttpResponseStreamWriter()
+    {
+        var inner = new StringWriter();
+        var writer = new PagedBufferedTextWriter(new TestArrayPool(), inner);
+
+        writer.Write("prefix ");
+        await writer.WriteUtf8Async("<p>test</p>"u8.ToArray());
+        await writer.FlushAsync();
+
+        Assert.Equal("prefix <p>test</p>", inner.ToString());
     }
 }

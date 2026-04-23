@@ -4,6 +4,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Html;
@@ -469,6 +470,38 @@ public abstract class RazorPageBase : IRazorPage
         if (!string.IsNullOrEmpty(value))
         {
             Output.Write(value);
+        }
+    }
+
+    /// <summary>
+    /// Writes the specified UTF-8 encoded <paramref name="utf8Value"/> without HTML encoding to <see cref="Output"/>.
+    /// </summary>
+    /// <param name="utf8Value">The UTF-8 encoded HTML literal bytes to write.</param>
+    /// <remarks>
+    /// This overload is used by the Razor compiler when emitting HTML literals as UTF-8 byte arrays
+    /// (C# <c>"..."u8</c> literals) instead of regular string literals, enabling more efficient
+    /// end-to-end UTF-8 output when the response encoding is UTF-8.
+    /// </remarks>
+    public virtual void WriteLiteral(ReadOnlyMemory<byte> utf8Value)
+    {
+        if (utf8Value.Length == 0)
+        {
+            return;
+        }
+
+        var writer = Output;
+
+        if (writer.Encoding is UTF8Encoding && writer is ViewBufferTextWriter viewBufferWriter)
+        {
+            // When the output encoding is UTF-8 and we're writing to a ViewBuffer,
+            // preserve the raw UTF-8 bytes through the buffer pipeline.
+            viewBufferWriter.Buffer.AppendHtml(new Utf8HtmlLiteralContent(utf8Value));
+        }
+        else
+        {
+            // For non-UTF-8 encodings or non-buffered writers, decode to string
+            // and use the existing string-based write path.
+            writer.Write(Encoding.UTF8.GetString(utf8Value.Span));
         }
     }
 

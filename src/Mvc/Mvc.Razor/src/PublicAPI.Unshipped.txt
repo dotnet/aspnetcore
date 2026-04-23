@@ -1,1 +1,2 @@
 #nullable enable
+virtual Microsoft.AspNetCore.Mvc.Razor.RazorPageBase.WriteLiteral(System.ReadOnlyMemory<byte> utf8Value) -> void

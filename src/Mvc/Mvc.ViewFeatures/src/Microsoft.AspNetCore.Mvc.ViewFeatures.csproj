@@ -58,6 +58,7 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.TagHelpers.Test" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Views.TestCommon" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.ViewFeatures.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Mvc.Microbenchmarks" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
   </ItemGroup>
 </Project>

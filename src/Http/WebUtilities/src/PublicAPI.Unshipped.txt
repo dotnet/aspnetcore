@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.WebUtilities.HttpResponseStreamWriter.WriteUtf8(System.ReadOnlySpan<byte> utf8Value) -> void
+Microsoft.AspNetCore.WebUtilities.HttpResponseStreamWriter.WriteUtf8Async(System.ReadOnlyMemory<byte> utf8Value, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!

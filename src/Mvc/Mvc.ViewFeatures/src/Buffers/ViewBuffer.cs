@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 
@@ -193,6 +194,14 @@ internal sealed class ViewBuffer : IHtmlContentBuilder
                     continue;
                 }
 
+                // UTF-8 literals use the direct byte path when possible,
+                // avoiding string conversion entirely.
+                if (value.Value is Utf8HtmlLiteralContent utf8Literal)
+                {
+                    WriteUtf8LiteralTo(writer, utf8Literal, encoder);
+                    continue;
+                }
+
                 if (value.Value is IHtmlContent valueAsHtmlContent)
                 {
                     valueAsHtmlContent.WriteTo(writer, encoder);
@@ -232,6 +241,14 @@ internal sealed class ViewBuffer : IHtmlContentBuilder
                     continue;
                 }
 
+                // UTF-8 literals use the direct byte path when possible,
+                // avoiding string conversion entirely. No per-item flush needed.
+                if (value.Value is Utf8HtmlLiteralContent utf8Literal)
+                {
+                    await WriteUtf8LiteralToAsync(writer, utf8Literal, encoder);
+                    continue;
+                }
+
                 if (value.Value is IHtmlAsyncContent valueAsHtmlAsyncContent)
                 {
                     await valueAsHtmlAsyncContent.WriteToAsync(writer);
@@ -247,6 +264,40 @@ internal sealed class ViewBuffer : IHtmlContentBuilder
                 }
             }
         }
+    }
+
+    private static void WriteUtf8LiteralTo(TextWriter writer, Utf8HtmlLiteralContent utf8Literal, HtmlEncoder encoder)
+    {
+        if (writer is PagedBufferedTextWriter pagedWriter)
+        {
+            pagedWriter.WriteUtf8(utf8Literal.Utf8Content.Span);
+        }
+        else if (writer is HttpResponseStreamWriter responseWriter)
+        {
+            responseWriter.WriteUtf8(utf8Literal.Utf8Content.Span);
+        }
+        else
+        {
+            // Fallback: decode to string for writers that don't support direct UTF-8
+            utf8Literal.WriteTo(writer, encoder);
+        }
+    }
+
+    private static Task WriteUtf8LiteralToAsync(TextWriter writer, Utf8HtmlLiteralContent utf8Literal, HtmlEncoder encoder)
+    {
+        if (writer is PagedBufferedTextWriter pagedWriter)
+        {
+            return pagedWriter.WriteUtf8Async(utf8Literal.Utf8Content);
+        }
+
+        if (writer is HttpResponseStreamWriter responseWriter)
+        {
+            return responseWriter.WriteUtf8Async(utf8Literal.Utf8Content);
+        }
+
+        // Fallback: decode to string for writers that don't support direct UTF-8
+        utf8Literal.WriteTo(writer, encoder);
+        return Task.CompletedTask;
     }
 
     private string DebuggerToString() => _name;

@@ -1,8 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Globalization;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.WebEncoders.Testing;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
@@ -508,5 +510,181 @@ public class ViewBufferTest
             item => Assert.Null(item.Value),
             item => Assert.Null(item.Value),
             item => Assert.Null(item.Value));
+    }
+
+    [Fact]
+    public void AppendHtml_Utf8HtmlLiteralContent_AddsToBuffer()
+    {
+        var buffer = new ViewBuffer(new TestViewBufferScope(), "some-name", pageSize: 32);
+        var utf8Content = new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<h1>Hello</h1>"));
+
+        buffer.AppendHtml(utf8Content);
+
+        Assert.Equal(1, buffer.Count);
+        var page = buffer[0];
+        Assert.Equal(1, page.Count);
+        Assert.IsType<Utf8HtmlLiteralContent>(page.Buffer[0].Value);
+    }
+
+    [Fact]
+    public void WriteTo_WithUtf8HtmlLiteralContent_WritesDecodedContent()
+    {
+        var buffer = new ViewBuffer(new TestViewBufferScope(), "some-name", pageSize: 32);
+        var writer = new StringWriter();
+
+        buffer.AppendHtml("prefix ");
+        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<h1>UTF-8</h1>")));
+        buffer.AppendHtml(" suffix");
+        buffer.WriteTo(writer, new HtmlTestEncoder());
+
+        Assert.Equal("prefix <h1>UTF-8</h1> suffix", writer.ToString());
+    }
+
+    [Fact]
+    public async Task WriteToAsync_WithUtf8HtmlLiteralContent_WritesDecodedContent()
+    {
+        var buffer = new ViewBuffer(new TestViewBufferScope(), "some-name", pageSize: 32);
+        var writer = new StringWriter();
+
+        buffer.AppendHtml("prefix ");
+        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<h1>UTF-8</h1>")));
+        buffer.AppendHtml(" suffix");
+
+        await buffer.WriteToAsync(writer, new HtmlTestEncoder());
+
+        Assert.Equal("prefix <h1>UTF-8</h1> suffix", writer.ToString());
+    }
+
+    [Fact]
+    public void WriteTo_MixedStringAndUtf8Content_WritesCorrectly()
+    {
+        var buffer = new ViewBuffer(new TestViewBufferScope(), "some-name", pageSize: 32);
+        var writer = new StringWriter();
+
+        buffer.AppendHtml("<html>");
+        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<head><title>Test</title></head>")));
+        buffer.AppendHtml("<body>");
+        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<h1>Hello</h1>")));
+        buffer.AppendHtml("</body></html>");
+
+        buffer.WriteTo(writer, new HtmlTestEncoder());
+
+        Assert.Equal("<html><head><title>Test</title></head><body><h1>Hello</h1></body></html>", writer.ToString());
+    }
+
+    [Fact]
+    public async Task WriteToAsync_MixedStringAndUtf8Content_WritesCorrectly()
+    {
+        var buffer = new ViewBuffer(new TestViewBufferScope(), "some-name", pageSize: 32);
+        var writer = new StringWriter();
+
+        buffer.AppendHtml("<html>");
+        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<head><title>Test</title></head>")));
+        buffer.AppendHtml("<body>");
+        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<h1>Hello</h1>")));
+        buffer.AppendHtml("</body></html>");
+
+        await buffer.WriteToAsync(writer, new HtmlTestEncoder());
+
+        Assert.Equal("<html><head><title>Test</title></head><body><h1>Hello</h1></body></html>", writer.ToString());
+    }
+
+    [Fact]
+    public async Task WriteToAsync_Utf8HtmlLiteralContent_DoesNotFlushPerItem()
+    {
+        var buffer = new ViewBuffer(new TestViewBufferScope(), "some-name", pageSize: 32);
+        var flushTrackingWriter = new FlushTrackingWriter();
+
+        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<p>One</p>")));
+        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<p>Two</p>")));
+        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<p>Three</p>")));
+
+        await buffer.WriteToAsync(flushTrackingWriter, new HtmlTestEncoder());
+
+        // UTF-8 literals should NOT trigger per-item flushes like generic IHtmlContent does
+        Assert.Equal(0, flushTrackingWriter.FlushCount);
+        Assert.Equal("<p>One</p><p>Two</p><p>Three</p>", flushTrackingWriter.ToString());
+    }
+
+    [Fact]
+    public void WriteTo_Utf8Literal_WritesDirectlyToStream_NoStringConversion()
+    {
+        var buffer = new ViewBuffer(new TestViewBufferScope(), "some-name", pageSize: 32);
+        var stream = new MemoryStream();
+        var responseWriter = new HttpResponseStreamWriter(stream, System.Text.Encoding.UTF8);
+        var pagedWriter = new PagedBufferedTextWriter(ArrayPool<char>.Shared, responseWriter);
+
+        var utf8Bytes = "<h1>Direct UTF-8</h1>"u8.ToArray();
+        buffer.AppendHtml(new Utf8HtmlLiteralContent(utf8Bytes));
+
+        buffer.WriteTo(pagedWriter, new HtmlTestEncoder());
+        responseWriter.Flush();
+
+        // Verify the exact bytes made it to the stream
+        Assert.Equal(utf8Bytes, stream.ToArray());
+    }
+
+    [Fact]
+    public async Task WriteToAsync_Utf8Literal_WritesDirectlyToStream_NoStringConversion()
+    {
+        var buffer = new ViewBuffer(new TestViewBufferScope(), "some-name", pageSize: 32);
+        var stream = new MemoryStream();
+        var responseWriter = new HttpResponseStreamWriter(stream, System.Text.Encoding.UTF8);
+        var pagedWriter = new PagedBufferedTextWriter(ArrayPool<char>.Shared, responseWriter);
+
+        var utf8Bytes = "<h1>Direct UTF-8</h1>"u8.ToArray();
+        buffer.AppendHtml(new Utf8HtmlLiteralContent(utf8Bytes));
+
+        await buffer.WriteToAsync(pagedWriter, new HtmlTestEncoder());
+        await pagedWriter.FlushAsync();
+        await responseWriter.FlushAsync();
+
+        // Verify the exact bytes made it to the stream
+        Assert.Equal(utf8Bytes, stream.ToArray());
+    }
+
+    [Fact]
+    public async Task WriteToAsync_MixedStringAndUtf8_EndToEnd_MaintainsOrdering()
+    {
+        var buffer = new ViewBuffer(new TestViewBufferScope(), "some-name", pageSize: 32);
+        var stream = new MemoryStream();
+        var responseWriter = new HttpResponseStreamWriter(stream, System.Text.Encoding.UTF8);
+        var pagedWriter = new PagedBufferedTextWriter(ArrayPool<char>.Shared, responseWriter);
+
+        buffer.AppendHtml("<html>");
+        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("<head>")));
+        buffer.AppendHtml("<title>Test</title>");
+        buffer.AppendHtml(new Utf8HtmlLiteralContent(System.Text.Encoding.UTF8.GetBytes("</head>")));
+        buffer.AppendHtml("<body></body></html>");
+
+        await buffer.WriteToAsync(pagedWriter, new HtmlTestEncoder());
+        await pagedWriter.FlushAsync();
+        await responseWriter.FlushAsync();
+
+        var output = System.Text.Encoding.UTF8.GetString(stream.ToArray());
+        Assert.Equal("<html><head><title>Test</title></head><body></body></html>", output);
+    }
+
+    private class FlushTrackingWriter : StringWriter
+    {
+        public int FlushCount { get; private set; }
+
+        public override void Flush()
+        {
+            FlushCount++;
+            base.Flush();
+        }
+
+        public override Task FlushAsync()
+        {
+            FlushCount++;
+            return base.FlushAsync();
+        }
+
+        public override Task FlushAsync(CancellationToken cancellationToken)
+        {
+            FlushCount++;
+            return base.FlushAsync(cancellationToken);
+        }
     }
 }

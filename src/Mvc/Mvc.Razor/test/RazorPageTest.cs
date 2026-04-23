@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
@@ -1334,6 +1335,85 @@ public class RazorPageTest
         // Assert
         Assert.Equal("Not buffered", defaultWriter.ToString());
         Assert.Equal("This should be buffered", bufferWriter.ToString());
+    }
+
+    [Fact]
+    public void WriteLiteral_Utf8_EmptyValue_DoesNothing()
+    {
+        var page = CreatePage(p => { });
+        var buffer = new ViewBuffer(new TestViewBufferScope(), string.Empty, pageSize: 32);
+        var writer = new ViewBufferTextWriter(buffer, Encoding.UTF8);
+        page.ViewContext.Writer = writer;
+
+        page.WriteLiteral(ReadOnlyMemory<byte>.Empty);
+
+        Assert.Equal(0, buffer.Count);
+    }
+
+    [Fact]
+    public void WriteLiteral_Utf8_WithUtf8Encoding_BuffersAsUtf8HtmlLiteralContent()
+    {
+        var page = CreatePage(p => { });
+        var buffer = new ViewBuffer(new TestViewBufferScope(), string.Empty, pageSize: 32);
+        var writer = new ViewBufferTextWriter(buffer, Encoding.UTF8);
+        page.ViewContext.Writer = writer;
+
+        var utf8Bytes = Encoding.UTF8.GetBytes("<h1>Hello World</h1>");
+
+        page.WriteLiteral(new ReadOnlyMemory<byte>(utf8Bytes));
+
+        Assert.Equal(1, buffer.Count);
+        var page0 = buffer[0];
+        Assert.Equal(1, page0.Count);
+        var content = Assert.IsType<Utf8HtmlLiteralContent>(page0.Buffer[0].Value);
+        Assert.True(utf8Bytes.AsSpan().SequenceEqual(content.Utf8Content.Span));
+    }
+
+    [Fact]
+    public void WriteLiteral_Utf8_WithUtf8Encoding_ProducesCorrectOutput()
+    {
+        var page = CreatePage(p => { });
+        var buffer = new ViewBuffer(new TestViewBufferScope(), string.Empty, pageSize: 32);
+        var writer = new ViewBufferTextWriter(buffer, Encoding.UTF8);
+        page.ViewContext.Writer = writer;
+
+        page.WriteLiteral(new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes("<h1>Hello</h1>")));
+
+        Assert.Equal("<h1>Hello</h1>", HtmlContentUtilities.HtmlContentToString(buffer, HtmlEncoder.Default));
+    }
+
+    [Fact]
+    public void WriteLiteral_Utf8_WithNonUtf8Encoding_WritesAsString()
+    {
+        var page = CreatePage(p => { });
+        var defaultWriter = new StringWriter(new StringBuilder(), CultureInfo.InvariantCulture);
+        page.ViewContext.Writer = defaultWriter;
+
+        var utf8Bytes = Encoding.UTF8.GetBytes("<p>Hello</p>");
+
+        page.WriteLiteral(new ReadOnlyMemory<byte>(utf8Bytes));
+
+        // StringWriter uses Unicode encoding, not UTF-8, so WriteLiteral should
+        // decode to string and write directly
+        Assert.Equal("<p>Hello</p>", defaultWriter.ToString());
+    }
+
+    [Fact]
+    public void WriteLiteral_Utf8_MixedWithStringLiterals_ProducesCorrectOutput()
+    {
+        var page = CreatePage(p => { });
+        var buffer = new ViewBuffer(new TestViewBufferScope(), string.Empty, pageSize: 32);
+        var writer = new ViewBufferTextWriter(buffer, Encoding.UTF8);
+        page.ViewContext.Writer = writer;
+
+        page.WriteLiteral("<html>");
+        page.WriteLiteral(new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes("<body>")));
+        page.WriteLiteral("<h1>Title</h1>");
+        page.WriteLiteral(new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes("</body>")));
+        page.WriteLiteral("</html>");
+
+        Assert.Equal("<html><body><h1>Title</h1></body></html>",
+            HtmlContentUtilities.HtmlContentToString(buffer, HtmlEncoder.Default));
     }
 
     [Fact]
