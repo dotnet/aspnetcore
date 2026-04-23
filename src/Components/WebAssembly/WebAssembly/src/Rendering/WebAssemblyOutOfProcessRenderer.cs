@@ -36,7 +36,7 @@ internal sealed partial class WebAssemblyOutOfProcessRenderer : WebAssemblyRende
         try
         {
             using var memoryStream = new ArrayBuilderMemoryStream(arrayBuilder);
-            using (var renderBatchWriter = new RenderBatchWriter(memoryStream, leaveOpen: false))
+            using (var renderBatchWriter = new RenderBatchWriter(memoryStream, leaveOpen: false, useUtf16StringTable: true))
             {
                 renderBatchWriter.Write(in batch);
             }

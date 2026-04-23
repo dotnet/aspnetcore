@@ -3,6 +3,7 @@
 
 #nullable disable warnings
 
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Components.RenderTree;
 
@@ -37,15 +38,27 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 /// </summary>
 internal sealed class RenderBatchWriter : IDisposable
 {
+    // Format marker written after the offset table so JS can detect the string encoding.
+    // 0 = UTF-8 (default, legacy), 1 = UTF-16LE.
+    internal const byte StringTableFormatUtf8 = 0;
+    internal const byte StringTableFormatUtf16 = 1;
+
     private readonly ArrayBuilder<string> _strings;
     private readonly Dictionary<string, int> _deduplicatedStringIndices;
     private readonly BinaryWriter _binaryWriter;
+    private readonly bool _useUtf16StringTable;
 
     public RenderBatchWriter(Stream output, bool leaveOpen)
+        : this(output, leaveOpen, useUtf16StringTable: false)
+    {
+    }
+
+    public RenderBatchWriter(Stream output, bool leaveOpen, bool useUtf16StringTable)
     {
         _strings = new ArrayBuilder<string>();
         _deduplicatedStringIndices = new Dictionary<string, int>();
         _binaryWriter = new BinaryWriter(output, Encoding.UTF8, leaveOpen);
+        _useUtf16StringTable = useUtf16StringTable;
     }
 
     public void Write(in RenderBatch renderBatch)
@@ -54,7 +67,7 @@ internal sealed class RenderBatchWriter : IDisposable
         var referenceFramesOffset = Write(renderBatch.ReferenceFrames);
         var disposedComponentIdsOffset = Write(renderBatch.DisposedComponentIDs);
         var disposedEventHandlerIdsOffset = Write(renderBatch.DisposedEventHandlerIDs);
-        var stringTableOffset = WriteStringTable();
+        var stringTableOffset = _useUtf16StringTable ? WriteStringTableUtf16() : WriteStringTable();
 
         _binaryWriter.Write(updatedComponentsOffset);
         _binaryWriter.Write(referenceFramesOffset);
@@ -272,6 +285,38 @@ internal sealed class RenderBatchWriter : IDisposable
             var stringValue = _strings.Buffer[i];
             locations[i] = (int)_binaryWriter.BaseStream.Position;
             _binaryWriter.Write(stringValue);
+        }
+
+        // Now write the locations
+        var locationsStartPos = (int)_binaryWriter.BaseStream.Position;
+        for (var i = 0; i < stringsCount; i++)
+        {
+            _binaryWriter.Write(locations[i]);
+        }
+
+        return locationsStartPos;
+    }
+
+    int WriteStringTableUtf16()
+    {
+        // UTF-16LE string table: each entry is [int32 charCount][UTF-16LE chars].
+        // This avoids UTF-8 encode on C# side and UTF-8 decode on JS side,
+        // since both C# and JS strings are natively UTF-16.
+        var stringsCount = _strings.Count;
+        var locations = new int[stringsCount];
+
+        for (var i = 0; i < stringsCount; i++)
+        {
+            var stringValue = _strings.Buffer[i];
+            locations[i] = (int)_binaryWriter.BaseStream.Position;
+
+            // Write char count (not byte count) as int32
+            _binaryWriter.Write(stringValue.Length);
+
+            // Write UTF-16LE chars — zero-cost reinterpret via MemoryMarshal
+            var charSpan = stringValue.AsSpan();
+            var byteSpan = MemoryMarshal.AsBytes(charSpan);
+            _binaryWriter.BaseStream.Write(byteSpan);
         }
 
         // Now write the locations

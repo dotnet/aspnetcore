@@ -13,8 +13,10 @@ const editsEntryLength = 16; // 4 ints
 const stringTableEntryLength = 4; // Each is an int32 giving the string data location, or -1 for null
 
 export class OutOfProcessRenderBatch implements RenderBatch {
-  constructor(private batchData: Uint8Array) {
-    const stringReader = new OutOfProcessStringReader(batchData);
+  constructor(private batchData: Uint8Array, useUtf16StringTable?: boolean) {
+    const stringReader = useUtf16StringTable
+      ? new OutOfProcessStringReaderUtf16(batchData)
+      : new OutOfProcessStringReader(batchData);
 
     this.arrayRangeReader = new OutOfProcessArrayRangeReader(batchData);
     this.arrayBuilderSegmentReader = new OutOfProcessArrayBuilderSegmentReader(batchData);
@@ -192,6 +194,35 @@ class OutOfProcessStringReader {
         numUtf8Bytes
       );
       return decodeUtf8(utf8Data);
+    }
+  }
+}
+
+class OutOfProcessStringReaderUtf16 {
+  private stringTableStartIndex: number;
+  private dataView: DataView;
+
+  constructor(private batchDataUint8: Uint8Array) {
+    // Final int gives start position of the string table (same layout as UTF-8 variant)
+    this.stringTableStartIndex = readInt32LE(batchDataUint8, batchDataUint8.length - 4);
+    this.dataView = new DataView(batchDataUint8.buffer, batchDataUint8.byteOffset, batchDataUint8.byteLength);
+  }
+
+  readString(index: number): string | null {
+    if (index === -1) { // Special value encodes 'null'
+      return null;
+    } else {
+      const stringTableEntryPos = readInt32LE(this.batchDataUint8, this.stringTableStartIndex + index * stringTableEntryLength);
+
+      // UTF-16LE format: [int32 charCount][UTF-16LE chars]
+      // Both C# and JS strings are natively UTF-16, so this avoids two transcoding passes.
+      const charCount = readInt32LE(this.batchDataUint8, stringTableEntryPos);
+      const charsStart = stringTableEntryPos + 4;
+      const uint16Array = new Uint16Array(charCount);
+      for (let i = 0; i < charCount; i++) {
+        uint16Array[i] = this.dataView.getUint16(charsStart + i * 2, true); // little-endian
+      }
+      return String.fromCharCode(...uint16Array);
     }
   }
 }
