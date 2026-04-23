@@ -11,6 +11,8 @@ using System.Runtime.CompilerServices;
 namespace Microsoft.AspNetCore.Components.WebView;
 #elif COMPONENTS_SERVER
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
+#elif COMPONENTS_WEBASSEMBLY
+namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 #elif JS_INTEROP
 namespace Microsoft.JSInterop.Infrastructure;
 #else

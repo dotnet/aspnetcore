@@ -1,11 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable warnings
+
 using System.Text;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 #if BLAZOR_WEBVIEW
 namespace Microsoft.AspNetCore.Components.WebView;
+#elif COMPONENTS_WEBASSEMBLY
+namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 #else
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 #endif

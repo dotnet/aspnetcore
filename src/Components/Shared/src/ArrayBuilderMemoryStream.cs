@@ -5,6 +5,8 @@ using System.Runtime.CompilerServices;
 
 #if BLAZOR_WEBVIEW
 namespace Microsoft.AspNetCore.Components.WebView;
+#elif COMPONENTS_WEBASSEMBLY
+namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 #else
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 #endif
