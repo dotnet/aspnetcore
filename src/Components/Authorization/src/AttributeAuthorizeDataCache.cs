@@ -11,7 +11,7 @@ internal static class AttributeAuthorizeDataCache
 {
     static AttributeAuthorizeDataCache()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += ClearCache;
         }

@@ -24,7 +24,7 @@ internal sealed class EndpointComponentState : ComponentState
 
     static EndpointComponentState()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += _streamRenderingAttributeByComponentType.Clear;
             HotReloadManager.Default.OnDeltaApplied += _treePositionKeyCache.Clear;

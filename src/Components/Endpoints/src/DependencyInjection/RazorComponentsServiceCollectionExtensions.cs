@@ -72,10 +72,12 @@ public static class RazorComponentsServiceCollectionExtensions
         services.AddSupplyValueFromQueryProvider();
         services.AddSupplyValueFromPersistentComponentStateProvider();
         services.TryAddCascadingValue(sp => sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext);
-        services.TryAddScoped<WebAssemblySettingsEmitter>();
         services.TryAddScoped<ResourcePreloadService>();
         services.AddTempData();
         services.TryAddSingleton<CacheBoundaryStore, MemoryCacheBoundaryStore>();
+        services.TryAddScoped<TempDataCascadingValueSupplier>();
+        services.TryAddCascadingValueSupplier<SupplyParameterFromTempDataAttribute>(
+            sp => sp.GetRequiredService<TempDataCascadingValueSupplier>().CreateSubscription);
 
         services.TryAddScoped<ResourceCollectionProvider>();
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<ResourceCollectionProvider>(services, RenderMode.InteractiveWebAssembly);

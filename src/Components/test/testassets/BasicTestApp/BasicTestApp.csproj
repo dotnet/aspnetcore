@@ -20,6 +20,13 @@
     <!-- Avoid spending time brotli compression publish output.-->
     <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(TestTrimmedOrMultithreadingApps)' != 'true'">
+    <!-- Temporarily disabled to test hypothesis that MetadataUpdaterSupport=true (from PR #65903)
+         causes intermittent MIME type failures for _framework/dotnet.js in E2E tests.
+         See: https://github.com/dotnet/aspnetcore/pull/65903 -->
+    <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+  </PropertyGroup>
+
 
   <!--
     Allow publishing to be skipped when building via Microsoft.AspNetCore.Components.E2ETests.csproj.
