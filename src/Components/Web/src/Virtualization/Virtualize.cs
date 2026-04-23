@@ -84,6 +84,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     // non-zero when the rendered window shifted independently of item indices.
     private int? _pendingAnchorIndexShift;
 
+    private bool IsAnchorRestorePending => _pendingAnchorIndexShift is not null;
+
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -292,9 +294,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
             // If a mutation captured an anchor snapshot before render,
             // restore it now to keep the same row at the same viewport offset.
-            if (_pendingAnchorIndexShift is not null && !_pendingScrollToBottom)
+            if (IsAnchorRestorePending && !_pendingScrollToBottom)
             {
-                var shift = _pendingAnchorIndexShift.Value;
+                var shift = _pendingAnchorIndexShift!.Value;
                 _pendingAnchorIndexShift = null;
                 await _jsInterop.RestoreAnchorAsync(shift);
             }
@@ -432,6 +434,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
     {
+        if (IsAnchorRestorePending)
+        {
+            return;
+        }
+
         ProcessMeasurements(spacerSeparation);
 
         CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
@@ -447,6 +454,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
     {
+        if (IsAnchorRestorePending)
+        {
+            return;
+        }
+
         var hadNewMeasurements = ProcessMeasurements(spacerSeparation);
 
         CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
