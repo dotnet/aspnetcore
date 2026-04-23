@@ -6,7 +6,6 @@ Microsoft.AspNetCore.Components.Forms.ClientValidation.IClientValidationAdapter.
 Microsoft.AspNetCore.Components.Forms.ClientValidation.IClientValidationService
 Microsoft.AspNetCore.Components.Forms.ClientValidation.IClientValidationService.GetClientValidationAttributes(Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
 Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationContext
-Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationContext.ClientValidationContext() -> void
 Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationContext.ErrorMessage.get -> string!
 Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationContext.MergeAttribute(string! key, string! value) -> void
 Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator.EnableClientValidation.get -> bool
