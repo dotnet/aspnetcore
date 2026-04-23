@@ -41,11 +41,13 @@ export function shouldSkipElement(element: HTMLElement): boolean {
     return true;
   }
 
-  // offsetParent is null for elements that are not rendered (display:none on self or ancestor,
-  // or not connected to the document). This covers CSS-class-based hiding (e.g., Bootstrap's
-  // .d-none) not just inline styles. Note: offsetParent is also null for position:fixed elements,
-  // but those are visible — we check for that case explicitly.
-  if (element.offsetParent === null && getComputedStyle(element).position !== 'fixed') {
+  // Use getComputedStyle for robust visibility detection covering CSS classes, stylesheets,
+  // and inherited styles. Combined with offsetParent to detect inherited display:none.
+  const style = getComputedStyle(element);
+  if (element.offsetParent === null && style.position !== 'fixed' && style.position !== 'sticky') {
+    return true;
+  }
+  if (style.visibility === 'hidden') {
     return true;
   }
 
