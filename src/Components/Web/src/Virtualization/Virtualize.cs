@@ -78,13 +78,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private VirtualizeAnchorMode _lastRenderedAnchorMode;
 
-    // When non-null, OnAfterRenderAsync tells JS to restore the anchor snapshot.
-    // The value is the change in _itemsBefore that JS uses to find the anchor
-    // item in the updated DOM: 0 for prepends (child position unchanged),
-    // non-zero when the rendered window shifted independently of item indices.
-    private int? _pendingAnchorIndexShift;
-
-    private bool IsAnchorRestorePending => _pendingAnchorIndexShift is not null;
+    // When true, OnAfterRenderAsync tells JS to restore the anchor snapshot
+    // so the viewport stays stable after a prepend or append.
+    private bool _pendingAnchorRestore;
 
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
@@ -294,15 +290,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
             // If a mutation captured an anchor snapshot before render,
             // restore it now to keep the same row at the same viewport offset.
-            if (IsAnchorRestorePending && !_pendingScrollToBottom)
+            var shouldRestore = _pendingAnchorRestore && !_pendingScrollToBottom;
+            _pendingAnchorRestore = false;
+
+            if (shouldRestore)
             {
-                var shift = _pendingAnchorIndexShift!.Value;
-                _pendingAnchorIndexShift = null;
-                await _jsInterop.RestoreAnchorAsync(shift);
-            }
-            else
-            {
-                _pendingAnchorIndexShift = null;
+                await _jsInterop.RestoreAnchorAsync();
             }
 
             await _jsInterop.RefreshObserversAsync();
@@ -434,7 +427,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
     {
-        if (IsAnchorRestorePending)
+        if (_pendingAnchorRestore)
         {
             return;
         }
@@ -454,7 +447,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
     {
-        if (IsAnchorRestorePending)
+        if (_pendingAnchorRestore)
         {
             return;
         }
@@ -478,7 +471,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             if ((AnchorMode & VirtualizeAnchorMode.End) != 0)
             {
                 _pendingScrollToBottom = true;
-                _pendingAnchorIndexShift = null;
+                _pendingAnchorRestore = false;
             }
         }
 
@@ -614,9 +607,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                     {
                         result = await AdjustForPrependAsync(countDelta, result.TotalItemCount, cancellationToken);
                     }
-                    else if (IsAppendAtBottom(countDelta, previousItemCount))
+                    else if (ShouldAnchorForAppend(countDelta, previousItemCount))
                     {
-                        _pendingAnchorIndexShift = 0;
+                        _pendingAnchorRestore = true;
                     }
                 }
                 else if (itemsAdded && !isDefaultProvider && ItemKey != null && _previousFirstLoadedItemKey != null)
@@ -631,9 +624,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                         {
                             result = await AdjustForPrependAsync(countDelta, result.TotalItemCount, cancellationToken);
                         }
-                        else if (IsAppendAtBottom(countDelta, previousItemCount))
+                        else if (ShouldAnchorForAppend(countDelta, previousItemCount))
                         {
-                            _pendingAnchorIndexShift = 0;
+                            _pendingAnchorRestore = true;
                         }
                     }
                 }
@@ -692,16 +685,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private async ValueTask<ItemsProviderResult<TItem>> AdjustForPrependAsync(
         int countDelta, int newTotalCount, CancellationToken cancellationToken)
     {
-        if (_itemsBefore > 0)
-        {
-            _itemsBefore = Math.Min(_itemsBefore + countDelta, Math.Max(0, newTotalCount - _visibleItemCapacity));
-        }
-        else
-        {
-            _itemsBefore = Math.Min(countDelta, Math.Max(0, newTotalCount - _visibleItemCapacity));
-        }
-
-        _pendingAnchorIndexShift = 0;
+        _itemsBefore = Math.Min(_itemsBefore + countDelta, Math.Max(0, newTotalCount - _visibleItemCapacity));
+        _pendingAnchorRestore = true;
 
         var adjustedRequest = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
         return await _itemsProvider(adjustedRequest);
@@ -710,7 +695,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     // Items appended at the bottom while viewport is near the end.
     // In non-End modes, restore the anchor so the viewport doesn't
     // chase the new items via spacer redistribution.
-    private bool IsAppendAtBottom(int countDelta, int previousItemCount)
+    private bool ShouldAnchorForAppend(int countDelta, int previousItemCount)
         => countDelta > 0
             && (AnchorMode & VirtualizeAnchorMode.End) == 0
             && _itemsBefore + _visibleItemCapacity >= previousItemCount;

@@ -100,8 +100,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   let wasAtBottom = false;
   // Pending scroll correction after redistribution changes spacer→item heights.
   let pendingScrollCorrection = false;
-  let scrollCorrectionDataIndex: string | null = null;
-  let scrollCorrectionRelTop: number | null = null;
+  let scrollCorrectionItemIndex = 0;
+  let scrollCorrectionOffset = 0;
 
   function reobserveSpacers(): void {
     intersectionObserver.unobserve(spacerBefore);
@@ -254,20 +254,19 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
 
     // Correct drift from spacer→item height differences after redistribution.
-    if (pendingScrollCorrection
-      && scrollCorrectionDataIndex !== null && scrollCorrectionRelTop !== null) {
-      const el = spacerBefore.parentElement?.querySelector(
-        `[data-index="${scrollCorrectionDataIndex}"]`);
-      if (el) {
+    if (pendingScrollCorrection) {
+      let el: Element | null = spacerBefore.nextElementSibling;
+      for (let i = 0; i < scrollCorrectionItemIndex && el && el !== spacerAfter; i++) {
+        el = el.nextElementSibling;
+      }
+      if (el && el !== spacerAfter) {
         pendingScrollCorrection = false;
         const containerTop = scrollContainer ? scrollContainer.getBoundingClientRect().top : 0;
-        const delta = (el.getBoundingClientRect().top - containerTop) - scrollCorrectionRelTop;
+        const delta = (el.getBoundingClientRect().top - containerTop) - scrollCorrectionOffset;
         if (Math.abs(delta) > 1) {
           scrollElement.scrollTop += delta;
           ignoreAnchorScroll = true;
         }
-        scrollCorrectionDataIndex = null;
-        scrollCorrectionRelTop = null;
       }
     }
 
@@ -278,7 +277,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   // Corrects scrollTop after a render that shifted content, using the snapshot
   // saved by updateAnchorSnapshot() during the previous render cycle.
-  function restoreAnchorForShift(indexShift: number): void {
+  function restoreAnchorForShift(): void {
     const snapshot = observersByDotNetObjectId[id].anchorSnapshot;
     if (!snapshot) {
       return;
@@ -289,20 +288,16 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       return;
     }
 
-    // Beginning mode at the very top: let new items appear instead of anchoring.
+    // Beginning mode at the very top: show new items by converging to top.
     if ((anchorMode & 1) && snapshot.scrollTop < 1) {
-      return;
-    }
-
-    // indexShift adjusts the child index for rendered window changes:
-    // 0 for prepends (child position preserved), positive for redistributions.
-    const targetChildIndex = snapshot.childIndex - indexShift;
-    if (targetChildIndex < 0) {
+      convergingToTop = true;
+      scrollElement.scrollTop = 0;
+      startConvergenceObserving();
       return;
     }
 
     let current = spacerBefore.nextElementSibling;
-    for (let i = 0; i < targetChildIndex && current && current !== spacerAfter; i++) {
+    for (let i = 0; i < snapshot.anchorItemIndex && current && current !== spacerAfter; i++) {
       current = current.nextElementSibling;
     }
 
@@ -313,18 +308,15 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     const containerTop = scrollContainer
       ? scrollContainer.getBoundingClientRect().top
       : 0;
-    const newRelTop = current.getBoundingClientRect().top - containerTop;
-    const delta = newRelTop - snapshot.relTop;
+    const newOffset = current.getBoundingClientRect().top - containerTop;
+    const delta = newOffset - snapshot.anchorOffset;
 
     // Suppress spacer IO until next user scroll. Save anchor for drift correction.
     suppressSpacerCallbacks = true;
     ignoreAnchorScroll = true;
     if (Math.abs(delta) > 1) {
-      const dataIndex = current.getAttribute('data-index');
-      if (dataIndex) {
-        scrollCorrectionDataIndex = dataIndex;
-        pendingScrollCorrection = true;
-      }
+      scrollCorrectionItemIndex = snapshot.anchorItemIndex;
+      pendingScrollCorrection = true;
     }
 
     const preserveWasAtBottom = (anchorMode & 2) && wasAtBottom;
@@ -333,10 +325,10 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       scrollElement.scrollTop += delta;
     }
 
-    // Save anchor position AFTER scrollTop adjustment for drift correction.
-    if (pendingScrollCorrection && scrollCorrectionDataIndex !== null) {
+    // Save anchor offset AFTER scrollTop adjustment for drift correction.
+    if (pendingScrollCorrection) {
       const containerTop = scrollContainer ? scrollContainer.getBoundingClientRect().top : 0;
-      scrollCorrectionRelTop = current.getBoundingClientRect().top - containerTop;
+      scrollCorrectionOffset = current.getBoundingClientRect().top - containerTop;
     }
 
     if (preserveWasAtBottom) {
@@ -420,17 +412,16 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       // Find the first visible item and save its position for post-redistribution correction.
       const containerTop = scrollContainer ? scrollContainer.getBoundingClientRect().top : 0;
       const viewBottom = scrollContainer ? scrollContainer.getBoundingClientRect().bottom : window.innerHeight;
+      let itemIndex = 0;
       for (let el = spacerBefore.nextElementSibling; el && el !== spacerAfter; el = el.nextElementSibling) {
         const rect = el.getBoundingClientRect();
-        if (rect.top >= containerTop - 1 && rect.bottom > containerTop && rect.top < viewBottom) {
-          const dataIndex = el.getAttribute('data-index');
-          if (dataIndex) {
-            pendingScrollCorrection = true;
-            scrollCorrectionDataIndex = dataIndex;
-            scrollCorrectionRelTop = rect.top - containerTop;
-          }
+        if (rect.bottom > containerTop && rect.top < viewBottom) {
+          pendingScrollCorrection = true;
+          scrollCorrectionItemIndex = itemIndex;
+          scrollCorrectionOffset = rect.top - containerTop;
           break;
         }
+        itemIndex++;
       }
       reobserveSpacers();
     }
@@ -452,7 +443,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     setConvergingToBottom: () => { convergingToBottom = true; },
     setAnchorMode: (mode: number) => { anchorMode = mode; },
     restoreAnchor: restoreAnchorForShift,
-    anchorSnapshot: null as { childIndex: number; relTop: number; scrollTop: number } | null,
+    anchorSnapshot: null as { anchorItemIndex: number; anchorOffset: number; scrollTop: number } | null,
     onDispose: () => {
       stopConvergenceObserving();
       anchoredItems.clear();
@@ -547,27 +538,26 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   // Saves the first visible item's child index and viewport-relative position.
   function updateAnchorSnapshot(): void {
-    // Track whether we're at the very bottom before the next render changes spacer sizes.
     wasAtBottom = Math.abs(scrollElement.scrollTop + scrollElement.clientHeight - scrollElement.scrollHeight) < 2;
 
     const containerTop = scrollContainer
       ? scrollContainer.getBoundingClientRect().top
       : 0;
 
-    let childIndex = 0;
+    let anchorItemIndex = 0;
     for (let el = spacerBefore.nextElementSibling;
       el && el !== spacerAfter;
       el = el.nextElementSibling) {
       const rect = el.getBoundingClientRect();
-      if (rect.top >= containerTop - 1 && rect.bottom > containerTop) {
+      if (rect.bottom > containerTop) {
         observersByDotNetObjectId[id].anchorSnapshot = {
-          childIndex,
-          relTop: rect.top - containerTop,
+          anchorItemIndex,
+          anchorOffset: rect.top - containerTop,
           scrollTop: scrollElement.scrollTop,
         };
         return;
       }
-      childIndex++;
+      anchorItemIndex++;
     }
     observersByDotNetObjectId[id].anchorSnapshot = null;
   }
@@ -669,10 +659,10 @@ function setAnchorMode(dotNetHelper: DotNet.DotNetObject, mode: number): void {
   entry?.setAnchorMode?.(mode);
 }
 
-function restoreAnchor(dotNetHelper: DotNet.DotNetObject, indexShift: number): void {
+function restoreAnchor(dotNetHelper: DotNet.DotNetObject): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   const entry = observersByDotNetObjectId[id];
-  entry?.restoreAnchor?.(indexShift);
+  entry?.restoreAnchor?.();
 }
 
 function getObserversMapEntry(dotNetHelper: DotNet.DotNetObject): { observersByDotNetObjectId: {[id: number]: any }, id: number } {

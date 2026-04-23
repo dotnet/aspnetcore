@@ -57,9 +57,9 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
         return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.setAnchorMode", _selfReference, anchorMode);
     }
 
-    public ValueTask RestoreAnchorAsync(int indexShift)
+    public ValueTask RestoreAnchorAsync()
     {
-        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.restoreAnchor", _selfReference, indexShift);
+        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.restoreAnchor", _selfReference);
     }
 
     public async ValueTask DisposeAsync()
