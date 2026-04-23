@@ -140,7 +140,8 @@
     <Exec
       Command="npm ci"
       WorkingDirectory="$(NpmWorkspaceRoot)"
-      EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
+      EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)"
+      ConsoleToMsBuild="true" />
   </Target>
 
   <Target Name="Build" DependsOnTargets="Restore" Inputs="@(NpmBuildInputFiles)" Outputs="@(NpmBuildOutputFiles)">
@@ -159,12 +160,13 @@
     <Exec
       Command="npm run build"
       WorkingDirectory="$(MSBuildThisFileDirectory).."
+      ConsoleToMsBuild="true"
       />
   </Target>
 
   <Target Name="_Test" BeforeTargets="Test">
     <Message Text="Testing NPM packages..." Importance="high" />
-    <Exec Command="npm run test" ContinueOnError="true" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+    <Exec Command="npm run test" ContinueOnError="true" WorkingDirectory="$(MSBuildThisFileDirectory).." ConsoleToMsBuild="true" />
   </Target>
 
   <Target Name="Pack" DependsOnTargets="Build">
