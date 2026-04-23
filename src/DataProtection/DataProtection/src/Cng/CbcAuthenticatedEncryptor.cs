@@ -448,7 +448,7 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         {
             var ntstatus = UnsafeNativeMethods.BCryptEncrypt(
                 hKey: tempKeyHandle,
-                pbInput: (pbPlaintextArray != null) ? &pbPlaintextArray[plaintext.Offset] : &dummy,
+                pbInput: (pbPlaintextArray != null && plaintext.Count > 0) ? &pbPlaintextArray[plaintext.Offset] : &dummy,
                 cbInput: (uint)plaintext.Count,
                 pPaddingInfo: null,
                 pbIV: pbDummyIV,
