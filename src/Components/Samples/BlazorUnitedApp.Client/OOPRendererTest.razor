@@ -1,0 +1,71 @@
+@inject IJSRuntime JSRuntime
+
+<div id="oop-renderer-test">
+    <h4>Interactive OOP Renderer Tests</h4>
+
+    <!-- Event handling test -->
+    <div>
+        <p>Counter: <span id="counter-value">@currentCount</span></p>
+        <button id="increment-button" @onclick="IncrementCount">Click me</button>
+    </div>
+
+    <!-- Text input binding test -->
+    <div>
+        <input id="text-input" @bind="textValue" @bind:event="oninput" />
+        <p>You typed: <span id="text-output">@textValue</span></p>
+    </div>
+
+    <!-- JSInterop test -->
+    <div>
+        <button id="jsinterop-button" @onclick="CallJSInterop">Call JSInterop</button>
+        <p>JS result: <span id="jsinterop-result">@jsResult</span></p>
+    </div>
+
+    <!-- Conditional rendering test -->
+    <div>
+        <button id="toggle-button" @onclick="ToggleVisibility">Toggle</button>
+        @if (isVisible)
+        {
+            <p id="toggle-content">This content is visible</p>
+        }
+    </div>
+
+    <!-- List rendering test -->
+    <div>
+        <button id="add-item-button" @onclick="AddItem">Add Item</button>
+        <ul id="item-list">
+            @foreach (var item in items)
+            {
+                <li>@item</li>
+            }
+        </ul>
+    </div>
+</div>
+
+@code {
+    private int currentCount;
+    private string textValue = "";
+    private string jsResult = "(none)";
+    private bool isVisible = true;
+    private List<string> items = new() { "Item 1", "Item 2" };
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+
+    private async Task CallJSInterop()
+    {
+        jsResult = await JSRuntime.InvokeAsync<string>("eval", "'Hello from JS at ' + new Date().toLocaleTimeString()");
+    }
+
+    private void ToggleVisibility()
+    {
+        isVisible = !isVisible;
+    }
+
+    private void AddItem()
+    {
+        items.Add($"Item {items.Count + 1}");
+    }
+}

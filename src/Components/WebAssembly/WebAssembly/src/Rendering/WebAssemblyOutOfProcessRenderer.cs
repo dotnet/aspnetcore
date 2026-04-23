@@ -25,7 +25,11 @@ internal sealed partial class WebAssemblyOutOfProcessRenderer : WebAssemblyRende
     {
     }
 
-    protected override int GetWebRendererId() => (int)WebRendererId.WebAssemblyOOP;
+    // Use the same renderer ID as the standard WebAssembly renderer so that the JS
+    // root component manager dispatches components and events to us correctly.
+    // The OOP distinction is only in how render batches are delivered (byte[] via JSImport
+    // instead of shared memory pointers).
+    protected override int GetWebRendererId() => (int)WebRendererId.WebAssembly;
 
     protected override Task UpdateDisplayAsync(in RenderBatch batch)
     {

@@ -194,6 +194,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 {
                     config.WebAssembly.EnvironmentVariables["MY_TEST_VAR"] = "test-value-from-server";
                     config.WebAssembly.EnvironmentVariables["ANOTHER_TEST_VAR"] = "another-test-value";
+                    config.WebAssembly.EnvironmentVariables["__BLAZOR_WEBASSEMBLY_OOP_RENDERER"] = "true";
                 });
 
             NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);

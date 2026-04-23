@@ -12,6 +12,10 @@ const disposedEventHandlerIdsEntryLength = 8; // Each is an int64 giving the ID
 const editsEntryLength = 16; // 4 ints
 const stringTableEntryLength = 4; // Each is an int32 giving the string data location, or -1 for null
 
+interface OutOfProcessStringReaderInterface {
+  readString(index: number): string | null;
+}
+
 export class OutOfProcessRenderBatch implements RenderBatch {
   constructor(private batchData: Uint8Array, useUtf16StringTable?: boolean) {
     const stringReader = useUtf16StringTable
@@ -91,7 +95,7 @@ class OutOfProcessRenderTreeDiffReader implements RenderTreeDiffReader {
 }
 
 class OutOfProcessRenderTreeEditReader implements RenderTreeEditReader {
-  constructor(private batchDataUint8: Uint8Array, private stringReader: OutOfProcessStringReader) {
+  constructor(private batchDataUint8: Uint8Array, private stringReader: OutOfProcessStringReaderInterface) {
   }
 
   editType(edit: RenderTreeEdit) {
@@ -117,7 +121,7 @@ class OutOfProcessRenderTreeEditReader implements RenderTreeEditReader {
 }
 
 class OutOfProcessRenderTreeFrameReader implements RenderTreeFrameReader {
-  constructor(private batchDataUint8: Uint8Array, private stringReader: OutOfProcessStringReader) {
+  constructor(private batchDataUint8: Uint8Array, private stringReader: OutOfProcessStringReaderInterface) {
   }
 
   // For render frames, the 2nd-4th ints have different meanings depending on frameType.
