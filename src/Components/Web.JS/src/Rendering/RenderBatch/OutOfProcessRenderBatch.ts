@@ -203,13 +203,12 @@ class OutOfProcessStringReader {
 }
 
 class OutOfProcessStringReaderUtf16 {
+  private static textDecoder = new TextDecoder('utf-16le');
   private stringTableStartIndex: number;
-  private dataView: DataView;
 
   constructor(private batchDataUint8: Uint8Array) {
     // Final int gives start position of the string table (same layout as UTF-8 variant)
     this.stringTableStartIndex = readInt32LE(batchDataUint8, batchDataUint8.length - 4);
-    this.dataView = new DataView(batchDataUint8.buffer, batchDataUint8.byteOffset, batchDataUint8.byteLength);
   }
 
   readString(index: number): string | null {
@@ -222,11 +221,9 @@ class OutOfProcessStringReaderUtf16 {
       // Both C# and JS strings are natively UTF-16, so this avoids two transcoding passes.
       const charCount = readInt32LE(this.batchDataUint8, stringTableEntryPos);
       const charsStart = stringTableEntryPos + 4;
-      const uint16Array = new Uint16Array(charCount);
-      for (let i = 0; i < charCount; i++) {
-        uint16Array[i] = this.dataView.getUint16(charsStart + i * 2, true); // little-endian
-      }
-      return String.fromCharCode(...uint16Array);
+      const byteLength = charCount * 2;
+      const utf16Bytes = new Uint8Array(this.batchDataUint8.buffer, this.batchDataUint8.byteOffset + charsStart, byteLength);
+      return OutOfProcessStringReaderUtf16.textDecoder.decode(utf16Bytes);
     }
   }
 }
