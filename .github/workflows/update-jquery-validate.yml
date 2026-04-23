@@ -24,6 +24,7 @@ jobs:
         with:
           node-version: '20.x'
           cache: 'npm'
+          cache-dependency-path: src/Mvc/build/package-lock.json
 
       - name: Set RepoRoot
         run: echo "RepoRoot=$(pwd)" >> $GITHUB_ENV
