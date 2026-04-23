@@ -24,6 +24,8 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
 
     [CascadingParameter] EditContext CurrentEditContext { get; set; } = default!;
 
+    [CascadingParameter] private HtmlFieldPrefix? FieldPrefix { get; set; }
+
     /// <summary>
     /// Specifies the field for which validation messages should be displayed.
     /// </summary>
@@ -69,7 +71,8 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        var hasClientValidation = CurrentEditContext.Properties.TryGetValue(typeof(IClientValidationService), out _);
+        var hasClientValidation = CurrentEditContext.Properties.TryGetValue(typeof(IClientValidationService), out var serviceObj)
+            && serviceObj is IClientValidationService;
 
         if (hasClientValidation)
         {
@@ -93,11 +96,13 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
     /// JS library can find it and replace its content. If no server-side messages exist yet,
     /// an empty placeholder div is rendered for JS to populate when client validation runs.
     /// Server-rendered sibling messages (without data-valmsg-for) are cleaned up by the JS library
-    /// when it inserts the clien-side validation messages.
+    /// when it inserts the client-side validation messages.
     /// </summary>
     private void RenderForClientValidation(RenderTreeBuilder builder)
     {
-        var fieldName = ExpressionFormatter.FormatLambda(For!);
+        // Use HtmlFieldPrefix to compute the field name consistently with InputBase.
+        // In nested Editor scenarios, FieldPrefix adjusts the name to match the rendered input's name attribute.
+        var fieldName = FieldPrefix?.GetFieldName(For!) ?? ExpressionFormatter.FormatLambda(For!);
         var first = true;
 
         foreach (var message in CurrentEditContext.GetValidationMessages(_fieldIdentifier))

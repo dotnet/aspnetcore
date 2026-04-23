@@ -101,7 +101,18 @@ internal sealed class DefaultClientValidationService : IClientValidationService
             case RangeAttribute ra:
                 // RangeAttribute lazily converts Minimum/Maximum from strings to the target type.
                 // Calling IsValid triggers this conversion so we can read the typed values.
-                ra.IsValid(3);
+                // Wrap in try-catch to handle non-numeric operand types (e.g., DateTime ranges)
+                // which would throw when validating an integer value.
+                try
+                {
+                    // TODO: Add support for DateTime ranges?
+                    ra.IsValid(null);
+                }
+                catch (InvalidOperationException)
+                {
+                    // Non-numeric range type - can't emit client-side attributes
+                    break;
+                }
                 htmlAttributes.TryAdd("data-val-range", errorMessage);
                 htmlAttributes.TryAdd("data-val-range-min", Convert.ToString(ra.Minimum, CultureInfo.InvariantCulture)!);
                 htmlAttributes.TryAdd("data-val-range-max", Convert.ToString(ra.Maximum, CultureInfo.InvariantCulture)!);

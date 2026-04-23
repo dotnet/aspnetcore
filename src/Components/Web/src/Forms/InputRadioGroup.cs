@@ -104,7 +104,9 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
         Dictionary<string, object>? result = null;
         foreach (var (key, value) in AdditionalAttributes)
         {
-            if (key.StartsWith("data-val", StringComparison.OrdinalIgnoreCase))
+            // Match "data-val" exactly and "data-val-*" (with dash), but not "data-value" or other unrelated attributes.
+            if (string.Equals(key, "data-val", StringComparison.OrdinalIgnoreCase)
+                || key.StartsWith("data-val-", StringComparison.OrdinalIgnoreCase))
             {
                 result ??= new();
                 result[key] = value;

@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Components.Forms.ClientValidation;
 /// <summary>
 /// Context for adding client-side validation HTML attributes.
 /// </summary>
-public readonly ref struct ClientValidationContext
+public class ClientValidationContext
 {
     private readonly Dictionary<string, object> _attributes;
 

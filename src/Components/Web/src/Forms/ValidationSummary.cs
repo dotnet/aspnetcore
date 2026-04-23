@@ -67,7 +67,8 @@ public class ValidationSummary : ComponentBase, IDisposable
             CurrentEditContext.GetValidationMessages() :
             CurrentEditContext.GetValidationMessages(new FieldIdentifier(Model, string.Empty));
 
-        var hasClientValidation = CurrentEditContext.Properties.TryGetValue(typeof(IClientValidationService), out _);
+        var hasClientValidation = CurrentEditContext.Properties.TryGetValue(typeof(IClientValidationService), out var serviceObj)
+            && serviceObj is IClientValidationService;
 
         if (hasClientValidation)
         {
@@ -102,22 +103,23 @@ public class ValidationSummary : ComponentBase, IDisposable
 
     /// <summary>
     /// Renders a validation summary container with data-valmsg-summary="true" for the JS
-    /// validation library. The container starts with validation-summary-valid CSS class;
-    /// JS toggles to validation-summary-errors when errors are present. Any server-rendered
-    /// messages are included as initial list items.
+    /// validation library. Sets the initial CSS class based on whether server-rendered messages
+    /// exist: validation-summary-errors when non-empty (so CSS that hides validation-summary-valid
+    /// won't suppress initial server errors), validation-summary-valid when empty.
     /// </summary>
     private void RenderForClientValidation(RenderTreeBuilder builder, IEnumerable<string> validationMessages)
     {
-        // Render container for client-side validation summary.
+        var messages = validationMessages.ToList();
+
         builder.OpenElement(0, "div");
         builder.AddAttribute(1, "data-valmsg-summary", "true");
-        builder.AddAttribute(2, "class", "validation-summary-valid");
+        builder.AddAttribute(2, "class", messages.Count > 0 ? "validation-summary-errors" : "validation-summary-valid");
 
         builder.OpenElement(3, "ul");
         builder.AddAttribute(4, "class", "validation-errors");
         builder.AddMultipleAttributes(5, AdditionalAttributes);
 
-        foreach (var error in validationMessages)
+        foreach (var error in messages)
         {
             builder.OpenElement(6, "li");
             builder.AddAttribute(7, "class", "validation-message");
