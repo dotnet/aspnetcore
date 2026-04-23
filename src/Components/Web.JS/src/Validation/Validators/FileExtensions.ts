@@ -15,10 +15,11 @@ export const fileExtensionsValidator: Validator = (context: ValidationContext): 
     return true;
   }
 
-  // Build regex from comma-separated extensions, stripping dots for escaping.
+  // Build regex from comma-separated extensions, stripping dots and escaping regex metacharacters.
   const extensions = params.extensions.split(',')
     .map(ext => ext.trim().replace(/^\./, ''))
     .filter(ext => ext.length > 0)
+    .map(ext => ext.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
     .join('|');
 
   if (!extensions) {

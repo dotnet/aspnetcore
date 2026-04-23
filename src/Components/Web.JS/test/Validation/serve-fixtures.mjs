@@ -6,7 +6,7 @@
 
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
-import { join, extname, resolve } from 'node:path';
+import { join, extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
@@ -67,7 +67,7 @@ const server = createServer(async (req, res) => {
   if (url.pathname.startsWith('/dist/')) {
     // Serve built JS files from dist/Debug
     filePath = resolve(distDir, url.pathname.slice('/dist/'.length));
-    if (!filePath.startsWith(distDir)) {
+    if (!filePath.startsWith(distDir + sep)) {
       res.writeHead(403);
       res.end('Forbidden');
       return;
@@ -76,7 +76,7 @@ const server = createServer(async (req, res) => {
     // Serve HTML fixtures (strip leading slash so join resolves under fixturesDir)
     const requestedPath = url.pathname === '/' ? 'index.html' : url.pathname.slice(1);
     filePath = resolve(fixturesDir, requestedPath);
-    if (!filePath.startsWith(fixturesDir)) {
+    if (!filePath.startsWith(fixturesDir + sep)) {
       res.writeHead(403);
       res.end('Forbidden');
       return;

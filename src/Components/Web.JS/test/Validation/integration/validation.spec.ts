@@ -252,9 +252,23 @@ test.describe('form submission prevention', () => {
     await page.goto('/no-validation.html');
 
     // This form has no data-val attributes, so submit should not be intercepted.
-    // We can verify by checking that the library initialized but doesn't block.
-    const apiExists = await page.evaluate(() => typeof (window as any).__aspnetValidation !== 'undefined');
-    expect(apiExists).toBe(true);
+    // Verify by listening for validationcomplete (should NOT fire on untracked forms).
+    const validationFired = await page.evaluate(() => {
+      return new Promise<boolean>((resolve) => {
+        document.addEventListener('validationcomplete', () => resolve(true), { once: true });
+        // Submit the form programmatically
+        const form = document.querySelector('form');
+        if (form) {
+          // Prevent actual navigation but let the event propagate
+          form.addEventListener('submit', (e) => { e.preventDefault(); }, { once: true });
+          form.requestSubmit();
+        }
+        // If validationcomplete doesn't fire within 100ms, it wasn't intercepted
+        setTimeout(() => resolve(false), 100);
+      });
+    });
+
+    expect(validationFired).toBe(false);
   });
 });
 
