@@ -107,6 +107,92 @@ app.MapGet("/", (HttpContext httpContext, string name) =>
     }
 
     [Fact]
+    public async Task ParameterBindingFailure_WithEndpointFilterFactory_DoesNotExecuteHandler()
+    {
+        // Arrange - Add an endpoint filter factory that returns next as-is
+        var source = """
+app.MapGet("/{id}", (HttpContext httpContext, Guid id) =>
+{
+    httpContext.Items["handlerExecuted"] = true;
+    return id.ToString();
+})
+.AddEndpointFilterFactory((_, next) => next);
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues["id"] = "invalid-guid";
+
+        // Act
+        await endpoint.RequestDelegate(httpContext);
+
+        // Assert
+        Assert.Equal(400, httpContext.Response.StatusCode);
+        Assert.Null(httpContext.Items["handlerExecuted"]);
+    }
+
+    [Fact]
+    public async Task ParameterBindingFailure_WithoutFilter_DoesNotExecuteHandler()
+    {
+        // Arrange
+        var source = """
+app.MapGet("/{id}", (HttpContext httpContext, Guid id) =>
+{
+    httpContext.Items["handlerExecuted"] = true;
+    return id.ToString();
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues["id"] = "invalid-guid";
+
+        // Act
+        await endpoint.RequestDelegate(httpContext);
+
+        // Assert
+        Assert.Equal(400, httpContext.Response.StatusCode);
+        Assert.Null(httpContext.Items["handlerExecuted"]);
+    }
+
+    [Fact]
+    public async Task ParameterBindingFailure_WithFilterGeneratingProblemDetails_WritesBody()
+    {
+        // Arrange - Filter explicitly generates custom response for 400 errors
+        var source = """
+app.MapGet("/{id}", (HttpContext httpContext, Guid id) =>
+{
+    httpContext.Items["handlerExecuted"] = true;
+    return id.ToString();
+})
+.AddEndpointFilterFactory((_, next) => async (context) =>
+{
+    if (context.HttpContext.Response.StatusCode == 400)
+    {
+        return Results.Json(new { error = "Parameter binding failed" }, statusCode: 400);
+    }
+    return await next(context);
+});
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+        var httpContext = CreateHttpContext();
+        httpContext.Request.RouteValues["id"] = "invalid-guid";
+
+        // Act
+        await endpoint.RequestDelegate(httpContext);
+
+        // Assert
+        Assert.Equal(400, httpContext.Response.StatusCode);
+        Assert.Null(httpContext.Items["handlerExecuted"]);
+
+        // Filter generated JSON error, so body should contain JSON
+        var body = await GetResponseBodyAsync(httpContext);
+        Assert.NotEmpty(body);
+        Assert.Contains("Parameter binding failed", body);
+    }
+
+    [Fact]
     public async Task RequestDelegateCanInvokeMultipleEndpointFilters_ThatTouchArguments()
     {
         // Arrange

@@ -3745,14 +3745,26 @@
       ]
     }
   },
-  "webworker": {
+  "blazorwebworker": {
     "Default": {
-      "Template": "webworker",
-      "Arguments": "new webworker",
+      "Template": "blazorwebworker",
+      "Arguments": "new blazorwebworker",
       "Files": [
         "WebWorkerClient.cs",
+        "WorkerMethods.cs",
         "wwwroot/dotnet-web-worker.js",
         "wwwroot/dotnet-web-worker-client.js"
+      ]
+    }
+  },
+  "blazor-wasm-servicedefaults": {
+    "Default": {
+      "Template": "blazor-wasm-servicedefaults",
+      "Arguments": "new blazor-wasm-servicedefaults",
+      "Files": [
+        "BackgroundExportHandler.cs",
+        "Extensions.cs",
+        "wwwroot/{ProjectName}.lib.module.js"
       ]
     }
   }

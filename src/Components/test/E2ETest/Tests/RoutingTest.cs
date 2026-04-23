@@ -1591,7 +1591,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    public void CanNavigateToQueryStringPageWithNoQuery()
+    public virtual void CanNavigateToQueryStringPageWithNoQuery()
     {
         SetUrlViaPushState("/");
 
