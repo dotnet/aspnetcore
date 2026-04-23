@@ -12,23 +12,9 @@
 
     <ImportMap nonce="my-value" />
     <HeadOutlet />
-    <ConfigureBrowser Configuration="@_browserConfig" />
 </head>
 <body>
     <Routes />
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 </html>
-
-@code {
-    private static readonly BrowserConfiguration _browserConfig = new()
-    {
-        WebAssembly = new WebAssemblyBrowserOptions
-        {
-            EnvironmentVariables = new Dictionary<string, string>
-            {
-                ["__BLAZOR_WEBASSEMBLY_OOP_RENDERER"] = "true"
-            }
-        }
-    };
-}

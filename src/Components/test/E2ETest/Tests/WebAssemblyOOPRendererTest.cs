@@ -13,9 +13,9 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests;
 
 public class WebAssemblyOOPRendererTest(
     BrowserFixture browserFixture,
-    BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<GlobalInteractivityApp>> serverFixture,
+    OOPRendererServerFixture<RazorComponentEndpointsStartup<GlobalInteractivityApp>> serverFixture,
     ITestOutputHelper output)
-    : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<GlobalInteractivityApp>>>(browserFixture, serverFixture, output)
+    : ServerTestBase<OOPRendererServerFixture<RazorComponentEndpointsStartup<GlobalInteractivityApp>>>(browserFixture, serverFixture, output)
 {
     [Fact]
     public void OOPRendererIsActiveAndComponentIsInteractive()
