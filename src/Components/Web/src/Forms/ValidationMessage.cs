@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Components.Forms.ClientValidation;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -52,7 +53,7 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
                 $"{nameof(For)} parameter.");
         }
         else if (For != _previousFieldAccessor)
-        {            
+        {
             _fieldIdentifier = FieldIdentifier.Create(For);
             _previousFieldAccessor = For;
         }
@@ -68,12 +69,61 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
+        var hasClientValidation = CurrentEditContext.Properties.TryGetValue(typeof(IClientValidationService), out _);
+
+        if (hasClientValidation)
+        {
+            RenderForClientValidation(builder);
+            return;
+        }
+
         foreach (var message in CurrentEditContext.GetValidationMessages(_fieldIdentifier))
         {
             builder.OpenElement(0, "div");
             builder.AddAttribute(1, "class", "validation-message");
             builder.AddMultipleAttributes(2, AdditionalAttributes);
             builder.AddContent(3, message);
+            builder.CloseElement();
+        }
+    }
+
+    /// <summary>
+    /// Renders validation messages with data-valmsg-for and data-valmsg-replace attributes
+    /// for the JS validation library. The first message element carries the attributes so the
+    /// JS library can find it and replace its content. If no server-side messages exist yet,
+    /// an empty placeholder div is rendered for JS to populate when client validation runs.
+    /// Server-rendered sibling messages (without data-valmsg-for) are cleaned up by the JS library
+    /// when it inserts the clien-side validation messages.
+    /// </summary>
+    private void RenderForClientValidation(RenderTreeBuilder builder)
+    {
+        var fieldName = ExpressionFormatter.FormatLambda(For!);
+        var first = true;
+
+        foreach (var message in CurrentEditContext.GetValidationMessages(_fieldIdentifier))
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", "validation-message");
+            if (first)
+            {
+                // First message element will be used as container for client-side validation message
+                builder.AddAttribute(2, "data-valmsg-for", fieldName);
+                builder.AddAttribute(3, "data-valmsg-replace", "true");
+                first = false;
+            }
+            builder.AddMultipleAttributes(4, AdditionalAttributes);
+            builder.AddContent(5, message);
+            builder.CloseElement();
+        }
+
+        if (first)
+        {
+            // No messages - render empty placeholder for JS to find
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", "validation-message");
+            builder.AddAttribute(2, "data-valmsg-for", fieldName);
+            builder.AddAttribute(3, "data-valmsg-replace", "true");
+            builder.AddMultipleAttributes(4, AdditionalAttributes);
             builder.CloseElement();
         }
     }
