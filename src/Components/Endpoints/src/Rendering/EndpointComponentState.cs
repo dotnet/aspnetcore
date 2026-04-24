@@ -82,10 +82,7 @@ internal sealed class EndpointComponentState : ComponentState
     /// <summary>
     /// MetadataUpdateHandler event. This is invoked by the hot reload host via reflection.
     /// </summary>
-    public static void UpdateApplication(Type[]? _)
-    {
-        _streamRenderingAttributeByComponentType.Clear();
-    }
+    public static void UpdateApplication(Type[]? _) => _streamRenderingAttributeByComponentType.Clear();
 
     private static string ComputeTreePositionKey(string ancestorTypeName, int sequence, string? keyString)
     {
