@@ -221,11 +221,9 @@ public class DefaultClientValidationServiceTest
 
     private class CustomValidationAttribute : ValidationAttribute, IClientValidationAdapter
     {
-        public void AddClientValidationAttributes(ClientValidationContext context)
-        {
-            context.MergeAttribute("data-val-custom", context.ErrorMessage);
-            context.MergeAttribute("data-val-custom-param", "custom-value");
-        }
+        public ClientValidationRule? GetClientValidationRule(string errorMessage)
+            => new ClientValidationRule("custom", errorMessage)
+                .WithParameter("param", "custom-value");
     }
 
     // Nested model tests

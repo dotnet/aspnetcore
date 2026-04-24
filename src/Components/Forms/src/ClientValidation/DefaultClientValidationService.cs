@@ -162,10 +162,26 @@ internal sealed class DefaultClientValidationService : IClientValidationService
                 // Check for custom adapter on the attribute
                 if (validationAttribute is IClientValidationAdapter adapter)
                 {
-                    var context = new ClientValidationContext(htmlAttributes, errorMessage);
-                    adapter.AddClientValidationAttributes(context);
+                    var rule = adapter.GetClientValidationRule(errorMessage);
+                    if (rule is not null)
+                    {
+                        EmitRule(htmlAttributes, rule);
+                    }
                 }
                 break;
+        }
+    }
+
+    /// <summary>
+    /// Serializes a <see cref="ClientValidationRule"/> into the flat <c>data-val-*</c> dictionary
+    /// used during rendering. Uses <c>TryAdd</c> (first-wins) so existing entries are preserved.
+    /// </summary>
+    private static void EmitRule(Dictionary<string, object> htmlAttributes, ClientValidationRule rule)
+    {
+        htmlAttributes.TryAdd($"data-val-{rule.Name}", rule.ErrorMessage);
+        foreach (var (paramName, paramValue) in rule.Parameters)
+        {
+            htmlAttributes.TryAdd($"data-val-{rule.Name}-{paramName}", paramValue);
         }
     }
 
