@@ -37,21 +37,23 @@ public partial class Paginator : IDisposable
         _queryParameterValueSupplier = new();
     }
 
-    private bool CanGoBack => State.CurrentPageIndex > 0;
-    private bool CanGoForwards => State.CurrentPageIndex < State.LastPageIndex;
     private readonly QueryParameterValueSupplier _queryParameterValueSupplier;
-
-    private Task GoFirstAsync() => GoToPageAsync(0);
-    private Task GoPreviousAsync() => GoToPageAsync(State.CurrentPageIndex - 1);
-    private Task GoNextAsync() => GoToPageAsync(State.CurrentPageIndex + 1);
-    private Task GoLastAsync() => GoToPageAsync(State.LastPageIndex.GetValueOrDefault(0));
-    private Task GoToPageAsync(int pageIndex) => State.SetCurrentPageIndexAsync(pageIndex);
 
     private string GetPageUrl(int pageIndex)
     {
         int? pageValue = pageIndex == 0 ? null : pageIndex + 1;
         return NavigationManager.GetUriWithQueryParameter(QueryName, pageValue);
     }
+
+    private Task GoFirstAsync() => GoToPageAsync(0);
+    private Task GoPreviousAsync() => GoToPageAsync(State.CurrentPageIndex - 1);
+    private Task GoNextAsync() => GoToPageAsync(State.CurrentPageIndex + 1);
+    private Task GoLastAsync() => GoToPageAsync(State.LastPageIndex.GetValueOrDefault(0));
+
+    private bool CanGoBack => State.CurrentPageIndex > 0;
+    private bool CanGoForwards => State.CurrentPageIndex < State.LastPageIndex;
+    private Task GoToPageAsync(int pageIndex)
+        => State.SetCurrentPageIndexAsync(pageIndex);
 
     /// <inheritdoc />
     protected override void OnInitialized()
