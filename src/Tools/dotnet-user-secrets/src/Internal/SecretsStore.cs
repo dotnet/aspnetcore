@@ -23,7 +23,7 @@ public class SecretsStore
     private readonly string _secretsFilePath;
     private readonly IDictionary<string, string> _secrets;
 
-    public SecretsStore(string userSecretsId, IReporter reporter)
+    public SecretsStore(string userSecretsId, IReporter reporter, bool ignoreLoadErrors = false)
     {
         Ensure.NotNull(userSecretsId, nameof(userSecretsId));
 
@@ -34,7 +34,14 @@ public class SecretsStore
         Directory.CreateDirectory(secretDir);
 
         reporter.Verbose(Resources.FormatMessage_Secret_File_Path(_secretsFilePath));
-        _secrets = Load(userSecretsId);
+        try
+        {
+            _secrets = Load(userSecretsId);
+        }
+        catch (InvalidDataException) when (ignoreLoadErrors)
+        {
+            _secrets = new Dictionary<string, string>();
+        }
     }
 
     public string this[string key]

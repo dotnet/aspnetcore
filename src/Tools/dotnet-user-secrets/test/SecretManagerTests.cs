@@ -354,6 +354,30 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
     }
 
     [Fact]
+    public void Clear_CanClearMalformedSecretsFile()
+    {
+        var projectPath = _fixture.GetTempSecretProject();
+        var secretManager = new Program(_console, projectPath);
+
+        // Clear once initially, to capture the expected contents of a cleared secrets file.
+        secretManager.RunInternal("clear", "-p", projectPath);
+        var expectedClearedFileContents = File.ReadAllText(secretManager.SecretsFilePath);
+
+        // Intentionally write malformed JSON to the secrets file.
+        File.WriteAllText(secretManager.SecretsFilePath, "{");
+
+        // Confirm that the list subcommand is unable to run due to the malformed content.
+        Assert.Throws<InvalidDataException>(() => secretManager.RunInternal("list", "-p", projectPath));
+
+        // Clear again and the contents of the secrets file should be reset.
+        secretManager.RunInternal("clear", "-p", projectPath);
+        Assert.Equal(expectedClearedFileContents, File.ReadAllText(secretManager.SecretsFilePath));
+
+        // Confirm that the list subcommand is now able to run successfully.
+        secretManager.RunInternal("list", "-p", projectPath);
+    }
+
+    [Fact]
     public void Init_When_Project_Has_No_Secrets_Id()
     {
         var projectPath = _fixture.CreateProject(null);
