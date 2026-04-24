@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.ObjectModel;
+
 namespace Microsoft.AspNetCore.Components.Forms.ClientValidation;
 
 /// <summary>
@@ -8,8 +10,7 @@ namespace Microsoft.AspNetCore.Components.Forms.ClientValidation;
 /// </summary>
 public sealed class ClientValidationRule
 {
-    private static readonly IReadOnlyDictionary<string, string> EmptyParameters =
-        new Dictionary<string, string>(0);
+    private static readonly IReadOnlyDictionary<string, string> EmptyParameters = ReadOnlyDictionary<string, string>.Empty;
 
     private Dictionary<string, string>? _parameters;
 

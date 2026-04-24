@@ -109,7 +109,7 @@ public class ValidationSummary : ComponentBase, IDisposable
     /// </summary>
     private void RenderForClientValidation(RenderTreeBuilder builder, IEnumerable<string> validationMessages)
     {
-        var messages = validationMessages.ToList();
+        var messages = new List<string>(validationMessages);
 
         builder.OpenElement(0, "div");
         builder.AddAttribute(1, "data-valmsg-summary", "true");
