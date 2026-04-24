@@ -842,6 +842,34 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task GetOpenApiParameters_EnumWithOutOfOrderValues_NonBodyUsesOriginalMemberNames()
+    {
+        // Arrange - configure a global JsonStringEnumConverter with KebabCaseLower naming policy
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.KebabCaseLower));
+        });
+        var builder = CreateBuilder(serviceCollection);
+
+        // Act - map an endpoint with an enum whose members are declared out of numeric order
+        // (Critical=3, Warning=1, Info=0). Both Enum.GetNames() and the schema generator
+        // sort by underlying value, so the positional comparison should still work.
+        builder.MapGet("/api/order", (OutOfOrderEnum val) => val);
+
+        // Assert - member names sorted by underlying value: Info(0), Warning(1), Critical(3)
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api/order"].Operations[HttpMethod.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Collection(parameter.Schema.Enum,
+                value => Assert.Equal("Info", value.GetValue<string>()),
+                value => Assert.Equal("Warning", value.GetValue<string>()),
+                value => Assert.Equal("Critical", value.GetValue<string>()));
+        });
+    }
+
+    [Fact]
     public async Task SupportsMvcActionWithAmbientRouteParameter()
     {
         // Arrange

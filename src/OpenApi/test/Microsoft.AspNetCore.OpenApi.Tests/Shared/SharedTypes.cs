@@ -242,3 +242,15 @@ internal enum DuplicateValueEnum
     ValueB = 1,
     ValueC = 1,
 }
+
+/// <summary>
+/// An enum with values declared out of numeric order — used to test that the
+/// positional comparison between schema enum values and Enum.GetNames() works
+/// correctly since both sort by underlying value, not declaration order.
+/// </summary>
+internal enum OutOfOrderEnum
+{
+    Critical = 3,
+    Warning = 1,
+    Info = 0,
+}
