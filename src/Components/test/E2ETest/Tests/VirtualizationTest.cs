@@ -2429,6 +2429,16 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Exists(By.Id("prepend-items")).Click();
         Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
 
+        // Wait for anchor restore to settle before expanding an item.
+        AssertViewportStaysStable(
+            js,
+            By.Id("scroll-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            "None mode: viewport should stay stable after prepend",
+            driftTolerance: 5);
+
         Browser.Exists(By.Id("expand-item")).Click();
         Browser.Contains("Expanded item", () => Browser.Exists(By.Id("status")).Text);
 
