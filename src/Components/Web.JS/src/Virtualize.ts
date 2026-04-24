@@ -55,10 +55,10 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   const scrollElement = scrollContainer || document.documentElement;
   const isTable = isValidTableElement(spacerAfter.parentElement);
 
-  // Ensure the scroll container is focusable so it receives keyboard events
-  // (Home/End keys). Without tabindex, a plain <div> can't receive focus.
+  // Ensure the scroll container is focusable for Home/End key handling.
+  // Use tabindex="-1" so it's focusable via click/JS but not added to the tab order.
   if (scrollContainer && !scrollContainer.hasAttribute('tabindex')) {
-    scrollContainer.setAttribute('tabindex', '0');
+    scrollContainer.setAttribute('tabindex', '-1');
   }
   const supportsAnchor = CSS.supports('overflow-anchor', 'auto');
   const useNativeAnchoring = !isTable && supportsAnchor;
