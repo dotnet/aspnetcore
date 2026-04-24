@@ -231,3 +231,14 @@ internal enum Priority
     MediumPriority,
     LowPriority,
 }
+
+/// <summary>
+/// An enum with duplicate underlying values — used to test that the naming-policy fix
+/// handles aliases correctly (e.g. ValueB and ValueC both map to 1).
+/// </summary>
+internal enum DuplicateValueEnum
+{
+    ValueA = 0,
+    ValueB = 1,
+    ValueC = 1,
+}

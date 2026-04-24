@@ -815,6 +815,33 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task GetOpenApiParameters_EnumWithDuplicateValues_NonBodyUsesOriginalMemberNames()
+    {
+        // Arrange - configure a global JsonStringEnumConverter with KebabCaseLower naming policy
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.KebabCaseLower));
+        });
+        var builder = CreateBuilder(serviceCollection);
+
+        // Act - map an endpoint with an enum that has duplicate underlying values (ValueB=1, ValueC=1).
+        builder.MapGet("/api/dupes", (DuplicateValueEnum val) => val);
+
+        // Assert - the schema should correctly list all member names even when
+        // multiple members share the same underlying value.
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api/dupes"].Operations[HttpMethod.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Collection(parameter.Schema.Enum,
+                value => Assert.Equal("ValueA", value.GetValue<string>()),
+                value => Assert.Equal("ValueB", value.GetValue<string>()),
+                value => Assert.Equal("ValueC", value.GetValue<string>()));
+        });
+    }
+
+    [Fact]
     public async Task SupportsMvcActionWithAmbientRouteParameter()
     {
         // Arrange
