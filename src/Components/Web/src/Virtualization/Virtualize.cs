@@ -225,14 +225,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                     $"Do not supply both '{nameof(Items)}' and '{nameof(ItemsProvider)}'.");
             }
 
-            if (ItemKey == null)
-            {
-                throw new InvalidOperationException(
-                    $"{GetType()} requires '{nameof(ItemKey)}' when '{nameof(ItemsProvider)}' is used. " +
-                    $"Set '{nameof(ItemKey)}' to a function that returns a unique identifier for each item " +
-                    $"(e.g., ItemKey=\"@(item => item.Id)\").");
-            }
-
             _itemsProvider = ItemsProvider;
         }
         else if (Items != null)
