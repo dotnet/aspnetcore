@@ -50,10 +50,12 @@ public class WebAssemblyOOPRendererTest(
         Navigate($"{ServerPathBase}/oop-renderer-interactivity");
         Browser.Equal("webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
 
-        var input = Browser.Exists(By.Id("text-input"));
-        input.SendKeys("Hello OOP");
+        const string text = "Héllo OOP 😀";
 
-        Browser.Equal("Hello OOP", () => Browser.Exists(By.Id("text-output")).Text);
+        var input = Browser.Exists(By.Id("text-input"));
+        input.SendKeys(text);
+
+        Browser.Equal(text, () => Browser.Exists(By.Id("text-output")).Text);
     }
 
     [Fact]
