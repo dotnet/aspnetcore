@@ -75,7 +75,7 @@
 
     private async Task CallJSInterop()
     {
-        jsResult = await JSRuntime.InvokeAsync<string>("eval", "'Hello from JS'");
+        jsResult = await JSRuntime.InvokeAsync<string>("String", "Hello from JS");
     }
 
     private void ToggleVisibility()
