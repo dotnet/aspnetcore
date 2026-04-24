@@ -20,7 +20,11 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     /// </summary>
     public static TicketSerializer Default { get; } = new TicketSerializer();
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Serializes the specified authentication ticket.
+    /// </summary>
+    /// <param name="ticket">The authentication ticket to serialize.</param>
+    /// <returns>The serialized representation of <paramref name="ticket"/>.</returns>
     public virtual byte[] Serialize(AuthenticationTicket ticket)
     {
         using (var memory = new MemoryStream())
@@ -33,7 +37,11 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
         }
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Deserializes the specified authentication ticket payload.
+    /// </summary>
+    /// <param name="data">The serialized authentication ticket.</param>
+    /// <returns>The deserialized <see cref="AuthenticationTicket"/>, or <see langword="null"/> if the format is unsupported.</returns>
     public virtual AuthenticationTicket? Deserialize(byte[] data)
     {
         using (var memory = new MemoryStream(data))
@@ -116,7 +124,11 @@ public class TicketSerializer : IDataSerializer<AuthenticationTicket>
         }
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Writes the specified claim using the provided binary writer.
+    /// </summary>
+    /// <param name="writer">The binary writer to write to.</param>
+    /// <param name="claim">The claim to serialize.</param>
     protected virtual void WriteClaim(BinaryWriter writer, Claim claim)
     {
         ArgumentNullException.ThrowIfNull(writer);

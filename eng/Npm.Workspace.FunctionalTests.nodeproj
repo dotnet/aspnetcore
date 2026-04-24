@@ -25,7 +25,7 @@
 
   <Target Name="_Test" BeforeTargets="Test">
     <Message Text="Testing NPM packages..." Importance="high" />
-    <Exec Command="npm run integration-test" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+    <Exec Command="npm run integration-test" WorkingDirectory="$(MSBuildThisFileDirectory).." ConsoleToMsBuild="true" />
   </Target>
 
   <Target Name="GetReferencesProvided" Returns="@(ProvidesReference)">

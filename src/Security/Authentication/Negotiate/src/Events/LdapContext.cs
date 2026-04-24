@@ -13,7 +13,10 @@ public class LdapContext : ResultContext<NegotiateOptions>
     /// <summary>
     /// Creates a new <see cref="LdapContext"/>.
     /// </summary>
-    /// <inheritdoc />
+    /// <param name="context">The HTTP request context.</param>
+    /// <param name="scheme">The authentication scheme.</param>
+    /// <param name="options">The negotiate authentication options.</param>
+    /// <param name="settings">The LDAP settings to apply.</param>
     public LdapContext(
         HttpContext context,
         AuthenticationScheme scheme,
