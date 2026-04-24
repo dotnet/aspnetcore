@@ -121,4 +121,5 @@ public sealed class RazorComponentsServiceOptions
     }
 
     private long _CacheBoundarySizeLimit = 100_000_000;
+    internal static readonly TimeSpan DefaultCacheBoundaryExpiration = TimeSpan.FromSeconds(30);
 }

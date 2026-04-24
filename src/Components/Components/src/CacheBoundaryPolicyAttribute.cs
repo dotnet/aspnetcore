@@ -10,17 +10,6 @@ namespace Microsoft.AspNetCore.Components;
 /// Optionally, set <see cref="VaryBy"/> to lift the exclusion when the cache boundary
 /// varies by the specified dimensions.
 /// </summary>
-/// <example>
-/// <code>
-/// // Always excluded from cache:
-/// [CacheBoundaryPolicy(Excluded = true)]
-/// public class MyDynamicComponent : ComponentBase { }
-///
-/// // Excluded unless the cache boundary varies by user:
-/// [CacheBoundaryPolicy(Excluded = true, VaryBy = CacheBoundaryVaryBy.User)]
-/// public class MyAuthComponent : ComponentBase { }
-/// </code>
-/// </example>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
 public sealed class CacheBoundaryPolicyAttribute : Attribute
 {

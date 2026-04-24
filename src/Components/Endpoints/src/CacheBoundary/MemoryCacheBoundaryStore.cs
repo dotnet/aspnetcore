@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal sealed class MemoryCacheBoundaryStore : CacheBoundaryStore
+internal sealed class MemoryCacheBoundaryStore : ICacheBoundaryStore
 {
     private readonly MemoryCache _cache;
 
@@ -18,13 +18,13 @@ internal sealed class MemoryCacheBoundaryStore : CacheBoundaryStore
         });
     }
 
-    public override string? Get(string key)
+    public string? Get(string key)
     {
         _cache.TryGetValue(key, out string? cached);
         return cached;
     }
 
-    public override void Set(string key, string json, CacheStoreOptions options = default)
+    public void Set(string key, string json, CacheStoreOptions options = default)
     {
         var entryOptions = new MemoryCacheEntryOptions
         {
@@ -42,7 +42,7 @@ internal sealed class MemoryCacheBoundaryStore : CacheBoundaryStore
         }
         else
         {
-            entryOptions.AbsoluteExpirationRelativeToNow = options.ExpiresAfter ?? DefaultExpiration;
+            entryOptions.AbsoluteExpirationRelativeToNow = options.ExpiresAfter ?? RazorComponentsServiceOptions.DefaultCacheBoundaryExpiration;
         }
 
         if (options.Priority.HasValue)
@@ -53,12 +53,12 @@ internal sealed class MemoryCacheBoundaryStore : CacheBoundaryStore
         _cache.Set(key, json, entryOptions);
     }
 
-    public override void Clear()
+    public void Clear()
     {
         _cache.Clear();
     }
 
-    public override void Dispose()
+    public void Dispose()
     {
         _cache.Dispose();
     }

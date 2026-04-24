@@ -47,7 +47,6 @@ internal sealed partial class CacheBoundaryJson
                 _ => throw new InvalidOperationException($"Unknown segment kind: {segment.Kind}"),
             };
         }
-
         return JsonSerializer.Serialize(entries, CacheJsonContext.Default.JsonCacheSegmentArray);
     }
 
@@ -89,7 +88,6 @@ internal sealed partial class CacheBoundaryJson
         {
             return null;
         }
-
         return JsonSerializer.Serialize(key);
     }
 
@@ -99,10 +97,7 @@ internal sealed partial class CacheBoundaryJson
         {
             return null;
         }
-
-        var type = Type.GetType(keyType)
-            ?? throw new InvalidOperationException($"Could not resolve key type: '{keyType}'.");
-
+        var type = Type.GetType(keyType) ?? throw new InvalidOperationException($"Could not resolve key type: '{keyType}'.");
         return JsonSerializer.Deserialize(keyValue, type);
     }
 

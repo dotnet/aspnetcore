@@ -84,16 +84,18 @@ public class CacheBoundaryRenderTest
         Assert.Fail($"Expected to find text frame '{expectedText}' but it was not present.");
     }
 
-    private sealed class TestCacheStore : CacheBoundaryStore
+    private sealed class TestCacheStore : ICacheBoundaryStore
     {
         public Dictionary<string, string> Data { get; } = new();
         public string? ReturnForAnyKey { get; set; }
 
-        public override string? Get(string key)
+        public string? Get(string key)
             => ReturnForAnyKey ?? (Data.TryGetValue(key, out var value) ? value : null);
 
-        public override void Set(string key, string json, CacheStoreOptions options = default)
+        public void Set(string key, string json, CacheStoreOptions options = default)
             => Data[key] = json;
+
+        public void Dispose() { }
     }
 
     private sealed class TestLogger : ILogger

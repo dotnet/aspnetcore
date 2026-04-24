@@ -30,6 +30,7 @@
     <Compile Include="$(RepoRoot)src\Shared\Components\ProtectedPrerenderComponentApplicationStore.cs" LinkBase="DependencyInjection" />
     <Compile Include="$(RepoRoot)src\Shared\ClosedGenericMatcher\ClosedGenericMatcher.cs" LinkBase="FormMapping" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ComponentKeyHelper.cs" Link="Shared\ComponentKeyHelper.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ResourceCollectionProvider.cs" Link="Shared\ResourceCollectionProvider.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryStateProvider.cs" LinkBase="Forms" />
     <Compile Include="$(SharedSourceRoot)Buffers\RefPooledArrayBufferWriter.cs" Link="Shared\Buffers\%(Filename)%(Extension)" />

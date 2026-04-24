@@ -103,7 +103,7 @@ public sealed class CacheBoundary : ComponentBase
     [Parameter]
     public string? VaryBy { get; set; }
 
-    [Inject] internal CacheBoundaryStore? CacheStore { get; set; }
+    [Inject] internal ICacheBoundaryStore? CacheStore { get; set; }
 
     [CascadingParameter] internal HttpContext? HttpContext { get; set; }
 
