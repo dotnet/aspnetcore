@@ -38,11 +38,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 /// </summary>
 internal sealed class RenderBatchWriter : IDisposable
 {
-    // Format marker written after the offset table so JS can detect the string encoding.
-    // 0 = UTF-8 (default, legacy), 1 = UTF-16LE.
-    internal const byte StringTableFormatUtf8 = 0;
-    internal const byte StringTableFormatUtf16 = 1;
-
     private readonly ArrayBuilder<string> _strings;
     private readonly Dictionary<string, int> _deduplicatedStringIndices;
     private readonly BinaryWriter _binaryWriter;
