@@ -8,24 +8,22 @@ namespace Microsoft.AspNetCore.Antiforgery;
 /// based on Fetch Metadata headers (Sec-Fetch-Site) and Origin header validation.
 /// </summary>
 /// <remarks>
-/// Cross-origin protection is enabled by default and provides CSRF protection
+/// Cross-origin protection is registered by default and provides CSRF protection
 /// for endpoints that have antiforgery metadata without requiring the antiforgery
-/// middleware or DataProtection services.
+/// middleware or DataProtection services. To disable cross-origin protection entirely,
+/// remove the <see cref="ICrossOriginProtection"/> service from DI.
 /// </remarks>
 public class CrossOriginProtectionOptions
 {
-    /// <summary>
-    /// Gets or sets a value indicating whether cross-origin protection is enabled.
-    /// When enabled, requests to endpoints with antiforgery metadata are validated
-    /// using Sec-Fetch-Site and Origin headers.
-    /// </summary>
-    /// <value>Defaults to <see langword="true"/>.</value>
-    public bool Enabled { get; set; } = true;
-
     /// <summary>
     /// Gets the collection of trusted origins that are allowed for cross-origin requests.
     /// Origins should be in the format "scheme://host[:port]" (e.g., "https://example.com").
     /// Comparison is case-insensitive.
     /// </summary>
+    /// <remarks>
+    /// Most applications don't need to configure this — same-origin requests are allowed
+    /// automatically via Sec-Fetch-Site header validation. Only add origins here when you
+    /// need to accept state-changing requests from a different origin.
+    /// </remarks>
     public IList<string> TrustedOrigins { get; } = new List<string>();
 }

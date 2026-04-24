@@ -2,12 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Shared;
@@ -283,6 +285,33 @@ public static class WebHost
             else
             {
                 configureRouting(services);
+            }
+
+            // WE DONT WANT TO DO SERVICES.REMOVE() HERE.
+            if (string.Equals("false", hostingContext.Configuration["CrossOriginProtection"], StringComparison.OrdinalIgnoreCase))
+            {
+                var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ICrossOriginProtection));
+                if (descriptor != null)
+                {
+                    services.Remove(descriptor);
+                }
+            }
+            else
+            {
+                // Read TrustedOrigins from configuration:
+                //   "CrossOriginProtection": { "TrustedOrigins": "https://admin.internal;https://partner.com" }
+                services.PostConfigure<CrossOriginProtectionOptions>(options =>
+                {
+                    var trustedOrigins = hostingContext.Configuration["CrossOriginProtection:TrustedOrigins"]
+                        ?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (trustedOrigins?.Length > 0)
+                    {
+                        foreach (var origin in trustedOrigins)
+                        {
+                            options.TrustedOrigins.Add(origin);
+                        }
+                    }
+                });
             }
         });
     }

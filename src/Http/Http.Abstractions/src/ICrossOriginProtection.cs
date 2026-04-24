@@ -18,9 +18,8 @@ public interface ICrossOriginProtection
     /// </summary>
     /// <param name="context">The <see cref="HttpContext"/> for the current request.</param>
     /// <returns>
-    /// <see cref="CrossOriginValidationResult.Allowed"/> if the request passes cross-origin validation;
-    /// <see cref="CrossOriginValidationResult.Denied"/> if the request is a suspected cross-origin attack;
-    /// <see cref="CrossOriginValidationResult.Disabled"/> if cross-origin protection is not enabled.
+    /// <see cref="CrossOriginAntiforgeryResult.Allowed"/> if the request passes cross-origin validation;
+    /// <see cref="CrossOriginAntiforgeryResult.Denied"/> if the request is a suspected cross-origin attack.
     /// </returns>
-    CrossOriginValidationResult Validate(HttpContext context);
+    CrossOriginAntiforgeryResult Validate(HttpContext context);
 }
