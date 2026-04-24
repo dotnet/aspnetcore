@@ -30,15 +30,11 @@ namespace Microsoft.AspNetCore.Mvc.Microbenchmarks;
 [MemoryDiagnoser]
 public class WriteLiteralUtf8Benchmark
 {
-    private StringWriteLiteralView _stringView;
-    private Utf8WriteLiteralView _utf8View;
     private MemoryStream _outputStream;
 
     [GlobalSetup]
     public void Setup()
     {
-        _stringView = new StringWriteLiteralView();
-        _utf8View = new Utf8WriteLiteralView();
         _outputStream = new MemoryStream(capacity: 16 * 1024);
     }
 
@@ -57,7 +53,9 @@ public class WriteLiteralUtf8Benchmark
     {
         _outputStream.Position = 0;
         _outputStream.SetLength(0);
-        await RenderViewAsync(_stringView, _outputStream);
+
+        var view = new StringWriteLiteralView();
+        await RenderViewAsync(view, _outputStream);
     }
 
     /// <summary>
@@ -69,7 +67,9 @@ public class WriteLiteralUtf8Benchmark
     {
         _outputStream.Position = 0;
         _outputStream.SetLength(0);
-        await RenderViewAsync(_utf8View, _outputStream);
+
+        var view = new Utf8WriteLiteralView();
+        await RenderViewAsync(view, _outputStream);
     }
 
     private static async Task RenderViewAsync(RazorPage page, Stream outputStream)
@@ -78,10 +78,12 @@ public class WriteLiteralUtf8Benchmark
         var buffer = new ViewBuffer(bufferScope, "benchmark-view", ViewBuffer.ViewPageSize);
         var viewBufferWriter = new ViewBufferTextWriter(buffer, Encoding.UTF8);
 
-        var httpContext = new DefaultHttpContext();
-        httpContext.RequestServices = new ServiceCollection()
-            .AddSingleton<IViewBufferScope>(bufferScope)
-            .BuildServiceProvider();
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = new ServiceCollection()
+                .AddSingleton<IViewBufferScope>(bufferScope)
+                .BuildServiceProvider()
+        };
 
         var viewContext = new ViewContext(
             new ActionContext(httpContext, new RouteData(), new ActionDescriptor()),
@@ -113,16 +115,16 @@ public class WriteLiteralUtf8Benchmark
         {
             WriteLiteral("<!DOCTYPE html>\r\n<html lang=\"en\">\r\n<head>\r\n    <meta charset=\"utf-8\" />\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\r\n    <title>Product Listing</title>\r\n    <link rel=\"stylesheet\" href=\"/css/site.css\" />\r\n</head>\r\n<body>\r\n    <header>\r\n        <nav class=\"navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3\">\r\n            <div class=\"container\">\r\n                <a class=\"navbar-brand\" href=\"/\">My Store</a>\r\n            </div>\r\n        </nav>\r\n    </header>\r\n    <div class=\"container\">\r\n        <main role=\"main\" class=\"pb-3\">\r\n            <h1>Products</h1>\r\n            <div class=\"row\">\r\n");
 
-            for (var i = 0; i < 20; i++)
+            for (var i = 0; i < 500; i++)
             {
                 WriteLiteral("                <div class=\"col-md-4 mb-3\">\r\n                    <div class=\"card\">\r\n                        <div class=\"card-body\">\r\n                            <h5 class=\"card-title\">");
-                Write(HtmlString.Empty); // Simulates @Model.Name
+                Write("Model.Name"); // Simulates @Model.Name
                 WriteLiteral("</h5>\r\n                            <p class=\"card-text text-muted\">");
-                Write(HtmlString.Empty); // Simulates @Model.Description
+                Write("Model.Description that's longer and needs more work"); // Simulates @Model.Description
                 WriteLiteral("</p>\r\n                            <div class=\"d-flex justify-content-between align-items-center\">\r\n                                <span class=\"h5 mb-0\">");
-                Write(HtmlString.Empty); // Simulates @Model.Price
+                Write(123.45); // Simulates @Model.Price
                 WriteLiteral("</span>\r\n                                <a href=\"/products/details/");
-                Write(HtmlString.Empty); // Simulates @Model.Id
+                Write(123456); // Simulates @Model.Id
                 WriteLiteral("\" class=\"btn btn-primary\">View Details</a>\r\n                            </div>\r\n                        </div>\r\n                    </div>\r\n                </div>\r\n");
             }
 
@@ -149,22 +151,22 @@ public class WriteLiteralUtf8Benchmark
 
         public override Task ExecuteAsync()
         {
-            WriteLiteral(new ReadOnlyMemory<byte>(__Literals.Literal_0));
+            WriteLiteral(__Literals.Literal_0);
 
-            for (var i = 0; i < 20; i++)
+            for (var i = 0; i < 500; i++)
             {
-                WriteLiteral(new ReadOnlyMemory<byte>(__Literals.Literal_1));
-                Write(HtmlString.Empty); // Simulates @Model.Name
-                WriteLiteral(new ReadOnlyMemory<byte>(__Literals.Literal_2));
-                Write(HtmlString.Empty); // Simulates @Model.Description
-                WriteLiteral(new ReadOnlyMemory<byte>(__Literals.Literal_3));
-                Write(HtmlString.Empty); // Simulates @Model.Price
-                WriteLiteral(new ReadOnlyMemory<byte>(__Literals.Literal_4));
-                Write(HtmlString.Empty); // Simulates @Model.Id
-                WriteLiteral(new ReadOnlyMemory<byte>(__Literals.Literal_5));
+                WriteLiteral(__Literals.Literal_1);
+                Write("Model.Name"); // Simulates @Model.Name
+                WriteLiteral(__Literals.Literal_2);
+                Write("Model.Description that's longer and needs more work"); // Simulates @Model.Description
+                WriteLiteral(__Literals.Literal_3);
+                Write(123.45); // Simulates @Model.Price
+                WriteLiteral(__Literals.Literal_4);
+                Write(123456); // Simulates @Model.Id
+                WriteLiteral(__Literals.Literal_5);
             }
 
-            WriteLiteral(new ReadOnlyMemory<byte>(__Literals.Literal_6));
+            WriteLiteral(__Literals.Literal_6);
 
             return Task.CompletedTask;
         }

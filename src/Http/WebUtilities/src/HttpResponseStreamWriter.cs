@@ -758,7 +758,7 @@ public class HttpResponseStreamWriter : TextWriter
 
     private void ThrowIfNotUtf8Encoding()
     {
-        if (Encoding is not UTF8Encoding)
+        if (!ReferenceEquals(Encoding, Encoding.UTF8) && (Encoding is not UTF8Encoding))
         {
             throw new InvalidOperationException($"WriteUtf8 requires a UTF-8 encoding, but the writer's encoding is '{Encoding.WebName}'.");
         }
