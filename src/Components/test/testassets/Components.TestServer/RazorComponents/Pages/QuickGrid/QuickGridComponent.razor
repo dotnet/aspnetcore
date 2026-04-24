@@ -1,4 +1,4 @@
-﻿@page "/quickgrid"
+@page "/quickgrid"
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using Microsoft.AspNetCore.Components.Forms
 
@@ -15,7 +15,7 @@
 </div>
 
 <div id="grid2">
-    <QuickGrid ItemsProvider="@cityProvider" Pagination="@pagination2" QueryName="QuickGrid2">
+    <QuickGrid ItemsProvider="@cityProvider" Pagination="@pagination2" QueryParameterNamePrefix="QuickGrid2">
         <PropertyColumn Property="@(c => c.CityId)" />
         <PropertyColumn Property="@(c => c.Name)" Sortable="true" />
         <PropertyColumn Property="@(c => c.Country)" Sortable="true" />
@@ -31,7 +31,7 @@
     </div>
 </FormMappingScope>
 <div id="grid3">
-    <QuickGrid Items="@people" Pagination="@pagination3" QueryName="QuickGrid3">
+    <QuickGrid Items="@people" Pagination="@pagination3" QueryParameterNamePrefix="QuickGrid3">
         <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" />
         <PropertyColumn Property="@(p => p.FirstName)" Sortable="true" />
         <PropertyColumn Property="@(p => p.LastName)" Sortable="true" />

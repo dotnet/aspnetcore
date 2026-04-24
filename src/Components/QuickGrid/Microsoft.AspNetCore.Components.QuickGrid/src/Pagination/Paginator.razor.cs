@@ -41,6 +41,12 @@ public partial class Paginator : IDisposable
     private bool CanGoForwards => State.CurrentPageIndex < State.LastPageIndex;
     private readonly QueryParameterValueSupplier _queryParameterValueSupplier;
 
+    private Task GoFirstAsync() => GoToPageAsync(0);
+    private Task GoPreviousAsync() => GoToPageAsync(State.CurrentPageIndex - 1);
+    private Task GoNextAsync() => GoToPageAsync(State.CurrentPageIndex + 1);
+    private Task GoLastAsync() => GoToPageAsync(State.LastPageIndex.GetValueOrDefault(0));
+    private Task GoToPageAsync(int pageIndex) => State.SetCurrentPageIndexAsync(pageIndex);
+
     private string GetPageUrl(int pageIndex)
     {
         int? pageValue = pageIndex == 0 ? null : pageIndex + 1;
@@ -50,19 +56,27 @@ public partial class Paginator : IDisposable
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        NavigationManager.LocationChanged += OnLocationChanged;
+        if (QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting)
+        {
+            NavigationManager.LocationChanged += OnLocationChanged;
+        }
     }
 
     /// <inheritdoc />
     protected override Task OnParametersSetAsync()
     {
         _totalItemCountChanged.SubscribeOrMove(State.TotalItemCountChangedSubscribable);
-        _queryParameterValueSupplier.ReadParametersFromQuery(QueryParameterValueSupplier.GetQueryString(NavigationManager.Uri));
-        var pageFromQuery = ReadPageIndexFromQueryString() ?? 0;
-        if (pageFromQuery != State.CurrentPageIndex)
+
+        if (QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting)
         {
-            return State.SetCurrentPageIndexAsync(pageFromQuery);
+            _queryParameterValueSupplier.ReadParametersFromQuery(QueryParameterValueSupplier.GetQueryString(NavigationManager.Uri));
+            var pageFromQuery = ReadPageIndexFromQueryString() ?? 0;
+            if (pageFromQuery != State.CurrentPageIndex)
+            {
+                return State.SetCurrentPageIndexAsync(pageFromQuery);
+            }
         }
+
         return Task.CompletedTask;
     }
 
@@ -94,7 +108,10 @@ public partial class Paginator : IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
-        NavigationManager.LocationChanged -= OnLocationChanged;
+        if (QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting)
+        {
+            NavigationManager.LocationChanged -= OnLocationChanged;
+        }
         _totalItemCountChanged.Dispose();
     }
 }

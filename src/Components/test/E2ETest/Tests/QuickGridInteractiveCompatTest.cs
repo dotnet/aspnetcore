@@ -11,14 +11,26 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.Tests;
 
-public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
+/// <summary>
+/// Tests QuickGrid with URL-driven navigation disabled via the
+/// <c>Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting</c> AppContext switch.
+/// Mirrors <see cref="QuickGridInteractiveTest"/> but asserts button-based sorting and pagination
+/// instead of anchor-based navigation with URL query parameters.
+/// </summary>
+public class QuickGridInteractiveCompatTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
 {
-    public QuickGridInteractiveTest(
+    public QuickGridInteractiveCompatTest(
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
+    }
+
+    protected override void InitializeAsyncCore()
+    {
+        _serverFixture.AdditionalArguments.Add("--DisableUrlDrivenNavigation=true");
+        base.InitializeAsyncCore();
     }
 
     public override Task InitializeAsync() => InitializeAsync(BrowserFixture.StreamingContext);
@@ -29,22 +41,25 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Navigate($"{ServerPathBase}/quickgrid-interactive");
         Browser.Exists(By.CssSelector("#grid > table"));
 
-        // Click to sort ascending, wait for result
-        Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(1) > div > a"));
+        var initialUrl = Browser.Url;
+
+        // Click button to sort ascending
+        Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(1) > div > button.col-title"));
         Browser.Equal("10895", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
-        Assert.Contains("sort=PersonId", Browser.Url);
-        Assert.Contains("order=asc", Browser.Url);
+
+        // URL should not change in compat mode
+        Assert.Equal(initialUrl, Browser.Url);
 
         // Click again to sort descending
-        Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(1) > div > a"));
+        Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(1) > div > button.col-title"));
 
-        //Compare first row to expected result
         Browser.Equal("12381", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
         Browser.Equal("Matti", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(2)")).Text);
         Browser.Equal("Karttunen", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(3)")).Text);
         Browser.Equal("1981-06-04", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(4)")).Text);
-        Assert.Contains("sort=PersonId", Browser.Url);
-        Assert.Contains("order=desc", Browser.Url);
+
+        // URL should still not change
+        Assert.Equal(initialUrl, Browser.Url);
     }
 
     [Fact]
@@ -53,22 +68,21 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Navigate($"{ServerPathBase}/quickgrid-interactive");
         Browser.Exists(By.CssSelector("#grid > table"));
 
-        // Click to sort ascending, wait for result
-        Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(2) > div > a.col-title"));
+        var initialUrl = Browser.Url;
+
+        // Click button to sort ascending
+        Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(2) > div > button.col-title"));
         Browser.Equal("12372", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
-        Assert.Contains("sort=FirstName", Browser.Url);
-        Assert.Contains("order=asc", Browser.Url);
+        Assert.Equal(initialUrl, Browser.Url);
 
         // Click again to sort descending
-        Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(2) > div > a.col-title"));
+        Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(2) > div > button.col-title"));
 
-        //Compare first row to expected result
         Browser.Equal("12379", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
         Browser.Equal("Zbyszek", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(2)")).Text);
         Browser.Equal("Piestrzeniewicz", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(3)")).Text);
         Browser.Equal("1981-04-02", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(4)")).Text);
-        Assert.Contains("sort=FirstName", Browser.Url);
-        Assert.Contains("order=desc", Browser.Url);
+        Assert.Equal(initialUrl, Browser.Url);
     }
 
     [Fact]
@@ -77,22 +91,21 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Navigate($"{ServerPathBase}/quickgrid-interactive");
         Browser.Exists(By.CssSelector("#grid > table"));
 
-        // Click to sort ascending, wait for result
-        Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(4) > div > a"));
+        var initialUrl = Browser.Url;
+
+        // Click button to sort ascending
+        Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(4) > div > button.col-title"));
         Browser.Equal("11205", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
-        Assert.Contains("sort=BirthDate", Browser.Url);
-        Assert.Contains("order=asc", Browser.Url);
+        Assert.Equal(initialUrl, Browser.Url);
 
         // Click again to sort descending
-        Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(4) > div > a"));
+        Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(4) > div > button.col-title"));
 
-        //Compare first row to expected result
         Browser.Equal("12364", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
         Browser.Equal("Paolo", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(2)")).Text);
         Browser.Equal("Accorti", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(3)")).Text);
         Browser.Equal("2018-05-18", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(4)")).Text);
-        Assert.Contains("sort=BirthDate", Browser.Url);
-        Assert.Contains("order=desc", Browser.Url);
+        Assert.Equal(initialUrl, Browser.Url);
     }
 
     [Fact]
@@ -109,22 +122,9 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
 
         Browser.Equal("2", () => Browser.FindElement(By.CssSelector(".first-paginator .paginator nav > div > strong:nth-child(1)")).Text);
         Browser.Equal(10, () => Browser.FindElement(By.CssSelector("#grid .quickgrid")).FindElements(By.CssSelector("tbody > tr")).Count);
-    }
 
-    [Fact]
-    public void DualPaginatorsNavigatesAndBothUpdate()
-    {
-        Navigate($"{ServerPathBase}/quickgrid-interactive");
-        Browser.Exists(By.CssSelector("#grid2 > table"));
-
-        Browser.Equal("1", () => Browser.FindElement(By.CssSelector(".top-paginator .paginator nav > div > strong:nth-child(1)")).Text);
-        Browser.Equal("1", () => Browser.FindElement(By.CssSelector(".bottom-paginator .paginator nav > div > strong:nth-child(1)")).Text);
-
-        Browser.Click(By.CssSelector(".top-paginator .go-next"));
-
-        Browser.Equal("2", () => Browser.FindElement(By.CssSelector(".top-paginator .paginator nav > div > strong:nth-child(1)")).Text);
-        Browser.Equal("2", () => Browser.FindElement(By.CssSelector(".bottom-paginator .paginator nav > div > strong:nth-child(1)")).Text);
-        Assert.Contains("people_page=2", Browser.Url);
+        // URL should not change in compat mode
+        Assert.DoesNotContain("page=", Browser.Url);
     }
 
     [Fact]
@@ -134,21 +134,20 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Browser.Exists(By.CssSelector("#grid > table"));
         Browser.Exists(By.CssSelector("#grid2 > table"));
 
-        // Sort first grid by PersonId ascending
-        Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(1) > div > a"));
+        var initialUrl = Browser.Url;
+
+        // Sort first grid by PersonId ascending (button, not anchor)
+        Browser.Click(By.CssSelector("#grid > table thead > tr > th:nth-child(1) > div > button.col-title"));
         Browser.Equal("10895", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
 
-        // Sort second grid by FirstName ascending (uses QueryParameterNamePrefix="people" prefix)
-        Browser.Click(By.CssSelector("#grid2 > table thead > tr > th:nth-child(2) > div > a.col-title"));
+        // Sort second grid by FirstName ascending (button, not anchor)
+        Browser.Click(By.CssSelector("#grid2 > table thead > tr > th:nth-child(2) > div > button.col-title"));
         Browser.Equal("12372", () => Browser.FindElement(By.CssSelector("#grid2 > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
 
         // First grid should remain sorted
         Browser.Equal("10895", () => Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(1)")).Text);
 
-        // Verify URL contains both unprefixed and prefixed sort parameters
-        Assert.Contains("sort=PersonId", Browser.Url);
-        Assert.Contains("order=asc", Browser.Url);
-        Assert.Contains("people_sort=FirstName", Browser.Url);
-        Assert.Contains("people_order=asc", Browser.Url);
+        // URL should not change in compat mode
+        Assert.Equal(initialUrl, Browser.Url);
     }
 }

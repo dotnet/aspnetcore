@@ -7,7 +7,8 @@
 }
 
 /* If the column is sortable, its title is rendered as a link element for accessibility and to support navigation by tab */
-a.col-title {
+a.col-title,
+button.col-title {
     border: none;
     background: none;
     position: relative;

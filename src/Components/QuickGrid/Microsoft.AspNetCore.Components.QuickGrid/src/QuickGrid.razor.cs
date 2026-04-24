@@ -119,7 +119,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// The parameter from which the page and sorting URL parameters are derived. The default value is an empty string, which results in query parameters named "page", "sort", and "order". If you provide a non-empty value, for example "products",
     /// then the query parameters will be "products_page", "products_sort", and "products_order". This allows you to use multiple <see cref="QuickGrid{TGridItem}"/> components on the same page without their URL parameters conflicting with each other.
     /// </summary>
-    [Parameter] public string QueryName { get; set; } = "";
+    [Parameter] public string QueryParameterNamePrefix { get; set; } = "";
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
@@ -174,9 +174,9 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
 
     private (string ColumnTitle, bool Ascending)? _cachedSortFromQuery;
 
-    private string SortQueryParameterNameBy => QueryName == "" ? "sort" : $"{QueryName}_sort";
-    private string SortQueryParameterNameOrder => QueryName == "" ? "order" : $"{QueryName}_order";
-    private string PageQueryParameterName => QueryName == "" ? "page" : $"{QueryName}_page";
+    private string SortQueryParameterNameBy => QueryParameterNamePrefix == "" ? "sort" : $"{QueryParameterNamePrefix}_sort";
+    private string SortQueryParameterNameOrder => QueryParameterNamePrefix == "" ? "order" : $"{QueryParameterNamePrefix}_order";
+    private string PageQueryParameterName => QueryParameterNamePrefix == "" ? "page" : $"{QueryParameterNamePrefix}_page";
     private readonly QueryParameterValueSupplier _queryParameterValueSupplier;
 
     /// <summary>
@@ -202,8 +202,11 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _queryParameterValueSupplier.ReadParametersFromQuery(QueryParameterValueSupplier.GetQueryString(NavigationManager.Uri));
-        NavigationManager.LocationChanged += OnLocationChanged;
+        if (QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting)
+        {
+            _queryParameterValueSupplier.ReadParametersFromQuery(QueryParameterValueSupplier.GetQueryString(NavigationManager.Uri));
+            NavigationManager.LocationChanged += OnLocationChanged;
+        }
     }
 
     /// <inheritdoc />
@@ -316,8 +319,13 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         };
 
         _sortByColumn = column;
-        var newUri = GetSortQueryStringUrl(_sortByColumn, _sortByAscending);
-        NavigationManager.NavigateTo(newUri);
+
+        if (QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting)
+        {
+            var newUri = GetSortQueryStringUrl(_sortByColumn, _sortByAscending);
+            NavigationManager.NavigateTo(newUri);
+        }
+
         return RefreshDataAsync();
     }
 
@@ -558,7 +566,10 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        NavigationManager.LocationChanged -= OnLocationChanged;
+        if (QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting)
+        {
+            NavigationManager.LocationChanged -= OnLocationChanged;
+        }
         _wasDisposed = true;
         _currentPageItemsChanged.Dispose();
 

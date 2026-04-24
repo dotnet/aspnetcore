@@ -1,4 +1,4 @@
-﻿@page "/quickgrid-interactive"
+@page "/quickgrid-interactive"
 @rendermode RenderMode.InteractiveServer
 @using Microsoft.AspNetCore.Components.QuickGrid
 
@@ -28,7 +28,7 @@
     <Paginator State="@pagination2" />
 </div>
 <div id="grid2">
-    <QuickGrid Items="@people" Pagination="@pagination2" QueryName="people">
+    <QuickGrid Items="@people" Pagination="@pagination2" QueryParameterNamePrefix="people">
         <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" />
         <PropertyColumn Property="@(p => p.FirstName)" Sortable="true" />
         <PropertyColumn Property="@(p => p.LastName)" Sortable="true" />
