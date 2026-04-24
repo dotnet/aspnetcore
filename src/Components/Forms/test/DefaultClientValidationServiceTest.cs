@@ -221,7 +221,7 @@ public class DefaultClientValidationServiceTest
 
     private class CustomValidationAttribute : ValidationAttribute, IClientValidationAdapter
     {
-        public void AddClientValidationAttributes(in ClientValidationContext context)
+        public void AddClientValidationAttributes(ClientValidationContext context)
         {
             context.MergeAttribute("data-val-custom", context.ErrorMessage);
             context.MergeAttribute("data-val-custom-param", "custom-value");

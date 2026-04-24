@@ -12,5 +12,5 @@ public interface IClientValidationAdapter
     /// <summary>
     /// Adds client-side validation attributes to the rendering context.
     /// </summary>
-    void AddClientValidationAttributes(in ClientValidationContext context);
+    void AddClientValidationAttributes(ClientValidationContext context);
 }

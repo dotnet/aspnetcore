@@ -2,7 +2,7 @@
 *REMOVED*static Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.AddDataAnnotationsValidation(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext) -> Microsoft.AspNetCore.Components.Forms.EditContext!
 *REMOVED*static Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.EnableDataAnnotationsValidation(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext) -> System.IDisposable!
 Microsoft.AspNetCore.Components.Forms.ClientValidation.IClientValidationAdapter
-Microsoft.AspNetCore.Components.Forms.ClientValidation.IClientValidationAdapter.AddClientValidationAttributes(in Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationContext context) -> void
+Microsoft.AspNetCore.Components.Forms.ClientValidation.IClientValidationAdapter.AddClientValidationAttributes(Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationContext context) -> void
 Microsoft.AspNetCore.Components.Forms.ClientValidation.IClientValidationService
 Microsoft.AspNetCore.Components.Forms.ClientValidation.IClientValidationService.GetClientValidationAttributes(Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
 Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationContext

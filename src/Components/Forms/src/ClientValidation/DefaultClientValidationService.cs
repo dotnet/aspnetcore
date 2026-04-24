@@ -88,14 +88,14 @@ internal sealed class DefaultClientValidationService : IClientValidationService
                 }
                 break;
 
-            case MaxLengthAttribute mla:
+            case MaxLengthAttribute maxla:
                 htmlAttributes.TryAdd("data-val-maxlength", errorMessage);
-                htmlAttributes.TryAdd("data-val-maxlength-max", mla.Length.ToString(CultureInfo.InvariantCulture));
+                htmlAttributes.TryAdd("data-val-maxlength-max", maxla.Length.ToString(CultureInfo.InvariantCulture));
                 break;
 
-            case MinLengthAttribute mla:
+            case MinLengthAttribute minla:
                 htmlAttributes.TryAdd("data-val-minlength", errorMessage);
-                htmlAttributes.TryAdd("data-val-minlength-min", mla.Length.ToString(CultureInfo.InvariantCulture));
+                htmlAttributes.TryAdd("data-val-minlength-min", minla.Length.ToString(CultureInfo.InvariantCulture));
                 break;
 
             case RangeAttribute ra:
@@ -163,7 +163,7 @@ internal sealed class DefaultClientValidationService : IClientValidationService
                 if (validationAttribute is IClientValidationAdapter adapter)
                 {
                     var context = new ClientValidationContext(htmlAttributes, errorMessage);
-                    adapter.AddClientValidationAttributes(in context);
+                    adapter.AddClientValidationAttributes(context);
                 }
                 break;
         }
