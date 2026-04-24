@@ -6,9 +6,10 @@
     "AI",
     "MCP"
   ],
-  "identity": "Microsoft.McpServer.ProjectTemplates.McpServer.CSharp",
   "name": "MCP Server App",
   "description": "A project template for creating a Model Context Protocol (MCP) server using C# and the ModelContextProtocol package.",
+  "groupIdentity": "Microsoft.McpServer",
+  "identity": "Microsoft.McpServer.CSharp.11.0",
   "shortName": "mcpserver",
   "defaultName": "McpServer",
   "sourceName": "McpServer-CSharp",
