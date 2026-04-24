@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -115,9 +114,7 @@ public abstract class RuntimePerformanceBenchmarkBase
     [GlobalSetup]
     public void GlobalSetup()
     {
-        var loader = new RazorCompiledItemLoader();
-        var viewsDll = Path.ChangeExtension(typeof(ViewAssemblyMarker).Assembly.Location, "Views.dll");
-        var viewsAssembly = Assembly.Load(File.ReadAllBytes(viewsDll));
+        var viewsAssembly = typeof(ViewAssemblyMarker).Assembly;
         var services = new ServiceCollection();
         var listener = new DiagnosticListener(GetType().Assembly.FullName);
         var partManager = new ApplicationPartManager();
