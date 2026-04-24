@@ -69,7 +69,7 @@ public class VirtualizeItemKeyAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.VirtualizeItemsProviderRequiresItemKey.Id,
-                Message = "Virtualize component uses 'ItemsProvider' without 'ItemKey'. Set 'ItemKey' to enable prepend/append detection.",
+                Message = "Virtualize uses 'ItemsProvider' without 'ItemKey'. Set ItemKey to a function returning a unique key per item (e.g., ItemKey=\"@(item => item.Id)\").",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
