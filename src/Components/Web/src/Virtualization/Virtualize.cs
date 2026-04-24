@@ -52,8 +52,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private object? _previousFirstLoadedItemKey;
 
-    private bool _hasWarnedMissingItemKey;
-
     private CancellationTokenSource? _refreshCts;
 
     private bool _skipNextDistributionRefresh;
@@ -227,14 +225,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                     $"Do not supply both '{nameof(Items)}' and '{nameof(ItemsProvider)}'.");
             }
 
-            if (ItemKey == null && !_hasWarnedMissingItemKey)
+            if (ItemKey == null)
             {
-                _hasWarnedMissingItemKey = true;
-                System.Diagnostics.Debug.WriteLine(
-                    $"[Virtualize] Warning: '{nameof(ItemsProvider)}' is set without '{nameof(ItemKey)}'. " +
-                    $"Anchoring requires '{nameof(ItemKey)}' to keep the viewport stable " +
-                    $"when items change dynamically. Set '{nameof(ItemKey)}' to a function that returns " +
-                    $"a unique identifier for each item (e.g., ItemKey=\"@(item => item.Id)\").");
+                throw new InvalidOperationException(
+                    $"{GetType()} requires '{nameof(ItemKey)}' when '{nameof(ItemsProvider)}' is used. " +
+                    $"Set '{nameof(ItemKey)}' to a function that returns a unique identifier for each item " +
+                    $"(e.g., ItemKey=\"@(item => item.Id)\").");
             }
 
             _itemsProvider = ItemsProvider;
