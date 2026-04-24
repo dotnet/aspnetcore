@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsBenchmarkProject>true</IsBenchmarkProject>
+    <<IsMicrobenchmarksProject>false</IsMicrobenchmarksProject>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
