@@ -74,6 +74,26 @@ export class ErrorDisplay {
     }
   }
 
+  clearFieldToPristine(input: ValidatableElement): void {
+    removeClasses(input, this.cssClasses.inputError);
+    removeClasses(input, this.cssClasses.inputValid);
+
+    const messageElements = findMessageElements(input);
+    for (const messageElement of messageElements) {
+      removeClasses(messageElement, this.cssClasses.messageError);
+      removeClasses(messageElement, this.cssClasses.messageValid);
+      if (messageElement.getAttribute('data-valmsg-replace') !== 'false') {
+        messageElement.textContent = '';
+      }
+    }
+
+    input.removeAttribute('aria-invalid');
+    const msgId = messageElements[0]?.id;
+    if (msgId) {
+      removeAriaToken(input, 'aria-describedby', msgId);
+    }
+  }
+
   private updateMessageElements(messageElements: HTMLElement[], errorMessage: string): void {
     const classToAdd = errorMessage ? this.cssClasses.messageError : this.cssClasses.messageValid;
     const classToRemove = errorMessage ? this.cssClasses.messageValid : this.cssClasses.messageError;

@@ -93,8 +93,7 @@ export class ValidationEngine {
     for (const element of formState.trackedElements) {
       const state = this.trackedElements.get(element);
       if (state) {
-        this.markValid(element, state);
-        state.hasBeenInvalid = false;
+        this.markPristine(element, state);
       }
     }
 
@@ -236,6 +235,13 @@ export class ValidationEngine {
     state.currentError = undefined;
     element.setCustomValidity('');
     this.errorDisplay.clearFieldError(element);
+  }
+
+  private markPristine(element: ValidatableElement, state: ElementState): void {
+    state.currentError = undefined;
+    state.hasBeenInvalid = false;
+    element.setCustomValidity('');
+    this.errorDisplay.clearFieldToPristine(element);
   }
 }
 
