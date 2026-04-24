@@ -20,6 +20,7 @@ export interface CircuitStartOptions {
   reconnectionHandler?: ReconnectionHandler;
   initializers : ServerInitializers;
   circuitHandlers: CircuitHandler[];
+  onPauseRequested?: () => Promise<void>;
 }
 
 export function resolveOptions(userOptions?: Partial<CircuitStartOptions>): CircuitStartOptions {
