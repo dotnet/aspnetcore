@@ -798,11 +798,11 @@ public class VirtualizeTest
             b.AddContent(1, item.ToString(System.Globalization.CultureInfo.InvariantCulture));
             b.CloseElement();
         }));
-        builder.AddComponentParameter(6, "AnchorMode", anchorMode);
+        builder.AddComponentParameter(5, "AnchorMode", anchorMode);
 
         if (captureRenderedVirtualize != null)
         {
-            builder.AddComponentReferenceCapture(5, component =>
+            builder.AddComponentReferenceCapture(6, component =>
                 captureRenderedVirtualize(component as Virtualize<int>));
         }
 
@@ -872,7 +872,7 @@ public class VirtualizeTest
     }
 
     [Fact]
-    public async Task Virtualize_ItemsProvider_GrowingTotalCount_DoesNotAssumePreprend()
+    public async Task Virtualize_ItemsProvider_GrowingTotalCount_DoesNotAssumePrepend()
     {
         Virtualize<int> renderedVirtualize = null;
         var totalCount = 100;
