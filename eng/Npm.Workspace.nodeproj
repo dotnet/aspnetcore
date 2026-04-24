@@ -16,7 +16,9 @@
     <ContainsFunctionalTestAssets>false</ContainsFunctionalTestAssets>
     <BuildHelixPayload>false</BuildHelixPayload>
     <!-- Skip puppeteer tests until https://github.com/dotnet/aspnetcore/issues/54176 is resolved -->
-    <_NpmAdditionalEnvironmentVariables>PUPPETEER_SKIP_DOWNLOAD=1</_NpmAdditionalEnvironmentVariables>
+    <!-- Generate a Node.js diagnostic report on uncaught exceptions to help diagnose npm ci crashes (exit code 57005).
+         report-on-faulting-state-change is not allowed in NODE_OPTIONS, so we use report-uncaught-exception. -->
+    <_NpmAdditionalEnvironmentVariables>PUPPETEER_SKIP_DOWNLOAD=1;NODE_OPTIONS=--report-uncaught-exception --report-directory=artifacts/log/node-reports</_NpmAdditionalEnvironmentVariables>
   </PropertyGroup>
 
   <PropertyGroup>
