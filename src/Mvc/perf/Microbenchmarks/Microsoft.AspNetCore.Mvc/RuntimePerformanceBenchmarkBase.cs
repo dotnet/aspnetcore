@@ -87,6 +87,11 @@ public class RuntimePerformanceBenchmarkBase
         public IFileProvider ContentRootFileProvider { get; set; }
     }
 
+    public RuntimePerformanceBenchmarkBase() : this([])
+    {
+
+    }
+
     protected RuntimePerformanceBenchmarkBase(params string[] viewPaths)
     {
         ViewPaths = viewPaths;
