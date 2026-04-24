@@ -64,8 +64,7 @@ test.describe('timing: lazy validation, eager recovery', () => {
     expect(await getFieldMessage(page, 'Default')).toBe('');
 
     // Come back, clear the value, and blur — change fires, field is now invalid
-    await page.locator('#default-field').press('Control+a');
-    await page.locator('#default-field').press('Backspace');
+    await page.locator('#default-field').fill('');
     await page.locator('#submit-only').focus();
     expect(await getFieldMessage(page, 'Default')).toBe('Default is required.');
   });
@@ -89,8 +88,7 @@ test.describe('timing: lazy validation, eager recovery', () => {
     await page.locator('#change-only').focus();
     expect(await getFieldMessage(page, 'Default')).toBe('');
 
-    await page.locator('#default-field').press('Control+a');
-    await page.locator('#default-field').press('Backspace');
+    await page.locator('#default-field').fill('');
     await page.locator('#change-only').focus();
     expect(await getFieldMessage(page, 'Default')).toBe('Default is required.');
 
