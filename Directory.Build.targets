@@ -138,6 +138,25 @@
     <BuildDependsOn>$(BuildDependsOn);_CopySymbolsToArtifacts</BuildDependsOn>
   </PropertyGroup>
 
+  <!-- Enable runtime async for net11.0+ source projects that ship only in the Shared Framework -->
+  <PropertyGroup Condition="'$(IsAspNetCoreApp)' == 'true' AND
+      '$(IsPackable)' != 'true' AND
+      $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0')) AND
+      '$(UseRuntimeAsync)' != 'false' AND
+      '$(TargetOS)' != 'browser' AND
+      !$(RuntimeIdentifier.StartsWith('browser-'))">
+    <Features>$(Features);runtime-async=on</Features>
+  </PropertyGroup>
+
+  <!-- Also enable runtime async for compatible test projects -->
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true' AND
+      $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net11.0')) AND
+      '$(UseRuntimeAsync)' != 'false' AND
+      '$(TargetOS)' != 'browser' AND
+      !$(RuntimeIdentifier.StartsWith('browser-'))">
+    <Features>$(Features);runtime-async=on</Features>
+  </PropertyGroup>
+
   <!-- Properties for Package Validation -->
   <PropertyGroup Condition="'$(ExcludeFromSourceOnlyBuild)' != 'true'">
     <EnablePackageValidation Condition="'$(EnablePackageValidation)' == ''">true</EnablePackageValidation>
