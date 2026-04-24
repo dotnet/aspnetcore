@@ -112,6 +112,47 @@ test.describe('timing: lazy validation, eager recovery', () => {
     await page.locator('#default-field').press('Backspace');
     expect(await getFieldMessage(page, 'Default')).toBe('');
   });
+
+  test('reset clears both error and valid CSS classes on invalid field', async ({ page }) => {
+    await submitForm(page);
+    expect(await hasErrorClass(page, '#default-field')).toBe(true);
+
+    await page.click('button[type="reset"]');
+    await page.waitForTimeout(50);
+
+    // Input should have neither error nor valid class — pristine, like initial render
+    const inputClasses = await page.locator('#default-field').evaluate(el => Array.from(el.classList));
+    expect(inputClasses).not.toContain('input-validation-error');
+    expect(inputClasses).not.toContain('input-validation-valid');
+
+    // Message element should have neither class and no text
+    const msg = page.locator('[data-valmsg-for="Default"]');
+    const msgClasses = await msg.evaluate(el => Array.from(el.classList));
+    expect(msgClasses).not.toContain('field-validation-error');
+    expect(msgClasses).not.toContain('field-validation-valid');
+    expect((await msg.textContent() ?? '').trim()).toBe('');
+
+    // aria-invalid should be absent
+    expect(await page.locator('#default-field').getAttribute('aria-invalid')).toBeNull();
+  });
+
+  test('reset clears valid class on previously fixed field', async ({ page }) => {
+    // Submit empty -> field is invalid
+    await submitForm(page);
+    // Fix the field -> field gets input-validation-valid class after eager recovery
+    await page.fill('#default-field', 'hello');
+    await page.locator('#submit-only').focus();
+    const classesAfterFix = await page.locator('#default-field').evaluate(el => Array.from(el.classList));
+    expect(classesAfterFix).toContain('input-validation-valid');
+
+    // Reset -> pristine, no valid class
+    await page.click('button[type="reset"]');
+    await page.waitForTimeout(50);
+
+    const classesAfterReset = await page.locator('#default-field').evaluate(el => Array.from(el.classList));
+    expect(classesAfterReset).not.toContain('input-validation-valid');
+    expect(classesAfterReset).not.toContain('input-validation-error');
+  });
 });
 
 // ---------------------------------------------------------------------------
