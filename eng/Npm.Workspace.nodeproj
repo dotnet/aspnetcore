@@ -138,47 +138,11 @@
   <Target Name="Restore" Inputs="@(NpmInputFiles)" Outputs="@(NpmOutputFiles)">
     <Message Text="Restoring NPM packages..." Importance="high" />
 
-    <!-- Log environment diagnostics to help debug npm ci 0xDEAD crashes (https://github.com/dotnet/aspnetcore/issues/62807) -->
-    <Exec Command="node --version" ConsoleToMsBuild="true" Condition="'$(ContinuousIntegrationBuild)' == 'true'" />
-    <Exec Command="npm --version" ConsoleToMsBuild="true" Condition="'$(ContinuousIntegrationBuild)' == 'true'" />
-    <Exec Command="npm config get registry" WorkingDirectory="$(NpmWorkspaceRoot)" ConsoleToMsBuild="true" Condition="'$(ContinuousIntegrationBuild)' == 'true'" />
-    <Exec Command="npm config get cache" WorkingDirectory="$(NpmWorkspaceRoot)" ConsoleToMsBuild="true" Condition="'$(ContinuousIntegrationBuild)' == 'true'" />
-    <Exec Command="df -h ." WorkingDirectory="$(NpmWorkspaceRoot)"
-          ConsoleToMsBuild="true" Condition="'$(ContinuousIntegrationBuild)' == 'true' AND '$(OS)' != 'Windows_NT'" />
-    <Exec Command="powershell -NoProfile -Command &quot;Get-CimInstance Win32_LogicalDisk | Format-Table DeviceID, @{N='Size(GB)';E={[math]::Round($_.Size/1GB,1)}}, @{N='Free(GB)';E={[math]::Round($_.FreeSpace/1GB,1)}}, @{N='Use%%';E={[math]::Round(($_.Size-$_.FreeSpace)/$_.Size*100,0)}} -AutoSize&quot;"
-          ConsoleToMsBuild="true" Condition="'$(ContinuousIntegrationBuild)' == 'true' AND '$(OS)' == 'Windows_NT'" />
-
     <Exec
-      Command="npm ci --loglevel verbose"
+      Command="npm ci"
       WorkingDirectory="$(NpmWorkspaceRoot)"
       EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)"
-      ConsoleToMsBuild="true"
-      IgnoreExitCode="true">
-      <Output TaskParameter="ExitCode" PropertyName="_NpmCiExitCode" />
-    </Exec>
-
-    <!-- On failure, resolve the npm cache directory, copy debug logs to artifacts/log for upload, then dump to console -->
-    <Exec Command="npm config get cache" WorkingDirectory="$(NpmWorkspaceRoot)" ConsoleToMsBuild="true"
-          Condition="'$(_NpmCiExitCode)' != '0'">
-      <Output TaskParameter="ConsoleOutput" PropertyName="_NpmCacheDir" />
-    </Exec>
-
-    <ItemGroup Condition="'$(_NpmCiExitCode)' != '0' AND '$(_NpmCacheDir)' != ''">
-      <_NpmDebugLogs Include="$(_NpmCacheDir)/_logs/*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(_NpmDebugLogs)" DestinationFolder="$(ArtifactsDir)log/$(Configuration)/npm-logs/"
-          Condition="'$(_NpmCiExitCode)' != '0' AND '@(_NpmDebugLogs)' != ''"
-          ContinueOnError="true" />
-
-    <Exec Command="cat &quot;$(_NpmCacheDir)/_logs/&quot;*-debug-0.log 2>/dev/null || echo 'No npm debug log found'"
-          ConsoleToMsBuild="true" IgnoreExitCode="true"
-          Condition="'$(_NpmCiExitCode)' != '0' AND '$(OS)' != 'Windows_NT'" />
-    <Exec Command="for /f &quot;delims=&quot; %%i in ('dir /b &quot;$(_NpmCacheDir)\_logs\*-debug-0.log&quot; 2^>nul') do type &quot;$(_NpmCacheDir)\_logs\%%i&quot;"
-          ConsoleToMsBuild="true" IgnoreExitCode="true"
-          Condition="'$(_NpmCiExitCode)' != '0' AND '$(OS)' == 'Windows_NT'" />
-
-    <Error Text="npm ci failed with exit code $(_NpmCiExitCode). See verbose output and npm debug log above."
-           Condition="'$(_NpmCiExitCode)' != '0'" />
+      />
   </Target>
 
   <Target Name="Build" DependsOnTargets="Restore" Inputs="@(NpmBuildInputFiles)" Outputs="@(NpmBuildOutputFiles)">
