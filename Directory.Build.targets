@@ -14,6 +14,10 @@
       '$(IsMicrobenchmarksProject)' == 'true'">$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(IsBenchmarkProject)' == 'true'">
+    <Reference Include="Microsoft.Extensions.Logging" />
+  </ItemGroup>
+
   <PropertyGroup Label="Resx settings">
     <GenerateResxSource Condition="'$(GenerateResxSource)' == ''">true</GenerateResxSource>
     <GenerateResxSourceEmitFormatMethods Condition="'$(GenerateResxSourceEmitFormatMethods)' == ''">true</GenerateResxSourceEmitFormatMethods>

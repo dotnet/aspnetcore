@@ -10,6 +10,7 @@ using BenchmarkDotNet.Exporters.Csv;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
 using BenchmarkDotNet.Validators;
+using Perfolizer.Metrology;
 
 namespace BenchmarkDotNet.Attributes;
 
