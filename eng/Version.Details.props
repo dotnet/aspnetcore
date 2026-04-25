@@ -101,8 +101,8 @@ This file should be imported by eng/Versions.props
     <!-- dotnet-extensions dependencies -->
     <MicrosoftExtensionsCachingHybridPackageVersion>10.6.0-preview.1.26215.2</MicrosoftExtensionsCachingHybridPackageVersion>
     <MicrosoftExtensionsDiagnosticsTestingPackageVersion>10.6.0-preview.1.26215.2</MicrosoftExtensionsDiagnosticsTestingPackageVersion>
-    <MicrosoftExtensionsServiceDiscoveryPackageVersion>10.4.1</MicrosoftExtensionsServiceDiscoveryPackageVersion>
-    <MicrosoftExtensionsServiceDiscoveryYarpPackageVersion>10.4.1</MicrosoftExtensionsServiceDiscoveryYarpPackageVersion>
+    <MicrosoftExtensionsServiceDiscoveryPackageVersion>10.6.0-preview.1.26215.2</MicrosoftExtensionsServiceDiscoveryPackageVersion>
+    <MicrosoftExtensionsServiceDiscoveryYarpPackageVersion>10.6.0-preview.1.26215.2</MicrosoftExtensionsServiceDiscoveryYarpPackageVersion>
     <MicrosoftExtensionsTimeProviderTestingPackageVersion>10.6.0-preview.1.26215.2</MicrosoftExtensionsTimeProviderTestingPackageVersion>
     <!-- dotnet-msbuild dependencies -->
     <MicrosoftBuildPackageVersion>17.12.50</MicrosoftBuildPackageVersion>
