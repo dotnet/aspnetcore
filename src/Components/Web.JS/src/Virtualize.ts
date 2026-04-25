@@ -243,14 +243,18 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
     scrollTriggeredRender = false;
 
-    // End mode: start scroll-to-bottom convergence when items were appended.
-    if ((anchorMode & 2) && !convergingToBottom && !convergingToTop
-      && wasAtBottom && spacerAfter.offsetHeight > 0) {
-      convergingToBottom = true;
-      suppressSpacerCallbacks = false;
-      reobserveSpacers();
+    // End mode: scroll to bottom when items were appended while viewport was at bottom.
+    if ((anchorMode & 2) && wasAtBottom) {
       scrollElement.scrollTop = scrollElement.scrollHeight;
-      startConvergenceObserving();
+      ignoreAnchorScroll = true;
+      // Start convergence only when there are more items to load (spacerAfter > 0).
+      // When all items fit in DOM, the single scrollTop assignment above is sufficient.
+      if (!convergingToBottom && !convergingToTop && spacerAfter.offsetHeight > 0) {
+        convergingToBottom = true;
+        suppressSpacerCallbacks = false;
+        reobserveSpacers();
+        startConvergenceObserving();
+      }
     }
 
     // Correct drift from spacer→item height differences after redistribution.
@@ -319,7 +323,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       pendingScrollCorrection = true;
     }
 
-    const preserveWasAtBottom = (anchorMode & 2) && wasAtBottom;
+    // End mode: preserve wasAtBottom only if the viewport is actually at the bottom right now.
+    // Don't rely on the cached wasAtBottom — it may be stale if the user scrolled away.
+    const atBottom = scrollElement.scrollHeight <= scrollElement.clientHeight
+      || Math.abs(scrollElement.scrollTop + scrollElement.clientHeight - scrollElement.scrollHeight) < 2;
+    const preserveWasAtBottom = (anchorMode & 2) && atBottom;
 
     if (Math.abs(delta) > 1) {
       scrollElement.scrollTop += delta;
@@ -406,23 +414,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
 
     // Clear suppression and re-observe on user scroll.
-    // Save anchor for drift correction when spacer→item redistribution shifts the viewport.
     if (suppressSpacerCallbacks) {
       suppressSpacerCallbacks = false;
-      // Find the first visible item and save its position for post-redistribution correction.
-      const containerTop = scrollContainer ? scrollContainer.getBoundingClientRect().top : 0;
-      const viewBottom = scrollContainer ? scrollContainer.getBoundingClientRect().bottom : window.innerHeight;
-      let itemIndex = 0;
-      for (let el = spacerBefore.nextElementSibling; el && el !== spacerAfter; el = el.nextElementSibling) {
-        const rect = el.getBoundingClientRect();
-        if (rect.bottom > containerTop && rect.top < viewBottom) {
-          pendingScrollCorrection = true;
-          scrollCorrectionItemIndex = itemIndex;
-          scrollCorrectionOffset = rect.top - containerTop;
-          break;
-        }
-        itemIndex++;
-      }
       reobserveSpacers();
     }
 
@@ -538,7 +531,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   // Saves the first visible item's child index and viewport-relative position.
   function updateAnchorSnapshot(): void {
-    wasAtBottom = Math.abs(scrollElement.scrollTop + scrollElement.clientHeight - scrollElement.scrollHeight) < 2;
+    wasAtBottom = scrollElement.scrollHeight <= scrollElement.clientHeight
+      || Math.abs(scrollElement.scrollTop + scrollElement.clientHeight - scrollElement.scrollHeight) < 2;
 
     const containerTop = scrollContainer
       ? scrollContainer.getBoundingClientRect().top

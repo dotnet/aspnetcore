@@ -43,6 +43,7 @@
     <button id="append-items" @onclick="AppendItems">Append 10 Items</button>
     <button id="append-many-items" @onclick="AppendManyItems">Append 100 Items</button>
     <button id="expand-item" @onclick="ExpandVisibleItem">Expand Item 3 to 400px</button>
+    <button id="set-small-count" @onclick="SetSmallCount">Set 5 Items</button>
     <button id="toggle-provider" @onclick="ToggleProvider">
         Source: @(useItemsProvider ? "ItemsProvider" : "Items")
     </button>
@@ -141,6 +142,17 @@
         items.AddRange(newItems);
         nextAppendIndex += 100;
         statusMessage = $"Appended 100 items (indices {startIndex}..{startIndex + 99})";
+        if (useItemsProvider && virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
+    }
+
+    private async Task SetSmallCount()
+    {
+        items = Enumerable.Range(0, 5)
+            .Select(i => new DynamicItem { Index = i, Height = GetHeight(i) })
+            .ToList();
+        nextPrependIndex = -1;
+        nextAppendIndex = 5;
+        statusMessage = "Set to 5 items";
         if (useItemsProvider && virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
     }
 
