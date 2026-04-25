@@ -19,4 +19,23 @@ public sealed class Circuit
     /// Gets the identifier for the <see cref="Circuit"/>.
     /// </summary>
     public string Id => _circuitHost.CircuitId.Id;
+
+    /// <summary>
+    /// Requests that the connected client begin the graceful circuit-pause flow.
+    /// </summary>
+    /// <remarks>
+    /// The operation is idempotent. Observe completion through
+    /// <see cref="CircuitHandler.OnConnectionDownAsync"/> and <see cref="CircuitHandler.OnCircuitClosedAsync"/>.
+    /// </remarks>
+    /// <param name="cancellationToken">
+    /// Cancels the request before it is accepted by the framework.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if the request was accepted and the client was asked to begin pausing;
+    /// otherwise <see langword="false"/>.
+    /// </returns>
+    public ValueTask<bool> RequestCircuitPauseAsync(CancellationToken cancellationToken = default)
+    {
+        return _circuitHost.RequestPauseAsync(cancellationToken);
+    }
 }

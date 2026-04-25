@@ -1,0 +1,27 @@
+<!--
+  Temporary targets file that adds a SPA fallback endpoint to the static web assets
+  endpoints manifest. This will be removed once the SDK ships StaticWebAssetSpaFallbackEnabled.
+-->
+<Project>
+  <PropertyGroup>
+    <GenerateStaticWebAssetsManifestDependsOn>$(GenerateStaticWebAssetsManifestDependsOn);_AddSpaFallbackEndpoint</GenerateStaticWebAssetsManifestDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_AddSpaFallbackEndpoint">
+    <ItemGroup>
+      <!-- Find the identity (uncompressed) index.html endpoint: Route == index.html, AssetFile not .gz/.br -->
+      <_SpaFallbackCandidate Include="@(StaticWebAssetEndpoint)"
+        Condition="'%(Identity)' == 'index.html' and !$([System.String]::Copy('%(AssetFile)').EndsWith('.gz')) and !$([System.String]::Copy('%(AssetFile)').EndsWith('.br'))" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'@(_SpaFallbackCandidate)' != ''">
+      <!-- Add a clone with route changed to the SPA catch-all pattern -->
+      <StaticWebAssetEndpoint Include="{**path:nonfile}"
+        AssetFile="%(_SpaFallbackCandidate.AssetFile)"
+        Selectors="%(_SpaFallbackCandidate.Selectors)"
+        EndpointProperties="%(_SpaFallbackCandidate.EndpointProperties)"
+        ResponseHeaders="%(_SpaFallbackCandidate.ResponseHeaders)"
+        Order="$([System.Int32]::MaxValue)" />
+    </ItemGroup>
+  </Target>
+</Project>
