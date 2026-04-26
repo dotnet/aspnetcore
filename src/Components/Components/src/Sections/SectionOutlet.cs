@@ -28,6 +28,11 @@ public sealed class SectionOutlet : IComponent, IDisposable
     /// </summary>
     [Parameter] public object? SectionId { get; set; }
 
+    /// <summary>
+    /// Gets or sets the <see cref="RenderFragment"/> to be rendered when no matching <see cref="SectionContent"/> provides data to this outlet.
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
     internal IComponent? CurrentLogicalParent => _currentContentProvider;
 
     void IComponent.Attach(RenderHandle renderHandle)
@@ -96,7 +101,7 @@ public sealed class SectionOutlet : IComponent, IDisposable
 
     private void BuildRenderTree(RenderTreeBuilder builder)
     {
-        var fragment = _currentContentProvider?.ChildContent ?? _emptyRenderFragment;
+        var fragment = _currentContentProvider?.ChildContent ?? ChildContent ?? _emptyRenderFragment;
 
         builder.OpenComponent<SectionOutletContentRenderer>(0);
         builder.SetKey(fragment);
