@@ -1,10 +1,10 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": "Blazor WebAssembly Service Defaults",
-  "description": "A project template for creating a service defaults library for Blazor WebAssembly applications. Includes OpenTelemetry, service discovery, and resilience support for Aspire integration.",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/hosted/description": "Configure for a hosted Blazor Web scenario where configuration flows from the server via a DOM comment. When false (default), configures for a standalone scenario with a configuration endpoint and JS initializer.",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+  "name": "Blazor WebAssembly 服务默认值",
+  "description": "用于创建 Blazor WebAssembly 应用程序的服务默认值库的项目模板。包含 OpenTelemetry、服务发现和面向 Aspire 集成的弹性支持。",
+  "symbols/Framework/description": "项目的目标框架。",
+  "symbols/hosted/description": "为托管的 Blazor Web 方案配置，在此方案中，配置通过 DOM 注释从服务器传递。若为 false (默认)，则为具有配置终结点和 JS 初始值设定项的独立方案进行配置。",
+  "symbols/skipRestore/description": "如果已指定，则在创建时跳过项目的自动还原。",
+  "postActions/restore/description": "还原此项目所需的 NuGet 包。",
+  "postActions/restore/manualInstructions/default/text": "运行 \"dotnet restore\""
 }
