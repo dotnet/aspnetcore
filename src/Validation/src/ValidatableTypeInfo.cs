@@ -155,7 +155,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
 
             // Validate type-level attributes
-            ValidateTypeAttributes(value, context, displayName);
+            await ValidateTypeAttributesAsync(value, context, displayName, cancellationToken);
 
             // If any type-level attribute errors were found, return early
             if (context.ValidationErrors is not null && context.ValidationErrors.Count > originalErrorCount)
@@ -190,7 +190,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         }
     }
 
-    private void ValidateTypeAttributes(object? value, ValidateContext context, string displayName)
+    private async Task ValidateTypeAttributesAsync(object? value, ValidateContext context, string displayName, CancellationToken cancellationToken)
     {
         var validationAttributes = GetValidationAttributes();
         var errorPrefix = context.CurrentValidationPath;
@@ -204,7 +204,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         for (var i = 0; i < validationAttributes.Length; i++)
         {
             var attribute = validationAttributes[i];
-            var result = attribute.GetValidationResult(value, context.ValidationContext);
+            var result = await attribute.GetValidationResultAsync(value, context.ValidationContext, cancellationToken);
             if (result is not null && result != ValidationResult.Success)
             {
                 foreach (var memberName in result.MemberNames)

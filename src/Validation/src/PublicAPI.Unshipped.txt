@@ -3,6 +3,7 @@
 *REMOVED*Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, string! displayName) -> void
 *REMOVED*Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.Type! type, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Validation.ValidatablePropertyInfo!>! members) -> void
 abstract Microsoft.Extensions.Validation.DisplayNameInfo.GetDisplayName(Microsoft.Extensions.Validation.ValidateContext! context, string! memberName, System.Type? declaringType) -> string?
+abstract System.ComponentModel.DataAnnotations.AsyncValidationAttribute.IsValidAsync(object? value, System.ComponentModel.DataAnnotations.ValidationContext! validationContext, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.ComponentModel.DataAnnotations.ValidationResult?>!
 Microsoft.Extensions.Validation.DisplayNameInfo
 Microsoft.Extensions.Validation.DisplayNameInfo.DisplayNameInfo() -> void
 Microsoft.Extensions.Validation.DisplayNameLocalizationContext
@@ -32,3 +33,9 @@ Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.T
 Microsoft.Extensions.Validation.ValidationOptions.Localizer.get -> Microsoft.Extensions.Validation.IValidationLocalizer?
 Microsoft.Extensions.Validation.ValidationOptions.Localizer.set -> void
 Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatablePropertyInfo(System.Type! type, string! propertyName, out Microsoft.Extensions.Validation.IValidatableInfo? validatablePropertyInfo) -> bool
+override abstract System.ComponentModel.DataAnnotations.AsyncValidationAttribute.IsValid(object? value, System.ComponentModel.DataAnnotations.ValidationContext! validationContext) -> System.ComponentModel.DataAnnotations.ValidationResult?
+override sealed System.ComponentModel.DataAnnotations.AsyncValidationAttribute.IsValid(object? value) -> bool
+override sealed System.ComponentModel.DataAnnotations.AsyncValidationAttribute.RequiresValidationContext.get -> bool
+System.ComponentModel.DataAnnotations.AsyncValidationAttribute
+System.ComponentModel.DataAnnotations.AsyncValidationAttribute.AsyncValidationAttribute() -> void
+System.ComponentModel.DataAnnotations.AsyncValidationAttribute.GetValidationResultAsync(object? value, System.ComponentModel.DataAnnotations.ValidationContext! validationContext, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.ComponentModel.DataAnnotations.ValidationResult?>!
