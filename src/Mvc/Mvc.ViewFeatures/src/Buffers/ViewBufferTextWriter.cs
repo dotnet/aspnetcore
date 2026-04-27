@@ -34,6 +34,7 @@ internal sealed class ViewBufferTextWriter : TextWriter
 
         Buffer = buffer;
         Encoding = encoding;
+        IsUtf8Encoding = ReferenceEquals(encoding, Encoding.UTF8) || encoding is UTF8Encoding;
     }
 
     /// <summary>
@@ -54,12 +55,15 @@ internal sealed class ViewBufferTextWriter : TextWriter
 
         Buffer = buffer;
         Encoding = encoding;
+        IsUtf8Encoding = ReferenceEquals(encoding, Encoding.UTF8) || encoding is UTF8Encoding;
         _htmlEncoder = htmlEncoder;
         _inner = inner;
     }
 
     /// <inheritdoc />
     public override Encoding Encoding { get; }
+
+    internal bool IsUtf8Encoding { get; }
 
     /// <summary>
     /// Gets the <see cref="ViewBuffer"/>.

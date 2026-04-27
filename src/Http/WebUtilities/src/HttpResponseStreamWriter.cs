@@ -22,6 +22,7 @@ public class HttpResponseStreamWriter : TextWriter
     private readonly ArrayPool<byte> _bytePool;
     private readonly ArrayPool<char> _charPool;
     private readonly int _charBufferSize;
+    private readonly bool _isUtf8Encoding;
 
     private readonly byte[] _byteBuffer;
     private readonly char[] _charBuffer;
@@ -70,6 +71,7 @@ public class HttpResponseStreamWriter : TextWriter
         Encoding = encoding ?? throw new ArgumentNullException(nameof(encoding));
         _bytePool = bytePool ?? throw new ArgumentNullException(nameof(bytePool));
         _charPool = charPool ?? throw new ArgumentNullException(nameof(charPool));
+        _isUtf8Encoding = ReferenceEquals(encoding, Encoding.UTF8) || encoding is UTF8Encoding;
 
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bufferSize);
         if (!_stream.CanWrite)
@@ -608,19 +610,28 @@ public class HttpResponseStreamWriter : TextWriter
         return WriteUtf8AsyncCore(utf8Value, cancellationToken);
     }
 
-    private async Task WriteUtf8AsyncCore(ReadOnlyMemory<byte> utf8Value, CancellationToken cancellationToken)
+    private Task WriteUtf8AsyncCore(ReadOnlyMemory<byte> utf8Value, CancellationToken cancellationToken)
     {
         // Encode pending chars into byte buffer (may flush byte buffer to stream if needed)
         if (_charBufferCount > 0)
         {
-            await FlushInternalAsync(flushEncoder: true);
+            var flushTask = FlushInternalAsync(flushEncoder: true);
+            if (!flushTask.IsCompletedSuccessfully)
+            {
+                return WriteUtf8AsyncCoreAwaited(flushTask, utf8Value, cancellationToken);
+            }
         }
 
         // Flush byte buffer if the new bytes don't fit
         if (_byteBufferCount > 0 && _byteBufferCount + utf8Value.Length > _byteBuffer.Length)
         {
-            await _stream.WriteAsync(_byteBuffer.AsMemory(0, _byteBufferCount), cancellationToken);
+            var pendingCount = _byteBufferCount;
             _byteBufferCount = 0;
+            var writeTask = WriteToStreamAsync(_byteBuffer.AsMemory(0, pendingCount), cancellationToken);
+            if (!writeTask.IsCompletedSuccessfully)
+            {
+                return BufferUtf8BytesAfterWriteAsync(writeTask, utf8Value, cancellationToken);
+            }
         }
 
         // Buffer the bytes, or write directly if larger than the entire buffer
@@ -632,8 +643,22 @@ public class HttpResponseStreamWriter : TextWriter
         else
         {
             // Large payload: write directly, bypassing buffer
-            await _stream.WriteAsync(utf8Value, cancellationToken);
+            return WriteToStreamAsync(utf8Value, cancellationToken);
         }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task WriteUtf8AsyncCoreAwaited(Task flushTask, ReadOnlyMemory<byte> utf8Value, CancellationToken cancellationToken)
+    {
+        await flushTask;
+        await WriteUtf8AsyncCore(utf8Value, cancellationToken);
+    }
+
+    private async Task BufferUtf8BytesAfterWriteAsync(Task writeTask, ReadOnlyMemory<byte> utf8Value, CancellationToken cancellationToken)
+    {
+        await writeTask;
+        await WriteUtf8AsyncCore(utf8Value, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -682,11 +707,11 @@ public class HttpResponseStreamWriter : TextWriter
         return FlushByteBufferAsyncCore();
     }
 
-    private async Task FlushByteBufferAsyncCore()
+    private Task FlushByteBufferAsyncCore()
     {
         var count = _byteBufferCount;
         _byteBufferCount = 0;
-        await _stream.WriteAsync(_byteBuffer.AsMemory(0, count));
+        return WriteToStreamAsync(_byteBuffer.AsMemory(0, count));
     }
 
     private void BufferUtf8Bytes(ReadOnlySpan<byte> utf8Value)
@@ -825,16 +850,33 @@ public class HttpResponseStreamWriter : TextWriter
         return FlushInternalAsyncCore(flushEncoder);
     }
 
-    private async Task FlushInternalAsyncCore(bool flushEncoder)
+    private Task FlushInternalAsyncCore(bool flushEncoder)
     {
         // Flush pending bytes to make room for encoded chars
         if (_byteBufferCount > 0)
         {
             var pendingCount = _byteBufferCount;
             _byteBufferCount = 0;
-            await _stream.WriteAsync(_byteBuffer.AsMemory(0, pendingCount));
+            var writeTask = WriteToStreamAsync(_byteBuffer.AsMemory(0, pendingCount));
+            if (!writeTask.IsCompletedSuccessfully)
+            {
+                return FlushInternalAsyncCoreAwaited(writeTask, flushEncoder);
+            }
         }
 
+        EncodeCharBuffer(flushEncoder);
+
+        return Task.CompletedTask;
+    }
+
+    private async Task FlushInternalAsyncCoreAwaited(Task writeTask, bool flushEncoder)
+    {
+        await writeTask;
+        EncodeCharBuffer(flushEncoder);
+    }
+
+    private void EncodeCharBuffer(bool flushEncoder)
+    {
         var count = _encoder.GetBytes(
             _charBuffer,
             0,
@@ -845,6 +887,12 @@ public class HttpResponseStreamWriter : TextWriter
 
         _charBufferCount = 0;
         _byteBufferCount += count;
+    }
+
+    private Task WriteToStreamAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+    {
+        var writeTask = _stream.WriteAsync(buffer, cancellationToken);
+        return writeTask.IsCompletedSuccessfully ? Task.CompletedTask : writeTask.AsTask();
     }
 
     private void CopyToCharBuffer(string value)
@@ -917,7 +965,7 @@ public class HttpResponseStreamWriter : TextWriter
 
     private void ThrowIfNotUtf8Encoding()
     {
-        if (!ReferenceEquals(Encoding, Encoding.UTF8) && (Encoding is not UTF8Encoding))
+        if (!_isUtf8Encoding)
         {
             throw new InvalidOperationException($"WriteUtf8 requires a UTF-8 encoding, but the writer's encoding is '{Encoding.WebName}'.");
         }

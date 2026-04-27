@@ -491,7 +491,7 @@ public abstract class RazorPageBase : IRazorPage
 
         var writer = Output;
 
-        if (writer is ViewBufferTextWriter viewBufferWriter && (ReferenceEquals(writer.Encoding, Encoding.UTF8) || writer.Encoding is UTF8Encoding))
+        if (writer is ViewBufferTextWriter { IsUtf8Encoding: true } viewBufferWriter)
         {
             // When the output encoding is UTF-8 and we're writing to a ViewBuffer,
             // preserve the raw UTF-8 bytes through the buffer pipeline.
