@@ -1,11 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
 using Microsoft.AspNetCore.InternalTesting;
+using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.Cng;
 
@@ -26,7 +29,7 @@ public class GcmAuthenticatedEncryptorTests
         byte[] decipheredtext = encryptor.Decrypt(new ArraySegment<byte>(ciphertext), aad);
 
         // Assert
-        Assert.Equal(plaintext.AsSpan(), decipheredtext.AsSpan());
+        Assert.Equal(plaintext.AsSpan().ToArray(), decipheredtext.AsSpan().ToArray());
     }
 
     [ConditionalFact]

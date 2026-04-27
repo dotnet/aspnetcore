@@ -1298,7 +1298,7 @@ public class StartupTests : IISFunctionalTestBase
     [ConditionalFact]
     [RequiresNewHandler]
     [RequiresNewShim]
-    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/62787", Queues = "Windows.Amd64.VS2022.Pre.Open;" + "Windows.Amd64.VS2022.Pre;")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/62787", Queues = "Windows.Amd64.VS2026.Pre.Scout.Open;" + "Windows.Amd64.VS2026.Pre.Scout;")]
     public async Task ServerAddressesIncludesBaseAddress()
     {
         var appName = "\u041C\u043E\u0451\u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435";
@@ -1435,6 +1435,41 @@ public class StartupTests : IISFunctionalTestBase
 
         var response = await deploymentResult.HttpClient.GetAsync("ConnectionClose");
         Assert.Equal(true, response.Headers.ConnectionClose);
+    }
+
+    [ConditionalFact]
+    public async Task InProcessHostlifetime()
+    {
+        if (DeployerSelector.IsNewShimTest)
+        {
+            // NewShim tests use 2.2 IIS packages which don't have the host lifetime
+            return;
+        }
+
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
+        deploymentParameters.TransformArguments((a, _) => $"{a} HostBuilder");
+
+        Assert.Equal("IISHostLifetime", await GetStringAsync(deploymentParameters, "GetHostLifetime"));
+    }
+
+    [ConditionalFact]
+    public async Task OutOfProcessHostlifetime()
+    {
+        if (DeployerSelector.IsNewShimTest)
+        {
+            // NewShim tests use 2.2 IIS packages which don't have the host lifetime
+            return;
+        }
+
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+        deploymentParameters.TransformArguments((a, _) => $"{a} HostBuilder");
+
+        if (deploymentParameters.ServerType == ServerType.IISExpress)
+        {
+            return;
+        }
+
+        Assert.Equal("ConsoleLifetime", await GetStringAsync(deploymentParameters, "GetHostLifetime"));
     }
 
     public static int GetNextSSLPort(int avoid = 0)

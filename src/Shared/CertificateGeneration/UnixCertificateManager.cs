@@ -32,6 +32,11 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     private const string BrowserFamilyChromium = "Chromium";
     private const string BrowserFamilyFirefox = "Firefox";
 
+    private const string PowerShellCommand = "powershell.exe";
+    private const string WslInteropPath = "/proc/sys/fs/binfmt_misc/WSLInterop";
+    private const string WslInteropLatePath = "/proc/sys/fs/binfmt_misc/WSLInterop-late";
+    private const string WslFriendlyName = AspNetHttpsOidFriendlyName + " (WSL)";
+
     private const string OpenSslCommand = "openssl";
     private const string CertUtilCommand = "certutil";
 
@@ -355,13 +360,78 @@ internal sealed partial class UnixCertificateManager : CertificateManager
                 ? Path.Combine("$HOME", certDir[homeDirectoryWithSlash.Length..])
                 : certDir;
 
-            if (TryGetOpenSslDirectory(out var openSslDir))
+            var hasValidSslCertDir = false;
+
+            // Check if SSL_CERT_DIR is already set and if certDir is already included
+            var existingSslCertDir = Environment.GetEnvironmentVariable(OpenSslCertificateDirectoryVariableName);
+            if (!string.IsNullOrEmpty(existingSslCertDir))
+            {
+                var existingDirs = existingSslCertDir.Split(Path.PathSeparator);
+                var certDirFullPath = Path.GetFullPath(certDir);
+                var isCertDirIncluded = existingDirs.Any(dir =>
+                {
+                    if (string.IsNullOrWhiteSpace(dir))
+                    {
+                        return false;
+                    }
+
+                    try
+                    {
+                        return string.Equals(Path.GetFullPath(dir), certDirFullPath, StringComparison.Ordinal);
+                    }
+                    catch
+                    {
+                        // Ignore invalid directory entries in SSL_CERT_DIR
+                        return false;
+                    }
+                });
+
+                if (isCertDirIncluded)
+                {
+                    // The certificate directory is already in SSL_CERT_DIR, no action needed
+                    Log.UnixOpenSslCertificateDirectoryAlreadyConfigured(prettyCertDir, OpenSslCertificateDirectoryVariableName);
+                    hasValidSslCertDir = true;
+                }
+                else
+                {
+                    // SSL_CERT_DIR is set but doesn't include our directory - suggest appending
+                    Log.UnixSuggestAppendingToEnvironmentVariable(prettyCertDir, OpenSslCertificateDirectoryVariableName);
+                    hasValidSslCertDir = false;
+                }
+            }
+            else if (TryGetOpenSslDirectory(out var openSslDir))
             {
                 Log.UnixSuggestSettingEnvironmentVariable(prettyCertDir, Path.Combine(openSslDir, "certs"), OpenSslCertificateDirectoryVariableName);
+                hasValidSslCertDir = false;
             }
             else
             {
                 Log.UnixSuggestSettingEnvironmentVariableWithoutExample(prettyCertDir, OpenSslCertificateDirectoryVariableName);
+                hasValidSslCertDir = false;
+            }
+
+            sawTrustFailure = !hasValidSslCertDir;
+        }
+
+        // Check to see if we're running in WSL; if so, use powershell.exe to add the certificate to the Windows trust store as well
+        if (IsRunningOnWslWithInterop())
+        {
+            try
+            {
+                if (TrustCertificateInWindowsStore(certificate))
+                {
+                    Log.WslWindowsTrustSucceeded();
+                }
+                else
+                {
+                    Log.WslWindowsTrustFailed();
+                    sawTrustFailure = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.WslWindowsTrustException(ex.Message);
+                sawTrustFailure = true;
             }
         }
 
@@ -562,6 +632,68 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     private static string GetCertificateNickname(X509Certificate2 certificate)
     {
         return $"aspnetcore-localhost-{certificate.Thumbprint}";
+    }
+
+    /// <summary>
+    /// Detects if the current environment is Windows Subsystem for Linux (WSL) with interop enabled.
+    /// </summary>
+    /// <returns>True if running on WSL with interop; otherwise, false.</returns>
+    private static bool IsRunningOnWslWithInterop()
+    {
+        // WSL exposes special files that indicate WSL interop is enabled.
+        // Either WSLInterop or WSLInterop-late may be present depending on the WSL version and configuration.
+        if (File.Exists(WslInteropPath) || File.Exists(WslInteropLatePath))
+        {
+            return true;
+        }
+
+        // Additionally check for standard WSL environment variables as a fallback.
+        // WSL_INTEROP is set to the path of the interop socket.
+        if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WSL_INTEROP")))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Attempts to trust the certificate in the Windows certificate store via PowerShell when running on WSL.
+    /// If the certificate already exists in the store, this is a no-op.
+    /// </summary>
+    /// <param name="certificate">The certificate to trust.</param>
+    /// <returns>True if the certificate was successfully added to the Windows store; otherwise, false.</returns>
+    private static bool TrustCertificateInWindowsStore(X509Certificate2 certificate)
+    {
+        // Export the certificate as DER-encoded bytes (no private key needed for trust)
+        // and embed it directly in the PowerShell script as Base64 to avoid file path
+        // translation issues between WSL and Windows.
+        var certBytes = certificate.Export(X509ContentType.Cert);
+        var certBase64 = Convert.ToBase64String(certBytes);
+
+        var escapedFriendlyName = WslFriendlyName.Replace("'", "''");
+        var powershellScript = $@"
+            $certBytes = [Convert]::FromBase64String('{certBase64}')
+            $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2(,$certBytes)
+            $cert.FriendlyName = '{escapedFriendlyName}'
+            $store = New-Object System.Security.Cryptography.X509Certificates.X509Store('Root', 'CurrentUser')
+            $store.Open('ReadWrite')
+            $store.Add($cert)
+            $store.Close()
+        ";
+
+        // Encode the PowerShell script to Base64 (UTF-16LE as required by PowerShell)
+        var encodedCommand = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(powershellScript));
+
+        var startInfo = new ProcessStartInfo(PowerShellCommand, $"-NoProfile -NonInteractive -EncodedCommand {encodedCommand}")
+        {
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+
+        using var process = Process.Start(startInfo)!;
+        process.WaitForExit();
+        return process.ExitCode == 0;
     }
 
     /// <remarks>
