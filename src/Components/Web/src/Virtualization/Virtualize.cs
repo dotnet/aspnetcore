@@ -599,6 +599,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                     {
                         _pendingAnchorRestore = true;
                     }
+                    else if (ShouldScrollToBottomForAppend(countDelta, previousItemCount))
+                    {
+                        _pendingScrollToBottom = true;
+                    }
                 }
                 else if (itemsAdded && !isDefaultProvider && ItemKey != null && _previousFirstLoadedItemKey != null)
                 {
@@ -615,6 +619,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                         else if (ShouldAnchorForAppend(countDelta, previousItemCount))
                         {
                             _pendingAnchorRestore = true;
+                        }
+                        else if (ShouldScrollToBottomForAppend(countDelta, previousItemCount))
+                        {
+                            _pendingScrollToBottom = true;
                         }
                     }
                 }
@@ -686,6 +694,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private bool ShouldAnchorForAppend(int countDelta, int previousItemCount)
         => countDelta > 0
             && (AnchorMode & VirtualizeAnchorMode.End) == 0
+            && _itemsBefore + _visibleItemCapacity >= previousItemCount;
+
+    private bool ShouldScrollToBottomForAppend(int countDelta, int previousItemCount)
+        => countDelta > 0
+            && (AnchorMode & VirtualizeAnchorMode.End) != 0
             && _itemsBefore + _visibleItemCapacity >= previousItemCount;
 
     /// <inheritdoc />
