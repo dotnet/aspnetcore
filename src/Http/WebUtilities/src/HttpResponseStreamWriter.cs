@@ -27,6 +27,7 @@ public class HttpResponseStreamWriter : TextWriter
     private readonly char[] _charBuffer;
 
     private int _charBufferCount;
+    private int _byteBufferCount;
     private bool _disposed;
 
     /// <summary>
@@ -503,14 +504,15 @@ public class HttpResponseStreamWriter : TextWriter
     // called by the user (example: from a Razor view).
 
     /// <summary>
-    /// Writes pre-encoded UTF-8 bytes directly to the underlying stream, bypassing character encoding.
+    /// Writes pre-encoded UTF-8 bytes to the underlying stream, bypassing character encoding.
     /// </summary>
     /// <param name="utf8Value">The UTF-8 encoded bytes to write.</param>
     /// <remarks>
-    /// This method flushes any pending character data to maintain correct write ordering,
-    /// then writes the raw bytes directly to the stream. The writer's <see cref="Encoding"/>
-    /// must be <see cref="System.Text.Encoding.UTF8"/> or a <see cref="UTF8Encoding"/>; otherwise
-    /// an <see cref="InvalidOperationException"/> is thrown.
+    /// This method buffers the raw bytes and flushes them to the underlying stream when the buffer is full
+    /// or when <see cref="Flush"/> is called, similar to how character writes are buffered. Any pending
+    /// character data is encoded into the byte buffer first to maintain correct write ordering. The writer's
+    /// <see cref="Encoding"/> must be <see cref="System.Text.Encoding.UTF8"/> or a <see cref="UTF8Encoding"/>;
+    /// otherwise an <see cref="InvalidOperationException"/> is thrown.
     /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// The writer's encoding is not UTF-8.
@@ -525,29 +527,32 @@ public class HttpResponseStreamWriter : TextWriter
             return;
         }
 
-        // Flush any pending char data with encoder finalization to maintain write ordering
-        FlushInternal(flushEncoder: true);
+        // Encode pending chars into byte buffer to maintain write ordering
+        if (_charBufferCount > 0)
+        {
+            FlushInternal(flushEncoder: true);
+        }
 
-        // Write raw UTF-8 bytes directly to the underlying stream
-        _stream.Write(utf8Value);
+        // Buffer the UTF-8 bytes
+        BufferUtf8Bytes(utf8Value);
     }
 
     /// <summary>
-    /// Asynchronously writes pre-encoded UTF-8 bytes directly to the underlying stream, bypassing character encoding.
+    /// Asynchronously writes pre-encoded UTF-8 bytes to the underlying stream, bypassing character encoding.
     /// </summary>
     /// <param name="utf8Value">The UTF-8 encoded bytes to write.</param>
     /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous write operation.</returns>
     /// <remarks>
-    /// This method flushes any pending character data to maintain correct write ordering,
-    /// then writes the raw bytes directly to the stream. The writer's <see cref="Encoding"/>
-    /// must be <see cref="System.Text.Encoding.UTF8"/> or a <see cref="UTF8Encoding"/>; otherwise
-    /// an <see cref="InvalidOperationException"/> is thrown.
+    /// This method buffers the raw bytes and flushes them to the underlying stream when the buffer is full
+    /// or when <see cref="FlushAsync"/> is called, similar to how character writes are buffered. Any pending
+    /// character data is encoded into the byte buffer first to maintain correct write ordering. The writer's
+    /// <see cref="Encoding"/> must be <see cref="System.Text.Encoding.UTF8"/> or a <see cref="UTF8Encoding"/>;
+    /// otherwise an <see cref="InvalidOperationException"/> is thrown.
     /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// The writer's encoding is not UTF-8.
     /// </exception>
-    [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")]
     public Task WriteUtf8Async(ReadOnlyMemory<byte> utf8Value, CancellationToken cancellationToken = default)
     {
         if (_disposed)
@@ -567,16 +572,68 @@ public class HttpResponseStreamWriter : TextWriter
             return Task.CompletedTask;
         }
 
+        // Fast path: no pending chars, bytes fit in remaining buffer space.
+        // Just memcpy and return — no async state machine, no stream I/O.
+        if (_charBufferCount == 0 && _byteBufferCount + utf8Value.Length <= _byteBuffer.Length)
+        {
+            utf8Value.Span.CopyTo(_byteBuffer.AsSpan(_byteBufferCount));
+            _byteBufferCount += utf8Value.Length;
+            return Task.CompletedTask;
+        }
+
+        // Second fast path: pending chars + UTF-8 bytes all fit in byte buffer.
+        // Encode chars synchronously, then memcpy — still no async, no stream I/O.
+        if (_charBufferCount > 0)
+        {
+            var maxBytesForChars = Encoding.GetMaxByteCount(_charBufferCount);
+            if (_byteBufferCount + maxBytesForChars + utf8Value.Length <= _byteBuffer.Length)
+            {
+                var encodedCount = _encoder.GetBytes(
+                    _charBuffer,
+                    0,
+                    _charBufferCount,
+                    _byteBuffer,
+                    _byteBufferCount,
+                    flush: true);
+
+                _charBufferCount = 0;
+                _byteBufferCount += encodedCount;
+
+                utf8Value.Span.CopyTo(_byteBuffer.AsSpan(_byteBufferCount));
+                _byteBufferCount += utf8Value.Length;
+                return Task.CompletedTask;
+            }
+        }
+
         return WriteUtf8AsyncCore(utf8Value, cancellationToken);
     }
 
     private async Task WriteUtf8AsyncCore(ReadOnlyMemory<byte> utf8Value, CancellationToken cancellationToken)
     {
-        // Flush pending char data with encoder finalization to maintain write ordering
-        await FlushInternalAsync(flushEncoder: true);
+        // Encode pending chars into byte buffer (may flush byte buffer to stream if needed)
+        if (_charBufferCount > 0)
+        {
+            await FlushInternalAsync(flushEncoder: true);
+        }
 
-        // Write raw bytes directly to stream
-        await _stream.WriteAsync(utf8Value, cancellationToken);
+        // Flush byte buffer if the new bytes don't fit
+        if (_byteBufferCount > 0 && _byteBufferCount + utf8Value.Length > _byteBuffer.Length)
+        {
+            await _stream.WriteAsync(_byteBuffer.AsMemory(0, _byteBufferCount), cancellationToken);
+            _byteBufferCount = 0;
+        }
+
+        // Buffer the bytes, or write directly if larger than the entire buffer
+        if (utf8Value.Length <= _byteBuffer.Length - _byteBufferCount)
+        {
+            utf8Value.Span.CopyTo(_byteBuffer.AsSpan(_byteBufferCount));
+            _byteBufferCount += utf8Value.Length;
+        }
+        else
+        {
+            // Large payload: write directly, bypassing buffer
+            await _stream.WriteAsync(utf8Value, cancellationToken);
+        }
     }
 
     /// <inheritdoc/>
@@ -585,6 +642,7 @@ public class HttpResponseStreamWriter : TextWriter
         ThrowIfDisposed();
 
         FlushInternal(flushEncoder: true);
+        FlushByteBuffer();
     }
 
     /// <inheritdoc/>
@@ -595,7 +653,69 @@ public class HttpResponseStreamWriter : TextWriter
             return GetObjectDisposedTask();
         }
 
-        return FlushInternalAsync(flushEncoder: true);
+        return FlushAllAsync();
+    }
+
+    private async Task FlushAllAsync()
+    {
+        await FlushInternalAsync(flushEncoder: true);
+        await FlushByteBufferAsync();
+    }
+
+    private void FlushByteBuffer()
+    {
+        if (_byteBufferCount > 0)
+        {
+            var count = _byteBufferCount;
+            _byteBufferCount = 0;
+            _stream.Write(_byteBuffer, 0, count);
+        }
+    }
+
+    private Task FlushByteBufferAsync()
+    {
+        if (_byteBufferCount == 0)
+        {
+            return Task.CompletedTask;
+        }
+
+        return FlushByteBufferAsyncCore();
+    }
+
+    private async Task FlushByteBufferAsyncCore()
+    {
+        var count = _byteBufferCount;
+        _byteBufferCount = 0;
+        await _stream.WriteAsync(_byteBuffer.AsMemory(0, count));
+    }
+
+    private void BufferUtf8Bytes(ReadOnlySpan<byte> utf8Value)
+    {
+        while (utf8Value.Length > 0)
+        {
+            var available = _byteBuffer.Length - _byteBufferCount;
+
+            if (available == 0)
+            {
+                // Buffer full, flush to stream (reset count before write for exception safety)
+                var count = _byteBufferCount;
+                _byteBufferCount = 0;
+                _stream.Write(_byteBuffer, 0, count);
+                available = _byteBuffer.Length;
+            }
+
+            // Large payload: bypass buffer entirely
+            if (_byteBufferCount == 0 && utf8Value.Length >= _byteBuffer.Length)
+            {
+                _stream.Write(utf8Value);
+                return;
+            }
+
+            var toCopy = Math.Min(utf8Value.Length, available);
+            utf8Value[..toCopy].CopyTo(_byteBuffer.AsSpan(_byteBufferCount));
+            _byteBufferCount += toCopy;
+            utf8Value = utf8Value.Slice(toCopy);
+        }
     }
 
     /// <inheritdoc/>
@@ -607,6 +727,7 @@ public class HttpResponseStreamWriter : TextWriter
             try
             {
                 FlushInternal(flushEncoder: true);
+                FlushByteBuffer();
             }
             finally
             {
@@ -627,6 +748,7 @@ public class HttpResponseStreamWriter : TextWriter
             try
             {
                 await FlushInternalAsync(flushEncoder: true);
+                await FlushByteBufferAsync();
             }
             finally
             {
@@ -639,7 +761,8 @@ public class HttpResponseStreamWriter : TextWriter
     }
 
     // Note: our FlushInternal method does NOT flush the underlying stream. This would result in
-    // chunking.
+    // chunking. It encodes pending chars into the byte buffer at the current _byteBufferCount
+    // offset, flushing the byte buffer to the stream first if needed to make room.
     private void FlushInternal(bool flushEncoder)
     {
         if (_charBufferCount == 0)
@@ -647,29 +770,69 @@ public class HttpResponseStreamWriter : TextWriter
             return;
         }
 
+        // Check if the encoded chars will fit in the remaining byte buffer space
+        var maxBytesNeeded = Encoding.GetMaxByteCount(_charBufferCount);
+        if (_byteBufferCount + maxBytesNeeded > _byteBuffer.Length)
+        {
+            // Flush pending bytes to make room
+            if (_byteBufferCount > 0)
+            {
+                var pendingCount = _byteBufferCount;
+                _byteBufferCount = 0;
+                _stream.Write(_byteBuffer, 0, pendingCount);
+            }
+        }
+
         var count = _encoder.GetBytes(
             _charBuffer,
             0,
             _charBufferCount,
             _byteBuffer,
-            0,
+            _byteBufferCount,
             flush: flushEncoder);
 
         _charBufferCount = 0;
-
-        if (count > 0)
-        {
-            _stream.Write(_byteBuffer, 0, count);
-        }
+        _byteBufferCount += count;
     }
 
     // Note: our FlushInternalAsync method does NOT flush the underlying stream. This would result in
-    // chunking.
-    private async Task FlushInternalAsync(bool flushEncoder)
+    // chunking. It encodes pending chars into the byte buffer, with a sync fast path when the
+    // encoded chars fit in the remaining byte buffer space (avoiding async state machine creation).
+    private Task FlushInternalAsync(bool flushEncoder)
     {
         if (_charBufferCount == 0)
         {
-            return;
+            return Task.CompletedTask;
+        }
+
+        // Fast path: encoded chars fit in remaining byte buffer space — pure sync
+        var maxBytesNeeded = Encoding.GetMaxByteCount(_charBufferCount);
+        if (_byteBufferCount + maxBytesNeeded <= _byteBuffer.Length)
+        {
+            var count = _encoder.GetBytes(
+                _charBuffer,
+                0,
+                _charBufferCount,
+                _byteBuffer,
+                _byteBufferCount,
+                flush: flushEncoder);
+
+            _charBufferCount = 0;
+            _byteBufferCount += count;
+            return Task.CompletedTask;
+        }
+
+        return FlushInternalAsyncCore(flushEncoder);
+    }
+
+    private async Task FlushInternalAsyncCore(bool flushEncoder)
+    {
+        // Flush pending bytes to make room for encoded chars
+        if (_byteBufferCount > 0)
+        {
+            var pendingCount = _byteBufferCount;
+            _byteBufferCount = 0;
+            await _stream.WriteAsync(_byteBuffer.AsMemory(0, pendingCount));
         }
 
         var count = _encoder.GetBytes(
@@ -677,15 +840,11 @@ public class HttpResponseStreamWriter : TextWriter
             0,
             _charBufferCount,
             _byteBuffer,
-            0,
+            _byteBufferCount,
             flush: flushEncoder);
 
         _charBufferCount = 0;
-
-        if (count > 0)
-        {
-            await _stream.WriteAsync(_byteBuffer.AsMemory(0, count));
-        }
+        _byteBufferCount += count;
     }
 
     private void CopyToCharBuffer(string value)

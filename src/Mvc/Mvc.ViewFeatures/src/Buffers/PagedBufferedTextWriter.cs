@@ -173,26 +173,38 @@ internal sealed class PagedBufferedTextWriter : TextWriter
     /// <summary>
     /// Asynchronously writes pre-encoded UTF-8 bytes directly through to the inner writer.
     /// </summary>
-    internal async Task WriteUtf8Async(ReadOnlyMemory<byte> utf8Value)
+    internal Task WriteUtf8Async(ReadOnlyMemory<byte> utf8Value)
     {
         if (utf8Value.IsEmpty)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         // Flush buffered chars to maintain write ordering
-        await FlushAsyncCore();
+        var flushTask = FlushAsyncCore();
+        if (flushTask.IsCompletedSuccessfully)
+        {
+            return ForwardUtf8ToInnerAsync(utf8Value);
+        }
 
-        // Forward to inner writer if it supports direct UTF-8
+        return WriteUtf8AsyncAwaited(flushTask, utf8Value);
+    }
+
+    private Task ForwardUtf8ToInnerAsync(ReadOnlyMemory<byte> utf8Value)
+    {
         if (_inner is HttpResponseStreamWriter responseWriter)
         {
-            await responseWriter.WriteUtf8Async(utf8Value);
+            return responseWriter.WriteUtf8Async(utf8Value);
         }
-        else
-        {
-            // Fallback for writers that don't support direct UTF-8
-            await _inner.WriteAsync(Encoding.UTF8.GetString(utf8Value.Span));
-        }
+
+        // Fallback for writers that don't support direct UTF-8
+        return _inner.WriteAsync(Encoding.UTF8.GetString(utf8Value.Span));
+    }
+
+    private async Task WriteUtf8AsyncAwaited(Task flushTask, ReadOnlyMemory<byte> utf8Value)
+    {
+        await flushTask;
+        await ForwardUtf8ToInnerAsync(utf8Value);
     }
 
     // Synchronous flush of buffered char pages to the inner writer.
