@@ -137,11 +137,12 @@
 
   <Target Name="Restore" Inputs="@(NpmInputFiles)" Outputs="@(NpmOutputFiles)">
     <Message Text="Restoring NPM packages..." Importance="high" />
+
     <Exec
       Command="npm ci"
       WorkingDirectory="$(NpmWorkspaceRoot)"
       EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)"
-      ConsoleToMsBuild="true" />
+      />
   </Target>
 
   <Target Name="Build" DependsOnTargets="Restore" Inputs="@(NpmBuildInputFiles)" Outputs="@(NpmBuildOutputFiles)">

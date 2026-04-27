@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Channels;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -150,11 +151,13 @@ public class DynamicTestHub : DynamicHub
 
     public ChannelReader<string> StreamBroken() => TestHubMethodsImpl.StreamBroken();
 
+    [RuntimeAsyncMethodGeneration(false)]
     public async Task CallEcho(string message)
     {
         await Clients.Client(Context.ConnectionId).Echo(message);
     }
 
+    [RuntimeAsyncMethodGeneration(false)]
     public async Task CallHandlerThatDoesntExist()
     {
         await Clients.Client(Context.ConnectionId).NoClientHandler();

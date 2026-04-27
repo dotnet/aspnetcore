@@ -100,7 +100,12 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         return base.HandleRequestAsync();
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Handles remote sign-out requests sent by the identity provider.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if the request was handled by the OpenID Connect handler; otherwise, <see langword="false"/>.
+    /// </returns>
     protected virtual async Task<bool> HandleRemoteSignOutAsync()
     {
         OpenIdConnectMessage? message = null;
