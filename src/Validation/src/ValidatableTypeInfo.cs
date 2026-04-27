@@ -87,7 +87,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             }
 
             // Validate type-level attributes
-            ValidateTypeAttributes(value, context);
+            await ValidateTypeAttributesAsync(value, context, cancellationToken);
 
             // If any type-level attribute errors were found, return early
             if (context.ValidationErrors is not null && context.ValidationErrors.Count > originalErrorCount)
@@ -122,7 +122,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         }
     }
 
-    private void ValidateTypeAttributes(object? value, ValidateContext context)
+    private async Task ValidateTypeAttributesAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
         var validationAttributes = GetValidationAttributes();
         var errorPrefix = context.CurrentValidationPath;
@@ -130,7 +130,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         for (var i = 0; i < validationAttributes.Length; i++)
         {
             var attribute = validationAttributes[i];
-            var result = attribute.GetValidationResult(value, context.ValidationContext);
+            var result = await attribute.GetValidationResultAsync(value, context.ValidationContext, cancellationToken);
             if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
             {
                 // Create a validation error for each member name that is provided

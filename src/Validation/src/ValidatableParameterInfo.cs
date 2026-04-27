@@ -72,7 +72,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
 
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
         {
-            var result = _requiredAttribute.GetValidationResult(value, context.ValidationContext);
+            var result = await _requiredAttribute.GetValidationResultAsync(value, context.ValidationContext, cancellationToken);
 
             if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
             {
@@ -88,7 +88,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             var attribute = validationAttributes[i];
             try
             {
-                var result = attribute.GetValidationResult(value, context.ValidationContext);
+                var result = await attribute.GetValidationResultAsync(value, context.ValidationContext, cancellationToken);
                 if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
                 {
                     var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
