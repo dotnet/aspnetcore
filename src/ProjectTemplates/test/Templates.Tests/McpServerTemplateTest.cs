@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.InternalTesting;
 using Templates.Test.Helpers;
 using Xunit.Abstractions;
@@ -71,9 +72,13 @@ public class McpServerTemplateTest : LoggedTest
     private async Task McpServerTemplateCoreAsync(string transport, string[] args = null)
     {
         var nativeAot = args?.Contains(ArgConstants.PublishNativeAot) ?? false;
+        var selfContainedFalse = args is not null
+            && args.Contains("--self-contained")
+            && args.Contains("false");
+        var needsSingleRid = !selfContainedFalse;
 
         var project = await ProjectFactory.CreateProject(Output);
-        if (nativeAot)
+        if (needsSingleRid)
         {
             project.SetCurrentRuntimeIdentifier();
         }
@@ -84,7 +89,14 @@ public class McpServerTemplateTest : LoggedTest
             allArgs.AddRange(args);
         }
 
-        await project.RunDotNetNewAsync("mcpserver", args: allArgs.ToArray());
+        // The default template uses SelfContained=true with multi-RID RuntimeIdentifiers.
+        // CI feeds don't have all RID-specific runtime packages, so replace the multi-RID
+        // property with a single RuntimeIdentifier for the current platform before restore.
+        Action preRestoreAction = needsSingleRid
+            ? () => ReplaceRuntimeIdentifiersWithSingle(project)
+            : null;
+
+        await project.RunDotNetNewAsync("mcpserver", args: allArgs.ToArray(), preRestoreAction: preRestoreAction);
 
         if (transport == "remote")
         {
@@ -137,5 +149,21 @@ public class McpServerTemplateTest : LoggedTest
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", project, aspNetProcess.Process));
             }
         }
+    }
+
+    /// <summary>
+    /// Replaces multi-RID <c>&lt;RuntimeIdentifiers&gt;</c> with a single
+    /// <c>&lt;RuntimeIdentifier&gt;</c> matching the current platform so that
+    /// NuGet restore only needs the current platform's runtime packages.
+    /// </summary>
+    private static void ReplaceRuntimeIdentifiersWithSingle(Project project)
+    {
+        var csprojPath = Directory.GetFiles(project.TemplateOutputDir, "*.csproj").Single();
+        var content = File.ReadAllText(csprojPath);
+        content = Regex.Replace(
+            content,
+            @"<RuntimeIdentifiers>[^<]+</RuntimeIdentifiers>",
+            $"<RuntimeIdentifier>{project.RuntimeIdentifier}</RuntimeIdentifier>");
+        File.WriteAllText(csprojPath, content);
     }
 }
