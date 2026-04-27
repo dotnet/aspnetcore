@@ -2470,6 +2470,108 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             "No visible gaps should exist between rendered items");
     }
 
+    [Fact]
+    public void AnchorMode_None_AsyncProvider_PrependKeepsViewportStable()
+    {
+        MountAnchorModeComponent("0", variableHeight: true, useItemsProvider: true);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        // Enable 500ms provider delay to simulate network latency.
+        Browser.Exists(By.Id("toggle-delay")).Click();
+        Browser.Contains("Provider delay: 500ms", () => Browser.Exists(By.Id("status")).Text);
+
+        ScrollMidListAndWaitForRender(container, js);
+        // With provider delay, wait for the visible items to fully settle
+        // (provider round-trips complete and _itemsBefore stabilizes).
+        WaitForRenderToSettle(container, js);
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("prepend-items")).Click();
+        // Wait for all provider calls to complete (RefreshDataAsync finishes).
+        Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+        // Wait for the final render + restore to settle.
+        WaitForRenderToSettle(container, js);
+
+        AssertViewportStaysStable(
+            js,
+            By.Id("scroll-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            "Async provider: viewport should stay stable after prepend despite placeholder transition",
+            driftTolerance: 5);
+    }
+
+    [Fact]
+    public void AnchorMode_None_AsyncProvider_ScrollDoesNotFlash()
+    {
+        MountAnchorModeComponent("0", variableHeight: true, useItemsProvider: true);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        // Enable 500ms provider delay to simulate network latency.
+        Browser.Exists(By.Id("toggle-delay")).Click();
+        Browser.Contains("Provider delay: 500ms", () => Browser.Exists(By.Id("status")).Text);
+
+        // Scroll through items incrementally, checking for backward index jumps (flashing).
+        var result = js.ExecuteAsyncScript(@"
+            var done = arguments[arguments.length - 1];
+            var container = arguments[0];
+            (async () => {
+                const SCROLL_INCREMENT = 200;
+                const MAX_ITERATIONS = 50;
+                const SETTLE_MS = 100; // Short settle — we're testing for flashing, not waiting for full load
+
+                let prevTopIndex = -1;
+                let flashCount = 0;
+                let maxIndexSeen = -1;
+
+                for (let i = 0; i < MAX_ITERATIONS; i++) {
+                    container.scrollTop += SCROLL_INCREMENT;
+                    await new Promise(r => setTimeout(r, SETTLE_MS));
+
+                    var items = container.querySelectorAll('.item[data-index]');
+                    var containerRect = container.getBoundingClientRect();
+                    let topIndex = -1;
+
+                    for (var j = 0; j < items.length; j++) {
+                        var rect = items[j].getBoundingClientRect();
+                        if (rect.bottom > containerRect.top + 2 && rect.top < containerRect.bottom - 2) {
+                            topIndex = parseInt(items[j].getAttribute('data-index'), 10);
+                            break;
+                        }
+                    }
+
+                    if (topIndex >= 0) {
+                        if (topIndex > maxIndexSeen) maxIndexSeen = topIndex;
+                        if (prevTopIndex >= 0 && topIndex < prevTopIndex - 3) {
+                            flashCount++;
+                        }
+                        prevTopIndex = topIndex;
+                    }
+
+                    // Stop if we've reached near the end.
+                    if (container.scrollHeight - container.scrollTop - container.clientHeight < 2) break;
+                }
+
+                done({ flashCount: flashCount, maxIndexSeen: maxIndexSeen });
+            })();
+        ", container) as Dictionary<string, object>;
+
+        var flashCount = Convert.ToInt32(result["flashCount"], CultureInfo.InvariantCulture);
+        var maxIndexSeen = Convert.ToInt32(result["maxIndexSeen"], CultureInfo.InvariantCulture);
+
+        Assert.True(flashCount == 0,
+            $"Async provider: scrolling should not flash/jump backward. " +
+            $"Detected {flashCount} backward jumps, max index seen: {maxIndexSeen}");
+        Assert.True(maxIndexSeen >= 50,
+            $"Should have scrolled through some items but only reached index {maxIndexSeen}");
+    }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]
@@ -3274,7 +3376,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     /// <summary>
     /// Waits for the Virtualize render cycle to settle by checking that the rendered
-    /// item count and scrollTop stabilize (don't change for two consecutive reads).
+    /// item count, scrollTop, and first visible item index stabilize.
     /// Use after actions that trigger async rendering (prepend/append with ItemsProvider on Server)
     /// to ensure anchor restore has completed before making single-shot assertions.
     /// </summary>
@@ -3282,15 +3384,31 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         long lastScrollTop = -1;
         int lastItemCount = -1;
+        string lastFirstIndex = "";
         int stableCount = 0;
 
         Browser.True(() =>
         {
-            var scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
-            var itemCount = (int)(long)js.ExecuteScript(
-                "return arguments[0].querySelectorAll('.item[data-index]').length", container);
+            var result = js.ExecuteScript(@"
+                var c = arguments[0];
+                var items = c.querySelectorAll('.item[data-index]');
+                var cr = c.getBoundingClientRect();
+                var firstIdx = '';
+                for (var i = 0; i < items.length; i++) {
+                    var r = items[i].getBoundingClientRect();
+                    if (r.bottom > cr.top + 2 && r.top < cr.bottom - 2) {
+                        firstIdx = items[i].getAttribute('data-index');
+                        break;
+                    }
+                }
+                return { scrollTop: Math.round(c.scrollTop), itemCount: items.length, firstIndex: firstIdx };
+            ", container) as Dictionary<string, object>;
 
-            if (scrollTop == lastScrollTop && itemCount == lastItemCount)
+            var scrollTop = Convert.ToInt64(result["scrollTop"], CultureInfo.InvariantCulture);
+            var itemCount = Convert.ToInt32(result["itemCount"], CultureInfo.InvariantCulture);
+            var firstIndex = result["firstIndex"]?.ToString() ?? "";
+
+            if (scrollTop == lastScrollTop && itemCount == lastItemCount && firstIndex == lastFirstIndex)
             {
                 stableCount++;
             }
@@ -3301,10 +3419,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
             lastScrollTop = scrollTop;
             lastItemCount = itemCount;
+            lastFirstIndex = firstIndex;
 
-            // Require 2 consecutive stable reads (~500ms apart from Browser.True polling interval).
-            return stableCount >= 2;
-        }, TimeSpan.FromSeconds(10), "Render cycle did not settle in time");
+            // Require 3 consecutive stable reads to account for async provider delays.
+            return stableCount >= 3;
+        }, TimeSpan.FromSeconds(15), "Render cycle did not settle in time");
     }
 
     private static (string index, double top) GetItemPositionInViewport(
