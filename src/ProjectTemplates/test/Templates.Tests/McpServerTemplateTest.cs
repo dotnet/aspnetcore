@@ -57,14 +57,14 @@ public class McpServerTemplateTest : LoggedTest
     }
 
     [ConditionalFact]
-    [SkipOnHelix("Not supported queues", Queues = HelixConstants.NativeAotNotSupportedHelixQueues)]
+    [SkipOnHelix("NativeAOT template requires runtime packages unavailable in CI")]
     public async Task McpServerTemplate_Local_NativeAot()
     {
         await McpServerTemplateCoreAsync("local", args: [ArgConstants.PublishNativeAot]);
     }
 
     [ConditionalFact]
-    [SkipOnHelix("Not supported queues", Queues = HelixConstants.NativeAotNotSupportedHelixQueues)]
+    [SkipOnHelix("NativeAOT template requires runtime packages unavailable in CI")]
     public async Task McpServerTemplate_Remote_NativeAot()
     {
         await McpServerTemplateCoreAsync("remote", args: [ArgConstants.PublishNativeAot]);
