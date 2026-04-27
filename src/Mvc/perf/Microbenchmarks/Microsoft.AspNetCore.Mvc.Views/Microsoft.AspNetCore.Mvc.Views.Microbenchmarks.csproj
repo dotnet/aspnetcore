@@ -2,9 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <!--  Workaround https://github.com/dotnet/core-setup/issues/3726 -->
-    <!-- <GenerateDependencyFile>false</GenerateDependencyFile> -->
     <IsBenchmarkProject>true</IsBenchmarkProject>
+    <IsMicrobenchmarksProject>false</IsMicrobenchmarksProject>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 

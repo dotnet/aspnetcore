@@ -185,7 +185,11 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
   if ((-not $globalJsonHasRuntimes) -and (-not [string]::IsNullOrEmpty($env:DOTNET_INSTALL_DIR)) -and (Test-Path(Join-Path $env:DOTNET_INSTALL_DIR "sdk\$dotnetSdkVersion"))) {
     $dotnetRoot = $env:DOTNET_INSTALL_DIR
   } else {
-    $dotnetRoot = Join-Path $RepoRoot '.dotnet'
+    if (-not [string]::IsNullOrEmpty($env:DOTNET_GLOBAL_INSTALL_DIR)) {
+      $dotnetRoot = $env:DOTNET_GLOBAL_INSTALL_DIR
+    } else {
+      $dotnetRoot = Join-Path $RepoRoot '.dotnet'
+    }
 
     if (-not (Test-Path(Join-Path $dotnetRoot "sdk\$dotnetSdkVersion"))) {
       if ($install) {
@@ -677,9 +681,19 @@ function InitializeToolset() {
   }
 
   $downloadArgs = @("package", "download", "Microsoft.DotNet.Arcade.Sdk@$toolsetVersion", "--verbosity", "minimal", "--prerelease", "--output", "$nugetCache")
-  if ($env:NUGET_CONFIG) {
+  $nugetConfig = $env:NUGET_CONFIG
+  if (-not $nugetConfig) {
+    # Search for any variation of nuget.config in the RepoRoot
+    $configFile = Get-ChildItem -Path $RepoRoot -File | Where-Object { $_.Name -ieq "nuget.config" } | Select-Object -First 1
+
+    if ($configFile) {
+        $nugetConfig = $configFile.FullName
+    }
+  }
+
+  if ($nugetConfig) {
     $downloadArgs += "--configfile"
-    $downloadArgs += $env:NUGET_CONFIG
+    $downloadArgs += $nugetConfig
   }
   DotNet @downloadArgs
 
