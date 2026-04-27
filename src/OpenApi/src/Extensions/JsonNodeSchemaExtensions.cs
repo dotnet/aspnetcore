@@ -358,8 +358,9 @@ internal static class JsonNodeSchemaExtensions
 
         // Parameters sourced from query, path, header, and form are bound via Enum.TryParse,
         // which only accepts the original C# member names — not names transformed by a JSON
-        // naming policy (e.g. KebabCaseLower). Replace the schema's enum values with the
-        // original member names so the OpenAPI spec matches what the server actually accepts.
+        // naming policy (e.g. KebabCaseLower). Replace the schema's enum values and default
+        // value with the original member names so the OpenAPI spec matches what the server
+        // actually accepts.
         if (parameterDescription.Source is { } source && IsNonBodyBindingSource(source)
             && parameterDescription.Type is { } paramType)
         {
@@ -373,6 +374,31 @@ internal static class JsonNodeSchemaExtensions
                     enumArray.Add((JsonNode)name);
                 }
                 schema[OpenApiSchemaKeywords.EnumKeyword] = enumArray;
+
+                // Also fix the default value — it was serialized using the naming policy
+                // (e.g. "high-priority") but should use the original member name
+                // (e.g. "HighPriority") to match what Enum.TryParse accepts. The default
+                // may be stored in "default" or "x-ref-default" depending on whether the
+                // schema was tagged for componentization.
+                var defaultKey = schema[OpenApiConstants.RefDefaultAnnotation] is not null
+                    ? OpenApiConstants.RefDefaultAnnotation
+                    : OpenApiSchemaKeywords.DefaultKeyword;
+                if (jsonTypeInfo is not null
+                    && schema[defaultKey] is JsonNode defaultNode
+                    && defaultNode.GetValueKind() == JsonValueKind.String)
+                {
+                    var defaultValue = defaultNode.GetValue<string>();
+                    foreach (var memberName in memberNames)
+                    {
+                        var enumValue = Enum.Parse(enumType, memberName);
+                        var serialized = JsonSerializer.SerializeToNode(enumValue, jsonTypeInfo);
+                        if (serialized?.GetValue<string>() == defaultValue)
+                        {
+                            schema[defaultKey] = (JsonNode)memberName;
+                            break;
+                        }
+                    }
+                }
             }
         }
 

@@ -277,6 +277,17 @@ internal sealed class OpenApiSchemaService(
 
         if (inlineEnumParam)
         {
+            // The schema was originally tagged for componentization (x-schema-id was set),
+            // so ApplyDefaultValue stored the default in the x-ref-default metadata annotation
+            // instead of the "default" keyword. Since we're now inlining this schema, promote
+            // the annotation to the schema's Default property.
+            if (schema.Metadata?.TryGetValue(OpenApiConstants.RefDefaultAnnotation, out var refDefault) == true
+                && refDefault is JsonNode defaultNode)
+            {
+                schema.Default = defaultNode;
+                schema.Metadata.Remove(OpenApiConstants.RefDefaultAnnotation);
+            }
+
             return schema;
         }
 

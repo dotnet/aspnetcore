@@ -887,7 +887,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         builder.MapGet("/api/header", ([FromHeader] Priority priority = Priority.MediumPriority) => { });
         builder.MapGet("/api/path/{priority}", (Priority priority = Priority.LowPriority) => { });
         builder.MapPut("/api/form", ([FromForm] Priority priority = Priority.HighPriority) => { });
-        builder.MapPost("/api/body", (Priority priority) => priority);
+        builder.MapPost("/api/body", ([FromBody] Priority priority) => priority);
 
         // Assert
         await VerifyOpenApiDocument(builder, document =>
