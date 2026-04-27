@@ -69,10 +69,7 @@ public class Project : IDisposable
         bool isItemTemplate = false,
         string[] args = null,
         // Used to set special options in MSBuild
-        IDictionary<string, string> environmentVariables = null,
-        // Optional action to run after template creation but before restore,
-        // e.g. to modify the generated csproj for single-RID self-contained builds.
-        Action preRestoreAction = null)
+        IDictionary<string, string> environmentVariables = null)
     {
         if (templateName.Contains(' '))
         {
@@ -139,8 +136,6 @@ public class Project : IDisposable
 
         var createResult = new ProcessResult(createExecution);
         Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create", this, createResult));
-
-        preRestoreAction?.Invoke();
 
         if (!isItemTemplate)
         {
