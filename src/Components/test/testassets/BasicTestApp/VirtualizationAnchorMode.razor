@@ -41,7 +41,10 @@
     <button id="prepend-items" @onclick="PrependItems">Prepend 10 Items</button>
     <button id="prepend-many-items" @onclick="PrependManyItems">Prepend 100 Items</button>
     <button id="append-items" @onclick="AppendItems">Append 10 Items</button>
+    <button id="append-one-item" @onclick="AppendOneItem">Append 1 Item</button>
     <button id="append-many-items" @onclick="AppendManyItems">Append 100 Items</button>
+    <button id="delete-above" @onclick="DeleteAbove">Delete 10 Above</button>
+    <button id="delete-below" @onclick="DeleteBelow">Delete 10 Below</button>
     <button id="expand-item" @onclick="ExpandVisibleItem">Expand Item 3 to 400px</button>
     <button id="set-small-count" @onclick="SetSmallCount">Set 5 Items</button>
     <button id="toggle-provider" @onclick="ToggleProvider">
@@ -162,6 +165,23 @@
         statusMessage = $"Appended 10 items (indices {startIndex}..{startIndex + 9})";
     }
 
+    private async Task AppendOneItem()
+    {
+        var index = nextAppendIndex;
+        var newItem = new DynamicItem { Index = index, Height = GetHeight(index) };
+        nextAppendIndex += 1;
+        if (useItemsProvider && virtualizeRef != null)
+        {
+            _pendingAppend = new List<DynamicItem> { newItem };
+            await virtualizeRef.RefreshDataAsync();
+        }
+        else
+        {
+            items.Add(newItem);
+        }
+        statusMessage = $"Appended 1 item (index {index})";
+    }
+
     private async Task AppendManyItems()
     {
         var startIndex = nextAppendIndex;
@@ -204,6 +224,25 @@
         {
             statusMessage = "No item to expand";
         }
+    }
+
+    private async Task DeleteAbove()
+    {
+        var count = Math.Min(10, items.Count);
+        var removed = items.Take(count).Select(i => i.Index).ToList();
+        items.RemoveRange(0, count);
+        statusMessage = $"Deleted {count} items from above (indices {removed.First()}..{removed.Last()})";
+        if (useItemsProvider && virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
+    }
+
+    private async Task DeleteBelow()
+    {
+        var count = Math.Min(10, items.Count);
+        var startIdx = items.Count - count;
+        var removed = items.Skip(startIdx).Select(i => i.Index).ToList();
+        items.RemoveRange(startIdx, count);
+        statusMessage = $"Deleted {count} items from below (indices {removed.First()}..{removed.Last()})";
+        if (useItemsProvider && virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
     }
 
     private void ToggleProvider()
