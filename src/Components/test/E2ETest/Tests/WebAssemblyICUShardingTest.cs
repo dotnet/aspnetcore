@@ -6,6 +6,7 @@ using GlobalizationWasmApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
 
@@ -23,6 +24,7 @@ public class WebAssemblyICUShardingTest : ServerTestBase<ToggleExecutionModeServ
     {
     }
 
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/127516")]
     [Fact]
     public void LoadingApp_FrenchLanguage_Works()
     {
@@ -41,6 +43,7 @@ public class WebAssemblyICUShardingTest : ServerTestBase<ToggleExecutionModeServ
         Assert.Equal("Bonjour!", localizedDisplay.Text);
     }
 
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/127516")]
     [Theory]
     [InlineData("ko", "ko", "2020. 9. 2. 오전 12:00:00", "안녕하세요")] // ko exists in the CJK data set.
     [InlineData("ko-KR", "ko-KR", "2020. 9. 2. 오전 12:00:00", "안녕하세요")]// ko-KR exists in the CJK data set.
@@ -65,6 +68,7 @@ public class WebAssemblyICUShardingTest : ServerTestBase<ToggleExecutionModeServ
         Assert.Equal(expectedText, localizedDisplay.Text);
     }
 
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/127516")]
     [Fact]
     public void LoadingApp_RussianLanguage_Works()
     {
@@ -83,6 +87,7 @@ public class WebAssemblyICUShardingTest : ServerTestBase<ToggleExecutionModeServ
         Assert.Equal("Hello", localizedDisplay.Text); // No localized resources for this culture.
     }
 
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/127516")]
     [Fact]
     public void LoadingApp_KannadaLanguage_Works()
     {

@@ -5,6 +5,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
 
@@ -30,6 +31,7 @@ public class WebAssemblyLoggingTest : ServerTestBase<ToggleExecutionModeServerFi
         Assert.Equal("none", errorUi.GetCssValue("display"));
     }
 
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/127515")]
     [Fact]
     public void LogsSimpleExceptionsUsingLogger()
     {
@@ -42,6 +44,7 @@ public class WebAssemblyLoggingTest : ServerTestBase<ToggleExecutionModeServerFi
             "at BasicTestApp.ErrorComponent.ThrowSimple");
     }
 
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/127515")]
     [Fact]
     public void LogsInnerExceptionsUsingLogger()
     {
@@ -55,6 +58,7 @@ public class WebAssemblyLoggingTest : ServerTestBase<ToggleExecutionModeServerFi
             "at BasicTestApp.ErrorComponent.ThrowInner");
     }
 
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/127515")]
     [Fact]
     public void LogsAggregateExceptionsUsingLogger()
     {
@@ -70,6 +74,7 @@ public class WebAssemblyLoggingTest : ServerTestBase<ToggleExecutionModeServerFi
             "System.InvalidTimeZoneException: Aggregate exception 3");
     }
 
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/127515")]
     [Fact]
     public void LogsUsingCustomLogger()
     {
