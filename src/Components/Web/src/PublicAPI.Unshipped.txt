@@ -86,8 +86,8 @@ Microsoft.AspNetCore.Components.Web.SupplyParameterFromTempDataAttribute.Name.se
 Microsoft.AspNetCore.Components.Web.SupplyParameterFromTempDataAttribute.SupplyParameterFromTempDataAttribute() -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.AnchorMode.get -> Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.AnchorMode.set -> void
-Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemKey.get -> System.Func<TItem, object!>?
-Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemKey.set -> void
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemComparer.get -> System.Collections.Generic.IEqualityComparer<TItem>?
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemComparer.set -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
 Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode.Beginning = 1 -> Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
 Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode.End = 2 -> Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode

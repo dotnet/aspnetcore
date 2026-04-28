@@ -50,7 +50,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     // For in-memory Items where objects have stable identity
     private TItem? _previousFirstLoadedItem;
 
-    private object? _previousFirstLoadedItemKey;
+    // For ItemsProvider where items are compared via ItemComparer
+    private TItem? _previousFirstLoadedItemForProvider;
 
     private CancellationTokenSource? _refreshCts;
 
@@ -166,16 +167,18 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     public VirtualizeAnchorMode AnchorMode { get; set; } = VirtualizeAnchorMode.Beginning;
 
     /// <summary>
-    /// Gets or sets a function that extracts a key value from each item. The key is used
-    /// to detect whether items were prepended or appended when using <see cref="ItemsProvider"/>.
-    /// When not set, anchoring does not work with <see cref="ItemsProvider"/> and the viewport
-    /// may jump when items are added dynamically.
+    /// Gets or sets a comparer used to detect whether items were prepended or appended
+    /// when using <see cref="ItemsProvider"/>. The comparer determines if the first loaded
+    /// item changed between provider calls, which indicates items were inserted above.
+    ///
+    /// For C# records, the default comparer works automatically (value equality).
+    /// For classes, provide a comparer that compares by a unique identifier (e.g., Id).
     ///
     /// For in-memory <see cref="Items"/>, this parameter is not needed because the component
     /// can detect prepends using object identity.
     /// </summary>
     [Parameter]
-    public Func<TItem, object>? ItemKey { get; set; }
+    public IEqualityComparer<TItem>? ItemComparer { get; set; }
 
     /// <summary>
     /// Instructs the component to re-request data from its <see cref="ItemsProvider"/>.
@@ -343,9 +346,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 _itemTemplate(item)(builder);
                 _lastRenderedItemCount++;
 
-                if (isFirstRenderedItem && ItemKey != null && _itemsProvider != DefaultItemsProvider)
+                if (isFirstRenderedItem && ItemComparer != null && _itemsProvider != DefaultItemsProvider)
                 {
-                    _previousFirstLoadedItemKey = ItemKey(item);
+                    _previousFirstLoadedItemForProvider = item;
                     isFirstRenderedItem = false;
                 }
             }
@@ -604,13 +607,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                         _pendingScrollToBottom = true;
                     }
                 }
-                else if (itemsAdded && !isDefaultProvider && ItemKey != null && _previousFirstLoadedItemKey != null)
+                else if (itemsAdded && !isDefaultProvider && ItemComparer != null && _previousFirstLoadedItemForProvider != null)
                 {
                     using var enumerator = result.Items.GetEnumerator();
                     if (enumerator.MoveNext())
                     {
-                        var newKey = ItemKey!(enumerator.Current);
-                        var itemsShifted = !Equals(_previousFirstLoadedItemKey, newKey);
+                        var itemsShifted = !ItemComparer.Equals(_previousFirstLoadedItemForProvider, enumerator.Current);
 
                         if (itemsShifted)
                         {

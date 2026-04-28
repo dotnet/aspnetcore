@@ -36,7 +36,7 @@
     @* No scroll container — uses window/document as the scroll root *@
     @if (useItemsProvider)
     {
-        <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" AnchorMode="@anchorMode" ItemKey="@(item => item.Index)" Context="item">
+        <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@_itemComparer" Context="item">
             <div class="item"
                  data-index="@item.Index"
                  data-anchor-mode="@((int)anchorMode)"
@@ -65,6 +65,8 @@
     private bool useVariableHeight = false;
     private bool useItemsProvider = false;
     private Virtualize<DynamicItem> virtualizeRef;
+    private static readonly IEqualityComparer<DynamicItem> _itemComparer =
+        EqualityComparer<DynamicItem>.Create((a, b) => a.Index == b.Index, item => item.Index);
 
     protected override void OnInitialized()
     {

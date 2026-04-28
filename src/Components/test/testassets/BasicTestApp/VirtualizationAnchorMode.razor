@@ -15,7 +15,7 @@
 <div id="scroll-container" style="height: 300px; overflow-y: auto; border: 1px solid black;">
     @if (useItemsProvider)
     {
-        <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" AnchorMode="@anchorMode" ItemKey="@(item => item.Index)" Context="item">
+        <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@_itemComparer" Context="item">
             <div class="item"
                  data-index="@item.Index"
                  data-anchor-mode="@((int)anchorMode)"
@@ -69,10 +69,14 @@
     private bool useItemsProvider = false;
     private bool useProviderDelay = false;
     private Virtualize<DynamicItem> virtualizeRef;
+    private static readonly IEqualityComparer<DynamicItem> _itemComparer =
+        EqualityComparer<DynamicItem>.Create((a, b) => a.Index == b.Index, item => item.Index);
 
     // Pending mutations applied inside the provider (simulates DB-backed data).
     private List<DynamicItem> _pendingPrepend;
     private List<DynamicItem> _pendingAppend;
+    private int _pendingDeleteFromTop;
+    private int _pendingDeleteFromBottom;
 
     protected override void OnInitialized()
     {
@@ -229,20 +233,32 @@
     private async Task DeleteAbove()
     {
         var count = Math.Min(10, items.Count);
-        var removed = items.Take(count).Select(i => i.Index).ToList();
-        items.RemoveRange(0, count);
-        statusMessage = $"Deleted {count} items from above (indices {removed.First()}..{removed.Last()})";
-        if (useItemsProvider && virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
+        if (useItemsProvider && virtualizeRef != null)
+        {
+            _pendingDeleteFromTop = count;
+            await virtualizeRef.RefreshDataAsync();
+        }
+        else
+        {
+            items.RemoveRange(0, count);
+        }
+        statusMessage = $"Deleted {count} items from above";
     }
 
     private async Task DeleteBelow()
     {
         var count = Math.Min(10, items.Count);
-        var startIdx = items.Count - count;
-        var removed = items.Skip(startIdx).Select(i => i.Index).ToList();
-        items.RemoveRange(startIdx, count);
-        statusMessage = $"Deleted {count} items from below (indices {removed.First()}..{removed.Last()})";
-        if (useItemsProvider && virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
+        if (useItemsProvider && virtualizeRef != null)
+        {
+            _pendingDeleteFromBottom = count;
+            await virtualizeRef.RefreshDataAsync();
+        }
+        else
+        {
+            var startIdx = items.Count - count;
+            items.RemoveRange(startIdx, count);
+        }
+        statusMessage = $"Deleted {count} items from below";
     }
 
     private void ToggleProvider()
@@ -269,6 +285,18 @@
         {
             items.AddRange(_pendingAppend);
             _pendingAppend = null;
+        }
+        if (_pendingDeleteFromTop > 0)
+        {
+            var count = Math.Min(_pendingDeleteFromTop, items.Count);
+            items.RemoveRange(0, count);
+            _pendingDeleteFromTop = 0;
+        }
+        if (_pendingDeleteFromBottom > 0)
+        {
+            var count = Math.Min(_pendingDeleteFromBottom, items.Count);
+            items.RemoveRange(items.Count - count, count);
+            _pendingDeleteFromBottom = 0;
         }
 
         var result = items.Skip(request.StartIndex).Take(request.Count)
