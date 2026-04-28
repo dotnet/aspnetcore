@@ -103,12 +103,12 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.UseInvokeVoidAsyncForObjectReturn_Description)));
 
-    public static readonly DiagnosticDescriptor VirtualizeItemsProviderRequiresItemKey = new(
+    public static readonly DiagnosticDescriptor VirtualizeItemsProviderRequiresItemComparer = new(
         "BL0011",
-        CreateLocalizableResourceString(nameof(Resources.VirtualizeItemsProviderRequiresItemKey_Title)),
-        CreateLocalizableResourceString(nameof(Resources.VirtualizeItemsProviderRequiresItemKey_Format)),
+        CreateLocalizableResourceString(nameof(Resources.VirtualizeItemsProviderRequiresItemComparer_Title)),
+        CreateLocalizableResourceString(nameof(Resources.VirtualizeItemsProviderRequiresItemComparer_Format)),
         Usage,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: CreateLocalizableResourceString(nameof(Resources.VirtualizeItemsProviderRequiresItemKey_Description)));
+        description: CreateLocalizableResourceString(nameof(Resources.VirtualizeItemsProviderRequiresItemComparer_Description)));
 }

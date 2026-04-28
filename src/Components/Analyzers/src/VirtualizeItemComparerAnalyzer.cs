@@ -21,7 +21,7 @@ public sealed class VirtualizeItemComparerAnalyzer : DiagnosticAnalyzer
     private const string RenderTreeBuilderTypeName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(DiagnosticDescriptors.VirtualizeItemsProviderRequiresItemKey);
+        ImmutableArray.Create(DiagnosticDescriptors.VirtualizeItemsProviderRequiresItemComparer);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -95,7 +95,7 @@ public sealed class VirtualizeItemComparerAnalyzer : DiagnosticAnalyzer
                                         }
                                         else if (paramName == "ItemComparer")
                                         {
-                                            state.HasItemKey = true;
+                                            state.HasItemComparer = true;
                                         }
                                     }
                                 }
@@ -119,10 +119,10 @@ public sealed class VirtualizeItemComparerAnalyzer : DiagnosticAnalyzer
                 {
                     foreach (var state in completedVirtualizeComponents)
                     {
-                        if (state.HasItemsProvider && !state.HasItemKey && state.ItemsProviderLocation != null)
+                        if (state.HasItemsProvider && !state.HasItemComparer && state.ItemsProviderLocation != null)
                         {
                             endContext.ReportDiagnostic(Diagnostic.Create(
-                                DiagnosticDescriptors.VirtualizeItemsProviderRequiresItemKey,
+                                DiagnosticDescriptors.VirtualizeItemsProviderRequiresItemComparer,
                                 state.ItemsProviderLocation));
                         }
                     }
@@ -135,7 +135,7 @@ public sealed class VirtualizeItemComparerAnalyzer : DiagnosticAnalyzer
     {
         public bool IsVirtualize { get; set; }
         public bool HasItemsProvider { get; set; }
-        public bool HasItemKey { get; set; }
+        public bool HasItemComparer { get; set; }
         public Location? ItemsProviderLocation { get; set; }
     }
 }

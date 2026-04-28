@@ -68,7 +68,7 @@ public class VirtualizeItemComparerAnalyzerTest : DiagnosticVerifier
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
             {
-                Id = DiagnosticDescriptors.VirtualizeItemsProviderRequiresItemKey.Id,
+                Id = DiagnosticDescriptors.VirtualizeItemsProviderRequiresItemComparer.Id,
                 Message = "Virtualize uses 'ItemsProvider' without 'ItemComparer'. Set ItemComparer to an IEqualityComparer that identifies items by a unique key.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
