@@ -88,7 +88,7 @@ public sealed class ProducesResponseTypeMetadata : IProducesResponseTypeMetadata
 
     internal static ProducesResponseTypeMetadata CreateUnvalidated(Type? type, int statusCode, IEnumerable<string> contentTypes)
     {
-        if (type is not null && type.IsAssignableFrom(typeof(ProblemDetails)))
+        if (type is not null && typeof(ProblemDetails).IsAssignableFrom(type))
         {
             contentTypes = [MediaTypeNames.Application.ProblemJson];
         }
