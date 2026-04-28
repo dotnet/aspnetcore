@@ -80,6 +80,13 @@ internal static class Int7BitEncodingUtils
         }
         while ((b & 0x80) != 0);
 
+        // Check if last byte of 5 byte sequence is valid (i.e. does not exceed 0x0F)
+        if (shift == 35 && b > 0x0F)
+        {
+            // The value exceeds the maximum for a 32-bit integer.
+            throw new FormatException("Bad 7-bit encoded integer.");
+        }
+
         return index;
     }
 

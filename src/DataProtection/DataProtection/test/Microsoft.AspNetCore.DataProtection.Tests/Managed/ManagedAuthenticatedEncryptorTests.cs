@@ -153,7 +153,7 @@ public class ManagedAuthenticatedEncryptorTests
         // This test reproduces the issue from ServerComponentDeserializerTest.DoesNotParseMarkersWithUnknownComponentTypeAssembly
         // which uses ITimeLimitedDataProtector with ManagedAuthenticatedEncryptor under the hood.
         // The buffer boundary condition occurs when the output size calculation results in a value
-        // that is close to or exceeds 255 bytes (the initial stackalloc size).
+        // that is close to or exceeds 256 bytes (the initial stackalloc size).
 
         // Arrange
         var dataProtectionProvider = new TestsDataProtectionProvider<ManagedAuthenticatedEncryptorConfiguration>();

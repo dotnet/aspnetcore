@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
 
@@ -147,13 +148,12 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
         var authenticatedIdentity = GetAuthenticatedIdentity(httpContext.User);
         if (authenticatedIdentity != null)
         {
-            if (requestToken.ClaimUid is null)
+            extractedClaimUidBytes = _claimUidExtractor.TryExtractClaimUidBytes(httpContext.User, currentClaimUidBytes);
+
+            if (!extractedClaimUidBytes)
             {
+                // User has no extractable claims - fall back to username-based validation
                 currentUsername = authenticatedIdentity.Name ?? string.Empty;
-            }
-            else
-            {
-                extractedClaimUidBytes = _claimUidExtractor.TryExtractClaimUidBytes(httpContext.User, currentClaimUidBytes);
             }
         }
 
@@ -201,7 +201,7 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
                 return false;
             }
 
-            return token.ClaimUid.GetData().SequenceEqual(claimUidBytes);
+            return CryptographicOperations.FixedTimeEquals(token.ClaimUid.GetData(), claimUidBytes);
         }
     }
 
