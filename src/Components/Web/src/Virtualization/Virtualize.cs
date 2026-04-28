@@ -47,11 +47,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private IEnumerable<TItem>? _loadedItems;
 
-    // For in-memory Items where objects have stable identity
     private TItem? _previousFirstLoadedItem;
-
-    // For ItemsProvider where items are compared via ItemComparer
-    private TItem? _previousFirstLoadedItemForProvider;
 
     private CancellationTokenSource? _refreshCts;
 
@@ -348,7 +344,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
                 if (isFirstRenderedItem && ItemComparer != null && _itemsProvider != DefaultItemsProvider)
                 {
-                    _previousFirstLoadedItemForProvider = item;
+                    _previousFirstLoadedItem = item;
                     isFirstRenderedItem = false;
                 }
             }
@@ -607,12 +603,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                         _pendingScrollToBottom = true;
                     }
                 }
-                else if (itemsAdded && !isDefaultProvider && ItemComparer != null && _previousFirstLoadedItemForProvider != null)
+                else if (itemsAdded && !isDefaultProvider && ItemComparer != null && _previousFirstLoadedItem != null)
                 {
                     using var enumerator = result.Items.GetEnumerator();
                     if (enumerator.MoveNext())
                     {
-                        var itemsShifted = !ItemComparer.Equals(_previousFirstLoadedItemForProvider, enumerator.Current);
+                        var itemsShifted = !ItemComparer.Equals(_previousFirstLoadedItem, enumerator.Current);
 
                         if (itemsShifted)
                         {
@@ -633,12 +629,16 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 _loadedItems = result.Items;
                 _loadedItemsStartIndex = _itemsBefore;
 
-                // Only needed for DefaultItemsProvider; custom providers return new instances
-                // per request, making ReferenceEquals unreliable.
-                _previousFirstLoadedItem = _itemsProvider == DefaultItemsProvider
-                    && Items != null && _itemsBefore < Items.Count
-                    ? Items.ElementAtOrDefault(_itemsBefore)
-                    : default;
+                // For DefaultItemsProvider, capture the first loaded item by reference
+                // so we can detect prepends via ReferenceEquals.
+                // For custom providers, _previousFirstLoadedItem is set during
+                // BuildRenderTree (using the actual rendered item for ItemComparer).
+                if (_itemsProvider == DefaultItemsProvider)
+                {
+                    _previousFirstLoadedItem = Items != null && _itemsBefore < Items.Count
+                        ? Items.ElementAtOrDefault(_itemsBefore)
+                        : default;
+                }
 
                 _loading = false;
                 _skipNextDistributionRefresh = request.Count > 0;
