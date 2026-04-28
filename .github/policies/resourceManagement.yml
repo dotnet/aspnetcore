@@ -191,7 +191,7 @@ configuration:
           days: 1
       actions:
       - addReply:
-          reply: This dependency PR has had no activity for a full business day - @dotnet/aspnet-build please take a look if you are on build-ops.
+          reply: This dependency PR has had no activity for a full business day - @dotnet/aspnet-build please take a look.
     - description: '[Idle Issue Management] Tag aspnet-build on dependency PRs (weekend)'
       frequencies:
       - weekday:
@@ -206,7 +206,7 @@ configuration:
           days: 3
       actions:
       - addReply:
-          reply: This dependency PR has had no activity for a full business day - @dotnet/aspnet-build please take a look if you are on build-ops.
+          reply: This dependency PR has had no activity for a full business day - @dotnet/aspnet-build please take a look.
     eventResponderTasks:
     - if:
       - payloadType: Issue_Comment
@@ -440,19 +440,19 @@ configuration:
           branch: main
       then:
       - addMilestone:
-          milestone: 11.0-preview4
+          milestone: 11.0-preview5
       description: '[Milestone Assignments] Assign Milestone to PRs merged to the `main` branch'
     - if:
       - payloadType: Pull_Request
       - isAction:
           action: Closed
       - targetsBranch:
-          branch: release/11.0-preview3
+          branch: release/11.0-preview4
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 11.0-preview3
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/11.0-preview3 branch'
+          milestone: 11.0-preview4
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/11.0-preview4 branch'
     - if:
       - payloadType: Issues
       - isAction:
@@ -632,7 +632,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 10.0.7
+          milestone: 10.0.9
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/10.0 branch'
     - if:
       - payloadType: Pull_Request
@@ -643,7 +643,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 9.0.16
+          milestone: 9.0.17
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0 branch'
     - if:
       - payloadType: Pull_Request
@@ -654,7 +654,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 8.0.27
+          milestone: 8.0.28
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/8.0 branch'
     - if:
       - payloadType: Issues
