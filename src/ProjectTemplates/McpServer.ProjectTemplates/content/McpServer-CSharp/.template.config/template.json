@@ -9,6 +9,7 @@
   "name": "MCP Server App",
   "description": "A project template for creating a Model Context Protocol (MCP) server using C# and the ModelContextProtocol package.",
   "groupIdentity": "Microsoft.McpServer",
+  "precedence": "11000",
   "identity": "Microsoft.McpServer.CSharp.11.0",
   "shortName": "mcpserver",
   "defaultName": "McpServer",
