@@ -150,13 +150,9 @@ internal class SSRRenderModeBoundary : IComponent
                 {
                     throw new InvalidOperationException($"Cannot pass RenderFragment<T> parameter '{name}' to component '{_componentType.Name}' with rendermode '{RenderMode.GetType().Name}'. Templated content can't be passed across a rendermode boundary, because it is arbitrary code and cannot be serialized.");
                 }
-                else
+                else if (value is not RenderFragment)
                 {
-                    // TODO: Ideally we *should* support RenderFragment (the non-generic version) by prerendering it
-                    // However it's very nontrivial since it means we have to execute it within the current renderer
-                    // somehow without actually emitting its result directly, wait for quiescence, and then prerender
-                    // the output into a separate buffer so we can serialize it in a special way.
-                    // A prototype implementation is at https://github.com/dotnet/aspnetcore/commit/ed330ff5b143974d9060828a760ad486b1d386ac
+                    // RenderFragment is allowed — will be serialized in ToMarker()
                     throw new InvalidOperationException($"Cannot pass the parameter '{name}' to component '{_componentType.Name}' with rendermode '{RenderMode.GetType().Name}'. This is because the parameter is of the delegate type '{value.GetType()}', which is arbitrary code and cannot be serialized.");
                 }
             }
@@ -181,9 +177,10 @@ internal class SSRRenderModeBoundary : IComponent
         // so we lazily compute the marker key once.
         _markerKey ??= GenerateMarkerKey(sequence, componentKey);
 
-        var parameters = _latestParameters is null
+        // Build a serialization-safe copy of parameters, replacing RenderFragment delegates with DTOs
+        var serializableParameters = _latestParameters is null
             ? ParameterView.Empty
-            : ParameterView.FromDictionary((IDictionary<string, object?>)_latestParameters);
+            : BuildSerializableParameterView(_latestParameters);
 
         var marker = RenderMode switch
         {
@@ -200,15 +197,33 @@ internal class SSRRenderModeBoundary : IComponent
             var serverComponentSerializer = httpContext.RequestServices.GetRequiredService<ServerComponentSerializer>();
 
             var invocationId = EndpointHtmlRenderer.GetOrCreateInvocationId(httpContext);
-            serverComponentSerializer.SerializeInvocation(ref marker, invocationId, _componentType, parameters);
+            serverComponentSerializer.SerializeInvocation(ref marker, invocationId, _componentType, serializableParameters);
         }
 
         if (RenderMode is InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode)
         {
-            WebAssemblyComponentSerializer.SerializeInvocation(ref marker, _componentType, parameters);
+            WebAssemblyComponentSerializer.SerializeInvocation(ref marker, _componentType, serializableParameters);
         }
 
         return marker;
+    }
+
+    private static ParameterView BuildSerializableParameterView(IReadOnlyDictionary<string, object?> latestParameters)
+    {
+        var dict = new Dictionary<string, object?>(latestParameters.Count);
+        foreach (var (name, value) in latestParameters)
+        {
+            if (value is RenderFragment renderFragment)
+            {
+                dict[name] = new SerializedRenderFragment { Frames = RenderFragmentSerializer.Serialize(renderFragment) };
+            }
+            else
+            {
+                dict[name] = value;
+            }
+        }
+
+        return ParameterView.FromDictionary(dict);
     }
 
     private ComponentMarkerKey GenerateMarkerKey(int sequence, object? componentKey)

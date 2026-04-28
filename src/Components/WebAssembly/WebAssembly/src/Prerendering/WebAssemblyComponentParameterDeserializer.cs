@@ -49,20 +49,31 @@ internal sealed class WebAssemblyComponentParameterDeserializer
             }
             else
             {
-                var parameterType = _parametersCache.GetParameterType(definition.Assembly, definition.TypeName);
-                if (parameterType == null)
-                {
-                    throw new InvalidOperationException($"The parameter '{definition.Name}' with type '{definition.TypeName}' in assembly '{definition.Assembly}' could not be found.");
-                }
                 try
                 {
                     var value = (JsonElement)parameterValues[i];
-                    var parameterValue = JsonSerializer.Deserialize(
-                        value.GetRawText(),
-                        parameterType,
-                        WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
 
-                    parametersDictionary[definition.Name] = parameterValue;
+                    if (definition.TypeName == typeof(SerializedRenderFragment).FullName)
+                    {
+                        var serialized = JsonSerializer.Deserialize<SerializedRenderFragment>(
+                            value.GetRawText(),
+                            WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
+                        parametersDictionary[definition.Name] = RenderFragmentSerializer.Deserialize(serialized!.Frames);
+                    }
+                    else
+                    {
+                        var parameterType = _parametersCache.GetParameterType(definition.Assembly, definition.TypeName);
+                        if (parameterType is null)
+                        {
+                            throw new InvalidOperationException($"The parameter '{definition.Name}' with type '{definition.TypeName}' in assembly '{definition.Assembly}' could not be found.");
+                        }
+
+                        var parameterValue = JsonSerializer.Deserialize(
+                            value.GetRawText(),
+                            parameterType,
+                            WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
+                        parametersDictionary[definition.Name] = parameterValue;
+                    }
                 }
                 catch (Exception e)
                 {
