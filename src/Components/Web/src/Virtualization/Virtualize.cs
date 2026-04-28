@@ -49,6 +49,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private TItem? _previousFirstLoadedItem;
 
+    private bool _itemComparerExplicitlySet;
+
     private CancellationTokenSource? _refreshCts;
 
     private bool _skipNextDistributionRefresh;
@@ -167,14 +169,31 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// when using <see cref="ItemsProvider"/>. The comparer determines if the first loaded
     /// item changed between provider calls, which indicates items were inserted above.
     ///
-    /// For C# records, the default comparer works automatically (value equality).
-    /// For classes, provide a comparer that compares by a unique identifier (e.g., Id).
+    /// Defaults to <see cref="EqualityComparer{T}.Default"/>. For records and types implementing
+    /// <see cref="IEquatable{T}"/>, the default works automatically (value equality). For classes
+    /// without value-equality semantics, provide a comparer that compares by a unique identifier
+    /// (e.g., <c>Id</c>); otherwise reference-equality fallback would produce false-positive
+    /// prepend detection when the provider returns fresh instances.
+    ///
+    /// Prepend detection only runs when this parameter is explicitly assigned by the consumer.
+    /// The <c>BL0011</c> analyzer warns when <see cref="ItemsProvider"/> is used without an
+    /// explicit <see cref="ItemComparer"/> assignment.
     ///
     /// For in-memory <see cref="Items"/>, this parameter is not needed because the component
     /// can detect prepends using object identity.
     /// </summary>
     [Parameter]
-    public IEqualityComparer<TItem>? ItemComparer { get; set; }
+    public IEqualityComparer<TItem> ItemComparer
+    {
+        get => _itemComparer;
+        set
+        {
+            _itemComparer = value;
+            _itemComparerExplicitlySet = true;
+        }
+    }
+
+    private IEqualityComparer<TItem> _itemComparer = EqualityComparer<TItem>.Default;
 
     /// <summary>
     /// Instructs the component to re-request data from its <see cref="ItemsProvider"/>.
@@ -342,7 +361,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 _itemTemplate(item)(builder);
                 _lastRenderedItemCount++;
 
-                if (isFirstRenderedItem && ItemComparer != null && _itemsProvider != DefaultItemsProvider)
+                if (isFirstRenderedItem && _itemComparerExplicitlySet && _itemsProvider != DefaultItemsProvider)
                 {
                     _previousFirstLoadedItem = item;
                     isFirstRenderedItem = false;
@@ -590,7 +609,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 if (itemsAdded && isDefaultProvider && _previousFirstLoadedItem != null)
                 {
                     var newFirstItem = Items!.ElementAtOrDefault(_itemsBefore);
-                    if (newFirstItem != null && !ReferenceEquals(_previousFirstLoadedItem, newFirstItem))
+                    // Use EqualityComparer<TItem>.Default so this works for value-type TItem;
+                    // ReferenceEquals would always return false due to boxing.
+                    if (newFirstItem != null && !EqualityComparer<TItem>.Default.Equals(_previousFirstLoadedItem, newFirstItem))
                     {
                         result = await AdjustForPrependAsync(countDelta, result.TotalItemCount, cancellationToken);
                     }
@@ -603,7 +624,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                         _pendingScrollToBottom = true;
                     }
                 }
-                else if (itemsAdded && !isDefaultProvider && ItemComparer != null && _previousFirstLoadedItem != null)
+                else if (itemsAdded && !isDefaultProvider && _itemComparerExplicitlySet && _previousFirstLoadedItem != null)
                 {
                     using var enumerator = result.Items.GetEnumerator();
                     if (enumerator.MoveNext())
@@ -629,10 +650,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 _loadedItems = result.Items;
                 _loadedItemsStartIndex = _itemsBefore;
 
-                // For DefaultItemsProvider, capture the first loaded item by reference
-                // so we can detect prepends via ReferenceEquals.
-                // For custom providers, _previousFirstLoadedItem is set during
-                // BuildRenderTree (using the actual rendered item for ItemComparer).
+                // For DefaultItemsProvider, capture the first loaded item so we can detect
+                // prepends via EqualityComparer<TItem>.Default (works for both reference and
+                // value types — see comment on the comparison above).
+                // For custom providers, _previousFirstLoadedItem is set during BuildRenderTree
+                // (using the actual rendered item for ItemComparer).
                 if (_itemsProvider == DefaultItemsProvider)
                 {
                     _previousFirstLoadedItem = Items != null && _itemsBefore < Items.Count
