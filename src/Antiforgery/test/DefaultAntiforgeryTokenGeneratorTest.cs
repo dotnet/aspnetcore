@@ -416,10 +416,9 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
     public void TryValidateTokenSet_UsernameToken_FailsWhenUserHasExtractableClaims()
     {
         // Regression test: a username-based request token (no ClaimUid) should NOT validate
-        // successfully against a user who currently has extractable claims. The old behavior
-        // always extracted the current user's claim UID; if the user had claims but the token
-        // didn't, validation failed because null != extractedClaimUid. The new behavior skips
-        // claim extraction when requestToken.ClaimUid is null, so it incorrectly passes.
+        // successfully against a user who currently has extractable claims.
+        // Always extract the current user's claim UID; if the user had claims but the token
+        // didn't, validation failed because null != extractedClaimUid.
 
         // Arrange
         var httpContext = new DefaultHttpContext();
@@ -449,8 +448,6 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         var result = tokenProvider.TryValidateTokenSet(httpContext, cookieToken, fieldtoken, out var message);
 
         // Assert - should FAIL because the user now has claims but the token doesn't.
-        // With the fix, claim extraction happens first; since it succeeds, username is not
-        // populated, so the username comparison fails (token has "the-user", current is "").
         Assert.False(result);
         Assert.Contains("the-user", message);
     }

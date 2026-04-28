@@ -45,8 +45,8 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
                 // This should never happen, since the IDataProtector should have
                 // checked the key ring provider to see if the span-based encryptor
                 // could be used.
-                // If we get here is means the key ring provider is returning a different encryptor
-                // which would be very odd. But we'll check just in case and fallback to the old behavior if this happens.
+                // If we get here, it means the key ring provider is returning a different encryptor
+                // which would be very odd. But we'll check just in case and fall back to the old behavior if this happens.
                 var result = Protect(plaintext.ToArray());
                 var span = destination.GetSpan(result.Length);
                 result.CopyTo(span);
@@ -173,8 +173,8 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
                 // This should never happen, since the IDataProtector should have
                 // checked the key ring provider to see if the span-based encryptor
                 // could be used.
-                // If we get here is means the key ring provider is returning a different encryptor
-                // which would be very odd. But we'll check just in case and fallback to the old behavior if this happens.
+                // If we get here, it means the key ring provider is returning a different encryptor
+                // which would be very odd. But we'll check just in case and fall back to the old behavior if this happens.
                 var result = requestedEncryptor.Decrypt(actualCiphertext.ToArray(), aad.ToArray());
                 var span = destination.GetSpan(result.Length);
                 result.CopyTo(span);
