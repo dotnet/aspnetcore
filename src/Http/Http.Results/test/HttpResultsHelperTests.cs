@@ -4,6 +4,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -216,6 +217,35 @@ public partial class HttpResultsHelperTests
         Assert.True(three.IsComplete);
         Assert.Equal("Three", three.Name);
         Assert.Equal("ThreeChild", three.Child);
+    }
+
+    [Fact]
+    public async Task WriteResultAsJsonAsync_SetsProblemJsonContentType_ForProblemDetails()
+    {
+        const string Detail = "Explanation of something went wrong :'(";
+
+        // Arrange
+        var value = new ProblemDetails()
+        {
+            Detail = Detail,
+        };
+        var responseBodyStream = new MemoryStream();
+        var httpContext = CreateHttpContext(responseBodyStream);
+        var serializerOptions = new JsonOptions().SerializerOptions;
+
+        _ = new NotFound<ProblemDetails>(value);
+
+        // Act
+        await HttpResultsHelper.WriteResultAsJsonAsync(httpContext, NullLogger.Instance, value, jsonSerializerOptions: serializerOptions);
+
+        // Assert
+        var body = JsonSerializer.Deserialize<ProblemDetails>(responseBodyStream.ToArray(), serializerOptions);
+
+        Assert.NotNull(body);
+        Assert.Equal(Detail, body.Detail);
+        Assert.Equal(StatusCodes.Status404NotFound, body.Status);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.5", body.Type);
+        Assert.Equal("Not Found", body.Title);
     }
 
     private static async IAsyncEnumerable<JsonTodo> GetTodosAsync()
