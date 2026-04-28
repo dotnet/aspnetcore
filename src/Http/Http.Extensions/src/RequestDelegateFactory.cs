@@ -1441,7 +1441,7 @@ public static partial class RequestDelegateFactory
                             },
                         };
 
-                        await problemDetailsService.WriteAsync(problemDetailsContext);
+                        _ = await problemDetailsService.TryWriteAsync(problemDetailsContext);
                     }
 
                     return (null, false);
