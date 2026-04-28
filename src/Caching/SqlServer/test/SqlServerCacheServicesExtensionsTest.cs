@@ -98,7 +98,7 @@ public class SqlServerCacheServicesExtensionsTest
         // when the factory itself depends on a registered service (e.g. a token provider).
         var services = new ServiceCollection();
         services.AddSingleton<IFakeTokenService, FakeTokenService>();
-        SqlServerCachingServicesExtensions.AddSqlServerCacheServices(services);
+        services.AddDistributedSqlServerCache(_ => { });
 
         services.AddOptions<SqlServerCacheOptions>()
             .Configure<IFakeTokenService>((options, tokenService) =>
