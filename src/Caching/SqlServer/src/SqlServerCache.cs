@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Shared;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
@@ -33,13 +34,19 @@ public class SqlServerCache : IDistributedCache, IBufferDistributedCache
     /// Initializes a new instance of <see cref="SqlServerCache"/>.
     /// </summary>
     /// <param name="options">The configuration options.</param>
-    public SqlServerCache(IOptions<SqlServerCacheOptions> options)
+    /// <param name="serviceProvider">The service provider used to resolve services for <see cref="SqlServerCacheOptions.ConnectionFactory"/>.</param>
+    public SqlServerCache(IOptions<SqlServerCacheOptions> options, IServiceProvider serviceProvider)
     {
         var cacheOptions = options.Value;
 
-        ArgumentThrowHelper.ThrowIfNullOrEmpty(cacheOptions.ConnectionString);
         ArgumentThrowHelper.ThrowIfNullOrEmpty(cacheOptions.SchemaName);
         ArgumentThrowHelper.ThrowIfNullOrEmpty(cacheOptions.TableName);
+
+        if (cacheOptions.ConnectionFactory is null && string.IsNullOrEmpty(cacheOptions.ConnectionString))
+        {
+            throw new ArgumentException(
+                $"Either {nameof(SqlServerCacheOptions.ConnectionString)} or {nameof(SqlServerCacheOptions.ConnectionFactory)} must be set.");
+        }
 
         if (cacheOptions.ExpiredItemsDeletionInterval.HasValue &&
             cacheOptions.ExpiredItemsDeletionInterval.Value < MinimumExpiredItemsDeletionInterval)
@@ -64,8 +71,12 @@ public class SqlServerCache : IDistributedCache, IBufferDistributedCache
         _deleteExpiredCachedItemsDelegate = DeleteExpiredCacheItems;
         _defaultSlidingExpiration = cacheOptions.DefaultSlidingExpiration;
 
+        Func<SqlConnection> connectionFactory = cacheOptions.ConnectionFactory is not null
+            ? () => cacheOptions.ConnectionFactory(serviceProvider)
+            : () => new SqlConnection(cacheOptions.ConnectionString);
+
         _dbOperations = new DatabaseOperations(
-            cacheOptions.ConnectionString,
+            connectionFactory,
             cacheOptions.SchemaName,
             cacheOptions.TableName,
             _systemClock);

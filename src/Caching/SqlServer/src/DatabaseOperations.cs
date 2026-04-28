@@ -29,9 +29,9 @@ internal sealed class DatabaseOperations : IDatabaseOperations
     private const string UtcNowParameterName = "UtcNow";
 
     public DatabaseOperations(
-        string connectionString, string schemaName, string tableName, ISystemClock systemClock)
+        Func<SqlConnection> connectionFactory, string schemaName, string tableName, ISystemClock systemClock)
     {
-        ConnectionString = connectionString;
+        ConnectionFactory = connectionFactory;
         SchemaName = schemaName;
         TableName = tableName;
         SystemClock = systemClock;
@@ -40,7 +40,7 @@ internal sealed class DatabaseOperations : IDatabaseOperations
 
     internal SqlQueries SqlQueries { get; }
 
-    internal string ConnectionString { get; }
+    internal Func<SqlConnection> ConnectionFactory { get; }
 
     internal string SchemaName { get; }
 
@@ -50,7 +50,7 @@ internal sealed class DatabaseOperations : IDatabaseOperations
 
     public void DeleteCacheItem(string key)
     {
-        using (var connection = new SqlConnection(ConnectionString))
+        using (var connection = ConnectionFactory())
         using (var command = new SqlCommand(SqlQueries.DeleteCacheItem, connection))
         {
             command.Parameters.AddCacheItemId(key);
@@ -65,7 +65,7 @@ internal sealed class DatabaseOperations : IDatabaseOperations
     {
         token.ThrowIfCancellationRequested();
 
-        using (var connection = new SqlConnection(ConnectionString))
+        using (var connection = ConnectionFactory())
         using (var command = new SqlCommand(SqlQueries.DeleteCacheItem, connection))
         {
             command.Parameters.AddCacheItemId(key);
@@ -117,7 +117,7 @@ internal sealed class DatabaseOperations : IDatabaseOperations
     {
         var utcNow = SystemClock.UtcNow;
 
-        using (var connection = new SqlConnection(ConnectionString))
+        using (var connection = ConnectionFactory())
         using (var command = new SqlCommand(SqlQueries.DeleteExpiredCacheItems, connection))
         {
             command.Parameters.AddWithValue(UtcNowParameterName, SqlDbType.DateTimeOffset, utcNow);
@@ -135,7 +135,7 @@ internal sealed class DatabaseOperations : IDatabaseOperations
         var absoluteExpiration = DatabaseOperations.GetAbsoluteExpiration(utcNow, options);
         DatabaseOperations.ValidateOptions(options.SlidingExpiration, absoluteExpiration);
 
-        using (var connection = new SqlConnection(ConnectionString))
+        using (var connection = ConnectionFactory())
         using (var upsertCommand = new SqlCommand(SqlQueries.SetCacheItem, connection))
         {
             upsertCommand.Parameters
@@ -175,7 +175,7 @@ internal sealed class DatabaseOperations : IDatabaseOperations
         var absoluteExpiration = DatabaseOperations.GetAbsoluteExpiration(utcNow, options);
         DatabaseOperations.ValidateOptions(options.SlidingExpiration, absoluteExpiration);
 
-        using (var connection = new SqlConnection(ConnectionString))
+        using (var connection = ConnectionFactory())
         using (var upsertCommand = new SqlCommand(SqlQueries.SetCacheItem, connection))
         {
             upsertCommand.Parameters
@@ -221,7 +221,7 @@ internal sealed class DatabaseOperations : IDatabaseOperations
         }
 
         byte[]? value = null;
-        using (var connection = new SqlConnection(ConnectionString))
+        using (var connection = ConnectionFactory())
         using (var command = new SqlCommand(query, connection))
         {
             command.Parameters
@@ -274,7 +274,7 @@ internal sealed class DatabaseOperations : IDatabaseOperations
         }
 
         byte[]? value = null;
-        using (var connection = new SqlConnection(ConnectionString))
+        using (var connection = ConnectionFactory())
         using (var command = new SqlCommand(query, connection))
         {
             command.Parameters

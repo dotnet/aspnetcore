@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Xunit;
 
@@ -691,7 +692,7 @@ public class SqlServerCacheWithDatabaseTest
             options = GetCacheOptions();
         }
 
-        return new SqlServerCache(options);
+        return new SqlServerCache(options, new ServiceCollection().BuildServiceProvider());
     }
 
     private SqlServerCacheOptions GetCacheOptions(ISystemClock testClock = null)
