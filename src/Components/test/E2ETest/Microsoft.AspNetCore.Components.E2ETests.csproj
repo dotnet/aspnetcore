@@ -43,9 +43,13 @@
   </ItemGroup>
 
   <!-- Exclude threading test files when building with CoreCLR (UseMonoRuntime=false) since ThreadingApp requires Mono -->
+  <!-- Also exclude server-only tests since the CoreCLR job targets the WASM runtime path;
+       server-side Blazor already runs on CoreCLR by default and is covered by the Mono job. -->
   <ItemGroup Condition="'$(UseMonoRuntime)' == 'false'">
     <Compile Remove="Tests\ThreadingAppTest.cs" />
     <Compile Remove="Tests\ThreadingAppHostedTest.cs" />
+    <Compile Remove="ServerExecutionTests\**\*.cs" />
+    <Compile Remove="ServerRenderingTests\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
