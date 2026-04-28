@@ -2876,6 +2876,106 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             "End mode: growing dataset (one at a time) should follow to bottom");
     }
 
+    [Theory(Skip = "https://github.com/dotnet/aspnetcore/issues/66509")]
+    [InlineData("0", false)]
+    [InlineData("1", false)]
+    [InlineData("2", false)]
+    [InlineData("0", true)]
+    [InlineData("1", true)]
+    [InlineData("2", true)]
+    public void AnchorMode_DeleteAboveViewport_ViewportStaysStable(string anchorMode, bool useItemsProvider)
+    {
+        MountAnchorModeComponent(anchorMode, useItemsProvider: useItemsProvider);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        ScrollMidListAndWaitForRender(container, js);
+        WaitForRenderToSettle(container, js);
+
+        var (indexBefore, relTopBefore, _) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("delete-above")).Click();
+        Browser.Contains("Deleted 10 items from above", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
+
+        AssertViewportStaysStable(
+            js,
+            By.Id("scroll-container"),
+            ".item",
+            indexBefore,
+            relTopBefore,
+            $"AnchorMode {anchorMode} (provider={useItemsProvider}): viewport should stay stable after deleting items above",
+            driftTolerance: 5);
+    }
+
+    [Theory]
+    [InlineData("0", false)]
+    [InlineData("1", false)]
+    [InlineData("2", false)]
+    [InlineData("0", true)]
+    [InlineData("1", true)]
+    [InlineData("2", true)]
+    public void AnchorMode_DeleteBelowViewport_ViewportStaysStable(string anchorMode, bool useItemsProvider)
+    {
+        MountAnchorModeComponent(anchorMode, useItemsProvider: useItemsProvider);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        ScrollMidListAndWaitForRender(container, js);
+        WaitForRenderToSettle(container, js);
+
+        var (indexBefore, relTopBefore, scrollTopBefore) = GetItemPositionInContainer(js, container, ".item");
+
+        Browser.Exists(By.Id("delete-below")).Click();
+        Browser.Contains("Deleted 10 items from below", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
+
+        var (indexAfter, relTopAfter, scrollTopAfter) = GetItemPositionInContainer(js, container, ".item");
+        Assert.Equal(indexBefore, indexAfter);
+        Assert.True(Math.Abs(scrollTopAfter - scrollTopBefore) < 5,
+            $"AnchorMode {anchorMode} (provider={useItemsProvider}): scrollTop should not change after deleting items below. " +
+            $"Before: {scrollTopBefore}, After: {scrollTopAfter}");
+    }
+
+    [Theory]
+    [InlineData("0", false)]
+    [InlineData("1", false)]
+    [InlineData("2", false)]
+    [InlineData("0", true)]
+    [InlineData("1", true)]
+    [InlineData("2", true)]
+    public void AnchorMode_DeleteAtViewportTop_FirstSurvivingItemJumpsToTheTop(string anchorMode, bool useItemsProvider)
+    {
+        MountAnchorModeComponent(anchorMode, useItemsProvider: useItemsProvider);
+
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        // Scroll down a small amount so the anchor item (around index 4-5) is
+        // within the range of "Delete 10 from top" (items 0-9).
+        ScrollContainer(js, container, 200);
+        Browser.True(() => (long)js.ExecuteScript("return arguments[0].scrollTop", container) > 100);
+        WaitForRenderToSettle(container, js);
+
+        // Delete 10 from the top — this removes items 0-9, including the anchor.
+        Browser.Exists(By.Id("delete-above")).Click();
+        Browser.Contains("Deleted 10 items from above", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
+
+        // Items should still be rendered.
+        Browser.True(() => GetElementCount(container, ".item") > 0,
+            "Items should still be rendered after deletion at viewport");
+
+        // The first visible item should be the first surviving item (index 10),
+        // since items 0-9 were deleted and the viewport shifts up naturally.
+        var (firstVisibleIndex, _, _) = GetItemPositionInContainer(js, container, ".item");
+        var firstVisibleIdx = int.Parse(firstVisibleIndex, CultureInfo.InvariantCulture);
+        Assert.True(firstVisibleIdx >= 10,
+            $"After deleting items 0-9, the first visible item should be >= 10, but was {firstVisibleIdx}");
+    }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]
