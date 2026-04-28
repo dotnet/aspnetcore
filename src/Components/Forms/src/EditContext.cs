@@ -43,6 +43,17 @@ public sealed class EditContext
     public event EventHandler<ValidationRequestedEventArgs>? OnValidationRequested;
 
     /// <summary>
+    /// An async event that is raised when validation is requested. Validator components
+    /// subscribe to this event to perform async validation (e.g., database lookups, remote API calls).
+    /// Handlers are awaited by <see cref="ValidateAsync"/>. <see cref="Validate"/> also invokes
+    /// these handlers but requires each to complete synchronously; if any returns an incomplete
+    /// <see cref="Task"/>, <see cref="Validate"/> throws <see cref="InvalidOperationException"/>.
+    /// A validator should subscribe to either <see cref="OnValidationRequested"/> or
+    /// <see cref="OnValidationRequestedAsync"/> for a given source of validation, not both.
+    /// </summary>
+    public event Func<object, ValidationRequestedEventArgs, Task>? OnValidationRequestedAsync;
+
+    /// <summary>
     /// An event that is raised when validation state has changed.
     /// </summary>
     public event EventHandler<ValidationStateChangedEventArgs>? OnValidationStateChanged;
@@ -214,10 +225,170 @@ public sealed class EditContext
     /// Validates this <see cref="EditContext"/>.
     /// </summary>
     /// <returns>True if there are no validation messages after validation; otherwise false.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when an <see cref="OnValidationRequestedAsync"/> handler does not complete synchronously.
+    /// Use <see cref="ValidateAsync"/> instead when async validators are registered.
+    /// </exception>
     public bool Validate()
     {
         OnValidationRequested?.Invoke(this, ValidationRequestedEventArgs.Empty);
+
+        if (OnValidationRequestedAsync is { } asyncHandler)
+        {
+            var delegates = asyncHandler.GetInvocationList();
+            for (var i = 0; i < delegates.Length; i++)
+            {
+                var task = ((Func<object, ValidationRequestedEventArgs, Task>)delegates[i])
+                    .Invoke(this, ValidationRequestedEventArgs.Empty);
+
+                if (!task.IsCompleted)
+                {
+                    throw new InvalidOperationException(
+                        $"An asynchronous validation handler did not complete synchronously. " +
+                        $"Use {nameof(ValidateAsync)} instead of {nameof(Validate)} when async validators are registered.");
+                }
+
+                // Surface synchronous faults. GetResult unwraps single exceptions (no AggregateException).
+                task.GetAwaiter().GetResult();
+            }
+        }
+
         return !GetValidationMessages().Any();
+    }
+
+    /// <summary>
+    /// Validates this <see cref="EditContext"/> asynchronously.
+    /// Invokes both sync <see cref="OnValidationRequested"/> and async
+    /// <see cref="OnValidationRequestedAsync"/> handlers, cancels any pending
+    /// field-level validation tasks, then returns whether the model is valid.
+    /// </summary>
+    /// <returns>True if there are no validation messages after validation; otherwise false.</returns>
+    public async Task<bool> ValidateAsync()
+    {
+        // Cancel all pending field-level async tasks - form-submit validation supersedes them
+        CancelAllPendingValidationTasks();
+
+        // Fire sync event first (backward compat - existing validators listen here)
+        OnValidationRequested?.Invoke(this, ValidationRequestedEventArgs.Empty);
+
+        // Fire async event - invoke all handlers and await them
+        if (OnValidationRequestedAsync is { } asyncHandler)
+        {
+            var delegates = asyncHandler.GetInvocationList();
+            var tasks = new Task[delegates.Length];
+            for (var i = 0; i < delegates.Length; i++)
+            {
+                tasks[i] = ((Func<object, ValidationRequestedEventArgs, Task>)delegates[i])
+                    .Invoke(this, ValidationRequestedEventArgs.Empty);
+            }
+
+            await Task.WhenAll(tasks);
+        }
+
+        return !GetValidationMessages().Any();
+    }
+
+    /// <summary>
+    /// Registers an async validation task for a specific field. The task is tracked for
+    /// pending/faulted state queries via <see cref="IsValidationPending(in FieldIdentifier)"/>
+    /// and <see cref="IsValidationFaulted(in FieldIdentifier)"/>. If a task is already tracked
+    /// for this field, the previous task's <paramref name="cts"/> is cancelled and the new task replaces it.
+    /// The <see cref="EditContext"/> takes ownership of the supplied <paramref name="cts"/>: it will be
+    /// cancelled if a subsequent validation supersedes this one, and disposed once <paramref name="task"/> completes.
+    /// </summary>
+    /// <param name="fieldIdentifier">Identifies the field being validated.</param>
+    /// <param name="task">The async validation task to track.</param>
+    /// <param name="cts">The <see cref="CancellationTokenSource"/> that can cancel the task.</param>
+    public void AddValidationTask(in FieldIdentifier fieldIdentifier, Task task, CancellationTokenSource cts)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+        ArgumentNullException.ThrowIfNull(cts);
+
+        var state = GetOrAddFieldState(fieldIdentifier);
+
+        // Cancel any previous pending task for this field. Its observer disposes its own CTS
+        // when the validator task settles, so we must not dispose it here while it may still be in flight.
+        state.PendingValidationCts?.Cancel();
+
+        state.PendingValidationTask = task;
+        state.PendingValidationCts = cts;
+        state.IsValidationFaulted = false;
+
+        NotifyValidationStateChanged();
+
+        // Observe the task's completion to update state and dispose the CTS.
+        _ = ObserveValidationTaskAsync(state, task, cts);
+    }
+
+    /// <summary>
+    /// Returns <c>true</c> if the specified field has a pending async validation task.
+    /// </summary>
+    /// <param name="fieldIdentifier">Identifies the field to query.</param>
+    /// <returns><c>true</c> if async validation is in progress for the field; otherwise <c>false</c>.</returns>
+    public bool IsValidationPending(in FieldIdentifier fieldIdentifier)
+        => _fieldStates.TryGetValue(fieldIdentifier, out var state) && state.PendingValidationTask is { IsCompleted: false };
+
+    /// <summary>
+    /// Returns <c>true</c> if the field identified by the <paramref name="accessor"/> expression
+    /// has a pending async validation task.
+    /// </summary>
+    /// <typeparam name="TField">The type of the field.</typeparam>
+    /// <param name="accessor">An expression that identifies the field, e.g. <c>() =&gt; model.Email</c>.</param>
+    /// <returns><c>true</c> if async validation is in progress for the field; otherwise <c>false</c>.</returns>
+    public bool IsValidationPending<TField>(Expression<Func<TField>> accessor)
+        => IsValidationPending(FieldIdentifier.Create(accessor));
+
+    /// <summary>
+    /// Returns <c>true</c> if any field has a pending async validation task.
+    /// </summary>
+    /// <returns><c>true</c> if any field has async validation in progress; otherwise <c>false</c>.</returns>
+    public bool IsValidationPending()
+    {
+        foreach (var state in _fieldStates)
+        {
+            if (state.Value.PendingValidationTask is { IsCompleted: false })
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Returns <c>true</c> if the specified field's last async validation faulted
+    /// (threw a non-cancellation exception).
+    /// </summary>
+    /// <param name="fieldIdentifier">Identifies the field to query.</param>
+    /// <returns><c>true</c> if the field's last async validation faulted; otherwise <c>false</c>.</returns>
+    public bool IsValidationFaulted(in FieldIdentifier fieldIdentifier)
+        => _fieldStates.TryGetValue(fieldIdentifier, out var state) && state.IsValidationFaulted;
+
+    /// <summary>
+    /// Returns <c>true</c> if the field identified by the <paramref name="accessor"/> expression's
+    /// last async validation faulted (threw a non-cancellation exception).
+    /// </summary>
+    /// <typeparam name="TField">The type of the field.</typeparam>
+    /// <param name="accessor">An expression that identifies the field, e.g. <c>() =&gt; model.Email</c>.</param>
+    /// <returns><c>true</c> if the field's last async validation faulted; otherwise <c>false</c>.</returns>
+    public bool IsValidationFaulted<TField>(Expression<Func<TField>> accessor)
+        => IsValidationFaulted(FieldIdentifier.Create(accessor));
+
+    /// <summary>
+    /// Returns <c>true</c> if any field's last async validation faulted.
+    /// </summary>
+    /// <returns><c>true</c> if any field has a faulted async validation; otherwise <c>false</c>.</returns>
+    public bool IsValidationFaulted()
+    {
+        foreach (var state in _fieldStates)
+        {
+            if (state.Value.IsValidationFaulted)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     internal FieldState? GetFieldState(in FieldIdentifier fieldIdentifier)
@@ -235,5 +406,55 @@ public sealed class EditContext
         }
 
         return state;
+    }
+
+    private void CancelAllPendingValidationTasks()
+    {
+        foreach (var (_, state) in _fieldStates)
+        {
+            if (state.PendingValidationCts is { } cts)
+            {
+                // Request cancellation; the observer task disposes the CTS when the validator settles.
+                cts.Cancel();
+                state.PendingValidationTask = null;
+                state.PendingValidationCts = null;
+                state.IsValidationFaulted = false;
+            }
+        }
+    }
+
+    private async Task ObserveValidationTaskAsync(FieldState state, Task task, CancellationTokenSource cts)
+    {
+        try
+        {
+            await task;
+        }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is silent - field was re-edited or form submitted
+        }
+        catch (Exception)
+        {
+            // Infrastructure fault - mark field as faulted only if this is still the current task
+            if (ReferenceEquals(state.PendingValidationTask, task))
+            {
+                state.IsValidationFaulted = true;
+            }
+        }
+        finally
+        {
+            // Only clear slot state if this is still the current task (not replaced by a newer one)
+            if (ReferenceEquals(state.PendingValidationTask, task))
+            {
+                state.PendingValidationTask = null;
+                state.PendingValidationCts = null;
+                NotifyValidationStateChanged();
+            }
+
+            // Always dispose the CTS we own. Safe whether or not the slot is still current,
+            // and only happens after the validator task has observably settled, so the validator
+            // can never observe a disposed token.
+            cts.Dispose();
+        }
     }
 }
