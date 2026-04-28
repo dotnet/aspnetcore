@@ -211,12 +211,12 @@
     <value>Use InvokeVoidAsync instead of InvokeAsync&lt;object&gt;</value>
   </data>
   <data name="VirtualizeItemsProviderRequiresItemKey_Description" xml:space="preserve">
-    <value>Without ItemKey, the component cannot detect whether items were prepended or appended, causing the viewport to jump when items change dynamically.</value>
+    <value>Without ItemComparer, the component cannot detect whether items were prepended or appended, causing the viewport to jump when items change dynamically.</value>
   </data>
   <data name="VirtualizeItemsProviderRequiresItemKey_Format" xml:space="preserve">
-    <value>Virtualize uses 'ItemsProvider' without 'ItemKey'. Set ItemKey to a function returning a unique key per item (e.g., ItemKey="@(item =&gt; item.Id)").</value>
+    <value>Virtualize uses 'ItemsProvider' without 'ItemComparer'. Set ItemComparer to an IEqualityComparer that identifies items by a unique key.</value>
   </data>
   <data name="VirtualizeItemsProviderRequiresItemKey_Title" xml:space="preserve">
-    <value>Virtualize with ItemsProvider requires ItemKey</value>
+    <value>Virtualize with ItemsProvider requires ItemComparer</value>
   </data>
 </root>

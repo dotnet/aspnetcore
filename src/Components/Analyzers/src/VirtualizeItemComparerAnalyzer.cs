@@ -12,10 +12,10 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Microsoft.AspNetCore.Components.Analyzers;
 
 /// <summary>
-/// Analyzer that detects usage of Virtualize with ItemsProvider but without ItemKey.
+/// Analyzer that detects usage of Virtualize with ItemsProvider but without ItemComparer.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public sealed class VirtualizeItemKeyAnalyzer : DiagnosticAnalyzer
+public sealed class VirtualizeItemComparerAnalyzer : DiagnosticAnalyzer
 {
     private const string VirtualizeTypeName = "Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize`1";
     private const string RenderTreeBuilderTypeName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
@@ -93,7 +93,7 @@ public sealed class VirtualizeItemKeyAnalyzer : DiagnosticAnalyzer
                                             state.HasItemsProvider = true;
                                             state.ItemsProviderLocation = invocation.Syntax.GetLocation();
                                         }
-                                        else if (paramName == "ItemKey")
+                                        else if (paramName == "ItemComparer")
                                         {
                                             state.HasItemKey = true;
                                         }

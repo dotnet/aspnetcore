@@ -7,9 +7,9 @@ using TestHelper;
 
 namespace Microsoft.AspNetCore.Components.Analyzers.Test;
 
-public class VirtualizeItemKeyAnalyzerTest : DiagnosticVerifier
+public class VirtualizeItemComparerAnalyzerTest : DiagnosticVerifier
 {
-    protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new VirtualizeItemKeyAnalyzer();
+    protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new VirtualizeItemComparerAnalyzer();
 
     private static readonly string VirtualizeDeclarations = @"
     namespace Microsoft.AspNetCore.Components.Rendering
@@ -33,7 +33,7 @@ public class VirtualizeItemKeyAnalyzerTest : DiagnosticVerifier
         {
             public object ItemsProvider { get; set; }
             public object Items { get; set; }
-            public object ItemKey { get; set; }
+            public object ItemComparer { get; set; }
             public float ItemSize { get; set; }
         }
 
@@ -45,7 +45,7 @@ public class VirtualizeItemKeyAnalyzerTest : DiagnosticVerifier
 ";
 
     [Fact]
-    public void ItemsProviderWithoutItemKey_ReportsDiagnostic()
+    public void ItemsProviderWithoutItemComparer_ReportsDiagnostic()
     {
         var test = @"
     namespace ConsoleApplication1
@@ -69,7 +69,7 @@ public class VirtualizeItemKeyAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.VirtualizeItemsProviderRequiresItemKey.Id,
-                Message = "Virtualize uses 'ItemsProvider' without 'ItemKey'. Set ItemKey to a function returning a unique key per item (e.g., ItemKey=\"@(item => item.Id)\").",
+                Message = "Virtualize uses 'ItemsProvider' without 'ItemComparer'. Set ItemComparer to an IEqualityComparer that identifies items by a unique key.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
@@ -79,7 +79,7 @@ public class VirtualizeItemKeyAnalyzerTest : DiagnosticVerifier
     }
 
     [Fact]
-    public void ItemsProviderWithItemKey_NoDiagnostic()
+    public void ItemsProviderWithItemComparer_NoDiagnostic()
     {
         var test = @"
     namespace ConsoleApplication1
@@ -93,7 +93,7 @@ public class VirtualizeItemKeyAnalyzerTest : DiagnosticVerifier
             {
                 __builder.OpenComponent<Virtualize<string>>(0);
                 __builder.AddComponentParameter(1, ""ItemsProvider"", (object)null);
-                __builder.AddComponentParameter(2, ""ItemKey"", (object)null);
+                __builder.AddComponentParameter(2, ""ItemComparer"", (object)null);
                 __builder.CloseComponent();
             }
         }
@@ -103,7 +103,7 @@ public class VirtualizeItemKeyAnalyzerTest : DiagnosticVerifier
     }
 
     [Fact]
-    public void ItemsCollectionWithoutItemKey_NoDiagnostic()
+    public void ItemsCollectionWithoutItemComparer_NoDiagnostic()
     {
         var test = @"
     namespace ConsoleApplication1
