@@ -1,5 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.RequestQueueSecurityDescriptor.get -> System.Security.AccessControl.GenericSecurityDescriptor?
-Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.RequestQueueSecurityDescriptor.set -> void
-Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestPropertyFeature
-Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestPropertyFeature.TryGetTlsClientHello(System.Span<byte> tlsClientHelloBytesDestination, out int bytesReturned) -> bool

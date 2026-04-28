@@ -8,6 +8,8 @@ internal interface IInternalJSImportMethods
     string GetPersistedState();
 
     string GetApplicationEnvironment();
+    
+    string GetApplicationCulture();
 
     void AttachRootComponentToElement(string domElementSelector, int componentId, int rendererId);
 

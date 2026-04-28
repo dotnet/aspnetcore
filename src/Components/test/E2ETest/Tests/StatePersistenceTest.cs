@@ -276,6 +276,20 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
         RenderComponentsWithPersistentStateAndValidate(suppressEnhancedNavigation: false, mode, typeof(InteractiveServerRenderMode), streaming, stateValue: "other");
     }
 
+    [Theory]
+    [InlineData("ServerNonPrerendered")]
+    [InlineData("WebAssemblyNonPrerendered")]
+    public void PersistentStateIsSupportedInDynamicJSRoots(string renderMode)
+    {
+        Navigate($"subdir/WasmMinimal/dynamic-js-root.html?renderMode={renderMode}");
+
+        Browser.Equal("Counter", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("Current count: 0", () => Browser.Exists(By.CssSelector("p[role='status']")).Text);
+
+        Browser.Click(By.CssSelector("button.btn-primary"));
+        Browser.Equal("Current count: 1", () => Browser.Exists(By.CssSelector("p[role='status']")).Text);
+    }
+
     private void BlockWebAssemblyResourceLoad()
     {
         // Clear local storage so that the resource hash is not found

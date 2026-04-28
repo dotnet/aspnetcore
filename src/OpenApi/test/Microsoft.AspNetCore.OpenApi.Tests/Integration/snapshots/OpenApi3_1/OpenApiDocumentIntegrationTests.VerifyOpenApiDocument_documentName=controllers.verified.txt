@@ -1,5 +1,5 @@
 ﻿{
-  "openapi": "3.1.1",
+  "openapi": "3.1.2",
   "info": {
     "title": "Sample | controllers",
     "version": "1.0.0"
@@ -118,6 +118,88 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CurrentWeather"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query": {
+      "x-oai-additionalOperations": {
+        "QUERY": {
+          "tags": [
+            "Test"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CurrentWeather"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CurrentWeather"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CurrentWeather"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query-with-body": {
+      "x-oai-additionalOperations": {
+        "QUERY": {
+          "tags": [
+            "Test"
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MvcTodo"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MvcTodo"
+                }
+              },
+              "application/*+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MvcTodo"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/MvcTodo"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/MvcTodo"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/MvcTodo"
+                  }
                 }
               }
             }

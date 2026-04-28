@@ -17,12 +17,12 @@ public sealed class UserPasskeyInfo
     /// <param name="publicKey">The public key for the passkey.</param>
     /// <param name="createdAt">The time when the passkey was created.</param>
     /// <param name="signCount">The signature counter for the passkey.</param>
-    /// <param name="attestationObject">The passkey's attestation object.</param>
-    /// <param name="clientDataJson">The passkey's client data JSON.</param>
     /// <param name="transports">The transports supported by this passkey.</param>
     /// <param name="isUserVerified">Indicates if the passkey has a verified user.</param>
     /// <param name="isBackupEligible">Indicates if the passkey is eligible for backup.</param>
     /// <param name="isBackedUp">Indicates if the passkey is currently backed up.</param>
+    /// <param name="attestationObject">The passkey's attestation object.</param>
+    /// <param name="clientDataJson">The passkey's client data JSON.</param>
     public UserPasskeyInfo(
         byte[] credentialId,
         byte[] publicKey,
@@ -110,4 +110,12 @@ public sealed class UserPasskeyInfo
     /// See <see href="https://www.w3.org/TR/webauthn-3/#dictdef-collectedclientdata"/>.
     /// </remarks>
     public byte[] ClientDataJson { get; }
+
+    /// <summary>
+    /// Gets or sets the AAGUID of the authenticator that created this passkey.
+    /// </summary>
+    /// <remarks>
+    /// See <see href="https://www.w3.org/TR/webauthn-3/#aaguid"/>.
+    /// </remarks>
+    public byte[]? Aaguid { get; set; }
 }

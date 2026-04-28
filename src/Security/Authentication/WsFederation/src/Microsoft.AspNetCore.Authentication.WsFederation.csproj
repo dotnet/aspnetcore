@@ -10,6 +10,9 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authentication" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.IdentityModel.Protocols.WsFederation" />
     <Reference Include="System.IdentityModel.Tokens.Jwt" />
   </ItemGroup>

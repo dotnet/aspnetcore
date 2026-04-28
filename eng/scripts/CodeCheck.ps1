@@ -149,11 +149,6 @@ try {
         & $PSScriptRoot\GenerateProjectList.ps1 -ci:$ci
     }
 
-    Write-Host "  Re-generating package baselines"
-    Invoke-Block {
-        & dotnet run --project "$repoRoot/eng/tools/BaselineGenerator/"
-    }
-
     Write-Host "Running git diff to check for pending changes"
 
     # Redirect stderr to stdout because PowerShell does not consistently handle output to stderr
@@ -211,6 +206,25 @@ try {
             LogError "Modified API baseline files:"
             foreach ($file in $changedAPIBaselines) {
                 LogError $file
+            }
+        }
+
+        # Check for relevant changes to SignalR typescript files
+        $tsChanges = $changedFilesFromTarget | Where-Object { $_ -like "src/SignalR/clients/ts/*" -and $_ -ne "src/SignalR/clients/ts/CHANGELOG.md" }
+        $changelogChanged = $changedFilesFromTarget -contains "src/SignalR/clients/ts/CHANGELOG.md"
+        $signalrChangelogOverrideMarker = "[no changelog]"
+
+        # Only enforce changelog rule if there are relevant TS changes
+        if ($tsChanges.Count -gt 0 -and -not $changelogChanged) {
+            # Check if the override marker exists in recent commit messages
+            $hasOverride = git log origin/$targetBranch..HEAD --pretty=%B | Select-String -Pattern $signalrChangelogOverrideMarker -Quiet
+
+            if (-not $hasOverride) {
+                LogError "Changes were made to 'src/SignalR/clients/ts/', but no update to 'CHANGELOG.md' was found."
+                LogError "Either update 'src/SignalR/clients/ts/CHANGELOG.md' or include '$signalrChangelogOverrideMarker' in your commit message."
+                exit 1
+            } else {
+                Write-Host "SignalR Changelog update skipped due to override marker in commit message."
             }
         }
     }

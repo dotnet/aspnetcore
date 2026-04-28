@@ -144,8 +144,24 @@ public class TargetingPackTests
             .Split(';', StringSplitOptions.RemoveEmptyEntries)
             .ToHashSet();
 
-        // PackageOverrides will contain all Aspnetcore/Runtime ref pack libs, plus an entry for Microsoft.AspNetCore.App
+        // Some packages are excluded from pruning because they contain build logic that is not in the SDK.
+        // These packages need their build targets to execute even though their runtime assemblies are in the shared framework.
+        string[] packagesExcludedFromPruning = ["Microsoft.Extensions.FileProviders.Embedded"]; // See https://github.com/dotnet/aspnetcore/issues/63719
+
+        foreach (var excludedPackage in packagesExcludedFromPruning)
+        {
+            aspnetcoreDependencies.Remove(excludedPackage);
+        }
+
+        // PackageOverrides will contain all Aspnetcore/Runtime ref pack libs, plus an entry for Microsoft.AspNetCore.App,
+        // minus any packages excluded from pruning
         Assert.Equal(packageOverrideFileLines.Length, runtimeDependencies.Count + aspnetcoreDependencies.Count + 1);
+
+        // Verify that excluded packages are NOT in PackageOverrides
+        foreach (var excludedPackage in packagesExcludedFromPruning)
+        {
+            Assert.DoesNotContain(packageOverrideFileLines, line => line.StartsWith(excludedPackage + "|", StringComparison.Ordinal));
+        }
 
         // PackageOverrides versions should remain at Major.Minor.0 while servicing.
         var netCoreAppPackageVersion = TestData.GetMicrosoftNETCoreAppVersion();

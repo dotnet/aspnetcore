@@ -65,7 +65,33 @@ InProcessOptions::InProcessOptions(const ConfigurationSource &configurationSourc
     const auto handlerSettings = aspNetCoreSection->GetKeyValuePairs(CS_ASPNETCORE_HANDLER_SETTINGS);
     m_fSetCurrentDirectory = equals_ignore_case(find_element(handlerSettings, CS_ASPNETCORE_HANDLER_SET_CURRENT_DIRECTORY).value_or(L"true"), L"true");
     m_fCallStartupHook = equals_ignore_case(find_element(handlerSettings, CS_ASPNETCORE_HANDLER_CALL_STARTUP_HOOK).value_or(L"true"), L"true");
-    m_strStackSize = find_element(handlerSettings, CS_ASPNETCORE_HANDLER_STACK_SIZE).value_or(L"0x100000"); // 1 MB in hex
+    // Parse stack size: this was previously using an undocumented runtime configuration
+    // that accepted a hex string. We had to switch to the documented one but that one
+    // accepts a decimal string. So we need to convert hex to decimal.
+    // For invalid or out-of-range values, pass through the raw string and let the runtime fail.
+    auto rawStackSize = find_element(handlerSettings, CS_ASPNETCORE_HANDLER_STACK_SIZE);
+    if (rawStackSize.has_value())
+    {
+        const wchar_t* rawStr = rawStackSize.value().c_str();
+        wchar_t* endPtr = nullptr;
+        errno = 0;
+        unsigned long stackSizeVal = wcstoul(rawStr, &endPtr, 16);
+        if (endPtr != rawStr && errno == 0)
+        {
+            wchar_t decimalBuf[32];
+            swprintf_s(decimalBuf, L"%lu", stackSizeVal);
+            m_strStackSize = decimalBuf;
+        }
+        else
+        {
+            // Invalid or out-of-range value: pass through as-is, letting the runtime handle it
+            m_strStackSize = rawStackSize.value();
+        }
+    }
+    else
+    {
+        m_strStackSize = L"1048576"; // 1 MB in decimal
+    }
     m_fSuppressRecycleOnStartupTimeout = equals_ignore_case(find_element(handlerSettings, CS_ASPNETCORE_SUPPRESS_RECYCLE_ON_STARTUP_TIMEOUT).value_or(L"false"), L"true");
 
     m_dwStartupTimeLimitInMS = aspNetCoreSection->GetRequiredLong(CS_ASPNETCORE_PROCESS_STARTUP_TIME_LIMIT) * 1000;

@@ -191,6 +191,38 @@ namespace BlazorWebCSharp._1.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.ComplexProperty(typeof(Dictionary<string, object>), "Data", "Microsoft.AspNetCore.Identity.IdentityUserPasskey<string>.Data#IdentityPasskeyData", b1 =>
+                        {
+                            b1.IsRequired();
+
+                            b1.Property<byte[]>("AttestationObject")
+                                .IsRequired();
+
+                            b1.Property<byte[]>("ClientDataJson")
+                                .IsRequired();
+
+                            b1.Property<DateTimeOffset>("CreatedAt");
+
+                            b1.Property<bool>("IsBackedUp");
+
+                            b1.Property<bool>("IsBackupEligible");
+
+                            b1.Property<bool>("IsUserVerified");
+
+                            b1.Property<string>("Name");
+
+                            b1.Property<byte[]>("PublicKey")
+                                .IsRequired();
+
+                            b1.Property<uint>("SignCount");
+
+                            b1.PrimitiveCollection<string>("Transports");
+
+                            b1
+                                .ToJson("Data")
+                                .HasColumnType("TEXT");
+                        });
+
                     b.HasKey("CredentialId");
 
                     b.HasIndex("UserId");
@@ -267,57 +299,6 @@ namespace BlazorWebCSharp._1.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.OwnsOne("Microsoft.AspNetCore.Identity.IdentityPasskeyData", "Data", b1 =>
-                        {
-                            b1.Property<byte[]>("IdentityUserPasskeyCredentialId")
-                                .HasColumnType("BLOB");
-
-                            b1.Property<byte[]>("AttestationObject")
-                                .IsRequired()
-                                .HasColumnType("BLOB");
-
-                            b1.Property<byte[]>("ClientDataJson")
-                                .IsRequired()
-                                .HasColumnType("BLOB");
-
-                            b1.Property<DateTimeOffset>("CreatedAt")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<bool>("IsBackedUp")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<bool>("IsBackupEligible")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<bool>("IsUserVerified")
-                                .HasColumnType("INTEGER");
-
-                            b1.Property<string>("Name")
-                                .HasColumnType("TEXT");
-
-                            b1.Property<byte[]>("PublicKey")
-                                .IsRequired()
-                                .HasColumnType("BLOB");
-
-                            b1.Property<uint>("SignCount")
-                                .HasColumnType("INTEGER");
-
-                            b1.PrimitiveCollection<string>("Transports")
-                                .HasColumnType("TEXT");
-
-                            b1.HasKey("IdentityUserPasskeyCredentialId");
-
-                            b1.ToTable("AspNetUserPasskeys");
-
-                            b1.ToJson("Data");
-
-                            b1.WithOwner()
-                                .HasForeignKey("IdentityUserPasskeyCredentialId");
-                        });
-
-                    b.Navigation("Data")
                         .IsRequired();
                 });
 

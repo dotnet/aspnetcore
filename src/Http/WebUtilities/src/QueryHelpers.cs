@@ -117,14 +117,18 @@ public static class QueryHelpers
     /// Parse a query string into its component key and value parts.
     /// </summary>
     /// <param name="queryString">The raw query string value, with or without the leading '?'.</param>
-    /// <returns>A collection of parsed keys and values.</returns>
+    /// <returns>
+    /// A collection of parsed keys and values. The returned <see cref="Dictionary{TKey, TValue}"/> always uses a
+    /// case-insensitive (<see cref="StringComparer.OrdinalIgnoreCase"/>) key comparer so keys can be accessed
+    /// in a case-insensitive manner regardless of whether the input contained any elements.
+    /// </returns>
     public static Dictionary<string, StringValues> ParseQuery(string? queryString)
     {
         var result = ParseNullableQuery(queryString);
 
         if (result == null)
         {
-            return new Dictionary<string, StringValues>();
+            return new Dictionary<string, StringValues>(0, StringComparer.OrdinalIgnoreCase);
         }
 
         return result;

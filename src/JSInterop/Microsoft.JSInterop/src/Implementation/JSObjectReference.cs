@@ -104,7 +104,15 @@ public class JSObjectReference : IJSObjectReference
         {
             Disposed = true;
 
-            await _jsRuntime.InvokeVoidAsync("DotNet.disposeJSObjectReferenceById", Id);
+            try
+            {
+                await _jsRuntime.InvokeVoidAsync("DotNet.disposeJSObjectReferenceById", Id);
+            }
+            catch (JSDisconnectedException)
+            {
+                // If the JavaScript runtime is disconnected, there's no need to dispose the JS object reference
+                // as the JS side is already gone. We can safely ignore this exception.
+            }
         }
     }
 

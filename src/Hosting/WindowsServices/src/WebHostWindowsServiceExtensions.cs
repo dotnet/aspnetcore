@@ -2,13 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ServiceProcess;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Hosting.WindowsServices;
 
 /// <summary>
 ///     Extensions to <see cref="IWebHost"/> for hosting inside a Windows service.
 /// </summary>
-[Obsolete("Use UseWindowsService and AddHostedService instead. For more information, visit https://aka.ms/aspnet/deprecate/009.", DiagnosticId = "ASPDEPR009")]
+[Obsolete("Use UseWindowsService and AddHostedService instead. For more information, visit https://aka.ms/aspnet/deprecate/009.", DiagnosticId = "ASPDEPR009", UrlFormat = Obsoletions.AspNetCoreDeprecate009Url)]
 public static class WebHostWindowsServiceExtensions
 {
     /// <summary>

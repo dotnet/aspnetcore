@@ -1,0 +1,126 @@
+<Theme xmlns="http://wixtoolset.org/schemas/v4/thmutil">
+      <!-- Use system colors where possible as they change based on themes and are automatically adjusted for high contrast.
+       For custom colors, ensure the contrast ratio is at least 4.5:1 (3:1 for large text and other UI components).
+       The WinUI 3 Gallery app can be used to calculate contrast settings. Take note that custom colors for <Font>
+       elements use BGR instead of RGB ordering.
+
+       Line spacing for fonts should be rounded to the nearest multiple of 4. For example, Segoe UI with a height of 24 has
+       a line spacing of 31.9, so 32 should be used when calculating the height of a control that contains a single line of text,
+       like a label. For a height of 12, the line spacing to use is 16. -->
+    <Font Id="DefaultFont" Height="-12" Weight="500" Foreground="windowtext" Background="window">Segoe UI</Font>
+    <Font Id="WindowBannerFont" Height="-24" Weight="900" Foreground="000000" Background="D42B52">Segoe UI</Font>
+    <Font Id="PageHeaderFont" Height="-20" Weight="500" Foreground="graytext" Background="window">Segoe UI</Font>
+    <Font Id="ErrorFont" Height="-12" Weight="900" Foreground="windowtext" Background="window">Segoe UI</Font>
+    <Window Width="644" Height="460" HexStyle="100a0000" FontId="DefaultFont" Caption="#(loc.Caption)" IconFile="dotnet.ico">
+        <ImageControl Name="DotNetLogo" X="12" Y="-48" Width="124" Height="124" ImageFile="DotNetLogo_256x.png" Visible="yes" />
+        <Text X="80" Y="12" Width="-12" Height="40" FontId="WindowBannerFont" Visible="yes" DisablePrefix="yes">#(loc.Title)</Text>
+        <Text X="80" Y="40" Width="-12" Height="40" FontId="WindowBannerFont" Visible="yes" DisablePrefix="yes">#(loc.SubTitle)</Text>
+
+        <Page Name="Help">
+            <Label Name="HelpHeader" X="148" Y="80" Width="-12" Height="32" FontId="PageHeaderFont" HexStyle="00000000" DisablePrefix="yes">#(loc.HelpHeader)</Label>
+            <Label Name="HelpText" X="148" Y="124" Width="-12" Height="-48" FontId="DefaultFont" HexStyle="00000000" DisablePrefix="yes">#(loc.HelpText)</Label>
+
+            <Button Name="HelpCancelButton"  X="-12" Y="-12" Width="100" Height="24" TabStop="yes" FontId="DefaultFont">
+                <Text>#(loc.HelpCloseButton)</Text>
+                <CloseWindowAction/>
+            </Button>
+        </Page>
+        <Page Name="Install">
+            <Label Name="WelcomeHeader" X="148" Y="80" Width="-12" Height="32" FontId="PageHeaderFont" HexStyle="000000">#(loc.Welcome)</Label>
+
+            <Hypertext X="148" Y="120" Width="-12" Height="44" FontId="DefaultFont" Name="InstallResetIIS" EnableCondition="IISEnabled" HideWhenDisabled="yes">#(loc.InstallResetIIS)</Hypertext>
+            <Hypertext X="148" Y="120" Width="-12" Height="44" FontId="DefaultFont" Name="InstallNoIIS" EnableCondition="NOT IISEnabled" HideWhenDisabled="yes">#(loc.InstallNoIIS)</Hypertext>
+
+            <!-- Align the label with the top of the logo on the left. -->
+            <Label Name="LicenseTermsAndPolicies" X="148" Y="288" Width="-12" Height="32" FontId="DefaultFont" HexStyle="000000">#(loc.LicenseAssent)</Label>
+
+            <!-- These controls have larger vertical spacing to improve readability (20 instead of 16). -->
+            <Hypertext Name="PrivacyStatementLink" X="172" Y="320" Width="-12" Height="16" FontId="DefaultFont" TabStop="yes" HexStyle="000000" HideWhenDisabled="yes">#(loc.PrivacyStatementLink)</Hypertext>
+            <Hypertext Name="DotNetCLITelemetryLink" X="172" Y="340" Width="-12" Height="16" FontId="DefaultFont" TabStop="yes" HexStyle="000000" HideWhenDisabled="yes">#(loc.DotNetCLITelemetryLink)</Hypertext>
+            <Hypertext Name="DotNetEulaLink" X="172" Y="360" Width="-12" Height="16" FontId="DefaultFont" TabStop="yes" HexStyle="000000" HideWhenDisabled="yes">#(loc.DotNetEulaLink)</Hypertext>
+            <Button Name="InstallButton" X="-124" Y="-12" Width="100" Height="24" TabStop="yes" FontId="DefaultFont">#(loc.InstallInstallButton)</Button>
+            <Button Name="InstallCancelButton" X="-12" Y="-12" Width="100" Height="24" TabStop="yes" FontId="DefaultFont">
+                <Text>#(loc.InstallCloseButton)</Text>
+                <CloseWindowAction/>
+            </Button>
+        </Page>
+        <Page Name="Progress">
+            <Label HexStyle="000000" Name="ProgressHeader" X="12" Y="80" Width="-12" Height="32" FontId="PageHeaderFont" DisablePrefix="yes">#(loc.ProgressHeader)</Label>
+            <Label HexStyle="000000" Name="ProgressLabel" X="12" Y="124" Width="96" Height="16" FontId="DefaultFont" DisablePrefix="yes">#(loc.ProgressLabel)</Label>
+            <Label HexStyle="000000" Name="OverallProgressPackageText" X="108" Y="124" Width="-12" Height="16" FontId="DefaultFont" DisablePrefix="yes">#(loc.OverallProgressPackageText)</Label>
+
+            <Progressbar Name="OverallCalculatedProgressbar" X="12" Y="152" Width="-12" Height="20" />
+
+            <Button Name="ProgressCancelButton" X="-12" Y="-12" Width="100" Height="24" TabStop="yes" FontId="DefaultFont">
+                <Text>#(loc.ProgressCancelButton)</Text>
+                <CloseWindowAction/>
+            </Button>
+        </Page>
+        <Page Name="Modify">
+            <Label Name="ModifyHeader" X="148" Y="80" Width="-12" Height="32" FontId="PageHeaderFont" DisablePrefix="yes">#(loc.ModifyHeader)</Label>
+
+            <Hypertext Name="ModifyTextIIS" X="148" Y="124" Width="-12" Height="-48" FontId="DefaultFont" HexStyle="00000000" DisablePrefix="yes" EnableCondition="IISEnabled" HideWhenDisabled="yes">#(loc.ModifyResetIIS)</Hypertext>
+            <Hypertext Name="ModifyTextNoIIS" X="148" Y="124" Width="-12" Height="-48" FontId="DefaultFont" HexStyle="00000000" DisablePrefix="yes" EnableCondition="NOT IISEnabled" HideWhenDisabled="yes">#(loc.ModifyNoIIS)</Hypertext>
+
+            <Button Name="RepairButton" X="-236" Y="-12" Width="100" Height="24" TabStop="yes" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.ModifyRepairButton)</Button>
+            <Button Name="UninstallButton" X="-124" Y="-12" Width="100" Height="24" TabStop="yes" FontId="DefaultFont">#(loc.ModifyUninstallButton)</Button>
+            <Button Name="ModifyCancelButton" X="-12" Y="-12" Width="100" Height="24" TabStop="yes" FontId="DefaultFont">
+                <Text>#(loc.ModifyCloseButton)</Text>
+                <CloseWindowAction/>
+            </Button>
+        </Page>
+        <Page Name="Success">
+            <Label Name="SuccessHeader" X="148" Y="80" Width="-12" Height="32" HexStyle="00000000" FontId="PageHeaderFont">
+                <!-- Default text to display if none of the conditions are true. -->
+                <Text>#(loc.SuccessHeader)</Text>
+                <Text Condition="WixBundleAction = 2">#(loc.SuccessLayoutHeader)</Text>
+                <Text Condition="WixBundleAction = 3">#(loc.SuccessUnsafeUninstallHeader)</Text>
+                <Text Condition="WixBundleAction = 4">#(loc.SuccessUninstallHeader)</Text>
+                <Text Condition="WixBundleAction = 5">#(loc.SuccessCacheHeader)</Text>
+                <Text Condition="WixBundleAction = 6">#(loc.SuccessInstallHeader)</Text>
+                <Text Condition="WixBundleAction = 7">#(loc.SuccessModifyHeader)</Text>
+                <Text Condition="WixBundleAction = 8">#(loc.SuccessRepairHeader)</Text>
+            </Label>
+
+            <Label X="148" Y="-48" Width="-12" Height="34" FontId="DefaultFont" DisablePrefix="yes" VisibleCondition="WixStdBARestartRequired">
+                <Text>#(loc.SuccessRestartText)</Text>
+                <Text Condition="WixBundleAction = 3">#(loc.SuccessUninstallRestartText)</Text>
+            </Label>
+
+            <!-- Calculate the relative offset as follows, assuming there are two buttons, right aligned:
+               First button, X="-12" Width="100"
+               Second button, X="-124" (-12 - 100 (width of first button) - 12 (gap between buttons)) -->
+            <Button Name="SuccessRestartButton" X="-124" Y="-12" Width="100" Height="24" TabStop="yes" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.SuccessRestartButton)</Button>
+            <Button Name="SuccessCloseButton" X="-12" Y="-12" Width="100" Height="24" TabStop="yes" FontId="DefaultFont">
+                <Text>#(loc.SuccessCloseButton)</Text>
+                <CloseWindowAction />
+            </Button>
+        </Page>
+        <Page Name="Failure">
+            <Label Name="FailureHeader" X="148" Y="80" Width="-12" Height="32" HexStyle="00000000" FontId="PageHeaderFont">
+                <Text>#(loc.FailureHeader)</Text>
+                <Text Condition="WixBundleAction = 2">#(loc.FailureLayoutHeader)</Text>
+                <Text Condition="WixBundleAction = 3">#(loc.FailureUnsafeUninstallHeader)</Text>
+                <Text Condition="WixBundleAction = 4">#(loc.FailureUninstallHeader)</Text>
+                <Text Condition="WixBundleAction = 5">#(loc.FailureCacheHeader)</Text>
+                <Text Condition="WixBundleAction = 6">#(loc.FailureInstallHeader)</Text>
+                <Text Condition="WixBundleAction = 7">#(loc.FailureModifyHeader)</Text>
+                <Text Condition="WixBundleAction = 8">#(loc.FailureRepairHeader)</Text>
+            </Label>
+
+            <!-- Reserve three lines of space (2 for the message plus a 3rd for a line break. -->
+            <Hypertext HexStyle="000000" Name="FailureLogFileLink" X="148" Y="124" Width="-12" Height="48" FontId="DefaultFont" TabStop="yes" HideWhenDisabled="yes">#(loc.FailureHyperlinkLogText)</Hypertext>
+
+            <!-- This element is updated by the bootstrapper application. Reserve 3 lines of space. -->
+            <Hypertext HexStyle="000000" Name="FailureMessageText" X="148" Y="172" Width="-12" Height="48" FontId="ErrorFont" TabStop="yes" HideWhenDisabled="yes" />
+
+            <!-- Reserve two lines of space to accommodate localized content. -->
+            <Label X="148" Y="-48" Width="-12" Height="32" FontId="DefaultFont" DisablePrefix="yes" VisibleCondition="WixStdBARestartRequired">#(loc.FailureRestartText)</Label>
+            <Button Name="FailureRestartButton" X="-124" Y="-12" Width="100" Height="24" TabStop="yes" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.FailureRestartButton)</Button>
+            <Button Name="FailureCloseButton" X="-12" Y="-12" Width="100" Height="24" TabStop="yes" FontId="DefaultFont">
+                <Text>#(loc.FailureCloseButton)</Text>
+                <CloseWindowAction/>
+            </Button>
+        </Page>
+    </Window>
+</Theme>

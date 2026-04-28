@@ -984,8 +984,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         var property = properties["status"];
 
         Assert.NotNull(property);
-        Assert.Equal(3, property.Enum.Count);
-        Assert.Equal("Approved", property.Default.GetValue<string>());
+        var statusReference = Assert.IsType<OpenApiSchemaReference>(property);
+        Assert.Equal(3, statusReference.RecursiveTarget.Enum.Count);
+        Assert.Equal("Approved", statusReference.Default.GetValue<string>());
     }
 
     [ApiController]

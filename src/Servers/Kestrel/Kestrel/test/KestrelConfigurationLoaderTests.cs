@@ -267,7 +267,6 @@ public class KestrelConfigurationLoaderTests
 
     [Fact]
     // inherently flaky (writes to a well-known path)
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/48736")]
     public void ConfigureEndpointDevelopmentCertificateGetsLoadedWhenPresent()
     {
         try
@@ -776,6 +775,7 @@ public class KestrelConfigurationLoaderTests
 
     [Theory]
     [MemberData(nameof(GetPemCertificateTestData))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/pull/63708/")]
     public void ConfigureEndpoint_CanLoadPemCertificates(string algorithmType, string keyPassword, string extension)
     {
         var serverOptions = CreateServerOptions();

@@ -754,7 +754,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         //
         // We choose to do that here so we don't have to keep state to track implicitly closed
         // streams vs. streams closed with END_STREAM or RST_STREAM.
-        throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamClosed(_incomingFrame.Type, _incomingFrame.StreamId), Http2ErrorCode.STREAM_CLOSED, ConnectionEndReason.UnknownStream);
+        throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamClosed(_incomingFrame.Type, _incomingFrame.StreamId), Http2ErrorCode.STREAM_CLOSED, ConnectionEndReason.FrameAfterStreamClose);
     }
 
     private Http2ConnectionErrorException CreateReceivedFrameStreamAbortedException(Http2Stream stream)
@@ -795,7 +795,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             throw CreateStreamIdZeroException();
         }
 
-        if (_incomingFrame.HeadersHasPadding && _incomingFrame.HeadersPadLength >= _incomingFrame.PayloadLength - 1)
+        if (_incomingFrame.HeadersHasPadding && _incomingFrame.HeadersPayloadLength <= 0)
         {
             throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorPaddingTooLong(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR, ConnectionEndReason.InvalidDataPadding);
         }
@@ -834,6 +834,18 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             // Since we found an active stream, this HEADERS frame contains trailers
             _currentHeadersStream = stream;
             _requestHeaderParsingState = RequestHeaderParsingState.Trailers;
+
+            // Cancel keep-alive timeout and start header timeout if necessary.
+            if (!_incomingFrame.HeadersEndHeaders)
+            {
+                if (TimeoutControl.TimerReason != TimeoutReason.None)
+                {
+                    Debug.Assert(TimeoutControl.TimerReason == TimeoutReason.KeepAlive, "Non keep-alive timeout set at start of trailer headers.");
+                    TimeoutControl.CancelTimeout();
+                }
+
+                TimeoutControl.SetTimeout(Limits.RequestHeadersTimeout, TimeoutReason.RequestHeaders);
+            }
 
             var headersPayload = payload.Slice(0, _incomingFrame.HeadersPayloadLength); // Minus padding
             return DecodeTrailersAsync(_incomingFrame.HeadersEndHeaders, headersPayload);
@@ -1158,8 +1170,12 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         {
             if (stream.RstStreamReceived)
             {
-                // Hard abort, do not allow any more frames on this stream.
-                throw CreateReceivedFrameStreamAbortedException(stream);
+                // WINDOW_UPDATE received after we have already processed an inbound RST_STREAM for this stream.
+                // RFC 7540 (Sections 5.1, 6.9) / RFC 9113 do not explicitly define semantics for WINDOW_UPDATE on a
+                // stream in the "closed" state due to a reset by client. We surface it as a stream error (STREAM_CLOSED)
+                // rather than aborting the entire connection to keep behavior deterministic and consistent with other servers.
+                // https://github.com/dotnet/aspnetcore/issues/63726
+                throw new Http2StreamErrorException(_incomingFrame.StreamId, CoreStrings.Http2StreamAborted, Http2ErrorCode.STREAM_CLOSED);
             }
 
             if (!stream.TryUpdateOutputWindow(_incomingFrame.WindowUpdateSizeIncrement))
@@ -1191,6 +1207,11 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
         if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
         {
+            if (_incomingFrame.ContinuationEndHeaders)
+            {
+                TimeoutControl.CancelTimeout();
+            }
+
             return DecodeTrailersAsync(_incomingFrame.ContinuationEndHeaders, payload);
         }
         else
@@ -1247,12 +1268,21 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     {
         Debug.Assert(_currentHeadersStream != null);
 
-        _hpackDecoder.Decode(payload, endHeaders, handler: this);
-
-        if (endHeaders)
+        try
         {
-            _currentHeadersStream.OnEndStreamReceived();
+            _hpackDecoder.Decode(payload, endHeaders, handler: this);
+
+            if (endHeaders)
+            {
+                _currentHeadersStream.OnEndStreamReceived();
+                ResetRequestHeaderParsingState();
+            }
+        }
+        catch (Http2StreamErrorException)
+        {
+            _currentHeadersStream.Dispose();
             ResetRequestHeaderParsingState();
+            throw;
         }
 
         return Task.CompletedTask;

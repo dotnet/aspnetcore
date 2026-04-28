@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!-- Use fixed version instead of $(DefaultNetCoreTargetFramework) to avoid needing workarounds set up here. -->
-    <TargetFramework>net10.0</TargetFramework>
+    <!-- Use SDK bundled version to avoid needing workarounds set up here. -->
+    <TargetFramework>$(BundledNETCoreAppTargetFramework)</TargetFramework>
     <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
 
     <ConfigDirectory>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', '.config'))</ConfigDirectory>

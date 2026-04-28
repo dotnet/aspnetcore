@@ -71,9 +71,6 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
 
         services.TryAddScoped<IRemoteAuthenticationPathsProvider, DefaultRemoteApplicationPathsProvider<TProviderOptions>>();
         services.TryAddScoped<IAccessTokenProviderAccessor, AccessTokenProviderAccessor>();
-#pragma warning disable CS0618 // Type or member is obsolete, we keep it for now for backwards compatibility
-        services.TryAddScoped<SignOutSessionStateManager>();
-#pragma warning restore CS0618 // Type or member is obsolete, we keep it for now for backwards compatibility
 
         services.TryAddScoped<AccountClaimsPrincipalFactory<TAccount>>();
 

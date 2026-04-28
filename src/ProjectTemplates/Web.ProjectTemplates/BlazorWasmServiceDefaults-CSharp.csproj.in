@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">BlazorWasm.ServiceDefaults1</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="${MicrosoftAspNetCoreComponentsWebAssemblyVersion}" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="${MicrosoftExtensionsHttpResilienceVersion}" />
+    <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="${MicrosoftExtensionsServiceDiscoveryVersion}" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="${OpenTelemetryExporterOpenTelemetryProtocolVersion}" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="${OpenTelemetryExtensionsHostingVersion}" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="${OpenTelemetryInstrumentationHttpVersion}" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="${OpenTelemetryInstrumentationRuntimeVersion}" />
+  </ItemGroup>
+
+</Project>

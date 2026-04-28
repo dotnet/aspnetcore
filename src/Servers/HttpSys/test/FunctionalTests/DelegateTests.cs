@@ -311,17 +311,16 @@ public class DelegateTests : LoggedTest
         AssertPermissions(destination.Queue.Handle);
         unsafe void AssertPermissions(SafeHandle handle)
         {
-            PSECURITY_DESCRIPTOR pSecurityDescriptor = new();
-
             WIN32_ERROR result = PInvoke.GetSecurityInfo(
                 handle,
                 Windows.Win32.Security.Authorization.SE_OBJECT_TYPE.SE_KERNEL_OBJECT,
-                4, // DACL_SECURITY_INFORMATION
-                null,
-                null,
-                null,
-                null,
-                &pSecurityDescriptor);
+                OBJECT_SECURITY_INFORMATION.DACL_SECURITY_INFORMATION,
+                out _,
+                out _,
+                out _,
+                out _,
+                out var pSecurityDescriptor);
+            Assert.Equal(WIN32_ERROR.ERROR_SUCCESS, result);
 
             var length = (int)PInvoke.GetSecurityDescriptorLength(pSecurityDescriptor);
 

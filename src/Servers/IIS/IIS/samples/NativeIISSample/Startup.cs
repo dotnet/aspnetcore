@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -51,6 +52,19 @@ public class Startup
             await context.Response.WriteAsync("LocalPort: " + context.Connection.LocalPort + Environment.NewLine);
             await context.Response.WriteAsync("ClientCert: " + context.Connection.ClientCertificate + Environment.NewLine);
             await context.Response.WriteAsync(Environment.NewLine);
+
+            var handshakeFeature = context.Features.Get<ITlsHandshakeFeature>();
+            if (handshakeFeature is not null)
+            {
+                await context.Response.WriteAsync(Environment.NewLine);
+                await context.Response.WriteAsync("TLS Information:" + Environment.NewLine);
+                await context.Response.WriteAsync($"Protocol: {handshakeFeature.Protocol}" + Environment.NewLine);
+
+                if (handshakeFeature.NegotiatedCipherSuite.HasValue)
+                {
+                    await context.Response.WriteAsync($"Cipher Suite: {handshakeFeature.NegotiatedCipherSuite.Value}" + Environment.NewLine);
+                }
+            }
 
             await context.Response.WriteAsync("User: " + context.User.Identity.Name + Environment.NewLine);
             if (_authSchemeProvider != null)

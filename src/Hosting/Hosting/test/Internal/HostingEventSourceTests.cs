@@ -6,12 +6,19 @@ using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.InternalTesting.Tracing;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Hosting;
 
 public class HostingEventSourceTests : LoggedTest
 {
+    [Fact]
+    public void EventIdsAreConsistent()
+    {
+        EventSourceValidator.ValidateEventSourceIds(typeof(HostingEventSource));
+    }
+
     [Fact]
     public void MatchesNameAndGuid()
     {

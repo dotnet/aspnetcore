@@ -28,13 +28,15 @@ public static class IISDeploymentParameterExtensions
         parameters.AddServerConfigAction(
             element =>
             {
-                element.Descendants("binding")
-                    .Single()
-                    .SetAttributeValue("protocol", "https");
+                foreach (var binding in element.Descendants("binding"))
+                {
+                    binding.SetAttributeValue("protocol", "https");
+                }
 
-                element.Descendants("access")
-                    .Single()
-                    .SetAttributeValue("sslFlags", "None");
+                foreach (var access in element.Descendants("access"))
+                {
+                    access.SetAttributeValue("sslFlags", "None");
+                }
             });
     }
 
@@ -43,9 +45,11 @@ public static class IISDeploymentParameterExtensions
         parameters.AddServerConfigAction(
             element =>
             {
-                element.Descendants("binding")
-                    .Single()
-                    .SetAttributeValue("protocol", "https");
+                foreach (var binding in element.Descendants("binding"))
+                {
+                    binding
+                        .SetAttributeValue("protocol", "https");
+                }
 
                 element.Descendants("access")
                     .Single()

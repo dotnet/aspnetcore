@@ -8,6 +8,8 @@
     <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
     <ImplicitUsings>disable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Skip these in all internal builds to avoid restoring vulnerable packages for CG -->
+    <ExcludeFromBuild Condition="'$(SYSTEM_TEAMPROJECT)' == 'internal' ">true</ExcludeFromBuild>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">

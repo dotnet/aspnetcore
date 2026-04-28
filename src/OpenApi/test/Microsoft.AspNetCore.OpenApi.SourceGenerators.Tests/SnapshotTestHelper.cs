@@ -38,15 +38,34 @@ public static partial class SnapshotTestHelper
                 .Select(assembly => MetadataReference.CreateFromFile(assembly.Location))
                 .Concat(
                 [
-                    MetadataReference.CreateFromFile(typeof(Builder.WebApplicationBuilder).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(OpenApiOptions).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Authentication.AuthenticationMiddleware).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Authentication.AuthenticationService).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Authentication.IAuthenticationService).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Authorization.Policy.IPolicyEvaluator).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(Builder.EndpointRouteBuilderExtensions).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(Builder.IApplicationBuilder).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Builder.IISOptions).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Builder.IISServerOptions).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Builder.WebApplicationBuilder).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(OpenApiOptions).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Cors.Infrastructure.CorsService).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Diagnostics.DeveloperExceptionPageMiddleware).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(HostFiltering.HostFilteringOptions).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Hosting.IWebHostBuilder).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Hosting.WebHostBuilderKestrelExtensions).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(HttpOverrides.ForwardedHeaders).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Mvc.ApiExplorer.DefaultApiDescriptionProvider).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(Mvc.ApiExplorer.IApiDescriptionProvider).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(Mvc.ControllerBase).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Mvc.Cors.CorsAuthorizationFilter).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Mvc.DataAnnotations.ValidationAttributeAdapterProvider).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(MvcServiceCollectionExtensions).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(MvcCoreMvcBuilderExtensions).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(Http.TypedResults).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Server.Kestrel.Core.KestrelServer).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Server.Kestrel.Transport.Quic.QuicTransportOptions).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Server.Kestrel.Transport.Sockets.SocketTransportOptions).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(System.Text.Json.Nodes.JsonArray).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),
@@ -87,6 +106,12 @@ public static partial class SnapshotTestHelper
             [CSharpSyntaxTree.ParseText(source, options: ParseOptions, path: "Program.cs")],
             references,
             new CSharpCompilationOptions(OutputKind.ConsoleApplication));
+
+        var programEmitResult = inputCompilation.Emit(Stream.Null);
+        if (!programEmitResult.Success)
+        {
+            throw new InvalidOperationException($"Failed to compile Program.cs: {string.Join(Environment.NewLine, programEmitResult.Diagnostics)}");
+        }
 
         var driver = CSharpGeneratorDriver.Create(
             generators: [generator.AsSourceGenerator()],
@@ -488,7 +513,7 @@ public static partial class SnapshotTestHelper
 
             public void OnCompleted()
             {
-                _disposable.Dispose();
+                _disposable?.Dispose();
             }
 
             public void OnError(Exception error)

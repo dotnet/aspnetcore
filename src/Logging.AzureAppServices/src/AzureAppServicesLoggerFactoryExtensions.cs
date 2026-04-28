@@ -13,14 +13,14 @@ using static Microsoft.Extensions.DependencyInjection.ServiceDescriptor;
 namespace Microsoft.Extensions.Logging;
 
 /// <summary>
-/// Extension methods for adding Azure diagnostics logger.
+/// Provides extension methods for adding Azure diagnostics logger.
 /// </summary>
 public static class AzureAppServicesLoggerFactoryExtensions
 {
     /// <summary>
     /// Adds an Azure Web Apps diagnostics logger.
     /// </summary>
-    /// <param name="builder">The extension method argument</param>
+    /// <param name="builder">The extension method argument.</param>
     /// <returns></returns>
     public static ILoggingBuilder AddAzureWebAppDiagnostics(this ILoggingBuilder builder)
     {

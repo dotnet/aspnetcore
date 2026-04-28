@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
@@ -63,7 +64,8 @@ public class SignInManager<TUser> where TUser : class
         Logger = logger;
         _schemes = schemes;
         _confirmation = confirmation;
-        _metrics = userManager.ServiceProvider?.GetService<SignInManagerMetrics>();
+        // SignInManagerMetrics created from constructor because of difficulties registering internal type.
+        _metrics = userManager.ServiceProvider?.GetService<IMeterFactory>() is { } factory ? new SignInManagerMetrics(factory) : null;
         _passkeyHandler = userManager.ServiceProvider?.GetService<IPasskeyHandler<TUser>>();
     }
 
@@ -662,6 +664,12 @@ public class SignInManager<TUser> where TUser : class
         if (!assertionResult.Succeeded)
         {
             return SignInResult.Failed;
+        }
+
+        var error = await PreSignInCheck(assertionResult.User);
+        if (error != null)
+        {
+            return error;
         }
 
         // After a successful assertion, we need to update the passkey so that it has the latest

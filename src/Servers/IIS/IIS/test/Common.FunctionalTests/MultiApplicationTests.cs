@@ -113,7 +113,7 @@ public class MultiApplicationTests : IISFunctionalTestBase
         var siteElement = config
             .RequiredElement("system.applicationHost")
             .RequiredElement("sites")
-            .RequiredElement("site");
+            .Elements("site").Last();
 
         var application = siteElement
             .RequiredElement("application");

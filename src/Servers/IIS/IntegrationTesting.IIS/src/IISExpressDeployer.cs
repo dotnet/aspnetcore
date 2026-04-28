@@ -167,6 +167,8 @@ public partial class IISExpressDeployer : IISDeployerBase
                 Logger.LogInformation("Attempting to start IIS Express on port: {port}", port);
                 PrepareConfig(contentRoot, port);
 
+                // Use 2 since 1 is used by the our default site in Http.config
+                DeploymentParameters.SiteName = "2";
                 var parameters = string.IsNullOrEmpty(DeploymentParameters.ServerConfigLocation) ?
                                 string.Format(CultureInfo.InvariantCulture, "/port:{0} /path:\"{1}\" /trace:error /systray:false", uri.Port, contentRoot) :
                                 string.Format(CultureInfo.InvariantCulture, "/site:{0} /config:{1} /trace:error /systray:false", DeploymentParameters.SiteName, DeploymentParameters.ServerConfigLocation);
@@ -293,7 +295,7 @@ public partial class IISExpressDeployer : IISDeployerBase
             .RequiredElement("modules")
             .GetOrAdd("add", "name", AspNetCoreModuleV2ModuleName);
 
-        ConfigureModuleAndBinding(config.Root, contentRoot, port);
+        ConfigureModuleAndBinding(config.Root, contentRoot, port, siteId: 2);
 
         var webConfigPath = Path.Combine(contentRoot, "web.config");
         if (!DeploymentParameters.PublishApplicationBeforeDeployment && !File.Exists(webConfigPath))

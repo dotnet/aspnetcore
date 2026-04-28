@@ -20,7 +20,7 @@ internal partial class EndpointHtmlRenderer
 
     protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
     {
-        if (_isHandlingErrors || _isReExecuted)
+        if (_isHandlingErrors)
         {
             // Ignore the render mode boundary in error scenarios.
             return componentActivator.CreateInstance(componentType);
@@ -168,30 +168,7 @@ internal partial class EndpointHtmlRenderer
         }
         else if (_nonStreamingPendingTasks.Count > 0)
         {
-            if (_isReExecuted)
-            {
-                HandleNonStreamingTasks();
-            }
-            else
-            {
-                await WaitForNonStreamingPendingTasks();
-            }
-        }
-    }
-
-    public void HandleNonStreamingTasks()
-    {
-        if (NonStreamingPendingTasksCompletion == null)
-        {
-            foreach (var task in _nonStreamingPendingTasks)
-            {
-                _ = GetErrorHandledTask(task);
-            }
-
-            // Clear the pending tasks since we are handling them
-            _nonStreamingPendingTasks.Clear();
-
-            NonStreamingPendingTasksCompletion = Task.CompletedTask;
+            await WaitForNonStreamingPendingTasks();
         }
     }
 

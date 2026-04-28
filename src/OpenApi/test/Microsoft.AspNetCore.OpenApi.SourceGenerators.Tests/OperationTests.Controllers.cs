@@ -96,4 +96,49 @@ public record Todo(int Id, string Title, bool Completed);
             Assert.Equal("The todo to insert into the database.", path3.RequestBody.Description);
         });
     }
+
+    [Fact]
+    public async Task SupportsRouteParametersFromControllers()
+    {
+        var source = """
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services
+    .AddControllers()
+    .AddApplicationPart(typeof(TestController).Assembly);
+builder.Services.AddOpenApi();
+
+var app = builder.Build();
+
+app.MapControllers();
+
+app.Run();
+
+[ApiController]
+[Route("[controller]")]
+public class TestController : ControllerBase
+{
+    /// <param name="userId">The id of the user.</param>
+    [HttpGet("{userId}")]
+    public string Get()
+    {
+        return "Hello, World!";
+    }
+}
+
+public partial class Program {}
+
+""";
+        var generator = new XmlCommentGenerator();
+        await SnapshotTestHelper.Verify(source, generator, out var compilation);
+        await SnapshotTestHelper.VerifyOpenApi(compilation, document =>
+        {
+            var path = document.Paths["/Test/{userId}"].Operations[HttpMethod.Get];
+            Assert.Equal("The id of the user.", path.Parameters[0].Description);
+        });
+    }
 }

@@ -102,6 +102,7 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
             HttpMethod = httpMethod,
             GroupName = routeEndpoint.Metadata.GetMetadata<IEndpointGroupNameMetadata>()?.EndpointGroupName,
             RelativePath = routeEndpoint.RoutePattern.RawText?.TrimStart('/'),
+            RoutePattern = routeEndpoint.RoutePattern,
             ActionDescriptor = new ActionDescriptor
             {
                 DisplayName = routeEndpoint.DisplayName,

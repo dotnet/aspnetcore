@@ -39,7 +39,7 @@ public class BadHttpRequestTests : LoggedTest
         return TestBadRequest(
             $"GET / {httpVersion}\r\n",
             "505 HTTP Version Not Supported",
-            CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion(httpVersion),
+            CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion_Detail(httpVersion),
             ConnectionEndReason.InvalidHttpVersion);
     }
 

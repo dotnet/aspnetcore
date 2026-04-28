@@ -19,16 +19,6 @@ public class EditContextDataAnnotationsExtensionsTest
     }
 
     [Fact]
-    public void ObsoleteApiReturnsEditContextForChaining()
-    {
-        var editContext = new EditContext(new object());
-#pragma warning disable 0618
-        var returnValue = editContext.AddDataAnnotationsValidation();
-#pragma warning restore 0618
-        Assert.Same(editContext, returnValue);
-    }
-
-    [Fact]
     public void GetsValidationMessagesFromDataAnnotations()
     {
         // Arrange

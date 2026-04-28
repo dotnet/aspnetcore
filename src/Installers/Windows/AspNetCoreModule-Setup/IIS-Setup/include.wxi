@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<Include>
+﻿<Include xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <?define DiscoverabilityKeyRoot = "SOFTWARE\Microsoft\IIS Extensions"?>
 
   <!-- NativeMachine values match the expected values for image file machine constants
@@ -9,8 +7,8 @@
   <?define NativeMachine_x64=34404?>
   <?define NativeMachine_arm64=43620?>
 
-  <?if $(var.Platform) = "x64"?>
-    <?define IsWin64 = yes ?>
+  <?if $(InstallerPlatform)=x64?>
+    <?define Bitness = always64 ?>
     <?define PlatformArchitecture = x64 ?>
     <?define ProgramFilesFolder = ProgramFiles64Folder ?>
     <?define ProgramFilesFolder32 = ProgramFilesFolder ?>
@@ -18,15 +16,15 @@
     <?define SysWow64Folder = SystemFolder ?>
     <?define PlatformValue = x64 ?>
     <?define ANCMInstallerVersion = 400 ?>
-  <?elseif $(var.Platform) = "x86" ?>
-    <?define IsWin64 = no ?>
+  <?elseif $(InstallerPlatform)=x86?>
+    <?define Bitness = always32 ?>
     <?define PlatformArchitecture = x86 ?>
     <?define ProgramFilesFolder = ProgramFilesFolder ?>
     <?define SystemFolder = SystemFolder ?>
     <?define PlatformValue = Intel ?>
     <?define ANCMInstallerVersion = 400 ?>
-  <?elseif $(var.Platform) ~= "arm64" ?>
-    <?define IsWin64 = yes ?>
+  <?elseif $(InstallerPlatform)~=arm64?>
+    <?define Bitness = always64 ?>
     <?define PlatformArchitecture = ARM64 ?>
     <?define ProgramFilesFolder = ProgramFiles64Folder ?>
     <?define ProgramFilesFolder32 = ProgramFilesFolder ?>

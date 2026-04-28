@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.AspNetCore.OutputCaching.IOutputCachePolicyProvider
+Microsoft.AspNetCore.OutputCaching.IOutputCachePolicyProvider.GetBasePolicies() -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.OutputCaching.IOutputCachePolicy!>!
+Microsoft.AspNetCore.OutputCaching.IOutputCachePolicyProvider.GetPolicyAsync(string! policyName) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.OutputCaching.IOutputCachePolicy?>

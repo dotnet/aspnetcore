@@ -22,6 +22,8 @@ abstract Microsoft.AspNetCore.Components.Dispatcher.InvokeAsync(System.Func<Syst
 abstract Microsoft.AspNetCore.Components.Dispatcher.InvokeAsync<TResult>(System.Func<System.Threading.Tasks.Task<TResult>!>! workItem) -> System.Threading.Tasks.Task<TResult>!
 abstract Microsoft.AspNetCore.Components.Dispatcher.InvokeAsync<TResult>(System.Func<TResult>! workItem) -> System.Threading.Tasks.Task<TResult>!
 abstract Microsoft.AspNetCore.Components.ErrorBoundaryBase.OnErrorAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
+abstract Microsoft.AspNetCore.Components.PersistentComponentStateSerializer<T>.Persist(T value, System.Buffers.IBufferWriter<byte>! writer) -> void
+abstract Microsoft.AspNetCore.Components.PersistentComponentStateSerializer<T>.Restore(System.Buffers.ReadOnlySequence<byte> data) -> T
 abstract Microsoft.AspNetCore.Components.RenderModeAttribute.Mode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode!
 abstract Microsoft.AspNetCore.Components.RenderTree.Renderer.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
 abstract Microsoft.AspNetCore.Components.RenderTree.Renderer.HandleException(System.Exception! exception) -> void
@@ -98,8 +100,8 @@ Microsoft.AspNetCore.Components.EditorRequiredAttribute.EditorRequiredAttribute(
 Microsoft.AspNetCore.Components.ElementReference
 Microsoft.AspNetCore.Components.ElementReference.Context.get -> Microsoft.AspNetCore.Components.ElementReferenceContext?
 Microsoft.AspNetCore.Components.ElementReference.ElementReference() -> void
-Microsoft.AspNetCore.Components.ElementReference.ElementReference(string! id) -> void
 Microsoft.AspNetCore.Components.ElementReference.ElementReference(string! id, Microsoft.AspNetCore.Components.ElementReferenceContext? context) -> void
+Microsoft.AspNetCore.Components.ElementReference.ElementReference(string! id) -> void
 Microsoft.AspNetCore.Components.ElementReference.Id.get -> string!
 Microsoft.AspNetCore.Components.ElementReferenceContext
 Microsoft.AspNetCore.Components.ElementReferenceContext.ElementReferenceContext() -> void
@@ -151,8 +153,8 @@ Microsoft.AspNetCore.Components.EventHandlerAttribute.AttributeName.get -> strin
 Microsoft.AspNetCore.Components.EventHandlerAttribute.EnablePreventDefault.get -> bool
 Microsoft.AspNetCore.Components.EventHandlerAttribute.EnableStopPropagation.get -> bool
 Microsoft.AspNetCore.Components.EventHandlerAttribute.EventArgsType.get -> System.Type!
-Microsoft.AspNetCore.Components.EventHandlerAttribute.EventHandlerAttribute(string! attributeName, System.Type! eventArgsType) -> void
 Microsoft.AspNetCore.Components.EventHandlerAttribute.EventHandlerAttribute(string! attributeName, System.Type! eventArgsType, bool enableStopPropagation, bool enablePreventDefault) -> void
+Microsoft.AspNetCore.Components.EventHandlerAttribute.EventHandlerAttribute(string! attributeName, System.Type! eventArgsType) -> void
 Microsoft.AspNetCore.Components.ExcludeFromInteractiveRoutingAttribute
 Microsoft.AspNetCore.Components.ExcludeFromInteractiveRoutingAttribute.ExcludeFromInteractiveRoutingAttribute() -> void
 Microsoft.AspNetCore.Components.IComponent
@@ -165,11 +167,17 @@ Microsoft.AspNetCore.Components.IHandleAfterRender
 Microsoft.AspNetCore.Components.IHandleAfterRender.OnAfterRenderAsync() -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.IHandleEvent
 Microsoft.AspNetCore.Components.IHandleEvent.HandleEventAsync(Microsoft.AspNetCore.Components.EventCallbackWorkItem item, object? arg) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCollectionExtensions
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager
+Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.ComponentStatePersistenceManager(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager!>! logger, System.IServiceProvider! serviceProvider) -> void
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.ComponentStatePersistenceManager(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager!>! logger) -> void
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.RenderTree.Renderer! renderer) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.RestoreStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.RestoreContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.RestoreStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.SetPlatformRenderMode(Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> void
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.State.get -> Microsoft.AspNetCore.Components.PersistentComponentState!
+Microsoft.AspNetCore.Components.Infrastructure.PersistentStateProviderServiceCollectionExtensions
+Microsoft.AspNetCore.Components.Infrastructure.RegisterPersistentComponentStateServiceCollectionExtensions
 Microsoft.AspNetCore.Components.InjectAttribute
 Microsoft.AspNetCore.Components.InjectAttribute.InjectAttribute() -> void
 Microsoft.AspNetCore.Components.InjectAttribute.Key.get -> object?
@@ -213,8 +221,10 @@ Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, bool f
 Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, bool forceLoad) -> void
 Microsoft.AspNetCore.Components.NavigationManager.NavigateTo(string! uri, Microsoft.AspNetCore.Components.NavigationOptions options) -> void
 Microsoft.AspNetCore.Components.NavigationManager.NavigationManager() -> void
+Microsoft.AspNetCore.Components.NavigationManager.NotFound() -> void
 Microsoft.AspNetCore.Components.NavigationManager.NotifyLocationChanged(bool isInterceptedLink) -> void
 Microsoft.AspNetCore.Components.NavigationManager.NotifyLocationChangingAsync(string! uri, string? state, bool isNavigationIntercepted) -> System.Threading.Tasks.ValueTask<bool>
+Microsoft.AspNetCore.Components.NavigationManager.OnNotFound -> System.EventHandler<Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs!>!
 Microsoft.AspNetCore.Components.NavigationManager.RegisterLocationChangingHandler(System.Func<Microsoft.AspNetCore.Components.Routing.LocationChangingContext!, System.Threading.Tasks.ValueTask>! locationChangingHandler) -> System.IDisposable!
 Microsoft.AspNetCore.Components.NavigationManager.ToAbsoluteUri(string? relativeUri) -> System.Uri!
 Microsoft.AspNetCore.Components.NavigationManager.ToBaseRelativePath(string! uri) -> string!
@@ -251,17 +261,26 @@ Microsoft.AspNetCore.Components.ParameterView.Enumerator.Current.get -> Microsof
 Microsoft.AspNetCore.Components.ParameterView.Enumerator.Enumerator() -> void
 Microsoft.AspNetCore.Components.ParameterView.Enumerator.MoveNext() -> bool
 Microsoft.AspNetCore.Components.ParameterView.GetEnumerator() -> Microsoft.AspNetCore.Components.ParameterView.Enumerator
-Microsoft.AspNetCore.Components.ParameterView.GetValueOrDefault<TValue>(string! parameterName) -> TValue?
 Microsoft.AspNetCore.Components.ParameterView.GetValueOrDefault<TValue>(string! parameterName, TValue defaultValue) -> TValue
+Microsoft.AspNetCore.Components.ParameterView.GetValueOrDefault<TValue>(string! parameterName) -> TValue?
 Microsoft.AspNetCore.Components.ParameterView.ParameterView() -> void
 Microsoft.AspNetCore.Components.ParameterView.SetParameterProperties(object! target) -> void
 Microsoft.AspNetCore.Components.ParameterView.ToDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, object?>!
 Microsoft.AspNetCore.Components.ParameterView.TryGetValue<TValue>(string! parameterName, out TValue result) -> bool
 Microsoft.AspNetCore.Components.PersistentComponentState
 Microsoft.AspNetCore.Components.PersistentComponentState.PersistAsJson<TValue>(string! key, TValue instance) -> void
-Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnPersisting(System.Func<System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.PersistingComponentStateSubscription
 Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnPersisting(System.Func<System.Threading.Tasks.Task!>! callback, Microsoft.AspNetCore.Components.IComponentRenderMode? renderMode) -> Microsoft.AspNetCore.Components.PersistingComponentStateSubscription
+Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnPersisting(System.Func<System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.PersistingComponentStateSubscription
+Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnRestoring(System.Action! callback, Microsoft.AspNetCore.Components.RestoreOptions options) -> Microsoft.AspNetCore.Components.RestoringComponentStateSubscription
 Microsoft.AspNetCore.Components.PersistentComponentState.TryTakeFromJson<TValue>(string! key, out TValue? instance) -> bool
+Microsoft.AspNetCore.Components.PersistentComponentStateSerializer<T>
+Microsoft.AspNetCore.Components.PersistentComponentStateSerializer<T>.PersistentComponentStateSerializer() -> void
+Microsoft.AspNetCore.Components.PersistentStateAttribute
+Microsoft.AspNetCore.Components.PersistentStateAttribute.AllowUpdates.get -> bool
+Microsoft.AspNetCore.Components.PersistentStateAttribute.AllowUpdates.set -> void
+Microsoft.AspNetCore.Components.PersistentStateAttribute.PersistentStateAttribute() -> void
+Microsoft.AspNetCore.Components.PersistentStateAttribute.RestoreBehavior.get -> Microsoft.AspNetCore.Components.RestoreBehavior
+Microsoft.AspNetCore.Components.PersistentStateAttribute.RestoreBehavior.set -> void
 Microsoft.AspNetCore.Components.PersistingComponentStateSubscription
 Microsoft.AspNetCore.Components.PersistingComponentStateSubscription.Dispose() -> void
 Microsoft.AspNetCore.Components.PersistingComponentStateSubscription.PersistingComponentStateSubscription() -> void
@@ -287,14 +306,15 @@ Microsoft.AspNetCore.Components.Rendering.ComponentState.ComponentId.get -> int
 Microsoft.AspNetCore.Components.Rendering.ComponentState.ComponentState(Microsoft.AspNetCore.Components.RenderTree.Renderer! renderer, int componentId, Microsoft.AspNetCore.Components.IComponent! component, Microsoft.AspNetCore.Components.Rendering.ComponentState? parentComponentState) -> void
 Microsoft.AspNetCore.Components.Rendering.ComponentState.LogicalParentComponentState.get -> Microsoft.AspNetCore.Components.Rendering.ComponentState?
 Microsoft.AspNetCore.Components.Rendering.ComponentState.ParentComponentState.get -> Microsoft.AspNetCore.Components.Rendering.ComponentState?
+Microsoft.AspNetCore.Components.Rendering.ComponentState.Renderer.get -> Microsoft.AspNetCore.Components.RenderTree.Renderer!
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame frame) -> void
-Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, string! name) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, string! name, bool value) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, string! name, Microsoft.AspNetCore.Components.EventCallback value) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, string! name, object? value) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, string! name, string? value) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, string! name, System.MulticastDelegate? value) -> void
+Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute(int sequence, string! name) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddAttribute<TArgument>(int sequence, string! name, Microsoft.AspNetCore.Components.EventCallback<TArgument> value) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentParameter(int sequence, string! name, object? value) -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.AddComponentReferenceCapture(int sequence, System.Action<object!>! componentReferenceCaptureAction) -> void
@@ -372,10 +392,10 @@ Microsoft.AspNetCore.Components.RenderTree.Renderer.GetCurrentRenderTreeFrames(i
 Microsoft.AspNetCore.Components.RenderTree.Renderer.GetEventArgsType(ulong eventHandlerId) -> System.Type!
 Microsoft.AspNetCore.Components.RenderTree.Renderer.InstantiateComponent(System.Type! componentType) -> Microsoft.AspNetCore.Components.IComponent!
 Microsoft.AspNetCore.Components.RenderTree.Renderer.RemoveRootComponent(int componentId) -> void
-Microsoft.AspNetCore.Components.RenderTree.Renderer.Renderer(System.IServiceProvider! serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Components.RenderTree.Renderer.Renderer(System.IServiceProvider! serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.Components.IComponentActivator! componentActivator) -> void
-Microsoft.AspNetCore.Components.RenderTree.Renderer.RenderRootComponentAsync(int componentId) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.RenderTree.Renderer.Renderer(System.IServiceProvider! serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
 Microsoft.AspNetCore.Components.RenderTree.Renderer.RenderRootComponentAsync(int componentId, Microsoft.AspNetCore.Components.ParameterView initialParameters) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.RenderTree.Renderer.RenderRootComponentAsync(int componentId) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.RenderTree.Renderer.UnhandledSynchronizationException -> System.UnhandledExceptionEventHandler!
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeDiff
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeDiff.RenderTreeDiff() -> void
@@ -417,7 +437,7 @@ Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.Region = 5 -> Mic
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.Text = 2 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
 Microsoft.AspNetCore.Components.ResourceAsset
 Microsoft.AspNetCore.Components.ResourceAsset.Properties.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>?
-Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void
+Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties = null) -> void
 Microsoft.AspNetCore.Components.ResourceAsset.Url.get -> string!
 Microsoft.AspNetCore.Components.ResourceAssetCollection
 Microsoft.AspNetCore.Components.ResourceAssetCollection.IsContentSpecificUrl(string! path) -> bool
@@ -427,6 +447,20 @@ Microsoft.AspNetCore.Components.ResourceAssetProperty
 Microsoft.AspNetCore.Components.ResourceAssetProperty.Name.get -> string!
 Microsoft.AspNetCore.Components.ResourceAssetProperty.ResourceAssetProperty(string! name, string! value) -> void
 Microsoft.AspNetCore.Components.ResourceAssetProperty.Value.get -> string!
+Microsoft.AspNetCore.Components.RestoreBehavior
+Microsoft.AspNetCore.Components.RestoreBehavior.Default = 0 -> Microsoft.AspNetCore.Components.RestoreBehavior
+Microsoft.AspNetCore.Components.RestoreBehavior.SkipInitialValue = 1 -> Microsoft.AspNetCore.Components.RestoreBehavior
+Microsoft.AspNetCore.Components.RestoreBehavior.SkipLastSnapshot = 2 -> Microsoft.AspNetCore.Components.RestoreBehavior
+Microsoft.AspNetCore.Components.RestoreContext
+Microsoft.AspNetCore.Components.RestoreOptions
+Microsoft.AspNetCore.Components.RestoreOptions.AllowUpdates.get -> bool
+Microsoft.AspNetCore.Components.RestoreOptions.AllowUpdates.init -> void
+Microsoft.AspNetCore.Components.RestoreOptions.RestoreBehavior.get -> Microsoft.AspNetCore.Components.RestoreBehavior
+Microsoft.AspNetCore.Components.RestoreOptions.RestoreBehavior.init -> void
+Microsoft.AspNetCore.Components.RestoreOptions.RestoreOptions() -> void
+Microsoft.AspNetCore.Components.RestoringComponentStateSubscription
+Microsoft.AspNetCore.Components.RestoringComponentStateSubscription.Dispose() -> void
+Microsoft.AspNetCore.Components.RestoringComponentStateSubscription.RestoringComponentStateSubscription() -> void
 Microsoft.AspNetCore.Components.RouteAttribute
 Microsoft.AspNetCore.Components.RouteAttribute.RouteAttribute(string! template) -> void
 Microsoft.AspNetCore.Components.RouteAttribute.Template.get -> string!
@@ -445,6 +479,7 @@ Microsoft.AspNetCore.Components.RouteView.RouteData.set -> void
 Microsoft.AspNetCore.Components.RouteView.RouteView() -> void
 Microsoft.AspNetCore.Components.RouteView.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Routing.IHostEnvironmentNavigationManager
+Microsoft.AspNetCore.Components.Routing.IHostEnvironmentNavigationManager.Initialize(string! baseUri, string! uri, System.Func<string!, System.Threading.Tasks.Task!>! onNavigateTo) -> void
 Microsoft.AspNetCore.Components.Routing.IHostEnvironmentNavigationManager.Initialize(string! baseUri, string! uri) -> void
 Microsoft.AspNetCore.Components.Routing.INavigationInterception
 Microsoft.AspNetCore.Components.Routing.INavigationInterception.EnableNavigationInterceptionAsync() -> System.Threading.Tasks.Task!
@@ -471,6 +506,10 @@ Microsoft.AspNetCore.Components.Routing.LocationChangingContext.TargetLocation.i
 Microsoft.AspNetCore.Components.Routing.NavigationContext
 Microsoft.AspNetCore.Components.Routing.NavigationContext.CancellationToken.get -> System.Threading.CancellationToken
 Microsoft.AspNetCore.Components.Routing.NavigationContext.Path.get -> string!
+Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs
+Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.NotFoundEventArgs() -> void
+Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.Path.get -> string?
+Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.Path.set -> void
 Microsoft.AspNetCore.Components.Routing.Router
 Microsoft.AspNetCore.Components.Routing.Router.AdditionalAssemblies.get -> System.Collections.Generic.IEnumerable<System.Reflection.Assembly!>!
 Microsoft.AspNetCore.Components.Routing.Router.AdditionalAssemblies.set -> void
@@ -484,6 +523,8 @@ Microsoft.AspNetCore.Components.Routing.Router.Navigating.get -> Microsoft.AspNe
 Microsoft.AspNetCore.Components.Routing.Router.Navigating.set -> void
 Microsoft.AspNetCore.Components.Routing.Router.NotFound.get -> Microsoft.AspNetCore.Components.RenderFragment!
 Microsoft.AspNetCore.Components.Routing.Router.NotFound.set -> void
+Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.get -> System.Type?
+Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.set -> void
 Microsoft.AspNetCore.Components.Routing.Router.OnNavigateAsync.get -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Routing.NavigationContext!>
 Microsoft.AspNetCore.Components.Routing.Router.OnNavigateAsync.set -> void
 Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
@@ -672,6 +713,10 @@ static Microsoft.AspNetCore.Components.EventCallbackFactoryEventArgsExtensions.C
 static Microsoft.AspNetCore.Components.EventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<System.EventArgs!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<System.EventArgs!>
 static Microsoft.AspNetCore.Components.EventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Func<Microsoft.AspNetCore.Components.ChangeEventArgs!, System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs!>
 static Microsoft.AspNetCore.Components.EventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Func<System.EventArgs!, System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<System.EventArgs!>
+static Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Components.Infrastructure.PersistentStateProviderServiceCollectionExtensions.AddSupplyValueFromPersistentComponentStateProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Components.Infrastructure.RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<TService>(Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.AspNetCore.Components.IComponentRenderMode! componentRenderMode) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Components.MarkupString.explicit operator Microsoft.AspNetCore.Components.MarkupString(string! value) -> Microsoft.AspNetCore.Components.MarkupString
 static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, bool value) -> string!
 static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameter(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! name, bool? value) -> string!
@@ -698,6 +743,9 @@ static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQue
 static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithQueryParameters(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, System.Collections.Generic.IReadOnlyDictionary<string!, object?>! parameters) -> string!
 static Microsoft.AspNetCore.Components.ParameterView.Empty.get -> Microsoft.AspNetCore.Components.ParameterView
 static Microsoft.AspNetCore.Components.ParameterView.FromDictionary(System.Collections.Generic.IDictionary<string!, object?>! parameters) -> Microsoft.AspNetCore.Components.ParameterView
+static Microsoft.AspNetCore.Components.RestoreContext.InitialValue.get -> Microsoft.AspNetCore.Components.RestoreContext!
+static Microsoft.AspNetCore.Components.RestoreContext.LastSnapshot.get -> Microsoft.AspNetCore.Components.RestoreContext!
+static Microsoft.AspNetCore.Components.RestoreContext.ValueUpdate.get -> Microsoft.AspNetCore.Components.RestoreContext!
 static Microsoft.AspNetCore.Components.SupplyParameterFromQueryProviderServiceCollectionExtensions.AddSupplyValueFromQueryProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.AddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, string! name, System.Func<System.IServiceProvider!, TValue>! initialValueFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.AddCascadingValue<TValue>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, System.Func<System.IServiceProvider!, Microsoft.AspNetCore.Components.CascadingValueSource<TValue>!>! sourceFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
@@ -726,12 +774,14 @@ virtual Microsoft.AspNetCore.Components.NavigationManager.NavigateToCore(string!
 virtual Microsoft.AspNetCore.Components.NavigationManager.Refresh(bool forceReload = false) -> void
 virtual Microsoft.AspNetCore.Components.NavigationManager.SetNavigationLockState(bool value) -> void
 virtual Microsoft.AspNetCore.Components.OwningComponentBase.Dispose(bool disposing) -> void
+virtual Microsoft.AspNetCore.Components.OwningComponentBase.DisposeAsyncCore() -> System.Threading.Tasks.ValueTask
 virtual Microsoft.AspNetCore.Components.Rendering.ComponentState.DisposeAsync() -> System.Threading.Tasks.ValueTask
+virtual Microsoft.AspNetCore.Components.Rendering.ComponentState.GetComponentKey() -> object?
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.AddPendingTask(Microsoft.AspNetCore.Components.Rendering.ComponentState? componentState, System.Threading.Tasks.Task! task) -> void
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.Assets.get -> Microsoft.AspNetCore.Components.ResourceAssetCollection!
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.CreateComponentState(int componentId, Microsoft.AspNetCore.Components.IComponent! component, Microsoft.AspNetCore.Components.Rendering.ComponentState? parentComponentState) -> Microsoft.AspNetCore.Components.Rendering.ComponentState!
-virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo? fieldInfo, System.EventArgs! eventArgs) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo? fieldInfo, System.EventArgs! eventArgs, bool waitForQuiescence) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo? fieldInfo, System.EventArgs! eventArgs) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.Dispose(bool disposing) -> void
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.GetComponentRenderMode(Microsoft.AspNetCore.Components.IComponent! component) -> Microsoft.AspNetCore.Components.IComponentRenderMode?
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.ProcessPendingRender() -> void

@@ -19,8 +19,12 @@ Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.ExceptionHandlingPath.get -
 Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.ExceptionHandlingPath.set -> void
 Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.StatusCodeSelector.get -> System.Func<System.Exception!, int>?
 Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.StatusCodeSelector.set -> void
+Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.SuppressDiagnosticsCallback.get -> System.Func<Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext!, bool>?
+Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.SuppressDiagnosticsCallback.set -> void
 Microsoft.AspNetCore.Builder.StatusCodePagesExtensions
 Microsoft.AspNetCore.Builder.StatusCodePagesOptions
+Microsoft.AspNetCore.Builder.StatusCodePagesOptions.CreateScopeForStatusCodePages.get -> bool
+Microsoft.AspNetCore.Builder.StatusCodePagesOptions.CreateScopeForStatusCodePages.set -> void
 Microsoft.AspNetCore.Builder.StatusCodePagesOptions.HandleAsync.get -> System.Func<Microsoft.AspNetCore.Diagnostics.StatusCodeContext!, System.Threading.Tasks.Task!>!
 Microsoft.AspNetCore.Builder.StatusCodePagesOptions.HandleAsync.set -> void
 Microsoft.AspNetCore.Builder.StatusCodePagesOptions.StatusCodePagesOptions() -> void
@@ -32,6 +36,12 @@ Microsoft.AspNetCore.Builder.WelcomePageOptions.WelcomePageOptions() -> void
 Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware
 Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware.DeveloperExceptionPageMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.DeveloperExceptionPageOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.AspNetCore.Hosting.IWebHostEnvironment! hostingEnvironment, System.Diagnostics.DiagnosticSource! diagnosticSource, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.IDeveloperPageExceptionFilter!>! filters) -> void
 Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Diagnostics.ExceptionHandledType
+Microsoft.AspNetCore.Diagnostics.ExceptionHandledType.ExceptionHandlerDelegate = 3 -> Microsoft.AspNetCore.Diagnostics.ExceptionHandledType
+Microsoft.AspNetCore.Diagnostics.ExceptionHandledType.ExceptionHandlerService = 1 -> Microsoft.AspNetCore.Diagnostics.ExceptionHandledType
+Microsoft.AspNetCore.Diagnostics.ExceptionHandledType.ExceptionHandlingPath = 4 -> Microsoft.AspNetCore.Diagnostics.ExceptionHandledType
+Microsoft.AspNetCore.Diagnostics.ExceptionHandledType.ProblemDetailsService = 2 -> Microsoft.AspNetCore.Diagnostics.ExceptionHandledType
+Microsoft.AspNetCore.Diagnostics.ExceptionHandledType.Unhandled = 0 -> Microsoft.AspNetCore.Diagnostics.ExceptionHandledType
 Microsoft.AspNetCore.Diagnostics.ExceptionHandlerFeature
 Microsoft.AspNetCore.Diagnostics.ExceptionHandlerFeature.Endpoint.get -> Microsoft.AspNetCore.Http.Endpoint?
 Microsoft.AspNetCore.Diagnostics.ExceptionHandlerFeature.Endpoint.set -> void
@@ -45,6 +55,14 @@ Microsoft.AspNetCore.Diagnostics.ExceptionHandlerFeature.RouteValues.set -> void
 Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware
 Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware.ExceptionHandlerMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.ExceptionHandlerOptions!>! options, System.Diagnostics.DiagnosticListener! diagnosticListener) -> void
 Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext.Exception.get -> System.Exception!
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext.Exception.init -> void
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext.ExceptionHandledBy.get -> Microsoft.AspNetCore.Diagnostics.ExceptionHandledType
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext.ExceptionHandledBy.init -> void
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext.ExceptionHandlerSuppressDiagnosticsContext() -> void
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext.HttpContext.init -> void
 Microsoft.AspNetCore.Diagnostics.IExceptionHandler
 Microsoft.AspNetCore.Diagnostics.IExceptionHandler.TryHandleAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext, System.Exception! exception, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<bool>
 Microsoft.AspNetCore.Diagnostics.StatusCodeContext
@@ -76,24 +94,25 @@ Microsoft.AspNetCore.Diagnostics.WelcomePageMiddleware
 Microsoft.AspNetCore.Diagnostics.WelcomePageMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Diagnostics.WelcomePageMiddleware.WelcomePageMiddleware(Microsoft.AspNetCore.Http.RequestDelegate! next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.WelcomePageOptions!>! options) -> void
 Microsoft.Extensions.DependencyInjection.ExceptionHandlerServiceCollectionExtensions
-static Microsoft.AspNetCore.Builder.DeveloperExceptionPageExtensions.UseDeveloperExceptionPage(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.DeveloperExceptionPageExtensions.UseDeveloperExceptionPage(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Builder.DeveloperExceptionPageOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.AspNetCore.Builder.ExceptionHandlerExtensions.UseExceptionHandler(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.DeveloperExceptionPageExtensions.UseDeveloperExceptionPage(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.ExceptionHandlerExtensions.UseExceptionHandler(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Builder.ExceptionHandlerOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.AspNetCore.Builder.ExceptionHandlerExtensions.UseExceptionHandler(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! errorHandlingPath) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.ExceptionHandlerExtensions.UseExceptionHandler(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! errorHandlingPath, bool createScopeForErrors) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.ExceptionHandlerExtensions.UseExceptionHandler(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! errorHandlingPath) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.ExceptionHandlerExtensions.UseExceptionHandler(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! configure) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.AspNetCore.Builder.StatusCodePagesExtensions.UseStatusCodePages(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.ExceptionHandlerExtensions.UseExceptionHandler(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.StatusCodePagesExtensions.UseStatusCodePages(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Builder.StatusCodePagesOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.StatusCodePagesExtensions.UseStatusCodePages(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! contentType, string! bodyFormat) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.StatusCodePagesExtensions.UseStatusCodePages(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder!>! configuration) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.StatusCodePagesExtensions.UseStatusCodePages(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, System.Func<Microsoft.AspNetCore.Diagnostics.StatusCodeContext!, System.Threading.Tasks.Task!>! handler) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.StatusCodePagesExtensions.UseStatusCodePages(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.StatusCodePagesExtensions.UseStatusCodePagesWithRedirects(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! locationFormat) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.AspNetCore.Builder.StatusCodePagesExtensions.UseStatusCodePagesWithReExecute(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! pathFormat, string? queryFormat = null) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.AspNetCore.Builder.WelcomePageExtensions.UseWelcomePage(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.StatusCodePagesExtensions.UseStatusCodePagesWithReExecute(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! pathFormat, string! queryFormat) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.StatusCodePagesExtensions.UseStatusCodePagesWithReExecute(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! pathFormat, string? queryFormat = null, bool createScopeForStatusCodePages = false) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.WelcomePageExtensions.UseWelcomePage(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Builder.WelcomePageOptions! options) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.WelcomePageExtensions.UseWelcomePage(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, Microsoft.AspNetCore.Http.PathString path) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.WelcomePageExtensions.UseWelcomePage(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! path) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.WelcomePageExtensions.UseWelcomePage(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.Extensions.DependencyInjection.ExceptionHandlerServiceCollectionExtensions.AddExceptionHandler(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Builder.ExceptionHandlerOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.ExceptionHandlerServiceCollectionExtensions.AddExceptionHandler<T>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.ExceptionHandlerServiceCollectionExtensions.AddExceptionHandler<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Builder.ExceptionHandlerOptions!, TService!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

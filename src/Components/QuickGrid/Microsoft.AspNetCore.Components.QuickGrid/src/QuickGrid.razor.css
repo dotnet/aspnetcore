@@ -116,3 +116,8 @@ html[dir=rtl] .col-justify-end .col-options {
     right: unset;
     left: 0;
 }
+
+/* Clickable rows when OnRowClick is set */
+tr.row-clickable {
+    cursor: pointer;
+}

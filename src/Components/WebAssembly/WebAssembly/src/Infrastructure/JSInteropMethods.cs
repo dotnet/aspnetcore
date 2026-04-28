@@ -17,13 +17,6 @@ public static class JSInteropMethods
     /// <summary>
     /// For framework use only.
     /// </summary>
-    [Obsolete("This API is for framework use only and is no longer used in the current version")]
-    public static void NotifyLocationChanged(string uri, bool isInterceptedLink)
-        => WebAssemblyNavigationManager.Instance.SetLocation(uri, null, isInterceptedLink);
-
-    /// <summary>
-    /// For framework use only.
-    /// </summary>
     [JSInvokable(nameof(NotifyLocationChanged))]
     public static void NotifyLocationChanged(string uri, string? state, bool isInterceptedLink)
     {

@@ -106,10 +106,6 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
 
     [Inject] internal AuthenticationStateProvider AuthenticationProvider { get; set; } = default!;
 
-#pragma warning disable CS0618 // Type or member is obsolete, we keep it for now for backwards compatibility
-    [Inject] internal SignOutSessionStateManager SignOutManager { get; set; } = default!;
-#pragma warning restore CS0618 // Type or member is obsolete, we keep it for now for backwards compatibility
-
     [Inject] internal ILogger<RemoteAuthenticatorViewCore<TAuthenticationState>> Logger { get; set; } = default!;
 
     /// <inheritdoc />
@@ -282,9 +278,7 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
 
     private async Task ProcessLogOut(string returnUrl)
     {
-        if ((Navigation.HistoryEntryState != null && !ValidateSignOutRequestState()) ||
-            // For backcompat purposes, keep SignOutManager working, even though we now use the history.state for this.
-            (Navigation.HistoryEntryState == null && !await SignOutManager.ValidateSignOutState()))
+        if (Navigation.HistoryEntryState != null && !ValidateSignOutRequestState())
         {
             Log.LogoutOperationInitiatedExternally(Logger);
             Navigation.NavigateTo(ApplicationPaths.LogOutFailedPath, AuthenticationNavigationOptions with { HistoryEntryState = "The logout was not initiated from within the page." });

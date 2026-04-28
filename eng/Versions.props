@@ -1,26 +1,29 @@
 <!--
 
   This file defines the versions of external dependencies used by ASP.NET Core.
-  This file might be updated by automation.
 
 -->
 <Project>
-  <Import Project="Version.Details.props" Condition="Exists('Version.Details.props')" />
+
+  <Import Project="Version.Details.props" />
+
   <PropertyGroup Label="Version settings">
-    <AspNetCoreMajorVersion>10</AspNetCoreMajorVersion>
+    <AspNetCoreMajorVersion>11</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
-    <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
-    <ValidateBaseline>true</ValidateBaseline>
+    <PreReleaseVersionIteration>5</PreReleaseVersionIteration>
     <IdentityModelVersion Condition="'$(IsIdentityModelTestJob)' != 'true'">8.0.1</IdentityModelVersion>
     <IdentityModelVersion Condition="'$(IsIdentityModelTestJob)' == 'true'">*-*</IdentityModelVersion>
-    <!--
-        When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
-    -->
-    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
-    <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
-    <PreReleaseVersionLabel>rc</PreReleaseVersionLabel>
-    <PreReleaseBrandingLabel>RC $(PreReleaseVersionIteration)</PreReleaseBrandingLabel>
+    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
+    <!-- Allowed values: '', 'prerelease', 'release'. Set to 'release' when stabilizing. -->
+    <DotNetFinalVersionKind></DotNetFinalVersionKind>
+
+    <!-- PreReleaseBrandingLabel is automatically calculated based on PreReleaseVersionLabel -->
+    <PreReleaseBrandingLabel Condition="'$(PreReleaseVersionLabel)' == 'alpha'">Alpha $(PreReleaseVersionIteration)</PreReleaseBrandingLabel>
+    <PreReleaseBrandingLabel Condition="'$(PreReleaseVersionLabel)' == 'preview'">Preview $(PreReleaseVersionIteration)</PreReleaseBrandingLabel>
+    <PreReleaseBrandingLabel Condition="'$(PreReleaseVersionLabel)' == 'rc'">RC $(PreReleaseVersionIteration)</PreReleaseBrandingLabel>
+    <PreReleaseBrandingLabel Condition="'$(PreReleaseVersionLabel)' == 'rtm'">RTM</PreReleaseBrandingLabel>
+    <PreReleaseBrandingLabel Condition="'$(PreReleaseVersionLabel)' == 'servicing'">Servicing</PreReleaseBrandingLabel>
     <IncludePreReleaseLabelInPackageVersion>true</IncludePreReleaseLabelInPackageVersion>
     <IncludePreReleaseLabelInPackageVersion Condition=" '$(DotNetFinalVersionKind)' == 'release' ">false</IncludePreReleaseLabelInPackageVersion>
     <AspNetCoreMajorMinorVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</AspNetCoreMajorMinorVersion>
@@ -44,18 +47,22 @@
       src\Components\WebAssembly\Sdk\testassets\Directory.Build.props, and
       src\Razor\test\testassets\Directory.Build.props when this changes.
     -->
-    <DefaultNetCoreTargetFramework>net10.0</DefaultNetCoreTargetFramework>
+    <DefaultNetCoreTargetFramework>net11.0</DefaultNetCoreTargetFramework>
     <!-- this should usually match for LTS builds, and be off-by-one otherwise;
       example use-case here is OOB packages where Aspire wants to be able to consume
       new features specific to OOB -->
     <CurrentLtsTargetFramework>net10.0</CurrentLtsTargetFramework>
   </PropertyGroup>
+
   <PropertyGroup Label="Arcade settings">
     <!-- Opt-in to Arcade tools for building VSIX projects. -->
     <UsingToolVSSDK>true</UsingToolVSSDK>
     <!-- Disable XLIFF tasks -->
     <UsingToolXliff>false</UsingToolXliff>
+    <!-- Allow missing prune package data when not targeting the current .NET version -->
+    <AllowMissingPrunePackageData Condition="'$(DefaultNetCoreTargetFramework)' != '$(NetCurrent)'">true</AllowMissingPrunePackageData>
   </PropertyGroup>
+
   <!--
     Versions below this comment are not managed by automation and can be changed as needed.
   -->
@@ -66,7 +73,7 @@
     <SystemBuffersVersion>4.6.1</SystemBuffersVersion>
     <SystemMemoryVersion>4.6.3</SystemMemoryVersion>
     <SystemThreadingTasksExtensionsVersion>4.6.3</SystemThreadingTasksExtensionsVersion>
-    <SystemValueTupleVersion>4.6.1</SystemValueTupleVersion>
+    <SystemValueTupleVersion>4.6.2</SystemValueTupleVersion>
     <!-- DiagnosticAdapter package pinned temporarily (??) until migrated/deprecated -->
     <!-- This is the latest version found in dotnet-public. -->
     <MicrosoftExtensionsDiagnosticAdapterVersion>5.0.0-preview.3.20215.2</MicrosoftExtensionsDiagnosticAdapterVersion>
@@ -92,20 +99,8 @@
     <MicrosoftAzureSignalRVersion>1.2.0</MicrosoftAzureSignalRVersion>
     <MicrosoftBuildLocatorVersion>1.2.6</MicrosoftBuildLocatorVersion>
     <!--
-      Temporarily override the Microsoft.NET.Test.Sdk version Arcade defaults to. That's incompatible w/ test
-      framework in current .NET SDKs.
-    -->
-    <MicrosoftNETTestSdkVersion>17.1.0-preview-20211109-03</MicrosoftNETTestSdkVersion>
-    <!--
-      Also use a newer, publicly-released version of the templating engine than the Arcade default.
-      https://github.com/dotnet/templating/blob/main/docs/Localization.md recommends updating the version when
-      preview or stable versions are released to NuGet.org.
-    -->
-    <MicrosoftTemplateEngineAuthoringTasksVersion>8.0.100-alpha.1.22607.1</MicrosoftTemplateEngineAuthoringTasksVersion>
-    <!--
       Versions of Microsoft.CodeAnalysis packages referenced by analyzers shipped in the SDK.
       This need to be pinned since they're used in 3.1 apps and need to be loadable in VS 2019.
-      If you update these versions, make sure to also update https://github.com/dotnet/aspnetcore/blob/main/eng/SourceBuildPrebuiltBaseline.xml
     -->
     <Analyzer_MicrosoftCodeAnalysisCSharpVersion>3.3.1</Analyzer_MicrosoftCodeAnalysisCSharpVersion>
     <Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion>3.3.1</Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion>
@@ -116,6 +111,9 @@
     <MicrosoftCodeAnalysisCSharpAnalyzerTestingVersion>1.1.2</MicrosoftCodeAnalysisCSharpAnalyzerTestingVersion>
     <MicrosoftCodeAnalysisCSharpCodeFixTestingVersion>1.1.2</MicrosoftCodeAnalysisCSharpCodeFixTestingVersion>
     <MicrosoftCodeAnalysisCSharpSourceGeneratorsTestingVersion>1.1.2</MicrosoftCodeAnalysisCSharpSourceGeneratorsTestingVersion>
+    <!-- Specifies the version of Roslyn that should be referenced by source generators.
+         This gets overriden by source-build, separately from MicrosoftCodeAnalysisVersion_LatestVS. -->
+    <MicrosoftCodeAnalysisSourceGeneratorVersion>$(MicrosoftCodeAnalysisVersion_LatestVS)</MicrosoftCodeAnalysisSourceGeneratorVersion>
     <MicrosoftCssParserVersion>1.0.0-20230414.1</MicrosoftCssParserVersion>
     <MicrosoftIdentityModelLoggingVersion>$(IdentityModelVersion)</MicrosoftIdentityModelLoggingVersion>
     <MicrosoftIdentityModelProtocolsOpenIdConnectVersion>$(IdentityModelVersion)</MicrosoftIdentityModelProtocolsOpenIdConnectVersion>
@@ -151,24 +149,31 @@
     <GrpcNetClientVersion>2.64.0</GrpcNetClientVersion>
     <GrpcToolsVersion>2.64.0</GrpcToolsVersion>
     <MessagePackVersion>2.5.187</MessagePackVersion>
-    <MicrosoftIdentityWebVersion>3.0.0</MicrosoftIdentityWebVersion>
-    <MicrosoftIdentityWebGraphServiceClientVersion>3.0.0</MicrosoftIdentityWebGraphServiceClientVersion>
-    <MicrosoftIdentityWebUIVersion>3.0.0</MicrosoftIdentityWebUIVersion>
-    <MicrosoftIdentityWebDownstreamApiVersion>3.0.0</MicrosoftIdentityWebDownstreamApiVersion>
-    <MicrosoftWindowsCsWin32Version>0.3.46-beta</MicrosoftWindowsCsWin32Version>
+    <!-- Extensions packages for Blazor WASM Service Defaults -->
+    <MicrosoftExtensionsHttpResilienceVersion>10.0.0</MicrosoftExtensionsHttpResilienceVersion>
+    <MicrosoftIdentityWebVersion>3.14.1</MicrosoftIdentityWebVersion>
+    <MicrosoftIdentityWebGraphServiceClientVersion>3.14.1</MicrosoftIdentityWebGraphServiceClientVersion>
+    <MicrosoftIdentityWebUIVersion>3.14.1</MicrosoftIdentityWebUIVersion>
+    <MicrosoftIdentityWebDownstreamApiVersion>3.14.1</MicrosoftIdentityWebDownstreamApiVersion>
+    <MicrosoftWindowsCsWin32Version>0.3.269</MicrosoftWindowsCsWin32Version>
     <MessagePackAnalyzerVersion>$(MessagePackVersion)</MessagePackAnalyzerVersion>
     <MoqVersion>4.10.0</MoqVersion>
     <MonoCecilVersion>0.11.2</MonoCecilVersion>
     <MonoTextTemplatingVersion>2.2.1</MonoTextTemplatingVersion>
     <NewtonsoftJsonBsonVersion>1.0.2</NewtonsoftJsonBsonVersion>
-    <NewtonsoftJsonVersion>13.0.3</NewtonsoftJsonVersion>
+    <NewtonsoftJsonVersion>13.0.4</NewtonsoftJsonVersion>
     <NSwagApiDescriptionClientVersion>13.0.4</NSwagApiDescriptionClientVersion>
+    <!-- OpenTelemetry packages for Blazor WASM Service Defaults -->
+    <OpenTelemetryExporterOpenTelemetryProtocolVersion>1.15.0</OpenTelemetryExporterOpenTelemetryProtocolVersion>
+    <OpenTelemetryExtensionsHostingVersion>1.15.0</OpenTelemetryExtensionsHostingVersion>
+    <OpenTelemetryInstrumentationHttpVersion>1.15.0</OpenTelemetryInstrumentationHttpVersion>
+    <OpenTelemetryInstrumentationRuntimeVersion>1.15.0</OpenTelemetryInstrumentationRuntimeVersion>
     <PhotinoNETVersion>2.5.2</PhotinoNETVersion>
-    <MicrosoftPlaywrightVersion>1.54.0</MicrosoftPlaywrightVersion>
+    <MicrosoftPlaywrightVersion>1.58.0</MicrosoftPlaywrightVersion>
     <PollyExtensionsHttpVersion>3.0.0</PollyExtensionsHttpVersion>
     <PollyVersion>7.2.4</PollyVersion>
-    <SeleniumSupportVersion>4.35.0</SeleniumSupportVersion>
-    <SeleniumWebDriverVersion>4.35.0</SeleniumWebDriverVersion>
+    <SeleniumSupportVersion>4.41.0</SeleniumSupportVersion>
+    <SeleniumWebDriverVersion>4.41.0</SeleniumWebDriverVersion>
     <SerilogExtensionsLoggingVersion>1.4.0</SerilogExtensionsLoggingVersion>
     <SerilogSinksFileVersion>4.0.0</SerilogSinksFileVersion>
     <StackExchangeRedisVersion>2.7.27</StackExchangeRedisVersion>
@@ -183,12 +188,20 @@
     <XunitExtensibilityCoreVersion>$(XunitVersion)</XunitExtensibilityCoreVersion>
     <XunitExtensibilityExecutionVersion>$(XunitVersion)</XunitExtensibilityExecutionVersion>
     <XUnitRunnerVisualStudioVersion>3.1.3</XUnitRunnerVisualStudioVersion>
-    <MicrosoftDataSqlClientVersion>5.2.2</MicrosoftDataSqlClientVersion>
-    <MicrosoftOpenApiVersion>2.0.0</MicrosoftOpenApiVersion>
-    <MicrosoftOpenApiYamlReaderVersion>2.0.0</MicrosoftOpenApiYamlReaderVersion>
+    <!-- xUnit v3 packages (used by Components.Testing E2E infrastructure) -->
+    <XunitV3Version>3.2.2</XunitV3Version>
+    <XunitV3ExtensibilityCoreVersion>$(XunitV3Version)</XunitV3ExtensibilityCoreVersion>
+    <MicrosoftPlaywrightXunitV3Version>1.58.0</MicrosoftPlaywrightXunitV3Version>
+    <!-- Components.Testing dependencies -->
+    <YarpReverseProxyVersion>2.3.0</YarpReverseProxyVersion>
+    <MicrosoftDataSqlClientVersion>7.0.0</MicrosoftDataSqlClientVersion>
+    <MicrosoftDataSqlClientExtensionsAzureVersion>1.0.0</MicrosoftDataSqlClientExtensionsAzureVersion>
+    <MicrosoftOpenApiVersion>3.3.1</MicrosoftOpenApiVersion>
+    <MicrosoftOpenApiYamlReaderVersion>3.3.1</MicrosoftOpenApiYamlReaderVersion>
     <!-- dotnet tool versions (see also auto-updated DotnetEfVersion property). -->
     <DotnetDumpVersion>6.0.322601</DotnetDumpVersion>
     <DotnetServeVersion>1.10.93</DotnetServeVersion>
     <MicrosoftPlaywrightCLIVersion>1.2.3</MicrosoftPlaywrightCLIVersion>
   </PropertyGroup>
+
 </Project>

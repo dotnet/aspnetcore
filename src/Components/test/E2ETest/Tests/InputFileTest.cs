@@ -196,6 +196,31 @@ public class InputFileTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Browser.Equal("Supplied file with size 32 bytes exceeds the maximum of 10 bytes.", () => exceptionMessage.Text);
     }
 
+    [Fact]
+    public void CanClearFilesByInvokingCancelEvent()
+    {
+        // Upload a file first
+        var file = TempFile.Create(_tempDirectory, "txt", "This is a test file.");
+        var inputFile = Browser.Exists(By.Id("input-file"));
+        inputFile.SendKeys(file.Path);
+
+        // Verify the file was uploaded
+        var fileContainer = Browser.Exists(By.Id($"file-{file.Name}"));
+
+        // Get the file count element
+        var fileCount = Browser.Exists(By.Id("file-count"));
+        Browser.Equal("1", () => fileCount.Text);
+
+        // Trigger the cancel event via JavaScript to simulate canceling the file dialog
+        Browser.ExecuteJavaScript(@"
+            const inputElement = document.getElementById('input-file');
+            inputElement.dispatchEvent(new Event('cancel'));
+        ");
+
+        // Wait a moment for the event to be processed and verify the file list was cleared
+        Browser.Equal("0", () => Browser.Exists(By.Id("file-count")).Text);
+    }
+
     public void Dispose()
     {
         Directory.Delete(_tempDirectory, recursive: true);

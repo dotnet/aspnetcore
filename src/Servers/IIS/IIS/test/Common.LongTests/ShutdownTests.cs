@@ -27,6 +27,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 // Contains all tests related to shutdown, including app_offline, abort, and app recycle
 [Collection(PublishedSitesCollection.Name)]
+#if NEWSHIM_FUNCTIONALS
+[QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
+#endif
 public class ShutdownTests : IISFunctionalTestBase
 {
     public ShutdownTests(PublishedSitesFixture fixture) : base(fixture)
@@ -34,7 +37,6 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52676")]
     public async Task ShutdownTimeoutIsApplied()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -477,10 +479,21 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
+    [RequiresNewShim]
     public async Task ConfigurationChangeCanBeIgnoredInProcess()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
         deploymentParameters.HandlerSettings["disallowRotationOnConfigChange"] = "true";
+
+        if (deploymentParameters.ServerType == ServerType.IISExpress)
+        {
+            // IISExpress seems to call OnGlobalApplicationStop after config changes
+            // In theory we might be able to store a bool if OnGlobalConfigurationChange is called
+            // and reset it in OnGlobalApplicationStop and ignore the current OnGlobalApplicationStop call
+            // But that seems a little risky, so I'd prefer not doing that as this probably isn't
+            // an important user scenario
+            return;
+        }
 
         var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -491,16 +504,21 @@ public class ShutdownTests : IISFunctionalTestBase
         // Just "touching" web.config should be enough
         deploymentResult.ModifyWebConfig(element => { });
 
-        // Have to retry here to allow ANCM to receive notification and react to it
-        // Verify that worker process does not get restarted with new process id
-        await deploymentResult.HttpClient.RetryRequestAsync("/ProcessId", async r => await r.Content.ReadAsStringAsync() == processBefore);
+        // need some reasonable delay here to ensure the app has time to react to the file change notification
+        // In this case it should ignore it, but it's hard to test that the app doesn't do anything in reaction to the file change.
+        for (var i = 0; i < 2000; i++)
+        {
+            using var res = await deploymentResult.HttpClient.GetAsync("/ProcessId");
+            await Task.Delay(1);
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+            Assert.Equal(processBefore, await res.Content.ReadAsStringAsync());
+        }
     }
 
     [ConditionalFact]
     public async Task AppHostConfigurationChangeIsIgnoredInProcess()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
-        deploymentParameters.HandlerSettings["disallowRotationOnConfigChange"] = "true";
 
         var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -511,9 +529,15 @@ public class ShutdownTests : IISFunctionalTestBase
         // Just "touching" applicationHost.config should be enough
         _deployer.ModifyApplicationHostConfig(element => { });
 
-        // Have to retry here to allow ANCM to receive notification and react to it
-        // Verify that worker process does not get restarted with new process id
-        await deploymentResult.HttpClient.RetryRequestAsync("/ProcessId", async r => await r.Content.ReadAsStringAsync() == processBefore);
+        // need some reasonable delay here to ensure the app has time to react to the file change notification
+        // In this case it should ignore it, but it's hard to test that the app doesn't do anything in reaction to the file change.
+        for (var i = 0; i < 2000; i++)
+        {
+            using var res = await deploymentResult.HttpClient.GetAsync("/ProcessId");
+            await Task.Delay(1);
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+            Assert.Equal(processBefore, await res.Content.ReadAsStringAsync());
+        }
     }
 
     [ConditionalFact]
@@ -535,7 +559,6 @@ public class ShutdownTests : IISFunctionalTestBase
         await deploymentResult.HttpClient.RetryRequestAsync("/ProcessId", async r => await r.Content.ReadAsStringAsync() == processBefore);
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/55937")]
     [ConditionalFact]
     public async Task OutOfProcessToInProcessHostingModelSwitchWorks()
     {

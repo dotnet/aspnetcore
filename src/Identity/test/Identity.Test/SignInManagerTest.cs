@@ -486,6 +486,168 @@ public class SignInManagerTest
             ]));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanRequireConfirmedEmailForPasskeySignIn(bool confirmed)
+    {
+        // Setup
+        var user = new PocoUser { UserName = "Foo" };
+        var passkey = new UserPasskeyInfo(null, null, default, 0, null, false, false, false, null, null);
+        var assertionResult = PasskeyAssertionResult.Success(passkey, user);
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        passkeyHandler
+            .Setup(h => h.MakeRequestOptionsAsync(user, It.IsAny<HttpContext>()))
+            .Returns(Task.FromResult(new PasskeyRequestOptionsResult
+            {
+                AssertionState = "<some-assertion-state>",
+                RequestOptionsJson = "<some-options-json>",
+            }));
+        passkeyHandler
+            .Setup(h => h.PerformAssertionAsync(It.IsAny<PasskeyAssertionContext>()))
+            .Returns(Task.FromResult(assertionResult));
+        var manager = SetupUserManager(user, passkeyHandler: passkeyHandler.Object);
+        manager.Setup(m => m.IsEmailConfirmedAsync(user)).ReturnsAsync(confirmed).Verifiable();
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        if (confirmed)
+        {
+            manager
+                .Setup(m => m.AddOrUpdatePasskeyAsync(user, passkey))
+                .Returns(Task.FromResult(IdentityResult.Success))
+                .Verifiable();
+            SetupSignIn(context, auth, user.Id, isPersistent: false, loginProvider: null);
+        }
+        SetupPasskeyAuth(context, auth);
+
+        var identityOptions = new IdentityOptions();
+        identityOptions.SignIn.RequireConfirmedEmail = true;
+        var logger = new TestLogger<SignInManager<PocoUser>>();
+        var helper = SetupSignInManager(manager.Object, context, logger, identityOptions);
+
+        // Act
+        await helper.MakePasskeyRequestOptionsAsync(user);
+        var signInResult = await helper.PasskeySignInAsync(credentialJson: "<some-passkey>");
+
+        // Assert
+        Assert.Equal(confirmed, signInResult.Succeeded);
+        Assert.NotEqual(confirmed, signInResult.IsNotAllowed);
+
+        var message = $"User cannot sign in without a confirmed email.";
+        if (!confirmed)
+        {
+            Assert.Contains(message, logger.LogMessages);
+        }
+        else
+        {
+            Assert.DoesNotContain(message, logger.LogMessages);
+        }
+
+        manager.Verify();
+        auth.Verify();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanRequireConfirmedPhoneNumberForPasskeySignIn(bool confirmed)
+    {
+        // Setup
+        var user = new PocoUser { UserName = "Foo" };
+        var passkey = new UserPasskeyInfo(null, null, default, 0, null, false, false, false, null, null);
+        var assertionResult = PasskeyAssertionResult.Success(passkey, user);
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        passkeyHandler
+            .Setup(h => h.MakeRequestOptionsAsync(user, It.IsAny<HttpContext>()))
+            .Returns(Task.FromResult(new PasskeyRequestOptionsResult
+            {
+                AssertionState = "<some-assertion-state>",
+                RequestOptionsJson = "<some-options-json>",
+            }));
+        passkeyHandler
+            .Setup(h => h.PerformAssertionAsync(It.IsAny<PasskeyAssertionContext>()))
+            .Returns(Task.FromResult(assertionResult));
+        var manager = SetupUserManager(user, passkeyHandler: passkeyHandler.Object);
+        manager.Setup(m => m.IsPhoneNumberConfirmedAsync(user)).ReturnsAsync(confirmed).Verifiable();
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        if (confirmed)
+        {
+            manager
+                .Setup(m => m.AddOrUpdatePasskeyAsync(user, passkey))
+                .Returns(Task.FromResult(IdentityResult.Success))
+                .Verifiable();
+            SetupSignIn(context, auth, user.Id, isPersistent: false, loginProvider: null);
+        }
+        SetupPasskeyAuth(context, auth);
+
+        var identityOptions = new IdentityOptions();
+        identityOptions.SignIn.RequireConfirmedPhoneNumber = true;
+        var logger = new TestLogger<SignInManager<PocoUser>>();
+        var helper = SetupSignInManager(manager.Object, context, logger, identityOptions);
+
+        // Act
+        await helper.MakePasskeyRequestOptionsAsync(user);
+        var signInResult = await helper.PasskeySignInAsync(credentialJson: "<some-passkey>");
+
+        // Assert
+        Assert.Equal(confirmed, signInResult.Succeeded);
+        Assert.NotEqual(confirmed, signInResult.IsNotAllowed);
+
+        var message = $"User cannot sign in without a confirmed phone number.";
+        if (!confirmed)
+        {
+            Assert.Contains(message, logger.LogMessages);
+        }
+        else
+        {
+            Assert.DoesNotContain(message, logger.LogMessages);
+        }
+
+        manager.Verify();
+        auth.Verify();
+    }
+
+    [Fact]
+    public async Task PasskeySignInReturnsLockedOutWhenLockedOut()
+    {
+        // Setup
+        var user = new PocoUser { UserName = "Foo" };
+        var passkey = new UserPasskeyInfo(null, null, default, 0, null, false, false, false, null, null);
+        var assertionResult = PasskeyAssertionResult.Success(passkey, user);
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        passkeyHandler
+            .Setup(h => h.MakeRequestOptionsAsync(user, It.IsAny<HttpContext>()))
+            .Returns(Task.FromResult(new PasskeyRequestOptionsResult
+            {
+                AssertionState = "<some-assertion-state>",
+                RequestOptionsJson = "<some-options-json>",
+            }));
+        passkeyHandler
+            .Setup(h => h.PerformAssertionAsync(It.IsAny<PasskeyAssertionContext>()))
+            .Returns(Task.FromResult(assertionResult));
+        var manager = SetupUserManager(user, passkeyHandler: passkeyHandler.Object);
+        manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
+        manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(true).Verifiable();
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        SetupPasskeyAuth(context, auth);
+
+        var logger = new TestLogger<SignInManager<PocoUser>>();
+        var helper = SetupSignInManager(manager.Object, context, logger);
+
+        // Act
+        await helper.MakePasskeyRequestOptionsAsync(user);
+        var signInResult = await helper.PasskeySignInAsync(credentialJson: "<some-passkey>");
+
+        // Assert
+        Assert.False(signInResult.Succeeded);
+        Assert.True(signInResult.IsLockedOut);
+        Assert.Contains($"User is currently locked out.", logger.LogMessages);
+        manager.Verify();
+        auth.Verify();
+    }
+
     private static void SetupPasskeyAuth(HttpContext context, Mock<IAuthenticationService> auth)
     {
         // Calling AuthenticateAsync will return a failure result

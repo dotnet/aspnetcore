@@ -35,9 +35,9 @@
 ~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.Equals(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute other) -> bool
 ~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.MoveTo(Microsoft.AspNetCore.Html.IHtmlContentBuilder destination) -> void
 ~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.Name.get -> string
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.TagHelperAttribute(string name) -> void
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.TagHelperAttribute(string name, object value) -> void
 ~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.TagHelperAttribute(string name, object value, Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle valueStyle) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.TagHelperAttribute(string name, object value) -> void
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.TagHelperAttribute(string name) -> void
 ~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.Value.get -> object
 ~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute.WriteTo(System.IO.TextWriter writer, System.Text.Encodings.Web.HtmlEncoder encoder) -> void
 ~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttributeList.Add(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute attribute) -> void
@@ -68,8 +68,8 @@
 ~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.Content.get -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
 ~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.Content.set -> void
 ~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.GetChildContentAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>
-~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.GetChildContentAsync(bool useCachedResult) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>
 ~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.GetChildContentAsync(bool useCachedResult, System.Text.Encodings.Web.HtmlEncoder encoder) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>
+~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.GetChildContentAsync(bool useCachedResult) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>
 ~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.GetChildContentAsync(System.Text.Encodings.Web.HtmlEncoder encoder) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent>
 ~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.PostContent.get -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent
 ~Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput.PostElement.get -> Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContent

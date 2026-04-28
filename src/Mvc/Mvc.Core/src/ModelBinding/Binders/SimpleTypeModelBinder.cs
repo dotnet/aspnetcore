@@ -107,7 +107,7 @@ public class SimpleTypeModelBinder : IModelBinder
     /// <summary>
     /// If the <paramref name="model" /> is <see langword="null" />, verifies that it is allowed to be <see langword="null" />,
     /// otherwise notifies the <see cref="P:ModelBindingContext.ModelState" /> about the invalid <paramref name="valueProviderResult" />.
-    /// Sets the <see href="P:ModelBindingContext.Result" /> to the <paramref name="model" /> if successful.
+    /// Sets the <see cref="P:ModelBindingContext.Result" /> to the <paramref name="model" /> if successful.
     /// </summary>
     protected virtual void CheckModel(
         ModelBindingContext bindingContext,

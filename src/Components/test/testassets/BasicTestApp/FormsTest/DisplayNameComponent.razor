@@ -1,0 +1,35 @@
+@using System.ComponentModel
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<div>
+    <p id="product-name-label"><DisplayName For="@(() => _product.Name)" /></p>
+    <p id="price-label"><DisplayName For="@(() => _product.Price)" /></p>
+    <p id="stock-label"><DisplayName For="@(() => _product.StockQuantity)" /></p>
+    <p id="description-label"><DisplayName For="@(() => _product.Description)" /></p>
+    <p id="localized-label"><DisplayName For="@(() => _product.LocalizedName)" /></p>
+</div>
+
+@code {
+    private Product _product = new Product();
+
+    class Product
+    {
+        [Display(Name = "Product Name")]
+        public string Name { get; set; } = "Sample";
+
+        [DisplayName("Unit Price")]
+        public decimal Price { get; set; } = 99.99m;
+
+        [Display(Name = "Stock Quantity")]
+        [DisplayName("Stock Amount")] // This should be ignored, Display takes precedence
+        public int StockQuantity { get; set; } = 100;
+
+        // No attributes - should fall back to property name
+        public string Description { get; set; } = "Test";
+
+        // Uses resource file for localization - will show "Product Name" in en-US, "Nom du produit" in fr-FR
+        [Display(Name = nameof(TestResources.ProductName), ResourceType = typeof(TestResources))]
+        public string LocalizedName { get; set; } = "Localized";
+    }
+}

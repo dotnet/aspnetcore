@@ -1,0 +1,39 @@
+﻿<!--
+    Copyright (c) Microsoft Corporation. All rights reserved.
+    Licensed under the MIT license.
+-->
+
+<Include xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+<!-- This is the old fragment:
+
+  <Fragment Id="Fragment.IIS.OOB.Common.ShortcutConsoleProperties">
+
+To add this to your wxs file, add:
+
+    <?include $(PROJECT_ROOT)\setup\iisca\wix5\filename.wxi ?>
+
+-->
+
+    <CustomAction Id="ScheduleSetConsoleProperties" DllEntry="ScheduleSetConsolePropertiesCA" Execute="immediate" Return="check" BinaryRef="IISCustomActionDll" />
+    
+    <!-- Deferred custom actions scheduled by the immediate actions above -->
+    <CustomAction Id="ExecuteSetConsoleProperties" DllEntry="ExecuteSetConsolePropertiesCA" Execute="deferred" Return="check" Impersonate="no" BinaryRef="IISCustomActionDll" />
+    
+    <CustomTable Id="IISShortcutConsoleProperties">
+      <!--<Column Id='Name' Type='string' PrimaryKey='yes' />-->
+      <Column Id="Shortcut_" Type="string" PrimaryKey="yes" KeyTable="Shortcut" KeyColumn="1" Category="identifier" Width="72" />
+      <Column Id="QuickEdit" Type="int" Width="2" MinValue="0" MaxValue="1" Nullable="no" />
+      <Column Id="InsertMode" Type="int" Width="2" MinValue="0" MaxValue="1" Nullable="no" />
+      <Column Id="WindowWidth" Type="int" Width="2" Nullable="no" />
+      <Column Id="WindowHeight" Type="int" Width="2" Nullable="no" />
+      <Column Id="BufferWidth" Type="int" Width="2" Nullable="no" />
+      <Column Id="BufferHeight" Type="int" Width="2" Nullable="no" />
+      <!--<Column Id="TextColor" Type="string"  Width="11" Nullable="yes"/>
+      <Column Id="BackgroundColor" Type="string" Width="11" Nullable="yes" Category="Formatted"/>-->
+    </CustomTable>
+    
+    <InstallExecuteSequence>
+      <Custom Action="ScheduleSetConsoleProperties" After="CreateShortcuts" Condition="NOT SKIPSETCONSOLEPROPERTIES" />
+    </InstallExecuteSequence>
+</Include>

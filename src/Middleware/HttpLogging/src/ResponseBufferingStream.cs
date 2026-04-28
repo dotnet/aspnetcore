@@ -6,18 +6,19 @@ using System.IO.Pipelines;
 using System.Text;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.HttpLogging;
 
 internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBodyFeature
 {
-    private readonly IHttpResponseBodyFeature _innerBodyFeature;
+    private IHttpResponseBodyFeature _innerBodyFeature = null!;
     private int _limit;
     private PipeWriter? _pipeAdapter;
 
-    private readonly HttpLoggingInterceptorContext _logContext;
-    private readonly HttpLoggingOptions _options;
-    private readonly IHttpLoggingInterceptor[] _interceptors;
+    private HttpLoggingInterceptorContext _logContext = null!;
+    private HttpLoggingOptions _options = null!;
+    private IHttpLoggingInterceptor[] _interceptors = [];
     private bool _logBody;
     private bool _hasLogged;
     private Encoding? _encoding;
@@ -25,18 +26,60 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
 
     private static readonly StreamPipeWriterOptions _pipeWriterOptions = new StreamPipeWriterOptions(leaveOpen: true);
 
-    internal ResponseBufferingStream(IHttpResponseBodyFeature innerBodyFeature,
+    /// <summary>
+    /// Parameterless constructor for object pooling.
+    /// </summary>
+    internal ResponseBufferingStream()
+        : base(Stream.Null, NullLogger.Instance)
+    {
+    }
+
+    /// <summary>
+    /// Initializes the stream for a new request. Call this after obtaining from the pool.
+    /// </summary>
+    internal void Initialize(
+        IHttpResponseBodyFeature innerBodyFeature,
         ILogger logger,
         HttpLoggingInterceptorContext logContext,
         HttpLoggingOptions options,
         IHttpLoggingInterceptor[] interceptors)
-        : base(innerBodyFeature.Stream, logger)
     {
         _innerBodyFeature = innerBodyFeature;
         _innerStream = innerBodyFeature.Stream;
+        _logger = logger;
         _logContext = logContext;
         _options = options;
         _interceptors = interceptors;
+        // Reset transient state
+        _limit = 0;
+        _pipeAdapter = null;
+        _logBody = false;
+        _hasLogged = false;
+        _encoding = null;
+        _bodyBeforeClose = null;
+        HeadersWritten = false;
+    }
+
+    /// <summary>
+    /// Resets the stream state for returning to the pool.
+    /// </summary>
+    internal void ResetForPool()
+    {
+        _innerBodyFeature = null!;
+        _innerStream = Stream.Null;
+        _logger = NullLogger.Instance;
+        _logContext = null!;
+        _options = null!;
+        _interceptors = [];
+        _pipeAdapter = null;
+        _encoding = null;
+        _bodyBeforeClose = null;
+        _limit = 0;
+        _logBody = false;
+        _hasLogged = false;
+        HeadersWritten = false;
+        // Reset base class buffer state
+        Reset();
     }
 
     public bool HeadersWritten { get; private set; }

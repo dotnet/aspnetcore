@@ -21,10 +21,16 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
 
     private readonly int _maxAccepts;
 
-    private volatile int _stopping;
+    // Shutdown coordination - _acceptLoopCount and _acceptLoopsTcs protected by _shutdownLock
+    private readonly Lock _shutdownLock = new();
+    private volatile bool _stopping; // Volatile for lock-free reads in hot path
+    private int _acceptLoopCount;
+    private readonly TaskCompletionSource _acceptLoopsCompleted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private Task? _stopTask;
+
+    // Request counting - lock-free for performance (hot path)
     private int _outstandingRequests;
-    private readonly TaskCompletionSource _shutdownSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-    private int _shutdownSignalCompleted;
+    private readonly TaskCompletionSource _requestsDrained = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     private readonly ServerAddressesFeature _serverAddresses;
 
@@ -60,7 +66,7 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
 
     public IFeatureCollection Features { get; }
 
-    internal bool Stopping => _stopping == 1;
+    internal bool Stopping => _stopping;
 
     public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken) where TContext : notnull
     {
@@ -147,12 +153,22 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
 
     internal int DecrementOutstandingRequest()
     {
-        return Interlocked.Decrement(ref _outstandingRequests);
-    }
+        var count = Interlocked.Decrement(ref _outstandingRequests);
 
-    internal void SetShutdownSignal()
-    {
-        _shutdownSignal.TrySetResult();
+        if (count == 0)
+        {
+            lock (_shutdownLock)
+            {
+                // Only signal after accept loops have completed to prevent early signaling
+                // while new requests can still be accepted.
+                if (_acceptLoopCount == 0)
+                {
+                    _requestsDrained.TrySetResult();
+                }
+            }
+        }
+
+        return count;
     }
 
     // The message pump.
@@ -163,6 +179,15 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
     {
         Debug.Assert(RequestContextFactory != null);
 
+        lock (_shutdownLock)
+        {
+            if (_stopping)
+            {
+                return;
+            }
+            _acceptLoopCount++;
+        }
+
         // Allocate and accept context per loop and reuse it for all accepts
         var acceptContext = new AsyncAcceptContext(Listener, RequestContextFactory, _logger);
 
@@ -171,46 +196,61 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
         ThreadPool.UnsafeQueueUserWorkItem(loop, preferLocal: false);
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    public async Task StopAsync(CancellationToken cancellationToken)
     {
-        void RegisterCancelation()
+        Task shutdownTask;
+        lock (_shutdownLock)
         {
-            cancellationToken.Register(() =>
+            if (_stopTask is not null)
             {
-                if (Interlocked.Exchange(ref _shutdownSignalCompleted, 1) == 0)
-                {
-                    Log.StopCancelled(_logger, _outstandingRequests);
-                    _shutdownSignal.TrySetResult();
-                }
-            });
-        }
-
-        if (Interlocked.Exchange(ref _stopping, 1) == 1)
-        {
-            RegisterCancelation();
-
-            return _shutdownSignal.Task;
-        }
-
-        try
-        {
-            // Wait for active requests to drain
-            if (_outstandingRequests > 0)
-            {
-                Log.WaitingForRequestsToDrain(_logger, _outstandingRequests);
-                RegisterCancelation();
+                shutdownTask = _stopTask;
             }
             else
             {
-                _shutdownSignal.TrySetResult();
+                _stopping = true;
+
+                // If no accept loops were started, signal completion immediately
+                if (_acceptLoopCount == 0)
+                {
+                    _acceptLoopsCompleted.TrySetResult();
+                }
+
+                _stopTask = shutdownTask = StopAsyncCore();
             }
         }
-        catch (Exception ex)
+
+        // Register cancellation for all callers (not just the first).
+        // Any caller's canceled token should unblock the shutdown.
+        using var registration = cancellationToken.Register(static state =>
         {
-            _shutdownSignal.TrySetException(ex);
+            var pump = (MessagePump)state!;
+            Log.StopCancelled(pump._logger, pump._outstandingRequests);
+            pump._requestsDrained.TrySetResult();
+        }, this);
+
+        await shutdownTask.ConfigureAwait(false);
+    }
+
+    private async Task StopAsyncCore()
+    {
+        // Shutdown the request queue to cancel pending accept operations.
+        // This will cause the accept loops to wake up with an error and exit.
+        Listener.RequestQueue.StopProcessingRequests();
+
+        // Wait for accept loops to complete before disposing the listener.
+        // This prevents a race where the BoundHandle is disposed while
+        // AsyncAcceptContext is still trying to use it for cleanup.
+        // After this completes, DecrementOutstandingRequest can signal _requestsDrained
+        // (it checks _acceptLoopCount).
+        await _acceptLoopsCompleted.Task.ConfigureAwait(false);
+
+        if (Interlocked.CompareExchange(ref _outstandingRequests, 0, 0) != 0)
+        {
+            Log.WaitingForRequestsToDrain(_logger, _outstandingRequests);
+            await _requestsDrained.Task.ConfigureAwait(false);
         }
 
-        return _shutdownSignal.Task;
+        Listener.Dispose();
     }
 
     public DelegationRule CreateDelegationRule(string queueName, string uri)
@@ -220,12 +260,21 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
         return rule;
     }
 
+    // Ungraceful shutdown
     public void Dispose()
     {
-        _stopping = 1;
-        _shutdownSignal.TrySetResult();
+        StopAsync(new CancellationToken(canceled: true)).GetAwaiter().GetResult();
+    }
 
-        Listener.Dispose();
+    private void AcceptLoopCompleted()
+    {
+        lock (_shutdownLock)
+        {
+            if (--_acceptLoopCount == 0)
+            {
+                _acceptLoopsCompleted.TrySetResult();
+            }
+        }
     }
 
     private sealed class AcceptLoop : IThreadPoolWorkItem
@@ -281,42 +330,48 @@ internal sealed partial class MessagePump : IServer, IServerDelegationFeature
                     continue;
                 }
 
+                // Increment BEFORE queuing to prevent race where the queued accept loop
+                // exits and signals completion before we've counted this request.
+                _messagePump.IncrementOutstandingRequest();
+
                 if (_preferInlineScheduling)
                 {
-                    try
-                    {
-                        await requestContext.ExecuteAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        // Request processing failed
-                        // Log the error message, release throttle and move on
-                        Log.RequestListenerProcessError(_messagePump._logger, ex);
-                    }
+                    await HandleRequest(requestContext);
                 }
                 else
                 {
-                    try
-                    {
-                        // Queue another accept before we execute the request
-                        ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
+                    // Queue another accept before we execute the request
+                    ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
 
-                        // Use this thread to start the execution of the request (avoid the double threadpool dispatch)
-                        await requestContext.ExecuteAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        // Request processing failed
-                        // Log the error message, release throttle and move on
-                        Log.RequestListenerProcessError(_messagePump._logger, ex);
-                    }
+                    await HandleRequest(requestContext);
 
                     // We're done with this thread, accept loop was continued via ThreadPool.UnsafeQueueUserWorkItem
                     return;
                 }
             }
 
+            // Only dispose and signal completion when the loop is actually done (not re-queued)
             _asyncAcceptContext.Dispose();
+            _messagePump.AcceptLoopCompleted();
+
+            async Task HandleRequest(RequestContext requestContext)
+            {
+                try
+                {
+                    // Use this thread to start the execution of the request (avoid the double threadpool dispatch)
+                    await requestContext.ExecuteAsync();
+                }
+                catch (Exception ex)
+                {
+                    // Request processing failed
+                    // Log the error message, release throttle and move on
+                    Log.RequestListenerProcessError(_messagePump._logger, ex);
+                }
+                finally
+                {
+                    _messagePump.DecrementOutstandingRequest();
+                }
+            }
         }
     }
 }

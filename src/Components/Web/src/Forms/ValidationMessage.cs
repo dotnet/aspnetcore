@@ -94,9 +94,6 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
 
     private void DetachValidationStateChangedListener()
     {
-        if (_previousEditContext != null)
-        {
-            _previousEditContext.OnValidationStateChanged -= _validationStateChangedHandler;
-        }
+        _previousEditContext?.OnValidationStateChanged -= _validationStateChangedHandler;
     }
 }

@@ -32,7 +32,10 @@ public class DenyAnonymousAuthorizationRequirement : AuthorizationHandler<DenyAn
         return Task.CompletedTask;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Returns a string representation of the requirement.
+    /// </summary>
+    /// <returns>A description of the anonymous-user restriction.</returns>
     public override string ToString()
     {
         return $"{nameof(DenyAnonymousAuthorizationRequirement)}: Requires an authenticated user.";

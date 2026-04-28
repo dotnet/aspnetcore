@@ -25,8 +25,8 @@ export type BlazorInitializer = {
 };
 
 export type JSAsset = {
-    moduleExports?: any | Promise<any>,
-    name?: string; // actually URL
+  moduleExports?: any | Promise<any>,
+  name?: string; // actually URL
 }
 
 export class JSInitializer {
@@ -90,7 +90,8 @@ export class JSInitializer {
 
       function runMultiRuntimeInitializers(
         jsInitializer: JSInitializer,
-        initializerModule: Partial<BlazorInitializer>, initializerArguments: unknown[]): void | PromiseLike<void> {
+        initializerModule: Partial<BlazorInitializer>, initializerArguments: unknown[]
+      ): void | PromiseLike<void> {
         const options = initializerArguments[0] as WebStartOptions;
         const { beforeStart, afterStarted, beforeWebStart, afterWebStarted, beforeWebAssemblyStart, afterWebAssemblyStarted, beforeServerStart, afterServerStarted } = initializerModule;
         const runtimeSpecificExports = !!(beforeWebStart || afterWebStarted || beforeWebAssemblyStart || afterWebAssemblyStarted || beforeServerStart || afterServerStarted);

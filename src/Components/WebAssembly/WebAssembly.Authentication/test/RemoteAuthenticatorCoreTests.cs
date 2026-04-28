@@ -371,37 +371,6 @@ public class RemoteAuthenticatorCoreTests
     }
 
     [Fact]
-    public async Task AuthenticationManager_Logout_RedirectsToFailureOnInvalidSignOutState()
-    {
-        // Arrange
-        var (remoteAuthenticator, renderer, authServiceMock) = CreateAuthenticationManager(
-            "https://www.example.com/base/authentication/logout",
-            new InteractiveRequestOptions { Interaction = InteractionType.SignIn, ReturnUrl = "https://www.example.com/base/fetchData" }.ToState());
-
-        if (remoteAuthenticator.SignOutManager is TestSignOutSessionStateManager testManager)
-        {
-            testManager.SignOutState = false;
-        }
-
-        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
-        {
-            [_action] = RemoteAuthenticationActions.LogOut
-        });
-
-        // Act
-        await renderer.Dispatcher.InvokeAsync<object>(() => remoteAuthenticator.SetParametersAsync(parameters));
-
-        // Assert
-        Assert.Equal(
-            "https://www.example.com/base/authentication/logout-failed",
-            remoteAuthenticator.Navigation.Uri);
-
-        Assert.Equal(
-            "The logout was not initiated from within the page.",
-            ((TestNavigationManager)remoteAuthenticator.Navigation).HistoryEntryState);
-    }
-
-    [Fact]
     public async Task AuthenticationManager_Logout_NavigatesToLogoutFailureOnError()
     {
         // Arrange
@@ -731,8 +700,6 @@ public class RemoteAuthenticatorCoreTests
             Mock.Of<IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>>>(),
             navigationManager);
 
-        remoteAuthenticator.SignOutManager = new TestSignOutSessionStateManager();
-
         remoteAuthenticator.AuthenticationService = authenticationServiceMock;
         remoteAuthenticator.AuthenticationProvider = authenticationServiceMock;
         return (remoteAuthenticator, renderer, authenticationServiceMock);
@@ -754,24 +721,6 @@ public class RemoteAuthenticatorCoreTests
             Uri = System.Uri.IsWellFormedUriString(uri, UriKind.Absolute) ? uri : new Uri(new Uri(BaseUri), uri).ToString();
             HistoryEntryState = options.HistoryEntryState;
         }
-    }
-
-#pragma warning disable CS0618 // Type or member is obsolete, we keep it for now for backwards compatibility
-    private class TestSignOutSessionStateManager : SignOutSessionStateManager
-#pragma warning restore CS0618 // Type or member is obsolete, we keep it for now for backwards compatibility
-    {
-        public TestSignOutSessionStateManager() : base(null)
-        {
-        }
-        public bool SignOutState { get; set; } = true;
-
-        public override ValueTask SetSignOutState()
-        {
-            SignOutState = true;
-            return default;
-        }
-
-        public override Task<bool> ValidateSignOutState() => Task.FromResult(SignOutState);
     }
 
     private class TestJsRuntime : IJSRuntime

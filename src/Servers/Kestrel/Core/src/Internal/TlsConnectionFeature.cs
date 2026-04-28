@@ -16,8 +16,22 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 {
     private readonly SslStream _sslStream;
     private readonly ConnectionContext _context;
+    private bool _snapshotted;
+
     private X509Certificate2? _clientCert;
     private Task<X509Certificate2?>? _clientCertTask;
+
+    private SslProtocols _protocol;
+    private TlsCipherSuite? _negotiatedCipherSuite;
+    private ReadOnlyMemory<byte> _applicationProtocol;
+#pragma warning disable SYSLIB0058 // Obsolete TLS cipher algorithm enums
+    private CipherAlgorithmType _cipherAlgorithm;
+    private int _cipherStrength;
+    private HashAlgorithmType _hashAlgorithm;
+    private int _hashStrength;
+    private ExchangeAlgorithmType _keyExchangeAlgorithm;
+    private int _keyExchangeStrength;
+#pragma warning restore SYSLIB0058
 
     public TlsConnectionFeature(SslStream sslStream, ConnectionContext context)
     {
@@ -26,6 +40,47 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 
         _sslStream = sslStream;
         _context = context;
+    }
+
+    /// <summary>
+    /// Captures all SslStream-backed property values so they remain accessible after the SslStream is disposed.
+    /// Must be called before disposing the SslStream.
+    /// </summary>
+    internal void Snapshot()
+    {
+        if (_snapshotted)
+        {
+            return;
+        }
+        _snapshotted = true;
+
+        if (_sslStream is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _protocol = _sslStream.SslProtocol;
+            _negotiatedCipherSuite = _sslStream.NegotiatedCipherSuite;
+            _applicationProtocol = _sslStream.NegotiatedApplicationProtocol.Protocol.ToArray();
+
+#pragma warning disable SYSLIB0058 // Obsolete TLS cipher algorithm enums
+            _cipherAlgorithm = _sslStream.CipherAlgorithm;
+            _cipherStrength = _sslStream.CipherStrength;
+            _hashAlgorithm = _sslStream.HashAlgorithm;
+            _hashStrength = _sslStream.HashStrength;
+            _keyExchangeAlgorithm = _sslStream.KeyExchangeAlgorithm;
+            _keyExchangeStrength = _sslStream.KeyExchangeStrength;
+#pragma warning restore SYSLIB0058
+
+            _clientCert ??= ConvertToX509Certificate2(_sslStream.RemoteCertificate);
+        }
+        catch
+        {
+            // If the handshake never completed, SslStream properties may throw.
+            // The snapshotted fields will retain their default values.
+        }
     }
 
     internal bool AllowDelayedClientCertificateNegotation { get; set; }
@@ -45,33 +100,35 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
 
     public string HostName { get; set; } = string.Empty;
 
-    public ReadOnlyMemory<byte> ApplicationProtocol => _sslStream.NegotiatedApplicationProtocol.Protocol;
+    public ReadOnlyMemory<byte> ApplicationProtocol => _snapshotted ? _applicationProtocol : _sslStream.NegotiatedApplicationProtocol.Protocol;
 
-    public SslProtocols Protocol => _sslStream.SslProtocol;
+    public SslProtocols Protocol => _snapshotted ? _protocol : _sslStream.SslProtocol;
 
     public SslStream SslStream => _sslStream;
 
-    // We don't store the values for these because they could be changed by a renegotiation.
+    public Exception? Exception { get; set; }
 
-    public TlsCipherSuite? NegotiatedCipherSuite => _sslStream.NegotiatedCipherSuite;
+    // After Snapshot() is called, all values are served from cached fields instead of the SslStream.
 
-    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
-    public CipherAlgorithmType CipherAlgorithm => _sslStream.CipherAlgorithm;
-
-    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
-    public int CipherStrength => _sslStream.CipherStrength;
+    public TlsCipherSuite? NegotiatedCipherSuite => _snapshotted ? _negotiatedCipherSuite : _sslStream.NegotiatedCipherSuite;
 
     [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
-    public HashAlgorithmType HashAlgorithm => _sslStream.HashAlgorithm;
+    public CipherAlgorithmType CipherAlgorithm => _snapshotted ? _cipherAlgorithm : _sslStream.CipherAlgorithm;
 
     [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
-    public int HashStrength => _sslStream.HashStrength;
+    public int CipherStrength => _snapshotted ? _cipherStrength : _sslStream.CipherStrength;
 
     [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
-    public ExchangeAlgorithmType KeyExchangeAlgorithm => _sslStream.KeyExchangeAlgorithm;
+    public HashAlgorithmType HashAlgorithm => _snapshotted ? _hashAlgorithm : _sslStream.HashAlgorithm;
 
     [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
-    public int KeyExchangeStrength => _sslStream.KeyExchangeStrength;
+    public int HashStrength => _snapshotted ? _hashStrength : _sslStream.HashStrength;
+
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
+    public ExchangeAlgorithmType KeyExchangeAlgorithm => _snapshotted ? _keyExchangeAlgorithm : _sslStream.KeyExchangeAlgorithm;
+
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
+    public int KeyExchangeStrength => _snapshotted ? _keyExchangeStrength : _sslStream.KeyExchangeStrength;
 
     public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
     {

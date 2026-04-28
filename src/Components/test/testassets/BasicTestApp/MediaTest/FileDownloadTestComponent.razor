@@ -1,0 +1,101 @@
+﻿@using System.IO
+@using Microsoft.AspNetCore.Components.Web.Media
+
+<h3>FileDownload Component Tests</h3>
+
+<div>
+    <h4>Test Controls</h4>
+    <button id="show-download" @onclick="ShowDownload">Show Download</button>
+    <button id="show-error-download" @onclick="ShowErrorDownload">Show Error Download</button>
+    <button id="show-blank-filename" @onclick="ShowBlankFilename">Show Blank Filename</button>
+    <button id="show-custom-href" @onclick="ShowCustomHref">Show Custom Href</button>
+    <button id="show-templated-download" @onclick="ShowTemplatedDownload">Show Templated Download</button>
+</div>
+
+@if (_showDownload)
+{
+    <FileDownload id="download-link" Source="@_downloadSource" FileName="@_downloadFileName" Text="Download File" />
+}
+@if (_showError)
+{
+    <FileDownload id="error-download-link" Source="@_errorSource" FileName="@_errorFileName" Text="Error File" />
+}
+@if (_showBlank)
+{
+    <FileDownload id="blank-download-link" Source="@_blankSource" FileName="@_blankFileName" Text="Blank File" />
+}
+@if (_showCustomHref)
+{
+    <FileDownload id="custom-href-download-link" Source="@_customHrefSource" FileName="@_customHrefFileName" Text="Custom Href" href="https://example.com/original" />
+}
+@if (_showTemplated)
+{
+    <FileDownload Source="@_templatedSource" FileName="@_templatedFileName" Context="fctx">
+        <div id="templated-download-wrapper" class="download-shell @(fctx.IsLoading ? "loading" : fctx.HasError ? "error" : "ready")">
+            <a id="templated-download-link" @ref="fctx.Element" href="javascript:void(0)" @onclick="() => fctx.InvokeAsync()">
+                <span id="templated-download-text">Download (templated)</span>
+            </a>
+            <span id="templated-download-status">@(fctx.IsLoading ? "Loading" : fctx.HasError ? "Error" : "Idle/Done")</span>
+        </div>
+    </FileDownload>
+}
+
+@code {
+    private bool _showDownload;
+    private bool _showError;
+    private bool _showBlank;
+    private bool _showCustomHref;
+    private bool _showTemplated;
+
+    private MediaSource _downloadSource = new MediaSource(new byte[0], string.Empty, string.Empty);
+    private MediaSource _errorSource = new MediaSource(new byte[0], string.Empty, string.Empty);
+    private MediaSource _blankSource = new MediaSource(new byte[0], string.Empty, string.Empty);
+    private MediaSource _customHrefSource = new MediaSource(new byte[0], string.Empty, string.Empty);
+    private MediaSource _templatedSource = new MediaSource(new byte[0], string.Empty, string.Empty);
+
+    private string _downloadFileName = string.Empty;
+    private string _errorFileName = string.Empty;
+    private string _blankFileName = string.Empty;
+    private string _customHrefFileName = string.Empty;
+    private string _templatedFileName = string.Empty;
+
+    private static readonly byte[] TestPngData = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjqK6u/g8ABVcCcYoGhmwAAAAASUVORK5CYII=");
+    private static readonly byte[] TestTxtData = System.Text.Encoding.UTF8.GetBytes("Hello file download");
+
+    private void ShowDownload()
+    {
+        _downloadSource = new MediaSource(TestPngData, "image/png", "download-png-basic");
+        _downloadFileName = "test.png";
+        _showDownload = true;
+    }
+
+    private void ShowErrorDownload()
+    {
+        var ms = new MemoryStream(TestTxtData);
+        ms.Seek(ms.Length, SeekOrigin.Begin); // Force immediate EOF / error in JS pipeline when reading
+        _errorSource = new MediaSource(ms, "text/plain", "error-file-key");
+        _errorFileName = "error.txt";
+        _showError = true;
+    }
+
+    private void ShowBlankFilename()
+    {
+        _blankSource = new MediaSource(TestTxtData, "text/plain", "blank-file-key");
+        _blankFileName = "";
+        _showBlank = true;
+    }
+
+    private void ShowCustomHref()
+    {
+        _customHrefSource = new MediaSource(TestTxtData, "text/plain", "custom-href-file-key");
+        _customHrefFileName = "custom.bin";
+        _showCustomHref = true;
+    }
+
+    private void ShowTemplatedDownload()
+    {
+        _templatedSource = new MediaSource(TestPngData, "image/png", "templated-download-file-key");
+        _templatedFileName = "templated.png";
+        _showTemplated = true;
+    }
+}

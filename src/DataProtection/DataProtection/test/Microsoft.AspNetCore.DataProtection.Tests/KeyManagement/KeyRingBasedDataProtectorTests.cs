@@ -1,18 +1,31 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Buffers;
+using System.Buffers.Binary;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
+using Microsoft.AspNetCore.DataProtection.Managed;
+#if NET
+using Microsoft.AspNetCore.DataProtection.Tests.Internal;
+#endif
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
+using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
@@ -46,8 +59,8 @@ public class KeyRingBasedDataProtectorTests
             .Setup(o => o.Encrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
             .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualPlaintext, actualAad) =>
             {
-                Assert.Equal(expectedPlaintext, actualPlaintext.AsSpan());
-                Assert.Equal(expectedAad, actualAad.AsSpan());
+                Assert.Equal(expectedPlaintext, actualPlaintext.AsSpan().ToArray());
+                Assert.Equal(expectedAad, actualAad.AsSpan().ToArray());
                 return new byte[] { 0x23, 0x29, 0x31, 0x37 }; // ciphertext + tag
             });
 
@@ -84,8 +97,8 @@ public class KeyRingBasedDataProtectorTests
             .Setup(o => o.Encrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
             .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualPlaintext, actualAad) =>
             {
-                Assert.Equal(expectedPlaintext, actualPlaintext.AsSpan());
-                Assert.Equal(expectedAad, actualAad.AsSpan());
+                Assert.Equal(expectedPlaintext, actualPlaintext.AsSpan().ToArray());
+                Assert.Equal(expectedAad, actualAad.AsSpan().ToArray());
                 return new byte[] { 0x23, 0x29, 0x31, 0x37 }; // ciphertext + tag
             });
 
@@ -424,8 +437,8 @@ public class KeyRingBasedDataProtectorTests
             .Setup(o => o.Decrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
             .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualCiphertext, actualAad) =>
             {
-                Assert.Equal(expectedCiphertext, actualCiphertext.AsSpan());
-                Assert.Equal(expectedAad, actualAad.AsSpan());
+                Assert.Equal(expectedCiphertext, actualCiphertext.AsSpan().ToArray());
+                Assert.Equal(expectedAad, actualAad.AsSpan().ToArray());
                 return expectedPlaintext;
             });
         var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
@@ -471,8 +484,8 @@ public class KeyRingBasedDataProtectorTests
             .Setup(o => o.Decrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
             .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualCiphertext, actualAad) =>
             {
-                Assert.Equal(expectedCiphertext, actualCiphertext.AsSpan());
-                Assert.Equal(expectedAad, actualAad.AsSpan());
+                Assert.Equal(expectedCiphertext, actualCiphertext.AsSpan().ToArray());
+                Assert.Equal(expectedAad, actualAad.AsSpan().ToArray());
                 return expectedPlaintext;
             });
         var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
@@ -520,8 +533,8 @@ public class KeyRingBasedDataProtectorTests
             .Setup(o => o.Decrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
             .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualCiphertext, actualAad) =>
             {
-                Assert.Equal(expectedCiphertext, actualCiphertext.AsSpan());
-                Assert.Equal(expectedAad, actualAad.AsSpan());
+                Assert.Equal(expectedCiphertext, actualCiphertext.AsSpan().ToArray());
+                Assert.Equal(expectedAad, actualAad.AsSpan().ToArray());
                 return expectedPlaintext;
             });
         var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
@@ -595,8 +608,8 @@ public class KeyRingBasedDataProtectorTests
             .Setup(o => o.Encrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
             .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualPlaintext, actualAad) =>
             {
-                Assert.Equal(expectedPlaintext, actualPlaintext.AsSpan());
-                Assert.Equal(expectedAad, actualAad.AsSpan());
+                Assert.Equal(expectedPlaintext, actualPlaintext.AsSpan().ToArray());
+                Assert.Equal(expectedAad, actualAad.AsSpan().ToArray());
                 return new byte[] { 0x23, 0x29, 0x31, 0x37 }; // ciphertext + tag
             });
 
@@ -618,6 +631,159 @@ public class KeyRingBasedDataProtectorTests
         // Assert
         Assert.Equal(expectedProtectedData, retVal);
     }
+
+#if NET
+    [Theory]
+    [InlineData("", EncryptionAlgorithm.AES_128_CBC, ValidationAlgorithm.HMACSHA256)]
+    [InlineData("small", EncryptionAlgorithm.AES_128_CBC, ValidationAlgorithm.HMACSHA256)]
+    [InlineData("This is a medium length plaintext message", EncryptionAlgorithm.AES_128_CBC, ValidationAlgorithm.HMACSHA256)]
+    [InlineData("This is a very long plaintext message that spans multiple blocks and should test the encryption and size estimation with larger payloads to ensure everything works correctly", EncryptionAlgorithm.AES_128_CBC, ValidationAlgorithm.HMACSHA256)]
+    [InlineData("small", EncryptionAlgorithm.AES_256_CBC, ValidationAlgorithm.HMACSHA256)]
+    [InlineData("This is a medium length plaintext message", EncryptionAlgorithm.AES_256_CBC, ValidationAlgorithm.HMACSHA512)]
+    [InlineData("small", EncryptionAlgorithm.AES_128_GCM, ValidationAlgorithm.HMACSHA256)]
+    [InlineData("This is a medium length plaintext message", EncryptionAlgorithm.AES_256_GCM, ValidationAlgorithm.HMACSHA256)]
+    public void GetProtectedSize_TryProtectUnprotect_CorrectlyEstimatesDataLength_MultipleScenarios(string plaintextStr, EncryptionAlgorithm encryptionAlgorithm, ValidationAlgorithm validationAlgorithm)
+    {
+        byte[] plaintext = Encoding.UTF8.GetBytes(plaintextStr);
+        var encryptorFactory = new AuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
+        
+        var configuration = new AuthenticatedEncryptorConfiguration
+        {
+            EncryptionAlgorithm = encryptionAlgorithm,
+            ValidationAlgorithm = validationAlgorithm
+        };
+        
+        Key key = new Key(Guid.NewGuid(), DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, configuration.CreateNewDescriptor(), new[] { encryptorFactory });
+        var keyRing = new KeyRing(key, [ key ]);
+        var mockKeyRingProvider = new Mock<IKeyRingProvider>();
+        mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(keyRing);
+
+        var protector = new KeyRingBasedSpanDataProtector(
+            keyRingProvider: mockKeyRingProvider.Object,
+            logger: GetLogger(),
+            originalPurposes: null,
+            newPurpose: "purpose");
+
+        RoundtripEncryptionHelpers.AssertTryProtectTryUnprotectParity(protector, plaintext);
+    }
+
+    [Theory]
+    [InlineData(16)]     // 16 bytes
+    [InlineData(32)]     // 32 bytes  
+    [InlineData(64)]     // 64 bytes
+    [InlineData(128)]    // 128 bytes
+    [InlineData(256)]    // 256 bytes
+    [InlineData(512)]    // 512 bytes
+    [InlineData(1024)]   // 1 KB
+    [InlineData(4096)]   // 4 KB
+    public void GetProtectedSize_TryProtect_VariousPlaintextSizes(int plaintextSize)
+    {
+        byte[] plaintext = new byte[plaintextSize];
+        for (int i = 0; i < plaintextSize; i++)
+        {
+            plaintext[i] = (byte)(i % 256);
+        }
+
+        var encryptorFactory = new AuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
+        Key key = new Key(Guid.NewGuid(), DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, new AuthenticatedEncryptorConfiguration().CreateNewDescriptor(), new[] { encryptorFactory });
+        var keyRing = new KeyRing(key, new[] { key });
+        var mockKeyRingProvider = new Mock<IKeyRingProvider>();
+        mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(keyRing);
+
+        var protector = new KeyRingBasedSpanDataProtector(
+            keyRingProvider: mockKeyRingProvider.Object,
+            logger: GetLogger(),
+            originalPurposes: null,
+            newPurpose: "purpose");
+
+        RoundtripEncryptionHelpers.AssertTryProtectTryUnprotectParity(protector, plaintext);
+    }
+
+    [Theory]
+    [InlineData(16)]     // 16 bytes
+    [InlineData(32)]     // 32 bytes  
+    [InlineData(64)]     // 64 bytes
+    [InlineData(128)]    // 128 bytes
+    [InlineData(256)]    // 256 bytes
+    [InlineData(512)]    // 512 bytes
+    [InlineData(1024)]   // 1 KB
+    [InlineData(4096)]   // 4 KB
+    public void GetUnprotectedSize_EstimatesCorrectly_VariousPlaintextSizes(int plaintextSize)
+    {
+        // Arrange
+        byte[] plaintext = new byte[plaintextSize];
+        // Fill with a pattern to make debugging easier if needed
+        for (int i = 0; i < plaintextSize; i++)
+        {
+            plaintext[i] = (byte)(i % 256);
+        }
+
+        var encryptorFactory = new AuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
+        Key key = new Key(Guid.NewGuid(), DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, new AuthenticatedEncryptorConfiguration().CreateNewDescriptor(), new[] { encryptorFactory });
+        var keyRing = new KeyRing(key, new[] { key });
+        var mockKeyRingProvider = new Mock<IKeyRingProvider>();
+        mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(keyRing);
+
+        var protector = new KeyRingBasedSpanDataProtector(
+            keyRingProvider: mockKeyRingProvider.Object,
+            logger: GetLogger(),
+            originalPurposes: null,
+            newPurpose: "purpose");
+
+        // Act - first protect the data  
+        byte[] protectedData = protector.Protect(plaintext);
+
+        var arrayBufferWriter = new ArrayBufferWriter<byte>(plaintextSize);
+        protector.Unprotect(protectedData, ref arrayBufferWriter);
+        var unprotectedData = arrayBufferWriter.WrittenSpan;
+        Assert.Equal(plaintextSize, unprotectedData.Length);
+        Assert.Equal(plaintext, unprotectedData);
+    }
+
+    [Fact]
+    public void TryUnprotect_WithTooShortCiphertext_ReturnsFalse()
+    {
+        var encryptorFactory = new AuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
+        Key key = new Key(Guid.NewGuid(), DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, new AuthenticatedEncryptorConfiguration().CreateNewDescriptor(), new[] { encryptorFactory });
+        var keyRing = new KeyRing(key, new[] { key });
+        var mockKeyRingProvider = new Mock<IKeyRingProvider>();
+        mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(keyRing);
+
+        var protector = new KeyRingBasedSpanDataProtector(
+            keyRingProvider: mockKeyRingProvider.Object,
+            logger: GetLogger(),
+            originalPurposes: null,
+            newPurpose: "purpose");
+
+        // Act - try to unprotect with too short ciphertext (shorter than magic header + key id)
+        byte[] shortCiphertext = new byte[10]; // Less than 20 bytes (magic header + key id)
+        var destination = new ArrayBufferWriter<byte>(100);
+
+        var ex = ExceptionAssert2.ThrowsCryptographicException(() => protector.Unprotect(shortCiphertext, ref destination));
+        Assert.Equal(Resources.ProtectionProvider_BadMagicHeader, ex.Message);
+    }
+
+    [Fact]
+    public void GetUnprotectedSize_WithTooShortCiphertext_ThrowsException()
+    {
+        var encryptorFactory = new AuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
+        Key key = new Key(Guid.NewGuid(), DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, new AuthenticatedEncryptorConfiguration().CreateNewDescriptor(), new[] { encryptorFactory });
+        var keyRing = new KeyRing(key, [ key ]);
+        var mockKeyRingProvider = new Mock<IKeyRingProvider>();
+        mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(keyRing);
+
+        var protector = new KeyRingBasedSpanDataProtector(
+            keyRingProvider: mockKeyRingProvider.Object,
+            logger: GetLogger(),
+            originalPurposes: null,
+            newPurpose: "purpose");
+
+        // Less than magic header + key id size
+        var buffer = new ArrayBufferWriter<byte>();
+        var ex = ExceptionAssert2.ThrowsCryptographicException(() => protector.Unprotect(new byte[10], ref buffer));
+        Assert.Equal(Resources.ProtectionProvider_BadMagicHeader, ex.Message);
+    }
+#endif
 
     private static byte[] BuildAadFromPurposeStrings(Guid keyId, params string[] purposes)
     {

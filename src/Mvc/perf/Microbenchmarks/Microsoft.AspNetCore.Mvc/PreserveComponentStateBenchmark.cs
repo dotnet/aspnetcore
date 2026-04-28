@@ -6,11 +6,14 @@ using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -41,7 +44,19 @@ public class PreserveComponentStateBenchmark
         _serviceProvider = new ServiceCollection()
             .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
             .AddScoped(typeof(ILogger<>), typeof(NullLogger<>))
+            .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
+            .AddSingleton<IWebHostEnvironment>(new BenchmarkWebHostEnvironment())
             .AddMvc().Services.BuildServiceProvider();
+    }
+
+    private sealed class BenchmarkWebHostEnvironment : IWebHostEnvironment
+    {
+        public string EnvironmentName { get; set; } = "Production";
+        public string ApplicationName { get; set; } = typeof(PreserveComponentStateBenchmark).Assembly.GetName().Name!;
+        public string WebRootPath { get; set; } = AppContext.BaseDirectory;
+        public IFileProvider WebRootFileProvider { get; set; } = new NullFileProvider();
+        public string ContentRootPath { get; set; } = AppContext.BaseDirectory;
+        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
     }
 
     // From 30 entries of about 100 bytes (~3K) to 100 entries with 100K per entry (~10MB)
@@ -73,10 +88,15 @@ public class PreserveComponentStateBenchmark
     {
         _tagHelper.ViewContext = GetViewContext();
         var state = _tagHelper.ViewContext.HttpContext.RequestServices.GetRequiredService<PersistentComponentState>();
-        foreach (var (key, value) in _entries)
+        state.RegisterOnPersisting(() =>
         {
-            state.PersistAsJson(key, value);
-        }
+            foreach (var (key, value) in _entries)
+            {
+                state.PersistAsJson(key, value);
+            }
+
+            return Task.CompletedTask;
+        });
 
         _output = new TagHelperOutput("persist-component-state", _attributes, _childContent);
         _output.Content = new DefaultTagHelperContent();

@@ -1,16 +1,5 @@
 <Project>
 
-  <Target Name="EnsureBaselineIsUpdated"
-          Condition=" '$(ValidateBaseline)' == 'true' AND
-              '$(IsServicingBuild)' == 'true' AND
-              '$(AspNetCoreBaselineVersion)' != '$(PreviousAspNetCoreReleaseVersion)' AND
-              '$(MSBuildProjectName)' != 'BaselineGenerator' AND
-              '$(MSBuildProjectName)' != 'RepoTasks' "
-          BeforeTargets="BeforeBuild">
-    <Error Text="The package baseline ($(AspNetCoreBaselineVersion)) is out of date with the latest release of this repo ($(PreviousAspNetCoreReleaseVersion)).
-                 See $(RepoRoot)eng\tools\BaselineGenerator\README.md for instructions on updating this baseline." />
-  </Target>
-
   <!-- This target is used to get the package versions of projects. A variant also exists in Npm.Common.targets. -->
   <Target Name="_GetPackageVersionInfo" DependsOnTargets="$(GetPackageVersionDependsOn)"
           Returns="@(_ProjectPathWithVersion)">
