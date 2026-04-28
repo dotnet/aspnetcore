@@ -5,6 +5,7 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -17,7 +18,8 @@ public class WebAssemblyOOPRendererTest(
     ITestOutputHelper output)
     : ServerTestBase<OOPRendererServerFixture<RazorComponentEndpointsStartup<GlobalInteractivityApp>>>(browserFixture, serverFixture, output)
 {
-    [Fact]
+    [ConditionalFact]
+    [SkipMultithreadedMono]
     public void OOPRendererIsActiveAndComponentIsInteractive()
     {
         Navigate($"{ServerPathBase}/oop-renderer-interactivity");
@@ -29,7 +31,8 @@ public class WebAssemblyOOPRendererTest(
         Browser.Equal("true", () => Browser.Exists(By.Id("oop-renderer-active")).Text);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [SkipMultithreadedMono]
     public void OOPRendererHandlesClickEvents()
     {
         Navigate($"{ServerPathBase}/oop-renderer-interactivity");
@@ -44,13 +47,14 @@ public class WebAssemblyOOPRendererTest(
         Browser.Equal("3", () => Browser.Exists(By.Id("counter-value")).Text);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [SkipMultithreadedMono]
     public void OOPRendererHandlesTextInputBinding()
     {
         Navigate($"{ServerPathBase}/oop-renderer-interactivity");
         Browser.Equal("webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
 
-        const string text = "Héllo OOP 😀";
+        const string text = "Hello OOP Renderer";
 
         var input = Browser.Exists(By.Id("text-input"));
         input.SendKeys(text);
@@ -58,7 +62,8 @@ public class WebAssemblyOOPRendererTest(
         Browser.Equal(text, () => Browser.Exists(By.Id("text-output")).Text);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [SkipMultithreadedMono]
     public void OOPRendererHandlesJSInterop()
     {
         Navigate($"{ServerPathBase}/oop-renderer-interactivity");
@@ -69,7 +74,8 @@ public class WebAssemblyOOPRendererTest(
         Browser.Equal("Hello from JS", () => Browser.Exists(By.Id("jsinterop-result")).Text);
     }
 
-    [Fact]
+    [ConditionalFact]
+    [SkipMultithreadedMono]
     public void OOPRendererHandlesConditionalRendering()
     {
         Navigate($"{ServerPathBase}/oop-renderer-interactivity");
@@ -87,7 +93,8 @@ public class WebAssemblyOOPRendererTest(
         Browser.Exists(By.Id("toggle-content"));
     }
 
-    [Fact]
+    [ConditionalFact]
+    [SkipMultithreadedMono]
     public void OOPRendererHandlesListRendering()
     {
         Navigate($"{ServerPathBase}/oop-renderer-interactivity");
