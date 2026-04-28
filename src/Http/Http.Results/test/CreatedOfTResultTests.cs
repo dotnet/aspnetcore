@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
@@ -99,7 +100,6 @@ public class CreatedOfTResultTests
     {
         // Arrange
         Created<Todo> MyApi() { throw new NotImplementedException(); }
-        var metadata = new List<object>();
         var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0);
 
         // Act
@@ -110,6 +110,25 @@ public class CreatedOfTResultTests
         Assert.Equal(StatusCodes.Status201Created, producesResponseTypeMetadata.StatusCode);
         Assert.Equal(typeof(Todo), producesResponseTypeMetadata.Type);
         Assert.Single(producesResponseTypeMetadata.ContentTypes, "application/json");
+
+        Assert.Contains(builder.Metadata, m => m is IDisableCookieRedirectMetadata);
+    }
+
+    [Fact]
+    public void PopulateMetadata_ProblemDetailsAddsProblemJsonMetadata()
+    {
+        // Arrange
+        Created<ProblemDetails> MyApi() { throw new NotImplementedException(); }
+        var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0);
+
+        // Act
+        PopulateMetadata<Created<ProblemDetails>>(((Delegate)MyApi).GetMethodInfo(), builder);
+
+        // Assert
+        var producesResponseTypeMetadata = builder.Metadata.OfType<ProducesResponseTypeMetadata>().Last();
+        Assert.Equal(StatusCodes.Status201Created, producesResponseTypeMetadata.StatusCode);
+        Assert.Equal(typeof(ProblemDetails), producesResponseTypeMetadata.Type);
+        Assert.Single(producesResponseTypeMetadata.ContentTypes, "application/problem+json");
 
         Assert.Contains(builder.Metadata, m => m is IDisableCookieRedirectMetadata);
     }
