@@ -5,7 +5,7 @@
     <IsShipping>false</IsShipping>
     <OutputType>Exe</OutputType>
     <PublishTrimmed>true</PublishTrimmed>
-    <RuntimeIdentifier Condition="'$(CurrentLtsTargetFramework)' == 'net11.0' and '$(TargetRuntimeIdentifier)' != ''">$(TargetRuntimeIdentifier)</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(DotNetBuild)' == 'true'">$(TargetRuntimeIdentifier)</RuntimeIdentifier>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)eng\TrimmableProjects.props" />
