@@ -43,7 +43,7 @@ public class SqlServerCacheOptions : IOptions<SqlServerCacheOptions>
     /// Either <see cref="ConnectionString"/> or <see cref="ConnectionFactory"/> must be set, but not both.
     /// When set, <see cref="ConnectionString"/> is ignored.
     /// </remarks>
-    public Func<IServiceProvider, SqlConnection>? ConnectionFactory { get; set; }
+    public Func<SqlConnection>? ConnectionFactory { get; set; }
 
     /// <summary>
     /// Gets or sets the schema name of the table.

@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Shared;
-using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
@@ -34,8 +33,7 @@ public class SqlServerCache : IDistributedCache, IBufferDistributedCache
     /// Initializes a new instance of <see cref="SqlServerCache"/>.
     /// </summary>
     /// <param name="options">The configuration options.</param>
-    /// <param name="serviceProvider">The service provider used to resolve services for <see cref="SqlServerCacheOptions.ConnectionFactory"/>.</param>
-    public SqlServerCache(IOptions<SqlServerCacheOptions> options, IServiceProvider serviceProvider)
+    public SqlServerCache(IOptions<SqlServerCacheOptions> options)
     {
         var cacheOptions = options.Value;
 
@@ -71,9 +69,8 @@ public class SqlServerCache : IDistributedCache, IBufferDistributedCache
         _deleteExpiredCachedItemsDelegate = DeleteExpiredCacheItems;
         _defaultSlidingExpiration = cacheOptions.DefaultSlidingExpiration;
 
-        Func<SqlConnection> connectionFactory = cacheOptions.ConnectionFactory is not null
-            ? () => cacheOptions.ConnectionFactory(serviceProvider)
-            : () => new SqlConnection(cacheOptions.ConnectionString);
+        Func<SqlConnection> connectionFactory = cacheOptions.ConnectionFactory
+            ?? (() => new SqlConnection(cacheOptions.ConnectionString));
 
         _dbOperations = new DatabaseOperations(
             connectionFactory,
