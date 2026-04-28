@@ -19,6 +19,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
     [InlineData(BrowserKind.Chromium, "WebAssembly")]
     [InlineData(BrowserKind.Chromium, "Auto")]
     [InlineData(BrowserKind.Chromium, "None", "Individual")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66403")]
     public async Task BlazorWebTemplate_Works(BrowserKind browserKind, string interactivityOption, string authOption = "None")
     {
         var project = await CreateBuildPublishAsync(

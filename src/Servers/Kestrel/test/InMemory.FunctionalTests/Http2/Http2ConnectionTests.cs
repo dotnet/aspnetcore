@@ -4299,7 +4299,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66037")]
     public async Task GOAWAY_Received_ConnectionLifetimeNotification_Cancelled()
     {
         await InitializeConnectionAsync(_noopApplication, addKestrelFeatures: true);
@@ -5277,7 +5276,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66037")]
     public async Task AbortSendsFinalGOAWAY()
     {
         await InitializeConnectionAsync(_noopApplication);
@@ -5351,7 +5349,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66037")]
     public async Task StopProcessingNextRequestSendsGracefulGOAWAYThenFinalGOAWAYWhenAllStreamsComplete()
     {
         await InitializeConnectionAsync(_echoApplication);

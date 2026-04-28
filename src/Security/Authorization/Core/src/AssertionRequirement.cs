@@ -52,7 +52,10 @@ public class AssertionRequirement : IAuthorizationHandler, IAuthorizationRequire
         }
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Returns a string representation of the requirement.
+    /// </summary>
+    /// <returns>A description of the assertion requirement.</returns>
     public override string ToString()
     {
         return $"{nameof(Handler)} assertion should evaluate to true.";
