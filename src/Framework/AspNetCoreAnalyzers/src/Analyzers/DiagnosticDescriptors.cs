@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers;
@@ -247,5 +248,19 @@ internal static class DiagnosticDescriptors
         Usage,
         DiagnosticSeverity.Info,
         isEnabledByDefault: true,
+        helpLinkUri: AnalyzersLink);
+
+    internal static readonly DiagnosticDescriptor InvalidRouteConstraintForParameterType = CreateDescriptor(
+        "ASP0029",
+        Usage,
+        DiagnosticSeverity.Error);
+
+    private static DiagnosticDescriptor CreateDescriptor(string id, string category, DiagnosticSeverity defaultSeverity, bool isEnabledByDefault = true, [CallerMemberName] string? name = null) => new(
+        id,
+        CreateLocalizableResourceString($"Analyzer_{name}_Title"),
+        CreateLocalizableResourceString($"Analyzer_{name}_Message"),
+        category,
+        defaultSeverity,
+        isEnabledByDefault,
         helpLinkUri: AnalyzersLink);
 }
