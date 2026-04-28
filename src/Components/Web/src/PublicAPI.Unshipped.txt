@@ -82,7 +82,7 @@ Microsoft.AspNetCore.Components.Web.Media.MediaSource.MimeType.get -> string!
 Microsoft.AspNetCore.Components.Web.Media.MediaSource.Stream.get -> System.IO.Stream!
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.AnchorMode.get -> Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.AnchorMode.set -> void
-Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemComparer.get -> System.Collections.Generic.IEqualityComparer<TItem>?
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemComparer.get -> System.Collections.Generic.IEqualityComparer<TItem>!
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemComparer.set -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
 Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode.Beginning = 1 -> Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode

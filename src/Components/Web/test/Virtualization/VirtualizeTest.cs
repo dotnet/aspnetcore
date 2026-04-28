@@ -921,4 +921,46 @@ public class VirtualizeTest
             $"IO-driven refresh should not trigger prepend detection (shift by countDelta). " +
             $"Before: {itemsBeforeAfterInit}, After: {renderedVirtualize._itemsBefore}, Shift: {shift}");
     }
+
+    [Fact]
+    public async Task Virtualize_DefaultProvider_ValueTypeItem_AppendDoesNotAssumePrepend()
+    {
+        Virtualize<int> renderedVirtualize = null;
+        var items = Enumerable.Range(1, 100).ToList();
+
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualizeWithContent(50f, items, v => renderedVirtualize = v)
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+
+        await testRenderer.RenderRootComponentAsync(componentId);
+        Assert.NotNull(renderedVirtualize);
+
+        var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
+
+        // Initial IO callback to set up _itemCount.
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 800f, 800f));
+
+        var itemsBeforeAfterInit = renderedVirtualize._itemsBefore;
+
+        // Append 20 items at the end. Items[0] is unchanged — this is NOT a prepend.
+        items.AddRange(Enumerable.Range(101, 20));
+
+        // IO-driven refresh re-reads the in-memory list and observes count growth 100 -> 120.
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 800f, 800f));
+
+        var shift = renderedVirtualize._itemsBefore - itemsBeforeAfterInit;
+        Assert.True(shift != 20,
+            $"In-memory append on value-type TItem must not trigger prepend detection (shift by countDelta). " +
+            $"Before: {itemsBeforeAfterInit}, After: {renderedVirtualize._itemsBefore}, Shift: {shift}");
+    }
 }
