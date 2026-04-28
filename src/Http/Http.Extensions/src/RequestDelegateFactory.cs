@@ -1422,6 +1422,28 @@ public static partial class RequestDelegateFactory
                 {
                     Log.InvalidJsonRequestBody(httpContext, parameterTypeName, parameterName, ex, throwOnBadRequest);
                     httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+
+                    var problemDetailsService = httpContext.RequestServices.GetService<IProblemDetailsService>();
+                    if (problemDetailsService is not null)
+                    {
+                        IEnumerable<KeyValuePair<string, string[]>> errors =
+                        [
+                            new KeyValuePair<string, string[]>(ex.Path ?? string.Empty, [ex.Message]),
+                        ];
+
+                        var problemDetailsContext = new ProblemDetailsContext()
+                        {
+                            HttpContext = httpContext,
+                            Exception = ex,
+                            ProblemDetails = new HttpValidationProblemDetails(errors)
+                            {
+                                Status = StatusCodes.Status400BadRequest,
+                            },
+                        };
+
+                        await problemDetailsService.WriteAsync(problemDetailsContext);
+                    }
+
                     return (null, false);
                 }
             }

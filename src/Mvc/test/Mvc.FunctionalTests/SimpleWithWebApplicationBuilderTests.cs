@@ -291,4 +291,16 @@ public class SimpleWithWebApplicationBuilderTests : LoggedTest
         // Assert
         await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
     }
+
+    [Theory]
+    [InlineData("/post-required-minimal")]
+    [InlineData("/post-required-mvc")]
+    public async Task PostWithRequiredProperty(string endpoint)
+    {
+        var response = await Client.PostAsJsonAsync(endpoint, new { });
+        var responseString = await response.Content.ReadAsStringAsync();
+        Assert.Matches("""
+            {"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred\.","status":400,"errors":{"\$":\["JSON deserialization for type 'ModelWithRequiredProperty' was missing required properties including: 'prop'\."]},"traceId":".+?"}
+            """, responseString);
+    }
 }

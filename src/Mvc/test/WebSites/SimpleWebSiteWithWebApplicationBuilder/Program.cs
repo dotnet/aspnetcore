@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 
 using static Microsoft.AspNetCore.Http.Results;
@@ -9,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddAntiforgery();
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
@@ -53,6 +55,8 @@ app.MapPost("/fileupload", async (IFormFile file) =>
     return uploadStream.Length;
 });
 
+app.MapPost("/post-required-minimal", string (ModelWithRequiredProperty model) => $"Hello {model.Prop}");
+
 app.Run();
 
 record Person(string Name, int Age);
@@ -61,6 +65,19 @@ public class MyController : ControllerBase
 {
     [HttpGet("/greet")]
     public string Greet() => $"Hello human";
+}
+
+[ApiController]
+public class MyApiController
+{
+    [HttpPost("/post-required-mvc")]
+    public string PostModel(ModelWithRequiredProperty model) => $"Hello {model.Prop}";
+}
+
+public class ModelWithRequiredProperty
+{
+    [Required]
+    public required string Prop { get; set; }
 }
 
 namespace SimpleWebSiteWithWebApplicationBuilder
