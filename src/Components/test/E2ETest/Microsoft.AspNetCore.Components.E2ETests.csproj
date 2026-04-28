@@ -48,6 +48,7 @@
   <ItemGroup Condition="'$(UseMonoRuntime)' == 'false'">
     <Compile Remove="Tests\ThreadingAppTest.cs" />
     <Compile Remove="Tests\ThreadingAppHostedTest.cs" />
+    <Compile Remove="Tests\ProtectedBrowserStorageInjectionTest.cs" />
     <Compile Remove="ServerExecutionTests\**\*.cs" />
     <Compile Remove="ServerRenderingTests\**\*.cs" />
   </ItemGroup>
