@@ -85,7 +85,6 @@ public class ConflictOfTResultTests
     {
         // Arrange
         Conflict<Todo> MyApi() { throw new NotImplementedException(); }
-        var metadata = new List<object>();
         var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0);
 
         // Act
@@ -96,6 +95,25 @@ public class ConflictOfTResultTests
         Assert.Equal(StatusCodes.Status409Conflict, producesResponseTypeMetadata.StatusCode);
         Assert.Equal(typeof(Todo), producesResponseTypeMetadata.Type);
         Assert.Single(producesResponseTypeMetadata.ContentTypes, "application/json");
+
+        Assert.Contains(builder.Metadata, m => m is IDisableCookieRedirectMetadata);
+    }
+
+    [Fact]
+    public void PopulateMetadata_ProblemDetailsAddsProblemJsonMetadata()
+    {
+        // Arrange
+        Conflict<ProblemDetails> MyApi() { throw new NotImplementedException(); }
+        var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0);
+
+        // Act
+        PopulateMetadata<Conflict<ProblemDetails>>(((Delegate)MyApi).GetMethodInfo(), builder);
+
+        // Assert
+        var producesResponseTypeMetadata = builder.Metadata.OfType<ProducesResponseTypeMetadata>().Last();
+        Assert.Equal(StatusCodes.Status409Conflict, producesResponseTypeMetadata.StatusCode);
+        Assert.Equal(typeof(ProblemDetails), producesResponseTypeMetadata.Type);
+        Assert.Single(producesResponseTypeMetadata.ContentTypes, "application/problem+json");
 
         Assert.Contains(builder.Metadata, m => m is IDisableCookieRedirectMetadata);
     }
