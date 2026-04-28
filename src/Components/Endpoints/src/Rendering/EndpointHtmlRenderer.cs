@@ -60,6 +60,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         _services = serviceProvider;
         _options = serviceProvider.GetRequiredService<IOptions<RazorComponentsServiceOptions>>().Value;
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
+        RenderFragmentSerializer.SetLogger(loggerFactory);
     }
 
     internal HttpContext? HttpContext => _httpContext;
