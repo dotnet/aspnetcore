@@ -2856,31 +2856,24 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Contains("Set to 5 items", () => Browser.Exists(By.Id("status")).Text);
         Browser.True(() => GetElementCount(container, ".item") > 0);
 
-        // Do NOT scroll — the user has never scrolled. wasAtBottom may not be set.
-        // Append 10 items — this should trigger End mode auto-follow even without
-        // prior scrolling, because the viewport was at the bottom (all items visible).
-        Browser.Exists(By.Id("append-items")).Click();
-        Browser.Contains("Appended 10 items", () => Browser.Exists(By.Id("status")).Text);
+        // Add items one at a time. End mode should keep following to bottom
+        // even before a scrollbar appears (spacerAfter is 0).
+        for (var i = 0; i < 20; i++)
+        {
+            Browser.Exists(By.Id("append-one-item")).Click();
+            Browser.Contains("Appended 1 item", () => Browser.Exists(By.Id("status")).Text);
+        }
 
+        // After adding 20 items (total 25), a scrollbar should exist
+        // and End mode should have followed to the bottom.
         Browser.True(() =>
         {
             var st = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
             var sh = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
             var ch = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
             return st > 0 && sh - st - ch < 2;
-        }, TimeSpan.FromSeconds(10), "End mode: growing dataset should follow to bottom without prior scrolling");
-
-        // Append again — should keep following.
-        Browser.Exists(By.Id("append-items")).Click();
-        Browser.Contains("Appended 10 items", () => Browser.Exists(By.Id("status")).Text);
-
-        Browser.True(() =>
-        {
-            var st = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
-            var sh = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
-            var ch = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
-            return st > 0 && sh - st - ch < 2;
-        }, TimeSpan.FromSeconds(10), "End mode: second append should still follow to bottom");
+        }, TimeSpan.FromSeconds(10),
+            "End mode: growing dataset (one at a time) should follow to bottom");
     }
 
     [Theory]

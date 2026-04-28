@@ -699,7 +699,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private bool ShouldScrollToBottomForAppend(int countDelta, int previousItemCount)
         => countDelta > 0
             && (AnchorMode & VirtualizeAnchorMode.End) != 0
-            && _itemsBefore + _visibleItemCapacity >= previousItemCount;
+            && previousItemCount <= _visibleItemCapacity;
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
