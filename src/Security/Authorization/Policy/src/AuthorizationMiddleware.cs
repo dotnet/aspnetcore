@@ -28,7 +28,10 @@ public class AuthorizationMiddleware
 {
     // AppContext switch used to control whether HttpContext or endpoint is passed as a resource to AuthZ
     private const string SuppressUseHttpContextAsAuthorizationResource = "Microsoft.AspNetCore.Authorization.SuppressUseHttpContextAsAuthorizationResource";
-    private static readonly bool _suppressUseHttpContextAsAuthorizationResource = AppContext.TryGetSwitch(SuppressUseHttpContextAsAuthorizationResource, out var enabled) && enabled;
+    // Not readonly so tests can override via reflection.
+#pragma warning disable IDE0044
+    private static bool _suppressUseHttpContextAsAuthorizationResource = AppContext.TryGetSwitch(SuppressUseHttpContextAsAuthorizationResource, out var enabled) && enabled;
+#pragma warning restore IDE0044
 
     // Property key is used by Endpoint routing to determine if Authorization has run
     private const string AuthorizationMiddlewareInvokedWithEndpointKey = "__AuthorizationMiddlewareWithEndpointInvoked";

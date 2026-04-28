@@ -4984,10 +4984,14 @@ public class RendererTest
     [Fact]
     public async Task NoHotReloadListenersAreRegistered_WhenHotReloadIsDisabled()
     {
+        // The IsSupported property is cached at static init time, so we need to update it via reflection.
+        var backingField = typeof(HotReloadManager).GetField("s_isSupported", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
+        var originalValue = (bool)backingField.GetValue(null)!;
         // Arrange
         try
         {
             AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", false);
+            backingField.SetValue(null, false);
             await using var renderer = new TestRenderer();
             var hotReloadManager = new HotReloadManager();
             renderer.HotReloadManager = hotReloadManager;
@@ -5008,6 +5012,7 @@ public class RendererTest
         finally
         {
             AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", true);
+            backingField.SetValue(null, originalValue);
         }
     }
 

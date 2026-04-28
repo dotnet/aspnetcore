@@ -13,9 +13,14 @@ internal sealed class HotReloadManager
 {
     public static readonly HotReloadManager Default = new();
 
-    [FeatureSwitchDefinition("System.Reflection.Metadata.MetadataUpdater.IsSupported")]
-    internal static bool IsSupported { get; } =
+    // Not readonly so tests can override via reflection.
+#pragma warning disable IDE0044
+    private static bool s_isSupported =
         AppContext.TryGetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", out bool isSupported) ? isSupported : true;
+#pragma warning restore IDE0044
+
+    [FeatureSwitchDefinition("System.Reflection.Metadata.MetadataUpdater.IsSupported")]
+    internal static bool IsSupported => s_isSupported;
 
     /// <summary>
     /// Gets a value that determines if OnDeltaApplied is subscribed to.

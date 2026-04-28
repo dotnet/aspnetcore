@@ -290,7 +290,7 @@ public class AuthorizationMiddlewareTests
         var endpoint = CreateEndpoint(new AuthorizeAttribute("whatever"), new ReqAttribute(req));
         var services = new ServiceCollection()
             .AddAuthorization()
-            .AddSingleton(policyProvider.Object)  
+            .AddSingleton(policyProvider.Object)
             .AddLogging()
             .AddSingleton(CreateDataSource(endpoint)).BuildServiceProvider();
 
@@ -674,28 +674,38 @@ public class AuthorizationMiddlewareTests
     [Fact]
     public async Task AuthZResourceShouldBeEndpointByDefaultWithCompatSwitch()
     {
+        var field = typeof(AuthorizationMiddleware).GetField("_suppressUseHttpContextAsAuthorizationResource", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
+        var originalValue = (bool)field.GetValue(null)!;
         AppContext.SetSwitch("Microsoft.AspNetCore.Authorization.SuppressUseHttpContextAsAuthorizationResource", isEnabled: true);
+        field.SetValue(null, true);
 
-        // Arrange
-        object resource = null;
-        var policy = new AuthorizationPolicyBuilder().RequireAssertion(c =>
+        try
         {
-            resource = c.Resource;
-            return true;
-        }).Build();
-        var policyProvider = new Mock<IAuthorizationPolicyProvider>();
-        policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(policy);
-        var next = new TestRequestDelegate();
+            object resource = null;
+            var policy = new AuthorizationPolicyBuilder().RequireAssertion(c =>
+            {
+                resource = c.Resource;
+                return true;
+            }).Build();
+            var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+            policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(policy);
+            var next = new TestRequestDelegate();
 
-        var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
-        var endpoint = CreateEndpoint(new AuthorizeAttribute());
-        var context = GetHttpContext(endpoint: endpoint);
+            var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+            var endpoint = CreateEndpoint(new AuthorizeAttribute());
+            var context = GetHttpContext(endpoint: endpoint);
 
-        // Act
-        await middleware.Invoke(context);
+            // Act
+            await middleware.Invoke(context);
 
-        // Assert
-        Assert.Equal(endpoint, resource);
+            // Assert
+            Assert.Equal(endpoint, resource);
+        }
+        finally
+        {
+            AppContext.SetSwitch("Microsoft.AspNetCore.Authorization.SuppressUseHttpContextAsAuthorizationResource", isEnabled: false);
+            field.SetValue(null, originalValue);
+        }
     }
 
     [Fact]
