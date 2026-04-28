@@ -102,16 +102,29 @@
     private int nextPrependIndex = -1;
     private int nextAppendIndex = 500;
 
+    // Pending mutations applied inside the provider callback.
+    private List<DynamicItem> _pendingPrepend;
+    private List<DynamicItem> _pendingAppend;
+
     private async Task PrependItems()
     {
         var newItems = Enumerable.Range(0, 10)
             .Select(i => new DynamicItem { Index = nextPrependIndex - i, Height = GetHeight(nextPrependIndex - i) })
             .Reverse()
             .ToList();
-        items.InsertRange(0, newItems);
         nextPrependIndex -= 10;
-        statusMessage = $"Prepended 10 items (indices {newItems.First().Index}..{newItems.Last().Index})";
-        if (useItemsProvider && virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
+
+        if (useItemsProvider)
+        {
+            _pendingPrepend = newItems;
+            statusMessage = $"Prepended 10 items (indices {newItems.First().Index}..{newItems.Last().Index})";
+            if (virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
+        }
+        else
+        {
+            items.InsertRange(0, newItems);
+            statusMessage = $"Prepended 10 items (indices {newItems.First().Index}..{newItems.Last().Index})";
+        }
     }
 
     private async Task PrependManyItems()
@@ -120,10 +133,19 @@
             .Select(i => new DynamicItem { Index = nextPrependIndex - i, Height = GetHeight(nextPrependIndex - i) })
             .Reverse()
             .ToList();
-        items.InsertRange(0, newItems);
         nextPrependIndex -= 100;
-        statusMessage = $"Prepended 100 items (indices {newItems.First().Index}..{newItems.Last().Index})";
-        if (useItemsProvider && virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
+
+        if (useItemsProvider)
+        {
+            _pendingPrepend = newItems;
+            statusMessage = $"Prepended 100 items (indices {newItems.First().Index}..{newItems.Last().Index})";
+            if (virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
+        }
+        else
+        {
+            items.InsertRange(0, newItems);
+            statusMessage = $"Prepended 100 items (indices {newItems.First().Index}..{newItems.Last().Index})";
+        }
     }
 
     private async Task AppendItems()
@@ -132,10 +154,19 @@
         var newItems = Enumerable.Range(startIndex, 10)
             .Select(i => new DynamicItem { Index = i, Height = GetHeight(i) })
             .ToList();
-        items.AddRange(newItems);
         nextAppendIndex += 10;
-        statusMessage = $"Appended 10 items (indices {startIndex}..{startIndex + 9})";
-        if (useItemsProvider && virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
+
+        if (useItemsProvider)
+        {
+            _pendingAppend = newItems;
+            statusMessage = $"Appended 10 items (indices {startIndex}..{startIndex + 9})";
+            if (virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
+        }
+        else
+        {
+            items.AddRange(newItems);
+            statusMessage = $"Appended 10 items (indices {startIndex}..{startIndex + 9})";
+        }
     }
 
     private async Task AppendManyItems()
@@ -144,10 +175,19 @@
         var newItems = Enumerable.Range(startIndex, 100)
             .Select(i => new DynamicItem { Index = i, Height = GetHeight(i) })
             .ToList();
-        items.AddRange(newItems);
         nextAppendIndex += 100;
-        statusMessage = $"Appended 100 items (indices {startIndex}..{startIndex + 99})";
-        if (useItemsProvider && virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
+
+        if (useItemsProvider)
+        {
+            _pendingAppend = newItems;
+            statusMessage = $"Appended 100 items (indices {startIndex}..{startIndex + 99})";
+            if (virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
+        }
+        else
+        {
+            items.AddRange(newItems);
+            statusMessage = $"Appended 100 items (indices {startIndex}..{startIndex + 99})";
+        }
     }
 
     private void ExpandVisibleItem()
@@ -170,11 +210,25 @@
         statusMessage = useItemsProvider ? "Switched to ItemsProvider" : "Switched to Items";
     }
 
-    private ValueTask<ItemsProviderResult<DynamicItem>> GetItemsAsync(ItemsProviderRequest request)
+    private async ValueTask<ItemsProviderResult<DynamicItem>> GetItemsAsync(ItemsProviderRequest request)
     {
+        await Task.Yield();
+
+        // Apply pending mutations inside the provider callback.
+        if (_pendingPrepend != null)
+        {
+            items.InsertRange(0, _pendingPrepend);
+            _pendingPrepend = null;
+        }
+        if (_pendingAppend != null)
+        {
+            items.AddRange(_pendingAppend);
+            _pendingAppend = null;
+        }
+
         var result = items.Skip(request.StartIndex).Take(request.Count)
             .Select(i => new DynamicItem { Index = i.Index, Height = i.Height });
-        return ValueTask.FromResult(new ItemsProviderResult<DynamicItem>(result, items.Count));
+        return new ItemsProviderResult<DynamicItem>(result, items.Count);
     }
 
     private class DynamicItem
