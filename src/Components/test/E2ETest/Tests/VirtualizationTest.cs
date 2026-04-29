@@ -1758,6 +1758,68 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(isFirstRowId1);
     }
 
+    [Fact]
+    public void QuickGrid_AspireLikeThumbScrollToEnd_DoesNotLeaveBlankTail()
+    {
+        Browser.MountTestComponent<BasicTestApp.QuickGridTest.QuickGridAspireLikeComponent>();
+
+        var container = Browser.Exists(By.Id("aspire-like-grid"));
+        var totalItems = Browser.Exists(By.Id("aspire-total-items"));
+        var maxDepth = Browser.Exists(By.Id("aspire-max-depth"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        Browser.Equal("Total items: 10000", () => totalItems.Text);
+        Browser.True(() => int.Parse(maxDepth.Text.Replace("Max depth: ", string.Empty, StringComparison.Ordinal), CultureInfo.InvariantCulture) >= 40);
+        WaitForQuickGridDataRows(container);
+
+        js.ExecuteScript("arguments[0].scrollTop = arguments[0].scrollHeight", container);
+
+        var diagnostics = new System.Text.StringBuilder();
+        var pollCount = 0;
+        Browser.True(() =>
+        {
+            pollCount++;
+            var metrics = (IReadOnlyDictionary<string, object>)js.ExecuteScript(
+                "var c = arguments[0];" +
+                "var spacers = c.querySelectorAll('[aria-hidden]');" +
+                "var rows = c.querySelectorAll('tbody tr:not([aria-hidden])');" +
+                "var firstId = -1;" +
+                "var lastId = -1;" +
+                "for (var i = 0; i < rows.length; i++) {" +
+                "  var marker = rows[i].querySelector('.aspire-row-id');" +
+                "  if (marker) { var parsed = parseInt(marker.textContent, 10); if (!Number.isNaN(parsed)) { firstId = parsed; break; } }" +
+                "}" +
+                "for (var i = rows.length - 1; i >= 0; i--) {" +
+                "  var marker = rows[i].querySelector('.aspire-row-id');" +
+                "  if (marker) { var parsed = parseInt(marker.textContent, 10); if (!Number.isNaN(parsed)) { lastId = parsed; break; } }" +
+                "}" +
+                "return {" +
+                "  remaining: c.scrollHeight - c.scrollTop - c.clientHeight," +
+                "  scrollTop: c.scrollTop," +
+                "  scrollHeight: c.scrollHeight," +
+                "  clientHeight: c.clientHeight," +
+                "  spacerBefore: spacers.length >= 1 ? spacers[0].offsetHeight : -1," +
+                "  spacerAfter: spacers.length >= 2 ? spacers[spacers.length - 1].offsetHeight : -1," +
+                "  firstId: firstId," +
+                "  lastId: lastId" +
+                "};",
+                container);
+
+            var remaining = Convert.ToDouble(metrics["remaining"], CultureInfo.InvariantCulture);
+            var scrollTop = Convert.ToDouble(metrics["scrollTop"], CultureInfo.InvariantCulture);
+            var scrollHeight = Convert.ToDouble(metrics["scrollHeight"], CultureInfo.InvariantCulture);
+            var clientHeight = Convert.ToDouble(metrics["clientHeight"], CultureInfo.InvariantCulture);
+            var spacerBefore = Convert.ToDouble(metrics["spacerBefore"], CultureInfo.InvariantCulture);
+            var spacerAfter = Convert.ToDouble(metrics["spacerAfter"], CultureInfo.InvariantCulture);
+            var firstId = Convert.ToInt32(metrics["firstId"], CultureInfo.InvariantCulture);
+            var lastId = Convert.ToInt32(metrics["lastId"], CultureInfo.InvariantCulture);
+
+            diagnostics.AppendLine(CultureInfo.InvariantCulture, $"poll #{pollCount}: scrollTop={scrollTop:F1}, scrollHeight={scrollHeight:F1}, clientHeight={clientHeight:F1}, remaining={remaining:F1}, spacerBefore={spacerBefore:F1}, spacerAfter={spacerAfter:F1}, firstId={firstId}, lastId={lastId}");
+
+            return spacerAfter < 1 && firstId > 9950 && lastId == 10000;
+        }, $"Aspire-like QuickGrid should not get stranded in a large blank tail after dragging the scrollbar thumb to the bottom.{Environment.NewLine}{diagnostics}");
+    }
+
     private void WaitForQuickGridDataRows(IWebElement container)
         => Browser.True(() => CheckQuickGridFirstRow(container, text => int.TryParse(text, out _)));
 

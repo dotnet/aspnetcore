@@ -357,6 +357,16 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       return;
     }
 
+    // Re-render overwrites the entire style attribute that init/refreshObservedElements applied. Re-apply it.
+    if (isTable) {
+      if (spacerBefore.style.display !== 'table-row') {
+        spacerBefore.style.display = 'table-row';
+      }
+      if (spacerAfter.style.display !== 'table-row') {
+        spacerAfter.style.display = 'table-row';
+      }
+    }
+
     const intersectingEntries = entries.filter(entry => {
       if (entry.isIntersecting) {
         if (entry.target === spacerAfter) {
@@ -382,7 +392,17 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
     rangeBetweenSpacers.setStartAfter(spacerBefore);
     rangeBetweenSpacers.setEndBefore(spacerAfter);
-    const spacerSeparation = rangeBetweenSpacers.getBoundingClientRect().height / scaleFactor;
+    let spacerSeparation = rangeBetweenSpacers.getBoundingClientRect().height / scaleFactor;
+
+    if (isTable && spacerSeparation > 0) {
+      const firstTr = spacerBefore.nextElementSibling;
+      const lastTr = spacerAfter.previousElementSibling;
+      const fc = firstTr && firstTr !== spacerAfter ? firstTr.querySelector('td,th') as HTMLElement | null : null;
+      const lc = lastTr && lastTr !== spacerBefore ? lastTr.querySelector('td,th') as HTMLElement | null : null;
+      if (fc && lc) {
+        spacerSeparation = (lc.getBoundingClientRect().bottom - fc.getBoundingClientRect().top) / scaleFactor;
+      }
+    }
 
     intersectingEntries.forEach((entry): void => {
       const containerSize = (entry.rootBounds?.height ?? 0) / scaleFactor;

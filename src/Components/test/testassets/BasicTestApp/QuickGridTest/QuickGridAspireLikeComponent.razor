@@ -1,0 +1,117 @@
+@using System.Globalization
+@using System.Linq
+@using System.Reflection
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+<style>
+    #aspire-like-grid {
+        height: 476px;
+        overflow: auto;
+    }
+</style>
+
+<p id="aspire-total-items">Total items: @_totalItemCount</p>
+<p id="aspire-max-depth">Max depth: @_maxDepth</p>
+
+<div id="aspire-like-grid">
+    <QuickGrid @ref="_grid" ItemsProvider="@_itemsProvider" Virtualize="true" ItemSize="32">
+        <TemplateColumn Title="Name">
+            <span class="aspire-row-id" hidden>@context.Id</span>
+            <span>@context.Name</span>
+        </TemplateColumn>
+        <PropertyColumn Property="@(r => r.Resource)" />
+        <PropertyColumn Property="@(r => r.Duration)" />
+    </QuickGrid>
+</div>
+
+@code {
+    private static readonly IReadOnlyList<AspireLikeRow> s_allRows = CreateRows();
+
+    private QuickGrid<AspireLikeRow> _grid = default!;
+    private GridItemsProvider<AspireLikeRow> _itemsProvider = default!;
+    private int _totalItemCount = s_allRows.Count;
+    private int _maxDepth = s_allRows.Max(r => r.Depth);
+
+    internal sealed class AspireLikeRow
+    {
+        public int Id { get; set; }
+        public int Depth { get; set; }
+        public bool HasChildren { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Resource { get; set; } = string.Empty;
+        public string Duration { get; set; } = string.Empty;
+    }
+
+    protected override void OnInitialized()
+    {
+        _itemsProvider = async request =>
+        {
+            await Task.Yield();
+
+            var items = s_allRows
+                .Skip(request.StartIndex)
+                .Take(request.Count ?? 100)
+                .ToList();
+
+            return GridItemsProviderResult.From(items, totalItemCount: _totalItemCount);
+        };
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (_grid is null)
+        {
+            return;
+        }
+
+        var virtualizeField = typeof(QuickGrid<AspireLikeRow>).GetField("_virtualizeComponent", BindingFlags.Instance | BindingFlags.NonPublic);
+        if (virtualizeField?.GetValue(_grid) is not Virtualize<(int, AspireLikeRow)> virtualize)
+        {
+            return;
+        }
+
+        if (virtualize.MaxItemCount != 10_000)
+        {
+            virtualize.MaxItemCount = 10_000;
+            StateHasChanged();
+        }
+    }
+
+    private static List<AspireLikeRow> CreateRows()
+    {
+        const int targetItemCount = 10_000;
+        var rows = new List<AspireLikeRow>(targetItemCount);
+        var nextId = 1;
+
+        for (var traceGroup = 0; rows.Count < targetItemCount; traceGroup++)
+        {
+            rows.Add(new AspireLikeRow
+            {
+                Id = nextId++,
+                Depth = 1,
+                HasChildren = true,
+                Name = $"GET /big-trace/{traceGroup}",
+                Resource = "Stress.ApiService",
+                Duration = "46.37s",
+            });
+
+            var depthLimit = 20 + (traceGroup % 28);
+
+            for (var depth = 1; depth <= depthLimit && rows.Count < targetItemCount; depth++)
+            {
+                rows.Add(new AspireLikeRow
+                {
+                    Id = nextId++,
+                    Depth = depth + 1,
+                    HasChildren = depth < depthLimit,
+                    Name = $"bigtrace-Span-{traceGroup}-{depth}",
+                    Resource = depth % 5 == 0 ? "Stress.Worker" : "Stress.ApiService",
+                    Duration = FormattableString.Invariant($"{Math.Max(0.03, 4.25 - (depth * 0.07)):0.00}s"),
+                });
+            }
+        }
+
+        return rows;
+    }
+}
