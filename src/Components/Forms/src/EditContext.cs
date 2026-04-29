@@ -227,6 +227,14 @@ public sealed class EditContext
     /// Validates this <see cref="EditContext"/>.
     /// </summary>
     /// <returns>True if there are no validation messages after validation; otherwise false.</returns>
+    /// <remarks>
+    /// Validation must not be re-entered. Do not call <see cref="Validate"/> or
+    /// <see cref="ValidateAsync"/> from inside an <see cref="OnValidationRequested"/>,
+    /// <see cref="OnValidationRequestedAsync"/>, or <see cref="OnValidationStateChanged"/>
+    /// handler attached to the same <see cref="EditContext"/>; doing so produces undefined
+    /// behavior (in particular, it can cause infinite recursion via the validator's own
+    /// <see cref="NotifyValidationStateChanged"/> calls).
+    /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// Thrown when an <see cref="OnValidationRequestedAsync"/> handler does not complete synchronously.
     /// Use <see cref="ValidateAsync"/> instead when async validators are registered.
@@ -285,6 +293,13 @@ public sealed class EditContext
     /// the form is not marked as faulted in that case and the previous form-level fault state is preserved.</param>
     /// <returns>True if there are no validation messages after validation and no async handler
     /// faulted; otherwise false.</returns>
+    /// <remarks>
+    /// Validation must not be re-entered. Do not call <see cref="Validate"/> or
+    /// <see cref="ValidateAsync"/> from inside an <see cref="OnValidationRequested"/>,
+    /// <see cref="OnValidationRequestedAsync"/>, or <see cref="OnValidationStateChanged"/>
+    /// handler attached to the same <see cref="EditContext"/>; doing so produces undefined
+    /// behavior.
+    /// </remarks>
     /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/>
     /// is cancelled before or during the validation pass.</exception>
     public async Task<bool> ValidateAsync(CancellationToken cancellationToken = default)
