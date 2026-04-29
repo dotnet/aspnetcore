@@ -271,10 +271,18 @@ public sealed class EditContext
     /// (observable via the parameterless <see cref="IsValidationFaulted()"/>) and the method
     /// returns <c>false</c>.
     /// </summary>
+    /// <param name="cancellationToken">A token that signals cancellation of the validation pass.
+    /// The token is exposed to async handlers via <see cref="ValidationRequestedEventArgs.CancellationToken"/>.
+    /// If the caller cancels the token, this method throws <see cref="OperationCanceledException"/>;
+    /// the form is not marked as faulted in that case.</param>
     /// <returns>True if there are no validation messages after validation and no async handler
     /// faulted; otherwise false.</returns>
-    public async Task<bool> ValidateAsync()
+    /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/>
+    /// is cancelled before or during the validation pass.</exception>
+    public async Task<bool> ValidateAsync(CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         // Cancel all pending field-level async tasks - form-submit validation supersedes them
         CancelAllPendingValidationTasks();
 
@@ -287,6 +295,12 @@ public sealed class EditContext
 
         if (OnValidationRequestedAsync is { } asyncHandler)
         {
+            // Only allocate a new args instance when the caller actually supplied a cancellable token;
+            // otherwise reuse the shared Empty instance with None token.
+            var args = cancellationToken.CanBeCanceled
+                ? new ValidationRequestedEventArgs(cancellationToken)
+                : ValidationRequestedEventArgs.Empty;
+
             var delegates = asyncHandler.GetInvocationList();
             var tasks = new Task[delegates.Length];
 
@@ -295,7 +309,7 @@ public sealed class EditContext
                 try
                 {
                     tasks[i] = ((Func<object, ValidationRequestedEventArgs, Task>)delegates[i])
-                        .Invoke(this, ValidationRequestedEventArgs.Empty)
+                        .Invoke(this, args)
                         ?? Task.CompletedTask;
                 }
                 catch (Exception ex)
@@ -310,9 +324,15 @@ public sealed class EditContext
             {
                 await Task.WhenAll(tasks);
             }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // Caller-requested cancellation propagates to the caller. The form is not marked
+                // faulted because cancellation is not a validation failure.
+                throw;
+            }
             catch (OperationCanceledException)
             {
-                // Cancellation of a form-level async handler is not a fault.
+                // Handler-internal cancellation (not the caller's token) is silently contained.
             }
             catch
             {

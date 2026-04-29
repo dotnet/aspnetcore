@@ -117,7 +117,7 @@ public static partial class EditContextDataAnnotationsExtensions
                 return;
             }
 
-            await ValidateFormAsync(_validatorTypeInfo);
+            await ValidateFormAsync(_validatorTypeInfo, e.CancellationToken);
             _editContext.NotifyValidationStateChanged();
         }
 
@@ -153,7 +153,7 @@ public static partial class EditContextDataAnnotationsExtensions
 
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
-        private async Task ValidateFormAsync(IValidatableInfo validatableInfo)
+        private async Task ValidateFormAsync(IValidatableInfo validatableInfo, CancellationToken cancellationToken)
         {
             var validationContext = new ValidationContext(_editContext.Model, _serviceProvider, items: null);
             var validateContext = new ValidateContext
@@ -172,7 +172,7 @@ public static partial class EditContextDataAnnotationsExtensions
             {
                 validateContext.OnValidationError += AddMapping;
 
-                await validatableInfo.ValidateAsync(_editContext.Model, validateContext, CancellationToken.None);
+                await validatableInfo.ValidateAsync(_editContext.Model, validateContext, cancellationToken);
 
                 if (validateContext.ValidationErrors is { Count: > 0 } validationErrors)
                 {
