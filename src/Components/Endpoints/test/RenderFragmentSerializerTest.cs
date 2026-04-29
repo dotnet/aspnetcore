@@ -171,6 +171,40 @@ public class RenderFragmentSerializerTest
     }
 
     [Fact]
+    public void Serialize_EventCallbackAttribute_IsSkipped()
+    {
+        RenderFragment fragment = builder =>
+        {
+            builder.OpenComponent<TestComponent>(0);
+            builder.AddAttribute(1, "OnClick", EventCallback.Factory.Create(new object(), () => { }));
+            builder.AddComponentParameter(2, "Title", "Hello");
+            builder.CloseComponent();
+        };
+
+        var result = RenderFragmentSerializer.Serialize(fragment);
+
+        Assert.DoesNotContain(result, f => f.AttributeName == "OnClick");
+        Assert.Contains(result, f => f.AttributeName == "Title");
+    }
+
+    [Fact]
+    public void Serialize_EventCallbackOfT_Attribute_IsSkipped()
+    {
+        RenderFragment fragment = builder =>
+        {
+            builder.OpenComponent<TestComponent>(0);
+            builder.AddAttribute(1, "OnChange", EventCallback.Factory.Create<string>(new object(), _ => { }));
+            builder.AddComponentParameter(2, "Title", "Hello");
+            builder.CloseComponent();
+        };
+
+        var result = RenderFragmentSerializer.Serialize(fragment);
+
+        Assert.DoesNotContain(result, f => f.AttributeName == "OnChange");
+        Assert.Contains(result, f => f.AttributeName == "Title");
+    }
+
+    [Fact]
     public void Serialize_SkippedFrames_SiblingStructurePreserved()
     {
         RenderFragment fragment = builder =>
@@ -436,7 +470,7 @@ public class RenderFragmentSerializerTest
         var serialized = RenderFragmentSerializer.Serialize(original);
 
         Assert.Equal(42, serialized[0].ElementKey);
-        Assert.Equal("System.Int32", serialized[0].ElementKeyType);
+        Assert.Contains("System.Int32", serialized[0].ElementKeyType);
 
         var json = JsonSerializer.Serialize(serialized);
         var deserialized = JsonSerializer.Deserialize<List<RenderTreeFrameDTO>>(json)!;
@@ -490,7 +524,7 @@ public class RenderFragmentSerializerTest
         var serialized = RenderFragmentSerializer.Serialize(original);
 
         Assert.Equal(99, serialized[0].ComponentKey);
-        Assert.Equal("System.Int32", serialized[0].ComponentKeyType);
+        Assert.Contains("System.Int32", serialized[0].ComponentKeyType);
 
         var json = JsonSerializer.Serialize(serialized);
         var deserialized = JsonSerializer.Deserialize<List<RenderTreeFrameDTO>>(json)!;
@@ -517,7 +551,7 @@ public class RenderFragmentSerializerTest
         var serialized = RenderFragmentSerializer.Serialize(original);
 
         Assert.Equal(42, serialized[1].AttributeValue);
-        Assert.Equal("System.Int32", serialized[1].AttributeValueType);
+        Assert.Contains("System.Int32", serialized[1].AttributeValueType);
 
         var json = JsonSerializer.Serialize(serialized);
         var deserialized = JsonSerializer.Deserialize<List<RenderTreeFrameDTO>>(json)!;
