@@ -24,6 +24,12 @@ public class ValidationSummary : ComponentBase, IDisposable
     [Parameter] public object? Model { get; set; }
 
     /// <summary>
+    /// Gets or sets an optional CSS class string appended to the <c>validation-errors</c>
+    /// CSS class on the rendered <c>ul</c> element.
+    /// </summary>
+    [Parameter] public string? CssClass { get; set; }
+
+    /// <summary>
     /// Gets or sets a collection of additional attributes that will be applied to the created <c>ul</c> element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
@@ -72,9 +78,12 @@ public class ValidationSummary : ComponentBase, IDisposable
             {
                 first = false;
 
+                var combinedClass = AttributeUtilities.CombineClassNames(AdditionalAttributes,
+                    string.IsNullOrEmpty(CssClass) ? "validation-errors" : $"validation-errors {CssClass}");
+
                 builder.OpenElement(0, "ul");
-                builder.AddAttribute(1, "class", "validation-errors");
-                builder.AddMultipleAttributes(2, AdditionalAttributes);
+                builder.AddMultipleAttributes(1, AdditionalAttributes);
+                builder.AddAttribute(2, "class", combinedClass);
             }
 
             builder.OpenElement(3, "li");
