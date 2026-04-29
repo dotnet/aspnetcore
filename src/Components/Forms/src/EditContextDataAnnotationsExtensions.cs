@@ -85,7 +85,9 @@ public static partial class EditContextDataAnnotationsExtensions
             if (_validatorTypeInfo is ValidatableTypeInfo typeInfo &&
                 typeInfo.GetProperty(fieldIdentifier.FieldName) is ValidatablePropertyInfo validatablePropertyInfo)
             {
-                RunAsyncFieldValidation(fieldIdentifier, validatablePropertyInfo);
+                var cts = new CancellationTokenSource();
+                var task = ValidateFieldAsync(fieldIdentifier, validatablePropertyInfo, cts.Token);
+                _editContext.AddValidationTask(fieldIdentifier, task, cts);
             }
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             else if (TryGetValidatableProperty(fieldIdentifier, out var propertyInfo))
@@ -210,23 +212,6 @@ public static partial class EditContextDataAnnotationsExtensions
             // We have to notify even if there were no messages before and are still no messages now,
             // because the "state" that changed might be the completion of some async validation task
             _editContext.NotifyValidationStateChanged();
-        }
-
-        private void RunAsyncFieldValidation(FieldIdentifier fieldIdentifier, ValidatablePropertyInfo validatableInfo)
-        {
-            var cts = new CancellationTokenSource();
-            var task = ValidateFieldAsync(fieldIdentifier, validatableInfo, cts.Token);
-
-            if (task.IsCompleted)
-            {
-                // Sync-only validators - task completed immediately, results already in store.
-                cts.Dispose();
-            }
-            else
-            {
-                // Has async validators - register for tracking (pending/faulted state).
-                _editContext.AddValidationTask(fieldIdentifier, task, cts);
-            }
         }
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]

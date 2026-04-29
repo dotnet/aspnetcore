@@ -409,6 +409,11 @@ public sealed class EditContext
     /// The <see cref="EditContext"/> takes ownership of the supplied <paramref name="cts"/>: it will be
     /// cancelled if a subsequent validation supersedes this one, and disposed once <paramref name="task"/> completes.
     /// </summary>
+    /// <remarks>
+    /// If <paramref name="task"/> is already completed, it is settled synchronously: the field is
+    /// not parked in the pending state, a faulted task is surfaced via
+    /// <see cref="IsValidationFaulted(in FieldIdentifier)"/>, and <paramref name="cts"/> is disposed.
+    /// </remarks>
     /// <param name="fieldIdentifier">Identifies the field being validated.</param>
     /// <param name="task">The async validation task to track.</param>
     /// <param name="cts">The <see cref="CancellationTokenSource"/> that can cancel the task.</param>
@@ -422,6 +427,23 @@ public sealed class EditContext
         // Cancel any previous pending task for this field. Its observer disposes its own CTS
         // when the validator task settles, so we must not dispose it here while it may still be in flight.
         state.PendingValidationCts?.Cancel();
+
+        if (task.IsCompleted)
+        {
+            // Settle synchronously without parking the slot. Mirrors observer policy: only set
+            // IsValidationFaulted on a faulted task; cancel and success are no-ops on the fault flag.
+            if (task.IsFaulted)
+            {
+                _ = task.Exception; // observe to suppress UnobservedTaskException
+                if (!state.IsValidationFaulted)
+                {
+                    state.IsValidationFaulted = true;
+                    NotifyValidationStateChanged();
+                }
+            }
+            cts.Dispose();
+            return;
+        }
 
         state.PendingValidationTask = task;
         state.PendingValidationCts = cts;
