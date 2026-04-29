@@ -40,8 +40,17 @@ public sealed class EditContext
     public event EventHandler<FieldChangedEventArgs>? OnFieldChanged;
 
     /// <summary>
-    /// An event that is raised when validation is requested.
+    /// An event that is raised when validation is requested. Validator components subscribe
+    /// to this event to perform synchronous validation.
     /// </summary>
+    /// <remarks>
+    /// For a given source of validation, a validator component should subscribe to either
+    /// <see cref="OnValidationRequested"/> or <see cref="OnValidationRequestedAsync"/>, not
+    /// both. Subscribing to both causes the same validator to run twice on
+    /// <see cref="ValidateAsync"/>, with the second pass overwriting the first.
+    /// (The built-in <see cref="EditContextDataAnnotationsExtensions"/> validator subscribes
+    /// to both intentionally and routes between sync- and async-only execution internally.)
+    /// </remarks>
     public event EventHandler<ValidationRequestedEventArgs>? OnValidationRequested;
 
     /// <summary>
@@ -50,9 +59,12 @@ public sealed class EditContext
     /// Handlers are awaited by <see cref="ValidateAsync"/>. <see cref="Validate"/> also invokes
     /// these handlers but requires each to complete synchronously; if any returns an incomplete
     /// <see cref="Task"/>, <see cref="Validate"/> throws <see cref="InvalidOperationException"/>.
-    /// A validator should subscribe to either <see cref="OnValidationRequested"/> or
-    /// <see cref="OnValidationRequestedAsync"/> for a given source of validation, not both.
     /// </summary>
+    /// <remarks>
+    /// For a given source of validation, a validator component should subscribe to either
+    /// <see cref="OnValidationRequested"/> or <see cref="OnValidationRequestedAsync"/>, not
+    /// both. See <see cref="OnValidationRequested"/> for details.
+    /// </remarks>
     public event Func<object, ValidationRequestedEventArgs, Task>? OnValidationRequestedAsync;
 
     /// <summary>
@@ -287,10 +299,13 @@ public sealed class EditContext
     /// <see cref="IsValidationFaulted()"/> result is updated only when a pass completes; it is
     /// preserved across caller-cancelled passes.
     /// </summary>
-    /// <param name="cancellationToken">A token that signals cancellation of the validation pass.
+    /// <param name="cancellationToken">A token that signals cancellation of this validation pass.
     /// The token is exposed to async handlers via <see cref="ValidationRequestedEventArgs.CancellationToken"/>.
     /// If the caller cancels the token, this method throws <see cref="OperationCanceledException"/>;
-    /// the form is not marked as faulted in that case and the previous form-level fault state is preserved.</param>
+    /// the form is not marked as faulted in that case and the previous form-level fault state is preserved.
+    /// The token bounds the in-flight pass only; field-level validation tasks that start independently
+    /// during the awaited window (for example, from user edits) are not linked to this token and
+    /// continue running.</param>
     /// <returns>True if there are no validation messages after validation and no async handler
     /// faulted; otherwise false.</returns>
     /// <remarks>
@@ -413,6 +428,13 @@ public sealed class EditContext
     /// If <paramref name="task"/> is already completed, it is settled synchronously: the field is
     /// not parked in the pending state, a faulted task is surfaced via
     /// <see cref="IsValidationFaulted(in FieldIdentifier)"/>, and <paramref name="cts"/> is disposed.
+    /// <para>
+    /// Validators backing <paramref name="task"/> are expected to clear any prior validation
+    /// messages for the field up-front (before awaiting), and to avoid writing partial results
+    /// to a <see cref="ValidationMessageStore"/> on a path that may subsequently throw. If a
+    /// validator does write partial state and then throws, those messages remain in the store
+    /// until cleared by a subsequent successful validation.
+    /// </para>
     /// </remarks>
     /// <param name="fieldIdentifier">Identifies the field being validated.</param>
     /// <param name="task">The async validation task to track.</param>
