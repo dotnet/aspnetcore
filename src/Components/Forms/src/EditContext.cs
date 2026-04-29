@@ -18,6 +18,7 @@ public sealed class EditContext
     // didn't yet track any state for it, so we behave as if it's in the default state
     // (valid and unmodified).
     private readonly Dictionary<FieldIdentifier, FieldState> _fieldStates = new Dictionary<FieldIdentifier, FieldState>();
+    private bool _isFormValidationFaulted;
 
     /// <summary>
     /// Constructs an instance of <see cref="EditContext"/>.
@@ -231,6 +232,10 @@ public sealed class EditContext
     /// </exception>
     public bool Validate()
     {
+        // Reset form-level faulted state at the start of each validation pass so a previous
+        // faulted ValidateAsync does not bleed into a successful Validate.
+        _isFormValidationFaulted = false;
+
         OnValidationRequested?.Invoke(this, ValidationRequestedEventArgs.Empty);
 
         if (OnValidationRequestedAsync is { } asyncHandler)
@@ -258,34 +263,83 @@ public sealed class EditContext
 
     /// <summary>
     /// Validates this <see cref="EditContext"/> asynchronously.
-    /// Invokes both sync <see cref="OnValidationRequested"/> and async
-    /// <see cref="OnValidationRequestedAsync"/> handlers, cancels any pending
-    /// field-level validation tasks, then returns whether the model is valid.
+    /// Cancels any pending field-level async validation tasks, invokes the synchronous
+    /// <see cref="OnValidationRequested"/> handlers, then invokes and awaits the asynchronous
+    /// <see cref="OnValidationRequestedAsync"/> handlers concurrently. Exceptions from synchronous
+    /// handlers propagate to the caller, matching <see cref="Validate"/>. Any non-cancellation
+    /// exception thrown by an asynchronous handler is contained: the form is marked as faulted
+    /// (observable via the parameterless <see cref="IsValidationFaulted()"/>) and the method
+    /// returns <c>false</c>.
     /// </summary>
-    /// <returns>True if there are no validation messages after validation; otherwise false.</returns>
+    /// <returns>True if there are no validation messages after validation and no async handler
+    /// faulted; otherwise false.</returns>
     public async Task<bool> ValidateAsync()
     {
         // Cancel all pending field-level async tasks - form-submit validation supersedes them
         CancelAllPendingValidationTasks();
 
-        // Fire sync event first (backward compat - existing validators listen here)
+        // Reset form-level faulted state at the start of each validation pass.
+        _isFormValidationFaulted = false;
+
+        // Sync handlers run unchanged - their exceptions propagate to the caller, matching Validate().
+        // This guarantees observable parity for apps that haven't introduced any async validators.
         OnValidationRequested?.Invoke(this, ValidationRequestedEventArgs.Empty);
 
-        // Fire async event - invoke all handlers and await them
         if (OnValidationRequestedAsync is { } asyncHandler)
         {
             var delegates = asyncHandler.GetInvocationList();
             var tasks = new Task[delegates.Length];
+
             for (var i = 0; i < delegates.Length; i++)
             {
-                tasks[i] = ((Func<object, ValidationRequestedEventArgs, Task>)delegates[i])
-                    .Invoke(this, ValidationRequestedEventArgs.Empty);
+                try
+                {
+                    tasks[i] = ((Func<object, ValidationRequestedEventArgs, Task>)delegates[i])
+                        .Invoke(this, ValidationRequestedEventArgs.Empty)
+                        ?? Task.CompletedTask;
+                }
+                catch (Exception ex)
+                {
+                    // Sync throw before the handler's first await - normalize to a faulted Task
+                    // so all handlers are observed uniformly via Task.WhenAll.
+                    tasks[i] = Task.FromException(ex);
+                }
             }
 
-            await Task.WhenAll(tasks);
+            try
+            {
+                await Task.WhenAll(tasks);
+            }
+            catch (OperationCanceledException)
+            {
+                // Cancellation of a form-level async handler is not a fault.
+            }
+            catch
+            {
+                _isFormValidationFaulted = true;
+            }
+
+            // Task.WhenAll surfaces only one exception; if cancellation won the race we may
+            // still have other faulted tasks. Inspect the array to catch those.
+            if (!_isFormValidationFaulted)
+            {
+                for (var i = 0; i < tasks.Length; i++)
+                {
+                    if (tasks[i].IsFaulted)
+                    {
+                        _isFormValidationFaulted = true;
+                        break;
+                    }
+                }
+            }
+
+            if (_isFormValidationFaulted)
+            {
+                NotifyValidationStateChanged();
+            }
         }
 
-        return !GetValidationMessages().Any();
+        return !_isFormValidationFaulted && !GetValidationMessages().Any();
     }
 
     /// <summary>
@@ -375,11 +429,19 @@ public sealed class EditContext
         => IsValidationFaulted(FieldIdentifier.Create(accessor));
 
     /// <summary>
-    /// Returns <c>true</c> if any field's last async validation faulted.
+    /// Returns <c>true</c> if any field's last async validation faulted, or if the most recent
+    /// <see cref="ValidateAsync"/> call observed an unhandled exception from any
+    /// <see cref="OnValidationRequestedAsync"/> handler.
     /// </summary>
-    /// <returns><c>true</c> if any field has a faulted async validation; otherwise <c>false</c>.</returns>
+    /// <returns><c>true</c> if any field has a faulted async validation, or the form-level
+    /// async validation faulted; otherwise <c>false</c>.</returns>
     public bool IsValidationFaulted()
     {
+        if (_isFormValidationFaulted)
+        {
+            return true;
+        }
+
         foreach (var state in _fieldStates)
         {
             if (state.Value.IsValidationFaulted)
