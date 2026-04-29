@@ -161,14 +161,18 @@ public static partial class EditContextDataAnnotationsExtensions
                 ValidationOptions = _validationOptions!,
                 ValidationContext = validationContext,
             };
+
+            // Clear stale messages up-front. If the validator throws partway through, the form
+            // shows no per-field messages (form-level fault state is signaled separately via
+            // EditContext.IsValidationFaulted). Stale messages from a prior pass would be misleading
+            // because they reflect a different model state.
+            _messages.Clear();
+
             try
             {
                 validateContext.OnValidationError += AddMapping;
 
                 await validatableInfo.ValidateAsync(_editContext.Model, validateContext, CancellationToken.None);
-
-                // Transfer results to the ValidationMessageStore
-                _messages.Clear();
 
                 if (validateContext.ValidationErrors is { Count: > 0 } validationErrors)
                 {
@@ -210,10 +214,6 @@ public static partial class EditContextDataAnnotationsExtensions
 
         private void RunAsyncFieldValidation(FieldIdentifier fieldIdentifier, ValidatablePropertyInfo validatableInfo)
         {
-            // Clear stale messages immediately so the field shows neutral state
-            // while async validation is in progress.
-            _messages.Clear(fieldIdentifier);
-
             var cts = new CancellationTokenSource();
             var task = ValidateFieldAsync(fieldIdentifier, validatableInfo, cts.Token);
 
@@ -242,21 +242,23 @@ public static partial class EditContextDataAnnotationsExtensions
                 ValidationContext = validationContext,
             };
 
+            // Clear stale messages up-front so the field shows neutral state during validation
+            // and shows neutral state after a throw or cancellation. Any faulted state is signaled
+            // separately via EditContext.IsValidationFaulted.
+            _messages.Clear(fieldIdentifier);
+            _editContext.NotifyValidationStateChanged();
+
             try
             {
                 await validatableInfo.ValidateAsync(fieldIdentifier.Model, validateContext, cancellationToken);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
-                // Task was cancelled (user re-edited field or form is submitting).
-                // Clear stale messages so the field shows a neutral state, not old results.
-                _messages.Clear(fieldIdentifier);
+                // Task was cancelled (user re-edited field or form is submitting). Messages were
+                // already cleared above; just notify so the UI re-renders.
                 _editContext.NotifyValidationStateChanged();
                 return;
             }
-
-            // Transfer results to the ValidationMessageStore
-            _messages.Clear(fieldIdentifier);
 
             if (validateContext.ValidationErrors is { Count: > 0 } validationErrors)
             {
