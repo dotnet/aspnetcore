@@ -9,13 +9,13 @@ This file should be imported by eng/Versions.props
     <dotnetefPackageVersion>10.0.9</dotnetefPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>10.0.9</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftBclTimeProviderPackageVersion>10.0.9</MicrosoftBclTimeProviderPackageVersion>
-    <MicrosoftDotNetArcadeSdkPackageVersion>10.0.0-beta.26228.119</MicrosoftDotNetArcadeSdkPackageVersion>
-    <MicrosoftDotNetBuildTasksArchivesPackageVersion>10.0.0-beta.26228.119</MicrosoftDotNetBuildTasksArchivesPackageVersion>
-    <MicrosoftDotNetBuildTasksInstallersPackageVersion>10.0.0-beta.26228.119</MicrosoftDotNetBuildTasksInstallersPackageVersion>
-    <MicrosoftDotNetBuildTasksTemplatingPackageVersion>10.0.0-beta.26228.119</MicrosoftDotNetBuildTasksTemplatingPackageVersion>
-    <MicrosoftDotNetHelixSdkPackageVersion>10.0.0-beta.26228.119</MicrosoftDotNetHelixSdkPackageVersion>
-    <MicrosoftDotNetRemoteExecutorPackageVersion>10.0.0-beta.26228.119</MicrosoftDotNetRemoteExecutorPackageVersion>
-    <MicrosoftDotNetSharedFrameworkSdkPackageVersion>10.0.0-beta.26228.119</MicrosoftDotNetSharedFrameworkSdkPackageVersion>
+    <MicrosoftDotNetArcadeSdkPackageVersion>10.0.0-beta.26229.109</MicrosoftDotNetArcadeSdkPackageVersion>
+    <MicrosoftDotNetBuildTasksArchivesPackageVersion>10.0.0-beta.26229.109</MicrosoftDotNetBuildTasksArchivesPackageVersion>
+    <MicrosoftDotNetBuildTasksInstallersPackageVersion>10.0.0-beta.26229.109</MicrosoftDotNetBuildTasksInstallersPackageVersion>
+    <MicrosoftDotNetBuildTasksTemplatingPackageVersion>10.0.0-beta.26229.109</MicrosoftDotNetBuildTasksTemplatingPackageVersion>
+    <MicrosoftDotNetHelixSdkPackageVersion>10.0.0-beta.26229.109</MicrosoftDotNetHelixSdkPackageVersion>
+    <MicrosoftDotNetRemoteExecutorPackageVersion>10.0.0-beta.26229.109</MicrosoftDotNetRemoteExecutorPackageVersion>
+    <MicrosoftDotNetSharedFrameworkSdkPackageVersion>10.0.0-beta.26229.109</MicrosoftDotNetSharedFrameworkSdkPackageVersion>
     <MicrosoftEntityFrameworkCorePackageVersion>10.0.9</MicrosoftEntityFrameworkCorePackageVersion>
     <MicrosoftEntityFrameworkCoreDesignPackageVersion>10.0.9</MicrosoftEntityFrameworkCoreDesignPackageVersion>
     <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>10.0.9</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
@@ -44,7 +44,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftExtensionsFileProvidersCompositePackageVersion>10.0.9</MicrosoftExtensionsFileProvidersCompositePackageVersion>
     <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>10.0.9</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>10.0.9</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
-    <MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>10.0.9-servicing.26228.119</MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>
+    <MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>10.0.9-servicing.26229.109</MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>
     <MicrosoftExtensionsHostingPackageVersion>10.0.9</MicrosoftExtensionsHostingPackageVersion>
     <MicrosoftExtensionsHostingAbstractionsPackageVersion>10.0.9</MicrosoftExtensionsHostingAbstractionsPackageVersion>
     <MicrosoftExtensionsHttpPackageVersion>10.0.9</MicrosoftExtensionsHttpPackageVersion>
@@ -60,16 +60,16 @@ This file should be imported by eng/Versions.props
     <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>10.0.9</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
     <MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>10.0.9</MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>
     <MicrosoftExtensionsPrimitivesPackageVersion>10.0.9</MicrosoftExtensionsPrimitivesPackageVersion>
-    <MicrosoftInternalRuntimeAspNetCoreTransportPackageVersion>10.0.9-servicing.26228.119</MicrosoftInternalRuntimeAspNetCoreTransportPackageVersion>
+    <MicrosoftInternalRuntimeAspNetCoreTransportPackageVersion>10.0.9-servicing.26229.109</MicrosoftInternalRuntimeAspNetCoreTransportPackageVersion>
     <MicrosoftNETRuntimeMonoAOTCompilerTaskPackageVersion>10.0.9</MicrosoftNETRuntimeMonoAOTCompilerTaskPackageVersion>
     <MicrosoftNETRuntimeWebAssemblySdkPackageVersion>10.0.9</MicrosoftNETRuntimeWebAssemblySdkPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>10.0.9</MicrosoftNETCoreAppRefPackageVersion>
-    <MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>10.0.9-servicing.26228.119</MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>
-    <MicrosoftNETCorePlatformsPackageVersion>10.0.9-servicing.26228.119</MicrosoftNETCorePlatformsPackageVersion>
+    <MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>10.0.9-servicing.26229.109</MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>10.0.9-servicing.26229.109</MicrosoftNETCorePlatformsPackageVersion>
     <MicrosoftWebXdtPackageVersion>3.2.9</MicrosoftWebXdtPackageVersion>
-    <NuGetFrameworksPackageVersion>7.0.3-rc.22919</NuGetFrameworksPackageVersion>
-    <NuGetPackagingPackageVersion>7.0.3-rc.22919</NuGetPackagingPackageVersion>
-    <NuGetVersioningPackageVersion>7.0.3-rc.22919</NuGetVersioningPackageVersion>
+    <NuGetFrameworksPackageVersion>7.0.3-rc.23009</NuGetFrameworksPackageVersion>
+    <NuGetPackagingPackageVersion>7.0.3-rc.23009</NuGetPackagingPackageVersion>
+    <NuGetVersioningPackageVersion>7.0.3-rc.23009</NuGetVersioningPackageVersion>
     <SystemCollectionsImmutablePackageVersion>10.0.9</SystemCollectionsImmutablePackageVersion>
     <SystemCompositionPackageVersion>10.0.9</SystemCompositionPackageVersion>
     <SystemConfigurationConfigurationManagerPackageVersion>10.0.9</SystemConfigurationConfigurationManagerPackageVersion>
