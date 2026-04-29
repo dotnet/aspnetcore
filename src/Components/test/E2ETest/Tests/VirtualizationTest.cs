@@ -2034,6 +2034,33 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         }
     }
 
+    // Repeatedly issues `scroll` until the resulting scrollTop satisfies `condition`.
+    // Used for test setup where the browser may silently clamp scrollTop (e.g. before
+    // Virtualize has sized the spacer to make the target reachable). Do NOT use this
+    // when the test's purpose is to verify that a single scroll command took effect —
+    // use AssertScrollTop instead, which polls the position without re-issuing scrolls.
+    private void ScrollUntil(IJavaScriptExecutor js, IWebElement container, Action scroll, Func<long, bool> condition, string expectation)
+    {
+        long st = 0, sh = 0, ch = 0;
+        try
+        {
+            Browser.True(() =>
+            {
+                scroll();
+                st = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+                sh = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+                ch = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+                return condition(st);
+            });
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(
+                $"Scroll assertion failed: expected {expectation}, " +
+                $"but scrollTop={st}, scrollHeight={sh}, clientHeight={ch}, maxScrollTop={sh - ch}", ex);
+        }
+    }
+
     private void ScrollToBottomAndWait(IWebElement container, IJavaScriptExecutor js)
     {
         Browser.True(() =>
@@ -2066,8 +2093,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     private void ScrollMidListAndWaitForRender(IWebElement container, IJavaScriptExecutor js)
     {
-        ScrollContainer(js, container, 5000);
-        AssertScrollTop(js, container, st => st > 4000, "scrollTop > 4000 after ScrollContainer(5000)");
+        ScrollUntil(js, container, () => ScrollContainer(js, container, 5000),
+            st => st > 4000, "scrollTop > 4000 after ScrollContainer(5000)");
         // Wait for Virtualize to render items at the new scroll position.
         Browser.True(() =>
         {
@@ -2189,8 +2216,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
     private void ScrollNearTopAndWaitForRender(IWebElement container, IJavaScriptExecutor js)
     {
-        ScrollContainer(js, container, 200);
-        AssertScrollTop(js, container, st => st >= 150, "scrollTop >= 150 after ScrollContainer(200)");
+        ScrollUntil(js, container, () => ScrollContainer(js, container, 200),
+            st => st >= 150, "scrollTop >= 150 after ScrollContainer(200)");
         Browser.True(() =>
         {
             var items = container.FindElements(By.CssSelector(".item[data-index]"));
@@ -2698,6 +2725,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             relTopBefore,
             "Beginning mode mid-list: viewport should stay stable after prepend");
     }
+
     [Theory]
     [InlineData(false, false)]
     [InlineData(true, false)]
@@ -2976,8 +3004,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Scroll down a small amount so the anchor item (around index 4-5) is
         // within the range of "Delete 10 from top" (items 0-9).
-        ScrollContainer(js, container, 200);
-        AssertScrollTop(js, container, st => st > 100, "scrollTop > 100 after ScrollContainer(200)");
+        ScrollUntil(js, container, () => ScrollContainer(js, container, 200),
+            st => st > 100, "scrollTop > 100 after ScrollContainer(200)");
         WaitForRenderToSettle(container, js);
 
         // Delete 10 from the top — this removes items 0-9, including the anchor.
@@ -3048,8 +3076,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         var currentScrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
         var targetScrollTop = (int)(currentScrollTop - 500);
-        ScrollContainer(js, container, targetScrollTop);
-        AssertScrollTop(js, container, st => st < currentScrollTop - 100,
+        ScrollUntil(js, container, () => ScrollContainer(js, container, targetScrollTop),
+            st => st < currentScrollTop - 100,
             $"scrollTop < {currentScrollTop - 100} after scrolling away from bottom");
 
         var scrollTopBeforeSecondAppend = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
@@ -3088,8 +3116,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => container.FindElements(By.CssSelector("[data-index='-10']")).Count > 0);
         WaitForRenderToSettle(container, js);
 
-        ScrollContainer(js, container, 500);
-        AssertScrollTop(js, container, st => st > 200, "scrollTop > 200 after ScrollContainer(500)");
+        ScrollUntil(js, container, () => ScrollContainer(js, container, 500),
+            st => st > 200, "scrollTop > 200 after ScrollContainer(500)");
 
         var scrollTopBefore = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
 
