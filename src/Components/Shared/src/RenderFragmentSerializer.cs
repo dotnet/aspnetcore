@@ -4,7 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
@@ -62,7 +61,7 @@ internal static partial class RenderFragmentSerializer
                 case RenderTreeFrameType.Element:
                     dto.ElementName = frame.ElementName;
                     dto.ElementKey = frame.ElementKey;
-                    dto.ElementKeyType = frame.ElementKey?.GetType().FullName;
+                    dto.ElementKeyType = frame.ElementKey?.GetType().AssemblyQualifiedName;
                     containerStack[containerCount++] = (i + frame.ElementSubtreeLength, RenderTreeFrameType.Element);
                     break;
                 case RenderTreeFrameType.Text:
@@ -87,10 +86,15 @@ internal static partial class RenderFragmentSerializer
                         Log.EventHandlerSkipped(_logger, frame.AttributeName);
                         continue;
                     }
+                    else if (IsEventCallback(frame.AttributeValue))
+                    {
+                        Log.EventHandlerSkipped(_logger, frame.AttributeName);
+                        continue;
+                    }
                     else
                     {
                         dto.AttributeValue = frame.AttributeValue;
-                        dto.AttributeValueType = frame.AttributeValue?.GetType().FullName;
+                        dto.AttributeValueType = frame.AttributeValue?.GetType().AssemblyQualifiedName;
                     }
                     break;
                 case RenderTreeFrameType.Component:
@@ -100,7 +104,7 @@ internal static partial class RenderFragmentSerializer
                     if (frame.ComponentKey is not null)
                     {
                         dto.ComponentKey = frame.ComponentKey;
-                        dto.ComponentKeyType = frame.ComponentKey.GetType().FullName;
+                        dto.ComponentKeyType = frame.ComponentKey.GetType().AssemblyQualifiedName;
                     }
                     containerStack[containerCount++] = (i + frame.ComponentSubtreeLength, RenderTreeFrameType.Component);
                     break;
@@ -229,6 +233,22 @@ internal static partial class RenderFragmentSerializer
             return json.Deserialize(type);
         }
         return json.ToString();
+    }
+
+    private static bool IsEventCallback(object? value)
+    {
+        if (value is null)
+        {
+            return false;
+        }
+
+        if (value is EventCallback)
+        {
+            return true;
+        }
+
+        var type = value.GetType();
+        return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(EventCallback<>);
     }
 
     private static partial class Log
