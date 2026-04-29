@@ -28,6 +28,7 @@ public sealed class ComponentParameterAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesMustBeUnique,
             DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesHasWrongType,
             DiagnosticDescriptors.ComponentParametersShouldBeAutoProperties,
+            DiagnosticDescriptors.ComponentParametersShouldNotUseRequiredOrInit,
         });
     }
 
@@ -134,6 +135,49 @@ public sealed class ComponentParameterAnalyzer : DiagnosticAnalyzer
                     }
                 });
             }, SymbolKind.NamedType);
+
+            // Register syntax node action to check for required/init modifiers on component parameters
+            context.RegisterSyntaxNodeAction(context =>
+            {
+                var propertyDeclaration = (PropertyDeclarationSyntax)context.Node;
+                var propertySymbol = context.SemanticModel.GetDeclaredSymbol(propertyDeclaration);
+                
+                if (propertySymbol == null || !ComponentFacts.IsParameter(symbols, propertySymbol))
+                {
+                    return;
+                }
+
+                // Check for required modifier on the property
+                foreach (var modifier in propertyDeclaration.Modifiers)
+                {
+                    var modifierText = modifier.ValueText;
+                    if (modifierText == "required")
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            DiagnosticDescriptors.ComponentParametersShouldNotUseRequiredOrInit,
+                            modifier.GetLocation(),
+                            propertySymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
+                            "required"));
+                    }
+                }
+
+                // Check for init accessor
+                if (propertyDeclaration.AccessorList != null)
+                {
+                    foreach (var accessor in propertyDeclaration.AccessorList.Accessors)
+                    {
+                        // Check if this is an init accessor (init is a keyword that replaces set, not a modifier)
+                        if (accessor.Keyword.ValueText == "init")
+                        {
+                            context.ReportDiagnostic(Diagnostic.Create(
+                                DiagnosticDescriptors.ComponentParametersShouldNotUseRequiredOrInit,
+                                accessor.Keyword.GetLocation(),
+                                propertySymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
+                                "init"));
+                        }
+                    }
+                }
+            }, SyntaxKind.PropertyDeclaration);
         });
     }
 

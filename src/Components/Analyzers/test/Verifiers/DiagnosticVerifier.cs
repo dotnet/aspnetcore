@@ -6,6 +6,7 @@
 using System.Globalization;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace TestHelper;
@@ -44,6 +45,18 @@ public abstract partial class DiagnosticVerifier
     protected void VerifyCSharpDiagnostic(string source, params DiagnosticResult[] expected)
     {
         VerifyDiagnostics(new[] { source }, LanguageNames.CSharp, GetCSharpDiagnosticAnalyzer(), expected);
+    }
+
+    /// <summary>
+    /// Called to test a C# DiagnosticAnalyzer when applied on the single inputted string as a source with specific parse options
+    /// Note: input a DiagnosticResult for each Diagnostic expected
+    /// </summary>
+    /// <param name="source">A class in the form of a string to run the analyzer on</param>
+    /// <param name="parseOptions">Parse options to use for the test</param>
+    /// <param name="expected"> DiagnosticResults that should appear after the analyzer is run on the source</param>
+    protected void VerifyCSharpDiagnostic(string source, CSharpParseOptions parseOptions, params DiagnosticResult[] expected)
+    {
+        VerifyDiagnostics(new[] { source }, LanguageNames.CSharp, GetCSharpDiagnosticAnalyzer(), parseOptions, expected);
     }
 
     /// <summary>
@@ -90,6 +103,21 @@ public abstract partial class DiagnosticVerifier
     private void VerifyDiagnostics(string[] sources, string language, DiagnosticAnalyzer analyzer, params DiagnosticResult[] expected)
     {
         var diagnostics = GetSortedDiagnostics(sources, language, analyzer);
+        VerifyDiagnosticResults(diagnostics, analyzer, expected);
+    }
+
+    /// <summary>
+    /// General method that gets a collection of actual diagnostics found in the source after the analyzer is run with specific parse options,
+    /// then verifies each of them.
+    /// </summary>
+    /// <param name="sources">An array of strings to create source documents from to run the analyzers on</param>
+    /// <param name="language">The language of the classes represented by the source strings</param>
+    /// <param name="analyzer">The analyzer to be run on the source code</param>
+    /// <param name="parseOptions">Parse options to use for the test</param>
+    /// <param name="expected">DiagnosticResults that should appear after the analyzer is run on the sources</param>
+    private void VerifyDiagnostics(string[] sources, string language, DiagnosticAnalyzer analyzer, CSharpParseOptions parseOptions, params DiagnosticResult[] expected)
+    {
+        var diagnostics = GetSortedDiagnostics(sources, language, analyzer, parseOptions);
         VerifyDiagnosticResults(diagnostics, analyzer, expected);
     }
 
