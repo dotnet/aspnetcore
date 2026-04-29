@@ -12,7 +12,9 @@ internal sealed class DeferredHostBuilder : IHostBuilder
 {
     public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
 
-    private Action<IHostBuilder> _configure;
+    private Action<IHostBuilder> _configureHostBuilder;
+    private Action<IHostApplicationBuilder>? _configureHostApplicationBuilder;
+
     private Func<string[], object>? _hostFactory;
 
     private readonly ConfigurationManager _hostConfiguration = new();
@@ -23,7 +25,7 @@ internal sealed class DeferredHostBuilder : IHostBuilder
 
     public DeferredHostBuilder()
     {
-        _configure = b =>
+        _configureHostBuilder = b =>
         {
             // Copy the properties from this builder into the builder
             // that we're going to receive
@@ -55,13 +57,19 @@ internal sealed class DeferredHostBuilder : IHostBuilder
 
     public IHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate)
     {
-        _configure += b => b.ConfigureAppConfiguration(configureDelegate);
+        // We don't have HostBuilderContext here.
+        // Also, HostBuilderContext is private in HostApplicationBuilder
+        // For that most part, HostBuilderContext is only exposed during HostBuilderAdapter.ApplyChanges.
+        // This is done only in Build().
+        // Build is already late as we want configuration to apply very early.
+        // Do we need new API for this functionality? (the new API will only then be Action<IConfigurationBuilder>.
+        _configureHostApplicationBuilder += b => configureDelegate(null!, b.Configuration);
         return this;
     }
 
     public IHostBuilder ConfigureContainer<TContainerBuilder>(Action<HostBuilderContext, TContainerBuilder> configureDelegate)
     {
-        _configure += b => b.ConfigureContainer(configureDelegate);
+        _configureHostBuilder += b => b.ConfigureContainer(configureDelegate);
         return this;
     }
 
@@ -76,25 +84,30 @@ internal sealed class DeferredHostBuilder : IHostBuilder
 
     public IHostBuilder ConfigureServices(Action<HostBuilderContext, IServiceCollection> configureDelegate)
     {
-        _configure += b => b.ConfigureServices(configureDelegate);
+        _configureHostBuilder += b => b.ConfigureServices(configureDelegate);
         return this;
     }
 
     public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory) where TContainerBuilder : notnull
     {
-        _configure += b => b.UseServiceProviderFactory(factory);
+        _configureHostBuilder += b => b.UseServiceProviderFactory(factory);
         return this;
     }
 
     public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(Func<HostBuilderContext, IServiceProviderFactory<TContainerBuilder>> factory) where TContainerBuilder : notnull
     {
-        _configure += b => b.UseServiceProviderFactory(factory);
+        _configureHostBuilder += b => b.UseServiceProviderFactory(factory);
         return this;
     }
 
     public void ConfigureHostBuilder(object hostBuilder)
     {
-        _configure(((IHostBuilder)hostBuilder));
+        _configureHostBuilder(((IHostBuilder)hostBuilder));
+    }
+
+    public void ConfigureHostApplicationBuilder(object hostApplicationBuilder)
+    {
+        _configureHostApplicationBuilder?.Invoke((IHostApplicationBuilder)hostApplicationBuilder);
     }
 
     public void EntryPointCompleted(Exception? exception)
