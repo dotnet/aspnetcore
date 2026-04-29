@@ -165,6 +165,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
             _renderer = new WebAssemblyRenderer(Services, collection, loggerFactory, jsComponentInterop);
 
             WebAssemblyNavigationManager.Instance.CreateLogger(loggerFactory);
+            RenderFragmentSerializer.SetLogger(loggerFactory);
 
             RootComponentOperationBatch? initialOperationBatch = null;
             if (Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS") == "true")
