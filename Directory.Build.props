@@ -92,6 +92,13 @@
     <RestoreDisableParallel>true</RestoreDisableParallel>
   </PropertyGroup>
 
+ <!-- Add net10.0 support when using an MSBuild version that doesn't include it natively -->
+ <ItemGroup Condition="!$([MSBuild]::VersionGreaterThanOrEquals($(MSBuildVersion), '18.0.0'))">
+   <SupportedNETCoreAppTargetFramework Include=".NETCoreApp,Version=v10.0"
+                                       DisplayName=".NET 10.0"
+                                       Alias="net10.0" />
+ </ItemGroup>
+
   <Import Project="eng\QuarantinedTests.BeforeArcade.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Project="eng\QuarantinedTests.AfterArcade.props" />
