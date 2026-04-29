@@ -215,6 +215,8 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="Microsoft.Data.SqlClient" />
     <LatestPackageReference Include="Microsoft.Data.SqlClient.Extensions.Azure" />
     <LatestPackageReference Include="Microsoft.Windows.CsWin32" />
+    <LatestPackageReference Include="ModelContextProtocol" />
+    <LatestPackageReference Include="ModelContextProtocol.AspNetCore" />
     <LatestPackageReference Include="Mono.Cecil" />
     <LatestPackageReference Include="Mono.TextTemplating" />
     <LatestPackageReference Include="Moq" />

@@ -452,7 +452,7 @@ configuration:
       - removeMilestone
       - addMilestone:
           milestone: 11.0-preview4
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/11.0-preview3 branch'
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/11.0-preview4 branch'
     - if:
       - payloadType: Issues
       - isAction:

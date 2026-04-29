@@ -3767,5 +3767,28 @@
         "wwwroot/{ProjectName}.lib.module.js"
       ]
     }
+  },
+  "mcpserver": {
+    "Local": {
+      "Template": "mcpserver",
+      "Arguments": "new mcpserver --transport local",
+      "Files": [
+        "Program.cs",
+        "README.md",
+        ".mcp/server.json",
+        "Tools/RandomNumberTools.cs"
+      ]
+    },
+    "Remote": {
+      "Template": "mcpserver",
+      "Arguments": "new mcpserver --transport remote",
+      "Files": [
+        "Program.cs",
+        "README.md",
+        "{ProjectName}.http",
+        "Properties/launchSettings.json",
+        "Tools/RandomNumberTools.cs"
+      ]
+    }
   }
 }
