@@ -1,1 +1,2 @@
 #nullable enable
+virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.ConfigureHostConfiguration(Microsoft.Extensions.Configuration.IConfigurationBuilder! configurationBuilder) -> void

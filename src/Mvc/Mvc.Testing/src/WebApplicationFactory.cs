@@ -284,6 +284,9 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
                         { HostDefaults.ApplicationKey, typeof(TEntryPoint).Assembly.GetName()?.Name ?? string.Empty }
                 });
             });
+
+            deferredHostBuilder.ConfigureHostConfiguration(ConfigureHostConfiguration);
+
             // This helper call does the hard work to determine if we can fallback to diagnostic source events to get the host instance
             var factory = HostFactoryResolver.ResolveHostFactory(
                 typeof(TEntryPoint).Assembly,
@@ -613,6 +616,13 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         TryConfigureServerPort(() => GetServerAddressFeature(host));
         host.Start();
         return host;
+    }
+
+    /// <summary>
+    /// Gives a fixture an opportunity to add test configuration source that will be available immediately in entry point.
+    /// </summary>
+    protected virtual void ConfigureHostConfiguration(IConfigurationBuilder configurationBuilder)
+    {
     }
 
     private static IServerAddressesFeature? GetServerAddressFeature(IHost host) => host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>();
