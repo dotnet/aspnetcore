@@ -492,6 +492,7 @@ public sealed class EditContext
 
     private void CancelAllPendingValidationTasks()
     {
+        var changed = false;
         foreach (var (_, state) in _fieldStates)
         {
             if (state.PendingValidationCts is { } cts)
@@ -501,7 +502,16 @@ public sealed class EditContext
                 state.PendingValidationTask = null;
                 state.PendingValidationCts = null;
                 state.IsValidationFaulted = false;
+                changed = true;
             }
+        }
+
+        if (changed)
+        {
+            // The pending/faulted state of one or more fields just changed. Notify so UI components
+            // observing IsValidationPending or IsValidationFaulted re-render even if no subsequent
+            // handler raises its own notification.
+            NotifyValidationStateChanged();
         }
     }
 
