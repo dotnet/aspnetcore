@@ -1096,4 +1096,24 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var jsExecutor = (IJavaScriptExecutor)Browser;
         return (bool)jsExecutor.ExecuteScript($"return arguments[0].attributes['{attribute}'] !== undefined;", webElement);
     }
+    [Fact]
+    public void ValidationSummaryAppliesCssClass()
+    {
+        var appElement = MountTypicalValidationComponent();
+        var nameInput = appElement.FindElement(By.ClassName("name")).FindElement(By.TagName("input"));
+        var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
+
+        // Make the form invalid to trigger rendering of the ValidationSummary elements
+        nameInput.SendKeys("01234567890123456789\t");
+        submitButton.Click();
+
+        // Default ValidationSummary renders with only "validation-errors" class
+        var defaultSummaryElement = appElement.FindElement(By.ClassName("all-errors")).FindElement(By.TagName("ul"));
+        Browser.Equal("validation-errors", () => defaultSummaryElement.GetDomAttribute("class"));
+
+        // ValidationSummary with CssClass appends the custom class to "validation-errors"
+        var customSummaryElement = appElement.FindElement(By.ClassName("all-errors-custom-class")).FindElement(By.TagName("ul"));
+        Browser.Equal("validation-errors custom-summary-css-class", () => customSummaryElement.GetDomAttribute("class"));
+    }
+
 }
