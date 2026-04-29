@@ -54,6 +54,25 @@
     </TestContentPackage.RenderFragmentChild>
 }
 
+@if (Test == 6)
+{
+    <TestContentPackage.RenderFragmentChild @rendermode="renderMode" IdSuffix="test6">
+        <TestContentPackage.TypedParameterDisplay IdSuffix="typed" Count="42" Score="3.14" IsActive="true" />
+    </TestContentPackage.RenderFragmentChild>
+}
+
+@if (Test == 7)
+{
+    <TestContentPackage.RenderFragmentChild @rendermode="renderMode" IdSuffix="test7">
+        <div id="keyed-container">
+            @for (var i = 1; i <= 3; i++)
+            {
+                <span @key="i" id="keyed-@i">Item @i</span>
+            }
+        </div>
+    </TestContentPackage.RenderFragmentChild>
+}
+
 @code {
     [Parameter, SupplyParameterFromQuery(Name = "test")]
     public int Test { get; set; }

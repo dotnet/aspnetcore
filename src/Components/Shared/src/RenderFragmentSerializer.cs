@@ -8,12 +8,13 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components;
 
 internal static partial class RenderFragmentSerializer
 {
-    private static ILogger? _logger;
+    private static ILogger _logger = NullLogger.Instance;
 
     internal static void SetLogger(ILoggerFactory loggerFactory)
     {
@@ -35,7 +36,11 @@ internal static partial class RenderFragmentSerializer
         var frames = builder.GetFrames();
         var framesSpan = frames.Array.AsSpan(0, frames.Count);
         var result = new List<RenderTreeFrameDTO>();
-        Span<(int OriginalEndIndex, RenderTreeFrameType Type)> containerStack = stackalloc (int, RenderTreeFrameType)[framesSpan.Length];
+
+        const int stackAllocThreshold = 128;
+        Span<(int OriginalEndIndex, RenderTreeFrameType Type)> containerStack = framesSpan.Length <= stackAllocThreshold
+            ? stackalloc (int, RenderTreeFrameType)[framesSpan.Length]
+            : new (int, RenderTreeFrameType)[framesSpan.Length];
         var containerCount = 0;
 
         for (var i = 0; i < framesSpan.Length; i++)
@@ -56,7 +61,8 @@ internal static partial class RenderFragmentSerializer
             {
                 case RenderTreeFrameType.Element:
                     dto.ElementName = frame.ElementName;
-                    dto.ElementKey = frame.ElementKey?.ToString();
+                    dto.ElementKey = frame.ElementKey;
+                    dto.ElementKeyType = frame.ElementKey?.GetType().FullName;
                     containerStack[containerCount++] = (i + frame.ElementSubtreeLength, RenderTreeFrameType.Element);
                     break;
                 case RenderTreeFrameType.Text:
@@ -71,57 +77,51 @@ internal static partial class RenderFragmentSerializer
                     {
                         dto.NestedRenderFragment = Serialize(nestedFragment, depth + 1);
                     }
+                    else if (frame.AttributeValue is Delegate d && d.GetType().IsGenericType && d.GetType().GetGenericTypeDefinition() == typeof(RenderFragment<>))
+                    {
+                        Log.GenericRenderFragmentSkipped(_logger, frame.AttributeName);
+                        continue;
+                    }
                     else if (frame.AttributeValue is Delegate)
                     {
-                        if (_logger is not null)
-                        {
-                            Log.EventHandlerSkipped(_logger, frame.AttributeName);
-                        }
+                        Log.EventHandlerSkipped(_logger, frame.AttributeName);
                         continue;
                     }
                     else
                     {
                         dto.AttributeValue = frame.AttributeValue;
+                        dto.AttributeValueType = frame.AttributeValue?.GetType().FullName;
                     }
                     break;
                 case RenderTreeFrameType.Component:
                     dto.ComponentType = frame.ComponentType is not null
                         ? $"{frame.ComponentType.FullName}, {frame.ComponentType.Assembly.GetName().Name}"
                         : null;
-                    dto.ComponentKey = frame.ComponentKey?.ToString();
+                    if (frame.ComponentKey is not null)
+                    {
+                        dto.ComponentKey = frame.ComponentKey;
+                        dto.ComponentKeyType = frame.ComponentKey.GetType().FullName;
+                    }
                     containerStack[containerCount++] = (i + frame.ComponentSubtreeLength, RenderTreeFrameType.Component);
                     break;
                 case RenderTreeFrameType.Region:
                     containerStack[containerCount++] = (i + frame.RegionSubtreeLength, RenderTreeFrameType.Region);
                     break;
                 case RenderTreeFrameType.ElementReferenceCapture:
-                    if (_logger is not null)
-                    {
-                        Log.ElementReferenceCaptureSkipped(_logger);
-                    }
+                    Log.ElementReferenceCaptureSkipped(_logger);
                     continue;
                 case RenderTreeFrameType.ComponentReferenceCapture:
-                    if (_logger is not null)
-                    {
-                        Log.ComponentReferenceCaptureSkipped(_logger);
-                    }
+                    Log.ComponentReferenceCaptureSkipped(_logger);
                     continue;
                 case RenderTreeFrameType.ComponentRenderMode:
-                    if (_logger is not null)
-                    {
-                        Log.ComponentRenderModeSkipped(_logger);
-                    }
+                    Log.ComponentRenderModeSkipped(_logger);
                     continue;
                 case RenderTreeFrameType.NamedEvent:
-                    if (_logger is not null)
-                    {
-                        Log.NamedEventSkipped(_logger);
-                    }
+                    Log.NamedEventSkipped(_logger);
                     continue;
                 default:
                     throw new NotImplementedException($"Serialization for frame type '{frame.FrameType}' is not implemented.");
             }
-
             result.Add(dto);
         }
 
@@ -154,7 +154,9 @@ internal static partial class RenderFragmentSerializer
                         builder.OpenElement(dto.Sequence, dto.ElementName!);
                         if (dto.ElementKey is not null)
                         {
-                            builder.SetKey(dto.ElementKey);
+                            builder.SetKey(dto.ElementKey is JsonElement jsonElement
+                                ? ConvertTypedValue(jsonElement, dto.ElementKeyType!)!
+                                : dto.ElementKey);
                         }
                         break;
                     case RenderTreeFrameType.Text:
@@ -172,7 +174,7 @@ internal static partial class RenderFragmentSerializer
                         else
                         {
                             var value = dto.AttributeValue is JsonElement je
-                                ? ConvertJsonElement(je)
+                                ? ConvertTypedValue(je, dto.AttributeValueType!)
                                 : dto.AttributeValue;
                             builder.AddAttribute(dto.Sequence, dto.AttributeName!, value);
                         }
@@ -186,7 +188,9 @@ internal static partial class RenderFragmentSerializer
                         builder.OpenComponent(dto.Sequence, componentType);
                         if (dto.ComponentKey is not null)
                         {
-                            builder.SetKey(dto.ComponentKey);
+                            builder.SetKey(dto.ComponentKey is JsonElement jsonElement
+                                ? ConvertTypedValue(jsonElement, dto.ComponentKeyType!)!
+                                : dto.ComponentKey);
                         }
                         break;
                     case RenderTreeFrameType.Region:
@@ -215,15 +219,17 @@ internal static partial class RenderFragmentSerializer
         }
     }
 
-    private static object? ConvertJsonElement(JsonElement element) => element.ValueKind switch
+    [UnconditionalSuppressMessage("Trimming", "IL2057", Justification = "Type names are serialized from known component parameter types.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Attribute and key types are primitive or well-known types preserved by the application.")]
+    private static object? ConvertTypedValue(JsonElement json, string typeName)
     {
-        JsonValueKind.String => element.GetString(),
-        JsonValueKind.Number => element.TryGetInt64(out var l) ? l : element.GetDouble(),
-        JsonValueKind.True => true,
-        JsonValueKind.False => false,
-        JsonValueKind.Null => null,
-        _ => element.GetRawText(),
-    };
+        var type = Type.GetType(typeName);
+        if (type is not null)
+        {
+            return json.Deserialize(type);
+        }
+        return json.ToString();
+    }
 
     private static partial class Log
     {
@@ -241,6 +247,9 @@ internal static partial class RenderFragmentSerializer
 
         [LoggerMessage(5, LogLevel.Warning, "A @formname directive inside a RenderFragment was skipped during serialization. Named events are an SSR-only mechanism and cannot cross render mode boundaries.", EventName = "NamedEventSkipped")]
         public static partial void NamedEventSkipped(ILogger logger);
+
+        [LoggerMessage(6, LogLevel.Warning, "A generic RenderFragment<T> parameter '{AttributeName}' inside a RenderFragment was skipped during serialization. Only non-generic RenderFragment is supported across render mode boundaries.", EventName = "GenericRenderFragmentSkipped")]
+        public static partial void GenericRenderFragmentSkipped(ILogger logger, string? attributeName);
     }
 }
 
@@ -264,7 +273,10 @@ internal sealed class RenderTreeFrameDTO
     public string? ElementName { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? ElementKey { get; set; }
+    public object? ElementKey { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ElementKeyType { get; set; }
 
     // Text
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -282,6 +294,9 @@ internal sealed class RenderTreeFrameDTO
     public object? AttributeValue { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? AttributeValueType { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<RenderTreeFrameDTO>? NestedRenderFragment { get; set; }
 
     // Component
@@ -289,5 +304,8 @@ internal sealed class RenderTreeFrameDTO
     public string? ComponentType { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? ComponentKey { get; set; }
+    public object? ComponentKey { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ComponentKeyType { get; set; }
 }

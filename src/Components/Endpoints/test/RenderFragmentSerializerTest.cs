@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 
@@ -421,6 +422,226 @@ public class RenderFragmentSerializerTest
         Assert.Equal("my-key", frames.Array[0].ElementKey);
     }
 
+    [Fact]
+    public void Roundtrip_IntKey_PreservesType()
+    {
+        RenderFragment original = builder =>
+        {
+            builder.OpenElement(0, "div");
+            builder.SetKey(42);
+            builder.AddContent(1, "keyed");
+            builder.CloseElement();
+        };
+
+        var serialized = RenderFragmentSerializer.Serialize(original);
+
+        Assert.Equal(42, serialized[0].ElementKey);
+        Assert.Equal("System.Int32", serialized[0].ElementKeyType);
+
+        var json = JsonSerializer.Serialize(serialized);
+        var deserialized = JsonSerializer.Deserialize<List<RenderTreeFrameDTO>>(json)!;
+        var fragment = RenderFragmentSerializer.Deserialize(deserialized);
+
+        var builder2 = new RenderTreeBuilder();
+        fragment(builder2);
+        var frames = builder2.GetFrames();
+
+        Assert.IsType<int>(frames.Array[0].ElementKey);
+        Assert.Equal(42, frames.Array[0].ElementKey);
+    }
+
+    [Fact]
+    public void Roundtrip_GuidKey_PreservesType()
+    {
+        var guid = Guid.NewGuid();
+
+        RenderFragment original = builder =>
+        {
+            builder.OpenElement(0, "div");
+            builder.SetKey(guid);
+            builder.AddContent(1, "keyed");
+            builder.CloseElement();
+        };
+
+        var serialized = RenderFragmentSerializer.Serialize(original);
+        var json = JsonSerializer.Serialize(serialized);
+        var deserialized = JsonSerializer.Deserialize<List<RenderTreeFrameDTO>>(json)!;
+        var fragment = RenderFragmentSerializer.Deserialize(deserialized);
+
+        var builder2 = new RenderTreeBuilder();
+        fragment(builder2);
+        var frames = builder2.GetFrames();
+
+        Assert.IsType<Guid>(frames.Array[0].ElementKey);
+        Assert.Equal(guid, frames.Array[0].ElementKey);
+    }
+
+    [Fact]
+    public void Roundtrip_ComponentWithIntKey_PreservesType()
+    {
+        RenderFragment original = builder =>
+        {
+            builder.OpenComponent<TestComponent>(0);
+            builder.SetKey(99);
+            builder.AddComponentParameter(1, "Title", "Hello");
+            builder.CloseComponent();
+        };
+
+        var serialized = RenderFragmentSerializer.Serialize(original);
+
+        Assert.Equal(99, serialized[0].ComponentKey);
+        Assert.Equal("System.Int32", serialized[0].ComponentKeyType);
+
+        var json = JsonSerializer.Serialize(serialized);
+        var deserialized = JsonSerializer.Deserialize<List<RenderTreeFrameDTO>>(json)!;
+        var fragment = RenderFragmentSerializer.Deserialize(deserialized);
+
+        var builder2 = new RenderTreeBuilder();
+        fragment(builder2);
+        var frames = builder2.GetFrames();
+
+        Assert.IsType<int>(frames.Array[0].ComponentKey);
+        Assert.Equal(99, frames.Array[0].ComponentKey);
+    }
+
+    [Fact]
+    public void Roundtrip_IntAttribute_PreservesTypeAfterJson()
+    {
+        RenderFragment original = builder =>
+        {
+            builder.OpenComponent<TypedComponent>(0);
+            builder.AddComponentParameter(1, "Count", 42);
+            builder.CloseComponent();
+        };
+
+        var serialized = RenderFragmentSerializer.Serialize(original);
+
+        Assert.Equal(42, serialized[1].AttributeValue);
+        Assert.Equal("System.Int32", serialized[1].AttributeValueType);
+
+        var json = JsonSerializer.Serialize(serialized);
+        var deserialized = JsonSerializer.Deserialize<List<RenderTreeFrameDTO>>(json)!;
+        var fragment = RenderFragmentSerializer.Deserialize(deserialized);
+
+        var builder2 = new RenderTreeBuilder();
+        fragment(builder2);
+        var frames = builder2.GetFrames();
+
+        Assert.IsType<int>(frames.Array[1].AttributeValue);
+        Assert.Equal(42, frames.Array[1].AttributeValue);
+    }
+
+    [Fact]
+    public void Roundtrip_GuidAttribute_PreservesTypeAfterJson()
+    {
+        var guid = Guid.NewGuid();
+
+        RenderFragment original = builder =>
+        {
+            builder.OpenComponent<TypedComponent>(0);
+            builder.AddComponentParameter(1, "Id", guid);
+            builder.CloseComponent();
+        };
+
+        var serialized = RenderFragmentSerializer.Serialize(original);
+        var json = JsonSerializer.Serialize(serialized);
+        var deserialized = JsonSerializer.Deserialize<List<RenderTreeFrameDTO>>(json)!;
+        var fragment = RenderFragmentSerializer.Deserialize(deserialized);
+
+        var builder2 = new RenderTreeBuilder();
+        fragment(builder2);
+        var frames = builder2.GetFrames();
+
+        Assert.IsType<Guid>(frames.Array[1].AttributeValue);
+        Assert.Equal(guid, frames.Array[1].AttributeValue);
+    }
+
+    [Fact]
+    public void Roundtrip_DoubleAttribute_PreservesTypeAfterJson()
+    {
+        RenderFragment original = builder =>
+        {
+            builder.OpenComponent<TypedComponent>(0);
+            builder.AddComponentParameter(1, "Score", 3.14);
+            builder.CloseComponent();
+        };
+
+        var serialized = RenderFragmentSerializer.Serialize(original);
+        var json = JsonSerializer.Serialize(serialized);
+        var deserialized = JsonSerializer.Deserialize<List<RenderTreeFrameDTO>>(json)!;
+        var fragment = RenderFragmentSerializer.Deserialize(deserialized);
+
+        var builder2 = new RenderTreeBuilder();
+        fragment(builder2);
+        var frames = builder2.GetFrames();
+
+        Assert.IsType<double>(frames.Array[1].AttributeValue);
+        Assert.Equal(3.14, frames.Array[1].AttributeValue);
+    }
+
+    [Fact]
+    public void Serialize_GenericRenderFragment_IsSkipped()
+    {
+        RenderFragment<string> typedFragment = value => builder =>
+        {
+            builder.AddContent(0, value);
+        };
+
+        RenderFragment fragment = builder =>
+        {
+            builder.OpenComponent<TestComponent>(0);
+            builder.AddAttribute(1, "TypedContent", typedFragment);
+            builder.AddComponentParameter(2, "Title", "Hello");
+            builder.CloseComponent();
+        };
+
+        var result = RenderFragmentSerializer.Serialize(fragment);
+
+        Assert.DoesNotContain(result, f => f.AttributeName == "TypedContent");
+        Assert.Contains(result, f => f.AttributeName == "Title");
+    }
+
+    [Fact]
+    public void Serialize_LargeFragment_HandlesHeapFallback()
+    {
+        RenderFragment fragment = builder =>
+        {
+            for (var i = 0; i < 200; i++)
+            {
+                builder.OpenElement(i * 2, "span");
+                builder.CloseElement();
+            }
+        };
+
+        var result = RenderFragmentSerializer.Serialize(fragment);
+
+        Assert.Equal(400, result.Count);
+
+        var deserialized = RenderFragmentSerializer.Deserialize(result);
+        var builder2 = new RenderTreeBuilder();
+        deserialized(builder2);
+        var frames = builder2.GetFrames();
+        Assert.Equal(200, frames.Count);
+    }
+
+    [Fact]
+    public void Serialize_ExceedingMaxDepth_Throws()
+    {
+        static RenderFragment CreateDeep(int depth) => builder =>
+        {
+            builder.OpenComponent<TestComponent>(0);
+            if (depth < 55)
+            {
+                builder.AddAttribute(1, "ChildContent", CreateDeep(depth + 1));
+            }
+            builder.CloseComponent();
+        };
+
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            RenderFragmentSerializer.Serialize(CreateDeep(0)));
+        Assert.Contains("50", ex.Message);
+    }
+
     private class TestComponent : IComponent
     {
         [Parameter]
@@ -428,6 +649,22 @@ public class RenderFragmentSerializerTest
 
         [Parameter]
         public RenderFragment? ChildContent { get; set; }
+
+        public void Attach(RenderHandle renderHandle) { }
+
+        public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
+    }
+
+    private class TypedComponent : IComponent
+    {
+        [Parameter]
+        public int Count { get; set; }
+
+        [Parameter]
+        public Guid Id { get; set; }
+
+        [Parameter]
+        public double Score { get; set; }
 
         public void Attach(RenderHandle renderHandle) { }
 

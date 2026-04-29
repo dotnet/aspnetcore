@@ -96,4 +96,32 @@ public class RenderFragmentSerializationTest : ServerTestBase<BasicTestAppServer
         Browser.Click(By.Id("increment-test5-inner"));
         Browser.Equal("1", () => Browser.FindElement(By.Id("count-test5-inner")).Text);
     }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void RenderFragmentCrossesBoundary_ComponentWithTypedParameters(string mode)
+    {
+        Navigate($"{ServerPathBase}/render-fragment-interactive?test=6&mode={mode}");
+
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-test6")).Text);
+
+        Browser.Equal("42", () => Browser.FindElement(By.Id("int-value-typed")).Text);
+        Browser.Equal("3.14", () => Browser.FindElement(By.Id("double-value-typed")).Text);
+        Browser.Equal("True", () => Browser.FindElement(By.Id("bool-value-typed")).Text);
+    }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void RenderFragmentCrossesBoundary_KeyedElements(string mode)
+    {
+        Navigate($"{ServerPathBase}/render-fragment-interactive?test=7&mode={mode}");
+
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-test7")).Text);
+
+        Browser.Equal("Item 1", () => Browser.FindElement(By.Id("keyed-1")).Text);
+        Browser.Equal("Item 2", () => Browser.FindElement(By.Id("keyed-2")).Text);
+        Browser.Equal("Item 3", () => Browser.FindElement(By.Id("keyed-3")).Text);
+    }
 }
