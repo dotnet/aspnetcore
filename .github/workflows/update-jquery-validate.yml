@@ -20,9 +20,11 @@ jobs:
         uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98 # v4.2.2
 
       - name: Setup Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: src/Mvc/build/package-lock.json
 
       - name: Set RepoRoot
         run: echo "RepoRoot=$(pwd)" >> $GITHUB_ENV

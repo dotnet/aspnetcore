@@ -281,7 +281,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         {
             foreach (var stream in _streams.Values)
             {
-                if (stream.IsReceivingHeader)
+                if (stream.IsReceivingHeader || stream.IsReceivingTrailerHeaders)
                 {
                     if (stream.StreamTimeoutTimestamp == default)
                     {

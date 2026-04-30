@@ -21,9 +21,9 @@ export function attachComponentDescriptorHandler(handler: DescriptorHandler) {
 }
 
 export function registerAllComponentDescriptors(root: Node) {
-  const descriptors = upgradeComponentCommentsToLogicalRootComments(root);
   const webAssemblyOptions = discoverWebAssemblyOptions(root);
   if (webAssemblyOptions) { descriptorHandler?.setWebAssemblyOptions(webAssemblyOptions); }
+  const descriptors = upgradeComponentCommentsToLogicalRootComments(root);
 
   for (const descriptor of descriptors) {
     descriptorHandler?.registerComponent(descriptor);
@@ -33,6 +33,10 @@ export function registerAllComponentDescriptors(root: Node) {
 export { preprocessAndSynchronizeDomContent as synchronizeDomContent };
 
 function preprocessAndSynchronizeDomContent(destination: CommentBoundedRange | Node, newContent: Node) {
+  // Strip any WebAssembly metadata comments from the new content before building
+  // the logical tree, so they don't end up as orphaned nodes in the logical children array
+  discoverWebAssemblyOptions(newContent);
+
   // Start by recursively identifying component markers in the new content
   // and converting them into logical elements so they correctly participate
   // in logical element synchronization
