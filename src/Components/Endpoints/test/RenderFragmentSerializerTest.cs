@@ -6,17 +6,19 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 public class RenderFragmentSerializerTest
 {
+    private static readonly NullLogger _logger = NullLogger.Instance;
     [Fact]
     public void Serialize_EmptyFragment_ReturnsEmptyList()
     {
         RenderFragment fragment = builder => { };
 
-        var result = RenderFragmentSerializer.Serialize(fragment);
+        var result = RenderFragmentSerializer.Serialize(fragment, _logger);
 
         Assert.Empty(result);
     }
@@ -29,7 +31,7 @@ public class RenderFragmentSerializerTest
             builder.AddContent(0, "Hello world");
         };
 
-        var result = RenderFragmentSerializer.Serialize(fragment);
+        var result = RenderFragmentSerializer.Serialize(fragment, _logger);
 
         var frame = Assert.Single(result);
         Assert.Equal(RenderTreeFrameType.Text, frame.Type);
@@ -44,7 +46,7 @@ public class RenderFragmentSerializerTest
             builder.AddMarkupContent(0, "<b>bold</b>");
         };
 
-        var result = RenderFragmentSerializer.Serialize(fragment);
+        var result = RenderFragmentSerializer.Serialize(fragment, _logger);
 
         var frame = Assert.Single(result);
         Assert.Equal(RenderTreeFrameType.Markup, frame.Type);
@@ -63,7 +65,7 @@ public class RenderFragmentSerializerTest
             builder.CloseElement();
         };
 
-        var result = RenderFragmentSerializer.Serialize(fragment);
+        var result = RenderFragmentSerializer.Serialize(fragment, _logger);
 
         Assert.Equal(5, result.Count);
 
@@ -94,7 +96,7 @@ public class RenderFragmentSerializerTest
             builder.CloseElement();
         };
 
-        var result = RenderFragmentSerializer.Serialize(fragment);
+        var result = RenderFragmentSerializer.Serialize(fragment, _logger);
 
         Assert.Equal(5, result.Count);
         Assert.Equal("div", result[0].ElementName);
@@ -118,7 +120,7 @@ public class RenderFragmentSerializerTest
             builder.CloseComponent();
         };
 
-        var result = RenderFragmentSerializer.Serialize(fragment);
+        var result = RenderFragmentSerializer.Serialize(fragment, _logger);
 
         Assert.Equal(3, result.Count);
         Assert.Equal(RenderTreeFrameType.Component, result[0].Type);
@@ -140,7 +142,7 @@ public class RenderFragmentSerializerTest
             builder.CloseRegion();
         };
 
-        var result = RenderFragmentSerializer.Serialize(fragment);
+        var result = RenderFragmentSerializer.Serialize(fragment, _logger);
 
         Assert.Equal(3, result.Count);
         Assert.Equal(RenderTreeFrameType.Region, result[0].Type);
@@ -161,7 +163,7 @@ public class RenderFragmentSerializerTest
             builder.CloseElement();
         };
 
-        var result = RenderFragmentSerializer.Serialize(fragment);
+        var result = RenderFragmentSerializer.Serialize(fragment, _logger);
 
         Assert.Equal(3, result.Count);
         Assert.Equal(RenderTreeFrameType.Element, result[0].Type);
@@ -181,7 +183,7 @@ public class RenderFragmentSerializerTest
             builder.CloseComponent();
         };
 
-        var result = RenderFragmentSerializer.Serialize(fragment);
+        var result = RenderFragmentSerializer.Serialize(fragment, _logger);
 
         Assert.DoesNotContain(result, f => f.AttributeName == "OnClick");
         Assert.Contains(result, f => f.AttributeName == "Title");
@@ -198,7 +200,7 @@ public class RenderFragmentSerializerTest
             builder.CloseComponent();
         };
 
-        var result = RenderFragmentSerializer.Serialize(fragment);
+        var result = RenderFragmentSerializer.Serialize(fragment, _logger);
 
         Assert.DoesNotContain(result, f => f.AttributeName == "OnChange");
         Assert.Contains(result, f => f.AttributeName == "Title");
@@ -220,7 +222,7 @@ public class RenderFragmentSerializerTest
             builder.CloseElement();
         };
 
-        var result = RenderFragmentSerializer.Serialize(fragment);
+        var result = RenderFragmentSerializer.Serialize(fragment, _logger);
 
         Assert.Equal(8, result.Count);
         Assert.Equal("div", result[0].ElementName);
@@ -251,7 +253,7 @@ public class RenderFragmentSerializerTest
             builder.CloseComponent();
         };
 
-        var result = RenderFragmentSerializer.Serialize(fragment);
+        var result = RenderFragmentSerializer.Serialize(fragment, _logger);
 
         Assert.Equal(3, result.Count);
         Assert.Equal(RenderTreeFrameType.Component, result[0].Type);
@@ -278,7 +280,7 @@ public class RenderFragmentSerializerTest
             builder.CloseElement();
         };
 
-        var result = RenderFragmentSerializer.Serialize(fragment);
+        var result = RenderFragmentSerializer.Serialize(fragment, _logger);
 
         var attr = result.Single(f => f.Type == RenderTreeFrameType.Attribute);
         Assert.Equal("disabled", attr.AttributeName);
@@ -396,7 +398,7 @@ public class RenderFragmentSerializerTest
             builder.CloseElement();
         };
 
-        var serialized = RenderFragmentSerializer.Serialize(original);
+        var serialized = RenderFragmentSerializer.Serialize(original, _logger);
         var deserialized = RenderFragmentSerializer.Deserialize(serialized);
 
         var originalBuilder = new RenderTreeBuilder();
@@ -444,7 +446,7 @@ public class RenderFragmentSerializerTest
             builder.CloseElement();
         };
 
-        var serialized = RenderFragmentSerializer.Serialize(original);
+        var serialized = RenderFragmentSerializer.Serialize(original, _logger);
 
         Assert.Equal("my-key", serialized[0].ElementKey);
 
@@ -467,7 +469,7 @@ public class RenderFragmentSerializerTest
             builder.CloseElement();
         };
 
-        var serialized = RenderFragmentSerializer.Serialize(original);
+        var serialized = RenderFragmentSerializer.Serialize(original, _logger);
 
         Assert.Equal(42, serialized[0].ElementKey);
         Assert.Contains("System.Int32", serialized[0].ElementKeyType);
@@ -497,7 +499,7 @@ public class RenderFragmentSerializerTest
             builder.CloseElement();
         };
 
-        var serialized = RenderFragmentSerializer.Serialize(original);
+        var serialized = RenderFragmentSerializer.Serialize(original, _logger);
         var json = JsonSerializer.Serialize(serialized);
         var deserialized = JsonSerializer.Deserialize<List<RenderTreeFrameDTO>>(json)!;
         var fragment = RenderFragmentSerializer.Deserialize(deserialized);
@@ -521,7 +523,7 @@ public class RenderFragmentSerializerTest
             builder.CloseComponent();
         };
 
-        var serialized = RenderFragmentSerializer.Serialize(original);
+        var serialized = RenderFragmentSerializer.Serialize(original, _logger);
 
         Assert.Equal(99, serialized[0].ComponentKey);
         Assert.Contains("System.Int32", serialized[0].ComponentKeyType);
@@ -548,7 +550,7 @@ public class RenderFragmentSerializerTest
             builder.CloseComponent();
         };
 
-        var serialized = RenderFragmentSerializer.Serialize(original);
+        var serialized = RenderFragmentSerializer.Serialize(original, _logger);
 
         Assert.Equal(42, serialized[1].AttributeValue);
         Assert.Contains("System.Int32", serialized[1].AttributeValueType);
@@ -577,7 +579,7 @@ public class RenderFragmentSerializerTest
             builder.CloseComponent();
         };
 
-        var serialized = RenderFragmentSerializer.Serialize(original);
+        var serialized = RenderFragmentSerializer.Serialize(original, _logger);
         var json = JsonSerializer.Serialize(serialized);
         var deserialized = JsonSerializer.Deserialize<List<RenderTreeFrameDTO>>(json)!;
         var fragment = RenderFragmentSerializer.Deserialize(deserialized);
@@ -600,7 +602,7 @@ public class RenderFragmentSerializerTest
             builder.CloseComponent();
         };
 
-        var serialized = RenderFragmentSerializer.Serialize(original);
+        var serialized = RenderFragmentSerializer.Serialize(original, _logger);
         var json = JsonSerializer.Serialize(serialized);
         var deserialized = JsonSerializer.Deserialize<List<RenderTreeFrameDTO>>(json)!;
         var fragment = RenderFragmentSerializer.Deserialize(deserialized);
@@ -629,7 +631,7 @@ public class RenderFragmentSerializerTest
             builder.CloseComponent();
         };
 
-        var result = RenderFragmentSerializer.Serialize(fragment);
+        var result = RenderFragmentSerializer.Serialize(fragment, _logger);
 
         Assert.DoesNotContain(result, f => f.AttributeName == "TypedContent");
         Assert.Contains(result, f => f.AttributeName == "Title");
@@ -647,7 +649,7 @@ public class RenderFragmentSerializerTest
             }
         };
 
-        var result = RenderFragmentSerializer.Serialize(fragment);
+        var result = RenderFragmentSerializer.Serialize(fragment, _logger);
 
         Assert.Equal(400, result.Count);
 
@@ -672,7 +674,7 @@ public class RenderFragmentSerializerTest
         };
 
         var ex = Assert.Throws<InvalidOperationException>(() =>
-            RenderFragmentSerializer.Serialize(CreateDeep(0)));
+            RenderFragmentSerializer.Serialize(CreateDeep(0), _logger));
         Assert.Contains("50", ex.Message);
     }
 
