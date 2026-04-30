@@ -94,8 +94,25 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\WebAssembly\DevServer\src\Server\*.cs" />
+    <Compile Include="..\..\..\Gateway\src\BlazorGateway.cs" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Yarp.ReverseProxy" />
+    <Reference Include="Microsoft.Extensions.ServiceDiscovery" />
+    <Reference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" />
+  </ItemGroup>
+
+  <!-- YARP NuGet packages transitively add a FrameworkReference to Microsoft.AspNetCore.App
+       via AddTransitiveFrameworkReferences (after ResolvePackageAssets). TestServer gets the
+       framework via project references, so remove it before targeting pack resolution. -->
+  <Target Name="_RemoveTransitiveAspNetCoreFrameworkReference"
+          AfterTargets="AddTransitiveFrameworkReferences"
+          BeforeTargets="ResolveTargetingPackAssets">
+    <ItemGroup>
+      <FrameworkReference Remove="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+  </Target>
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">

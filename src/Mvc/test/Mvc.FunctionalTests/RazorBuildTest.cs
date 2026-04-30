@@ -102,7 +102,6 @@ public class RazorBuildTest : LoggedTest
 
     [Fact]
     [LogLevel(LogLevel.Trace)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/56553")]
     public async Task RazorViews_AreUpdatedOnChange()
     {
         // Arrange
@@ -141,7 +140,6 @@ public class RazorBuildTest : LoggedTest
 
     [Fact]
     [LogLevel(LogLevel.Trace)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/56553")]
     public async Task RazorPages_AreUpdatedOnChange()
     {
         // Arrange

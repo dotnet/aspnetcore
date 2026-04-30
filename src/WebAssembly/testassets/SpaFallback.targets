@@ -1,0 +1,8 @@
+<!--
+  Temporary targets file that adds a SPA fallback endpoint to the static web assets
+  endpoints manifest. This file forwards to the shared implementation under
+  src/Components/WebAssembly/testassets/SpaFallback.targets to avoid duplication.
+-->
+<Project>
+  <Import Project="..\Components\WebAssembly\testassets\SpaFallback.targets" />
+</Project>

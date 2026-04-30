@@ -41,7 +41,10 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
         }
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Releases resources used by the validator.
+    /// </summary>
+    /// <param name="disposing"><see langword="true"/> if managed resources should be released; otherwise, <see langword="false"/>.</param>
     protected virtual void Dispose(bool disposing)
     {
     }

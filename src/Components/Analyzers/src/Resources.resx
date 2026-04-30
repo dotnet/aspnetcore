@@ -210,4 +210,13 @@
   <data name="UseInvokeVoidAsyncForObjectReturn_Title" xml:space="preserve">
     <value>Use InvokeVoidAsync instead of InvokeAsync&lt;object&gt;</value>
   </data>
+  <data name="VirtualizeItemsProviderRequiresItemComparer_Description" xml:space="preserve">
+    <value>Without ItemComparer, the component cannot detect whether items were prepended or appended, causing the viewport to jump when items change dynamically.</value>
+  </data>
+  <data name="VirtualizeItemsProviderRequiresItemComparer_Format" xml:space="preserve">
+    <value>Virtualize uses 'ItemsProvider' without 'ItemComparer'. Set ItemComparer to an IEqualityComparer that identifies items by a unique key.</value>
+  </data>
+  <data name="VirtualizeItemsProviderRequiresItemComparer_Title" xml:space="preserve">
+    <value>Virtualize with ItemsProvider requires ItemComparer</value>
+  </data>
 </root>
