@@ -159,7 +159,7 @@
     <MessagePackAnalyzerVersion>$(MessagePackVersion)</MessagePackAnalyzerVersion>
     <ModelContextProtocolVersion>1.2.0</ModelContextProtocolVersion>
     <ModelContextProtocolAspNetCoreVersion>$(ModelContextProtocolVersion)</ModelContextProtocolAspNetCoreVersion>
-    <MoqVersion>4.10.0</MoqVersion>
+    <MoqVersion>4.20.72</MoqVersion>
     <MonoCecilVersion>0.11.2</MonoCecilVersion>
     <MonoTextTemplatingVersion>2.2.1</MonoTextTemplatingVersion>
     <NewtonsoftJsonBsonVersion>1.0.2</NewtonsoftJsonBsonVersion>
