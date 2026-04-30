@@ -1,9 +1,9 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Blazor Web Worker",
-  "description": "A project for creating a class library that runs .NET code on a web worker from a Blazor WebAssembly or Blazor Web app.",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+  "name": "Blazor worker",
+  "description": "Blazor WebAssembly または Blazor Web アプリから worker 上で .NET コードを実行するクラス ライブラリを作成するためのプロジェクト。",
+  "symbols/Framework/description": "プロジェクトのターゲット フレームワーク。",
+  "symbols/skipRestore/description": "指定した場合、作成時にプロジェクトの自動復元がスキップされます。",
+  "postActions/restore/description": "このプロジェクトに必要な NuGet パッケージを復元します。",
+  "postActions/restore/manualInstructions/default/text": "'dotnet restore' を実行する"
 }
