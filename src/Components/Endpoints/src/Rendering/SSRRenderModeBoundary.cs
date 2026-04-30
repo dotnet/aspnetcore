@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -29,6 +30,7 @@ internal class SSRRenderModeBoundary : IComponent
     private IReadOnlyDictionary<string, object?>? _latestParameters;
     private ComponentMarkerKey? _markerKey;
     private readonly HttpContext _httpContext;
+    private readonly ILogger _logger;
 
     public IComponentRenderMode RenderMode { get; }
 
@@ -41,6 +43,7 @@ internal class SSRRenderModeBoundary : IComponent
 
         _httpContext = httpContext;
         _componentType = componentType;
+        _logger = httpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(RenderFragmentSerializer).FullName!);
         RenderMode = renderMode;
         _prerender = renderMode switch
         {
@@ -180,7 +183,7 @@ internal class SSRRenderModeBoundary : IComponent
         // Build a serialization-safe copy of parameters, replacing RenderFragment delegates with DTOs
         var serializableParameters = _latestParameters is null
             ? ParameterView.Empty
-            : BuildSerializableParameterView(_latestParameters);
+            : BuildSerializableParameterView(_latestParameters, _logger);
 
         var marker = RenderMode switch
         {
@@ -208,14 +211,14 @@ internal class SSRRenderModeBoundary : IComponent
         return marker;
     }
 
-    private static ParameterView BuildSerializableParameterView(IReadOnlyDictionary<string, object?> latestParameters)
+    private static ParameterView BuildSerializableParameterView(IReadOnlyDictionary<string, object?> latestParameters, ILogger logger)
     {
         var dict = new Dictionary<string, object?>(latestParameters.Count);
         foreach (var (name, value) in latestParameters)
         {
             if (value is RenderFragment renderFragment)
             {
-                dict[name] = new SerializedRenderFragment { Frames = RenderFragmentSerializer.Serialize(renderFragment) };
+                dict[name] = new SerializedRenderFragment { Frames = RenderFragmentSerializer.Serialize(renderFragment, logger) };
             }
             else
             {

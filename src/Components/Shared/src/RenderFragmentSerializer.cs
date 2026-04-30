@@ -7,22 +7,14 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components;
 
 internal static partial class RenderFragmentSerializer
 {
-    private static ILogger _logger = NullLogger.Instance;
-
-    internal static void SetLogger(ILoggerFactory loggerFactory)
-    {
-        _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderFragmentSerializer");
-    }
-
     private const int MaxSerializationDepth = 50;
 
-    internal static List<RenderTreeFrameDTO> Serialize(RenderFragment renderFragment, int depth = 0)
+    internal static List<RenderTreeFrameDTO> Serialize(RenderFragment renderFragment, ILogger logger, int depth = 0)
     {
         if (depth > MaxSerializationDepth)
         {
@@ -74,21 +66,21 @@ internal static partial class RenderFragmentSerializer
                     dto.AttributeName = frame.AttributeName;
                     if (frame.AttributeValue is RenderFragment nestedFragment)
                     {
-                        dto.NestedRenderFragment = Serialize(nestedFragment, depth + 1);
+                        dto.NestedRenderFragment = Serialize(nestedFragment, logger, depth + 1);
                     }
                     else if (frame.AttributeValue is Delegate d && d.GetType().IsGenericType && d.GetType().GetGenericTypeDefinition() == typeof(RenderFragment<>))
                     {
-                        Log.GenericRenderFragmentSkipped(_logger, frame.AttributeName);
+                        Log.GenericRenderFragmentSkipped(logger, frame.AttributeName);
                         continue;
                     }
                     else if (frame.AttributeValue is Delegate)
                     {
-                        Log.EventHandlerSkipped(_logger, frame.AttributeName);
+                        Log.EventHandlerSkipped(logger, frame.AttributeName);
                         continue;
                     }
                     else if (IsEventCallback(frame.AttributeValue))
                     {
-                        Log.EventHandlerSkipped(_logger, frame.AttributeName);
+                        Log.EventHandlerSkipped(logger, frame.AttributeName);
                         continue;
                     }
                     else
@@ -98,9 +90,7 @@ internal static partial class RenderFragmentSerializer
                     }
                     break;
                 case RenderTreeFrameType.Component:
-                    dto.ComponentType = frame.ComponentType is not null
-                        ? $"{frame.ComponentType.FullName}, {frame.ComponentType.Assembly.GetName().Name}"
-                        : null;
+                    dto.ComponentType = frame.ComponentType?.AssemblyQualifiedName;
                     if (frame.ComponentKey is not null)
                     {
                         dto.ComponentKey = frame.ComponentKey;
@@ -112,16 +102,16 @@ internal static partial class RenderFragmentSerializer
                     containerStack[containerCount++] = (i + frame.RegionSubtreeLength, RenderTreeFrameType.Region);
                     break;
                 case RenderTreeFrameType.ElementReferenceCapture:
-                    Log.ElementReferenceCaptureSkipped(_logger);
+                    Log.ElementReferenceCaptureSkipped(logger);
                     continue;
                 case RenderTreeFrameType.ComponentReferenceCapture:
-                    Log.ComponentReferenceCaptureSkipped(_logger);
+                    Log.ComponentReferenceCaptureSkipped(logger);
                     continue;
                 case RenderTreeFrameType.ComponentRenderMode:
-                    Log.ComponentRenderModeSkipped(_logger);
+                    Log.ComponentRenderModeSkipped(logger);
                     continue;
                 case RenderTreeFrameType.NamedEvent:
-                    Log.NamedEventSkipped(_logger);
+                    Log.NamedEventSkipped(logger);
                     continue;
                 default:
                     throw new NotImplementedException($"Serialization for frame type '{frame.FrameType}' is not implemented.");
