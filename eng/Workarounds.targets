@@ -39,4 +39,68 @@
       <ResolvedAnalyzers Remove="@(ResolvedAnalyzers)" Condition="'%(ResolvedAnalyzers.NuGetPackageId)' == 'System.Text.Json'" />
     </ItemGroup>
   </Target>
+
+  <!--
+    Work around https://github.com/dotnet/aspnetcore/issues/62807
+    Parallel builds race on shared project outputs: a dependency's CopyFilesToOutputDirectory
+    can overwrite a DLL/PDB while a consumer's _CopyFilesMarkedCopyLocal reads it, causing
+    MSB3030 ("Could not copy because it was not found"). The SDK's Copy task checks
+    File.Exists before copying and does not retry on FileNotFoundException.
+
+    This target runs immediately before _CopyFilesMarkedCopyLocal and waits for any
+    transiently-missing source files to reappear. While there is a theoretical TOCTOU
+    gap between this check and the Copy task, in practice the gap is microseconds
+    (sequential targets on the same MSBuild node) while the race we are protecting
+    against spans seconds (parallel nodes rebuilding shared outputs).
+
+    Proper fix tracked at: https://github.com/dotnet/msbuild/issues/13599
+  -->
+  <PropertyGroup>
+    <_WaitForCopyLocalMaxRetries Condition="'$(_WaitForCopyLocalMaxRetries)' == ''">5</_WaitForCopyLocalMaxRetries>
+    <_WaitForCopyLocalRetryDelayMs Condition="'$(_WaitForCopyLocalRetryDelayMs)' == ''">500</_WaitForCopyLocalRetryDelayMs>
+  </PropertyGroup>
+
+  <UsingTask TaskName="_WaitForCopyLocalSources" TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <SourceFiles ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <MaxRetries ParameterType="System.Int32" Required="true" />
+      <RetryDelayMs ParameterType="System.Int32" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        foreach (var item in SourceFiles)
+        {
+            string path = item.ItemSpec;
+            for (int attempt = 0; attempt < MaxRetries; attempt++)
+            {
+                if (System.IO.File.Exists(path))
+                    break;
+
+                Log.LogMessage(MessageImportance.Low,
+                    "Source file not yet available, waiting {0}ms (attempt {1}/{2}): {3}",
+                    RetryDelayMs, attempt + 1, MaxRetries, path);
+
+                System.Threading.Thread.Sleep(RetryDelayMs);
+
+                if (attempt == MaxRetries - 1)
+                    Log.LogMessage(MessageImportance.High,
+                        "Source file still missing after {0} retries ({1}ms total), " +
+                        "copy will likely fail: {2}",
+                        MaxRetries, MaxRetries * RetryDelayMs, path);
+            }
+        }
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="_WaitForCopyLocalSourcesBeforeCopy"
+          BeforeTargets="_CopyFilesMarkedCopyLocal"
+          Condition="'@(ReferenceCopyLocalPaths)' != '' AND '$(UseCommonOutputDirectory)' != 'true' AND '$(ContinuousIntegrationBuild)' == 'true'">
+    <_WaitForCopyLocalSources
+        SourceFiles="@(ReferenceCopyLocalPaths)"
+        MaxRetries="$(_WaitForCopyLocalMaxRetries)"
+        RetryDelayMs="$(_WaitForCopyLocalRetryDelayMs)" />
+  </Target>
+
 </Project>
