@@ -5,6 +5,7 @@
     <IsShipping>false</IsShipping>
     <OutputType>Exe</OutputType>
     <PublishTrimmed>true</PublishTrimmed>
+    <RuntimeIdentifier Condition="'$(DotNetBuild)' == 'true'">$(TargetRuntimeIdentifier)</RuntimeIdentifier>
   </PropertyGroup>
 
   <Import Project="$(RepoRoot)eng\TrimmableProjects.props" />
