@@ -1,10 +1,10 @@
-{
+﻿{
   "author": "Microsoft",
-  "name": "Blazor WebAssembly Service Defaults",
-  "description": "A project template for creating a service defaults library for Blazor WebAssembly applications. Includes OpenTelemetry, service discovery, and resilience support for Aspire integration.",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/hosted/description": "Configure for a hosted Blazor Web scenario where configuration flows from the server via a DOM comment. When false (default), configures for a standalone scenario with a configuration endpoint and JS initializer.",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+  "name": "Blazor WebAssembly Hizmeti Varsayılanları",
+  "description": "Blazor WebAssembly uygulamaları için hizmet varsayılanları kitaplığı oluşturmak üzere bir proje şablonu. Aspire entegrasyonu için OpenTelemetry, hizmet bulma ve dayanıklılık desteği içerir.",
+  "symbols/Framework/description": "Projenin hedef çerçevesi.",
+  "symbols/hosted/description": "Yapılandırmanın sunucudan DOM açıklaması aracılığıyla aktığı, şirket dışında barındırılan bir Blazor Web senaryosu için yapılandırın. False olduğunda (varsayılan), yapılandırma uç noktası ve JS başlatıcısı olan bağımsız bir senaryo için yapılandırır.",
+  "symbols/skipRestore/description": "Belirtilmişse oluştururken projenin otomatik geri yüklenmesini atlar.",
+  "postActions/restore/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
+  "postActions/restore/manualInstructions/default/text": "\"dotnet restore\" komutunu çalıştır"
 }
