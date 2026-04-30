@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO.Pipelines;
 using System.Net.Http;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
@@ -987,6 +988,37 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         var statusReference = Assert.IsType<OpenApiSchemaReference>(property);
         Assert.Equal(3, statusReference.RecursiveTarget.Enum.Count);
         Assert.Equal("Approved", statusReference.Default.GetValue<string>());
+    }
+
+    [Fact]
+    public async Task GetOpenApiRequestBody_EnumFormFieldWithGlobalNamingPolicy_UsesOriginalMemberNames()
+    {
+        // Arrange - configure a global JsonStringEnumConverter with KebabCaseLower naming policy
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.KebabCaseLower));
+        });
+        var builder = CreateBuilder(serviceCollection);
+
+        // Act - map an endpoint with an enum form parameter
+        builder.MapPost("/form-enum", ([FromForm] Priority priority) => { });
+
+        // Assert - the OpenAPI schema for the form field should use the original C# member names
+        // (PascalCase), NOT the naming-policy-transformed values (kebab-case), because form
+        // parameter binding uses Enum.TryParse which only accepts the original member names.
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/form-enum"].Operations[HttpMethod.Post];
+            var properties = operation.RequestBody.Content["application/x-www-form-urlencoded"].Schema.Properties;
+            var property = properties["priority"];
+            Assert.NotNull(property);
+
+            Assert.Collection(property.Enum,
+                value => Assert.Equal("HighPriority", value.GetValue<string>()),
+                value => Assert.Equal("MediumPriority", value.GetValue<string>()),
+                value => Assert.Equal("LowPriority", value.GetValue<string>()));
+        });
     }
 
     [ApiController]
