@@ -9,7 +9,7 @@
     <_BlazorModulesFilePath>..\..\..\..\WebView\src\blazor.modules.json</_BlazorModulesFilePath>
   </PropertyGroup>
 
-  <Import Project="..\..\..\..\WebView\src\buildTransitive\Microsoft.AspNetCore.Components.WebView.props" />
+  <Import Project="..\..\..\..\WebView\src\build\Microsoft.AspNetCore.Components.WebView.props" />
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Components.WebView.Photino.csproj" />
