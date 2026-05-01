@@ -165,25 +165,25 @@
       </FinalV5Assets>
     </ItemGroup>
 
-    <GenerateStaticWebAssetsPropsFile StaticWebAssets="@(FinalV4Assets)" PackagePathPrefix="staticwebassets/V4" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V4.targets" />
-    <GenerateStaticWebAssetsPropsFile StaticWebAssets="@(FinalV5Assets)" PackagePathPrefix="staticwebassets/V5" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V5.targets" />
+    <GenerateStaticWebAssetsPropsFile StaticWebAssets="@(FinalV4Assets)" PackagePathPrefix="build/$(DefaultNetCoreTargetFramework)/staticwebassets/V4" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V4.targets" />
+    <GenerateStaticWebAssetsPropsFile StaticWebAssets="@(FinalV5Assets)" PackagePathPrefix="build/$(DefaultNetCoreTargetFramework)/staticwebassets/V5" TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V5.targets" />
 
     <GenerateStaticWebAssetEndpointsPropsFile
       StaticWebAssets="@(V4Assets)"
-      PackagePathPrefix="staticwebassets/V4"
+      PackagePathPrefix="build/$(DefaultNetCoreTargetFramework)/staticwebassets/V4"
       StaticWebAssetEndpoints="@(V4AssetEndpoints)"
       TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V4.endpoints.targets" />
 
     <GenerateStaticWebAssetEndpointsPropsFile
       StaticWebAssets="@(V5Assets)"
-      PackagePathPrefix="staticwebassets/V5"
+      PackagePathPrefix="build/$(DefaultNetCoreTargetFramework)/staticwebassets/V5"
       StaticWebAssetEndpoints="@(V5AssetEndpoints)"
       TargetPropsFilePath="$(IntermediateOutputPath)IdentityUI.V5.endpoints.targets" />
 
-    <ComputeStaticWebAssetsTargetPaths Assets="@(FinalV4Assets)" PathPrefix="staticwebassets/V4" AdjustPathsForPack="true">
+    <ComputeStaticWebAssetsTargetPaths Assets="@(FinalV4Assets)" PathPrefix="build/$(DefaultNetCoreTargetFramework)/staticwebassets/V4" AdjustPathsForPack="true">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackStaticWebAssetWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
-    <ComputeStaticWebAssetsTargetPaths Assets="@(FinalV5Assets)" PathPrefix="staticwebassets/V5" AdjustPathsForPack="true">
+    <ComputeStaticWebAssetsTargetPaths Assets="@(FinalV5Assets)" PathPrefix="build/$(DefaultNetCoreTargetFramework)/staticwebassets/V5" AdjustPathsForPack="true">
       <Output TaskParameter="AssetsWithTargetPath" ItemName="_PackStaticWebAssetWithTargetPath" />
     </ComputeStaticWebAssetsTargetPaths>
 
