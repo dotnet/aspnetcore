@@ -29,9 +29,14 @@
       <ILLinkArgs Condition="'$(GenerateLinkerWarningSuppressions)' == 'true'">$(ILLinkArgs) --generate-warning-suppressions xml</ILLinkArgs>
     </PropertyGroup>
     <ItemGroup>
-      <RootAssemblies Include="@(ReferencePath->HasMetadata('ProjectPath'))" RootMode="visible" />
-      <_ILLinkSuppressionFile Include="$([System.IO.Path]::GetDirectoryName($([System.String]::new('%(RootAssemblies.ProjectPath)'))))\%(FileName).WarningSuppressions.xml"
-        SuppressionFileName="%(FileName).WarningSuppressions" />
+      <_ProjectReferencePaths Include="@(ReferencePath->HasMetadata('ProjectPath'))" />
+      <RootAssemblies Include="@(_ProjectReferencePaths->'%(Filename)')" RootMode="visible" />
+      <!-- Create clean items for AssemblyPaths (ITaskItem[] that flows to external task host).
+           Using Remove+Include pattern to strip all inherited metadata. -->
+      <_CleanAssemblyPaths Remove="@(_CleanAssemblyPaths)" />
+      <_CleanAssemblyPaths Include="@(_ProjectReferencePaths->'%(FullPath)')" />
+      <_ILLinkSuppressionFile Include="$([System.IO.Path]::GetDirectoryName($([System.String]::new('%(RootAssemblies.ProjectPath)'))))\%(RootAssemblies.Identity).WarningSuppressions.xml"
+        SuppressionFileName="%(RootAssemblies.Identity).WarningSuppressions" />
       <ILLinkSuppressionFile Condition="Exists(%(_ILLinkSuppressionFile.Identity))" Include="%(_ILLinkSuppressionFile.Identity)" />
     </ItemGroup>
 
@@ -49,7 +54,7 @@
       <_DotNetHostFileName>$([System.IO.Path]::GetFileName('$(DotNetTool)'))</_DotNetHostFileName>
     </PropertyGroup>
     <ILLink
-        AssemblyPaths=""
+        AssemblyPaths="@(_CleanAssemblyPaths)"
         RootAssemblyNames="@(RootAssemblies)"
         OutputDirectory="$(LibrariesTrimmedArtifactsPath)"
         ReferenceAssemblyPaths="@(RuntimePackAsset);@(ReferencePath->WithMetadataValue('ExternallyResolved', 'true'))"

@@ -158,6 +158,54 @@ public class TlsListenerTests
             $"Expected ReadAsync() to happen about 2-5 times. Actually happened {reader.ReadAsyncCounter} times.");
     }
 
+    // Regression test for making sure we don't throw for values of length greater than short.MaxValue (32767)
+    // we should cap at MaxTlsRecordLength and pass what we can to the callback
+    [Fact]
+    public async Task OversizedTlsRecord_DoesNotThrow_CapsAtMaxLength()
+    {
+        const int oversizedLength = 32768; // > 2^14 (16384) max TLS record size
+        var recordHeader = new byte[]
+        {
+            0x16,             // ContentType: Handshake
+            0x03, 0x01,       // Version: TLS 1.0
+            (byte)(oversizedLength >> 8), (byte)(oversizedLength & 0xFF), // Length: 32768
+        };
+
+        // Handshake message header (part of payload):
+        // - 1 byte: handshake type (0x01 = ClientHello)
+        var handshakeHeader = new byte[]
+        {
+            0x01,             // HandshakeType: ClientHello
+        };
+
+        // Build the complete oversized TLS record
+        var tlsRecord = new byte[5 + oversizedLength];
+        recordHeader.CopyTo(tlsRecord, 0);
+        handshakeHeader.CopyTo(tlsRecord, 5);
+
+        var pipe = new Pipe();
+        var writer = pipe.Writer;
+
+        var transport = new DuplexPipe(pipe.Reader, writer);
+        var transportConnection = new DefaultConnectionContext("test", transport, transport);
+
+        ReadOnlySequence<byte> receivedBytes = default;
+        var tlsClientHelloCallbackInvoked = false;
+        var listener = new TlsListener((ctx, data) =>
+        {
+            tlsClientHelloCallbackInvoked = true;
+            receivedBytes = data;
+        });
+
+        await writer.WriteAsync(tlsRecord);
+        await writer.CompleteAsync();
+
+        await listener.OnTlsClientHelloAsync(transportConnection, CancellationToken.None);
+
+        Assert.True(tlsClientHelloCallbackInvoked, "Expected TLS ClientHello callback to be invoked");
+        Assert.Equal(5 + TlsListener.MaxTlsPlaintextFragmentLength, receivedBytes.Length);
+    }
+
     private async Task RunTlsClientHelloCallbackTest_WithMultipleSegments(
         int id,
         List<byte[]> packets,

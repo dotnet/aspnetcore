@@ -349,7 +349,10 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
             isBackupEligible: authenticatorData.IsBackupEligible,
             isBackedUp: authenticatorData.IsBackedUp,
             attestationObject: response.AttestationObject.ToArray(),
-            clientDataJson: response.ClientDataJSON.ToArray());
+            clientDataJson: response.ClientDataJSON.ToArray())
+        {
+            Aaguid = attestedCredentialData.Aaguid.ToArray(),
+        };
 
         // 28. Process the client extension outputs in clientExtensionResults and the authenticator extension
         //     outputs in the extensions in authData as required by the Relying Party.

@@ -684,7 +684,7 @@ internal static class RenderTreeDiffBuilder
                         var oldParameters = new ParameterView(ParameterViewLifetime.Unbound, oldTree, oldFrameIndex);
                         var newParametersLifetime = new ParameterViewLifetime(diffContext.BatchBuilder);
                         var newParameters = new ParameterView(newParametersLifetime, newTree, newFrameIndex);
-                        var isHotReload = HotReloadManager.Default.MetadataUpdateSupported && diffContext.Renderer.IsRenderingOnMetadataUpdate;
+                        var isHotReload = HotReloadManager.IsSupported && diffContext.Renderer.IsRenderingOnMetadataUpdate;
 
                         if (isHotReload && newParameters.HasRemovedDirectParameters(oldParameters))
                         {
@@ -754,13 +754,13 @@ internal static class RenderTreeDiffBuilder
     {
         var newTree = diffContext.NewTree;
         var unsupportedFrameType = newTree[newFrameIndex].FrameTypeField;
-        
+
         // Build component hierarchy path
         var componentPath = BuildComponentPath(diffContext.Renderer, diffContext.ComponentId);
-        
+
         // Build frame types descriptor
         var frameTypesDescriptor = BuildFrameTypeDescriptor(newTree, newFrameIndex);
-        
+
         return $"Encountered an unsupported frame type during diffing {unsupportedFrameType} for Component Path: '{componentPath}' on tree with length '{newTree.Length}' and contents '{frameTypesDescriptor}'.";
     }
 
@@ -771,7 +771,7 @@ internal static class RenderTreeDiffBuilder
         {
             frameTypes.Add(renderTree[i].FrameTypeField.ToString());
         }
-        
+
         return string.Join(", ", frameTypes);
     }
 
@@ -779,14 +779,14 @@ internal static class RenderTreeDiffBuilder
     {
         var componentPath = new List<string>();
         var currentComponentState = renderer.GetRequiredComponentState(componentId);
-        
+
         while (currentComponentState is not null)
         {
             var componentType = currentComponentState.Component.GetType();
             componentPath.Insert(0, componentType.Name);
             currentComponentState = currentComponentState.ParentComponentState;
         }
-        
+
         return string.Join(" -> ", componentPath);
     }
 

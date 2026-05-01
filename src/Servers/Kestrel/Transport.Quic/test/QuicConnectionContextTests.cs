@@ -554,7 +554,6 @@ public class QuicConnectionContextTests : TestApplicationErrorLoggerLoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/56517")]
     public async Task StreamPool_ManyConcurrentStreams_StreamPoolFull()
     {
         // Arrange

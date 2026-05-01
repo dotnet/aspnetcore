@@ -9,7 +9,7 @@
 
 <PageTitle>Disable two-factor authentication (2FA)</PageTitle>
 
-<StatusMessage />
+<StatusMessage Message="@message" />
 <h3>Disable two-factor authentication (2FA)</h3>
 
 <div class="alert alert-warning" role="alert">
@@ -30,17 +30,24 @@
 </div>
 
 @code {
+    private string? message;
     private ApplicationUser? user;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
+    [SupplyParameterFromTempData(Name = IdentityRedirectManager.StatusMessageKey)]
+    private string? IdentityStatusMessage { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
+        message = IdentityStatusMessage;
+        IdentityStatusMessage = null;
+
         user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectTo("Account/InvalidUser");
             return;
         }
 
@@ -54,7 +61,7 @@
     {
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectTo("Account/InvalidUser");
             return;
         }
 
@@ -66,9 +73,7 @@
 
         var userId = await UserManager.GetUserIdAsync(user);
         Logger.LogInformation("User with ID '{UserId}' has disabled 2fa.", userId);
-        RedirectManager.RedirectToWithStatus(
-            "Account/Manage/TwoFactorAuthentication",
-            "2fa has been disabled. You can reenable 2fa when you setup an authenticator app",
-            HttpContext);
+        IdentityStatusMessage = "2fa has been disabled. You can reenable 2fa when you setup an authenticator app";
+        RedirectManager.RedirectTo("Account/Manage/TwoFactorAuthentication");
     }
 }

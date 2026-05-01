@@ -60,7 +60,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     private bool _hasAdvanced;
     private bool _isLeasedMemoryInvalid = true;
     protected Exception? _applicationException;
-    private BadHttpRequestException? _requestRejectedException;
+    protected BadHttpRequestException? _requestRejectedException;
 
     protected HttpVersion _httpVersion;
     // This should only be used by the application, not the server. This is settable on HttpRequest but we don't want that to affect
@@ -265,8 +265,26 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
                 ThrowResponseAlreadyStartedException(nameof(ReasonPhrase));
             }
 
+            if (value is not null)
+            {
+                // Reject non-ASCII (> 0x7E), CR/LF, and other control characters
+                // to prevent HTTP response splitting. Only HTAB, SP, and VCHAR
+                // (0x21-0x7E) are allowed per RFC 9112 Section 4.
+                var invalid = HttpCharacters.IndexOfInvalidFieldValueChar(value);
+                if (invalid >= 0)
+                {
+                    ThrowInvalidReasonPhraseCharacter(value[invalid]);
+                }
+            }
+
             _reasonPhrase = value;
         }
+    }
+
+    private static void ThrowInvalidReasonPhraseCharacter(char ch)
+    {
+        throw new InvalidOperationException(CoreStrings.FormatInvalidAsciiOrControlChar(
+            string.Format(System.Globalization.CultureInfo.InvariantCulture, "0x{0:X4}", (ushort)ch)));
     }
 
     public IHeaderDictionary ResponseHeaders { get; set; } = default!;

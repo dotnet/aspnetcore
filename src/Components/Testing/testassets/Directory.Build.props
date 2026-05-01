@@ -1,0 +1,60 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <!-- E2E test projects use xUnit v3; disable the Arcade SDK's auto-included xUnit v2 -->
+  <PropertyGroup Condition=" $(IsTestProject) ">
+    <UsingToolXUnit>false</UsingToolXUnit>
+    <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
+    <!-- NU1903: Transitive Newtonsoft.Json vulnerability from nuget.org packages -->
+    <NoWarn>$(NoWarn);NU1903</NoWarn>
+  </PropertyGroup>
+
+  <!-- Remove auto-added xUnit v2 test infra from CSharp.Common.props -->
+  <ItemGroup Condition=" $(IsTestProject) ">
+    <Reference Remove="Microsoft.AspNetCore.InternalTesting" />
+    <Reference Remove="Moq" />
+    <Compile Remove="$(SharedSourceRoot)test\SuccessfulTests.cs" />
+  </ItemGroup>
+
+  <!--
+    E2E test projects host a YARP proxy in-process (WebApplication.CreateSlimBuilder) which
+    requires the full ASP.NET Core shared framework at runtime. In the aspnetcore repo,
+    transitive References from shipping libraries don't copy to the test output, so test
+    projects use the bulk @(AspNetCoreAppReference) items from SharedFramework.Local.props.
+  -->
+  <ItemGroup Condition=" $(IsTestProject) ">
+    <Reference Include="@(AspNetCoreAppReference)" />
+    <Reference Include="@(AspNetCoreAppReferenceAndPackage)" />
+  </ItemGroup>
+
+  <!--
+    Development layout: point the tasks assembly to the artifacts bin output so that
+    Microsoft.AspNetCore.Components.Testing.targets (which only handles the NuGet package
+    layout) can find it when building inside the aspnetcore repo.
+  -->
+  <PropertyGroup Condition=" $(IsTestProject) ">
+    <_E2ETasksAssembly Condition="'$(_E2ETasksAssembly)' == '' and Exists('$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll')">$(ArtifactsBinDir)Microsoft.AspNetCore.Components.Testing.Tasks\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Components.Testing.Tasks.dll</_E2ETasksAssembly>
+  </PropertyGroup>
+
+  <!--
+    Development layout: add the source generator as an analyzer from the local project.
+    When the library is consumed via NuGet the generator is picked up from analyzers/dotnet/cs/.
+  -->
+  <ItemGroup Condition=" $(IsTestProject) ">
+    <ProjectReference
+      Include="$(MSBuildThisFileDirectory)..\gen\Microsoft.AspNetCore.Components.Testing.Generators.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <!--
+    E2E tests require Playwright/browser infrastructure and should not run via Arcade's
+    RunTests target during regular CI builds. Set IsTestProject=false AFTER all conditional
+    blocks above have executed (they need IsTestProject=true for references/generator setup).
+    The final value is what Arcade's Test/RunTests targets evaluate.
+  -->
+  <PropertyGroup Condition=" $(IsTestProject) ">
+    <IsTestProject>false</IsTestProject>
+    <IsUnitTestProject>false</IsUnitTestProject>
+  </PropertyGroup>
+</Project>

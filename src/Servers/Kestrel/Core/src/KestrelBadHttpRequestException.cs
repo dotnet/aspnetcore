@@ -23,6 +23,8 @@ internal static class KestrelBadHttpRequestException
 
     [MethodImpl(MethodImplOptions.NoInlining)]
 #pragma warning disable CS0618 // Type or member is obsolete
+    // Keep in sync with the pre-allocated response prefixes in
+    // Http1Connection.GetStaticErrorResponsePrefix().
     internal static BadHttpRequestException GetException(RequestRejectionReason reason)
     {
         BadHttpRequestException ex;

@@ -150,6 +150,38 @@
   </Target>
 
   <!--
+    NuGet pack reads framework references from restore assets. For affected SDK-pack projects, add a temporary
+    framework reference during project evaluation so that it flows into the restore assets used by pack / GenerateNuspec.
+  -->
+
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' AND
+                 '$(IsPackable)' == 'true' AND
+                 '$(IsAspNetCoreApp)' != 'true' AND
+                 '@(_FrameworkProjectReference)' != '' AND
+                 '@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->Count())' == '0'">
+    <KnownFrameworkReference Include="@(_RemovedAspNetKnownFrameworkReference)" />
+    <!-- Mark as IsTransitiveFrameworkReference to exclude the pruning data: https://github.com/dotnet/sdk/issues/53106 -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" IsTransitiveFrameworkReference="true" DoNotResolve="true" />
+  </ItemGroup>
+
+  <!-- Remove the referenced AspNetCore framework before it's resolved in ResolveFrameworkReferences.  This lets us use our own references. -->
+  <Target Name="_RemoveAspNetCoreFrameworkReference" 
+          BeforeTargets="ResolveFrameworkReferences" >
+    <ItemGroup>
+      <FrameworkReference Remove="@(FrameworkReference->WithMetadataValue('DoNotResolve', 'true'))" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Remove Transtive Microsoft.Aspnetcore.App FrameworkReference, for projects referencing the affected projects above -->
+  <Target Name="_RemoveAspNetCoreTransitiveFrameworkReference"
+          BeforeTargets="AddTransitiveFrameworkReferences"
+          Condition="'$(UseAspNetCoreSharedRuntime)' != 'true'" >
+    <ItemGroup>
+      <TransitiveFrameworkReference Remove="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+  </Target>
+
+  <!--
     This target resolves remaining Reference items to Packages, if possible. If not, they are left as Reference
     items for the SDK to resolve. This executes on NuGet restore and during DesignTimeBuild. It should not run in
     outer, cross-targeting build.

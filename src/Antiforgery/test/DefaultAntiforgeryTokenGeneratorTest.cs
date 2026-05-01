@@ -413,6 +413,46 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
     }
 
     [Fact]
+    public void TryValidateTokenSet_UsernameToken_FailsWhenUserHasExtractableClaims()
+    {
+        // Regression test: a username-based request token (no ClaimUid) should NOT validate
+        // successfully against a user who currently has extractable claims.
+        // Always extract the current user's claim UID; if the user had claims but the token
+        // didn't, validation failed because null != extractedClaimUid.
+
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        var identity = GetAuthenticatedIdentity("the-user");
+        httpContext.User = new ClaimsPrincipal(identity);
+
+        var cookieToken = new AntiforgeryToken() { IsCookieToken = true };
+
+        // Request token was generated when the user had no extractable claims (username-based)
+        var fieldtoken = new AntiforgeryToken()
+        {
+            SecurityToken = cookieToken.SecurityToken,
+            Username = "the-user",
+            IsCookieToken = false,
+            ClaimUid = null  // no claims when token was generated
+        };
+
+        // But NOW the user has extractable claims (the extractor returns a valid claim UID)
+        var currentClaimUid = new BinaryBlob(256);
+        var claimUidExtractor = new DummyClaimUidExtractor(identity, currentClaimUid);
+
+        var tokenProvider = new DefaultAntiforgeryTokenGenerator(
+            claimUidExtractor: claimUidExtractor,
+            additionalDataProvider: null);
+
+        // Act
+        var result = tokenProvider.TryValidateTokenSet(httpContext, cookieToken, fieldtoken, out var message);
+
+        // Assert - should FAIL because the user now has claims but the token doesn't.
+        Assert.False(result);
+        Assert.Contains("the-user", message);
+    }
+
+    [Fact]
     public void TryValidateTokenSet_ClaimUidMismatch()
     {
         // Arrange
@@ -537,7 +577,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
                                   .Returns(true);
 
         var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-            claimUidExtractor: new Mock<IClaimUidExtractor>().Object,
+            claimUidExtractor: new DummyClaimUidExtractor(identity, blob: null, failsExtraction: true),
             additionalDataProvider: mockAdditionalDataProvider.Object);
 
         // Act

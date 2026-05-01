@@ -522,7 +522,7 @@ T", null, null, false, null, null, null));
                                     {
                                         continue;
                                     }
-                                    foreach (var mediaType in content)
+                                    foreach (var mediaType in content.OfType<OpenApiMediaType>())
                                     {
                                         mediaType.Example = jsonString.Parse();
                                     }
@@ -584,7 +584,7 @@ T", null, null, false, null, null, null));
                                         continue;
                                     }
                                     var parsedExample = jsonString.Parse();
-                                    foreach (var mediaType in content)
+                                    foreach (var mediaType in content.OfType<OpenApiMediaType>())
                                     {
                                         mediaType.Example = parsedExample;
                                     }

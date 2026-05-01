@@ -29,7 +29,6 @@ build_nodejs=''
 build_java=''
 build_installers=''
 build_projects=''
-target_arch='x64'
 configuration=''
 runtime_source_feed=''
 runtime_source_feed_key=''
@@ -37,15 +36,13 @@ source_build=''
 product_build=''
 from_vmr=''
 warn_as_error=true
+warn_not_as_error=''
 from_vmr=''
 
-if [ "$(uname)" = "Darwin" ]; then
-    target_os_name='osx'
-elif [ "$(uname)" = "FreeBSD" ]; then
-    target_os_name='freebsd'
-else
-    target_os_name='linux'
-fi
+source "$DIR/common/native/init-os-and-arch.sh"
+
+target_os_name="$os"
+target_arch="$arch"
 
 msbuild_args=()
 
@@ -86,6 +83,7 @@ Options:
     --excludeCIBinarylog              Don't output binary log by default in CI builds (short: -nobl).
     --verbosity|-v                    MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
     --warnAsError                     Sets warnaserror msbuild parameter: 'true' or 'false'
+    --warnNotAsError                  Sets a semi-colon delimited list of warning codes that should not be treated as errors
 
     --runtime-source-feed             Additional feed that can be used when downloading .NET runtimes and SDKs
     --runtime-source-feed-key         Key for feed that can be used when downloading .NET runtimes and SDKs
@@ -261,6 +259,11 @@ while [[ $# -gt 0 ]]; do
             shift
             [ -z "${1:-}" ] && __error "Missing value for parameter --warnaserror" && __usage
             warn_as_error="${1:-}"
+            ;;
+        -warnnotaserror)
+            shift
+            [ -z "${1:-}" ] && __error "Missing value for parameter --warnNotAsError" && __usage
+            warn_not_as_error="${1:-}"
             ;;
         *)
             msbuild_args[${#msbuild_args[*]}]="$1"

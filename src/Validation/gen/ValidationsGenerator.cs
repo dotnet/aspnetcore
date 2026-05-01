@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Immutable;
 using System.Linq;
-using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.Extensions.Validation;
@@ -39,15 +35,12 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         var validatableTypesWithAttribute = frameworkValidatableTypes.Concat(generatedValidatableTypes);
 
         // Extract all minimal API endpoints in the application.
-        var endpoints = context.SyntaxProvider
+        // Extract validatable types from all endpoints.
+        var validatableTypesFromEndpoints = context.SyntaxProvider
             .CreateSyntaxProvider(
                 predicate: FindEndpoints,
                 transform: TransformEndpoints)
-            .Where(endpoint => endpoint is not null);
-
-        // Extract validatable types from all endpoints.
-        var validatableTypesFromEndpoints = endpoints
-            .Select(ExtractValidatableEndpoint);
+            .Where(endpoint => !endpoint.IsDefault);
 
         // Join all validatable types encountered in the type graph.
         var allValidatableTypesProviders = validatableTypesFromEndpoints

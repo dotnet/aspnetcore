@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.Tests.KeyManagement;
 public class AdditionalAuthenticatedDataTemplateTests

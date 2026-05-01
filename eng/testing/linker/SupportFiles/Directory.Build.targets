@@ -64,6 +64,20 @@
   </ItemGroup>
 
   <!--
+    Remove transitive Microsoft.AspNetCore.App FrameworkReference that flows from the ProjectReferences below.
+    Without this, the SDK resolves the targeting pack version of ASP.NET Core assemblies, which may be older than
+    the locally-built versions and cause compilation errors when APIs have changed.
+    Mirrors _RemoveAspNetCoreTransitiveFrameworkReference in eng/targets/ResolveReferences.targets.
+  -->
+  <Target Name="_RemoveAspNetCoreTransitiveFrameworkReference"
+          BeforeTargets="AddTransitiveFrameworkReferences"
+          Condition="'$(UseAspNetCoreSharedRuntime)' != 'true'">
+    <ItemGroup>
+      <TransitiveFrameworkReference Remove="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+  </Target>
+
+  <!--
   Reference the Microsoft.AspNetCore.App shared framework assemblies with ProjectReference.
   This allows for easy dev workflow. Just need to update the product code, and re-run the tests.
   -->

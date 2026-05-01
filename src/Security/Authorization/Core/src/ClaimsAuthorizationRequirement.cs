@@ -84,7 +84,10 @@ public class ClaimsAuthorizationRequirement : AuthorizationHandler<ClaimsAuthori
         return Task.CompletedTask;
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Returns a string representation of the requirement.
+    /// </summary>
+    /// <returns>A description of the claim requirement.</returns>
     public override string ToString()
     {
         var value = (_emptyAllowedValues)

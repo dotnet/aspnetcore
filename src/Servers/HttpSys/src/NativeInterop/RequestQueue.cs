@@ -147,7 +147,7 @@ internal sealed partial class RequestQueue
 
         var result = PInvoke.HttpSetRequestQueueProperty(Handle,
             HTTP_SERVER_PROPERTY.HttpServerQueueLengthProperty,
-            &length, (uint)Marshal.SizeOf<long>());
+            new ReadOnlySpan<byte>(&length, sizeof(long)));
 
         if (result != 0)
         {
@@ -161,9 +161,10 @@ internal sealed partial class RequestQueue
         Debug.Assert(Created);
         CheckDisposed();
 
+        var verbosityLong = (long)verbosity;
         var result = PInvoke.HttpSetRequestQueueProperty(Handle,
             HTTP_SERVER_PROPERTY.HttpServer503VerbosityProperty,
-            &verbosity, (uint)Marshal.SizeOf<long>());
+            new ReadOnlySpan<byte>(&verbosityLong, sizeof(long)));
 
         if (result != 0)
         {
