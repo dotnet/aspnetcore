@@ -21,7 +21,8 @@ A triaged issue ends up in one of these states:
 | --- | --- |
 | **Closed** | Not actionable: duplicate, by-design, won't fix, can't repro, or already fixed. |
 | **Servicing milestone** (`N.0.x`) | A regression or high-impact bug in a supported release that warrants a patch. Subject to the [servicing bar](https://github.com/dotnet/aspnetcore/blob/main/docs/Servicing.md). |
-| **Current-release planning milestone** (`.NET N Planning`) | Candidate for the in-flight major release. Issues here are scheduled into specific release milestones (e.g. `N.0-previewX`) during team planning. |
+| **Current release milestone** (`N.0-previewX`) | Needs to be addressed in the next preview of the in-flight release — for example, a recent regression or a blocker for an in-progress feature. |
+| **Current-release planning milestone** (`.NET N Planning`) | Candidate for the in-flight major release. Issues here are scheduled into a specific `N.0-previewX` milestone during team planning. |
 | **`Backlog`** | Tracked but not committed to any release. Re-evaluated during release planning. |
 
 If we need more information from the reporter before we can triage, we apply the `Needs: Author Feedback` or `Needs: Repro` label and triage again once the information is provided. See [Issue Management Policies](https://github.com/dotnet/aspnetcore/blob/main/docs/IssueManagementPolicies.md) for how those labels behave.
