@@ -7,120 +7,90 @@ This document describes how issues filed in `dotnet/aspnetcore` are triaged. It 
 
 > **Need urgent help?** Customers needing urgent investigation should contact [Microsoft Support](https://dotnet.microsoft.com/platform/support).
 
-## What we triage and when
+## How we triage
 
-Every open issue without a milestone is considered untriaged. The team reviews untriaged issues regularly (typically weekly per area) and aims to make a decision quickly. Decisions are recorded as a **type label**, an **area label**, and a **milestone** — together they answer "what kind of issue is this, who owns it, and when (if ever) will we work on it?"
+The team reviews untriaged issues (open issues without a milestone) regularly. We try to respond to new issues as quickly as we can, but it may take a few days. Each triaged issue is given an **issue type**, an **area label**, and a **milestone** — together they answer "what kind of issue is this, who owns it, and when (if ever) are we planning to work on it?"
+
+A milestone reflects current intent, not a guarantee. Issues placed in a planning milestone may be rescheduled, moved to `Backlog`, or closed as priorities evolve.
 
 ## Triage outcomes
 
-Every triaged issue ends up in one of these states:
+A triaged issue ends up in one of these states:
 
 | Outcome | Meaning |
 | --- | --- |
-| **Closed** | Not actionable: invalid, duplicate, by-design, won't fix, can't repro, or already fixed. |
-| **Current release milestone** (e.g. the active `N.0` milestone) | Important enough to address in the in-flight release. Used sparingly. |
-| **Servicing milestone** (e.g. `N.0.x`) | A regression or high-impact bug in a supported release that warrants a patch. Subject to the [servicing bar](https://github.com/dotnet/aspnetcore/blob/main/docs/ReleasePlanning.md). |
-| **Next-release planning milestone** | Candidate for the next major .NET release; reviewed during sprint planning. |
-| **`Backlog`** | Tracked, but not committed to any release. Re-evaluated during release planning. |
-| **`Needs: Author Feedback`** | Waiting on the reporter for more information. May auto-close if no response. |
+| **Closed** | Not actionable: duplicate, by-design, won't fix, can't repro, or already fixed. |
+| **Servicing milestone** (`N.0.x`) | A regression or high-impact bug in a supported release that warrants a patch. Subject to the [servicing bar](https://github.com/dotnet/aspnetcore/blob/main/docs/Servicing.md). |
+| **Current-release planning milestone** (`.NET N Planning`) | Candidate for the in-flight major release. Issues here are scheduled into specific release milestones (e.g. `N.0-previewX`) during team planning. |
+| **`Backlog`** | Tracked but not committed to any release. Re-evaluated during release planning. |
 
-If the report depends on more information from the reporter, we apply `Needs: Author Feedback` first and triage again once we have what we need.
+If we need more information from the reporter before we can triage, we apply the `Needs: Author Feedback` or `Needs: Repro` label and triage again once the information is provided. See [Issue Management Policies](https://github.com/dotnet/aspnetcore/blob/main/docs/IssueManagementPolicies.md) for how those labels behave.
 
-## How we triage by issue type
+## Issue types
 
-Every triaged issue is tagged with a **type label**: `bug`, `enhancement` (feature), `Docs`, or `investigate` / `question`. The decision logic differs by type.
+Each triaged issue is assigned a [GitHub issue type](https://docs.github.com/en/issues/tracking-your-work-with-issues/configuring-a-custom-issue-type-list-for-an-organization): **Bug**, **Feature**, **Task**, or **Epic**. The decision logic differs by type.
 
-### Bug reports
+### Bug
 
-For something to be triaged as a bug, the issue should clearly describe:
+A good bug report describes:
 
 1. The expected behavior.
 2. The actual behavior.
-3. Steps to reproduce, ideally a minimal repro project.
-4. The .NET version and OS.
+3. The .NET version and OS.
+4. A minimal reproduction. See the [Bug Report Reproduction Guide](https://github.com/dotnet/aspnetcore/blob/main/docs/repro.md) for what we expect — typically a project hosted in a public GitHub repo. If a repro is missing, we apply `Needs: Repro`.
 
-Then we assess impact and severity, considering:
+We assess impact and severity by considering:
 
 - **Is it a regression in a currently supported release?** Regressions are weighted heavily and are the strongest candidates for servicing.
-- **Severity:** crash, data loss, security, hang, perf, or incorrect behavior with workaround?
+- **Severity:** crash, data loss, security, hang, perf, or incorrect behavior with a workaround?
 - **Reach:** how many users are likely affected? Common scenario or a niche edge case?
 - **Community signal:** 👍 reactions and substantive comments from distinct users.
-- **Workaround availability:** is there a reasonable user-side fix?
-
-Based on that:
-
-- **Critical / clear regression in a supported release** → servicing milestone (subject to servicing-bar approval).
-- **High-impact, reproducible** → next-release planning milestone.
-- **Real but low impact, or unclear impact** → `Backlog`, awaiting more signal.
-- **Cannot reproduce or insufficient information** → `Needs: Author Feedback`; close if no response.
-- **Caused by user code or environment** → close with an explanation.
-
-### Feature requests (`enhancement`)
-
-We weigh:
-
-- Alignment with the framework's goals and roadmap.
-- Size and design complexity.
-- Community demand (👍, comments, related issues, prior discussions).
-- Whether the scenario can already be achieved via extension points.
+- **Workaround availability.**
 
 Outcomes:
 
-- **Aligned and well-scoped** → next-release planning milestone for design review.
-- **Reasonable but not urgent** → `Backlog` to gather signal.
-- **Out of scope or unlikely to ship** → close with rationale and, where possible, a pointer to alternatives.
+- **Clear regression in a supported release with no good workaround** → servicing milestone, subject to the [servicing bar](https://github.com/dotnet/aspnetcore/blob/main/docs/Servicing.md) (which also weighs regression risk and forbids API changes in patches).
+- **High impact, reproducible** → current-release planning milestone.
+- **Real but low impact, or unclear impact** → `Backlog`.
+- **Caused by user code or environment** → close with explanation.
 
-### Investigations
+### Feature
 
-When a report could be a bug, environmental, or a misconfiguration, we apply the `investigate` label. Most investigations resolve to "user code / environment" and close; a minority surface as real bugs and re-triage as such.
+We try to prioritize the most important and impactful feature requests for each release. There are multiple factors that go into determining the priority of a feature. It's a balance between addressing key feedback, investing in key strategic directions, and satisfying Microsoft business needs. We also have to weigh the cost and risk of building, maintaining, and supporting the feature given the team's available resources.
 
-For investigations that require a process dump, ETW trace, or other diagnostic the reporter must provide, we set `Needs: Author Feedback`. If the reporter cannot or will not provide actionable diagnostics, the issue is closed; reopening is welcome once data is available.
+Outcomes:
 
-### Documentation issues
+- **Aligned and prioritized for the current release** → current-release planning milestone.
+- **Reasonable but not prioritized** → `Backlog` to gather signal.
+- **Out of scope** → close with rationale and, where possible, a pointer to alternatives.
 
-Tagged `Docs` and typically transferred to [`dotnet/AspNetCore.Docs`](https://github.com/dotnet/AspNetCore.Docs). High-traffic confusion may be addressed in the current release.
+### Task
 
-### Wrong area or wrong repo
+Engineering work that is neither a user-visible bug nor a new feature: refactors, perf improvements without a behavior change, test infrastructure, build/CI work, internal cleanups, and **documentation gaps**.
 
-If an issue belongs in another area or repo (e.g. `dotnet/runtime`, `dotnet/sdk`, `dotnet/AspNetCore.Docs`, `microsoft/reverse-proxy`), we transfer or re-label it during triage rather than holding it.
+Documentation tasks in this repo track technical content gaps that need to be filled by the ASP.NET Core engineering team. The engineering team provides the technical content to add to the docs by opening an issue with the content in the [`dotnet/AspNetCore.Docs`](https://github.com/dotnet/AspNetCore.Docs) repo. Doc issues should have type **Task** and the `Docs` label.
 
-## Milestone and release planning
+### Epic
 
-- **Sprint planning** (typically monthly): the team reviews issues in the next-release planning milestone and pulls the highest-impact items into the active sprint. Lower-impact items may be moved to `Backlog`.
-- **Release planning**: near the end of a release cycle, the team reviews `Backlog` and promotes items aligned with the next release's themes into the next-release planning milestone. See [ReleasePlanning.md](https://github.com/dotnet/aspnetcore/blob/main/docs/ReleasePlanning.md).
+Larger bodies of work that span multiple issues or releases.
 
-## Stale-issue cleanup
+## Investigations
 
-Issues that have been in `Backlog` across multiple releases without gaining traction are closed during release planning. Long-lived backlog age is itself a signal that an issue isn't impactful enough to act on; closing keeps the backlog meaningful. Reopening is welcome when new information or community demand emerges.
+When further investigation from our team is needed to determine the nature and impact of a reported issue, we apply the `investigate` label. Once the investigation is completed, the issue is triaged normally. Issues that don't have clear impact or severity may get closed without being investigated.
 
-## How decisions flow
+## Wrong repo
 
-```mermaid
-flowchart TD
-    A[New issue] --> B{Enough info?}
-    B -- No --> C[Needs: Author Feedback]
-    C -. no response .-> X[Close]
-    C -. info provided .-> B
-    B -- Yes --> D{Type?}
-    D -- Bug --> E{Impact / regression?}
-    D -- Feature --> F{Aligned with goals?}
-    D -- Investigation --> G[Investigate]
-    D -- Docs --> H[Transfer to docs repo]
-    D -- Out of scope / by design / duplicate --> X
-    E -- Critical / supported regression --> S[Servicing milestone]
-    E -- High impact --> P[Next-release planning]
-    E -- Low / unclear impact --> BL[Backlog]
-    F -- Yes --> P
-    F -- Maybe --> BL
-    F -- No --> X
-    G -- Real bug --> E
-    G -- User / env issue --> X
-    BL -. release planning .-> P
-    BL -. stale across releases .-> X
-```
+If an issue belongs in another repo (e.g. `dotnet/runtime`, `dotnet/sdk`, `dotnet/AspNetCore.Docs`, `dotnet/yarp`), we transfer it during triage.
+
+## Release planning
+
+Near the end of a release cycle, the team reviews `Backlog` and promotes items aligned with the next release into the next planning milestone. Issues that have stayed in `Backlog` across multiple releases without gaining traction are typically closed during this review — long backlog age is itself a signal that an issue isn't impactful enough to act on. Reopening is welcome when new information or community demand emerges.
+
+See [Release Planning](https://github.com/dotnet/aspnetcore/blob/main/docs/ReleasePlanning.md) for details.
 
 ## References
 
-- [Issue Management Policies](https://github.com/dotnet/aspnetcore/blob/main/docs/IssueManagementPolicies.md) — automation and labels.
+- [Issue Management Policies](https://github.com/dotnet/aspnetcore/blob/main/docs/IssueManagementPolicies.md) — automation and labels (`Needs: Author Feedback`, `Needs: Repro`, etc.).
+- [Bug Report Reproduction Guide](https://github.com/dotnet/aspnetcore/blob/main/docs/repro.md) — what we expect from a minimal repro.
 - [Release Planning](https://github.com/dotnet/aspnetcore/blob/main/docs/ReleasePlanning.md) — how releases are scoped.
-- [Servicing bar](https://github.com/dotnet/aspnetcore/blob/main/docs/ReleasePlanning.md) — what qualifies for a patch release.
+- [Servicing](https://github.com/dotnet/aspnetcore/blob/main/docs/Servicing.md) — Servicing bar and release process.
