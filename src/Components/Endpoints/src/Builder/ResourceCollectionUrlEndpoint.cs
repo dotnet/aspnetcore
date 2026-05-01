@@ -82,9 +82,11 @@ internal partial class ResourceCollectionUrlEndpoint
     private static byte[] CreateGzipBytes(byte[] bytes)
     {
         using var gzipContent = new MemoryStream();
-        using var gzipStream = new GZipStream(gzipContent, CompressionLevel.Optimal, leaveOpen: true);
-        gzipStream.Write(bytes);
-        gzipStream.Flush();
+        using (var gzipStream = new GZipStream(gzipContent, CompressionLevel.Optimal, leaveOpen: true))
+        {
+            gzipStream.Write(bytes);
+        }
+
         return gzipContent.ToArray();
     }
 

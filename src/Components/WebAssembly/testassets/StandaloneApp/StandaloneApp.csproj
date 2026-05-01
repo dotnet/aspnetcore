@@ -2,10 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- Point to the locally-built Gateway DLL -->
+    <_BlazorGatewayDll>$(RepoRoot)artifacts\bin\Microsoft.AspNetCore.Components.Gateway\$(Configuration)\$(DefaultNetCoreTargetFramework)\blazor-gateway.dll</_BlazorGatewayDll>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
   </ItemGroup>
+
+  <Import Project="$(RepoRoot)src\Components\Gateway\src\build\Microsoft.AspNetCore.Components.Gateway.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)..\SpaFallback.targets" />
 
 </Project>

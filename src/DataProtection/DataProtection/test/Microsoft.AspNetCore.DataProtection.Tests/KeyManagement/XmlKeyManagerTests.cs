@@ -934,7 +934,6 @@ public class XmlKeyManagerTests
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66029")]
     public void DeleteKeys()
     {
         var repository = new EphemeralXmlRepository(NullLoggerFactory.Instance);

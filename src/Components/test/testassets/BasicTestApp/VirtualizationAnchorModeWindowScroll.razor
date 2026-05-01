@@ -1,0 +1,239 @@
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+
+<style>
+    html, body {
+        overflow-y: scroll;
+        height: auto;
+    }
+</style>
+
+<div style="position: fixed;top: 0; left: 0; right: 0; z-index: 1000; background: white; padding: 5px 10px; border-bottom: 2px solid #ccc; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <div style="margin-bottom: 5px;">
+        <label>Anchor Mode:
+            <select id="anchor-mode-select" @onchange="OnAnchorModeChanged">
+                <option value="0" selected="@(anchorMode == VirtualizeAnchorMode.None)">None</option>
+                <option value="1" selected="@(anchorMode == VirtualizeAnchorMode.Beginning)">Beginning</option>
+                <option value="2" selected="@(anchorMode == VirtualizeAnchorMode.End)">End</option>
+            </select>
+        </label>
+        <button id="prepend-items" @onclick="PrependItems">Prepend 10 Items</button>
+        <button id="prepend-many-items" @onclick="PrependManyItems">Prepend 100 Items</button>
+        <button id="append-items" @onclick="AppendItems">Append 10 Items</button>
+        <button id="append-many-items" @onclick="AppendManyItems">Append 100 Items</button>
+        <button id="expand-item" @onclick="ExpandVisibleItem">Expand Item 3 to 400px</button>
+        <button id="toggle-provider" @onclick="ToggleProvider">
+            Source: @(useItemsProvider ? "ItemsProvider" : "Items")
+        </button>
+        <button id="toggle-height" @onclick="ToggleVariableHeight">
+            Heights: @(useVariableHeight ? "Variable (10-200px)" : "Fixed (50px)")
+        </button>
+    </div>
+    <p id="status" style="margin: 0; font-size: 12px;">@statusMessage</p>
+    <p id="current-mode" style="margin: 0; font-size: 12px;">@((int)anchorMode)</p>
+</div>
+
+<div id="virtualize-root" style="margin-top: 90px;">
+    @* No scroll container — uses window/document as the scroll root *@
+    @if (useItemsProvider)
+    {
+        <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@_itemComparer" Context="item">
+            <div class="item"
+                 data-index="@item.Index"
+                 data-anchor-mode="@((int)anchorMode)"
+                 style="border: 1px solid gray; padding: 5px; min-height: @(item.Height)px;">
+                <div>Item @item.Index</div>
+            </div>
+        </Virtualize>
+    }
+    else
+    {
+        <Virtualize Items="@items" ItemSize="50" AnchorMode="@anchorMode" Context="item">
+            <div class="item"
+                 data-index="@item.Index"
+                 data-anchor-mode="@((int)anchorMode)"
+                 style="border: 1px solid gray; padding: 5px; min-height: @(item.Height)px;">
+                <div>Item @item.Index</div>
+            </div>
+        </Virtualize>
+    }
+</div>
+
+@code {
+    private List<DynamicItem> items = new();
+    private string statusMessage = "Ready";
+    private VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Beginning;
+    private bool useVariableHeight = false;
+    private bool useItemsProvider = false;
+    private Virtualize<DynamicItem> virtualizeRef;
+    private static readonly IEqualityComparer<DynamicItem> _itemComparer =
+        EqualityComparer<DynamicItem>.Create((a, b) => a.Index == b.Index, item => item.Index);
+
+    protected override void OnInitialized()
+    {
+        items = Enumerable.Range(0, 500)
+            .Select(i => new DynamicItem { Index = i, Height = GetHeight(i) })
+            .ToList();
+    }
+
+    private int GetHeight(int index)
+    {
+        return useVariableHeight ? 10 + (Math.Abs(index * 7 + 13) % 191) : 50;
+    }
+
+    private void ToggleVariableHeight()
+    {
+        useVariableHeight = !useVariableHeight;
+        foreach (var item in items)
+        {
+            item.Height = GetHeight(item.Index);
+        }
+        statusMessage = useVariableHeight ? "Switched to variable heights" : "Switched to fixed heights";
+    }
+
+    private void OnAnchorModeChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var value))
+        {
+            anchorMode = (VirtualizeAnchorMode)value;
+            statusMessage = $"AnchorMode changed to {anchorMode}";
+        }
+    }
+
+    private int nextPrependIndex = -1;
+    private int nextAppendIndex = 500;
+
+    // Pending mutations applied inside the provider callback.
+    private List<DynamicItem> _pendingPrepend;
+    private List<DynamicItem> _pendingAppend;
+
+    private async Task PrependItems()
+    {
+        var newItems = Enumerable.Range(0, 10)
+            .Select(i => new DynamicItem { Index = nextPrependIndex - i, Height = GetHeight(nextPrependIndex - i) })
+            .Reverse()
+            .ToList();
+        nextPrependIndex -= 10;
+
+        if (useItemsProvider)
+        {
+            _pendingPrepend = newItems;
+            statusMessage = $"Prepended 10 items (indices {newItems.First().Index}..{newItems.Last().Index})";
+            if (virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
+        }
+        else
+        {
+            items.InsertRange(0, newItems);
+            statusMessage = $"Prepended 10 items (indices {newItems.First().Index}..{newItems.Last().Index})";
+        }
+    }
+
+    private async Task PrependManyItems()
+    {
+        var newItems = Enumerable.Range(0, 100)
+            .Select(i => new DynamicItem { Index = nextPrependIndex - i, Height = GetHeight(nextPrependIndex - i) })
+            .Reverse()
+            .ToList();
+        nextPrependIndex -= 100;
+
+        if (useItemsProvider)
+        {
+            _pendingPrepend = newItems;
+            statusMessage = $"Prepended 100 items (indices {newItems.First().Index}..{newItems.Last().Index})";
+            if (virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
+        }
+        else
+        {
+            items.InsertRange(0, newItems);
+            statusMessage = $"Prepended 100 items (indices {newItems.First().Index}..{newItems.Last().Index})";
+        }
+    }
+
+    private async Task AppendItems()
+    {
+        var startIndex = nextAppendIndex;
+        var newItems = Enumerable.Range(startIndex, 10)
+            .Select(i => new DynamicItem { Index = i, Height = GetHeight(i) })
+            .ToList();
+        nextAppendIndex += 10;
+
+        if (useItemsProvider)
+        {
+            _pendingAppend = newItems;
+            statusMessage = $"Appended 10 items (indices {startIndex}..{startIndex + 9})";
+            if (virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
+        }
+        else
+        {
+            items.AddRange(newItems);
+            statusMessage = $"Appended 10 items (indices {startIndex}..{startIndex + 9})";
+        }
+    }
+
+    private async Task AppendManyItems()
+    {
+        var startIndex = nextAppendIndex;
+        var newItems = Enumerable.Range(startIndex, 100)
+            .Select(i => new DynamicItem { Index = i, Height = GetHeight(i) })
+            .ToList();
+        nextAppendIndex += 100;
+
+        if (useItemsProvider)
+        {
+            _pendingAppend = newItems;
+            statusMessage = $"Appended 100 items (indices {startIndex}..{startIndex + 99})";
+            if (virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
+        }
+        else
+        {
+            items.AddRange(newItems);
+            statusMessage = $"Appended 100 items (indices {startIndex}..{startIndex + 99})";
+        }
+    }
+
+    private void ExpandVisibleItem()
+    {
+        var target = items.FirstOrDefault(i => i.Index == 3);
+        if (target != null)
+        {
+            target.Height = 400;
+            statusMessage = $"Expanded item {target.Index}";
+        }
+        else
+        {
+            statusMessage = "No item to expand";
+        }
+    }
+
+    private void ToggleProvider()
+    {
+        useItemsProvider = !useItemsProvider;
+        statusMessage = useItemsProvider ? "Switched to ItemsProvider" : "Switched to Items";
+    }
+
+    private async ValueTask<ItemsProviderResult<DynamicItem>> GetItemsAsync(ItemsProviderRequest request)
+    {
+        await Task.Yield();
+
+        // Apply pending mutations inside the provider callback.
+        if (_pendingPrepend != null)
+        {
+            items.InsertRange(0, _pendingPrepend);
+            _pendingPrepend = null;
+        }
+        if (_pendingAppend != null)
+        {
+            items.AddRange(_pendingAppend);
+            _pendingAppend = null;
+        }
+
+        var result = items.Skip(request.StartIndex).Take(request.Count)
+            .Select(i => new DynamicItem { Index = i.Index, Height = i.Height });
+        return new ItemsProviderResult<DynamicItem>(result, items.Count);
+    }
+
+    private class DynamicItem
+    {
+        public int Index { get; set; }
+        public int Height { get; set; }
+    }
+}

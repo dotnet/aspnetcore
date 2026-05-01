@@ -111,7 +111,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         NavigationManager.OnNotFound += OnNotFound;
         RoutingStateProvider = ServiceProvider.GetService<IRoutingStateProvider>();
 
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += ClearRouteCaches;
         }
@@ -179,7 +179,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
         NavigationManager.OnNotFound -= OnNotFound;
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied -= ClearRouteCaches;
         }

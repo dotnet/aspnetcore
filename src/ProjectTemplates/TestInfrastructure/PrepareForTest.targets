@@ -136,7 +136,7 @@
     <GenerateFileFromTemplate
       TemplateFile="$(MSBuildThisFileDirectory)..\TestInfrastructure\Directory.Build.targets.in"
       Properties="Configuration=$(Configuration);
-          RestoreAdditionalProjectSources=$([MSBuild]::Escape('$(RestoreAdditionalProjectSources);$(ArtifactsShippingPackagesDir);$(ArtifactsNonShippingPackagesDir)'));MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion=$(MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion)"
+          RestoreAdditionalProjectSources=$([MSBuild]::Escape('$(RestoreAdditionalProjectSources);$(ArtifactsShippingPackagesDir);$(ArtifactsNonShippingPackagesDir)'));MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion=$(PackageVersion)"
       OutputPath="$(TestTemplateCreationFolder)Directory.Build.targets" />
 
     <GenerateFileFromTemplate

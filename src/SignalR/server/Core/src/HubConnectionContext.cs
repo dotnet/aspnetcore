@@ -276,18 +276,13 @@ public partial class HubConnectionContext
                 static async ValueTask<FlushResult> WriteAsync(MessageBuffer messageBuffer, HubConnectionContext hubConnectionContext,
                     HubMessage message, CancellationToken cancellationToken)
                 {
-                    CancellationTokenSource? cts = null;
                     var connectionToken = hubConnectionContext.ConnectionAborted;
                     if (message is CloseMessage)
                     {
                         // If it's a CloseMessage, we might already have triggered the ConnectionAborted token
-                        // We would like to successfully send the CloseMessage for graceful close which means we can't use the ConnectionAborted token,
-                        // but we need to make sure we don't get blocked by backpressure or anything, so we use a short-lived token.
-                        cts = new CancellationTokenSource(TimeSpan.FromSeconds(5), hubConnectionContext._timeProvider);
-                        connectionToken = cts.Token;
+                        // We would like to successfully send the CloseMessage for graceful close which means we can't use the ConnectionAborted token.
+                        connectionToken = CancellationToken.None;
                     }
-
-                    using var __ = cts;
 
                     // MessageBuffer can wait on things other than the PipeWriter (which is canceled by other means)
                     // So we need to make sure the cancellation token passed to it is also canceled when the connection is aborted
