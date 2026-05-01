@@ -591,19 +591,10 @@ public class DefaultObjectValidatorTests
 
         var validator = CreateValidator();
 
-        var model = new Mock<IValidatableObject>();
-        model
-            .Setup(x => x.Validate(It.IsAny<ValidationContext>()))
-            .Callback((ValidationContext context) =>
-            {
-                var receivedService = context.GetService<IExampleService>();
-                Assert.Equal(service.Object, receivedService);
-                receivedService.DoSomething();
-            })
-            .Returns(new List<ValidationResult>());
+        var model = new MockedValidatableObject(service.Object);
 
         // Act
-        validator.Validate(actionContext, validationState, prefix: null, model: model.Object);
+        validator.Validate(actionContext, validationState, prefix: null, model: model);
 
         // Assert
         service.Verify();
@@ -1685,6 +1676,22 @@ public class DefaultObjectValidatorTests
 
                 return new DepthObject(MaxAllowedDepth, Depth + 1);
             }
+        }
+    }
+
+    private sealed class MockedValidatableObject : IValidatableObject
+    {
+        private readonly IExampleService _exampleService;
+
+        public MockedValidatableObject(IExampleService exampleService)
+            => _exampleService = exampleService;
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            var receivedService = validationContext.GetService<IExampleService>();
+            Assert.Equal(_exampleService, receivedService);
+
+            return new List<ValidationResult>();
         }
     }
 }
