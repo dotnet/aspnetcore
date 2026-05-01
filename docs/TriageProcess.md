@@ -57,7 +57,7 @@ Outcomes:
 
 ### Feature
 
-We try to prioritize the most important and impactful feature requests for each release. There are multiple factors that go into determining the priority of a feature. It's a balance between addressing key feedback, investing in key strategic directions, and satisfying Microsoft business needs. We also have to weigh the cost and risk of building, maintaining, and supporting the feature given the team's available resources.
+We try to prioritize the most important and impactful feature requests for each release. There are multiple factors that go into determining the priority of a feature. It's a balance between addressing key feedback, investing in key strategic directions, and satisfying business needs. We also have to weigh the cost and risk of building, maintaining, and supporting the feature given the team's available resources.
 
 Outcomes:
 
