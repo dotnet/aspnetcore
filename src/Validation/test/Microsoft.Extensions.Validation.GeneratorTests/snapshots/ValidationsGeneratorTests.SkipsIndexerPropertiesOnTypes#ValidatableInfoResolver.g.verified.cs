@@ -71,16 +71,16 @@ namespace Microsoft.Extensions.Validation.Generated
         public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo)
         {
             validatableInfo = null;
-            if (type == typeof(global::TestService))
+            if (type == typeof(global::TypeWithJsonElement))
             {
                 validatableInfo = new GeneratedValidatableTypeInfo(
-                    type: typeof(global::TestService),
+                    type: typeof(global::TypeWithJsonElement),
                     members: [
                         new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::TestService),
-                            propertyType: typeof(int),
-                            name: "Value",
-                            displayName: "Value"
+                            containingType: typeof(global::TypeWithJsonElement),
+                            propertyType: typeof(string),
+                            name: "Name",
+                            displayName: "Name"
                         ),
                     ]
                 );
