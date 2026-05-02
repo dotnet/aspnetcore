@@ -46,7 +46,7 @@ public class PasskeyHandlerAttestationTest
 
         Assert.True(result.Succeeded);
 
-        Assert.Equal(expectedTime.UtcDateTime, result.Passkey.CreatedAt);
+        Assert.Equal(expectedTime, result.Passkey.CreatedAt);
     }
 
     [Fact]
