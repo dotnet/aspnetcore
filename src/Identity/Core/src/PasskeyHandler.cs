@@ -677,8 +677,10 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
         // Uri.Equals correctly handles string comparands.
         return ValueTask.FromResult(httpContext.Request.Headers.Origin is [var origin] && originUri.Equals(origin));
     }
+
     private string GetServerDomain(HttpContext httpContext)
         => _options.ServerDomain ?? httpContext.Request.Host.Host;
+
     private static DateTime GetUtcNow(HttpContext httpContext)
      => (httpContext.RequestServices.GetService<TimeProvider>() ?? TimeProvider.System).GetUtcNow().UtcDateTime;
 }
