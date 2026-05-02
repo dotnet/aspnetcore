@@ -9,8 +9,10 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 
 namespace Microsoft.AspNetCore.Identity.Test;
@@ -28,6 +30,23 @@ public class PasskeyHandlerAttestationTest
         var result = await test.RunAsync();
 
         Assert.True(result.Succeeded);
+    }
+
+    [Fact]
+    public async Task CanSucceed_UsesTimeProviderForCreatedAt()
+    {
+        var test = new AttestationTest();
+        var fakeTimeProvider = new FakeTimeProvider();
+        var expectedTime = new DateTimeOffset(2033, 1, 2, 3, 4, 5, TimeSpan.Zero);
+        fakeTimeProvider.SetUtcNow(expectedTime);
+
+        test.TimeProvider = fakeTimeProvider;
+
+        var result = await test.RunAsync();
+
+        Assert.True(result.Succeeded);
+
+        Assert.Equal(expectedTime.UtcDateTime, result.Passkey.CreatedAt);
     }
 
     [Fact]
@@ -987,6 +1006,7 @@ public class PasskeyHandlerAttestationTest
         public string? UserDisplayName { get; set; } = "John Doe";
         public string? Origin { get; set; } = "https://example.com";
         public bool DoesCredentialAlreadyExistForAnotherUser { get; set; }
+        public TimeProvider? TimeProvider { get; set; }
         public COSEAlgorithmIdentifier Algorithm { get; set; } = COSEAlgorithmIdentifier.ES256;
         public ReadOnlyMemory<byte> CredentialId { get; set; } = _defaultCredentialId;
         public ComputedValue<AttestedCredentialDataArgs> AttestedCredentialDataArgs { get; } = new();
@@ -1003,6 +1023,7 @@ public class PasskeyHandlerAttestationTest
         {
             var httpContext = new Mock<HttpContext>();
             httpContext.Setup(c => c.Request.Headers.Origin).Returns(new StringValues(Origin));
+            httpContext.Setup(c => c.RequestServices).Returns(CreateServices());
 
             var userManager = MockHelpers.MockUserManager<PocoUser>();
 
@@ -1093,6 +1114,17 @@ public class PasskeyHandlerAttestationTest
             };
 
             return await handler.PerformAttestationAsync(context);
+        }
+
+        private IServiceProvider CreateServices()
+        {
+            var services = new ServiceCollection();
+            if (TimeProvider is not null)
+            {
+                services.AddSingleton(TimeProvider);
+            }
+
+            return services.BuildServiceProvider();
         }
     }
 }
