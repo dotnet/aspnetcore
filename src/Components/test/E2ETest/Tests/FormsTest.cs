@@ -1096,6 +1096,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var jsExecutor = (IJavaScriptExecutor)Browser;
         return (bool)jsExecutor.ExecuteScript($"return arguments[0].attributes['{attribute}'] !== undefined;", webElement);
     }
+
     [Fact]
     public void ValidationSummaryAppliesCssClass()
     {
@@ -1107,13 +1108,14 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         nameInput.SendKeys("01234567890123456789\t");
         submitButton.Click();
 
-        // Default ValidationSummary renders with only "validation-errors" class
-        var defaultSummaryElement = appElement.FindElement(By.ClassName("all-errors")).FindElement(By.TagName("ul"));
-        Browser.Equal("validation-errors", () => defaultSummaryElement.GetDomAttribute("class"));
+        // Default ValidationSummary renders with only "validation-errors" class.
+        // FindElement is inside the lambda so Browser.Equal retries until the ul is rendered.
+        Browser.Equal("validation-errors",
+            () => appElement.FindElement(By.ClassName("all-errors")).FindElement(By.TagName("ul")).GetDomAttribute("class"));
 
         // ValidationSummary with CssClass appends the custom class to "validation-errors"
-        var customSummaryElement = appElement.FindElement(By.ClassName("all-errors-custom-class")).FindElement(By.TagName("ul"));
-        Browser.Equal("validation-errors custom-summary-css-class", () => customSummaryElement.GetDomAttribute("class"));
+        Browser.Equal("validation-errors custom-summary-css-class",
+            () => appElement.FindElement(By.ClassName("all-errors-custom-class")).FindElement(By.TagName("ul")).GetDomAttribute("class"));
     }
 
 }
