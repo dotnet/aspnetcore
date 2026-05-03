@@ -5,27 +5,28 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
-using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.Extensions.Validation;
 
 public sealed partial class ValidationsGenerator : IIncrementalGenerator
 {
-    private static readonly SymbolDisplayFormat _symbolDisplayFormat = new(
-        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Included,
-        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
-
-    internal ImmutableArray<ValidatableType> ExtractValidatableTypes(IInvocationOperation operation, WellKnownTypes wellKnownTypes)
+    internal static ImmutableArray<ValidatableType> ExtractValidatableTypes(IInvocationOperation operation)
     {
         AnalyzerDebug.Assert(operation.SemanticModel != null, "SemanticModel should not be null.");
         var parameters = operation.TryGetRouteHandlerMethod(operation.SemanticModel, out var method)
             ? method.Parameters
             : [];
+
+        if (parameters.IsEmpty)
+        {
+            return [];
+        }
+
+        var wellKnownTypes = WellKnownTypes.GetOrCreate(operation.SemanticModel.Compilation);
 
         var fromServiceMetadataSymbol = wellKnownTypes.GetOptional(
             WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata);
@@ -51,12 +52,12 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 continue;
             }
 
-            _ = TryExtractValidatableType(parameter.Type, wellKnownTypes, ref validatableTypes, ref visitedTypes);
+            _ = TryExtractValidatableType(parameter.Type, wellKnownTypes, validatableTypes, visitedTypes);
         }
         return [.. validatableTypes];
     }
 
-    internal bool TryExtractValidatableType(ITypeSymbol incomingTypeSymbol, WellKnownTypes wellKnownTypes, ref HashSet<ValidatableType> validatableTypes, ref List<ITypeSymbol> visitedTypes)
+    internal static bool TryExtractValidatableType(ITypeSymbol incomingTypeSymbol, WellKnownTypes wellKnownTypes, HashSet<ValidatableType> validatableTypes, List<ITypeSymbol> visitedTypes)
     {
         var typeSymbol = incomingTypeSymbol.UnwrapType(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Collections_IEnumerable));
         if (typeSymbol.SpecialType != SpecialType.None)
@@ -89,7 +90,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         var hasValidatableBaseType = false;
         while (current != null && current.SpecialType != SpecialType.System_Object)
         {
-            hasValidatableBaseType |= TryExtractValidatableType(current, wellKnownTypes, ref validatableTypes, ref visitedTypes);
+            hasValidatableBaseType |= TryExtractValidatableType(current, wellKnownTypes, validatableTypes, visitedTypes);
             current = current.BaseType;
         }
 
@@ -97,7 +98,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         ImmutableArray<ValidatableProperty> members = [];
         if (ParsabilityHelper.GetParsability(typeSymbol, wellKnownTypes) is Parsability.NotParsable)
         {
-            members = ExtractValidatableMembers(typeSymbol, wellKnownTypes, ref validatableTypes, ref visitedTypes);
+            members = ExtractValidatableMembers(typeSymbol, wellKnownTypes, validatableTypes, visitedTypes);
         }
 
         // Extract the validatable types discovered in the JsonDerivedTypeAttributes of this type and add them to the top-level list.
@@ -105,7 +106,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         var hasValidatableDerivedTypes = false;
         foreach (var derivedType in derivedTypes ?? [])
         {
-            hasValidatableDerivedTypes |= TryExtractValidatableType(derivedType, wellKnownTypes, ref validatableTypes, ref visitedTypes);
+            hasValidatableDerivedTypes |= TryExtractValidatableType(derivedType, wellKnownTypes, validatableTypes, visitedTypes);
         }
 
         // No validatable members or derived types found, so we don't need to add this type.
@@ -116,13 +117,13 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
         // Add the type itself as a validatable type itself.
         validatableTypes.Add(new ValidatableType(
-            Type: typeSymbol,
+            TypeFQN: typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
             Members: members));
 
         return true;
     }
 
-    internal ImmutableArray<ValidatableProperty> ExtractValidatableMembers(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, ref HashSet<ValidatableType> validatableTypes, ref List<ITypeSymbol> visitedTypes)
+    private static ImmutableArray<ValidatableProperty> ExtractValidatableMembers(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, HashSet<ValidatableType> validatableTypes, List<ITypeSymbol> visitedTypes)
     {
         var members = new List<ValidatableProperty>();
         var resolvedRecordProperty = new List<IPropertySymbol>();
@@ -189,19 +190,18 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
                         // Check if the property's type is validatable, this resolves
                         // validatable types in the inheritance hierarchy
-                        var hasValidatableType = TryExtractValidatableType(
+                        _ = TryExtractValidatableType(
                             correspondingProperty.Type,
                             wellKnownTypes,
-                            ref validatableTypes,
-                            ref visitedTypes);
+                            validatableTypes,
+                            visitedTypes);
 
                         members.Add(new ValidatableProperty(
-                            ContainingType: correspondingProperty.ContainingType,
-                            Type: correspondingProperty.Type,
+                            ContainingTypeFQN: correspondingProperty.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                            TypeFQN: correspondingProperty.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                             Name: correspondingProperty.Name,
                             DisplayName: parameter.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute)) ??
-                                        correspondingProperty.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute)),
-                            Attributes: []));
+                                        correspondingProperty.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute))));
                     }
                 }
             }
@@ -248,47 +248,22 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 continue;
             }
 
-            var hasValidatableType = TryExtractValidatableType(member.Type, wellKnownTypes, ref validatableTypes, ref visitedTypes);
-            var attributes = ExtractValidationAttributes(member, wellKnownTypes, out var isRequired);
+            var hasValidatableType = TryExtractValidatableType(member.Type, wellKnownTypes, validatableTypes, visitedTypes);
 
-            // If the member has no validation attributes or validatable types and is not required, skip it.
-            if (attributes.IsDefaultOrEmpty && !hasValidatableType && !isRequired)
+            // If the member has no validation attributes or validatable types, skip it.
+            if (!HasValidationAttributes(member, wellKnownTypes) && !hasValidatableType)
             {
                 continue;
             }
 
             members.Add(new ValidatableProperty(
-                ContainingType: member.ContainingType,
-                Type: member.Type,
+                ContainingTypeFQN: member.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                TypeFQN: member.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                 Name: member.Name,
-                DisplayName: member.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute)),
-                Attributes: attributes));
+                DisplayName: member.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute))));
         }
 
         return [.. members];
-    }
-
-    internal static ImmutableArray<ValidationAttribute> ExtractValidationAttributes(ISymbol symbol, WellKnownTypes wellKnownTypes, out bool isRequired)
-    {
-        var attributes = symbol.GetAttributes();
-        if (attributes.Length == 0)
-        {
-            isRequired = false;
-            return [];
-        }
-
-        var validationAttributes = attributes
-            .Where(attribute => attribute.AttributeClass != null)
-            .Where(attribute => attribute.AttributeClass!.ImplementsValidationAttribute(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_ValidationAttribute)));
-        isRequired = validationAttributes.Any(attr => SymbolEqualityComparer.Default.Equals(attr.AttributeClass, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_RequiredAttribute)));
-        return [.. validationAttributes
-            .Where(attr => !SymbolEqualityComparer.Default.Equals(attr.AttributeClass, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_ValidationAttribute)))
-            .Select(attribute => new ValidationAttribute(
-                Name: symbol.Name + attribute.AttributeClass!.Name,
-                ClassName: attribute.AttributeClass!.ToDisplayString(_symbolDisplayFormat),
-                Arguments: [.. attribute.ConstructorArguments.Select(a => a.ToCSharpString())],
-                NamedArguments: attribute.NamedArguments.ToDictionary(namedArgument => namedArgument.Key, namedArgument => namedArgument.Value.ToCSharpString()),
-                IsCustomValidationAttribute: SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_CustomValidationAttribute))))];
     }
 
     internal static bool HasValidationAttributes(ISymbol symbol, WellKnownTypes wellKnownTypes)

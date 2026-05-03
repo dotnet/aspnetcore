@@ -1986,6 +1986,15 @@ public static partial class RequestDelegateFactory
     {
         if (defaultValue is null)
         {
+            // For non-nullable value types (e.g., Guid, DateTime, TimeSpan), reflection reports
+            // DefaultValue == null when the parameter default is `= default`. Using
+            // Expression.Constant(null, valueType) would throw an ArgumentException because null
+            // is not valid for a non-nullable value type. Use Expression.Default instead.
+            if (parameterType.IsValueType && Nullable.GetUnderlyingType(parameterType) is null)
+            {
+                return Expression.Default(parameterType);
+            }
+
             return Expression.Constant(null, parameterType);
         }
 
