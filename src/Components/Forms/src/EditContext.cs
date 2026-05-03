@@ -364,37 +364,31 @@ public sealed class EditContext
                     }
                 }
 
+                // Await completion; per-task outcomes are inspected below, so the aggregate
+                // exception WhenAll would surface adds no information.
                 try
                 {
                     await Task.WhenAll(tasks);
                 }
-                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                {
-                    // Caller-requested cancellation propagates to the caller. The previous form-level
-                    // fault state is preserved since no new result was produced. The finally block
-                    // still clears the pending flag.
-                    throw;
-                }
-                catch (OperationCanceledException)
-                {
-                    // Handler-internal cancellation (not the caller's token) is silently contained.
-                }
                 catch
                 {
-                    faultedThisPass = true;
+                    // Swallowed; classification happens below. Caller cancellation is re-thrown
+                    // via ThrowIfCancellationRequested before classification runs.
                 }
 
-                // Task.WhenAll surfaces only one exception; if cancellation won the race we may
-                // still have other faulted tasks. Inspect the array to catch those.
-                if (!faultedThisPass)
+                // Caller-requested cancellation propagates to the caller. The previous form-level
+                // fault state is preserved since no new result was produced. The finally block
+                // still clears the pending flag.
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // A handler-internal OperationCanceledException leaves its task in the Canceled
+                // state (IsFaulted == false), so it is naturally excluded from this scan.
+                for (var i = 0; i < tasks.Length; i++)
                 {
-                    for (var i = 0; i < tasks.Length; i++)
+                    if (tasks[i].IsFaulted)
                     {
-                        if (tasks[i].IsFaulted)
-                        {
-                            faultedThisPass = true;
-                            break;
-                        }
+                        faultedThisPass = true;
+                        break;
                     }
                 }
             }
