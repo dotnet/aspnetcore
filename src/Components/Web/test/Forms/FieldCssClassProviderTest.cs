@@ -54,7 +54,7 @@ public class FieldCssClassProviderTest
     }
 
     [Fact]
-    public void AppendsPending_WhenAsyncTaskInFlight()
+    public void ReturnsPending_WhenAsyncTaskInFlight()
     {
         var model = new TestModel();
         var editContext = new EditContext(model);
@@ -62,13 +62,13 @@ public class FieldCssClassProviderTest
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         editContext.AddValidationTask(field, tcs.Task, new CancellationTokenSource());
 
-        Assert.Equal("valid pending", _provider.GetFieldCssClass(editContext, field));
+        Assert.Equal("pending", _provider.GetFieldCssClass(editContext, field));
 
         tcs.SetResult();
     }
 
     [Fact]
-    public void AppendsPending_AndModified()
+    public void ReturnsModifiedPending_WhenModifiedAndAsyncTaskInFlight()
     {
         var model = new TestModel();
         var editContext = new EditContext(model);
@@ -77,13 +77,31 @@ public class FieldCssClassProviderTest
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         editContext.AddValidationTask(field, tcs.Task, new CancellationTokenSource());
 
-        Assert.Equal("modified valid pending", _provider.GetFieldCssClass(editContext, field));
+        Assert.Equal("modified pending", _provider.GetFieldCssClass(editContext, field));
 
         tcs.SetResult();
     }
 
     [Fact]
-    public async Task AppendsFaulted_WhenLastAsyncValidationFaulted()
+    public async Task PendingSupersedesValidityWhenMessagesArePresent()
+    {
+        // Stale messages from a prior pass don't leak through while we're still validating.
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+        var field = FieldIdentifier.Create(() => model.Property);
+        var messages = new ValidationMessageStore(editContext);
+        messages.Add(field, "stale");
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        editContext.AddValidationTask(field, tcs.Task, new CancellationTokenSource());
+
+        Assert.Equal("pending", _provider.GetFieldCssClass(editContext, field));
+
+        tcs.SetResult();
+        await WaitUntil(() => !editContext.IsValidationPending(field));
+    }
+
+    [Fact]
+    public async Task ReturnsFaulted_WhenLastAsyncValidationFaulted()
     {
         var model = new TestModel();
         var editContext = new EditContext(model);
@@ -93,24 +111,38 @@ public class FieldCssClassProviderTest
 
         await WaitUntil(() => editContext.IsValidationFaulted(field));
 
-        Assert.Equal("valid faulted", _provider.GetFieldCssClass(editContext, field));
+        Assert.Equal("faulted", _provider.GetFieldCssClass(editContext, field));
     }
 
     [Fact]
-    public async Task AppendsFaulted_AndCombinesWithOtherFlags()
+    public async Task ReturnsModifiedFaulted_WhenModifiedAndLastAsyncValidationFaulted()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+        var field = FieldIdentifier.Create(() => model.Property);
+        editContext.NotifyFieldChanged(field);
+        var faultingTask = Task.FromException(new InvalidOperationException("boom"));
+        editContext.AddValidationTask(field, faultingTask, new CancellationTokenSource());
+
+        await WaitUntil(() => editContext.IsValidationFaulted(field));
+
+        Assert.Equal("modified faulted", _provider.GetFieldCssClass(editContext, field));
+    }
+
+    [Fact]
+    public async Task FaultedSupersedesInvalidWhenMessagesArePresent()
     {
         var model = new TestModel();
         var editContext = new EditContext(model);
         var field = FieldIdentifier.Create(() => model.Property);
         var messages = new ValidationMessageStore(editContext);
-        messages.Add(field, "bad");
-        editContext.NotifyFieldChanged(field);
+        messages.Add(field, "ignored-by-faulted");
         var faultingTask = Task.FromException(new InvalidOperationException("boom"));
         editContext.AddValidationTask(field, faultingTask, new CancellationTokenSource());
 
         await WaitUntil(() => editContext.IsValidationFaulted(field));
 
-        Assert.Equal("modified invalid faulted", _provider.GetFieldCssClass(editContext, field));
+        Assert.Equal("faulted", _provider.GetFieldCssClass(editContext, field));
     }
 
     private static async Task WaitUntil(Func<bool> condition)

@@ -15,14 +15,18 @@ public class FieldCssClassProvider
 
     /// <summary>
     /// Gets a string that indicates the status of the specified field as a CSS class.
-    /// The result includes some combination of <c>"modified"</c>, <c>"valid"</c> / <c>"invalid"</c>,
-    /// <c>"pending"</c>, and <c>"faulted"</c>:
+    /// The result is one of <c>"valid"</c>, <c>"invalid"</c>, <c>"pending"</c>, or <c>"faulted"</c>,
+    /// optionally prefixed with <c>"modified "</c> when
+    /// <see cref="EditContext.IsModified(in FieldIdentifier)"/> is <c>true</c>.
     /// <list type="bullet">
-    /// <item><c>"modified"</c> is added when <see cref="EditContext.IsModified(in FieldIdentifier)"/> is <c>true</c>.</item>
-    /// <item><c>"valid"</c> or <c>"invalid"</c> reflects whether any validation messages exist for the field.</item>
-    /// <item><c>"pending"</c> is added while an async validation task registered via
-    /// <see cref="EditContext.AddValidationTask"/> is in flight.</item>
-    /// <item><c>"faulted"</c> is added when the field's last async validation threw a non-cancellation exception.</item>
+    /// <item><c>"pending"</c> is emitted while an async validation task registered via
+    /// <see cref="EditContext.AddValidationTask"/> is in flight, and supersedes valid/invalid
+    /// since the outcome is not yet known.</item>
+    /// <item><c>"faulted"</c> is emitted when the field's last async validation threw a
+    /// non-cancellation exception, and supersedes valid/invalid since the infrastructure
+    /// failed to determine validity.</item>
+    /// <item><c>"valid"</c> or <c>"invalid"</c> reflects whether any validation messages exist
+    /// for the field once no pending or faulted state applies.</item>
     /// </list>
     /// </summary>
     /// <param name="editContext">The <see cref="EditContext"/>.</param>
@@ -30,26 +34,24 @@ public class FieldCssClassProvider
     /// <returns>A CSS class name string.</returns>
     public virtual string GetFieldCssClass(EditContext editContext, in FieldIdentifier fieldIdentifier)
     {
-        var isValid = !editContext.GetValidationMessages(fieldIdentifier).Any();
-        var isModified = editContext.IsModified(fieldIdentifier);
-        var isPending = editContext.IsValidationPending(fieldIdentifier);
-        var isFaulted = editContext.IsValidationFaulted(fieldIdentifier);
+        var modified = editContext.IsModified(fieldIdentifier);
 
-        // Fast path preserves the historical literals for the synchronous-only case.
-        if (!isPending && !isFaulted)
+        if (editContext.IsValidationPending(fieldIdentifier))
         {
-            if (isModified)
-            {
-                return isValid ? "modified valid" : "modified invalid";
-            }
-
-            return isValid ? "valid" : "invalid";
+            return modified ? "modified pending" : "pending";
         }
 
-        var modified = isModified ? "modified " : "";
-        var validity = isValid ? "valid" : "invalid";
-        var pending = isPending ? " pending" : "";
-        var faulted = isFaulted ? " faulted" : "";
-        return $"{modified}{validity}{pending}{faulted}";
+        if (editContext.IsValidationFaulted(fieldIdentifier))
+        {
+            return modified ? "modified faulted" : "faulted";
+        }
+
+        var isValid = !editContext.GetValidationMessages(fieldIdentifier).Any();
+        if (modified)
+        {
+            return isValid ? "modified valid" : "modified invalid";
+        }
+
+        return isValid ? "valid" : "invalid";
     }
 }
