@@ -636,6 +636,11 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     {
     }
 
+    /// <summary>
+    /// Gives a fixture an opportunity to configure the application builder.
+    /// This method will be called very early, during the entrypoint's call to WebApplication.CreateBuilder.
+    /// </summary>
+    /// <param name="hostApplicationBuilder">The host application builder to configure.</param>
     protected virtual void ConfigureHostApplicationBuilder(IHostApplicationBuilder hostApplicationBuilder)
     {
     }
