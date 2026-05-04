@@ -237,4 +237,21 @@ public class GetDocumentTests(ITestOutputHelper output)
         Assert.True(File.Exists(Path.Combine(outputPath.FullName, "Sample.json")));
         Assert.True(File.Exists(Path.Combine(outputPath.FullName, "Sample_internal.json")));
     }
+
+    [Theory]
+    [InlineData("a/../b", "Sample_a_._b.json")]
+    [InlineData(@"a\..\b", "Sample_a_._b.json")]
+    [InlineData("..", "Sample_..json")]
+    public void GetDocumentPath_SanitizesDocumentName(string documentName, string expectedFileName)
+    {
+        // We validate the path generation logic directly to avoid coupling this test to sample app document names.
+        var method = typeof(GetDocumentCommandWorker).GetMethod("GetDocumentPath", BindingFlags.NonPublic | BindingFlags.Static);
+        Assert.NotNull(method);
+
+        var outputDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        var resultPath = (string)method.Invoke(null, [documentName, "Sample", outputDir]);
+
+        Assert.Equal(expectedFileName, Path.GetFileName(resultPath));
+        Assert.Equal(outputDir, Path.GetDirectoryName(resultPath));
+    }
 }
