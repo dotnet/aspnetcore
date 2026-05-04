@@ -26,6 +26,7 @@ public interface ISessionStore
     /// prior to sending the response.
     /// </param>
     /// <param name="isNewSessionKey"><see langword="true"/> if establishing a new session; <see langword="false"/> if resuming a session.</param>
+    /// <param name="context">The <see cref="HttpContext"/>.</param>
     /// <returns>The <see cref="ISession"/> that was created or resumed.</returns>
-    ISession Create(string sessionKey, TimeSpan idleTimeout, TimeSpan ioTimeout, Func<bool> tryEstablishSession, bool isNewSessionKey);
+    ISession Create(string sessionKey, TimeSpan idleTimeout, TimeSpan ioTimeout, Func<bool> tryEstablishSession, bool isNewSessionKey, HttpContext context);
 }
