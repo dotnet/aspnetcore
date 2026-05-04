@@ -288,7 +288,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
             var arbitraryActions = new Dictionary<string, Action<object?>>(capacity: 1)
             {
-                { "HostApplicationBuilderConstructed", hostApplicationBuilder => SetupConfigurationBuilder(((HostApplicationBuilder)hostApplicationBuilder!).Configuration) }
+                { "HostApplicationBuilderConstructed", hostApplicationBuilder => ConfigureHostApplicationBuilder((IHostApplicationBuilder)hostApplicationBuilder!) }
             };
 
             var factory = HostFactoryResolver.ResolveHostFactory(
@@ -636,7 +636,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     {
     }
 
-    protected virtual void SetupConfigurationBuilder(IConfigurationBuilder configurationBuilder)
+    protected virtual void ConfigureHostApplicationBuilder(IHostApplicationBuilder hostApplicationBuilder)
     {
     }
 
