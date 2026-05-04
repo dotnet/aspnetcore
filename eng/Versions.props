@@ -194,6 +194,9 @@
     <XunitV3Version>3.2.2</XunitV3Version>
     <XunitV3ExtensibilityCoreVersion>$(XunitV3Version)</XunitV3ExtensibilityCoreVersion>
     <MicrosoftPlaywrightXunitV3Version>1.58.0</MicrosoftPlaywrightXunitV3Version>
+    <!-- Components.AI dependencies -->
+    <MicrosoftExtensionsAIAbstractionsVersion>10.4.1</MicrosoftExtensionsAIAbstractionsVersion>
+    <MicrosoftExtensionsAIVersion>10.4.1</MicrosoftExtensionsAIVersion>
     <!-- Components.Testing dependencies -->
     <YarpReverseProxyVersion>2.3.0</YarpReverseProxyVersion>
     <MicrosoftDataSqlClientVersion>7.0.0</MicrosoftDataSqlClientVersion>

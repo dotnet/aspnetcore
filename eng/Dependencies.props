@@ -248,6 +248,9 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="xunit.v3.extensibility.core" Version="$(XunitV3ExtensibilityCoreVersion)" />
     <LatestPackageReference Include="Microsoft.Playwright.Xunit.v3" Version="$(MicrosoftPlaywrightXunitV3Version)" />
     <LatestPackageReference Include="Yarp.ReverseProxy" Version="$(YarpReverseProxyVersion)" />
+    <!-- Components.AI (Microsoft.Extensions.AI) -->
+    <LatestPackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="$(MicrosoftExtensionsAIAbstractionsVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.AI" Version="$(MicrosoftExtensionsAIVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.ServiceDiscovery" />
     <LatestPackageReference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" />
   </ItemGroup>
