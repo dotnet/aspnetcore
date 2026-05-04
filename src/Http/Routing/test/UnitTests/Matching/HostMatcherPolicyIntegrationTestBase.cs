@@ -173,6 +173,54 @@ public abstract class HostMatcherPolicyIntegrationTestBase
     }
 
     [Fact]
+    public async Task Match_HostWithWildcard_InvalidSubdomain()
+    {
+        // Arrange
+        var endpoint = CreateEndpoint("/hello", hosts: new string[] { "*.contoso.com:8080", });
+
+        var matcher = CreateMatcher(endpoint);
+        var httpContext = CreateContext("/hello", ".contoso.com:8080");
+
+        // Act
+        await matcher.MatchAsync(httpContext);
+
+        // Assert
+        MatcherAssert.AssertNotMatch(httpContext);
+    }
+
+    [Fact]
+    public async Task Match_HostWithWildcard_InvalidSubdomain2()
+    {
+        // Arrange
+        var endpoint = CreateEndpoint("/hello", hosts: new string[] { "*.contoso.com:8080", });
+
+        var matcher = CreateMatcher(endpoint);
+        var httpContext = CreateContext("/hello", ".test.contoso.com:8080");
+
+        // Act
+        await matcher.MatchAsync(httpContext);
+
+        // Assert
+        MatcherAssert.AssertNotMatch(httpContext);
+    }
+
+    [Fact]
+    public async Task Match_HostWithWildcard_InvalidSubdomain3()
+    {
+        // Arrange
+        var endpoint = CreateEndpoint("/hello", hosts: new string[] { "*.contoso.com:8080", });
+
+        var matcher = CreateMatcher(endpoint);
+        var httpContext = CreateContext("/hello", "..contoso.com:8080");
+
+        // Act
+        await matcher.MatchAsync(httpContext);
+
+        // Assert
+        MatcherAssert.AssertNotMatch(httpContext);
+    }
+
+    [Fact]
     public async Task Match_HostAndHostWithWildcard_NoSubdomain()
     {
         // Arrange
