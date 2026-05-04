@@ -5,6 +5,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
 
@@ -28,6 +29,7 @@ public class JsInitializersTest : ServerTestBase<ToggleExecutionModeServerFixtur
     // This case is essentially the same as Blazor.web.js with 'legacy' initializers enabled by default, as Blazor.server.js and Blazor.Webassembly.js
     // both need to support the legacy initializers for backwards compatibility.
     // The implementation accounts for the new 'modern' initializers and prefers those over the 'legacy' ones.
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/127515")]
     [Fact]
     public void InitializersWork()
     {

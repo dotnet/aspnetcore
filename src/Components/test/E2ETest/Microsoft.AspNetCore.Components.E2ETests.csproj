@@ -42,6 +42,17 @@
     <Compile Include="$(SharedSourceRoot)Process\**\*.cs" LinkBase="Shared" />
   </ItemGroup>
 
+  <!-- Exclude threading test files when building with CoreCLR (UseMonoRuntime=false) since ThreadingApp requires Mono -->
+  <!-- Also exclude server-only tests since the CoreCLR job targets the WASM runtime path;
+       server-side Blazor already runs on CoreCLR by default and is covered by the Mono job. -->
+  <ItemGroup Condition="'$(UseMonoRuntime)' == 'false'">
+    <Compile Remove="Tests\ThreadingAppTest.cs" />
+    <Compile Remove="Tests\ThreadingAppHostedTest.cs" />
+    <Compile Remove="Tests\ProtectedBrowserStorageInjectionTest.cs" />
+    <Compile Remove="ServerExecutionTests\**\*.cs" />
+    <Compile Remove="ServerRenderingTests\**\*.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
@@ -74,13 +85,14 @@
     <ProjectReference Include="..\testassets\Components.TestServer\Components.TestServer.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Server\HostedInAspNet.Server.csproj" />
-    <ProjectReference Include="..\..\WebAssembly\testassets\ThreadingApp.Server\ThreadingApp.Server.csproj" />
+    <!-- Threading requires Mono; exclude when building with CoreCLR (UseMonoRuntime=false) -->
+    <ProjectReference Include="..\..\WebAssembly\testassets\ThreadingApp.Server\ThreadingApp.Server.csproj" Condition="'$(UseMonoRuntime)' != 'false'" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestTrimmedOrMultithreadingApps)' != 'true'">
     <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj" />
-    <ProjectReference Include="..\..\WebAssembly\testassets\ThreadingApp\ThreadingApp.csproj" />
+    <ProjectReference Include="..\..\WebAssembly\testassets\ThreadingApp\ThreadingApp.csproj" Condition="'$(UseMonoRuntime)' != 'false'" />
     <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
     <ProjectReference Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.Prerendered.Server\Wasm.Prerendered.Server.csproj" />
@@ -97,7 +109,7 @@
 
     <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.Prerendered.Server\Wasm.Prerendered.Server.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\Wasm.Prerendered.Server\;" />
 
-    <ProjectReference Include="..\..\WebAssembly\testassets\ThreadingApp\ThreadingApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=false;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\ThreadingApp\;" />
+    <ProjectReference Include="..\..\WebAssembly\testassets\ThreadingApp\ThreadingApp.csproj" Condition="'$(UseMonoRuntime)' != 'false'" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=false;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\ThreadingApp\;" />
 
     <ProjectReference Include="..\testassets\Components.TestServer\Components.TestServer.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;_SkipReferencedProjectPublishAssets=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\Components.TestServer\;" />
   </ItemGroup>

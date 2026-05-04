@@ -7,6 +7,7 @@ using BasicTestApp.RouterTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
 
@@ -65,6 +66,7 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         AssertLogDoesNotContainCriticalMessages("Could not load file or assembly 'Newtonsoft.Json");
     }
 
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/127515")]
     [Fact]
     public void CanLazyLoadOnFirstVisit()
     {
@@ -84,6 +86,7 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         AssertLogDoesNotContainCriticalMessages("Could not load file or assembly 'Newtonsoft.Json");
     }
 
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/127515")]
     [Fact]
     public void CanLazyLoadAssemblyWithRoutes()
     {
@@ -131,6 +134,7 @@ public class WebAssemblyLazyLoadTest : ServerTestBase<ToggleExecutionModeServerF
         AssertLogContainsCriticalMessages("DoesNotExist.wasm must be marked with 'BlazorWebAssemblyLazyLoad' item group in your project file to allow lazy-loading.");
     }
 
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/127515")]
     [Fact]
     public void CanLazyLoadViaLinkChange()
     {

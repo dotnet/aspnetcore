@@ -5,6 +5,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
 
@@ -34,6 +35,7 @@ public class EnvironmentBoundaryTest : ServerTestBase<ToggleExecutionModeServerF
         return text.Replace("Current Environment:", "").Trim();
     }
 
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/127515")]
     [Fact]
     public void RendersContentWhenEnvironmentMatches()
     {
@@ -70,6 +72,7 @@ public class EnvironmentBoundaryTest : ServerTestBase<ToggleExecutionModeServerF
         }
     }
 
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/127515")]
     [Fact]
     public void HidesContentWhenEnvironmentDoesNotMatch()
     {
@@ -101,6 +104,7 @@ public class EnvironmentBoundaryTest : ServerTestBase<ToggleExecutionModeServerF
         }
     }
 
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/127515")]
     [Fact]
     public void DisplaysCurrentEnvironment()
     {

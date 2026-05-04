@@ -5,6 +5,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
 
@@ -31,6 +32,7 @@ public class WebAssemblyConfigurationTest : ServerTestBase<BlazorWasmTestAppFixt
         _appElement = Browser.MountTestComponent<ConfigurationComponent>();
     }
 
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/127515")]
     [Fact]
     public void WebAssemblyConfiguration_Works()
     {
@@ -61,6 +63,7 @@ public class WebAssemblyConfigurationTest : ServerTestBase<BlazorWasmTestAppFixt
         }
     }
 
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/127515")]
     [Fact]
     public void WebAssemblyConfiguration_ReloadingWorks()
     {

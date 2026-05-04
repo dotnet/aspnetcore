@@ -3,9 +3,9 @@
 
 using System;
 using System.Threading;
+using Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 
 namespace Microsoft.AspNetCore.Components.E2ETest;
 
