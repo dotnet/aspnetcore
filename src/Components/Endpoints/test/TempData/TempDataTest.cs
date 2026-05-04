@@ -7,7 +7,7 @@ public class TempDataTest
 {
     internal TempData CreateTempData()
     {
-        return new TempData(() => new Dictionary<string, object>());
+        return new TempData(() => new Dictionary<string, (object Value, Type Type)>());
     }
 
     [Fact]
@@ -89,7 +89,7 @@ public class TempDataTest
 
         var saved = tempData.Save();
         Assert.Single(saved);
-        Assert.Equal("Value1", saved["Key1"]);
+        Assert.Equal("Value1", saved["Key1"].Value);
     }
 
     [Fact]
@@ -156,17 +156,17 @@ public class TempDataTest
         var saved = tempData.Save();
 
         Assert.Single(saved);
-        Assert.Equal("Value3", saved["Key3"]);
+        Assert.Equal("Value3", saved["Key3"].Value);
     }
 
     [Fact]
     public void Load_PopulatesDataFromDictionary()
     {
         var tempData = CreateTempData();
-        var dataToLoad = new Dictionary<string, object>
+        var dataToLoad = new Dictionary<string, (object Value, Type Type)>
         {
-            ["Key1"] = "Value1",
-            ["Key2"] = "Value2"
+            ["Key1"] = ("Value1", typeof(string)),
+            ["Key2"] = ("Value2", typeof(string))
         };
 
         tempData.Load(dataToLoad);
@@ -180,9 +180,9 @@ public class TempDataTest
     {
         var tempData = CreateTempData();
         tempData["ExistingKey"] = "ExistingValue";
-        var dataToLoad = new Dictionary<string, object>
+        var dataToLoad = new Dictionary<string, (object Value, Type Type)>
         {
-            ["NewKey"] = "NewValue"
+            ["NewKey"] = ("NewValue", typeof(string))
         };
 
         tempData.Load(dataToLoad);
@@ -220,7 +220,7 @@ public class TempDataTest
         var tempData = new TempData(() =>
         {
             loadCalled = true;
-            return new Dictionary<string, object> { ["Key"] = "Value" };
+            return new Dictionary<string, (object Value, Type Type)> { ["Key"] = ("Value", typeof(string)) };
         });
         var saved = tempData.Save();
 
@@ -238,7 +238,7 @@ public class TempDataTest
         {
             loadCalled = true;
             numberOfLoads++;
-            return new Dictionary<string, object> { ["Key"] = "Value" };
+            return new Dictionary<string, (object Value, Type Type)> { ["Key"] = ("Value", typeof(string)) };
         });
 
         var value = tempData["Key"];

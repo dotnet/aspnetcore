@@ -38,7 +38,7 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
         _logger = logger;
     }
 
-    public IDictionary<string, object?> LoadTempData(HttpContext context)
+    public IDictionary<string, (object? Value, Type? Type)> LoadTempData(HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
         var cookieName = _options.TempDataCookie.Name ?? CookieName;
@@ -48,12 +48,12 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
             if (!context.Request.Cookies.ContainsKey(cookieName))
             {
                 Log.TempDataCookieNotFound(_logger, cookieName);
-                return ReadOnlyDictionary<string, object?>.Empty;
+                return ReadOnlyDictionary<string, (object? Value, Type? Type)>.Empty;
             }
             var serializedDataFromCookie = _chunkingCookieManager.GetRequestCookie(context, cookieName);
             if (serializedDataFromCookie is null)
             {
-                return ReadOnlyDictionary<string, object?>.Empty;
+                return ReadOnlyDictionary<string, (object? Value, Type? Type)>.Empty;
             }
 
             byte[]? rentedDecodeBuffer = null;
@@ -82,7 +82,7 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
 
                 if (dataFromCookie is null)
                 {
-                    return ReadOnlyDictionary<string, object?>.Empty;
+                    return ReadOnlyDictionary<string, (object? Value, Type? Type)>.Empty;
                 }
                 var convertedData = _tempDataSerializer.DeserializeData(dataFromCookie);
                 Log.TempDataCookieLoadSuccess(_logger, cookieName);
@@ -103,19 +103,19 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
             var cookieOptions = _options.TempDataCookie.Build(context);
             SetCookiePath(context, cookieOptions);
             context.Response.Cookies.Delete(cookieName, cookieOptions);
-            return ReadOnlyDictionary<string, object?>.Empty;
+            return ReadOnlyDictionary<string, (object? Value, Type? Type)>.Empty;
         }
     }
 
-    public void SaveTempData(HttpContext context, IDictionary<string, object?> values)
+    public void SaveTempData(HttpContext context, IDictionary<string, (object? Value, Type? Type)> values)
     {
         ArgumentNullException.ThrowIfNull(context);
 
         foreach (var kvp in values)
         {
-            if (kvp.Value is not null && !_tempDataSerializer.CanSerialize(kvp.Value.GetType()))
+            if (kvp.Value.Value is not null && !_tempDataSerializer.CanSerialize(kvp.Value.Type!))
             {
-                throw new InvalidOperationException($"TempData cannot store values of type '{kvp.Value.GetType()}'.");
+                throw new InvalidOperationException($"TempData cannot store values of type '{kvp.Value.Type}'.");
             }
         }
 
