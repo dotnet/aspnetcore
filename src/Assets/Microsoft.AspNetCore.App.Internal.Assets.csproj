@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" DefaultTargets="Pack">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor" DefaultTargets="Pack">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -12,6 +12,10 @@
     <IncludeSymbols>false</IncludeSymbols>
     <ImplicitUsings>disable</ImplicitUsings>
 
+    <StaticWebAssetBasePath>/_framework</StaticWebAssetBasePath>
+    <!-- SWA Framework Assets: mark all JS files as Framework type during pack -->
+    <StaticWebAssetFrameworkPattern>**/*.js</StaticWebAssetFrameworkPattern>
+
     <!-- The package doesn't produce any lib or ref assemblies -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
@@ -21,26 +25,28 @@
     <_BlazorJSContentRoot Condition="'$(Configuration)' == 'Release'">$(RepoRoot)src\Components\Web.JS\dist\Release</_BlazorJSContentRoot>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(BuildNodeJS)' == 'true'">
-    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.web.js" />
-    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.server.js" />
-    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.webassembly.js" />
-
-    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.web.js.map" />
-    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.server.js.map" />
-    <_BlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.webassembly.js.map" />
+  <!-- Include blazor JS files as Content under wwwroot/ so the SWA pipeline discovers them.
+       ContentRoot points to the JS dist folder so the runtime middleware can serve files directly.
+       Condition on BuildNodeJS since the files won't exist during No-NodeJS CI builds. -->
+  <!-- blazor.webassembly.js is provided by Microsoft.AspNetCore.Components.WebAssembly instead.
+       It flows to Blazor Web Apps through the client project P2P reference chain. -->
+  <ItemGroup Condition="'$(BuildNodeJS)' != 'false'">
+    <Content Include="$(_BlazorJSContentRoot)\blazor.web.js" Link="wwwroot\blazor.web.js" ContentRoot="$(_BlazorJSContentRoot)\" />
+    <Content Include="$(_BlazorJSContentRoot)\blazor.server.js" Link="wwwroot\blazor.server.js" ContentRoot="$(_BlazorJSContentRoot)\" />
+    <Content Include="$(_BlazorJSContentRoot)\blazor.web.js.map" Link="wwwroot\blazor.web.js.map" ContentRoot="$(_BlazorJSContentRoot)\" />
+    <Content Include="$(_BlazorJSContentRoot)\blazor.server.js.map" Link="wwwroot\blazor.server.js.map" ContentRoot="$(_BlazorJSContentRoot)\" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="build\*" Pack="true" PackagePath="%(Identity)" />
-    <None Include="buildMultiTargeting\*" Pack="true" PackagePath="%(Identity)" />
-    <None Include="buildTransitive\*" Pack="true" PackagePath="%(Identity)" />
-    <None Include="@(_BlazorJSFile)" Pack="true" PackagePath="_framework\%(FileName)%(Extension)" />
+    <StaticWebAssetGroupDefinition Include="BlazorFramework"
+      Value="enabled" SourceId="$(PackageId)" Order="0"
+      IncludePattern="**" />
   </ItemGroup>
 
-  <Target Name="_CheckBlazorJSPath" AfterTargets="ResolveProjectReferences">
+  <Target Name="_CheckBlazorJSPath" AfterTargets="ResolveProjectReferences" Condition="'$(BuildNodeJS)' != 'false'">
     <ItemGroup>
-      <_MissingBlazorJSFile Include="@(_BlazorJSFile)" Condition="!EXISTS('%(_BlazorJSFile.FullPath)')" />
+      <_MissingBlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.web.js" Condition="!EXISTS('$(_BlazorJSContentRoot)\blazor.web.js')" />
+      <_MissingBlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.server.js" Condition="!EXISTS('$(_BlazorJSContentRoot)\blazor.server.js')" />
     </ItemGroup>
 
     <Error

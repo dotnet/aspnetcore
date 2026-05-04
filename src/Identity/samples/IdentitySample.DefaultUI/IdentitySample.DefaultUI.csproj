@@ -7,6 +7,8 @@
     <IdentityUIFrameworkVersion>Bootstrap4</IdentityUIFrameworkVersion>
   </PropertyGroup>
 
+  <Import Project="$(MSBuildThisFileDirectory)..\..\UI\src\StaticWebAssets.Groups.targets" />
+
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Antiforgery" />
@@ -83,23 +85,5 @@
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
-
-  <!-- Include an assembly attribute into the built application assembly to indicate which flavor of the UI framework to use (needed for project reference) -->
-  <ItemGroup>
-    <AssemblyAttribute Include="Microsoft.AspNetCore.Identity.UI.UIFrameworkAttribute">
-      <_Parameter1>$(IdentityUIFrameworkVersion)</_Parameter1>
-    </AssemblyAttribute>
-  </ItemGroup>
-
-  <Target
-    Name="_SetBootstrapFrameworkVersion"
-    AfterTargets="ResolveReferencedProjectsStaticWebAssetsConfiguration"
-    BeforeTargets="ResolveReferencedProjectsStaticWebAssets">
-    <ItemGroup>
-      <StaticWebAssetProjectConfiguration Condition="'%(FileName)' == 'Microsoft.AspNetCore.Identity.UI'">
-        <AdditionalBuildProperties>IdentityDefaultUIFramework=$(IdentityUIFrameworkVersion)</AdditionalBuildProperties>
-      </StaticWebAssetProjectConfiguration>
-    </ItemGroup>
-  </Target>
 
 </Project>

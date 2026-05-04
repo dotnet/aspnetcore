@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.StaticWebAssets">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -9,6 +9,10 @@
     <NoWarn>$(NoWarn);BL0006</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>annotations</Nullable>
+
+    <StaticWebAssetBasePath>/_framework</StaticWebAssetBasePath>
+    <!-- SWA Framework Assets: mark all JS files as Framework type during pack -->
+    <StaticWebAssetFrameworkPattern>**/*.js</StaticWebAssetFrameworkPattern>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,22 +37,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="buildTransitive\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="%(Identity)" />
-    <None Include="buildMultiTargeting\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="%(Identity)" />
-    <None Include="build\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="%(Identity)" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
     <Reference Include="Microsoft.Extensions.Configuration.Binder" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
     <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
     <Reference Include="Microsoft.Extensions.Logging" />
-
   </ItemGroup>
 
-    <!-- This workaround is required when referencing FileProviders.Embedded as a project -->
+  <!-- This workaround is required when referencing FileProviders.Embedded as a project -->
   <PropertyGroup>
     <_FileProviderTaskAssembly>$(ArtifactsDir)bin\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task\$(Configuration)\netstandard2.0\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.dll</_FileProviderTaskAssembly>
   </PropertyGroup>
@@ -56,22 +53,37 @@
   <UsingTask AssemblyFile="$(_FileProviderTaskAssembly)" TaskName="Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.GenerateEmbeddedResourcesManifest" />
 
   <PropertyGroup>
-    <BlazorWebViewJSFilename>blazor.webview.js</BlazorWebViewJSFilename>
-    <!-- Microsoft.AspNetCore.Components.Web.JS.npmproj always capitalizes the directory name. -->
-    <BlazorWebViewJSFile Condition=" '$(Configuration)' == 'Debug' ">..\..\..\Web.JS\dist\Debug\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
-    <BlazorWebViewJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\..\Web.JS\dist\Release\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
+    <_BlazorWebViewJSContentRoot Condition="'$(Configuration)' == 'Debug'">$(RepoRoot)src\Components\Web.JS\dist\Debug</_BlazorWebViewJSContentRoot>
+    <_BlazorWebViewJSContentRoot Condition="'$(Configuration)' == 'Release'">$(RepoRoot)src\Components\Web.JS\dist\Release</_BlazorWebViewJSContentRoot>
   </PropertyGroup>
 
-  <!-- blazor.webview.js should exist after eng/Npm.Workspace.nodeproj builds. Warn if not. -->
-  <Target Name="_CheckBlazorWebViewJSPath" AfterTargets="ResolveProjectReferences" Condition=" !EXISTS('$(BlazorWebViewJSFile)') ">
-    <Warning Text="'$(BlazorWebViewJSFile)' does not exist and won't be included in the build." />
-  </Target>
+  <!-- Include blazor.webview.js as Content under wwwroot/ so the SWA pipeline discovers it.
+       ContentRoot points to the JS dist folder so the runtime middleware can serve files directly. -->
+  <ItemGroup Condition="'$(BuildNodeJS)' != 'false'">
+    <Content Include="$(_BlazorWebViewJSContentRoot)\blazor.webview.js" Link="wwwroot\blazor.webview.js" ContentRoot="$(_BlazorWebViewJSContentRoot)\" />
+  </ItemGroup>
 
-  <Target Name="_AddEmbeddedBlazorWebView" BeforeTargets="_CalculateEmbeddedFilesManifestInputs" DependsOnTargets="_CheckBlazorWebViewJSPath">
-    <ItemGroup>
-      <Content Include="$(BlazorWebViewJSFile)" Condition="EXISTS('$(BlazorWebViewJSFile)')" Pack="true" PackagePath="staticwebassets/$(BlazorWebViewJSFilename)" />
-      <Content Include="blazor.modules.json" Pack="true" PackagePath="staticwebassets/blazor.modules.json" />
-    </ItemGroup>
+  <!-- blazor.modules.json is a fallback for WebView apps that don't have JS library modules.
+       It is tagged with the BlazorWebViewModules=fallback group so it can be conditionally
+       included via a deferred group when the consumer has no JS library modules. -->
+  <ItemGroup>
+    <Content Remove="blazor.modules.json" />
+    <Content Include="blazor.modules.json" Link="wwwroot\blazor.modules.json"
+      AssetTraitName="JSModule" AssetTraitValue="JSModuleManifest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <StaticWebAssetGroupDefinition Include="BlazorWebView"
+      Value="enabled" SourceId="$(PackageId)" Order="0"
+      IncludePattern="**" ExcludePattern="**/blazor.modules.json" />
+    <StaticWebAssetGroupDefinition Include="BlazorWebViewModules"
+      Value="fallback" SourceId="$(PackageId)" Order="1"
+      IncludePattern="**/blazor.modules.json" />
+  </ItemGroup>
+
+  <!-- blazor.webview.js should exist after eng/Npm.Workspace.nodeproj builds. Warn if not. -->
+  <Target Name="_CheckBlazorWebViewJSPath" AfterTargets="ResolveProjectReferences" Condition="'$(BuildNodeJS)' != 'false' and !EXISTS('$(_BlazorWebViewJSContentRoot)\blazor.webview.js')">
+    <Warning Text="'$(_BlazorWebViewJSContentRoot)\blazor.webview.js' does not exist and won't be included in the build." />
   </Target>
 
 </Project>

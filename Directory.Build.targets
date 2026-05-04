@@ -175,8 +175,8 @@
 
   <!--
     Remove the implicit package reference for Microsoft.AspNetCore.App.Internal.Assets.
-    Projects within the repo will consume framework assets by importing
-    Microsoft.AspNetCore.App.Internal.Assets.targets directly
+    Projects within the repo consume framework assets via ProjectReference and
+    the StaticWebAssets.Groups.targets convention file.
   -->
   <Target Name="_RemoveAspNetCoreAppInternalAssetsReference" AfterTargets="ProcessFrameworkReferences">
     <ItemGroup>
