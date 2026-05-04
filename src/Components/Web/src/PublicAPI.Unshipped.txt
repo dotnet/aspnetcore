@@ -106,3 +106,5 @@ Microsoft.AspNetCore.Components.Forms.Label<TValue>.ChildContent.set -> void
 Microsoft.AspNetCore.Components.Forms.Label<TValue>.For.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>?
 Microsoft.AspNetCore.Components.Forms.Label<TValue>.For.set -> void
 Microsoft.AspNetCore.Components.Forms.Label<TValue>.Label() -> void
+Microsoft.AspNetCore.Components.Forms.ValidationSummary.CssClass.get -> string?
+Microsoft.AspNetCore.Components.Forms.ValidationSummary.CssClass.set -> void
