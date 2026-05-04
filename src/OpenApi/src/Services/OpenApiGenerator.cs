@@ -29,6 +29,8 @@ namespace Microsoft.AspNetCore.OpenApi;
 [RequiresDynamicCode("OpenApiGenerator performs reflection to generate OpenAPI descriptors. This cannot be statically analyzed.")]
 internal sealed class OpenApiGenerator
 {
+    private static readonly IComparer<OpenApiTag> _openApiTagComparer = Comparer<OpenApiTag>.Create(
+        static (left, right) => StringComparer.Ordinal.Compare(left.Name, right.Name));
     private readonly IHostEnvironment? _environment;
     private readonly IServiceProviderIsService? _serviceProviderIsService;
 
@@ -334,7 +336,12 @@ internal sealed class OpenApiGenerator
             {
                 foreach (var tag in metadataItem.Tags)
                 {
-                    document.Tags ??= new HashSet<OpenApiTag>();
+                    document.Tags = document.Tags switch
+                    {
+                        null => new SortedSet<OpenApiTag>(_openApiTagComparer),
+                        SortedSet<OpenApiTag> sortedTags => sortedTags,
+                        _ => new SortedSet<OpenApiTag>(document.Tags, _openApiTagComparer)
+                    };
                     document.Tags.Add(new OpenApiTag { Name = tag });
                     tags.Add(new OpenApiTagReference(tag, document));
                 }
@@ -356,7 +363,12 @@ internal sealed class OpenApiGenerator
             controllerName = _environment?.ApplicationName ?? string.Empty;
         }
 
-        document.Tags ??= new HashSet<OpenApiTag>();
+        document.Tags = document.Tags switch
+        {
+            null => new SortedSet<OpenApiTag>(_openApiTagComparer),
+            SortedSet<OpenApiTag> sortedTags => sortedTags,
+            _ => new SortedSet<OpenApiTag>(document.Tags, _openApiTagComparer)
+        };
         document.Tags.Add(new OpenApiTag { Name = controllerName });
         return [new(controllerName, document)];
     }
