@@ -496,7 +496,8 @@ internal sealed class ApiResponseTypeProvider
             }
         }
 
-        // iterating in reverse order to give precedence to higher scope attributes which are processed first
+        // Keep the first non-null Description encountered. Callers iterate in descending scope
+        // order, so this preserves the highest-scope description for the (StatusCode, Type) pair.
         if (existing.Description is null && newEntry.Description is not null)
         {
             existing.Description = newEntry.Description;
