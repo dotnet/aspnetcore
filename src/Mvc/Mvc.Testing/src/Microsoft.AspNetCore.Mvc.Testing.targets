@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <_MvcTestingTasksAssembly Condition="'$(_MvcTestingTasksAssembly)' == ''">$(MSBuildThisFileDirectory)..\..\tasks\netstandard2.0\Microsoft.AspNetCore.Mvc.Testing.Tasks.dll</_MvcTestingTasksAssembly>
+
+    <_MvcTestingManifestFileName Condition="'$(NamespaceMvcTestingManifest)' == 'True'">MvcTestingAppManifest.$(AssemblyName).json</_MvcTestingManifestFileName>
+    <_MvcTestingManifestFileName Condition="'$(NamespaceMvcTestingManifest)' != 'True'">MvcTestingAppManifest.json</_MvcTestingManifestFileName>
   </PropertyGroup>
   <UsingTask TaskName="GenerateMvcTestManifestTask" AssemblyFile="$(_MvcTestingTasksAssembly)"/>
 
@@ -35,14 +38,14 @@
       </_ManifestProjects>
     </ItemGroup>
 
-    <GenerateMvcTestManifestTask ManifestPath="$(IntermediateOutputPath)MvcTestingAppManifest.json" Projects="@(_ManifestProjects)"/>
+    <GenerateMvcTestManifestTask ManifestPath="$(IntermediateOutputPath)$(_MvcTestingManifestFileName)" Projects="@(_ManifestProjects)"/>
 
     <ItemGroup>
-      <ContentWithTargetPath Include="$(IntermediateOutputPath)MvcTestingAppManifest.json"
-        TargetPath="MvcTestingAppManifest.json"
+      <ContentWithTargetPath Include="$(IntermediateOutputPath)$(_MvcTestingManifestFileName)"
+        TargetPath="$(_MvcTestingManifestFileName)"
         CopyToOutputDirectory="PreserveNewest"
         CopyToPublishDirectory="Never"/>
-      <FileWrites Include="$(IntermediateOutputPath)MvcTestingAppManifest.json" />
+      <FileWrites Include="$(IntermediateOutputPath)$(_MvcTestingManifestFileName)" />
     </ItemGroup>
   </Target>
 
@@ -54,12 +57,12 @@
       <_DepsFileToPublish Include="$([System.IO.Path]::ChangeExtension('%(_ContentRootProjectReferences.Identity)', 'deps.json'))" />
     </ItemGroup>
 
-    <GenerateMvcTestManifestTask ManifestPath="$(PublishDir)MvcTestingAppManifest.json" Projects="@(_PublishManifestProjects)" />
-    
+    <GenerateMvcTestManifestTask ManifestPath="$(PublishDir)$(_MvcTestingManifestFileName)" Projects="@(_PublishManifestProjects)" />
+
     <ItemGroup>
       <_DepsFilesToPublishResolved Include="%(_DepsFileToPublish.FullPath)" Condition="Exists('%(_DepsFileToPublish.FullPath)')" />
     </ItemGroup>
-    
+
     <Copy SourceFiles="@(_DepsFilesToPublishResolved)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="@(_DepsFilesToPublishResolved->Count()) > 0" />
   </Target>
 
@@ -69,7 +72,7 @@
         Condition="'%(_ContentRootProjectReferences.Identity)' != ''"
         Include="$([System.IO.Path]::ChangeExtension('%(_ContentRootProjectReferences.ResolvedFrom)', '.deps.json'))" />
     </ItemGroup>
-    
+
     <PropertyGroup>
         <_CreateHardLinksForMvcCopyDependencyFilesIfPossible Condition="'$(_CreateHardLinksForMvcCopyDependencyFilesIfPossible)' == ''">$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)</_CreateHardLinksForMvcCopyDependencyFilesIfPossible>
         <_CreateSymbolicLinksForMvcCopyDependencyFilesIfPossible Condition="'$(_CreateSymbolicLinksMvcCopyDependencyFilesIfPossible)' == ''">$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)</_CreateSymbolicLinksForMvcCopyDependencyFilesIfPossible>
