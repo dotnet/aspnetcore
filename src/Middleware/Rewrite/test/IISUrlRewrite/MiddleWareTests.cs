@@ -664,6 +664,47 @@ public class MiddlewareTests
     }
 
     [Fact]
+    public async Task Invoke_RewriteMapInActionUrl()
+    {
+        var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"
+                <rewrite>
+                    <rules>
+                        <rule name=""query id redirect"" stopProcessing=""true"">
+                            <match url=""(.*)"" />
+                            <conditions logicalGrouping=""MatchAll"">
+                                <add input=""{QUERY_STRING}"" pattern=""(.*)(id=([0-9]+-[0-9]+))(.*)"" />
+                            </conditions>
+                            <action type=""Redirect"" url=""{R:0}?{C:1}{id-map:{C:3}}{C:4}"" appendQueryString=""false"" redirectType=""Permanent"" />
+                        </rule>
+                    </rules>
+                    <rewriteMaps>
+                        <rewriteMap name=""id-map"">
+                            <add key=""1234-1234"" value=""id=ABCD-ABCD"" />
+                        </rewriteMap>
+                    </rewriteMaps>
+                </rewrite>"));
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.UseRewriter(options);
+                    app.Run(context => context.Response.WriteAsync(context.Request.GetEncodedUrl()));
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+        var response = await server.CreateClient().GetAsync(new Uri("http://localhost/index.html?id=1234-1234"));
+
+        Assert.Equal(HttpStatusCode.MovedPermanently, response.StatusCode);
+        Assert.Equal("/index.html?id=ABCD-ABCD", response.Headers.Location?.OriginalString);
+    }
+
+    [Fact]
     public async Task Invoke_CustomResponse()
     {
         var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(@"<rewrite>
