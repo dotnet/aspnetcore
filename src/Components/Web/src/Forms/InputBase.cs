@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Components.Forms.ClientValidation;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -289,6 +290,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         }
 
         UpdateAdditionalValidationAttributes();
+        MergeClientValidationAttributes();
 
         // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
         return base.SetParametersAsync(ParameterView.Empty);
@@ -383,6 +385,37 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         }
 
         return newDictionaryCreated;
+    }
+
+    /// <summary>
+    /// Merges client-side validation attributes (data-val-*) into AdditionalAttributes when
+    /// an IClientValidationService is available in EditContext.Properties. This is set by
+    /// DataAnnotationsValidator in static SSR mode. Uses first-wins semantics so that
+    /// developer-specified attributes in AdditionalAttributes take precedence over generated ones.
+    /// </summary>
+    private void MergeClientValidationAttributes()
+    {
+        if (EditContext?.Properties.TryGetValue(typeof(IClientValidationService), out var serviceObj) != true
+            || serviceObj is not IClientValidationService service)
+        {
+            return;
+        }
+
+        var htmlAttributes = service.GetClientValidationAttributes(FieldIdentifier);
+        if (htmlAttributes is null)
+        {
+            return;
+        }
+
+        if (ConvertToDictionary(AdditionalAttributes, out var additionalAttributes))
+        {
+            AdditionalAttributes = additionalAttributes;
+        }
+
+        foreach (var (key, value) in htmlAttributes)
+        {
+            additionalAttributes.TryAdd(key, value);
+        }
     }
 
     /// <inheritdoc/>

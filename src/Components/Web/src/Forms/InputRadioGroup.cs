@@ -63,6 +63,13 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
         }
 
         _context.FieldClass = EditContext?.FieldCssClass(FieldIdentifier);
+
+        // Pass client validation attributes to child InputRadio components.
+        // Unlike MVC (which uses FormContext to emit data-val-* on only the first radio button),
+        // Blazor's component model renders children independently without render-order tracking.
+        // Instead, we pass validation attributes to ALL children via cascading context, and the
+        // JS validation library deduplicates at scan time (tracking one radio per name group).
+        _context.ClientValidationAttributes = ExtractClientValidationAttributes();
     }
 
     /// <inheritdoc />
@@ -81,4 +88,31 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
         => this.TryParseSelectableValueFromString(value, out result, out validationErrorMessage);
+
+    /// <summary>
+    /// Extracts data-val-* client validation attributes from AdditionalAttributes so they
+    /// can be passed to child InputRadio components via InputRadioContext. InputRadioGroup
+    /// itself doesn't render an HTML element, so it can't carry these attributes directly.
+    /// </summary>
+    private IReadOnlyDictionary<string, object>? ExtractClientValidationAttributes()
+    {
+        if (AdditionalAttributes is null)
+        {
+            return null;
+        }
+
+        Dictionary<string, object>? result = null;
+        foreach (var (key, value) in AdditionalAttributes)
+        {
+            // Match "data-val" exactly and "data-val-*" (with dash), but not "data-value" or other unrelated attributes.
+            if (string.Equals(key, "data-val", StringComparison.OrdinalIgnoreCase)
+                || key.StartsWith("data-val-", StringComparison.OrdinalIgnoreCase))
+            {
+                result ??= new();
+                result[key] = value;
+            }
+        }
+
+        return result;
+    }
 }
