@@ -254,21 +254,38 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     }
 
     /// <inheritdoc />
-    public override Task SendGroupsAsync(IReadOnlyList<string> groupNames, string methodName, object?[] args, CancellationToken cancellationToken = default)
+    public override async Task SendGroupsAsync(IReadOnlyList<string> groupNames, string methodName, object?[] args, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(groupNames);
-        var publishTasks = new List<Task>(groupNames.Count);
-        var payload = _protocol.WriteInvocation(methodName, args);
+        HashSet<string>? connections = null;
 
         foreach (var groupName in groupNames)
         {
             if (!string.IsNullOrEmpty(groupName))
             {
-                publishTasks.Add(PublishAsync(_channels.Group(groupName), payload));
+                var groupChannel = _channels.Group(groupName);
+                if (groupChannel != null)
+                {
+                    var connectionStore = _groups.GetStore(groupChannel);
+                    if (connectionStore != null)
+                    {
+                        foreach (var connection in connectionStore)
+                        {
+                            if (connections == null)
+                            {
+                                connections = new HashSet<string>();
+                            }
+                            connections.Add(connection.ConnectionId);
+                        }
+                    }
+                }
             }
         }
 
-        return Task.WhenAll(publishTasks);
+        if (connections != null)
+        {
+            await SendConnectionsAsync(connections.ToList(), methodName, args, cancellationToken);
+        }
     }
 
     /// <inheritdoc />

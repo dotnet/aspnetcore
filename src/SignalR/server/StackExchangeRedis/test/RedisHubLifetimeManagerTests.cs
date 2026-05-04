@@ -145,6 +145,30 @@ public class RedisHubLifetimeManagerTests : ScaleoutHubLifetimeManagerTests<Test
         }
     }
 
+    [Fact]
+    public async Task ConnectionInMultipleGroups_ReceivesMessageOnlyOnce()
+    {
+        var server = new TestRedisServer();
+
+        using (var client = new TestClient())
+        {
+            var manager = CreateLifetimeManager(server);
+            var connection = HubConnectionContextUtils.Create(client.Connection);
+
+            await manager.OnConnectedAsync(connection).DefaultTimeout();
+            await manager.AddToGroupAsync(connection.ConnectionId, "group1").DefaultTimeout();
+            await manager.AddToGroupAsync(connection.ConnectionId, "group2").DefaultTimeout();
+
+            await manager.SendGroupsAsync(new[] { "group1", "group2" }, "Hello", new object[] { "World" }).DefaultTimeout();
+
+            var message = Assert.IsType<InvocationMessage>(await client.ReadAsync().DefaultTimeout());
+            Assert.Equal("Hello", message.Target);
+            Assert.Single(message.Arguments);
+            Assert.Equal("World", (string)message.Arguments[0]);
+            Assert.Null(client.TryRead());
+        }
+    }
+
     public override TestRedisServer CreateBackplane()
     {
         return new TestRedisServer();

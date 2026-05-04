@@ -226,7 +226,7 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
     {
         // Each task represents the list of tasks for each of the writes within a group
         List<Task>? tasks = null;
-        SerializedHubMessage? message = null;
+        HashSet<string>? connections = null;
 
         foreach (var groupName in groupNames)
         {
@@ -238,7 +238,26 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
             var group = _groups[groupName];
             if (group != null)
             {
-                DefaultHubLifetimeManager<THub>.SendToGroupConnections(methodName, args, group, null, null, ref tasks, ref message, cancellationToken);
+                foreach (var connection in group)
+                {
+                    if (connections == null)
+                    {
+                        connections = new HashSet<string>();
+                    }
+                    connections.Add(connection.Key);
+                }
+            }
+        }
+
+        if (connections != null)
+        {
+            foreach (var connectionId in connections)
+            {
+                if (tasks == null)
+                {
+                    tasks = new List<Task>();
+                }
+                tasks.Add(SendConnectionAsync(connectionId, methodName, args, cancellationToken));
             }
         }
 
