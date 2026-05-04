@@ -389,4 +389,89 @@ public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
 
         internal static int InstantiationCount = 0;
     }
+
+    [Fact]
+    public async Task DocumentTransformer_CanAccessOperationDescriptions()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/todo", () => "todo");
+        builder.MapGet("/user", () => "user");
+        builder.MapPost("/todo", () => { });
+
+        var expectedPaths = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "/todo",
+            "/user"
+        };
+
+        var mappedOperationsCount = 0;
+        var options = new OpenApiOptions();
+        options.AddDocumentTransformer((document, context, cancellationToken) =>
+        {
+            Assert.Equal(3, context.OperationDescriptions.Count);
+
+            foreach (var (operation, apiDescription) in context.OperationDescriptions)
+            {
+                var documentPath = "/" + apiDescription.RelativePath;
+                Assert.Contains(documentPath, expectedPaths);
+
+                Assert.True(document.Paths.TryGetValue(documentPath, out var pathItem));
+                Assert.Contains(operation, pathItem.Operations.Values);
+                mappedOperationsCount++;
+            }
+
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            Assert.Equal(2, document.Paths.Count);
+        });
+
+        Assert.Equal(3, mappedOperationsCount);
+    }
+
+    [Fact]
+    public async Task DocumentTransformer_CanAccessEndpointMetadataViaOperationDescriptions()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/public", () => "public")
+            .WithMetadata(new OperationMarker());
+        builder.MapGet("/secret", () => "secret");
+
+        var options = new OpenApiOptions();
+        var publicEndpointHasMarker = false;
+        var secretEndpointHasMarker = false;
+
+        options.AddDocumentTransformer((document, context, cancellationToken) =>
+        {
+            Assert.Equal(2, context.OperationDescriptions.Count);
+
+            foreach (var (_, apiDescription) in context.OperationDescriptions)
+            {
+                var hasMarker = apiDescription.ActionDescriptor.EndpointMetadata
+                    .Any(m => m is OperationMarker);
+
+                if (apiDescription.RelativePath == "public")
+                {
+                    publicEndpointHasMarker = hasMarker;
+                }
+                else if (apiDescription.RelativePath == "secret")
+                {
+                    secretEndpointHasMarker = hasMarker;
+                }
+            }
+
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document => { });
+
+        Assert.True(publicEndpointHasMarker);
+        Assert.False(secretEndpointHasMarker);
+    }
+
+    private sealed class OperationMarker;
 }

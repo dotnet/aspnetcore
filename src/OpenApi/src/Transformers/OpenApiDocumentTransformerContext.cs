@@ -68,6 +68,11 @@ public sealed class OpenApiDocumentTransformerContext
     /// </example>
     public required IServiceProvider ApplicationServices { get; init; }
 
+    /// <summary>
+    /// Gets a map of <see cref="OpenApiOperation"/> instances to their associated <see cref="ApiDescription"/>.
+    /// </summary>
+    public required IReadOnlyDictionary<OpenApiOperation, ApiDescription> OperationDescriptions { get; init; }
+
     internal IOpenApiSchemaTransformer[] SchemaTransformers { get; init; } = [];
 
     // Internal because we expect users to interact with the `Document` provided in

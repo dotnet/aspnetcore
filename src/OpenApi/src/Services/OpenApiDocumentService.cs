@@ -72,10 +72,11 @@ internal sealed class OpenApiDocumentService(
             Info = GetOpenApiInfo(),
             Servers = GetOpenApiServers(httpRequest)
         };
-        document.Paths = await GetOpenApiPathsAsync(document, scopedServiceProvider, operationTransformers, schemaTransformers, cancellationToken);
+        var operationDescriptions = new Dictionary<OpenApiOperation, ApiDescription>();
+        document.Paths = await GetOpenApiPathsAsync(document, scopedServiceProvider, operationTransformers, schemaTransformers, operationDescriptions, cancellationToken);
         try
         {
-            await ApplyTransformersAsync(document, scopedServiceProvider, schemaTransformers, cancellationToken);
+            await ApplyTransformersAsync(document, scopedServiceProvider, schemaTransformers, operationDescriptions, cancellationToken);
         }
 
         finally
@@ -97,7 +98,7 @@ internal sealed class OpenApiDocumentService(
         return document;
     }
 
-    private async Task ApplyTransformersAsync(OpenApiDocument document, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, CancellationToken cancellationToken)
+    private async Task ApplyTransformersAsync(OpenApiDocument document, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, IReadOnlyDictionary<OpenApiOperation, ApiDescription> operationDescriptions, CancellationToken cancellationToken)
     {
         var documentTransformerContext = new OpenApiDocumentTransformerContext
         {
@@ -105,7 +106,8 @@ internal sealed class OpenApiDocumentService(
             ApplicationServices = scopedServiceProvider,
             DescriptionGroups = apiDescriptionGroupCollectionProvider.ApiDescriptionGroups.Items,
             Document = document,
-            SchemaTransformers = schemaTransformers
+            SchemaTransformers = schemaTransformers,
+            OperationDescriptions = operationDescriptions
         };
         // Use index-based for loop to avoid allocating an enumerator with a foreach.
         for (var i = 0; i < _options.DocumentTransformers.Count; i++)
@@ -246,6 +248,7 @@ internal sealed class OpenApiDocumentService(
         IServiceProvider scopedServiceProvider,
         IOpenApiOperationTransformer[] operationTransformers,
         IOpenApiSchemaTransformer[] schemaTransformers,
+        Dictionary<OpenApiOperation, ApiDescription> operationDescriptions,
         CancellationToken cancellationToken)
     {
         var descriptionsByPath = apiDescriptionGroupCollectionProvider.ApiDescriptionGroups.Items
@@ -256,7 +259,7 @@ internal sealed class OpenApiDocumentService(
         foreach (var descriptions in descriptionsByPath)
         {
             Debug.Assert(descriptions.Key != null, "Relative path mapped to OpenApiPath key cannot be null.");
-            var operations = await GetOperationsAsync(descriptions, document, scopedServiceProvider, operationTransformers, schemaTransformers, cancellationToken);
+            var operations = await GetOperationsAsync(descriptions, document, scopedServiceProvider, operationTransformers, schemaTransformers, operationDescriptions, cancellationToken);
             if (operations.Count > 0)
             {
                 paths.Add(descriptions.Key, new OpenApiPathItem { Operations = operations });
@@ -272,6 +275,7 @@ internal sealed class OpenApiDocumentService(
         IServiceProvider scopedServiceProvider,
         IOpenApiOperationTransformer[] operationTransformers,
         IOpenApiSchemaTransformer[] schemaTransformers,
+        Dictionary<OpenApiOperation, ApiDescription> operationDescriptions,
         CancellationToken cancellationToken)
     {
         var operations = new Dictionary<HttpMethod, OpenApiOperation>();
@@ -298,7 +302,13 @@ internal sealed class OpenApiDocumentService(
                 continue;
             }
 
+            if (operations.TryGetValue(method, out var existingOperation))
+            {
+                operationDescriptions.Remove(existingOperation);
+            }
+
             operations[method] = operation;
+            operationDescriptions[operation] = description;
 
             // Use index-based for loop to avoid allocating an enumerator with a foreach.
             for (var i = 0; i < operationTransformers.Length; i++)
