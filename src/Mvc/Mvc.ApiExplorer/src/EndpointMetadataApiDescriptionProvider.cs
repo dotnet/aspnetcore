@@ -420,11 +420,16 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
             // With multiple response types (e.g., different types for the same status code),
             // we need deterministic ordering so that API documentation is stable across runs.
             // This matches the ordering used by the controller path in ApiResponseTypeProvider.
-            supportedResponseTypes = supportedResponseTypes
-                .OrderBy(responseType => responseType.StatusCode)
-                .ThenBy(responseType => responseType.Type?.Name)
-                .ThenBy(responseType => responseType.ApiResponseFormats.FirstOrDefault()?.MediaType)
-                .ToList(); // clears and rewrites the supportedResponseTypes list in-place
+            var sorted = supportedResponseTypes
+                .OrderBy(rt => rt.StatusCode)
+                .ThenBy(rt => rt.Type?.Name)
+                .ThenBy(rt => rt.ApiResponseFormats.FirstOrDefault()?.MediaType)
+                .ToArray();
+            supportedResponseTypes.Clear();
+            foreach (var sortedResponseType in sorted)
+            {
+                supportedResponseTypes.Add(sortedResponseType);
+            }
         }
 
         static string? GetMatchingResponseTypeDescription(IEnumerable<ApiResponseType> responseMetadataTypes, ApiResponseType apiResponseType)
