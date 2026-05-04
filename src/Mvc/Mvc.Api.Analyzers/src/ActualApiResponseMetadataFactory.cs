@@ -59,9 +59,9 @@ public static class ActualApiResponseMetadataFactory
     internal static ActualApiResponseMetadata?[] InspectReturnOperation(
         in ApiControllerSymbolCache symbolCache,
         IReturnOperation returnOperation,
-        ISwitchExpressionArmOperation? armOperation = null)
+        IOperation? overrideReturnedValue = null)
     {
-        var returnedValue = armOperation?.Value ?? returnOperation.ReturnedValue;
+        var returnedValue = overrideReturnedValue ?? returnOperation.ReturnedValue;
         var defaultStatusCodeAttributeSymbol = symbolCache.DefaultStatusCodeAttribute;
 
         if (returnedValue is null || returnedValue is IInvalidOperation)
@@ -106,10 +106,18 @@ public static class ActualApiResponseMetadataFactory
             for (var i = 0; i < switchExpression.Arms.Length; i++)
             {
                 var arm = switchExpression.Arms[i];
-                var armMetadata = InspectReturnOperation(symbolCache, returnOperation, arm);
+                var armMetadata = InspectReturnOperation(symbolCache, returnOperation, arm.Value);
                 metadata.AddRange(armMetadata);
             }
 
+            return metadata.ToArray();
+        }
+
+        if (returnedValue is IConditionalOperation conditionalOperation)
+        {
+            var metadata = new List<ActualApiResponseMetadata?>();
+            metadata.AddRange(InspectReturnOperation(symbolCache, returnOperation, conditionalOperation.WhenTrue));
+            metadata.AddRange(InspectReturnOperation(symbolCache, returnOperation, conditionalOperation.WhenFalse));
             return metadata.ToArray();
         }
 

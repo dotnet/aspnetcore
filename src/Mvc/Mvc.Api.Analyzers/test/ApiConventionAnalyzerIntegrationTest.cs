@@ -29,8 +29,17 @@ public class ApiConventionAnalyzerIntegrationTest
         => RunNoDiagnosticsAreReturned();
 
     [Fact]
-    public Task NoDiagnosticsAreReturned_ForApiController_IfStatusCodesCannotBeInferred()
-        => RunNoDiagnosticsAreReturned();
+    public async Task DiagnosticsAreReturned_ForApiController_IfConditionalExpressionReturnsUndocumentedStatusCodes()
+    {
+        // Arrange
+        var testSource = MvcTestSource.Read(GetType().Name, "DiagnosticsAreReturned_ForApiController_IfConditionalExpressionReturnsUndocumentedStatusCodes");
+
+        // Act
+        var result = await Executor.GetDiagnosticsAsync(testSource.Source);
+
+        // Assert
+        Assert.Contains(result, d => d.Id == ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode.Id);
+    }
 
     [Fact]
     public Task NoDiagnosticsAreReturned_ForReturnStatementsInLambdas()
@@ -191,6 +200,117 @@ namespace Test
 }";
         var testSource = TestSource.Read(source);
         var expectedLocation = testSource.DefaultMarkerLocation;
+
+        // Act
+        var result = await Executor.GetDiagnosticsAsync(testSource.Source);
+
+        // Assert
+        Assert.Contains(result, d => d.Id == ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode.Id);
+    }
+
+    [Fact]
+    public async Task DiagnosticsAreReturned_ForActionsReturnedFromConditionalExpression()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Mvc;
+
+namespace Test
+{
+    [ApiController]
+    public class Foo : ControllerBase
+    {
+        [ProducesResponseType(typeof(string), 200)]
+        public IActionResult Get(int id)
+        {
+            return id == 0 ? NotFound() : Ok();
+        }
+    }
+}";
+        var testSource = TestSource.Read(source);
+
+        // Act
+        var result = await Executor.GetDiagnosticsAsync(testSource.Source);
+
+        // Assert
+        Assert.Contains(result, d => d.Id == ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode.Id);
+    }
+
+    [Fact]
+    public async Task DiagnosticsAreReturned_ForActionsReturnedFromNestedConditionalExpression()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Mvc;
+
+namespace Test
+{
+    [ApiController]
+    public class Foo : ControllerBase
+    {
+        [ProducesResponseType(typeof(string), 200)]
+        public IActionResult Get(int id)
+        {
+            return id == 0 ? NotFound() : id == 1 ? BadRequest() : Ok();
+        }
+    }
+}";
+        var testSource = TestSource.Read(source);
+
+        // Act
+        var result = await Executor.GetDiagnosticsAsync(testSource.Source);
+
+        // Assert
+        Assert.Contains(result, d => d.Id == ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode.Id);
+    }
+
+    [Fact]
+    public async Task NoDiagnosticsAreReturned_ForConditionalExpressionWithAllDocumentedStatusCodes()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Mvc;
+
+namespace Test
+{
+    [ApiController]
+    public class Foo : ControllerBase
+    {
+        [ProducesResponseType(200)]
+        [ProducesResponseType(404)]
+        public IActionResult Get(int id)
+        {
+            return id == 0 ? NotFound() : Ok();
+        }
+    }
+}";
+        var testSource = TestSource.Read(source);
+
+        // Act
+        var result = await Executor.GetDiagnosticsAsync(testSource.Source);
+
+        // Assert
+        Assert.DoesNotContain(result, d => d.Id == ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode.Id);
+    }
+
+    [Fact]
+    public async Task DiagnosticsAreReturned_ForExpressionBodiedMemberWithConditionalExpression()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Mvc;
+
+namespace Test
+{
+    [ApiController]
+    public class Foo : ControllerBase
+    {
+        [ProducesResponseType(typeof(string), 200)]
+        public IActionResult Get(int id)
+            => id == 0 ? NotFound() : Ok();
+    }
+}";
+        var testSource = TestSource.Read(source);
 
         // Act
         var result = await Executor.GetDiagnosticsAsync(testSource.Source);
