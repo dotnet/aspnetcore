@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
+using System.Text.Json;
 using Microsoft.Extensions.CommandLineUtils;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal;
 
@@ -53,14 +53,14 @@ internal sealed class ListCommand : ICommand
 
     private static void ReportJson(CommandContext context)
     {
-        var jObject = new JObject();
+        var secrets = new Dictionary<string, string>();
         foreach (var item in context.SecretStore.AsEnumerable())
         {
-            jObject[item.Key] = item.Value;
+            secrets[item.Key] = item.Value;
         }
 
         context.Reporter.Output("//BEGIN");
-        context.Reporter.Output(jObject.ToString(Formatting.Indented));
+        context.Reporter.Output(JsonSerializer.Serialize(secrets, SecretsStore.SerializerOptions));
         context.Reporter.Output("//END");
     }
 }
