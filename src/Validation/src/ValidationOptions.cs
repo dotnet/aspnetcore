@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.Extensions.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -21,6 +22,14 @@ public class ValidationOptions
     /// </remarks>
     [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
     public IList<IValidatableInfoResolver> Resolvers { get; } = [];
+
+    /// <summary>
+    /// Controls which IStringLocalizer is used for a given declaring type.
+    /// </summary>
+    public Func<Type, IStringLocalizerFactory, IStringLocalizer>? LocalizerProvider { get; set; }
+
+    [Experimental("ASP0030")]
+    public ValidationAttributeFormatterRegistry AttributeFormatters { get; } = new();
 
     /// <summary>
     /// Gets or sets the maximum depth for validation of nested objects.

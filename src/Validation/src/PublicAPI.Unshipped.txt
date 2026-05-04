@@ -1,1 +1,7 @@
 #nullable enable
+Microsoft.Extensions.Validation.IValidationAttributeFormatter
+Microsoft.Extensions.Validation.IValidationAttributeFormatter.FormatErrorMessage(System.Globalization.CultureInfo! culture, string! messageTemplate, string! displayName) -> string!
+Microsoft.Extensions.Validation.ValidationAttributeFormatterRegistry
+Microsoft.Extensions.Validation.ValidationAttributeFormatterRegistry.AddFormatter<TAttribute>(System.Func<TAttribute!, Microsoft.Extensions.Validation.IValidationAttributeFormatter!>! factory) -> void
+Microsoft.Extensions.Validation.ValidationAttributeFormatterRegistry.GetFormatter(System.ComponentModel.DataAnnotations.ValidationAttribute! attribute) -> Microsoft.Extensions.Validation.IValidationAttributeFormatter?
+Microsoft.Extensions.Validation.ValidationOptions.AttributeFormatters.get -> Microsoft.Extensions.Validation.ValidationAttributeFormatterRegistry!
