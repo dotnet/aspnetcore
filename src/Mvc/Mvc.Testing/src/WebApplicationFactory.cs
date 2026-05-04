@@ -295,8 +295,8 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
                 typeof(TEntryPoint).Assembly,
                 stopApplication: false,
                 configureHostBuilder: deferredHostBuilder.ConfigureHostBuilder,
-                arbitraryActions: arbitraryActions,
-                entrypointCompleted: deferredHostBuilder.EntryPointCompleted);
+                entrypointCompleted: deferredHostBuilder.EntryPointCompleted,
+                arbitraryActions: arbitraryActions);
 
             if (factory is not null)
             {
