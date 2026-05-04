@@ -33,23 +33,23 @@ public class Http1LargeWritingBenchmark
         _consumeResponseBodyTask = ConsumeResponseBody();
     }
 
-    [IterationSetup]
-    public void Setup()
+    [Benchmark]
+    public Task WriteAsync()
     {
         _http1Connection.Reset();
         _http1Connection.RequestHeaders.ContentLength = _writeData.Length;
         _http1Connection.FlushAsync().GetAwaiter().GetResult();
-    }
 
-    [Benchmark]
-    public Task WriteAsync()
-    {
         return _http1Connection.ResponseBody.WriteAsync(_writeData, 0, _writeData.Length, default);
     }
 
     [Benchmark]
     public Task WriteSegmentsUnawaitedAsync()
     {
+        _http1Connection.Reset();
+        _http1Connection.RequestHeaders.ContentLength = _writeData.Length;
+        _http1Connection.FlushAsync().GetAwaiter().GetResult();
+
         // Write a 10th the of the data at a time
         var segmentSize = _writeData.Length / 10;
 
