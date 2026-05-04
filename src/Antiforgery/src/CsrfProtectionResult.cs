@@ -4,9 +4,9 @@
 namespace Microsoft.AspNetCore.Antiforgery;
 
 /// <summary>
-/// Represents the result of cross-origin antiforgery validation.
+/// Represents the result of cross-origin antiforgery request validation.
 /// </summary>
-public enum CrossOriginAntiforgeryResult
+public enum CsrfProtectionResult
 {
     /// <summary>
     /// The request is allowed. The request is either same-origin, from a trusted origin,

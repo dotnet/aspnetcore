@@ -52,4 +52,15 @@ public static class AntiforgeryServiceCollectionExtensions
         services.Configure(setupAction);
         return services;
     }
+
+    /// <summary>
+    /// Registers cross-origin request protection (Sec-Fetch-* / Origin header validation).
+    /// This is called internally by the framework. Applications do not need to call this directly.
+    /// </summary>
+    internal static IServiceCollection AddCsrfProtection(this IServiceCollection services)
+    {
+        services.AddOptions();
+        services.TryAddSingleton<ICsrfProtection, DefaultCrossOriginProtection>();
+        return services;
+    }
 }

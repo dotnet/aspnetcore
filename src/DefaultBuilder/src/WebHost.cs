@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -274,26 +275,11 @@ public static class WebHost
             services.AddTransient<IStartupFilter, ForwardedHeadersStartupFilter>();
             services.AddTransient<IConfigureOptions<ForwardedHeadersOptions>, ForwardedHeadersOptionsSetup>();
 
-            // Cross-origin protection (Sec-Fetch-* / Origin header validation).
-            // Enabled by default for all apps. Disable via configuration:
-            //   "CrossOriginProtection:Enabled": "false"
-            var crossOriginEnabled = hostingContext.Configuration["CrossOriginProtection:Enabled"];
-            if (!string.Equals("false", crossOriginEnabled, StringComparison.OrdinalIgnoreCase))
+            // Cross-origin CSRF protection (Sec-Fetch-* / Origin header validation). Registered by default for all apps.
+            var crossOriginEnabled = hostingContext.Configuration["CrossOriginProtection"];
+            if (!string.Equals("disable", crossOriginEnabled, StringComparison.OrdinalIgnoreCase))
             {
-                services.AddCrossOriginProtection();
-
-                services.PostConfigure<CrossOriginProtectionOptions>(options =>
-                {
-                    var trustedOrigins = hostingContext.Configuration["CrossOriginProtection:TrustedOrigins"]
-                        ?.Split(';', StringSplitOptions.RemoveEmptyEntries);
-                    if (trustedOrigins is not null)
-                    {
-                        foreach (var origin in trustedOrigins)
-                        {
-                            options.TrustedOrigins.Add(origin.Trim());
-                        }
-                    }
-                });
+                services.TryAddSingleton<ICsrfProtection, DefaultCrossOriginProtection>();
             }
 
             // Provide a way for the default host builder to configure routing. This probably means calling AddRouting.

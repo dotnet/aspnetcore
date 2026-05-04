@@ -3,11 +3,10 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Antiforgery;
 
-internal sealed class DefaultCrossOriginProtection : ICrossOriginProtection
+internal sealed class DefaultCrossOriginProtection : ICsrfProtection
 {
     // Safe HTTP methods that do not require cross-origin validation (RFC 7231).
     private static readonly HashSet<string> SafeMethods = new(StringComparer.OrdinalIgnoreCase)
@@ -20,11 +19,16 @@ internal sealed class DefaultCrossOriginProtection : ICrossOriginProtection
 
     private readonly HashSet<string> _trustedOrigins;
 
-    public DefaultCrossOriginProtection(IOptions<CrossOriginProtectionOptions> options)
+    public DefaultCrossOriginProtection()
+        : this(Array.Empty<string>())
+    {
+    }
+
+    public DefaultCrossOriginProtection(IEnumerable<string> trustedOrigins)
     {
         // Normalize trusted origins at construction time for fast lookup.
         _trustedOrigins = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var origin in options.Value.TrustedOrigins)
+        foreach (var origin in trustedOrigins)
         {
             if (TryNormalizeOrigin(origin, out var normalized))
             {
@@ -34,16 +38,16 @@ internal sealed class DefaultCrossOriginProtection : ICrossOriginProtection
     }
 
     /// <inheritdoc />
-    public CrossOriginAntiforgeryResult Validate(HttpContext httpContext)
+    public CsrfProtectionResult Validate(HttpContext context)
     {
-        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(context);
 
-        var request = httpContext.Request;
+        var request = context.Request;
 
         // Step 1: Safe methods are always allowed.
         if (SafeMethods.Contains(request.Method))
         {
-            return CrossOriginAntiforgeryResult.Allowed;
+            return CsrfProtectionResult.Allowed;
         }
 
         // Step 2: Check trusted origins against the Origin header.
@@ -52,7 +56,7 @@ internal sealed class DefaultCrossOriginProtection : ICrossOriginProtection
         {
             if (TryNormalizeOrigin(origin, out var normalizedOrigin) && _trustedOrigins.Contains(normalizedOrigin))
             {
-                return CrossOriginAntiforgeryResult.Allowed;
+                return CsrfProtectionResult.Allowed;
             }
         }
 
@@ -62,10 +66,10 @@ internal sealed class DefaultCrossOriginProtection : ICrossOriginProtection
         {
             return secFetchSite switch
             {
-                "same-origin" => CrossOriginAntiforgeryResult.Allowed,
-                "none" => CrossOriginAntiforgeryResult.Allowed,
+                "same-origin" => CsrfProtectionResult.Allowed,
+                "none" => CsrfProtectionResult.Allowed,
                 // "cross-site", "same-site", or any other value → deny.
-                _ => CrossOriginAntiforgeryResult.Denied,
+                _ => CsrfProtectionResult.Denied,
             };
         }
 
@@ -76,18 +80,18 @@ internal sealed class DefaultCrossOriginProtection : ICrossOriginProtection
             if (requestOrigin != null && TryNormalizeOrigin(origin, out var normalizedOrigin))
             {
                 return string.Equals(normalizedOrigin, requestOrigin, StringComparison.OrdinalIgnoreCase)
-                    ? CrossOriginAntiforgeryResult.Allowed
-                    : CrossOriginAntiforgeryResult.Denied;
+                    ? CsrfProtectionResult.Allowed
+                    : CsrfProtectionResult.Denied;
             }
 
             // Malformed Origin header → deny (fail closed).
-            return CrossOriginAntiforgeryResult.Denied;
+            return CsrfProtectionResult.Denied;
         }
 
         // Step 5: No Sec-Fetch-Site AND no Origin header.
         // This is a non-browser client (curl, Postman, server-to-server).
         // Allow the request — CSRF is a browser-based attack vector.
-        return CrossOriginAntiforgeryResult.Allowed;
+        return CsrfProtectionResult.Allowed;
     }
 
     /// <summary>
