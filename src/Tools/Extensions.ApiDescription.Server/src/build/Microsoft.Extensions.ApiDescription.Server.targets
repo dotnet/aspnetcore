@@ -64,7 +64,7 @@
 
     <Message Importance="high" Text="%0AGenerateOpenApiDocuments:" />
     <Message Importance="high" Text="  $(_DotNetGetDocumentCommand)" />
-    <Exec Command="$(_DotNetGetDocumentCommand)" LogStandardErrorAsError="true" />
+    <Exec Command="$(_DotNetGetDocumentCommand)" LogStandardErrorAsError="true" StandardOutputImportance="High" />
   </Target>
 
   <!-- Unless this is an inner build or default timing is disabled, tie document retrieval into the build. -->
