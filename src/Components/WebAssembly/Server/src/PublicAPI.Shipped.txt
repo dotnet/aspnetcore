@@ -3,9 +3,7 @@
 ~Microsoft.AspNetCore.Components.WebAssembly.Server.TargetPickerUi.TargetPickerUi(string debugProxyUrl, string devToolsHost) -> void
 ~static Microsoft.AspNetCore.Builder.ComponentsWebAssemblyApplicationBuilderExtensions.UseBlazorFrameworkFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder applicationBuilder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
 ~static Microsoft.AspNetCore.Builder.ComponentsWebAssemblyApplicationBuilderExtensions.UseBlazorFrameworkFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder, Microsoft.AspNetCore.Http.PathString pathPrefix) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
-~static Microsoft.AspNetCore.Builder.WebAssemblyNetDebugProxyAppBuilderExtensions.UseWebAssemblyDebugging(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) -> void
 Microsoft.AspNetCore.Builder.ComponentsWebAssemblyApplicationBuilderExtensions
-Microsoft.AspNetCore.Builder.WebAssemblyNetDebugProxyAppBuilderExtensions
 Microsoft.AspNetCore.Builder.WebAssemblyRazorComponentsEndpointConventionBuilderExtensions
 Microsoft.AspNetCore.Components.WebAssembly.Server.AuthenticationStateSerializationOptions
 Microsoft.AspNetCore.Components.WebAssembly.Server.AuthenticationStateSerializationOptions.AuthenticationStateSerializationOptions() -> void
@@ -26,7 +24,6 @@ Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpoint
 Microsoft.Extensions.DependencyInjection.WebAssemblyRazorComponentsBuilderExtensions
 static Microsoft.AspNetCore.Builder.ComponentsWebAssemblyApplicationBuilderExtensions.UseBlazorFrameworkFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder! applicationBuilder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
 static Microsoft.AspNetCore.Builder.ComponentsWebAssemblyApplicationBuilderExtensions.UseBlazorFrameworkFiles(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder, Microsoft.AspNetCore.Http.PathString pathPrefix) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.AspNetCore.Builder.WebAssemblyNetDebugProxyAppBuilderExtensions.UseWebAssemblyDebugging(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> void
 static Microsoft.AspNetCore.Builder.WebAssemblyRazorComponentsEndpointConventionBuilderExtensions.AddInteractiveWebAssemblyRenderMode(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder, System.Action<Microsoft.AspNetCore.Components.WebAssembly.Server.WebAssemblyComponentsEndpointOptions!>? callback = null) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!
 static Microsoft.Extensions.DependencyInjection.WebAssemblyRazorComponentsBuilderExtensions.AddAuthenticationStateSerialization(this Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder! builder, System.Action<Microsoft.AspNetCore.Components.WebAssembly.Server.AuthenticationStateSerializationOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!
 static Microsoft.Extensions.DependencyInjection.WebAssemblyRazorComponentsBuilderExtensions.AddInteractiveWebAssemblyComponents(this Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!
