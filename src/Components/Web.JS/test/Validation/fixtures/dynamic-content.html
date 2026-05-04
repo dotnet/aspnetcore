@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Dynamic Content</title>
+  <style>
+    .field-validation-error { color: red; }
+    .field-validation-valid { display: none; }
+  </style>
+</head>
+<body>
+  <form id="test-form" method="post">
+    <input id="name" name="Name" type="text"
+           data-val="true"
+           data-val-required="Name is required." />
+    <span data-valmsg-for="Name" data-valmsg-replace="true"></span>
+
+    <div id="dynamic-container"></div>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <script src="/dist/aspnet-core-validation.js"></script>
+</body>
+</html>

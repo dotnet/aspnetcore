@@ -11,6 +11,7 @@ export default createBaseConfig({
     'blazor.web': './src/Boot.Web.ts',
     'blazor.webassembly': './src/Boot.WebAssembly.ts',
     'blazor.webview': './src/Boot.WebView.ts',
+    'aspnet-core-validation': './src/Validation/index.ts',
   },
   dir: __dirname,
   updateConfig: (config, environment, output, input) => {

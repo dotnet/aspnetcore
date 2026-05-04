@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Basic Validation</title>
+  <style>
+    .input-validation-error { border-color: red; }
+    .input-validation-valid { border-color: green; }
+    .field-validation-error { color: red; display: block; }
+    .field-validation-valid { display: none; }
+    .validation-summary-errors { color: red; }
+    .validation-summary-valid { display: none; }
+  </style>
+</head>
+<body>
+  <form id="test-form" method="post">
+    <div data-valmsg-summary="true" class="validation-summary-valid">
+      <ul></ul>
+    </div>
+
+    <div>
+      <label for="name">Name (required)</label>
+      <input id="name" name="Name" type="text"
+             data-val="true"
+             data-val-required="The Name field is required." />
+      <span data-valmsg-for="Name" data-valmsg-replace="true"></span>
+    </div>
+
+    <div>
+      <label for="email">Email (required)</label>
+      <input id="email" name="Email" type="text"
+             data-val="true"
+             data-val-required="The Email field is required." />
+      <span data-valmsg-for="Email" data-valmsg-replace="true"></span>
+    </div>
+
+    <div>
+      <label for="bio">Bio (maxlength 100)</label>
+      <textarea id="bio" name="Bio"
+                data-val="true"
+                data-val-maxlength="Bio must be at most 100 characters."
+                data-val-maxlength-max="100"></textarea>
+      <span data-valmsg-for="Bio" data-valmsg-replace="true"></span>
+    </div>
+
+    <div>
+      <label for="password">Password (minlength 8, maxlength 50)</label>
+      <input id="password" name="Password" type="password"
+             data-val="true"
+             data-val-required="Password is required."
+             data-val-length="Password must be between 8 and 50 characters."
+             data-val-length-min="8"
+             data-val-length-max="50" />
+      <span data-valmsg-for="Password" data-valmsg-replace="true"></span>
+    </div>
+
+    <div>
+      <label>
+        <input id="agree" name="Agree" type="checkbox"
+               data-val="true"
+               data-val-required="You must agree to the terms." />
+        I agree to the terms
+      </label>
+      <span data-valmsg-for="Agree" data-valmsg-replace="true"></span>
+    </div>
+
+    <div>
+      <label for="category">Category (required select)</label>
+      <select id="category" name="Category"
+              data-val="true"
+              data-val-required="Please select a category.">
+        <option value="">-- Select --</option>
+        <option value="A">Category A</option>
+        <option value="B">Category B</option>
+      </select>
+      <span data-valmsg-for="Category" data-valmsg-replace="true"></span>
+    </div>
+
+    <button type="submit">Submit</button>
+    <button type="reset">Reset</button>
+  </form>
+
+  <script src="/dist/aspnet-core-validation.js"></script>
+</body>
+</html>

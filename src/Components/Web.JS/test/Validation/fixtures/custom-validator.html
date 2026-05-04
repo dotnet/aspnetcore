@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Custom Validators</title>
+  <style>
+    .input-validation-error { border-color: red; }
+    .field-validation-error { color: red; }
+    .field-validation-valid { display: none; }
+  </style>
+</head>
+<body>
+  <form id="test-form" method="post">
+    <div>
+      <label for="code">Code (custom-format)</label>
+      <input id="code" name="Code" type="text"
+             data-val="true"
+             data-val-customformat="Code must start with 'ABC-'."
+             data-val-customformat-prefix="ABC-" />
+      <span data-valmsg-for="Code" data-valmsg-replace="true"></span>
+    </div>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <script src="/dist/aspnet-core-validation.js"></script>
+  <script>
+    // The validation library initializes on DOMContentLoaded. Custom validators
+    // must be registered after the library is ready.
+    document.addEventListener('DOMContentLoaded', function() {
+      window.__aspnetValidation.addValidator('customformat', function(context) {
+        if (!context.value) {
+          return true; // Empty is valid (use required for that)
+        }
+        var prefix = context.params['prefix'] || '';
+        if (!context.value.startsWith(prefix)) {
+          return false;
+        }
+        return true;
+      });
+    });
+  </script>
+</body>
+</html>

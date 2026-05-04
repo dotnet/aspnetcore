@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>All Validators</title>
+  <style>
+    .field-validation-error { color: red; }
+    .field-validation-valid { display: none; }
+  </style>
+</head>
+<body>
+  <form id="test-form" method="post">
+    <!-- range -->
+    <input id="age" name="Age" type="number"
+           data-val="true"
+           data-val-range="Age must be between 1 and 150."
+           data-val-range-min="1"
+           data-val-range-max="150" />
+    <span data-valmsg-for="Age" data-valmsg-replace="true"></span>
+
+    <!-- regex -->
+    <input id="zipcode" name="ZipCode" type="text"
+           data-val="true"
+           data-val-regex="Invalid zip code."
+           data-val-regex-pattern="\d{5}(-\d{4})?" />
+    <span data-valmsg-for="ZipCode" data-valmsg-replace="true"></span>
+
+    <!-- email -->
+    <input id="email" name="Email" type="text"
+           data-val="true"
+           data-val-email="Invalid email address." />
+    <span data-valmsg-for="Email" data-valmsg-replace="true"></span>
+
+    <!-- url -->
+    <input id="website" name="Website" type="text"
+           data-val="true"
+           data-val-url="Invalid URL." />
+    <span data-valmsg-for="Website" data-valmsg-replace="true"></span>
+
+    <!-- phone -->
+    <input id="phone" name="Phone" type="text"
+           data-val="true"
+           data-val-phone="Invalid phone number." />
+    <span data-valmsg-for="Phone" data-valmsg-replace="true"></span>
+
+    <!-- creditcard -->
+    <input id="card" name="Card" type="text"
+           data-val="true"
+           data-val-creditcard="Invalid credit card number." />
+    <span data-valmsg-for="Card" data-valmsg-replace="true"></span>
+
+    <!-- equalto -->
+    <input id="password" name="Password" type="password" />
+    <input id="confirm" name="ConfirmPassword" type="password"
+           data-val="true"
+           data-val-equalto="Passwords must match."
+           data-val-equalto-other="*.Password" />
+    <span data-valmsg-for="ConfirmPassword" data-valmsg-replace="true"></span>
+
+    <!-- fileextensions -->
+    <input id="avatar" name="Avatar" type="text"
+           data-val="true"
+           data-val-fileextensions="Only image files are allowed."
+           data-val-fileextensions-extensions=".png,.jpg,.jpeg,.gif" />
+    <span data-valmsg-for="Avatar" data-valmsg-replace="true"></span>
+
+    <!-- A required field so form always stays invalid for easy testing -->
+    <input id="anchor" name="Anchor" type="text"
+           data-val="true"
+           data-val-required="Required." />
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <script src="/dist/aspnet-core-validation.js"></script>
+</body>
+</html>

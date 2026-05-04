@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Timing Tests</title>
+  <style>
+    .field-validation-error { color: red; }
+    .field-validation-valid { display: none; }
+  </style>
+</head>
+<body>
+  <form id="test-form" method="post">
+    <!-- Default timing: change + gated input -->
+    <input id="default-field" name="Default" type="text"
+           data-val="true"
+           data-val-required="Default is required." />
+    <span data-valmsg-for="Default" data-valmsg-replace="true"></span>
+
+    <!-- data-valevent="submit": only validated on form submit -->
+    <input id="submit-only" name="SubmitOnly" type="text"
+           data-val="true"
+           data-val-required="SubmitOnly is required."
+           data-valevent="submit" />
+    <span data-valmsg-for="SubmitOnly" data-valmsg-replace="true"></span>
+
+    <!-- data-valevent="change": only validated on change/blur, never on input -->
+    <input id="change-only" name="ChangeOnly" type="text"
+           data-val="true"
+           data-val-required="ChangeOnly is required."
+           data-valevent="change" />
+    <span data-valmsg-for="ChangeOnly" data-valmsg-replace="true"></span>
+
+    <!-- data-valevent="input": always validated on every keystroke -->
+    <input id="input-eager" name="InputEager" type="text"
+           data-val="true"
+           data-val-required="InputEager is required."
+           data-valevent="input" />
+    <span data-valmsg-for="InputEager" data-valmsg-replace="true"></span>
+
+    <button type="submit">Submit</button>
+    <button type="reset">Reset</button>
+  </form>
+
+  <script src="/dist/aspnet-core-validation.js"></script>
+</body>
+</html>
